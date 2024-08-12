@@ -90,6 +90,9 @@ export const functions: Functions<Api> = {
     log('test', path, prompt, assessor, expectations, print(api.pid))
     const actorId = getActorId(api.pid)
 
+    // when to start the tps report ?
+    // is this running in a single thread ?
+
     const { start, run } = await api.actions<longthread.Api>('longthread')
     await start()
     await run({ path, content: prompt, actorId })
@@ -97,10 +100,11 @@ export const functions: Functions<Api> = {
     log('starting assessment with:', assessor)
 
     const thread = await api.readJSON<Thread>(getThreadPath(api.pid))
+    const { oneshot } = await api
+      .actions<completions.Api>('ai-completions', { branch: true })
     const promises = expectations.map(async (expectation) => {
-      const { oneshot } = await api.actions<completions.Api>('ai-completions')
       const contents = [
-        `Expectation: \n${JSON.stringify(expectation, null, 2)}`,
+        `Expectation: \n${expectation}`,
         '\n---\n',
         `Messages: \n${JSON.stringify(thread.messages, null, 2)}`,
       ]
@@ -108,8 +112,9 @@ export const functions: Functions<Api> = {
       const assistant = await oneshot({ path: assessor, contents, actorId })
       assert(assistant.tool_calls?.length === 1, 'expected one tool call')
       const outcome = assistant.tool_calls[0].function
-      log('outcome', outcome)
-      return JSON.parse(outcome.arguments)
+      const parsed = JSON.parse(outcome.arguments)
+      log('outcome', parsed)
+      return parsed
     })
     const outcomes = await Promise.all(promises)
     return outcomes

@@ -86,13 +86,19 @@ export const functions: Functions<Api> = {
 const loop = async (path: string, api: IA) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
-  while (!await isDone(threadPath, api)) {
+  const HARD_STOP = 10
+  let count = 0
+  while (!await isDone(threadPath, api) && count++ < HARD_STOP) {
     await complete({ path })
     if (await isDone(threadPath, api)) {
       return
     }
     // TODO check tool responses come back correct
     await executeTools(threadPath, api)
+  }
+  if (count >= HARD_STOP) {
+    // TODO test this actually works
+    console.error('HARD_STOP', HARD_STOP)
   }
 }
 

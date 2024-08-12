@@ -13,22 +13,27 @@ const synthPath = 'agents/synth.md'
 const assessorPath = 'agents/assessor.md'
 const simplePath = 'synth.test.md'
 
-const synth = await Deno.readTextFile('./tests/' + synthPath)
-const assessor = await Deno.readTextFile('./tests/' + assessorPath)
-const simple = await Deno.readTextFile('./tests/' + simplePath)
+const synth = await Deno.readTextFile('./HAL/' + synthPath)
+const assessor = await Deno.readTextFile('./HAL/' + assessorPath)
+const simple = await Deno.readTextFile('./HAL/tests/' + simplePath)
 
-Deno.test('synth', async () => {
+Deno.test('synth', async (t) => {
   const { backchat, engine } = await cradleMaker()
-  log.enable('AI:tests AI:longthread AI:synth AI:agents AI:qbr*')
-  log('test start')
 
   await backchat.write(synthPath, synth)
   await backchat.write(assessorPath, assessor)
   await backchat.write(simplePath, simple)
 
   const actions = await backchat.actions<Api>('longthread')
-  const content = `how many tests in ./${simplePath} ?`
-  await actions.run({ content, path: synthPath, actorId })
+  await t.step('test count', async () => {
+    const content = `how many tests in ./${simplePath} ?`
+    await actions.run({ content, path: synthPath, actorId })
+  })
+  log.enable('AI:tests AI:longthread AI:synth AI:agents AI:qbr*')
+  await t.step('run tests', async () => {
+    const content = `run tests in ./${simplePath}`
+    await actions.run({ content, path: synthPath, actorId })
+  })
 
   await engine.stop()
 })

@@ -1,5 +1,5 @@
 import {
-  addRun,
+  addIteration,
   addTest,
   create,
   type TestSuiteSchema,
@@ -27,7 +27,7 @@ const raw: TestSuiteSchema = {
         completed: 1,
         successes: [1, 0],
       },
-      runs: [
+      iterations: [
         {
           commit: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
           prompts: ['prompt used'],
@@ -61,7 +61,7 @@ Deno.test('tps report', async () => {
 
   await delay(1)
 
-  const updated = addRun(added, 0, {
+  const updated = addIteration(added, 0, {
     commit: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
     prompts: ['prompt used'],
     outcomes: [{

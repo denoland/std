@@ -8,15 +8,15 @@ const outcome = z
     outcome: z.boolean(),
   })
   .describe(
-    'the result of a single test run along with chain of thought reasoning for how the outcome was reached',
+    'the result of a single test iteration along with chain of thought reasoning for how the outcome was reached',
   )
 
-type Run = z.infer<typeof run>
-const run = z
+type Iteration = z.infer<typeof iteration>
+const iteration = z
   .object({
-    commit: md5.describe('the commit of the branch this run completed on'),
+    commit: md5.describe('the commit this iteration completed on'),
     prompts: z.array(z.string()).describe('the prompt(s) that were used'),
-    outcomes: z.array(outcome).describe('the outcomes of this run'),
+    outcomes: z.array(outcome).describe('the outcomes of this iteration'),
   })
 const summary = z
   .object({
@@ -25,12 +25,12 @@ const summary = z
       .int()
       .gt(1723003530757)
       .default(Date.now)
-      .describe('the time the test run started'),
+      .describe('the start time'),
     elapsed: z
       .number()
       .int()
       .gte(0)
-      .describe('the time the test run took to complete in ms'),
+      .describe('the time the operation has been running for in ms'),
     iterations: z
       .number()
       .int()
@@ -77,24 +77,26 @@ const singleTestSchema = z
       .refine((v) => v.successes.every((success) => success <= v.completed), {
         message: 'successes cannot be greater than completed',
       }),
-    runs: z.array(run)
+    iterations: z.array(iteration)
       .describe('the outcome and info about each test run that has executed'),
   })
   .describe('summary and runs output of a single test')
   .refine(
     (v) =>
-      v.runs.every((run) => run.outcomes.length === v.summary.expectations),
+      v.iterations.every((run) =>
+        run.outcomes.length === v.summary.expectations
+      ),
     { message: 'outcomes count must match expectations count' },
   )
-  .refine((v) => v.runs.length <= v.summary.iterations, {
+  .refine((v) => v.iterations.length <= v.summary.iterations, {
     message: 'runs cannot be greater than iterations',
   })
-  .refine((v) => v.runs.length === v.summary.completed, {
+  .refine((v) => v.iterations.length === v.summary.completed, {
     message: 'runs must equal completed',
   })
   .refine((v) => {
     const tally = v.summary.successes.map(() => 0)
-    for (const run of v.runs) {
+    for (const run of v.iterations) {
       run.outcomes.forEach(({ outcome }, index) => {
         if (outcome) {
           tally[index]++
@@ -157,24 +159,28 @@ export const addTest = (base: TestSuiteSchema, expectations: number) => {
       completed: 0,
       successes: Array(expectations).fill(0),
     },
-    runs: [],
+    iterations: [],
   }
   copy.results.push(test)
   copy.summary.tests++
   return testSuiteSchema.parse(copy)
 }
 
-export const addRun = (base: TestSuiteSchema, index: number, run: Run) => {
+export const addIteration = (
+  base: TestSuiteSchema,
+  index: number,
+  iteration: Iteration,
+) => {
   const copy = testSuiteSchema.parse(base)
   const test = copy.results[index]
   test.summary.completed++
   test.summary.elapsed = Date.now() - test.summary.timestamp
-  run.outcomes.forEach(({ outcome }, index) => {
+  iteration.outcomes.forEach(({ outcome }, index) => {
     if (outcome) {
       test.summary.successes[index]++
     }
   })
-  test.runs.push(run)
+  test.iterations.push(iteration)
   let leastCompleted = Number.MAX_SAFE_INTEGER
   for (const _test of copy.results) {
     if (_test.summary.completed < leastCompleted) {
