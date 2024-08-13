@@ -32,6 +32,10 @@ import {
 
 // IsExact
 {
+  class _Class<T> {
+    declare private _prop: T;
+  }
+
   // matching
   assertType<IsExact<string | number, string | number>>(true);
   assertType<IsExact<string | number | Date, string | number | Date>>(true);
@@ -47,6 +51,7 @@ import {
   assertType<IsExact<{ prop: never }, { prop: never }>>(true);
   assertType<IsExact<{ prop: any }, { prop: any }>>(true);
   assertType<IsExact<{ prop: unknown }, { prop: unknown }>>(true);
+  assertType<IsExact<{ readonly prop: any }, { readonly prop: any }>>(true);
   assertType<IsExact<[], []>>(true);
   assertType<IsExact<readonly [], readonly []>>(true);
   assertType<IsExact<any[], any[]>>(true);
@@ -58,6 +63,32 @@ import {
   assertType<IsExact<[any, ...any[]], [any, ...any[]]>>(true);
   assertType<IsExact<[any, ...any[], any], [any, ...any[], any]>>(true);
   assertType<IsExact<typeof globalThis, typeof globalThis>>(true);
+  assertType<IsExact<() => void, () => void>>(true);
+  assertType<IsExact<() => any, () => any>>(true);
+  assertType<IsExact<() => unknown, () => unknown>>(true);
+  assertType<IsExact<() => never, () => never>>(true);
+  assertType<IsExact<(arg: any) => void, (arg: any) => void>>(true);
+  assertType<IsExact<(arg?: any) => void, (arg?: any) => void>>(true);
+  assertType<IsExact<(...args: any[]) => void, (...args: any[]) => void>>(true);
+  assertType<
+    IsExact<
+      (arg: any, ...args: any[]) => void,
+      (arg: any, ...args: any[]) => void
+    >
+  >(true);
+  assertType<IsExact<_Class<any>, _Class<any>>>(true);
+  assertType<
+    IsExact<
+      _Class<{ x: any; prop?: any }>,
+      _Class<{ x: any; prop?: any }>
+    >
+  >(true);
+  assertType<
+    IsExact<
+      _Class<{ x: any; readonly prop: any }>,
+      _Class<{ x: any; readonly prop: any }>
+    >
+  >(true);
 
   // not matching
   assertType<IsExact<string | number | Date, string | number>>(false);
@@ -102,6 +133,7 @@ import {
     >
   >(false);
   assertType<IsExact<{ prop: string | undefined }, { prop?: string }>>(false); // these are different
+  assertType<IsExact<{ prop: any }, { readonly prop: any }>>(false);
   assertType<IsExact<[], readonly []>>(false);
   assertType<IsExact<any[], []>>(false);
   assertType<IsExact<any[], unknown[]>>(false);
@@ -112,6 +144,43 @@ import {
   assertType<IsExact<[...any[]], [any, ...any[]]>>(false);
   assertType<IsExact<[...any[]], [any, ...any[], any]>>(false);
   assertType<IsExact<[any, ...any[]], [any, ...any[], any]>>(false);
+  assertType<IsExact<() => void, () => undefined>>(false);
+  assertType<IsExact<() => any, () => unknown>>(false);
+  assertType<IsExact<() => any, () => never>>(false);
+  assertType<IsExact<(arg: any) => void, (arg: unknown) => void>>(false);
+  assertType<IsExact<() => void, (arg?: any) => void>>(false);
+  assertType<IsExact<(arg: any) => void, (arg?: any) => void>>(false);
+  assertType<
+    IsExact<
+      (...args: any[]) => void,
+      (...args: unknown[]) => void
+    >
+  >(false);
+  assertType<
+    IsExact<
+      (arg: any, ...args: any[]) => void,
+      (arg: unknown, ...args: any[]) => void
+    >
+  >(false);
+  assertType<
+    IsExact<
+      (arg: any, ...args: any[]) => void,
+      (arg: any, ...args: unknown[]) => void
+    >
+  >(false);
+  assertType<IsExact<_Class<any>, _Class<number>>>(false);
+  assertType<
+    IsExact<
+      _Class<{ x: any; prop?: any }>,
+      _Class<{ x: any; other?: any }>
+    >
+  >(false);
+  assertType<
+    IsExact<
+      _Class<{ x: any; prop: any }>,
+      _Class<{ x: any; readonly prop: any }>
+    >
+  >(false);
 }
 
 // Has
