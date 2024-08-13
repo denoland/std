@@ -50,6 +50,7 @@ type TarStreamInputInternal =
 export interface TarStreamOptions {
   /**
    * An octal literal.
+   * Defaults to 755 for directories and 644 for files.
    */
   mode?: number;
   /**
@@ -64,6 +65,7 @@ export interface TarStreamOptions {
   gid?: number;
   /**
    * A number of seconds since the start of epoch. Avoid negative values.
+   * Defaults to the current time in seconds.
    */
   mtime?: number;
   /**
