@@ -47,6 +47,16 @@ import {
   assertType<IsExact<{ prop: never }, { prop: never }>>(true);
   assertType<IsExact<{ prop: any }, { prop: any }>>(true);
   assertType<IsExact<{ prop: unknown }, { prop: unknown }>>(true);
+  assertType<IsExact<[], []>>(true);
+  assertType<IsExact<readonly [], readonly []>>(true);
+  assertType<IsExact<any[], any[]>>(true);
+  assertType<IsExact<unknown[], unknown[]>>(true);
+  assertType<IsExact<never[], never[]>>(true);
+  assertType<IsExact<[elm?: any], [elm?: any]>>(true);
+  assertType<IsExact<[...any[]], [...any[]]>>(true);
+  assertType<IsExact<[...any[], any], [...any[], any]>>(true);
+  assertType<IsExact<[any, ...any[]], [any, ...any[]]>>(true);
+  assertType<IsExact<[any, ...any[], any], [any, ...any[], any]>>(true);
   assertType<IsExact<typeof globalThis, typeof globalThis>>(true);
 
   // not matching
@@ -92,6 +102,16 @@ import {
     >
   >(false);
   assertType<IsExact<{ prop: string | undefined }, { prop?: string }>>(false); // these are different
+  assertType<IsExact<[], readonly []>>(false);
+  assertType<IsExact<any[], []>>(false);
+  assertType<IsExact<any[], unknown[]>>(false);
+  assertType<IsExact<any[], never[]>>(false);
+  assertType<IsExact<[], [elm?: any]>>(false);
+  assertType<IsExact<[elm: any], [elm?: any]>>(false);
+  assertType<IsExact<[...any[]], [...any[], any]>>(false);
+  assertType<IsExact<[...any[]], [any, ...any[]]>>(false);
+  assertType<IsExact<[...any[]], [any, ...any[], any]>>(false);
+  assertType<IsExact<[any, ...any[]], [any, ...any[], any]>>(false);
 }
 
 // Has
