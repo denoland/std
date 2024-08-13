@@ -89,6 +89,18 @@ import {
       _Class<{ x: any; readonly prop: any }>
     >
   >(true);
+  assertType<
+    IsExact<
+      { [x: string]: unknown } & { prop: unknown },
+      { [x: string]: unknown; prop: unknown }
+    >
+  >(true);
+  assertType<
+    IsExact<
+      { [x: string]: unknown; prop: unknown },
+      { [x: string]: unknown } & { prop: unknown }
+    >
+  >(true);
 
   // not matching
   assertType<IsExact<string | number | Date, string | number>>(false);
@@ -179,6 +191,18 @@ import {
     IsExact<
       _Class<{ x: any; prop: any }>,
       _Class<{ x: any; readonly prop: any }>
+    >
+  >(false);
+  assertType<
+    IsExact<
+      { [x: string]: unknown; prop: any } & { prop: unknown },
+      { [x: string]: unknown; prop: unknown }
+    >
+  >(false);
+  assertType<
+    IsExact<
+      { [x: string]: unknown; prop: unknown },
+      { [x: string]: unknown; prop: any } & { prop: unknown }
     >
   >(false);
 }
