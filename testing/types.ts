@@ -177,12 +177,14 @@ export type IsNullable<T> = Extract<T, null | undefined> extends never ? false
  * @typeParam T The type to check if it exactly matches type `U`.
  * @typeParam U The type to check if it exactly matches type `T`.
  */
-export type IsExact<T, U> = TupleMatches<AnyToBrand<T>, AnyToBrand<U>> extends
-  true
-  ? TupleMatches<DeepPrepareIsExact<T>, DeepPrepareIsExact<U>> extends true
-    ? true
-  : false
-  : false;
+export type IsExact<T, U> =
+  ParametersAndReturnTypeMatches<AnyToBrand<T>, AnyToBrand<U>> extends true
+    ? ParametersAndReturnTypeMatches<
+      DeepPrepareIsExact<T>,
+      DeepPrepareIsExact<U>
+    > extends true ? true
+    : false
+    : false;
 
 /** @internal */
 export type DeepPrepareIsExact<T, VisitedTypes = never> = {
@@ -246,6 +248,16 @@ export type IsNever<T> = [T] extends [never] ? true : false;
 export type IsUnknown<T> = unknown extends T
   ? ([T] extends [null] ? false : true)
   : false;
+
+/**
+ * The internal utility type to match the given types as return types.
+ *
+ * @internal
+ */
+export type ParametersAndReturnTypeMatches<T, U> = Matches<
+  <X>(_: T) => X extends T ? 1 : 2,
+  <X>(_: U) => X extends U ? 1 : 2
+>;
 
 /**
  * The internal utility type to match the given types as tuples.
