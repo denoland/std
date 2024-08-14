@@ -3,14 +3,15 @@
 /**
  * **UNSTABLE**: New API, yet to be vetted.
  *
- * Converts a string into a slug.
+ * Converts a string into {@link https://en.wikipedia.org/wiki/Clean_URL#Slug a slug}.
  *
  * @example Usage
  * ```ts
  * import { slugify } from "@std/text/slugify";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(slugify("déjà vu"),"deja-vu");
+ * assertEquals(slugify("hello world"), "hello-world");
+ * assertEquals(slugify("déjà vu"), "deja-vu");
  * ```
  *
  * @param input The string that is going to be converted into a slug
