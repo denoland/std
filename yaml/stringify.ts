@@ -118,8 +118,10 @@ export function stringify(
   // deno-lint-ignore no-explicit-any
   if (state.useAnchors) state.getDuplicateReferences(data as any);
 
-  if (state.writeNode(0, data, { block: true, compact: true, isKey: false })) {
-    return `${state.dump}\n`;
-  }
-  return "";
+  const string = state.stringifyNode(data, 0, {
+    block: true,
+    compact: true,
+    isKey: false,
+  });
+  return string === null ? "" : `${string}\n`;
 }
