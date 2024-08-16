@@ -376,7 +376,7 @@
  * @module
  */
 
-export * from "./base_handler.ts";
+export * from "./handler.ts";
 export * from "./console_handler.ts";
 export * from "./file_handler.ts";
 export * from "./rotating_file_handler.ts";
