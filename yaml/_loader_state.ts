@@ -137,7 +137,6 @@ function codepointToChar(codepoint: number): string {
 }
 
 export class LoaderState {
-  schema: Schema;
   input: string;
   length: number;
   lineIndent = 0;
@@ -149,7 +148,7 @@ export class LoaderState {
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
-  version?: string | null;
+  version: string | null;
   checkLineBreaks = false;
   tagMap: ArrayObject = Object.create(null);
   anchorMap: ArrayObject = Object.create(null);
@@ -166,13 +165,13 @@ export class LoaderState {
       allowDuplicateKeys = false,
     }: LoaderStateOptions,
   ) {
-    this.schema = schema;
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.typeMap = this.schema.compiledTypeMap;
+    this.implicitTypes = schema.compiledImplicit;
+    this.typeMap = schema.compiledTypeMap;
     this.length = input.length;
+    this.version = null;
 
     this.readIndent();
   }
@@ -357,7 +356,7 @@ function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
     return state.throwError("unacceptable YAML version of the document");
   }
 
-  state.version = args[0];
+  state.version = args[0] ?? null;
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
     return state.dispatchWarning("unsupported YAML version of the document");
