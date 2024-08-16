@@ -478,7 +478,6 @@ export class DumperState {
   implicitTypes: Type<"scalar">[];
   explicitTypes: Type<KindType>[];
   tag: string | null = null;
-  result = "";
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: ArrayObject<StyleVariant>;
@@ -902,21 +901,4 @@ export class DumperState {
     for (const object of duplicateObjects) this.duplicates.push(object);
     this.usedDuplicates = new Set();
   }
-}
-
-// deno-lint-ignore no-explicit-any
-export function dump(input: any, options: DumperStateOptions = {}): string {
-  const state = new DumperState(options);
-
-  if (state.useAnchors) state.getDuplicateReferences(input);
-
-  if (
-    state.writeNode(0, input, {
-      block: true,
-      compact: true,
-      isKey: false,
-    })
-  ) return `${state.dump}\n`;
-
-  return "";
 }

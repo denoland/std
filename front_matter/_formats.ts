@@ -1,17 +1,23 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+/**
+ * Supported format for front matter. `"unknown"` is used when auto format
+ * detection logic fails.
+ */
+export type Format = "yaml" | "toml" | "json";
+
 const BOM = "\\ufeff?";
 
 const YAML_DELIMITER = "= yaml =|---";
-const YAML_HEADER = `(---yaml|${YAML_DELIMITER})`;
+const YAML_HEADER = `(---yaml|${YAML_DELIMITER})\\s*`;
 const YAML_FOOTER = `(?:---|${YAML_DELIMITER})`;
 
 const TOML_DELIMITER = "\\+\\+\\+|= toml =";
-const TOML_HEADER = `(---toml|${TOML_DELIMITER})`;
+const TOML_HEADER = `(---toml|${TOML_DELIMITER})\\s*`;
 const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
 
 const JSON_DELIMITER = `= json =`;
-const JSON_HEADER = `(---json|${JSON_DELIMITER})`;
+const JSON_HEADER = `(---json|${JSON_DELIMITER})\\s*`;
 const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
 const DATA = "([\\s\\S]+?)";

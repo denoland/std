@@ -41,7 +41,14 @@ import { HEADER_LENGTH } from "./_common.ts";
 
 export type { TarInfo, TarMeta };
 
-/** Options for {@linkcode Tar.append}. */
+/**
+ * Options for {@linkcode Tar.append}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarOptions extends TarInfo {
   /**
    * Filepath of the file to append to the archive
@@ -115,7 +122,14 @@ function formatHeader(data: TarData): Uint8Array {
   return buffer;
 }
 
-/** Base interface for {@linkcode TarDataWithSource}. */
+/**
+ * Base interface for {@linkcode TarDataWithSource}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarData {
   /** Name of the file, excluding directory names (if any). */
   fileName?: string;
@@ -162,7 +176,14 @@ export interface TarData {
   group?: string;
 }
 
-/** Tar data interface for {@linkcode Tar.data}. */
+/**
+ * Tar data interface for {@linkcode Tar.data}.
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ */
 export interface TarDataWithSource extends TarData {
   /**
    * Path of the file to read.
@@ -228,14 +249,19 @@ export interface TarDataWithSource extends TarData {
  * await copy(tar.getReader(), writer);
  * writer.close();
  * ```
+ *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
  */
 export class Tar {
   /** Tar data. */
-  data: TarDataWithSource[];
+  #data: TarDataWithSource[];
 
   /** Constructs a new instance. */
   constructor() {
-    this.data = [];
+    this.#data = [];
   }
 
   /**
@@ -359,7 +385,7 @@ export class Tar {
       });
 
     tarData.checksum = pad(checksum, 6) + "\u0000 ";
-    this.data.push(tarData);
+    this.#data.push(tarData);
   }
 
   /**
@@ -367,7 +393,7 @@ export class Tar {
    */
   getReader(): Reader {
     const readers: Reader[] = [];
-    this.data.forEach((tarData) => {
+    this.#data.forEach((tarData) => {
       let { reader } = tarData;
       const { filePath } = tarData;
       const headerArr = formatHeader(tarData);
