@@ -4,11 +4,6 @@
 import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
-const branks = /^[ \t\r\n]*$/;
-function isBrankString(str: string) {
-  return branks.test(str);
-}
-
 /**
  * Parse each chunk as JSON.
  *
@@ -62,7 +57,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
     super(
       {
         transform(chunk, controller) {
-          if (!isBrankString(chunk)) {
+          if (chunk.trim().length) {
             controller.enqueue(parse(chunk));
           }
         },
