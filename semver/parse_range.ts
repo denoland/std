@@ -400,7 +400,7 @@ function parseOperatorRanges(string: string): (Comparator | null)[] {
  * ```
  *
  * @throws {TypeError} If the input range is invalid.
- * @param range The range set string
+ * @param value The range set string
  * @returns A valid SemVer range
  */
 export function parseRange(value: string): Range {
