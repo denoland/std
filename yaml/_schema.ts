@@ -5,7 +5,6 @@
 // This module is browser compatible.
 
 import type { KindType, Type } from "./_type.ts";
-import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -49,87 +48,86 @@ import {
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
-function compileList<T extends Type<KindType>>(
-  list: T[],
-  result: T[],
-): T[] {
-  const exclude = new Set();
+type ImplicitType = Type<"scalar">;
+type ExplicitType = Type<KindType>;
 
-  for (const currentType of list) {
-    for (const previousType of result) {
-      if (
-        previousType.tag === currentType.tag &&
-        previousType.kind === currentType.kind
-      ) {
-        exclude.add(previousType);
-      }
+function compileImplicitTypes<T extends ImplicitType>(
+  schema: Schema,
+): T[] {
+  const result = [];
+  for (const includedSchema of schema.include) {
+    result.push(...compileImplicitTypes<T>(includedSchema));
+  }
+  for (const type of schema.implicitTypes) {
+    if (!result.some((it) => it.tag == type.tag && it.kind === type.kind)) {
+      result.push(type as T);
     }
-    result.push(currentType);
   }
-
-  return result.filter((type): unknown => !exclude.has(type));
+  return result;
 }
-function compileImplicitTypeList<T extends Type<"scalar">>(
+function compileExplicitTypes<T extends ExplicitType>(
   schema: Schema,
-  result: T[],
 ): T[] {
+  const result = [];
   for (const includedSchema of schema.include) {
-    result = compileImplicitTypeList(includedSchema, result);
+    result.push(...compileExplicitTypes<T>(includedSchema));
   }
-  return compileList(schema.implicit as T[], result);
-}
-function compileExplicitTypeList<T extends Type<KindType>>(
-  schema: Schema,
-  result: T[],
-): T[] {
-  for (const includedSchema of schema.include) {
-    result = compileExplicitTypeList(includedSchema, result);
+  for (const type of schema.explicitTypes) {
+    if (!result.some((it) => it.tag == type.tag && it.kind === type.kind)) {
+      result.push(type as T);
+    }
   }
-  return compileList(schema.explicit as T[], result);
+  return result;
 }
 
 export type TypeMap = Record<
   KindType | "fallback",
-  ArrayObject<Type<KindType>>
+  Map<string, ExplicitType>
 >;
-function compileMap(...typesList: Type<KindType>[][]): TypeMap {
+function compileMap(
+  implicitTypes: ImplicitType[],
+  explicitTypes: ExplicitType[],
+): TypeMap {
   const result: TypeMap = {
-    fallback: {},
-    mapping: {},
-    scalar: {},
-    sequence: {},
+    fallback: new Map(),
+    mapping: new Map(),
+    scalar: new Map(),
+    sequence: new Map(),
   };
 
-  for (const types of typesList) {
+  const fallbackMap = result["fallback"];
+  for (const types of [implicitTypes, explicitTypes]) {
     for (const type of types) {
-      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
+      const map = result[type.kind];
+      map.set(type.tag, type);
+      fallbackMap.set(type.tag, type);
     }
   }
   return result;
 }
 
 export class Schema {
-  implicit: Type<"scalar">[];
-  explicit: Type<KindType>[];
+  implicitTypes: ImplicitType[];
+  explicitTypes: ExplicitType[];
   include: Schema[];
 
-  compiledImplicit: Type<"scalar">[];
-  compiledExplicit: Type<KindType>[];
+  compiledImplicitTypes: ImplicitType[];
+  compiledExplicitTypes: ExplicitType[];
   compiledTypeMap: TypeMap;
 
   constructor({ explicit = [], implicit = [], include = [] }: {
-    implicit?: Type<"scalar">[];
-    explicit?: Type<KindType>[];
+    implicit?: ImplicitType[];
+    explicit?: ExplicitType[];
     include?: Schema[];
   }) {
-    this.explicit = explicit;
-    this.implicit = implicit;
+    this.explicitTypes = explicit;
+    this.implicitTypes = implicit;
     this.include = include;
-    this.compiledImplicit = compileImplicitTypeList(this, []);
-    this.compiledExplicit = compileExplicitTypeList(this, []);
+    this.compiledImplicitTypes = compileImplicitTypes(this);
+    this.compiledExplicitTypes = compileExplicitTypes(this);
     this.compiledTypeMap = compileMap(
-      this.compiledImplicit,
-      this.compiledExplicit,
+      this.compiledImplicitTypes,
+      this.compiledExplicitTypes,
     );
   }
 }

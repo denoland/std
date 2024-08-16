@@ -170,7 +170,7 @@ export class LoaderState {
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = this.schema.compiledImplicit;
+    this.implicitTypes = this.schema.compiledImplicitTypes;
     this.typeMap = this.schema.compiledTypeMap;
     this.length = input.length;
 
@@ -1662,10 +1662,9 @@ function composeNode(
           break;
         }
       }
-    } else if (
-      Object.hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
-    ) {
-      type = state.typeMap[state.kind || "fallback"][state.tag]!;
+    } else if (state.typeMap[state.kind || "fallback"].has(state.tag)) {
+      const map = state.typeMap[state.kind || "fallback"];
+      type = map.get(state.tag)!;
 
       if (state.result !== null && type.kind !== state.kind) {
         return state.throwError(
