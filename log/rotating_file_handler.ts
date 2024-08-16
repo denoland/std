@@ -96,6 +96,7 @@ export class RotatingFileHandler extends FileHandler {
   }
 
   override log(msg: string) {
+    if (!this._file) this.open();
     const msgByteLength = this._encoder.encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {

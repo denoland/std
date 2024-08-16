@@ -79,6 +79,7 @@ export class FileHandler extends BaseHandler {
   }
 
   log(msg: string) {
+    if (!this._file) this.open();
     const bytes = this._encoder.encode(msg + "\n");
     if (bytes.byteLength > this._buf.byteLength - this._pointer) {
       this.flush();

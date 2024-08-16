@@ -5,7 +5,6 @@ import type { BaseHandler } from "./base_handler.ts";
 import { DEFAULT_CONFIG, DEFAULT_LEVEL } from "./_config.ts";
 import { type LogConfig, Logger } from "./logger.ts";
 import { state } from "./_state.ts";
-import type { FileHandler } from "./file_handler.ts";
 
 /** Setup logger config. */
 export function setup(config: LogConfig) {
@@ -14,17 +13,12 @@ export function setup(config: LogConfig) {
     loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },
   };
 
-  // tear down existing handlers
-  state.handlers.forEach((handler) => {
-    (handler as FileHandler).open?.();
-  });
   state.handlers.clear();
 
   // setup handlers
   const handlers = state.config.handlers || {};
 
   for (const [handlerName, handler] of Object.entries(handlers)) {
-    (handler as FileHandler).close?.();
     state.handlers.set(handlerName, handler);
   }
 
