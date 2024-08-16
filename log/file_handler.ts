@@ -44,7 +44,7 @@ export class FileHandler extends BaseHandler {
   protected _openOptions: Deno.OpenOptions;
   protected _encoder: TextEncoder = new TextEncoder();
   #unloadCallback = (() => {
-    this.destroy();
+    this.close();
   }).bind(this);
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
@@ -62,7 +62,7 @@ export class FileHandler extends BaseHandler {
     this._buf = new Uint8Array(options.bufferSize ?? 4096);
   }
 
-  override setup() {
+  open() {
     this._file = Deno.openSync(this._filename, this._openOptions);
     this.#resetBuffer();
 
@@ -78,7 +78,7 @@ export class FileHandler extends BaseHandler {
     }
   }
 
-  override log(msg: string) {
+  log(msg: string) {
     const bytes = this._encoder.encode(msg + "\n");
     if (bytes.byteLength > this._buf.byteLength - this._pointer) {
       this.flush();
@@ -107,10 +107,14 @@ export class FileHandler extends BaseHandler {
     this._pointer = 0;
   }
 
-  override destroy() {
+  close() {
     this.flush();
     this._file?.close();
     this._file = undefined;
     removeEventListener("unload", this.#unloadCallback);
+  }
+
+  [Symbol.dispose]() {
+    this.close();
   }
 }
