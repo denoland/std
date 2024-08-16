@@ -137,7 +137,6 @@ function codepointToChar(codepoint: number): string {
 }
 
 export class LoaderState {
-  schema: Schema;
   input: string;
   length: number;
   lineIndent = 0;
@@ -166,12 +165,11 @@ export class LoaderState {
       allowDuplicateKeys = false,
     }: LoaderStateOptions,
   ) {
-    this.schema = schema;
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.typeMap = this.schema.compiledTypeMap;
+    this.implicitTypes = schema.compiledImplicit;
+    this.typeMap = schema.compiledTypeMap;
     this.length = input.length;
     this.version = null;
 
