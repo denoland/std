@@ -477,7 +477,6 @@ export class DumperState {
   condenseFlow: boolean;
   implicitTypes: Type<"scalar">[];
   explicitTypes: Type<KindType>[];
-  tag: string | null = null;
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: ArrayObject<StyleVariant>;
@@ -587,7 +586,6 @@ export class DumperState {
   writeFlowSequence(level: number) {
     let _result = "";
     const object = this.dump;
-    const _tag = this.tag;
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
       if (
@@ -602,14 +600,12 @@ export class DumperState {
       }
     }
 
-    this.tag = _tag;
     this.dump = `[${_result}]`;
   }
 
   writeBlockSequence(level: number, compact: boolean) {
     let _result = "";
     const object = this.dump;
-    const _tag = this.tag;
 
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
@@ -634,13 +630,11 @@ export class DumperState {
       }
     }
 
-    this.tag = _tag;
     this.dump = _result || "[]"; // Empty sequence if no valid values.
   }
 
   writeFlowMapping(level: number) {
     let _result = "";
-    const _tag = this.tag;
     const object = this.dump;
     const objectKeyList = Object.keys(object);
 
@@ -683,13 +677,11 @@ export class DumperState {
       _result += pairBuffer;
     }
 
-    this.tag = _tag;
     this.dump = `{${_result}}`;
   }
 
-  writeBlockMapping(level: number, compact: boolean) {
+  writeBlockMapping(tag: string | null, level: number, compact: boolean) {
     const object = this.dump;
-    const _tag = this.tag;
     const objectKeyList = Object.keys(object);
     let _result = "";
 
@@ -724,7 +716,7 @@ export class DumperState {
         continue; // Skip this pair because of invalid key.
       }
 
-      const explicitPair = (this.tag !== null && this.tag !== "?") ||
+      const explicitPair = (tag !== null && tag !== "?") ||
         (this.dump && this.dump.length > 1024);
 
       if (explicitPair) {
@@ -763,39 +755,33 @@ export class DumperState {
       _result += pairBuffer;
     }
 
-    this.tag = _tag;
     this.dump = _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(explicit: boolean): boolean {
-    const object = this.dump;
-    const typeList = explicit ? this.explicitTypes : this.implicitTypes;
+  getTypeRepresentation(value: unknown, type: Type<KindType, unknown>) {
+    if (!type.represent) return value;
+    const style = this.styleMap[type.tag]! || type.defaultStyle;
 
-    for (const type of typeList) {
-      if (type.predicate?.(object)) {
-        this.tag = explicit ? type.tag : "?";
-
-        if (type.represent) {
-          const style = this.styleMap[type.tag]! || type.defaultStyle;
-
-          if (typeof type.represent === "function") {
-            this.dump = type.represent(object, style);
-            return true;
-          }
-          if (Object.hasOwn(type.represent, style)) {
-            this.dump = type.represent[style]!(object, style);
-            return true;
-          }
-          throw new TypeError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
-        }
-
-        return true;
-      }
+    if (typeof type.represent === "function") {
+      return type.represent(value, style);
     }
+    if (Object.hasOwn(type.represent, style)) {
+      return type.represent[style]!(value, style);
+    }
+    throw new TypeError(
+      `!<${type.tag}> tag resolver accepts not "${style}" style`,
+    );
+  }
 
-    return false;
+  detectType(value: unknown) {
+    const implicitTypes = this.implicitTypes;
+    for (const type of implicitTypes) {
+      if (type.predicate?.(value)) return { type, tag: "?" };
+    }
+    const explicitTypes = this.explicitTypes;
+    for (const type of explicitTypes) {
+      if (type.predicate?.(value)) return { type, tag: type.tag };
+    }
   }
 
   // Serializes `object` and writes it to global `result`.
@@ -809,12 +795,11 @@ export class DumperState {
       isKey: boolean;
     },
   ): boolean {
-    this.tag = null;
-    this.dump = object;
+    const { type, tag = null } = this.detectType(object) ?? {};
 
-    if (!this.detectType(false)) {
-      this.detectType(true);
-    }
+    object = type ? this.getTypeRepresentation(object, type) : object;
+
+    this.dump = object;
 
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
@@ -831,7 +816,7 @@ export class DumperState {
     }
 
     if (
-      (this.tag !== null && this.tag !== "?") ||
+      (tag !== null && tag !== "?") ||
       duplicate ||
       (this.indent !== 2 && level > 0)
     ) {
@@ -846,7 +831,7 @@ export class DumperState {
       }
       if (isObject(this.dump) && !Array.isArray(this.dump)) {
         if (block && Object.keys(this.dump).length !== 0) {
-          this.writeBlockMapping(level, compact);
+          this.writeBlockMapping(tag, level, compact);
           if (duplicate) {
             this.dump = `&ref_${duplicateIndex}${this.dump}`;
           }
@@ -870,7 +855,7 @@ export class DumperState {
           }
         }
       } else if (typeof this.dump === "string") {
-        if (this.tag !== "?") {
+        if (tag !== "?") {
           this.writeScalar(this.dump, level, isKey);
         }
       } else {
@@ -882,8 +867,8 @@ export class DumperState {
         );
       }
 
-      if (this.tag !== null && this.tag !== "?") {
-        this.dump = `!<${this.tag}> ${this.dump}`;
+      if (tag !== null && tag !== "?") {
+        this.dump = `!<${tag}> ${this.dump}`;
       }
     }
 
