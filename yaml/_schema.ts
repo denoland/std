@@ -57,7 +57,7 @@ function addTypeToMap<T extends Type<KindType>>(map: Map<string, T>, type: T) {
   map.set(key, type);
 }
 
-function compileImplicitTypes<T extends ImplicitType>(
+function createImplicitTypes<T extends ImplicitType>(
   include: Schema[],
   implicitTypes: ImplicitType[],
 ): T[] {
@@ -70,7 +70,7 @@ function compileImplicitTypes<T extends ImplicitType>(
   for (const type of implicitTypes) addTypeToMap(typeMap, type);
   return [...typeMap.values()];
 }
-function compileExplicitTypes<T extends ExplicitType>(
+function createExplicitTypes<T extends ExplicitType>(
   include: Schema[],
   explicitTypes: ExplicitType[],
 ): T[] {
@@ -87,7 +87,7 @@ export type TypeMap = Record<
   KindType | "fallback",
   Map<string, ExplicitType>
 >;
-function compileMap(
+function createTypeMap(
   implicitTypes: ImplicitType[],
   explicitTypes: ExplicitType[],
 ): TypeMap {
@@ -119,9 +119,9 @@ export class Schema {
     explicitTypes?: ExplicitType[];
     include?: Schema[];
   }) {
-    this.implicitTypes = compileImplicitTypes(include, implicitTypes);
-    this.explicitTypes = compileExplicitTypes(include, explicitTypes);
-    this.typeMap = compileMap(this.implicitTypes, this.explicitTypes);
+    this.implicitTypes = createImplicitTypes(include, implicitTypes);
+    this.explicitTypes = createExplicitTypes(include, explicitTypes);
+    this.typeMap = createTypeMap(this.implicitTypes, this.explicitTypes);
   }
 }
 
