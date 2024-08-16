@@ -9,6 +9,7 @@ import {
   runTestInvalidInputTests,
   runTestValidInputTests,
 } from "./_test_utils.ts";
+import { assertEquals } from "@std/assert/equals";
 
 Deno.test("toml() tests valid input true", () => {
   runTestValidInputTests("toml", test);
@@ -28,4 +29,10 @@ Deno.test("toml() parses toml delineate by ---toml", async () => {
 
 Deno.test("toml() parses toml delineate by +++", async () => {
   await runExtractTomlTests2(extract);
+});
+
+Deno.test("extractToml() allows whitespaces after the header", () => {
+  assertEquals(extract("---toml  \nfoo = 0\n---\n").attrs, { foo: 0 });
+  assertEquals(extract("+++  \nfoo = 0\n--- \n").attrs, { foo: 0 });
+  assertEquals(extract("= toml =  \nfoo = 0\n---\n").attrs, { foo: 0 });
 });
