@@ -30,6 +30,11 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion that `x` is of type `never`.
  * If not then throw.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @example Exhaustivenss check
  * ```ts
  * import { assertNever } from "@std/assert/never";
