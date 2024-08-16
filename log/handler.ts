@@ -16,7 +16,7 @@ export interface HandlerOptions {
   formatter?: FormatterFunction;
 }
 
-export abstract class Handler {
+export class Handler {
   #levelName: LevelName;
   #level: LogLevel;
   formatter: FormatterFunction;
