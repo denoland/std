@@ -170,8 +170,8 @@ export class LoaderState {
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = this.schema.compiledImplicitTypes;
-    this.typeMap = this.schema.compiledTypeMap;
+    this.implicitTypes = this.schema.implicitTypes;
+    this.typeMap = this.schema.typeMap;
     this.length = input.length;
 
     this.readIndent();

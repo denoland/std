@@ -508,8 +508,8 @@ export class DumperState {
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.implicitTypes = this.schema.compiledImplicitTypes;
-    this.explicitTypes = this.schema.compiledExplicitTypes;
+    this.implicitTypes = this.schema.implicitTypes;
+    this.explicitTypes = this.schema.explicitTypes;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
