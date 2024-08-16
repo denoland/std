@@ -477,7 +477,6 @@ export class DumperState {
   condenseFlow: boolean;
   implicitTypes: Type<"scalar">[];
   explicitTypes: Type<KindType>[];
-  result = "";
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: ArrayObject<StyleVariant>;
