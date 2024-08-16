@@ -5,7 +5,6 @@
 // This module is browser compatible.
 
 import type { KindType, Type } from "./_type.ts";
-import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -79,19 +78,21 @@ function compileList<K extends KindType, D = any>(
 
 export type TypeMap = Record<
   KindType | "fallback",
-  ArrayObject<Type<KindType>>
+  Map<string, Type<KindType>>
 >;
 function compileMap(...typesList: Type<KindType>[][]): TypeMap {
   const result: TypeMap = {
-    fallback: {},
-    mapping: {},
-    scalar: {},
-    sequence: {},
+    fallback: new Map(),
+    mapping: new Map(),
+    scalar: new Map(),
+    sequence: new Map(),
   };
 
   for (const types of typesList) {
     for (const type of types) {
-      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
+      const map = result[type.kind];
+      map.set(type.tag, type);
+      result.fallback.set(type.tag, type);
     }
   }
   return result;
