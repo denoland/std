@@ -49,32 +49,43 @@ import {
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
-// deno-lint-ignore no-explicit-any
-function compileList<K extends KindType, D = any>(
-  schema: Schema,
-  name: "implicit" | "explicit",
-  result: Type<K, D>[],
-): Type<K, D>[] {
-  const exclude: number[] = [];
+function compileList<T extends Type<KindType>>(
+  list: T[],
+  result: T[],
+): T[] {
+  const exclude = new Set();
 
-  for (const includedSchema of schema.include) {
-    result = compileList(includedSchema, name, result);
-  }
-
-  for (const currentType of schema[name]) {
-    for (const [previousIndex, previousType] of result.entries()) {
+  for (const currentType of list) {
+    for (const previousType of result) {
       if (
         previousType.tag === currentType.tag &&
         previousType.kind === currentType.kind
       ) {
-        exclude.push(previousIndex);
+        exclude.add(previousType);
       }
     }
-
-    result.push(currentType as Type<K, D>);
+    result.push(currentType);
   }
 
-  return result.filter((_type, index): unknown => !exclude.includes(index));
+  return result.filter((type): unknown => !exclude.has(type));
+}
+function compileImplicitTypeList<T extends Type<"scalar">>(
+  schema: Schema,
+  result: T[],
+): T[] {
+  for (const includedSchema of schema.include) {
+    result = compileImplicitTypeList(includedSchema, result);
+  }
+  return compileList(schema.implicit as T[], result);
+}
+function compileExplicitTypeList<T extends Type<KindType>>(
+  schema: Schema,
+  result: T[],
+): T[] {
+  for (const includedSchema of schema.include) {
+    result = compileExplicitTypeList(includedSchema, result);
+  }
+  return compileList(schema.explicit as T[], result);
 }
 
 export type TypeMap = Record<
@@ -106,16 +117,16 @@ export class Schema {
   compiledExplicit: Type<KindType>[];
   compiledTypeMap: TypeMap;
 
-  constructor(definition: {
+  constructor({ explicit = [], implicit = [], include = [] }: {
     implicit?: Type<"scalar">[];
     explicit?: Type<KindType>[];
     include?: Schema[];
   }) {
-    this.explicit = definition.explicit || [];
-    this.implicit = definition.implicit || [];
-    this.include = definition.include || [];
-    this.compiledImplicit = compileList(this, "implicit", []);
-    this.compiledExplicit = compileList(this, "explicit", []);
+    this.explicit = explicit;
+    this.implicit = implicit;
+    this.include = include;
+    this.compiledImplicit = compileImplicitTypeList(this, []);
+    this.compiledExplicit = compileExplicitTypeList(this, []);
     this.compiledTypeMap = compileMap(
       this.compiledImplicit,
       this.compiledExplicit,
