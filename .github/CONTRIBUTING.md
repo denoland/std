@@ -148,6 +148,17 @@ delimiter. E.g.
  */
 ````
 
+You can also write code snippets that are expected to fail either at compile
+time or at runtime by adding `expect-error`. E.g.
+
+````ts
+/**
+ * ```ts expect-error
+ * (code snippet to fail)
+ * ```
+ */
+````
+
 ### Notices for unstable APIs
 
 Each unstable API must have the
