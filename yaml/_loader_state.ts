@@ -150,8 +150,8 @@ export class LoaderState {
 
   version: string | null;
   checkLineBreaks = false;
-  tagMap: ArrayObject = Object.create(null);
-  anchorMap: ArrayObject = Object.create(null);
+  tagMap = new Map();
+  anchorMap = new Map();
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
@@ -220,8 +220,8 @@ export class LoaderState {
 
     this.version = null;
     this.checkLineBreaks = false;
-    this.tagMap = Object.create(null);
-    this.anchorMap = Object.create(null);
+    this.tagMap = new Map();
+    this.anchorMap = new Map();
 
     while ((ch = this.peek()) !== 0) {
       skipSeparationSpace(this, true, -1);
@@ -376,7 +376,7 @@ function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
     );
   }
 
-  if (Object.hasOwn(state.tagMap, handle)) {
+  if (state.tagMap.has(handle)) {
     return state.throwError(
       `there is a previously declared suffix for "${handle}" tag handle`,
     );
@@ -388,7 +388,7 @@ function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
     );
   }
 
-  state.tagMap[handle] = prefix;
+  state.tagMap.set(handle, prefix);
 }
 
 function captureSegment(
@@ -870,7 +870,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   }
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.next();
@@ -1134,7 +1134,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   const result: unknown[] = [];
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.peek();
@@ -1206,7 +1206,7 @@ function readBlockMapping(
   let ch: number;
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.peek();
@@ -1460,8 +1460,8 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (Object.hasOwn(state.tagMap, tagHandle)) {
-    state.tag = state.tagMap[tagHandle] + tagName;
+  } else if (state.tagMap.has(tagHandle)) {
+    state.tag = state.tagMap.get(tagHandle) + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
   } else if (tagHandle === "!!") {
@@ -1515,11 +1515,11 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(position, state.position);
-  if (!Object.hasOwn(state.anchorMap, alias)) {
+  if (!state.anchorMap.has(alias)) {
     return state.throwError(`unidentified alias "${alias}"`);
   }
 
-  state.result = state.anchorMap[alias];
+  state.result = state.anchorMap.get(alias);
   skipSeparationSpace(state, true, -1);
   return true;
 }
@@ -1627,7 +1627,7 @@ function composeNode(
         }
 
         if (state.anchor !== null) {
-          state.anchorMap[state.anchor] = state.result;
+          state.anchorMap.set(state.anchor, state.result);
         }
       }
     } else if (indentStatus === 0) {
@@ -1656,7 +1656,7 @@ function composeNode(
           state.result = type.construct(state.result);
           state.tag = type.tag;
           if (state.anchor !== null) {
-            state.anchorMap[state.anchor] = state.result;
+            state.anchorMap.set(state.anchor, state.result);
           }
           break;
         }
@@ -1679,7 +1679,7 @@ function composeNode(
       } else {
         state.result = type.construct(state.result);
         if (state.anchor !== null) {
-          state.anchorMap[state.anchor] = state.result;
+          state.anchorMap.set(state.anchor, state.result);
         }
       }
     } else {

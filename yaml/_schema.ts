@@ -56,9 +56,7 @@ function compileList<K extends KindType, D = any>(
 ): Type<K, D>[] {
   const exclude: number[] = [];
 
-  for (const includedSchema of schema.include) {
-    result = compileList(includedSchema, name, result);
-  }
+  if (schema.include) result = compileList(schema.include, name, result);
 
   for (const currentType of schema[name]) {
     for (const [previousIndex, previousType] of result.entries()) {
@@ -101,7 +99,7 @@ function compileMap(...typesList: Type<KindType>[][]): TypeMap {
 export class Schema {
   implicit: Type<"scalar">[];
   explicit: Type<KindType>[];
-  include: Schema[];
+  include?: Schema;
 
   compiledImplicit: Type<"scalar">[];
   compiledExplicit: Type<KindType>[];
@@ -110,11 +108,11 @@ export class Schema {
   constructor(definition: {
     implicit?: Type<"scalar">[];
     explicit?: Type<KindType>[];
-    include?: Schema[];
+    include?: Schema;
   }) {
     this.explicit = definition.explicit || [];
     this.implicit = definition.implicit || [];
-    this.include = definition.include || [];
+    this.include = definition.include;
     this.compiledImplicit = compileList(this, "implicit", []);
     this.compiledExplicit = compileList(this, "explicit", []);
     this.compiledTypeMap = compileMap(
@@ -140,7 +138,7 @@ const FAILSAFE_SCHEMA = new Schema({
  */
 const JSON_SCHEMA = new Schema({
   implicit: [nil, bool, int, float],
-  include: [FAILSAFE_SCHEMA],
+  include: FAILSAFE_SCHEMA,
 });
 
 /**
@@ -149,7 +147,7 @@ const JSON_SCHEMA = new Schema({
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
 const CORE_SCHEMA = new Schema({
-  include: [JSON_SCHEMA],
+  include: JSON_SCHEMA,
 });
 
 /**
@@ -158,7 +156,7 @@ const CORE_SCHEMA = new Schema({
 export const DEFAULT_SCHEMA = new Schema({
   explicit: [binary, omap, pairs, set],
   implicit: [timestamp, merge],
-  include: [CORE_SCHEMA],
+  include: CORE_SCHEMA,
 });
 
 /***
@@ -188,7 +186,7 @@ export const DEFAULT_SCHEMA = new Schema({
  */
 const EXTENDED_SCHEMA = new Schema({
   explicit: [regexp, undefinedType],
-  include: [DEFAULT_SCHEMA],
+  include: DEFAULT_SCHEMA,
 });
 
 export const SCHEMA_MAP = new Map([
