@@ -6,7 +6,7 @@ import { fnv64, fnv64a } from "./fnv64.ts";
 
 export function fnv(name: string, buf?: Uint8Array): ArrayBuffer {
   if (!buf) {
-    throw new TypeError("no data provided for hashing");
+    throw new TypeError("No data provided for hashing");
   }
 
   switch (name) {
@@ -19,6 +19,6 @@ export function fnv(name: string, buf?: Uint8Array): ArrayBuffer {
     case "FNV64A":
       return fnv64a(buf);
     default:
-      throw new TypeError(`unsupported fnv digest: ${name}`);
+      throw new TypeError(`Unsupported fnv digest: ${name}`);
   }
 }

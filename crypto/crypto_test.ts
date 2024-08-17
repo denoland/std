@@ -345,7 +345,7 @@ Deno.test("digest() throws on invalid input", async () => {
         })() as AsyncIterable<BufferSource>,
       ),
     TypeError,
-    "data contained chunk of the wrong type",
+    "Data contained a chunk with an invalid type, chunks must be ArrayBuffer or Uint8Array",
   );
 
   await assertRejects(
@@ -375,7 +375,7 @@ Deno.test("digestSync() throws on invalid input", () => {
         })() as Iterable<BufferSource>,
       ),
     TypeError,
-    "data contained chunk of the wrong type",
+    "Data contained a chunk with an invalid type, chunks must be ArrayBuffer or Uint8Array",
   );
 
   assertThrows(
