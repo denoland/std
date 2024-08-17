@@ -107,7 +107,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
       throw new TypeError(
-        "compare must be a function, did you mean to call BinarySearchTree.from?",
+        "The 'compare' parameter must be a function, did you mean to call BinarySearchTree.from?",
       );
     }
     this.#compare = compare;
@@ -333,7 +333,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
       : "left";
     if (!node[replacementDirection]) {
       throw new TypeError(
-        `cannot rotate ${direction} without ${replacementDirection} child`,
+        `Cannot rotate ${direction} without ${replacementDirection} child`,
       );
     }
     const replacement: BinarySearchNode<T> = node[replacementDirection]!;

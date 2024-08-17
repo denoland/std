@@ -23,7 +23,7 @@ Deno.test("BinarySearchTree throws if compare is not a function", () => {
   assertThrows(
     () => new BinarySearchTree({} as (a: number, b: number) => number),
     TypeError,
-    "compare must be a function",
+    "The 'compare' parameter must be a function",
   );
 });
 
