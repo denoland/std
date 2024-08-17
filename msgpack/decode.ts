@@ -82,7 +82,7 @@ function decodeMap(
 
     if (typeof key !== "number" && typeof key !== "string") {
       throw new EvalError(
-        "Messagepack decode came across an invalid type for a key of a map",
+        "Messagepack decode came across an invalid type for a key of a map, keys must be a number or a string",
       );
     }
 
@@ -205,7 +205,7 @@ function decodeSlice(
     case 0xc7: // ext 8 - small extension type
     case 0xc8: // ext 16 - medium extension type
     case 0xc9: // ext 32 - large extension type
-      throw new Error("ext not implemented yet");
+      throw new Error("Large extension type 'ext' not implemented yet");
     case 0xca: { // float 32
       if (pointer.consumed + 3 >= uint8.length) {
         throw new EvalError(
@@ -311,7 +311,7 @@ function decodeSlice(
     case 0xd6: // fixext 4 - 4 byte extension type
     case 0xd7: // fixext 8 - 8 byte extension type
     case 0xd8: // fixext 16 - 16 byte extension type
-      throw new Error("fixext not implemented yet");
+      throw new Error("'fixext' not implemented yet");
     case 0xd9: { // str 8 - small string
       if (pointer.consumed >= uint8.length) {
         throw new EvalError(
