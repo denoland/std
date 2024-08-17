@@ -667,3 +667,7 @@ Oren: Ben-Kiki
 Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
+
+Deno.test("stringify() handles unefined with skipInvalid option", () => {
+  assertEquals(stringify(undefined, { skipInvalid: true }), "");
+});
