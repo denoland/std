@@ -99,7 +99,10 @@ export class Scanner {
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
       const escaped = "\\u" + this.char().charCodeAt(0).toString(16);
-      throw new SyntaxError(`Contains invalid whitespaces: \`${escaped}\``);
+      const position = this.#position;
+      throw new SyntaxError(
+        `Contains invalid whitespace at position '${position}': \`${escaped}\``,
+      );
     }
   }
 
@@ -153,7 +156,7 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
   value: Record<string, unknown>;
 }) {
   if (table.key.length === 0 || table.key[0] == null) {
-    throw new Error("Unexpected key length");
+    throw new Error("Key length must be a positive number");
   }
   const value = target[table.key[0]];
 
@@ -774,7 +777,7 @@ export function parserFactory<T>(parser: ParserComponent<T>) {
     try {
       parsed = parser(scanner);
     } catch (e) {
-      err = e instanceof Error ? e : new Error("[non-error thrown]");
+      err = e instanceof Error ? e : new Error("Invalid error type caught");
     }
 
     if (err || !parsed || !parsed.ok || !scanner.eof()) {
