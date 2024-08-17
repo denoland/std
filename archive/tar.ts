@@ -278,7 +278,7 @@ export class Tar {
    */
   async append(filenameInArchive: string, source: TarOptions) {
     if (typeof filenameInArchive !== "string") {
-      throw new Error("file name not specified");
+      throw new Error("File name must be a string");
     }
     let fileName = filenameInArchive;
 
@@ -303,7 +303,7 @@ export class Tar {
         i--;
       }
       const errMsg =
-        "ustar format does not allow a long file name (length of [file name" +
+        "The 'ustar' format does not allow a long file name (length of [file name" +
         "prefix] + / + [file name] must be shorter than 256 bytes)";
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
@@ -339,18 +339,18 @@ export class Tar {
 
     if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
-        "ustar format does not allow owner name length >= 32 bytes",
+        "The 'ustar' format does not allow owner name length >= 32 bytes",
       );
     }
     if (typeof source.group === "string" && source.group.length >= 32) {
       throw new Error(
-        "ustar format does not allow group name length >= 32 bytes",
+        "The 'ustar' format does not allow group name length >= 32 bytes",
       );
     }
 
     const fileSize = info?.size ?? source.contentSize;
     if (fileSize === undefined) {
-      throw new TypeError("fileSize must be set");
+      throw new TypeError("FileSize must be defined");
     }
 
     const type = source.type
@@ -400,7 +400,7 @@ export class Tar {
       readers.push(new Buffer(headerArr));
       if (!reader) {
         if (filePath === undefined) {
-          throw new TypeError("filePath must be defined");
+          throw new TypeError("FilePath must be defined");
         }
         reader = new FileReader(filePath);
       }
@@ -408,7 +408,7 @@ export class Tar {
 
       // to the nearest multiple of recordSize
       if (tarData.fileSize === undefined) {
-        throw new TypeError("fileSize must be set");
+        throw new TypeError("FileSize must be defined");
       }
       readers.push(
         new Buffer(
