@@ -668,6 +668,6 @@ Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
 
-Deno.test("stringify() handles unefined with skipInvalid option", () => {
+Deno.test("stringify() handles undefined with skipInvalid option", () => {
   assertEquals(stringify(undefined, { skipInvalid: true }), "");
 });
