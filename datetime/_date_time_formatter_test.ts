@@ -61,7 +61,7 @@ Deno.test("dateTimeFormatter.formatToParts() throws on an empty string", () => {
   assertThrows(
     () => formatter.formatToParts(""),
     Error,
-    "value not valid for part",
+    "Value not valid for part",
   );
 });
 
