@@ -426,7 +426,7 @@ function mergeMappings(
   state: LoaderState,
   destination: ArrayObject,
   source: ArrayObject,
-  overridableKeys: ArrayObject<boolean>,
+  overridableKeys: Set<string>,
 ) {
   if (!isObject(source)) {
     return state.throwError(
@@ -442,14 +442,14 @@ function mergeMappings(
       enumerable: true,
       configurable: true,
     });
-    overridableKeys[key] = true;
+    overridableKeys.add(key);
   }
 }
 
 function storeMappingPair(
   state: LoaderState,
   result: ArrayObject | null,
-  overridableKeys: ArrayObject<boolean>,
+  overridableKeys: Set<string>,
   keyTag: string | null,
   keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
@@ -507,7 +507,7 @@ function storeMappingPair(
   } else {
     if (
       !state.allowDuplicateKeys &&
-      !Object.hasOwn(overridableKeys, keyNode) &&
+      !overridableKeys.has(keyNode) &&
       Object.hasOwn(result, keyNode)
     ) {
       state.line = startLine || state.line;
@@ -520,7 +520,7 @@ function storeMappingPair(
       enumerable: true,
       configurable: true,
     });
-    delete overridableKeys[keyNode];
+    overridableKeys.delete(keyNode);
   }
 
   return result;
@@ -885,7 +885,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let isPair = false;
   let following = 0;
   let line = 0;
-  const overridableKeys: ArrayObject<boolean> = Object.create(null);
+  const overridableKeys = new Set<string>();
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
 
@@ -1193,7 +1193,7 @@ function readBlockMapping(
   const tag = state.tag;
   const anchor = state.anchor;
   const result = {};
-  const overridableKeys = Object.create(null);
+  const overridableKeys = new Set<string>();
   let following: number;
   let allowCompact = false;
   let line: number;
