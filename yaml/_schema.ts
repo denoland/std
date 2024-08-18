@@ -51,42 +51,11 @@ export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 type ImplicitType = Type<"scalar">;
 type ExplicitType = Type<KindType>;
 
-function addTypeToMap<T extends Type<KindType>>(map: Map<string, T>, type: T) {
-  const key = `${type.tag}_${type.kind}`;
-  if (map.has(key)) return;
-  map.set(key, type);
-}
-
-function createImplicitTypes<T extends ImplicitType>(
-  implicitTypes: ImplicitType[],
-  include?: Schema,
-): T[] {
-  const typeMap = new Map<string, T>();
-  if (include) {
-    for (const type of include.implicitTypes) {
-      addTypeToMap(typeMap, type);
-    }
-  }
-  for (const type of implicitTypes) addTypeToMap(typeMap, type);
-  return [...typeMap.values()];
-}
-function createExplicitTypes<T extends ExplicitType>(
-  explicitTypes: ExplicitType[],
-  include?: Schema,
-): T[] {
-  const typeMap = new Map<string, T>();
-  if (include) {
-    for (const type of include.explicitTypes) {
-      addTypeToMap(typeMap, type);
-    }
-  }
-  for (const type of explicitTypes) addTypeToMap(typeMap, type);
-  return [...typeMap.values()];
-}
 export type TypeMap = Record<
   KindType | "fallback",
   Map<string, ExplicitType>
 >;
+
 function createTypeMap(
   implicitTypes: ImplicitType[],
   explicitTypes: ExplicitType[],
@@ -97,32 +66,30 @@ function createTypeMap(
     scalar: new Map(),
     sequence: new Map(),
   };
-
   const fallbackMap = result["fallback"];
-  for (const types of [implicitTypes, explicitTypes]) {
-    for (const type of types) {
-      const map = result[type.kind];
-      map.set(type.tag, type);
-      fallbackMap.set(type.tag, type);
-    }
+  for (const type of [...implicitTypes, ...explicitTypes]) {
+    const map = result[type.kind];
+    map.set(type.tag, type);
+    fallbackMap.set(type.tag, type);
   }
   return result;
 }
 
-export class Schema {
+export interface Schema {
   implicitTypes: ImplicitType[];
   explicitTypes: ExplicitType[];
   typeMap: TypeMap;
+}
 
-  constructor({ explicitTypes = [], implicitTypes = [], include }: {
-    implicitTypes?: ImplicitType[];
-    explicitTypes?: ExplicitType[];
-    include?: Schema;
-  }) {
-    this.implicitTypes = createImplicitTypes(implicitTypes, include);
-    this.explicitTypes = createExplicitTypes(explicitTypes, include);
-    this.typeMap = createTypeMap(this.implicitTypes, this.explicitTypes);
-  }
+function createSchema({ explicitTypes = [], implicitTypes = [], include }: {
+  implicitTypes?: ImplicitType[];
+  explicitTypes?: ExplicitType[];
+  include?: Schema;
+}) {
+  if (include) implicitTypes.push(...include.implicitTypes);
+  if (include) explicitTypes.push(...include.explicitTypes);
+  const typeMap = createTypeMap(implicitTypes, explicitTypes);
+  return { implicitTypes, explicitTypes, typeMap };
 }
 
 /**
@@ -130,7 +97,7 @@ export class Schema {
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
  */
-const FAILSAFE_SCHEMA = new Schema({
+const FAILSAFE_SCHEMA = createSchema({
   explicitTypes: [str, seq, map],
 });
 
@@ -139,7 +106,7 @@ const FAILSAFE_SCHEMA = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
  */
-const JSON_SCHEMA = new Schema({
+const JSON_SCHEMA = createSchema({
   implicitTypes: [nil, bool, int, float],
   include: FAILSAFE_SCHEMA,
 });
@@ -149,14 +116,14 @@ const JSON_SCHEMA = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
-const CORE_SCHEMA = new Schema({
+const CORE_SCHEMA = createSchema({
   include: JSON_SCHEMA,
 });
 
 /**
  * Default YAML schema. It is not described in the YAML specification.
  */
-export const DEFAULT_SCHEMA = new Schema({
+export const DEFAULT_SCHEMA = createSchema({
   explicitTypes: [binary, omap, pairs, set],
   implicitTypes: [timestamp, merge],
   include: CORE_SCHEMA,
@@ -187,12 +154,12 @@ export const DEFAULT_SCHEMA = new Schema({
  * );
  * ```
  */
-const EXTENDED_SCHEMA = new Schema({
+const EXTENDED_SCHEMA = createSchema({
   explicitTypes: [regexp, undefinedType],
   include: DEFAULT_SCHEMA,
 });
 
-export const SCHEMA_MAP = new Map([
+export const SCHEMA_MAP = new Map<SchemaType, Schema>([
   ["core", CORE_SCHEMA],
   ["default", DEFAULT_SCHEMA],
   ["failsafe", FAILSAFE_SCHEMA],
