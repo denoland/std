@@ -110,8 +110,6 @@ function createTypeMap(
 }
 
 export class Schema {
-  include?: Schema;
-
   implicitTypes: ImplicitType[];
   explicitTypes: ExplicitType[];
   typeMap: TypeMap;
