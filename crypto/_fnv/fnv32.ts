@@ -9,7 +9,7 @@ import { mul32, swap32 } from "./util.ts";
 
 const prime32 = 16777619;
 
-export const fnv32 = (data: Uint8Array): ArrayBuffer => {
+export function fnv32(data: Uint8Array): ArrayBuffer {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -18,9 +18,9 @@ export const fnv32 = (data: Uint8Array): ArrayBuffer => {
   });
 
   return Uint32Array.from([swap32(hash)]).buffer;
-};
+}
 
-export const fnv32a = (data: Uint8Array): ArrayBuffer => {
+export function fnv32a(data: Uint8Array): ArrayBuffer {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -29,4 +29,4 @@ export const fnv32a = (data: Uint8Array): ArrayBuffer => {
   });
 
   return Uint32Array.from([swap32(hash)]).buffer;
-};
+}

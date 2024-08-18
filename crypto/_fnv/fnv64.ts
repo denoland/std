@@ -10,7 +10,7 @@ import { mul64, swap32 } from "./util.ts";
 const prime64Lo = 435;
 const prime64Hi = 256;
 
-export const fnv64 = (data: Uint8Array): ArrayBuffer => {
+export function fnv64(data: Uint8Array): ArrayBuffer {
   let hashLo = 2216829733;
   let hashHi = 3421674724;
 
@@ -20,9 +20,9 @@ export const fnv64 = (data: Uint8Array): ArrayBuffer => {
   });
 
   return new Uint32Array([swap32(hashHi >>> 0), swap32(hashLo >>> 0)]).buffer;
-};
+}
 
-export const fnv64a = (data: Uint8Array): ArrayBuffer => {
+export function fnv64a(data: Uint8Array): ArrayBuffer {
   let hashLo = 2216829733;
   let hashHi = 3421674724;
 
@@ -32,4 +32,4 @@ export const fnv64a = (data: Uint8Array): ArrayBuffer => {
   });
 
   return new Uint32Array([swap32(hashHi >>> 0), swap32(hashLo >>> 0)]).buffer;
-};
+}
