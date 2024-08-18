@@ -667,3 +667,7 @@ Oren: Ben-Kiki
 Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
+
+Deno.test("stringify() handles deprecated boolean syntax", () => {
+  assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+});
