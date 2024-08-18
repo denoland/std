@@ -177,7 +177,7 @@ Deno.test("sprintf() handles hex", function () {
   assertThrows(
     () => sprintf("%x", {}),
     Error,
-    "currently only number and string are implemented for hex",
+    'Only "number" and "string" are implemented for hex formatting: object is not currently supported',
   );
 });
 Deno.test("sprintf() handles heX", function () {
@@ -729,7 +729,11 @@ Deno.test("sprintf() handles errors", function () {
 });
 
 Deno.test("sprintf() throws with d with sharp option", () => {
-  assertThrows(() => sprintf("%#d", 1.1), Error, "cannot handle base: 10");
+  assertThrows(
+    () => sprintf("%#d", 1.1),
+    Error,
+    "Format number only supports radix 2, 8 and 16: cannot handle radix 10",
+  );
 });
 
 Deno.test("printf() prints the result synchronously", () => {
