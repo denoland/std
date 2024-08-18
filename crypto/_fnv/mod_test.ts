@@ -16,13 +16,10 @@ Deno.test("fnv()", function () {
   }
 });
 
-Deno.test("fnv() throws when no data is provided", function () {
-  assertThrows(() => fnv("FNV32"), TypeError, "no data provided for hashing");
-});
-
 Deno.test("fnv() throws when an unsupported digest is provided", function () {
   assertThrows(
-    () => fnv("FNV128", new Uint8Array()),
+    // deno-lint-ignore no-explicit-any
+    () => fnv("FNV128" as any, new Uint8Array()),
     TypeError,
     "unsupported fnv digest: FNV128",
   );
