@@ -58,12 +58,12 @@ function addTypeToMap<T extends Type<KindType>>(map: Map<string, T>, type: T) {
 }
 
 function createImplicitTypes<T extends ImplicitType>(
-  include: Schema[],
   implicitTypes: ImplicitType[],
+  include?: Schema,
 ): T[] {
   const typeMap = new Map<string, T>();
-  for (const includedSchema of include) {
-    for (const type of includedSchema.implicitTypes) {
+  if (include) {
+    for (const type of include.implicitTypes) {
       addTypeToMap(typeMap, type);
     }
   }
@@ -71,12 +71,12 @@ function createImplicitTypes<T extends ImplicitType>(
   return [...typeMap.values()];
 }
 function createExplicitTypes<T extends ExplicitType>(
-  include: Schema[],
   explicitTypes: ExplicitType[],
+  include?: Schema,
 ): T[] {
   const typeMap = new Map<string, T>();
-  for (const includedSchema of include) {
-    for (const type of includedSchema.explicitTypes) {
+  if (include) {
+    for (const type of include.explicitTypes) {
       addTypeToMap(typeMap, type);
     }
   }
@@ -110,17 +110,19 @@ function createTypeMap(
 }
 
 export class Schema {
+  include?: Schema;
+
   implicitTypes: ImplicitType[];
   explicitTypes: ExplicitType[];
   typeMap: TypeMap;
 
-  constructor({ explicitTypes = [], implicitTypes = [], include = [] }: {
+  constructor({ explicitTypes = [], implicitTypes = [], include }: {
     implicitTypes?: ImplicitType[];
     explicitTypes?: ExplicitType[];
-    include?: Schema[];
+    include?: Schema;
   }) {
-    this.implicitTypes = createImplicitTypes(include, implicitTypes);
-    this.explicitTypes = createExplicitTypes(include, explicitTypes);
+    this.implicitTypes = createImplicitTypes(implicitTypes, include);
+    this.explicitTypes = createExplicitTypes(explicitTypes, include);
     this.typeMap = createTypeMap(this.implicitTypes, this.explicitTypes);
   }
 }
@@ -141,7 +143,7 @@ const FAILSAFE_SCHEMA = new Schema({
  */
 const JSON_SCHEMA = new Schema({
   implicitTypes: [nil, bool, int, float],
-  include: [FAILSAFE_SCHEMA],
+  include: FAILSAFE_SCHEMA,
 });
 
 /**
@@ -150,7 +152,7 @@ const JSON_SCHEMA = new Schema({
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
 const CORE_SCHEMA = new Schema({
-  include: [JSON_SCHEMA],
+  include: JSON_SCHEMA,
 });
 
 /**
@@ -159,7 +161,7 @@ const CORE_SCHEMA = new Schema({
 export const DEFAULT_SCHEMA = new Schema({
   explicitTypes: [binary, omap, pairs, set],
   implicitTypes: [timestamp, merge],
-  include: [CORE_SCHEMA],
+  include: CORE_SCHEMA,
 });
 
 /***
@@ -189,7 +191,7 @@ export const DEFAULT_SCHEMA = new Schema({
  */
 const EXTENDED_SCHEMA = new Schema({
   explicitTypes: [regexp, undefinedType],
-  include: [DEFAULT_SCHEMA],
+  include: DEFAULT_SCHEMA,
 });
 
 export const SCHEMA_MAP = new Map([

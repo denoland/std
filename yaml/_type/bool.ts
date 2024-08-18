@@ -6,15 +6,16 @@
 import type { Type } from "../_type.ts";
 import { isBoolean } from "../_utils.ts";
 
+const YAML_TRUE_BOOLEANS = ["true", "True", "TRUE"];
+const YAML_FALSE_BOOLEANS = ["false", "False", "FALSE"];
+const YAML_BOOLEANS = [...YAML_TRUE_BOOLEANS, ...YAML_FALSE_BOOLEANS];
+
 function resolveYamlBoolean(data: string): boolean {
-  return (
-    data === "true" || data === "True" || data === "TRUE" || data === "false" ||
-    data === "False" || data === "FALSE"
-  );
+  return YAML_BOOLEANS.includes(data);
 }
 
 function constructYamlBoolean(data: string): boolean {
-  return data === "true" || data === "True" || data === "TRUE";
+  return YAML_TRUE_BOOLEANS.includes(data);
 }
 
 export const bool: Type<"scalar", boolean> = {
