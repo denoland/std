@@ -1,9 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
+ * Converts a string into a {@link https://en.wikipedia.org/wiki/Clean_URL#Slug | slug}.
  *
- * Converts a string into {@link https://en.wikipedia.org/wiki/Clean_URL#Slug a slug}.
+ * **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts
