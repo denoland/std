@@ -39,7 +39,9 @@ jobs:
 
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
-        run: deno task test
+        run: |
+          deno task test
+          rm deno.lock # remove deno.lock (v4) as it's incompatible with v3
         env:
           DENO_FUTURE: 1
 
