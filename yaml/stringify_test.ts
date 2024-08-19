@@ -668,6 +668,6 @@ Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
 
-Deno.test("stringify() handles deprecated boolean syntax", () => {
+Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
   assertEquals(stringify("On", { compatMode: true }), "'On'\n");
 });
