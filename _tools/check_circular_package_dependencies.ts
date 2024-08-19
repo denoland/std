@@ -272,5 +272,4 @@ if (Deno.args.includes("--graph")) {
       Deno.exit(1);
     }
   }
-  console.log("No circular dependencies found.");
 }
