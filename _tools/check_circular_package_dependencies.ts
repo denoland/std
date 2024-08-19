@@ -264,7 +264,6 @@ if (Deno.args.includes("--graph")) {
     }
   }
 } else {
-  console.log(`${Object.keys(deps).length} packages checked.`);
   for (const mod of Object.keys(deps)) {
     const res = checkCircularDeps(mod);
     if (res) {
