@@ -28,7 +28,7 @@ Deno.test("slugify() handles dashes", () => {
   assertEquals(slugify("--Hello--World--"), "hello-world");
 });
 
-Deno.test("slugify() handles empty String", () => {
+Deno.test("slugify() handles empty string", () => {
   assertEquals(slugify(""), "");
 });
 
