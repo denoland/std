@@ -12,12 +12,12 @@ Deno.test("posix.toFileUrl()", function () {
   assertThrows(
     () => posix.toFileUrl("foo").href,
     TypeError,
-    "Must be an absolute path.",
+    'Path must be absolute, path value "foo"',
   );
   assertThrows(
     () => posix.toFileUrl("C:/"),
     TypeError,
-    "Must be an absolute path.",
+    'Path must be absolute, path value "C:/"',
   );
   assertEquals(
     posix.toFileUrl("//localhost/home/foo").href,
@@ -35,7 +35,7 @@ Deno.test("windows.toFileUrl()", function () {
   assertThrows(
     () => windows.toFileUrl("foo").href,
     TypeError,
-    "Must be an absolute path.",
+    'Path must be absolute, path value "foo"',
   );
   assertEquals(windows.toFileUrl("C:/").href, "file:///C:/");
   assertEquals(
@@ -51,6 +51,6 @@ Deno.test("windows.toFileUrl()", function () {
   assertThrows(
     () => windows.toFileUrl("//:/home/foo").href,
     TypeError,
-    "Invalid hostname.",
+    'Invalid hostname: ""',
   );
 });
