@@ -867,9 +867,11 @@ export class DumperState {
   stringify(data: unknown): string {
     if (this.useAnchors) this.getDuplicateReferences(data);
 
-    if (this.writeNode(0, data, { block: true, compact: true, isKey: false })) {
-      return `${this.dump}\n`;
-    }
-    return "";
+    const string = this.stringifyNode(data, 0, {
+      block: true,
+      compact: true,
+      isKey: false,
+    });
+    return string === null ? "" : `${string}\n`;
   }
 }
