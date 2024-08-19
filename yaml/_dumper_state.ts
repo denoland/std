@@ -761,30 +761,35 @@ export class DumperState {
     this.dump = _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  getTypeRepresentation(value: unknown, type: Type<KindType, unknown>) {
-    if (!type.represent) return value;
-    const style = this.styleMap[type.tag]! || type.defaultStyle;
+  detectType(explicit: boolean) {
+    const object = this.dump;
+    const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
-    if (typeof type.represent === "function") {
-      return type.represent(value, style);
-    }
-    if (Object.hasOwn(type.represent, style)) {
-      return type.represent[style]!(value, style);
-    }
-    throw new TypeError(
-      `!<${type.tag}> tag resolver accepts not "${style}" style`,
-    );
-  }
+    let tag = null;
+    for (const type of typeList) {
+      if (type.predicate?.(object)) {
+        tag = explicit ? type.tag : "?";
 
-  detectType(value: unknown) {
-    const implicitTypes = this.implicitTypes;
-    for (const type of implicitTypes) {
-      if (type.predicate?.(value)) return { type, tag: "?" };
+        if (type.represent) {
+          const style = this.styleMap[type.tag]! || type.defaultStyle;
+
+          if (typeof type.represent === "function") {
+            this.dump = type.represent(object, style);
+            return tag;
+          }
+          if (Object.hasOwn(type.represent, style)) {
+            this.dump = type.represent[style]!(object, style);
+            return tag;
+          }
+          throw new TypeError(
+            `!<${type.tag}> tag resolver accepts not "${style}" style`,
+          );
+        }
+
+        return tag;
+      }
     }
-    const explicitTypes = this.explicitTypes;
-    for (const type of explicitTypes) {
-      if (type.predicate?.(value)) return { type, tag: type.tag };
-    }
+    return tag;
   }
 
   // Serializes `object` and writes it to global `result`.
@@ -798,11 +803,9 @@ export class DumperState {
       isKey: boolean;
     },
   ): boolean {
-    const { type, tag = null } = this.detectType(object) ?? {};
-
-    object = type ? this.getTypeRepresentation(object, type) : object;
-
     this.dump = object;
+
+    const tag = this.detectType(false) ?? this.detectType(true) ?? null;
 
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
