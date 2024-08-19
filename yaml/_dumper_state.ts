@@ -401,8 +401,11 @@ function blockHeader(string: string, indentPerLevel: number): string {
   return `${indentIndicator}${chomp}\n`;
 }
 
-// deno-lint-ignore no-explicit-any
-function inspectNode(object: any, objects: any[], duplicateObjects: Set<any>) {
+function inspectNode(
+  object: unknown,
+  objects: unknown[],
+  duplicateObjects: Set<unknown>,
+) {
   if (!isObject(object)) return;
   if (objects.includes(object)) {
     duplicateObjects.add(object);
@@ -890,15 +893,22 @@ export class DumperState {
     return true;
   }
 
-  getDuplicateReferences(object: Record<string, unknown>) {
-    // deno-lint-ignore no-explicit-any
-    const objects: any[] = [];
-    // deno-lint-ignore no-explicit-any
-    const duplicateObjects: Set<any> = new Set();
+  getDuplicateReferences(object: unknown) {
+    const objects: unknown[] = [];
+    const duplicateObjects: Set<unknown> = new Set();
 
     inspectNode(object, objects, duplicateObjects);
 
     for (const object of duplicateObjects) this.duplicates.push(object);
     this.usedDuplicates = new Set();
+  }
+
+  stringify(data: unknown): string {
+    if (this.useAnchors) this.getDuplicateReferences(data);
+
+    if (this.writeNode(0, data, { block: true, compact: true, isKey: false })) {
+      return `${this.dump}\n`;
+    }
+    return "";
   }
 }

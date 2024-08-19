@@ -1661,8 +1661,8 @@ function composeNode(
           break;
         }
       }
-    } else if (state.typeMap[state.kind || "fallback"].has(state.tag)) {
-      const map = state.typeMap[state.kind || "fallback"];
+    } else if (state.typeMap[state.kind ?? "fallback"].has(state.tag)) {
+      const map = state.typeMap[state.kind ?? "fallback"];
       type = map.get(state.tag)!;
 
       if (state.result !== null && type.kind !== state.kind) {
