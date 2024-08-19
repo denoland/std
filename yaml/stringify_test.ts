@@ -670,4 +670,7 @@ Deno.test("stringify() handles string", () => {
 
 Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
   assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+  assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
+  assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
+  assertEquals(stringify("No", { compatMode: true }), "'No'\n");
 });
