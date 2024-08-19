@@ -148,6 +148,29 @@ delimiter. E.g.
  */
 ````
 
+You can also write code snippets that are expected to fail either at compile
+time or at runtime by adding `expect-error`. However, if the fenced code is
+supposed to not pass type checking, you may also want to specify `ignore`
+directive, because we run `deno test --doc` command in CI, which does type
+checking against fenced code snippets except for those with `ignore` directive.
+So concrete examples are:
+
+````ts
+/**
+ * ```ts expect-error ignore
+ * // Does not pass type checking
+ * const x: string = 1;
+ * ```
+ *
+ * ```ts expect-error
+ * import { assert } from "@std/assert/assert";
+ *
+ * // Fails at runtime
+ * assert(false);
+ * ```
+ */
+````
+
 ### Notices for unstable APIs
 
 Each unstable API must have the

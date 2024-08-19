@@ -5,9 +5,9 @@ import {
   assertEquals,
   assertRejects,
 } from "@std/assert";
-import { delay } from "@std/async";
 import { memoize } from "./memoize.ts";
 import { LruCache } from "./lru_cache.ts";
+import { FakeTime } from "@std/testing/time";
 
 Deno.test(
   "memoize() memoizes nullary function (lazy/singleton)",
@@ -32,11 +32,13 @@ Deno.test(
     });
 
     await t.step("sync function", async () => {
+      using time = new FakeTime();
+
       const firstHitDate = memoize(() => new Date());
 
       const date = firstHitDate();
 
-      await delay(10);
+      await time.tickAsync(10);
 
       const date2 = firstHitDate();
 
@@ -324,14 +326,14 @@ Deno.test("memoize() allows primitive arg with `getKey`", () => {
 });
 
 Deno.test("memoize() works with async functions", async () => {
+  using time = new FakeTime();
+
   // wait time per call of the original (un-memoized) function
   const DELAY_MS = 100;
-  // max amount of execution time per call of the memoized function
-  const TOLERANCE_MS = 5;
 
   const startTime = Date.now();
   const fn = memoize(async (n: number) => {
-    await delay(DELAY_MS);
+    await time.tickAsync(DELAY_MS);
     return 0 - n;
   });
 
@@ -351,7 +353,7 @@ Deno.test("memoize() works with async functions", async () => {
   assertAlmostEquals(
     Date.now() - startTime,
     numUnique * DELAY_MS,
-    nums.length * TOLERANCE_MS,
+    nums.length,
   );
 });
 
