@@ -20,4 +20,3 @@ if (invalidEntries.length > 0) {
   );
   Deno.exit(1);
 }
-console.log("ok");
