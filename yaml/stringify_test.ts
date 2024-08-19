@@ -674,3 +674,7 @@ Deno.test("stringify() uses quotes around deprecated boolean notations when `com
   assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
   assertEquals(stringify("No", { compatMode: true }), "'No'\n");
 });
+
+Deno.test("stringify() handles undefined with skipInvalid option", () => {
+  assertEquals(stringify(undefined, { skipInvalid: true }), "");
+});
