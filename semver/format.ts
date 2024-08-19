@@ -22,15 +22,15 @@ function formatNumber(value: number) {
  * assertEquals(format(semver), "1.2.3");
  * ```
  *
- * @param semver The SemVer to format
+ * @param version The SemVer to format
  * @returns The string representation of a semantic version.
  */
-export function format(semver: SemVer): string {
-  const major = formatNumber(semver.major);
-  const minor = formatNumber(semver.minor);
-  const patch = formatNumber(semver.patch);
-  const pre = semver.prerelease?.join(".") ?? "";
-  const build = semver.build?.join(".") ?? "";
+export function format(version: SemVer): string {
+  const major = formatNumber(version.major);
+  const minor = formatNumber(version.minor);
+  const patch = formatNumber(version.patch);
+  const pre = version.prerelease?.join(".") ?? "";
+  const build = version.build?.join(".") ?? "";
 
   const primary = `${major}.${minor}.${patch}`;
   const release = [primary, pre].filter((v) => v).join("-");
