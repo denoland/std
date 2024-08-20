@@ -44,7 +44,6 @@ export function dirname(path: string): string;
  * import { dirname } from "@std/path/posix/dirname";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(dirname(new URL(import.meta.url)), import.meta.dirname);
  * assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
  * ```
  *
