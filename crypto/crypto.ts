@@ -273,7 +273,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
           const chunkBytes = toUint8Array(chunk);
           if (!chunkBytes) {
             throw new TypeError(
-              "Data contained a chunk with an invalid type, chunks must be ArrayBuffer or Uint8Array",
+              "Cannot digest the data: A chunk is not ArrayBuffer nor ArrayBufferView",
             );
           }
           context.update(chunkBytes);
