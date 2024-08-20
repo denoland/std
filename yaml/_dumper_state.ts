@@ -114,7 +114,7 @@ function indentString(string: string, spaces: number): string {
     .join("\n");
 }
 
-function generateNextLine(indent: number, level: number): string {
+function generateNextLineWhiteSpace(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
@@ -599,31 +599,22 @@ export class DumperState {
     level: number,
     compact: boolean,
   ): string {
-    let _result = "";
+    const whitespace = generateNextLineWhiteSpace(this.indent, level);
 
-    for (let index = 0; index < object.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(level + 1, object[index], {
+    let result = "";
+    for (const [index, value] of object.entries()) {
+      const string = this.stringifyNode(level + 1, value, {
         block: true,
         compact: true,
         isKey: false,
       });
-      if (string !== null) {
-        if (!compact || index !== 0) {
-          _result += generateNextLine(this.indent, level);
-        }
-
-        if (string && LINE_FEED === string.charCodeAt(0)) {
-          _result += "-";
-        } else {
-          _result += "- ";
-        }
-
-        _result += string;
-      }
+      if (string === null) continue;
+      if (!compact || index !== 0) result += whitespace;
+      result += LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
+      result += string;
     }
 
-    return _result || "[]"; // Empty sequence if no valid values.
+    return result || "[]"; // Empty sequence if no valid values.
   }
 
   stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
@@ -698,7 +689,7 @@ export class DumperState {
       let pairBuffer = "";
 
       if (!compact || index !== 0) {
-        pairBuffer += generateNextLine(this.indent, level);
+        pairBuffer += generateNextLineWhiteSpace(this.indent, level);
       }
 
       const objectValue = object[objectKey];
@@ -726,7 +717,7 @@ export class DumperState {
       pairBuffer += keyString;
 
       if (explicitPair) {
-        pairBuffer += generateNextLine(this.indent, level);
+        pairBuffer += generateNextLineWhiteSpace(this.indent, level);
       }
 
       const valueString = this.stringifyNode(level + 1, objectValue, {
