@@ -46,7 +46,9 @@ export async function readRange(
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
+  if (length <= 0) {
+    throw new RangeError("Byte range start cannot be larger than end");
+  }
   await r.seek(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
@@ -54,16 +56,16 @@ export async function readRange(
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = await r.read(p);
     if (nread === null) {
-      throw new Error("Unexpected EOF reach while reading a range.");
+      throw new Error("Unexpected EOF reach while reading a range");
     }
     if (nread === 0) {
-      throw new Error("Unexpected read of 0 bytes while reading a range.");
+      throw new Error("Unexpected read of 0 bytes while reading a range");
     }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
     if (length < 0) {
-      throw new Error("Unexpected length remaining after reading range.");
+      throw new Error("Unexpected length remaining after reading range");
     }
   }
   return result;
@@ -97,7 +99,9 @@ export function readRangeSync(
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
+  if (length <= 0) {
+    throw new RangeError("Byte range start cannot be larger than end");
+  }
   r.seekSync(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
@@ -105,16 +109,16 @@ export function readRangeSync(
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = r.readSync(p);
     if (nread === null) {
-      throw new Error("Unexpected EOF reach while reading a range.");
+      throw new Error("Unexpected EOF reach while reading a range");
     }
     if (nread === 0) {
-      throw new Error("Unexpected read of 0 bytes while reading a range.");
+      throw new Error("Unexpected read of 0 bytes while reading a range");
     }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
     if (length < 0) {
-      throw new Error("Unexpected length remaining after reading range.");
+      throw new Error("Unexpected length remaining after reading range");
     }
   }
   return result;

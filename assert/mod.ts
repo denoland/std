@@ -30,6 +30,7 @@ export * from "./is_error.ts";
 export * from "./less_or_equal.ts";
 export * from "./less.ts";
 export * from "./match.ts";
+export * from "./never.ts";
 export * from "./not_equals.ts";
 export * from "./not_instance_of.ts";
 export * from "./not_match.ts";
