@@ -578,7 +578,7 @@ export class DumperState {
   }
 
   stringifyFlowSequence(object: unknown[], level: number): string {
-    let _result = "";
+    let result = "";
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
       const string = this.stringifyNode(level, object[index], {
@@ -587,11 +587,11 @@ export class DumperState {
         isKey: false,
       });
       if (string === null) continue;
-      if (index !== 0) _result += `,${!this.condenseFlow ? " " : ""}`;
-      _result += string;
+      if (index !== 0) result += `,${!this.condenseFlow ? " " : ""}`;
+      result += string;
     }
 
-    return `[${_result}]`;
+    return `[${result}]`;
   }
 
   stringifyBlockSequence(
@@ -600,7 +600,6 @@ export class DumperState {
     compact: boolean,
   ): string {
     const whitespace = generateNextLineWhiteSpace(this.indent, level);
-
     let result = "";
     for (const [index, value] of object.entries()) {
       const string = this.stringifyNode(level + 1, value, {
@@ -618,7 +617,7 @@ export class DumperState {
   }
 
   stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
-    let _result = "";
+    let result = "";
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -658,10 +657,10 @@ export class DumperState {
       pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    return `{${_result}}`;
+    return `{${result}}`;
   }
 
   stringifyBlockMapping(
@@ -671,7 +670,7 @@ export class DumperState {
     compact: boolean,
   ): string {
     const objectKeyList = Object.keys(object);
-    let _result = "";
+    let result = "";
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
@@ -740,10 +739,10 @@ export class DumperState {
       pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    return _result || "{}"; // Empty mapping if no valid pairs.
+    return result || "{}"; // Empty mapping if no valid pairs.
   }
 
   detectType(
