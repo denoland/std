@@ -37,7 +37,6 @@ export function dirname(path: string): string;
  * import { dirname } from "@std/path/windows/dirname";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(dirname(new URL(import.meta.url)), import.meta.dirname);
  * assertEquals(dirname(new URL("file:///C:/foo/bar/baz.ext")), "C:\\foo\\bar");
  * ```
  *
