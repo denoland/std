@@ -805,7 +805,7 @@ export class DumperState {
   ): boolean {
     this.dump = object;
 
-    const tag = this.detectType(false) ?? this.detectType(true) ?? null;
+    const tag = this.detectType(false) ?? this.detectType(true);
 
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
