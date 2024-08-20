@@ -53,7 +53,8 @@
     "supports-color": "npm:supports-color",
     "ulid": "npm:ulid",
     "youtube-caption-extractor": "npm:youtube-caption-extractor",
-    "zod": "npm:zod"
+    "zod": "npm:zod",
+    "zod-to-json-schema": "npm:zod-to-json-schema"
   },
   "exclude": ["cov/"],
   "lint": {

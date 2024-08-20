@@ -4,7 +4,7 @@
 
 import { IoStruct, partialFromRepo } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
-import { PROCTYPE } from '@/api/web-client.types.ts'
+import { PROCTYPE } from '@/api/types.ts'
 import { expect } from '@utils'
 
 const partial = partialFromRepo('system/system')
@@ -14,7 +14,7 @@ Deno.test('io-channel', () => {
   const io = IOChannel.readObject(json, pid)
   expect(io.isExecutionAvailable()).toBeTruthy()
   const { request, sequence } = io.setExecution()
-  const executing = io.getExecution()
+  const executing = io.getRunnableExecution()
   const outbound = json.requests[1]
   expect(executing).toEqual(outbound)
   expect(sequence).toBe(1)

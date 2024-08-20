@@ -2,24 +2,27 @@ import {
   addIteration,
   addTest,
   create,
-  type TestSuiteSchema,
-  testSuiteSchema,
+  type TestController,
+  testController,
+  type TestFile,
+  testFile,
 } from '@/api/tps-report.ts'
 import { expect } from '@utils'
 import { delay } from '@std/async'
-const raw: TestSuiteSchema = {
+const raw: TestFile = {
   summary: {
     timestamp: Date.now(),
     path: 'tests/test-example.test.md',
     hash: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
-    tests: 1,
+    casesCount: 1,
     elapsed: 1000,
     iterations: 5,
     completed: 4,
   },
-  results: [
+  cases: [
     {
       summary: {
+        name: 'test name 1',
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 3,
@@ -43,8 +46,9 @@ const raw: TestSuiteSchema = {
     },
   ],
 }
+
 Deno.test('tps report', async () => {
-  const suite = testSuiteSchema.parse(raw)
+  const suite = testFile.parse(raw)
   expect(suite).toEqual(raw)
 
   const created = create(
@@ -52,12 +56,12 @@ Deno.test('tps report', async () => {
     '29426920ac614d1672d6f2dfcdd22c0052c22e32',
     5,
   )
-  expect(created.summary.tests).toEqual(0)
+  expect(created.summary.casesCount).toEqual(0)
 
-  const added = addTest(created, 2)
-  expect(added.summary.tests).toEqual(1)
-  expect(added.results.length).toEqual(1)
-  expect(added.results[0].summary.expectations).toEqual(2)
+  const added = addTest(created, 'test name', 2)
+  expect(added.summary.casesCount).toEqual(1)
+  expect(added.cases.length).toEqual(1)
+  expect(added.cases[0].summary.expectations).toEqual(2)
 
   await delay(1)
 
@@ -74,8 +78,15 @@ Deno.test('tps report', async () => {
   })
   expect(updated.summary.completed).toEqual(1)
   expect(updated.summary.elapsed).toBeGreaterThan(0)
-  expect(updated.results[0].summary.completed).toEqual(1)
-  expect(updated.results[0].summary.elapsed).toBeGreaterThan(0)
+  expect(updated.cases[0].summary.completed).toEqual(1)
+  expect(updated.cases[0].summary.elapsed).toBeGreaterThan(0)
 })
-
-// verify the synth agent creates the tps report correctly based on the test file
+const controller: TestController = {
+  globs: ['tests/*.test.md'],
+  files: [{ path: 'tests/test-example.test.md', status: 'pending' }],
+  concurrency: 2,
+}
+Deno.test('controller', () => {
+  const parsed = testController.parse(controller)
+  expect(parsed).toEqual(controller)
+})

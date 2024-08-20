@@ -98,7 +98,7 @@ const loop = async (path: string, api: IA) => {
   }
   if (count >= HARD_STOP) {
     // TODO test this actually works
-    console.error('HARD_STOP', HARD_STOP)
+    console.error('LONGTHREAD HARD_STOP after:', HARD_STOP)
   }
 }
 
@@ -119,6 +119,17 @@ const isDone = async (threadPath: string, api: IA) => {
   }
   if ('tool_calls' in last) {
     log(last.name, last.tool_calls)
+    if (last.tool_calls?.length === 1) {
+      const tool = last.tool_calls[0]
+      if (tool.function.name === 'utils_resolve') {
+        log('resolved')
+        return true
+      }
+      if (tool.function.name === 'utils_reject') {
+        log('rejected')
+        return true
+      }
+    }
     return false
   }
   if ('tool_call_id' in last) {

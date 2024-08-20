@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const md5 = z.string().regex(/^[a-f0-9]{40}$/, 'Invalid MD5 hash')
 
-const outcome = z
+export const outcome = z
   .object({
     reasoning: z.array(z.string()),
     outcome: z.boolean(),
@@ -11,8 +11,8 @@ const outcome = z
     'the result of a single test iteration along with chain of thought reasoning for how the outcome was reached',
   )
 
-type Iteration = z.infer<typeof iteration>
-const iteration = z
+export type TestIteration = z.infer<typeof testIteration>
+export const testIteration = z
   .object({
     commit: md5.describe('the commit this iteration completed on'),
     prompts: z.array(z.string()).describe('the prompt(s) that were used'),
@@ -49,8 +49,8 @@ const summary = z
     'A summary of the test results combining all individual results into a ratio',
   )
 
-type SingleTestSchema = z.infer<typeof singleTestSchema>
-const singleTestSchema = z
+type TestCase = z.infer<typeof testCase>
+const testCase = z
   .object({
     summary: summary
       .extend({
@@ -58,13 +58,15 @@ const singleTestSchema = z
           .number()
           .int()
           .gt(0)
-          .describe('the number of expectations for this run'),
+          .describe('the number of expectations for this test case'),
         successes: z
           .array(z.number().int().gte(0))
           .describe(
             'for each expectation, the sum of the successful outcomes so far.  When divided by the number of completed iterations, the ratio of successful outcomes is calculated',
           ),
+        name: z.string().describe('the name of the test case'),
       })
+      .strict()
       .describe(
         'A summary of the test results combining all individual results into a ratio',
       )
@@ -77,9 +79,10 @@ const singleTestSchema = z
       .refine((v) => v.successes.every((success) => success <= v.completed), {
         message: 'successes cannot be greater than completed',
       }),
-    iterations: z.array(iteration)
+    iterations: z.array(testIteration)
       .describe('the outcome and info about each test run that has executed'),
   })
+  .strict()
   .describe('summary and runs output of a single test')
   .refine(
     (v) =>
@@ -108,50 +111,72 @@ const singleTestSchema = z
     )
   }, { message: 'runs outcomes must sum to successes' })
 
-export type TestSuiteSchema = z.infer<typeof testSuiteSchema>
-export const testSuiteSchema = z
+export type TestFile = z.infer<typeof testFile>
+export const testFile = z
   .object({
     summary: summary.extend({
       hash: md5.describe(
         'the hash of the test file used to generate the test run',
       ),
       path: z.string().describe('the path to the test file'),
-      tests: z
+      casesCount: z
         .number()
         .int()
         .gte(0)
-        .describe('the number of tests specified in the test file'),
+        .describe('the number of test cases specified in the test file'),
     })
+      .strict()
       .refine((value) => value.completed <= value.iterations, {
         message: 'completed cannot be greater than iterations',
       }),
-    results: z.array(singleTestSchema).describe('the results of each test'),
+    cases: z.array(testCase).describe('the results of each test case'),
   })
-  .refine((value) => value.results.length <= value.summary.tests, {
+  .strict()
+  .refine((value) => value.cases.length <= value.summary.casesCount, {
     message: 'the number of tests cannot be less than the number of results',
-    path: ['results'],
+    path: ['cases'],
   })
 
+export type TestController = z.infer<typeof testController>
+export const testController = z.object({
+  globs: z.array(z.string()).default([])
+    .describe('the globs to select the files to run'),
+  files: z.array(z.object({
+    path: z.string(),
+    status: z.enum(['pending', 'running', 'complete', 'error']),
+  })).describe(
+    'the files to run after resolving the globs, in run order, along with their run status',
+  ),
+  concurrency: z.number().int().gt(0).default(1).describe(
+    'the number of files to run concurrently',
+  ),
+}).strict()
+
 export const create = (path: string, hash: string, iterations: number) => {
-  const blank: TestSuiteSchema = {
+  const blank: TestFile = {
     summary: {
       timestamp: Date.now(),
       path,
       hash,
-      tests: 0,
+      casesCount: 0,
       elapsed: 0,
       iterations,
       completed: 0,
     },
-    results: [],
+    cases: [],
   }
-  return testSuiteSchema.parse(blank)
+  return testFile.parse(blank)
 }
 
-export const addTest = (base: TestSuiteSchema, expectations: number) => {
-  const copy = testSuiteSchema.parse(base)
-  const test: SingleTestSchema = {
+export const addTest = (
+  base: TestFile,
+  name: string,
+  expectations: number,
+) => {
+  const copy = testFile.parse(base)
+  const test: TestCase = {
     summary: {
+      name,
       timestamp: Date.now(),
       elapsed: 0,
       iterations: copy.summary.iterations,
@@ -161,18 +186,18 @@ export const addTest = (base: TestSuiteSchema, expectations: number) => {
     },
     iterations: [],
   }
-  copy.results.push(test)
-  copy.summary.tests++
-  return testSuiteSchema.parse(copy)
+  copy.cases.push(test)
+  copy.summary.casesCount++
+  return testFile.parse(copy)
 }
 
 export const addIteration = (
-  base: TestSuiteSchema,
+  base: TestFile,
   index: number,
-  iteration: Iteration,
+  iteration: TestIteration,
 ) => {
-  const copy = testSuiteSchema.parse(base)
-  const test = copy.results[index]
+  const copy = testFile.parse(base)
+  const test = copy.cases[index]
   test.summary.completed++
   test.summary.elapsed = Date.now() - test.summary.timestamp
   iteration.outcomes.forEach(({ outcome }, index) => {
@@ -182,12 +207,12 @@ export const addIteration = (
   })
   test.iterations.push(iteration)
   let leastCompleted = Number.MAX_SAFE_INTEGER
-  for (const _test of copy.results) {
+  for (const _test of copy.cases) {
     if (_test.summary.completed < leastCompleted) {
       leastCompleted = _test.summary.completed
     }
   }
   copy.summary.completed = leastCompleted
   copy.summary.elapsed = Date.now() - copy.summary.timestamp
-  return testSuiteSchema.parse(copy)
+  return testFile.parse(copy)
 }

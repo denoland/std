@@ -25,7 +25,11 @@ import * as assistantsEffects from './assistants-effects.ts'
 import * as assistants from './assistants.ts'
 
 import * as longthread from './longthread.ts'
-import * as synth from './synth.ts'
+import * as stateboard from './stateboard.ts'
+
+import * as testCaseRunner from './test-case-runner.ts'
+import * as testController from './test-controller.ts'
+import * as testRegistry from './test-registry.ts'
 
 const isolatesExport = {
   system,
@@ -55,7 +59,11 @@ const isolatesExport = {
   assistants,
 
   longthread,
-  synth,
+  stateboard,
+
+  'test-case-runner': testCaseRunner,
+  'test-controller': testController,
+  'test-registry': testRegistry,
 }
 
 export default isolatesExport

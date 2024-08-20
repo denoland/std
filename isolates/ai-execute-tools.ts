@@ -29,7 +29,7 @@ export const executeTools = async (threadPath: string, api: IA) => {
   for (const call of assistant.tool_calls) {
     const { function: { name, arguments: args }, id: tool_call_id } = call
     debugToolCall(name, args)
-    log('tool call:', name, args)
+    log('tool call:', name, JSON.parse(args))
     assert(actions[name], `missing action: ${name}`)
     const message: OpenAI.ChatCompletionToolMessageParam = {
       role: 'tool',
@@ -42,13 +42,13 @@ export const executeTools = async (threadPath: string, api: IA) => {
 
     try {
       const parameters = JSON.parse(args)
-      log('executing tool call:', colorize(api.commit), name, parameters)
       const branchName = tool_call_id
       const { promise } = await actions[name](parameters, branchName)
       const { result, parent } = await withMeta(promise)
       assert(typeof parent === 'string', 'missing parent')
       assert(sha1.test(parent), 'invalid parent')
       await api.merge(parent)
+
       thread = await api.readJSON<Thread>(threadPath)
       assert(!thread.toolCommits[tool_call_id], 'tool call already exists')
       thread.toolCommits[tool_call_id] = parent

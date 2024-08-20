@@ -89,7 +89,7 @@ export default class IOChannel {
     return this.#save()
   }
   isExecution(attempt: SolidRequest) {
-    const next = this.getExecution()
+    const next = this.getRunnableExecution()
     return equal(next, attempt)
   }
   isExecutionAvailable() {
@@ -138,14 +138,27 @@ export default class IOChannel {
     this.#io.executed[sequence] = true
     return { request, sequence }
   }
+  getRunnableExecution() {
+    const { request, sequence } = this.#getExecution()
+    return toRunnableRequest(request, sequence)
+  }
   getExecution() {
+    const { request, sequence } = this.#getExecution()
+    let commit = undefined
+    const runnable = toRunnableRequest(request, sequence)
+    if (isRemoteRequest(request)) {
+      commit = request.commit
+    }
+    return { runnable, commit }
+  }
+  #getExecution() {
     if (this.#io.executing === undefined) {
       throw new Error('no execution action set')
     }
     const sequence = this.#io.executing
     assert(sequence in this.#io.requests, 'execution sequence not found')
     const request = this.#io.requests[sequence]
-    return toRunnableRequest(request, sequence)
+    return { request, sequence }
   }
   getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
@@ -213,7 +226,7 @@ export default class IOChannel {
     const indices: number[] = []
     const commits: string[] = []
 
-    const origin = this.getExecution()
+    const origin = this.getRunnableExecution()
     assert(origin, 'no serial request found')
     const sequence = this.getSequence(origin)
     const pendings = this.#io.pendings[sequence]

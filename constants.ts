@@ -15,13 +15,15 @@ import {
   PierceRequest,
   RemoteRequest,
   Request,
+  SchemaType,
   SolidRequest,
   UnsequencedRequest,
 } from './api/types.ts'
 import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
-import { equal } from '@utils'
+import { assert, equal } from '@utils'
+import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -94,13 +96,13 @@ export type IsolatePromise =
 type BareIsolatePromise = {
   request: UnsequencedRequest
 }
-export type PromisedIsolatePromise = BareIsolatePromise & {
-  promise: MetaPromise
-  resolve: (value: unknown) => void
+export type PromisedIsolatePromise<T = unknown> = BareIsolatePromise & {
+  promise: MetaPromise<T>
+  resolve: (value: T) => void
   reject: (error: Error) => void
 }
-export type SettledIsolatePromise =
-  & (BareIsolatePromise | PromisedIsolatePromise)
+export type SettledIsolatePromise<T = unknown> =
+  & (BareIsolatePromise | PromisedIsolatePromise<T>)
   & {
     outcome: Outcome
     /** if an outcome is given, there must be a commit associated with it, so
@@ -244,5 +246,15 @@ export type Provisioner = (superBackchat: Backchat) => Promise<void>
 export type CradleMaker = (
   init?: Provisioner,
 ) => Promise<{ backchat: Backchat; engine: EngineInterface }>
+
+export const toJsonSchema = (schemas: SchemaType) => {
+  const result: { [key in keyof SchemaType]: JsonSchema7ObjectType } = {}
+  for (const key in schemas) {
+    const schema = zodToJsonSchema(schemas[key])
+    assert(schema, `invalid schema: ${key}`)
+    result[key] = schema as JsonSchema7ObjectType
+  }
+  return result
+}
 
 export * from './api/types.ts'

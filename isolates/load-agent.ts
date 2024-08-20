@@ -1,6 +1,6 @@
 import merge from 'lodash.merge'
 import { assert, posix } from '@utils'
-import { AGENT_RUNNERS, Functions, Triad } from '@/constants.ts'
+import { AGENT_RUNNERS, Functions, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
@@ -63,7 +63,7 @@ export const functions: Functions<Api> = {
 
     const { pid, commit } = api
     const source: Triad = { path, pid, commit }
-    const instructions = content.trim()
+    const instructions = await expandLinks(content.trim(), api)
     const name = posix.basename(path, posix.extname(path))
     const loaded: Agent = { ...defaults, name, instructions, source }
 
@@ -121,4 +121,56 @@ const assertAgent = (agent: Agent) => {
   if (!/^[a-zA-Z0-9_-]+$/.test(agent.name)) {
     throw new Error('name must be alphanumeric: ' + agent.name)
   }
+}
+const expandLinks = async (content: string, api: IA, path: string[] = []) => {
+  content = content.trim()
+  const links = extractLinks(content)
+  const contents = await loadContent(links, api, path)
+  return replaceLinksWithContent(content, links, contents)
+}
+const loadContent = async (links: string[], api: IA, path: string[]) => {
+  const contents = new Map()
+  for (const link of links) {
+    if (path.includes(link)) {
+      throw new Error('circular reference: ' + path.join(' -> '))
+    }
+    const content = await api.read(link)
+    contents.set(link, await expandLinks(content, api, path.concat(link)))
+  }
+  return contents
+}
+
+const extractLinks = (content: string): string[] => {
+  const linkRegex = /\[.*?\]\((.*?\.md)\)/g
+  const plain = content.split(codeBlockRegex).filter((_, i) => i % 2 === 0)
+
+  const links = []
+  for (const section of plain) {
+    let match
+    while ((match = linkRegex.exec(section)) !== null) {
+      links.push(match[1])
+    }
+  }
+  return links
+}
+
+const codeBlockRegex = /(```[\s\S]*?```|`[^`\n]*`)/g
+const replaceLinksWithContent = (
+  content: string,
+  links: string[],
+  contents: Map<string, string>,
+) => {
+  const parts = content.split(codeBlockRegex)
+  for (let i = 0; i < parts.length; i++) {
+    if (i % 2 === 0) {
+      for (const link of links) {
+        const linkRegex = new RegExp(`\\[.*?\\]\\(${link}\\)`, 'g')
+        const resolved = contents.get(link)
+        assert(resolved, 'missing content for link: ' + link)
+        parts[i] = parts[i].replace(linkRegex, resolved)
+      }
+    }
+  }
+
+  return parts.join('')
 }

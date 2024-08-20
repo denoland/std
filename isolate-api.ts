@@ -32,22 +32,29 @@ type EffectOptions = {
 
 export default class IA<T extends object = Default> {
   #accumulator: Accumulator
-  #origin: SolidRequest | undefined
+  #origin: SolidRequest
+  #originCommit: string | undefined
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   #isEffect = false
   #isEffectRecovered = false
   #abort = new AbortController()
-  private constructor(accumulator: Accumulator, origin?: SolidRequest) {
+  private constructor(
+    accumulator: Accumulator,
+    origin: SolidRequest,
+    originCommit?: string,
+  ) {
     this.#accumulator = accumulator
     this.#origin = origin
+    this.#originCommit = originCommit
   }
   static create(
     accumulator: Accumulator,
-    origin?: SolidRequest,
+    origin: SolidRequest,
+    originCommit?: string,
     opts?: EffectOptions,
   ) {
-    const api = new IA(accumulator, origin)
+    const api = new IA(accumulator, origin, originCommit)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
@@ -58,6 +65,7 @@ export default class IA<T extends object = Default> {
     // TODO find a more graceful way to do this for cradle setup
     return new IA<T>(
       null as unknown as Accumulator,
+      null as unknown as SolidRequest,
     )
   }
   get #fs() {
@@ -67,10 +75,11 @@ export default class IA<T extends object = Default> {
     return this.#fs.pid
   }
   get origin() {
-    if (!this.#origin) {
-      throw new Error('origin not set')
-    }
     return this.#origin
+  }
+  /** The commit from the origin action */
+  get originCommit() {
+    return this.#originCommit
   }
   get commit() {
     return this.#fs.oid
@@ -117,7 +126,7 @@ export default class IA<T extends object = Default> {
     if (recovered) {
       assert(isSettledIsolatePromise(recovered), 'recovered is not settled')
       const { outcome } = recovered
-      let promise: MetaPromise
+      let promise: MetaPromise<typeof outcome.result>
       if (outcome.error) {
         promise = Promise.reject(deserializeError(outcome.error))
       } else {
@@ -127,7 +136,7 @@ export default class IA<T extends object = Default> {
       return promise
     }
     let resolve, reject
-    const promise: MetaPromise = new Promise((_resolve, _reject) => {
+    const promise: MetaPromise<unknown> = new Promise((_resolve, _reject) => {
       resolve = _resolve
       reject = _reject
     })
@@ -245,7 +254,9 @@ export default class IA<T extends object = Default> {
     return this.#fs.isPidExists(pid)
   }
   merge(commit: string, ...excludes: string[]) {
-    assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
+    if (commit !== this.originCommit) {
+      assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
+    }
     log('overwrite', commit, excludes)
     return this.#fs.overwrite(commit, ...excludes)
   }

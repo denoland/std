@@ -1,5 +1,6 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
+import { z, ZodObject, ZodTypeAny } from 'zod'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32crockford } from '@scure/base'
 import { JSONSchemaType } from './types.ajv.ts'
@@ -20,6 +21,11 @@ export enum PROCTYPE {
   // together to allow for a fire and forget branches
   // OR make DAEMON be the same as FORGET since no new info need be returned ?
 }
+
+export type SchemaType = {
+  [key: string]: ZodObject<Record<string, ZodTypeAny>>
+}
+
 export type { JSONSchemaType }
 export type ApiFunction = {
   (): unknown | Promise<unknown>
@@ -74,7 +80,9 @@ export type ProcessOptions = {
    * is done.
    */
   noClose?: boolean
-  /** Set a prefix for the new branch name.  Implies branch = true */
+  /** Set a prefix for the new branch name, which will be combined with a
+   * random id and separated by a "-". Implies branch = true
+   */
   prefix?: string
   /** Set the name of the new branch.  Will error if this exists already */
   branchName?: string
@@ -484,7 +492,6 @@ export const freezePid = (pid: PID) => {
   if (!pid.branches[0]) {
     throw new Error('branch is required')
   }
-  const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
   if (!githubRegex.test(pid.account) || !githubRegex.test(pid.repository)) {
     const repo = `${pid.account}/${pid.repository}`
     throw new Error('Invalid GitHub account or repository name: ' + repo)
@@ -574,6 +581,7 @@ const checkUndefined = (params: Params) => {
     }
   }
 }
+export const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
 export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
@@ -622,6 +630,7 @@ export const isActorBranch = (pid: PID) => {
 }
 
 export const isPidEqual = (pid1: PID, pid2: PID) => {
+  // TODO why not just use the fast-equals utility ?
   if (pid1.repoId !== pid2.repoId) {
     return false
   }
@@ -645,7 +654,7 @@ export const META_SYMBOL = Symbol.for('settling commit')
 export type Meta = {
   parent?: CommitOid
 }
-export const withMeta = async (promise: MetaPromise) => {
+export const withMeta = async <T>(promise: MetaPromise<T>) => {
   const result = await promise
   assert.truthy(META_SYMBOL in promise, 'missing commit symbol')
   const meta = promise[META_SYMBOL]
@@ -658,7 +667,7 @@ export const withMeta = async (promise: MetaPromise) => {
   return { result, parent }
 }
 export const sha1 = /^[0-9a-f]{40}$/i
-export type MetaPromise = Promise<unknown> & { [META_SYMBOL]?: Meta }
+export type MetaPromise<T> = Promise<T> & { [META_SYMBOL]?: Meta }
 
 export const addBranches = (pid: PID, ...children: string[]) => {
   const next = { ...pid, branches: [...pid.branches, ...children] }
@@ -700,3 +709,9 @@ export const getThreadPath = (pid: PID) => {
   const threadId = getBaseName(pid)
   return `threads/${threadId}.json`
 }
+export const zodPid = z.object({
+  repoId: z.string().regex(repoIdRegex),
+  account: z.string().regex(githubRegex),
+  repository: z.string().regex(githubRegex),
+  branches: z.array(z.string()).min(1),
+})
