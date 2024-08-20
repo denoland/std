@@ -627,50 +627,39 @@ export class DumperState {
   }
 
   stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
-    let result = "";
-    const objectKeyList = Object.keys(object);
+    const quote = this.condenseFlow ? '"' : "";
+    const separator = this.condenseFlow ? ":" : ": ";
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = this.condenseFlow ? '"' : "";
-
-      if (index !== 0) pairBuffer += ", ";
-
-      const objectValue = object[objectKey];
-
-      const keyString = this.stringifyNode(level, objectKey, {
+    const results = [];
+    for (const key of Object.keys(object)) {
+      const keyString = this.stringifyNode(level, key, {
         block: false,
         compact: false,
         isKey: false,
       });
-      if (
-        keyString === null
-      ) {
-        continue; // Skip this pair because of invalid key;
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key;
 
+      const value = object[key];
+      const valueString = this.stringifyNode(level, value, {
+        block: false,
+        compact: false,
+        isKey: false,
+      });
+      if (valueString === null) continue; // Skip this pair because of invalid value.
+
+      let pairBuffer = "";
+
+      pairBuffer += quote;
       if (keyString.length > 1024) pairBuffer += "? ";
-
-      pairBuffer += `${keyString}${this.condenseFlow ? '"' : ""}:${
-        this.condenseFlow ? "" : " "
-      }`;
-
-      const valueString = this.stringifyNode(level, objectValue, {
-        block: false,
-        compact: false,
-        isKey: false,
-      });
-
-      if (valueString === null) {
-        continue; // Skip this pair because of invalid value.
-      }
-
+      pairBuffer += keyString;
+      pairBuffer += quote;
+      pairBuffer += separator;
       pairBuffer += valueString;
 
-      // Both key and value are valid.
-      result += pairBuffer;
+      results.push(pairBuffer);
     }
 
-    return `{${result}}`;
+    return `{${results.join(", ")}}`;
   }
 
   stringifyBlockMapping(
