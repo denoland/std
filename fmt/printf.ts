@@ -622,8 +622,7 @@ class Printf {
           break;
         default:
           throw new Error(
-            `Cannot handle the radix ${radix}: only 2, 8, 16 are supported`
-              radix,
+            `Cannot handle the radix ${radix}: only 2, 8, 16 are supported`,
           );
       }
     }
