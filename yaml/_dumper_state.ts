@@ -518,7 +518,10 @@ export class DumperState {
   //    • No ending newline => unaffected; already using strip "-" chomping.
   //    • Ending newline    => removed then restored.
   //  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-  stringifyScalar(string: string, level: number, isKey: boolean): string {
+  stringifyScalar(
+    string: string,
+    { level, isKey }: { level: number; isKey: boolean },
+  ): string {
     if (string.length === 0) {
       return "''";
     }
@@ -577,11 +580,15 @@ export class DumperState {
     }
   }
 
-  stringifyFlowSequence(object: unknown[], level: number): string {
+  stringifyFlowSequence(
+    object: unknown[],
+    { level }: { level: number },
+  ): string {
     let _result = "";
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(level, object[index], {
+      const string = this.stringifyNode(object[index], {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -596,14 +603,14 @@ export class DumperState {
 
   stringifyBlockSequence(
     object: unknown[],
-    level: number,
-    compact: boolean,
+    { level, compact }: { level: number; compact: boolean },
   ): string {
     let _result = "";
 
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(level + 1, object[index], {
+      const string = this.stringifyNode(object[index], {
+        level: level + 1,
         block: true,
         compact: true,
         isKey: false,
@@ -626,7 +633,10 @@ export class DumperState {
     return _result || "[]"; // Empty sequence if no valid values.
   }
 
-  stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
+  stringifyFlowMapping(
+    object: Record<string, unknown>,
+    { level }: { level: number },
+  ): string {
     let _result = "";
     const objectKeyList = Object.keys(object);
 
@@ -637,7 +647,8 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(level, objectKey, {
+      const keyString = this.stringifyNode(objectKey, {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -654,7 +665,8 @@ export class DumperState {
         this.condenseFlow ? "" : " "
       }`;
 
-      const valueString = this.stringifyNode(level, objectValue, {
+      const valueString = this.stringifyNode(objectValue, {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -675,9 +687,11 @@ export class DumperState {
 
   stringifyBlockMapping(
     object: Record<string, unknown>,
-    tag: string | null,
-    level: number,
-    compact: boolean,
+    { tag, level, compact }: {
+      tag: string | null;
+      level: number;
+      compact: boolean;
+    },
   ): string {
     const objectKeyList = Object.keys(object);
     let _result = "";
@@ -703,7 +717,8 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(level + 1, objectKey, {
+      const keyString = this.stringifyNode(objectKey, {
+        level: level + 1,
         block: true,
         compact: true,
         isKey: true,
@@ -729,7 +744,8 @@ export class DumperState {
         pairBuffer += generateNextLine(this.indent, level);
       }
 
-      const valueString = this.stringifyNode(level + 1, objectValue, {
+      const valueString = this.stringifyNode(objectValue, {
+        level: level + 1,
         block: true,
         compact: explicitPair,
         isKey: false,
@@ -790,7 +806,8 @@ export class DumperState {
 
   // Serializes `object` and writes it to global `result`.
   // Returns true on success, or false on invalid object.
-  stringifyNode(level: number, object: unknown, { block, compact, isKey }: {
+  stringifyNode(object: unknown, { level, block, compact, isKey }: {
+    level: number;
     block: boolean;
     compact: boolean;
     isKey: boolean;
@@ -830,12 +847,12 @@ export class DumperState {
       }
       if (isObject(object) && !Array.isArray(object)) {
         if (block && Object.keys(object).length !== 0) {
-          object = this.stringifyBlockMapping(object, tag, level, compact);
+          object = this.stringifyBlockMapping(object, { tag, level, compact });
           if (duplicate) {
             object = `&ref_${duplicateIndex}${object}`;
           }
         } else {
-          object = this.stringifyFlowMapping(object, level);
+          object = this.stringifyFlowMapping(object, { level });
           if (duplicate) {
             object = `&ref_${duplicateIndex} ${object}`;
           }
@@ -843,19 +860,22 @@ export class DumperState {
       } else if (Array.isArray(object)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && object.length !== 0) {
-          object = this.stringifyBlockSequence(object, arrayLevel, compact);
+          object = this.stringifyBlockSequence(object, {
+            level: arrayLevel,
+            compact,
+          });
           if (duplicate) {
             object = `&ref_${duplicateIndex}${object}`;
           }
         } else {
-          object = this.stringifyFlowSequence(object, arrayLevel);
+          object = this.stringifyFlowSequence(object, { level: arrayLevel });
           if (duplicate) {
             object = `&ref_${duplicateIndex} ${object}`;
           }
         }
       } else if (typeof object === "string") {
         if (tag !== "?") {
-          object = this.stringifyScalar(object, level, isKey);
+          object = this.stringifyScalar(object, { level, isKey });
         }
       } else {
         if (this.skipInvalid) return null;
@@ -887,7 +907,8 @@ export class DumperState {
   stringify(data: unknown): string {
     if (this.useAnchors) this.getDuplicateReferences(data);
 
-    const string = this.stringifyNode(0, data, {
+    const string = this.stringifyNode(data, {
+      level: 0,
       block: true,
       compact: true,
       isKey: false,
