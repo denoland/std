@@ -66,7 +66,7 @@ function createTypeMap(
     scalar: new Map(),
     sequence: new Map(),
   };
-  const fallbackMap = result["fallback"];
+  const fallbackMap = result.fallback;
   for (const type of [...implicitTypes, ...explicitTypes]) {
     const map = result[type.kind];
     map.set(type.tag, type);
@@ -85,9 +85,11 @@ function createSchema({ explicitTypes = [], implicitTypes = [], include }: {
   implicitTypes?: ImplicitType[];
   explicitTypes?: ExplicitType[];
   include?: Schema;
-}) {
-  if (include) implicitTypes.push(...include.implicitTypes);
-  if (include) explicitTypes.push(...include.explicitTypes);
+}): Schema {
+  if (include) {
+    implicitTypes.push(...include.implicitTypes);
+    explicitTypes.push(...include.explicitTypes);
+  }
   const typeMap = createTypeMap(implicitTypes, explicitTypes);
   return { implicitTypes, explicitTypes, typeMap };
 }
