@@ -82,7 +82,7 @@ function decodeMap(
 
     if (typeof key !== "number" && typeof key !== "string") {
       throw new EvalError(
-        "Messagepack decode came across an invalid type for a key of a map, keys must be a number or a string",
+        "Cannot decode a key of a map: The type of key is invalid, keys must be a number or a string",
       );
     }
 
