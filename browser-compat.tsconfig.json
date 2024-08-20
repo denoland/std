@@ -6,6 +6,7 @@
       "ESNext"
     ]
   },
+  "importMap": "./import_map.json",
   "workspace": [
     "./archive",
     "./assert",
