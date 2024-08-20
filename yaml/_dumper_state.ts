@@ -577,21 +577,22 @@ export class DumperState {
     }
   }
 
-  stringifyFlowSequence(object: unknown[], level: number): string {
-    let result = "";
-    for (let index = 0; index < object.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(level, object[index], {
+  stringifyFlowSequence(
+    object: unknown[],
+    { level }: { level: number },
+  ): string {
+    const results = [];
+    for (const value of object) {
+      const string = this.stringifyNode(level, value, {
         block: false,
         compact: false,
         isKey: false,
       });
       if (string === null) continue;
-      if (index !== 0) result += `,${!this.condenseFlow ? " " : ""}`;
-      result += string;
+      results.push(string);
     }
-
-    return `[${result}]`;
+    const separator = this.condenseFlow ? "," : ", ";
+    return `[${results.join(separator)}]`;
   }
 
   stringifyBlockSequence(
@@ -848,7 +849,7 @@ export class DumperState {
             object = `&ref_${duplicateIndex}${object}`;
           }
         } else {
-          object = this.stringifyFlowSequence(object, arrayLevel);
+          object = this.stringifyFlowSequence(object, { level: arrayLevel });
           if (duplicate) {
             object = `&ref_${duplicateIndex} ${object}`;
           }
