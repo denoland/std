@@ -518,11 +518,7 @@ export class DumperState {
   //    • No ending newline => unaffected; already using strip "-" chomping.
   //    • Ending newline    => removed then restored.
   //  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-  stringifyScalar(
-    string: string,
-    level: number,
-    isKey: boolean,
-  ) {
+  stringifyScalar(string: string, level: number, isKey: boolean): string {
     if (string.length === 0) {
       return "''";
     }
@@ -581,7 +577,7 @@ export class DumperState {
     }
   }
 
-  stringifyFlowSequence(object: unknown[], level: number) {
+  stringifyFlowSequence(object: unknown[], level: number): string {
     let _result = "";
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
@@ -598,7 +594,11 @@ export class DumperState {
     return `[${_result}]`;
   }
 
-  stringifyBlockSequence(object: unknown[], level: number, compact: boolean) {
+  stringifyBlockSequence(
+    object: unknown[],
+    level: number,
+    compact: boolean,
+  ): string {
     let _result = "";
 
     for (let index = 0; index < object.length; index += 1) {
@@ -626,7 +626,7 @@ export class DumperState {
     return _result || "[]"; // Empty sequence if no valid values.
   }
 
-  stringifyFlowMapping(object: Record<string, unknown>, level: number) {
+  stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
     let _result = "";
     const objectKeyList = Object.keys(object);
 
@@ -678,7 +678,7 @@ export class DumperState {
     tag: string | null,
     level: number,
     compact: boolean,
-  ) {
+  ): string {
     const objectKeyList = Object.keys(object);
     let _result = "";
 
@@ -790,15 +790,11 @@ export class DumperState {
 
   // Serializes `object` and writes it to global `result`.
   // Returns true on success, or false on invalid object.
-  stringifyNode(
-    level: number,
-    object: unknown,
-    { block, compact, isKey }: {
-      block: boolean;
-      compact: boolean;
-      isKey: boolean;
-    },
-  ): string | null {
+  stringifyNode(level: number, object: unknown, { block, compact, isKey }: {
+    block: boolean;
+    compact: boolean;
+    isKey: boolean;
+  }): string | null {
     const result = this.detectType(object, false) ??
       this.detectType(object, true) ?? { tag: null, object };
     const tag = result.tag;
