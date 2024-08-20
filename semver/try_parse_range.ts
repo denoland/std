@@ -21,16 +21,14 @@ import { parseRange } from "./parse_range.ts";
  * ]);
  * ```
  *
- * @param range The range string
+ * @param value The range string
  * @returns A Range object if valid otherwise `undefined`
  */
-export function tryParseRange(
-  range: string,
-): Range | undefined {
+export function tryParseRange(value: string): Range | undefined {
   try {
     // Return '*' instead of '' so that truthiness works.
     // This will throw if it's invalid anyway
-    return parseRange(range);
+    return parseRange(value);
   } catch {
     return undefined;
   }

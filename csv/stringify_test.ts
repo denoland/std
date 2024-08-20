@@ -579,5 +579,17 @@ Deno.test({
         },
       },
     );
+    await t.step({
+      name: "`as const` row data and options pass type checking",
+      fn() {
+        const columns = ["col1", "col2"] as const;
+        const data = [["foo", "bar"], ["baz", "qux"]] as const;
+        const options = { columns } as const;
+
+        void (() => {
+          stringify(data, options);
+        });
+      },
+    });
   },
 });
