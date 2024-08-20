@@ -626,7 +626,10 @@ export class DumperState {
     return result || "[]"; // Empty sequence if no valid values.
   }
 
-  stringifyFlowMapping(object: Record<string, unknown>, level: number): string {
+  stringifyFlowMapping(
+    object: Record<string, unknown>,
+    { level }: { level: number },
+  ): string {
     const quote = this.condenseFlow ? '"' : "";
     const separator = this.condenseFlow ? ":" : ": ";
 
@@ -824,7 +827,7 @@ export class DumperState {
             object = `&ref_${duplicateIndex}${object}`;
           }
         } else {
-          object = this.stringifyFlowMapping(object, level);
+          object = this.stringifyFlowMapping(object, { level });
           if (duplicate) {
             object = `&ref_${duplicateIndex} ${object}`;
           }
