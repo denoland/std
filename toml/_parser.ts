@@ -101,7 +101,7 @@ export class Scanner {
       const escaped = "\\u" + this.char().charCodeAt(0).toString(16);
       const position = this.#position;
       throw new SyntaxError(
-        `Contains invalid whitespace at position '${position}': \`${escaped}\``,
+        `Cannot parse the TOML: It contains invalid whitespace at position '${position}': \`${escaped}\``,
       );
     }
   }
@@ -156,7 +156,7 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
   value: Record<string, unknown>;
 }) {
   if (table.key.length === 0 || table.key[0] == null) {
-    throw new Error("Key length must be a positive number");
+    throw new Error("Cannot parse the TOML: key length is not a positive number"));
   }
   const value = target[table.key[0]];
 

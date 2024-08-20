@@ -311,7 +311,7 @@ function decodeSlice(
     case 0xd6: // fixext 4 - 4 byte extension type
     case 0xd7: // fixext 8 - 8 byte extension type
     case 0xd8: // fixext 16 - 16 byte extension type
-      throw new Error("'fixext' not implemented yet");
+      throw new Error("Cannot decode a slice: 'fixext' not implemented yet");
     case 0xd9: { // str 8 - small string
       if (pointer.consumed >= uint8.length) {
         throw new EvalError(

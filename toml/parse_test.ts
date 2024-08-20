@@ -515,7 +515,7 @@ Deno.test({
           },
         ),
       Error,
-      "Key length must be a positive number",
+      "Cannot parse the TOML: key length is not a positive number",
     );
 
     assertThrows(
