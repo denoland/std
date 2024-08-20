@@ -114,6 +114,8 @@ export function createDetails(
     });
 }
 
+const NON_WHITESPACE_REGEXP = /\S/;
+
 /**
  * Renders the differences between the actual and expected strings. Partially
  * inspired from {@link https://github.com/kpdecker/jsdiff}.
@@ -185,7 +187,7 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
       tokens = diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
-          type === "common" && value.trim().length
+          type === "common" && NON_WHITESPACE_REGEXP.test(value)
         )
       ) {
         break;
