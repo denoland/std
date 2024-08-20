@@ -459,7 +459,7 @@ class Printf {
     const arg = this.args[this.argNum] as any;
     if ((arg || {}).constructor.name !== "Array") {
       throw new Error(
-        `Printf must be constructed with an array for 'arg': got ${arg}`,
+        `Cannot handle less than '<' flag: 'arg' is not an array`,
       );
     }
     let str = "[ ";
@@ -622,7 +622,7 @@ class Printf {
           break;
         default:
           throw new Error(
-            "Format number only supports radix 2, 8 and 16: cannot handle radix " +
+            `Cannot handle the radix ${radix}: only 2, 8, 16 are supported`
               radix,
           );
       }
@@ -898,7 +898,7 @@ class Printf {
       }
       default:
         throw new Error(
-          `Only "number" and "string" are implemented for hex formatting: ${typeof val} is not currently supported`,
+          `Cannot format hex, only number and string are supported for hex formatting: ${typeof val} is given`
         );
     }
   }

@@ -490,12 +490,12 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`DateFormat error: ${part.type} ${part.value}`);
+          throw Error(`Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`);
       }
 
       if (!value) {
         throw Error(
-          `Value not valid for part { ${type} ${value} } ${
+          `Cannot format value: The value is not valid for part { ${type} ${value} } ${
             string.slice(
               0,
               25,
