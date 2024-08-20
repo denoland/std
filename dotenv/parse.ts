@@ -59,6 +59,8 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * Parse `.env` file output in an object.
  *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ *
  * @example Usage
  * ```ts
  * import { parse } from "@std/dotenv/parse";
