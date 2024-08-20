@@ -186,6 +186,7 @@ async function assertSnippetEvals(
     ],
     stderr: "piped",
   });
+  console.log(`${document.location.filename}:${document.location.line}`);
   const timeoutId = setTimeout(() => {
     console.warn(
       `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...`,

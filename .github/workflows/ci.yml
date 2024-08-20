@@ -52,10 +52,8 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      # TODO(kt3k): Rewrite test:browser task and enable this check
-      #- name: Type check browser compatible modules
-      #  shell: bash
-      #  run: deno task test:browser
+      - name: Type check browser compatible modules
+        run: deno task test:browser
 
       - name: Generate lcov
         run: deno task cov:gen
