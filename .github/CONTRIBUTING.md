@@ -245,11 +245,11 @@ Bad: Can't parse input x
 Good: Cannot parse input x
 ```
 
-7. Messages should use a colon when providing additional information:
+7. Messages should use a colon when providing additional information. Periods
+   should never be used. Other punctuation may be used as needed:
 
 ```
 Bad: Cannot parse input x. value is empty
-Bad: Cannot parse input x, value is empty
 Good: Cannot parse input x: value is empty
 ```
 
