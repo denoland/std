@@ -3,6 +3,15 @@ import { type LevelName, LogLevels } from "./levels.ts";
 import type { LogRecord } from "./logger.ts";
 import { Handler, type HandlerOptions } from "./handler.ts";
 import { writeAllSync } from "@std/io/write-all";
+import {
+  bufSymbol,
+  encoderSymbol,
+  filenameSymbol,
+  fileSymbol,
+  modeSymbol,
+  openOptionsSymbol,
+  pointerSymbol,
+} from "./_file_handler_symbols.ts";
 
 export type LogMode = "a" | "w" | "x";
 
@@ -36,34 +45,37 @@ export interface FileHandlerOptions extends HandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  */
 export class FileHandler extends Handler {
-  protected _file: Deno.FsFile | undefined;
-  protected _buf: Uint8Array;
-  protected _pointer = 0;
-  protected _filename: string;
-  protected _mode: LogMode;
-  protected _openOptions: Deno.OpenOptions;
-  protected _encoder: TextEncoder = new TextEncoder();
+  [fileSymbol]: Deno.FsFile | undefined;
+  [bufSymbol]: Uint8Array;
+  [pointerSymbol] = 0;
+  [filenameSymbol]: string;
+  [modeSymbol]: LogMode;
+  [openOptionsSymbol]: Deno.OpenOptions;
+  [encoderSymbol]: TextEncoder = new TextEncoder();
   #unloadCallback = (() => {
     this.destroy();
   }).bind(this);
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
-    this._filename = options.filename;
+    this[filenameSymbol] = options.filename;
     // default to append mode, write only
-    this._mode = options.mode ? options.mode : "a";
-    this._openOptions = {
-      createNew: this._mode === "x",
-      create: this._mode !== "x",
-      append: this._mode === "a",
-      truncate: this._mode !== "a",
+    this[modeSymbol] = options.mode ? options.mode : "a";
+    this[openOptionsSymbol] = {
+      createNew: this[modeSymbol] === "x",
+      create: this[modeSymbol] !== "x",
+      append: this[modeSymbol] === "a",
+      truncate: this[modeSymbol] !== "a",
       write: true,
     };
-    this._buf = new Uint8Array(options.bufferSize ?? 4096);
+    this[bufSymbol] = new Uint8Array(options.bufferSize ?? 4096);
   }
 
   override setup() {
-    this._file = Deno.openSync(this._filename, this._openOptions);
+    this[fileSymbol] = Deno.openSync(
+      this[filenameSymbol],
+      this[openOptionsSymbol],
+    );
     this.#resetBuffer();
 
     addEventListener("unload", this.#unloadCallback);
@@ -79,24 +91,24 @@ export class FileHandler extends Handler {
   }
 
   override log(msg: string) {
-    const bytes = this._encoder.encode(msg + "\n");
-    if (bytes.byteLength > this._buf.byteLength - this._pointer) {
+    const bytes = this[encoderSymbol].encode(msg + "\n");
+    if (bytes.byteLength > this[bufSymbol].byteLength - this[pointerSymbol]) {
       this.flush();
     }
-    if (bytes.byteLength > this._buf.byteLength) {
-      writeAllSync(this._file!, bytes);
+    if (bytes.byteLength > this[bufSymbol].byteLength) {
+      writeAllSync(this[fileSymbol]!, bytes);
     } else {
-      this._buf.set(bytes, this._pointer);
-      this._pointer += bytes.byteLength;
+      this[bufSymbol].set(bytes, this[pointerSymbol]);
+      this[pointerSymbol] += bytes.byteLength;
     }
   }
 
   flush() {
-    if (this._pointer > 0 && this._file) {
+    if (this[pointerSymbol] > 0 && this[fileSymbol]) {
       let written = 0;
-      while (written < this._pointer) {
-        written += this._file.writeSync(
-          this._buf.subarray(written, this._pointer),
+      while (written < this[pointerSymbol]) {
+        written += this[fileSymbol].writeSync(
+          this[bufSymbol].subarray(written, this[pointerSymbol]),
         );
       }
       this.#resetBuffer();
@@ -104,13 +116,13 @@ export class FileHandler extends Handler {
   }
 
   #resetBuffer() {
-    this._pointer = 0;
+    this[pointerSymbol] = 0;
   }
 
   override destroy() {
     this.flush();
-    this._file?.close();
-    this._file = undefined;
+    this[fileSymbol]?.close();
+    this[fileSymbol] = undefined;
     removeEventListener("unload", this.#unloadCallback);
   }
 }

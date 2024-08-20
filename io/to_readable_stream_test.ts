@@ -13,7 +13,7 @@ class MockReaderCloser implements Reader, Closer {
 
   read(p: Uint8Array): Promise<number | null> {
     if (this.closeCall) {
-      throw new Error("already closed");
+      throw new Error("Already closed");
     }
     if (p.length === 0) {
       return Promise.resolve(0);
