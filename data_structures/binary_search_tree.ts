@@ -107,7 +107,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
       throw new TypeError(
-        "The 'compare' parameter must be a function, did you mean to call BinarySearchTree.from?",
+        "Cannot construct a BinarySearchTree: the 'compare' parameter is not a function, did you mean to call BinarySearchTree.from?",
       );
     }
     this.#compare = compare;

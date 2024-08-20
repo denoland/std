@@ -109,7 +109,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
       throw new TypeError(
-        "The 'compare' parameter must be a function, did you mean to call RedBlackTree.from?",
+        "Cannot construct a RedBlackTree: the 'compare' parameter is not a function, did you mean to call RedBlackTree.from?,
       );
     }
     super(compare);

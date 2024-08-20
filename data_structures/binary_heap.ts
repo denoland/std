@@ -71,7 +71,7 @@ export class BinaryHeap<T> implements Iterable<T> {
   constructor(compare: (a: T, b: T) => number = descend) {
     if (typeof compare !== "function") {
       throw new TypeError(
-        "The 'compare' parameter must be a function, did you mean to use BinaryHeap.from?",
+        "Cannot construct a BinaryHeap: the 'compare' parameter is not a function, did you mean to call BinaryHeap.from?",
       );
     }
     this.#compare = compare;
