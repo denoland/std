@@ -584,7 +584,7 @@ export class DumperState {
     array: unknown[],
     { level }: { level: number },
   ): string {
-    let _result = "";
+    let result = "";
     for (let index = 0; index < array.length; index += 1) {
       // Write only valid elements.
       const string = this.stringifyNode(array[index], {
@@ -594,18 +594,18 @@ export class DumperState {
         isKey: false,
       });
       if (string === null) continue;
-      if (index !== 0) _result += `,${!this.condenseFlow ? " " : ""}`;
-      _result += string;
+      if (index !== 0) result += `,${!this.condenseFlow ? " " : ""}`;
+      result += string;
     }
 
-    return `[${_result}]`;
+    return `[${result}]`;
   }
 
   stringifyBlockSequence(
     array: unknown[],
     { level, compact }: { level: number; compact: boolean },
   ): string {
-    let _result = "";
+    let result = "";
 
     for (let index = 0; index < array.length; index += 1) {
       // Write only valid elements.
@@ -617,27 +617,27 @@ export class DumperState {
       });
       if (string !== null) {
         if (!compact || index !== 0) {
-          _result += generateNextLine(this.indent, level);
+          result += generateNextLine(this.indent, level);
         }
 
         if (string && LINE_FEED === string.charCodeAt(0)) {
-          _result += "-";
+          result += "-";
         } else {
-          _result += "- ";
+          result += "- ";
         }
 
-        _result += string;
+        result += string;
       }
     }
 
-    return _result || "[]"; // Empty sequence if no valid values.
+    return result || "[]"; // Empty sequence if no valid values.
   }
 
   stringifyFlowMapping(
     object: Record<string, unknown>,
     { level }: { level: number },
   ): string {
-    let _result = "";
+    let result = "";
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -679,10 +679,10 @@ export class DumperState {
       pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    return `{${_result}}`;
+    return `{${result}}`;
   }
 
   stringifyBlockMapping(
@@ -694,7 +694,7 @@ export class DumperState {
     },
   ): string {
     const objectKeyList = Object.keys(object);
-    let _result = "";
+    let result = "";
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
@@ -765,10 +765,10 @@ export class DumperState {
       pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    return _result || "{}"; // Empty mapping if no valid pairs.
+    return result || "{}"; // Empty mapping if no valid pairs.
   }
 
   detectType(
