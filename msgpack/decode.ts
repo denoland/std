@@ -205,7 +205,9 @@ function decodeSlice(
     case 0xc7: // ext 8 - small extension type
     case 0xc8: // ext 16 - medium extension type
     case 0xc9: // ext 32 - large extension type
-      throw new Error("Cannot decode a slice: Large extension type 'ext' not implemented yet");
+      throw new Error(
+        "Cannot decode a slice: Large extension type 'ext' not implemented yet",
+      );
     case 0xca: { // float 32
       if (pointer.consumed + 3 >= uint8.length) {
         throw new EvalError(

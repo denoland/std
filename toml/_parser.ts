@@ -156,7 +156,9 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
   value: Record<string, unknown>;
 }) {
   if (table.key.length === 0 || table.key[0] == null) {
-    throw new Error("Cannot parse the TOML: key length is not a positive number"));
+    throw new Error(
+      "Cannot parse the TOML: key length is not a positive number",
+    );
   }
   const value = target[table.key[0]];
 

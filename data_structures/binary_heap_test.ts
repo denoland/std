@@ -8,7 +8,7 @@ Deno.test("BinaryHeap throws if compare is not a function", () => {
   assertThrows(
     () => new BinaryHeap({} as (a: number, b: number) => number),
     TypeError,
-    "The 'compare' parameter must be a function",
+    "Cannot construct a BinaryHeap: the 'compare' parameter is not a function, did you mean to call BinaryHeap.from?",
   );
 });
 

@@ -1217,14 +1217,14 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-invalid-whitespace1.toml"));
       },
       Error,
-      "Contains invalid whitespace at position '0': `\\u3000`",
+      "Parse error on line 1, column 0: Cannot parse the TOML: It contains invalid whitespace at position '0': `\\u3000`",
     );
     assertThrows(
       () => {
         parseFile(path.join(testdataDir, "error-invalid-whitespace2.toml"));
       },
       Error,
-      "Contains invalid whitespace at position '3': `\\u3000`",
+      "Parse error on line 1, column 3: Cannot parse the TOML: It contains invalid whitespace at position '3': `\\u3000`",
     );
   },
 });
