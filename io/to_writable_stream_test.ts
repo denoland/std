@@ -10,7 +10,7 @@ class MockWriterCloser implements Writer, Closer {
 
   write(p: Uint8Array): Promise<number> {
     if (this.closeCall) {
-      throw new Error("already closed");
+      throw new Error("Already closed");
     }
     if (p.length) {
       this.chunks.push(p);
