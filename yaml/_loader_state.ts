@@ -168,8 +168,8 @@ export class LoaderState {
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = schema.compiledImplicit;
-    this.typeMap = schema.compiledTypeMap;
+    this.implicitTypes = schema.implicitTypes;
+    this.typeMap = schema.typeMap;
     this.length = input.length;
     this.version = null;
 

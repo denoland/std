@@ -480,7 +480,6 @@ export class DumperState {
   condenseFlow: boolean;
   implicitTypes: Type<"scalar">[];
   explicitTypes: Type<KindType>[];
-  tag: string | null = null;
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: ArrayObject<StyleVariant>;
@@ -509,8 +508,8 @@ export class DumperState {
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.explicitTypes = this.schema.compiledExplicit;
+    this.implicitTypes = this.schema.implicitTypes;
+    this.explicitTypes = this.schema.explicitTypes;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
@@ -519,7 +518,7 @@ export class DumperState {
   //    • No ending newline => unaffected; already using strip "-" chomping.
   //    • Ending newline    => removed then restored.
   //  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-  stringifyScalar(
+  writeScalar(
     string: string,
     level: number,
     isKey: boolean,
@@ -582,12 +581,11 @@ export class DumperState {
     }
   }
 
-  stringifyFlowSequence(array: unknown[], level: number) {
+  writeFlowSequence(object: unknown[], level: number) {
     let _result = "";
-    const _tag = this.tag;
-    for (let index = 0; index < array.length; index += 1) {
+    for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(array[index], level, {
+      const string = this.writeNode(level, object[index], {
         block: false,
         compact: false,
         isKey: false,
@@ -597,42 +595,39 @@ export class DumperState {
       _result += string;
     }
 
-    this.tag = _tag;
     return `[${_result}]`;
   }
 
-  stringifyBlockSequence(array: unknown[], level: number, compact: boolean) {
+  writeBlockSequence(object: unknown[], level: number, compact: boolean) {
     let _result = "";
-    const _tag = this.tag;
 
-    for (let index = 0; index < array.length; index += 1) {
+    for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(array[index], level + 1, {
+      const string = this.writeNode(level + 1, object[index], {
         block: true,
         compact: true,
         isKey: false,
       });
-      if (string === null) continue;
-      if (!compact || index !== 0) {
-        _result += generateNextLine(this.indent, level);
-      }
+      if (string !== null) {
+        if (!compact || index !== 0) {
+          _result += generateNextLine(this.indent, level);
+        }
 
-      if (LINE_FEED === string.charCodeAt(0)) {
-        _result += "-";
-      } else {
-        _result += "- ";
-      }
+        if (string && LINE_FEED === string.charCodeAt(0)) {
+          _result += "-";
+        } else {
+          _result += "- ";
+        }
 
-      _result += string;
+        _result += string;
+      }
     }
 
-    this.tag = _tag;
     return _result || "[]"; // Empty sequence if no valid values.
   }
 
-  stringifyFlowMapping(object: Record<string, unknown>, level: number) {
+  writeFlowMapping(object: Record<string, unknown>, level: number) {
     let _result = "";
-    const _tag = this.tag;
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -642,40 +637,48 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(objectKey, level, {
+      const keyString = this.writeNode(level, objectKey, {
         block: false,
         compact: false,
         isKey: false,
       });
-      if (keyString === null) continue; // Skip this pair because of invalid key;
+      if (
+        keyString === null
+      ) {
+        continue; // Skip this pair because of invalid key;
+      }
+
       if (keyString.length > 1024) pairBuffer += "? ";
 
       pairBuffer += `${keyString}${this.condenseFlow ? '"' : ""}:${
         this.condenseFlow ? "" : " "
       }`;
 
-      const valueString = this.stringifyNode(objectValue, level, {
+      const valueString = this.writeNode(level, objectValue, {
         block: false,
         compact: false,
         isKey: false,
       });
-      if (valueString === null) continue; // Skip this pair because of invalid value.
+
+      if (valueString === null) {
+        continue; // Skip this pair because of invalid value.
+      }
+
       pairBuffer += valueString;
 
       // Both key and value are valid.
       _result += pairBuffer;
     }
 
-    this.tag = _tag;
     return `{${_result}}`;
   }
 
-  stringifyBlockMapping(
+  writeBlockMapping(
     object: Record<string, unknown>,
+    tag: string | null,
     level: number,
     compact: boolean,
   ) {
-    const _tag = this.tag;
     const objectKeyList = Object.keys(object);
     let _result = "";
 
@@ -700,17 +703,20 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(objectKey, level + 1, {
+      const keyString = this.writeNode(level + 1, objectKey, {
         block: true,
         compact: true,
         isKey: true,
       });
-      if (keyString === null) continue; // Skip this pair because of invalid key.
-      const explicitPair = (this.tag !== null && this.tag !== "?") ||
+      if (keyString === null) {
+        continue; // Skip this pair because of invalid key.
+      }
+
+      const explicitPair = (tag !== null && tag !== "?") ||
         (keyString.length > 1024);
 
       if (explicitPair) {
-        if (LINE_FEED === keyString.charCodeAt(0)) {
+        if (keyString && LINE_FEED === keyString.charCodeAt(0)) {
           pairBuffer += "?";
         } else {
           pairBuffer += "? ";
@@ -723,12 +729,17 @@ export class DumperState {
         pairBuffer += generateNextLine(this.indent, level);
       }
 
-      const valueString = this.stringifyNode(objectValue, level + 1, {
+      const valueString = this.writeNode(level + 1, objectValue, {
         block: true,
         compact: explicitPair,
         isKey: false,
       });
-      if (valueString === null) continue; // Skip this pair because of invalid value.
+      if (
+        valueString === null
+      ) {
+        continue; // Skip this pair because of invalid value.
+      }
+
       if (valueString && LINE_FEED === valueString.charCodeAt(0)) {
         pairBuffer += ":";
       } else {
@@ -741,117 +752,130 @@ export class DumperState {
       _result += pairBuffer;
     }
 
-    this.tag = _tag;
     return _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(object: unknown, explicit: boolean) {
+  detectType(
+    object: unknown,
+    explicit: boolean,
+  ): { tag: string; object: unknown } | null {
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
+    let tag = null;
     for (const type of typeList) {
       if (type.predicate?.(object)) {
-        this.tag = explicit ? type.tag : "?";
+        tag = explicit ? type.tag : "?";
 
         if (type.represent) {
           const style = this.styleMap[type.tag]! || type.defaultStyle;
 
           if (typeof type.represent === "function") {
-            return type.represent(object, style);
+            object = type.represent(object, style);
+            return { tag, object };
           }
           if (Object.hasOwn(type.represent, style)) {
-            return type.represent[style]!(object, style);
+            object = type.represent[style]!(object, style);
+            return { tag, object };
           }
           throw new TypeError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`,
           );
         }
 
-        return object;
+        return { tag, object };
       }
     }
+    return null;
   }
 
-  // Serializes `object`
-  // Returns string on success, or null on invalid value.
-  stringifyNode(
-    value: unknown,
+  // Serializes `object` and writes it to global `result`.
+  // Returns true on success, or false on invalid object.
+  writeNode(
     level: number,
+    object: unknown,
     { block, compact, isKey }: {
       block: boolean;
       compact: boolean;
       isKey: boolean;
     },
   ): string | null {
-    this.tag = null;
-
-    value = this.detectType(value, false) ?? this.detectType(value, true) ??
-      value;
+    const result = this.detectType(object, false) ??
+      this.detectType(object, true) ?? { tag: null, object };
+    const tag = result.tag;
+    object = result.object;
 
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    const objectOrArray = isObject(value) ||
-      Array.isArray(value);
+    const objectOrArray = isObject(object) ||
+      Array.isArray(object);
 
     let duplicateIndex = -1;
     let duplicate = false;
     if (objectOrArray) {
-      duplicateIndex = this.duplicates.indexOf(value);
+      duplicateIndex = this.duplicates.indexOf(object);
       duplicate = duplicateIndex !== -1;
     }
 
     if (
-      (this.tag !== null && this.tag !== "?") ||
+      (tag !== null && tag !== "?") ||
       duplicate ||
       (this.indent !== 2 && level > 0)
     ) {
       compact = false;
     }
 
-    if (duplicate && this.usedDuplicates.has(value)) {
+    if (duplicate && this.usedDuplicates.has(object)) {
       return `*ref_${duplicateIndex}`;
     } else {
       if (objectOrArray && duplicate) {
-        this.usedDuplicates.add(value);
+        this.usedDuplicates.add(object);
       }
-      if (isObject(value) && !Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, level, compact);
-          if (duplicate) value = `&ref_${duplicateIndex}${value}`;
-          if (this.tag == null || this.tag === "?") return value as string;
-          return `!<${this.tag}> ${value}`;
+      if (isObject(object) && !Array.isArray(object)) {
+        if (block && Object.keys(object).length !== 0) {
+          object = this.writeBlockMapping(object, tag, level, compact);
+          if (duplicate) {
+            object = `&ref_${duplicateIndex}${object}`;
+          }
+        } else {
+          object = this.writeFlowMapping(object, level);
+          if (duplicate) {
+            object = `&ref_${duplicateIndex} ${object}`;
+          }
         }
-        value = this.stringifyFlowMapping(value, level);
-        if (duplicate) value = `&ref_${duplicateIndex} ${value}`;
-        if (this.tag == null || this.tag === "?") return value as string;
-        return `!<${this.tag}> ${value}`;
-      }
-      if (Array.isArray(value)) {
+      } else if (Array.isArray(object)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-        if (block && value.length !== 0) {
-          value = this.stringifyBlockSequence(value, arrayLevel, compact);
-          if (duplicate) value = `&ref_${duplicateIndex}${value}`;
-          if (this.tag == null || this.tag === "?") return value as string;
-          return `!<${this.tag}> ${value}`;
+        if (block && object.length !== 0) {
+          object = this.writeBlockSequence(object, arrayLevel, compact);
+          if (duplicate) {
+            object = `&ref_${duplicateIndex}${object}`;
+          }
+        } else {
+          object = this.writeFlowSequence(object, arrayLevel);
+          if (duplicate) {
+            object = `&ref_${duplicateIndex} ${object}`;
+          }
         }
-        value = this.stringifyFlowSequence(value, arrayLevel);
-        if (duplicate) value = `&ref_${duplicateIndex} ${value}`;
-        if (this.tag == null || this.tag === "?") return value as string;
-        return `!<${this.tag}> ${value}`;
-      }
-      if (typeof value === "string") {
-        if (this.tag !== "?") {
-          value = this.stringifyScalar(value, level, isKey);
+      } else if (typeof object === "string") {
+        if (tag !== "?") {
+          object = this.writeScalar(object, level, isKey);
         }
-        if (this.tag == null || this.tag === "?") return value as string;
-        return value = `!<${this.tag}> ${value}`;
+      } else {
+        if (this.skipInvalid) return null;
+        throw new TypeError(
+          `unacceptable kind of an object to dump ${
+            getObjectTypeString(object)
+          }`,
+        );
       }
-      if (this.skipInvalid) return null;
-      throw new TypeError(
-        `unacceptable kind of an object to dump ${getObjectTypeString(value)}`,
-      );
+
+      if (tag !== null && tag !== "?") {
+        object = `!<${tag}> ${object}`;
+      }
     }
+
+    return object as string;
   }
 
   getDuplicateReferences(object: unknown) {
@@ -867,11 +891,14 @@ export class DumperState {
   stringify(data: unknown): string {
     if (this.useAnchors) this.getDuplicateReferences(data);
 
-    const string = this.stringifyNode(data, 0, {
+    const string = this.writeNode(0, data, {
       block: true,
       compact: true,
       isKey: false,
     });
-    return string === null ? "" : `${string}\n`;
+    if (string !== null) {
+      return `${string}\n`;
+    }
+    return "";
   }
 }

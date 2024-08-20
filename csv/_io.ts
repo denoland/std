@@ -226,7 +226,7 @@ export function createQuoteErrorMessage(
 }
 
 export function convertRowToObject(
-  row: string[],
+  row: readonly string[],
   headers: readonly string[],
   zeroBasedLine: number,
 ) {
