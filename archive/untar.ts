@@ -136,6 +136,27 @@ export interface TarEntry extends TarMetaWithLinkName {}
  * > **UNSTABLE**: New API, yet to be vetted.
  *
  * @experimental
+ *
+ * @example Usage
+ * ```ts no-assert
+ * import { TarEntry } from "@std/archive/untar";
+ * import { Buffer } from "@std/io/buffer";
+ *
+ * const content = new TextEncoder().encode("hello tar world!");
+ * const reader = new Buffer(content);
+ * const tarMeta = {
+ *   fileName: "archive/",
+ *   fileSize: 0,
+ *   fileMode: 509,
+ *   mtime: 1591800767,
+ *   uid: 1001,
+ *   gid: 1001,
+ *   owner: "deno",
+ *   group: "deno",
+ *   type: "directory",
+ * };
+ * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
+ * ```
  */
 export class TarEntry implements Reader {
   #reader: Reader | (Reader & Deno.Seeker);
@@ -168,6 +189,30 @@ export class TarEntry implements Reader {
    * Returns whether the entry has already been consumed.
    *
    * @returns Whether the entry has already been consumed.
+   *
+   * @example Usage
+   * ```ts
+   * import { TarEntry } from "@std/archive/untar";
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const content = new TextEncoder().encode("hello tar world!");
+   * const reader = new Buffer(content);
+   * const tarMeta = {
+   *   fileName: "archive/",
+   *   fileSize: 0,
+   *   fileMode: 509,
+   *   mtime: 1591800767,
+   *   uid: 1001,
+   *   gid: 1001,
+   *   owner: "deno",
+   *   group: "deno",
+   *   type: "directory",
+   * };
+   * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
+   *
+   * assertEquals(tarEntry.consumed, false);
+   * ```
    */
   get consumed(): boolean {
     return this.#consumed;
@@ -187,31 +232,24 @@ export class TarEntry implements Reader {
    *
    * @example Usage
    * ```ts
-   * import { Buffer } from "@std/io/buffer";
-   * import { TarEntry } from "@std/archive/untar";
+   * import { Tar, Untar } from "@std/archive";
    * import { assertEquals } from "@std/assert/equals";
+   * import { Buffer } from "@std/io/buffer";
    *
-   * const text = "Hello, world!";
+   * const content = new TextEncoder().encode("hello tar world!");
    *
-   * const reader = new Buffer(new TextEncoder().encode(text));
-   * const tarMeta = {
-   *   fileName: "text",
-   *   fileSize: 0,
-   *   fileMode: 509,
-   *   mtime: 1591800767,
-   *   uid: 1001,
-   *   gid: 1001,
-   *   owner: "deno",
-   *   group: "deno",
-   *   type: "file",
-   * };
+   * const tar = new Tar();
+   * tar.append("test.txt", {
+   *   reader: new Buffer(content),
+   *   contentSize: content.byteLength,
+   * });
    *
-   * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
-   * const p = new Uint8Array(1024);
-   * const n = await tarEntry.read(p);
-   * const result = new TextDecoder().decode(p.subarray(0, n));
+   * const untar = new Untar(tar.getReader());
+   * const entry = await untar.extract();
+   * const buffer = new Uint8Array(1024);
+   * const n = await entry!.read(buffer);
    *
-   * assertEquals(result, text);
+   * assertEquals(buffer.subarray(0, n!), content);
    * ```
    */
   async read(p: Uint8Array): Promise<number | null> {
@@ -245,7 +283,36 @@ export class TarEntry implements Reader {
     return offset < 0 ? n - Math.abs(offset) : offset;
   }
 
-  /** Discords the current entry. */
+  /**
+   * Discords the current entry.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { TarEntry } from "@std/archive/untar";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const text = "Hello, world!";
+   *
+   * const reader = new Buffer(new TextEncoder().encode(text));
+   * const tarMeta = {
+   *   fileName: "text",
+   *   fileSize: 0,
+   *   fileMode: 509,
+   *   mtime: 1591800767,
+   *   uid: 1001,
+   *   gid: 1001,
+   *   owner: "deno",
+   *   group: "deno",
+   *   type: "file",
+   * };
+   *
+   * const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
+   * await tarEntry.discard();
+   *
+   * assertEquals(tarEntry.consumed, true);
+   * ```
+   */
   async discard() {
     // Discard current entry
     if (this.#consumed) return;
@@ -429,7 +496,7 @@ export class Untar {
    * // read data from a tar archive
    * const untar = new Untar(tar.getReader());
    * const result = await untar.extract();
-   * const untarText = new TextDecoder("utf-8").decode(await readAll(result));
+   * const untarText = new TextDecoder().decode(await readAll(result));
    * ```
    */
   async extract(): Promise<TarEntry | null> {
