@@ -460,7 +460,9 @@ export class Tar {
       readers.push(new Buffer(headerArr));
       if (!reader) {
         if (filePath === undefined) {
-          throw new TypeError("Cannot get the reader for the tar archive: FilePath is not defined");
+          throw new TypeError(
+            "Cannot get the reader for the tar archive: FilePath is not defined",
+          );
         }
         reader = new FileReader(filePath);
       }
@@ -468,7 +470,9 @@ export class Tar {
 
       // to the nearest multiple of recordSize
       if (tarData.fileSize === undefined) {
-        throw new TypeError("Cannot get the reader for the tar archive: FileSize is not  defined");
+        throw new TypeError(
+          "Cannot get the reader for the tar archive: FileSize is not  defined",
+        );
       }
       readers.push(
         new Buffer(

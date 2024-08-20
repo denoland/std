@@ -430,7 +430,9 @@ export class Untar {
     const magic = decoder.decode(header.ustar);
 
     if (magic.indexOf("ustar")) {
-      throw new Error(`Cannot validate the header as it has unsupported archive format: ${magic}`);
+      throw new Error(
+        `Cannot validate the header as it has unsupported archive format: ${magic}`,
+      );
     }
 
     return header;

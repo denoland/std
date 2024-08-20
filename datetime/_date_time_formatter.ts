@@ -490,7 +490,9 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`);
+          throw Error(
+            `Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`,
+          );
       }
 
       if (!value) {

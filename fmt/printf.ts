@@ -897,7 +897,7 @@ class Printf {
       }
       default:
         throw new Error(
-          `Cannot format hex, only number and string are supported for hex formatting: ${typeof val} is given`
+          `Cannot format hex, only number and string are supported for hex formatting: ${typeof val} is given`,
         );
     }
   }
