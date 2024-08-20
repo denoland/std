@@ -110,6 +110,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  * @example Usage
  * ```ts no-assert
  * import { TarEntry } from "@std/archive/untar";
+ * import { Buffer } from "@std/io/buffer";
  *
  * const content = new TextEncoder().encode("hello tar world!");
  * const reader = new Buffer(content);
@@ -479,24 +480,30 @@ export class Untar {
    * or null if there are no more entries to extract.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts
    * import { Tar, Untar } from "@std/archive";
+   * import { Buffer } from "@std/io/buffer";
+   * import { readAll } from "@std/io/read-all";
+   * import { assertEquals, assertNotEquals } from "@std/assert";
    *
-   * const fileName = "output.txt";
-   * const text = "hello tar world!";
+   * const content = new TextEncoder().encode("hello tar world!");
    *
-   * // create a tar archive
+   * // Create a tar archive
    * const tar = new Tar();
-   * const content = new TextEncoder().encode(text);
-   * await tar.append(fileName, {
+   * await tar.append("output.txt", {
    *   reader: new Buffer(content),
    *   contentSize: content.byteLength,
    * });
    *
-   * // read data from a tar archive
+   * // Read data from a tar archive
    * const untar = new Untar(tar.getReader());
    * const result = await untar.extract();
-   * const untarText = new TextDecoder().decode(await readAll(result));
+   *
+   * assertNotEquals(result, null);
+   * assertEquals(result!.fileName, "output.txt");
+   * assertEquals(result!.fileSize, content.byteLength);
+   * assertEquals(result!.type, "file");
+   * assertEquals(await readAll(result!), content);
    * ```
    */
   async extract(): Promise<TarEntry | null> {
