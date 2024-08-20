@@ -3,11 +3,14 @@
 import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import * as path from "@std/path";
+import { assertSpyCall, spy } from "@std/testing/mock";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("parse()", () => {
+  using consoleWarnSpy = spy(console, "warn");
+
   const testDotenv = Deno.readTextFileSync(
     path.join(testdataDir, "./.env.test"),
   );
@@ -140,6 +143,12 @@ Deno.test("parse()", () => {
     "export is ignored",
     "export at the start of the key is ignored",
   );
+
+  assertSpyCall(consoleWarnSpy, 0, {
+    args: [
+      'Ignored the key "1INVALID" as it is not a valid identifier: The key need to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.',
+    ],
+  });
 });
 
 Deno.test("parse() ignores comments", () => {
