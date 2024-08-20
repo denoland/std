@@ -9,4 +9,6 @@ commands:
   - util:noop              # call this function if no changes are required
 ---
 
-Given the limits provided, retrieve messages then retrieve topic, consider messages and topic, consider if there is a topic change.  If there is, call topic update with the new topic, otherwise call noop to exit with no changes.
+Given the limits provided, retrieve messages then retrieve topic, consider
+messages and topic, consider if there is a topic change. If there is, call topic
+update with the new topic, otherwise call noop to exit with no changes.

@@ -26,6 +26,7 @@ filesystem:
 Ensure that the number of customers returned is identical to the state
 
 **Prompts:**
+
 ```markdown
 list all customers
 ```

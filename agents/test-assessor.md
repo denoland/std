@@ -4,7 +4,7 @@ config:
   tool_choice: required
 commands:
   - files:read
-  - synth:assessment
+  - test-case-runner:assessment
 ---
 
 You are an expert assessor of test results.

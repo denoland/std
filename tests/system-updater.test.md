@@ -42,7 +42,6 @@ We should be able to pull into any branch we might like to.
 **Prompts**
 
 ```md
-
 ```
 
 ## Pull from a parent branch into a child
@@ -53,7 +52,8 @@ If the repo we are in has no equivalent on github then we should see an error
 **Prompts**
 
 ```md
-Init a new repo named `this-repo/does-not-exist4345`, then pull the latest updates from github for it.
+Init a new repo named `this-repo/does-not-exist4345`, then pull the latest
+updates from github for it.
 ```
 
 **Expectations**
@@ -73,7 +73,8 @@ need to be able to operate on it remotely
 **Prompts**
 
 ```md
-Check the latest head commit and then pull the latest updates for `dreamcatcher-tech/test`
+Check the latest head commit and then pull the latest updates for
+`dreamcatcher-tech/test`
 ```
 
 **Expectations**
@@ -91,7 +92,8 @@ so we need to check that is the case first
 **Prompts**
 
 ```md
-Delete the repo `dreamcatcher-tech/test` then clone a new repo from `dreamcatcher-tech/test` using github
+Delete the repo `dreamcatcher-tech/test` then clone a new repo from
+`dreamcatcher-tech/test` using github
 ```
 
 **Expectations**
@@ -112,8 +114,7 @@ do the first thing
 
 ## Step 2
 
-**Before**
-[Step 1](#step-1)
+**Before** [Step 1](#step-1)
 
 **Prompts**
 
@@ -127,8 +128,7 @@ do step 2
 
 ## Final
 
-**Before**
-[Step 2](#step-2)
+**Before** [Step 2](#step-2)
 
 **Expectations**
 
@@ -138,5 +138,4 @@ do step 2
 
 ## Step N
 
-**Invoke**
-[Step 2](#step-2)
+**Invoke** [Step 2](#step-2)

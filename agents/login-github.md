@@ -4,6 +4,9 @@ commands:
   - oauth:authenticate
 ---
 
-Check if we can access the users repositories on github, and if not, walk them thru the authentication loop. NEVER talk back, simply execute the commands and display text ONLY IF ABSOLUTELY NECESSARY
+Check if we can access the users repositories on github, and if not, walk them
+thru the authentication loop. NEVER talk back, simply execute the commands and
+display text ONLY IF ABSOLUTELY NECESSARY
 
-If there was an error, respond starting with 'ERROR' so that calling AI knows there was a problem
+If there was an error, respond starting with 'ERROR' so that calling AI knows
+there was a problem

@@ -7,12 +7,8 @@ IF there is a Primary Key constraint (PK) then you MUST generate a new PK
 starting from 1. For example, if you generate a new COMPANY entity named
 "Trucking", the entity would look like this:
 
-erDiagram
-COMPANY {
-int company_id PK "1"
-string company_name "Trucking"
-string country
-}
+erDiagram COMPANY { int company_id PK "1" string company_name "Trucking" string
+country }
 
 Ask clarifying questions if you need more information to generate an entity.
 
@@ -24,17 +20,11 @@ brief summary as well.
 
 Remember that comments in an erDiagram must be as shown:
 
-erDiagram
-CUSTOMER {
-string customer_name "John Doe"
-}
+erDiagram CUSTOMER { string customer_name "John Doe" }
 
 and NOT using the ":" character like this:
 
-erDiagram
-CUSTOMER {
-string customer_name: "John Doe"
-}
+erDiagram CUSTOMER { string customer_name: "John Doe" }
 
 I will now give you the entity relationship diagram in mermaid format. I want
 you to consider that as a working system. I will then give you updates to the
@@ -169,35 +159,43 @@ efficiency.
 
 ## 2. Customer Agents can only update customer details or create customers.
 
-Reason: Customer Agents interact directly with customers and handle their requests, so they need the ability to update customer information.
+Reason: Customer Agents interact directly with customers and handle their
+requests, so they need the ability to update customer information.
 
 ## 3. Only the Duty Manager can approve permission requests.
 
-Reason: To maintain control over changes that impact the schedule and operations, the Duty Manager should have the final say in permission requests.
+Reason: To maintain control over changes that impact the schedule and
+operations, the Duty Manager should have the final say in permission requests.
 
 ## 4. Drivers can only update the status of pickups.
 
-Reason: Drivers are on the ground and can confirm if a pickup was completed or if there were issues.
+Reason: Drivers are on the ground and can confirm if a pickup was completed or
+if there were issues.
 
 ## 5. Customer Agents can request pickups for customers.
 
-Reason: Part of the Customer Agent's responsibility is to manage and schedule pickups based on customer requests.
+Reason: Part of the Customer Agent's responsibility is to manage and schedule
+pickups based on customer requests.
 
 ## 6. Only the Duty Manager can log issues related to schedules and routes.
 
-Reason: Issues with schedules and routes can have significant impacts, so logging these should be controlled and managed centrally by the Duty Manager.
+Reason: Issues with schedules and routes can have significant impacts, so
+logging these should be controlled and managed centrally by the Duty Manager.
 
 ## 7. Customer Agents can view but not modify schedules.
 
-Reason: Customer Agents need to see the schedules to inform customers but should not be able to alter them to maintain operational integrity.
+Reason: Customer Agents need to see the schedules to inform customers but should
+not be able to alter them to maintain operational integrity.
 
 ## 8. Only the Duty Manager can add or remove trucks and drivers from the system.
 
-Reason: Adding or removing trucks and drivers affects the overall capacity and logistics, needing oversight from the Duty Manager.
+Reason: Adding or removing trucks and drivers affects the overall capacity and
+logistics, needing oversight from the Duty Manager.
 
 ## 9. Customer Agents can log customer interaction notes.
 
-Reason: It is important for Customer Agents to document their interactions with customers for future reference and for maintaining service quality.
+Reason: It is important for Customer Agents to document their interactions with
+customers for future reference and for maintaining service quality.
 
 ## 10. Only the Duty Manager can clear logs.
 
@@ -226,37 +224,44 @@ and reviews. Clearing them should be controlled.
 
 1. CUSTOMER_AGENT
 
-- Description: Individuals who manage customer interactions and requests. They are responsible for updating customer details and scheduling pickups.
+- Description: Individuals who manage customer interactions and requests. They
+  are responsible for updating customer details and scheduling pickups.
 - Attributes: agent_id (PK), name, age, address.
 
 2. COMPANY
 
-- Description: The organization that operates the recycling service, managing various departments and employees.
+- Description: The organization that operates the recycling service, managing
+  various departments and employees.
 - Attributes: company_id (PK), company_name, country.
 
 3. CUSTOMER
 
-- Description: Individuals or entities that use the recycling services provided by the company.
+- Description: Individuals or entities that use the recycling services provided
+  by the company.
 - Attributes: customer_id (PK), customer_name, start_date, end_date.
 
 4. LOCATION
 
-- Description: Physical places where pickups occur. Locations are associated with routes.
+- Description: Physical places where pickups occur. Locations are associated
+  with routes.
 - Attributes: location_id (PK), address, route, details.
 
 5. DEPARTMENT
 
-- Description: Various divisions within the company that manage different aspects of the recycling operations.
+- Description: Various divisions within the company that manage different
+  aspects of the recycling operations.
 - Attributes: department_id (PK), department_name.
 
 6. ROUTE
 
-- Description: Defined paths that trucks follow to make pickups at various locations. Routes are linked to schedules.
+- Description: Defined paths that trucks follow to make pickups at various
+  locations. Routes are linked to schedules.
 - Attributes: route_id (PK), day.
 
 7. DRIVER
 
-- Description: Employees responsible for driving the trucks and completing the pickups.
+- Description: Employees responsible for driving the trucks and completing the
+  pickups.
 - Attributes: driver_id (PK), name, license_number.
 
 8. TRUCK
@@ -271,29 +276,34 @@ and reviews. Clearing them should be controlled.
 
 10. SCHEDULE
 
-- Description: A timetable that specifies which truck and driver will execute a route on a particular date.
+- Description: A timetable that specifies which truck and driver will execute a
+  route on a particular date.
 - Attributes: schedule_id (PK), date.
 
 11. PERMISSION
 
-- Description: Authorizations required to perform certain actions, especially those restricted to the Duty Manager.
+- Description: Authorizations required to perform certain actions, especially
+  those restricted to the Duty Manager.
 - Attributes: permission_id (PK), status, details.
 
 13. DUTY_MANAGER
 
-- Description: A senior role responsible for overseeing operations, making key decisions, and managing permissions.
+- Description: A senior role responsible for overseeing operations, making key
+  decisions, and managing permissions.
 - Attributes: manager_id (PK), name.
 
 14. MESSAGE
 
-- Description: Communications sent from the Duty Manager to Customer Agents, informing them about permission decisions or other important notices.
+- Description: Communications sent from the Duty Manager to Customer Agents,
+  informing them about permission decisions or other important notices.
 - Attributes: message_id (PK), content, sent_date.
 
 ## Relationships
 
 1. CUSTOMER_AGENT "works_at" COMPANY
 
-- Description: Indicates employment where a Customer Agent works for the Company.
+- Description: Indicates employment where a Customer Agent works for the
+  Company.
 - Cardinality: ||--||
 
 2. CUSTOMER_AGENT "manages" CUSTOMER
@@ -303,22 +313,26 @@ and reviews. Clearing them should be controlled.
 
 3. CUSTOMER "creates" CUSTOMER_AGENT
 
-- Description: Customer interactions lead to creation and management activities by Customer Agents.
+- Description: Customer interactions lead to creation and management activities
+  by Customer Agents.
 - Cardinality: }o--|{
 
 4. CUSTOMER "location_is" LOCATION
 
-- Description: Represents the assignment of a location to a customer for pickups.
+- Description: Represents the assignment of a location to a customer for
+  pickups.
 - Cardinality: ||--|{
 
 5. CUSTOMER_AGENT "updates" LOCATION
 
-- Description: Customer Agents have the ability to update location details as needed.
+- Description: Customer Agents have the ability to update location details as
+  needed.
 - Cardinality: ||--o{
 
 6. CUSTOMER_AGENT "belongs_to" DEPARTMENT
 
-- Description: Each Customer Agent is associated with a specific department in the company.
+- Description: Each Customer Agent is associated with a specific department in
+  the company.
 - Cardinality: ||--||
 
 7. ROUTE "visits" LOCATION
@@ -373,7 +387,8 @@ and reviews. Clearing them should be controlled.
 
 25. DUTY_MANAGER "sends" MESSAGE
 
-- Description: The Duty Manager sends messages to inform Customer Agents about decisions.
+- Description: The Duty Manager sends messages to inform Customer Agents about
+  decisions.
 - Cardinality: ||--||
 
 ---
