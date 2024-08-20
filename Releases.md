@@ -1,3 +1,91 @@
+### 2024.08.16
+
+#### @std/cache 0.1.0 (minor)
+
+- feat(cache/unstable): add `memoize()` and `LruCache` (#4725)
+- fix(cache/unstable): fix flaky `memoize()` test with `FakeTime` (#5664)
+- chore(cache): add `@experimental` JSDoc tag to public symbols (#5666)
+
+#### @std/datetime 0.225.0 (minor)
+
+- BREAKING(datetime): replace `utc` with `timeZone` option (#5647)
+- fix(datetime): handle am / pm variants (#5406)
+- refactor(datetime): cleanup `DateTimeFormatter` and `parse()` function (#5649)
+
+#### @std/encoding 1.0.2 (patch)
+
+- feat(encoding/unstable): `decodeBase32Hex()` and `encodeBase32Hex()` (#4931)
+- test(encoding): cleanup base32 tests (#5665)
+
+#### @std/front-matter 1.0.2 (patch)
+
+- refactor(front-matter): remove `Extractor` type (#5659)
+
+#### @std/http 1.0.3 (patch)
+
+- refactor(http): use `methods` module in `file-server` module (#5668)
+
+#### @std/io 0.224.5 (patch)
+
+- docs(io): document `std/io` (#5656)
+- refactor(io): cleanup `BufferFullError` and `PartialReadError` logic (#5657)
+
+#### @std/streams 1.0.2 (patch)
+
+- feat(streams/unstable): `toLines()` (#5121)
+
+#### @std/text 1.0.3 (patch)
+
+- feat(text/unstable): add `slugify()` function (#5646)
+
+#### @std/uuid 1.0.1 (patch)
+
+- perf(uuid): make `uuidToBytes()` up to 2.5x faster (#5670)
+- perf(uuid): make `bytesToUuid()` up to 100x faster (#5655)
+
+#### @std/yaml 1.0.3 (patch)
+
+- refactor(yaml): remove `result` property (#5684)
+- refactor(yaml): move exports to import file (#5651)
+
+### 2024.08.07
+
+#### @std/http 1.0.2 (patch)
+
+- fix(http/unstable): make `info` parameter optional (#5652)
+
+### 2024.08.07
+
+#### @std/archive 0.225.0 (minor)
+
+- BREAKING(archive): remove `TarEntry.#header` (#5638)
+- fix(archive): make `data` property private in `Tar` (#5645)
+- fix(archive): make `block` and `reader` properties in `Untar` private (#5637)
+- docs(archive): mark public APIs as unstable/experimental (#5639)
+
+#### @std/csv 1.0.1 (patch)
+
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+#### @std/datetime 0.224.5 (patch)
+
+- refactor(datetime): remove `Tokenizer` class (#5622)
+
+#### @std/http 1.0.1 (patch)
+
+- feat(http/unstable): `route` module (#5644)
+- feat(http/unstable): `headers` module (#4317)
+- feat(http/unstable): `methods` module (#4320)
+- fix(http): handle wrong request method correctly (#5643)
+- refactor(http): use `headers` module in `file-server` module (#5642)
+
+#### @std/streams 1.0.1 (patch)
+
+- feat(streams/unstable): `FixedChunkStream` (#4995)
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
 ### 2024.08.05
 
 #### @std/async 1.0.3 (patch)

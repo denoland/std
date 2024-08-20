@@ -53,6 +53,7 @@ import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
 import { HEADER } from "./header.ts";
+import { METHOD } from "./method.ts";
 
 interface EntryInfo {
   mode: string;
@@ -174,6 +175,10 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  if (req.method !== METHOD.Get) {
+    return createStandardResponse(STATUS_CODE.MethodNotAllowed);
+  }
+
   let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
 
   try {
@@ -636,6 +641,10 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
+  if (req.method !== METHOD.Get) {
+    return createStandardResponse(STATUS_CODE.MethodNotAllowed);
+  }
+
   let response: Response;
   try {
     response = await createServeDirResponse(req, opts);

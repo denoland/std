@@ -10,8 +10,8 @@ import type { Reader, Writer } from "./types.ts";
  * an error occurs. It resolves to the number of bytes copied or rejects with
  * the first error encountered while copying.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { copy } from "@std/io/copy";
  *
  * const source = await Deno.open("my_file.txt");

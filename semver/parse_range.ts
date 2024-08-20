@@ -400,17 +400,17 @@ function parseOperatorRanges(string: string): (Comparator | null)[] {
  * ```
  *
  * @throws {TypeError} If the input range is invalid.
- * @param range The range set string
+ * @param value The range set string
  * @returns A valid SemVer range
  */
-export function parseRange(range: string): Range {
-  const result = range
+export function parseRange(value: string): Range {
+  const result = value
     // remove spaces between operators and versions
     .replaceAll(/(?<=<|>|=|~|\^)(\s+)/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
   if (result.some((r) => r.includes(null))) {
-    throw new TypeError(`Invalid range: ${range}`);
+    throw new TypeError(`Invalid range: ${value}`);
   }
   return result as Range;
 }

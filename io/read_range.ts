@@ -6,6 +6,8 @@ import type { Reader, ReaderSync } from "./types.ts";
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 /**
+ * The range of bytes to read from a file or other resource that is readable.
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export interface ByteRange {
@@ -21,7 +23,8 @@ export interface ByteRange {
  * seekable.  The range start and end are inclusive of the bytes within that
  * range.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertEquals } from "@std/assert";
  * import { readRange } from "@std/io/read-range";
  *
@@ -31,6 +34,10 @@ export interface ByteRange {
  * assertEquals(bytes.length, 10);
  * ```
  *
+ * @param r The reader to read from
+ * @param range The range of bytes to read
+ * @returns The bytes read
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function readRange(
@@ -39,7 +46,9 @@ export async function readRange(
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
+  if (length <= 0) {
+    throw new RangeError("Byte range start cannot be larger than end");
+  }
   await r.seek(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
@@ -47,16 +56,16 @@ export async function readRange(
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = await r.read(p);
     if (nread === null) {
-      throw new Error("Unexpected EOF reach while reading a range.");
+      throw new Error("Unexpected EOF reach while reading a range");
     }
     if (nread === 0) {
-      throw new Error("Unexpected read of 0 bytes while reading a range.");
+      throw new Error("Unexpected read of 0 bytes while reading a range");
     }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
     if (length < 0) {
-      throw new Error("Unexpected length remaining after reading range.");
+      throw new Error("Unexpected length remaining after reading range");
     }
   }
   return result;
@@ -67,7 +76,8 @@ export async function readRange(
  * readable and seekable.  The range start and end are inclusive of the bytes
  * within that range.
  *
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { assertEquals } from "@std/assert";
  * import { readRangeSync } from "@std/io/read-range";
  *
@@ -77,6 +87,10 @@ export async function readRange(
  * assertEquals(bytes.length, 10);
  * ```
  *
+ * @param r The reader to read from
+ * @param range The range of bytes to read
+ * @returns The bytes read
+ *
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function readRangeSync(
@@ -85,7 +99,9 @@ export function readRangeSync(
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end
   let length = range.end - range.start + 1;
-  if (length <= 0) throw new RangeError("Invalid byte range was passed.");
+  if (length <= 0) {
+    throw new RangeError("Byte range start cannot be larger than end");
+  }
   r.seekSync(range.start, Deno.SeekMode.Start);
   const result = new Uint8Array(length);
   let off = 0;
@@ -93,16 +109,16 @@ export function readRangeSync(
     const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
     const nread = r.readSync(p);
     if (nread === null) {
-      throw new Error("Unexpected EOF reach while reading a range.");
+      throw new Error("Unexpected EOF reach while reading a range");
     }
     if (nread === 0) {
-      throw new Error("Unexpected read of 0 bytes while reading a range.");
+      throw new Error("Unexpected read of 0 bytes while reading a range");
     }
     copyBytes(p, result, off);
     off += nread;
     length -= nread;
     if (length < 0) {
-      throw new Error("Unexpected length remaining after reading range.");
+      throw new Error("Unexpected length remaining after reading range");
     }
   }
   return result;

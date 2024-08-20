@@ -667,3 +667,14 @@ Oren: Ben-Kiki
 Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
+
+Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
+  assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+  assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
+  assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
+  assertEquals(stringify("No", { compatMode: true }), "'No'\n");
+});
+
+Deno.test("stringify() handles undefined with skipInvalid option", () => {
+  assertEquals(stringify(undefined, { skipInvalid: true }), "");
+});

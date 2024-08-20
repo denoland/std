@@ -58,7 +58,7 @@ const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
 const PATTERN_TAG_URI =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
-interface LoaderStateOptions {
+export interface LoaderStateOptions {
   /** specifies a schema to use. */
   schema?: Schema;
   /** compatibility with JSON.parse behaviour. */
@@ -136,8 +136,7 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
-class LoaderState {
-  schema: Schema;
+export class LoaderState {
   input: string;
   length: number;
   lineIndent = 0;
@@ -149,10 +148,10 @@ class LoaderState {
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
-  version?: string | null;
+  version: string | null;
   checkLineBreaks = false;
-  tagMap: ArrayObject = Object.create(null);
-  anchorMap: ArrayObject = Object.create(null);
+  tagMap = new Map();
+  anchorMap = new Map();
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
@@ -166,13 +165,13 @@ class LoaderState {
       allowDuplicateKeys = false,
     }: LoaderStateOptions,
   ) {
-    this.schema = schema;
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.typeMap = this.schema.compiledTypeMap;
+    this.implicitTypes = schema.implicitTypes;
+    this.typeMap = schema.typeMap;
     this.length = input.length;
+    this.version = null;
 
     this.readIndent();
   }
@@ -221,8 +220,8 @@ class LoaderState {
 
     this.version = null;
     this.checkLineBreaks = false;
-    this.tagMap = Object.create(null);
-    this.anchorMap = Object.create(null);
+    this.tagMap = new Map();
+    this.anchorMap = new Map();
 
     while ((ch = this.peek()) !== 0) {
       skipSeparationSpace(this, true, -1);
@@ -357,7 +356,7 @@ function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
     return state.throwError("unacceptable YAML version of the document");
   }
 
-  state.version = args[0];
+  state.version = args[0] ?? null;
   state.checkLineBreaks = minor < 2;
   if (minor !== 1 && minor !== 2) {
     return state.dispatchWarning("unsupported YAML version of the document");
@@ -377,7 +376,7 @@ function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
     );
   }
 
-  if (Object.hasOwn(state.tagMap, handle)) {
+  if (state.tagMap.has(handle)) {
     return state.throwError(
       `there is a previously declared suffix for "${handle}" tag handle`,
     );
@@ -389,7 +388,7 @@ function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
     );
   }
 
-  state.tagMap[handle] = prefix;
+  state.tagMap.set(handle, prefix);
 }
 
 function captureSegment(
@@ -427,7 +426,7 @@ function mergeMappings(
   state: LoaderState,
   destination: ArrayObject,
   source: ArrayObject,
-  overridableKeys: ArrayObject<boolean>,
+  overridableKeys: Set<string>,
 ) {
   if (!isObject(source)) {
     return state.throwError(
@@ -443,14 +442,14 @@ function mergeMappings(
       enumerable: true,
       configurable: true,
     });
-    overridableKeys[key] = true;
+    overridableKeys.add(key);
   }
 }
 
 function storeMappingPair(
   state: LoaderState,
   result: ArrayObject | null,
-  overridableKeys: ArrayObject<boolean>,
+  overridableKeys: Set<string>,
   keyTag: string | null,
   keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
@@ -508,7 +507,7 @@ function storeMappingPair(
   } else {
     if (
       !state.allowDuplicateKeys &&
-      !Object.hasOwn(overridableKeys, keyNode) &&
+      !overridableKeys.has(keyNode) &&
       Object.hasOwn(result, keyNode)
     ) {
       state.line = startLine || state.line;
@@ -521,7 +520,7 @@ function storeMappingPair(
       enumerable: true,
       configurable: true,
     });
-    delete overridableKeys[keyNode];
+    overridableKeys.delete(keyNode);
   }
 
   return result;
@@ -871,7 +870,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   }
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.next();
@@ -886,7 +885,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let isPair = false;
   let following = 0;
   let line = 0;
-  const overridableKeys: ArrayObject<boolean> = Object.create(null);
+  const overridableKeys = new Set<string>();
   while (ch !== 0) {
     skipSeparationSpace(state, true, nodeIndent);
 
@@ -1135,7 +1134,7 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   const result: unknown[] = [];
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.peek();
@@ -1194,7 +1193,7 @@ function readBlockMapping(
   const tag = state.tag;
   const anchor = state.anchor;
   const result = {};
-  const overridableKeys = Object.create(null);
+  const overridableKeys = new Set<string>();
   let following: number;
   let allowCompact = false;
   let line: number;
@@ -1207,7 +1206,7 @@ function readBlockMapping(
   let ch: number;
 
   if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap[state.anchor] = result;
+    state.anchorMap.set(state.anchor, result);
   }
 
   ch = state.peek();
@@ -1461,8 +1460,8 @@ function readTagProperty(state: LoaderState): boolean {
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (Object.hasOwn(state.tagMap, tagHandle)) {
-    state.tag = state.tagMap[tagHandle] + tagName;
+  } else if (state.tagMap.has(tagHandle)) {
+    state.tag = state.tagMap.get(tagHandle) + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
   } else if (tagHandle === "!!") {
@@ -1516,11 +1515,11 @@ function readAlias(state: LoaderState): boolean {
   }
 
   const alias = state.input.slice(position, state.position);
-  if (!Object.hasOwn(state.anchorMap, alias)) {
+  if (!state.anchorMap.has(alias)) {
     return state.throwError(`unidentified alias "${alias}"`);
   }
 
-  state.result = state.anchorMap[alias];
+  state.result = state.anchorMap.get(alias);
   skipSeparationSpace(state, true, -1);
   return true;
 }
@@ -1628,7 +1627,7 @@ function composeNode(
         }
 
         if (state.anchor !== null) {
-          state.anchorMap[state.anchor] = state.result;
+          state.anchorMap.set(state.anchor, state.result);
         }
       }
     } else if (indentStatus === 0) {
@@ -1657,15 +1656,14 @@ function composeNode(
           state.result = type.construct(state.result);
           state.tag = type.tag;
           if (state.anchor !== null) {
-            state.anchorMap[state.anchor] = state.result;
+            state.anchorMap.set(state.anchor, state.result);
           }
           break;
         }
       }
-    } else if (
-      Object.hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
-    ) {
-      type = state.typeMap[state.kind || "fallback"][state.tag]!;
+    } else if (state.typeMap[state.kind ?? "fallback"].has(state.tag)) {
+      const map = state.typeMap[state.kind ?? "fallback"];
+      type = map.get(state.tag)!;
 
       if (state.result !== null && type.kind !== state.kind) {
         return state.throwError(
@@ -1681,7 +1679,7 @@ function composeNode(
       } else {
         state.result = type.construct(state.result);
         if (state.anchor !== null) {
-          state.anchorMap[state.anchor] = state.result;
+          state.anchorMap.set(state.anchor, state.result);
         }
       }
     } else {
@@ -1690,43 +1688,4 @@ function composeNode(
   }
 
   return state.tag !== null || state.anchor !== null || hasContent;
-}
-
-function sanitizeInput(input: string) {
-  input = String(input);
-
-  if (input.length > 0) {
-    // Add tailing `\n` if not exists
-    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
-
-    // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
-  }
-
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
-
-  return input;
-}
-
-export function loadDocuments(
-  input: string,
-  options: LoaderStateOptions = {},
-): unknown[] {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  return [...state.readDocuments()];
-}
-
-export function load(input: string, options: LoaderStateOptions = {}): unknown {
-  input = sanitizeInput(input);
-  const state = new LoaderState(input, options);
-  const documentGenerator = state.readDocuments();
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new SyntaxError(
-      "expected a single document in the stream, but found more",
-    );
-  }
-  return document ?? null;
 }

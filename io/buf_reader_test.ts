@@ -21,7 +21,7 @@ class OneByteReader implements Reader {
       return Promise.resolve(0);
     }
     if (!(p instanceof Uint8Array)) {
-      throw Error("expected Uint8Array");
+      throw Error("Expected Uint8Array");
     }
     return Promise.resolve(this.r.read(p.subarray(0, 1)));
   }
@@ -35,7 +35,7 @@ class HalfReader implements Reader {
 
   read(p: Uint8Array): Promise<number | null> {
     if (!(p instanceof Uint8Array)) {
-      throw Error("expected Uint8Array");
+      throw Error("Expected Uint8Array");
     }
     const half = Math.floor((p.byteLength + 1) / 2);
     return Promise.resolve(this.r.read(p.subarray(0, half)));
@@ -200,15 +200,12 @@ Deno.test("BufReader.readFull() throws if array length is too big", async functi
   }
   {
     const buf = new Uint8Array(6);
-    try {
-      await bufr.readFull(buf);
-      fail("readFull() should throw PartialReadError");
-    } catch (err) {
-      assert(err instanceof PartialReadError);
-      assert(err.partial instanceof Uint8Array);
-      assertEquals(err.partial.length, 5);
-      assertEquals(dec.decode(buf.subarray(0, 5)), "World");
-    }
+    const error = await assertRejects(
+      () => bufr.readFull(buf),
+      PartialReadError,
+    );
+    assertEquals(error.partial.length, 5);
+    assertEquals(dec.decode(buf.subarray(0, 5)), "World");
   }
 });
 
