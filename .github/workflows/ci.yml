@@ -17,8 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # TODO(iuioiua): Re-enable on next patch release
-          # - v1.x
+          - v1.x
           - canary
         os:
           - ubuntu-latest
