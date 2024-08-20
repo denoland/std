@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { extractAndParse, type Parser } from "./_shared.ts";
-import { parse, ParseOptions } from "@std/yaml/parse";
+import { parse, type ParseOptions } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
 
