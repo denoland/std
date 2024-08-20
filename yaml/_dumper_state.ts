@@ -596,8 +596,7 @@ export class DumperState {
 
   stringifyBlockSequence(
     object: unknown[],
-    level: number,
-    compact: boolean,
+    { level, compact }: { level: number; compact: boolean },
   ): string {
     const whitespace = generateNextLineWhiteSpace(this.indent, level);
     let result = "";
@@ -833,7 +832,10 @@ export class DumperState {
       } else if (Array.isArray(object)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && object.length !== 0) {
-          object = this.stringifyBlockSequence(object, arrayLevel, compact);
+          object = this.stringifyBlockSequence(object, {
+            level: arrayLevel,
+            compact,
+          });
           if (duplicate) {
             object = `&ref_${duplicateIndex}${object}`;
           }
