@@ -581,7 +581,8 @@ export class DumperState {
     let _result = "";
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(level, object[index], {
+      const string = this.stringifyNode(object[index], {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -603,7 +604,8 @@ export class DumperState {
 
     for (let index = 0; index < object.length; index += 1) {
       // Write only valid elements.
-      const string = this.stringifyNode(level + 1, object[index], {
+      const string = this.stringifyNode(object[index], {
+        level: level + 1,
         block: true,
         compact: true,
         isKey: false,
@@ -637,7 +639,8 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(level, objectKey, {
+      const keyString = this.stringifyNode(objectKey, {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -654,7 +657,8 @@ export class DumperState {
         this.condenseFlow ? "" : " "
       }`;
 
-      const valueString = this.stringifyNode(level, objectValue, {
+      const valueString = this.stringifyNode(objectValue, {
+        level,
         block: false,
         compact: false,
         isKey: false,
@@ -703,7 +707,8 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      const keyString = this.stringifyNode(level + 1, objectKey, {
+      const keyString = this.stringifyNode(objectKey, {
+        level: level + 1,
         block: true,
         compact: true,
         isKey: true,
@@ -729,7 +734,8 @@ export class DumperState {
         pairBuffer += generateNextLine(this.indent, level);
       }
 
-      const valueString = this.stringifyNode(level + 1, objectValue, {
+      const valueString = this.stringifyNode(objectValue, {
+        level: level + 1,
         block: true,
         compact: explicitPair,
         isKey: false,
@@ -790,11 +796,15 @@ export class DumperState {
 
   // Serializes `object` and writes it to global `result`.
   // Returns true on success, or false on invalid object.
-  stringifyNode(level: number, object: unknown, { block, compact, isKey }: {
-    block: boolean;
-    compact: boolean;
-    isKey: boolean;
-  }): string | null {
+  stringifyNode(
+    object: unknown,
+    { level, block, compact, isKey }: {
+      level: number;
+      block: boolean;
+      compact: boolean;
+      isKey: boolean;
+    },
+  ): string | null {
     const result = this.detectType(object, false) ??
       this.detectType(object, true) ?? { tag: null, object };
     const tag = result.tag;
@@ -880,7 +890,8 @@ export class DumperState {
   stringify(data: unknown): string {
     if (this.useAnchors) this.getDuplicateReferences(data);
 
-    const string = this.stringifyNode(0, data, {
+    const string = this.stringifyNode(data, {
+      level: 0,
       block: true,
       compact: true,
       isKey: false,
