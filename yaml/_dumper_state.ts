@@ -761,7 +761,7 @@ export class DumperState {
     this.dump = _result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(explicit: boolean) {
+  detectType(explicit: boolean): string | null {
     const object = this.dump;
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
