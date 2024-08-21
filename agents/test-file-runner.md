@@ -1,16 +1,16 @@
 ---
 description: Drone that knows how to run test files and generate tps reports from the results
+
 config:
   tool_choice: required
-  parallel_tool_calls: false
 
 commands:
   - files:read
   - test-case-runner:test
   - utils:resolve
   - utils:reject
-  - utils:upsertTpsReport
-  - utils:addTestCase
+  - tps-report:upsert
+  - tps-report:addCase
 
 
 ---
