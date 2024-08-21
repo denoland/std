@@ -28,7 +28,7 @@ import {
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, StyleVariant, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
 const STYLE_SINGLE = 2;
@@ -89,11 +89,11 @@ function charCodeToHexString(charCode: number): string {
 }
 
 function compileStyleMap(
-  map?: ArrayObject<StyleVariant> | null,
-): ArrayObject<StyleVariant> {
+  map?: Record<string, StyleVariant> | null,
+): Record<string, StyleVariant> {
   if (typeof map === "undefined" || map === null) return {};
 
-  const result: ArrayObject<StyleVariant> = {};
+  const result: Record<string, StyleVariant> = {};
   for (let tag of Object.keys(map)) {
     const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
@@ -429,7 +429,7 @@ export interface DumperStateOptions {
    */
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
-  styles?: ArrayObject<StyleVariant> | null;
+  styles?: Record<string, StyleVariant> | null;
   /** specifies a schema to use. */
   schema?: Schema;
   /**
@@ -477,7 +477,7 @@ export class DumperState {
   explicitTypes: Type<KindType>[];
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
-  styleMap: ArrayObject<StyleVariant>;
+  styleMap: Record<string, StyleVariant>;
 
   constructor({
     schema = DEFAULT_SCHEMA,
