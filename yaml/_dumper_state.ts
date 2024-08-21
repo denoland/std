@@ -93,7 +93,7 @@ function createStyleMap(
 ): Map<string, StyleVariant> {
   const result = new Map();
   for (let tag of Object.keys(map)) {
-    const style = map[tag] as StyleVariant;
+    const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
