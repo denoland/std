@@ -94,7 +94,11 @@ Deno.test("posix.dirname() works with file URLs", () => {
   );
 
   // throws with non-file URLs
-  assertThrows(() => posix.dirname(new URL("https://deno.land/")));
+  assertThrows(
+    () => posix.dirname(new URL("https://deno.land/")),
+    TypeError,
+    "Must be a file URL.",
+  );
 });
 
 Deno.test("windows.dirname()", function () {
@@ -119,5 +123,9 @@ Deno.test("windows.dirname() works with file URLs", () => {
   );
 
   // throws with non-file URLs
-  assertThrows(() => windows.dirname(new URL("https://deno.land/")));
+  assertThrows(
+    () => windows.dirname(new URL("https://deno.land/")),
+    TypeError,
+    "Must be a file URL.",
+  );
 });
