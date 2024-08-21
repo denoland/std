@@ -30,16 +30,14 @@ Before running the tests, upsert a new tps report.
 
 ## Running tests
 
-Tests must be run one test case at a time, starting from the top of the file
-down. To run each test in turn, consider only the text within the test section,
-and do the following:
+First, set up all the test cases by starting from the top of the file down, and
+considering only the text within the test section, add a new test case to the
+tps report
 
-- add a new test case to the tps report
-- extract out each prompt from the Prompts, one at a time, then for each prompt:
-  - call the test-case-runner function with this prompt as the contents, the
-    expectations of the test, the path of the target agent, and the path of the
-    assessor agent. The test case runner will update the tps report
-    automatically upon completion
+Second, for each test case, call the test-case-runner function with the prompts
+as the contents, the expectations of the test, the path of the target agent, and
+the path of the assessor agent. The test case runner will update the tps report
+automatically upon completion
 
 ## The "Markdown Test Format"
 
