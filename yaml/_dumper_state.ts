@@ -599,8 +599,8 @@ export class DumperState {
     { level, compact }: { level: number; compact: boolean },
   ): string {
     const whitespace = generateNextLineWhiteSpace(this.indent, level);
-    let result = "";
-    for (const [index, value] of array.entries()) {
+    const results = [];
+    for (const value of array) {
       const string = this.stringifyNode(value, {
         level: level + 1,
         block: true,
@@ -608,12 +608,12 @@ export class DumperState {
         isKey: false,
       });
       if (string === null) continue;
-      if (!compact || index !== 0) result += whitespace;
-      result += LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
-      result += string;
+      const linePrefix = LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
+      results.push(`${linePrefix}${string}`);
     }
-
-    return result || "[]"; // Empty sequence if no valid values.
+    if (!results.length) return "[]";
+    const prefix = compact ? "" : whitespace;
+    return prefix + results.join(whitespace);
   }
 
   stringifyFlowMapping(
