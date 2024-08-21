@@ -11,6 +11,11 @@ import { decodeBase32, encodeBase32 } from "./base32.ts";
 /**
  * Converts a Uint8Array stream into a base32-encoded stream.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @example Usage
@@ -18,15 +23,13 @@ import { decodeBase32, encodeBase32 } from "./base32.ts";
  * import { assertEquals } from "@std/assert";
  * import { encodeBase32 } from "@std/encoding/base32";
  * import { Base32EncoderStream } from "@std/encoding/base32-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * assertEquals(
- *   (await Array.fromAsync(
- *     (await Deno.open("./deno.json"))
- *       .readable
- *       .pipeThrough(new Base32EncoderStream()),
- *   )).join(""),
- *   encodeBase32(await Deno.readFile("./deno.json")),
- * );
+ * const stream = ReadableStream.from(["Hello,", " world!"])
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeThrough(new Base32EncoderStream());
+ *
+ * assertEquals(await toText(stream), encodeBase32(new TextEncoder().encode("Hello, world!")));
  * ```
  */
 export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
@@ -56,23 +59,24 @@ export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
 /**
  * Decodes a base32-encoded stream into a Uint8Array stream.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base32DecoderStream, Base32EncoderStream } from "@std/encoding/base32-stream";
+ * import { Base32DecoderStream } from "@std/encoding/base32-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * const readable = (await Deno.open("./deno.json"))
- *   .readable
- *   .pipeThrough(new Base32EncoderStream());
+ * const stream = ReadableStream.from(["JBSWY3DPEBLW64TMMQQQ===="])
+ *   .pipeThrough(new Base32DecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
  *
- * assertEquals(
- *   Uint8Array.from((await Array.fromAsync(
- *     readable.pipeThrough(new Base32DecoderStream()),
- *   )).map(x => [...x]).flat()),
- *   await Deno.readFile("./deno.json"),
- * );
+ * assertEquals(await toText(stream), "Hello World!");
  * ```
  */
 export class Base32DecoderStream extends TransformStream<string, Uint8Array> {
