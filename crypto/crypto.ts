@@ -235,7 +235,9 @@ const stdCrypto: StdCrypto = ((x) => x)({
           for await (const chunk of data as AsyncIterable<BufferSource>) {
             const chunkBytes = toUint8Array(chunk);
             if (!chunkBytes) {
-              throw new TypeError("data contained chunk of the wrong type");
+              throw new TypeError(
+                "Cannot digest the data: A chunk is not ArrayBuffer nor ArrayBufferView",
+              );
             }
             context.update(chunkBytes);
           }
@@ -270,7 +272,9 @@ const stdCrypto: StdCrypto = ((x) => x)({
         for (const chunk of data) {
           const chunkBytes = toUint8Array(chunk);
           if (!chunkBytes) {
-            throw new TypeError("data contained chunk of the wrong type");
+            throw new TypeError(
+              "Cannot digest the data: A chunk is not ArrayBuffer nor ArrayBufferView",
+            );
           }
           context.update(chunkBytes);
         }

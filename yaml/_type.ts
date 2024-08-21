@@ -4,8 +4,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import type { ArrayObject } from "./_utils.ts";
-
 export type KindType = "sequence" | "scalar" | "mapping";
 /**
  * The style variation for `styles` option of {@linkcode stringify}
@@ -26,7 +24,7 @@ export interface Type<K extends KindType, D = any> {
   tag: string;
   kind: K;
   predicate?: (data: unknown) => data is D;
-  represent?: RepresentFn<D> | ArrayObject<RepresentFn<D>>;
+  represent?: RepresentFn<D> | Record<string, RepresentFn<D>>;
   defaultStyle?: StyleVariant;
   // deno-lint-ignore no-explicit-any
   resolve: (data: any) => boolean;
