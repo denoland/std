@@ -49,6 +49,8 @@ function trimQuotes(value: string): string {
   return value;
 }
 
+const NON_WHITESPACE_REGEXP = /\S/;
+
 /**
  * Class implementation for fine control of INI data structures.
  */
@@ -315,7 +317,7 @@ export class IniMap<T = any> {
       } else if (isSection(trimmed, lineNumber)) {
         const sec = trimmed.substring(1, trimmed.length - 1);
 
-        if (sec.trim() === "") {
+        if (!NON_WHITESPACE_REGEXP.test(sec)) {
           throw new SyntaxError(
             `Unexpected empty section name at line ${lineNumber}`,
           );

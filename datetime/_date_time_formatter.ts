@@ -397,7 +397,7 @@ export class DateTimeFormatter {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
                 console.error(
-                  `Trying to parse hour greater than 12. Use 'H' instead of 'h'.`,
+                  `Trying to parse hour greater than 12, use 'H' instead of 'h'.`,
                 );
               }
               break;
@@ -406,7 +406,7 @@ export class DateTimeFormatter {
               value = /^\d{2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
                 console.error(
-                  `Trying to parse hour greater than 12. Use 'HH' instead of 'hh'.`,
+                  `Trying to parse hour greater than 12, use 'HH' instead of 'hh'.`,
                 );
               }
               break;
@@ -475,7 +475,7 @@ export class DateTimeFormatter {
               value = "PM";
               break;
             default:
-              throw new Error(`dayPeriod '${value}' is not supported.`);
+              throw new Error(`DayPeriod '${value}' is not supported.`);
           }
           break;
         }
@@ -490,12 +490,14 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`${part.type} ${part.value}`);
+          throw Error(
+            `Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`,
+          );
       }
 
       if (!value) {
         throw Error(
-          `value not valid for part { ${type} ${value} } ${
+          `Cannot format value: The value is not valid for part { ${type} ${value} } ${
             string.slice(
               0,
               25,

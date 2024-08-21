@@ -54,7 +54,7 @@ export function _serializeArgList<Return>(
         }
         // Non-weak keys other than `Symbol.for(...)` are handled by the branches above.
         throw new Error(
-          "Should be unreachable. Please open an issue at https://github.com/denoland/std/issues/new",
+          "Should be unreachable: please open an issue at https://github.com/denoland/std/issues/new",
         );
       }
 
