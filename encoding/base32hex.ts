@@ -7,6 +7,8 @@
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7 | base32hex}
  * encoding and decoding.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * Modified from {@link [base32]}.
  *
  * This module is browser compatible.
@@ -23,8 +25,6 @@
  * );
  * ```
  *
- * @experimental
- *
  * @module
  */
 import { decode, encode } from "./_base32_common.ts";
@@ -35,6 +35,8 @@ lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
 
 /**
  * Decodes a base32hex-encoded string.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
  *
@@ -51,8 +53,6 @@ lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
  *   new TextEncoder().encode("6c60c0"),
  * );
  * ```
- *
- * @experimental
  */
 export function decodeBase32Hex(b32: string): Uint8Array {
   return decode(b32, lookup);
@@ -60,6 +60,8 @@ export function decodeBase32Hex(b32: string): Uint8Array {
 
 /**
  * Converts data into a base32hex-encoded string.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
  *
@@ -73,8 +75,6 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  *
  * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
  * ```
- *
- * @experimental
  */
 export function encodeBase32Hex(
   data: ArrayBuffer | Uint8Array | string,

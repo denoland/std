@@ -18,8 +18,6 @@ import { splitToWords } from "./_util.ts";
  *
  * @param input The string that is going to be converted into CONSTANT_CASE
  * @returns The string as CONSTANT_CASE
- *
- * @experimental
  */
 export function toConstantCase(input: string): string {
   input = input.trim();

@@ -122,7 +122,7 @@ function formatHeader(data: TarData): Uint8Array {
 /**
  * Base interface for {@linkcode TarDataWithSource}.
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarData {
   /** Name of the file, excluding directory names (if any). */
@@ -173,7 +173,7 @@ export interface TarData {
 /**
  * Tar data interface for {@linkcode Tar.data}.
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarDataWithSource extends TarData {
   /**
@@ -241,7 +241,7 @@ export interface TarDataWithSource extends TarData {
  * writer.close();
  * ```
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export class Tar {
   /** Tar data. */
