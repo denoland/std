@@ -4,6 +4,8 @@ import type { MemoizationCache } from "./memoize.ts";
 /**
  * Time-to-live cache.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * Automatically removes entries once the configured amount of time elapses.
  *
  * @typeParam K The type of the cache keys.
@@ -32,6 +34,8 @@ export class TtlCache<K, V> extends Map<K, V>
    * Used for pretty-printing in console logging etc.
    * @returns The name of the class
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts no-assert
    * import { TtlCache } from "@std/cache/ttl-cache";
@@ -44,6 +48,9 @@ export class TtlCache<K, V> extends Map<K, V>
 
   /**
    * Constructs a new instance.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @param defaultTtl The default time-to-live in milliseconds
    */
   constructor(defaultTtl: number) {
@@ -53,6 +60,8 @@ export class TtlCache<K, V> extends Map<K, V>
 
   /**
    * Set a value in the cache.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param key The cache key
    * @param value The value to set
@@ -80,6 +89,8 @@ export class TtlCache<K, V> extends Map<K, V>
   /**
    * Deletes the value associated with the given key.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @param key The key to delete.
    * @returns `true` if the key was deleted, `false` otherwise.
    *
@@ -103,6 +114,8 @@ export class TtlCache<K, V> extends Map<K, V>
 
   /**
    * Clears the cache.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts
@@ -128,6 +141,8 @@ export class TtlCache<K, V> extends Map<K, V>
   /**
    * Automatically clears all remaining timeouts once the cache goes out of
    * scope if the cache is declared with `using`.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts no-assert
