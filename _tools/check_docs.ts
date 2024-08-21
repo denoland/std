@@ -28,6 +28,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
+  "../archive/mod.ts",
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
@@ -165,14 +166,22 @@ function assertHasParamTag(
 }
 
 async function assertSnippetEvals(
-  snippet: string,
-  document: { jsDoc: JsDoc; location: Location },
+  {
+    snippet,
+    document,
+    expectError,
+  }: {
+    snippet: string;
+    document: { jsDoc: JsDoc; location: Location };
+    expectError: boolean;
+  },
 ) {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       "--ext=ts",
       "--unstable-webgpu",
+      "--check",
       "--no-lock",
       snippet,
     ],
@@ -187,11 +196,19 @@ async function assertSnippetEvals(
   try {
     const { success, stderr } = await command.output();
     const error = new TextDecoder().decode(stderr);
-    assert(
-      success,
-      `Failed to execute snippet: \n${snippet}\n${error}`,
-      document,
-    );
+    if (expectError) {
+      assert(
+        !success,
+        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
+        document,
+      );
+    } else {
+      assert(
+        success,
+        `Failed to execute snippet: \n${snippet}\n${error}`,
+        document,
+      );
+    }
   } finally {
     clearTimeout(timeoutId);
   }
@@ -228,7 +245,13 @@ function assertSnippetsWork(
         document,
       );
     }
-    snippetPromises.push(assertSnippetEvals(snippet, document));
+    snippetPromises.push(
+      assertSnippetEvals({
+        snippet,
+        document,
+        expectError: delim?.includes("expect-error") ?? false,
+      }),
+    );
   }
 }
 

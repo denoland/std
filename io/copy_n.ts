@@ -46,7 +46,7 @@ export async function copyN(
         n += await dest.write(buf.slice(n, nread));
       }
       if (n !== nread) {
-        throw new Error("could not write");
+        throw new Error("Could not write");
       }
     }
     if (result === null) {

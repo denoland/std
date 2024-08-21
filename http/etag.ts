@@ -161,6 +161,9 @@ export async function eTag(
   return tag ? weak ? `W/"${tag}"` : `"${tag}"` : undefined;
 }
 
+const STAR_REGEXP = /^\s*\*\s*$/;
+const COMMA_REGEXP = /\s*,\s*/;
+
 /** A helper function that takes the value from the `If-Match` header and a
  * calculated etag for the target. By using strong comparison, return `true` if
  * the values match, otherwise `false`.
@@ -202,10 +205,10 @@ export function ifMatch(
   if (!value || !etag || etag.startsWith("W/")) {
     return false;
   }
-  if (value.trim() === "*") {
+  if (STAR_REGEXP.test(value)) {
     return true;
   }
-  const tags = value.split(/\s*,\s*/);
+  const tags = value.split(COMMA_REGEXP);
   return tags.includes(etag);
 }
 
@@ -249,11 +252,11 @@ export function ifNoneMatch(
   if (!value || !etag) {
     return true;
   }
-  if (value.trim() === "*") {
+  if (STAR_REGEXP.test(value)) {
     return false;
   }
   etag = etag.startsWith("W/") ? etag.slice(2) : etag;
-  const tags = value.split(/\s*,\s*/).map((tag) =>
+  const tags = value.split(COMMA_REGEXP).map((tag) =>
     tag.startsWith("W/") ? tag.slice(2) : tag
   );
   return !tags.includes(etag);
