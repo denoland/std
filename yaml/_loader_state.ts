@@ -67,8 +67,6 @@ export interface LoaderStateOptions {
   onWarning?(error: Error): void;
 }
 
-type ResultType = unknown[] | Record<string, unknown> | string;
-
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
   [0x75, 4], // u
@@ -155,7 +153,7 @@ export class LoaderState {
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
-  result: ResultType | null = "";
+  result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
     input: string,
@@ -858,7 +856,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.peek();
   let terminator: number;
   let isMapping = true;
-  let result: ResultType = {};
+  let result = {};
   if (ch === LEFT_SQUARE_BRACKET) {
     terminator = RIGHT_SQUARE_BRACKET;
     isMapping = false;
@@ -953,7 +951,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
         ),
       );
     } else {
-      (result as ResultType[]).push(keyNode as ResultType);
+      (result as unknown[]).push(keyNode);
     }
 
     skipSeparationSpace(state, true, nodeIndent);
