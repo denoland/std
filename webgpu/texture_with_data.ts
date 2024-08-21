@@ -17,7 +17,11 @@ function textureDimensionArrayLayerCount(
 
 function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
   if (Array.isArray(size)) {
-    if (size[0] === undefined) throw new TypeError("Width must be defined");
+    if (size[0] === undefined) {
+      throw new TypeError(
+        "Cannot normalize Extent3d: width is not defined",
+      );
+    }
     return {
       width: size[0],
       height: size[1],

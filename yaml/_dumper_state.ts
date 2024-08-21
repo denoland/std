@@ -118,13 +118,6 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-function testImplicitResolving(
-  implicitTypes: Type<"scalar">[],
-  str: string,
-): boolean {
-  return implicitTypes.some((type) => type.resolve(str));
-}
-
 // Returns true if the character can be printed without escaping.
 // From YAML 1.2: "any allowed characters known to be non-printable
 // should also be escaped. [However,] This isn’t mandatory"
@@ -208,7 +201,7 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (string: string) => boolean,
+  implicitTypes: Type<"scalar", unknown>[],
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -260,7 +253,9 @@ function chooseScalarStyle(
   if (!hasLineBreak && !hasFoldableLine) {
     // Strings interpretable as another type have to be quoted;
     // e.g. the string 'true' vs. the boolean true.
-    return plain && !testAmbiguousType(string) ? STYLE_PLAIN : STYLE_SINGLE;
+    return plain && !implicitTypes.some((type) => type.resolve(string))
+      ? STYLE_PLAIN
+      : STYLE_SINGLE;
   }
   // Edge case: block indentation indicator can only have one digit.
   if (indentPerLevel > 9 && needIndentIndicator(string)) {
@@ -546,16 +541,14 @@ export class DumperState {
       // No block styles in flow mode.
       (this.flowLevel > -1 && level >= this.flowLevel);
 
-    switch (
-      chooseScalarStyle(
-        string,
-        singleLineOnly,
-        this.indent,
-        lineWidth,
-        (str: string): boolean =>
-          testImplicitResolving(this.implicitTypes, str),
-      )
-    ) {
+    const scalarStyle = chooseScalarStyle(
+      string,
+      singleLineOnly,
+      this.indent,
+      lineWidth,
+      this.implicitTypes,
+    );
+    switch (scalarStyle) {
       case STYLE_PLAIN:
         return string;
       case STYLE_SINGLE:

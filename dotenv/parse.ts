@@ -10,7 +10,9 @@ type LineParseResult = {
 type CharactersMap = { [key: string]: string };
 
 const RE_KEY_VALUE =
-  /^\s*(?:export\s+)?(?<key>[a-zA-Z_]+[a-zA-Z0-9_]*?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
+  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
+
+const RE_VALID_KEY = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 const RE_EXPAND_VALUE =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
@@ -57,6 +59,8 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 /**
  * Parse `.env` file output in an object.
  *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ *
  * @example Usage
  * ```ts
  * import { parse } from "@std/dotenv/parse";
@@ -78,6 +82,13 @@ export function parse(text: string): Record<string, string> {
   while ((match = RE_KEY_VALUE.exec(text)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
+
+    if (!RE_VALID_KEY.test(key)) {
+      console.warn(
+        `Ignored the key "${key}" as it is not a valid identifier: The key need to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.`,
+      );
+      continue;
+    }
 
     if (unquoted) {
       keysForExpandCheck.push(key);
