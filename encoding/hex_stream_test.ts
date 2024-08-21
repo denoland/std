@@ -5,23 +5,7 @@ import { encodeHex } from "./hex.ts";
 import { HexDecoderStream, HexEncoderStream } from "./hex_stream.ts";
 import { toText } from "@std/streams/to-text";
 import { concat } from "@std/bytes/concat";
-
-type Sliceable = {
-  slice(start?: number, end?: number): Sliceable;
-  length: number;
-};
-
-class RandomSliceStream<T extends Sliceable> extends TransformStream<T, T> {
-  constructor() {
-    super({
-      transform(chunk, controller) {
-        const i = Math.floor(Math.random() * chunk.length);
-        controller.enqueue(chunk.slice(0, i) as T);
-        controller.enqueue(chunk.slice(i) as T);
-      },
-    });
-  }
-}
+import { RandomSliceStream } from "./_random_slice_stream.ts";
 
 Deno.test("HexEncoderStream() encodes stream", async () => {
   const stream = (await Deno.open("./deno.lock"))
