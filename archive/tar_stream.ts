@@ -153,7 +153,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
     >({
       transform(chunk, controller) {
         if (chunk.options && !validTarStreamOptions(chunk.options)) {
-          return controller.error("Invalid TarStreamOptions Provided");
+          return controller.error(
+            new Error("Invalid TarStreamOptions Provided"),
+          );
         }
 
         if (
@@ -161,9 +163,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           (chunk.size < 0 || 8 ** 12 < chunk.size ||
             chunk.size.toString() === "NaN")
         ) {
-          return controller.error(
-            "Size cannot exceed 64 Gibs",
-          );
+          return controller.error(new Error("Size cannot exceed 64 Gibs"));
         }
 
         const pathname = parsePathname(chunk.pathname);
@@ -334,14 +334,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   }
 }
 
-/**
- * parsePathname is a function that validates the correctness of the pathname
- * being provided.
- * Function will throw if invalid pathname is provided.
- * The result can be provided instead of the string version to TarStream,
- * or can just be used to check in advance of creating the Tar archive.
- */
-export function parsePathname(
+function parsePathname(
   pathname: string,
 ): [Uint8Array, Uint8Array] {
   const name = new TextEncoder().encode(pathname);
@@ -380,6 +373,39 @@ export function parsePathname(
   }
   return [prefix, name.slice(suitableSlashPos + 1)];
 }
+
+/**
+ * The type that may be returned from the `validPathname` function.
+ */
+export type PathnameResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * validPathname is a function that validates the correctness of a pathname that
+ * may be piped to a `TarStream`. It provides a means to check that a pathname is
+ * valid before pipping it through the `TarStream`, where if invalid will throw an
+ * error. Ruining any progress made when archiving.
+ *
+ * @param pathname The pathname as a string
+ * @return { ok: true } | { ok: false, error: string }
+ *
+ * @example Usage
+ * ```ts
+ * import { validPathname, type PathnameResult } from "@std/archive";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals<PathnameResult>(validPathname('MyFile.txt'), { ok: true });
+ * ```
+ */
+export function validPathname(pathname: string): PathnameResult {
+  try {
+    parsePathname(pathname);
+    return { ok: true };
+  } catch (error) {
+    if (!(error instanceof Error)) throw error;
+    return { ok: false, error: error.message };
+  }
+}
+
 /**
  * validTarStreamOptions is a function that returns a true if all of the options
  * provided are in the correct format, otherwise returns false.

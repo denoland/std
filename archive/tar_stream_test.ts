@@ -1,12 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
-  parsePathname,
   TarStream,
   type TarStreamInput,
   validTarStreamOptions,
 } from "./tar_stream.ts";
-import { assertEquals } from "../assert/mod.ts";
-import { assert } from "../assert/assert.ts";
+import { assert, assertEquals, assertRejects } from "../assert/mod.ts";
+import { UnTarStream } from "./untar_stream.ts";
 
 Deno.test("TarStream() with default stream", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -76,15 +75,11 @@ Deno.test("TarStream() with negative size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  let threw = false;
-  try {
-    await Array.fromAsync(readable);
-  } catch (error) {
-    threw = true;
-    assert(typeof error === "string");
-    assertEquals(error, "Size cannot exceed 64 Gibs");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Size cannot exceed 64 Gibs",
+  );
 });
 
 Deno.test("TarStream() with 65 GiB size", async () => {
@@ -105,15 +100,11 @@ Deno.test("TarStream() with 65 GiB size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  let threw = false;
-  try {
-    await Array.fromAsync(readable);
-  } catch (error) {
-    threw = true;
-    assert(typeof error === "string");
-    assertEquals(error, "Size cannot exceed 64 Gibs");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Size cannot exceed 64 Gibs",
+  );
 });
 
 Deno.test("TarStream() with NaN size", async () => {
@@ -134,55 +125,45 @@ Deno.test("TarStream() with NaN size", async () => {
   ])
     .pipeThrough(new TarStream());
 
-  let threw = false;
-  try {
-    await Array.fromAsync(readable);
-  } catch (error) {
-    threw = true;
-    assert(typeof error === "string");
-    assertEquals(error, "Size cannot exceed 64 Gibs");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Size cannot exceed 64 Gibs",
+  );
 });
 
-Deno.test("parsePathname()", () => {
-  const encoder = new TextEncoder();
+Deno.test("parsePathname()", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      pathname:
+        "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
+    },
+    {
+      pathname:
+        "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
+    },
+    {
+      pathname:
+        "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+    },
+    {
+      pathname:
+        "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UnTarStream());
 
-  assertEquals(
-    parsePathname(
-      "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
-    ),
-    [
-      encoder.encode(
-        "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery",
-      ),
-      encoder.encode("LongPath"),
-    ],
-  );
-
-  assertEquals(
-    parsePathname(
-      "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
-    ),
-    [
-      encoder.encode("./some random path"),
-      encoder.encode(
-        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
-      ),
-    ],
-  );
-
-  assertEquals(
-    parsePathname(
-      "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
-    ),
-    [
-      encoder.encode("./some random path"),
-      encoder.encode(
-        "with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
-      ),
-    ],
-  );
+  const output = [
+    "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
+    "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
+    "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+    "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
+  ];
+  for await (const tarChunk of readable) {
+    assert(tarChunk.type === "header");
+    assertEquals(tarChunk.pathname, output.shift());
+  }
 });
 
 Deno.test("validTarStreamOptions()", () => {
@@ -234,16 +215,11 @@ Deno.test("TarStream() with invalid options", async () => {
     { pathname: "potato", options: { mode: 9 } },
   ]).pipeThrough(new TarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(typeof error === "string");
-    assertEquals(error, "Invalid TarStreamOptions Provided");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Invalid TarStreamOptions Provided",
+  );
 });
 
 Deno.test("TarStream() with mismatching sizes", async () => {
@@ -256,47 +232,35 @@ Deno.test("TarStream() with mismatching sizes", async () => {
     },
   ]).pipeThrough(new TarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(error instanceof RangeError);
-    assertEquals(
-      error.message,
-      "Provided size did not match bytes read from provided readable",
-    );
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    RangeError,
+    "Provided size did not match bytes read from provided readable",
+  );
 });
 
-Deno.test("parsePathname() with too long path", () => {
-  let threw = false;
-  try {
-    parsePathname("0".repeat(300));
-  } catch (error) {
-    threw = true;
-    assert(error instanceof RangeError);
-    assertEquals(
-      error.message,
-      "Pathname cannot exceed 256 bytes",
-    );
-  }
-  assertEquals(threw, true);
+Deno.test("parsePathname() with too long path", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([{
+    pathname: "0".repeat(300),
+  }])
+    .pipeThrough(new TarStream());
+
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    RangeError,
+    "Pathname cannot exceed 256 bytes",
+  );
 });
 
-Deno.test("parsePathname() with too long path", () => {
-  let threw = false;
-  try {
-    parsePathname("0".repeat(160) + "/");
-  } catch (error) {
-    threw = true;
-    assert(error instanceof Error);
-    assertEquals(
-      error.message,
-      "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
-    );
-  }
-  assertEquals(threw, true);
+Deno.test("parsePathname() with too long path", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([{
+    pathname: "0".repeat(160) + "/",
+  }])
+    .pipeThrough(new TarStream());
+
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
+  );
 });

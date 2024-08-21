@@ -2,7 +2,7 @@
 import { concat } from "../bytes/mod.ts";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
 import { UnTarStream } from "./untar_stream.ts";
-import { assert, assertEquals } from "../assert/mod.ts";
+import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -99,16 +99,11 @@ Deno.test("UnTarStream() with invalid size", async () => {
     )
     .pipeThrough(new UnTarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(error instanceof Error);
-    assertEquals(error.message, "Tarball has an unexpected number of bytes");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Tarball has an unexpected number of bytes",
+  );
 });
 
 Deno.test("UnTarStream() with invalid ending", async () => {
@@ -129,35 +124,22 @@ Deno.test("UnTarStream() with invalid ending", async () => {
   const readable = ReadableStream.from([tarBytes])
     .pipeThrough(new UnTarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(error instanceof Error);
-    assertEquals(
-      error.message,
-      "Tarball has invalid ending",
-    );
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Tarball has invalid ending",
+  );
 });
 
 Deno.test("UnTarStream() with too small size", async () => {
   const readable = ReadableStream.from([new Uint8Array(512)])
     .pipeThrough(new UnTarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(error instanceof Error);
-    assertEquals(error.message, "Tarball was too small to be valid");
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Tarball was too small to be valid",
+  );
 });
 
 Deno.test("UnTarStream() with invalid checksum", async () => {
@@ -178,17 +160,9 @@ Deno.test("UnTarStream() with invalid checksum", async () => {
   const readable = ReadableStream.from([tarBytes])
     .pipeThrough(new UnTarStream());
 
-  let threw = false;
-  try {
-    // deno-lint-ignore no-empty
-    for await (const _ of readable) {}
-  } catch (error) {
-    threw = true;
-    assert(error instanceof SyntaxError);
-    assertEquals(
-      error.message,
-      "Tarball header failed to pass checksum",
-    );
-  }
-  assertEquals(threw, true);
+  await assertRejects(
+    () => Array.fromAsync(readable),
+    Error,
+    "Tarball header failed to pass checksum",
+  );
 });
