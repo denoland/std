@@ -11,6 +11,11 @@ import { decodeHex, encodeHex } from "./hex.ts";
 /**
  * Converts a Uint8Array stream into a hex-encoded stream.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
  *
  * @example Usage
@@ -18,15 +23,13 @@ import { decodeHex, encodeHex } from "./hex.ts";
  * import { assertEquals } from "@std/assert";
  * import { encodeHex } from "@std/encoding/hex";
  * import { HexEncoderStream } from "@std/encoding/hex-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * assertEquals(
- *   (await Array.fromAsync(
- *     (await Deno.open("./deno.json"))
- *       .readable
- *       .pipeThrough(new HexEncoderStream()),
- *   )).join(""),
- *   encodeHex(await Deno.readFile("./deno.json")),
- * );
+ * const stream = ReadableStream.from(["Hello,", " world!"])
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeThrough(new HexEncoderStream());
+ *
+ * assertEquals(await toText(stream), encodeHex(new TextEncoder().encode("Hello, world!")));
  * ```
  */
 export class HexEncoderStream extends TransformStream<Uint8Array, string> {
@@ -42,23 +45,24 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
 /**
  * Decodes a hex-encoded stream into a Uint8Array stream.
  *
+ * > [!WARNING]
+ * > **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @experimental
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { HexDecoderStream, HexEncoderStream } from "@std/encoding/hex-stream";
+ * import { HexDecoderStream } from "@std/encoding/hex-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * const readable = (await Deno.open("./deno.json"))
- *   .readable
- *   .pipeThrough(new HexEncoderStream());
+ * const stream = ReadableStream.from(["48656c6c6f2c", "20776f726c6421"])
+ *   .pipeThrough(new HexDecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
  *
- * assertEquals(
- *   Uint8Array.from((await Array.fromAsync(
- *     readable.pipeThrough(new HexDecoderStream()),
- *   )).map(x => [...x]).flat()),
- *   await Deno.readFile("./deno.json"),
- * );
+ * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
 export class HexDecoderStream extends TransformStream<string, Uint8Array> {
