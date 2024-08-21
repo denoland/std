@@ -114,12 +114,5 @@ export function stringify(
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
-
-  // deno-lint-ignore no-explicit-any
-  if (state.useAnchors) state.getDuplicateReferences(data as any);
-
-  if (state.writeNode(0, data, { block: true, compact: true, isKey: false })) {
-    return `${state.dump}\n`;
-  }
-  return "";
+  return state.stringify(data);
 }

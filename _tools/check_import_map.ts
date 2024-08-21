@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import denoJson from "../deno.json" with { type: "json" };
+import denoJson from "../import_map.json" with { type: "json" };
 
 const invalidEntries = [];
 
