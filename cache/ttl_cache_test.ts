@@ -103,8 +103,3 @@ Deno.test("TtlCache deletes entries", async (t) => {
     cache.set(1, "one");
   });
 });
-
-Deno.test("TtlCache string representation from [Symbol.toStringTag]", () => {
-  const cache = new TtlCache<unknown, unknown>(10);
-  assertEquals(String(cache), "[object TtlCache]");
-});

@@ -31,22 +31,6 @@ export class TtlCache<K, V> extends Map<K, V>
   #timeouts = new Map<K, number>();
 
   /**
-   * Used for pretty-printing in console logging etc.
-   * @returns The name of the class
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { TtlCache } from "@std/cache/ttl-cache";
-   * console.log(new TtlCache<string, number>(1000)); // TtlCache
-   * ```
-   */
-  override get [Symbol.toStringTag](): string {
-    return this.constructor.name;
-  }
-
-  /**
    * Constructs a new instance.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
