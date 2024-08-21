@@ -8,7 +8,7 @@ Deno.test("RedBlackTree throws if compare is not a function", () => {
   assertThrows(
     () => new RedBlackTree({} as (a: number, b: number) => number),
     TypeError,
-    "compare must be a function",
+    "Cannot construct a RedBlackTree: the 'compare' parameter is not a function, did you mean to call RedBlackTree.from?",
   );
 });
 
