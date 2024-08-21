@@ -64,7 +64,7 @@
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */

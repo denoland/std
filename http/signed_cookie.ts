@@ -17,7 +17,7 @@ function splitByLast(value: string, separator: string): [string, string] {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval no-assert
@@ -59,7 +59,7 @@ export async function signCookie(
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval no-assert
@@ -104,7 +104,7 @@ export async function verifySignedCookie(
  *
  * Important: always verify the cookie using {@linkcode verifySignedCookie} first.
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval no-assert

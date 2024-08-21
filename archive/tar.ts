@@ -46,7 +46,7 @@ export type { TarInfo, TarMeta };
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarOptions extends TarInfo {
   /**

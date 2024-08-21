@@ -46,7 +46,7 @@ import type { Reader } from "@std/io/types";
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarMetaWithLinkName extends TarMeta {
   /** File name of the symbolic link. */
@@ -58,7 +58,7 @@ export interface TarMetaWithLinkName extends TarMeta {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
@@ -100,7 +100,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarEntry extends TarMetaWithLinkName {}
 
@@ -109,7 +109,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export class TarEntry implements Reader {
   #reader: Reader | (Reader & Deno.Seeker);
@@ -243,7 +243,7 @@ export class TarEntry implements Reader {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export class Untar {
   /** Internal reader. */

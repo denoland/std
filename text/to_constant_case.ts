@@ -8,7 +8,7 @@ import { splitToWords } from "./_util.ts";
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts

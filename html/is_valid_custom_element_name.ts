@@ -22,7 +22,7 @@ const CUSTOM_ELEMENT_NAME_CHARS =
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * The element name must not be any of the following:
  * - `annotation-xml`

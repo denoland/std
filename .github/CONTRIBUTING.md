@@ -181,10 +181,7 @@ the starting description.
 /**
  * <description>
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * ...
  */

@@ -23,7 +23,7 @@ export type Ansi = string & {};
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Color =
   | "black"
@@ -54,7 +54,7 @@ const COLORS: Record<Color, string> = {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface SpinnerOptions {
   /**
@@ -84,6 +84,8 @@ export interface SpinnerOptions {
 /**
  * A spinner that can be used to indicate that something is loading.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
 
  *
  * @example Usage
@@ -98,8 +100,6 @@ export interface SpinnerOptions {
  *  console.log("Finished loading!");
  * }, 3_000);
  * ```
- *
- * @experimental
  */
 export class Spinner {
   #spinner: string[];

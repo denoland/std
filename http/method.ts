@@ -7,7 +7,7 @@
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
  */
@@ -297,6 +297,6 @@ export const METHOD = {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Method = typeof METHOD[keyof typeof METHOD];

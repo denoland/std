@@ -8,7 +8,7 @@ import type { Reader } from "@std/io/types";
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarInfo {
   /**
@@ -48,7 +48,7 @@ export interface TarInfo {
  *
 
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarMeta extends TarInfo {
   /**
