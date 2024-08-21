@@ -21,7 +21,7 @@ import { isAbsolute } from "./is_absolute.ts";
  */
 export function toFileUrl(path: string): URL {
   if (!isAbsolute(path)) {
-    throw new TypeError(`Path must be absolute, path value "${path}"`);
+    throw new TypeError(`Path must be absolute: received "${path}"`);
   }
   const [, hostname, pathname] = path.match(
     /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,

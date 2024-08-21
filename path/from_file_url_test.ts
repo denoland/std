@@ -17,12 +17,12 @@ Deno.test("posix.fromFileUrl()", function () {
   assertThrows(
     () => posix.fromFileUrl("http://localhost/foo"),
     TypeError,
-    "Must be a file URL",
+    'URL must be a file URL: received "http:"',
   );
   assertThrows(
     () => posix.fromFileUrl("abcd://localhost/foo"),
     TypeError,
-    "Must be a file URL",
+    'URL must be a file URL: received "abcd:"',
   );
 });
 
@@ -49,11 +49,11 @@ Deno.test("windows.fromFileUrl()", function () {
   assertThrows(
     () => windows.fromFileUrl("http://localhost/foo"),
     TypeError,
-    "Must be a file URL",
+    'URL must be a file URL: received "http:"',
   );
   assertThrows(
     () => windows.fromFileUrl("abcd://localhost/foo"),
     TypeError,
-    "Must be a file URL",
+    'URL must be a file URL: received "abcd:"',
   );
 });

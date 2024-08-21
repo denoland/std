@@ -12,12 +12,12 @@ Deno.test("posix.toFileUrl()", function () {
   assertThrows(
     () => posix.toFileUrl("foo").href,
     TypeError,
-    'Path must be absolute, path value "foo"',
+    'Path must be absolute: received "foo"',
   );
   assertThrows(
     () => posix.toFileUrl("C:/"),
     TypeError,
-    'Path must be absolute, path value "C:/"',
+    'Path must be absolute: received "C:/"',
   );
   assertEquals(
     posix.toFileUrl("//localhost/home/foo").href,
@@ -35,7 +35,7 @@ Deno.test("windows.toFileUrl()", function () {
   assertThrows(
     () => windows.toFileUrl("foo").href,
     TypeError,
-    'Path must be absolute, path value "foo"',
+    'Path must be absolute: received "foo"',
   );
   assertEquals(windows.toFileUrl("C:/").href, "file:///C:/");
   assertEquals(

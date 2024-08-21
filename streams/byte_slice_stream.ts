@@ -49,7 +49,7 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
       start: () => {
         if (start < 0) {
           throw new RangeError(
-            "Invalid argument: `start` must not be negative",
+            `'start' must be >= 0: received ${start}`,
           );
         }
         end += 1;
