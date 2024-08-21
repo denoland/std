@@ -4,6 +4,8 @@
  * Parses and loads environment variables from a `.env` file into the current
  * process, or stringify data into a `.env` file format.
  *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ *
  * ```ts no-eval
  * // Automatically load environment variables from a `.env` file
  * import "@std/dotenv/load";
@@ -83,6 +85,8 @@ export function loadSync(
  *
  * Inspired by the node modules {@linkcode https://github.com/motdotla/dotenv | dotenv}
  * and {@linkcode https://github.com/motdotla/dotenv-expand | dotenv-expand}.
+ *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
  *
  * ## Basic usage
  * ```sh
