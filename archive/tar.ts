@@ -471,7 +471,7 @@ export class Tar {
       // to the nearest multiple of recordSize
       if (tarData.fileSize === undefined) {
         throw new TypeError(
-          "Cannot get the reader for the tar archive: FileSize is not  defined",
+          "Cannot get the reader for the tar archive: FileSize is not defined",
         );
       }
       readers.push(
