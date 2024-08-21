@@ -19,7 +19,7 @@ function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
   if (Array.isArray(size)) {
     if (size[0] === undefined) {
       throw new TypeError(
-        "Cannot normalize Extend3d: size[0] specifies the width and it must be defined",
+        "Cannot normalize Extent3d: width is not defined",
       );
     }
     return {
