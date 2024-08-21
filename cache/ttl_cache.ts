@@ -29,7 +29,7 @@ export class TtlCache<K, V> extends Map<K, V>
   #timeouts = new Map<K, number>();
 
   /**
-   * Construct a new `TtlCache`.
+   * Constructs a new instance.
    * @param defaultTtl The default time-to-live in milliseconds
    */
   constructor(defaultTtl: number) {
