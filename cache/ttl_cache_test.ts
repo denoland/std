@@ -5,28 +5,38 @@ import { FakeTime } from "@std/testing/time";
 
 const UNSET = Symbol("UNSET");
 
-function assertEntries<K extends unknown, V extends unknown>(
+// check `has()`, `get()`, `forEach()`
+function assertEntries<K, V>(
   cache: TtlCache<K, V>,
   entries: [key: K, value: V | typeof UNSET][],
 ) {
-  const filteredEntries = entries.filter(([, value]) => value !== UNSET);
-  const filteredKeys = filteredEntries.map(([key]) => key);
-  const filteredValues = filteredEntries.map(([, value]) => value);
-
-  assertEquals(cache.size, filteredEntries.length);
-
-  assertEquals([...cache.entries()], filteredEntries);
-  assertEquals([...cache.keys()], filteredKeys);
-  assertEquals([...cache.values()], filteredValues);
-
   for (const [key, value] of entries) {
     assertEquals(cache.has(key), value !== UNSET);
     assertEquals(cache.get(key), value === UNSET ? undefined : value);
   }
+
+  cache.forEach((v, k) => assertEquals(v, entries.find(([x]) => x === k)![1]));
+  assertContentfulEntries(cache, entries.filter(([, v]) => v !== UNSET));
 }
 
-Deno.test("TtlCache deletes entries after they expire", async (t) => {
-  await t.step("default TTL (passed in constructor)", () => {
+// check `size`, `entries()`, `keys()`, `values()`, `[Symbol.iterator]()`
+function assertContentfulEntries<K, V>(
+  cache: TtlCache<K, V>,
+  entries: [key: K, value: V][],
+) {
+  const keys = entries.map(([key]) => key);
+  const values = entries.map(([, value]) => value);
+
+  assertEquals(cache.size, entries.length);
+
+  assertEquals([...cache.entries()], entries);
+  assertEquals([...cache.keys()], keys);
+  assertEquals([...cache.values()], values);
+  assertEquals([...cache], entries);
+}
+
+Deno.test("TtlCache deletes entries", async (t) => {
+  await t.step("after the default TTL, passed in constructor", () => {
     using time = new FakeTime(0);
 
     const cache = new TtlCache<number, string>(10);
@@ -49,7 +59,7 @@ Deno.test("TtlCache deletes entries after they expire", async (t) => {
     assertEntries(cache, [[1, UNSET], [2, UNSET]]);
   });
 
-  await t.step("custom TTL (passed in `set`)", () => {
+  await t.step("after a custom TTL, passed in set()", () => {
     using time = new FakeTime(0);
 
     const cache = new TtlCache<number, string>(10);
@@ -65,5 +75,31 @@ Deno.test("TtlCache deletes entries after they expire", async (t) => {
 
     time.now = 10;
     assertEntries(cache, [[1, UNSET], [2, UNSET]]);
+  });
+
+  await t.step("after manually calling delete()", () => {
+    const cache = new TtlCache<number, string>(10);
+
+    cache.set(1, "one");
+    assertEntries(cache, [[1, "one"]]);
+    assertEquals(cache.delete(1), true);
+    assertEntries(cache, [[1, UNSET]]);
+    assertEquals(cache.delete(1), false);
+    assertEntries(cache, [[1, UNSET]]);
+  });
+
+  await t.step("after manually calling clear()", () => {
+    const cache = new TtlCache<number, string>(10);
+
+    cache.set(1, "one");
+    assertEntries(cache, [[1, "one"]]);
+    cache.clear();
+    assertEntries(cache, [[1, UNSET]]);
+  });
+
+  // this test will fail with `error: Leaks detected` if the timeouts are not cleared
+  await t.step("[Symbol.dispose]() clears all remaining timeouts", () => {
+    using cache = new TtlCache<number, string>(10);
+    cache.set(1, "one");
   });
 });
