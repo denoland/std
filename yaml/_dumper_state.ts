@@ -114,7 +114,7 @@ function indentString(string: string, spaces: number): string {
     .join("\n");
 }
 
-function generateNextLineWhiteSpace(indent: number, level: number): string {
+function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
@@ -598,7 +598,7 @@ export class DumperState {
     array: unknown[],
     { level, compact }: { level: number; compact: boolean },
   ): string {
-    const whitespace = generateNextLineWhiteSpace(this.indent, level);
+    const whitespace = generateNextLine(this.indent, level);
     const results = [];
     for (const value of array) {
       const string = this.stringifyNode(value, {
@@ -695,7 +695,7 @@ export class DumperState {
       let pairBuffer = "";
 
       if (!compact || index !== 0) {
-        pairBuffer += generateNextLineWhiteSpace(this.indent, level);
+        pairBuffer += generateNextLine(this.indent, level);
       }
 
       const objectValue = object[objectKey];
@@ -724,7 +724,7 @@ export class DumperState {
       pairBuffer += keyString;
 
       if (explicitPair) {
-        pairBuffer += generateNextLineWhiteSpace(this.indent, level);
+        pairBuffer += generateNextLine(this.indent, level);
       }
 
       const valueString = this.stringifyNode(objectValue, {
