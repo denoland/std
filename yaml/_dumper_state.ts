@@ -6,6 +6,7 @@
 import {
   AMPERSAND,
   ASTERISK,
+  BOM,
   COLON,
   COMMA,
   COMMERCIAL_AT,
@@ -126,7 +127,7 @@ function isPrintable(c: number): boolean {
   return (
     (0x00020 <= c && c <= 0x00007e) ||
     (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
-    (0x0e000 <= c && c <= 0x00fffd && c !== 0xfeff) /* BOM */ ||
+    (0x0e000 <= c && c <= 0x00fffd && c !== BOM) ||
     (0x10000 <= c && c <= 0x10ffff)
   );
 }
@@ -137,7 +138,7 @@ function isPlainSafe(c: number): boolean {
   // where nb-char ::= c-printable - b-char - c-byte-order-mark.
   return (
     isPrintable(c) &&
-    c !== 0xfeff &&
+    c !== BOM &&
     // - c-flow-indicator
     c !== COMMA &&
     c !== LEFT_SQUARE_BRACKET &&
@@ -156,7 +157,7 @@ function isPlainSafeFirst(c: number): boolean {
   // where ns-char = nb-char - s-white.
   return (
     isPrintable(c) &&
-    c !== 0xfeff &&
+    c !== BOM &&
     !isWhiteSpace(c) && // - s-white
     // - (c-indicator ::=
     // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
