@@ -28,7 +28,7 @@ import {
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, StyleVariant, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
 const STYLE_SINGLE = 2;
@@ -88,20 +88,17 @@ function charCodeToHexString(charCode: number): string {
   );
 }
 
-function compileStyleMap(
-  map?: ArrayObject<StyleVariant> | null,
-): ArrayObject<StyleVariant> {
-  if (typeof map === "undefined" || map === null) return {};
-
-  const result: ArrayObject<StyleVariant> = {};
+function createStyleMap(
+  map: Record<string, StyleVariant>,
+): Map<string, StyleVariant> {
+  const result = new Map();
   for (let tag of Object.keys(map)) {
-    const style = String(map[tag]) as StyleVariant;
+    const style = map[tag] as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    result[tag] = style;
+    result.set(tag, style);
   }
-
   return result;
 }
 
@@ -429,7 +426,7 @@ export interface DumperStateOptions {
    */
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
-  styles?: ArrayObject<StyleVariant> | null;
+  styles?: Record<string, StyleVariant>;
   /** specifies a schema to use. */
   schema?: Schema;
   /**
@@ -477,7 +474,7 @@ export class DumperState {
   explicitTypes: Type<KindType>[];
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
-  styleMap: ArrayObject<StyleVariant>;
+  styleMap: Map<string, StyleVariant> = new Map();
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -497,7 +494,7 @@ export class DumperState {
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(styles);
+    if (styles) this.styleMap = createStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
     this.useAnchors = useAnchors;
@@ -776,7 +773,8 @@ export class DumperState {
         tag = explicit ? type.tag : "?";
 
         if (type.represent) {
-          const style = this.styleMap[type.tag]! || type.defaultStyle;
+          const style = this.styleMap.get(type.tag) ||
+            type.defaultStyle as StyleVariant;
 
           if (typeof type.represent === "function") {
             value = type.represent(value, style);
