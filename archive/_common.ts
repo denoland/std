@@ -6,8 +6,6 @@ import type { Reader } from "@std/io/types";
 /**
  * Base interface for {@linkcode TarMeta}.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarInfo {
@@ -45,8 +43,6 @@ export interface TarInfo {
 
 /**
  * Base interface for {@linkcode TarMetaWithLinkName}.
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */

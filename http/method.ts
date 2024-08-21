@@ -5,8 +5,6 @@
 /**
  * HTTP Methods derived from IANA Hypertext Transfer Protocol (HTTP) Method Registry
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
@@ -294,8 +292,6 @@ export const METHOD = {
 
 /**
  * A HTTP Method
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */

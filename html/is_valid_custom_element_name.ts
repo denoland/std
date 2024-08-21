@@ -20,8 +20,6 @@ const CUSTOM_ELEMENT_NAME_CHARS =
  * requirements defined in
  * {@link https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name}.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * The element name must not be any of the following:

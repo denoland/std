@@ -3,8 +3,6 @@
 /**
  * Request handler for {@linkcode Route}.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * Extends {@linkcode Deno.ServeHandlerInfo} by adding adding a `params` argument.
@@ -21,8 +19,6 @@ export type Handler = (
 
 /**
  * Route configuration for {@linkcode route}.
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -45,8 +41,6 @@ export interface Route {
 
 /**
  * Routes requests to different handlers based on the request path and method.
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *

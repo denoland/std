@@ -56,8 +56,6 @@ export interface TarMetaWithLinkName extends TarMeta {
 /**
  * Tar header with raw, unprocessed bytes as values.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarHeader = {
@@ -366,8 +364,6 @@ export class TarEntry implements Reader {
  *   await copy(entry, file);
  * }
  * ```
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */

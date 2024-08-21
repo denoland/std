@@ -21,8 +21,6 @@ export type Ansi = string & {};
 /**
  * Color options for {@linkcode SpinnerOptions.color}.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Color =
@@ -51,8 +49,6 @@ const COLORS: Record<Color, string> = {
 
 /**
  * Options for {@linkcode Spinner}.
- *
-
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -85,8 +81,6 @@ export interface SpinnerOptions {
  * A spinner that can be used to indicate that something is loading.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
-
  *
  * @example Usage
  * ```ts no-eval

@@ -44,8 +44,6 @@ export type { TarInfo, TarMeta };
 /**
  * Options for {@linkcode Tar.append}.
  *
-
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarOptions extends TarInfo {
@@ -124,8 +122,6 @@ function formatHeader(data: TarData): Uint8Array {
 /**
  * Base interface for {@linkcode TarDataWithSource}.
  *
-
- *
  * @experimental
  */
 export interface TarData {
@@ -176,8 +172,6 @@ export interface TarData {
 
 /**
  * Tar data interface for {@linkcode Tar.data}.
- *
-
  *
  * @experimental
  */
@@ -246,8 +240,6 @@ export interface TarDataWithSource extends TarData {
  * await copy(tar.getReader(), writer);
  * writer.close();
  * ```
- *
-
  *
  * @experimental
  */
