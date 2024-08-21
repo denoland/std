@@ -26,6 +26,7 @@ import type { MemoizationCache } from "./memoize.ts";
 export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
+  #timeouts = new Map<K, number>();
 
   /**
    * Construct a new `TtlCache`.
@@ -35,8 +36,6 @@ export class TtlCache<K, V> extends Map<K, V>
     super();
     this.#defaultTtl = defaultTtl;
   }
-
-  #abortControllers = new Map<K, AbortController>();
 
   /**
    * Set a value in the cache.
@@ -58,18 +57,15 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override set(key: K, value: V, ttl: number = this.#defaultTtl): this {
+    clearTimeout(this.#timeouts.get(key));
     super.set(key, value);
 
-    this.#abortControllers.get(key)?.abort();
-    const ac = new AbortController();
-    this.#abortControllers.set(key, ac);
-
-    setTimeout(() => {
-      if (!ac.signal.aborted) {
-        super.delete(key);
-        this.#abortControllers.delete(key);
-      }
+    const timeout = setTimeout(() => {
+      super.delete(key);
+      this.#timeouts.delete(key);
     }, ttl);
+
+    this.#timeouts.set(key, timeout);
 
     return this;
   }

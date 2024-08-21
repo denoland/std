@@ -26,7 +26,7 @@ function assertEntries<K extends unknown, V extends unknown>(
 }
 
 Deno.test("TtlCache deletes entries after they expire", async (t) => {
-  await t.step("default TTL (passed in constructor)", async () => {
+  await t.step("default TTL (passed in constructor)", () => {
     using time = new FakeTime(0);
 
     const cache = new TtlCache<number, string>(10);
@@ -34,22 +34,22 @@ Deno.test("TtlCache deletes entries after they expire", async (t) => {
     cache.set(1, "one");
     cache.set(2, "two");
 
+    time.now = 1;
     assertEntries(cache, [[1, "one"], [2, "two"]]);
 
-    await time.tickAsync(5);
-
+    time.now = 5;
+    assertEntries(cache, [[1, "one"], [2, "two"]]);
+    // setting again resets TTL countdown for key 1
     cache.set(1, "one");
 
-    await time.tickAsync(5);
-
+    time.now = 10;
     assertEntries(cache, [[1, "one"], [2, UNSET]]);
 
-    await time.tickAsync(8);
-
+    time.now = 15;
     assertEntries(cache, [[1, UNSET], [2, UNSET]]);
   });
 
-  await t.step("custom TTL (passed in `set`)", async () => {
+  await t.step("custom TTL (passed in `set`)", () => {
     using time = new FakeTime(0);
 
     const cache = new TtlCache<number, string>(10);
@@ -57,14 +57,13 @@ Deno.test("TtlCache deletes entries after they expire", async (t) => {
     cache.set(1, "one");
     cache.set(2, "two", 3);
 
+    time.now = 1;
     assertEntries(cache, [[1, "one"], [2, "two"]]);
 
-    await time.tickAsync(5);
-
+    time.now = 3;
     assertEntries(cache, [[1, "one"], [2, UNSET]]);
 
-    await time.tickAsync(5);
-
+    time.now = 10;
     assertEntries(cache, [[1, UNSET], [2, UNSET]]);
   });
 });
