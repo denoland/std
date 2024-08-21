@@ -210,6 +210,33 @@ export class LoaderState {
     this.onWarning?.(error);
   }
 
+  yamlDirectiveHandler(...args: string[]) {
+    if (this.version !== null) {
+      return this.throwError("duplication of %YAML directive");
+    }
+
+    if (args.length !== 1) {
+      return this.throwError("YAML directive accepts exactly one argument");
+    }
+
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+    if (match === null) {
+      return this.throwError("ill-formed argument of the YAML directive");
+    }
+
+    const major = parseInt(match[1]!, 10);
+    const minor = parseInt(match[2]!, 10);
+    if (major !== 1) {
+      return this.throwError("unacceptable YAML version of the document");
+    }
+
+    this.version = args[0] ?? null;
+    this.checkLineBreaks = minor < 2;
+    if (minor !== 1 && minor !== 2) {
+      return this.dispatchWarning("unsupported YAML version of the document");
+    }
+  }
+
   readDocument() {
     const documentStart = this.position;
     let position: number;
@@ -276,7 +303,7 @@ export class LoaderState {
 
       switch (directiveName) {
         case "YAML":
-          yamlDirectiveHandler(this, ...directiveArgs);
+          this.yamlDirectiveHandler(...directiveArgs);
           break;
         case "TAG":
           tagDirectiveHandler(this, ...directiveArgs);
@@ -336,32 +363,6 @@ export class LoaderState {
   }
 }
 
-function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (state.version !== null) {
-    return state.throwError("duplication of %YAML directive");
-  }
-
-  if (args.length !== 1) {
-    return state.throwError("YAML directive accepts exactly one argument");
-  }
-
-  const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
-  if (match === null) {
-    return state.throwError("ill-formed argument of the YAML directive");
-  }
-
-  const major = parseInt(match[1]!, 10);
-  const minor = parseInt(match[2]!, 10);
-  if (major !== 1) {
-    return state.throwError("unacceptable YAML version of the document");
-  }
-
-  state.version = args[0] ?? null;
-  state.checkLineBreaks = minor < 2;
-  if (minor !== 1 && minor !== 2) {
-    return state.dispatchWarning("unsupported YAML version of the document");
-  }
-}
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (args.length !== 2) {
     return state.throwError("TAG directive accepts exactly two arguments");
