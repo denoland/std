@@ -30,6 +30,7 @@ import * as stateboard from './stateboard.ts'
 import * as testCaseRunner from './test-case-runner.ts'
 import * as testController from './test-controller.ts'
 import * as testRegistry from './test-registry.ts'
+import * as tpsReport from './tps-report.ts'
 
 const isolatesExport = {
   system,
@@ -64,6 +65,7 @@ const isolatesExport = {
   'test-case-runner': testCaseRunner,
   'test-controller': testController,
   'test-registry': testRegistry,
+  'tps-report': tpsReport,
 }
 
 export default isolatesExport

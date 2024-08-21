@@ -268,6 +268,10 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
   }
   return api
 }
+
+export type Returns<T> = {
+  [K in keyof T]: z.ZodSchema
+}
 export type ToApiType<
   P extends Record<string, ZodSchema>,
   R extends { [K in keyof P]: ZodSchema },

@@ -22,7 +22,7 @@ export const parameters = {
     index: z.number().int().gte(0)
       .describe('the index of the test case in the containing test file'),
   }).describe(
-    'test an agent with a prompt and expectations, given a path to the agent.  Returns a list of outcomes from running the prompt and testing the output against the expectations.',
+    'Runs the test case at the given index from the given test file.  Returns a list of outcomes from assessing the end system state against the expectations.',
   ),
   assessment: z.object({
     reasoning: z.array(z.string()),
@@ -34,8 +34,8 @@ export const parameters = {
 export const api = toApi(parameters)
 
 export const returns = {
-  test: z.undefined(),
-  assessment: z.undefined(),
+  test: z.void(),
+  assessment: z.void(),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>

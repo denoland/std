@@ -1,10 +1,4 @@
-import { Debug } from '@utils'
 import { Functions } from '@/constants.ts'
-import * as tps from '@/api/tps-report.ts'
-import { assert } from '@std/assert'
-import { TestFile } from '@/api/tps-report.ts'
-
-const log = Debug('AI:utils')
 
 export const api = {
   delay: {
@@ -59,50 +53,6 @@ export const api = {
     description:
       'Used by drones to signal the unsuccessful completion of a task.  Can be called with any properties at all',
   },
-  upsertTpsReport: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['testPath', 'agent', 'assessor'],
-    properties: {
-      testPath: { type: 'string' },
-      agent: {
-        type: 'string',
-        description: 'the agent that is the target of the test',
-      },
-      assessor: {
-        type: 'string',
-        description: 'the agent that will assess the test',
-      },
-      iterations: { type: 'integer' },
-    },
-    description:
-      'Create or update a test report for the given testPath and iterations',
-  },
-  addTestCase: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['testPath', 'name', 'prompts', 'expectations'],
-    properties: {
-      testPath: {
-        type: 'string',
-        description: 'the path to the .test.md file',
-      },
-      name: { type: 'string', description: 'the name of the test case' },
-      prompts: {
-        type: 'array',
-        items: { type: 'array', items: { type: 'string' } },
-        description:
-          'The prompt(s) for the test case.  The outer array is for each iteration, the inner array is for each prompt or chain of prompts',
-      },
-      expectations: {
-        type: 'array',
-        items: { type: 'string' },
-        description: 'The expectations for the test case',
-      },
-    },
-    description:
-      'Add a test case to the test report for the given testPath with the given number of expectations',
-  },
 }
 
 export type Api = {
@@ -111,22 +61,6 @@ export type Api = {
   trueOrFalse: (params: { value: boolean }) => void
   resolve: () => void
   reject: () => void
-  upsertTpsReport: (
-    params: {
-      testPath: string
-      agent: string
-      assessor: string
-      iterations?: number
-    },
-  ) => void
-  addTestCase: (
-    params: {
-      testPath: string
-      name: string
-      prompts: string[][]
-      expectations: string[]
-    },
-  ) => void
 }
 export const functions: Functions<Api> = {
   delay: async ({ milliseconds }) => {
@@ -145,28 +79,4 @@ export const functions: Functions<Api> = {
   reject: () => {
     throw new Error('Reject should never execute')
   },
-  upsertTpsReport: async (
-    { testPath, agent, assessor, iterations = 1 },
-    api,
-  ) => {
-    log('upsertTpsReport', testPath, iterations)
-    const tpsPath = getTpsPath(testPath)
-    const hash = await api.readOid(testPath)
-    const tpsReport = tps.create(testPath, hash, agent, assessor, iterations)
-    log('writing tps report:', tpsPath)
-    api.writeJSON(tpsPath, tpsReport)
-  },
-  addTestCase: async ({ testPath, name, prompts, expectations }, api) => {
-    log('addTestCase', testPath, name, expectations)
-    const tpsPath = getTpsPath(testPath)
-    const tpsReport = await api.readJSON<TestFile>(tpsPath)
-    const updated = tps.addTest(tpsReport, name, prompts, expectations)
-    log('writing tps report:', tpsPath)
-    api.writeJSON(tpsPath, updated)
-  },
-}
-
-const getTpsPath = (testPath: string) => {
-  assert(testPath.endsWith('.test.md'), 'testPath must end with .test.md')
-  return testPath.replace('.test.md', '.tps.json')
 }
