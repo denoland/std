@@ -797,8 +797,6 @@ export class DumperState {
     return null;
   }
 
-  // Serializes `object` and writes it to global `result`.
-  // Returns true on success, or false on invalid object.
   stringifyNode(value: unknown, { level, block, compact, isKey }: {
     level: number;
     block: boolean;
@@ -814,52 +812,50 @@ export class DumperState {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    let duplicateIndex = -1;
-    let duplicate = false;
     if (isObject(value)) {
-      duplicateIndex = this.duplicates.indexOf(value);
-      duplicate = duplicateIndex !== -1;
-    }
+      const duplicateIndex = this.duplicates.indexOf(value);
+      const duplicate = duplicateIndex !== -1;
 
-    if (duplicate) {
-      if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
-      this.usedDuplicates.add(value);
-    }
-
-    if (
-      (tag !== null && tag !== "?") ||
-      duplicate ||
-      (this.indent !== 2 && level > 0)
-    ) {
-      compact = false;
-    }
-
-    if (isObject(value) && !Array.isArray(value)) {
-      if (block && Object.keys(value).length !== 0) {
-        value = this.stringifyBlockMapping(value, { tag, level, compact });
-        if (duplicate) {
-          value = `&ref_${duplicateIndex}${value}`;
-        }
-      } else {
-        value = this.stringifyFlowMapping(value, { level });
-        if (duplicate) {
-          value = `&ref_${duplicateIndex} ${value}`;
-        }
+      if (duplicate) {
+        if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
+        this.usedDuplicates.add(value);
       }
-    } else if (Array.isArray(value)) {
-      const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-      if (block && value.length !== 0) {
-        value = this.stringifyBlockSequence(value, {
-          level: arrayLevel,
-          compact,
-        });
-        if (duplicate) {
-          value = `&ref_${duplicateIndex}${value}`;
+
+      if (
+        (tag !== null && tag !== "?") ||
+        duplicate ||
+        (this.indent !== 2 && level > 0)
+      ) {
+        compact = false;
+      }
+
+      if (Array.isArray(value)) {
+        const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
+        if (block && value.length !== 0) {
+          value = this.stringifyBlockSequence(value, {
+            level: arrayLevel,
+            compact,
+          });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowSequence(value, { level: arrayLevel });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
         }
       } else {
-        value = this.stringifyFlowSequence(value, { level: arrayLevel });
-        if (duplicate) {
-          value = `&ref_${duplicateIndex} ${value}`;
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowMapping(value, { level });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
         }
       }
     } else if (typeof value === "string") {
@@ -869,7 +865,7 @@ export class DumperState {
     } else {
       if (this.skipInvalid) return null;
       throw new TypeError(
-        `unacceptable kind of an value to dump ${getObjectTypeString(value)}`,
+        `unacceptable kind of an object to dump ${getObjectTypeString(value)}`,
       );
     }
 
@@ -879,7 +875,6 @@ export class DumperState {
 
     return value as string;
   }
-
   getDuplicateReferences(value: unknown) {
     const values: unknown[] = [];
     const duplicateObjects: Set<unknown> = new Set();
