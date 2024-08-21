@@ -4,109 +4,62 @@ import {
   getThreadPath,
   print,
   Thread,
+  toApi,
+  type ToApiType,
 } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
 import * as completions from '@/isolates/ai-completions.ts'
 import { assert } from '@std/assert'
 import { addIteration, outcome, TestFile } from '@/api/tps-report.ts'
+import { z } from 'zod'
 
 const log = Debug('AI:test-case-runner')
 
-export const api = {
-  test: {
-    type: 'object',
-    description:
-      'test an agent with a prompt and expectations, given a path to the agent.  Returns a list of outcomes from running the prompt and testing the output against the expectations.',
-    required: ['path', 'index', 'agent', 'prompts', 'assessor', 'expectations'],
+export const parameters = {
+  test: z.object({
+    path: z.string().describe('the path to the test file being run'),
+    index: z.number().int().gte(0)
+      .describe('the index of the test case in the containing test file'),
+  }).describe(
+    'test an agent with a prompt and expectations, given a path to the agent.  Returns a list of outcomes from running the prompt and testing the output against the expectations.',
+  ),
+  assessment: z.object({
+    reasoning: z.array(z.string()),
+    outcome: z.boolean(),
+  }).describe(
+    'Called by the assistant and intercepted before execution.  Reports the outcomes of a test assessment, in the order that the expectations were passed in.  Provides step by step reasoning how the outcome was reached.',
+  ),
+}
+export const api = toApi(parameters)
 
-    // convert this to make the file runner add all the test cases first, then
-    // just drive the iterations ?
-    // then read all we need from the tps report, including the expectations
-    // so if expectations were just written, we need no more NL tooling ?
-    // could also do variation calculation in this isolate
-
-    // if we made the case format contain everything needed to do variations and
-    // write to the tps report, then the tps report can serve as an
-    // instructional piece too
-
-    properties: {
-      path: {
-        type: 'string',
-        description: 'the path to the test file being run',
-      },
-      index: {
-        type: 'integer',
-        description: 'the index of the test case in the containing test file',
-      },
-      agent: {
-        type: 'string',
-        description: 'the path to the agent file to invoke',
-      },
-      prompts: {
-        type: 'array',
-        description: 'the prompt(s) to drive the agent with',
-        items: { type: 'string' },
-      },
-      assessor: {
-        type: 'string',
-        description:
-          'the path to the agent file that will be used to assess the expectations against the end state of the system',
-      },
-      expectations: {
-        type: 'array',
-        items: { type: 'string' },
-        description:
-          'the expectations of the end state of the system after the agent has finished, that will be assessed by the assessor agent',
-      },
-    },
-    additionalProperties: false,
-  },
-  assessment: {
-    type: 'object',
-    description:
-      'Called by the assistant and intercepted before execution.  Reports the outcomes of a test assessment, in the order that the expectations were passed in.  Provides step by step reasoning how the outcome was reached.',
-    required: ['reasoning', 'outcome'],
-    properties: {
-      reasoning: {
-        type: 'array',
-        items: { type: 'string' },
-      },
-      outcome: { type: 'boolean' },
-    },
-    additionalProperties: false,
-  },
+export const returns = {
+  test: z.undefined(),
+  assessment: z.undefined(),
 }
 
-export type Api = {
-  /** Runs a single test case and assesses the output against the expectations  */
-  test: (params: {
-    /** Path to the test file this test case is from */
-    path: string
-    /** index of the test case in the containing test file */
-    index: number
-    /** Path to the Agent file to invoke */
-    agent: string
-    /** the prompt(s) to drive the agent with */
-    prompts: string[]
-    assessor: string
-    expectations: string[]
-  }) => Promise<void>
-  assessment: (params: { reasoning: string[]; outcome: boolean }) => void
-}
+export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  test: async (
-    { path, index, agent, prompts, assessor, expectations },
-    api,
-  ) => {
-    log('test', path, index, prompts, assessor, expectations, print(api.pid))
+  test: async ({ path, index }, api) => {
+    log('test', path, index, print(api.pid))
     const actorId = getActorId(api.pid)
 
     const { start, run } = await api.actions<longthread.Api>('longthread')
     await start()
-    for (const prompt of prompts) {
-      await run({ path: agent, content: prompt, actorId })
+
+    const tpsPath = getTpsPath(path)
+    let tpsReport = await api.readJSON<TestFile>(tpsPath)
+    const { agent, assessor } = tpsReport.summary
+    const { prompts, expectations } = tpsReport.cases[index].summary
+
+    for (const chain of prompts) {
+      // TODO treat each chat as an iteration to be done in parallel
+      // related to how many iterations we want to run
+      // so include the variation generation feature
+      for (const prompt of chain) {
+        await run({ path: agent, content: prompt, actorId })
+      }
     }
 
     log('starting assessment with:', assessor)
@@ -130,8 +83,8 @@ export const functions: Functions<Api> = {
     })
 
     const outcomes = await Promise.all(promises)
-    const tpsReport = await api.readJSON<TestFile>(getTpsPath(path))
-    const iteration = { commit: api.commit, outcomes, prompts }
+    tpsReport = await api.readJSON<TestFile>(getTpsPath(path))
+    const iteration = { commit: api.commit, outcomes, prompts: prompts[0] }
     const updated = addIteration(tpsReport, index, iteration)
 
     log('writing tps report:', getTpsPath(path))

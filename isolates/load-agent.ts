@@ -1,6 +1,6 @@
 import merge from 'lodash.merge'
 import { assert, posix } from '@utils'
-import { AGENT_RUNNERS, Functions, IA, Triad } from '@/constants.ts'
+import { agent, AGENT_RUNNERS, Functions, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
@@ -49,7 +49,6 @@ export const functions: Functions<Api> = {
     const config: Agent['config'] = {
       model: 'gpt-4o-mini',
       tool_choice: 'auto',
-      // must be false for strict function calling
       parallel_tool_calls: true,
     }
     const defaults = {
@@ -65,9 +64,8 @@ export const functions: Functions<Api> = {
     const source: Triad = { path, pid, commit }
     const instructions = await expandLinks(content.trim(), api)
     const name = posix.basename(path, posix.extname(path))
-    const loaded: Agent = { ...defaults, name, instructions, source }
+    const loaded = agent.parse({ ...defaults, name, instructions, source })
 
-    assertAgent(loaded)
     return loaded
   },
   loadAll: async ({ dir }, api) => {
@@ -85,43 +83,6 @@ export const functions: Functions<Api> = {
   },
 }
 
-const assertAgent = (agent: Agent) => {
-  // TODO use a zod schema to assert
-  if (!(typeof agent.instructions === 'string')) {
-    throw new Error('instructions must be an array')
-  }
-  // TODO check max length of instructions
-  // https://platform.openai.com/docs/api-reference/assistants/createAssistant#assistants-createassistant-instructions
-  const { runner } = agent
-  if (runner !== AGENT_RUNNERS.CHAT) {
-    throw new Error('runner must be chat')
-  }
-  if (agent.description && typeof agent.description !== 'string') {
-    throw new Error('description must be a string')
-  }
-  if (agent.config) {
-    const { config } = agent
-    if (
-      config.model && config.model !== 'gpt-3.5-turbo' &&
-      config.model !== 'gpt-4-turbo' && config.model !== 'gpt-4o' &&
-      config.model !== 'gpt-4o-mini'
-    ) {
-      throw new Error('invalid model: ' + config.model)
-    }
-    if (
-      agent.config.temperature &&
-      (agent.config.temperature < 0 || agent.config.temperature > 2)
-    ) {
-      throw new Error('temperature must be between 0 and 2')
-    }
-  }
-  if (!agent.commands || !Array.isArray(agent.commands)) {
-    throw new Error('commands must be an array')
-  }
-  if (!/^[a-zA-Z0-9_-]+$/.test(agent.name)) {
-    throw new Error('name must be alphanumeric: ' + agent.name)
-  }
-}
 const expandLinks = async (content: string, api: IA, path: string[] = []) => {
   content = content.trim()
   const links = extractLinks(content)

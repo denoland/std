@@ -162,30 +162,7 @@ export type RemoteThread = {
   /** The location in the remote repo and the last known commit we have of it */
   triad: Triad
 }
-export type Agent = {
-  /** Name used to identify this agent in the UI */
-  name: string
-  /** Where exactly did this agent come from */
-  source: Triad
-  description?: string
-  config: {
-    model: 'gpt-3.5-turbo' | 'gpt-4-turbo' | 'gpt-4o' | 'gpt-4o-mini'
-    temperature?: number
-    presence_penalty?: number
-    /** control model behaviour to force it to call a tool or no tool */
-    tool_choice: 'auto' | 'none' | 'required'
-    /** Is the model permitted to call more than one function at a time */
-    parallel_tool_calls: boolean
-  }
-  runner: AGENT_RUNNERS
-  commands: string[]
-  instructions: string
-}
-export type Triad = {
-  path: string
-  pid: PID
-  commit: CommitOid
-}
+
 export type PathTriad = {
   path: string
   pid?: PID
@@ -715,3 +692,30 @@ export const zodPid = z.object({
   repository: z.string().regex(githubRegex),
   branches: z.array(z.string()).min(1),
 })
+export const triad = z.object({
+  path: z.string(),
+  pid: zodPid,
+  commit: z.string(),
+})
+export type Triad = z.infer<typeof triad>
+
+export const agent = z.object({
+  name: z.string().regex(/^[a-zA-Z0-9_-]+$/),
+  source: triad.describe('Where exactly did this agent come from'),
+  description: z.string().optional(),
+  config: z.object({
+    model: z.enum(['gpt-3.5-turbo', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini']),
+    temperature: z.number().gte(0).lte(2).optional(),
+    presence_penalty: z.number().optional(),
+    tool_choice: z.enum(['auto', 'none', 'required']).describe(
+      'control model behaviour to force it to call a tool or no tool',
+    ),
+    parallel_tool_calls: z.boolean().describe(
+      'Is the model permitted to call more than one function at a time.  Must be false to use strict function calling',
+    ),
+  }),
+  runner: z.enum(['ai-runner']),
+  commands: z.array(z.string()),
+  instructions: z.string().max(256000),
+})
+export type Agent = z.infer<typeof agent>

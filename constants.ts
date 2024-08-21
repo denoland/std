@@ -24,6 +24,7 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { assert, equal } from '@utils'
 import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
+import { z, ZodSchema } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -255,6 +256,25 @@ export const toJsonSchema = (schemas: SchemaType) => {
     result[key] = schema as JsonSchema7ObjectType
   }
   return result
+}
+
+export const toApi = (parameters: Record<string, ZodSchema>) => {
+  const api: Record<keyof typeof parameters, JsonSchema7ObjectType> = {}
+  for (const key of Object.keys(parameters)) {
+    const schema = zodToJsonSchema(parameters[key])
+    assert('properties' in schema, 'schema must have properties')
+    assert(!schema.additionalProperties, 'additionalProperties not allowed')
+    api[key] = schema
+  }
+  return api
+}
+export type ToApiType<
+  P extends Record<string, ZodSchema>,
+  R extends { [K in keyof P]: ZodSchema },
+> = {
+  [K in keyof P]: (
+    params: z.infer<P[K]>,
+  ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
 }
 
 export * from './api/types.ts'

@@ -14,7 +14,8 @@ const raw: TestFile = {
     timestamp: Date.now(),
     path: 'tests/test-example.test.md',
     hash: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
-    casesCount: 1,
+    agent: 'the/agent/to/test.md',
+    assessor: 'agents/assessor.md',
     elapsed: 1000,
     iterations: 5,
     completed: 4,
@@ -26,7 +27,8 @@ const raw: TestFile = {
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 3,
-        expectations: 2,
+        prompts: [['prompt1'], ['multiple prompts', 'prompt2']],
+        expectations: ['expectation 1', 'expectation 2'],
         completed: 1,
         successes: [1, 0],
       },
@@ -54,14 +56,15 @@ Deno.test('tps report', async () => {
   const created = create(
     'tests/test-example.test.md',
     '29426920ac614d1672d6f2dfcdd22c0052c22e32',
+    'the/agent/to/test.md',
+    'agents/assessor.md',
     5,
   )
-  expect(created.summary.casesCount).toEqual(0)
+  expect(created.cases).toHaveLength(0)
 
-  const added = addTest(created, 'test name', 2)
-  expect(added.summary.casesCount).toEqual(1)
-  expect(added.cases.length).toEqual(1)
-  expect(added.cases[0].summary.expectations).toEqual(2)
+  const added = addTest(created, 'test name', [['prompt']], ['e1', 'e2'])
+  expect(added.cases).toHaveLength(1)
+  expect(added.cases[0].summary.expectations).toHaveLength(2)
 
   await delay(1)
 

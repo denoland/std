@@ -54,11 +54,11 @@ const testCase = z
   .object({
     summary: summary
       .extend({
+        prompts: z.array(z.array(z.string()))
+          .describe('the array of prompt arrays used for each iteration'),
         expectations: z
-          .number()
-          .int()
-          .gt(0)
-          .describe('the number of expectations for this test case'),
+          .array(z.string())
+          .describe('the expectations for this test case'),
         successes: z
           .array(z.number().int().gte(0))
           .describe(
@@ -73,8 +73,8 @@ const testCase = z
       .refine((v) => v.completed <= v.iterations, {
         message: 'completed cannot be greater than iterations',
       })
-      .refine((v) => v.successes.length === v.expectations, {
-        message: 'successes length must equal expectations count',
+      .refine((v) => v.successes.length === v.expectations.length, {
+        message: 'successes length must equal expectations length',
       })
       .refine((v) => v.successes.every((success) => success <= v.completed), {
         message: 'successes cannot be greater than completed',
@@ -87,7 +87,7 @@ const testCase = z
   .refine(
     (v) =>
       v.iterations.every((run) =>
-        run.outcomes.length === v.summary.expectations
+        run.outcomes.length === v.summary.expectations.length
       ),
     { message: 'outcomes count must match expectations count' },
   )
@@ -115,15 +115,14 @@ export type TestFile = z.infer<typeof testFile>
 export const testFile = z
   .object({
     summary: summary.extend({
-      hash: md5.describe(
-        'the hash of the test file used to generate the test run',
-      ),
-      path: z.string().describe('the path to the test file'),
-      casesCount: z
-        .number()
-        .int()
-        .gte(0)
-        .describe('the number of test cases specified in the test file'),
+      hash: md5
+        .describe('the hash of the test file used to generate the test run'),
+      path: z.string()
+        .describe('the path to the test file'),
+      agent: z.string()
+        .describe('the path to the agent file under test'),
+      assessor: z.string()
+        .describe('path to the agent file that will assess the test results'),
     })
       .strict()
       .refine((value) => value.completed <= value.iterations, {
@@ -132,10 +131,6 @@ export const testFile = z
     cases: z.array(testCase).describe('the results of each test case'),
   })
   .strict()
-  .refine((value) => value.cases.length <= value.summary.casesCount, {
-    message: 'the number of tests cannot be less than the number of results',
-    path: ['cases'],
-  })
 
 export type TestController = z.infer<typeof testController>
 export const testController = z.object({
@@ -152,13 +147,20 @@ export const testController = z.object({
   ),
 }).strict()
 
-export const create = (path: string, hash: string, iterations: number) => {
+export const create = (
+  path: string,
+  hash: string,
+  agent: string,
+  assessor: string,
+  iterations: number,
+) => {
   const blank: TestFile = {
     summary: {
       timestamp: Date.now(),
       path,
       hash,
-      casesCount: 0,
+      agent,
+      assessor,
       elapsed: 0,
       iterations,
       completed: 0,
@@ -171,24 +173,25 @@ export const create = (path: string, hash: string, iterations: number) => {
 export const addTest = (
   base: TestFile,
   name: string,
-  expectations: number,
+  prompts: string[][],
+  expectations: string[],
 ) => {
-  const copy = testFile.parse(base)
+  const clean = testFile.parse(base)
   const test: TestCase = {
     summary: {
       name,
       timestamp: Date.now(),
       elapsed: 0,
-      iterations: copy.summary.iterations,
+      iterations: clean.summary.iterations,
+      prompts,
       expectations,
       completed: 0,
-      successes: Array(expectations).fill(0),
+      successes: Array(expectations.length).fill(0),
     },
     iterations: [],
   }
-  copy.cases.push(test)
-  copy.summary.casesCount++
-  return testFile.parse(copy)
+  clean.cases.push(test)
+  return testFile.parse(clean)
 }
 
 export const addIteration = (

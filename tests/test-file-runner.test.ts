@@ -31,6 +31,7 @@ Deno.test('test file runner', async (t) => {
 
     const tpsPath = firstTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
+    console.dir(tps, { depth: 10 })
     log('done', tps)
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)

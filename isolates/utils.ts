@@ -62,9 +62,17 @@ export const api = {
   upsertTpsReport: {
     type: 'object',
     additionalProperties: false,
-    required: ['testPath'],
+    required: ['testPath', 'agent', 'assessor'],
     properties: {
       testPath: { type: 'string' },
+      agent: {
+        type: 'string',
+        description: 'the agent that is the target of the test',
+      },
+      assessor: {
+        type: 'string',
+        description: 'the agent that will assess the test',
+      },
       iterations: { type: 'integer' },
     },
     description:
@@ -73,14 +81,24 @@ export const api = {
   addTestCase: {
     type: 'object',
     additionalProperties: false,
-    required: ['testPath', 'name', 'expectations'],
+    required: ['testPath', 'name', 'prompts', 'expectations'],
     properties: {
       testPath: {
         type: 'string',
         description: 'the path to the .test.md file',
       },
       name: { type: 'string', description: 'the name of the test case' },
-      expectations: { type: 'integer' },
+      prompts: {
+        type: 'array',
+        items: { type: 'array', items: { type: 'string' } },
+        description:
+          'The prompt(s) for the test case.  The outer array is for each iteration, the inner array is for each prompt or chain of prompts',
+      },
+      expectations: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'The expectations for the test case',
+      },
     },
     description:
       'Add a test case to the test report for the given testPath with the given number of expectations',
@@ -93,9 +111,21 @@ export type Api = {
   trueOrFalse: (params: { value: boolean }) => void
   resolve: () => void
   reject: () => void
-  upsertTpsReport: (params: { testPath: string; iterations?: number }) => void
+  upsertTpsReport: (
+    params: {
+      testPath: string
+      agent: string
+      assessor: string
+      iterations?: number
+    },
+  ) => void
   addTestCase: (
-    params: { testPath: string; name: string; expectations: number },
+    params: {
+      testPath: string
+      name: string
+      prompts: string[][]
+      expectations: string[]
+    },
   ) => void
 }
 export const functions: Functions<Api> = {
@@ -115,19 +145,22 @@ export const functions: Functions<Api> = {
   reject: () => {
     throw new Error('Reject should never execute')
   },
-  upsertTpsReport: async ({ testPath, iterations = 1 }, api) => {
+  upsertTpsReport: async (
+    { testPath, agent, assessor, iterations = 1 },
+    api,
+  ) => {
     log('upsertTpsReport', testPath, iterations)
     const tpsPath = getTpsPath(testPath)
     const hash = await api.readOid(testPath)
-    const tpsReport = tps.create(testPath, hash, iterations)
+    const tpsReport = tps.create(testPath, hash, agent, assessor, iterations)
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, tpsReport)
   },
-  addTestCase: async ({ testPath, name, expectations }, api) => {
+  addTestCase: async ({ testPath, name, prompts, expectations }, api) => {
     log('addTestCase', testPath, name, expectations)
     const tpsPath = getTpsPath(testPath)
     const tpsReport = await api.readJSON<TestFile>(tpsPath)
-    const updated = tps.addTest(tpsReport, name, expectations)
+    const updated = tps.addTest(tpsReport, name, prompts, expectations)
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, updated)
   },

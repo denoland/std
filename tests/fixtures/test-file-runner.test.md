@@ -1,10 +1,9 @@
 ---
 target: agents/hamr.md
 assessor: agents/test-assessor.md
-
 ---
 
-# Second starter for 10
+# Starter for 10
 
 **Prompts:**
 
