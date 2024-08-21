@@ -36,3 +36,12 @@ Deno.test("extractYaml() allows whitespaces after the header", () => {
   assertEquals(extract("---yaml  \nfoo: 0\n--- \n").attrs, { foo: 0 });
   assertEquals(extract("= yaml =  \nfoo: 0\n---\n").attrs, { foo: 0 });
 });
+
+Deno.test("extractYaml() parses with schema options", () => {
+  assertEquals(
+    extract("---\ndate: 2024-08-20\n---\n", { schema: "json" }).attrs,
+    {
+      date: "2024-08-20",
+    },
+  );
+});
