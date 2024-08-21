@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
 /**
  * The interface required to provide a file.
  */
@@ -117,8 +118,8 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  * Tar archives are not compressed by default.  If you'd like to compress the
  * archive, you may do so by piping it through a compression stream.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { TarStream } from "@std/archive/tar-stream";
  *
  * await ReadableStream.from([
@@ -145,9 +146,6 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
 export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   #readable: ReadableStream<Uint8Array>;
   #writable: WritableStream<TarStreamInput>;
-  /**
-   * Constructs a new instance.
-   */
   constructor() {
     const { readable, writable } = new TransformStream<
       TarStreamInput,
@@ -271,6 +269,32 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
 
   /**
    * The ReadableStream
+   *
+   * @return ReadableStream<Uint8Array>
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { TarStream } from "@std/archive/tar-stream";
+   *
+   * await ReadableStream.from([
+   *   {
+   *     pathname: 'potato/'
+   *   },
+   *   {
+   *     pathname: 'deno.json',
+   *     size: (await Deno.stat('deno.json')).size,
+   *     iterable: (await Deno.open('deno.json')).readable
+   *   },
+   *   {
+   *     pathname: 'deno.lock',
+   *     size: (await Deno.stat('deno.lock')).size,
+   *     iterable: (await Deno.open('deno.lock')).readable
+   *   }
+   * ])
+   *   .pipeThrough(new TarStream())
+   *   .pipeThrough(new CompressionStream('gzip'))
+   *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
+   * ```
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
@@ -278,6 +302,32 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
 
   /**
    * The WritableStream
+   *
+   * @return WritableStream<TarStreamInput>
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { TarStream } from "@std/archive/tar-stream";
+   *
+   * await ReadableStream.from([
+   *   {
+   *     pathname: 'potato/'
+   *   },
+   *   {
+   *     pathname: 'deno.json',
+   *     size: (await Deno.stat('deno.json')).size,
+   *     iterable: (await Deno.open('deno.json')).readable
+   *   },
+   *   {
+   *     pathname: 'deno.lock',
+   *     size: (await Deno.stat('deno.lock')).size,
+   *     iterable: (await Deno.open('deno.lock')).readable
+   *   }
+   * ])
+   *   .pipeThrough(new TarStream())
+   *   .pipeThrough(new CompressionStream('gzip'))
+   *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
+   * ```
    */
   get writable(): WritableStream<TarStreamInput> {
     return this.#writable;
@@ -333,6 +383,17 @@ export function parsePathname(
 /**
  * validTarStreamOptions is a function that returns a true if all of the options
  * provided are in the correct format, otherwise returns false.
+ *
+ * @param options The TarStreamOptions
+ * @return boolean
+ *
+ * @example Usage
+ * ```ts
+ * import { validTarStreamOptions } from "@std/archive";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(validTarStreamOptions({ mode: 755 }), true);
+ * ```
  */
 export function validTarStreamOptions(
   options: TarStreamOptions,

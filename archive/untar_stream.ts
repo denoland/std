@@ -165,8 +165,8 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  * extension, such as '.tar.gz' for gzip. This TransformStream does not support
  * decompression which must be done before expanding the archive.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { UnTarStream } from "@std/archive/untar-stream";
  *
  * let fileWriter: WritableStreamDefaultWriter | undefined;
@@ -298,6 +298,26 @@ export class UnTarStream
 
   /**
    * The ReadableStream
+   *
+   * @return ReadableStream<TarStreamChunk>
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UnTarStream } from "@std/archive/untar-stream";
+   *
+   * let fileWriter: WritableStreamDefaultWriter | undefined;
+   * for await (
+   *   const entry of (await Deno.open('./out.tar.gz'))
+   *     .readable
+   *     .pipeThrough(new DecompressionStream('gzip'))
+   *     .pipeThrough(new UnTarStream())
+   * ) {
+   *   if (entry.type === "header") {
+   *     fileWriter?.close();
+   *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+   *   } else await fileWriter!.write(entry.data);
+   * }
+   * ```
    */
   get readable(): ReadableStream<TarStreamChunk> {
     return this.#readable;
@@ -305,6 +325,26 @@ export class UnTarStream
 
   /**
    * The WritableStream
+   *
+   * @return WritableStream<Uint8Array>
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { UnTarStream } from "@std/archive/untar-stream";
+   *
+   * let fileWriter: WritableStreamDefaultWriter | undefined;
+   * for await (
+   *   const entry of (await Deno.open('./out.tar.gz'))
+   *     .readable
+   *     .pipeThrough(new DecompressionStream('gzip'))
+   *     .pipeThrough(new UnTarStream())
+   * ) {
+   *   if (entry.type === "header") {
+   *     fileWriter?.close();
+   *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+   *   } else await fileWriter!.write(entry.data);
+   * }
+   * ```
    */
   get writable(): WritableStream<Uint8Array> {
     return this.#writable;
