@@ -4,6 +4,7 @@
 import { assertArg } from "../_common/dirname.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the directory path of a `path`.
@@ -32,7 +33,28 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param path The path to get the directory from.
  * @returns The directory path.
  */
-export function dirname(path: string): string {
+export function dirname(path: string): string;
+/**
+ * Return the directory path of a file URL.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { dirname } from "@std/path/posix/dirname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
+ * ```
+ *
+ * @param path The file url to get the directory from.
+ * @returns The directory path.
+ */
+export function dirname(path: URL): string;
+export function dirname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertArg(path);
 
   let end = -1;
