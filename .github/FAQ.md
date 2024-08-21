@@ -18,7 +18,7 @@ The Standard Library aims to compliment the
 By virtue of the APIs it supports, the Standard Library primarily aims to work
 with:
 
-1. [Deno](https://deno.com/)
+1. [Deno](https://deno.com/) (latest stable version and canary)
 1. [Deno Deploy](https://deno.com/deploy)
 1. Web browsers (i.e. [Google Chrome](https://www.google.com.au/chrome/),
    [Mozilla Firefox](https://www.mozilla.org/firefox/),
@@ -30,6 +30,18 @@ support the same APIs that the Standard Library targets. These runtimes include:
 1. [Node.js](https://nodejs.org/)
 1. [Cloudflare Workers](https://workers.cloudflare.com/)
 1. [Bun](https://bun.sh/)
+
+## Why is the Standard Library versioned differently to the Deno runtime?
+
+Deno is not the only runtime that the Standard Library is designed to work with
+(see above section). Hence, there's no reason to have Deno and the Standard
+Library to be versioned the same. Also, having both projects versioned
+independently allows them to progress asynchronously.
+
+## Which versions of Deno is the Standard Library guaranteed to work with?
+
+The Standard Library is designed to work with the latest stable and canary
+versions of Deno. This is checked-for with all PRs in CI.
 
 ## How is the Standard Library distributed?
 
@@ -94,6 +106,16 @@ import { bar } from "jsr:@std/foo@^0/bar";
 
 This is possible thanks to JSR being immutable. For more information, see JSR's
 [Immutability](https://jsr.io/docs/immutability) documentation.
+
+## An API I was using is no longer available in the Standard Library. What happened to it?
+
+It's most likely API has been moved, removed or renamed. These changes are
+always noted in, and most easily found in the
+[release notes](https://github.com/denoland/deno_std/releases). To find how an
+API's been modified, search for your API in the **Find a release** search bar.
+
+If you still cannot find the API you're looking for, please
+[open an issue](https://github.com/denoland/deno_std/issues/new?assignees=&labels=bug%2C+needs+triage&projects=&template=bug_report.md&title=).
 
 ## How can I contribute to the Standard Library?
 

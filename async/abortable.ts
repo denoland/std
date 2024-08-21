@@ -106,6 +106,7 @@ export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
  * assertEquals(items, []);
  * ```
  */
+
 export function abortable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
@@ -144,16 +145,22 @@ async function* abortableAsyncIterable<T>(
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();
-  while (true) {
-    const race = Promise.race([promise, it.next()]);
-    race.catch(() => {
-      signal.removeEventListener("abort", abort);
-    });
-    const { done, value } = await race;
-    if (done) {
-      signal.removeEventListener("abort", abort);
-      return;
+  try {
+    while (true) {
+      const race = Promise.race([promise, it.next()]);
+      race.catch(() => {
+        signal.removeEventListener("abort", abort);
+      });
+      const { done, value } = await race;
+      if (done) {
+        signal.removeEventListener("abort", abort);
+        const result = await it.return?.(value);
+        return result?.value;
+      }
+      yield value;
     }
-    yield value;
+  } catch (e) {
+    await it.return?.();
+    throw e;
   }
 }

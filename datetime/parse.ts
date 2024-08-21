@@ -46,7 +46,5 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  */
 export function parse(dateString: string, formatString: string): Date {
   const formatter = new DateTimeFormatter(formatString);
-  const parts = formatter.parseToParts(dateString);
-  const sortParts = formatter.sortDateTimeFormatPart(parts);
-  return formatter.partsToDate(sortParts);
+  return formatter.parse(dateString);
 }

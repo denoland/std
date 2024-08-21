@@ -79,7 +79,7 @@ Deno.test("spy()", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "function cannot be restore",
+    "Function cannot be restore",
   );
   assertEquals(func.restored, false);
 });
@@ -125,7 +125,7 @@ Deno.test("spy() works on function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "function cannot be restored",
+    "Function cannot be restored",
   );
   assertEquals(func.restored, false);
 
@@ -239,7 +239,7 @@ Deno.test("spy() works on instance method", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -277,7 +277,7 @@ Deno.test("spy() works on instance method symbol", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -342,7 +342,7 @@ Deno.test("spy() works on instance method property descriptor", () => {
   assertThrows(
     () => action.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(action.restored, true);
 });
@@ -444,7 +444,7 @@ Deno.test("spy() supports explicit resource management", () => {
         if (funcRef) funcRef.restore();
       },
       MockError,
-      "instance method already restored",
+      "Instance method already restored",
     );
     assertEquals(funcRef.restored, true);
   }
@@ -478,7 +478,7 @@ Deno.test("spy() works on constructor", () => {
   assertThrows(
     () => PointSpy.restore(),
     MockError,
-    "constructor cannot be restored",
+    "Constructor cannot be restored",
   );
 });
 
@@ -546,7 +546,7 @@ Deno.test("spy() throws when try spying already spied method", () => {
   assertThrows(
     () => spy(obj, "fn"),
     MockError,
-    "already spying on instance method",
+    "Already spying on instance method",
   );
 });
 
@@ -556,7 +556,7 @@ Deno.test("spy() throws when the property is not a method", () => {
     // deno-lint-ignore no-explicit-any
     () => spy(obj as any, "fn"),
     MockError,
-    "property is not an instance method",
+    "Property is not an instance method",
   );
 });
 
@@ -566,7 +566,7 @@ Deno.test("spy() throws when the property is not configurable", () => {
   assertThrows(
     () => spy(obj, "fn"),
     MockError,
-    "cannot spy on non configurable instance method",
+    "Cannot spy on non-configurable instance method",
   );
 });
 
@@ -602,7 +602,7 @@ Deno.test("stub()", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -640,7 +640,7 @@ Deno.test("stub() works on function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -684,7 +684,7 @@ Deno.test("stub() supports explicit resource management", () => {
         if (funcRef) funcRef.restore();
       },
       MockError,
-      "instance method already restored",
+      "Instance method already restored",
     );
     assertEquals(funcRef.restored, true);
   }
@@ -727,7 +727,7 @@ Deno.test("stub() handles non existent function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "instance method already restored",
+    "Instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -797,7 +797,7 @@ Deno.test("stub() throws when the property is not a method", () => {
     // deno-lint-ignore no-explicit-any
     () => stub(obj as any, "fn"),
     MockError,
-    "property is not an instance method",
+    "Property is not an instance method",
   );
 });
 
@@ -807,7 +807,7 @@ Deno.test("stub() throws when try stubbing already stubbed method", () => {
   assertThrows(
     () => stub(obj, "fn"),
     MockError,
-    "already spying on instance method",
+    "Already spying on instance method",
   );
 });
 
@@ -817,7 +817,7 @@ Deno.test("stub() throws then the property is not configurable", () => {
   assertThrows(
     () => stub(obj, "fn"),
     MockError,
-    "cannot spy on non configurable instance method",
+    "Cannot stub non-configurable instance method",
   );
 });
 
@@ -975,7 +975,7 @@ Deno.test("assertSpyCalls()", () => {
   assertThrows(
     () => assertSpyCalls(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -983,12 +983,12 @@ Deno.test("assertSpyCalls()", () => {
   assertThrows(
     () => assertSpyCalls(spyFunc, 0),
     AssertionError,
-    "spy called more than expected",
+    "Spy called more than expected",
   );
   assertThrows(
     () => assertSpyCalls(spyFunc, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -998,7 +998,7 @@ Deno.test("assertSpyCall() works with function", () => {
   assertThrows(
     () => assertSpyCall(spyFunc, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1026,7 +1026,7 @@ Deno.test("assertSpyCall() works with function", () => {
         returned: 2,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1034,7 +1034,7 @@ Deno.test("assertSpyCall() works with function", () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1042,7 +1042,7 @@ Deno.test("assertSpyCall() works with function", () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -1050,7 +1050,7 @@ Deno.test("assertSpyCall() works with function", () => {
         returned: 2,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () =>
@@ -1058,12 +1058,12 @@ Deno.test("assertSpyCall() works with function", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1074,7 +1074,7 @@ Deno.test("assertSpyCall() works with method", () => {
   assertThrows(
     () => assertSpyCall(spyMethod, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   point.action(3, 7);
@@ -1102,7 +1102,7 @@ Deno.test("assertSpyCall() works with method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1110,7 +1110,7 @@ Deno.test("assertSpyCall() works with method", () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1118,7 +1118,7 @@ Deno.test("assertSpyCall() works with method", () => {
         self: undefined,
       }),
     AssertionError,
-    "spy not expected to be called as method on object",
+    "Spy not expected to be called as method on object",
   );
   assertThrows(
     () =>
@@ -1126,12 +1126,12 @@ Deno.test("assertSpyCall() works with method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyMethod.call(point, 9);
@@ -1159,7 +1159,7 @@ Deno.test("assertSpyCall() works with method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1167,7 +1167,7 @@ Deno.test("assertSpyCall() works with method", () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1175,7 +1175,7 @@ Deno.test("assertSpyCall() works with method", () => {
         self: new Point(1, 2),
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -1183,7 +1183,7 @@ Deno.test("assertSpyCall() works with method", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value",
+    "Spy call did not return expected value",
   );
   assertThrows(
     () =>
@@ -1191,12 +1191,12 @@ Deno.test("assertSpyCall() works with method", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1248,7 +1248,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1256,7 +1256,7 @@ Deno.test("assertSpyCall() works with error", () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   assertThrows(
     () =>
@@ -1264,7 +1264,7 @@ Deno.test("assertSpyCall() works with error", () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   assertThrows(
     () =>
@@ -1326,12 +1326,12 @@ Deno.test("assertSpyCall() works with error", () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not return expected value, an error was thrown.",
+    "Spy call did not return expected value, an error was thrown.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1346,7 +1346,7 @@ Deno.test("assertSpyCall() throws TypeError when returned and error are both pro
         error: { msgIncludes: "x" },
       }),
     TypeError,
-    "do not expect error and return, only one should be expected",
+    "Do not expect error and return, only one should be expected",
   );
 });
 
@@ -1358,7 +1358,7 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await spyFunc();
@@ -1391,7 +1391,7 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
         returned: 2,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1399,7 +1399,7 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1407,7 +1407,7 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1415,7 +1415,7 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
         returned: 2,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1423,12 +1423,12 @@ Deno.test("assertSpyCallAsync() works with function", async () => {
         returned: Promise.resolve(2),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1443,7 +1443,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 0),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await point.action(3, 7);
@@ -1479,7 +1479,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1487,7 +1487,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1495,7 +1495,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         self: undefined,
       }),
     AssertionError,
-    "spy not expected to be called as method on object",
+    "Spy not expected to be called as method on object",
   );
   await assertRejects(
     () =>
@@ -1503,7 +1503,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1511,12 +1511,12 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   await spyMethod.call(point, 9);
@@ -1552,7 +1552,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1560,7 +1560,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         args: [7, 3],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1568,7 +1568,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         self: new Point(1, 2),
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1576,7 +1576,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: 7,
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () =>
@@ -1584,12 +1584,12 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call did not resolve to expected value",
+    "Spy call did not resolve to expected value",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyMethod, 2),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1600,7 +1600,7 @@ Deno.test("assertSpyCallAsync() rejects on sync value", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy call did not return a promise, a value was returned.",
+    "Spy call did not return a promise, a value was returned.",
   );
 });
 
@@ -1613,7 +1613,7 @@ Deno.test("assertSpyCallAsync() rejects on sync error", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "spy call did not return a promise, an error was thrown.",
+    "Spy call did not return a promise, an error was thrown.",
   );
 });
 
@@ -1672,7 +1672,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1680,7 +1680,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         args: [1],
       }),
     AssertionError,
-    "spy not called with expected args",
+    "Spy not called with expected args",
   );
   await assertRejects(
     () =>
@@ -1688,7 +1688,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         self: {},
       }),
     AssertionError,
-    "spy not called as method on expected self",
+    "Spy not called as method on expected self",
   );
   await assertRejects(
     () =>
@@ -1750,7 +1750,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         returned: Promise.resolve(7),
       }),
     AssertionError,
-    "spy call returned promise was rejected",
+    "Spy call returned promise was rejected",
   );
   await assertRejects(
     () =>
@@ -1759,12 +1759,12 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         error: { msgIncludes: "x" },
       }),
     TypeError,
-    "do not expect error and return, only one should be expected",
+    "Do not expect error and return, only one should be expected",
   );
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 1),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 });
 
@@ -1778,7 +1778,7 @@ Deno.test("assertSpyCallAsync() throws type error if expected return value is re
         returned: Promise.reject(new Error("failed")),
       }),
     TypeError,
-    "do not expect rejected promise, expect error instead",
+    "Do not expect rejected promise, expect error instead",
   );
 });
 
@@ -1788,7 +1788,7 @@ Deno.test("assertSpyCallArg()", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, undefined),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1855,7 +1855,7 @@ Deno.test("assertSpyCallArgs() throws without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1927,7 +1927,7 @@ Deno.test("assertSpyCallArgs() throws with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -1999,7 +1999,7 @@ Deno.test("assertSpyCallArgs() throws with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, []),
     AssertionError,
-    "spy not called as much as expected",
+    "Spy not called as much as expected",
   );
 
   spyFunc();
@@ -2115,12 +2115,12 @@ Deno.test("returnsNext() works with array", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -2135,13 +2135,13 @@ Deno.test("returnsNext() works with array", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
@@ -2155,12 +2155,12 @@ Deno.test("returnsNext() works with iterator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -2175,13 +2175,13 @@ Deno.test("returnsNext() works with iterator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
@@ -2198,12 +2198,12 @@ Deno.test("returnsNext() works with generator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 4 times",
+    "Not expected to be called more than 4 time(s)",
   );
 
   results = [];
@@ -2218,13 +2218,13 @@ Deno.test("returnsNext() works with generator", () => {
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   results.push(5);
   assertThrows(
     () => callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 });
 
@@ -2247,12 +2247,12 @@ Deno.test("resolvesNext() works with array", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -2274,13 +2274,13 @@ Deno.test("resolvesNext() works with array", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });
 
@@ -2303,12 +2303,12 @@ Deno.test("resolvesNext() works with iterator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -2330,13 +2330,13 @@ Deno.test("resolvesNext() works with iterator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });
 
@@ -2363,12 +2363,12 @@ Deno.test("resolvesNext() works with async generator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 5 times",
+    "Not expected to be called more than 5 time(s)",
   );
 
   results = [];
@@ -2390,12 +2390,12 @@ Deno.test("resolvesNext() works with async generator", async () => {
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
   results.push(5);
   await assertRejects(
     async () => await callback(),
     MockError,
-    "not expected to be called more than 6 times",
+    "Not expected to be called more than 6 time(s)",
   );
 });

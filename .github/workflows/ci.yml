@@ -18,9 +18,7 @@ jobs:
       matrix:
         deno:
           - v1.x
-          # TODO(iuioiua): Re-enable once workspaces functionality is fixed in canary
-          # See: https://github.com/denoland/deno/issues/24422
-          # - canary
+          - canary
         os:
           - ubuntu-latest
           - windows-latest
@@ -40,7 +38,9 @@ jobs:
 
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
-        run: deno task test
+        run: |
+          deno task test
+          rm deno.lock # remove deno.lock (v4) as it's incompatible with v3
         env:
           DENO_FUTURE: 1
 
@@ -52,7 +52,6 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
 
       - name: Type check browser compatible modules
-        shell: bash
         run: deno task test:browser
 
       - name: Generate lcov
@@ -112,10 +111,7 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
-          # See: https://github.com/denoland/deno/issues/24422
-          # deno-version: canary
-          deno-version: v1.x
+          deno-version: canary
 
       - name: Format
         run: deno fmt --check
@@ -185,10 +181,7 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
-          # See: https://github.com/denoland/deno/issues/24422
-          # deno-version: canary
-          deno-version: v1.x
+          deno-version: canary
 
       - name: Publish (dry run)
         run: deno publish --dry-run

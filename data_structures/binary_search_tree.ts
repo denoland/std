@@ -13,7 +13,7 @@ type Direction = "left" | "right";
  *
  * For performance, it's recommended that you use a self-balancing binary search
  * tree instead of this one unless you are extending this to create a
- * self-balancing tree. See RedBlackTree for an example of how BinarySearchTree
+ * self-balancing tree. See {@link RedBlackTree} for an example of how BinarySearchTree
  * can be extended to create a self-balancing binary search tree.
  *
  * | Method        | Average Case | Worst Case |
@@ -97,22 +97,6 @@ export class BinarySearchTree<T> implements Iterable<T> {
 
   /**
    * Construct an empty binary search tree.
-   *
-   * @example Creating an empty binary search tree
-   * ```ts no-assert
-   * import { BinarySearchTree } from "@std/data-structures";
-   *
-   * const tree = new BinarySearchTree<number>();
-   * ```
-   *
-   * @example Creating a binary search tree with a custom comparison function
-   * ```ts no-assert
-   * import { BinarySearchTree, ascend } from "@std/data-structures";
-   *
-   * const tree = new BinarySearchTree<{ price: number, name: string }>(
-   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
-   * );
-   * ```
    *
    * To create a binary search tree from an array like, an iterable object, or an
    * existing binary search tree, use the {@link BinarySearchTree.from} method.
@@ -759,7 +743,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * assertEquals([...tree], [1, 2, 3, 4, 5]);
    * ```
    *
-   * See {@link BinarySearchTree#lnrValues}.
+   * See {@link BinarySearchTree.prototype.lnrValues}.
    *
    * @returns An iterator that traverses the tree in-order (LNR).
    */

@@ -15,6 +15,7 @@ import {
   type DocNodeBase,
   type DocNodeClass,
   type DocNodeFunction,
+  type DocNodeInterface,
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
@@ -27,9 +28,11 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
+  "../archive/mod.ts",
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
+  "../cache/mod.ts",
   "../cli/mod.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
@@ -49,6 +52,7 @@ const ENTRY_POINTS = [
   "../http/mod.ts",
   "../ini/mod.ts",
   "../internal/mod.ts",
+  "../io/mod.ts",
   "../json/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
@@ -162,14 +166,22 @@ function assertHasParamTag(
 }
 
 async function assertSnippetEvals(
-  snippet: string,
-  document: { jsDoc: JsDoc; location: Location },
+  {
+    snippet,
+    document,
+    expectError,
+  }: {
+    snippet: string;
+    document: { jsDoc: JsDoc; location: Location };
+    expectError: boolean;
+  },
 ) {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       "--ext=ts",
       "--unstable-webgpu",
+      "--check",
       "--no-lock",
       snippet,
     ],
@@ -184,11 +196,19 @@ async function assertSnippetEvals(
   try {
     const { success, stderr } = await command.output();
     const error = new TextDecoder().decode(stderr);
-    assert(
-      success,
-      `Failed to execute snippet: \n${snippet}\n${error}`,
-      document,
-    );
+    if (expectError) {
+      assert(
+        !success,
+        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
+        document,
+      );
+    } else {
+      assert(
+        success,
+        `Failed to execute snippet: \n${snippet}\n${error}`,
+        document,
+      );
+    }
   } finally {
     clearTimeout(timeoutId);
   }
@@ -225,7 +245,13 @@ function assertSnippetsWork(
         document,
       );
     }
-    snippetPromises.push(assertSnippetEvals(snippet, document));
+    snippetPromises.push(
+      assertSnippetEvals({
+        snippet,
+        document,
+        expectError: delim?.includes("expect-error") ?? false,
+      }),
+    );
   }
 }
 
@@ -408,7 +434,6 @@ function assertConstructorDocs(
       assertHasParamTag(constructor, param.left.name);
     }
   }
-  assertHasExampleTag(constructor);
 }
 
 /**
@@ -417,6 +442,34 @@ function assertConstructorDocs(
  */
 function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
   assertSnippetsWork(document.jsDoc.doc!, document);
+}
+
+/**
+ * Ensures an interface document:
+ * - Has `@default` tags for all optional properties.
+ */
+// deno-lint-ignore no-unused-vars
+function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  for (const prop of document.interfaceDef.properties) {
+    if (!prop.optional) continue;
+    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
+      diagnostics.push(
+        new DocumentError(
+          "Optional interface properties should have default values",
+          document,
+        ),
+      );
+    }
+  }
+}
+
+// deno-lint-ignore no-unused-vars
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  // TODO(iuioiua): This is currently disabled deliberately, as it throws errors
+  // for interface properties that don't have a `@default` tag. Re-enable this
+  // when checking for `@default` tags again, or when a solution is found for
+  // ignoring some properties (those that don't require a `@default` tag).
+  // assertHasDefaultTags(document);
 }
 
 function resolve(specifier: string, referrer: string): string {
@@ -450,6 +503,8 @@ async function checkDocs(specifier: string) {
         assertClassDocs(document);
         break;
       }
+      case "interface":
+        assertInterfaceDocs(document);
     }
   }
 }

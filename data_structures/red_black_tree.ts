@@ -104,22 +104,6 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   /**
    * Construct an empty red-black tree.
    *
-   * @example Creating an empty red-black tree
-   * ```ts no-assert
-   * import { RedBlackTree } from "@std/data-structures";
-   *
-   * const tree = new RedBlackTree<number>();
-   * ```
-   *
-   * @example Creating a red-black tree with a custom comparison function
-   * ```ts no-assert
-   * import { RedBlackTree, ascend } from "@std/data-structures";
-   *
-   * const tree = new RedBlackTree<{ price: number, name: string }>(
-   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
-   * );
-   * ```
-   *
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
   constructor(compare: (a: T, b: T) => number = ascend) {

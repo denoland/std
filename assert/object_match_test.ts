@@ -31,6 +31,11 @@ const n = {
     ["b", b],
   ]),
 };
+const o = { foo: [new Map([["bar", n.bar], ["baz", null]])] };
+const p = { bar: [new Set([1, 2, 3])] };
+const q = { foo: [1, 2] as unknown[] };
+q.foo[2] = q.foo;
+const r = { bar: [[1, [2, [q]]]] };
 
 Deno.test("assertObjectMatch() matches simple subset", () => {
   assertObjectMatch(a, {
@@ -79,6 +84,7 @@ Deno.test("assertObjectMatch() matches subset with circular reference", () => {
       },
     },
   });
+  assertObjectMatch(q, { foo: [1, 2, [1, 2, [1, 2, [1, 2]]]] });
 });
 
 Deno.test("assertObjectMatch() matches subset with interface", () => {
@@ -105,6 +111,7 @@ Deno.test("assertObjectMatch() matches subset with nested array inside", () => {
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
   assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
   assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
+  assertObjectMatch(r, { bar: [[1, [2, [q]]]] });
 });
 
 Deno.test("assertObjectMatch() matches subset with regexp", () => {
@@ -117,6 +124,9 @@ Deno.test("assertObjectMatch() matches subset with built-in data structures", ()
   assertObjectMatch(n, { bar: new Map([["bar", 2]]) });
   assertObjectMatch(n, { baz: new Map([["b", b]]) });
   assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
+  assertObjectMatch(o, { foo: [new Map([["baz", null]])] });
+  assertObjectMatch(o, { foo: [new Map([["bar", n.bar]])] });
+  assertObjectMatch(p, { bar: [new Set([2, 3])] });
 });
 
 Deno.test("assertObjectMatch() throws when a key is missing from subset", () => {
@@ -293,6 +303,9 @@ Deno.test("assertObjectMatch() throws assertion error when in the first argument
     () => assertObjectMatch({ foo: undefined, bar: null }, { foo: null }),
     AssertionError,
   );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["b", null]]) }),
+  );
 });
 
 Deno.test("assertObjectMatch() throws readable type error for non mappable primitive types", () => {
@@ -317,5 +330,86 @@ Deno.test("assertObjectMatch() throws readable type error for non mappable primi
     () => assertObjectMatch("string", "string"),
     TypeError,
     "assertObjectMatch",
+  );
+});
+
+Deno.test("assertObjectMatch() prints inputs correctly", () => {
+  const x = {
+    command: "error",
+    payload: {
+      message: "NodeNotFound",
+    },
+    protocol: "graph",
+  };
+
+  const y = {
+    protocol: "graph",
+    command: "addgroup",
+    payload: {
+      graph: "foo",
+      metadata: {
+        description: "foo",
+      },
+      name: "somegroup",
+      nodes: [
+        "somenode",
+        "someothernode",
+      ],
+    },
+  };
+
+  assertThrows(
+    () => assertObjectMatch(x, y),
+    AssertionError,
+    `    {
++     command: "addgroup",
+-     command: "error",
+      payload: {
++       graph: "foo",
++       metadata: {
++         description: "foo",
++       },
++       name: "somegroup",
++       nodes: [
++         "somenode",
++         "someothernode",
++       ],
+-       message: "NodeNotFound",
+      },
+      protocol: "graph",
+    }`,
+  );
+
+  assertThrows(
+    () => assertObjectMatch({ foo: [] }, { foo: ["bar"] }),
+    AssertionError,
+    `    {
++     foo: [
++       "bar",
++     ],
+-     foo: [],
+    }`,
+  );
+
+  const a = {};
+  const b = {};
+
+  Object.defineProperty(a, "hello", {
+    value: "world",
+    enumerable: false,
+  });
+
+  Object.defineProperty(b, "foo", {
+    value: "bar",
+    enumerable: false,
+  });
+
+  assertThrows(
+    () => assertObjectMatch(a, b),
+    AssertionError,
+    `    {
+-     hello: "world",
++     foo: "bar",
+    }`,
   );
 });

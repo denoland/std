@@ -3,6 +3,7 @@ name: workspace publish
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -20,10 +21,7 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1
         with:
-          # TODO(iuioiua): Revert once workspaces functionality is fixed in canary
-          # See: https://github.com/denoland/deno/issues/24422
-          # deno-version: canary
-          deno-version: v1.x
+          deno-version: canary
 
       - name: Format
         run: deno fmt --check

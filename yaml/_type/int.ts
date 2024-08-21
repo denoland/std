@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { type Any, isNegativeZero } from "../_utils.ts";
+import { isNegativeZero } from "../_utils.ts";
 
 function isCharCodeInRange(c: number, lower: number, upper: number): boolean {
   return lower <= c && c <= upper;
@@ -91,7 +91,6 @@ function resolveYamlInteger(data: string): boolean {
   for (; index < max; index++) {
     ch = data[index];
     if (ch === "_") continue;
-    if (ch === ":") break;
     if (!isDecCode(data.charCodeAt(index))) {
       return false;
     }
@@ -101,18 +100,14 @@ function resolveYamlInteger(data: string): boolean {
   // Should have digits and should not end with `_`
   if (!hasDigits || ch === "_") return false;
 
-  // if !base60 - done;
-  if (ch !== ":") return true;
-
   // base60 almost not used, no needs to optimize
   return /^(:[0-5]?[0-9])+$/.test(data.slice(index));
 }
 
 function constructYamlInteger(data: string): number {
   let value = data;
-  const digits: number[] = [];
 
-  if (value.indexOf("_") !== -1) {
+  if (value.includes("_")) {
     value = value.replace(/_/g, "");
   }
 
@@ -132,45 +127,15 @@ function constructYamlInteger(data: string): number {
     return sign * parseInt(value, 8);
   }
 
-  if (value.indexOf(":") !== -1) {
-    value.split(":").forEach((v) => {
-      digits.unshift(parseInt(v, 10));
-    });
-
-    let valueInt = 0;
-    let base = 1;
-
-    digits.forEach((d) => {
-      valueInt += d * base;
-      base *= 60;
-    });
-
-    return sign * valueInt;
-  }
-
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: Any): boolean {
+function isInteger(object: unknown): object is number {
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }
 
-function compileStyleAliases(map?: Record<string, unknown[] | null>) {
-  const result = {} as Record<string, string>;
-
-  if (map) {
-    Object.keys(map).forEach((style) => {
-      map[style]!.forEach((alias) => {
-        result[String(alias)] = style;
-      });
-    });
-  }
-
-  return result;
-}
-
-export const int: Type = {
+export const int: Type<"scalar", number> = {
   tag: "tag:yaml.org,2002:int",
   construct: constructYamlInteger,
   defaultStyle: "decimal",
@@ -195,10 +160,4 @@ export const int: Type = {
     },
   },
   resolve: resolveYamlInteger,
-  styleAliases: compileStyleAliases({
-    binary: [2, "bin"],
-    decimal: [10, "dec"],
-    hexadecimal: [16, "hex"],
-    octal: [8, "oct"],
-  }),
 };

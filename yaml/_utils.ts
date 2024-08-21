@@ -4,9 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 // deno-lint-ignore no-explicit-any
-export type Any = any;
-
-export interface ArrayObject<T = Any> {
+export interface ArrayObject<T = any> {
   [P: string]: T;
 }
 
@@ -20,4 +18,8 @@ export function isObject(value: unknown): value is Record<string, unknown> {
 
 export function isNegativeZero(i: number): boolean {
   return i === 0 && Number.NEGATIVE_INFINITY === 1 / i;
+}
+
+export function getObjectTypeString(object: unknown) {
+  return Object.prototype.toString.call(object);
 }

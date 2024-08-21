@@ -22,16 +22,13 @@ function isNull(object: unknown): object is null {
   return object === null;
 }
 
-export const nil: Type = {
+export const nil: Type<"scalar", null> = {
   tag: "tag:yaml.org,2002:null",
   construct: constructYamlNull,
   defaultStyle: "lowercase",
   kind: "scalar",
   predicate: isNull,
   represent: {
-    canonical(): string {
-      return "~";
-    },
     lowercase(): string {
       return "null";
     },

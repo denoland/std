@@ -10,7 +10,7 @@ import {
   assertStringIncludes,
   assertThrows,
 } from "@std/assert";
-import { stringify, StringifyError } from "./stringify.ts";
+import { stringify } from "./stringify.ts";
 
 const CRLF = "\r\n";
 const BYTE_ORDER_MARK = "\ufeff";
@@ -26,7 +26,7 @@ Deno.test({
         const errorMessage = 'Property accessor is not of type "number"';
         assertThrows(
           () => stringify(data, { columns }),
-          StringifyError,
+          TypeError,
           errorMessage,
         );
       },
@@ -46,7 +46,7 @@ Deno.test({
           const options = { separator: '"', columns };
           assertThrows(
             () => stringify(data, options),
-            StringifyError,
+            TypeError,
             errorMessage,
           );
         },
@@ -66,7 +66,7 @@ Deno.test({
           const options = { separator: "\r\n", columns };
           assertThrows(
             () => stringify(data, options),
-            StringifyError,
+            TypeError,
             errorMessage,
           );
         },
@@ -80,7 +80,7 @@ Deno.test({
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
             () => stringify(data),
-            StringifyError,
+            TypeError,
             "No property accessor function was provided for object",
           );
         },
@@ -93,7 +93,7 @@ Deno.test({
           const data = [{ a: 1 }, { a: 2 }];
           assertThrows(
             () => stringify(data),
-            StringifyError,
+            TypeError,
             "No property accessor function was provided for object",
           );
         },
@@ -579,5 +579,17 @@ Deno.test({
         },
       },
     );
+    await t.step({
+      name: "`as const` row data and options pass type checking",
+      fn() {
+        const columns = ["col1", "col2"] as const;
+        const data = [["foo", "bar"], ["baz", "qux"]] as const;
+        const options = { columns } as const;
+
+        void (() => {
+          stringify(data, options);
+        });
+      },
+    });
   },
 });

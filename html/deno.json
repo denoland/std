@@ -1,9 +1,10 @@
 {
   "name": "@std/html",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.1",
   "exports": {
     ".": "./mod.ts",
     "./entities": "./entities.ts",
+    "./is-valid-custom-element-name": "./is_valid_custom_element_name.ts",
     "./named-entity-list.json": "./named_entity_list.json"
   }
 }

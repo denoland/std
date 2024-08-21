@@ -28,8 +28,19 @@ export type Operator =
   | "<=";
 
 /**
- * The shape of a valid semantic version comparator
- * @example >=0.0.0
+ * The shape of a valid SemVer comparator.
+ *
+ * @example Usage
+ * ```ts
+ * import type { Comparator } from "@std/semver/types";
+ *
+ * const comparator: Comparator = {
+ *   operator: ">",
+ *   major: 1,
+ *   minor: 2,
+ *   patch: 3,
+ * }
+ * ```
  */
 export interface Comparator extends SemVer {
   /** The operator */
@@ -46,9 +57,17 @@ export interface SemVer {
   minor: number;
   /** The patch version */
   patch: number;
-  /** The prerelease version */
+  /**
+   * The prerelease version
+   *
+   * @default {[]}
+   */
   prerelease?: (string | number)[];
-  /** The build metadata */
+  /**
+   * The build metadata
+   *
+   * @default {[]}
+   */
   build?: string[];
 }
 

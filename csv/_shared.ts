@@ -1,15 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * returns length of a string considering surrogate pairs
- * ```ts
- * function graphemeLength(s: string) {
- *   return Array.from(s).length;
- * }
- * graphemeLength("🐱") // 1
- * "🐱".length // 2
+ * Gives the length of a string in Unicode code points
+ *
+ * ```
+ * codePointLength("🐱"); // 1
+ * "🐱".length; // 2
  * ```
  */
-export function graphemeLength(s: string) {
+export function codePointLength(s: string) {
   return Array.from(s).length;
 }

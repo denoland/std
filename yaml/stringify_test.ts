@@ -5,7 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { YamlError } from "./_error.ts";
+import { compare, parse } from "@std/semver";
 
 Deno.test({
   name: "stringify()",
@@ -88,35 +88,11 @@ Deno.test({
       "0b101010\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "bin" } }),
-      "0b101010\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 2 } }),
-      "0b101010\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "octal" } }),
       "052\n",
     );
     assertEquals(
-      stringify(42, { styles: { "!!int": "oct" } }),
-      "052\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 8 } }),
-      "052\n",
-    );
-    assertEquals(
       stringify(42, { styles: { "!!int": "hexadecimal" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": "hex" } }),
-      "0x2A\n",
-    );
-    assertEquals(
-      stringify(42, { styles: { "!!int": 16 } }),
       "0x2A\n",
     );
   },
@@ -167,7 +143,7 @@ Deno.test({
     const object = { undefined: undefined };
     assertThrows(
       () => stringify(object),
-      YamlError,
+      TypeError,
       "unacceptable kind of an object to dump",
     );
   },
@@ -204,6 +180,25 @@ Deno.test({
 
     assertThrows(
       () => stringify({ function: func }, { schema: "extended" }),
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() ignores `!!js/*` yaml types when skipInvalid option is true",
+  fn() {
+    assertEquals(
+      stringify({ undefined: undefined }, { skipInvalid: true }),
+      "{}\n",
+    );
+    assertEquals(
+      stringify({
+        foobar() {
+          return "hello world!";
+        },
+      }, { skipInvalid: true }),
+      "{}\n",
     );
   },
 });
@@ -277,16 +272,409 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() works with noRefs option",
+  name: "stringify() works with useAnchors option",
   fn() {
     const obj = { foo: "bar" };
     assertEquals(
-      stringify([obj, obj], { noRefs: true }),
+      stringify([obj, obj], { useAnchors: false }),
       `- foo: bar\n- foo: bar\n`,
     );
     assertEquals(
-      stringify([obj, obj], { noRefs: false }),
+      stringify([obj, obj], { useAnchors: true }),
       `- &ref_0\n  foo: bar\n- *ref_0\n`,
     );
   },
+});
+
+Deno.test({
+  name: "stringify() uses block scalar style for multiline strings",
+  fn() {
+    assertEquals(
+      stringify("foo\nbar"),
+      `|-
+  foo
+  bar
+`,
+    );
+    assertEquals(
+      stringify("foo  \nbar  "),
+      `|-
+  foo \x20
+  bar \x20
+`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() uses folded scalar style for long strings",
+  fn() {
+    assertEquals(
+      stringify(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      ),
+      `>-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() uses flow style for arrays and mappings when the nesting level exceeds flowLevel option value",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+      }),
+      `foo: [bar, baz]
+bar: {hello: world}
+`,
+    );
+
+    const a = { foo: 42 };
+    const b = [1, 2];
+    const obj = { foo: [a, b], bar: { a, b } };
+    assertEquals(
+      stringify(obj, { flowLevel: 1 }),
+      `foo: [&ref_0 {foo: 42}, &ref_1 [1, 2]]
+bar: {a: *ref_0, b: *ref_1}
+`,
+    );
+  },
+});
+
+Deno.test("stringify() handles indentation", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with whitespace values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: " 123 Main St ",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: [" JavaScript ", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: ' 123 Main St '
+  city: Anytown
+  zip: 12345
+skills:
+  - ' JavaScript '
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with start newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "\n123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["\nJavaScript", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |-\n\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |-\n\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test("stringify() handles indentation with trailing newline values", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St\n",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript\n", "TypeScript", "Deno"],
+  };
+
+  const expected = `name: John
+age: 30
+address:
+  street: |\n    123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+  - |\n    JavaScript
+  - TypeScript
+  - Deno
+`;
+
+  const actual = stringify(object);
+  assertEquals(actual.trim(), expected.trim());
+});
+
+Deno.test(
+  "stringify() changes indentation style for arrays when arrayIndent = false is specified",
+  () => {
+    const object = {
+      name: "John",
+      age: 30,
+      address: {
+        street: "123 Main St",
+        city: "Anytown",
+        zip: 12345,
+      },
+      skills: ["JavaScript", "TypeScript", "Deno"],
+    };
+
+    assertEquals(
+      stringify(object, { arrayIndent: false }),
+      `name: John
+age: 30
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+skills:
+- JavaScript
+- TypeScript
+- Deno
+`,
+    );
+  },
+);
+
+Deno.test("stringify() changes the key order when the sortKeys option is specified", () => {
+  const object = {
+    "1.0.0": null,
+    "0.0.0-0": null,
+    "0.0.0": null,
+    "1.0.2": null,
+    "1.0.10": null,
+  };
+  assertEquals(
+    stringify(object),
+    `1.0.0: null
+0.0.0-0: null
+0.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+  // When sortKeys is true, keys are sorted in ASCII char order
+  assertEquals(
+    stringify(object, { sortKeys: true }),
+    `0.0.0: null
+0.0.0-0: null
+1.0.0: null
+1.0.10: null
+1.0.2: null
+`,
+  );
+  // When sortKeys is a function, keys are sorted by the return value of the function
+  assertEquals(
+    stringify(object, { sortKeys: (a, b) => compare(parse(a), parse(b)) }),
+    `0.0.0-0: null
+0.0.0: null
+1.0.0: null
+1.0.2: null
+1.0.10: null
+`,
+  );
+});
+
+Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
+  const object = {
+    message:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  };
+
+  assertEquals(
+    stringify(object, { lineWidth: 40 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur
+  adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit
+  in voluptate velit esse cillum dolore eu
+  fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in
+  culpa qui officia deserunt mollit anim
+  id est laborum.
+`,
+  );
+  // default lineWidth is 80
+  assertEquals(
+    stringify(object),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
+  in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: 120 }),
+    `message: >-
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`,
+  );
+  assertEquals(
+    stringify(object, { lineWidth: Infinity }),
+    "message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'\n",
+  );
+});
+
+Deno.test("stringify() changes indentation with indent option", () => {
+  const object = {
+    name: "John",
+    age: 30,
+    address: {
+      street: "123 Main St",
+      city: "Anytown",
+      zip: 12345,
+    },
+    skills: ["JavaScript", "TypeScript", "Deno"],
+  };
+
+  assertEquals(
+    stringify(object, { indent: 4 }),
+    `name: John
+age: 30
+address:
+    street: 123 Main St
+    city: Anytown
+    zip: 12345
+skills:
+    - JavaScript
+    - TypeScript
+    - Deno
+`,
+  );
+
+  assertEquals(
+    stringify(object, { indent: 8 }),
+    `name: John
+age: 30
+address:
+        street: 123 Main St
+        city: Anytown
+        zip: 12345
+skills:
+        - JavaScript
+        - TypeScript
+        - Deno
+`,
+  );
+});
+
+Deno.test("stringify() handles nil", () => {
+  assertEquals(stringify(null), "null\n");
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "lowercase" } }),
+    "null\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "uppercase" } }),
+    "NULL\n",
+  );
+  assertEquals(
+    stringify(null, { styles: { "tag:yaml.org,2002:null": "camelcase" } }),
+    "Null\n",
+  );
+});
+
+Deno.test("stringify() handles sequence", () => {
+  assertEquals(stringify([]), "[]\n");
+  assertEquals(
+    stringify(["Clark Evans", "Ingy döt Net", "Oren Ben-Kiki"]),
+    `- Clark Evans
+- Ingy döt Net
+- Oren Ben-Kiki
+`,
+  );
+});
+
+Deno.test("stringify() handles mapping", () => {
+  assertEquals(stringify({}), "{}\n");
+  assertEquals(
+    stringify({ Clark: "Evans", Ingy: "döt Net", Oren: "Ben-Kiki" }),
+    `Clark: Evans
+Ingy: döt Net
+Oren: Ben-Kiki
+`,
+  );
+});
+
+Deno.test("stringify() handles string", () => {
+  assertEquals(stringify("Hello World"), "Hello World\n");
+});
+
+Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
+  assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+  assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
+  assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
+  assertEquals(stringify("No", { compatMode: true }), "'No'\n");
+});
+
+Deno.test("stringify() handles undefined with skipInvalid option", () => {
+  assertEquals(stringify(undefined, { skipInvalid: true }), "");
 });

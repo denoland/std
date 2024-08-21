@@ -2,10 +2,10 @@
 // This module is browser compatible.
 
 import { _format, assertArg } from "../_common/format.ts";
-import type { FormatInputPathObject } from "../_interface.ts";
+import type { ParsedPath } from "../types.ts";
 
 /**
- * Generate a path from `FormatInputPathObject` object.
+ * Generate a path from `ParsedPath` object.
  *
  * @example Usage
  * ```ts
@@ -25,7 +25,7 @@ import type { FormatInputPathObject } from "../_interface.ts";
  * @param pathObject The path object to format.
  * @returns The formatted path.
  */
-export function format(pathObject: FormatInputPathObject): string {
+export function format(pathObject: Partial<ParsedPath>): string {
   assertArg(pathObject);
   return _format("/", pathObject);
 }
