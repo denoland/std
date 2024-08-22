@@ -5,10 +5,7 @@
 /**
  * HTTP Headers with status permanent
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names | IANA Hypertext Transfer Protocol (HTTP) Field Name Registry}
  */
@@ -1198,9 +1195,6 @@ export const HEADER = {
 /**
  * A HTTP Header
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Header = typeof HEADER[keyof typeof HEADER];

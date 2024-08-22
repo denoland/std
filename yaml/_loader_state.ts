@@ -234,6 +234,60 @@ export class LoaderState {
       return this.dispatchWarning("unsupported YAML version of the document");
     }
   }
+  tagDirectiveHandler(...args: string[]) {
+    if (args.length !== 2) {
+      return this.throwError("TAG directive accepts exactly two arguments");
+    }
+
+    const handle = args[0]!;
+    const prefix = args[1]!;
+
+    if (!PATTERN_TAG_HANDLE.test(handle)) {
+      return this.throwError(
+        "ill-formed tag handle (first argument) of the TAG directive",
+      );
+    }
+
+    if (this.tagMap.has(handle)) {
+      return this.throwError(
+        `there is a previously declared suffix for "${handle}" tag handle`,
+      );
+    }
+
+    if (!PATTERN_TAG_URI.test(prefix)) {
+      return this.throwError(
+        "ill-formed tag prefix (second argument) of the TAG directive",
+      );
+    }
+
+    this.tagMap.set(handle, prefix);
+  }
+  captureSegment(start: number, end: number, checkJson: boolean) {
+    let result: string;
+    if (start < end) {
+      result = this.input.slice(start, end);
+
+      if (checkJson) {
+        for (
+          let position = 0;
+          position < result.length;
+          position++
+        ) {
+          const character = result.charCodeAt(position);
+          if (
+            !(character === 0x09 ||
+              (0x20 <= character && character <= 0x10ffff))
+          ) {
+            return this.throwError("expected valid JSON character");
+          }
+        }
+      } else if (PATTERN_NON_PRINTABLE.test(result)) {
+        return this.throwError("the stream contains non-printable characters");
+      }
+
+      this.result += result;
+    }
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -304,7 +358,7 @@ export class LoaderState {
           this.yamlDirectiveHandler(...directiveArgs);
           break;
         case "TAG":
-          tagDirectiveHandler(this, ...directiveArgs);
+          this.tagDirectiveHandler(...directiveArgs);
           break;
         default:
           this.dispatchWarning(
@@ -358,66 +412,6 @@ export class LoaderState {
     while (this.position < this.length - 1) {
       yield this.readDocument();
     }
-  }
-}
-
-function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (args.length !== 2) {
-    return state.throwError("TAG directive accepts exactly two arguments");
-  }
-
-  const handle = args[0]!;
-  const prefix = args[1]!;
-
-  if (!PATTERN_TAG_HANDLE.test(handle)) {
-    return state.throwError(
-      "ill-formed tag handle (first argument) of the TAG directive",
-    );
-  }
-
-  if (state.tagMap.has(handle)) {
-    return state.throwError(
-      `there is a previously declared suffix for "${handle}" tag handle`,
-    );
-  }
-
-  if (!PATTERN_TAG_URI.test(prefix)) {
-    return state.throwError(
-      "ill-formed tag prefix (second argument) of the TAG directive",
-    );
-  }
-
-  state.tagMap.set(handle, prefix);
-}
-
-function captureSegment(
-  state: LoaderState,
-  start: number,
-  end: number,
-  checkJson: boolean,
-) {
-  let result: string;
-  if (start < end) {
-    result = state.input.slice(start, end);
-
-    if (checkJson) {
-      for (
-        let position = 0;
-        position < result.length;
-        position++
-      ) {
-        const character = result.charCodeAt(position);
-        if (
-          !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
-        ) {
-          return state.throwError("expected valid JSON character");
-        }
-      }
-    } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      return state.throwError("the stream contains non-printable characters");
-    }
-
-    state.result += result;
   }
 }
 
@@ -706,7 +700,7 @@ function readPlainScalar(
     }
 
     if (hasPendingContent) {
-      captureSegment(state, captureStart, captureEnd, false);
+      state.captureSegment(captureStart, captureEnd, false);
       writeFoldedLines(state, state.line - line);
       captureStart = captureEnd = state.position;
       hasPendingContent = false;
@@ -719,7 +713,7 @@ function readPlainScalar(
     ch = state.next();
   }
 
-  captureSegment(state, captureStart, captureEnd, false);
+  state.captureSegment(captureStart, captureEnd, false);
 
   if (state.result) {
     return true;
@@ -751,7 +745,7 @@ function readSingleQuotedScalar(
 
   while ((ch = state.peek()) !== 0) {
     if (ch === SINGLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (ch === SINGLE_QUOTE) {
@@ -762,7 +756,7 @@ function readSingleQuotedScalar(
         return true;
       }
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -801,12 +795,12 @@ function readDoubleQuotedScalar(
   let tmp: number;
   while ((ch = state.peek()) !== 0) {
     if (ch === DOUBLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       state.position++;
       return true;
     }
     if (ch === BACKSLASH) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (isEOL(ch)) {
@@ -837,7 +831,7 @@ function readDoubleQuotedScalar(
 
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -1122,7 +1116,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       ch = state.next();
     }
 
-    captureSegment(state, captureStart, state.position, false);
+    state.captureSegment(captureStart, state.position, false);
   }
 
   return true;

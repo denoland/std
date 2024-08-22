@@ -52,7 +52,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  override log(msg: string) {
+  log(msg: string) {
     console.log(msg);
   }
 }
