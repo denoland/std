@@ -417,7 +417,9 @@ export class Buffer {
    */
   grow(n: number) {
     if (n < 0) {
-      throw Error("Buffer growth must be positive");
+      throw Error(
+        `Cannot grow buffer as growth must be positive: received ${n}`,
+      );
     }
     const m = this.#grow(n);
     this.#reslice(m);

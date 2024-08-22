@@ -116,7 +116,7 @@ Deno.test("Buffer.grow(n) throws an error if n is a negative value", () => {
       buf.grow(-1);
     },
     Error,
-    "Buffer growth must be positive",
+    "Cannot grow buffer as growth must be positive: received -1",
   );
 });
 
