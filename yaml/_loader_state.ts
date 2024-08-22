@@ -371,7 +371,7 @@ export class LoaderState {
     }
   }
   storeMappingPair(
-    result: Record<string, unknown> | null,
+    result: Record<string, unknown>,
     overridableKeys: Set<string>,
     keyTag: string | null,
     keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
@@ -412,10 +412,6 @@ export class LoaderState {
     }
 
     keyNode = String(keyNode);
-
-    if (result === null) {
-      result = {};
-    }
 
     if (keyTag === "tag:yaml.org,2002:merge") {
       if (Array.isArray(valueNode)) {
@@ -998,7 +994,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     } else if (isPair) {
       (result as Record<string, unknown>[]).push(
         state.storeMappingPair(
-          null,
+          {},
           overridableKeys,
           keyTag,
           keyNode,
