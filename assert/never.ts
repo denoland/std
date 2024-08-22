@@ -27,12 +27,10 @@ import { AssertionError } from "./assertion_error.ts";
  */
 
 /**
- * **UNSTABLE**: New API, yet to be vetted.
- *
  * Make an assertion that `x` is of type `never`.
  * If not then throw.
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Exhaustivenss check
  * ```ts

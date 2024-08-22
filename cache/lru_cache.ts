@@ -7,7 +7,7 @@ export type { MemoizationCache };
  * 	https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU
  * ) cache.
  *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * Automatically removes entries above the max size based on when they were
  * last accessed with `get`, `set`, or `has`.

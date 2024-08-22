@@ -174,18 +174,14 @@ So concrete examples are:
 ### Notices for unstable APIs
 
 Each unstable API must have the
-[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
-[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
-after the starting description.
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag after
+the starting description.
 
 ```ts
 /**
  * <description>
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * ...
  */
