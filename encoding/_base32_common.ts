@@ -23,7 +23,7 @@ function getLens(b32: string): [number, number] {
 
   if (len % 8 > 0) {
     throw new Error(
-      `String length must be a multiple of 8: received length ${len}`,
+      `Cannot decode base32 string as the length must be a multiple of 8: received length ${len}`,
     );
   }
 
