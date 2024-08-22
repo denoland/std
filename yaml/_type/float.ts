@@ -50,8 +50,7 @@ function constructYamlFloat(data: string): number {
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
-// deno-lint-ignore no-explicit-any
-function representYamlFloat(object: any, style?: StyleVariant): any {
+function representYamlFloat(object: number, style?: StyleVariant) {
   if (isNaN(object)) {
     switch (style) {
       case "lowercase":
