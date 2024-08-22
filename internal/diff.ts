@@ -77,7 +77,9 @@ export function assertFp(value: unknown): asserts value is FarthestPoint {
     typeof (value as FarthestPoint)?.y !== "number" ||
     typeof (value as FarthestPoint)?.id !== "number"
   ) {
-    throw new Error("Unexpected missing FarthestPoint");
+    throw new Error(
+      `Unexpected value, expected 'FarthestPoint': received ${typeof value}`,
+    );
   }
 }
 
