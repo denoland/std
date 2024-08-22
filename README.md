@@ -89,25 +89,6 @@ Package versions >=1.0.0 follow [Semantic Versioning](https://semver.org/), and
 package versions <1.0.0 follow
 [this proposal](https://github.com/semver/semver/pull/923).
 
-## Badge
-
-[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
-
-```html
-<a href="https://jsr.io/@std">
-  <img
-    width="135"
-    height="20"
-    src="https://raw.githubusercontent.com/denoland/std/main/badge.svg"
-    alt="Built with the Deno Standard Library"
-  />
-</a>
-```
-
-```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/std/main/badge.svg)](https://jsr.io/@std)
-```
-
 ## Frequently Asked Questions
 
 Check out the frequently asked questions page [here](./.github/FAQ.md).
