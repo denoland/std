@@ -37,7 +37,9 @@ function errInvalidByte(byte: number) {
 }
 
 function errLength(len: number) {
-  return new RangeError(`Cannot decode the hex string as the input length should be even: length is ${len}`);
+  return new RangeError(
+    `Cannot decode the hex string as the input length should be even: length is ${len}`,
+  );
 }
 
 /** Converts a hex character into its value. */

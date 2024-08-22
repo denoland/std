@@ -117,7 +117,7 @@ Deno.test("encodeVarint() throws on overflow with negative", () => {
   assertThrows(
     () => encodeVarint(-1),
     RangeError,
-    "Argument 'num' should be unsigned: received a signed number",
+    "Cannot encode the input into varint as it should be non-negative integer: received -1",
   );
 });
 Deno.test("encodeVarint() encodes with offset", () => {
