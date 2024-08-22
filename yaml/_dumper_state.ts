@@ -648,16 +648,10 @@ export class DumperState {
       });
       if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      let pairBuffer = "";
-
-      pairBuffer += quote;
-      if (keyString.length > 1024) pairBuffer += "? ";
-      pairBuffer += keyString;
-      pairBuffer += quote;
-      pairBuffer += separator;
-      pairBuffer += valueString;
-
-      results.push(pairBuffer);
+      const keyPrefix = keyString.length > 1024 ? "? " : "";
+      results.push(
+        `${quote}${keyPrefix}${keyString}${quote}${separator}${valueString}`,
+      );
     }
 
     return `{${results.join(", ")}}`;
