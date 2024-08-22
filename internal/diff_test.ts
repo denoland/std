@@ -134,11 +134,26 @@ Deno.test({
 Deno.test({
   name: "assertFp() throws",
   fn() {
-    const error = "Unexpected missing FarthestPoint";
-    assertThrows(() => assertFp({ id: 0 }), Error, error);
-    assertThrows(() => assertFp({ y: 0 }), Error, error);
-    assertThrows(() => assertFp(undefined), Error, error);
-    assertThrows(() => assertFp(null), Error, error);
+    assertThrows(
+      () => assertFp({ id: 0 }),
+      Error,
+      "Unexpected value, expected 'FarthestPoint': received object",
+    );
+    assertThrows(
+      () => assertFp({ y: 0 }),
+      Error,
+      "Unexpected value, expected 'FarthestPoint': received object",
+    );
+    assertThrows(
+      () => assertFp(undefined),
+      Error,
+      "Unexpected value, expected 'FarthestPoint': received undefined",
+    );
+    assertThrows(
+      () => assertFp(null),
+      Error,
+      "Unexpected value, expected 'FarthestPoint': received object",
+    );
   },
 });
 
