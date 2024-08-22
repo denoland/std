@@ -134,11 +134,21 @@ export async function retry<T>(
     ...opts,
   };
 
-  if (options.maxTimeout <= 0) throw new TypeError("maxTimeout is less than 0");
-  if (options.minTimeout > options.maxTimeout) {
-    throw new TypeError("minTimeout is greater than maxTimeout");
+  if (options.maxTimeout <= 0) {
+    throw new TypeError(
+      `Cannot retry as 'maxTimeout' must be positive: current value is ${options.maxTimeout}`,
+    );
   }
-  if (options.jitter > 1) throw new TypeError("jitter is greater than 1");
+  if (options.minTimeout > options.maxTimeout) {
+    throw new TypeError(
+      `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${options.minTimeout}', 'maxTimeout=${options.maxTimeout}'`,
+    );
+  }
+  if (options.jitter > 1) {
+    throw new TypeError(
+      `Cannot retry as 'jitter' must be <= 1: current value is ${options.jitter}`,
+    );
+  }
 
   let attempt = 0;
   while (true) {

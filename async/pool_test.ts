@@ -38,7 +38,7 @@ Deno.test("pooledMap() handles errors", async () => {
       }
     },
     AggregateError,
-    "Threw while mapping.",
+    "Cannot complete the mapping as an error was thrown from an item",
   );
   assertEquals(error.errors.length, 2);
   assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
