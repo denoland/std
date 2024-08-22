@@ -5,7 +5,8 @@ import {
   getBaseName,
   IA,
   print,
-  toJsonSchema,
+  toApi,
+  ToApiType,
 } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as session from '@/isolates/session.ts'
@@ -14,7 +15,7 @@ import { z } from 'zod'
 const log = Debug('AI:test-registry')
 
 // TODO move to zodObject for all objects
-export const schema = {
+export const parameters = {
   '@@install': z.object({}).describe('Ensures the basic branch structure'),
   createController: z.object({})
     .describe(
@@ -24,14 +25,15 @@ export const schema = {
     controllerId: z.string().describe('The controllerId to delete'),
   }).describe('Deletes the controller and its containing branch'),
 }
-
-export type Api = {
-  '@@install': (params: void) => void
-  createController: (params: void) => Promise<string>
-  deleteController: (params: { controllerId: string }) => Promise<void>
+export const returns = {
+  '@@install': z.void(),
+  createController: z.string(),
+  deleteController: z.void(),
 }
 
-export const api = toJsonSchema(schema)
+export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
   '@@install': (_, api) => {
@@ -64,7 +66,7 @@ const ensureRegistry = async (api: IA) => {
       branchName: 'tests',
       noClose: true,
     })
-    await actions['@@install']()
+    await actions['@@install']({})
   }
   return registry
 }

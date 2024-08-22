@@ -15,7 +15,6 @@ import {
   PierceRequest,
   RemoteRequest,
   Request,
-  SchemaType,
   SolidRequest,
   UnsequencedRequest,
 } from './api/types.ts'
@@ -247,16 +246,6 @@ export type Provisioner = (superBackchat: Backchat) => Promise<void>
 export type CradleMaker = (
   init?: Provisioner,
 ) => Promise<{ backchat: Backchat; engine: EngineInterface }>
-
-export const toJsonSchema = (schemas: SchemaType) => {
-  const result: { [key in keyof SchemaType]: JsonSchema7ObjectType } = {}
-  for (const key in schemas) {
-    const schema = zodToJsonSchema(schemas[key])
-    assert(schema, `invalid schema: ${key}`)
-    result[key] = schema as JsonSchema7ObjectType
-  }
-  return result
-}
 
 export const toApi = (parameters: Record<string, ZodSchema>) => {
   const api: Record<keyof typeof parameters, JsonSchema7ObjectType> = {}

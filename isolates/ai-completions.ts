@@ -4,6 +4,8 @@ import OpenAI from 'openai'
 import {
   actorIdRegex,
   Agent,
+  ChatCompletionAssistantMessageParam,
+  ChatCompletionMessageParam,
   Functions,
   getBaseName,
   IA,
@@ -13,6 +15,7 @@ import {
 } from '@/constants.ts'
 import { loadTools, loadValidators } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
+
 const log = Debug('AI:completions')
 
 const apiKey = Deno.env.get('OPENAI_API_KEY')
@@ -75,13 +78,13 @@ export type Api = {
       content: string
       actorId: string
     },
-  ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
+  ) => Promise<ChatCompletionAssistantMessageParam>
   halt: (
     params: { content: string; path: string },
   ) => Promise<Params>
   oneshot: (
     params: { path: string; contents: string[]; actorId: string },
-  ) => Promise<OpenAI.ChatCompletionAssistantMessageParam>
+  ) => Promise<ChatCompletionAssistantMessageParam>
 }
 export const functions: Functions<Api> = {
   async complete({ path }, api) {
@@ -163,12 +166,12 @@ const complete = async (
     parallel_tool_calls,
     presence_penalty,
   } = config
-  const sysprompt: OpenAI.ChatCompletionSystemMessageParam = {
-    role: 'system',
+  const sysprompt: ChatCompletionMessageParam = {
+    role: 'assistant',
     content: agent.instructions,
     name: agent.source.path,
   }
-  const args: OpenAI.ChatCompletionCreateParams = {
+  const args: OpenAI.ChatCompletionCreateParamsNonStreaming = {
     model,
     temperature,
     messages: [...messages, sysprompt].map(safeAssistantName),
@@ -180,22 +183,21 @@ const complete = async (
   }
 
   log('completion started with model: %o', args.model, print(api.pid))
-  let completion
   try {
-    completion = await ai.chat.completions.create(args)
+    const completion = await ai.chat.completions.create(args)
+    const result = completion.choices[0].message
+    log('completion complete', agent.source.path, result)
+    const assistant: ChatCompletionAssistantMessageParam = {
+      ...result,
+      name: agent.source.path,
+    }
+    return assistant
   } catch (error) {
     console.error('ai completion error', error)
     throw error
   }
-  const result = completion.choices[0].message
-  log('completion complete', agent.source.path, result)
-  const assistant: OpenAI.ChatCompletionAssistantMessageParam = {
-    ...result,
-    name: agent.source.path,
-  }
-  return assistant
 }
-const safeAssistantName = (message: Thread['messages'][number]) => {
+const safeAssistantName = (message: ChatCompletionMessageParam) => {
   if (message.role !== 'assistant' && message.role !== 'system') {
     return message
   }

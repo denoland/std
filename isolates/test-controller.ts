@@ -6,35 +6,19 @@ import {
   Functions,
   getActorPid,
   print,
-  SchemaType,
-  toJsonSchema,
+  toApi,
 } from '@/constants.ts'
 import * as longthread from '@/isolates/longthread.ts'
 import * as session from '@/isolates/session.ts'
 import { Debug, equal } from '@utils'
 import { assert } from '@std/assert'
+import { ToApiType } from '@/constants.ts'
 
 const log = Debug('AI:test-controller')
 
-export type Api = {
-  /**  A list of file patterns and cases patterns to filter which cases to
-   * run. Optionally delete all previous test results
-   */
-  start: (
-    params: {
-      controllerId: string
-      files?: string[]
-      cases?: string[]
-      reset?: boolean
-    },
-  ) => Promise<void>
-  /** Cancel the current run immediately */
-  stop: (params: { controllerId: string }) => void
-}
-
 // so it acts as zod thing, but converts to  a json schema
 // then the functions api is just functions keyed by the api schema
-export const schema: SchemaType = {
+export const parameters = {
   start: z.object({
     controllerId: z.string().describe('The controllerId to run the tests with'),
     files: z.array(z.string()).optional(),
@@ -47,6 +31,12 @@ export const schema: SchemaType = {
     'Cancel the current run immediately',
   ),
 }
+export const api = toApi(parameters)
+export const returns = {
+  start: z.void(),
+  stop: z.void(),
+}
+export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
   start: async ({ controllerId, files = [], cases, reset }, api) => {
@@ -93,5 +83,3 @@ export const functions: Functions<Api> = {
     log('stop', controllerId, print(api.pid))
   },
 }
-
-export const api = toJsonSchema(schema)

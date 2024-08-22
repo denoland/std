@@ -1,6 +1,10 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
-import { z, ZodObject, ZodTypeAny } from 'zod'
+import { z } from 'zod'
+export type {
+  ChatCompletionAssistantMessageParam,
+  ChatCompletionMessageParam,
+} from './zod.ts'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32crockford } from '@scure/base'
 import { JSONSchemaType } from './types.ajv.ts'
@@ -21,10 +25,15 @@ export enum PROCTYPE {
   // together to allow for a fire and forget branches
   // OR make DAEMON be the same as FORGET since no new info need be returned ?
 }
-
-export type SchemaType = {
-  [key: string]: ZodObject<Record<string, ZodTypeAny>>
-}
+export const WIDGETS = z.enum([
+  'TPS_REPORT',
+  'FILES',
+  'BRANCH_EXPLORER',
+  'COMMIT_GRAPH',
+  'COMMIT_INFO',
+  'THREADS',
+  'REPOS',
+])
 
 export type { JSONSchemaType }
 export type ApiFunction = {
@@ -134,22 +143,50 @@ export const ENTRY_BRANCH = 'main'
 
 export type PartialPID = Omit<PID, 'repoId'>
 
-export type Thread = {
-  messages: OpenAI.ChatCompletionMessageParam[]
-  toolCommits: { [toolCallId: string]: CommitOid }
+import { ChatCompletionMessageParamSchema } from './zod.ts'
+export const thread = z.object({
+  /** If the messages were truncated, this is the offset count */
+  messageOffset: z.number(),
+  messages: z.array(ChatCompletionMessageParamSchema),
+  toolCommits: z.record(
+    /** The tool call id */
+    z.string(),
+    /** The commit hash the tool ended on */
+    z.string(),
+  ),
   /** Have any files been changed in this threads branch */
-  isDirty?: boolean
-  summaries?: {
-    title: string
-    summary: string
-    /** The message index that this summary starts with */
-    start: number
-    /** The message index that this summary ends with */
-    end: number
-  }[]
-  /** When the stateboard changes, the commit is logged, for replay */
-  stateboards?: { start: number; commit: string }[]
-}
+  isDirty: z.boolean().optional(),
+  summaries: z.array(
+    z.object({
+      title: z.string(),
+      summary: z.string(),
+      /** The message index that this summary starts with */
+      start: z.number().int().gte(0),
+      /** The message index that this summary ends with */
+      end: z.number().int().gte(0).optional(),
+    }).refine((data) => data.end === undefined || data.end >= data.start, {
+      message: "'end' must be greater than or equal to 'start'",
+      path: ['end'],
+    }),
+  ).optional(),
+  /** History of stateboard changes */
+  stateboards: z.array(z.object({
+    /** What message number set the stateboard change */
+
+    setter: z.number(),
+    commit: z.string(),
+  })),
+  /** History of what the focus was set to */
+  foci: z.array(z.object({
+    /** The message number that set the focus */
+
+    setter: z.number(),
+    focus: z.object({
+      // Define the structure of PathTriad here
+    }),
+  })),
+})
+export type Thread = z.infer<typeof thread>
 export type BackchatThread = Thread & {
   focus: string
 }

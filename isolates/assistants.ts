@@ -66,10 +66,13 @@ export const functions: Functions<Api> = {
     )
     const externalId = await createThread()
     const thread: AssistantsThread = {
+      messageOffset: 0,
       messages: [],
       toolCommits: {},
       externalId,
       additionalMessages: [],
+      stateboards: [],
+      foci: [],
     }
     api.writeJSON(threadPath, thread)
     return api.pid

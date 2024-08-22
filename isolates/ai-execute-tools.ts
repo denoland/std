@@ -31,7 +31,7 @@ export const executeTools = async (threadPath: string, api: IA) => {
     debugToolCall(name, args)
     log('tool call:', name, JSON.parse(args))
     assert(actions[name], `missing action: ${name}`)
-    const message: OpenAI.ChatCompletionToolMessageParam = {
+    const message: Thread['messages'][number] = {
       role: 'tool',
       tool_call_id,
       content: '',
