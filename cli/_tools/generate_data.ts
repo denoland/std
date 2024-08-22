@@ -34,7 +34,7 @@ async function fetchUnicodeData(filename: string, version: string) {
   );
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch ${filename}`);
+    throw new Error(`Failed to fetch ${filename}: status ${res.status}`);
   }
 
   return await res.text();
@@ -245,12 +245,12 @@ class Table {
 
   indicesToWidths() {
     if (!this.indexed) {
-      throw new Error(`Can't call indicesToWidths twice on the same Table`);
+      throw new Error(`Cannot call indicesToWidths twice on the same table`);
     }
 
     this.entries = this.entries.map((i) => {
       const width = this.indexed[i]!.width();
-      if (width === null) throw new TypeError("width cannot be null");
+      if (width === null) throw new TypeError("'width' cannot be null");
       return width!;
     });
 
@@ -259,7 +259,7 @@ class Table {
 
   get buckets() {
     if (!this.indexed) {
-      throw new Error(`Can't access buckets after calling indicesToWidths`);
+      throw new Error(`Cannot access buckets after calling indicesToWidths`);
     }
 
     return this.indexed;
