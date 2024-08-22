@@ -36,8 +36,8 @@ function errInvalidByte(byte: number) {
   return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
 }
 
-function errLength() {
-  return new RangeError("Odd length hex string");
+function errLength(len: number) {
+  return new RangeError(`Hex length should be even: length is ${len}`);
 }
 
 /** Converts a hex character into its value. */
@@ -111,7 +111,7 @@ export function decodeHex(src: string): Uint8Array {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
     fromHexChar(u8[dst.length * 2]!);
-    throw errLength();
+    throw errLength(u8.length);
   }
 
   return dst;

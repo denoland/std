@@ -39,7 +39,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("OOOO=="),
       Error,
-      "Invalid string. Length must be a multiple of 8",
+      "String length must be a multiple of 8: received length 6",
     );
   },
 });

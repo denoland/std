@@ -114,7 +114,11 @@ Deno.test("encodeVarint() throws on overflow uint64", () => {
   assertThrows(() => encodeVarint(1e+30), RangeError, "overflows uint64");
 });
 Deno.test("encodeVarint() throws on overflow with negative", () => {
-  assertThrows(() => encodeVarint(-1), RangeError, "signed input given");
+  assertThrows(
+    () => encodeVarint(-1),
+    RangeError,
+    "Argument 'num' should be unsigned: received a signed number",
+  );
 });
 Deno.test("encodeVarint() encodes with offset", () => {
   let uint = new Uint8Array(3);
