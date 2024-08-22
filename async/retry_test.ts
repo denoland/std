@@ -64,7 +64,7 @@ Deno.test(
           maxTimeout: 100,
         }),
       TypeError,
-      "'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=1000', 'maxTimeout=100'",
+      "Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=1000', 'maxTimeout=100'",
     );
   },
 );
@@ -78,7 +78,7 @@ Deno.test(
           maxTimeout: -1,
         }),
       TypeError,
-      "'maxTimeout' must be positive: current value is -1",
+      "Cannot retry as 'maxTimeout' must be positive: current value is -1",
     );
   },
 );
@@ -92,7 +92,7 @@ Deno.test(
           jitter: 2,
         }),
       TypeError,
-      "'jitter' must be <= 1: current value is 2",
+      "Cannot retry as 'jitter' must be <= 1: current value is 2",
     );
   },
 );

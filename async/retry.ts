@@ -136,17 +136,17 @@ export async function retry<T>(
 
   if (options.maxTimeout <= 0) {
     throw new TypeError(
-      `'maxTimeout' must be positive: current value is ${options.maxTimeout}`,
+      `Cannot retry as 'maxTimeout' must be positive: current value is ${options.maxTimeout}`,
     );
   }
   if (options.minTimeout > options.maxTimeout) {
     throw new TypeError(
-      `'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${options.minTimeout}', 'maxTimeout=${options.maxTimeout}'`,
+      `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${options.minTimeout}', 'maxTimeout=${options.maxTimeout}'`,
     );
   }
   if (options.jitter > 1) {
     throw new TypeError(
-      `'jitter' must be <= 1: current value is ${options.jitter}`,
+      `Cannot retry as 'jitter' must be <= 1: current value is ${options.jitter}`,
     );
   }
 
