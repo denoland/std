@@ -59,7 +59,7 @@ Deno.test("Buffer.truncate(n) throws if n is negative", () => {
       buf.truncate(-1);
     },
     Error,
-    'Error truncating buffer, truncation value "-1" out of range: value must be between 0 and 0',
+    'Buffer truncation value "-1" is not between 0 and 0',
   );
 });
 
@@ -70,7 +70,7 @@ Deno.test("Buffer.truncate(n) throws if n is greater than the length of the buff
       buf.truncate(1);
     },
     Error,
-    'Error truncating buffer, truncation value "1" out of range: value must be between 0 and 0',
+    'Buffer truncation value "1" is not between 0 and 0',
   );
 });
 

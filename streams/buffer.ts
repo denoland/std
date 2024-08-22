@@ -316,7 +316,7 @@ export class Buffer {
     }
     if (n < 0 || n > this.length) {
       throw Error(
-        `Error truncating buffer, truncation value "${n}" out of range: value must be between 0 and ${this.length}`,
+        `Buffer truncation value "${n}" is not between 0 and ${this.length}`,
       );
     }
     this.#reslice(this.#off + n);
