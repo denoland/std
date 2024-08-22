@@ -16,8 +16,6 @@
  *
  * @param input The string that is going to be converted into a slug
  * @returns The string as a slug
- *
- * @experimental
  */
 export function slugify(input: string): string {
   return input
