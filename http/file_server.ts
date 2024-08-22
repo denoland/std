@@ -48,12 +48,12 @@ import {
   type StatusCode,
 } from "./status.ts";
 import { ByteSliceStream } from "@std/streams/byte-slice-stream";
-import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
 import { HEADER } from "./header.ts";
 import { METHOD } from "./method.ts";
+import { serverArgs } from "./_file_server_utils.ts";
 
 interface EntryInfo {
   mode: string;
@@ -773,32 +773,6 @@ function logError(error: Error) {
 }
 
 function main() {
-  const serverArgs = parseArgs(Deno.args, {
-    string: ["port", "host", "cert", "key", "header"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
-    negatable: ["dir-listing", "dotfiles", "cors"],
-    collect: ["header"],
-    default: {
-      "dir-listing": true,
-      dotfiles: true,
-      cors: true,
-      verbose: false,
-      version: false,
-      host: "0.0.0.0",
-      port: undefined,
-      cert: "",
-      key: "",
-    },
-    alias: {
-      p: "port",
-      c: "cert",
-      k: "key",
-      h: "help",
-      v: "verbose",
-      V: "version",
-      H: "header",
-    },
-  });
   const port = serverArgs.port ? Number(serverArgs.port) : undefined;
   const headers = serverArgs.header || [];
   const host = serverArgs.host;

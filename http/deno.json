@@ -6,6 +6,7 @@
     "./cookie": "./cookie.ts",
     "./etag": "./etag.ts",
     "./file-server": "./file_server.ts",
+    "./parallel-file-server": "./parallel_file_server.ts",
     "./header": "./header.ts",
     "./method": "./method.ts",
     "./negotiation": "./negotiation.ts",
