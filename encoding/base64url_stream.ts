@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Utilities for encoding and decoding to and from base64url in a streaming manner.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
@@ -11,6 +14,8 @@ import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
 /**
  * Converts a Uint8Array stream into a base64url-encoded stream.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @example Usage
@@ -18,15 +23,13 @@ import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64Url } from "@std/encoding/base64url";
  * import { Base64UrlEncoderStream } from "@std/encoding/base64url-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * assertEquals(
- *   (await Array.fromAsync(
- *     (await Deno.open("./deno.json"))
- *       .readable
- *       .pipeThrough(new Base64UrlEncoderStream()),
- *   )).join(""),
- *   encodeBase64Url(await Deno.readFile("./deno.json")),
- * );
+ * const stream = ReadableStream.from(["Hello,", " world!"])
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeThrough(new Base64UrlEncoderStream());
+ *
+ * assertEquals(await toText(stream), encodeBase64Url(new TextEncoder().encode("Hello, world!")));
  * ```
  */
 export class Base64UrlEncoderStream
@@ -57,23 +60,22 @@ export class Base64UrlEncoderStream
 /**
  * Decodes a base64url-encoded stream into a Uint8Array stream.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64UrlDecoderStream, Base64UrlEncoderStream } from "@std/encoding/base64url-stream";
+ * import { encodeBase64Url } from "@std/encoding/base64url";
+ * import { Base64UrlDecoderStream } from "@std/encoding/base64url-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * const readable = (await Deno.open("./deno.json"))
- *   .readable
- *   .pipeThrough(new Base64UrlEncoderStream());
+ * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ"])
+ *   .pipeThrough(new Base64UrlDecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
  *
- * assertEquals(
- *   Uint8Array.from((await Array.fromAsync(
- *     readable.pipeThrough(new Base64UrlDecoderStream()),
- *   )).map(x => [...x]).flat()),
- *   await Deno.readFile("./deno.json"),
- * );
+ * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
 export class Base64UrlDecoderStream

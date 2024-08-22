@@ -23,6 +23,7 @@ import { decodeBase64, encodeBase64 } from "./base64.ts";
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64 } from "@std/encoding/base64";
  * import { Base64EncoderStream } from "@std/encoding/base64-stream";
+ * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
  *   .pipeThrough(new TextEncoderStream())
