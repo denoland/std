@@ -772,35 +772,50 @@ function logError(error: Error) {
   console.error(`%c${error.message}`, "color: red");
 }
 
-function main() {
-  const serverArgs = parseArgs(Deno.args, {
-    string: ["port", "host", "cert", "key", "header"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
-    negatable: ["dir-listing", "dotfiles", "cors"],
-    collect: ["header"],
-    default: {
-      "dir-listing": true,
-      dotfiles: true,
-      cors: true,
-      verbose: false,
-      version: false,
-      host: "0.0.0.0",
-      port: undefined,
-      cert: "",
-      key: "",
-    },
-    alias: {
-      p: "port",
-      c: "cert",
-      k: "key",
-      h: "help",
-      v: "verbose",
-      V: "version",
-      H: "header",
-    },
+const serverArgs = parseArgs(Deno.args, {
+  string: ["port", "host", "cert", "key", "header"],
+  boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose", "version"],
+  negatable: ["dir-listing", "dotfiles", "cors"],
+  collect: ["header"],
+  default: {
+    "dir-listing": true,
+    dotfiles: true,
+    cors: true,
+    verbose: false,
+    version: false,
+    host: "0.0.0.0",
+    port: undefined,
+    cert: "",
+    key: "",
+  },
+  alias: {
+    p: "port",
+    c: "cert",
+    k: "key",
+    h: "help",
+    v: "verbose",
+    V: "version",
+    H: "header",
+  },
+});
+
+const headers = serverArgs.header || [];
+const wild = serverArgs._ as string[];
+const target = resolve(wild[0] ?? "");
+
+export function handler(req: Request): Promise<Response> {
+  return serveDir(req, {
+    fsRoot: target,
+    showDirListing: serverArgs["dir-listing"],
+    showDotfiles: serverArgs.dotfiles,
+    enableCors: serverArgs.cors,
+    quiet: !serverArgs.verbose,
+    headers,
   });
+}
+
+function main() {
   const port = serverArgs.port ? Number(serverArgs.port) : undefined;
-  const headers = serverArgs.header || [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -823,20 +838,6 @@ function main() {
     }
   }
 
-  const wild = serverArgs._ as string[];
-  const target = resolve(wild[0] ?? "");
-
-  const handler = (req: Request): Promise<Response> => {
-    return serveDir(req, {
-      fsRoot: target,
-      showDirListing: serverArgs["dir-listing"],
-      showDotfiles: serverArgs.dotfiles,
-      enableCors: serverArgs.cors,
-      quiet: !serverArgs.verbose,
-      headers,
-    });
-  };
-
   const useTls = !!(keyFile && certFile);
 
   function onListen({ port, hostname }: { port: number; hostname: string }) {
@@ -855,21 +856,13 @@ function main() {
     console.log(message);
   }
 
-  if (useTls) {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-      cert: Deno.readTextFileSync(certFile),
-      key: Deno.readTextFileSync(keyFile),
-    }, handler);
-  } else {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-    }, handler);
-  }
+  Deno.serve({
+    port,
+    hostname: host,
+    onListen,
+    cert: useTls ? Deno.readTextFileSync(certFile) : undefined,
+    key: useTls ? Deno.readTextFileSync(keyFile) : undefined,
+  }, handler);
 }
 
 function printUsage() {
