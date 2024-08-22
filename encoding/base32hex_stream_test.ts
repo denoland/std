@@ -6,46 +6,31 @@ import {
   Base32HexDecoderStream,
   Base32HexEncoderStream,
 } from "./base32hex_stream.ts";
+import { RandomSliceStream } from "./_random_slice_stream.ts";
+import { toText } from "@std/streams/to-text";
+import { concat } from "@std/bytes/concat";
 
 Deno.test("Base32EncoderStream() encodes stream", async () => {
-  const readable = (await Deno.open("./deno.lock"))
+  const stream = (await Deno.open("./deno.lock"))
     .readable
-    .pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          const i = Math.floor(Math.random() * chunk.length);
-          controller.enqueue(chunk.slice(0, i));
-          controller.enqueue(chunk.slice(i));
-        },
-      }),
-    )
+    .pipeThrough(new RandomSliceStream())
     .pipeThrough(new Base32HexEncoderStream());
 
   assertEquals(
-    (await Array.fromAsync(readable)).join(""),
+    await toText(stream),
     encodeBase32Hex(await Deno.readFile("./deno.lock")),
   );
 });
 
 Deno.test("Base32DecoderStream() decodes stream", async () => {
-  const readable = (await Deno.open("./deno.lock"))
+  const stream = (await Deno.open("./deno.lock"))
     .readable
     .pipeThrough(new Base32HexEncoderStream())
-    .pipeThrough(
-      new TransformStream({
-        transform(chunk, controller) {
-          const i = Math.floor(Math.random() * chunk.length);
-          controller.enqueue(chunk.slice(0, i));
-          controller.enqueue(chunk.slice(i));
-        },
-      }),
-    )
+    .pipeThrough(new RandomSliceStream())
     .pipeThrough(new Base32HexDecoderStream());
 
   assertEquals(
-    Uint8Array.from(
-      (await Array.fromAsync(readable)).map((x) => [...x]).flat(),
-    ),
+    concat(await Array.fromAsync(stream)),
     await Deno.readFile("./deno.lock"),
   );
 });

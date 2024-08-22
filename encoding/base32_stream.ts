@@ -3,6 +3,8 @@
 /**
  * Utilities for encoding and decoding to and from base32 in a streaming manner.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @module
  */
 
@@ -11,10 +13,7 @@ import { decodeBase32, encodeBase32 } from "./base32.ts";
 /**
  * Converts a Uint8Array stream into a base32-encoded stream.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
@@ -59,10 +58,7 @@ export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
 /**
  * Decodes a base32-encoded stream into a Uint8Array stream.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *

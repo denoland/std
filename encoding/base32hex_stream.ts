@@ -1,7 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Utilities for encoding and decoding to and from base32hex in a streaming manner.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
@@ -11,6 +14,8 @@ import { decodeBase32Hex, encodeBase32Hex } from "./base32hex.ts";
 /**
  * Converts a Uint8Array stream into a base32hex-encoded stream.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @example Usage
@@ -18,15 +23,13 @@ import { decodeBase32Hex, encodeBase32Hex } from "./base32hex.ts";
  * import { assertEquals } from "@std/assert";
  * import { encodeBase32Hex } from "@std/encoding/base32hex";
  * import { Base32HexEncoderStream } from "@std/encoding/base32hex-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * assertEquals(
- *   (await Array.fromAsync(
- *     (await Deno.open("./deno.json"))
- *       .readable
- *       .pipeThrough(new Base32HexEncoderStream()),
- *   )).join(""),
- *   encodeBase32Hex(await Deno.readFile("./deno.json")),
- * );
+ * const stream = ReadableStream.from(["Hello,", " world!"])
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeThrough(new Base32HexEncoderStream());
+ *
+ * assertEquals(await toText(stream), encodeBase32Hex(new TextEncoder().encode("Hello, world!")));
  * ```
  */
 export class Base32HexEncoderStream
@@ -57,23 +60,21 @@ export class Base32HexEncoderStream
 /**
  * Decodes a base32hex-encoded stream into a Uint8Array stream.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base32HexDecoderStream, Base32HexEncoderStream } from "@std/encoding/base32hex-stream";
+ * import { Base32HexDecoderStream } from "@std/encoding/base32hex-stream";
+ * import { toText } from "@std/streams/to-text";
  *
- * const readable = (await Deno.open("./deno.json"))
- *   .readable
- *   .pipeThrough(new Base32HexEncoderStream());
+ * const stream = ReadableStream.from(["91imor3f4", "1rm7p6f8"])
+ *   .pipeThrough(new Base32HexDecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
  *
- * assertEquals(
- *   Uint8Array.from((await Array.fromAsync(
- *     readable.pipeThrough(new Base32HexDecoderStream()),
- *   )).map(x => [...x]).flat()),
- *   await Deno.readFile("./deno.json"),
- * );
+ * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
 export class Base32HexDecoderStream

@@ -4,6 +4,8 @@
 /**
  * Utilities for encoding and decoding to and from hex in a streaming manner.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @module
  */
 
@@ -12,10 +14,7 @@ import { decodeHex, encodeHex } from "./hex.ts";
 /**
  * Converts a Uint8Array stream into a hex-encoded stream.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
  *
@@ -46,10 +45,7 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
 /**
  * Decodes a hex-encoded stream into a Uint8Array stream.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
  *
