@@ -190,3 +190,72 @@ after the starting description.
  * ...
  */
 ```
+
+### Error Messages
+
+User-facing error messages should be clear, concise, and consistent. Error
+messages should be in sentence case but should not end with a period. Error
+messages should be free of grammatical errors and typos and written in American
+English.
+
+> ⚠️ Note that the error message style guide is a work in progress, and not all
+> the error messages have been updated to conform to the current styles. Error
+> message styles that should be followed:
+
+1. Messages should start with an upper case:
+
+```
+Bad: cannot parse input
+Good: Cannot parse input
+```
+
+2. Messages should not end with a period:
+
+```
+Bad: Cannot parse input.
+Good: Cannot parse input
+```
+
+3. Message should use quotes for values for strings:
+
+```
+Bad: Cannot parse input hello, world
+Good: Cannot parse input "hello, world"
+Good: Attempting to grow buffer by 10 bytes, which would exceed the maximum size of 100 bytes
+```
+
+4. Message should state the action that lead to the error:
+
+```
+Bad: Invalid input x
+Good: Cannot parse input x
+```
+
+5. Active voice should be used:
+
+```
+Bad: Input x cannot be parsed
+Good: Cannot parse input x
+```
+
+6. Messages should not use contractions:
+
+```
+Bad: Can't parse input x
+Good: Cannot parse input x
+```
+
+7. Messages should use a colon when providing additional information:
+
+```
+Bad: Cannot parse input x. value is empty
+Bad: Cannot parse input x, value is empty
+Good: Cannot parse input x: value is empty
+```
+
+8. Additional information should describe the current state:
+
+```
+Bad: Cannot parse input x, value must not be empty
+Good: Cannot parse input x, value is empty
+```

@@ -231,6 +231,6 @@ Deno.test("decode() throws when the key of the map is of invalid type", () => {
   assertThrows(
     () => decode(Uint8Array.of(0b10000000 | 1, 0xc2, 0xc2)),
     EvalError,
-    "Messagepack decode came across an invalid type for a key of a map",
+    "Cannot decode a key of a map: The type of key is invalid, keys must be a number or a string",
   );
 });

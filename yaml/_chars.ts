@@ -3,6 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+export const BOM = 0xfeff; /* BOM */
 export const TAB = 0x09; /* Tab */
 export const LINE_FEED = 0x0a; /* LF */
 export const CARRIAGE_RETURN = 0x0d; /* CR */

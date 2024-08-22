@@ -39,5 +39,5 @@ export function recognize(
     if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) return format;
   }
 
-  throw new TypeError(`Unsupported front matter format.`);
+  throw new TypeError("Unsupported front matter format");
 }

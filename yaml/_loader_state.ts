@@ -38,7 +38,7 @@ import {
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -168,8 +168,8 @@ export class LoaderState {
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = schema.compiledImplicit;
-    this.typeMap = schema.compiledTypeMap;
+    this.implicitTypes = schema.implicitTypes;
+    this.typeMap = schema.typeMap;
     this.length = input.length;
     this.version = null;
 
@@ -424,8 +424,8 @@ function captureSegment(
 
 function mergeMappings(
   state: LoaderState,
-  destination: ArrayObject,
-  source: ArrayObject,
+  destination: Record<string, unknown>,
+  source: Record<string, unknown>,
   overridableKeys: Set<string>,
 ) {
   if (!isObject(source)) {
@@ -448,14 +448,14 @@ function mergeMappings(
 
 function storeMappingPair(
   state: LoaderState,
-  result: ArrayObject | null,
+  result: Record<string, unknown> | null,
   overridableKeys: Set<string>,
   keyTag: string | null,
   keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
-): ArrayObject {
+): Record<string, unknown> {
   // The output is a plain object here, so keys can only be strings.
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
@@ -502,7 +502,12 @@ function storeMappingPair(
         mergeMappings(state, result, valueNode[index], overridableKeys);
       }
     } else {
-      mergeMappings(state, result, valueNode as ArrayObject, overridableKeys);
+      mergeMappings(
+        state,
+        result,
+        valueNode as Record<string, unknown>,
+        overridableKeys,
+      );
     }
   } else {
     if (
@@ -935,14 +940,14 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     if (isMapping) {
       storeMappingPair(
         state,
-        result,
+        result as Record<string, unknown>,
         overridableKeys,
         keyTag,
         keyNode,
         valueNode,
       );
     } else if (isPair) {
-      (result as ArrayObject[]).push(
+      (result as Record<string, unknown>[]).push(
         storeMappingPair(
           state,
           null,
