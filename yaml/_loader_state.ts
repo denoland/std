@@ -370,6 +370,86 @@ export class LoaderState {
       overridableKeys.add(key);
     }
   }
+  storeMappingPair(
+    result: Record<string, unknown>,
+    overridableKeys: Set<string>,
+    keyTag: string | null,
+    keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
+    valueNode: unknown,
+    startLine?: number,
+    startPos?: number,
+  ): Record<string, unknown> {
+    // The output is a plain object here, so keys can only be strings.
+    // We need to convert keyNode to a string, but doing so can hang the process
+    // (deeply nested arrays that explode exponentially using aliases).
+    if (Array.isArray(keyNode)) {
+      keyNode = Array.prototype.slice.call(keyNode);
+
+      for (let index = 0; index < keyNode.length; index++) {
+        if (Array.isArray(keyNode[index])) {
+          return this.throwError(
+            "nested arrays are not supported inside keys",
+          );
+        }
+
+        if (
+          typeof keyNode === "object" &&
+          getObjectTypeString(keyNode[index]) === "[object Object]"
+        ) {
+          keyNode[index] = "[object Object]";
+        }
+      }
+    }
+
+    // Avoid code execution in load() via toString property
+    // (still use its own toString for arrays, timestamps,
+    // and whatever user schema extensions happen to have @@toStringTag)
+    if (
+      typeof keyNode === "object" &&
+      getObjectTypeString(keyNode) === "[object Object]"
+    ) {
+      keyNode = "[object Object]";
+    }
+
+    keyNode = String(keyNode);
+
+    if (keyTag === "tag:yaml.org,2002:merge") {
+      if (Array.isArray(valueNode)) {
+        for (
+          let index = 0;
+          index < valueNode.length;
+          index++
+        ) {
+          this.mergeMappings(result, valueNode[index], overridableKeys);
+        }
+      } else {
+        this.mergeMappings(
+          result,
+          valueNode as Record<string, unknown>,
+          overridableKeys,
+        );
+      }
+    } else {
+      if (
+        !this.allowDuplicateKeys &&
+        !overridableKeys.has(keyNode) &&
+        Object.hasOwn(result, keyNode)
+      ) {
+        this.line = startLine || this.line;
+        this.position = startPos || this.position;
+        return this.throwError("duplicated mapping key");
+      }
+      Object.defineProperty(result, keyNode, {
+        value: valueNode,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.delete(keyNode);
+    }
+
+    return result;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -495,86 +575,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function storeMappingPair(
-  state: LoaderState,
-  result: Record<string, unknown>,
-  overridableKeys: Set<string>,
-  keyTag: string | null,
-  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
-  valueNode: unknown,
-  startLine?: number,
-  startPos?: number,
-): Record<string, unknown> {
-  // The output is a plain object here, so keys can only be strings.
-  // We need to convert keyNode to a string, but doing so can hang the process
-  // (deeply nested arrays that explode exponentially using aliases).
-  if (Array.isArray(keyNode)) {
-    keyNode = Array.prototype.slice.call(keyNode);
-
-    for (let index = 0; index < keyNode.length; index++) {
-      if (Array.isArray(keyNode[index])) {
-        return state.throwError("nested arrays are not supported inside keys");
-      }
-
-      if (
-        typeof keyNode === "object" &&
-        getObjectTypeString(keyNode[index]) === "[object Object]"
-      ) {
-        keyNode[index] = "[object Object]";
-      }
-    }
-  }
-
-  // Avoid code execution in load() via toString property
-  // (still use its own toString for arrays, timestamps,
-  // and whatever user schema extensions happen to have @@toStringTag)
-  if (
-    typeof keyNode === "object" &&
-    getObjectTypeString(keyNode) === "[object Object]"
-  ) {
-    keyNode = "[object Object]";
-  }
-
-  keyNode = String(keyNode);
-
-  if (keyTag === "tag:yaml.org,2002:merge") {
-    if (Array.isArray(valueNode)) {
-      for (
-        let index = 0;
-        index < valueNode.length;
-        index++
-      ) {
-        state.mergeMappings(result, valueNode[index], overridableKeys);
-      }
-    } else {
-      state.mergeMappings(
-        result,
-        valueNode as Record<string, unknown>,
-        overridableKeys,
-      );
-    }
-  } else {
-    if (
-      !state.allowDuplicateKeys &&
-      !overridableKeys.has(keyNode) &&
-      Object.hasOwn(result, keyNode)
-    ) {
-      state.line = startLine || state.line;
-      state.position = startPos || state.position;
-      return state.throwError("duplicated mapping key");
-    }
-    Object.defineProperty(result, keyNode, {
-      value: valueNode,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.delete(keyNode);
-  }
-
-  return result;
 }
 
 function readLineBreak(state: LoaderState) {
@@ -984,8 +984,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     }
 
     if (isMapping) {
-      storeMappingPair(
-        state,
+      state.storeMappingPair(
         result as Record<string, unknown>,
         overridableKeys,
         keyTag,
@@ -994,8 +993,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       );
     } else if (isPair) {
       (result as Record<string, unknown>[]).push(
-        storeMappingPair(
-          state,
+        state.storeMappingPair(
           {},
           overridableKeys,
           keyTag,
@@ -1213,8 +1211,7 @@ function readBlockMapping(
     if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
       if (ch === QUESTION) {
         if (atExplicitKey) {
-          storeMappingPair(
-            state,
+          state.storeMappingPair(
             result,
             overridableKeys,
             keyTag as string,
@@ -1261,8 +1258,7 @@ function readBlockMapping(
           }
 
           if (atExplicitKey) {
-            storeMappingPair(
-              state,
+            state.storeMappingPair(
               result,
               overridableKeys,
               keyTag as string,
@@ -1314,8 +1310,7 @@ function readBlockMapping(
       }
 
       if (!atExplicitKey) {
-        storeMappingPair(
-          state,
+        state.storeMappingPair(
           result,
           overridableKeys,
           keyTag as string,
@@ -1344,8 +1339,7 @@ function readBlockMapping(
 
   // Special case: last mapping's node contains only the key in explicit notation.
   if (atExplicitKey) {
-    storeMappingPair(
-      state,
+    state.storeMappingPair(
       result,
       overridableKeys,
       keyTag as string,
