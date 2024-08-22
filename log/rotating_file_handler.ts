@@ -2,6 +2,13 @@
 import type { LevelName } from "./levels.ts";
 import { existsSync } from "@std/fs/exists";
 import { FileHandler, type FileHandlerOptions } from "./file_handler.ts";
+import {
+  encoderSymbol,
+  filenameSymbol,
+  fileSymbol,
+  modeSymbol,
+  openOptionsSymbol,
+} from "./_file_handler_symbols.ts";
 
 interface RotatingFileHandlerOptions extends FileHandlerOptions {
   maxBytes: number;
@@ -68,36 +75,36 @@ export class RotatingFileHandler extends FileHandler {
     }
     super.open();
 
-    if (this._mode === "w") {
+    if (this[modeSymbol] === "w") {
       // Remove old backups too as it doesn't make sense to start with a clean
       // log file, but old backups
       for (let i = 1; i <= this.#maxBackupCount; i++) {
         try {
-          Deno.removeSync(this._filename + "." + i);
+          Deno.removeSync(this[filenameSymbol] + "." + i);
         } catch (error) {
           if (!(error instanceof Deno.errors.NotFound)) {
             throw error;
           }
         }
       }
-    } else if (this._mode === "x") {
+    } else if (this[modeSymbol] === "x") {
       // Throw if any backups also exist
       for (let i = 1; i <= this.#maxBackupCount; i++) {
-        if (existsSync(this._filename + "." + i)) {
+        if (existsSync(this[filenameSymbol] + "." + i)) {
           this.close();
           throw new Deno.errors.AlreadyExists(
-            "Backup log file " + this._filename + "." + i + " already exists",
+            "Backup log file " + this[filenameSymbol] + "." + i +
+              " already exists",
           );
         }
       }
     } else {
-      this.#currentFileSize = (Deno.statSync(this._filename)).size;
+      this.#currentFileSize = (Deno.statSync(this[filenameSymbol])).size;
     }
   }
 
   override log(msg: string) {
-    if (!this._file) this.open();
-    const msgByteLength = this._encoder.encode(msg).byteLength + 1;
+    const msgByteLength = this[encoderSymbol].encode(msg).byteLength + 1;
 
     if (this.#currentFileSize + msgByteLength > this.#maxBytes) {
       this.rotateLogFiles();
@@ -111,17 +118,20 @@ export class RotatingFileHandler extends FileHandler {
 
   rotateLogFiles() {
     this.flush();
-    this._file!.close();
+    this[fileSymbol]!.close();
 
     for (let i = this.#maxBackupCount - 1; i >= 0; i--) {
-      const source = this._filename + (i === 0 ? "" : "." + i);
-      const dest = this._filename + "." + (i + 1);
+      const source = this[filenameSymbol] + (i === 0 ? "" : "." + i);
+      const dest = this[filenameSymbol] + "." + (i + 1);
 
       if (existsSync(source)) {
         Deno.renameSync(source, dest);
       }
     }
 
-    this._file = Deno.openSync(this._filename, this._openOptions);
+    this[fileSymbol] = Deno.openSync(
+      this[filenameSymbol],
+      this[openOptionsSymbol],
+    );
   }
 }

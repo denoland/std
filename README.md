@@ -6,12 +6,10 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-<!--deno-fmt-ignore-start-->
 > [!IMPORTANT]
 > Newer versions of the Standard Library are now hosted on
 > [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
 > at [deno.land/std](https://deno.land/std).
-<!--deno-fmt-ignore-end-->
 
 ## Packages
 
@@ -59,17 +57,6 @@ documentation:
 | [uuid](https://jsr.io/@std/uuid)                       | [![JSR](https://jsr.io/badges/@std/uuid)](https://jsr.io/@std/uuid)                       |
 | [webgpu](https://jsr.io/@std/webgpu)                   | [![JSR](https://jsr.io/badges/@std/webgpu)](https://jsr.io/@std/webgpu)                   |
 | [yaml](https://jsr.io/@std/yaml)                       | [![JSR](https://jsr.io/badges/@std/yaml)](https://jsr.io/@std/yaml)                       |
-
-<!--deno-fmt-ignore-start-->
-> [!NOTE]
-> Settled status means a package is unlikely to have breaking changes, but has
-> not yet achieved v1 status.
-<!--deno-fmt-ignore-end-->
-
-## Stabilization
-
-The Standard Library is now in the process of stabilizing its packages. See
-[#4600](https://github.com/denoland/std/issues/4600) for details.
 
 ## Architecture
 

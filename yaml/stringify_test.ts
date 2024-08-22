@@ -668,6 +668,26 @@ Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
 });
 
+Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
+  assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+  assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
+  assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
+  assertEquals(stringify("No", { compatMode: true }), "'No'\n");
+});
+
 Deno.test("stringify() handles undefined with skipInvalid option", () => {
   assertEquals(stringify(undefined, { skipInvalid: true }), "");
+});
+
+Deno.test({
+  name: "stringify() handles object with condenseFlow option",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+        condenseFlow: true,
+      }),
+      `foo: [bar,baz]\nbar: {"hello":world}\n`,
+    );
+  },
 });

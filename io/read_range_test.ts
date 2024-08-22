@@ -65,7 +65,9 @@ class MockFile
   seek(offset: number, whence: Deno.SeekMode): Promise<number> {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      return Promise.reject(new RangeError("attempted to seek past end"));
+      return Promise.reject(
+        new RangeError("Attempted to seek past end of buffer"),
+      );
     }
     this.#offset = offset;
     return Promise.resolve(this.#offset);
@@ -74,7 +76,7 @@ class MockFile
   seekSync(offset: number, whence: Deno.SeekMode): number {
     assert(whence === Deno.SeekMode.Start);
     if (offset >= this.#buf.length) {
-      throw new RangeError("attempted to seek past end");
+      throw new RangeError("Attempted to seek past end of buffer");
     }
     this.#offset = offset;
     return this.#offset;
@@ -103,7 +105,7 @@ Deno.test({
         await readRange(file, { start: 100, end: 0 });
       },
       Error,
-      "Invalid byte range was passed.",
+      "Byte range start cannot be larger than end",
     );
   },
 });
@@ -119,7 +121,7 @@ Deno.test({
         await readRange(file, { start: 99, end: 100 });
       },
       Error,
-      "Unexpected EOF reach while reading a range.",
+      "Unexpected EOF reach while reading a range",
     );
   },
 });
@@ -146,7 +148,7 @@ Deno.test({
         readRangeSync(file, { start: 100, end: 0 });
       },
       Error,
-      "Invalid byte range was passed.",
+      "Byte range start cannot be larger than end",
     );
   },
 });
@@ -162,7 +164,7 @@ Deno.test({
         readRangeSync(file, { start: 99, end: 100 });
       },
       Error,
-      "Unexpected EOF reach while reading a range.",
+      "Unexpected EOF reach while reading a range",
     );
   },
 });

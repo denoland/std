@@ -6,6 +6,7 @@
 import {
   AMPERSAND,
   ASTERISK,
+  BOM,
   COLON,
   COMMA,
   COMMERCIAL_AT,
@@ -28,7 +29,7 @@ import {
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, StyleVariant, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
 const STYLE_SINGLE = 2;
@@ -88,20 +89,17 @@ function charCodeToHexString(charCode: number): string {
   );
 }
 
-function compileStyleMap(
-  map?: ArrayObject<StyleVariant> | null,
-): ArrayObject<StyleVariant> {
-  if (typeof map === "undefined" || map === null) return {};
-
-  const result: ArrayObject<StyleVariant> = {};
+function createStyleMap(
+  map: Record<string, StyleVariant>,
+): Map<string, StyleVariant> {
+  const result = new Map();
   for (let tag of Object.keys(map)) {
     const style = String(map[tag]) as StyleVariant;
     if (tag.slice(0, 2) === "!!") {
       tag = `tag:yaml.org,2002:${tag.slice(2)}`;
     }
-    result[tag] = style;
+    result.set(tag, style);
   }
-
   return result;
 }
 
@@ -118,13 +116,6 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-function testImplicitResolving(
-  implicitTypes: Type<"scalar">[],
-  str: string,
-): boolean {
-  return implicitTypes.some((type) => type.resolve(str));
-}
-
 // Returns true if the character can be printed without escaping.
 // From YAML 1.2: "any allowed characters known to be non-printable
 // should also be escaped. [However,] This isn’t mandatory"
@@ -133,7 +124,7 @@ function isPrintable(c: number): boolean {
   return (
     (0x00020 <= c && c <= 0x00007e) ||
     (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
-    (0x0e000 <= c && c <= 0x00fffd && c !== 0xfeff) /* BOM */ ||
+    (0x0e000 <= c && c <= 0x00fffd && c !== BOM) ||
     (0x10000 <= c && c <= 0x10ffff)
   );
 }
@@ -144,7 +135,7 @@ function isPlainSafe(c: number): boolean {
   // where nb-char ::= c-printable - b-char - c-byte-order-mark.
   return (
     isPrintable(c) &&
-    c !== 0xfeff &&
+    c !== BOM &&
     // - c-flow-indicator
     c !== COMMA &&
     c !== LEFT_SQUARE_BRACKET &&
@@ -163,7 +154,7 @@ function isPlainSafeFirst(c: number): boolean {
   // where ns-char = nb-char - s-white.
   return (
     isPrintable(c) &&
-    c !== 0xfeff &&
+    c !== BOM &&
     !isWhiteSpace(c) && // - s-white
     // - (c-indicator ::=
     // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
@@ -208,7 +199,7 @@ function chooseScalarStyle(
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (string: string) => boolean,
+  implicitTypes: Type<"scalar", unknown>[],
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -260,7 +251,9 @@ function chooseScalarStyle(
   if (!hasLineBreak && !hasFoldableLine) {
     // Strings interpretable as another type have to be quoted;
     // e.g. the string 'true' vs. the boolean true.
-    return plain && !testAmbiguousType(string) ? STYLE_PLAIN : STYLE_SINGLE;
+    return plain && !implicitTypes.some((type) => type.resolve(string))
+      ? STYLE_PLAIN
+      : STYLE_SINGLE;
   }
   // Edge case: block indentation indicator can only have one digit.
   if (indentPerLevel > 9 && needIndentIndicator(string)) {
@@ -403,15 +396,15 @@ function blockHeader(string: string, indentPerLevel: number): string {
 
 function inspectNode(
   object: unknown,
-  objects: unknown[],
+  objects: Set<unknown>,
   duplicateObjects: Set<unknown>,
 ) {
   if (!isObject(object)) return;
-  if (objects.includes(object)) {
+  if (objects.has(object)) {
     duplicateObjects.add(object);
     return;
   }
-  objects.push(object);
+  objects.add(object);
   const entries = Array.isArray(object) ? object : Object.values(object);
   for (const value of entries) {
     inspectNode(value, objects, duplicateObjects);
@@ -434,7 +427,7 @@ export interface DumperStateOptions {
    */
   flowLevel?: number;
   /** Each tag may have own set of styles.	- "tag" => "style" map. */
-  styles?: ArrayObject<StyleVariant> | null;
+  styles?: Record<string, StyleVariant>;
   /** specifies a schema to use. */
   schema?: Schema;
   /**
@@ -480,12 +473,9 @@ export class DumperState {
   condenseFlow: boolean;
   implicitTypes: Type<"scalar">[];
   explicitTypes: Type<KindType>[];
-  tag: string | null = null;
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
-  styleMap: ArrayObject<StyleVariant>;
-  // deno-lint-ignore no-explicit-any
-  dump: any;
+  styleMap: Map<string, StyleVariant> = new Map();
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -505,14 +495,14 @@ export class DumperState {
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
     this.flowLevel = flowLevel;
-    this.styleMap = compileStyleMap(styles);
+    if (styles) this.styleMap = createStyleMap(styles);
     this.sortKeys = sortKeys;
     this.lineWidth = lineWidth;
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.implicitTypes = this.schema.compiledImplicit;
-    this.explicitTypes = this.schema.compiledExplicit;
+    this.implicitTypes = this.schema.implicitTypes;
+    this.explicitTypes = this.schema.explicitTypes;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
@@ -521,130 +511,122 @@ export class DumperState {
   //    • No ending newline => unaffected; already using strip "-" chomping.
   //    • Ending newline    => removed then restored.
   //  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-  writeScalar(
+  stringifyScalar(
     string: string,
-    level: number,
-    isKey: boolean,
-  ) {
-    const createDump = () => {
-      if (string.length === 0) {
-        return "''";
-      }
-      if (this.compatMode && DEPRECATED_BOOLEANS_SYNTAX.includes(string)) {
-        return `'${string}'`;
-      }
-
-      const indent = this.indent * Math.max(1, level); // no 0-indent scalars
-      // As indentation gets deeper, let the width decrease monotonically
-      // to the lower bound min(this.lineWidth, 40).
-      // Note that this implies
-      //  this.lineWidth ≤ 40 + this.indent: width is fixed at the lower bound.
-      //  this.lineWidth > 40 + this.indent: width decreases until the lower
-      //  bound.
-      // This behaves better than a constant minimum width which disallows
-      // narrower options, or an indent threshold which causes the width
-      // to suddenly increase.
-      const lineWidth = this.lineWidth === -1
-        ? -1
-        : Math.max(Math.min(this.lineWidth, 40), this.lineWidth - indent);
-
-      // Without knowing if keys are implicit/explicit,
-      // assume implicit for safety.
-      const singleLineOnly = isKey ||
-        // No block styles in flow mode.
-        (this.flowLevel > -1 && level >= this.flowLevel);
-
-      switch (
-        chooseScalarStyle(
-          string,
-          singleLineOnly,
-          this.indent,
-          lineWidth,
-          (str: string): boolean =>
-            testImplicitResolving(this.implicitTypes, str),
-        )
-      ) {
-        case STYLE_PLAIN:
-          return string;
-        case STYLE_SINGLE:
-          return `'${string.replace(/'/g, "''")}'`;
-        case STYLE_LITERAL:
-          return `|${blockHeader(string, this.indent)}${
-            trimTrailingNewline(indentString(string, indent))
-          }`;
-        case STYLE_FOLDED:
-          return `>${blockHeader(string, this.indent)}${
-            trimTrailingNewline(
-              indentString(foldString(string, lineWidth), indent),
-            )
-          }`;
-        case STYLE_DOUBLE:
-          return `"${escapeString(string)}"`;
-        default:
-          throw new TypeError("impossible error: invalid scalar style");
-      }
-    };
-    this.dump = createDump();
-  }
-
-  writeFlowSequence(level: number) {
-    let _result = "";
-    const object = this.dump;
-    const _tag = this.tag;
-    for (let index = 0; index < object.length; index += 1) {
-      // Write only valid elements.
-      if (
-        this.writeNode(level, object[index], {
-          block: false,
-          compact: false,
-          isKey: false,
-        })
-      ) {
-        if (index !== 0) _result += `,${!this.condenseFlow ? " " : ""}`;
-        _result += this.dump;
-      }
+    { level, isKey }: { level: number; isKey: boolean },
+  ): string {
+    if (string.length === 0) {
+      return "''";
+    }
+    if (this.compatMode && DEPRECATED_BOOLEANS_SYNTAX.includes(string)) {
+      return `'${string}'`;
     }
 
-    this.tag = _tag;
-    this.dump = `[${_result}]`;
+    const indent = this.indent * Math.max(1, level); // no 0-indent scalars
+    // As indentation gets deeper, let the width decrease monotonically
+    // to the lower bound min(this.lineWidth, 40).
+    // Note that this implies
+    //  this.lineWidth ≤ 40 + this.indent: width is fixed at the lower bound.
+    //  this.lineWidth > 40 + this.indent: width decreases until the lower
+    //  bound.
+    // This behaves better than a constant minimum width which disallows
+    // narrower options, or an indent threshold which causes the width
+    // to suddenly increase.
+    const lineWidth = this.lineWidth === -1
+      ? -1
+      : Math.max(Math.min(this.lineWidth, 40), this.lineWidth - indent);
+
+    // Without knowing if keys are implicit/explicit,
+    // assume implicit for safety.
+    const singleLineOnly = isKey ||
+      // No block styles in flow mode.
+      (this.flowLevel > -1 && level >= this.flowLevel);
+
+    const scalarStyle = chooseScalarStyle(
+      string,
+      singleLineOnly,
+      this.indent,
+      lineWidth,
+      this.implicitTypes,
+    );
+    switch (scalarStyle) {
+      case STYLE_PLAIN:
+        return string;
+      case STYLE_SINGLE:
+        return `'${string.replace(/'/g, "''")}'`;
+      case STYLE_LITERAL:
+        return `|${blockHeader(string, this.indent)}${
+          trimTrailingNewline(indentString(string, indent))
+        }`;
+      case STYLE_FOLDED:
+        return `>${blockHeader(string, this.indent)}${
+          trimTrailingNewline(
+            indentString(foldString(string, lineWidth), indent),
+          )
+        }`;
+      case STYLE_DOUBLE:
+        return `"${escapeString(string)}"`;
+      default:
+        throw new TypeError("impossible error: invalid scalar style");
+    }
   }
 
-  writeBlockSequence(level: number, compact: boolean) {
-    let _result = "";
-    const object = this.dump;
-    const _tag = this.tag;
+  stringifyFlowSequence(
+    array: unknown[],
+    { level }: { level: number },
+  ): string {
+    const results = [];
+    for (const value of array) {
+      const string = this.stringifyNode(value, {
+        level,
+        block: false,
+        compact: false,
+        isKey: false,
+      });
+      if (string === null) continue;
+      results.push(string);
+    }
+    const separator = this.condenseFlow ? "," : ", ";
+    return `[${results.join(separator)}]`;
+  }
 
-    for (let index = 0; index < object.length; index += 1) {
+  stringifyBlockSequence(
+    array: unknown[],
+    { level, compact }: { level: number; compact: boolean },
+  ): string {
+    let result = "";
+
+    for (let index = 0; index < array.length; index += 1) {
       // Write only valid elements.
-      if (
-        this.writeNode(level + 1, object[index], {
-          block: true,
-          compact: true,
-          isKey: false,
-        })
-      ) {
+      const string = this.stringifyNode(array[index], {
+        level: level + 1,
+        block: true,
+        compact: true,
+        isKey: false,
+      });
+      if (string !== null) {
         if (!compact || index !== 0) {
-          _result += generateNextLine(this.indent, level);
+          result += generateNextLine(this.indent, level);
         }
 
-        if (this.dump && LINE_FEED === this.dump.charCodeAt(0)) {
-          _result += "-";
+        if (string && LINE_FEED === string.charCodeAt(0)) {
+          result += "-";
         } else {
-          _result += "- ";
+          result += "- ";
         }
 
-        _result += this.dump;
+        result += string;
       }
     }
 
-    this.tag = _tag;
-    this.dump = _result || "[]"; // Empty sequence if no valid values.
+    return result || "[]"; // Empty sequence if no valid values.
   }
 
-  writeFlowMapping(level: number) {
-    let _result = "";
-    const _tag = this.tag;
-    const object = this.dump;
+  stringifyFlowMapping(
+    object: Record<string, unknown>,
+    { level }: { level: number },
+  ): string {
+    let result = "";
     const objectKeyList = Object.keys(object);
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -654,47 +636,54 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
+      const keyString = this.stringifyNode(objectKey, {
+        level,
+        block: false,
+        compact: false,
+        isKey: false,
+      });
       if (
-        !this.writeNode(level, objectKey, {
-          block: false,
-          compact: false,
-          isKey: false,
-        })
+        keyString === null
       ) {
         continue; // Skip this pair because of invalid key;
       }
 
-      if (this.dump.length > 1024) pairBuffer += "? ";
+      if (keyString.length > 1024) pairBuffer += "? ";
 
-      pairBuffer += `${this.dump}${this.condenseFlow ? '"' : ""}:${
+      pairBuffer += `${keyString}${this.condenseFlow ? '"' : ""}:${
         this.condenseFlow ? "" : " "
       }`;
 
-      if (
-        !this.writeNode(level, objectValue, {
-          block: false,
-          compact: false,
-          isKey: false,
-        })
-      ) {
+      const valueString = this.stringifyNode(objectValue, {
+        level,
+        block: false,
+        compact: false,
+        isKey: false,
+      });
+
+      if (valueString === null) {
         continue; // Skip this pair because of invalid value.
       }
 
-      pairBuffer += this.dump;
+      pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    this.tag = _tag;
-    this.dump = `{${_result}}`;
+    return `{${result}}`;
   }
 
-  writeBlockMapping(level: number, compact: boolean) {
-    const object = this.dump;
-    const _tag = this.tag;
+  stringifyBlockMapping(
+    object: Record<string, unknown>,
+    { tag, level, compact }: {
+      tag: string | null;
+      level: number;
+      compact: boolean;
+    },
+  ): string {
     const objectKeyList = Object.keys(object);
-    let _result = "";
+    let result = "";
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
@@ -717,197 +706,205 @@ export class DumperState {
 
       const objectValue = object[objectKey];
 
-      if (
-        !this.writeNode(level + 1, objectKey, {
-          block: true,
-          compact: true,
-          isKey: true,
-        })
-      ) {
+      const keyString = this.stringifyNode(objectKey, {
+        level: level + 1,
+        block: true,
+        compact: true,
+        isKey: true,
+      });
+      if (keyString === null) {
         continue; // Skip this pair because of invalid key.
       }
 
-      const explicitPair = (this.tag !== null && this.tag !== "?") ||
-        (this.dump && this.dump.length > 1024);
+      const explicitPair = (tag !== null && tag !== "?") ||
+        (keyString.length > 1024);
 
       if (explicitPair) {
-        if (this.dump && LINE_FEED === this.dump.charCodeAt(0)) {
+        if (keyString && LINE_FEED === keyString.charCodeAt(0)) {
           pairBuffer += "?";
         } else {
           pairBuffer += "? ";
         }
       }
 
-      pairBuffer += this.dump;
+      pairBuffer += keyString;
 
       if (explicitPair) {
         pairBuffer += generateNextLine(this.indent, level);
       }
 
+      const valueString = this.stringifyNode(objectValue, {
+        level: level + 1,
+        block: true,
+        compact: explicitPair,
+        isKey: false,
+      });
       if (
-        !this.writeNode(level + 1, objectValue, {
-          block: true,
-          compact: explicitPair,
-          isKey: false,
-        })
+        valueString === null
       ) {
         continue; // Skip this pair because of invalid value.
       }
 
-      if (this.dump && LINE_FEED === this.dump.charCodeAt(0)) {
+      if (valueString && LINE_FEED === valueString.charCodeAt(0)) {
         pairBuffer += ":";
       } else {
         pairBuffer += ": ";
       }
 
-      pairBuffer += this.dump;
+      pairBuffer += valueString;
 
       // Both key and value are valid.
-      _result += pairBuffer;
+      result += pairBuffer;
     }
 
-    this.tag = _tag;
-    this.dump = _result || "{}"; // Empty mapping if no valid pairs.
+    return result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(explicit: boolean): boolean {
-    const object = this.dump;
+  detectType(
+    value: unknown,
+    explicit: boolean,
+  ): { tag: string; value: unknown } | null {
     const typeList = explicit ? this.explicitTypes : this.implicitTypes;
 
+    let tag = null;
     for (const type of typeList) {
-      if (type.predicate?.(object)) {
-        this.tag = explicit ? type.tag : "?";
+      if (type.predicate?.(value)) {
+        tag = explicit ? type.tag : "?";
 
         if (type.represent) {
-          const style = this.styleMap[type.tag]! || type.defaultStyle;
+          const style = this.styleMap.get(type.tag) ||
+            type.defaultStyle as StyleVariant;
 
           if (typeof type.represent === "function") {
-            this.dump = type.represent(object, style);
-            return true;
+            value = type.represent(value, style);
+            return { tag, value };
           }
           if (Object.hasOwn(type.represent, style)) {
-            this.dump = type.represent[style]!(object, style);
-            return true;
+            value = type.represent[style]!(value, style);
+            return { tag, value };
           }
           throw new TypeError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`,
           );
         }
 
-        return true;
+        return { tag, value };
       }
     }
-
-    return false;
+    return null;
   }
 
   // Serializes `object` and writes it to global `result`.
   // Returns true on success, or false on invalid object.
-  writeNode(
-    level: number,
-    object: unknown,
-    { block, compact, isKey }: {
-      block: boolean;
-      compact: boolean;
-      isKey: boolean;
-    },
-  ): boolean {
-    this.tag = null;
-    this.dump = object;
-
-    if (!this.detectType(false)) {
-      this.detectType(true);
-    }
+  stringifyNode(value: unknown, { level, block, compact, isKey }: {
+    level: number;
+    block: boolean;
+    compact: boolean;
+    isKey: boolean;
+  }): string | null {
+    const result = this.detectType(value, false) ??
+      this.detectType(value, true) ?? { tag: null, value };
+    const tag = result.tag;
+    value = result.value;
 
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    const objectOrArray = isObject(this.dump) ||
-      Array.isArray(this.dump);
+    const objectOrArray = isObject(value) ||
+      Array.isArray(value);
 
     let duplicateIndex = -1;
     let duplicate = false;
     if (objectOrArray) {
-      duplicateIndex = this.duplicates.indexOf(object);
+      duplicateIndex = this.duplicates.indexOf(value);
       duplicate = duplicateIndex !== -1;
     }
 
     if (
-      (this.tag !== null && this.tag !== "?") ||
+      (tag !== null && tag !== "?") ||
       duplicate ||
       (this.indent !== 2 && level > 0)
     ) {
       compact = false;
     }
 
-    if (duplicate && this.usedDuplicates.has(object)) {
-      this.dump = `*ref_${duplicateIndex}`;
+    if (duplicate && this.usedDuplicates.has(value)) {
+      return `*ref_${duplicateIndex}`;
     } else {
       if (objectOrArray && duplicate) {
-        this.usedDuplicates.add(object);
+        this.usedDuplicates.add(value);
       }
-      if (isObject(this.dump) && !Array.isArray(this.dump)) {
-        if (block && Object.keys(this.dump).length !== 0) {
-          this.writeBlockMapping(level, compact);
+      if (isObject(value) && !Array.isArray(value)) {
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
           if (duplicate) {
-            this.dump = `&ref_${duplicateIndex}${this.dump}`;
+            value = `&ref_${duplicateIndex}${value}`;
           }
         } else {
-          this.writeFlowMapping(level);
+          value = this.stringifyFlowMapping(value, { level });
           if (duplicate) {
-            this.dump = `&ref_${duplicateIndex} ${this.dump}`;
+            value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      } else if (Array.isArray(this.dump)) {
+      } else if (Array.isArray(value)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-        if (block && this.dump.length !== 0) {
-          this.writeBlockSequence(arrayLevel, compact);
+        if (block && value.length !== 0) {
+          value = this.stringifyBlockSequence(value, {
+            level: arrayLevel,
+            compact,
+          });
           if (duplicate) {
-            this.dump = `&ref_${duplicateIndex}${this.dump}`;
+            value = `&ref_${duplicateIndex}${value}`;
           }
         } else {
-          this.writeFlowSequence(arrayLevel);
+          value = this.stringifyFlowSequence(value, { level: arrayLevel });
           if (duplicate) {
-            this.dump = `&ref_${duplicateIndex} ${this.dump}`;
+            value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      } else if (typeof this.dump === "string") {
-        if (this.tag !== "?") {
-          this.writeScalar(this.dump, level, isKey);
+      } else if (typeof value === "string") {
+        if (tag !== "?") {
+          value = this.stringifyScalar(value, { level, isKey });
         }
       } else {
-        if (this.skipInvalid) return false;
+        if (this.skipInvalid) return null;
         throw new TypeError(
           `unacceptable kind of an object to dump ${
-            getObjectTypeString(this.dump)
+            getObjectTypeString(value)
           }`,
         );
       }
 
-      if (this.tag !== null && this.tag !== "?") {
-        this.dump = `!<${this.tag}> ${this.dump}`;
+      if (tag !== null && tag !== "?") {
+        value = `!<${tag}> ${value}`;
       }
     }
 
-    return true;
+    return value as string;
   }
 
-  getDuplicateReferences(object: unknown) {
-    const objects: unknown[] = [];
+  getDuplicateReferences(value: unknown) {
+    const values: Set<unknown> = new Set();
     const duplicateObjects: Set<unknown> = new Set();
 
-    inspectNode(object, objects, duplicateObjects);
+    inspectNode(value, values, duplicateObjects);
 
-    for (const object of duplicateObjects) this.duplicates.push(object);
+    for (const value of duplicateObjects) this.duplicates.push(value);
     this.usedDuplicates = new Set();
   }
 
-  stringify(data: unknown): string {
-    if (this.useAnchors) this.getDuplicateReferences(data);
+  stringify(value: unknown): string {
+    if (this.useAnchors) this.getDuplicateReferences(value);
 
-    if (this.writeNode(0, data, { block: true, compact: true, isKey: false })) {
-      return `${this.dump}\n`;
+    const string = this.stringifyNode(value, {
+      level: 0,
+      block: true,
+      compact: true,
+      isKey: false,
+    });
+    if (string !== null) {
+      return `${string}\n`;
     }
     return "";
   }

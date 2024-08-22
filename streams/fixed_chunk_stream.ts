@@ -4,10 +4,7 @@
  * A transform stream that resize {@linkcode Uint8Array} chunks into perfectly
  * `size` chunks with the exception of the last chunk.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts

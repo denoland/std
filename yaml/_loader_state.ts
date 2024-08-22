@@ -38,7 +38,7 @@ import {
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -66,8 +66,6 @@ export interface LoaderStateOptions {
   /** function to call on warning messages. */
   onWarning?(error: Error): void;
 }
-
-type ResultType = unknown[] | Record<string, unknown> | string;
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
@@ -155,7 +153,7 @@ export class LoaderState {
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
-  result: ResultType | null = "";
+  result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
     input: string,
@@ -168,8 +166,8 @@ export class LoaderState {
     this.input = input;
     this.onWarning = onWarning;
     this.allowDuplicateKeys = allowDuplicateKeys;
-    this.implicitTypes = schema.compiledImplicit;
-    this.typeMap = schema.compiledTypeMap;
+    this.implicitTypes = schema.implicitTypes;
+    this.typeMap = schema.typeMap;
     this.length = input.length;
     this.version = null;
 
@@ -208,6 +206,169 @@ export class LoaderState {
   dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
+  }
+
+  yamlDirectiveHandler(...args: string[]) {
+    if (this.version !== null) {
+      return this.throwError("duplication of %YAML directive");
+    }
+
+    if (args.length !== 1) {
+      return this.throwError("YAML directive accepts exactly one argument");
+    }
+
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+    if (match === null) {
+      return this.throwError("ill-formed argument of the YAML directive");
+    }
+
+    const major = parseInt(match[1]!, 10);
+    const minor = parseInt(match[2]!, 10);
+    if (major !== 1) {
+      return this.throwError("unacceptable YAML version of the document");
+    }
+
+    this.version = args[0] ?? null;
+    this.checkLineBreaks = minor < 2;
+    if (minor !== 1 && minor !== 2) {
+      return this.dispatchWarning("unsupported YAML version of the document");
+    }
+  }
+  tagDirectiveHandler(...args: string[]) {
+    if (args.length !== 2) {
+      return this.throwError("TAG directive accepts exactly two arguments");
+    }
+
+    const handle = args[0]!;
+    const prefix = args[1]!;
+
+    if (!PATTERN_TAG_HANDLE.test(handle)) {
+      return this.throwError(
+        "ill-formed tag handle (first argument) of the TAG directive",
+      );
+    }
+
+    if (this.tagMap.has(handle)) {
+      return this.throwError(
+        `there is a previously declared suffix for "${handle}" tag handle`,
+      );
+    }
+
+    if (!PATTERN_TAG_URI.test(prefix)) {
+      return this.throwError(
+        "ill-formed tag prefix (second argument) of the TAG directive",
+      );
+    }
+
+    this.tagMap.set(handle, prefix);
+  }
+  captureSegment(start: number, end: number, checkJson: boolean) {
+    let result: string;
+    if (start < end) {
+      result = this.input.slice(start, end);
+
+      if (checkJson) {
+        for (
+          let position = 0;
+          position < result.length;
+          position++
+        ) {
+          const character = result.charCodeAt(position);
+          if (
+            !(character === 0x09 ||
+              (0x20 <= character && character <= 0x10ffff))
+          ) {
+            return this.throwError("expected valid JSON character");
+          }
+        }
+      } else if (PATTERN_NON_PRINTABLE.test(result)) {
+        return this.throwError("the stream contains non-printable characters");
+      }
+
+      this.result += result;
+    }
+  }
+  readBlockSequence(nodeIndent: number): boolean {
+    let line: number;
+    let following: number;
+    let detected = false;
+    let ch: number;
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result: unknown[] = [];
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      if (ch !== MINUS) {
+        break;
+      }
+
+      following = this.peek(1);
+
+      if (!isWhiteSpaceOrEOL(following)) {
+        break;
+      }
+
+      detected = true;
+      this.position++;
+
+      if (skipSeparationSpace(this, true, -1)) {
+        if (this.lineIndent <= nodeIndent) {
+          result.push(null);
+          ch = this.peek();
+          continue;
+        }
+      }
+
+      line = this.line;
+      composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      result.push(this.result);
+      skipSeparationSpace(this, true, -1);
+
+      ch = this.peek();
+
+      if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
+        return this.throwError("bad indentation of a sequence entry");
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "sequence";
+      this.result = result;
+      return true;
+    }
+    return false;
+  }
+  mergeMappings(
+    destination: Record<string, unknown>,
+    source: Record<string, unknown>,
+    overridableKeys: Set<string>,
+  ) {
+    if (!isObject(source)) {
+      return this.throwError(
+        "cannot merge mappings; the provided source object is unacceptable",
+      );
+    }
+
+    for (const [key, value] of Object.entries(source)) {
+      if (Object.hasOwn(destination, key)) continue;
+      Object.defineProperty(destination, key, {
+        value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.add(key);
+    }
   }
 
   readDocument() {
@@ -276,10 +437,10 @@ export class LoaderState {
 
       switch (directiveName) {
         case "YAML":
-          yamlDirectiveHandler(this, ...directiveArgs);
+          this.yamlDirectiveHandler(...directiveArgs);
           break;
         case "TAG":
-          tagDirectiveHandler(this, ...directiveArgs);
+          this.tagDirectiveHandler(...directiveArgs);
           break;
         default:
           this.dispatchWarning(
@@ -336,126 +497,16 @@ export class LoaderState {
   }
 }
 
-function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (state.version !== null) {
-    return state.throwError("duplication of %YAML directive");
-  }
-
-  if (args.length !== 1) {
-    return state.throwError("YAML directive accepts exactly one argument");
-  }
-
-  const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
-  if (match === null) {
-    return state.throwError("ill-formed argument of the YAML directive");
-  }
-
-  const major = parseInt(match[1]!, 10);
-  const minor = parseInt(match[2]!, 10);
-  if (major !== 1) {
-    return state.throwError("unacceptable YAML version of the document");
-  }
-
-  state.version = args[0] ?? null;
-  state.checkLineBreaks = minor < 2;
-  if (minor !== 1 && minor !== 2) {
-    return state.dispatchWarning("unsupported YAML version of the document");
-  }
-}
-function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (args.length !== 2) {
-    return state.throwError("TAG directive accepts exactly two arguments");
-  }
-
-  const handle = args[0]!;
-  const prefix = args[1]!;
-
-  if (!PATTERN_TAG_HANDLE.test(handle)) {
-    return state.throwError(
-      "ill-formed tag handle (first argument) of the TAG directive",
-    );
-  }
-
-  if (state.tagMap.has(handle)) {
-    return state.throwError(
-      `there is a previously declared suffix for "${handle}" tag handle`,
-    );
-  }
-
-  if (!PATTERN_TAG_URI.test(prefix)) {
-    return state.throwError(
-      "ill-formed tag prefix (second argument) of the TAG directive",
-    );
-  }
-
-  state.tagMap.set(handle, prefix);
-}
-
-function captureSegment(
-  state: LoaderState,
-  start: number,
-  end: number,
-  checkJson: boolean,
-) {
-  let result: string;
-  if (start < end) {
-    result = state.input.slice(start, end);
-
-    if (checkJson) {
-      for (
-        let position = 0;
-        position < result.length;
-        position++
-      ) {
-        const character = result.charCodeAt(position);
-        if (
-          !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
-        ) {
-          return state.throwError("expected valid JSON character");
-        }
-      }
-    } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      return state.throwError("the stream contains non-printable characters");
-    }
-
-    state.result += result;
-  }
-}
-
-function mergeMappings(
-  state: LoaderState,
-  destination: ArrayObject,
-  source: ArrayObject,
-  overridableKeys: Set<string>,
-) {
-  if (!isObject(source)) {
-    return state.throwError(
-      "cannot merge mappings; the provided source object is unacceptable",
-    );
-  }
-
-  for (const [key, value] of Object.entries(source)) {
-    if (Object.hasOwn(destination, key)) continue;
-    Object.defineProperty(destination, key, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.add(key);
-  }
-}
-
 function storeMappingPair(
   state: LoaderState,
-  result: ArrayObject | null,
+  result: Record<string, unknown>,
   overridableKeys: Set<string>,
   keyTag: string | null,
   keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
-): ArrayObject {
+): Record<string, unknown> {
   // The output is a plain object here, so keys can only be strings.
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
@@ -488,10 +539,6 @@ function storeMappingPair(
 
   keyNode = String(keyNode);
 
-  if (result === null) {
-    result = {};
-  }
-
   if (keyTag === "tag:yaml.org,2002:merge") {
     if (Array.isArray(valueNode)) {
       for (
@@ -499,10 +546,14 @@ function storeMappingPair(
         index < valueNode.length;
         index++
       ) {
-        mergeMappings(state, result, valueNode[index], overridableKeys);
+        state.mergeMappings(result, valueNode[index], overridableKeys);
       }
     } else {
-      mergeMappings(state, result, valueNode as ArrayObject, overridableKeys);
+      state.mergeMappings(
+        result,
+        valueNode as Record<string, unknown>,
+        overridableKeys,
+      );
     }
   } else {
     if (
@@ -702,7 +753,7 @@ function readPlainScalar(
     }
 
     if (hasPendingContent) {
-      captureSegment(state, captureStart, captureEnd, false);
+      state.captureSegment(captureStart, captureEnd, false);
       writeFoldedLines(state, state.line - line);
       captureStart = captureEnd = state.position;
       hasPendingContent = false;
@@ -715,7 +766,7 @@ function readPlainScalar(
     ch = state.next();
   }
 
-  captureSegment(state, captureStart, captureEnd, false);
+  state.captureSegment(captureStart, captureEnd, false);
 
   if (state.result) {
     return true;
@@ -747,7 +798,7 @@ function readSingleQuotedScalar(
 
   while ((ch = state.peek()) !== 0) {
     if (ch === SINGLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (ch === SINGLE_QUOTE) {
@@ -758,7 +809,7 @@ function readSingleQuotedScalar(
         return true;
       }
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -797,12 +848,12 @@ function readDoubleQuotedScalar(
   let tmp: number;
   while ((ch = state.peek()) !== 0) {
     if (ch === DOUBLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       state.position++;
       return true;
     }
     if (ch === BACKSLASH) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (isEOL(ch)) {
@@ -833,7 +884,7 @@ function readDoubleQuotedScalar(
 
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -858,7 +909,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.peek();
   let terminator: number;
   let isMapping = true;
-  let result: ResultType = {};
+  let result = {};
   if (ch === LEFT_SQUARE_BRACKET) {
     terminator = RIGHT_SQUARE_BRACKET;
     isMapping = false;
@@ -935,17 +986,17 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     if (isMapping) {
       storeMappingPair(
         state,
-        result,
+        result as Record<string, unknown>,
         overridableKeys,
         keyTag,
         keyNode,
         valueNode,
       );
     } else if (isPair) {
-      (result as ArrayObject[]).push(
+      (result as Record<string, unknown>[]).push(
         storeMappingPair(
           state,
-          null,
+          {},
           overridableKeys,
           keyTag,
           keyNode,
@@ -953,7 +1004,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
         ),
       );
     } else {
-      (result as ResultType[]).push(keyNode as ResultType);
+      (result as unknown[]).push(keyNode);
     }
 
     skipSeparationSpace(state, true, nodeIndent);
@@ -1118,71 +1169,10 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       ch = state.next();
     }
 
-    captureSegment(state, captureStart, state.position, false);
+    state.captureSegment(captureStart, state.position, false);
   }
 
   return true;
-}
-
-function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
-  let line: number;
-  let following: number;
-  let detected = false;
-  let ch: number;
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result: unknown[] = [];
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    if (ch !== MINUS) {
-      break;
-    }
-
-    following = state.peek(1);
-
-    if (!isWhiteSpaceOrEOL(following)) {
-      break;
-    }
-
-    detected = true;
-    state.position++;
-
-    if (skipSeparationSpace(state, true, -1)) {
-      if (state.lineIndent <= nodeIndent) {
-        result.push(null);
-        ch = state.peek();
-        continue;
-      }
-    }
-
-    line = state.line;
-    composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
-    result.push(state.result);
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      return state.throwError("bad indentation of a sequence entry");
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "sequence";
-    state.result = result;
-    return true;
-  }
-  return false;
 }
 
 function readBlockMapping(
@@ -1596,7 +1586,7 @@ function composeNode(
     if (indentStatus === 1) {
       if (
         (allowBlockCollections &&
-          (readBlockSequence(state, blockIndent) ||
+          (state.readBlockSequence(blockIndent) ||
             readBlockMapping(state, blockIndent, flowIndent))) ||
         readFlowCollection(state, flowIndent)
       ) {
@@ -1634,7 +1624,7 @@ function composeNode(
       // Special case: block sequences are allowed to have same indentation level as the parent.
       // http://www.yaml.org/spec/1.2/spec.html#id2799784
       hasContent = allowBlockCollections &&
-        readBlockSequence(state, blockIndent);
+        state.readBlockSequence(blockIndent);
     }
   }
 

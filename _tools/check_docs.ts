@@ -22,12 +22,14 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
+import { pooledMap } from "@std/async/pool";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
 const ENTRY_POINTS = [
+  "../archive/mod.ts",
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
@@ -82,7 +84,7 @@ const ASSERTION_IMPORT =
   /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
-const snippetPromises: Promise<void>[] = [];
+const snippetPromises: (() => Promise<void>)[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -245,11 +247,12 @@ function assertSnippetsWork(
       );
     }
     snippetPromises.push(
-      assertSnippetEvals({
-        snippet,
-        document,
-        expectError: delim?.includes("expect-error") ?? false,
-      }),
+      () =>
+        assertSnippetEvals({
+          snippet,
+          document,
+          expectError: delim?.includes("expect-error") ?? false,
+        }),
     );
   }
 }
@@ -527,13 +530,16 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-const promises = [];
-for (const url of ENTRY_POINT_URLS) {
-  promises.push(checkDocs(url));
-}
+await Promise.all(ENTRY_POINT_URLS.map(checkDocs));
 
-await Promise.all(promises);
-await Promise.all(snippetPromises);
+const iter = pooledMap(
+  navigator.hardwareConcurrency,
+  snippetPromises,
+  (fn) => fn(),
+);
+for await (const _ of iter) {
+  // noop
+}
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
     console.error(

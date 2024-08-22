@@ -3,10 +3,7 @@
 /**
  * Request handler for {@linkcode Route}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * Extends {@linkcode Deno.ServeHandlerInfo} by adding adding a `params` argument.
  *
@@ -23,10 +20,7 @@ export type Handler = (
 /**
  * Route configuration for {@linkcode route}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface Route {
   /**
@@ -48,10 +42,7 @@ export interface Route {
 /**
  * Routes requests to different handlers based on the request path and method.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
@@ -100,7 +91,9 @@ export function route(
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
-      if (match) return route.handler(request, info, match);
+      if (match && request.method === (route.method ?? "GET")) {
+        return route.handler(request, info, match);
+      }
     }
     return defaultHandler(request, info);
   };
