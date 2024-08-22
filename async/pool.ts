@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 /** Error message emitted from the thrown error while mapping. */
-const ERROR_WHILE_MAPPING_MESSAGE = "Cannot complete the mapping as an error was thrown from an item";
+const ERROR_WHILE_MAPPING_MESSAGE =
+  "Cannot complete the mapping as an error was thrown from an item";
 
 /**
  * pooledMap transforms values from an (async) iterable into another async
