@@ -70,7 +70,7 @@ export class Base32HexEncoderStream
  * import { Base32HexDecoderStream } from "@std/encoding/base32hex-stream";
  * import { toText } from "@std/streams/to-text";
  *
- * const stream = ReadableStream.from(["91imor3f4", "1rm7p6f8"])
+ * const stream = ReadableStream.from(["91IMOR3F5GG7ERRI", "DHI22==="])
  *   .pipeThrough(new Base32HexDecoderStream())
  *   .pipeThrough(new TextDecoderStream());
  *
