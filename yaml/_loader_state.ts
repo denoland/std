@@ -234,6 +234,34 @@ export class LoaderState {
       return this.dispatchWarning("unsupported YAML version of the document");
     }
   }
+  tagDirectiveHandler(...args: string[]) {
+    if (args.length !== 2) {
+      return this.throwError("TAG directive accepts exactly two arguments");
+    }
+
+    const handle = args[0]!;
+    const prefix = args[1]!;
+
+    if (!PATTERN_TAG_HANDLE.test(handle)) {
+      return this.throwError(
+        "ill-formed tag handle (first argument) of the TAG directive",
+      );
+    }
+
+    if (this.tagMap.has(handle)) {
+      return this.throwError(
+        `there is a previously declared suffix for "${handle}" tag handle`,
+      );
+    }
+
+    if (!PATTERN_TAG_URI.test(prefix)) {
+      return this.throwError(
+        "ill-formed tag prefix (second argument) of the TAG directive",
+      );
+    }
+
+    this.tagMap.set(handle, prefix);
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -304,7 +332,7 @@ export class LoaderState {
           this.yamlDirectiveHandler(...directiveArgs);
           break;
         case "TAG":
-          tagDirectiveHandler(this, ...directiveArgs);
+          this.tagDirectiveHandler(...directiveArgs);
           break;
         default:
           this.dispatchWarning(
@@ -359,35 +387,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (args.length !== 2) {
-    return state.throwError("TAG directive accepts exactly two arguments");
-  }
-
-  const handle = args[0]!;
-  const prefix = args[1]!;
-
-  if (!PATTERN_TAG_HANDLE.test(handle)) {
-    return state.throwError(
-      "ill-formed tag handle (first argument) of the TAG directive",
-    );
-  }
-
-  if (state.tagMap.has(handle)) {
-    return state.throwError(
-      `there is a previously declared suffix for "${handle}" tag handle`,
-    );
-  }
-
-  if (!PATTERN_TAG_URI.test(prefix)) {
-    return state.throwError(
-      "ill-formed tag prefix (second argument) of the TAG directive",
-    );
-  }
-
-  state.tagMap.set(handle, prefix);
 }
 
 function captureSegment(
