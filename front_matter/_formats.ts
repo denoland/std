@@ -21,9 +21,7 @@ const JSON_HEADER = `(---json|${JSON_DELIMITER})\\s*`;
 const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
 const DATA = "([\\s\\S]+?)";
-const NEWLINE = `${
-  globalThis?.Deno?.build?.os === "windows" ? "\\r?" : ""
-}(?:\\n)?`;
+const NEWLINE = "\\r?\\n?";
 
 export const RECOGNIZE_YAML_REGEXP = new RegExp(`^${YAML_HEADER}$`, "im");
 export const RECOGNIZE_TOML_REGEXP = new RegExp(`^${TOML_HEADER}$`, "im");
