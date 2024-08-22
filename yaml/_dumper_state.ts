@@ -575,21 +575,19 @@ export class DumperState {
     array: unknown[],
     { level }: { level: number },
   ): string {
-    let result = "";
-    for (let index = 0; index < array.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(array[index], {
+    const results = [];
+    for (const value of array) {
+      const string = this.stringifyNode(value, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
       if (string === null) continue;
-      if (index !== 0) result += `,${!this.condenseFlow ? " " : ""}`;
-      result += string;
+      results.push(string);
     }
-
-    return `[${result}]`;
+    const separator = this.condenseFlow ? "," : ", ";
+    return `[${results.join(separator)}]`;
   }
 
   stringifyBlockSequence(

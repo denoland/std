@@ -90,7 +90,7 @@ export class FileHandler extends BaseHandler {
     }
   }
 
-  override log(msg: string) {
+  log(msg: string) {
     const bytes = this[encoderSymbol].encode(msg + "\n");
     if (bytes.byteLength > this[bufSymbol].byteLength - this[pointerSymbol]) {
       this.flush();

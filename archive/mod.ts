@@ -32,7 +32,7 @@
 /**
  * Tar is a utility for collecting multiple files (or any arbitrary data) into one
  * archive file, while untar is the inverse utility to extract the files from an
- * archive.  Files are not compressed, only collected into the archive.
+ * archive. Files are not compressed, only collected into the archive.
  *
  * ```ts no-eval
  * import { Tar } from "@std/archive/tar";
@@ -62,10 +62,7 @@
  * writer.close();
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
