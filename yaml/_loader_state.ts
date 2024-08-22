@@ -450,6 +450,23 @@ export class LoaderState {
 
     return result;
   }
+  readLineBreak() {
+    const ch = this.peek();
+
+    if (ch === LINE_FEED) {
+      this.position++;
+    } else if (ch === CARRIAGE_RETURN) {
+      this.position++;
+      if (this.peek() === LINE_FEED) {
+        this.position++;
+      }
+    } else {
+      return this.throwError("a line break is expected");
+    }
+
+    this.line += 1;
+    this.lineStart = this.position;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -513,7 +530,7 @@ export class LoaderState {
         directiveArgs.push(this.input.slice(position, this.position));
       }
 
-      if (ch !== 0) readLineBreak(this);
+      if (ch !== 0) this.readLineBreak();
 
       switch (directiveName) {
         case "YAML":
@@ -577,24 +594,6 @@ export class LoaderState {
   }
 }
 
-function readLineBreak(state: LoaderState) {
-  const ch = state.peek();
-
-  if (ch === LINE_FEED) {
-    state.position++;
-  } else if (ch === CARRIAGE_RETURN) {
-    state.position++;
-    if (state.peek() === LINE_FEED) {
-      state.position++;
-    }
-  } else {
-    return state.throwError("a line break is expected");
-  }
-
-  state.line += 1;
-  state.lineStart = state.position;
-}
-
 function skipSeparationSpace(
   state: LoaderState,
   allowComments: boolean,
@@ -615,7 +614,7 @@ function skipSeparationSpace(
     }
 
     if (isEOL(ch)) {
-      readLineBreak(state);
+      state.readLineBreak();
 
       ch = state.peek();
       lineBreaks++;
@@ -1085,7 +1084,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   }
 
   while (ch !== 0) {
-    readLineBreak(state);
+    state.readLineBreak();
     state.lineIndent = 0;
 
     ch = state.peek();
