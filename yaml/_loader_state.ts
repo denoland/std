@@ -348,6 +348,28 @@ export class LoaderState {
     }
     return false;
   }
+  mergeMappings(
+    destination: Record<string, unknown>,
+    source: Record<string, unknown>,
+    overridableKeys: Set<string>,
+  ) {
+    if (!isObject(source)) {
+      return this.throwError(
+        "cannot merge mappings; the provided source object is unacceptable",
+      );
+    }
+
+    for (const [key, value] of Object.entries(source)) {
+      if (Object.hasOwn(destination, key)) continue;
+      Object.defineProperty(destination, key, {
+        value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.add(key);
+    }
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -475,30 +497,6 @@ export class LoaderState {
   }
 }
 
-function mergeMappings(
-  state: LoaderState,
-  destination: Record<string, unknown>,
-  source: Record<string, unknown>,
-  overridableKeys: Set<string>,
-) {
-  if (!isObject(source)) {
-    return state.throwError(
-      "cannot merge mappings; the provided source object is unacceptable",
-    );
-  }
-
-  for (const [key, value] of Object.entries(source)) {
-    if (Object.hasOwn(destination, key)) continue;
-    Object.defineProperty(destination, key, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.add(key);
-  }
-}
-
 function storeMappingPair(
   state: LoaderState,
   result: Record<string, unknown> | null,
@@ -552,11 +550,10 @@ function storeMappingPair(
         index < valueNode.length;
         index++
       ) {
-        mergeMappings(state, result, valueNode[index], overridableKeys);
+        state.mergeMappings(result, valueNode[index], overridableKeys);
       }
     } else {
-      mergeMappings(
-        state,
+      state.mergeMappings(
         result,
         valueNode as Record<string, unknown>,
         overridableKeys,
