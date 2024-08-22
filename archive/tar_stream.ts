@@ -183,7 +183,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           mode: typeflag === "5" ? 755 : 644,
           uid: 0,
           gid: 0,
-          mtime: Math.floor(new Date().getTime() / 1000),
+          mtime: Math.floor(Date.now() / 1000),
           uname: "",
           gname: "",
           devmajor: "",
