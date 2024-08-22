@@ -3,7 +3,6 @@
 /**
  * Converts a string into a {@link https://en.wikipedia.org/wiki/Clean_URL#Slug | slug}.
  *
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
