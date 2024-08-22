@@ -38,7 +38,7 @@ import {
 import { Mark } from "./_mark.ts";
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { type ArrayObject, getObjectTypeString, isObject } from "./_utils.ts";
+import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -66,8 +66,6 @@ export interface LoaderStateOptions {
   /** function to call on warning messages. */
   onWarning?(error: Error): void;
 }
-
-type ResultType = unknown[] | Record<string, unknown> | string;
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
   [0x78, 2], // x
@@ -155,7 +153,7 @@ export class LoaderState {
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
-  result: ResultType | null = "";
+  result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
     input: string,
@@ -208,6 +206,33 @@ export class LoaderState {
   dispatchWarning(message: string) {
     const error = this.#createError(message);
     this.onWarning?.(error);
+  }
+
+  yamlDirectiveHandler(...args: string[]) {
+    if (this.version !== null) {
+      return this.throwError("duplication of %YAML directive");
+    }
+
+    if (args.length !== 1) {
+      return this.throwError("YAML directive accepts exactly one argument");
+    }
+
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+    if (match === null) {
+      return this.throwError("ill-formed argument of the YAML directive");
+    }
+
+    const major = parseInt(match[1]!, 10);
+    const minor = parseInt(match[2]!, 10);
+    if (major !== 1) {
+      return this.throwError("unacceptable YAML version of the document");
+    }
+
+    this.version = args[0] ?? null;
+    this.checkLineBreaks = minor < 2;
+    if (minor !== 1 && minor !== 2) {
+      return this.dispatchWarning("unsupported YAML version of the document");
+    }
   }
 
   readDocument() {
@@ -276,7 +301,7 @@ export class LoaderState {
 
       switch (directiveName) {
         case "YAML":
-          yamlDirectiveHandler(this, ...directiveArgs);
+          this.yamlDirectiveHandler(...directiveArgs);
           break;
         case "TAG":
           tagDirectiveHandler(this, ...directiveArgs);
@@ -336,32 +361,6 @@ export class LoaderState {
   }
 }
 
-function yamlDirectiveHandler(state: LoaderState, ...args: string[]) {
-  if (state.version !== null) {
-    return state.throwError("duplication of %YAML directive");
-  }
-
-  if (args.length !== 1) {
-    return state.throwError("YAML directive accepts exactly one argument");
-  }
-
-  const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
-  if (match === null) {
-    return state.throwError("ill-formed argument of the YAML directive");
-  }
-
-  const major = parseInt(match[1]!, 10);
-  const minor = parseInt(match[2]!, 10);
-  if (major !== 1) {
-    return state.throwError("unacceptable YAML version of the document");
-  }
-
-  state.version = args[0] ?? null;
-  state.checkLineBreaks = minor < 2;
-  if (minor !== 1 && minor !== 2) {
-    return state.dispatchWarning("unsupported YAML version of the document");
-  }
-}
 function tagDirectiveHandler(state: LoaderState, ...args: string[]) {
   if (args.length !== 2) {
     return state.throwError("TAG directive accepts exactly two arguments");
@@ -424,8 +423,8 @@ function captureSegment(
 
 function mergeMappings(
   state: LoaderState,
-  destination: ArrayObject,
-  source: ArrayObject,
+  destination: Record<string, unknown>,
+  source: Record<string, unknown>,
   overridableKeys: Set<string>,
 ) {
   if (!isObject(source)) {
@@ -448,14 +447,14 @@ function mergeMappings(
 
 function storeMappingPair(
   state: LoaderState,
-  result: ArrayObject | null,
+  result: Record<string, unknown> | null,
   overridableKeys: Set<string>,
   keyTag: string | null,
   keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
   valueNode: unknown,
   startLine?: number,
   startPos?: number,
-): ArrayObject {
+): Record<string, unknown> {
   // The output is a plain object here, so keys can only be strings.
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
@@ -502,7 +501,12 @@ function storeMappingPair(
         mergeMappings(state, result, valueNode[index], overridableKeys);
       }
     } else {
-      mergeMappings(state, result, valueNode as ArrayObject, overridableKeys);
+      mergeMappings(
+        state,
+        result,
+        valueNode as Record<string, unknown>,
+        overridableKeys,
+      );
     }
   } else {
     if (
@@ -858,7 +862,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.peek();
   let terminator: number;
   let isMapping = true;
-  let result: ResultType = {};
+  let result = {};
   if (ch === LEFT_SQUARE_BRACKET) {
     terminator = RIGHT_SQUARE_BRACKET;
     isMapping = false;
@@ -935,14 +939,14 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     if (isMapping) {
       storeMappingPair(
         state,
-        result,
+        result as Record<string, unknown>,
         overridableKeys,
         keyTag,
         keyNode,
         valueNode,
       );
     } else if (isPair) {
-      (result as ArrayObject[]).push(
+      (result as Record<string, unknown>[]).push(
         storeMappingPair(
           state,
           null,
@@ -953,7 +957,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
         ),
       );
     } else {
-      (result as ResultType[]).push(keyNode as ResultType);
+      (result as unknown[]).push(keyNode);
     }
 
     skipSeparationSpace(state, true, nodeIndent);

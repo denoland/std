@@ -253,9 +253,11 @@ Bad: Cannot parse input x, value is empty
 Good: Cannot parse input x: value is empty
 ```
 
-8. Additional information should describe the current state:
+8. Additional information should describe the current state, if possible, it
+   should also describe the desired state in an affirmative voice:
 
 ```
-Bad: Cannot parse input x, value must not be empty
-Good: Cannot parse input x, value is empty
+Bad: Cannot compute the square root for x: value must not be negative
+Good: Cannot compute the square root for x: current value is ${x}
+Better: Cannot compute the square root for x as x must be >= 0: current value is ${x}
 ```
