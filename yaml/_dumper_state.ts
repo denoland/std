@@ -630,7 +630,7 @@ export class DumperState {
     const separator = this.condenseFlow ? ":" : ": ";
 
     const results = [];
-    for (const key of Object.keys(object)) {
+    for (const [key, value] of Object.entries(object)) {
       const keyString = this.stringifyNode(key, {
         level,
         block: false,
@@ -639,7 +639,6 @@ export class DumperState {
       });
       if (keyString === null) continue; // Skip this pair because of invalid key;
 
-      const value = object[key];
       const valueString = this.stringifyNode(value, {
         level,
         block: false,
@@ -650,7 +649,7 @@ export class DumperState {
 
       const keyPrefix = keyString.length > 1024 ? "? " : "";
       results.push(
-        `${quote}${keyPrefix}${keyString}${quote}${separator}${valueString}`,
+        quote + keyPrefix + keyString + quote + separator + valueString,
       );
     }
 
