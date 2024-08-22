@@ -409,13 +409,15 @@ export class Untar {
         // EOF
         return null;
       }
-      throw new Error("checksum error");
+      throw new Error("Cannot validate checksum");
     }
 
     const magic = decoder.decode(header.ustar);
 
     if (magic.indexOf("ustar")) {
-      throw new Error(`unsupported archive format: ${magic}`);
+      throw new Error(
+        `Cannot validate the header as it has unsupported archive format: ${magic}`,
+      );
     }
 
     return header;
