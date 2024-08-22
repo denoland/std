@@ -26,7 +26,7 @@ Deno.test("assertStringIncludes() throws", () => {
   assertThrows(
     () => assertStringIncludes("Denosaurus from Jurassic", "Raptor"),
     AssertionError,
-    `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor".`,
+    `Expected actual: "Denosaurus from Jurassic" to contain: "Raptor"`,
   );
 });
 

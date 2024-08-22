@@ -67,7 +67,7 @@ Deno.test({
     assertThrows(
       () => assertStrictEquals({ a: 1, b: 2 }, { a: 1, b: 2 }),
       AssertionError,
-      `Values have the same structure but are not reference-equal.
+      `Values have the same structure but are not reference-equal
 
     {
       a: 1,

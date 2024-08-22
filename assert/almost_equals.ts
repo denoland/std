@@ -46,7 +46,7 @@ export function assertAlmostEquals(
     return;
   }
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
   throw new AssertionError(
     `Expected actual: "${f(actual)}" to be close to "${f(expected)}": \

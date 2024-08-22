@@ -34,7 +34,7 @@ export function assertStrictEquals<T>(
     return;
   }
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   let message: string;
 
   const actualString = format(actual);

@@ -33,7 +33,7 @@ Deno.test("expect().toThrow()", () => {
       }).toThrow(AssertionError);
     },
     AssertionError,
-    'Expected error to be instance of "AssertionError", but was "Error".',
+    'Expected error to be instance of "AssertionError", but was "Error"',
   );
 
   // Passes when error instance type is correct
@@ -49,7 +49,7 @@ Deno.test("expect().toThrow()", () => {
       }).toThrow(new AssertionError("hello world"));
     },
     AssertionError,
-    'Expected error to be instance of "AssertionError", but was "Error".',
+    'Expected error to be instance of "AssertionError", but was "Error"',
   );
 
   // Passes when literal string is in error
@@ -65,7 +65,7 @@ Deno.test("expect().toThrow()", () => {
       }).toThrow("goodbye");
     },
     AssertionError,
-    'Expected error message to include "goodbye", but got "hello world".',
+    'Expected error message to include "goodbye", but got "hello world"',
   );
 
   // Passes when error instance string is in error
@@ -81,7 +81,7 @@ Deno.test("expect().toThrow()", () => {
       }).toThrow(new AssertionError("goodbye"));
     },
     AssertionError,
-    'Expected error message to include "goodbye", but got "hello world".',
+    'Expected error message to include "goodbye", but got "hello world"',
   );
 
   // Passes when regex does match error
@@ -97,6 +97,6 @@ Deno.test("expect().toThrow()", () => {
       }).toThrow(/\d/);
     },
     AssertionError,
-    'Expected error message to include /\\d/, but got "hello world".',
+    'Expected error message to include /\\d/, but got "hello world"',
   );
 });

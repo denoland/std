@@ -33,7 +33,7 @@ export function assertNotStrictEquals<T>(
     return;
   }
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   throw new AssertionError(
     `Expected "actual" to not be strictly equal to: ${
       format(actual)

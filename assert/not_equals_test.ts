@@ -17,7 +17,7 @@ Deno.test("assertNotEquals() throws", () => {
       assertNotEquals("foo", "foo");
     },
     AssertionError,
-    "Expected actual: foo not to be: foo.",
+    "Expected actual: foo not to be: foo",
   );
 });
 

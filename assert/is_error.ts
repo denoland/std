@@ -33,7 +33,7 @@ export function assertIsError<E extends Error = Error>(
   msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   if (!(error instanceof Error)) {
     throw new AssertionError(
       `Expected "error" to be an Error object${msgSuffix}}`,

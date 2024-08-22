@@ -1058,7 +1058,7 @@ Deno.test("assertSpyCall() works with function", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1191,7 +1191,7 @@ Deno.test("assertSpyCall() works with method", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 2),
@@ -1275,7 +1275,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError".',
+    'Expected error to be instance of "OtherError", but was "ExampleError"',
   );
   assertThrows(
     () =>
@@ -1286,7 +1286,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError".',
+    'Expected error to be instance of "OtherError", but was "ExampleError"',
   );
   assertThrows(
     () =>
@@ -1297,7 +1297,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   assertThrows(
     () =>
@@ -1308,7 +1308,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   assertThrows(
     () =>
@@ -1318,7 +1318,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   assertThrows(
     () =>
@@ -1326,7 +1326,7 @@ Deno.test("assertSpyCall() works with error", () => {
         returned: 7,
       }),
     AssertionError,
-    "Spy call did not return expected value, an error was thrown.",
+    "Spy call did not return expected value, an error was thrown",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1600,7 +1600,7 @@ Deno.test("assertSpyCallAsync() rejects on sync value", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, a value was returned.",
+    "Spy call did not return a promise, a value was returned",
   );
 });
 
@@ -1613,7 +1613,7 @@ Deno.test("assertSpyCallAsync() rejects on sync error", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, an error was thrown.",
+    "Spy call did not return a promise, an error was thrown",
   );
 });
 
@@ -1721,7 +1721,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   await assertRejects(
     () =>
@@ -1732,7 +1732,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   await assertRejects(
     () =>
@@ -1742,7 +1742,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "failed"',
   );
   await assertRejects(
     () =>
@@ -1797,7 +1797,7 @@ Deno.test("assertSpyCallArg()", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, 2),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1814,7 +1814,7 @@ Deno.test("assertSpyCallArg()", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 0, 9),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1826,7 +1826,7 @@ Deno.test("assertSpyCallArg()", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 1, 7),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1838,7 +1838,7 @@ Deno.test("assertSpyCallArg()", () => {
   assertThrows(
     () => assertSpyCallArg(spyFunc, 0, 2, 7),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1863,7 +1863,7 @@ Deno.test("assertSpyCallArgs() throws without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, [undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1876,7 +1876,7 @@ Deno.test("assertSpyCallArgs() throws without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, [2]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1892,7 +1892,7 @@ Deno.test("assertSpyCallArgs() throws without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, [7, 9, undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1907,7 +1907,7 @@ Deno.test("assertSpyCallArgs() throws without range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, [9, 7]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1935,7 +1935,7 @@ Deno.test("assertSpyCallArgs() throws with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, [undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1948,7 +1948,7 @@ Deno.test("assertSpyCallArgs() throws with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, [2]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1964,7 +1964,7 @@ Deno.test("assertSpyCallArgs() throws with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, [9, 8, undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -1979,7 +1979,7 @@ Deno.test("assertSpyCallArgs() throws with start only", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, [9, 7]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -2007,7 +2007,7 @@ Deno.test("assertSpyCallArgs() throws with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, [undefined, undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -2021,7 +2021,7 @@ Deno.test("assertSpyCallArgs() throws with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 0, 1, 3, [2, 4]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -2038,7 +2038,7 @@ Deno.test("assertSpyCallArgs() throws with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, 3, [9, 8, undefined]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected
@@ -2053,7 +2053,7 @@ Deno.test("assertSpyCallArgs() throws with range", () => {
   assertThrows(
     () => assertSpyCallArgs(spyFunc, 1, 1, 3, [9, 7]),
     AssertionError,
-    `Values are not equal.
+    `Values are not equal
 
 
     [Diff] Actual / Expected

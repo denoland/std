@@ -32,7 +32,7 @@ export function assertEquals<T>(
   if (equal(actual, expected)) {
     return;
   }
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   let message = `Values are not equal${msgSuffix}`;
 
   const actualString = format(actual);

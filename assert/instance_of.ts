@@ -34,7 +34,7 @@ export function assertInstanceOf<T extends AnyConstructor>(
 ): asserts actual is GetConstructorType<T> {
   if (actual instanceof expectedType) return;
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   const expectedTypeStr = expectedType.name;
 
   let actualTypeStr = "";

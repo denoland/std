@@ -16,7 +16,7 @@ Deno.test({
     assertThrows(
       () => assertNotInstanceOf(new Date(), Date),
       AssertionError,
-      'Expected object to not be an instance of "function".',
+      'Expected object to not be an instance of "function"',
     );
   },
 });

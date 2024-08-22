@@ -19,7 +19,7 @@ Deno.test("assertRejects() with synchronous function that throws", async () => {
         throw { wrong: "true" };
       }),
     AssertionError,
-    "Function throws when expected to reject.",
+    "Function throws when expected to reject",
   );
 });
 
@@ -47,7 +47,7 @@ Deno.test("assertRejects() with non-error value rejected and error class", async
       );
     },
     AssertionError,
-    "A non-Error object was rejected.",
+    "A non-Error object was rejected",
   );
 });
 
@@ -103,7 +103,7 @@ Deno.test(
           "fail",
         ),
       AssertionError,
-      'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+      'Expected error to be instance of "CustomError", but was "AnotherCustomError"',
     );
   },
 );
@@ -113,7 +113,7 @@ Deno.test("assertRejects() throws when no promise is returned", async () => {
     // @ts-expect-error - testing invalid input
     async () => await assertRejects(() => {}),
     AssertionError,
-    "Function throws when expected to reject.",
+    "Function throws when expected to reject",
   );
 });
 
@@ -121,7 +121,7 @@ Deno.test("assertRejects() throws when the promise doesn't reject", async () => 
   await assertRejects(
     async () => await assertRejects(async () => await Promise.resolve(42)),
     AssertionError,
-    "Expected function to reject.",
+    "Expected function to reject",
   );
 });
 

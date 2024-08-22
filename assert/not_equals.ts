@@ -29,7 +29,7 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   }
   const actualString = String(actual);
   const expectedString = String(expected);
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   throw new AssertionError(
     `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`,
   );

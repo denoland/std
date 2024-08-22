@@ -10,7 +10,7 @@ Deno.test("assertMatch() throws", () => {
   assertThrows(
     () => assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/)),
     AssertionError,
-    `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/".`,
+    `Expected actual: "Denosaurus from Jurassic" to match: "/Raptor/"`,
   );
 });
 

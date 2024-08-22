@@ -8,19 +8,19 @@ Deno.test("assertIsError() throws when given value isn't error", () => {
   assertThrows(
     () => assertIsError("Panic!", undefined, "Panic!"),
     AssertionError,
-    `Expected "error" to be an Error object.`,
+    `Expected "error" to be an Error object`,
   );
 
   assertThrows(
     () => assertIsError(null),
     AssertionError,
-    `Expected "error" to be an Error object.`,
+    `Expected "error" to be an Error object`,
   );
 
   assertThrows(
     () => assertIsError(undefined),
     AssertionError,
-    `Expected "error" to be an Error object.`,
+    `Expected "error" to be an Error object`,
   );
 });
 
@@ -33,7 +33,7 @@ Deno.test("assertIsError() allows custom error", () => {
   assertThrows(
     () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
     AssertionError,
-    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+    'Expected error to be instance of "CustomError", but was "AnotherCustomError"',
   );
 });
 
@@ -46,7 +46,7 @@ Deno.test("assertIsError() throws with message diff containing double quotes", (
         'doesn\'t include "this message"',
       ),
     AssertionError,
-    `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\"".`,
+    `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\""`,
   );
 });
 

@@ -2,7 +2,7 @@
 import { AssertionError, assertThrows, fail } from "./mod.ts";
 
 Deno.test("AssertFail", function () {
-  assertThrows(fail, AssertionError, "Failed assertion.");
+  assertThrows(fail, AssertionError, "Failed assertion");
   assertThrows(
     () => {
       fail("foo");

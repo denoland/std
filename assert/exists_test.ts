@@ -24,12 +24,12 @@ Deno.test("assertExists() throws when value is null or undefined", () => {
   assertThrows(
     () => assertExists(undefined),
     AssertionError,
-    'Expected actual: "undefined" to not be null or undefined.',
+    'Expected actual: "undefined" to not be null or undefined',
   );
   assertThrows(
     () => assertExists(null),
     AssertionError,
-    'Expected actual: "null" to not be null or undefined.',
+    'Expected actual: "null" to not be null or undefined',
   );
 });
 

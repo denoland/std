@@ -24,7 +24,7 @@ export function assertMatch(
   msg?: string,
 ) {
   if (expected.test(actual)) return;
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   msg = `Expected actual: "${actual}" to match: "${expected}"${msgSuffix}`;
   throw new AssertionError(msg);
 }

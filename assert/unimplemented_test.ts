@@ -2,7 +2,7 @@
 import { AssertionError, assertThrows, unimplemented } from "./mod.ts";
 
 Deno.test("unimplemented() throws", function () {
-  assertThrows(() => unimplemented(), AssertionError, "Unimplemented.");
+  assertThrows(() => unimplemented(), AssertionError, "Unimplemented");
 });
 
 Deno.test("unimplemented() throws with custom message", function () {

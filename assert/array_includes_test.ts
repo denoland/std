@@ -24,7 +24,7 @@ Expected actual: "[
   "a",
 ]" to include: "[
   "b",
-]".
+]"
 missing: [
   "b",
 ]
@@ -46,7 +46,7 @@ Expected actual: "[
   {
     deno: "node",
   },
-]".
+]"
 missing: [
   {
     deno: "node",

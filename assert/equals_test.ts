@@ -45,7 +45,7 @@ Deno.test({
       () => assertEquals(1, 2),
       AssertionError,
       [
-        "Values are not equal.",
+        "Values are not equal",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
@@ -62,7 +62,7 @@ Deno.test({
       () => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
-        "Values are not equal.",
+        "Values are not equal",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   "1"`),
@@ -119,7 +119,7 @@ Deno.test({
         ),
       AssertionError,
       [
-        "Values are not equal.",
+        "Values are not equal",
         ...createHeader(),
         removed(`-   ${new Date(2019, 0, 3, 4, 20, 1, 10).toISOString()}`),
         added(`+   ${new Date(2019, 0, 3, 4, 20, 1, 20).toISOString()}`),
@@ -131,7 +131,7 @@ Deno.test({
         assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
-        "Values are not equal.",
+        "Values are not equal",
         ...createHeader(),
         removed(`-   ${new Date("invalid")}`),
         added(`+   ${new Date(2019, 0, 3, 4, 20, 1, 20).toISOString()}`),

@@ -24,7 +24,7 @@ export function assertStringIncludes(
   msg?: string,
 ) {
   if (actual.includes(expected)) return;
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   msg = `Expected actual: "${actual}" to contain: "${expected}"${msgSuffix}`;
   throw new AssertionError(msg);
 }

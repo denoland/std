@@ -18,17 +18,17 @@ Deno.test({
     assertThrows(
       () => assertInstanceOf(new Date(), RegExp),
       AssertionError,
-      `Expected object to be an instance of "RegExp" but was "Date".`,
+      `Expected object to be an instance of "RegExp" but was "Date"`,
     );
     assertThrows(
       () => assertInstanceOf(5, Date),
       AssertionError,
-      `Expected object to be an instance of "Date" but was "number".`,
+      `Expected object to be an instance of "Date" but was "number"`,
     );
     assertThrows(
       () => assertInstanceOf(new TestClass1(), TestClass2),
       AssertionError,
-      `Expected object to be an instance of "TestClass2" but was "TestClass1".`,
+      `Expected object to be an instance of "TestClass2" but was "TestClass1"`,
     );
 
     // Custom message
@@ -42,7 +42,7 @@ Deno.test({
     assertThrows(
       () => assertInstanceOf(5, Number),
       AssertionError,
-      `Expected object to be an instance of "Number" but was "number".`,
+      `Expected object to be an instance of "Number" but was "number"`,
     );
 
     let TestClassWithSameName: new () => unknown;
@@ -53,38 +53,38 @@ Deno.test({
     assertThrows(
       () => assertInstanceOf(new TestClassWithSameName(), TestClass3),
       AssertionError,
-      `Expected object to be an instance of "TestClass3".`,
+      `Expected object to be an instance of "TestClass3"`,
     );
 
     assertThrows(
       () => assertInstanceOf(TestClass1, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object`,
     );
     assertThrows(
       () => assertInstanceOf(() => {}, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object`,
     );
     assertThrows(
       () => assertInstanceOf(null, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was "null".`,
+      `Expected object to be an instance of "TestClass1" but was "null"`,
     );
     assertThrows(
       () => assertInstanceOf(undefined, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was "undefined".`,
+      `Expected object to be an instance of "TestClass1" but was "undefined"`,
     );
     assertThrows(
       () => assertInstanceOf({}, TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was "Object".`,
+      `Expected object to be an instance of "TestClass1" but was "Object"`,
     );
     assertThrows(
       () => assertInstanceOf(Object.create(null), TestClass1),
       AssertionError,
-      `Expected object to be an instance of "TestClass1" but was "Object".`,
+      `Expected object to be an instance of "TestClass1" but was "Object"`,
     );
 
     // Test TypeScript types functionality, wrapped in a function that never runs

@@ -86,7 +86,7 @@ export function assertThrows<E extends Error = Error>(
     msg = errorClassOrMsg;
   }
   let doesThrow = false;
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   try {
     fn();
   } catch (error) {

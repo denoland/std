@@ -82,7 +82,7 @@ export async function assertRejects<E extends Error = Error>(
   }
   let doesThrow = false;
   let isPromiseReturned = false;
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   try {
     const possiblePromise = fn();
     if (

@@ -43,7 +43,7 @@ Deno.test("assertThrows() throws when error class is expected but non-error valu
       );
     },
     AssertionError,
-    "A non-Error object was thrown.",
+    "A non-Error object was thrown",
   );
 });
 
@@ -134,7 +134,7 @@ Deno.test("assertThrows() throws when input function does not throw", () => {
       assertThrows(() => {});
     },
     AssertionError,
-    "Expected function to throw.",
+    "Expected function to throw",
   );
 });
 

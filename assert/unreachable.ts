@@ -16,6 +16,6 @@ import { AssertionError } from "./assertion_error.ts";
  * @returns Never returns, always throws.
  */
 export function unreachable(msg?: string): never {
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   throw new AssertionError(`Unreachable${msgSuffix}`);
 }

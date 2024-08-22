@@ -49,7 +49,7 @@ export function assertArrayIncludes<T>(
     return;
   }
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgSuffix = msg ? `: ${msg}` : "";
   msg = `Expected actual: "${format(actual)}" to include: "${
     format(expected)
   }"${msgSuffix}\nmissing: ${format(missing)}`;
