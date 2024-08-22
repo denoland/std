@@ -288,6 +288,66 @@ export class LoaderState {
       this.result += result;
     }
   }
+  readBlockSequence(nodeIndent: number): boolean {
+    let line: number;
+    let following: number;
+    let detected = false;
+    let ch: number;
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result: unknown[] = [];
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      if (ch !== MINUS) {
+        break;
+      }
+
+      following = this.peek(1);
+
+      if (!isWhiteSpaceOrEOL(following)) {
+        break;
+      }
+
+      detected = true;
+      this.position++;
+
+      if (skipSeparationSpace(this, true, -1)) {
+        if (this.lineIndent <= nodeIndent) {
+          result.push(null);
+          ch = this.peek();
+          continue;
+        }
+      }
+
+      line = this.line;
+      composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      result.push(this.result);
+      skipSeparationSpace(this, true, -1);
+
+      ch = this.peek();
+
+      if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
+        return this.throwError("bad indentation of a sequence entry");
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "sequence";
+      this.result = result;
+      return true;
+    }
+    return false;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1122,67 +1182,6 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   return true;
 }
 
-function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
-  let line: number;
-  let following: number;
-  let detected = false;
-  let ch: number;
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result: unknown[] = [];
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    if (ch !== MINUS) {
-      break;
-    }
-
-    following = state.peek(1);
-
-    if (!isWhiteSpaceOrEOL(following)) {
-      break;
-    }
-
-    detected = true;
-    state.position++;
-
-    if (skipSeparationSpace(state, true, -1)) {
-      if (state.lineIndent <= nodeIndent) {
-        result.push(null);
-        ch = state.peek();
-        continue;
-      }
-    }
-
-    line = state.line;
-    composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
-    result.push(state.result);
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      return state.throwError("bad indentation of a sequence entry");
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "sequence";
-    state.result = result;
-    return true;
-  }
-  return false;
-}
-
 function readBlockMapping(
   state: LoaderState,
   nodeIndent: number,
@@ -1594,7 +1593,7 @@ function composeNode(
     if (indentStatus === 1) {
       if (
         (allowBlockCollections &&
-          (readBlockSequence(state, blockIndent) ||
+          (state.readBlockSequence(blockIndent) ||
             readBlockMapping(state, blockIndent, flowIndent))) ||
         readFlowCollection(state, flowIndent)
       ) {
@@ -1632,7 +1631,7 @@ function composeNode(
       // Special case: block sequences are allowed to have same indentation level as the parent.
       // http://www.yaml.org/spec/1.2/spec.html#id2799784
       hasContent = allowBlockCollections &&
-        readBlockSequence(state, blockIndent);
+        state.readBlockSequence(blockIndent);
     }
   }
 
