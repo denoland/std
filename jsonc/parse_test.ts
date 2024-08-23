@@ -93,37 +93,37 @@ Deno.test({
     assertInvalidParse(
       `:::::`,
       SyntaxError,
-      "Unexpected token : in JSONC at position 0",
+      'Cannot parse JSONC: unexpected token ":" in JSONC at position 0',
     );
     assertInvalidParse(
       `[`,
       SyntaxError,
-      "Unexpected end of JSONC input",
+      "Cannot parse JSONC: unexpected end of JSONC input",
     );
     assertInvalidParse(
       `[]100`,
       SyntaxError,
-      "Unexpected token 100 in JSONC at position 2",
+      'Cannot parse JSONC: unexpected token "100" in JSONC at position 2',
     );
     assertInvalidParse(
       `[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]`,
       SyntaxError,
-      "Unexpected token aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa... in JSONC at position 1",
+      'Cannot parse JSONC: unexpected token "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa..." in JSONC at position 1',
     );
     assertInvalidParse(
       `}`,
       SyntaxError,
-      "Unexpected token } in JSONC at position 0",
+      'Cannot parse JSONC: unexpected token "}" in JSONC at position 0',
     );
     assertInvalidParse(
       `]`,
       SyntaxError,
-      "Unexpected token ] in JSONC at position 0",
+      'Cannot parse JSONC: unexpected token "]" in JSONC at position 0',
     );
     assertInvalidParse(
       `,`,
       SyntaxError,
-      "Unexpected token , in JSONC at position 0",
+      'Cannot parse JSONC: unexpected token "," in JSONC at position 0',
     );
   },
 });
@@ -163,7 +163,7 @@ Deno.test({
       // deno-lint-ignore no-explicit-any
       undefined as any,
       SyntaxError,
-      "Unexpected token undefined in JSONC at position 0",
+      'Cannot parse JSONC: unexpected token "undefined" in JSONC at position 0',
     );
     // deno-lint-ignore no-explicit-any
     assertValidParse(0 as any, 0);
