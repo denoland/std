@@ -262,6 +262,211 @@ export class LoaderState {
 
     this.tagMap.set(handle, prefix);
   }
+  captureSegment(start: number, end: number, checkJson: boolean) {
+    let result: string;
+    if (start < end) {
+      result = this.input.slice(start, end);
+
+      if (checkJson) {
+        for (
+          let position = 0;
+          position < result.length;
+          position++
+        ) {
+          const character = result.charCodeAt(position);
+          if (
+            !(character === 0x09 ||
+              (0x20 <= character && character <= 0x10ffff))
+          ) {
+            return this.throwError("expected valid JSON character");
+          }
+        }
+      } else if (PATTERN_NON_PRINTABLE.test(result)) {
+        return this.throwError("the stream contains non-printable characters");
+      }
+
+      this.result += result;
+    }
+  }
+  readBlockSequence(nodeIndent: number): boolean {
+    let line: number;
+    let following: number;
+    let detected = false;
+    let ch: number;
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result: unknown[] = [];
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      if (ch !== MINUS) {
+        break;
+      }
+
+      following = this.peek(1);
+
+      if (!isWhiteSpaceOrEOL(following)) {
+        break;
+      }
+
+      detected = true;
+      this.position++;
+
+      if (skipSeparationSpace(this, true, -1)) {
+        if (this.lineIndent <= nodeIndent) {
+          result.push(null);
+          ch = this.peek();
+          continue;
+        }
+      }
+
+      line = this.line;
+      composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      result.push(this.result);
+      skipSeparationSpace(this, true, -1);
+
+      ch = this.peek();
+
+      if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
+        return this.throwError("bad indentation of a sequence entry");
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "sequence";
+      this.result = result;
+      return true;
+    }
+    return false;
+  }
+  mergeMappings(
+    destination: Record<string, unknown>,
+    source: Record<string, unknown>,
+    overridableKeys: Set<string>,
+  ) {
+    if (!isObject(source)) {
+      return this.throwError(
+        "cannot merge mappings; the provided source object is unacceptable",
+      );
+    }
+
+    for (const [key, value] of Object.entries(source)) {
+      if (Object.hasOwn(destination, key)) continue;
+      Object.defineProperty(destination, key, {
+        value,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.add(key);
+    }
+  }
+  storeMappingPair(
+    result: Record<string, unknown>,
+    overridableKeys: Set<string>,
+    keyTag: string | null,
+    keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
+    valueNode: unknown,
+    startLine?: number,
+    startPos?: number,
+  ): Record<string, unknown> {
+    // The output is a plain object here, so keys can only be strings.
+    // We need to convert keyNode to a string, but doing so can hang the process
+    // (deeply nested arrays that explode exponentially using aliases).
+    if (Array.isArray(keyNode)) {
+      keyNode = Array.prototype.slice.call(keyNode);
+
+      for (let index = 0; index < keyNode.length; index++) {
+        if (Array.isArray(keyNode[index])) {
+          return this.throwError(
+            "nested arrays are not supported inside keys",
+          );
+        }
+
+        if (
+          typeof keyNode === "object" &&
+          getObjectTypeString(keyNode[index]) === "[object Object]"
+        ) {
+          keyNode[index] = "[object Object]";
+        }
+      }
+    }
+
+    // Avoid code execution in load() via toString property
+    // (still use its own toString for arrays, timestamps,
+    // and whatever user schema extensions happen to have @@toStringTag)
+    if (
+      typeof keyNode === "object" &&
+      getObjectTypeString(keyNode) === "[object Object]"
+    ) {
+      keyNode = "[object Object]";
+    }
+
+    keyNode = String(keyNode);
+
+    if (keyTag === "tag:yaml.org,2002:merge") {
+      if (Array.isArray(valueNode)) {
+        for (
+          let index = 0;
+          index < valueNode.length;
+          index++
+        ) {
+          this.mergeMappings(result, valueNode[index], overridableKeys);
+        }
+      } else {
+        this.mergeMappings(
+          result,
+          valueNode as Record<string, unknown>,
+          overridableKeys,
+        );
+      }
+    } else {
+      if (
+        !this.allowDuplicateKeys &&
+        !overridableKeys.has(keyNode) &&
+        Object.hasOwn(result, keyNode)
+      ) {
+        this.line = startLine || this.line;
+        this.position = startPos || this.position;
+        return this.throwError("duplicated mapping key");
+      }
+      Object.defineProperty(result, keyNode, {
+        value: valueNode,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.delete(keyNode);
+    }
+
+    return result;
+  }
+  readLineBreak() {
+    const ch = this.peek();
+
+    if (ch === LINE_FEED) {
+      this.position++;
+    } else if (ch === CARRIAGE_RETURN) {
+      this.position++;
+      if (this.peek() === LINE_FEED) {
+        this.position++;
+      }
+    } else {
+      return this.throwError("a line break is expected");
+    }
+
+    this.line += 1;
+    this.lineStart = this.position;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -325,7 +530,7 @@ export class LoaderState {
         directiveArgs.push(this.input.slice(position, this.position));
       }
 
-      if (ch !== 0) readLineBreak(this);
+      if (ch !== 0) this.readLineBreak();
 
       switch (directiveName) {
         case "YAML":
@@ -389,164 +594,6 @@ export class LoaderState {
   }
 }
 
-function captureSegment(
-  state: LoaderState,
-  start: number,
-  end: number,
-  checkJson: boolean,
-) {
-  let result: string;
-  if (start < end) {
-    result = state.input.slice(start, end);
-
-    if (checkJson) {
-      for (
-        let position = 0;
-        position < result.length;
-        position++
-      ) {
-        const character = result.charCodeAt(position);
-        if (
-          !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
-        ) {
-          return state.throwError("expected valid JSON character");
-        }
-      }
-    } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      return state.throwError("the stream contains non-printable characters");
-    }
-
-    state.result += result;
-  }
-}
-
-function mergeMappings(
-  state: LoaderState,
-  destination: Record<string, unknown>,
-  source: Record<string, unknown>,
-  overridableKeys: Set<string>,
-) {
-  if (!isObject(source)) {
-    return state.throwError(
-      "cannot merge mappings; the provided source object is unacceptable",
-    );
-  }
-
-  for (const [key, value] of Object.entries(source)) {
-    if (Object.hasOwn(destination, key)) continue;
-    Object.defineProperty(destination, key, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.add(key);
-  }
-}
-
-function storeMappingPair(
-  state: LoaderState,
-  result: Record<string, unknown> | null,
-  overridableKeys: Set<string>,
-  keyTag: string | null,
-  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
-  valueNode: unknown,
-  startLine?: number,
-  startPos?: number,
-): Record<string, unknown> {
-  // The output is a plain object here, so keys can only be strings.
-  // We need to convert keyNode to a string, but doing so can hang the process
-  // (deeply nested arrays that explode exponentially using aliases).
-  if (Array.isArray(keyNode)) {
-    keyNode = Array.prototype.slice.call(keyNode);
-
-    for (let index = 0; index < keyNode.length; index++) {
-      if (Array.isArray(keyNode[index])) {
-        return state.throwError("nested arrays are not supported inside keys");
-      }
-
-      if (
-        typeof keyNode === "object" &&
-        getObjectTypeString(keyNode[index]) === "[object Object]"
-      ) {
-        keyNode[index] = "[object Object]";
-      }
-    }
-  }
-
-  // Avoid code execution in load() via toString property
-  // (still use its own toString for arrays, timestamps,
-  // and whatever user schema extensions happen to have @@toStringTag)
-  if (
-    typeof keyNode === "object" &&
-    getObjectTypeString(keyNode) === "[object Object]"
-  ) {
-    keyNode = "[object Object]";
-  }
-
-  keyNode = String(keyNode);
-
-  if (result === null) {
-    result = {};
-  }
-
-  if (keyTag === "tag:yaml.org,2002:merge") {
-    if (Array.isArray(valueNode)) {
-      for (
-        let index = 0;
-        index < valueNode.length;
-        index++
-      ) {
-        mergeMappings(state, result, valueNode[index], overridableKeys);
-      }
-    } else {
-      mergeMappings(
-        state,
-        result,
-        valueNode as Record<string, unknown>,
-        overridableKeys,
-      );
-    }
-  } else {
-    if (
-      !state.allowDuplicateKeys &&
-      !overridableKeys.has(keyNode) &&
-      Object.hasOwn(result, keyNode)
-    ) {
-      state.line = startLine || state.line;
-      state.position = startPos || state.position;
-      return state.throwError("duplicated mapping key");
-    }
-    Object.defineProperty(result, keyNode, {
-      value: valueNode,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.delete(keyNode);
-  }
-
-  return result;
-}
-
-function readLineBreak(state: LoaderState) {
-  const ch = state.peek();
-
-  if (ch === LINE_FEED) {
-    state.position++;
-  } else if (ch === CARRIAGE_RETURN) {
-    state.position++;
-    if (state.peek() === LINE_FEED) {
-      state.position++;
-    }
-  } else {
-    return state.throwError("a line break is expected");
-  }
-
-  state.line += 1;
-  state.lineStart = state.position;
-}
-
 function skipSeparationSpace(
   state: LoaderState,
   allowComments: boolean,
@@ -567,7 +614,7 @@ function skipSeparationSpace(
     }
 
     if (isEOL(ch)) {
-      readLineBreak(state);
+      state.readLineBreak();
 
       ch = state.peek();
       lineBreaks++;
@@ -705,7 +752,7 @@ function readPlainScalar(
     }
 
     if (hasPendingContent) {
-      captureSegment(state, captureStart, captureEnd, false);
+      state.captureSegment(captureStart, captureEnd, false);
       writeFoldedLines(state, state.line - line);
       captureStart = captureEnd = state.position;
       hasPendingContent = false;
@@ -718,7 +765,7 @@ function readPlainScalar(
     ch = state.next();
   }
 
-  captureSegment(state, captureStart, captureEnd, false);
+  state.captureSegment(captureStart, captureEnd, false);
 
   if (state.result) {
     return true;
@@ -750,7 +797,7 @@ function readSingleQuotedScalar(
 
   while ((ch = state.peek()) !== 0) {
     if (ch === SINGLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (ch === SINGLE_QUOTE) {
@@ -761,7 +808,7 @@ function readSingleQuotedScalar(
         return true;
       }
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -800,12 +847,12 @@ function readDoubleQuotedScalar(
   let tmp: number;
   while ((ch = state.peek()) !== 0) {
     if (ch === DOUBLE_QUOTE) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       state.position++;
       return true;
     }
     if (ch === BACKSLASH) {
-      captureSegment(state, captureStart, state.position, true);
+      state.captureSegment(captureStart, state.position, true);
       ch = state.next();
 
       if (isEOL(ch)) {
@@ -836,7 +883,7 @@ function readDoubleQuotedScalar(
 
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
-      captureSegment(state, captureStart, captureEnd, true);
+      state.captureSegment(captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
@@ -936,8 +983,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     }
 
     if (isMapping) {
-      storeMappingPair(
-        state,
+      state.storeMappingPair(
         result as Record<string, unknown>,
         overridableKeys,
         keyTag,
@@ -946,9 +992,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       );
     } else if (isPair) {
       (result as Record<string, unknown>[]).push(
-        storeMappingPair(
-          state,
-          null,
+        state.storeMappingPair(
+          {},
           overridableKeys,
           keyTag,
           keyNode,
@@ -1039,7 +1084,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   }
 
   while (ch !== 0) {
-    readLineBreak(state);
+    state.readLineBreak();
     state.lineIndent = 0;
 
     ch = state.peek();
@@ -1121,71 +1166,10 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       ch = state.next();
     }
 
-    captureSegment(state, captureStart, state.position, false);
+    state.captureSegment(captureStart, state.position, false);
   }
 
   return true;
-}
-
-function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
-  let line: number;
-  let following: number;
-  let detected = false;
-  let ch: number;
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result: unknown[] = [];
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    if (ch !== MINUS) {
-      break;
-    }
-
-    following = state.peek(1);
-
-    if (!isWhiteSpaceOrEOL(following)) {
-      break;
-    }
-
-    detected = true;
-    state.position++;
-
-    if (skipSeparationSpace(state, true, -1)) {
-      if (state.lineIndent <= nodeIndent) {
-        result.push(null);
-        ch = state.peek();
-        continue;
-      }
-    }
-
-    line = state.line;
-    composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
-    result.push(state.result);
-    skipSeparationSpace(state, true, -1);
-
-    ch = state.peek();
-
-    if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      return state.throwError("bad indentation of a sequence entry");
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "sequence";
-    state.result = result;
-    return true;
-  }
-  return false;
 }
 
 function readBlockMapping(
@@ -1226,8 +1210,7 @@ function readBlockMapping(
     if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
       if (ch === QUESTION) {
         if (atExplicitKey) {
-          storeMappingPair(
-            state,
+          state.storeMappingPair(
             result,
             overridableKeys,
             keyTag as string,
@@ -1274,8 +1257,7 @@ function readBlockMapping(
           }
 
           if (atExplicitKey) {
-            storeMappingPair(
-              state,
+            state.storeMappingPair(
               result,
               overridableKeys,
               keyTag as string,
@@ -1327,8 +1309,7 @@ function readBlockMapping(
       }
 
       if (!atExplicitKey) {
-        storeMappingPair(
-          state,
+        state.storeMappingPair(
           result,
           overridableKeys,
           keyTag as string,
@@ -1357,8 +1338,7 @@ function readBlockMapping(
 
   // Special case: last mapping's node contains only the key in explicit notation.
   if (atExplicitKey) {
-    storeMappingPair(
-      state,
+    state.storeMappingPair(
       result,
       overridableKeys,
       keyTag as string,
@@ -1599,7 +1579,7 @@ function composeNode(
     if (indentStatus === 1) {
       if (
         (allowBlockCollections &&
-          (readBlockSequence(state, blockIndent) ||
+          (state.readBlockSequence(blockIndent) ||
             readBlockMapping(state, blockIndent, flowIndent))) ||
         readFlowCollection(state, flowIndent)
       ) {
@@ -1637,7 +1617,7 @@ function composeNode(
       // Special case: block sequences are allowed to have same indentation level as the parent.
       // http://www.yaml.org/spec/1.2/spec.html#id2799784
       hasContent = allowBlockCollections &&
-        readBlockSequence(state, blockIndent);
+        state.readBlockSequence(blockIndent);
     }
   }
 
