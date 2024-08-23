@@ -660,5 +660,9 @@ Deno.test("parseRange() parses ranges with caret", () => {
 });
 
 Deno.test("parseRange() throws on invalid range", () => {
-  assertThrows(() => parseRange("blerg"), TypeError, "Invalid range: blerg");
+  assertThrows(
+    () => parseRange("blerg"),
+    TypeError,
+    'Cannot parse version range: range "blerg" is invalid',
+  );
 });

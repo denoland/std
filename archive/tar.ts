@@ -44,10 +44,7 @@ export type { TarInfo, TarMeta };
 /**
  * Options for {@linkcode Tar.append}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarOptions extends TarInfo {
   /**
@@ -125,10 +122,7 @@ function formatHeader(data: TarData): Uint8Array {
 /**
  * Base interface for {@linkcode TarDataWithSource}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarData {
   /** Name of the file, excluding directory names (if any). */
@@ -179,10 +173,7 @@ export interface TarData {
 /**
  * Tar data interface for {@linkcode Tar.data}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarDataWithSource extends TarData {
   /**
@@ -221,8 +212,8 @@ export interface TarDataWithSource extends TarData {
  * * Filenames (including path) cannot contain non-ASCII characters
  * * Sparse files are not supported
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-eval
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
  * import { copy } from "@std/io/copy";
@@ -250,10 +241,7 @@ export interface TarDataWithSource extends TarData {
  * writer.close();
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export class Tar {
   /** Tar data. */
@@ -275,10 +263,39 @@ export class Tar {
    * `test.txt`. Use slash for directory separators.
    * @param source Details of the source of the content including the
    * reference to the content itself and potentially any related metadata.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Tar } from "@std/archive/tar";
+   * import { Buffer } from "@std/io/buffer";
+   * import { copy } from "@std/io/copy";
+   *
+   * const tar = new Tar();
+   *
+   * // Now that we've created our tar, let's add some files to it:
+   *
+   * const content = new TextEncoder().encode("Some arbitrary content");
+   * await tar.append("deno.txt", {
+   *   reader: new Buffer(content),
+   *   contentSize: content.byteLength,
+   * });
+   *
+   * // This file is sourced from the filesystem (and renamed in the archive)
+   * await tar.append("filename_in_archive.txt", {
+   *   filePath: "./filename_on_filesystem.txt",
+   * });
+   *
+   * // Now let's write the tar (with it's two files) to the filesystem
+   * // use tar.getReader() to read the contents.
+   *
+   * const writer = await Deno.open("./out.tar", { write: true, create: true });
+   * await copy(tar.getReader(), writer);
+   * writer.close();
+   * ```
    */
   async append(filenameInArchive: string, source: TarOptions) {
     if (typeof filenameInArchive !== "string") {
-      throw new Error("file name not specified");
+      throw new Error("Cannot append data: File name is not a string");
     }
     let fileName = filenameInArchive;
 
@@ -303,7 +320,7 @@ export class Tar {
         i--;
       }
       const errMsg =
-        "ustar format does not allow a long file name (length of [file name" +
+        "Cannot append data: The 'ustar' format does not allow a long file name (length of [file name" +
         "prefix] + / + [file name] must be shorter than 256 bytes)";
       if (i < 0 || fileName.length > 100) {
         throw new Error(errMsg);
@@ -339,18 +356,18 @@ export class Tar {
 
     if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
-        "ustar format does not allow owner name length >= 32 bytes",
+        "Cannot append data: The 'ustar' format does not allow owner name length >= 32 bytes",
       );
     }
     if (typeof source.group === "string" && source.group.length >= 32) {
       throw new Error(
-        "ustar format does not allow group name length >= 32 bytes",
+        "Cannot append data: The 'ustar' format does not allow group name length >= 32 bytes",
       );
     }
 
     const fileSize = info?.size ?? source.contentSize;
     if (fileSize === undefined) {
-      throw new TypeError("fileSize must be set");
+      throw new TypeError("Cannot append data: The file size is not defined");
     }
 
     const type = source.type
@@ -389,7 +406,38 @@ export class Tar {
   }
 
   /**
-   * Get a Reader instance for this tar archive.
+   * Get a {@linkcode Reader} instance for this tar archive.
+   *
+   * @returns A reader instance for the tar archive.
+   *
+   * @example Usage
+   * ```ts no-eval
+   * import { Tar } from "@std/archive/tar";
+   * import { Buffer } from "@std/io/buffer";
+   * import { copy } from "@std/io/copy";
+   *
+   * const tar = new Tar();
+   *
+   * // Now that we've created our tar, let's add some files to it:
+   *
+   * const content = new TextEncoder().encode("Some arbitrary content");
+   * await tar.append("deno.txt", {
+   *   reader: new Buffer(content),
+   *   contentSize: content.byteLength,
+   * });
+   *
+   * // This file is sourced from the filesystem (and renamed in the archive)
+   * await tar.append("filename_in_archive.txt", {
+   *   filePath: "./filename_on_filesystem.txt",
+   * });
+   *
+   * // Now let's write the tar (with it's two files) to the filesystem
+   * // use tar.getReader() to read the contents.
+   *
+   * const writer = await Deno.open("./out.tar", { write: true, create: true });
+   * await copy(tar.getReader(), writer);
+   * writer.close();
+   * ```
    */
   getReader(): Reader {
     const readers: Reader[] = [];
@@ -400,7 +448,9 @@ export class Tar {
       readers.push(new Buffer(headerArr));
       if (!reader) {
         if (filePath === undefined) {
-          throw new TypeError("filePath must be defined");
+          throw new TypeError(
+            "Cannot get the reader for the tar archive: FilePath is not defined",
+          );
         }
         reader = new FileReader(filePath);
       }
@@ -408,7 +458,9 @@ export class Tar {
 
       // to the nearest multiple of recordSize
       if (tarData.fileSize === undefined) {
-        throw new TypeError("fileSize must be set");
+        throw new TypeError(
+          "Cannot get the reader for the tar archive: FileSize is not defined",
+        );
       }
       readers.push(
         new Buffer(

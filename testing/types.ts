@@ -177,10 +177,13 @@ export type IsNullable<T> = Extract<T, null | undefined> extends never ? false
  * @typeParam T The type to check if it exactly matches type `U`.
  * @typeParam U The type to check if it exactly matches type `T`.
  */
-export type IsExact<T, U> = TupleMatches<AnyToBrand<T>, AnyToBrand<U>> extends
-  true
-  ? TupleMatches<DeepPrepareIsExact<T>, DeepPrepareIsExact<U>> extends true
-    ? true
+export type IsExact<T, U> = ParametersAndReturnTypeMatches<
+  FlatType<AnyToBrand<T>>,
+  FlatType<AnyToBrand<U>>
+> extends true ? ParametersAndReturnTypeMatches<
+    FlatType<DeepPrepareIsExact<T>>,
+    FlatType<DeepPrepareIsExact<U>>
+  > extends true ? true
   : false
   : false;
 
@@ -248,6 +251,16 @@ export type IsUnknown<T> = unknown extends T
   : false;
 
 /**
+ * The internal utility type to match the given types as return types.
+ *
+ * @internal
+ */
+export type ParametersAndReturnTypeMatches<T, U> = Matches<
+  <X>(_: T) => X extends T ? 1 : 2,
+  <X>(_: U) => X extends U ? 1 : 2
+>;
+
+/**
  * The internal utility type to match the given types as tuples.
  *
  * @internal
@@ -274,3 +287,12 @@ export type AnyToBrand<T> = IsAny<T> extends true ? AnyBrand : T;
  * @internal
  */
 export type AnyBrand = { __conditionalTypeChecksAny__: undefined };
+
+/**
+ * The utility type to flatten record types.
+ *
+ * @internal
+ */
+export type FlatType<T> = T extends Record<PropertyKey, unknown>
+  ? { [K in keyof T]: FlatType<T[K]> }
+  : T;

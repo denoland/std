@@ -32,14 +32,17 @@ function parseComparator(comparator: string): Comparator | null {
 
   const semver = groups.major
     ? {
-      major: parseNumber(groups.major, "Invalid major version"),
+      major: parseNumber(
+        groups.major,
+        `Cannot parse comparator ${comparator}: invalid major version`,
+      ),
       minor: parseNumber(
         groups.minor!,
-        "Invalid minor version",
+        `Cannot parse comparator ${comparator}: invalid minor version`,
       ),
       patch: parseNumber(
         groups.patch!,
-        "Invalid patch version",
+        `Cannot parse comparator ${comparator}: invalid patch version`,
       ),
       prerelease: prerelease ? parsePrerelease(prerelease) : [],
       build: buildmetadata ? parseBuild(buildmetadata) : [],
@@ -372,7 +375,9 @@ function parseOperatorRange(string: string): Comparator | Comparator[] | null {
     case "":
       return handleEqualOperator(groups);
     default:
-      throw new Error(`'${groups.operator}' is not a valid operator.`);
+      throw new Error(
+        `Cannot parse version range: '${groups.operator}' is not a valid operator`,
+      );
   }
 }
 function parseOperatorRanges(string: string): (Comparator | null)[] {
@@ -400,17 +405,19 @@ function parseOperatorRanges(string: string): (Comparator | null)[] {
  * ```
  *
  * @throws {TypeError} If the input range is invalid.
- * @param range The range set string
+ * @param value The range set string
  * @returns A valid SemVer range
  */
-export function parseRange(range: string): Range {
-  const result = range
+export function parseRange(value: string): Range {
+  const result = value
     // remove spaces between operators and versions
     .replaceAll(/(?<=<|>|=|~|\^)(\s+)/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
   if (result.some((r) => r.includes(null))) {
-    throw new TypeError(`Invalid range: ${range}`);
+    throw new TypeError(
+      `Cannot parse version range: range "${value}" is invalid`,
+    );
   }
   return result as Range;
 }

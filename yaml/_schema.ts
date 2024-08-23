@@ -5,7 +5,6 @@
 // This module is browser compatible.
 
 import type { KindType, Type } from "./_type.ts";
-import type { ArrayObject } from "./_utils.ts";
 import {
   binary,
   bool,
@@ -49,78 +48,50 @@ import {
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
-// deno-lint-ignore no-explicit-any
-function compileList<K extends KindType, D = any>(
-  schema: Schema,
-  name: "implicit" | "explicit",
-  result: Type<K, D>[],
-): Type<K, D>[] {
-  const exclude: number[] = [];
-
-  for (const includedSchema of schema.include) {
-    result = compileList(includedSchema, name, result);
-  }
-
-  for (const currentType of schema[name]) {
-    for (const [previousIndex, previousType] of result.entries()) {
-      if (
-        previousType.tag === currentType.tag &&
-        previousType.kind === currentType.kind
-      ) {
-        exclude.push(previousIndex);
-      }
-    }
-
-    result.push(currentType as Type<K, D>);
-  }
-
-  return result.filter((_type, index): unknown => !exclude.includes(index));
-}
+type ImplicitType = Type<"scalar">;
+type ExplicitType = Type<KindType>;
 
 export type TypeMap = Record<
   KindType | "fallback",
-  ArrayObject<Type<KindType>>
+  Map<string, ExplicitType>
 >;
-function compileMap(...typesList: Type<KindType>[][]): TypeMap {
-  const result: TypeMap = {
-    fallback: {},
-    mapping: {},
-    scalar: {},
-    sequence: {},
-  };
 
-  for (const types of typesList) {
-    for (const type of types) {
-      result[type.kind][type.tag] = result["fallback"][type.tag] = type;
-    }
+function createTypeMap(
+  implicitTypes: ImplicitType[],
+  explicitTypes: ExplicitType[],
+): TypeMap {
+  const result: TypeMap = {
+    fallback: new Map(),
+    mapping: new Map(),
+    scalar: new Map(),
+    sequence: new Map(),
+  };
+  const fallbackMap = result.fallback;
+  for (const type of [...implicitTypes, ...explicitTypes]) {
+    const map = result[type.kind];
+    map.set(type.tag, type);
+    fallbackMap.set(type.tag, type);
   }
   return result;
 }
 
-export class Schema {
-  implicit: Type<"scalar">[];
-  explicit: Type<KindType>[];
-  include: Schema[];
+export interface Schema {
+  implicitTypes: ImplicitType[];
+  explicitTypes: ExplicitType[];
+  typeMap: TypeMap;
+}
 
-  compiledImplicit: Type<"scalar">[];
-  compiledExplicit: Type<KindType>[];
-  compiledTypeMap: TypeMap;
-
-  constructor(definition: {
-    implicit?: Type<"scalar">[];
-    explicit?: Type<KindType>[];
-    include?: Schema[];
-  }) {
-    this.explicit = definition.explicit || [];
-    this.implicit = definition.implicit || [];
-    this.include = definition.include || [];
-    this.compiledImplicit = compileList(this, "implicit", []);
-    this.compiledExplicit = compileList(this, "explicit", []);
-    this.compiledTypeMap = compileMap(
-      this.compiledImplicit,
-      this.compiledExplicit,
-    );
+function createSchema({ explicitTypes = [], implicitTypes = [], include }: {
+  implicitTypes?: ImplicitType[];
+  explicitTypes?: ExplicitType[];
+  include?: Schema;
+}): Schema {
+  if (include) {
+    implicitTypes.push(...include.implicitTypes);
+    explicitTypes.push(...include.explicitTypes);
   }
+  const typeMap = createTypeMap(implicitTypes, explicitTypes);
+  return { implicitTypes, explicitTypes, typeMap };
 }
 
 /**
@@ -128,8 +99,8 @@ export class Schema {
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2802346}
  */
-const FAILSAFE_SCHEMA = new Schema({
-  explicit: [str, seq, map],
+const FAILSAFE_SCHEMA = createSchema({
+  explicitTypes: [str, seq, map],
 });
 
 /**
@@ -137,9 +108,9 @@ const FAILSAFE_SCHEMA = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2803231}
  */
-const JSON_SCHEMA = new Schema({
-  implicit: [nil, bool, int, float],
-  include: [FAILSAFE_SCHEMA],
+const JSON_SCHEMA = createSchema({
+  implicitTypes: [nil, bool, int, float],
+  include: FAILSAFE_SCHEMA,
 });
 
 /**
@@ -147,17 +118,17 @@ const JSON_SCHEMA = new Schema({
  *
  * @see {@link http://www.yaml.org/spec/1.2/spec.html#id2804923}
  */
-const CORE_SCHEMA = new Schema({
-  include: [JSON_SCHEMA],
+const CORE_SCHEMA = createSchema({
+  include: JSON_SCHEMA,
 });
 
 /**
  * Default YAML schema. It is not described in the YAML specification.
  */
-export const DEFAULT_SCHEMA = new Schema({
-  explicit: [binary, omap, pairs, set],
-  implicit: [timestamp, merge],
-  include: [CORE_SCHEMA],
+export const DEFAULT_SCHEMA = createSchema({
+  explicitTypes: [binary, omap, pairs, set],
+  implicitTypes: [timestamp, merge],
+  include: CORE_SCHEMA,
 });
 
 /***
@@ -185,12 +156,12 @@ export const DEFAULT_SCHEMA = new Schema({
  * );
  * ```
  */
-const EXTENDED_SCHEMA = new Schema({
-  explicit: [regexp, undefinedType],
-  include: [DEFAULT_SCHEMA],
+const EXTENDED_SCHEMA = createSchema({
+  explicitTypes: [regexp, undefinedType],
+  include: DEFAULT_SCHEMA,
 });
 
-export const SCHEMA_MAP = new Map([
+export const SCHEMA_MAP = new Map<SchemaType, Schema>([
   ["core", CORE_SCHEMA],
   ["default", DEFAULT_SCHEMA],
   ["failsafe", FAILSAFE_SCHEMA],

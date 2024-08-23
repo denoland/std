@@ -84,7 +84,7 @@ export type ColumnDetails = {
 export type Column = ColumnDetails | PropertyAccessor | PropertyAccessor[];
 
 /** An object (plain or array) */
-export type DataItem = Record<string, unknown> | unknown[];
+export type DataItem = Readonly<Record<string, unknown> | unknown[]>;
 
 /** Options for {@linkcode stringify}. */
 export type StringifyOptions = {
@@ -110,7 +110,7 @@ export type StringifyOptions = {
    *
    * @default {[]}
    */
-  columns?: Column[];
+  columns?: readonly Column[];
   /**
    * Whether to add a
    * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
@@ -145,7 +145,7 @@ function getEscapedString(value: unknown, sep: string): string {
 
 type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
   header: string;
-  prop: PropertyAccessor[];
+  prop: readonly PropertyAccessor[];
 };
 
 function normalizeColumn(column: Column): NormalizedColumn {
@@ -176,7 +176,7 @@ function normalizeColumn(column: Column): NormalizedColumn {
  */
 function getValuesFromItem(
   item: DataItem,
-  normalizedColumns: NormalizedColumn[],
+  normalizedColumns: readonly NormalizedColumn[],
 ): unknown[] {
   const values: unknown[] = [];
 
@@ -426,7 +426,7 @@ function getValuesFromItem(
  * @returns A CSV string.
  */
 export function stringify(
-  data: DataItem[],
+  data: readonly DataItem[],
   options?: StringifyOptions,
 ): string {
   const { headers = true, separator: sep = ",", columns = [], bom = false } =
