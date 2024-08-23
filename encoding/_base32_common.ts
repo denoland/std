@@ -22,7 +22,9 @@ function getLens(b32: string): [number, number] {
   const len = b32.length;
 
   if (len % 8 > 0) {
-    throw new Error("Invalid string. Length must be a multiple of 8");
+    throw new Error(
+      `Cannot decode base32 string as the length must be a multiple of 8: received length ${len}`,
+    );
   }
 
   let validLen = b32.indexOf("=");
