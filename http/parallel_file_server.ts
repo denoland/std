@@ -9,15 +9,6 @@
  * > deno serve --allow-read --parallel jsr:@std/http/parallel-file-server
  * ```
  *
- * If you want to install and run:
- *
- * ```shell
- * > # install
- * > deno install --allow-read --global jsr:@std/http/parallel-file-server
- * > # start server
- * > parallel-file-server --parallel
- * ```
- *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
