@@ -67,7 +67,7 @@ Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
     assertThrows(
       () => decodeBase64Url(illegalBase64url),
       TypeError,
-      "Illegal base64url string!",
+      "Illegal base64url string",
     );
   }
 });
