@@ -78,7 +78,7 @@ package versions <1.0.0 follow
 
 ## Badge
 
-[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
+[![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_deno__std-blue?logo=deno)](https://jsr.io/@std)
 
 ```html
 <a href="https://jsr.io/@std">
