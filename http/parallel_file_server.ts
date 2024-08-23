@@ -46,4 +46,4 @@ function handler(req: Request): Promise<Response> {
 
 export default {
   fetch: handler,
-} satisfies Deno.ServeDefaultExport;
+} as Deno.ServeDefaultExport;
