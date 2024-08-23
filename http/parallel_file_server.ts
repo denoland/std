@@ -4,9 +4,9 @@
 /**
  * This module is a CLI for serving static files.
  *
- * ```shell
- * > # start server
- * > deno serve --allow-read --parallel jsr:@std/http/parallel-file-server
+ * @example Start the server
+ * ```sh
+ * deno serve --allow-read --parallel jsr:@std/http/parallel-file-server
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
