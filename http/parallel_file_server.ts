@@ -2,7 +2,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * This module is a CLI for serving static files.
+ * This module is a CLI for serving static files on multiple threads.
  *
  * @example Start the server
  * ```sh
