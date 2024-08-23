@@ -317,7 +317,7 @@ export class LoaderState {
       detected = true;
       this.position++;
 
-      if (skipSeparationSpace(this, true, -1)) {
+      if (this.skipSeparationSpace(true, -1)) {
         if (this.lineIndent <= nodeIndent) {
           result.push(null);
           ch = this.peek();
@@ -328,7 +328,7 @@ export class LoaderState {
       line = this.line;
       composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
       result.push(this.result);
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
 
@@ -467,6 +467,45 @@ export class LoaderState {
     this.line += 1;
     this.lineStart = this.position;
   }
+  skipSeparationSpace(allowComments: boolean, checkIndent: number): number {
+    let lineBreaks = 0;
+    let ch = this.peek();
+
+    while (ch !== 0) {
+      while (isWhiteSpace(ch)) {
+        ch = this.next();
+      }
+
+      if (allowComments && ch === SHARP) {
+        do {
+          ch = this.next();
+        } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
+      }
+
+      if (isEOL(ch)) {
+        this.readLineBreak();
+
+        ch = this.peek();
+        lineBreaks++;
+        this.lineIndent = 0;
+
+        this.readIndent();
+        ch = this.peek();
+      } else {
+        break;
+      }
+    }
+
+    if (
+      checkIndent !== -1 &&
+      lineBreaks !== 0 &&
+      this.lineIndent < checkIndent
+    ) {
+      this.dispatchWarning("deficient indentation");
+    }
+
+    return lineBreaks;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -482,7 +521,7 @@ export class LoaderState {
     this.anchorMap = new Map();
 
     while ((ch = this.peek()) !== 0) {
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
 
@@ -547,7 +586,7 @@ export class LoaderState {
       }
     }
 
-    skipSeparationSpace(this, true, -1);
+    this.skipSeparationSpace(true, -1);
 
     if (
       this.lineIndent === 0 &&
@@ -556,13 +595,13 @@ export class LoaderState {
       this.peek(2) === MINUS
     ) {
       this.position += 3;
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
     } else if (hasDirectives) {
       return this.throwError("directives end mark is expected");
     }
 
     composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-    skipSeparationSpace(this, true, -1);
+    this.skipSeparationSpace(true, -1);
 
     if (
       this.checkLineBreaks &&
@@ -576,7 +615,7 @@ export class LoaderState {
     if (this.position === this.lineStart && testDocumentSeparator(this)) {
       if (this.peek() === DOT) {
         this.position += 3;
-        skipSeparationSpace(this, true, -1);
+        this.skipSeparationSpace(true, -1);
       }
     } else if (this.position < this.length - 1) {
       return this.throwError(
@@ -592,50 +631,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function skipSeparationSpace(
-  state: LoaderState,
-  allowComments: boolean,
-  checkIndent: number,
-): number {
-  let lineBreaks = 0;
-  let ch = state.peek();
-
-  while (ch !== 0) {
-    while (isWhiteSpace(ch)) {
-      ch = state.next();
-    }
-
-    if (allowComments && ch === SHARP) {
-      do {
-        ch = state.next();
-      } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
-    }
-
-    if (isEOL(ch)) {
-      state.readLineBreak();
-
-      ch = state.peek();
-      lineBreaks++;
-      state.lineIndent = 0;
-
-      state.readIndent();
-      ch = state.peek();
-    } else {
-      break;
-    }
-  }
-
-  if (
-    checkIndent !== -1 &&
-    lineBreaks !== 0 &&
-    state.lineIndent < checkIndent
-  ) {
-    state.dispatchWarning("deficient indentation");
-  }
-
-  return lineBreaks;
 }
 
 function testDocumentSeparator(state: LoaderState): boolean {
@@ -736,7 +731,7 @@ function readPlainScalar(
       line = state.line;
       const lineStart = state.lineStart;
       const lineIndent = state.lineIndent;
-      skipSeparationSpace(state, false, -1);
+      state.skipSeparationSpace(false, -1);
 
       if (state.lineIndent >= nodeIndent) {
         hasPendingContent = true;
@@ -809,7 +804,7 @@ function readSingleQuotedScalar(
       }
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
@@ -856,7 +851,7 @@ function readDoubleQuotedScalar(
       ch = state.next();
 
       if (isEOL(ch)) {
-        skipSeparationSpace(state, false, nodeIndent);
+        state.skipSeparationSpace(false, nodeIndent);
       } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
         state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
         state.position++;
@@ -884,7 +879,7 @@ function readDoubleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
@@ -937,7 +932,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let line = 0;
   const overridableKeys = new Set<string>();
   while (ch !== 0) {
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
@@ -962,7 +957,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       if (isWhiteSpaceOrEOL(following)) {
         isPair = isExplicitPair = true;
         state.position++;
-        skipSeparationSpace(state, true, nodeIndent);
+        state.skipSeparationSpace(true, nodeIndent);
       }
     }
 
@@ -970,14 +965,14 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
     keyTag = state.tag || null;
     keyNode = state.result;
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
     if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
       ch = state.next();
-      skipSeparationSpace(state, true, nodeIndent);
+      state.skipSeparationSpace(true, nodeIndent);
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
     }
@@ -1004,7 +999,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       (result as unknown[]).push(keyNode);
     }
 
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
@@ -1321,7 +1316,7 @@ function readBlockMapping(
         keyTag = keyNode = valueNode = null;
       }
 
-      skipSeparationSpace(state, true, -1);
+      state.skipSeparationSpace(true, -1);
       ch = state.peek();
     }
 
@@ -1503,7 +1498,7 @@ function readAlias(state: LoaderState): boolean {
   }
 
   state.result = state.anchorMap.get(alias);
-  skipSeparationSpace(state, true, -1);
+  state.skipSeparationSpace(true, -1);
   return true;
 }
 
@@ -1533,7 +1528,7 @@ function composeNode(
       CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
 
   if (allowToSeek) {
-    if (skipSeparationSpace(state, true, -1)) {
+    if (state.skipSeparationSpace(true, -1)) {
       atNewLine = true;
 
       if (state.lineIndent > parentIndent) {
@@ -1548,7 +1543,7 @@ function composeNode(
 
   if (indentStatus === 1) {
     while (readTagProperty(state) || readAnchorProperty(state)) {
-      if (skipSeparationSpace(state, true, -1)) {
+      if (state.skipSeparationSpace(true, -1)) {
         atNewLine = true;
         allowBlockCollections = allowBlockStyles;
 
