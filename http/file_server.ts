@@ -53,7 +53,7 @@ import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
 import { HEADER } from "./header.ts";
 import { METHOD } from "./method.ts";
-import { getServerArgs } from "./_file_server_utils.ts";
+import { getServerArgs } from "./_get_server_args.ts";
 
 interface EntryInfo {
   mode: string;

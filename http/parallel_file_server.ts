@@ -79,7 +79,7 @@
  */
 
 import { serveDir } from "./file_server.ts";
-import { getServerArgs } from "./_file_server_utils.ts";
+import { getServerArgs } from "./_get_server_args.ts";
 import { resolve } from "@std/path/resolve";
 
 const serverArgs = getServerArgs();
