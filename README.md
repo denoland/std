@@ -78,6 +78,10 @@ package versions <1.0.0 follow
 
 ## Badge
 
+> [!NOTE]
+> Previously, this repo hosted the badge SVG file. Now, the badge is retrieved
+> directly from [Shields.io](https://shields.io/).
+
 [![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_deno__std-blue?logo=deno)](https://jsr.io/@std)
 
 ```html
