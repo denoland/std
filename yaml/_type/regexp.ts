@@ -10,7 +10,7 @@ const REGEXP = /^\/(?<regexp>[\s\S]+)\/(?<modifiers>[gismuy]*)$/;
 export const regexp: Type<"scalar", RegExp> = {
   tag: "tag:yaml.org,2002:js/regexp",
   kind: "scalar",
-  resolve(data: string) {
+  resolve(data: string): boolean {
     if ((data === null) || (!data.length)) {
       return false;
     }
