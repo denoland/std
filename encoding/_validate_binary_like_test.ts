@@ -21,41 +21,41 @@ Deno.test("validateBinaryLike() throws on invalid inputs", () => {
       validateBinaryLike(1);
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type number.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type number",
   );
   assertThrows(
     () => {
       validateBinaryLike(undefined);
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type undefined.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type undefined",
   );
   assertThrows(
     () => {
       validateBinaryLike(null);
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type null.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type null",
   );
   assertThrows(
     () => {
       validateBinaryLike({});
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type Object.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type Object",
   );
   assertThrows(
     () => {
       validateBinaryLike(new class MyClass {}());
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type MyClass.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type MyClass",
   );
   assertThrows(
     () => {
       validateBinaryLike(Object.create(null));
     },
     TypeError,
-    "The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type object.",
+    "Cannot validate the input as it must be a Uint8Array, a string, or an ArrayBuffer: received a value of the type object",
   );
 });
