@@ -4,7 +4,9 @@
 export function assertArg(url: URL | string) {
   url = url instanceof URL ? url : new URL(url);
   if (url.protocol !== "file:") {
-    throw new TypeError("Must be a file URL.");
+    throw new TypeError(
+      `URL must be a file URL: received "${url.protocol}"`,
+    );
   }
   return url;
 }
