@@ -180,7 +180,9 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
               ? delimitedChunkEnd
               : inspectIndex;
           } else {
-            throw new Error("unreachable");
+            throw new Error(
+              "This should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues",
+            );
           }
         }
       } else if (matchIndex === 0) {
@@ -273,7 +275,9 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             : inspectIndex;
           controller.enqueue(result);
         } else {
-          throw new Error("unreachable");
+          throw new Error(
+            "This should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues",
+          );
         }
       } else {
         inspectIndex++;

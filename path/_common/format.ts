@@ -19,7 +19,7 @@ export function _format(
 export function assertArg(pathObject: Partial<ParsedPath>) {
   if (pathObject === null || typeof pathObject !== "object") {
     throw new TypeError(
-      `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,
+      `The "pathObject" argument must be of type Object, received type "${typeof pathObject}"`,
     );
   }
 }
