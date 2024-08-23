@@ -3,11 +3,11 @@ import type { MemoizationCache } from "./memoize.ts";
 export type { MemoizationCache };
 
 /**
- * [Least-recently-used](
- * 	https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU
- * ) cache.
+ * Least-recently-used cache.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @see {@link https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU | Least-recently-used cache}
  *
  * Automatically removes entries above the max size based on when they were
  * last accessed with `get`, `set`, or `has`.
