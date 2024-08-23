@@ -48,6 +48,7 @@ for await (
         /uuid(\/|\\)v3\.ts$/,
         /uuid(\/|\\)v4\.ts$/,
         /uuid(\/|\\)v5\.ts$/,
+        /http(\/|\\)parallel_file_server\.ts$/,
         /yaml(\/|\\)schema\.ts$/,
         /test\.ts$/,
         /\.d\.ts$/,
