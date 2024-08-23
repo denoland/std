@@ -91,7 +91,9 @@ export function route(
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
-      if (match) return route.handler(request, info, match);
+      if (match && request.method === (route.method ?? "GET")) {
+        return route.handler(request, info, match);
+      }
     }
     return defaultHandler(request, info);
   };

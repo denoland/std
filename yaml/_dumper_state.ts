@@ -396,15 +396,15 @@ function blockHeader(string: string, indentPerLevel: number): string {
 
 function inspectNode(
   object: unknown,
-  objects: unknown[],
+  objects: Set<unknown>,
   duplicateObjects: Set<unknown>,
 ) {
   if (!isObject(object)) return;
-  if (objects.includes(object)) {
+  if (objects.has(object)) {
     duplicateObjects.add(object);
     return;
   }
-  objects.push(object);
+  objects.add(object);
   const entries = Array.isArray(object) ? object : Object.values(object);
   for (const value of entries) {
     inspectNode(value, objects, duplicateObjects);
@@ -873,7 +873,7 @@ export class DumperState {
     return value as string;
   }
   getDuplicateReferences(value: unknown) {
-    const values: unknown[] = [];
+    const values: Set<unknown> = new Set();
     const duplicateObjects: Set<unknown> = new Set();
 
     inspectNode(value, values, duplicateObjects);

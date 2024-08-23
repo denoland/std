@@ -10,9 +10,13 @@ const routes: Route[] = [
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    method: "POST",
     handler: (_request, _info, params) =>
       new Response(params?.pathname.groups.id),
+  },
+  {
+    pattern: new URLPattern({ pathname: "/users/:id" }),
+    method: "POST",
+    handler: () => new Response("Done"),
   },
 ];
 
@@ -31,12 +35,17 @@ Deno.test("route()", async (t) => {
   });
 
   await t.step("handles dynamic routes", async () => {
-    const request = new Request("http://example.com/users/123", {
+    const request1 = new Request("http://example.com/users/123");
+    const response1 = await handler(request1);
+    assertEquals(await response1?.text(), "123");
+    assertEquals(response1?.status, 200);
+
+    const request2 = new Request("http://example.com/users/123", {
       method: "POST",
     });
-    const response = await handler(request);
-    assertEquals(await response?.text(), "123");
-    assertEquals(response?.status, 200);
+    const response2 = await handler(request2);
+    assertEquals(await response2?.text(), "Done");
+    assertEquals(response2?.status, 200);
   });
 
   await t.step("handles default handler", async () => {
