@@ -24,8 +24,10 @@
  */
 
 import { serveDir } from "./file_server.ts";
-import { serverArgs } from "./_file_server_utils.ts";
+import { getServerArgs } from "./_file_server_utils.ts";
 import { resolve } from "@std/path/resolve";
+
+const serverArgs = getServerArgs();
 
 const headers = serverArgs.header || [];
 const wild = serverArgs._ as string[];

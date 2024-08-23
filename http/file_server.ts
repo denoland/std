@@ -53,7 +53,7 @@ import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
 import { HEADER } from "./header.ts";
 import { METHOD } from "./method.ts";
-import { serverArgs } from "./_file_server_utils.ts";
+import { getServerArgs } from "./_file_server_utils.ts";
 
 interface EntryInfo {
   mode: string;
@@ -773,6 +773,7 @@ function logError(error: Error) {
 }
 
 function main() {
+  const serverArgs = getServerArgs();
   const port = serverArgs.port ? Number(serverArgs.port) : undefined;
   const headers = serverArgs.header || [];
   const host = serverArgs.host;
