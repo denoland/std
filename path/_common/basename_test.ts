@@ -16,13 +16,13 @@ Deno.test("assertArgs() throws", () => {
     // @ts-expect-error - testing invalid input
     () => assertArgs(undefined, "bar"),
     TypeError,
-    "Path must be a string. Received undefined",
+    'Path must be a string, received "undefined"',
   );
   assertThrows(
     // @ts-expect-error - testing invalid input
     () => assertArgs("foo", undefined),
     TypeError,
-    "Suffix must be a string. Received undefined",
+    'Suffix must be a string, received "undefined"',
   );
 });
 

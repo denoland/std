@@ -59,7 +59,7 @@ Deno.test("Buffer.truncate(n) throws if n is negative", () => {
       buf.truncate(-1);
     },
     Error,
-    "bytes.Buffer: truncation out of range",
+    'Buffer truncation value "-1" is not between 0 and 0',
   );
 });
 
@@ -70,7 +70,7 @@ Deno.test("Buffer.truncate(n) throws if n is greater than the length of the buff
       buf.truncate(1);
     },
     Error,
-    "bytes.Buffer: truncation out of range",
+    'Buffer truncation value "1" is not between 0 and 0',
   );
 });
 
@@ -116,7 +116,7 @@ Deno.test("Buffer.grow(n) throws an error if n is a negative value", () => {
       buf.grow(-1);
     },
     Error,
-    "Buffer.grow: negative count",
+    "Cannot grow buffer as growth must be positive: received -1",
   );
 });
 
@@ -127,6 +127,6 @@ Deno.test("Buffer.grow(n) throws if the total of byte size exceeds 2 ** 32 - 2",
       buf.grow(2 ** 32);
     },
     Error,
-    "The buffer cannot be grown beyond the maximum size.",
+    "The buffer cannot grow beyond the maximum size of",
   );
 });
