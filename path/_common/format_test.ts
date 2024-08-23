@@ -37,18 +37,18 @@ Deno.test("assertArg() throws", () => {
     // @ts-expect-error - testing invalid input
     () => assertArg(null),
     TypeError,
-    `The "pathObject" argument must be of type Object. Received type object`,
+    `The "pathObject" argument must be of type Object, received type "object"`,
   );
   assertThrows(
     // @ts-expect-error - testing invalid input
     () => assertArg(undefined),
     TypeError,
-    `The "pathObject" argument must be of type Object. Received type undefined`,
+    `The "pathObject" argument must be of type Object, received type "undefined"`,
   );
   assertThrows(
     // @ts-expect-error - testing invalid input
     () => assertArg(""),
     TypeError,
-    `The "pathObject" argument must be of type Object. Received type string`,
+    `The "pathObject" argument must be of type Object, received type "string"`,
   );
 });
