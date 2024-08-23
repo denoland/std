@@ -74,7 +74,7 @@ export async function parseRecord(
   }
 
   if (options.separator === undefined) {
-    throw new TypeError("Separator is required");
+    throw new TypeError("Cannot parse record: separator is required");
   }
 
   let line = fullLine;
@@ -211,18 +211,22 @@ export function createBareQuoteErrorMessage(
   zeroBasedLine: number,
   zeroBasedColumn: number,
 ) {
-  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
-    zeroBasedLine + 1
-  }, column ${zeroBasedColumn + 1}: bare " in non-quoted-field`;
+  return `Syntax error on line ${
+    zeroBasedRecordStartLine + 1
+  }; parse error on line ${zeroBasedLine + 1}, column ${
+    zeroBasedColumn + 1
+  }: bare " in non-quoted-field`;
 }
 export function createQuoteErrorMessage(
   zeroBasedRecordStartLine: number,
   zeroBasedLine: number,
   zeroBasedColumn: number,
 ) {
-  return `record on line ${zeroBasedRecordStartLine + 1}; parse error on line ${
-    zeroBasedLine + 1
-  }, column ${zeroBasedColumn + 1}: extraneous or missing " in quoted-field`;
+  return `Syntax error on line ${
+    zeroBasedRecordStartLine + 1
+  }; parse error on line ${zeroBasedLine + 1}, column ${
+    zeroBasedColumn + 1
+  }: extraneous or missing " in quoted-field`;
 }
 
 export function convertRowToObject(
@@ -232,7 +236,7 @@ export function convertRowToObject(
 ) {
   if (row.length !== headers.length) {
     throw new Error(
-      `record on line ${
+      `Syntax error on line ${
         zeroBasedLine + 1
       } has ${row.length} fields, but the header has ${headers.length} fields`,
     );

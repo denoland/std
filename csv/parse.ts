@@ -222,7 +222,7 @@ class Parser {
         INVALID_RUNE.includes(options.comment)) ||
       options.separator === options.comment
     ) {
-      throw new Error("Invalid Delimiter");
+      throw new Error("Error parsing input: invalid delimiter");
     }
 
     // The number of fields per record that is either inferred from the first
@@ -261,7 +261,7 @@ class Parser {
       if (lineResult.length > 0) {
         if (typeof _nbFields === "number" && _nbFields !== lineResult.length) {
           throw new SyntaxError(
-            `record on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
+            `Syntax error on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
           );
         }
         result.push(lineResult);
@@ -472,7 +472,7 @@ export function parse(input: string): string[][];
  * assertThrows(
  *   () => parse(string, { fieldsPerRecord: 0 }),
  *   SyntaxError,
- *   "record on line 2: expected 2 fields but got 3",
+ *   "Syntax error on line 2: expected 2 fields but got 3",
  * );
  * ```
  *
@@ -485,7 +485,7 @@ export function parse(input: string): string[][];
  * assertThrows(
  *   () => parse(string, { fieldsPerRecord: 2 }),
  *   SyntaxError,
- *   "record on line 2: expected 2 fields but got 3",
+ *   "Syntax error on line 2: expected 2 fields but got 3",
  * );
  * ```
  *
@@ -512,7 +512,9 @@ export function parse<const T extends ParseOptions>(
 
     if (options.skipFirstRow) {
       const head = r.shift();
-      if (head === undefined) throw new TypeError("Headers must be defined");
+      if (head === undefined) {
+        throw new TypeError("Error parsing input: headers must be defined");
+      }
       headers = head;
     }
 
