@@ -61,7 +61,7 @@ Deno.test({
           });
         },
         SyntaxError,
-        'Invalid cookie name: "' + name + '".',
+        'Invalid cookie name: "' + name + '"',
       );
     });
   },
@@ -132,7 +132,7 @@ Deno.test({
         });
       },
       SyntaxError,
-      path + ": Invalid cookie path char ';'",
+      'Cookie path "/;domain=sub.domain.com" contains invalid character: ";"',
     );
   },
 });
