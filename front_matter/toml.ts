@@ -33,6 +33,8 @@ export type { Extract };
  * @param text The text to extract TOML front matter from.
  * @returns The extracted TOML front matter and body content.
  */
-export function extract<T>(text: string): Extract<T> {
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+): Extract<T> {
   return extractAndParse(text, EXTRACT_TOML_REGEXP, parse as Parser);
 }

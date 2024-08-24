@@ -33,7 +33,9 @@ export type { Extract };
  * @param text The text to extract YAML front matter from.
  * @returns The extracted YAML front matter and body content.
  */
-export function extract<T>(text: string): Extract<T>;
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+): Extract<T>;
 /**
  * Extracts and parses {@link https://yaml.org | YAML} from the metadata of
  * front matter content.
@@ -63,8 +65,14 @@ export function extract<T>(text: string): Extract<T>;
  * @param options The options to pass to `@std/yaml/parse`.
  * @returns The extracted YAML front matter and body content.
  */
-export function extract<T>(text: string, options?: ParseOptions): Extract<T>;
-export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+  options?: ParseOptions,
+): Extract<T>;
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+  options?: ParseOptions,
+): Extract<T> {
   return extractAndParse(
     text,
     EXTRACT_YAML_REGEXP,

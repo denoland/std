@@ -6,7 +6,7 @@ import type { Extract } from "./types.ts";
 /** Parser function type */
 export type Parser = <T = Record<string, unknown>>(str: string) => T;
 
-export function extractAndParse<T>(
+export function extractAndParse<T extends Record<string, unknown>>(
   input: string,
   extractRegExp: RegExp,
   parse: Parser,

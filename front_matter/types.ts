@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /** Return type for {@linkcode extract} function. */
-export type Extract<T> = {
+export type Extract<T extends Record<string, unknown>> = {
   frontMatter: string;
   body: string;
   attrs: T;
