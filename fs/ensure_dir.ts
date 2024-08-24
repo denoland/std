@@ -100,7 +100,9 @@ export function ensureDirSync(dir: string | URL) {
 function throwIfNotDirectory(fileInfo: Deno.FileInfo) {
   if (!fileInfo.isDirectory) {
     throw new Error(
-      `Ensure path exists, expected 'dir', got '${getFileInfoType(fileInfo)}'`,
+      `Failed to ensure directory exists: expected 'dir', got '${
+        getFileInfoType(fileInfo)
+      }'`,
     );
   }
 }
