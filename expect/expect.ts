@@ -156,7 +156,7 @@ export function expect<T extends Expected = Expected>(
 
       if (name === "resolves") {
         if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be Promiselike");
+          throw new AssertionError("Expected value must be PromiseLike");
         }
 
         isPromised = true;
@@ -165,13 +165,13 @@ export function expect<T extends Expected = Expected>(
 
       if (name === "rejects") {
         if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be a PromiseLike");
+          throw new AssertionError("Expected value must be a PromiseLike");
         }
 
         value = value.then(
           (value) => {
             throw new AssertionError(
-              `Promise did not reject. resolved to ${value}`,
+              `Promise did not reject: resolved to ${value}`,
             );
           },
           (err) => err,
