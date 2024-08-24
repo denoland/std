@@ -23,7 +23,9 @@ export type { JsonValue };
  */
 export function parse(text: string): JsonValue {
   if (new.target) {
-    throw new TypeError("parse is not a constructor");
+    throw new TypeError(
+      "Cannot create an instance: parse is not a constructor",
+    );
   }
   return new JSONCParser(text).parse();
 }
@@ -83,7 +85,9 @@ class JSONCParser {
   #getNext(): Token {
     const { done, value } = this.#tokenized.next();
     if (done) {
-      throw new SyntaxError("Unexpected end of JSONC input");
+      throw new SyntaxError(
+        "Cannot parse JSONC: unexpected end of JSONC input",
+      );
     }
     return value;
   }
@@ -106,7 +110,9 @@ class JSONCParser {
           }
         }
         if (!hasEndOfComment) {
-          throw new SyntaxError("Unexpected end of JSONC input");
+          throw new SyntaxError(
+            "Cannot parse JSONC: unexpected end of JSONC input",
+          );
         }
         i++;
         continue;
@@ -362,5 +368,5 @@ function buildErrorMessage({ type, sourceText, position }: Token): string {
         : sourceText;
       break;
   }
-  return `Unexpected token ${token} in JSONC at position ${position}`;
+  return `Cannot parse JSONC: unexpected token "${token}" in JSONC at position ${position}`;
 }
