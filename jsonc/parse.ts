@@ -23,7 +23,7 @@ export type { JsonValue };
  */
 export function parse(text: string): JsonValue {
   if (new.target) {
-    throw new TypeError("Cannot instantiate parse: parse is not a constructor");
+    throw new TypeError("Cannot create an instance: parse is not a constructor");
   }
   return new JSONCParser(text).parse();
 }
