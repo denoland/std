@@ -5,23 +5,21 @@
 // This module is browser compatible.
 
 import type { KindType, Type } from "./_type.ts";
-import {
-  binary,
-  bool,
-  float,
-  int,
-  map,
-  merge,
-  nil,
-  omap,
-  pairs,
-  regexp,
-  seq,
-  set,
-  str,
-  timestamp,
-  undefinedType,
-} from "./_type/mod.ts";
+import { binary } from "./_type/binary.ts";
+import { bool } from "./_type/bool.ts";
+import { float } from "./_type/float.ts";
+import { int } from "./_type/int.ts";
+import { map } from "./_type/map.ts";
+import { merge } from "./_type/merge.ts";
+import { nil } from "./_type/nil.ts";
+import { omap } from "./_type/omap.ts";
+import { pairs } from "./_type/pairs.ts";
+import { regexp } from "./_type/regexp.ts";
+import { seq } from "./_type/seq.ts";
+import { set } from "./_type/set.ts";
+import { str } from "./_type/str.ts";
+import { timestamp } from "./_type/timestamp.ts";
+import { undefinedType } from "./_type/undefined.ts";
 
 /**
  * Name of the schema to use.
