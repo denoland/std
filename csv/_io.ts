@@ -238,7 +238,7 @@ export function convertRowToObject(
     throw new Error(
       `Syntax error on line ${
         zeroBasedLine + 1
-      } has ${row.length} fields, but the header has ${headers.length} fields`,
+      }: The record has ${row.length} fields, but the header has ${headers.length} fields`,
     );
   }
   const out: Record<string, unknown> = {};

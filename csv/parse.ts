@@ -222,7 +222,7 @@ class Parser {
         INVALID_RUNE.includes(options.comment)) ||
       options.separator === options.comment
     ) {
-      throw new Error("Error parsing input: invalid delimiter");
+      throw new Error("Cannot parse input: invalid delimiter");
     }
 
     // The number of fields per record that is either inferred from the first
@@ -513,7 +513,7 @@ export function parse<const T extends ParseOptions>(
     if (options.skipFirstRow) {
       const head = r.shift();
       if (head === undefined) {
-        throw new TypeError("Error parsing input: headers must be defined");
+        throw new TypeError("Cannot parse input: headers must be defined");
       }
       headers = head;
     }
