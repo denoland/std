@@ -357,7 +357,7 @@ x,,,
         error: {
           klass: Error,
           msg:
-            "Syntax error on line 2 has 2 fields, but the header has 3 fields",
+            "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
         },
       },
       {
@@ -368,7 +368,7 @@ x,,,
         error: {
           klass: Error,
           msg:
-            "Syntax error on line 2 has 4 fields, but the header has 3 fields",
+            "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
         },
       },
       {

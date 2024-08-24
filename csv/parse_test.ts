@@ -703,7 +703,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "\n" }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -714,7 +714,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "\r" }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -725,7 +725,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: '"' }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -736,7 +736,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { comment: "\n" }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -747,7 +747,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { comment: "\r" }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -758,7 +758,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "X", comment: "X" }),
           Error,
-          "Error parsing input: invalid delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -841,7 +841,7 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "Syntax error on line 2 has 2 fields, but the header has 3 fields",
+          "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
         );
       },
     });
@@ -856,7 +856,7 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "Syntax error on line 2 has 4 fields, but the header has 3 fields",
+          "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
         );
       },
     });
@@ -920,7 +920,7 @@ c"d,e`;
         assertThrows(
           () => parse("", { skipFirstRow: true }),
           Error,
-          "Error parsing input: headers must be defined",
+          "Cannot parse input: headers must be defined",
         );
       },
     });
