@@ -210,33 +210,45 @@ export class LoaderState {
 
   yamlDirectiveHandler(...args: string[]) {
     if (this.version !== null) {
-      return this.throwError("duplication of %YAML directive");
+      return this.throwError(
+        "Error handling YAML directive: duplication of %YAML directive",
+      );
     }
 
     if (args.length !== 1) {
-      return this.throwError("YAML directive accepts exactly one argument");
+      return this.throwError(
+        "Error handling YAML directive: YAML directive accepts exactly one argument",
+      );
     }
 
     const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
     if (match === null) {
-      return this.throwError("ill-formed argument of the YAML directive");
+      return this.throwError(
+        "Error handling YAML directive: ill-formed argument",
+      );
     }
 
     const major = parseInt(match[1]!, 10);
     const minor = parseInt(match[2]!, 10);
     if (major !== 1) {
-      return this.throwError("unacceptable YAML version of the document");
+      return this.throwError(
+        "Error handling YAML directive: unacceptable YAML version",
+      );
     }
 
     this.version = args[0] ?? null;
     this.checkLineBreaks = minor < 2;
     if (minor !== 1 && minor !== 2) {
-      return this.dispatchWarning("unsupported YAML version of the document");
+      return this.dispatchWarning(
+        "Error handling YAML directive: unsupported YAML version",
+      );
     }
   }
   tagDirectiveHandler(...args: string[]) {
     if (args.length !== 2) {
-      return this.throwError("TAG directive accepts exactly two arguments");
+      return this.throwError(
+        `Error handling tag directive: directive accepts exactly two arguments, received ${args.length}`,
+      );
     }
 
     const handle = args[0]!;
@@ -244,19 +256,19 @@ export class LoaderState {
 
     if (!PATTERN_TAG_HANDLE.test(handle)) {
       return this.throwError(
-        "ill-formed tag handle (first argument) of the TAG directive",
+        `Error handling tag directive: ill-formed handle (first argument) in "${handle}"`,
       );
     }
 
     if (this.tagMap.has(handle)) {
       return this.throwError(
-        `there is a previously declared suffix for "${handle}" tag handle`,
+        `Error handling tag directive: previously declared suffix for "${handle}" tag handle`,
       );
     }
 
     if (!PATTERN_TAG_URI.test(prefix)) {
       return this.throwError(
-        "ill-formed tag prefix (second argument) of the TAG directive",
+        "Error handling tag directive: ill-formed tag prefix (second argument) of the TAG directive",
       );
     }
 
@@ -278,11 +290,13 @@ export class LoaderState {
             !(character === 0x09 ||
               (0x20 <= character && character <= 0x10ffff))
           ) {
-            return this.throwError("expected valid JSON character");
+            return this.throwError(
+              `Expected valid JSON character: received "${character}"`,
+            );
           }
         }
       } else if (PATTERN_NON_PRINTABLE.test(result)) {
-        return this.throwError("the stream contains non-printable characters");
+        return this.throwError("Stream contains non-printable characters");
       }
 
       this.result += result;
@@ -333,7 +347,9 @@ export class LoaderState {
       ch = this.peek();
 
       if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
-        return this.throwError("bad indentation of a sequence entry");
+        return this.throwError(
+          "Error reading block sequence: bad indentation of a sequence entry",
+        );
       } else if (this.lineIndent < nodeIndent) {
         break;
       }
@@ -355,7 +371,7 @@ export class LoaderState {
   ) {
     if (!isObject(source)) {
       return this.throwError(
-        "cannot merge mappings; the provided source object is unacceptable",
+        "Cannot merge mappings: the provided source object is unacceptable",
       );
     }
 
@@ -388,7 +404,7 @@ export class LoaderState {
       for (let index = 0; index < keyNode.length; index++) {
         if (Array.isArray(keyNode[index])) {
           return this.throwError(
-            "nested arrays are not supported inside keys",
+            "Cannot store mapping pair: nested arrays are not supported inside keys",
           );
         }
 
@@ -437,7 +453,7 @@ export class LoaderState {
       ) {
         this.line = startLine || this.line;
         this.position = startPos || this.position;
-        return this.throwError("duplicated mapping key");
+        return this.throwError("Error storing mapping pair: duplicated key");
       }
       Object.defineProperty(result, keyNode, {
         value: valueNode,
@@ -461,7 +477,7 @@ export class LoaderState {
         this.position++;
       }
     } else {
-      return this.throwError("a line break is expected");
+      return this.throwError("Error reading line: line break not found");
     }
 
     this.line += 1;
@@ -542,7 +558,7 @@ export class LoaderState {
 
       if (directiveName.length < 1) {
         return this.throwError(
-          "directive name must not be less than one character in length",
+          "Error reading document: directive name length must be greater than zero",
         );
       }
 
@@ -597,7 +613,9 @@ export class LoaderState {
       this.position += 3;
       this.skipSeparationSpace(true, -1);
     } else if (hasDirectives) {
-      return this.throwError("directives end mark is expected");
+      return this.throwError(
+        "Cannot read document: directives end mark is expected",
+      );
     }
 
     composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
@@ -619,7 +637,7 @@ export class LoaderState {
       }
     } else if (this.position < this.length - 1) {
       return this.throwError(
-        "end of the stream or a document separator is expected",
+        "Error reading document: end of the stream or a document separator is expected",
       );
     }
 
@@ -811,7 +829,7 @@ function readSingleQuotedScalar(
       testDocumentSeparator(state)
     ) {
       return state.throwError(
-        "unexpected end of the document within a single quoted scalar",
+        "Unexpected end of the document within a single quoted scalar",
       );
     } else {
       state.position++;
@@ -820,7 +838,7 @@ function readSingleQuotedScalar(
   }
 
   return state.throwError(
-    "unexpected end of the stream within a single quoted scalar",
+    "Unexpected end of the stream within a single quoted scalar",
   );
 }
 
@@ -865,7 +883,9 @@ function readDoubleQuotedScalar(
           if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
-            return state.throwError("expected hexadecimal character");
+            return state.throwError(
+              "Cannot read double quoted scalar: expected hexadecimal character",
+            );
           }
         }
 
@@ -873,7 +893,9 @@ function readDoubleQuotedScalar(
 
         state.position++;
       } else {
-        return state.throwError("unknown escape sequence");
+        return state.throwError(
+          "Cannot read double quoted scalar: unknown escape sequence",
+        );
       }
 
       captureStart = captureEnd = state.position;
@@ -886,7 +908,7 @@ function readDoubleQuotedScalar(
       testDocumentSeparator(state)
     ) {
       return state.throwError(
-        "unexpected end of the document within a double quoted scalar",
+        "Unexpected end of the document within a double quoted scalar",
       );
     } else {
       state.position++;
@@ -895,7 +917,7 @@ function readDoubleQuotedScalar(
   }
 
   return state.throwError(
-    "unexpected end of the stream within a double quoted scalar",
+    "Unexpected end of the stream within a double quoted scalar",
   );
 }
 
@@ -945,7 +967,9 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       return true;
     }
     if (!readNext) {
-      return state.throwError("missed comma between flow collection entries");
+      return state.throwError(
+        "Cannot read flow collection: missing comma between flow collection entries",
+      );
     }
 
     keyTag = keyNode = valueNode = null;
@@ -1012,7 +1036,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   }
 
   return state.throwError(
-    "unexpected end of the stream within a flow collection",
+    "Cannot read flow collection: unexpected end of the stream within a flow collection",
   );
 }
 
@@ -1048,18 +1072,22 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
       if (CHOMPING_CLIP === chomping) {
         chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
-        return state.throwError("repeat of a chomping mode identifier");
+        return state.throwError(
+          "Cannot read block: chomping mode identifier repeated",
+        );
       }
     } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
       if (tmp === 0) {
         return state.throwError(
-          "bad explicit indentation width of a block scalar; it cannot be less than one",
+          "Cannot read block: indentation width must be greater than 0",
         );
       } else if (!detectedIndent) {
         textIndent = nodeIndent + tmp - 1;
         detectedIndent = true;
       } else {
-        return state.throwError("repeat of an indentation width identifier");
+        return state.throwError(
+          "Cannot read block: indentation width identifier repeated",
+        );
       }
     } else {
       break;
@@ -1224,7 +1252,7 @@ function readBlockMapping(
         allowCompact = true;
       } else {
         return state.throwError(
-          "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line",
+          "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
         );
       }
 
@@ -1247,7 +1275,7 @@ function readBlockMapping(
 
           if (!isWhiteSpaceOrEOL(ch)) {
             return state.throwError(
-              "a whitespace character is expected after the key-value separator within a block mapping",
+              "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
             );
           }
 
@@ -1269,7 +1297,7 @@ function readBlockMapping(
           keyNode = state.result;
         } else if (detected) {
           return state.throwError(
-            "can not read an implicit mapping pair; a colon is missed",
+            "Cannot read an implicit mapping pair: missing colon",
           );
         } else {
           state.tag = tag;
@@ -1278,7 +1306,7 @@ function readBlockMapping(
         }
       } else if (detected) {
         return state.throwError(
-          "can not read a block mapping entry; a multiline key may not be an implicit key",
+          "Cannot read a block mapping entry: a multiline key may not be an implicit key",
         );
       } else {
         state.tag = tag;
@@ -1321,7 +1349,9 @@ function readBlockMapping(
     }
 
     if (state.lineIndent > nodeIndent && ch !== 0) {
-      return state.throwError("bad indentation of a mapping entry");
+      return state.throwError(
+        "Cannot read block: bad indentation of a mapping entry",
+      );
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1366,7 +1396,9 @@ function readTagProperty(state: LoaderState): boolean {
   if (ch !== EXCLAMATION) return false;
 
   if (state.tag !== null) {
-    return state.throwError("duplication of a tag property");
+    return state.throwError(
+      "Cannot read tag property: duplication of a tag property",
+    );
   }
 
   ch = state.next();
@@ -1394,7 +1426,7 @@ function readTagProperty(state: LoaderState): boolean {
       ch = state.next();
     } else {
       return state.throwError(
-        "unexpected end of the stream within a verbatim tag",
+        "Cannot read tag property: unexpected end of stream",
       );
     }
   } else {
@@ -1405,7 +1437,7 @@ function readTagProperty(state: LoaderState): boolean {
 
           if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
             return state.throwError(
-              "named tag handle cannot contain such characters",
+              "Cannot read tag property: named tag handle contains invalid characters",
             );
           }
 
@@ -1413,7 +1445,7 @@ function readTagProperty(state: LoaderState): boolean {
           position = state.position + 1;
         } else {
           return state.throwError(
-            "tag suffix cannot contain exclamation marks",
+            "Cannot read tag property: tag suffix cannot contain an exclamation mark",
           );
         }
       }
@@ -1425,14 +1457,14 @@ function readTagProperty(state: LoaderState): boolean {
 
     if (PATTERN_FLOW_INDICATORS.test(tagName)) {
       return state.throwError(
-        "tag suffix cannot contain flow indicator characters",
+        "Cannot read tag property: tag suffix cannot contain flow indicator characters",
       );
     }
   }
 
   if (tagName && !PATTERN_TAG_URI.test(tagName)) {
     return state.throwError(
-      `tag name cannot contain such characters: ${tagName}`,
+      `Cannot read tag property: invalid characters in tag name "${tagName}"`,
     );
   }
 
@@ -1445,7 +1477,9 @@ function readTagProperty(state: LoaderState): boolean {
   } else if (tagHandle === "!!") {
     state.tag = `tag:yaml.org,2002:${tagName}`;
   } else {
-    return state.throwError(`undeclared tag handle "${tagHandle}"`);
+    return state.throwError(
+      `Cannot read tag property: undeclared tag handle "${tagHandle}"`,
+    );
   }
 
   return true;
@@ -1456,7 +1490,9 @@ function readAnchorProperty(state: LoaderState): boolean {
   if (ch !== AMPERSAND) return false;
 
   if (state.anchor !== null) {
-    return state.throwError("duplication of an anchor property");
+    return state.throwError(
+      "Cannot read anchor property: duplicate anchor property",
+    );
   }
   ch = state.next();
 
@@ -1467,7 +1503,7 @@ function readAnchorProperty(state: LoaderState): boolean {
 
   if (state.position === position) {
     return state.throwError(
-      "name of an anchor node must contain at least one character",
+      "Cannot read anchor property: name of an anchor node must contain at least one character",
     );
   }
 
@@ -1488,13 +1524,13 @@ function readAlias(state: LoaderState): boolean {
 
   if (state.position === position) {
     return state.throwError(
-      "name of an alias node must contain at least one character",
+      "Cannot read alias: alias name must contain at least one character",
     );
   }
 
   const alias = state.input.slice(position, state.position);
   if (!state.anchorMap.has(alias)) {
-    return state.throwError(`unidentified alias "${alias}"`);
+    return state.throwError(`Cannot read alias: unidentified alias "${alias}"`);
   }
 
   state.result = state.anchorMap.get(alias);
@@ -1591,7 +1627,7 @@ function composeNode(
 
           if (state.tag !== null || state.anchor !== null) {
             return state.throwError(
-              "alias node should not have Any properties",
+              "Cannot compose node: alias node should not have any properties",
             );
           }
         } else if (
@@ -1645,14 +1681,14 @@ function composeNode(
 
       if (state.result !== null && type.kind !== state.kind) {
         return state.throwError(
-          `unacceptable node kind for !<${state.tag}> tag; it should be "${type.kind}", not "${state.kind}"`,
+          `Unacceptable node kind for !<${state.tag}> tag: it should be "${type.kind}", not "${state.kind}"`,
         );
       }
 
       if (!type.resolve(state.result)) {
         // `state.result` updated in resolver if matched
         return state.throwError(
-          `cannot resolve a node with !<${state.tag}> explicit tag`,
+          `Cannot resolve a node with !<${state.tag}> explicit tag`,
         );
       } else {
         state.result = type.construct(state.result);
@@ -1661,7 +1697,7 @@ function composeNode(
         }
       }
     } else {
-      return state.throwError(`unknown tag !<${state.tag}>`);
+      return state.throwError(`Unknown tag !<${state.tag}>`);
     }
   }
 

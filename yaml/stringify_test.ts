@@ -144,7 +144,7 @@ Deno.test({
     assertThrows(
       () => stringify(object),
       TypeError,
-      "unacceptable kind of an object to dump",
+      "Cannot dump object of type: [object Undefined]",
     );
   },
 });
