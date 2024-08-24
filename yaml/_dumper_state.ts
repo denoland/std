@@ -461,7 +461,6 @@ export interface DumperStateOptions {
 }
 
 export class DumperState {
-  schema: Schema;
   indent: number;
   arrayIndent: boolean;
   skipInvalid: boolean;
@@ -490,7 +489,6 @@ export class DumperState {
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
-    this.schema = schema;
     this.indent = Math.max(1, indent);
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
@@ -501,8 +499,8 @@ export class DumperState {
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.implicitTypes = this.schema.implicitTypes;
-    this.explicitTypes = this.schema.explicitTypes;
+    this.implicitTypes = schema.implicitTypes;
+    this.explicitTypes = schema.explicitTypes;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
