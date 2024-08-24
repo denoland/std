@@ -231,7 +231,7 @@ Deno.test({
         fileHandler.setup();
       },
       Error,
-      "maxBytes cannot be less than 1",
+      '"maxBytes" must be >= 1: received 0',
     );
   },
 });
@@ -250,7 +250,7 @@ Deno.test({
         fileHandler.setup();
       },
       Error,
-      "maxBackupCount cannot be less than 1",
+      '"maxBackupCount" must be >= 1: received 0',
     );
   },
 });
