@@ -317,7 +317,7 @@ export class LoaderState {
       detected = true;
       this.position++;
 
-      if (skipSeparationSpace(this, true, -1)) {
+      if (this.skipSeparationSpace(true, -1)) {
         if (this.lineIndent <= nodeIndent) {
           result.push(null);
           ch = this.peek();
@@ -328,7 +328,7 @@ export class LoaderState {
       line = this.line;
       composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
       result.push(this.result);
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
 
@@ -370,6 +370,142 @@ export class LoaderState {
       overridableKeys.add(key);
     }
   }
+  storeMappingPair(
+    result: Record<string, unknown>,
+    overridableKeys: Set<string>,
+    keyTag: string | null,
+    keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
+    valueNode: unknown,
+    startLine?: number,
+    startPos?: number,
+  ): Record<string, unknown> {
+    // The output is a plain object here, so keys can only be strings.
+    // We need to convert keyNode to a string, but doing so can hang the process
+    // (deeply nested arrays that explode exponentially using aliases).
+    if (Array.isArray(keyNode)) {
+      keyNode = Array.prototype.slice.call(keyNode);
+
+      for (let index = 0; index < keyNode.length; index++) {
+        if (Array.isArray(keyNode[index])) {
+          return this.throwError(
+            "nested arrays are not supported inside keys",
+          );
+        }
+
+        if (
+          typeof keyNode === "object" &&
+          getObjectTypeString(keyNode[index]) === "[object Object]"
+        ) {
+          keyNode[index] = "[object Object]";
+        }
+      }
+    }
+
+    // Avoid code execution in load() via toString property
+    // (still use its own toString for arrays, timestamps,
+    // and whatever user schema extensions happen to have @@toStringTag)
+    if (
+      typeof keyNode === "object" &&
+      getObjectTypeString(keyNode) === "[object Object]"
+    ) {
+      keyNode = "[object Object]";
+    }
+
+    keyNode = String(keyNode);
+
+    if (keyTag === "tag:yaml.org,2002:merge") {
+      if (Array.isArray(valueNode)) {
+        for (
+          let index = 0;
+          index < valueNode.length;
+          index++
+        ) {
+          this.mergeMappings(result, valueNode[index], overridableKeys);
+        }
+      } else {
+        this.mergeMappings(
+          result,
+          valueNode as Record<string, unknown>,
+          overridableKeys,
+        );
+      }
+    } else {
+      if (
+        !this.allowDuplicateKeys &&
+        !overridableKeys.has(keyNode) &&
+        Object.hasOwn(result, keyNode)
+      ) {
+        this.line = startLine || this.line;
+        this.position = startPos || this.position;
+        return this.throwError("duplicated mapping key");
+      }
+      Object.defineProperty(result, keyNode, {
+        value: valueNode,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+      overridableKeys.delete(keyNode);
+    }
+
+    return result;
+  }
+  readLineBreak() {
+    const ch = this.peek();
+
+    if (ch === LINE_FEED) {
+      this.position++;
+    } else if (ch === CARRIAGE_RETURN) {
+      this.position++;
+      if (this.peek() === LINE_FEED) {
+        this.position++;
+      }
+    } else {
+      return this.throwError("a line break is expected");
+    }
+
+    this.line += 1;
+    this.lineStart = this.position;
+  }
+  skipSeparationSpace(allowComments: boolean, checkIndent: number): number {
+    let lineBreaks = 0;
+    let ch = this.peek();
+
+    while (ch !== 0) {
+      while (isWhiteSpace(ch)) {
+        ch = this.next();
+      }
+
+      if (allowComments && ch === SHARP) {
+        do {
+          ch = this.next();
+        } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
+      }
+
+      if (isEOL(ch)) {
+        this.readLineBreak();
+
+        ch = this.peek();
+        lineBreaks++;
+        this.lineIndent = 0;
+
+        this.readIndent();
+        ch = this.peek();
+      } else {
+        break;
+      }
+    }
+
+    if (
+      checkIndent !== -1 &&
+      lineBreaks !== 0 &&
+      this.lineIndent < checkIndent
+    ) {
+      this.dispatchWarning("deficient indentation");
+    }
+
+    return lineBreaks;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -385,7 +521,7 @@ export class LoaderState {
     this.anchorMap = new Map();
 
     while ((ch = this.peek()) !== 0) {
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
 
@@ -433,7 +569,7 @@ export class LoaderState {
         directiveArgs.push(this.input.slice(position, this.position));
       }
 
-      if (ch !== 0) readLineBreak(this);
+      if (ch !== 0) this.readLineBreak();
 
       switch (directiveName) {
         case "YAML":
@@ -450,7 +586,7 @@ export class LoaderState {
       }
     }
 
-    skipSeparationSpace(this, true, -1);
+    this.skipSeparationSpace(true, -1);
 
     if (
       this.lineIndent === 0 &&
@@ -459,13 +595,13 @@ export class LoaderState {
       this.peek(2) === MINUS
     ) {
       this.position += 3;
-      skipSeparationSpace(this, true, -1);
+      this.skipSeparationSpace(true, -1);
     } else if (hasDirectives) {
       return this.throwError("directives end mark is expected");
     }
 
     composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-    skipSeparationSpace(this, true, -1);
+    this.skipSeparationSpace(true, -1);
 
     if (
       this.checkLineBreaks &&
@@ -479,7 +615,7 @@ export class LoaderState {
     if (this.position === this.lineStart && testDocumentSeparator(this)) {
       if (this.peek() === DOT) {
         this.position += 3;
-        skipSeparationSpace(this, true, -1);
+        this.skipSeparationSpace(true, -1);
       }
     } else if (this.position < this.length - 1) {
       return this.throwError(
@@ -495,152 +631,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function storeMappingPair(
-  state: LoaderState,
-  result: Record<string, unknown> | null,
-  overridableKeys: Set<string>,
-  keyTag: string | null,
-  keyNode: Record<PropertyKey, unknown> | unknown[] | string | null,
-  valueNode: unknown,
-  startLine?: number,
-  startPos?: number,
-): Record<string, unknown> {
-  // The output is a plain object here, so keys can only be strings.
-  // We need to convert keyNode to a string, but doing so can hang the process
-  // (deeply nested arrays that explode exponentially using aliases).
-  if (Array.isArray(keyNode)) {
-    keyNode = Array.prototype.slice.call(keyNode);
-
-    for (let index = 0; index < keyNode.length; index++) {
-      if (Array.isArray(keyNode[index])) {
-        return state.throwError("nested arrays are not supported inside keys");
-      }
-
-      if (
-        typeof keyNode === "object" &&
-        getObjectTypeString(keyNode[index]) === "[object Object]"
-      ) {
-        keyNode[index] = "[object Object]";
-      }
-    }
-  }
-
-  // Avoid code execution in load() via toString property
-  // (still use its own toString for arrays, timestamps,
-  // and whatever user schema extensions happen to have @@toStringTag)
-  if (
-    typeof keyNode === "object" &&
-    getObjectTypeString(keyNode) === "[object Object]"
-  ) {
-    keyNode = "[object Object]";
-  }
-
-  keyNode = String(keyNode);
-
-  if (result === null) {
-    result = {};
-  }
-
-  if (keyTag === "tag:yaml.org,2002:merge") {
-    if (Array.isArray(valueNode)) {
-      for (
-        let index = 0;
-        index < valueNode.length;
-        index++
-      ) {
-        state.mergeMappings(result, valueNode[index], overridableKeys);
-      }
-    } else {
-      state.mergeMappings(
-        result,
-        valueNode as Record<string, unknown>,
-        overridableKeys,
-      );
-    }
-  } else {
-    if (
-      !state.allowDuplicateKeys &&
-      !overridableKeys.has(keyNode) &&
-      Object.hasOwn(result, keyNode)
-    ) {
-      state.line = startLine || state.line;
-      state.position = startPos || state.position;
-      return state.throwError("duplicated mapping key");
-    }
-    Object.defineProperty(result, keyNode, {
-      value: valueNode,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    overridableKeys.delete(keyNode);
-  }
-
-  return result;
-}
-
-function readLineBreak(state: LoaderState) {
-  const ch = state.peek();
-
-  if (ch === LINE_FEED) {
-    state.position++;
-  } else if (ch === CARRIAGE_RETURN) {
-    state.position++;
-    if (state.peek() === LINE_FEED) {
-      state.position++;
-    }
-  } else {
-    return state.throwError("a line break is expected");
-  }
-
-  state.line += 1;
-  state.lineStart = state.position;
-}
-
-function skipSeparationSpace(
-  state: LoaderState,
-  allowComments: boolean,
-  checkIndent: number,
-): number {
-  let lineBreaks = 0;
-  let ch = state.peek();
-
-  while (ch !== 0) {
-    while (isWhiteSpace(ch)) {
-      ch = state.next();
-    }
-
-    if (allowComments && ch === SHARP) {
-      do {
-        ch = state.next();
-      } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
-    }
-
-    if (isEOL(ch)) {
-      readLineBreak(state);
-
-      ch = state.peek();
-      lineBreaks++;
-      state.lineIndent = 0;
-
-      state.readIndent();
-      ch = state.peek();
-    } else {
-      break;
-    }
-  }
-
-  if (
-    checkIndent !== -1 &&
-    lineBreaks !== 0 &&
-    state.lineIndent < checkIndent
-  ) {
-    state.dispatchWarning("deficient indentation");
-  }
-
-  return lineBreaks;
 }
 
 function testDocumentSeparator(state: LoaderState): boolean {
@@ -741,7 +731,7 @@ function readPlainScalar(
       line = state.line;
       const lineStart = state.lineStart;
       const lineIndent = state.lineIndent;
-      skipSeparationSpace(state, false, -1);
+      state.skipSeparationSpace(false, -1);
 
       if (state.lineIndent >= nodeIndent) {
         hasPendingContent = true;
@@ -814,7 +804,7 @@ function readSingleQuotedScalar(
       }
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
@@ -861,7 +851,7 @@ function readDoubleQuotedScalar(
       ch = state.next();
 
       if (isEOL(ch)) {
-        skipSeparationSpace(state, false, nodeIndent);
+        state.skipSeparationSpace(false, nodeIndent);
       } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
         state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
         state.position++;
@@ -889,7 +879,7 @@ function readDoubleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
+      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
@@ -942,7 +932,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let line = 0;
   const overridableKeys = new Set<string>();
   while (ch !== 0) {
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
@@ -967,7 +957,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       if (isWhiteSpaceOrEOL(following)) {
         isPair = isExplicitPair = true;
         state.position++;
-        skipSeparationSpace(state, true, nodeIndent);
+        state.skipSeparationSpace(true, nodeIndent);
       }
     }
 
@@ -975,21 +965,20 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
     keyTag = state.tag || null;
     keyNode = state.result;
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
     if ((isExplicitPair || state.line === line) && ch === COLON) {
       isPair = true;
       ch = state.next();
-      skipSeparationSpace(state, true, nodeIndent);
+      state.skipSeparationSpace(true, nodeIndent);
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
     }
 
     if (isMapping) {
-      storeMappingPair(
-        state,
+      state.storeMappingPair(
         result as Record<string, unknown>,
         overridableKeys,
         keyTag,
@@ -998,9 +987,8 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       );
     } else if (isPair) {
       (result as Record<string, unknown>[]).push(
-        storeMappingPair(
-          state,
-          null,
+        state.storeMappingPair(
+          {},
           overridableKeys,
           keyTag,
           keyNode,
@@ -1011,7 +999,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       (result as unknown[]).push(keyNode);
     }
 
-    skipSeparationSpace(state, true, nodeIndent);
+    state.skipSeparationSpace(true, nodeIndent);
 
     ch = state.peek();
 
@@ -1091,7 +1079,7 @@ function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   }
 
   while (ch !== 0) {
-    readLineBreak(state);
+    state.readLineBreak();
     state.lineIndent = 0;
 
     ch = state.peek();
@@ -1217,8 +1205,7 @@ function readBlockMapping(
     if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
       if (ch === QUESTION) {
         if (atExplicitKey) {
-          storeMappingPair(
-            state,
+          state.storeMappingPair(
             result,
             overridableKeys,
             keyTag as string,
@@ -1265,8 +1252,7 @@ function readBlockMapping(
           }
 
           if (atExplicitKey) {
-            storeMappingPair(
-              state,
+            state.storeMappingPair(
               result,
               overridableKeys,
               keyTag as string,
@@ -1318,8 +1304,7 @@ function readBlockMapping(
       }
 
       if (!atExplicitKey) {
-        storeMappingPair(
-          state,
+        state.storeMappingPair(
           result,
           overridableKeys,
           keyTag as string,
@@ -1331,7 +1316,7 @@ function readBlockMapping(
         keyTag = keyNode = valueNode = null;
       }
 
-      skipSeparationSpace(state, true, -1);
+      state.skipSeparationSpace(true, -1);
       ch = state.peek();
     }
 
@@ -1348,8 +1333,7 @@ function readBlockMapping(
 
   // Special case: last mapping's node contains only the key in explicit notation.
   if (atExplicitKey) {
-    storeMappingPair(
-      state,
+    state.storeMappingPair(
       result,
       overridableKeys,
       keyTag as string,
@@ -1514,7 +1498,7 @@ function readAlias(state: LoaderState): boolean {
   }
 
   state.result = state.anchorMap.get(alias);
-  skipSeparationSpace(state, true, -1);
+  state.skipSeparationSpace(true, -1);
   return true;
 }
 
@@ -1544,7 +1528,7 @@ function composeNode(
       CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
 
   if (allowToSeek) {
-    if (skipSeparationSpace(state, true, -1)) {
+    if (state.skipSeparationSpace(true, -1)) {
       atNewLine = true;
 
       if (state.lineIndent > parentIndent) {
@@ -1559,7 +1543,7 @@ function composeNode(
 
   if (indentStatus === 1) {
     while (readTagProperty(state) || readAnchorProperty(state)) {
-      if (skipSeparationSpace(state, true, -1)) {
+      if (state.skipSeparationSpace(true, -1)) {
         atNewLine = true;
         allowBlockCollections = allowBlockStyles;
 

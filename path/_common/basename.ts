@@ -47,7 +47,7 @@ export function assertArgs(path: string, suffix: string) {
   if (path.length === 0) return path;
   if (typeof suffix !== "string") {
     throw new TypeError(
-      `Suffix must be a string. Received ${JSON.stringify(suffix)}`,
+      `Suffix must be a string, received "${JSON.stringify(suffix)}"`,
     );
   }
 }

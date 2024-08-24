@@ -56,7 +56,9 @@ export function parseMediaType(
         // ignore trailing semicolons
         break;
       }
-      throw new TypeError("Invalid media parameter.");
+      throw new TypeError(
+        `Cannot parse media type: invalid parameter "${type}"`,
+      );
     }
 
     let pmap = params;
@@ -68,7 +70,7 @@ export function parseMediaType(
       pmap = continuation.get(baseName)!;
     }
     if (key in pmap) {
-      throw new TypeError("Duplicate key parsed.");
+      throw new TypeError("Cannot parse media type: duplicate key");
     }
     pmap[key] = value;
     type = rest;

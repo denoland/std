@@ -48,7 +48,9 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
     super({
       start: () => {
         if (start < 0) {
-          throw new RangeError("`start` must be greater than 0");
+          throw new RangeError(
+            `Cannot construct ByteSliceStream as start must be >= 0: received ${start}`,
+          );
         }
         end += 1;
       },
