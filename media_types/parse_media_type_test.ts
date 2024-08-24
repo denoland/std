@@ -95,17 +95,17 @@ Deno.test({
 Deno.test({
   name: "parseMediaType() throws on invalid media type",
   fn() {
-    const fixtures = [
-      `form-data; foo`,
-      `form-data; foo="bar"; baz`,
-    ] as const;
+    const fixtures = [{ type: `form-data; foo`, invalid: "; foo" }, {
+      type: `form-data; foo="bar"; baz`,
+      invalid: "; baz",
+    }] as const;
     for (const fixture of fixtures) {
       assertThrows(
         () => {
-          parseMediaType(fixture);
+          parseMediaType(fixture.type);
         },
         TypeError,
-        "Invalid media parameter.",
+        `Cannot parse media type: invalid parameter "${fixture.invalid}"`,
       );
     }
   },
@@ -123,7 +123,7 @@ Deno.test({
           parseMediaType(fixture);
         },
         TypeError,
-        "Duplicate key parsed.",
+        "Cannot parse media type: duplicate key",
       );
     }
   },
