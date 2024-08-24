@@ -134,12 +134,12 @@ function fakeSetTimeout(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("Time is not faked");
+  if (!time) throw new TimeError("Cannot set timeout: time is not faked");
   return setTimer(callback, delay, args, false);
 }
 
 function fakeClearTimeout(id?: unknown) {
-  if (!time) throw new TimeError("Time is not faked");
+  if (!time) throw new TimeError("Cannot clear timeout: time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -152,12 +152,12 @@ function fakeSetInterval(
   // deno-lint-ignore no-explicit-any
   ...args: any[]
 ): number {
-  if (!time) throw new TimeError("Time is not faked");
+  if (!time) throw new TimeError("Cannot set interval: time is not faked");
   return setTimer(callback, delay, args, true);
 }
 
 function fakeClearInterval(id?: unknown) {
-  if (!time) throw new TimeError("Time is not faked");
+  if (!time) throw new TimeError("Cannot clear interval: time is not faked");
   if (typeof id === "number" && dueNodes.has(id)) {
     dueNodes.delete(id);
   }
@@ -294,7 +294,9 @@ export class FakeTime {
     start?: number | string | Date | null,
     options?: FakeTimeOptions,
   ) {
-    if (time) throw new TimeError("Time is already faked");
+    if (time) {
+      throw new TimeError("Cannot construct FakeTime: time is already faked");
+    }
     initializedAt = _internals.Date.now();
     startedAt = start instanceof Date
       ? start.valueOf()
@@ -303,7 +305,11 @@ export class FakeTime {
       : typeof start === "string"
       ? (new Date(start)).valueOf()
       : initializedAt;
-    if (Number.isNaN(startedAt)) throw new TypeError("Invalid start time");
+    if (Number.isNaN(startedAt)) {
+      throw new TypeError(
+        `Cannot construct FakeTime: invalid start time ${startedAt}`,
+      );
+    }
     now = startedAt;
 
     timerId = timerIdGen();
@@ -381,7 +387,9 @@ export class FakeTime {
    * ```
    */
   static restore() {
-    if (!time) throw new TimeError("Time is already restored");
+    if (!time) {
+      throw new TimeError("Cannot restore time: time is already restored");
+    }
     time.restore();
   }
 
@@ -417,7 +425,11 @@ export class FakeTime {
     // deno-lint-ignore no-explicit-any
     ...args: any[]
   ): Promise<T> {
-    if (!time) return Promise.reject(new TimeError("Time is not faked"));
+    if (!time) {
+      return Promise.reject(
+        new TimeError("Cannot restore time: time is not faked"),
+      );
+    }
     restoreGlobals();
     try {
       const result = callback.apply(null, args);
@@ -478,7 +490,11 @@ export class FakeTime {
    * @param value The current time (in milliseconds)
    */
   set now(value: number) {
-    if (value < now) throw new RangeError("Time cannot go backwards");
+    if (value < now) {
+      throw new RangeError(
+        `Cannot set current time in the past, time must be >= ${now}: received ${value}`,
+      );
+    }
     let dueNode: DueNode | null = dueTree.min();
     while (dueNode && dueNode.due <= value) {
       const timer: Timer | undefined = dueNode.timers.shift();
@@ -803,7 +819,9 @@ export class FakeTime {
    * ```
    */
   restore() {
-    if (!time) throw new TimeError("Time is already restored");
+    if (!time) {
+      throw new TimeError("Cannot restore time: time is already restored");
+    }
     time = undefined;
     restoreGlobals();
     if (advanceIntervalId) clearInterval(advanceIntervalId);

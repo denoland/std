@@ -2055,7 +2055,7 @@ Deno.test("describe()", async (t) => {
         // deno-lint-ignore no-explicit-any
         () => describe("async describe", (async () => {}) as any),
         Error,
-        'Returning a Promise from "describe" is not supported. Tests must be defined synchronously.',
+        'Returning a Promise from "describe" is not supported: tests must be defined synchronously',
       );
     },
   );
