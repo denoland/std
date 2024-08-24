@@ -67,11 +67,13 @@ export class RotatingFileHandler extends FileHandler {
   override setup() {
     if (this.#maxBytes < 1) {
       this.destroy();
-      throw new Error("maxBytes cannot be less than 1");
+      throw new Error(`"maxBytes" must be >= 1: received ${this.#maxBytes}`);
     }
     if (this.#maxBackupCount < 1) {
       this.destroy();
-      throw new Error("maxBackupCount cannot be less than 1");
+      throw new Error(
+        `"maxBackupCount" must be >= 1: received ${this.#maxBackupCount}`,
+      );
     }
     super.setup();
 
