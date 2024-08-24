@@ -41,7 +41,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     assertHasNoNewline(
       message.comment,
       "`message.comment`",
-      "Cannot stringif messagey",
+      "Cannot serialize message",
     );
     lines.push(`:${message.comment}`);
   }
@@ -49,7 +49,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     assertHasNoNewline(
       message.event,
       "`message.event`",
-      "Cannot stringify message",
+      "Cannot serialize message",
     );
     lines.push(`event:${message.event}`);
   }
@@ -62,7 +62,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     assertHasNoNewline(
       message.id.toString(),
       "`message.id`",
-      "Cannot stringif messagey",
+      "Cannot serialize message",
     );
     lines.push(`id:${message.id}`);
   }

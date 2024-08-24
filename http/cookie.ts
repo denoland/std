@@ -210,7 +210,7 @@ function validateValue(name: string, value: string | null) {
     }
     if (c > String.fromCharCode(0x80)) {
       throw new SyntaxError(
-        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value:" +
+        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value: It contains 0x" +
           c.charCodeAt(0).toString(16),
       );
     }
