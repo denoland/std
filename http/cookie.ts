@@ -131,7 +131,7 @@ function toString(cookie: Cookie): string {
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
     if (cookie.maxAge < 0) {
       throw new RangeError(
-        `Cookie Max-Age must >= 0: received ${cookie.maxAge}`,
+        `Cannot serialize cookie as Max-Age must be >= 0: received ${cookie.maxAge}`,
       );
     }
     out.push(`Max-Age=${cookie.maxAge}`);
@@ -210,7 +210,8 @@ function validateValue(name: string, value: string | null) {
     }
     if (c > String.fromCharCode(0x80)) {
       throw new SyntaxError(
-        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value: It contains 0x" +
+        "RFC2616 cookie '" + name +
+          "' can only have US-ASCII chars as value: It contains 0x" +
           c.charCodeAt(0).toString(16),
       );
     }
