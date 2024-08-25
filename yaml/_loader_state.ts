@@ -573,6 +573,13 @@ export class LoaderState {
 
     return false;
   }
+  writeFoldedLines(count: number) {
+    if (count === 1) {
+      this.result += " ";
+    } else if (count > 1) {
+      this.result += "\n".repeat(count - 1);
+    }
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -700,14 +707,6 @@ export class LoaderState {
   }
 }
 
-function writeFoldedLines(state: LoaderState, count: number) {
-  if (count === 1) {
-    state.result += " ";
-  } else if (count > 1) {
-    state.result += "\n".repeat(count - 1);
-  }
-}
-
 function readPlainScalar(
   state: LoaderState,
   nodeIndent: number,
@@ -795,7 +794,7 @@ function readPlainScalar(
 
     if (hasPendingContent) {
       state.captureSegment(captureStart, captureEnd, false);
-      writeFoldedLines(state, state.line - line);
+      state.writeFoldedLines(state.line - line);
       captureStart = captureEnd = state.position;
       hasPendingContent = false;
     }
@@ -851,7 +850,7 @@ function readSingleQuotedScalar(
       }
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
+      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
@@ -926,7 +925,7 @@ function readDoubleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
+      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
