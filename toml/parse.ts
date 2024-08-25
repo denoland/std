@@ -22,6 +22,8 @@ import { parserFactory, toml } from "./_parser.ts";
  * @param tomlString TOML string to be parsed.
  * @returns The parsed JS object.
  */
-export function parse(tomlString: string): Record<string, unknown> {
-  return parserFactory(toml)(tomlString);
+export function parse<T extends Record<string, unknown>>(
+  tomlString: string,
+): T {
+  return parserFactory<T>(toml)(tomlString);
 }

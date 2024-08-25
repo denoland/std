@@ -582,7 +582,9 @@ export class LoaderState {
     }
   }
 
-  readDocument(): Result {
+  readDocument<
+    T extends string | Record<string, unknown> | unknown[] | null,
+  >(): T {
     const documentStart = this.position;
     let position: number;
     let directiveName: string;
@@ -698,12 +700,14 @@ export class LoaderState {
       );
     }
 
-    return this.result;
+    return this.result as T;
   }
 
-  *readDocuments(): Generator<Result> {
+  *readDocuments<
+    T extends string | Record<string, unknown> | unknown[] | null,
+  >(): Generator<T> {
     while (this.position < this.length - 1) {
-      yield this.readDocument();
+      yield this.readDocument<T>();
     }
   }
 }

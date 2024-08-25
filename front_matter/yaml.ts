@@ -67,21 +67,17 @@ export function extract<
  * @param options The options to pass to `@std/yaml/parse`.
  * @returns The extracted YAML front matter and body content.
  */
-export function extract<
-  T extends unknown[] | Record<string, unknown> | string | null,
->(
+export function extract<T extends Record<string, unknown>>(
   text: string,
   options?: ParseOptions,
 ): Extract<T>;
-export function extract<
-  T extends unknown[] | Record<string, unknown> | string | null,
->(
+export function extract<T extends Record<string, unknown>>(
   text: string,
   options?: ParseOptions,
 ): Extract<T> {
   return extractAndParse<T>(
     text,
     EXTRACT_YAML_REGEXP,
-    (s) => parse<T>(s, options),
+    (s) => parse(s, options),
   );
 }

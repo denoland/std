@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { extractAndParse, type Parser } from "./_shared.ts";
+import { extractAndParse } from "./_shared.ts";
 import { parse } from "@std/toml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_TOML_REGEXP } from "./_formats.ts";
@@ -36,5 +36,5 @@ export type { Extract };
 export function extract<T extends Record<string, unknown>>(
   text: string,
 ): Extract<T> {
-  return extractAndParse<T>(text, EXTRACT_TOML_REGEXP, parse as Parser);
+  return extractAndParse<T>(text, EXTRACT_TOML_REGEXP, parse<T>);
 }

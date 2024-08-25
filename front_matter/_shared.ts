@@ -4,14 +4,14 @@ import { type Format, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 import type { Extract } from "./types.ts";
 
 /** Parser function type */
-export type Parser = (input: string) => unknown;
+export type Parser<T> = (str: string) => T;
 
 export function extractAndParse<
   T extends unknown[] | Record<string, unknown> | string | null,
 >(
   input: string,
   extractRegExp: RegExp,
-  parse: Parser,
+  parse: Parser<T>,
 ): Extract<T> {
   const match = extractRegExp.exec(input);
   if (!match || match.index !== 0) {

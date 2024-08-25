@@ -74,7 +74,7 @@ function sanitizeInput(input: string) {
  * @returns Parsed document.
  */
 export function parse<
-  T extends unknown[] | Record<string, unknown> | string | null,
+  T extends string | unknown[] | Record<string, unknown> | null,
 >(
   content: string,
   options: ParseOptions = {},
@@ -84,7 +84,7 @@ export function parse<
     ...options,
     schema: SCHEMA_MAP.get(options.schema!),
   });
-  const documentGenerator = state.readDocuments();
+  const documentGenerator = state.readDocuments<T>();
   const document = documentGenerator.next().value;
   if (!documentGenerator.next().done) {
     throw new SyntaxError(

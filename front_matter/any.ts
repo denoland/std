@@ -9,12 +9,14 @@ import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 
 export type { Extract };
 
-function getParserForFormat(format: Format): Parser {
+function getParserForFormat<T extends Record<string, unknown>>(
+  format: Format,
+): Parser<T> {
   switch (format) {
     case "yaml":
-      return parseYaml as Parser;
+      return parseYaml as Parser<T>;
     case "toml":
-      return parseToml as Parser;
+      return parseToml as Parser<T>;
     case "json":
       return JSON.parse;
   }
@@ -52,6 +54,6 @@ export function extract<T extends Record<string, unknown>>(
   const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
   const format = recognize(text, formats);
   const regexp = EXTRACT_REGEXP_MAP.get(format) as RegExp;
-  const parser = getParserForFormat(format);
+  const parser = getParserForFormat<T>(format);
   return extractAndParse<T>(text, regexp, parser);
 }
