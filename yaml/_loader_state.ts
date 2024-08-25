@@ -506,6 +506,25 @@ export class LoaderState {
 
     return lineBreaks;
   }
+  testDocumentSeparator(): boolean {
+    let ch = this.peek();
+
+    // Condition this.position === this.lineStart is tested
+    // in parent on each call, for efficiency. No needs to test here again.
+    if (
+      (ch === MINUS || ch === DOT) &&
+      ch === this.peek(1) &&
+      ch === this.peek(2)
+    ) {
+      ch = this.peek(3);
+
+      if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -612,7 +631,7 @@ export class LoaderState {
       this.dispatchWarning("non-ASCII line breaks are interpreted as content");
     }
 
-    if (this.position === this.lineStart && testDocumentSeparator(this)) {
+    if (this.position === this.lineStart && this.testDocumentSeparator()) {
       if (this.peek() === DOT) {
         this.position += 3;
         this.skipSeparationSpace(true, -1);
@@ -631,26 +650,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function testDocumentSeparator(state: LoaderState): boolean {
-  let ch = state.peek();
-
-  // Condition state.position === state.lineStart is tested
-  // in parent on each call, for efficiency. No needs to test here again.
-  if (
-    (ch === MINUS || ch === DOT) &&
-    ch === state.peek(1) &&
-    ch === state.peek(2)
-  ) {
-    ch = state.peek(3);
-
-    if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function writeFoldedLines(state: LoaderState, count: number) {
@@ -723,7 +722,7 @@ function readPlainScalar(
         break;
       }
     } else if (
-      (state.position === state.lineStart && testDocumentSeparator(state)) ||
+      (state.position === state.lineStart && state.testDocumentSeparator()) ||
       (withinFlowCollection && isFlowIndicator(ch))
     ) {
       break;
@@ -808,7 +807,7 @@ function readSingleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
-      testDocumentSeparator(state)
+      state.testDocumentSeparator()
     ) {
       return state.throwError(
         "unexpected end of the document within a single quoted scalar",
@@ -883,7 +882,7 @@ function readDoubleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
-      testDocumentSeparator(state)
+      state.testDocumentSeparator()
     ) {
       return state.throwError(
         "unexpected end of the document within a double quoted scalar",
