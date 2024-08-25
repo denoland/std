@@ -20,8 +20,7 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 
     if (keys.length !== 1) return false;
 
-    // deno-lint-ignore no-explicit-any
-    result[index] = [keys[0], pair[keys[0] as any]];
+    result[index] = [keys[0], pair[keys[0] as keyof typeof pair]];
   }
 
   return true;
@@ -36,8 +35,7 @@ function constructYamlPairs(data: string) {
 
     const keys = Object.keys(pair);
 
-    // deno-lint-ignore no-explicit-any
-    result[index] = [keys[0], pair[keys[0] as any]];
+    result[index] = [keys[0], pair[keys[0] as keyof typeof pair]];
   }
 
   return result;
