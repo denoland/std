@@ -592,32 +592,21 @@ export class DumperState {
     array: unknown[],
     { level, compact }: { level: number; compact: boolean },
   ): string {
-    let result = "";
-
-    for (let index = 0; index < array.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(array[index], {
+    const whitespace = generateNextLine(this.indent, level);
+    const prefix = compact ? "" : whitespace;
+    const results = [];
+    for (const value of array) {
+      const string = this.stringifyNode(value, {
         level: level + 1,
         block: true,
         compact: true,
         isKey: false,
       });
-      if (string !== null) {
-        if (!compact || index !== 0) {
-          result += generateNextLine(this.indent, level);
-        }
-
-        if (string && LINE_FEED === string.charCodeAt(0)) {
-          result += "-";
-        } else {
-          result += "- ";
-        }
-
-        result += string;
-      }
+      if (string === null) continue;
+      const linePrefix = LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
+      results.push(`${linePrefix}${string}`);
     }
-
-    return result || "[]"; // Empty sequence if no valid values.
+    return results.length ? prefix + results.join(whitespace) : "[]";
   }
 
   stringifyFlowMapping(
