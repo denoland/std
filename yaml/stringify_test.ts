@@ -691,3 +691,10 @@ Deno.test({
     );
   },
 });
+
+Deno.test("stringify() returns emtpy object on invalid entries", () => {
+  assertEquals(
+    stringify({ foo: undefined }, { skipInvalid: true }),
+    "{}\n",
+  );
+});
