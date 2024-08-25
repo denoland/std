@@ -229,7 +229,7 @@ export const functions: Functions<Api> = {
   async thread({ threadId }, api) {
     const opts = { branchName: threadId, noClose: true }
     const actions = await api.actions<longthread.Api>('longthread', opts)
-    await actions.start()
+    await actions.start({})
     return addBranches(api.pid, threadId)
   },
   async addAuthProvider({ provider, name }, api) {

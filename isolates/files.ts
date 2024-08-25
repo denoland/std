@@ -41,11 +41,17 @@ export const api = {
     },
   },
   read: {
-    description: 'Read a file.  It will be returned as a string.',
+    description: 'Read a file.  The contents will be returned as a string.',
     type: 'object',
     additionalProperties: false,
-    required: ['path'],
+    required: ['reasoning', 'path'],
     properties: {
+      reasoning: {
+        type: 'array',
+        items: { type: 'string' },
+        description:
+          'the brief step by step reasoning why this function was called and what it is trying to achieve',
+      },
       path: {
         type: 'string',
         description: 'the relative path to the file you want to read',

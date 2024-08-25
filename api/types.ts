@@ -544,7 +544,7 @@ export const toActions = <T = DispatchFunctions>(
   const proctype = getProcType(procOpts)
   const actions: DispatchFunctions = {}
   for (const functionName of Object.keys(schema)) {
-    actions[functionName] = (arg1?: Params) => {
+    actions[functionName] = (arg1: Params = {}) => {
       const params = safeParams(arg1)
       const unsequencedRequest: UnsequencedRequest = {
         target,
@@ -572,10 +572,7 @@ type PromisifyFunctionReturnTypes<T> = {
     ? (...args: Args) => R extends Promise<unknown> ? R : Promise<R>
     : T[K]
 }
-const safeParams = (params?: Params) => {
-  if (!params) {
-    return {}
-  }
+const safeParams = (params: Params) => {
   const safe = { ...params }
   for (const key in safe) {
     if (safe[key] === undefined) {

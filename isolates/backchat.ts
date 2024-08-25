@@ -126,7 +126,7 @@ export const functions: Functions<Api> = {
     const path = 'agents/backchat.md'
 
     const { start } = await api.functions<longthread.Api>('longthread')
-    await start()
+    await start({})
     log('create:', threadId, path)
     const thread = await readBackchat(api)
     thread.focus = threadId

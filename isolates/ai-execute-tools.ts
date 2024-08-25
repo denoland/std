@@ -1,10 +1,10 @@
 import { assert } from '@std/assert'
 import { Debug } from '@utils'
-import type OpenAI from 'openai'
 import { serializeError } from 'serialize-error'
-import { colorize, IA, sha1, Thread, withMeta } from '@/constants.ts'
+import { colorize, IA, print, sha1, Thread, withMeta } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
+import * as files from './files.ts'
 const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
@@ -39,41 +39,38 @@ export const executeTools = async (threadPath: string, api: IA) => {
     const messageIndex = thread.messages.length
     thread.messages.push(message)
     api.writeJSON(threadPath, thread)
+    const branchName = tool_call_id
 
     try {
       const parameters = JSON.parse(args)
-      const branchName = tool_call_id
-      const { promise } = await actions[name](parameters, branchName)
-      const { result, parent } = await withMeta(promise)
-      assert(typeof parent === 'string', 'missing parent')
-      assert(sha1.test(parent), 'invalid parent')
-      await api.merge(parent)
+      if (name === 'files_read') {
+        const { read } = await api.functions<files.Api>('files')
+        message.content = await read(parameters)
+        if (parameters.path.endsWith('.json')) {
+          // compress down to save tokens
+          message.content = JSON.stringify(JSON.parse(message.content))
+        }
 
-      thread = await api.readJSON<Thread>(threadPath)
-      assert(!thread.toolCommits[tool_call_id], 'tool call already exists')
-      thread.toolCommits[tool_call_id] = parent
-      api.writeJSON(threadPath, thread)
+        log('read', parameters.path, message.content.length, print(api.pid))
+      } else {
+        const { promise } = await actions[name](parameters, branchName)
+        const { result, parent } = await withMeta(promise)
+        assert(typeof parent === 'string', 'missing parent')
+        assert(sha1.test(parent), 'invalid parent')
+        await api.merge(parent)
 
-      log('tool call result:', name, result, colorize(parent))
-      if (result === '@@ARTIFACT_RELAY@@') {
-        log('tool call relay')
-        // TODO pass back the tool call id for precision
-        // TODO test this works with parallel calls calling combinations of relay
-        const withoutTip = thread.messages.slice(0, -1)
-        const lastToolCall = withoutTip
-          .findLast(({ role }) => role === 'tool')
-        assert(lastToolCall, 'missing last tool call')
-        message.content = (lastToolCall.content || '') as string
-        thread.messages[messageIndex] = message
+        thread = await api.readJSON<Thread>(threadPath)
+        assert(!thread.toolCommits[tool_call_id], 'tool call already exists')
+        thread.toolCommits[tool_call_id] = parent
         api.writeJSON(threadPath, thread)
 
-        return message.content
-      }
+        log('tool call result:', name, result, colorize(parent))
 
-      if (result === undefined || typeof result === 'string') {
-        message.content = result || ''
-      } else {
-        message.content = JSON.stringify(result, null, 2)
+        if (result === undefined || typeof result === 'string') {
+          message.content = result || ''
+        } else {
+          message.content = JSON.stringify(result, null, 2)
+        }
       }
     } catch (error) {
       log('tool call error:', error)

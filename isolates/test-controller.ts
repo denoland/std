@@ -69,7 +69,7 @@ export const functions: Functions<Api> = {
 
       const lopts = { target: await noop() }
       const actions = await api.actions<longthread.Api>('longthread', lopts)
-      await actions.start()
+      await actions.start({})
       const actorId = 'test-runner'
       const path = 'agents/test-file-runner.md'
       const content = `${file}`

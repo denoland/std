@@ -4,11 +4,21 @@ const md5 = z.string().regex(/^[a-f0-9]{40}$/, 'Invalid MD5 hash')
 
 export const outcome = z
   .object({
-    reasoning: z.array(z.string()),
-    outcome: z.boolean(),
+    reasoning: z.array(z.string()).describe(
+      'the chain of thought reasoning for how the outcome was reached',
+    ),
+    outcome: z.boolean().describe(
+      'the outcome of the test compared with the expectation',
+    ),
+    analysis: z.array(z.string()).optional().describe(
+      'the step by step analysis of WHY the system prompt of the agent under test did meet the expectation as well as it could have',
+    ),
+    improvements: z.array(z.string()).optional().describe(
+      'the improvement(s) to the agent prompt that would have resulted in better performance against the expectation',
+    ),
   })
   .describe(
-    'the result of a single test iteration along with chain of thought reasoning for how the outcome was reached',
+    'After a single test iteration is assessed, along with chain of thought reasoning for how the outcome was reached',
   )
 
 export type TestIteration = z.infer<typeof testIteration>

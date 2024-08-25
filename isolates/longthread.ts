@@ -1,52 +1,52 @@
 import { assert, Debug } from '@utils'
-import { actorIdRegex, getThreadPath, IA, print, Thread } from '@/constants.ts'
+import {
+  getThreadPath,
+  IA,
+  print,
+  Thread,
+  toApi,
+  ToApiType,
+} from '@/constants.ts'
+import { ChatCompletionAssistantMessageParamSchema } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
+import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
 const log = Debug('AI:longthread')
 
-export const api = {
-  start: {
-    description: 'start a new thread for the given agent',
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
-  run: {
-    type: 'object',
-    required: ['path', 'content', 'actorId'],
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' },
-      actorId: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
-  switchboard: {
-    type: 'object',
-    required: ['content', 'actorId'],
-    properties: {
-      content: { type: 'string' },
-      actorId: { type: 'string', pattern: actorIdRegex.source },
-    },
-    additionalProperties: false,
-  },
-}
-export interface Api {
-  start: (params: void) => Promise<void>
-  run: (params: {
+export const parameters = {
+  start: z.object({}).describe('start a new thread for the given agent'),
+  run: z.object({
     /** Path to the agent to instantiate */
-    path: string
-    content: string
-    actorId: string
-  }) => Promise<void>
-  switchboard: (
-    params: { content: string; actorId: string },
-  ) => Promise<void>
+    path: z.string(),
+    content: z.string(),
+    actorId: z.string(),
+  }),
+  switchboard: z.object({
+    content: z.string(),
+    actorId: z.string(),
+  }),
+  drone: z.object({
+    /** Path to the agent to instantiate */
+    path: z.string(),
+    content: z.string(),
+    actorId: z.string(),
+    /** tool name to stop on */
+    stopOnTool: z.string().optional(),
+  }),
+}
+export const returns = {
+  start: z.void(),
+  run: z.void(),
+  switchboard: z.void(),
+  drone: ChatCompletionAssistantMessageParamSchema,
 }
 
+export const api = toApi(parameters)
+export type Api = ToApiType<typeof parameters, typeof returns>
+
 export const functions: Functions<Api> = {
-  start: async (_: void, api) => {
+  start: async (_, api) => {
     const threadPath = getThreadPath(api.pid)
     log('start', threadPath, print(api.pid))
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
@@ -84,16 +84,31 @@ export const functions: Functions<Api> = {
 
     await loop(params.path, api)
   },
+  drone: async ({ path, content, actorId, stopOnTool }, api) => {
+    log('drone', path, content, actorId, stopOnTool)
+    await functions.start({}, api)
+
+    const threadPath = getThreadPath(api.pid)
+    let thread = await api.readJSON<Thread>(threadPath)
+    thread.messages.push({ name: actorId, role: 'user', content })
+    api.writeJSON(threadPath, thread)
+    await loop(path, api, stopOnTool)
+
+    thread = await api.readJSON<Thread>(threadPath)
+    const last = thread.messages[thread.messages.length - 1]
+    assert(last.role === 'assistant', 'not assistant response: ' + last.role)
+    return last
+  },
 }
 
-const loop = async (path: string, api: IA) => {
+const loop = async (path: string, api: IA, stopOnTool?: string) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
   const HARD_STOP = 10
   let count = 0
   while (!await isDone(threadPath, api) && count++ < HARD_STOP) {
     await complete({ path })
-    if (await isDone(threadPath, api)) {
+    if (await isDone(threadPath, api, stopOnTool)) {
       return
     }
     // TODO check tool responses come back correct
@@ -105,7 +120,7 @@ const loop = async (path: string, api: IA) => {
   }
 }
 
-const isDone = async (threadPath: string, api: IA) => {
+const isDone = async (threadPath: string, api: IA, stopOnTool?: string) => {
   const thread = await api.readJSON<Thread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (!last) {
@@ -130,6 +145,12 @@ const isDone = async (threadPath: string, api: IA) => {
       }
       if (tool.function.name === 'utils_reject') {
         log('rejected')
+        return true
+      }
+      if (stopOnTool && tool.function.name === stopOnTool) {
+        log('stopping on tool:', stopOnTool)
+        // TODO do a parsing check and error if the tool parameters are wrong,
+        // to allow the agent to fix the erroneous tool call
         return true
       }
     }

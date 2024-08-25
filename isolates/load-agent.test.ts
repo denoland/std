@@ -1,21 +1,12 @@
 import { expect } from '@utils'
-import { partialFromRepo, SolidRequest } from '@/constants.ts'
-import IA from '../isolate-api.ts'
 import { Api } from './load-agent.ts'
-import DB from '@/db.ts'
 import Compartment from '@io/compartment.ts'
-import Accumulator from '@/exe/accumulator.ts'
-import FS from '@/git/fs.ts'
 import { assert } from '@std/assert'
+import { createMockApi } from '@/tests/fixtures/mock-api.ts'
 
 Deno.test('format checking', async (t) => {
   const compartment = await Compartment.create('load-agent')
-  const db = await DB.create(DB.generateAesKey())
-  const partial = partialFromRepo('agent/format')
-  const fs = await FS.init(partial, db)
-  const accumulator = Accumulator.create(fs)
-  accumulator.activate(Symbol())
-  const api = IA.create(accumulator, null as unknown as SolidRequest)
+  const { api, stop } = await createMockApi('agent/format')
 
   const path = 'agents/agent-fixture.md'
   await t.step('fixture', async () => {
@@ -36,7 +27,7 @@ Deno.test('format checking', async (t) => {
   })
   // TODO test some erroneous config written
 
-  db.stop()
+  stop()
 })
 
 const agentMd = `
@@ -54,12 +45,7 @@ ALWAYS be as brief as possible
 
 Deno.test('expand md links', async (t) => {
   const compartment = await Compartment.create('load-agent')
-  const db = await DB.create(DB.generateAesKey())
-  const partial = partialFromRepo('agent/format')
-  const fs = await FS.init(partial, db)
-  const accumulator = Accumulator.create(fs)
-  accumulator.activate(Symbol())
-  const api = IA.create(accumulator, null as unknown as SolidRequest)
+  const { api, stop } = await createMockApi('agent/format')
   const path = 'agents/agent-fixture.md'
   const functions = compartment.functions<Api>(api)
 
@@ -95,7 +81,7 @@ Deno.test('expand md links', async (t) => {
   })
   // TODO test special chars messing up the link regex
   // TODO test paths are relative to the loaded path
-  db.stop()
+  stop()
 })
 
 const linkedAgent = `

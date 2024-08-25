@@ -270,6 +270,9 @@ export default class FS {
   }
   write(path: string, data: string | Uint8Array) {
     assertPath(path)
+    if (path.startsWith('./')) {
+      path = path.slice(2)
+    }
     log('write', path, data)
     this.#upserts.set(path, { data })
     this.#deletes.delete(path)

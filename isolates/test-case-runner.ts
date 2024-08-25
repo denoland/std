@@ -3,13 +3,11 @@ import {
   getActorId,
   getThreadPath,
   print,
-  Thread,
   toApi,
   type ToApiType,
 } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
-import * as completions from '@/isolates/ai-completions.ts'
 import { assert } from '@std/assert'
 import { addIteration, outcome, TestFile } from '@/api/tps-report.ts'
 import { z } from 'zod'
@@ -18,18 +16,15 @@ const log = Debug('AI:test-case-runner')
 
 export const parameters = {
   test: z.object({
-    path: z.string().describe('the path to the test file being run'),
+    path: z.string().regex(/.*\.test\.md$/).describe(
+      'the relative path to the test file that contains the test to be run',
+    ),
     index: z.number().int().gte(0)
       .describe('the index of the test case in the containing test file'),
   }).describe(
     'Runs the test case at the given index from the given test file.  Returns a list of outcomes from assessing the end system state against the expectations.',
   ),
-  assessment: z.object({
-    reasoning: z.array(z.string()),
-    outcome: z.boolean(),
-  }).describe(
-    'Called by the assistant and intercepted before execution.  Reports the outcomes of a test assessment, in the order that the expectations were passed in.  Provides step by step reasoning how the outcome was reached.',
-  ),
+  assessment: outcome,
 }
 export const api = toApi(parameters)
 
@@ -46,7 +41,7 @@ export const functions: Functions<Api> = {
     const actorId = getActorId(api.pid)
 
     const { start, run } = await api.actions<longthread.Api>('longthread')
-    await start()
+    await start({})
 
     const tpsPath = getTpsPath(path)
     let tpsReport = await api.readJSON<TestFile>(tpsPath)
@@ -64,16 +59,15 @@ export const functions: Functions<Api> = {
 
     log('starting assessment with:', assessor)
 
-    const thread = await api.readJSON<Thread>(getThreadPath(api.pid))
-    const { oneshot } = await api
-      .actions<completions.Api>('ai-completions', { branch: true })
+    const threadPath = getThreadPath(api.pid)
+    const stopOnTool = 'test-case-runner_assessment'
+    const { drone } = await api
+      .actions<longthread.Api>('longthread', { branch: true })
     const promises = expectations.map(async (expectation) => {
-      const contents = [
-        `Expectation: \n${expectation}`,
-        '\n---\n',
-        `Messages: \n${JSON.stringify(thread.messages, null, 2)}`,
-      ]
-      const assistant = await oneshot({ path: assessor, contents, actorId })
+      const content =
+        `Thread Path: ${threadPath}\n\nExpectation: ${expectation}\n\nAgent Path: ${agent}`
+      const path = assessor
+      const assistant = await drone({ path, content, actorId, stopOnTool })
 
       assert(assistant.tool_calls?.length === 1, 'expected one tool call')
       const args = JSON.parse(assistant.tool_calls[0].function.arguments)
@@ -95,6 +89,6 @@ export const functions: Functions<Api> = {
   },
 }
 const getTpsPath = (testPath: string) => {
-  assert(testPath.endsWith('.test.md'), 'testPath must end with .test.md')
+  assert(testPath.endsWith('.test.md'), 'not .test.md: ' + testPath)
   return testPath.replace('.test.md', '.tps.json')
 }

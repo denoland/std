@@ -252,7 +252,6 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
   for (const key of Object.keys(parameters)) {
     const schema = zodToJsonSchema(parameters[key])
     assert('properties' in schema, 'schema must have properties')
-    assert(!schema.additionalProperties, 'additionalProperties not allowed')
     api[key] = schema
   }
   return api
