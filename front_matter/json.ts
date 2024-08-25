@@ -35,5 +35,5 @@ export type { Extract };
 export function extract<T extends Record<string, unknown>>(
   text: string,
 ): Extract<T> {
-  return extractAndParse(text, EXTRACT_JSON_REGEXP, JSON.parse);
+  return extractAndParse<T>(text, EXTRACT_JSON_REGEXP, JSON.parse);
 }

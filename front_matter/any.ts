@@ -53,5 +53,5 @@ export function extract<T extends Record<string, unknown>>(
   const format = recognize(text, formats);
   const regexp = EXTRACT_REGEXP_MAP.get(format) as RegExp;
   const parser = getParserForFormat(format);
-  return extractAndParse(text, regexp, parser);
+  return extractAndParse<T>(text, regexp, parser);
 }

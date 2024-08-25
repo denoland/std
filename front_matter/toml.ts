@@ -36,5 +36,5 @@ export type { Extract };
 export function extract<T extends Record<string, unknown>>(
   text: string,
 ): Extract<T> {
-  return extractAndParse(text, EXTRACT_TOML_REGEXP, parse as Parser);
+  return extractAndParse<T>(text, EXTRACT_TOML_REGEXP, parse as Parser);
 }
