@@ -1,13 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { Result } from "../yaml/_loader_state.ts";
 import { type Format, RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 import type { Extract } from "./types.ts";
 
 /** Parser function type */
-export type Parser = (...args: unknown[]) => unknown;
+export type Parser = (input: string) => unknown;
 
-export function extractAndParse<T extends Result>(
+export function extractAndParse<
+  T extends unknown[] | Record<string, unknown> | string | null,
+>(
   input: string,
   extractRegExp: RegExp,
   parse: Parser,

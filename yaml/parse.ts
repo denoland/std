@@ -68,6 +68,7 @@ function sanitizeInput(input: string) {
  * ```
  *
  * @throws {SyntaxError} Throws error on invalid YAML.
+ * @typeParam T The type of the value
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
