@@ -580,6 +580,111 @@ export class LoaderState {
       this.result += "\n".repeat(count - 1);
     }
   }
+  readPlainScalar(nodeIndent: number, withinFlowCollection: boolean): boolean {
+    const kind = this.kind;
+    const result = this.result;
+    let ch = this.peek();
+
+    if (
+      isWhiteSpaceOrEOL(ch) ||
+      isFlowIndicator(ch) ||
+      ch === SHARP ||
+      ch === AMPERSAND ||
+      ch === ASTERISK ||
+      ch === EXCLAMATION ||
+      ch === VERTICAL_LINE ||
+      ch === GREATER_THAN ||
+      ch === SINGLE_QUOTE ||
+      ch === DOUBLE_QUOTE ||
+      ch === PERCENT ||
+      ch === COMMERCIAL_AT ||
+      ch === GRAVE_ACCENT
+    ) {
+      return false;
+    }
+
+    let following: number;
+    if (ch === QUESTION || ch === MINUS) {
+      following = this.peek(1);
+
+      if (
+        isWhiteSpaceOrEOL(following) ||
+        (withinFlowCollection && isFlowIndicator(following))
+      ) {
+        return false;
+      }
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    let captureEnd = this.position;
+    let captureStart = this.position;
+    let hasPendingContent = false;
+    let line = 0;
+    while (ch !== 0) {
+      if (ch === COLON) {
+        following = this.peek(1);
+
+        if (
+          isWhiteSpaceOrEOL(following) ||
+          (withinFlowCollection && isFlowIndicator(following))
+        ) {
+          break;
+        }
+      } else if (ch === SHARP) {
+        const preceding = this.peek(-1);
+
+        if (isWhiteSpaceOrEOL(preceding)) {
+          break;
+        }
+      } else if (
+        (this.position === this.lineStart && this.testDocumentSeparator()) ||
+        (withinFlowCollection && isFlowIndicator(ch))
+      ) {
+        break;
+      } else if (isEOL(ch)) {
+        line = this.line;
+        const lineStart = this.lineStart;
+        const lineIndent = this.lineIndent;
+        this.skipSeparationSpace(false, -1);
+
+        if (this.lineIndent >= nodeIndent) {
+          hasPendingContent = true;
+          ch = this.peek();
+          continue;
+        } else {
+          this.position = captureEnd;
+          this.line = line;
+          this.lineStart = lineStart;
+          this.lineIndent = lineIndent;
+          break;
+        }
+      }
+
+      if (hasPendingContent) {
+        this.captureSegment(captureStart, captureEnd, false);
+        this.writeFoldedLines(this.line - line);
+        captureStart = captureEnd = this.position;
+        hasPendingContent = false;
+      }
+
+      if (!isWhiteSpace(ch)) {
+        captureEnd = this.position + 1;
+      }
+
+      ch = this.next();
+    }
+
+    this.captureSegment(captureStart, captureEnd, false);
+
+    if (this.result) {
+      return true;
+    }
+
+    this.kind = kind;
+    this.result = result;
+    return false;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -705,116 +810,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readPlainScalar(
-  state: LoaderState,
-  nodeIndent: number,
-  withinFlowCollection: boolean,
-): boolean {
-  const kind = state.kind;
-  const result = state.result;
-  let ch = state.peek();
-
-  if (
-    isWhiteSpaceOrEOL(ch) ||
-    isFlowIndicator(ch) ||
-    ch === SHARP ||
-    ch === AMPERSAND ||
-    ch === ASTERISK ||
-    ch === EXCLAMATION ||
-    ch === VERTICAL_LINE ||
-    ch === GREATER_THAN ||
-    ch === SINGLE_QUOTE ||
-    ch === DOUBLE_QUOTE ||
-    ch === PERCENT ||
-    ch === COMMERCIAL_AT ||
-    ch === GRAVE_ACCENT
-  ) {
-    return false;
-  }
-
-  let following: number;
-  if (ch === QUESTION || ch === MINUS) {
-    following = state.peek(1);
-
-    if (
-      isWhiteSpaceOrEOL(following) ||
-      (withinFlowCollection && isFlowIndicator(following))
-    ) {
-      return false;
-    }
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  let captureEnd = state.position;
-  let captureStart = state.position;
-  let hasPendingContent = false;
-  let line = 0;
-  while (ch !== 0) {
-    if (ch === COLON) {
-      following = state.peek(1);
-
-      if (
-        isWhiteSpaceOrEOL(following) ||
-        (withinFlowCollection && isFlowIndicator(following))
-      ) {
-        break;
-      }
-    } else if (ch === SHARP) {
-      const preceding = state.peek(-1);
-
-      if (isWhiteSpaceOrEOL(preceding)) {
-        break;
-      }
-    } else if (
-      (state.position === state.lineStart && state.testDocumentSeparator()) ||
-      (withinFlowCollection && isFlowIndicator(ch))
-    ) {
-      break;
-    } else if (isEOL(ch)) {
-      line = state.line;
-      const lineStart = state.lineStart;
-      const lineIndent = state.lineIndent;
-      state.skipSeparationSpace(false, -1);
-
-      if (state.lineIndent >= nodeIndent) {
-        hasPendingContent = true;
-        ch = state.peek();
-        continue;
-      } else {
-        state.position = captureEnd;
-        state.line = line;
-        state.lineStart = lineStart;
-        state.lineIndent = lineIndent;
-        break;
-      }
-    }
-
-    if (hasPendingContent) {
-      state.captureSegment(captureStart, captureEnd, false);
-      state.writeFoldedLines(state.line - line);
-      captureStart = captureEnd = state.position;
-      hasPendingContent = false;
-    }
-
-    if (!isWhiteSpace(ch)) {
-      captureEnd = state.position + 1;
-    }
-
-    ch = state.next();
-  }
-
-  state.captureSegment(captureStart, captureEnd, false);
-
-  if (state.result) {
-    return true;
-  }
-
-  state.kind = kind;
-  state.result = result;
-  return false;
 }
 
 function readSingleQuotedScalar(
@@ -1641,7 +1636,7 @@ function composeNode(
             );
           }
         } else if (
-          readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)
+          state.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
         ) {
           hasContent = true;
 
