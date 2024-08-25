@@ -28,7 +28,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { KindType, StyleVariant, Type } from "./_type.ts";
+import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
 import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
@@ -758,38 +758,36 @@ export class DumperState {
     return result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(
-    value: unknown,
-    explicit: boolean,
-  ): { tag: string; value: unknown } | null {
-    const typeList = explicit ? this.explicitTypes : this.implicitTypes;
+  getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {
+    if (!type.represent) return value;
+    const style = this.styleMap.get(type.tag) ??
+      type.defaultStyle as StyleVariant;
+    if (typeof type.represent === "function") {
+      return type.represent(value, style);
+    }
+    if (Object.hasOwn(type.represent, style)) {
+      const represent = type.represent[style] as RepresentFn<unknown>;
+      return represent(value, style);
+    }
+    throw new TypeError(
+      `!<${type.tag}> tag resolver accepts not "${style}" style`,
+    );
+  }
 
-    let tag = null;
-    for (const type of typeList) {
+  detectType(value: unknown): { tag: string | null; value: unknown } {
+    for (const type of this.implicitTypes) {
       if (type.predicate?.(value)) {
-        tag = explicit ? type.tag : "?";
-
-        if (type.represent) {
-          const style = this.styleMap.get(type.tag) ||
-            type.defaultStyle as StyleVariant;
-
-          if (typeof type.represent === "function") {
-            value = type.represent(value, style);
-            return { tag, value };
-          }
-          if (Object.hasOwn(type.represent, style)) {
-            value = type.represent[style]!(value, style);
-            return { tag, value };
-          }
-          throw new TypeError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
-        }
-
-        return { tag, value };
+        value = this.getTypeRepresentation(type, value);
+        return { tag: "?", value };
       }
     }
-    return null;
+    for (const type of this.explicitTypes) {
+      if (type.predicate?.(value)) {
+        value = this.getTypeRepresentation(type, value);
+        return { tag: type.tag, value };
+      }
+    }
+    return { tag: null, value };
   }
 
   // Serializes `object` and writes it to global `result`.
@@ -800,8 +798,7 @@ export class DumperState {
     compact: boolean;
     isKey: boolean;
   }): string | null {
-    const result = this.detectType(value, false) ??
-      this.detectType(value, true) ?? { tag: null, value };
+    const result = this.detectType(value);
     const tag = result.tag;
     value = result.value;
 
