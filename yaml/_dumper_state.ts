@@ -710,7 +710,6 @@ export class DumperState {
         compact: true,
         isKey: true,
       });
-
       if (keyString === null) {
         continue; // Skip this pair because of invalid key.
       }
