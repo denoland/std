@@ -8,8 +8,7 @@ import type { Type } from "../_type.ts";
 const BASE64_MAP =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
 
-// deno-lint-ignore no-explicit-any
-function resolveYamlBinary(data: any): boolean {
+function resolveYamlBinary(data: string): boolean {
   if (data === null) return false;
 
   let code: number;
