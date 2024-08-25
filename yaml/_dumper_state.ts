@@ -593,6 +593,7 @@ export class DumperState {
     { level, compact }: { level: number; compact: boolean },
   ): string {
     const whitespace = generateNextLine(this.indent, level);
+    const prefix = compact ? "" : whitespace;
     const results = [];
     for (const value of array) {
       const string = this.stringifyNode(value, {
@@ -605,9 +606,7 @@ export class DumperState {
       const linePrefix = LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
       results.push(`${linePrefix}${string}`);
     }
-    if (!results.length) return "[]";
-    const prefix = compact ? "" : whitespace;
-    return prefix + results.join(whitespace);
+    return results.length ? prefix + results.join(whitespace) : "[]";
   }
 
   stringifyFlowMapping(
