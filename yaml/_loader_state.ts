@@ -134,6 +134,8 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
+type Result = unknown[] | Record<string, unknown> | string | null;
+
 export class LoaderState {
   input: string;
   length: number;
@@ -153,7 +155,7 @@ export class LoaderState {
   tag?: string | null;
   anchor?: string | null;
   kind?: string | null;
-  result: unknown[] | Record<string, unknown> | string | null = "";
+  result: Result = "";
 
   constructor(
     input: string,
@@ -507,7 +509,7 @@ export class LoaderState {
     return lineBreaks;
   }
 
-  readDocument() {
+  readDocument(): Result {
     const documentStart = this.position;
     let position: number;
     let directiveName: string;
@@ -626,7 +628,7 @@ export class LoaderState {
     return this.result;
   }
 
-  *readDocuments() {
+  *readDocuments(): Generator<Result> {
     while (this.position < this.length - 1) {
       yield this.readDocument();
     }

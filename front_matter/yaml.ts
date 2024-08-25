@@ -1,9 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { extractAndParse, type Parser } from "./_shared.ts";
+import { extractAndParse } from "./_shared.ts";
 import { parse, type ParseOptions } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
+import type { Result } from "../yaml/_loader_state.ts";
 
 export type { Extract };
 
@@ -33,7 +34,7 @@ export type { Extract };
  * @param text The text to extract YAML front matter from.
  * @returns The extracted YAML front matter and body content.
  */
-export function extract<T extends Record<string, unknown>>(
+export function extract<T extends Result>(
   text: string,
 ): Extract<T>;
 /**
@@ -65,17 +66,17 @@ export function extract<T extends Record<string, unknown>>(
  * @param options The options to pass to `@std/yaml/parse`.
  * @returns The extracted YAML front matter and body content.
  */
-export function extract<T extends Record<string, unknown>>(
+export function extract<T extends Result>(
   text: string,
   options?: ParseOptions,
 ): Extract<T>;
-export function extract<T extends Record<string, unknown>>(
+export function extract<T extends Result>(
   text: string,
   options?: ParseOptions,
 ): Extract<T> {
-  return extractAndParse(
+  return extractAndParse<T>(
     text,
     EXTRACT_YAML_REGEXP,
-    ((s) => parse(s, options)) as Parser,
+    (s) => parse<T>(s, options),
   );
 }

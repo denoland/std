@@ -72,10 +72,12 @@ function sanitizeInput(input: string) {
  * @param options Parsing options.
  * @returns Parsed document.
  */
-export function parse(
+export function parse<
+  T extends unknown[] | Record<string, unknown> | string | null,
+>(
   content: string,
   options: ParseOptions = {},
-): unknown {
+): T {
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
