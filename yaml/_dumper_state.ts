@@ -888,6 +888,7 @@ export class DumperState {
       const duplicateObjects: Set<unknown> = new Set();
       inspectNode(value, values, duplicateObjects);
       this.duplicates = [...duplicateObjects];
+      this.usedDuplicates = new Set();
     }
 
     const string = this.stringifyNode(value, {
