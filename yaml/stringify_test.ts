@@ -691,3 +691,10 @@ Deno.test({
     );
   },
 });
+
+Deno.test("stringify() handles array entry that starts with newline", () => {
+  assertEquals(
+    stringify(["\nfoo"]),
+    "- |-\n\n  foo\n",
+  );
+});
