@@ -882,18 +882,14 @@ export class DumperState {
     return value as string;
   }
 
-  getDuplicateReferences(value: unknown) {
-    const values: Set<unknown> = new Set();
-    const duplicateObjects: Set<unknown> = new Set();
-
-    inspectNode(value, values, duplicateObjects);
-
-    for (const value of duplicateObjects) this.duplicates.push(value);
-    this.usedDuplicates = new Set();
-  }
-
   stringify(value: unknown): string {
-    if (this.useAnchors) this.getDuplicateReferences(value);
+    if (this.useAnchors) {
+      const values: Set<unknown> = new Set();
+      const duplicateObjects: Set<unknown> = new Set();
+      inspectNode(value, values, duplicateObjects);
+      this.duplicates = [...duplicateObjects];
+      this.usedDuplicates = new Set();
+    }
 
     const string = this.stringifyNode(value, {
       level: 0,
