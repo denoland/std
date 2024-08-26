@@ -78,21 +78,25 @@ package versions <1.0.0 follow
 
 ## Badge
 
-[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
+> [!NOTE]
+> Previously, this repo hosted the badge SVG file. Now, the badge is retrieved
+> directly from [Shields.io](https://shields.io/).
+
+[![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_std-blue?logo=deno)](https://jsr.io/@std)
 
 ```html
 <a href="https://jsr.io/@std">
   <img
     width="135"
     height="20"
-    src="https://raw.githubusercontent.com/denoland/std/main/badge.svg"
+    src="https://img.shields.io/badge/Built_with_std-blue?logo=deno"
     alt="Built with the Deno Standard Library"
   />
 </a>
 ```
 
 ```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/std/main/badge.svg)](https://jsr.io/@std)
+[![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_std-blue?logo=deno)](https://jsr.io/@std)
 ```
 
 ## Frequently Asked Questions
