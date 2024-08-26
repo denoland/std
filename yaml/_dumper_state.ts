@@ -777,12 +777,9 @@ export class DumperState {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    const objectOrArray = isObject(value) ||
-      Array.isArray(value);
-
     let duplicateIndex = -1;
     let duplicate = false;
-    if (objectOrArray) {
+    if (isObject(value)) {
       duplicateIndex = this.duplicates.indexOf(value);
       duplicate = duplicateIndex !== -1;
     }
@@ -798,7 +795,7 @@ export class DumperState {
     if (duplicate && this.usedDuplicates.has(value)) {
       return `*ref_${duplicateIndex}`;
     } else {
-      if (objectOrArray && duplicate) {
+      if (isObject(value) && duplicate) {
         this.usedDuplicates.add(value);
       }
       if (isObject(value) && !Array.isArray(value)) {
