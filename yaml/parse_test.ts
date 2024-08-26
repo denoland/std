@@ -65,7 +65,11 @@ Deno.test({
   name: "parse() throws with `!!js/*` yaml types with default schemas",
   fn() {
     const yaml = `undefined: !!js/undefined ~`;
-    assertThrows(() => parse(yaml), SyntaxError, "Unknown tag !");
+    assertThrows(
+      () => parse(yaml),
+      SyntaxError,
+      "Cannot resolve unknown tag !",
+    );
   },
 });
 
