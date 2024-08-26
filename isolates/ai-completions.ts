@@ -165,6 +165,7 @@ const complete = async (
   log('completion started with model: %o', args.model, print(api.pid))
   let retries = 0
   const RETRY_LIMIT = 5
+  let errorMessage = ''
   while (retries++ < RETRY_LIMIT) {
     try {
       const completion = await ai.chat.completions.create(args)
@@ -177,10 +178,10 @@ const complete = async (
       return assistant
     } catch (error) {
       console.error('ai completion error', error)
-      throw error
+      errorMessage = error.message
     }
   }
-  throw new Error(`ai completion failed after ${retries} attempts`)
+  throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
 }
 
 export const getArgs = (

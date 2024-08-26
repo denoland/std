@@ -206,11 +206,12 @@ export const addTest = (
 
 export const addIteration = (
   base: TestFile,
-  index: number,
+  caseIndex: number,
+  iterationIndex: number,
   iteration: TestIteration,
 ) => {
   const copy = testFile.parse(base)
-  const test = copy.cases[index]
+  const test = copy.cases[caseIndex]
   test.summary.completed++
   test.summary.elapsed = Date.now() - test.summary.timestamp
   iteration.outcomes.forEach(({ outcome }, index) => {
@@ -218,7 +219,7 @@ export const addIteration = (
       test.summary.successes[index]++
     }
   })
-  test.iterations.push(iteration)
+  test.iterations[iterationIndex] = iteration
   let leastCompleted = Number.MAX_SAFE_INTEGER
   for (const _test of copy.cases) {
     if (_test.summary.completed < leastCompleted) {

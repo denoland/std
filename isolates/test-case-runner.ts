@@ -3,19 +3,19 @@ import {
   Functions,
   getActorId,
   getThreadPath,
+  IA,
   print,
   Thread,
   toApi,
   type ToApiType,
   withMeta,
 } from '@/constants.ts'
-import { Debug } from '@utils'
+import { assert, Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
 import * as loadAgent from '@/isolates/load-agent.ts'
 import { getArgs } from '@/isolates/ai-completions.ts'
 import { loadTools } from '@/isolates/ai-load-tools.ts'
-import { assert } from '@std/assert'
-import { addIteration, outcome, TestFile } from '@/api/tps-report.ts'
+import { addIteration, outcome, TestFile, testFile } from '@/api/tps-report.ts'
 import { z } from 'zod'
 import { assistantMessage } from '@/api/zod.ts'
 
@@ -25,7 +25,7 @@ const testParams = z.object({
   path: z.string().regex(/.*\.test\.md$/).describe(
     'the relative path to the test file that contains the test to be run',
   ),
-  index: z.number().int().gte(0)
+  caseIndex: z.number().int().gte(0)
     .describe('the index of the test case in the containing test file'),
 })
 
@@ -36,8 +36,9 @@ export const parameters = {
   caseRunner: testParams.describe(
     'The actual implementation of the test runner.  The test function calls this function in a new branch, and then merges the results back in.',
   ),
-  // we could handle the merging of data back in here, and just make sure each
-  // invocation started with a blank set of cases.
+  iteration: testParams.extend({
+    iterationIndex: z.number().int().gte(0),
+  }),
   openai: z.object({
     threadPath: z.string().describe(
       'relative path to the thread to recreate the request response pair from',
@@ -52,6 +53,7 @@ export const api = toApi(parameters)
 export const returns = {
   test: z.void(),
   caseRunner: z.void(),
+  iteration: z.void(),
   assessment: z.void(),
   openai: z.object({
     request: chatParams,
@@ -62,42 +64,51 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  test: async ({ path, index }, api) => {
-    const opts = { branchName: 'case_' + index }
+  test: async ({ path, caseIndex }, api) => {
+    const opts = { branchName: 'case_' + caseIndex }
     const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
-    const { parent } = await withMeta(caseRunner({ path, index }))
+    const { parent } = await withMeta(caseRunner({ path, caseIndex }))
     assert(parent, 'missing parent')
     await api.merge(parent)
     // TODO provide feature to read from the commit using the api
   },
 
-  caseRunner: async ({ path, index }, api) => {
-    log('test', path, index, print(api.pid))
-    const actorId = getActorId(api.pid)
+  caseRunner: async ({ path, caseIndex }, api) => {
+    log('test', path, caseIndex, print(api.pid))
 
-    const { start, run } = await api.actions<longthread.Api>('longthread')
-    await start({})
+    const file = await readTpsReport(path, api)
+    const { summary: { iterations } } = file
 
-    const tpsPath = getTpsPath(path)
-    let tpsReport = await api.readJSON<TestFile>(tpsPath)
+    // TODO handle merging parallel runs back in by reading before and after
+    // TODO batch the runs to get around artifact limitations in parallelisms
+
+    for (let i = 0; i < iterations; i++) {
+      const opts = { branchName: 'iteration_' + i }
+      const { iteration } = await api.actions<Api>('test-case-runner', opts)
+      const promise = iteration({ path, caseIndex, iterationIndex: i })
+      const { parent } = await withMeta(promise)
+      assert(parent, 'missing parent')
+      await api.merge(parent)
+    }
+  },
+  iteration: async ({ path, caseIndex, iterationIndex }, api) => {
+    log('iteration', path, caseIndex, iterationIndex, print(api.pid))
+
+    const tpsReport = await readTpsReport(path, api)
     const { agent, assessor } = tpsReport.summary
-    const { prompts, expectations } = tpsReport.cases[index].summary
+    const { prompts, expectations } = tpsReport.cases[caseIndex].summary
 
-    for (const chain of prompts) {
-      // TODO treat each chat as an iteration to be done in parallel
-      // related to how many iterations we want to run
-      // so include the variation generation feature
-
-      // each iteration needs to run in its own branch
-      // then it needs to get told to run the assessment
-      // when each one returns, we would merge back in the tps report
-      // then destroy the branch with a merge and close
-
-      // also want to run each iteration in parallel, as well as each case ?
-
-      for (const prompt of chain) {
-        await run({ path: agent, content: prompt, actorId })
-      }
+    const chain = prompts[iterationIndex]
+    // if we do not have enough prompts to run the iteration, generate more
+    if (prompts.length <= iterationIndex) {
+      // need to get the full test section to use the full context available
+      // then run this as a drone
+    }
+    const actorId = 'asdfasdf'
+    const { start, run } = await api.functions<longthread.Api>('longthread')
+    await start({})
+    for (const prompt of chain) {
+      await run({ path: agent, content: prompt, actorId })
     }
 
     log('starting assessment with:', assessor)
@@ -107,7 +118,6 @@ export const functions: Functions<Api> = {
     const { drone } = await api
       .actions<longthread.Api>('longthread', { branch: true })
 
-    // in here, signal the iteration count.
     const promises = expectations.map(async (expectation) => {
       // TODO recreate the call to openai directly
       const content = `threadPath: ${threadPath}\n\nExpectation: ${expectation}`
@@ -122,9 +132,13 @@ export const functions: Functions<Api> = {
     })
 
     const outcomes = await Promise.all(promises)
-    tpsReport = await api.readJSON<TestFile>(getTpsPath(path))
-    const iteration = { commit: api.commit, outcomes, prompts: prompts[0] }
-    const updated = addIteration(tpsReport, index, iteration)
+    const iteration = { prompts: chain, outcomes, commit: api.commit }
+    const updated = addIteration(
+      tpsReport,
+      caseIndex,
+      iterationIndex,
+      iteration,
+    )
 
     log('writing tps report:', getTpsPath(path))
     api.writeJSON(getTpsPath(path), updated)
@@ -148,7 +162,12 @@ export const functions: Functions<Api> = {
     return { request, response }
   },
 }
+
 const getTpsPath = (testPath: string) => {
   assert(testPath.endsWith('.test.md'), 'not .test.md: ' + testPath)
   return testPath.replace('.test.md', '.tps.json')
+}
+const readTpsReport = async (path: string, api: IA) => {
+  const tpsPath = getTpsPath(path)
+  return testFile.parse(await api.readJSON(tpsPath))
 }

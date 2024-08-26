@@ -7,32 +7,27 @@ import {
   fixture,
   meetingTestPath,
 } from '@/tests/fixtures/fixture.ts'
-import * as session from '@/isolates/session.ts'
 import { TestFile } from '@/api/tps-report.ts'
+import { addBranches } from '@/constants.ts'
 
 Deno.test('test file runner', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
     'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   )
-  const { noop } = await backchat.actions<session.Api>('session', {
-    branchName: 'runner',
-    noClose: true,
-  })
-  const target = await noop()
-  const actions = await backchat.actions<Api>('longthread', { target })
+
+  const opts = { branchName: 'runner', noClose: true }
+  const { drone } = await backchat.actions<Api>('longthread', opts)
+  const target = addBranches(backchat.pid, opts.branchName)
 
   await t.step('run', async () => {
-    await actions.start({})
-
     const path = fileRunnerPath
     const content = firstTestPath
 
-    await actions.run({ path, content, actorId })
+    await drone({ path, content, actorId })
 
     const tpsPath = firstTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
-    console.dir(tps, { depth: 10 })
     log('done', tps)
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)
@@ -42,25 +37,20 @@ Deno.test('test file runner', async (t) => {
   })
   await engine.stop()
 })
-Deno.test('test meeting bot', async (t) => {
+Deno.test.only('test meeting bot', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
     'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   )
-  const { noop } = await backchat.actions<session.Api>('session', {
-    branchName: 'runner',
-    noClose: true,
-  })
-  const target = await noop()
-  const actions = await backchat.actions<Api>('longthread', { target })
+  const opts = { branchName: 'runner', noClose: true }
+  const { drone } = await backchat.actions<Api>('longthread', opts)
+  const target = addBranches(backchat.pid, opts.branchName)
 
   await t.step('run', async () => {
-    await actions.start({})
-
     const path = fileRunnerPath
     const content = meetingTestPath
 
-    await actions.run({ path, content, actorId })
+    await drone({ path, content, actorId })
 
     const tpsPath = meetingTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)

@@ -3,19 +3,19 @@
   "version": "0.0.1",
   "lock": false,
   "tasks": {
-    "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --unstable-broadcast-channel --coverage --clean --parallel --trace-leaks",
-    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --unstable-broadcast-channel --watch",
-    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv --unstable-broadcast-channel -A --watch --inspect-wait main.ts",
+    "test": "DENO_KV_PATH=:memory: deno test -A --coverage --clean --parallel --trace-leaks",
+    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --watch",
+    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A --watch --inspect-wait main.ts",
     "check:types": "deno check **/*.ts",
     "check": "deno fmt --check && deno lint && deno task check:types",
     "ok": "deno task check && deno task test",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",
     "tc": "DEBUG_COLORS=1 deno test -A --unsafely-ignore-certificate-errors --trace-leaks ./api/cloud.ts",
-    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
-    "db:tools": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts",
+    "db:drop": "DEBUG_COLORS=1 deno run -A ./api/db-drop.ts",
+    "db:tools": "DEBUG_COLORS=1 deno run -A ./api/db-tools.ts",
     "keygen": "DEBUG_COLORS=1 deno run ./api/keygen.ts",
-    "bw": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A --watch benchmarks/bench.ts",
-    "bench": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A benchmarks/bench.ts"
+    "bw": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A --watch benchmarks/bench.ts",
+    "bench": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A benchmarks/bench.ts"
   },
   "imports": {
     "$git": "npm:isomorphic-git",
@@ -72,5 +72,6 @@
     "indentWidth": 2,
     "useTabs": false
   },
+  "unstable": ["kv", "fmt-html", "fmt-css", "fmt-yaml", "fmt-component"],
   "exports": "./main.ts"
 }
