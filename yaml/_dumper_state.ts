@@ -613,52 +613,34 @@ export class DumperState {
     object: Record<string, unknown>,
     { level }: { level: number },
   ): string {
-    let result = "";
-    const objectKeyList = Object.keys(object);
+    const quote = this.condenseFlow ? '"' : "";
+    const separator = this.condenseFlow ? ":" : ": ";
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = this.condenseFlow ? '"' : "";
-
-      if (index !== 0) pairBuffer += ", ";
-
-      const objectValue = object[objectKey];
-
-      const keyString = this.stringifyNode(objectKey, {
+    const results = [];
+    for (const [key, value] of Object.entries(object)) {
+      const keyString = this.stringifyNode(key, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
-      if (
-        keyString === null
-      ) {
-        continue; // Skip this pair because of invalid key;
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key;
 
-      if (keyString.length > 1024) pairBuffer += "? ";
-
-      pairBuffer += `${keyString}${this.condenseFlow ? '"' : ""}:${
-        this.condenseFlow ? "" : " "
-      }`;
-
-      const valueString = this.stringifyNode(objectValue, {
+      const valueString = this.stringifyNode(value, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
+      if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      if (valueString === null) {
-        continue; // Skip this pair because of invalid value.
-      }
-
-      pairBuffer += valueString;
-
-      // Both key and value are valid.
-      result += pairBuffer;
+      const keyPrefix = keyString.length > 1024 ? "? " : "";
+      results.push(
+        quote + keyPrefix + keyString + quote + separator + valueString,
+      );
     }
 
-    return `{${result}}`;
+    return `{${results.join(", ")}}`;
   }
 
   stringifyBlockMapping(
