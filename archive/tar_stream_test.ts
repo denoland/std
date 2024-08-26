@@ -6,6 +6,7 @@ import {
 } from "./tar_stream.ts";
 import { assert, assertEquals, assertRejects } from "../assert/mod.ts";
 import { UnTarStream } from "./untar_stream.ts";
+import { concat } from "../bytes/mod.ts";
 
 Deno.test("TarStream() with default stream", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -24,14 +25,25 @@ Deno.test("TarStream() with default stream", async () => {
     .getReader();
 
   let size = 0;
+  const data: Uint8Array[] = [];
   while (true) {
     const { done, value } = await reader.read();
     if (done) {
       break;
     }
     size += value.length;
+    data.push(value);
   }
   assertEquals(size, 512 + 512 + Math.ceil(text.length / 512) * 512 + 1024);
+  assertEquals(
+    text,
+    concat(data).slice(
+      512 + // Slicing off ./potato header
+        512, // Slicing off ./text.txt header
+      -1024, // Slicing off 1024 bytes of end padding
+    )
+      .slice(0, text.length), // Slice off padding added to text to make it divisible by 512
+  );
 });
 
 Deno.test("TarStream() with byte stream", async () => {
@@ -51,6 +63,7 @@ Deno.test("TarStream() with byte stream", async () => {
     .getReader({ mode: "byob" });
 
   let size = 0;
+  const data: Uint8Array[] = [];
   while (true) {
     const { done, value } = await reader.read(
       new Uint8Array(Math.ceil(Math.random() * 1024)),
@@ -59,8 +72,18 @@ Deno.test("TarStream() with byte stream", async () => {
       break;
     }
     size += value.length;
+    data.push(value);
   }
   assertEquals(size, 512 + 512 + Math.ceil(text.length / 512) * 512 + 1024);
+  assertEquals(
+    text,
+    concat(data).slice(
+      512 + // Slicing off ./potato header
+        512, // Slicing off ./text.txt header
+      -1024, // Slicing off 1024 bytes of end padding
+    )
+      .slice(0, text.length), // Slice off padding added to text to make it divisible by 512
+  );
 });
 
 Deno.test("TarStream() with negative size", async () => {
