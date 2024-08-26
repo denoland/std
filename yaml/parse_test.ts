@@ -641,7 +641,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    "Error handling YAML directive: YAML directive accepts exactly one argument at line 2, column 1:\n    ---\n    ^",
+    "Cannot handle YAML directive: YAML directive accepts exactly one argument at line 2, column 1:\n    ---\n    ^",
   );
   assertThrows(
     () =>
@@ -649,7 +649,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    "Error handling YAML directive: ill-formed argument at line 2, column 1:\n    ---\n    ^",
+    "Cannot handle YAML directive: ill-formed argument at line 2, column 1:\n    ---\n    ^",
   );
   assertThrows(
     () =>
@@ -657,7 +657,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    "Error handling YAML directive: unacceptable YAML version at line 2, column 1:\n    ---\n    ^",
+    "Cannot handle YAML directive: unacceptable YAML version at line 2, column 1:\n    ---\n    ^",
   );
   assertEquals(
     // The future 1.x version is acceptable
@@ -682,7 +682,7 @@ hello: world`,
     const warning = warningSpy.calls[0]?.args[0];
     assertEquals(
       warning.message,
-      "Error handling YAML directive: unsupported YAML version at line 2, column 1:\n    ---\n    ^",
+      "Cannot handle YAML directive: unsupported YAML version at line 2, column 1:\n    ---\n    ^",
     );
     assertInstanceOf(warning, SyntaxError);
   }
@@ -702,7 +702,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    "Error handling tag directive: directive accepts exactly two arguments, received 1 at line 2, column 1:\n    ---\n    ^",
+    "Cannot handle tag directive: directive accepts exactly two arguments, received 1 at line 2, column 1:\n    ---\n    ^",
   );
 
   assertThrows(
@@ -711,7 +711,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    'Error handling tag directive: ill-formed handle (first argument) in "abc" at line 2, column 1:\n    ---\n    ^',
+    'Cannot handle tag directive: ill-formed handle (first argument) in "abc" at line 2, column 1:\n    ---\n    ^',
   );
 
   assertThrows(
@@ -721,7 +721,7 @@ hello: world`),
 ---
 hello: world`),
     SyntaxError,
-    'Error handling tag directive: previously declared suffix for "!" tag handle at line 3, column 1:\n    ---\n    ^',
+    'Cannot handle tag directive: previously declared suffix for "!" tag handle at line 3, column 1:\n    ---\n    ^',
   );
 
   assertThrows(
@@ -877,7 +877,7 @@ Deno.test("parse() throws when the directive name is empty", () => {
 ---
 hello: world`),
     SyntaxError,
-    "Error reading document: directive name length must be greater than zero at line 1, column 2:\n    % 1.2\n     ^",
+    "Cannot read document: directive name length must be greater than zero at line 1, column 2:\n    % 1.2\n     ^",
   );
 });
 
@@ -1003,7 +1003,7 @@ age: 30
 name: Jane Doe`,
       ),
     SyntaxError,
-    "Error storing mapping pair: duplicated key at line 3, column 1:\n    name: Jane Doe\n    ^",
+    "Cannot store mapping pair: duplicated key at line 3, column 1:\n    name: Jane Doe\n    ^",
   );
 });
 

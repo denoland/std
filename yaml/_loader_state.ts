@@ -211,20 +211,20 @@ export class LoaderState {
   yamlDirectiveHandler(...args: string[]) {
     if (this.version !== null) {
       return this.throwError(
-        "Error handling YAML directive: duplication of %YAML directive",
+        "Cannot handle YAML directive: duplication of %YAML directive",
       );
     }
 
     if (args.length !== 1) {
       return this.throwError(
-        "Error handling YAML directive: YAML directive accepts exactly one argument",
+        "Cannot handle YAML directive: YAML directive accepts exactly one argument",
       );
     }
 
     const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
     if (match === null) {
       return this.throwError(
-        "Error handling YAML directive: ill-formed argument",
+        "Cannot handle YAML directive: ill-formed argument",
       );
     }
 
@@ -232,7 +232,7 @@ export class LoaderState {
     const minor = parseInt(match[2]!, 10);
     if (major !== 1) {
       return this.throwError(
-        "Error handling YAML directive: unacceptable YAML version",
+        "Cannot handle YAML directive: unacceptable YAML version",
       );
     }
 
@@ -240,14 +240,14 @@ export class LoaderState {
     this.checkLineBreaks = minor < 2;
     if (minor !== 1 && minor !== 2) {
       return this.dispatchWarning(
-        "Error handling YAML directive: unsupported YAML version",
+        "Cannot handle YAML directive: unsupported YAML version",
       );
     }
   }
   tagDirectiveHandler(...args: string[]) {
     if (args.length !== 2) {
       return this.throwError(
-        `Error handling tag directive: directive accepts exactly two arguments, received ${args.length}`,
+        `Cannot handle tag directive: directive accepts exactly two arguments, received ${args.length}`,
       );
     }
 
@@ -256,19 +256,19 @@ export class LoaderState {
 
     if (!PATTERN_TAG_HANDLE.test(handle)) {
       return this.throwError(
-        `Error handling tag directive: ill-formed handle (first argument) in "${handle}"`,
+        `Cannot handle tag directive: ill-formed handle (first argument) in "${handle}"`,
       );
     }
 
     if (this.tagMap.has(handle)) {
       return this.throwError(
-        `Error handling tag directive: previously declared suffix for "${handle}" tag handle`,
+        `Cannot handle tag directive: previously declared suffix for "${handle}" tag handle`,
       );
     }
 
     if (!PATTERN_TAG_URI.test(prefix)) {
       return this.throwError(
-        "Error handling tag directive: ill-formed tag prefix (second argument) of the TAG directive",
+        "Cannot handle tag directive: ill-formed tag prefix (second argument) of the TAG directive",
       );
     }
 
@@ -348,7 +348,7 @@ export class LoaderState {
 
       if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
         return this.throwError(
-          "Error reading block sequence: bad indentation of a sequence entry",
+          "Cannot read block sequence: bad indentation of a sequence entry",
         );
       } else if (this.lineIndent < nodeIndent) {
         break;
@@ -453,7 +453,7 @@ export class LoaderState {
       ) {
         this.line = startLine || this.line;
         this.position = startPos || this.position;
-        return this.throwError("Error storing mapping pair: duplicated key");
+        return this.throwError("Cannot store mapping pair: duplicated key");
       }
       Object.defineProperty(result, keyNode, {
         value: valueNode,
@@ -477,7 +477,7 @@ export class LoaderState {
         this.position++;
       }
     } else {
-      return this.throwError("Error reading line: line break not found");
+      return this.throwError("Cannot read line: line break not found");
     }
 
     this.line += 1;
@@ -558,7 +558,7 @@ export class LoaderState {
 
       if (directiveName.length < 1) {
         return this.throwError(
-          "Error reading document: directive name length must be greater than zero",
+          "Cannot read document: directive name length must be greater than zero",
         );
       }
 
@@ -637,7 +637,7 @@ export class LoaderState {
       }
     } else if (this.position < this.length - 1) {
       return this.throwError(
-        "Error reading document: end of the stream or a document separator is expected",
+        "Cannot read document: end of the stream or a document separator is expected",
       );
     }
 
