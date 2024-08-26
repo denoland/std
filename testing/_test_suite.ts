@@ -84,7 +84,9 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
 
     const { suite } = describe;
     if (suite && !TestSuiteInternal.suites.has(suite.symbol)) {
-      throw new Error("suite does not represent a registered test suite");
+      throw new Error(
+        "Cannot construct Test Suite: suite does not represent a registered test suite",
+      );
     }
     const testSuite = suite
       ? TestSuiteInternal.suites.get(suite.symbol)
@@ -101,7 +103,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         const value = fn() as any;
         if (value instanceof Promise) {
           throw new Error(
-            'Returning a Promise from "describe" is not supported. Tests must be defined synchronously.',
+            'Returning a Promise from "describe" is not supported: tests must be defined synchronously',
           );
         }
       } finally {
