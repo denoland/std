@@ -1,17 +1,21 @@
 ---
 config:
   temperature: 0
-commands:
+tools:
   search-for-files:
     isolate: files
     function: search
     description: Search for a file or directory.  Returns the relative path to the first match. This is some extra text to help the model make a choice better
+    branch: true # run the function in a dedicated branch rather than in band
     parameters:
       query-thing:
         description: this is the overridden parameter name for query
         was: query
       unchanged:
         description: this parameter name is the same as the original function name so it does not need the 'was' property as the mapping is clear
+      autoPopulated:
+        value: 'this is an example of an auto filled parameter
+        # This parameter would not be presented to the model, and will always be filled in to the value given here.  This is useful for things like restricting the ls function only certain file names, or restricting read to only be certain file extensions.
 ---
 
 This is a test file used to test the mappings between functions in isolates and
