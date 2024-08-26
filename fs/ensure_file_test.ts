@@ -79,7 +79,7 @@ Deno.test("ensureFile() rejects if input is dir", async function () {
         await ensureFile(testDir);
       },
       Error,
-      `Ensure path exists, expected 'file', got 'dir'`,
+      `Failed to ensure file exists: expected 'file', got 'dir'`,
     );
   } finally {
     await Deno.remove(testDir, { recursive: true });
@@ -97,7 +97,7 @@ Deno.test("ensureFileSync() throws if input is dir", function () {
         ensureFileSync(testDir);
       },
       Error,
-      `Ensure path exists, expected 'file', got 'dir'`,
+      `Failed to ensure file exists: expected 'file', got 'dir'`,
     );
   } finally {
     Deno.removeSync(testDir, { recursive: true });
