@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { concat } from "../bytes/mod.ts";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
-import { UnTarStream } from "./untar_stream.ts";
+import { UntarStream } from "./untar_stream.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
@@ -18,7 +18,7 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
     },
   ])
     .pipeThrough(new TarStream())
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   const pathnames: string[] = [];
   for await (const item of readable) {
@@ -41,7 +41,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
     },
   ])
     .pipeThrough(new TarStream())
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   const buffer = new Uint8Array(text.length);
   let offset = 0;
@@ -54,7 +54,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
   assertEquals(buffer, text);
 });
 
-Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
+Deno.test("UntarStream() with size equals to multiple of 512", async () => {
   const size = 512 * 3;
   const data = Uint8Array.from(
     { length: size },
@@ -69,7 +69,7 @@ Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
     },
   ])
     .pipeThrough(new TarStream())
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   assertEquals(
     concat(
@@ -81,7 +81,7 @@ Deno.test("UnTarStream() with size equals to multiple of 512", async () => {
   );
 });
 
-Deno.test("UnTarStream() with invalid size", async () => {
+Deno.test("UntarStream() with invalid size", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
     {
       pathname: "newFile.txt",
@@ -97,7 +97,7 @@ Deno.test("UnTarStream() with invalid size", async () => {
         },
       }),
     )
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
@@ -106,7 +106,7 @@ Deno.test("UnTarStream() with invalid size", async () => {
   );
 });
 
-Deno.test("UnTarStream() with invalid ending", async () => {
+Deno.test("UntarStream() with invalid ending", async () => {
   const tarBytes = concat(
     await Array.fromAsync(
       ReadableStream.from<TarStreamInput>([
@@ -122,7 +122,7 @@ Deno.test("UnTarStream() with invalid ending", async () => {
   tarBytes[tarBytes.length - 1] = 1;
 
   const readable = ReadableStream.from([tarBytes])
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
@@ -131,9 +131,9 @@ Deno.test("UnTarStream() with invalid ending", async () => {
   );
 });
 
-Deno.test("UnTarStream() with too small size", async () => {
+Deno.test("UntarStream() with too small size", async () => {
   const readable = ReadableStream.from([new Uint8Array(512)])
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
@@ -142,7 +142,7 @@ Deno.test("UnTarStream() with too small size", async () => {
   );
 });
 
-Deno.test("UnTarStream() with invalid checksum", async () => {
+Deno.test("UntarStream() with invalid checksum", async () => {
   const tarBytes = concat(
     await Array.fromAsync(
       ReadableStream.from<TarStreamInput>([
@@ -158,7 +158,7 @@ Deno.test("UnTarStream() with invalid checksum", async () => {
   tarBytes[148] = 97;
 
   const readable = ReadableStream.from([tarBytes])
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),

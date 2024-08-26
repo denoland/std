@@ -167,14 +167,14 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  *
  * @example Usage
  * ```ts no-eval
- * import { UnTarStream } from "@std/archive/untar-stream";
+ * import { UntarStream } from "@std/archive/untar-stream";
  *
  * let fileWriter: WritableStreamDefaultWriter | undefined;
  * for await (
  *   const entry of (await Deno.open('./out.tar.gz'))
  *     .readable
  *     .pipeThrough(new DecompressionStream('gzip'))
- *     .pipeThrough(new UnTarStream())
+ *     .pipeThrough(new UntarStream())
  * ) {
  *   if (entry.type === "header") {
  *     fileWriter?.close();
@@ -183,7 +183,7 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  * }
  * ```
  */
-export class UnTarStream
+export class UntarStream
   implements TransformStream<Uint8Array, TarStreamChunk> {
   #readable: ReadableStream<TarStreamChunk>;
   #writable: WritableStream<Uint8Array>;
@@ -300,14 +300,14 @@ export class UnTarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UnTarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/archive/untar-stream";
    *
    * let fileWriter: WritableStreamDefaultWriter | undefined;
    * for await (
    *   const entry of (await Deno.open('./out.tar.gz'))
    *     .readable
    *     .pipeThrough(new DecompressionStream('gzip'))
-   *     .pipeThrough(new UnTarStream())
+   *     .pipeThrough(new UntarStream())
    * ) {
    *   if (entry.type === "header") {
    *     fileWriter?.close();
@@ -327,14 +327,14 @@ export class UnTarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UnTarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/archive/untar-stream";
    *
    * let fileWriter: WritableStreamDefaultWriter | undefined;
    * for await (
    *   const entry of (await Deno.open('./out.tar.gz'))
    *     .readable
    *     .pipeThrough(new DecompressionStream('gzip'))
-   *     .pipeThrough(new UnTarStream())
+   *     .pipeThrough(new UntarStream())
    * ) {
    *   if (entry.type === "header") {
    *     fileWriter?.close();

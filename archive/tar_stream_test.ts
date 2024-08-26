@@ -5,7 +5,7 @@ import {
   validTarStreamOptions,
 } from "./tar_stream.ts";
 import { assert, assertEquals, assertRejects } from "../assert/mod.ts";
-import { UnTarStream } from "./untar_stream.ts";
+import { UntarStream } from "./untar_stream.ts";
 import { concat } from "../bytes/mod.ts";
 
 Deno.test("TarStream() with default stream", async () => {
@@ -175,7 +175,7 @@ Deno.test("parsePathname()", async () => {
     },
   ])
     .pipeThrough(new TarStream())
-    .pipeThrough(new UnTarStream());
+    .pipeThrough(new UntarStream());
 
   const output = [
     "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
