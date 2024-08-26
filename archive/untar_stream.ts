@@ -50,15 +50,15 @@ export interface PosixUstarFormat {
   /**
    * The mode of the entry.
    */
-  mode: string;
+  mode: number;
   /**
    * The uid of the entry.
    */
-  uid: string;
+  uid: number;
   /**
    * The gid of the entry.
    */
-  gid: string;
+  gid: number;
   /**
    * The size of the entry.
    */
