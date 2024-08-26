@@ -20,7 +20,29 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param path The path to get the extension from.
  * @returns The extension of the `path`.
  */
-export function extname(path: string): string {
+export function extname(path: string): string;
+/**
+ * Return the extension of the `path` with leading period.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { extname } from "@std/path/windows/extname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const ext = extname(new URL("file:///C:/foo/bar/baz.ext"));
+ * assertEquals(ext, ".ext");
+ * ```
+ *
+ * @param path The path to get the extension from.
+ * @returns The extension of the `path`.
+ */
+export function extname(path: URL): string;
+export function extname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = path.pathname;
+  }
   assertPath(path);
 
   let start = 0;

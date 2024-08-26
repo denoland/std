@@ -68,6 +68,15 @@ Deno.test("posix.extname()", function () {
   assertEquals(posix.extname("file\\\\"), "");
   assertEquals(posix.extname("file.\\"), ".\\");
   assertEquals(posix.extname("file.\\\\"), ".\\\\");
+
+  assertEquals(
+    posix.extname(new URL("https://deno.land/std/path/mod.ts")),
+    ".ts",
+  );
+  assertEquals(
+    posix.extname(new URL("https://deno.land/std/path")),
+    "",
+  );
 });
 
 Deno.test("windows.extname()", function () {
@@ -87,4 +96,13 @@ Deno.test("windows.extname()", function () {
   assertEquals(windows.extname("file\\\\"), "");
   assertEquals(windows.extname("file.\\"), ".");
   assertEquals(windows.extname("file.\\\\"), ".");
+
+  assertEquals(
+    windows.extname(new URL("file:///C:/home/user/Documents/image.png")),
+    ".png",
+  );
+  assertEquals(
+    windows.extname(new URL("file:///C:/home/user/Documents")),
+    "",
+  );
 });
