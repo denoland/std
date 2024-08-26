@@ -698,3 +698,17 @@ Deno.test("stringify() returns emtpy array on invalid entries", () => {
     "[]\n",
   );
 });
+
+Deno.test({
+  name:
+    "stringify() handles undefined array entry with skipInvalid and flowLevel option",
+  fn() {
+    assertEquals(
+      stringify({ foo: [undefined] }, {
+        flowLevel: 1,
+        skipInvalid: true,
+      }),
+      `foo: []\n`,
+    );
+  },
+});
