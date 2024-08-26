@@ -70,11 +70,11 @@ Deno.test("posix.extname()", function () {
   assertEquals(posix.extname("file.\\\\"), ".\\\\");
 
   assertEquals(
-    posix.extname(new URL("https://deno.land/std/path/mod.ts")),
-    ".ts",
+    posix.extname(new URL("file:///home/user/Documents/image.png")),
+    ".png",
   );
   assertEquals(
-    posix.extname(new URL("https://deno.land/std/path")),
+    posix.extname(new URL("file:///home/user/Documents")),
     "",
   );
 });
