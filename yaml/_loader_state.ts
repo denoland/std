@@ -35,7 +35,7 @@ import {
   SPACE,
   VERTICAL_LINE,
 } from "./_chars.ts";
-import { Mark } from "./_mark.ts";
+
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
 import { getObjectTypeString, isObject } from "./_utils.ts";
@@ -134,6 +134,53 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
+const INDENT = 4;
+const MAX_LENGTH = 75;
+const DELIMITERS = "\x00\r\n\x85\u2028\u2029";
+
+function getSnippet(buffer: string, position: number): string | null {
+  if (!buffer) return null;
+  let start = position;
+  let end = position;
+  let head = "";
+  let tail = "";
+
+  while (start > 0 && !DELIMITERS.includes(buffer.charAt(start - 1))) {
+    start--;
+    if (position - start > MAX_LENGTH / 2 - 1) {
+      head = " ... ";
+      start += 5;
+      break;
+    }
+  }
+
+  while (end < buffer.length && !DELIMITERS.includes(buffer.charAt(end))) {
+    end++;
+    if (end - position > MAX_LENGTH / 2 - 1) {
+      tail = " ... ";
+      end -= 5;
+      break;
+    }
+  }
+
+  const snippet = buffer.slice(start, end);
+  const indent = " ".repeat(INDENT);
+  const caretIndent = " ".repeat(INDENT + position - start + head.length);
+  return `${indent + head + snippet + tail}\n${caretIndent}^`;
+}
+
+function markToString(
+  buffer: string,
+  position: number,
+  line: number,
+  column: number,
+): string {
+  let where = `at line ${line + 1}, column ${column + 1}`;
+  const snippet = getSnippet(buffer, position);
+  if (snippet) where += `:\n${snippet}`;
+  return where;
+}
+
 export class LoaderState {
   input: string;
   length: number;
@@ -189,8 +236,9 @@ export class LoaderState {
     this.position += 1;
     return this.peek();
   }
+
   #createError(message: string): SyntaxError {
-    const mark = new Mark(
+    const mark = markToString(
       this.input,
       this.position,
       this.line,
@@ -522,6 +570,186 @@ export class LoaderState {
 
     return lineBreaks;
   }
+  testDocumentSeparator(): boolean {
+    let ch = this.peek();
+
+    // Condition this.position === this.lineStart is tested
+    // in parent on each call, for efficiency. No needs to test here again.
+    if (
+      (ch === MINUS || ch === DOT) &&
+      ch === this.peek(1) &&
+      ch === this.peek(2)
+    ) {
+      ch = this.peek(3);
+
+      if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+  writeFoldedLines(count: number) {
+    if (count === 1) {
+      this.result += " ";
+    } else if (count > 1) {
+      this.result += "\n".repeat(count - 1);
+    }
+  }
+  readPlainScalar(nodeIndent: number, withinFlowCollection: boolean): boolean {
+    const kind = this.kind;
+    const result = this.result;
+    let ch = this.peek();
+
+    if (
+      isWhiteSpaceOrEOL(ch) ||
+      isFlowIndicator(ch) ||
+      ch === SHARP ||
+      ch === AMPERSAND ||
+      ch === ASTERISK ||
+      ch === EXCLAMATION ||
+      ch === VERTICAL_LINE ||
+      ch === GREATER_THAN ||
+      ch === SINGLE_QUOTE ||
+      ch === DOUBLE_QUOTE ||
+      ch === PERCENT ||
+      ch === COMMERCIAL_AT ||
+      ch === GRAVE_ACCENT
+    ) {
+      return false;
+    }
+
+    let following: number;
+    if (ch === QUESTION || ch === MINUS) {
+      following = this.peek(1);
+
+      if (
+        isWhiteSpaceOrEOL(following) ||
+        (withinFlowCollection && isFlowIndicator(following))
+      ) {
+        return false;
+      }
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    let captureEnd = this.position;
+    let captureStart = this.position;
+    let hasPendingContent = false;
+    let line = 0;
+    while (ch !== 0) {
+      if (ch === COLON) {
+        following = this.peek(1);
+
+        if (
+          isWhiteSpaceOrEOL(following) ||
+          (withinFlowCollection && isFlowIndicator(following))
+        ) {
+          break;
+        }
+      } else if (ch === SHARP) {
+        const preceding = this.peek(-1);
+
+        if (isWhiteSpaceOrEOL(preceding)) {
+          break;
+        }
+      } else if (
+        (this.position === this.lineStart && this.testDocumentSeparator()) ||
+        (withinFlowCollection && isFlowIndicator(ch))
+      ) {
+        break;
+      } else if (isEOL(ch)) {
+        line = this.line;
+        const lineStart = this.lineStart;
+        const lineIndent = this.lineIndent;
+        this.skipSeparationSpace(false, -1);
+
+        if (this.lineIndent >= nodeIndent) {
+          hasPendingContent = true;
+          ch = this.peek();
+          continue;
+        } else {
+          this.position = captureEnd;
+          this.line = line;
+          this.lineStart = lineStart;
+          this.lineIndent = lineIndent;
+          break;
+        }
+      }
+
+      if (hasPendingContent) {
+        this.captureSegment(captureStart, captureEnd, false);
+        this.writeFoldedLines(this.line - line);
+        captureStart = captureEnd = this.position;
+        hasPendingContent = false;
+      }
+
+      if (!isWhiteSpace(ch)) {
+        captureEnd = this.position + 1;
+      }
+
+      ch = this.next();
+    }
+
+    this.captureSegment(captureStart, captureEnd, false);
+
+    if (this.result) {
+      return true;
+    }
+
+    this.kind = kind;
+    this.result = result;
+    return false;
+  }
+  readSingleQuotedScalar(nodeIndent: number): boolean {
+    let ch;
+    let captureStart;
+    let captureEnd;
+
+    ch = this.peek();
+
+    if (ch !== SINGLE_QUOTE) {
+      return false;
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    this.position++;
+    captureStart = captureEnd = this.position;
+
+    while ((ch = this.peek()) !== 0) {
+      if (ch === SINGLE_QUOTE) {
+        this.captureSegment(captureStart, this.position, true);
+        ch = this.next();
+
+        if (ch === SINGLE_QUOTE) {
+          captureStart = this.position;
+          this.position++;
+          captureEnd = this.position;
+        } else {
+          return true;
+        }
+      } else if (isEOL(ch)) {
+        this.captureSegment(captureStart, captureEnd, true);
+        this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
+        captureStart = captureEnd = this.position;
+      } else if (
+        this.position === this.lineStart &&
+        this.testDocumentSeparator()
+      ) {
+        return this.throwError(
+          "unexpected end of the document within a single quoted scalar",
+        );
+      } else {
+        this.position++;
+        captureEnd = this.position;
+      }
+    }
+
+    return this.throwError(
+      "unexpected end of the stream within a single quoted scalar",
+    );
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -630,7 +858,7 @@ export class LoaderState {
       this.dispatchWarning("non-ASCII line breaks are interpreted as content");
     }
 
-    if (this.position === this.lineStart && testDocumentSeparator(this)) {
+    if (this.position === this.lineStart && this.testDocumentSeparator()) {
       if (this.peek() === DOT) {
         this.position += 3;
         this.skipSeparationSpace(true, -1);
@@ -649,197 +877,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function testDocumentSeparator(state: LoaderState): boolean {
-  let ch = state.peek();
-
-  // Condition state.position === state.lineStart is tested
-  // in parent on each call, for efficiency. No needs to test here again.
-  if (
-    (ch === MINUS || ch === DOT) &&
-    ch === state.peek(1) &&
-    ch === state.peek(2)
-  ) {
-    ch = state.peek(3);
-
-    if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function writeFoldedLines(state: LoaderState, count: number) {
-  if (count === 1) {
-    state.result += " ";
-  } else if (count > 1) {
-    state.result += "\n".repeat(count - 1);
-  }
-}
-
-function readPlainScalar(
-  state: LoaderState,
-  nodeIndent: number,
-  withinFlowCollection: boolean,
-): boolean {
-  const kind = state.kind;
-  const result = state.result;
-  let ch = state.peek();
-
-  if (
-    isWhiteSpaceOrEOL(ch) ||
-    isFlowIndicator(ch) ||
-    ch === SHARP ||
-    ch === AMPERSAND ||
-    ch === ASTERISK ||
-    ch === EXCLAMATION ||
-    ch === VERTICAL_LINE ||
-    ch === GREATER_THAN ||
-    ch === SINGLE_QUOTE ||
-    ch === DOUBLE_QUOTE ||
-    ch === PERCENT ||
-    ch === COMMERCIAL_AT ||
-    ch === GRAVE_ACCENT
-  ) {
-    return false;
-  }
-
-  let following: number;
-  if (ch === QUESTION || ch === MINUS) {
-    following = state.peek(1);
-
-    if (
-      isWhiteSpaceOrEOL(following) ||
-      (withinFlowCollection && isFlowIndicator(following))
-    ) {
-      return false;
-    }
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  let captureEnd = state.position;
-  let captureStart = state.position;
-  let hasPendingContent = false;
-  let line = 0;
-  while (ch !== 0) {
-    if (ch === COLON) {
-      following = state.peek(1);
-
-      if (
-        isWhiteSpaceOrEOL(following) ||
-        (withinFlowCollection && isFlowIndicator(following))
-      ) {
-        break;
-      }
-    } else if (ch === SHARP) {
-      const preceding = state.peek(-1);
-
-      if (isWhiteSpaceOrEOL(preceding)) {
-        break;
-      }
-    } else if (
-      (state.position === state.lineStart && testDocumentSeparator(state)) ||
-      (withinFlowCollection && isFlowIndicator(ch))
-    ) {
-      break;
-    } else if (isEOL(ch)) {
-      line = state.line;
-      const lineStart = state.lineStart;
-      const lineIndent = state.lineIndent;
-      state.skipSeparationSpace(false, -1);
-
-      if (state.lineIndent >= nodeIndent) {
-        hasPendingContent = true;
-        ch = state.peek();
-        continue;
-      } else {
-        state.position = captureEnd;
-        state.line = line;
-        state.lineStart = lineStart;
-        state.lineIndent = lineIndent;
-        break;
-      }
-    }
-
-    if (hasPendingContent) {
-      state.captureSegment(captureStart, captureEnd, false);
-      writeFoldedLines(state, state.line - line);
-      captureStart = captureEnd = state.position;
-      hasPendingContent = false;
-    }
-
-    if (!isWhiteSpace(ch)) {
-      captureEnd = state.position + 1;
-    }
-
-    ch = state.next();
-  }
-
-  state.captureSegment(captureStart, captureEnd, false);
-
-  if (state.result) {
-    return true;
-  }
-
-  state.kind = kind;
-  state.result = result;
-  return false;
-}
-
-function readSingleQuotedScalar(
-  state: LoaderState,
-  nodeIndent: number,
-): boolean {
-  let ch;
-  let captureStart;
-  let captureEnd;
-
-  ch = state.peek();
-
-  if (ch !== SINGLE_QUOTE) {
-    return false;
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  state.position++;
-  captureStart = captureEnd = state.position;
-
-  while ((ch = state.peek()) !== 0) {
-    if (ch === SINGLE_QUOTE) {
-      state.captureSegment(captureStart, state.position, true);
-      ch = state.next();
-
-      if (ch === SINGLE_QUOTE) {
-        captureStart = state.position;
-        state.position++;
-        captureEnd = state.position;
-      } else {
-        return true;
-      }
-    } else if (isEOL(ch)) {
-      state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
-      captureStart = captureEnd = state.position;
-    } else if (
-      state.position === state.lineStart &&
-      testDocumentSeparator(state)
-    ) {
-      return state.throwError(
-        "Unexpected end of the document within a single quoted scalar",
-      );
-    } else {
-      state.position++;
-      captureEnd = state.position;
-    }
-  }
-
-  return state.throwError(
-    "Unexpected end of the stream within a single quoted scalar",
-  );
 }
 
 function readDoubleQuotedScalar(
@@ -901,11 +938,11 @@ function readDoubleQuotedScalar(
       captureStart = captureEnd = state.position;
     } else if (isEOL(ch)) {
       state.captureSegment(captureStart, captureEnd, true);
-      writeFoldedLines(state, state.skipSeparationSpace(false, nodeIndent));
+      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
       captureStart = captureEnd = state.position;
     } else if (
       state.position === state.lineStart &&
-      testDocumentSeparator(state)
+      state.testDocumentSeparator()
     ) {
       return state.throwError(
         "Unexpected end of the document within a double quoted scalar",
@@ -1618,7 +1655,7 @@ function composeNode(
       } else {
         if (
           (allowBlockScalars && readBlockScalar(state, flowIndent)) ||
-          readSingleQuotedScalar(state, flowIndent) ||
+          state.readSingleQuotedScalar(flowIndent) ||
           readDoubleQuotedScalar(state, flowIndent)
         ) {
           hasContent = true;
@@ -1631,7 +1668,7 @@ function composeNode(
             );
           }
         } else if (
-          readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)
+          state.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
         ) {
           hasContent = true;
 

@@ -335,7 +335,7 @@ Deno.test("exists() returns false when both isDirectory and isFile sets true", a
     assert(error instanceof TypeError);
     assertStringIncludes(
       error.message,
-      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together",
     );
   } finally {
     await Deno.remove(tempDirPath, { recursive: true });
@@ -356,7 +356,7 @@ Deno.test("existsSync() returns false when both isDirectory and isFile sets true
     assert(error instanceof TypeError);
     assertStringIncludes(
       error.message,
-      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+      "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together",
     );
   } finally {
     await Deno.remove(tempDirPath, { recursive: true });

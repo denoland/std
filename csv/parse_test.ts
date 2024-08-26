@@ -294,7 +294,7 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 0 }),
           SyntaxError,
-          "record on line 2: expected 3 fields but got 2",
+          "Syntax error on line 2: expected 3 fields but got 2",
         );
       },
     });
@@ -305,7 +305,7 @@ Deno.test({
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          "record on line 1: expected 2 fields but got 3",
+          "Syntax error on line 1: expected 2 fields but got 3",
         );
       },
     });
@@ -434,7 +434,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          'record on line 1; parse error on line 2, column 2: extraneous or missing " in quoted-field',
+          'Syntax error on line 1; parse error on line 2, column 2: extraneous or missing " in quoted-field',
         );
       },
     });
@@ -448,7 +448,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { fieldsPerRecord: 2 }),
           SyntaxError,
-          'record on line 2; parse error on line 4, column 1: extraneous or missing " in quoted-field',
+          'Syntax error on line 2; parse error on line 4, column 1: extraneous or missing " in quoted-field',
         );
       },
     });
@@ -463,7 +463,7 @@ c"d,e`;
         assertThrows(
           () => parse(input),
           SyntaxError,
-          'record on line 4; parse error on line 4, column 1: extraneous or missing " in quoted-field',
+          'Syntax error on line 4; parse error on line 4, column 1: extraneous or missing " in quoted-field',
         );
       },
     });
@@ -703,7 +703,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "\n" }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -714,7 +714,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "\r" }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -725,7 +725,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: '"' }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -736,7 +736,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { comment: "\n" }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -747,7 +747,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { comment: "\r" }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -758,7 +758,7 @@ c"d,e`;
         assertThrows(
           () => parse(input, { separator: "X", comment: "X" }),
           Error,
-          "Invalid Delimiter",
+          "Cannot parse input: invalid delimiter",
         );
       },
     });
@@ -841,7 +841,7 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "record on line 2 has 2 fields, but the header has 3 fields",
+          "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
         );
       },
     });
@@ -856,7 +856,7 @@ c"d,e`;
               columns: ["foo", "bar", "baz"],
             }),
           Error,
-          "record on line 2 has 4 fields, but the header has 3 fields",
+          "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
         );
       },
     });
@@ -920,7 +920,7 @@ c"d,e`;
         assertThrows(
           () => parse("", { skipFirstRow: true }),
           Error,
-          "Headers must be defined",
+          "Cannot parse input: headers must be defined",
         );
       },
     });

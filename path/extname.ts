@@ -22,6 +22,29 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * @param path Path with extension.
  * @returns The file extension. E.g. returns `.ts` for `file.ts`.
  */
-export function extname(path: string): string {
-  return isWindows ? windowsExtname(path) : posixExtname(path);
+export function extname(path: string): string;
+/**
+ * Return the extension of the path with leading period (".").
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { extname } from "@std/path/extname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * if (Deno.build.os === "windows") {
+ *   assertEquals(extname(new URL("file:///C:/home/user/Documents/image.png")), ".png");
+ * } else {
+ *   assertEquals(extname(new URL("file:///home/user/Documents/image.png")), ".png");
+ * }
+ * ```
+ *
+ * @param path Path with extension.
+ * @returns The file extension. E.g. returns `.ts` for `file.ts`.
+ */
+export function extname(path: URL): string;
+export function extname(path: string | URL): string {
+  // deno-lint-ignore no-explicit-any
+  return isWindows ? windowsExtname(path as any) : posixExtname(path as any);
 }

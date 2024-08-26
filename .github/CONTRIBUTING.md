@@ -257,3 +257,9 @@ Bad: Cannot compute the square root for x: value must not be negative
 Good: Cannot compute the square root for x: current value is ${x}
 Better: Cannot compute the square root for x as x must be >= 0: current value is ${x}
 ```
+
+#### Exceptions
+
+The assertion package uses periods to end sentences in error messages. There are
+a number of downstream packages that expect this behavior and changing it would
+be a breaking change.
