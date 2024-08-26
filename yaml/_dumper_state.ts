@@ -811,7 +811,7 @@ export class DumperState {
               value = `&ref_${duplicateIndex} ${value}`;
             }
           }
-        } else if (Array.isArray(value)) {
+        } else {
           const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
           if (block && value.length !== 0) {
             value = this.stringifyBlockSequence(value, {
