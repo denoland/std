@@ -1,3 +1,250 @@
+### 2024.08.26
+
+#### @std/archive 0.225.1 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(archive): complete documentation (#5636)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/assert 1.0.3 (patch)
+
+- feat(assert/unstable): add `assertNever` (#5690)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(assert): add additional example in assertObjectMatch docs (#5703)
+
+#### @std/async 1.0.4 (patch)
+
+- refactor(async): align the error messages to the style guide (#5758)
+- chore(async): add browser-compat declarations (#5730)
+
+#### @std/cache 0.1.1 (patch)
+
+- feat(cache/unstable): `TtlCache` (#5662)
+- docs(cache): tweak `LruCache` docs (#5790)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/cli 1.0.4 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(cli): align additional error messages (#5768)
+- test(cli): reduce flakiness of Spinner test (#5821)
+
+#### @std/crypto 1.0.3 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+- refactor(crypto): remove old unused `_fnv` folder (#5716)
+
+#### @std/csv 1.0.2 (patch)
+
+- fix(csv): accept readonly cell/header data (#5734) (#5735)
+- refactor(csv): align additional error messages (#5796)
+
+#### @std/data-structures 1.0.2 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/datetime 0.225.1 (patch)
+
+- docs(datetime): add constants to module docs (#5732)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/dotenv 0.225.1 (patch)
+
+- fix(dotenv): show warning when there is invalid key in `.env` file (#5745)
+
+#### @std/encoding 1.0.3 (patch)
+
+- feat(encoding/unstable): adds streaming versions for hex, base32, base32hex,
+  base64 and base64url (#4915)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(encoding): align additional error messages (#5767)
+
+#### @std/expect 1.0.1 (patch)
+
+- docs(expect): correct `expect()` docs (#5788)
+- refactor(expect): align additional error messages (#5811)
+
+#### @std/fmt 1.0.1 (patch)
+
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/front-matter 1.0.3 (patch)
+
+- feat(front-matter/unstable): add pass-through `ParseOptions` argument for YAML
+  parser (#5748)
+- fix(front-matter): remove os specific newline (#5752)
+- fix(front-matter): allow whitespaces after the header (#5685)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+- test(front-matter): remove duplicate tests (#5808)
+
+#### @std/fs 1.0.2 (patch)
+
+- refactor(fs): align additional error messages (#5802)
+
+#### @std/html 1.0.2 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+
+#### @std/http 1.0.4 (patch)
+
+- fix(http/unstable): match request method (#5772)
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(http): align additional error messages (#5791)
+
+#### @std/ini 1.0.0-rc.4 (prerelease)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+
+#### @std/internal 1.0.2 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- refactor(internal): align additional error messages (#5766)
+
+#### @std/io 0.224.6 (patch)
+
+- refactor(io): create a style guide for error messages, align error messages to
+  the style guide (#5671)
+
+#### @std/jsonc 1.0.1 (patch)
+
+- refactor(jsonc): align additional error messages (#5799)
+
+#### @std/log 0.224.6 (patch)
+
+- refactor(log): align additional error messages (#5801)
+- refactor(log): make `BaseHandler` abstract (#5737)
+- refactor(log): replace `protected` properties with `Symbol`s (#5724)
+
+#### @std/media-types 1.0.3 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- refactor(media-types): align additional error messages (#5800)
+
+#### @std/msgpack 1.0.1 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/net 1.0.1 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+
+#### @std/path 1.0.3 (patch)
+
+- feat(path/unstable): support `URL` in `extname()` (#5818)
+- feat(path/unstable): support `URL` input in `dirname()` (#5747)
+- refactor(path,streams): align additional error messages (#5718)
+
+#### @std/semver 1.0.2 (patch)
+
+- refactor(semver): align additional error messages (#5785)
+- refactor(semver): unify param names (#5700)
+
+#### @std/streams 1.0.3 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(path,streams): align additional error messages (#5718)
+
+#### @std/testing 1.0.1 (patch)
+
+- fix(testing): fix `IsExact` edge cases (#5676)
+- refactor(testing): align additional error messages (#5810)
+
+#### @std/text 1.0.4 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(text): fix `slugify()` summary (#5722)
+- test(text): move case tests to separate files (#5807)
+
+#### @std/toml 1.0.1 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/uuid 1.0.2 (patch)
+
+- refactor(uuid): align additional error messages (#5803)
+- test(uuid): assert error message of `version()` (#5819)
+
+#### @std/webgpu 0.224.6 (patch)
+
+- refactor(webgpu): align additional error messages (#5754)
+
+#### @std/yaml 1.0.4 (patch)
+
+- refactor(yaml): use `isObject()` (#5822)
+- refactor(yaml): cleanup `stringifyFlowMapping()` (#5743)
+- refactor(yaml): cleanup `stringifyBlockSequence()` (#5742)
+- refactor(yaml): cleanup `detectType()` (#5759)
+- refactor(yaml): inline `readPlainScalar()` (#5813)
+- refactor(yaml): move `getDuplicateReferences()` into `stringify()` (#5804)
+- refactor(yaml): inline `writeFoldedLines()` (#5812)
+- refactor(yaml): remove `Mark` class (#5805)
+- refactor(yaml): inline `testDocumentSeparator()` (#5793)
+- refactor(yaml): remove `any` types (#5782)
+- refactor(yaml): remove `schema` property from `DumperState` (#5798)
+- refactor(yaml): remove type mod file (#5795)
+- refactor(yaml): inline `skipSeparationSpace()` (#5792)
+- refactor(yaml): inline `readLineBreak()` (#5783)
+- refactor(yaml): inline `storeMappingPair()` (#5779)
+- refactor(yaml): remove `storeMappingPair()` result `null` type (#5781)
+- refactor(yaml): inline `mergeMappings()` (#5777)
+- refactor(yaml): use `Set` in `inspectNode()` (#5778)
+- refactor(yaml): inline `readBlockSequence()` (#5776)
+- refactor(yaml): inline `captureSegment()` (#5775)
+- refactor(yaml): inline `tagDirectiveHandler()` (#5771)
+- refactor(yaml): cleanup `stringifyFlowSequence()` (#5744)
+- refactor(yaml): change `styleMap` type to `Map` (#5760)
+- refactor(yaml): inline `yamlDirectiveHandler()` (#5763)
+- refactor(yaml): remove `ResultType` (#5765)
+- refactor(yaml): remove `ArrayObject` (#5761)
+- refactor(yaml): add `BOM` constant (#5764)
+- refactor(yaml): move options to options object (#5740)
+- refactor(yaml): replace `chooseScalarType()` callback with `implicitTypes`
+  argument (#5750)
+- refactor(yaml): remove variable underscore (#5741)
+- refactor(yaml): rename `DumperState` methods (#5738)
+- refactor(yaml): remove `dump` property (#5683)
+- refactor(yaml): remove `tag` property (#5689)
+- refactor(yaml): cleanup `Schema` (#5715)
+- refactor(yaml): use `Map`s for `TypeMap` (#5694)
+- refactor(yaml): add `stringify()` method to `DumperState` (#5707)
+- refactor(yaml): boolean constants (#5699)
+- refactor(yaml): use `Set` for `overridableKeys` (#5697)
+- refactor(yaml): use `Map` for `tagMap` and `anchorMap` (#5696)
+- refactor(yaml): redefine `include` as optional `Schema` (#5693)
+- refactor(yaml): remove `schema` property (#5692)
+- refactor(yaml): make `version` property required (#5691)
+- test(yaml): add `undefined` array entry test with `skipInvalid` option (#5814)
+- test(yaml): add `condenseFlow()` test (#5780)
+- test(yaml): add test for deprecated boolean syntax (#5713)
+- test(yaml): add edge case test for `stringify` (#5704)
+
 ### 2024.08.16
 
 #### @std/cache 0.1.0 (minor)
