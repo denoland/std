@@ -1,30 +1,78 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { concat } from "../bytes/mod.ts";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
-import { UntarStream } from "./untar_stream.ts";
+import {
+  type OldStyleFormat,
+  type PosixUstarFormat,
+  UntarStream,
+} from "./untar_stream.ts";
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
+  const seconds = Math.floor(Date.now() / 1000);
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
       pathname: "./potato",
+      options: {
+        mode: 111111,
+        uid: 12,
+        gid: 21,
+        mtime: seconds,
+        uname: "potato",
+        gname: "cake",
+        devmajor: "ice",
+        devminor: "scream",
+      },
     },
     {
       pathname: "./text.txt",
       size: text.length,
-      readable: ReadableStream.from([text]),
+      readable: ReadableStream.from([text.slice()]),
+      options: { mtime: seconds },
     },
   ])
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  const pathnames: string[] = [];
+  const headers: (OldStyleFormat | PosixUstarFormat)[] = [];
   for await (const item of readable) {
-    if (item.type === "header") pathnames.push(item.pathname);
+    if (item.type === "header") headers.push(item.header);
   }
-  assertEquals(pathnames, ["./potato", "./text.txt"]);
+  assertEquals(headers, [{
+    name: "./potato",
+    mode: 111111,
+    uid: 12,
+    gid: 21,
+    mtime: seconds,
+    uname: "potato",
+    gname: "cake",
+    devmajor: "ice",
+    devminor: "scream",
+    size: 0,
+    typeflag: "5",
+    linkname: "",
+    magic: "ustar\0",
+    version: "00",
+    prefix: "",
+  }, {
+    name: "./text.txt",
+    mode: 644,
+    uid: 0,
+    gid: 0,
+    mtime: seconds,
+    uname: "",
+    gname: "",
+    devmajor: "",
+    devminor: "",
+    size: text.length,
+    typeflag: "0",
+    linkname: "",
+    magic: "ustar\0",
+    version: "00",
+    prefix: "",
+  }]);
 });
 
 Deno.test("expandTarArchiveCheckingBodies", async () => {

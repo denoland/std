@@ -223,14 +223,12 @@ Deno.test("validTarStreamOptions()", () => {
   assertEquals(validTarStreamOptions({ gname: "a".repeat(100) }), false);
 
   assertEquals(validTarStreamOptions({ devmajor: "" }), true);
-  assertEquals(validTarStreamOptions({ devmajor: "000" }), true);
-  assertEquals(validTarStreamOptions({ devmajor: "008" }), false);
-  assertEquals(validTarStreamOptions({ devmajor: "000000000" }), false);
+  assertEquals(validTarStreamOptions({ devmajor: "1234" }), true);
+  assertEquals(validTarStreamOptions({ devmajor: "123456789" }), false);
 
   assertEquals(validTarStreamOptions({ devminor: "" }), true);
-  assertEquals(validTarStreamOptions({ devminor: "000" }), true);
-  assertEquals(validTarStreamOptions({ devminor: "008" }), false);
-  assertEquals(validTarStreamOptions({ devminor: "000000000" }), false);
+  assertEquals(validTarStreamOptions({ devminor: "1234" }), true);
+  assertEquals(validTarStreamOptions({ devminor: "123456789" }), false);
 });
 
 Deno.test("TarStream() with invalid options", async () => {

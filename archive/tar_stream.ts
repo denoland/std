@@ -205,8 +205,8 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
               "\0".repeat(100) + // linkname
               "ustar\0" + // magic
               "00" + // version
-              options.uname.padStart(32, "\0") + // uname
-              options.gname.padStart(32, "\0") + // gname
+              options.uname.padEnd(32, "\0") + // uname
+              options.gname.padEnd(32, "\0") + // gname
               options.devmajor.padStart(8, "\0") + // devmajor
               options.devminor.padStart(8, "\0"), // devminor
           ),
@@ -447,20 +447,20 @@ export function validTarStreamOptions(
   if (
     options.uname &&
     // deno-lint-ignore no-control-regex
-    (options.uname.length > 32 || !/^[\x00-\x7F]*$/.test(options.uname))
+    (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
   ) return false;
   if (
     options.gname &&
     // deno-lint-ignore no-control-regex
-    (options.gname.length > 32 || !/^[\x00-\x7F]*$/.test(options.gname))
+    (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
   ) return false;
   if (
     options.devmajor &&
-    (options.devmajor.length > 8 || !/^[0-7]*$/.test(options.devmajor))
+    (options.devmajor.length > 8)
   ) return false;
   if (
     options.devminor &&
-    (options.devminor.length > 8 || !/^[0-7]*$/.test(options.devminor))
+    (options.devminor.length > 8)
   ) return false;
   return true;
 }
