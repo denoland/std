@@ -1697,7 +1697,7 @@ function composeNode(
         }
       }
     } else {
-      return state.throwError(`Unknown tag !<${state.tag}>`);
+      return state.throwError(`Cannot resolve unknown tag !<${state.tag}>`);
     }
   }
 

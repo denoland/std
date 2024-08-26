@@ -874,7 +874,7 @@ export class DumperState {
       } else {
         if (this.skipInvalid) return null;
         throw new TypeError(
-          `Cannot dump object of type: ${getObjectTypeString(value)}`,
+          `Cannot stringify object of type: ${getObjectTypeString(value)}`,
         );
       }
 
