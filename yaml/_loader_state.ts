@@ -685,6 +685,55 @@ export class LoaderState {
     this.result = result;
     return false;
   }
+  readSingleQuotedScalar(nodeIndent: number): boolean {
+    let ch;
+    let captureStart;
+    let captureEnd;
+
+    ch = this.peek();
+
+    if (ch !== SINGLE_QUOTE) {
+      return false;
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    this.position++;
+    captureStart = captureEnd = this.position;
+
+    while ((ch = this.peek()) !== 0) {
+      if (ch === SINGLE_QUOTE) {
+        this.captureSegment(captureStart, this.position, true);
+        ch = this.next();
+
+        if (ch === SINGLE_QUOTE) {
+          captureStart = this.position;
+          this.position++;
+          captureEnd = this.position;
+        } else {
+          return true;
+        }
+      } else if (isEOL(ch)) {
+        this.captureSegment(captureStart, captureEnd, true);
+        this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
+        captureStart = captureEnd = this.position;
+      } else if (
+        this.position === this.lineStart &&
+        this.testDocumentSeparator()
+      ) {
+        return this.throwError(
+          "unexpected end of the document within a single quoted scalar",
+        );
+      } else {
+        this.position++;
+        captureEnd = this.position;
+      }
+    }
+
+    return this.throwError(
+      "unexpected end of the stream within a single quoted scalar",
+    );
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -810,59 +859,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readSingleQuotedScalar(
-  state: LoaderState,
-  nodeIndent: number,
-): boolean {
-  let ch;
-  let captureStart;
-  let captureEnd;
-
-  ch = state.peek();
-
-  if (ch !== SINGLE_QUOTE) {
-    return false;
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  state.position++;
-  captureStart = captureEnd = state.position;
-
-  while ((ch = state.peek()) !== 0) {
-    if (ch === SINGLE_QUOTE) {
-      state.captureSegment(captureStart, state.position, true);
-      ch = state.next();
-
-      if (ch === SINGLE_QUOTE) {
-        captureStart = state.position;
-        state.position++;
-        captureEnd = state.position;
-      } else {
-        return true;
-      }
-    } else if (isEOL(ch)) {
-      state.captureSegment(captureStart, captureEnd, true);
-      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
-      captureStart = captureEnd = state.position;
-    } else if (
-      state.position === state.lineStart &&
-      state.testDocumentSeparator()
-    ) {
-      return state.throwError(
-        "unexpected end of the document within a single quoted scalar",
-      );
-    } else {
-      state.position++;
-      captureEnd = state.position;
-    }
-  }
-
-  return state.throwError(
-    "unexpected end of the stream within a single quoted scalar",
-  );
 }
 
 function readDoubleQuotedScalar(
@@ -1623,7 +1619,7 @@ function composeNode(
       } else {
         if (
           (allowBlockScalars && readBlockScalar(state, flowIndent)) ||
-          readSingleQuotedScalar(state, flowIndent) ||
+          state.readSingleQuotedScalar(flowIndent) ||
           readDoubleQuotedScalar(state, flowIndent)
         ) {
           hasContent = true;
