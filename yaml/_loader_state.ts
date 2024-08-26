@@ -738,7 +738,7 @@ export class LoaderState {
         this.testDocumentSeparator()
       ) {
         return this.throwError(
-          "unexpected end of the document within a single quoted scalar",
+          "Unexpected end of the document within a single quoted scalar",
         );
       } else {
         this.position++;
@@ -747,7 +747,7 @@ export class LoaderState {
     }
 
     return this.throwError(
-      "unexpected end of the stream within a single quoted scalar",
+      "Unexpected end of the stream within a single quoted scalar",
     );
   }
 
