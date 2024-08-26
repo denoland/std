@@ -10,12 +10,12 @@ Deno.test("expect().resolves.toEqual()", async () => {
   assertThrows(
     () => expect(42).resolves.toEqual(42),
     AssertionError,
-    "expected value must be Promiselike",
+    "Expected value must be PromiseLike",
   );
   assertThrows(
     () => expect(null).resolves.toEqual(42),
     AssertionError,
-    "expected value must be Promiselike",
+    "Expected value must be PromiseLike",
   );
 });
 
@@ -26,12 +26,12 @@ Deno.test("expect().rejects.toEqual()", async () => {
   assertThrows(
     () => expect(42).rejects.toEqual(42),
     AssertionError,
-    "expected value must be a PromiseLike",
+    "Expected value must be a PromiseLike",
   );
   await assertRejects(
     () => expect(Promise.resolve(42)).rejects.toEqual(42),
     AssertionError,
-    "Promise did not reject. resolved to 42",
+    "Promise did not reject: resolved to 42",
   );
 });
 

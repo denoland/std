@@ -103,11 +103,11 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
         if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
-        throw new TypeError("cannot compare WeakMap instances");
+        throw new TypeError("Cannot compare WeakMap instances");
       }
       if (a instanceof WeakSet || b instanceof WeakSet) {
         if (!(a instanceof WeakSet && b instanceof WeakSet)) return false;
-        throw new TypeError("cannot compare WeakSet instances");
+        throw new TypeError("Cannot compare WeakSet instances");
       }
       if (seen.get(a) === b) {
         return true;
