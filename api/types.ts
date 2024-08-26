@@ -1,10 +1,8 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
 import { z } from 'zod'
-export type {
-  ChatCompletionAssistantMessageParam,
-  ChatCompletionMessageParam,
-} from './zod.ts'
+export type { AssistantMessage, CompletionMessage } from './zod.ts'
+import { completionMessage } from './zod.ts'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32crockford } from '@scure/base'
 import { JSONSchemaType } from './types.ajv.ts'
@@ -143,11 +141,10 @@ export const ENTRY_BRANCH = 'main'
 
 export type PartialPID = Omit<PID, 'repoId'>
 
-import { ChatCompletionMessageParamSchema } from './zod.ts'
 export const thread = z.object({
   /** If the messages were truncated, this is the offset count */
   messageOffset: z.number(),
-  messages: z.array(ChatCompletionMessageParamSchema),
+  messages: z.array(completionMessage),
   toolCommits: z.record(
     /** The tool call id */
     z.string(),
@@ -741,10 +738,10 @@ export const agent = z.object({
     model: z.enum(['gpt-3.5-turbo', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini']),
     temperature: z.number().gte(0).lte(2).optional(),
     presence_penalty: z.number().optional(),
-    tool_choice: z.enum(['auto', 'none', 'required']).describe(
+    tool_choice: z.enum(['auto', 'none', 'required']).optional().describe(
       'control model behaviour to force it to call a tool or no tool',
     ),
-    parallel_tool_calls: z.boolean().describe(
+    parallel_tool_calls: z.boolean().optional().describe(
       'Is the model permitted to call more than one function at a time.  Must be false to use strict function calling',
     ),
   }),
@@ -753,3 +750,18 @@ export const agent = z.object({
   instructions: z.string().max(256000),
 })
 export type Agent = z.infer<typeof agent>
+
+export const chatParams = agent.shape.config.extend({
+  messages: z.array(completionMessage),
+  seed: z.literal(1337),
+  tools: z.array(z.object({
+    type: z.literal('function'),
+    function: z.object({
+      name: z.string(),
+      description: z.string().optional(),
+      parameters: z.object({}).passthrough().optional(),
+      strict: z.boolean().optional().nullable(),
+    }),
+  })).optional(),
+})
+export type ChatParams = z.infer<typeof chatParams>

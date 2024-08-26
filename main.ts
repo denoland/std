@@ -1,5 +1,5 @@
 import { Debug, isKvTestMode } from '@/utils.ts'
-import Server from '@/api/server.ts'
+import Server from '@/server/server.ts'
 import { init } from '@/isolates/github.ts'
 
 const getPrivateKey = () => {

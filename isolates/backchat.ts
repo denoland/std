@@ -12,12 +12,17 @@ import {
   UnsequencedRequest,
 } from '@/constants.ts'
 import * as actors from './actors.ts'
-import { assert, Debug, expect } from '@utils'
+import { assert, Debug } from '@utils'
 import * as longthread from './longthread.ts'
 import * as loadAgent from './load-agent.ts'
 import * as completions from './ai-completions.ts'
 import { loadValidators } from '@/isolates/ai-load-tools.ts'
+import { z } from 'zod'
 const log = Debug('AI:backchat')
+
+export const parameters = {
+  create: z.object({}),
+}
 
 export const api = {
   create: {

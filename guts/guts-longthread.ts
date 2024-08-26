@@ -19,7 +19,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('prompt', async () => {
       const { start, run } = await backchat.actions<Api>('longthread')
       const threadId = generateThreadId(t.name)
-      await start()
+      await start({})
       await run({
         path: 'agents/agent-fixture.md',
         content: 'say "Hello"',
@@ -58,7 +58,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('start thread', async () => {
       const opts = { branchName: threadId, noClose: true }
       const { start } = await backchat.actions<Api>('longthread', opts)
-      await start()
+      await start({})
     })
     const { run } = await backchat.actions<Api>('longthread', { target })
     await t.step('say the word "hello"', async () => {

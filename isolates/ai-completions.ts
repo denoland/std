@@ -4,8 +4,9 @@ import OpenAI from 'openai'
 import {
   actorIdRegex,
   Agent,
-  ChatCompletionAssistantMessageParam,
-  ChatCompletionMessageParam,
+  AssistantMessage,
+  ChatParams,
+  CompletionMessage,
   Functions,
   getBaseName,
   IA,
@@ -78,13 +79,13 @@ export type Api = {
       content: string
       actorId: string
     },
-  ) => Promise<ChatCompletionAssistantMessageParam>
+  ) => Promise<AssistantMessage>
   halt: (
     params: { content: string; path: string },
   ) => Promise<Params>
   oneshot: (
     params: { path: string; contents: string[]; actorId: string },
-  ) => Promise<ChatCompletionAssistantMessageParam>
+  ) => Promise<AssistantMessage>
 }
 export const functions: Functions<Api> = {
   async complete({ path }, api) {
@@ -158,6 +159,35 @@ const complete = async (
   const { load } = await api.functions<loadAgent.Api>('load-agent')
   const agent: Agent = await load({ path })
   const tools = await loadTools(agent.commands, api)
+
+  const args = getArgs(agent, messages, tools)
+
+  log('completion started with model: %o', args.model, print(api.pid))
+  let retries = 0
+  const RETRY_LIMIT = 5
+  while (retries++ < RETRY_LIMIT) {
+    try {
+      const completion = await ai.chat.completions.create(args)
+      const result = completion.choices[0].message
+      log('completion complete', agent.source.path, result)
+      const assistant: AssistantMessage = {
+        ...result,
+        name: agent.source.path,
+      }
+      return assistant
+    } catch (error) {
+      console.error('ai completion error', error)
+      throw error
+    }
+  }
+  throw new Error(`ai completion failed after ${retries} attempts`)
+}
+
+export const getArgs = (
+  agent: Agent,
+  messages: Thread['messages'],
+  tools: OpenAI.ChatCompletionTool[],
+) => {
   const { config } = agent
   const {
     model,
@@ -166,12 +196,12 @@ const complete = async (
     parallel_tool_calls,
     presence_penalty,
   } = config
-  const sysprompt: ChatCompletionMessageParam = {
-    role: 'assistant',
-    content: agent.instructions,
+  const sysprompt: CompletionMessage = {
+    role: 'system',
+    content: agent.instructions + '\n\n' + additionInstructions(),
     name: agent.source.path,
   }
-  const args: OpenAI.ChatCompletionCreateParamsNonStreaming = {
+  const args: ChatParams = {
     model,
     temperature,
     messages: [...messages, sysprompt].map(safeAssistantName),
@@ -181,23 +211,9 @@ const complete = async (
     presence_penalty,
     parallel_tool_calls: tools.length ? parallel_tool_calls : undefined,
   }
-
-  log('completion started with model: %o', args.model, print(api.pid))
-  try {
-    const completion = await ai.chat.completions.create(args)
-    const result = completion.choices[0].message
-    log('completion complete', agent.source.path, result)
-    const assistant: ChatCompletionAssistantMessageParam = {
-      ...result,
-      name: agent.source.path,
-    }
-    return assistant
-  } catch (error) {
-    console.error('ai completion error', error)
-    throw error
-  }
+  return args
 }
-const safeAssistantName = (message: ChatCompletionMessageParam) => {
+const safeAssistantName = (message: CompletionMessage) => {
   if (message.role !== 'assistant' && message.role !== 'system') {
     return message
   }
@@ -209,3 +225,8 @@ const safeAssistantName = (message: ChatCompletionMessageParam) => {
   }
   return message
 }
+
+const additionInstructions = () => {
+  return 'The time is: ' + new Date().toISOString()
+}
+console.log(additionInstructions())

@@ -7,7 +7,7 @@ import {
   toApi,
   ToApiType,
 } from '@/constants.ts'
-import { ChatCompletionAssistantMessageParamSchema } from '@/api/zod.ts'
+import { assistantMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import { z } from 'zod'
@@ -39,7 +39,7 @@ export const returns = {
   start: z.void(),
   run: z.void(),
   switchboard: z.void(),
-  drone: ChatCompletionAssistantMessageParamSchema,
+  drone: assistantMessage,
 }
 
 export const api = toApi(parameters)
