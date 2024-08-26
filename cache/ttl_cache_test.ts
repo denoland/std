@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { TtlCache } from "./ttl_cache.ts";
-import { assertEquals } from "@std/assert";
+import { assertEquals, AssertionError, assertRejects } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
 
 const UNSET = Symbol("UNSET");
@@ -33,6 +33,29 @@ function assertContentfulEntries<K, V>(
   assertEquals([...cache.keys()], keys);
   assertEquals([...cache.values()], values);
   assertEquals([...cache], entries);
+}
+
+async function assertTimerDoesNotCompletePrematurely(
+  interval: number,
+): Promise<void> {
+  let timestamp: number | undefined;
+  const expectedTimeStamp = Date.now() + interval;
+
+  const timerId = setTimeout(() => {
+    timestamp = Date.now();
+  }, interval);
+
+  await new Promise((resolve) => setTimeout(resolve, 1));
+
+  if (timestamp) {
+    throw new AssertionError(
+      `The callback completed ${
+        expectedTimeStamp - Date.now()
+      } ms earlier than expected.`,
+    );
+  }
+
+  clearTimeout(timerId);
 }
 
 Deno.test("TtlCache deletes entries", async (t) => {
@@ -102,4 +125,18 @@ Deno.test("TtlCache deletes entries", async (t) => {
     using cache = new TtlCache<number, string>(10);
     cache.set(1, "one");
   });
+});
+
+Deno.test("TTL implementation: setTimeout()", async (t) => {
+  await t.step(
+    "Schedules intervals less than 2 ** 31",
+    () => assertTimerDoesNotCompletePrematurely(2 ** 31 - 1),
+  );
+
+  await t.step(
+    "Fails to schedule intervals greater than or equal to 2 ** 31",
+    async () => {
+      await assertRejects(() => assertTimerDoesNotCompletePrematurely(2 ** 31));
+    },
+  );
 });
