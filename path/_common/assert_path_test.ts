@@ -12,6 +12,6 @@ Deno.test("assertPath() throws", () => {
   assertThrows(
     () => assertPath(undefined),
     TypeError,
-    "Path must be a string. Received undefined",
+    'Path must be a string, received "undefined"',
   );
 });

@@ -16,7 +16,7 @@ export interface BaseHandlerOptions {
   formatter?: FormatterFunction;
 }
 
-export class BaseHandler {
+export abstract class BaseHandler {
   #levelName: LevelName;
   #level: LogLevel;
   formatter: FormatterFunction;
@@ -59,7 +59,7 @@ export class BaseHandler {
     return this.formatter(logRecord);
   }
 
-  log(_msg: string) {}
+  abstract log(msg: string): void;
   setup() {}
   destroy() {}
 

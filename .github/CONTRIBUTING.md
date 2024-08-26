@@ -174,18 +174,14 @@ So concrete examples are:
 ### Notices for unstable APIs
 
 Each unstable API must have the
-[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
-[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
-after the starting description.
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag after
+the starting description.
 
 ```ts
 /**
  * <description>
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * ...
  */
@@ -245,11 +241,11 @@ Bad: Can't parse input x
 Good: Cannot parse input x
 ```
 
-7. Messages should use a colon when providing additional information:
+7. Messages should use a colon when providing additional information. Periods
+   should never be used. Other punctuation may be used as needed:
 
 ```
 Bad: Cannot parse input x. value is empty
-Bad: Cannot parse input x, value is empty
 Good: Cannot parse input x: value is empty
 ```
 

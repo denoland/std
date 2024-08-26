@@ -21,10 +21,7 @@ export type Ansi = string & {};
 /**
  * Color options for {@linkcode SpinnerOptions.color}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Color =
   | "black"
@@ -53,10 +50,7 @@ const COLORS: Record<Color, string> = {
 /**
  * Options for {@linkcode Spinner}.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface SpinnerOptions {
   /**
@@ -86,8 +80,7 @@ export interface SpinnerOptions {
 /**
  * A spinner that can be used to indicate that something is loading.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
@@ -101,8 +94,6 @@ export interface SpinnerOptions {
  *  console.log("Finished loading!");
  * }, 3_000);
  * ```
- *
- * @experimental
  */
 export class Spinner {
   #spinner: string[];

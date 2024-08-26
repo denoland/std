@@ -191,6 +191,8 @@ export function increment(
       };
     }
     default:
-      throw new TypeError(`Invalid increment argument: ${release}`);
+      throw new TypeError(
+        `Cannot increment version: invalid argument ${release}`,
+      );
   }
 }

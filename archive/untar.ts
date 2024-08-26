@@ -46,10 +46,7 @@ export type { Reader };
  * Extend TarMeta with the `linkName` property so that readers can access
  * symbolic link values without polluting the world of archive writers.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarMetaWithLinkName extends TarMeta {
   /** File name of the symbolic link. */
@@ -59,10 +56,7 @@ export interface TarMetaWithLinkName extends TarMeta {
 /**
  * Tar header with raw, unprocessed bytes as values.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarHeader = {
   [key in UstarFields]: Uint8Array;
@@ -102,10 +96,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
 /**
  * Tar entry
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-assert
@@ -133,10 +124,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
 /**
  * Contains tar header metadata and a reader to the entry's body.
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-assert
@@ -377,10 +365,7 @@ export class TarEntry implements Reader {
  * }
  * ```
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export class Untar {
   /** Internal reader. */

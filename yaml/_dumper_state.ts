@@ -28,7 +28,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { KindType, StyleVariant, Type } from "./_type.ts";
+import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
 import { getObjectTypeString, isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
@@ -396,15 +396,15 @@ function blockHeader(string: string, indentPerLevel: number): string {
 
 function inspectNode(
   object: unknown,
-  objects: unknown[],
+  objects: Set<unknown>,
   duplicateObjects: Set<unknown>,
 ) {
   if (!isObject(object)) return;
-  if (objects.includes(object)) {
+  if (objects.has(object)) {
     duplicateObjects.add(object);
     return;
   }
-  objects.push(object);
+  objects.add(object);
   const entries = Array.isArray(object) ? object : Object.values(object);
   for (const value of entries) {
     inspectNode(value, objects, duplicateObjects);
@@ -461,7 +461,6 @@ export interface DumperStateOptions {
 }
 
 export class DumperState {
-  schema: Schema;
   indent: number;
   arrayIndent: boolean;
   skipInvalid: boolean;
@@ -490,7 +489,6 @@ export class DumperState {
     compatMode = true,
     condenseFlow = false,
   }: DumperStateOptions) {
-    this.schema = schema;
     this.indent = Math.max(1, indent);
     this.arrayIndent = arrayIndent;
     this.skipInvalid = skipInvalid;
@@ -501,8 +499,8 @@ export class DumperState {
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.implicitTypes = this.schema.implicitTypes;
-    this.explicitTypes = this.schema.explicitTypes;
+    this.implicitTypes = schema.implicitTypes;
+    this.explicitTypes = schema.explicitTypes;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
@@ -575,105 +573,74 @@ export class DumperState {
     array: unknown[],
     { level }: { level: number },
   ): string {
-    let result = "";
-    for (let index = 0; index < array.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(array[index], {
+    const results = [];
+    for (const value of array) {
+      const string = this.stringifyNode(value, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
       if (string === null) continue;
-      if (index !== 0) result += `,${!this.condenseFlow ? " " : ""}`;
-      result += string;
+      results.push(string);
     }
-
-    return `[${result}]`;
+    const separator = this.condenseFlow ? "," : ", ";
+    return `[${results.join(separator)}]`;
   }
 
   stringifyBlockSequence(
     array: unknown[],
     { level, compact }: { level: number; compact: boolean },
   ): string {
-    let result = "";
-
-    for (let index = 0; index < array.length; index += 1) {
-      // Write only valid elements.
-      const string = this.stringifyNode(array[index], {
+    const whitespace = generateNextLine(this.indent, level);
+    const prefix = compact ? "" : whitespace;
+    const results = [];
+    for (const value of array) {
+      const string = this.stringifyNode(value, {
         level: level + 1,
         block: true,
         compact: true,
         isKey: false,
       });
-      if (string !== null) {
-        if (!compact || index !== 0) {
-          result += generateNextLine(this.indent, level);
-        }
-
-        if (string && LINE_FEED === string.charCodeAt(0)) {
-          result += "-";
-        } else {
-          result += "- ";
-        }
-
-        result += string;
-      }
+      if (string === null) continue;
+      const linePrefix = LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
+      results.push(`${linePrefix}${string}`);
     }
-
-    return result || "[]"; // Empty sequence if no valid values.
+    return results.length ? prefix + results.join(whitespace) : "[]";
   }
 
   stringifyFlowMapping(
     object: Record<string, unknown>,
     { level }: { level: number },
   ): string {
-    let result = "";
-    const objectKeyList = Object.keys(object);
+    const quote = this.condenseFlow ? '"' : "";
+    const separator = this.condenseFlow ? ":" : ": ";
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = this.condenseFlow ? '"' : "";
-
-      if (index !== 0) pairBuffer += ", ";
-
-      const objectValue = object[objectKey];
-
-      const keyString = this.stringifyNode(objectKey, {
+    const results = [];
+    for (const [key, value] of Object.entries(object)) {
+      const keyString = this.stringifyNode(key, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
-      if (
-        keyString === null
-      ) {
-        continue; // Skip this pair because of invalid key;
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key;
 
-      if (keyString.length > 1024) pairBuffer += "? ";
-
-      pairBuffer += `${keyString}${this.condenseFlow ? '"' : ""}:${
-        this.condenseFlow ? "" : " "
-      }`;
-
-      const valueString = this.stringifyNode(objectValue, {
+      const valueString = this.stringifyNode(value, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
+      if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      if (valueString === null) {
-        continue; // Skip this pair because of invalid value.
-      }
-
-      pairBuffer += valueString;
-
-      // Both key and value are valid.
-      result += pairBuffer;
+      const keyPrefix = keyString.length > 1024 ? "? " : "";
+      results.push(
+        quote + keyPrefix + keyString + quote + separator + valueString,
+      );
     }
 
-    return `{${result}}`;
+    return `{${results.join(", ")}}`;
   }
 
   stringifyBlockMapping(
@@ -762,38 +729,36 @@ export class DumperState {
     return result || "{}"; // Empty mapping if no valid pairs.
   }
 
-  detectType(
-    value: unknown,
-    explicit: boolean,
-  ): { tag: string; value: unknown } | null {
-    const typeList = explicit ? this.explicitTypes : this.implicitTypes;
+  getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {
+    if (!type.represent) return value;
+    const style = this.styleMap.get(type.tag) ??
+      type.defaultStyle as StyleVariant;
+    if (typeof type.represent === "function") {
+      return type.represent(value, style);
+    }
+    if (Object.hasOwn(type.represent, style)) {
+      const represent = type.represent[style] as RepresentFn<unknown>;
+      return represent(value, style);
+    }
+    throw new TypeError(
+      `!<${type.tag}> tag resolver accepts not "${style}" style`,
+    );
+  }
 
-    let tag = null;
-    for (const type of typeList) {
+  detectType(value: unknown): { tag: string | null; value: unknown } {
+    for (const type of this.implicitTypes) {
       if (type.predicate?.(value)) {
-        tag = explicit ? type.tag : "?";
-
-        if (type.represent) {
-          const style = this.styleMap.get(type.tag) ||
-            type.defaultStyle as StyleVariant;
-
-          if (typeof type.represent === "function") {
-            value = type.represent(value, style);
-            return { tag, value };
-          }
-          if (Object.hasOwn(type.represent, style)) {
-            value = type.represent[style]!(value, style);
-            return { tag, value };
-          }
-          throw new TypeError(
-            `!<${type.tag}> tag resolver accepts not "${style}" style`,
-          );
-        }
-
-        return { tag, value };
+        value = this.getTypeRepresentation(type, value);
+        return { tag: "?", value };
       }
     }
-    return null;
+    for (const type of this.explicitTypes) {
+      if (type.predicate?.(value)) {
+        value = this.getTypeRepresentation(type, value);
+        return { tag: type.tag, value };
+      }
+    }
+    return { tag: null, value };
   }
 
   // Serializes `object` and writes it to global `result`.
@@ -804,8 +769,7 @@ export class DumperState {
     compact: boolean;
     isKey: boolean;
   }): string | null {
-    const result = this.detectType(value, false) ??
-      this.detectType(value, true) ?? { tag: null, value };
+    const result = this.detectType(value);
     const tag = result.tag;
     value = result.value;
 
@@ -886,18 +850,14 @@ export class DumperState {
     return value as string;
   }
 
-  getDuplicateReferences(value: unknown) {
-    const values: unknown[] = [];
-    const duplicateObjects: Set<unknown> = new Set();
-
-    inspectNode(value, values, duplicateObjects);
-
-    for (const value of duplicateObjects) this.duplicates.push(value);
-    this.usedDuplicates = new Set();
-  }
-
   stringify(value: unknown): string {
-    if (this.useAnchors) this.getDuplicateReferences(value);
+    if (this.useAnchors) {
+      const values: Set<unknown> = new Set();
+      const duplicateObjects: Set<unknown> = new Set();
+      inspectNode(value, values, duplicateObjects);
+      this.duplicates = [...duplicateObjects];
+      this.usedDuplicates = new Set();
+    }
 
     const string = this.stringifyNode(value, {
       level: 0,

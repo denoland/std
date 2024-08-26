@@ -38,7 +38,7 @@ export type PromptSecretOptions = {
  *
  * const password = promptSecret("Please provide the password:");
  * if (password !== "some-password") {
- *   throw new Error("Access denied.");
+ *   throw new Error("Access denied");
  * }
  * ```
  */

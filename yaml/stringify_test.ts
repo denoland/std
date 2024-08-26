@@ -678,3 +678,23 @@ Deno.test("stringify() uses quotes around deprecated boolean notations when `com
 Deno.test("stringify() handles undefined with skipInvalid option", () => {
   assertEquals(stringify(undefined, { skipInvalid: true }), "");
 });
+
+Deno.test({
+  name: "stringify() handles object with condenseFlow option",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+        condenseFlow: true,
+      }),
+      `foo: [bar,baz]\nbar: {"hello":world}\n`,
+    );
+  },
+});
+
+Deno.test("stringify() returns emtpy array on invalid entries", () => {
+  assertEquals(
+    stringify([undefined], { skipInvalid: true }),
+    "[]\n",
+  );
+});
