@@ -229,4 +229,3 @@ const safeAssistantName = (message: CompletionMessage) => {
 const additionInstructions = () => {
   return 'The time is: ' + new Date().toISOString()
 }
-console.log(additionInstructions())

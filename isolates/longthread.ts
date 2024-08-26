@@ -116,7 +116,7 @@ const loop = async (path: string, api: IA, stopOnTool?: string) => {
   }
   if (count >= HARD_STOP) {
     // TODO test this actually works
-    console.error('LONGTHREAD HARD_STOP after:', HARD_STOP)
+    throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
   }
 }
 

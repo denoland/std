@@ -1,10 +1,9 @@
 import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import { serializeError } from 'serialize-error'
-import { colorize, IA, print, sha1, Thread, withMeta } from '@/constants.ts'
+import { IA, Thread } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
-import * as files from './files.ts'
 const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
@@ -13,7 +12,7 @@ const debugToolResult = Debug(base + ':ai-tool-result')
 export const executeTools = async (threadPath: string, api: IA) => {
   // TODO only load what the assistant message needs
   log('execute tools:', threadPath)
-  let thread = await api.readJSON<Thread>(threadPath)
+  const thread = await api.readJSON<Thread>(threadPath)
 
   const assistant = thread.messages[thread.messages.length - 1]
   assert('tool_calls' in assistant, 'missing tool calls')
@@ -39,47 +38,34 @@ export const executeTools = async (threadPath: string, api: IA) => {
     const messageIndex = thread.messages.length
     thread.messages.push(message)
     api.writeJSON(threadPath, thread)
-    const branchName = tool_call_id
 
     try {
       const parameters = JSON.parse(args)
-      if (name === 'files_read') {
-        const { read } = await api.functions<files.Api>('files')
-        message.content = await read(parameters)
-        if (parameters.path.endsWith('.json')) {
-          // compress down to save tokens
-          message.content = JSON.stringify(JSON.parse(message.content))
-        }
+      const result = await actions[name](parameters)
 
-        log('read', parameters.path, message.content.length, print(api.pid))
+      if (result === undefined || typeof result === 'string') {
+        message.content = compressIfPrettyJson(result || '')
       } else {
-        const { promise } = await actions[name](parameters, branchName)
-        const { result, parent } = await withMeta(promise)
-        assert(typeof parent === 'string', 'missing parent')
-        assert(sha1.test(parent), 'invalid parent')
-        await api.merge(parent)
-
-        thread = await api.readJSON<Thread>(threadPath)
-        assert(!thread.toolCommits[tool_call_id], 'tool call already exists')
-        thread.toolCommits[tool_call_id] = parent
-        api.writeJSON(threadPath, thread)
-
-        log('tool call result:', name, result, colorize(parent))
-
-        if (result === undefined || typeof result === 'string') {
-          message.content = result || ''
-        } else {
-          message.content = JSON.stringify(result, null, 2)
-        }
+        message.content = JSON.stringify(result)
       }
+      log('tool call:', name, 'size:', message.content.length)
     } catch (error) {
       log('tool call error:', error)
       const serializeable = serializeError(error)
       delete serializeable.stack
-      message.content = JSON.stringify(serializeable, null, 2)
+      message.content = JSON.stringify(serializeable)
     }
     debugToolResult(message.content)
     thread.messages[messageIndex] = message
     api.writeJSON(threadPath, thread)
+  }
+}
+
+const compressIfPrettyJson = (content: string) => {
+  try {
+    const json = JSON.parse(content)
+    return JSON.stringify(json)
+  } catch {
+    return content
   }
 }

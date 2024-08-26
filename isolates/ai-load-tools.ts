@@ -1,6 +1,6 @@
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
-import { IA, JSONSchemaType, MetaPromise, Params } from '@/constants.ts'
+import { IA, JSONSchemaType, Params } from '@/constants.ts'
 import { isIsolate } from './index.ts'
 import validator from '@io/validator.ts'
 const log = Debug('AI:tools:load-tools')
@@ -19,8 +19,7 @@ export const loadValidators = async (commands: string[] = [], api: IA) => {
 }
 type Action = (
   params: Params,
-  branchName: string,
-) => Promise<{ promise: MetaPromise<unknown> }>
+) => Promise<unknown>
 
 const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
@@ -38,17 +37,10 @@ const load = async (commands: string[] = [], api: IA) => {
     const name = isolate + '_' + functionName
     const schema = await api.apiSchema(isolate)
     assert(functionName in schema, `isolate missing command: ${cmd}`)
-    const action = async (params: Params, branchName: string) => {
-      const actions = await api.actions(isolate, { branchName })
+    const action = async (params: Params) => {
+      const actions = await api.actions(isolate)
       assert(actions[functionName], `missing action: ${cmd}`)
-      // TODO fix this since needs wrapping to get the commit symbol
-      // TODO fix ts types so actions always return metapromise types
-      const result = actions[functionName](params) as unknown
-
-      const promise: MetaPromise<typeof result> = Promise.resolve(
-        result,
-      ) as MetaPromise<typeof result>
-      return { promise }
+      return actions[functionName](params)
     }
     // TODO use the compartment for running these
     validators[name] = validator(schema[functionName], name)

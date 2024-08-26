@@ -7,6 +7,7 @@ import {
   Thread,
   toApi,
   type ToApiType,
+  withMeta,
 } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
@@ -20,16 +21,23 @@ import { assistantMessage } from '@/api/zod.ts'
 
 const log = Debug('AI:test-case-runner')
 
+const testParams = z.object({
+  path: z.string().regex(/.*\.test\.md$/).describe(
+    'the relative path to the test file that contains the test to be run',
+  ),
+  index: z.number().int().gte(0)
+    .describe('the index of the test case in the containing test file'),
+})
+
 export const parameters = {
-  test: z.object({
-    path: z.string().regex(/.*\.test\.md$/).describe(
-      'the relative path to the test file that contains the test to be run',
-    ),
-    index: z.number().int().gte(0)
-      .describe('the index of the test case in the containing test file'),
-  }).describe(
+  test: testParams.describe(
     'Runs the test case at the given index from the given test file.  Returns a list of outcomes from assessing the end system state against the expectations.',
   ),
+  caseRunner: testParams.describe(
+    'The actual implementation of the test runner.  The test function calls this function in a new branch, and then merges the results back in.',
+  ),
+  // we could handle the merging of data back in here, and just make sure each
+  // invocation started with a blank set of cases.
   openai: z.object({
     threadPath: z.string().describe(
       'relative path to the thread to recreate the request response pair from',
@@ -43,6 +51,7 @@ export const api = toApi(parameters)
 
 export const returns = {
   test: z.void(),
+  caseRunner: z.void(),
   assessment: z.void(),
   openai: z.object({
     request: chatParams,
@@ -54,6 +63,15 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
   test: async ({ path, index }, api) => {
+    const opts = { branchName: 'case_' + index }
+    const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
+    const { parent } = await withMeta(caseRunner({ path, index }))
+    assert(parent, 'missing parent')
+    await api.merge(parent)
+    // TODO provide feature to read from the commit using the api
+  },
+
+  caseRunner: async ({ path, index }, api) => {
     log('test', path, index, print(api.pid))
     const actorId = getActorId(api.pid)
 
@@ -69,6 +87,14 @@ export const functions: Functions<Api> = {
       // TODO treat each chat as an iteration to be done in parallel
       // related to how many iterations we want to run
       // so include the variation generation feature
+
+      // each iteration needs to run in its own branch
+      // then it needs to get told to run the assessment
+      // when each one returns, we would merge back in the tps report
+      // then destroy the branch with a merge and close
+
+      // also want to run each iteration in parallel, as well as each case ?
+
       for (const prompt of chain) {
         await run({ path: agent, content: prompt, actorId })
       }
@@ -81,6 +107,7 @@ export const functions: Functions<Api> = {
     const { drone } = await api
       .actions<longthread.Api>('longthread', { branch: true })
 
+    // in here, signal the iteration count.
     const promises = expectations.map(async (expectation) => {
       // TODO recreate the call to openai directly
       const content = `threadPath: ${threadPath}\n\nExpectation: ${expectation}`
