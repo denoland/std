@@ -699,6 +699,14 @@ Deno.test("stringify() returns emtpy array on invalid entries", () => {
   );
 });
 
+Deno.test("stringify() handles duplicate array references", () => {
+  const a = ["foo"];
+  assertEquals(
+    stringify([a, a]),
+    "- &ref_0\n  - foo\n- *ref_0\n",
+  );
+});
+
 Deno.test({
   name:
     "stringify() handles undefined object entry with skipInvalid and flowLevel option",
