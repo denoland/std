@@ -7,7 +7,7 @@ export interface TarStreamFile {
   /**
    * The name of the file.
    */
-  pathname: string;
+  path: string;
   /**
    * The size of the file.
    */
@@ -29,7 +29,7 @@ export interface TarStreamDir {
   /**
    * The name of the directory.
    */
-  pathname: string;
+  path: string;
   /**
    * The metadata of the directory.
    */
@@ -42,8 +42,8 @@ export interface TarStreamDir {
  */
 export type TarStreamInput = TarStreamFile | TarStreamDir;
 type TarStreamInputInternal =
-  & (Omit<TarStreamFile, "pathname"> | Omit<TarStreamDir, "pathname">)
-  & { pathname: [Uint8Array, Uint8Array] };
+  & (Omit<TarStreamFile, "path"> | Omit<TarStreamDir, "path">)
+  & { path: [Uint8Array, Uint8Array] };
 
 /**
  * The options that can go along with a file or directory.
@@ -104,14 +104,14 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  * The ustar file format is used for creating the tar archive.  While this
  * format is compatible with most tar readers, the format has several
  * limitations, including:
- * - Pathnames must be at most 256 characters.
+ * - Paths must be at most 256 characters.
  * - Files must be at most 8 GiBs in size, or 64 GiBs if `sizeExtension` is set
  * to true.
  * - Sparse files are not supported.
  *
  * ### Usage
  * TarStream may throw an error for several reasons. A few of those are:
- * - The pathname is invalid.
+ * - The path is invalid.
  * - The size provided does not match that of the iterable's length.
  *
  * ### Compression
@@ -124,15 +124,15 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *
  * await ReadableStream.from([
  *   {
- *     pathname: 'potato/'
+ *     path: 'potato/'
  *   },
  *   {
- *     pathname: 'deno.json',
+ *     path: 'deno.json',
  *     size: (await Deno.stat('deno.json')).size,
  *     iterable: (await Deno.open('deno.json')).readable
  *   },
  *   {
- *     pathname: 'deno.lock',
+ *     path: 'deno.lock',
  *     size: (await Deno.stat('deno.lock')).size,
  *     iterable: (await Deno.open('deno.lock')).readable
  *   }
@@ -166,16 +166,16 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           return controller.error(new Error("Size cannot exceed 64 Gibs"));
         }
 
-        const pathname = parsePathname(chunk.pathname);
+        const path = parsePath(chunk.path);
 
-        controller.enqueue({ ...chunk, pathname });
+        controller.enqueue({ ...chunk, path });
       },
     });
     this.#writable = writable;
     const gen = async function* () {
       const encoder = new TextEncoder();
       for await (const chunk of readable) {
-        const [prefix, name] = chunk.pathname;
+        const [prefix, name] = chunk.path;
         const typeflag = "size" in chunk ? "0" : "5";
         const header = new Uint8Array(512);
         const size = "size" in chunk ? chunk.size : 0;
@@ -278,15 +278,15 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * await ReadableStream.from([
    *   {
-   *     pathname: 'potato/'
+   *     path: 'potato/'
    *   },
    *   {
-   *     pathname: 'deno.json',
+   *     path: 'deno.json',
    *     size: (await Deno.stat('deno.json')).size,
    *     iterable: (await Deno.open('deno.json')).readable
    *   },
    *   {
-   *     pathname: 'deno.lock',
+   *     path: 'deno.lock',
    *     size: (await Deno.stat('deno.lock')).size,
    *     iterable: (await Deno.open('deno.lock')).readable
    *   }
@@ -311,15 +311,15 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * await ReadableStream.from([
    *   {
-   *     pathname: 'potato/'
+   *     path: 'potato/'
    *   },
    *   {
-   *     pathname: 'deno.json',
+   *     path: 'deno.json',
    *     size: (await Deno.stat('deno.json')).size,
    *     iterable: (await Deno.open('deno.json')).readable
    *   },
    *   {
-   *     pathname: 'deno.lock',
+   *     path: 'deno.lock',
    *     size: (await Deno.stat('deno.lock')).size,
    *     iterable: (await Deno.open('deno.lock')).readable
    *   }
@@ -334,16 +334,16 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   }
 }
 
-function parsePathname(
-  pathname: string,
+function parsePath(
+  path: string,
 ): [Uint8Array, Uint8Array] {
-  const name = new TextEncoder().encode(pathname);
+  const name = new TextEncoder().encode(path);
   if (name.length <= 100) {
     return [new Uint8Array(0), name];
   }
 
   if (name.length > 256) {
-    throw new RangeError("Pathname cannot exceed 256 bytes");
+    throw new RangeError("Path cannot exceed 256 bytes");
   }
 
   // If length of last part is > 100, then there's no possible answer to split the path
@@ -368,37 +368,37 @@ function parsePathname(
   const prefix = name.slice(0, suitableSlashPos);
   if (prefix.length > 155) {
     throw new Error(
-      "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
+      "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
   return [prefix, name.slice(suitableSlashPos + 1)];
 }
 
 /**
- * The type that may be returned from the `validPathname` function.
+ * The type that may be returned from the `validPath` function.
  */
-export type PathnameResult = { ok: true } | { ok: false; error: string };
+export type PathResult = { ok: true } | { ok: false; error: string };
 
 /**
- * validPathname is a function that validates the correctness of a pathname that
- * may be piped to a `TarStream`. It provides a means to check that a pathname is
+ * validPath is a function that validates the correctness of a path that
+ * may be piped to a `TarStream`. It provides a means to check that a path is
  * valid before pipping it through the `TarStream`, where if invalid will throw an
  * error. Ruining any progress made when archiving.
  *
- * @param pathname The pathname as a string
+ * @param path The path as a string
  * @return { ok: true } | { ok: false, error: string }
  *
  * @example Usage
  * ```ts
- * import { validPathname, type PathnameResult } from "@std/archive";
+ * import { validPath, type PathResult } from "@std/archive";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals<PathnameResult>(validPathname('MyFile.txt'), { ok: true });
+ * assertEquals<PathResult>(validPath('MyFile.txt'), { ok: true });
  * ```
  */
-export function validPathname(pathname: string): PathnameResult {
+export function validPath(path: string): PathResult {
   try {
-    parsePathname(pathname);
+    parsePath(path);
     return { ok: true };
   } catch (error) {
     if (!(error instanceof Error)) throw error;

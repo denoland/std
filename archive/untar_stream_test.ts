@@ -14,7 +14,7 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "./potato",
+      path: "./potato",
       options: {
         mode: 111111,
         uid: 12,
@@ -27,7 +27,7 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
       },
     },
     {
-      pathname: "./text.txt",
+      path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
       options: { mtime: seconds },
@@ -80,10 +80,10 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "./potato",
+      path: "./potato",
     },
     {
-      pathname: "./text.txt",
+      path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
     },
@@ -111,7 +111,7 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "name",
+      path: "name",
       size,
       readable: ReadableStream.from([data.slice()]),
     },
@@ -132,7 +132,7 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
 Deno.test("UntarStream() with invalid size", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "newFile.txt",
+      path: "newFile.txt",
       size: 512,
       readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
     },
@@ -159,7 +159,7 @@ Deno.test("UntarStream() with invalid ending", async () => {
     await Array.fromAsync(
       ReadableStream.from<TarStreamInput>([
         {
-          pathname: "newFile.txt",
+          path: "newFile.txt",
           size: 512,
           readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
         },
@@ -195,7 +195,7 @@ Deno.test("UntarStream() with invalid checksum", async () => {
     await Array.fromAsync(
       ReadableStream.from<TarStreamInput>([
         {
-          pathname: "newFile.txt",
+          path: "newFile.txt",
           size: 512,
           readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
         },

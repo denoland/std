@@ -114,9 +114,9 @@ export interface TarStreamHeader {
    */
   type: "header";
   /**
-   * The pathname of the entry.
+   * The path of the entry.
    */
-  pathname: string;
+  path: string;
   /**
    * The header of the entry.
    */
@@ -178,7 +178,7 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  * ) {
  *   if (entry.type === "header") {
  *     fileWriter?.close();
- *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+ *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
  *   } else await fileWriter!.write(entry.data);
  * }
  * ```
@@ -271,7 +271,7 @@ export class UntarStream
 
       yield {
         type: "header",
-        pathname: ("prefix" in header && header.prefix.length
+        path: ("prefix" in header && header.prefix.length
           ? header.prefix + "/"
           : "") + header.name,
         header,
@@ -311,7 +311,7 @@ export class UntarStream
    * ) {
    *   if (entry.type === "header") {
    *     fileWriter?.close();
-   *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+   *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
    *   } else await fileWriter!.write(entry.data);
    * }
    * ```
@@ -338,7 +338,7 @@ export class UntarStream
    * ) {
    *   if (entry.type === "header") {
    *     fileWriter?.close();
-   *     fileWriter = (await Deno.create(entry.pathname)).writable.getWriter();
+   *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
    *   } else await fileWriter!.write(entry.data);
    * }
    * ```

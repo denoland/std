@@ -13,10 +13,10 @@ Deno.test("TarStream() with default stream", async () => {
 
   const reader = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "./potato",
+      path: "./potato",
     },
     {
-      pathname: "./text.txt",
+      path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
     },
@@ -51,10 +51,10 @@ Deno.test("TarStream() with byte stream", async () => {
 
   const reader = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "./potato",
+      path: "./potato",
     },
     {
-      pathname: "./text.txt",
+      path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
     },
@@ -91,7 +91,7 @@ Deno.test("TarStream() with negative size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "name",
+      path: "name",
       size: -text.length,
       readable: ReadableStream.from([text.slice()]),
     },
@@ -116,7 +116,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "name",
+      path: "name",
       size,
       readable: ReadableStream.from(iterable),
     },
@@ -141,7 +141,7 @@ Deno.test("TarStream() with NaN size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "name",
+      path: "name",
       size,
       readable: ReadableStream.from(iterable),
     },
@@ -155,22 +155,22 @@ Deno.test("TarStream() with NaN size", async () => {
   );
 });
 
-Deno.test("parsePathname()", async () => {
+Deno.test("parsePath()", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname:
+      path:
         "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
     },
     {
-      pathname:
+      path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
     },
     {
-      pathname:
+      path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
     },
     {
-      pathname:
+      path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
     },
   ])
@@ -185,7 +185,7 @@ Deno.test("parsePathname()", async () => {
   ];
   for await (const tarChunk of readable) {
     assert(tarChunk.type === "header");
-    assertEquals(tarChunk.pathname, output.shift());
+    assertEquals(tarChunk.path, output.shift());
   }
 });
 
@@ -233,7 +233,7 @@ Deno.test("validTarStreamOptions()", () => {
 
 Deno.test("TarStream() with invalid options", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
-    { pathname: "potato", options: { mode: 9 } },
+    { path: "potato", options: { mode: 9 } },
   ]).pipeThrough(new TarStream());
 
   await assertRejects(
@@ -247,7 +247,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
   const text = new TextEncoder().encode("Hello World!");
   const readable = ReadableStream.from<TarStreamInput>([
     {
-      pathname: "potato",
+      path: "potato",
       size: text.length + 1,
       readable: ReadableStream.from([text.slice()]),
     },
@@ -260,28 +260,28 @@ Deno.test("TarStream() with mismatching sizes", async () => {
   );
 });
 
-Deno.test("parsePathname() with too long path", async () => {
+Deno.test("parsePath() with too long path", async () => {
   const readable = ReadableStream.from<TarStreamInput>([{
-    pathname: "0".repeat(300),
+    path: "0".repeat(300),
   }])
     .pipeThrough(new TarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Pathname cannot exceed 256 bytes",
+    "Path cannot exceed 256 bytes",
   );
 });
 
-Deno.test("parsePathname() with too long path", async () => {
+Deno.test("parsePath() with too long path", async () => {
   const readable = ReadableStream.from<TarStreamInput>([{
-    pathname: "0".repeat(160) + "/",
+    path: "0".repeat(160) + "/",
   }])
     .pipeThrough(new TarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
     Error,
-    "Pathname needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
+    "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
   );
 });
