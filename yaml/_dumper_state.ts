@@ -795,35 +795,37 @@ export class DumperState {
     if (duplicate && this.usedDuplicates.has(value)) {
       return `*ref_${duplicateIndex}`;
     } else {
-      if (isObject(value) && duplicate) {
-        this.usedDuplicates.add(value);
-      }
-      if (isObject(value) && !Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
+      if (isObject(value)) {
+        if (duplicate) {
+          this.usedDuplicates.add(value);
         }
-      } else if (Array.isArray(value)) {
-        const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-        if (block && value.length !== 0) {
-          value = this.stringifyBlockSequence(value, {
-            level: arrayLevel,
-            compact,
-          });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
+        if (!Array.isArray(value)) {
+          if (block && Object.keys(value).length !== 0) {
+            value = this.stringifyBlockMapping(value, { tag, level, compact });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex}${value}`;
+            }
+          } else {
+            value = this.stringifyFlowMapping(value, { level });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex} ${value}`;
+            }
           }
         } else {
-          value = this.stringifyFlowSequence(value, { level: arrayLevel });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
+          const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
+          if (block && value.length !== 0) {
+            value = this.stringifyBlockSequence(value, {
+              level: arrayLevel,
+              compact,
+            });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex}${value}`;
+            }
+          } else {
+            value = this.stringifyFlowSequence(value, { level: arrayLevel });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex} ${value}`;
+            }
           }
         }
       } else if (typeof value === "string") {
