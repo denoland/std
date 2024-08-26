@@ -311,7 +311,7 @@ export type RowType<T> = T extends undefined ? string[]
  * await assertRejects(
  *   () => reader.read(),
  *   SyntaxError,
- *   "record on line 2: expected 2 fields but got 3",
+ *   "Syntax error on line 2: expected 2 fields but got 3",
  * );
  * ```
  *
@@ -333,7 +333,7 @@ export type RowType<T> = T extends undefined ? string[]
  * await assertRejects(
  *   () => reader.read(),
  *   SyntaxError,
- *   "record on line 2: expected 2 fields but got 3",
+ *   "Syntax error on line 2: expected 2 fields but got 3",
  * );
  * ```
  *
@@ -448,7 +448,7 @@ export class CsvParseStream<
       record.length !== this.#fieldsPerRecord
     ) {
       throw new SyntaxError(
-        `record on line ${
+        `Syntax error on line ${
           this.#zeroBasedLineIndex + 1
         }: expected ${this.#fieldsPerRecord} fields but got ${record.length}`,
       );

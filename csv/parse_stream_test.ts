@@ -45,7 +45,7 @@ Deno.test({
     await assertRejects(
       () => reader.read(),
       SyntaxError,
-      `record on line 4; parse error on line 5, column 1: extraneous or missing " in quoted-field`,
+      `Syntax error on line 4; parse error on line 5, column 1: extraneous or missing " in quoted-field`,
     );
   },
 });
@@ -86,7 +86,7 @@ Deno.test({
         separator: undefined,
         error: {
           klass: TypeError,
-          msg: "Separator is required",
+          msg: "Cannot parse record: separator is required",
         },
       },
       {
@@ -164,7 +164,7 @@ field"`,
         fieldsPerRecord: 0,
         error: {
           klass: SyntaxError,
-          msg: "record on line 2: expected 3 fields but got 2",
+          msg: "Syntax error on line 2: expected 3 fields but got 2",
         },
       },
       {
@@ -174,7 +174,7 @@ field"`,
         fieldsPerRecord: 3,
         error: {
           klass: SyntaxError,
-          msg: "record on line 2: expected 3 fields but got 2",
+          msg: "Syntax error on line 2: expected 3 fields but got 2",
         },
       },
       {
@@ -356,7 +356,8 @@ x,,,
         columns: ["foo", "bar", "baz"],
         error: {
           klass: Error,
-          msg: "record on line 2 has 2 fields, but the header has 3 fields",
+          msg:
+            "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
         },
       },
       {
@@ -366,7 +367,8 @@ x,,,
         columns: ["foo", "bar", "baz"],
         error: {
           klass: Error,
-          msg: "record on line 2 has 4 fields, but the header has 3 fields",
+          msg:
+            "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
         },
       },
       {
@@ -375,7 +377,7 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 1; parse error on line 1, column 3: bare " in non-quoted-field',
+            'Syntax error on line 1; parse error on line 1, column 3: bare " in non-quoted-field',
         },
       },
       {
@@ -384,7 +386,7 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 1; parse error on line 1, column 4: extraneous or missing " in quoted-field',
+            'Syntax error on line 1; parse error on line 1, column 4: extraneous or missing " in quoted-field',
         },
       },
       {
@@ -393,7 +395,7 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 1; parse error on line 3, column 2: extraneous or missing " in quoted-field',
+            'Syntax error on line 1; parse error on line 3, column 2: extraneous or missing " in quoted-field',
         },
       },
       {
@@ -402,7 +404,7 @@ x,,,
         error: {
           klass: SyntaxError,
           msg:
-            'record on line 2; parse error on line 4, column 2: extraneous or missing " in quoted-field',
+            'Syntax error on line 2; parse error on line 4, column 2: extraneous or missing " in quoted-field',
         },
       },
       {
