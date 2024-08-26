@@ -22,9 +22,11 @@ export interface ServerSentEventMessage {
   retry?: number;
 }
 
-function assertHasNoNewline(value: string, varName: string) {
+function assertHasNoNewline(value: string, varName: string, errPrefix: string) {
   if (value.match(NEWLINE_REGEXP) !== null) {
-    throw new SyntaxError(`${varName} cannot contain a newline`);
+    throw new SyntaxError(
+      `${errPrefix}: ${varName} cannot contain a newline`,
+    );
   }
 }
 
@@ -36,11 +38,19 @@ function assertHasNoNewline(value: string, varName: string) {
 function stringify(message: ServerSentEventMessage): Uint8Array {
   const lines = [];
   if (message.comment) {
-    assertHasNoNewline(message.comment, "`message.comment`");
+    assertHasNoNewline(
+      message.comment,
+      "`message.comment`",
+      "Cannot serialize message",
+    );
     lines.push(`:${message.comment}`);
   }
   if (message.event) {
-    assertHasNoNewline(message.event, "`message.event`");
+    assertHasNoNewline(
+      message.event,
+      "`message.event`",
+      "Cannot serialize message",
+    );
     lines.push(`event:${message.event}`);
   }
   if (message.data) {
@@ -49,7 +59,11 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     );
   }
   if (message.id) {
-    assertHasNoNewline(message.id.toString(), "`message.id`");
+    assertHasNoNewline(
+      message.id.toString(),
+      "`message.id`",
+      "Cannot serialize message",
+    );
     lines.push(`id:${message.id}`);
   }
   if (message.retry) lines.push(`retry:${message.retry}`);
