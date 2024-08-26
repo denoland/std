@@ -214,3 +214,15 @@ Deno.test("encode() throws when the object is an instance of a custom class", ()
     "Cannot safely encode value into messagepack",
   );
 });
+
+Deno.test("encode() accepts `as const` data", () => {
+  const data = {
+    a: 1,
+    b: { c: 2 },
+    d: [3, { e: 4 }],
+  } as const;
+
+  void (() => {
+    encode(data);
+  });
+});
