@@ -5,11 +5,11 @@
  */
 export interface TarStreamFile {
   /**
-   * The name of the file.
+   * The path to the file, relative to the archive's root directory.
    */
   path: string;
   /**
-   * The size of the file.
+   * The size of the file in bytes.
    */
   size: number;
   /**
@@ -27,7 +27,7 @@ export interface TarStreamFile {
  */
 export interface TarStreamDir {
   /**
-   * The name of the directory.
+   * The path of the directory, relative to the archive's root directory.
    */
   path: string;
   /**
@@ -132,9 +132,9 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *     iterable: (await Deno.open('deno.json')).readable
  *   },
  *   {
- *     path: 'deno.lock',
- *     size: (await Deno.stat('deno.lock')).size,
- *     iterable: (await Deno.open('deno.lock')).readable
+ *     path: '.vscode/settings.json',
+ *     size: (await Deno.stat('.vscode/settings.json')).size,
+ *     iterable: (await Deno.open('.vscode/settings.json')).readable
  *   }
  * ])
  *   .pipeThrough(new TarStream())
@@ -286,9 +286,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *     iterable: (await Deno.open('deno.json')).readable
    *   },
    *   {
-   *     path: 'deno.lock',
-   *     size: (await Deno.stat('deno.lock')).size,
-   *     iterable: (await Deno.open('deno.lock')).readable
+   *     path: '.vscode/settings.json',
+   *     size: (await Deno.stat('.vscode/settings.json')).size,
+   *     iterable: (await Deno.open('.vscode/settings.json')).readable
    *   }
    * ])
    *   .pipeThrough(new TarStream())
@@ -319,9 +319,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *     iterable: (await Deno.open('deno.json')).readable
    *   },
    *   {
-   *     path: 'deno.lock',
-   *     size: (await Deno.stat('deno.lock')).size,
-   *     iterable: (await Deno.open('deno.lock')).readable
+   *     path: '.vscode/settings.json',
+   *     size: (await Deno.stat('.vscode/settings.json')).size,
+   *     iterable: (await Deno.open('.vscode/settings.json')).readable
    *   }
    * ])
    *   .pipeThrough(new TarStream())
