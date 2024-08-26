@@ -12,15 +12,15 @@ export interface OldStyleFormat {
   /**
    * The mode of the entry.
    */
-  mode: string;
+  mode: number;
   /**
    * The uid of the entry.
    */
-  uid: string;
+  uid: number;
   /**
    * The gid of the entry.
    */
-  gid: string;
+  gid: number;
   /**
    * The size of the entry.
    */
@@ -236,9 +236,9 @@ export class UnTarStream
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {
         name: decoder.decode(value.subarray(0, 100)).split("\0")[0]!,
-        mode: decoder.decode(value.subarray(100, 108 - 2)),
-        uid: decoder.decode(value.subarray(108, 116 - 2)),
-        gid: decoder.decode(value.subarray(116, 124 - 2)),
+        mode: parseInt(decoder.decode(value.subarray(100, 108 - 2))),
+        uid: parseInt(decoder.decode(value.subarray(108, 116 - 2))),
+        gid: parseInt(decoder.decode(value.subarray(116, 124 - 2))),
         size: parseInt(decoder.decode(value.subarray(124, 136)).trimEnd(), 8),
         mtime: parseInt(decoder.decode(value.subarray(136, 148 - 1)), 8),
         typeflag: decoder.decode(value.subarray(156, 157)),
