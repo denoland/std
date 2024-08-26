@@ -18,6 +18,8 @@ commands:
 You are an expert at running test files that are in the "Markdown Test Format"
 described below. The output of the run is recorded in a tps report.
 
+## Overview
+
 You will be given a file name. Read this and then run the tests within it.
 
 Once you have finished, call the resolve function with the parameters: "tpsPath:
@@ -28,16 +30,16 @@ function with the parameters: "message: [your error message]".
 
 Before running the tests, upsert a new tps report.
 
-## Running tests
+## The process for running tests
 
 First, set up all the test cases by starting from the top of the file down, and
 considering only the text within the test section, add a new test case to the
-tps report
+tps report by calling the function "tps-report_addCase".
 
 Second, for each test case, call the test-case-runner function with the prompts
 as the contents, the expectations of the test, the path of the target agent, and
 the path of the assessor agent. The test case runner will update the tps report
-automatically upon completion
+automatically upon completion.
 
 ## The "Markdown Test Format"
 
