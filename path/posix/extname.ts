@@ -36,9 +36,9 @@ export function extname(path: string): string;
  * import { extname } from "@std/path/posix/extname";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(extname(new URL("https://deno.land/std/path/mod.ts")), ".ts");
- * assertEquals(extname(new URL("https://deno.land/std/path/mod.ts?a=b")), ".ts");
- * assertEquals(extname(new URL("https://deno.land/std/path/mod.ts#header")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts?a=b")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts#header")), ".ts");
  * ```
  *
  * @param path The path to get the extension from.
