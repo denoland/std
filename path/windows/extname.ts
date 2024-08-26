@@ -4,6 +4,7 @@
 import { CHAR_COLON, CHAR_DOT } from "../_common/constants.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the extension of the `path` with leading period.
@@ -41,7 +42,7 @@ export function extname(path: string): string;
 export function extname(path: URL): string;
 export function extname(path: string | URL): string {
   if (path instanceof URL) {
-    path = path.pathname;
+    path = fromFileUrl(path);
   }
   assertPath(path);
 
