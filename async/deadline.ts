@@ -16,10 +16,12 @@ export interface DeadlineOptions {
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
  *
- * @throws {DOMException} When the provided duration runs out before resolving
- * or if the optional signal is aborted, and `signal.reason` is undefined.
- * If the cause of aborting was the timeout being reached, the `DOMException`'s
- * `name` property will be set to `"TimeoutError"`.
+ * @throws {DOMException & { name: "TimeoutError" }} If the provided duration
+ * runs out before resolving.
+ * @throws {DOMException & { name: "AbortError" }} If the optional signal is
+ * aborted with the default `reason` before resolving or timing out.
+ * @throws {AbortSignal["reason"]} If the optional signal is aborted with a
+ * custom `reason` before resolving or timing out.
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make rejectable.
  * @param ms Duration in milliseconds for when the promise should time out.
