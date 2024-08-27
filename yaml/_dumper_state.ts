@@ -785,16 +785,16 @@ export class DumperState {
       const duplicateIndex = this.duplicates.indexOf(value);
       const duplicate = duplicateIndex !== -1;
 
+      if (duplicate) {
+        if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
+        this.usedDuplicates.add(value);
+      }
       if (
         (tag !== null && tag !== "?") ||
         duplicate ||
         (this.indent !== 2 && level > 0)
       ) {
         compact = false;
-      }
-      if (duplicate) {
-        if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
-        this.usedDuplicates.add(value);
       }
       if (!Array.isArray(value)) {
         if (block && Object.keys(value).length !== 0) {
