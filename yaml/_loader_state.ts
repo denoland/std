@@ -750,6 +750,81 @@ export class LoaderState {
       "Unexpected end of the stream within a single quoted scalar",
     );
   }
+  readDoubleQuotedScalar(nodeIndent: number): boolean {
+    let ch = this.peek();
+
+    if (ch !== DOUBLE_QUOTE) {
+      return false;
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    this.position++;
+    let captureEnd = this.position;
+    let captureStart = this.position;
+    let tmp: number;
+    while ((ch = this.peek()) !== 0) {
+      if (ch === DOUBLE_QUOTE) {
+        this.captureSegment(captureStart, this.position, true);
+        this.position++;
+        return true;
+      }
+      if (ch === BACKSLASH) {
+        this.captureSegment(captureStart, this.position, true);
+        ch = this.next();
+
+        if (isEOL(ch)) {
+          this.skipSeparationSpace(false, nodeIndent);
+        } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
+          this.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
+          this.position++;
+        } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
+          let hexLength = tmp;
+          let hexResult = 0;
+
+          for (; hexLength > 0; hexLength--) {
+            ch = this.next();
+
+            if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
+              hexResult = (hexResult << 4) + tmp;
+            } else {
+              return this.throwError(
+                "Cannot read double quoted scalar: expected hexadecimal character",
+              );
+            }
+          }
+
+          this.result += codepointToChar(hexResult);
+
+          this.position++;
+        } else {
+          return this.throwError(
+            "Cannot read double quoted scalar: unknown escape sequence",
+          );
+        }
+
+        captureStart = captureEnd = this.position;
+      } else if (isEOL(ch)) {
+        this.captureSegment(captureStart, captureEnd, true);
+        this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
+        captureStart = captureEnd = this.position;
+      } else if (
+        this.position === this.lineStart &&
+        this.testDocumentSeparator()
+      ) {
+        return this.throwError(
+          "Unexpected end of the document within a double quoted scalar",
+        );
+      } else {
+        this.position++;
+        captureEnd = this.position;
+      }
+    }
+
+    return this.throwError(
+      "Unexpected end of the stream within a double quoted scalar",
+    );
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -877,85 +952,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readDoubleQuotedScalar(
-  state: LoaderState,
-  nodeIndent: number,
-): boolean {
-  let ch = state.peek();
-
-  if (ch !== DOUBLE_QUOTE) {
-    return false;
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  state.position++;
-  let captureEnd = state.position;
-  let captureStart = state.position;
-  let tmp: number;
-  while ((ch = state.peek()) !== 0) {
-    if (ch === DOUBLE_QUOTE) {
-      state.captureSegment(captureStart, state.position, true);
-      state.position++;
-      return true;
-    }
-    if (ch === BACKSLASH) {
-      state.captureSegment(captureStart, state.position, true);
-      ch = state.next();
-
-      if (isEOL(ch)) {
-        state.skipSeparationSpace(false, nodeIndent);
-      } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
-        state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
-        state.position++;
-      } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
-        let hexLength = tmp;
-        let hexResult = 0;
-
-        for (; hexLength > 0; hexLength--) {
-          ch = state.next();
-
-          if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
-            hexResult = (hexResult << 4) + tmp;
-          } else {
-            return state.throwError(
-              "Cannot read double quoted scalar: expected hexadecimal character",
-            );
-          }
-        }
-
-        state.result += codepointToChar(hexResult);
-
-        state.position++;
-      } else {
-        return state.throwError(
-          "Cannot read double quoted scalar: unknown escape sequence",
-        );
-      }
-
-      captureStart = captureEnd = state.position;
-    } else if (isEOL(ch)) {
-      state.captureSegment(captureStart, captureEnd, true);
-      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
-      captureStart = captureEnd = state.position;
-    } else if (
-      state.position === state.lineStart &&
-      state.testDocumentSeparator()
-    ) {
-      return state.throwError(
-        "Unexpected end of the document within a double quoted scalar",
-      );
-    } else {
-      state.position++;
-      captureEnd = state.position;
-    }
-  }
-
-  return state.throwError(
-    "Unexpected end of the stream within a double quoted scalar",
-  );
 }
 
 function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
@@ -1656,7 +1652,7 @@ function composeNode(
         if (
           (allowBlockScalars && readBlockScalar(state, flowIndent)) ||
           state.readSingleQuotedScalar(flowIndent) ||
-          readDoubleQuotedScalar(state, flowIndent)
+          state.readDoubleQuotedScalar(flowIndent)
         ) {
           hasContent = true;
         } else if (readAlias(state)) {
