@@ -12,15 +12,15 @@ export const parameters = {
     testPath: z.string(),
     agent: z.string().describe('the agent that is the target of the test'),
     assessor: z.string().describe('the agent that will assess the test'),
-    iterations: z.number().int().gte(1).optional(),
+    iterations: z.number().int().gte(1),
   }).describe(
     'Create or update a test report for the given testPath and iterations',
   ),
   addCase: z.object({
     testPath: z.string().describe('the path to the .test.md file'),
     name: z.string().describe('the name of the test case'),
-    prompts: z.array(z.array(z.string())).describe(
-      'The prompt(s) for the test case.  The outer array is for each iteration, the inner array is for each prompt or chain of prompts',
+    promptChains: z.array(z.array(z.string())).describe(
+      'An array of prompt chains to be used in the test case.  A prompt chain contains one or more prompts that will be executed in sequence.  The array of prompt chains will be used to create variations for the required number of iterations of the test case',
     ),
     expectations: z.array(z.string()).describe(
       'The expectations for the test case',
@@ -28,11 +28,19 @@ export const parameters = {
   }).describe(
     'Add a test case to the test report for the given testPath with the given number of expectations',
   ),
+  confirmCaseCount: z.object({
+    testPath: z.string().describe('the path to the .test.md file'),
+    reasoning: z.array(z.string()).describe(
+      'the reasoning for the test case count',
+    ),
+    count: z.number().int().gte(1).describe('the number of test cases'),
+  }).describe('Confirm the number of test cases in the test report'),
 }
 
 export const returns: Returns<typeof parameters> = {
   upsert: z.void(),
   addCase: z.void(),
+  confirmCaseCount: z.number().int().gte(0),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -40,7 +48,7 @@ export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
   upsert: async (
-    { testPath, agent, assessor, iterations = 1 },
+    { testPath, agent, assessor, iterations },
     api,
   ) => {
     log('upsertTpsReport', testPath, iterations)
@@ -56,13 +64,22 @@ export const functions: Functions<Api> = {
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, tpsReport)
   },
-  addCase: async ({ testPath, name, prompts, expectations }, api) => {
+  addCase: async ({ testPath, name, promptChains, expectations }, api) => {
     log('addTestCase', testPath, name, expectations)
     const tpsPath = getTpsPath(testPath)
     const tpsReport = await api.readJSON<TestFile>(tpsPath)
-    const updated = tps.addTest(tpsReport, name, prompts, expectations)
+    const updated = tps.addTest(tpsReport, name, promptChains, expectations)
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, updated)
+  },
+  confirmCaseCount: async ({ testPath, count, reasoning }, api) => {
+    log('confirmCaseCount', testPath, count, reasoning)
+    const tpsPath = getTpsPath(testPath)
+    const tpsReport = await api.readJSON<TestFile>(tpsPath)
+    if (tpsReport.cases.length !== count) {
+      throw new Error('Wrong case count - should be: ' + tpsReport.cases.length)
+    }
+    return tpsReport.cases.length
   },
 }
 

@@ -88,6 +88,7 @@ export const functions: Functions<Api> = {
       const { parent } = await withMeta(promise)
       assert(parent, 'missing parent')
       await api.merge(parent)
+      log('iteration done', i)
     }
   },
   iteration: async ({ path, caseIndex, iterationIndex }, api) => {
