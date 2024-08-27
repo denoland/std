@@ -36,7 +36,7 @@ function sanitizeInput(input: string) {
   input = String(input);
 
   if (input.length > 0) {
-    // Add tailing `\n` if not exists
+    // Add trailing `\n` if not exists
     if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
 
     // Strip BOM
