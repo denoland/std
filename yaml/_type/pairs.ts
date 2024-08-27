@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { getObjectTypeString } from "../_utils.ts";
+import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlPairs(data: unknown[][]): boolean {
   if (data === null) return true;
@@ -12,7 +12,7 @@ function resolveYamlPairs(data: unknown[][]): boolean {
   const result = Array.from({ length: data.length });
 
   for (const [index, pair] of data.entries()) {
-    if (getObjectTypeString(pair) !== "[object Object]") {
+    if (!isPlainObject(pair)) {
       return false;
     }
 
