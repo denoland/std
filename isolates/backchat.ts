@@ -6,6 +6,7 @@ import {
   generateThreadId,
   getActorId,
   getActorPid,
+  getThreadPath,
   IA,
   print,
   threadIdRegex,
@@ -208,12 +209,12 @@ export const functions: Functions<Api> = {
   },
 }
 const readBackchat = (api: IA) => {
-  const backchatId = getBackchatId(api)
-  return api.readJSON<BackchatThread>(`threads/${backchatId}.json`)
+  const threadPath = getThreadPath(api.pid)
+  return api.readJSON<BackchatThread>(threadPath)
 }
 const writeBackchat = (thread: BackchatThread, api: IA) => {
-  const backchatId = getBackchatId(api)
-  api.writeJSON(`threads/${backchatId}.json`, thread)
+  const threadPath = getThreadPath(api.pid)
+  api.writeJSON(threadPath, thread)
 }
 const assertBackchatThread = (api: IA) => {
   assert(api.pid.branches.length === 3, 'Invalid pid')

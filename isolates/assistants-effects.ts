@@ -5,6 +5,7 @@ import {
   AssistantsThread,
   Functions,
   generateAgentHash,
+  getThreadPath,
   print,
 } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
@@ -106,14 +107,13 @@ export type Api = {
     params: { externalId: string; content: string },
   ) => Promise<OpenAI.Beta.Threads.Message>
   run: (params: {
-    threadId: string
     content: string
     /** Path to the agent to use for this run */
     path: string
     actorId: string
   }) => Promise<void>
   runStream: (
-    params: { threadId: string; runOptions: RunOptions },
+    params: { runOptions: RunOptions },
   ) => Promise<void>
   deleteThread: (params: { externalId: string }) => Promise<void>
   deleteAllAgents: (params: void) => Promise<void>
@@ -166,8 +166,8 @@ export const functions: Functions<Api> = {
     log('message added', message.role)
     return message
   },
-  async run({ threadId, content, path }, api) {
-    const threadPath = `threads/${threadId}.json`
+  async run({ content, path }, api) {
+    const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<AssistantsThread>(threadPath)
     const { externalId } = thread
     assert(externalId, 'thread not synced with openai')
@@ -198,14 +198,14 @@ export const functions: Functions<Api> = {
       temperature: agent.config.temperature,
       tool_choice: agent.config.tool_choice,
     }
-    await runStream({ threadId, runOptions })
+    await runStream({ runOptions })
   },
-  async runStream({ threadId, runOptions }, api) {
-    const threadPath = `threads/${threadId}.json`
+  async runStream({ runOptions }, api) {
+    const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<AssistantsThread>(threadPath)
     const { externalId } = thread
     assert(externalId, 'thread not synced with openai')
-    log('running stream', threadId, externalId)
+    log('running stream', externalId)
 
     return new Promise((resolve, reject) => {
       const stream = ai.beta.threads.runs.stream(externalId, runOptions)

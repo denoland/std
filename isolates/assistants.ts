@@ -1,5 +1,5 @@
 import { assert, Debug } from '@utils'
-import { AssistantsThread, IA, PID } from '@/constants.ts'
+import { AssistantsThread, getThreadPath, IA, PID } from '@/constants.ts'
 import { Functions } from '@/constants.ts'
 import * as effects from './assistants-effects.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
@@ -10,19 +10,12 @@ export const api = {
     description: 'start a new thread for the given agent',
     type: 'object',
     additionalProperties: false,
-    required: ['threadId'],
-    properties: {
-      threadId: {
-        description: 'the id of the thread to execute',
-        type: 'string',
-      },
-    },
+    properties: {},
   },
   run: {
     type: 'object',
-    required: ['threadId', 'path', 'content', 'actorId'],
+    required: ['path', 'content', 'actorId'],
     properties: {
-      threadId: { type: 'string' },
       path: { type: 'string' },
       content: { type: 'string' },
       actorId: { type: 'string' },
@@ -31,10 +24,7 @@ export const api = {
   },
   delete: {
     type: 'object',
-    required: ['threadId'],
-    properties: {
-      threadId: { type: 'string' },
-    },
+    properties: {},
     additionalProperties: false,
   },
   deleteAllAgents: {
@@ -44,22 +34,21 @@ export const api = {
   },
 }
 export interface Api {
-  start: (params: { threadId: string }) => Promise<PID>
+  start: (params: void) => Promise<PID>
   run: (params: {
-    threadId: string
     /** Path to the agent to instantiate */
     path: string
     content: string
     actorId: string
   }) => Promise<void>
-  delete: (params: { threadId: string }) => Promise<void>
+  delete: (params: void) => Promise<void>
   deleteAllAgents: (params: void) => Promise<void>
 }
 
 export const functions: Functions<Api> = {
-  start: async ({ threadId }, api) => {
-    log('start', threadId)
-    const threadPath = `threads/${threadId}.json`
+  start: async (_, api) => {
+    log('start')
+    const threadPath = getThreadPath(api.pid)
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const { createThread } = await api.actions<effects.Api>(
       'assistants-effects',
@@ -77,13 +66,13 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     return api.pid
   },
-  run: async ({ threadId, path, content, actorId }, api) => {
-    log('run', threadId, path, content, actorId)
+  run: async ({ path, content, actorId }, api) => {
+    log('run', path, content, actorId)
     const { run } = await api.actions<effects.Api>('assistants-effects')
-    const threadPath = `threads/${threadId}.json`
+    const threadPath = getThreadPath(api.pid)
     // TODO this is not tested at all
     while (!await isDone(threadPath, api)) {
-      await run({ threadId, content, path, actorId })
+      await run({ content, path, actorId })
       if (await isDone(threadPath, api)) {
         return
       }
@@ -91,9 +80,9 @@ export const functions: Functions<Api> = {
       await executeTools(threadPath, api)
     }
   },
-  delete: async ({ threadId }, api) => {
-    log('delete', threadId)
-    const threadPath = `threads/${threadId}.json`
+  delete: async (_, api) => {
+    log('delete')
+    const threadPath = getThreadPath(api.pid)
     const { externalId } = await api.readJSON<AssistantsThread>(threadPath)
     assert(externalId, 'missing externalId: ' + threadPath)
     api.delete(threadPath)

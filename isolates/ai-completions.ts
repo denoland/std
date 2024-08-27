@@ -8,7 +8,7 @@ import {
   ChatParams,
   CompletionMessage,
   Functions,
-  getBaseName,
+  getThreadPath,
   IA,
   Params,
   print,
@@ -89,9 +89,8 @@ export type Api = {
 }
 export const functions: Functions<Api> = {
   async complete({ path }, api) {
-    const threadId = getBaseName(api.pid)
-    const threadPath = `threads/${threadId}.json`
-    log('completing thread %o', threadId, print(api.pid))
+    const threadPath = getThreadPath(api.pid)
+    log('completing thread %o', threadPath, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
     // TODO assert thread is correctly formatted
 
@@ -101,9 +100,8 @@ export const functions: Functions<Api> = {
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
   },
   async once({ path, content, actorId }, api) {
-    const threadId = getBaseName(api.pid)
-    const threadPath = `threads/${threadId}.json`
-    log('once %o', threadId, print(api.pid))
+    const threadPath = getThreadPath(api.pid)
+    log('once %o', threadPath, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
     const message: Thread['messages'][number] = {
       role: 'user',
@@ -116,9 +114,8 @@ export const functions: Functions<Api> = {
     return result
   },
   async halt({ content, path }, api) {
-    const threadId = getBaseName(api.pid)
-    const threadPath = `threads/${threadId}.json`
-    log('halt %o', threadId, content, path, print(api.pid))
+    const threadPath = getThreadPath(api.pid)
+    log('halt %o', threadPath, content, path, print(api.pid))
     const thread = await api.readJSON<Thread>(threadPath)
     const assistant = await complete(path, thread.messages, api)
 

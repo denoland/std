@@ -4,6 +4,7 @@ import {
   Backchat,
   CradleMaker,
   generateThreadId,
+  getThreadPath,
   PID,
   print,
   Thread,
@@ -18,14 +19,14 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await t.step('prompt', async () => {
       const { start, run } = await backchat.actions<Api>('longthread')
-      const threadId = generateThreadId(t.name)
       await start({})
       await run({
         path: 'agents/agent-fixture.md',
         content: 'say "Hello"',
         actorId: 'ai',
       })
-      const result = await backchat.readJSON<Thread>(`threads/${threadId}.json`)
+      const threadPath = getThreadPath(backchat.pid)
+      const result = await backchat.readJSON<Thread>(threadPath)
       const [assistant] = result.messages.slice(-1)
       expect(assistant.content).toContain('Hello')
     })

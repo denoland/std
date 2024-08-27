@@ -1,7 +1,6 @@
 import {
   chatParams,
   Functions,
-  getActorId,
   getThreadPath,
   IA,
   print,
@@ -15,7 +14,7 @@ import * as longthread from '@/isolates/longthread.ts'
 import * as loadAgent from '@/isolates/load-agent.ts'
 import { getArgs } from '@/isolates/ai-completions.ts'
 import { loadTools } from '@/isolates/ai-load-tools.ts'
-import { addIteration, outcome, TestFile, testFile } from '@/api/tps-report.ts'
+import { addIteration, outcome, testFile } from '@/api/tps-report.ts'
 import { z } from 'zod'
 import { assistantMessage } from '@/api/zod.ts'
 
@@ -74,7 +73,7 @@ export const functions: Functions<Api> = {
   },
 
   caseRunner: async ({ path, caseIndex }, api) => {
-    log('test', path, caseIndex, print(api.pid))
+    log('caseRunner', path, caseIndex, print(api.pid))
 
     const file = await readTpsReport(path, api)
     const { summary: { iterations } } = file
@@ -99,12 +98,12 @@ export const functions: Functions<Api> = {
     const { prompts, expectations } = tpsReport.cases[caseIndex].summary
 
     const chain = prompts[iterationIndex]
-    // if we do not have enough prompts to run the iteration, generate more
     if (prompts.length <= iterationIndex) {
+      // if we do not have enough prompts to run the iteration, generate more
       // need to get the full test section to use the full context available
       // then run this as a drone
     }
-    const actorId = 'asdfasdf'
+    const actorId = 'iteration_' + iterationIndex
     const { start, run } = await api.functions<longthread.Api>('longthread')
     await start({})
     for (const prompt of chain) {
@@ -126,8 +125,8 @@ export const functions: Functions<Api> = {
 
       assert(assistant.tool_calls?.length === 1, 'expected one tool call')
       const args = JSON.parse(assistant.tool_calls[0].function.arguments)
-      log('outcome', args)
       const clean = outcome.parse(args)
+      log('outcome completed')
       return clean
     })
 

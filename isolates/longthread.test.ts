@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { generateThreadId, Thread } from '../constants.ts'
+import { getThreadPath, Thread } from '../constants.ts'
 import * as longthread from './longthread.ts'
 import DB from '@/db.ts'
 import { Engine } from '@/engine.ts'
@@ -29,24 +29,22 @@ Deno.test('longthread chat', async (t) => {
   const engine = await Engine.provision(superuserKey, aesKey)
   const backchat = await Backchat.upsert(engine, privateKey)
 
-  const threadId = generateThreadId('longthread chat')
-  const threadPath = `threads/${threadId}.json`
+  const threadPath = getThreadPath(backchat.pid)
   const actorId = 'longthread'
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
 
   await t.step('create longthread', async () => {
     await backchat.write(path, agentMd)
-    await longthread.start({ threadId })
+    await longthread.start({})
   })
   await t.step('start twice errors', async () => {
-    await expect(longthread.start({ threadId }))
-      .rejects.toThrow('thread exists')
+    await expect(longthread.start({})).rejects.toThrow('thread exists')
   })
 
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
-    await longthread.run({ threadId, path, content, actorId })
+    await longthread.run({ path, content, actorId })
     const result = await backchat.readJSON<Thread>(threadPath)
     log('result', result)
     expect(result.messages).toHaveLength(2)
@@ -57,7 +55,7 @@ Deno.test('longthread chat', async (t) => {
     resetInstructions(backchat, 'return the function call results')
     const content = 'call the "local" function'
 
-    await longthread.run({ threadId, path, content, actorId })
+    await longthread.run({ path, content, actorId })
 
     const result = await backchat.readJSON<Thread>(threadPath)
     expect(result).toHaveProperty('toolCommits')
@@ -77,7 +75,7 @@ Deno.test('longthread chat', async (t) => {
     resetInstructions(backchat, 'return the function call error message')
     const content = 'call the "error" function with message: salami'
 
-    await longthread.run({ threadId, path, content, actorId })
+    await longthread.run({ path, content, actorId })
 
     const result = await backchat.readJSON<Thread>(threadPath)
 
@@ -99,7 +97,7 @@ Deno.test('longthread chat', async (t) => {
       'call the "ping" function twice with the message being the integer "1" for the first one and the integer "2" for the second'
     backchat.write(path, doubleToolCall)
 
-    await longthread.run({ threadId, path, content, actorId })
+    await longthread.run({ path, content, actorId })
     const result = await backchat.readJSON<Thread>(threadPath)
 
     const [assistant] = result.messages.slice(-4)

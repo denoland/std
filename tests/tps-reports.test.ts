@@ -68,7 +68,7 @@ Deno.test('tps report', async () => {
 
   await delay(1)
 
-  const updated = addIteration(added, 0, {
+  const updated = addIteration(added, 0, 0, {
     commit: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
     prompts: ['prompt used'],
     outcomes: [{

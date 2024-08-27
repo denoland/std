@@ -1,6 +1,7 @@
 ---
 target: agents/hamr.md
 assessor: agents/test-assessor.md
+iterations: 2
 ---
 
 # Starter for 10
@@ -8,6 +9,7 @@ assessor: agents/test-assessor.md
 **Prompts:**
 
 - list all customers
+- list customers
 
 **Expections:**
 

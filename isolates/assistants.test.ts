@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { AssistantsThread, generateThreadId, getContent } from '../constants.ts'
+import { AssistantsThread, getContent, getThreadPath } from '../constants.ts'
 import * as assistants from './assistants.ts'
 import DB from '@/db.ts'
 import { Engine } from '@/engine.ts'
@@ -24,20 +24,19 @@ Deno.test.ignore('assistants chat', async (t) => {
   const engine = await Engine.provision(superuserKey, aesKey)
   const backchat = await Backchat.upsert(engine, privateKey)
 
-  const threadId = generateThreadId('assistants chat')
-  const threadPath = `threads/${threadId}.json`
+  const threadPath = getThreadPath(backchat.pid)
   const actorId = 'assistants'
 
   const assistants = await backchat.actions<assistants.Api>('assistants')
 
   await t.step('create assistant thread', async () => {
     await backchat.write(path, agentMd)
-    await assistants.start({ threadId })
+    await assistants.start()
   })
 
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
-    await assistants.run({ threadId, path, content, actorId })
+    await assistants.run({ path, content, actorId })
     const result = await backchat.readJSON<AssistantsThread>(threadPath)
     log('result', result)
     expect(result.messages).toHaveLength(2)
@@ -48,13 +47,13 @@ Deno.test.ignore('assistants chat', async (t) => {
     resetInstructions(backchat, 'return the function call results')
     const content = 'call the "local" function'
 
-    await assistants.run({ threadId, path, content, actorId })
+    await assistants.run({ path, content, actorId })
 
     const result = await backchat.readJSON<AssistantsThread>(threadPath)
     log('result', result)
     // expect(fn.function).toEqual({ name: 'io-fixture_local', arguments: '{}' })
   })
-  await assistants.delete({ threadId })
+  await assistants.delete()
   await assistants.deleteAllAgents()
   await engine.stop()
 })

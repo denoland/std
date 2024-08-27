@@ -13,7 +13,7 @@ import { addBranches } from '@/constants.ts'
 Deno.test('test file runner', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
-    'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   )
 
   const opts = { branchName: 'runner', noClose: true }
@@ -30,17 +30,18 @@ Deno.test('test file runner', async (t) => {
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
     log('done', tps)
     expect(tps).toBeTruthy()
-    expect(tps.summary.completed).toBe(1)
+    expect(tps.summary.completed).toBe(2)
     expect(tps.cases).toHaveLength(1)
-    expect(tps.cases[0].iterations).toHaveLength(1)
+    expect(tps.cases[0].iterations).toHaveLength(2)
     expect(tps.cases[0].iterations[0].outcomes).toHaveLength(4)
+    expect(tps.cases[0].iterations[1].outcomes).toHaveLength(4)
   })
   await engine.stop()
 })
-Deno.test.only('test meeting bot', async (t) => {
+Deno.test('test meeting bot', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
-    'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   )
   const opts = { branchName: 'runner', noClose: true }
   const { drone } = await backchat.actions<Api>('longthread', opts)
@@ -54,7 +55,6 @@ Deno.test.only('test meeting bot', async (t) => {
 
     const tpsPath = meetingTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
-    console.dir(tps, { depth: 10 })
     log('done', tps)
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)

@@ -714,8 +714,10 @@ export const getContent = (message: AssistantsThread['messages'][number]) => {
   return content[0].text.value
 }
 export const getThreadPath = (pid: PID) => {
-  const threadId = getBaseName(pid)
-  return `threads/${threadId}.json`
+  const [, , ...actorChildBranches] = pid.branches
+  const threadPath = actorChildBranches.join('/')
+  const path = `threads/${threadPath}.json`
+  return path
 }
 export const zodPid = z.object({
   repoId: z.string().regex(repoIdRegex),
