@@ -7,8 +7,6 @@ import type { Type } from "../_type.ts";
 import { getObjectTypeString } from "../_utils.ts";
 
 function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
-  if (!data.length) return false;
-
   const objectKeys = new Set();
   for (const object of data) {
     if (getObjectTypeString(object) !== "[object Object]") return false;
