@@ -79,7 +79,12 @@ Deno.test("stringify()", async (t) => {
         `NULL=`,
       ),
   );
-  await t.step("parse", () =>
-    assertEquals(parse(stringify({ PARSE: "par'se" })), { PARSE: "par'se" })
+  await t.step(
+    "parse", 
+    () =>
+      assertEquals(
+        parse(stringify({ PARSE: "par'se" })),
+        { PARSE: "par'se" },
+      ),
   );
 });
