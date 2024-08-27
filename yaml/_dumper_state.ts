@@ -29,7 +29,7 @@ import {
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
 const STYLE_SINGLE = 2;
@@ -565,7 +565,9 @@ export class DumperState {
       case STYLE_DOUBLE:
         return `"${escapeString(string)}"`;
       default:
-        throw new TypeError("impossible error: invalid scalar style");
+        throw new TypeError(
+          "Invalid scalar style should be unreachable: please file a bug report against Deno at https://github.com/denoland/std/issues",
+        );
     }
   }
 
@@ -663,7 +665,9 @@ export class DumperState {
       objectKeyList.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
-      throw new TypeError("sortKeys must be a boolean or a function");
+      throw new TypeError(
+        '"sortKeys" must be a boolean or a function: received ${typeof this.sortKeys}',
+      );
     }
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -777,12 +781,9 @@ export class DumperState {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    const objectOrArray = isObject(value) ||
-      Array.isArray(value);
-
     let duplicateIndex = -1;
     let duplicate = false;
-    if (objectOrArray) {
+    if (isObject(value)) {
       duplicateIndex = this.duplicates.indexOf(value);
       duplicate = duplicateIndex !== -1;
     }
@@ -798,35 +799,37 @@ export class DumperState {
     if (duplicate && this.usedDuplicates.has(value)) {
       return `*ref_${duplicateIndex}`;
     } else {
-      if (objectOrArray && duplicate) {
-        this.usedDuplicates.add(value);
-      }
-      if (isObject(value) && !Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
+      if (isObject(value)) {
+        if (duplicate) {
+          this.usedDuplicates.add(value);
         }
-      } else if (Array.isArray(value)) {
-        const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-        if (block && value.length !== 0) {
-          value = this.stringifyBlockSequence(value, {
-            level: arrayLevel,
-            compact,
-          });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
+        if (!Array.isArray(value)) {
+          if (block && Object.keys(value).length !== 0) {
+            value = this.stringifyBlockMapping(value, { tag, level, compact });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex}${value}`;
+            }
+          } else {
+            value = this.stringifyFlowMapping(value, { level });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex} ${value}`;
+            }
           }
         } else {
-          value = this.stringifyFlowSequence(value, { level: arrayLevel });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
+          const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
+          if (block && value.length !== 0) {
+            value = this.stringifyBlockSequence(value, {
+              level: arrayLevel,
+              compact,
+            });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex}${value}`;
+            }
+          } else {
+            value = this.stringifyFlowSequence(value, { level: arrayLevel });
+            if (duplicate) {
+              value = `&ref_${duplicateIndex} ${value}`;
+            }
           }
         }
       } else if (typeof value === "string") {
@@ -835,11 +838,7 @@ export class DumperState {
         }
       } else {
         if (this.skipInvalid) return null;
-        throw new TypeError(
-          `unacceptable kind of an object to dump ${
-            getObjectTypeString(value)
-          }`,
-        );
+        throw new TypeError(`Cannot stringify ${typeof value}`);
       }
 
       if (tag !== null && tag !== "?") {

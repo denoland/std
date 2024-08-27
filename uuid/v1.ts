@@ -142,7 +142,7 @@ export function generate(options: GenerateOptions = {}): string {
 
   if (node.length !== 6) {
     throw new Error(
-      "Cannot create UUID. The node option must be an array of 6 bytes",
+      "Cannot create UUID: the node option must be an array of 6 bytes",
     );
   }
 

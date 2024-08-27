@@ -58,7 +58,7 @@ export async function generate(
   data: Uint8Array,
 ): Promise<string> {
   if (!validateCommon(namespace)) {
-    throw new TypeError("Invalid namespace UUID");
+    throw new TypeError(`Cannot generate UUID: invalid namespace ${namespace}`);
   }
   const namespaceBytes = uuidToBytes(namespace);
   const toHash = concat([namespaceBytes, data]);

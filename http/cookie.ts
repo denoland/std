@@ -131,7 +131,7 @@ function toString(cookie: Cookie): string {
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
     if (cookie.maxAge < 0) {
       throw new RangeError(
-        "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+        `Cannot serialize cookie as Max-Age must be >= 0: received ${cookie.maxAge}`,
       );
     }
     out.push(`Max-Age=${cookie.maxAge}`);
@@ -164,7 +164,7 @@ function toString(cookie: Cookie): string {
  */
 function validateName(name: string | undefined | null) {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
-    throw new SyntaxError(`Invalid cookie name: "${name}".`);
+    throw new SyntaxError(`Invalid cookie name: "${name}"`);
   }
 }
 
@@ -184,7 +184,7 @@ function validatePath(path: string | null) {
       c === ";"
     ) {
       throw new SyntaxError(
-        path + ": Invalid cookie path char '" + c + "'",
+        `Cookie path "${path}" contains invalid character: "${c}"`,
       );
     }
   }
@@ -210,7 +210,8 @@ function validateValue(name: string, value: string | null) {
     }
     if (c > String.fromCharCode(0x80)) {
       throw new SyntaxError(
-        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value" +
+        "RFC2616 cookie '" + name +
+          "' can only have US-ASCII chars as value: It contains 0x" +
           c.charCodeAt(0).toString(16),
       );
     }

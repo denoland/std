@@ -13,7 +13,7 @@ export type ValueType =
   | boolean
   | null
   | Uint8Array
-  | ValueType[]
+  | readonly ValueType[]
   | ValueMap;
 
 /**

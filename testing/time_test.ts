@@ -339,7 +339,7 @@ Deno.test("FakeTime.restoreFor() returns promise that rejected to TimeError if F
   await assertRejects(
     () => FakeTime.restoreFor(() => {}),
     TimeError,
-    "Time is not faked",
+    "Cannot restore time: time is not faked",
   );
 });
 
@@ -662,15 +662,23 @@ Deno.test("Faked timer functions throws when called after FakeTime is restored",
   assertThrows(
     () => fakeSetTimeout(() => {}, 0),
     TimeError,
-    "Time is not faked",
+    "Cannot set timeout: time is not faked",
   );
-  assertThrows(() => fakeClearTimeout(0), TimeError, "Time is not faked");
+  assertThrows(
+    () => fakeClearTimeout(0),
+    TimeError,
+    "Cannot clear timeout: time is not faked",
+  );
   assertThrows(
     () => fakeSetInterval(() => {}, 0),
     TimeError,
-    "Time is not faked",
+    "Cannot set interval: time is not faked",
   );
-  assertThrows(() => fakeClearInterval(0), TimeError, "Time is not faked");
+  assertThrows(
+    () => fakeClearInterval(0),
+    TimeError,
+    "Cannot clear interval: time is not faked",
+  );
 });
 
 Deno.test("Faked Date.now returns real time after FakeTime is restored", () => {
@@ -700,19 +708,31 @@ Deno.test("FakeTime can be constructed with number, Date, or string", () => {
 });
 
 Deno.test("FakeTime throws when NaN is provided", () => {
-  assertThrows(() => new FakeTime(NaN), TypeError, "Invalid start time");
+  assertThrows(
+    () => new FakeTime(NaN),
+    TypeError,
+    "Cannot construct FakeTime: invalid start time NaN",
+  );
 });
 
 Deno.test("FakeTime.restore() throws when the time is already restored", () => {
   const _time = new FakeTime();
   FakeTime.restore();
-  assertThrows(() => FakeTime.restore(), TimeError, "Time is already restored");
+  assertThrows(
+    () => FakeTime.restore(),
+    TimeError,
+    "Cannot restore time: time is already restored",
+  );
 });
 
 Deno.test("time.restore() throws when the time is already restored", () => {
   const time = new FakeTime();
   time.restore();
-  assertThrows(() => time.restore(), TimeError, "Time is already restored");
+  assertThrows(
+    () => time.restore(),
+    TimeError,
+    "Cannot restore time: time is already restored",
+  );
 });
 
 Deno.test("time.now = N throws when N < time.now", () => {
@@ -722,7 +742,7 @@ Deno.test("time.now = N throws when N < time.now", () => {
       time.now = 999;
     },
     RangeError,
-    "Time cannot go backwards",
+    "Cannot set current time in the past, time must be >= 1000: received 999",
   );
 });
 

@@ -60,7 +60,7 @@ async function ensureValidCopy(
 
   if (options.isFolder && !destStat.isDirectory) {
     throw new Error(
-      `Cannot overwrite non-directory '${dest}' with directory '${src}'.`,
+      `Cannot overwrite non-directory '${dest}' with directory '${src}'`,
     );
   }
   if (!options.overwrite) {
@@ -87,11 +87,11 @@ function ensureValidCopySync(
 
   if (options.isFolder && !destStat.isDirectory) {
     throw new Error(
-      `Cannot overwrite non-directory '${dest}' with directory '${src}'.`,
+      `Cannot overwrite non-directory '${dest}' with directory '${src}'`,
     );
   }
   if (!options.overwrite) {
-    throw new Deno.errors.AlreadyExists(`'${dest}' already exists.`);
+    throw new Deno.errors.AlreadyExists(`'${dest}' already exists`);
   }
 
   return destStat;
@@ -313,14 +313,14 @@ export async function copy(
   dest = resolve(toPathString(dest));
 
   if (src === dest) {
-    throw new Error("Source and destination cannot be the same.");
+    throw new Error("Source and destination cannot be the same");
   }
 
   const srcStat = await Deno.lstat(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {
     throw new Error(
-      `Cannot copy '${src}' to a subdirectory of itself, '${dest}'.`,
+      `Cannot copy '${src}' to a subdirectory of itself: '${dest}'`,
     );
   }
 
@@ -389,14 +389,14 @@ export function copySync(
   dest = resolve(toPathString(dest));
 
   if (src === dest) {
-    throw new Error("Source and destination cannot be the same.");
+    throw new Error("Source and destination cannot be the same");
   }
 
   const srcStat = Deno.lstatSync(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {
     throw new Error(
-      `Cannot copy '${src}' to a subdirectory of itself, '${dest}'.`,
+      `Cannot copy '${src}' to a subdirectory of itself: '${dest}'`,
     );
   }
 

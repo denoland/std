@@ -79,7 +79,7 @@ Deno.test("spy()", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Function cannot be restore",
+    "Cannot restore: function cannot be restored",
   );
   assertEquals(func.restored, false);
 });
@@ -125,7 +125,7 @@ Deno.test("spy() works on function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Function cannot be restored",
+    "Cannot restore: function cannot be restored",
   );
   assertEquals(func.restored, false);
 
@@ -239,7 +239,7 @@ Deno.test("spy() works on instance method", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -277,7 +277,7 @@ Deno.test("spy() works on instance method symbol", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -342,7 +342,7 @@ Deno.test("spy() works on instance method property descriptor", () => {
   assertThrows(
     () => action.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(action.restored, true);
 });
@@ -444,7 +444,7 @@ Deno.test("spy() supports explicit resource management", () => {
         if (funcRef) funcRef.restore();
       },
       MockError,
-      "Instance method already restored",
+      "Cannot restore: instance method already restored",
     );
     assertEquals(funcRef.restored, true);
   }
@@ -478,7 +478,7 @@ Deno.test("spy() works on constructor", () => {
   assertThrows(
     () => PointSpy.restore(),
     MockError,
-    "Constructor cannot be restored",
+    "Cannot restore: constructor cannot be restored",
   );
 });
 
@@ -546,7 +546,7 @@ Deno.test("spy() throws when try spying already spied method", () => {
   assertThrows(
     () => spy(obj, "fn"),
     MockError,
-    "Already spying on instance method",
+    "Cannot spy: already spying on instance method",
   );
 });
 
@@ -556,7 +556,7 @@ Deno.test("spy() throws when the property is not a method", () => {
     // deno-lint-ignore no-explicit-any
     () => spy(obj as any, "fn"),
     MockError,
-    "Property is not an instance method",
+    "Cannot spy: property is not an instance method",
   );
 });
 
@@ -566,7 +566,7 @@ Deno.test("spy() throws when the property is not configurable", () => {
   assertThrows(
     () => spy(obj, "fn"),
     MockError,
-    "Cannot spy on non-configurable instance method",
+    "Cannot spy: non-configurable instance method",
   );
 });
 
@@ -602,7 +602,7 @@ Deno.test("stub()", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -640,7 +640,7 @@ Deno.test("stub() works on function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -684,7 +684,7 @@ Deno.test("stub() supports explicit resource management", () => {
         if (funcRef) funcRef.restore();
       },
       MockError,
-      "Instance method already restored",
+      "Cannot restore: instance method already restored",
     );
     assertEquals(funcRef.restored, true);
   }
@@ -727,7 +727,7 @@ Deno.test("stub() handles non existent function", () => {
   assertThrows(
     () => func.restore(),
     MockError,
-    "Instance method already restored",
+    "Cannot restore: instance method already restored",
   );
   assertEquals(func.restored, true);
 });
@@ -797,7 +797,7 @@ Deno.test("stub() throws when the property is not a method", () => {
     // deno-lint-ignore no-explicit-any
     () => stub(obj as any, "fn"),
     MockError,
-    "Property is not an instance method",
+    "Cannot stub: property is not an instance method",
   );
 });
 
@@ -807,7 +807,7 @@ Deno.test("stub() throws when try stubbing already stubbed method", () => {
   assertThrows(
     () => stub(obj, "fn"),
     MockError,
-    "Already spying on instance method",
+    "Cannot stub: already spying on instance method",
   );
 });
 
@@ -817,7 +817,7 @@ Deno.test("stub() throws then the property is not configurable", () => {
   assertThrows(
     () => stub(obj, "fn"),
     MockError,
-    "Cannot stub non-configurable instance method",
+    "Cannot stub: non-configurable instance method",
   );
 });
 

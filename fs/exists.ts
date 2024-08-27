@@ -123,7 +123,7 @@ export async function exists(
     ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
-          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together",
         );
       }
       if (
@@ -252,7 +252,7 @@ export function existsSync(
     ) {
       if (options.isDirectory && options.isFile) {
         throw new TypeError(
-          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together.",
+          "ExistsOptions.options.isDirectory and ExistsOptions.options.isFile must not be true together",
         );
       }
       if (
