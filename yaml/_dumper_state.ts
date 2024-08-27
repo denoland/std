@@ -29,7 +29,7 @@ import {
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
 import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
 const STYLE_SINGLE = 2;
@@ -831,9 +831,7 @@ export class DumperState {
       }
     } else {
       if (this.skipInvalid) return null;
-      throw new TypeError(
-        `Cannot stringify object of type: ${getObjectTypeString(value)}`,
-      );
+      throw new TypeError(`Cannot stringify ${typeof value}`);
     }
 
     if (tag !== null && tag !== "?") {

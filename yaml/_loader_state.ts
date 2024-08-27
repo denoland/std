@@ -750,6 +750,199 @@ export class LoaderState {
       "Unexpected end of the stream within a single quoted scalar",
     );
   }
+  readDoubleQuotedScalar(nodeIndent: number): boolean {
+    let ch = this.peek();
+
+    if (ch !== DOUBLE_QUOTE) {
+      return false;
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+    this.position++;
+    let captureEnd = this.position;
+    let captureStart = this.position;
+    let tmp: number;
+    while ((ch = this.peek()) !== 0) {
+      if (ch === DOUBLE_QUOTE) {
+        this.captureSegment(captureStart, this.position, true);
+        this.position++;
+        return true;
+      }
+      if (ch === BACKSLASH) {
+        this.captureSegment(captureStart, this.position, true);
+        ch = this.next();
+
+        if (isEOL(ch)) {
+          this.skipSeparationSpace(false, nodeIndent);
+        } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
+          this.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
+          this.position++;
+        } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
+          let hexLength = tmp;
+          let hexResult = 0;
+
+          for (; hexLength > 0; hexLength--) {
+            ch = this.next();
+
+            if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
+              hexResult = (hexResult << 4) + tmp;
+            } else {
+              return this.throwError(
+                "Cannot read double quoted scalar: expected hexadecimal character",
+              );
+            }
+          }
+
+          this.result += codepointToChar(hexResult);
+
+          this.position++;
+        } else {
+          return this.throwError(
+            "Cannot read double quoted scalar: unknown escape sequence",
+          );
+        }
+
+        captureStart = captureEnd = this.position;
+      } else if (isEOL(ch)) {
+        this.captureSegment(captureStart, captureEnd, true);
+        this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
+        captureStart = captureEnd = this.position;
+      } else if (
+        this.position === this.lineStart &&
+        this.testDocumentSeparator()
+      ) {
+        return this.throwError(
+          "Unexpected end of the document within a double quoted scalar",
+        );
+      } else {
+        this.position++;
+        captureEnd = this.position;
+      }
+    }
+
+    return this.throwError(
+      "Unexpected end of the stream within a double quoted scalar",
+    );
+  }
+  readFlowCollection(nodeIndent: number): boolean {
+    let ch = this.peek();
+    let terminator: number;
+    let isMapping = true;
+    let result = {};
+    if (ch === LEFT_SQUARE_BRACKET) {
+      terminator = RIGHT_SQUARE_BRACKET;
+      isMapping = false;
+      result = [];
+    } else if (ch === LEFT_CURLY_BRACKET) {
+      terminator = RIGHT_CURLY_BRACKET;
+    } else {
+      return false;
+    }
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.next();
+
+    const tag = this.tag;
+    const anchor = this.anchor;
+    let readNext = true;
+    let valueNode = null;
+    let keyNode = null;
+    let keyTag: string | null = null;
+    let isExplicitPair = false;
+    let isPair = false;
+    let following = 0;
+    let line = 0;
+    const overridableKeys = new Set<string>();
+    while (ch !== 0) {
+      this.skipSeparationSpace(true, nodeIndent);
+
+      ch = this.peek();
+
+      if (ch === terminator) {
+        this.position++;
+        this.tag = tag;
+        this.anchor = anchor;
+        this.kind = isMapping ? "mapping" : "sequence";
+        this.result = result;
+        return true;
+      }
+      if (!readNext) {
+        return this.throwError(
+          "Cannot read flow collection: missing comma between flow collection entries",
+        );
+      }
+
+      keyTag = keyNode = valueNode = null;
+      isPair = isExplicitPair = false;
+
+      if (ch === QUESTION) {
+        following = this.peek(1);
+
+        if (isWhiteSpaceOrEOL(following)) {
+          isPair = isExplicitPair = true;
+          this.position++;
+          this.skipSeparationSpace(true, nodeIndent);
+        }
+      }
+
+      line = this.line;
+      composeNode(this, nodeIndent, CONTEXT_FLOW_IN, false, true);
+      keyTag = this.tag || null;
+      keyNode = this.result;
+      this.skipSeparationSpace(true, nodeIndent);
+
+      ch = this.peek();
+
+      if ((isExplicitPair || this.line === line) && ch === COLON) {
+        isPair = true;
+        ch = this.next();
+        this.skipSeparationSpace(true, nodeIndent);
+        composeNode(this, nodeIndent, CONTEXT_FLOW_IN, false, true);
+        valueNode = this.result;
+      }
+
+      if (isMapping) {
+        this.storeMappingPair(
+          result as Record<string, unknown>,
+          overridableKeys,
+          keyTag,
+          keyNode,
+          valueNode,
+        );
+      } else if (isPair) {
+        (result as Record<string, unknown>[]).push(
+          this.storeMappingPair(
+            {},
+            overridableKeys,
+            keyTag,
+            keyNode,
+            valueNode,
+          ),
+        );
+      } else {
+        (result as unknown[]).push(keyNode);
+      }
+
+      this.skipSeparationSpace(true, nodeIndent);
+
+      ch = this.peek();
+
+      if (ch === COMMA) {
+        readNext = true;
+        ch = this.next();
+      } else {
+        readNext = false;
+      }
+    }
+
+    return this.throwError(
+      "Cannot read flow collection: unexpected end of the stream within a flow collection",
+    );
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -877,204 +1070,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readDoubleQuotedScalar(
-  state: LoaderState,
-  nodeIndent: number,
-): boolean {
-  let ch = state.peek();
-
-  if (ch !== DOUBLE_QUOTE) {
-    return false;
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-  state.position++;
-  let captureEnd = state.position;
-  let captureStart = state.position;
-  let tmp: number;
-  while ((ch = state.peek()) !== 0) {
-    if (ch === DOUBLE_QUOTE) {
-      state.captureSegment(captureStart, state.position, true);
-      state.position++;
-      return true;
-    }
-    if (ch === BACKSLASH) {
-      state.captureSegment(captureStart, state.position, true);
-      ch = state.next();
-
-      if (isEOL(ch)) {
-        state.skipSeparationSpace(false, nodeIndent);
-      } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
-        state.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
-        state.position++;
-      } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
-        let hexLength = tmp;
-        let hexResult = 0;
-
-        for (; hexLength > 0; hexLength--) {
-          ch = state.next();
-
-          if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
-            hexResult = (hexResult << 4) + tmp;
-          } else {
-            return state.throwError(
-              "Cannot read double quoted scalar: expected hexadecimal character",
-            );
-          }
-        }
-
-        state.result += codepointToChar(hexResult);
-
-        state.position++;
-      } else {
-        return state.throwError(
-          "Cannot read double quoted scalar: unknown escape sequence",
-        );
-      }
-
-      captureStart = captureEnd = state.position;
-    } else if (isEOL(ch)) {
-      state.captureSegment(captureStart, captureEnd, true);
-      state.writeFoldedLines(state.skipSeparationSpace(false, nodeIndent));
-      captureStart = captureEnd = state.position;
-    } else if (
-      state.position === state.lineStart &&
-      state.testDocumentSeparator()
-    ) {
-      return state.throwError(
-        "Unexpected end of the document within a double quoted scalar",
-      );
-    } else {
-      state.position++;
-      captureEnd = state.position;
-    }
-  }
-
-  return state.throwError(
-    "Unexpected end of the stream within a double quoted scalar",
-  );
-}
-
-function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
-  let ch = state.peek();
-  let terminator: number;
-  let isMapping = true;
-  let result = {};
-  if (ch === LEFT_SQUARE_BRACKET) {
-    terminator = RIGHT_SQUARE_BRACKET;
-    isMapping = false;
-    result = [];
-  } else if (ch === LEFT_CURLY_BRACKET) {
-    terminator = RIGHT_CURLY_BRACKET;
-  } else {
-    return false;
-  }
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.next();
-
-  const tag = state.tag;
-  const anchor = state.anchor;
-  let readNext = true;
-  let valueNode = null;
-  let keyNode = null;
-  let keyTag: string | null = null;
-  let isExplicitPair = false;
-  let isPair = false;
-  let following = 0;
-  let line = 0;
-  const overridableKeys = new Set<string>();
-  while (ch !== 0) {
-    state.skipSeparationSpace(true, nodeIndent);
-
-    ch = state.peek();
-
-    if (ch === terminator) {
-      state.position++;
-      state.tag = tag;
-      state.anchor = anchor;
-      state.kind = isMapping ? "mapping" : "sequence";
-      state.result = result;
-      return true;
-    }
-    if (!readNext) {
-      return state.throwError(
-        "Cannot read flow collection: missing comma between flow collection entries",
-      );
-    }
-
-    keyTag = keyNode = valueNode = null;
-    isPair = isExplicitPair = false;
-
-    if (ch === QUESTION) {
-      following = state.peek(1);
-
-      if (isWhiteSpaceOrEOL(following)) {
-        isPair = isExplicitPair = true;
-        state.position++;
-        state.skipSeparationSpace(true, nodeIndent);
-      }
-    }
-
-    line = state.line;
-    composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
-    keyTag = state.tag || null;
-    keyNode = state.result;
-    state.skipSeparationSpace(true, nodeIndent);
-
-    ch = state.peek();
-
-    if ((isExplicitPair || state.line === line) && ch === COLON) {
-      isPair = true;
-      ch = state.next();
-      state.skipSeparationSpace(true, nodeIndent);
-      composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
-      valueNode = state.result;
-    }
-
-    if (isMapping) {
-      state.storeMappingPair(
-        result as Record<string, unknown>,
-        overridableKeys,
-        keyTag,
-        keyNode,
-        valueNode,
-      );
-    } else if (isPair) {
-      (result as Record<string, unknown>[]).push(
-        state.storeMappingPair(
-          {},
-          overridableKeys,
-          keyTag,
-          keyNode,
-          valueNode,
-        ),
-      );
-    } else {
-      (result as unknown[]).push(keyNode);
-    }
-
-    state.skipSeparationSpace(true, nodeIndent);
-
-    ch = state.peek();
-
-    if (ch === COMMA) {
-      readNext = true;
-      ch = state.next();
-    } else {
-      readNext = false;
-    }
-  }
-
-  return state.throwError(
-    "Cannot read flow collection: unexpected end of the stream within a flow collection",
-  );
 }
 
 // Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
@@ -1649,14 +1644,14 @@ function composeNode(
         (allowBlockCollections &&
           (state.readBlockSequence(blockIndent) ||
             readBlockMapping(state, blockIndent, flowIndent))) ||
-        readFlowCollection(state, flowIndent)
+        state.readFlowCollection(flowIndent)
       ) {
         hasContent = true;
       } else {
         if (
           (allowBlockScalars && readBlockScalar(state, flowIndent)) ||
           state.readSingleQuotedScalar(flowIndent) ||
-          readDoubleQuotedScalar(state, flowIndent)
+          state.readDoubleQuotedScalar(flowIndent)
         ) {
           hasContent = true;
         } else if (readAlias(state)) {
