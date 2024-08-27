@@ -140,11 +140,15 @@ Deno.test({
 Deno.test({
   name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
-    const object = { undefined: undefined };
     assertThrows(
-      () => stringify(object),
+      () => stringify(undefined),
       TypeError,
-      "Cannot stringify object of type: [object Undefined]",
+      "Cannot stringify undefined",
+    );
+    assertThrows(
+      () => stringify(() => {}),
+      TypeError,
+      "Cannot stringify function",
     );
   },
 });
@@ -676,7 +680,10 @@ Deno.test("stringify() uses quotes around deprecated boolean notations when `com
 });
 
 Deno.test("stringify() handles undefined with skipInvalid option", () => {
-  assertEquals(stringify(undefined, { skipInvalid: true }), "");
+  assertEquals(
+    stringify(undefined, { skipInvalid: true }),
+    "",
+  );
 });
 
 Deno.test({
