@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { stringify } from "./stringify.ts";
+import { parse } from "./parse.ts";
 
 Deno.test("stringify()", async (t) => {
   await t.step(
@@ -77,5 +78,8 @@ Deno.test("stringify()", async (t) => {
         stringify({ "NULL": null } as unknown as Record<string, string>),
         `NULL=`,
       ),
+  );
+  await t.step("parse", () =>
+    assertEquals(parse(stringify({ PARSE: "par'se" })), { PARSE: "par'se" })
   );
 });
