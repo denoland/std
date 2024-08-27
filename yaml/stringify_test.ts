@@ -756,3 +756,14 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() handles duplicate binary references",
+  fn() {
+    const a = new Uint8Array();
+    assertEquals(
+      stringify([a, a]),
+      "- !<tag:yaml.org,2002:binary> AAAA\n- !<tag:yaml.org,2002:binary> AAAA\n",
+    );
+  },
+});
