@@ -30,6 +30,6 @@ Deno.test("expect().toHaveBeenLastCalledWith() handles the case when the mock is
   assertThrows(
     () => expect(mockFn).toHaveBeenLastCalledWith(1, 2, 3),
     AssertionError,
-    "Expected mock function to be last called with 1, 2, 3, but it was not.",
+    "Expected mock function to be last called with 1, 2, 3, but it was not",
   );
 });
