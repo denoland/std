@@ -98,7 +98,7 @@ export const functions: Functions<Api> = {
     const { agent, assessor } = tpsReport.summary
     const { prompts, expectations } = tpsReport.cases[caseIndex].summary
 
-    const chain = prompts[iterationIndex]
+    const chain = prompts[iterationIndex % prompts.length]
     if (prompts.length <= iterationIndex) {
       // if we do not have enough prompts to run the iteration, generate more
       // need to get the full test section to use the full context available
