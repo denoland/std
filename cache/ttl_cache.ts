@@ -6,7 +6,7 @@ import type { MemoizationCache } from "./memoize.ts";
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * Automatically removes entries once the configured amount of time elapses.
+ * Automatically removes entries after the configured amount of time elapses.
  *
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
@@ -35,7 +35,9 @@ export class TtlCache<K, V> extends Map<K, V>
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
-   * @param defaultTtl The default time-to-live in milliseconds
+   * @param defaultTtl The default time-to-live in milliseconds. This value must
+   * be equal to or greater than 0. Its limit is determined by the current
+   * runtime's {@linkcode setTimeout} implementation.
    */
   constructor(defaultTtl: number) {
     super();
@@ -49,7 +51,10 @@ export class TtlCache<K, V> extends Map<K, V>
    *
    * @param key The cache key
    * @param value The value to set
-   * @param ttl A custom time-to-live. If supplied, overrides the cache's default TTL for this entry.
+   * @param ttl A custom time-to-live. If supplied, overrides the cache's
+   * default TTL for this entry. This value must
+   * be equal to or greater than 0. Its limit is determined by the current
+   * runtime's {@linkcode setTimeout} implementation.
    * @returns `this` for chaining.
    *
    * @example Usage
