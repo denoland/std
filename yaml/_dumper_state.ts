@@ -565,7 +565,9 @@ export class DumperState {
       case STYLE_DOUBLE:
         return `"${escapeString(string)}"`;
       default:
-        throw new TypeError("impossible error: invalid scalar style");
+        throw new TypeError(
+          "Invalid scalar style should be unreachable: please file a bug report against Deno at https://github.com/denoland/std/issues",
+        );
     }
   }
 
@@ -663,7 +665,9 @@ export class DumperState {
       objectKeyList.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
-      throw new TypeError("sortKeys must be a boolean or a function");
+      throw new TypeError(
+        '"sortKeys" must be a boolean or a function: received ${typeof this.sortKeys}',
+      );
     }
 
     for (const [index, objectKey] of objectKeyList.entries()) {
@@ -835,9 +839,7 @@ export class DumperState {
       } else {
         if (this.skipInvalid) return null;
         throw new TypeError(
-          `unacceptable kind of an object to dump ${
-            getObjectTypeString(value)
-          }`,
+          `Cannot stringify object of type: ${getObjectTypeString(value)}`,
         );
       }
 
