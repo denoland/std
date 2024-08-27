@@ -25,19 +25,16 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 
   return true;
 }
-function constructYamlPairs(data: string) {
+function constructYamlPairs(
+  data: Record<string, unknown>[] | null,
+): [string, unknown][] {
   if (data === null) return [];
-
-  const result = Array.from({ length: data.length });
-
-  for (let index = 0; index < data.length; index += 1) {
-    const pair = data[index]!;
-
-    const keys = Object.keys(pair);
-
-    result[index] = [keys[0], pair[keys[0] as keyof typeof pair]];
+  const result: [string, unknown][] = Array.from({ length: data.length });
+  for (const [index, pair] of data.entries()) {
+    const key = Object.keys(pair)[0] as keyof typeof pair;
+    const value = pair[key];
+    result[index] = [key, value];
   }
-
   return result;
 }
 
