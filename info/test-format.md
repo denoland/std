@@ -22,7 +22,8 @@ the run. The following values are allowed:
 - assessor: The assessor is the path to the agent that is to perform the
   assessments on end system state after running the target agent under test.
 - iterations: The number of variations of each test case to run, to exercise the
-  agent more broadly. If the iterations value is missing, then assume it to be 1
+  agent more broadly. If the iterations value is missing, then assume it to be
+  one.
 
 ## Test cases
 
@@ -39,15 +40,24 @@ Prompts are used to exercise the target agent under test.
 Expectations are used to verify the end system state after the target agent has
 been run with each of the given prompts.
 
-## Prompts
+A test case will be run with one or more iterations, where each iteration is the
+same test case, but run with slightly different prompts. A test case is complete
+when all the iterations of it are completed.
 
-Prompts start with something like **Prompts:** followed by a list of prompts
-that are to be used to exercise the target agent.
+## Prompt Chains
+
+Prompt Chains start with something like **Prompts:** followed by a list of
+prompts or prompt chains that are to be used to exercise the target agent. A
+single line is a prompt chain with a single prompt within it.
 
 Each prompt may be plain text, or may be a fenced codeblock, often in md or
 markdown format, since the test file itself is markdown and a prompt that
 includes markdown features needs to be fenced to signal it is meant to be passed
 as a single block of text.
+
+In the list of prompt chains, a chain of prompts may be specified with the
+keyword "Chain:" or similar. This indicates that each item in the list is part
+of a chain of prompts.
 
 ## Expectations
 
@@ -56,3 +66,44 @@ of expectations about the end system state after the agent has been run. Each
 item in this list is checked by the assessor agent against the output of running
 each prompt. The result of assessment is always a true or a false as to whether
 the expectation was met or not.
+
+## Iterations
+
+Each test case is run thru a number of iterations. These are ai generated
+variations on the prompt used each run. If the number of iterations is greater
+than the number of prompts that are supplied, then an AI will be used to
+generate further variations using the given prompts as the basis for a theme.
+
+# Example
+
+Consider the following file:
+
+```md
+---
+target: agents/some-agent.md
+assessor: agents/test-assessor.md
+iterations: 50
+---
+
+# Warming the ocean
+
+**Prompts:**
+
+- warm the ocean
+- warm the ocean immediately
+- do the thing
+- **Chain:**
+  - good morning
+  - please warm the ocean by 2 degrees
+  - centigrade
+
+**Expections:**
+
+- the warm_ocean function was called
+- responses were short and to the point
+- the ocean is no longer cold
+```
+
+In this file, there is 1 test case("Warming the ocean") and there are 4
+variations of prompt chains provided, with one being a chain of 3 prompts and
+the rest being a chain of exactly 1 prompt. There are 3 expectations.
