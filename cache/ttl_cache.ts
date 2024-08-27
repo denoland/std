@@ -36,7 +36,7 @@ export class TtlCache<K, V> extends Map<K, V>
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param defaultTtl The default time-to-live in milliseconds. This value must
-   * be equal to or greater than 0. It's limit is determined by the current
+   * be equal to or greater than 0. Its limit is determined by the current
    * runtime's {@linkcode setTimeout} implementation.
    */
   constructor(defaultTtl: number) {
@@ -53,7 +53,7 @@ export class TtlCache<K, V> extends Map<K, V>
    * @param value The value to set
    * @param ttl A custom time-to-live. If supplied, overrides the cache's
    * default TTL for this entry. This value must
-   * be equal to or greater than 0. It's limit is determined by the current
+   * be equal to or greater than 0. Its limit is determined by the current
    * runtime's {@linkcode setTimeout} implementation.
    * @returns `this` for chaining.
    *
