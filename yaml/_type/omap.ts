@@ -14,9 +14,7 @@ function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
   for (const pair of data) {
     pairHasKey = false;
 
-    if (!isPlainObject(pair)) {
-      return false;
-    }
+    if (!isPlainObject(pair)) return false;
 
     for (pairKey in pair) {
       if (Object.hasOwn(pair, pairKey)) {

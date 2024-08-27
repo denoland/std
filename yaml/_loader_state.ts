@@ -456,10 +456,7 @@ export class LoaderState {
           );
         }
 
-        if (
-          typeof keyNode === "object" &&
-          isPlainObject(keyNode[index])
-        ) {
+        if (typeof keyNode === "object" && isPlainObject(keyNode[index])) {
           keyNode[index] = "[object Object]";
         }
       }
@@ -468,10 +465,7 @@ export class LoaderState {
     // Avoid code execution in load() via toString property
     // (still use its own toString for arrays, timestamps,
     // and whatever user schema extensions happen to have @@toStringTag)
-    if (
-      typeof keyNode === "object" &&
-      isPlainObject(keyNode)
-    ) {
+    if (typeof keyNode === "object" && isPlainObject(keyNode)) {
       keyNode = "[object Object]";
     }
 
