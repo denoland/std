@@ -337,7 +337,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
     node.next = ptr;
     node.prev = ptr.prev;
     ptr.prev!.next = node;
-    ptr.prev = node;
+    ptr.prev = ptr.prev!.next;
 
     ++this.#length;
     return this.#length;
@@ -447,7 +447,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
   }
 
   /**
-   * Removes all nodes of the linked list.
+   * Removes all nodes from the linked list.
    *
    * The complexity of this operation is O(1).
    *

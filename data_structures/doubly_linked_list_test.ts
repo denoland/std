@@ -101,7 +101,7 @@ Deno.test("DoublyLinkedList.remove() removes the node at the given index and ret
   assertEquals(empty.remove(0), undefined);
 });
 
-Deno.test("DoublyLinkedList.has() checks if the list contains the given value", () => {
+Deno.test("DoublyLinkedList.includes() checks if the list contains the given value", () => {
   const list = new DoublyLinkedList<string>();
   assertEquals(list.includes("x"), false);
 
