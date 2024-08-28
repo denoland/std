@@ -32,8 +32,9 @@ export const pairs: Type<"sequence"> = {
      * ```ts
      * import { assertEquals } from "@std/assert"
      * const data = [ { Monday: 3 }, { Tuesday: 4 } ]
-     * const pairs = data.flatMap(Object.entries)
-     * assertEquals(pairs, [ [ "Monday", 3 ], [ "Tuesday", 4 ] ])
+     * const actual = data.flatMap(Object.entries)
+     * const expected = [ [ "Monday", 3 ], [ "Tuesday", 4 ] ]
+     * assertEquals(actual, expected)
      * ```
      */
     return data?.flatMap(Object.entries) ?? [];
