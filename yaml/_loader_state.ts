@@ -1402,6 +1402,34 @@ export class LoaderState {
     this.anchor = this.input.slice(position, this.position);
     return true;
   }
+  readAlias(): boolean {
+    if (this.peek() !== ASTERISK) return false;
+
+    let ch = this.next();
+
+    const position = this.position;
+
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+      ch = this.next();
+    }
+
+    if (this.position === position) {
+      return this.throwError(
+        "Cannot read alias: alias name must contain at least one character",
+      );
+    }
+
+    const alias = this.input.slice(position, this.position);
+    if (!this.anchorMap.has(alias)) {
+      return this.throwError(
+        `Cannot read alias: unidentified alias "${alias}"`,
+      );
+    }
+
+    this.result = this.anchorMap.get(alias);
+    this.skipSeparationSpace(true, -1);
+    return true;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1531,33 +1559,6 @@ export class LoaderState {
   }
 }
 
-function readAlias(state: LoaderState): boolean {
-  if (state.peek() !== ASTERISK) return false;
-
-  let ch = state.next();
-
-  const position = state.position;
-
-  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.next();
-  }
-
-  if (state.position === position) {
-    return state.throwError(
-      "Cannot read alias: alias name must contain at least one character",
-    );
-  }
-
-  const alias = state.input.slice(position, state.position);
-  if (!state.anchorMap.has(alias)) {
-    return state.throwError(`Cannot read alias: unidentified alias "${alias}"`);
-  }
-
-  state.result = state.anchorMap.get(alias);
-  state.skipSeparationSpace(true, -1);
-  return true;
-}
-
 function composeNode(
   state: LoaderState,
   parentIndent: number,
@@ -1642,7 +1643,7 @@ function composeNode(
           state.readDoubleQuotedScalar(flowIndent)
         ) {
           hasContent = true;
-        } else if (readAlias(state)) {
+        } else if (state.readAlias()) {
           hasContent = true;
 
           if (state.tag !== null || state.anchor !== null) {
