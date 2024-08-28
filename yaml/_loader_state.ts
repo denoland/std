@@ -38,7 +38,7 @@ import {
 
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject, isPlainObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -456,10 +456,7 @@ export class LoaderState {
           );
         }
 
-        if (
-          typeof keyNode === "object" &&
-          getObjectTypeString(keyNode[index]) === "[object Object]"
-        ) {
+        if (typeof keyNode === "object" && isPlainObject(keyNode[index])) {
           keyNode[index] = "[object Object]";
         }
       }
@@ -468,10 +465,7 @@ export class LoaderState {
     // Avoid code execution in load() via toString property
     // (still use its own toString for arrays, timestamps,
     // and whatever user schema extensions happen to have @@toStringTag)
-    if (
-      typeof keyNode === "object" &&
-      getObjectTypeString(keyNode) === "[object Object]"
-    ) {
+    if (typeof keyNode === "object" && isPlainObject(keyNode)) {
       keyNode = "[object Object]";
     }
 
@@ -1099,6 +1093,189 @@ export class LoaderState {
 
     return true;
   }
+  readBlockMapping(nodeIndent: number, flowIndent: number): boolean {
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result = {};
+    const overridableKeys = new Set<string>();
+    let following: number;
+    let allowCompact = false;
+    let line: number;
+    let pos: number;
+    let keyTag = null;
+    let keyNode = null;
+    let valueNode = null;
+    let atExplicitKey = false;
+    let detected = false;
+    let ch: number;
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      following = this.peek(1);
+      line = this.line; // Save the current line.
+      pos = this.position;
+
+      //
+      // Explicit notation case. There are two separate blocks:
+      // first for the key (denoted by "?") and second for the value (denoted by ":")
+      //
+      if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
+        if (ch === QUESTION) {
+          if (atExplicitKey) {
+            this.storeMappingPair(
+              result,
+              overridableKeys,
+              keyTag as string,
+              keyNode,
+              null,
+            );
+            keyTag = keyNode = valueNode = null;
+          }
+
+          detected = true;
+          atExplicitKey = true;
+          allowCompact = true;
+        } else if (atExplicitKey) {
+          // i.e. 0x3A/* : */ === character after the explicit key.
+          atExplicitKey = false;
+          allowCompact = true;
+        } else {
+          return this.throwError(
+            "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
+          );
+        }
+
+        this.position += 1;
+        ch = following;
+
+        //
+        // Implicit notation case. Flow-style node as the key first, then ":", and the value.
+        //
+      } else if (composeNode(this, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+        if (this.line === line) {
+          ch = this.peek();
+
+          while (isWhiteSpace(ch)) {
+            ch = this.next();
+          }
+
+          if (ch === COLON) {
+            ch = this.next();
+
+            if (!isWhiteSpaceOrEOL(ch)) {
+              return this.throwError(
+                "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
+              );
+            }
+
+            if (atExplicitKey) {
+              this.storeMappingPair(
+                result,
+                overridableKeys,
+                keyTag as string,
+                keyNode,
+                null,
+              );
+              keyTag = keyNode = valueNode = null;
+            }
+
+            detected = true;
+            atExplicitKey = false;
+            allowCompact = false;
+            keyTag = this.tag;
+            keyNode = this.result;
+          } else if (detected) {
+            return this.throwError(
+              "Cannot read an implicit mapping pair: missing colon",
+            );
+          } else {
+            this.tag = tag;
+            this.anchor = anchor;
+            return true; // Keep the result of `composeNode`.
+          }
+        } else if (detected) {
+          return this.throwError(
+            "Cannot read a block mapping entry: a multiline key may not be an implicit key",
+          );
+        } else {
+          this.tag = tag;
+          this.anchor = anchor;
+          return true; // Keep the result of `composeNode`.
+        }
+      } else {
+        break; // Reading is done. Go to the epilogue.
+      }
+
+      //
+      // Common reading code for both explicit and implicit notations.
+      //
+      if (this.line === line || this.lineIndent > nodeIndent) {
+        if (
+          composeNode(this, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
+        ) {
+          if (atExplicitKey) {
+            keyNode = this.result;
+          } else {
+            valueNode = this.result;
+          }
+        }
+
+        if (!atExplicitKey) {
+          this.storeMappingPair(
+            result,
+            overridableKeys,
+            keyTag as string,
+            keyNode,
+            valueNode,
+            line,
+            pos,
+          );
+          keyTag = keyNode = valueNode = null;
+        }
+
+        this.skipSeparationSpace(true, -1);
+        ch = this.peek();
+      }
+
+      if (this.lineIndent > nodeIndent && ch !== 0) {
+        return this.throwError(
+          "Cannot read block: bad indentation of a mapping entry",
+        );
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    //
+    // Epilogue.
+    //
+
+    // Special case: last mapping's node contains only the key in explicit notation.
+    if (atExplicitKey) {
+      this.storeMappingPair(
+        result,
+        overridableKeys,
+        keyTag as string,
+        keyNode,
+        null,
+      );
+    }
+
+    // Expose the resulting mapping.
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "mapping";
+      this.result = result;
+    }
+
+    return detected;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1226,194 +1403,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readBlockMapping(
-  state: LoaderState,
-  nodeIndent: number,
-  flowIndent: number,
-): boolean {
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result = {};
-  const overridableKeys = new Set<string>();
-  let following: number;
-  let allowCompact = false;
-  let line: number;
-  let pos: number;
-  let keyTag = null;
-  let keyNode = null;
-  let valueNode = null;
-  let atExplicitKey = false;
-  let detected = false;
-  let ch: number;
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    following = state.peek(1);
-    line = state.line; // Save the current line.
-    pos = state.position;
-
-    //
-    // Explicit notation case. There are two separate blocks:
-    // first for the key (denoted by "?") and second for the value (denoted by ":")
-    //
-    if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
-      if (ch === QUESTION) {
-        if (atExplicitKey) {
-          state.storeMappingPair(
-            result,
-            overridableKeys,
-            keyTag as string,
-            keyNode,
-            null,
-          );
-          keyTag = keyNode = valueNode = null;
-        }
-
-        detected = true;
-        atExplicitKey = true;
-        allowCompact = true;
-      } else if (atExplicitKey) {
-        // i.e. 0x3A/* : */ === character after the explicit key.
-        atExplicitKey = false;
-        allowCompact = true;
-      } else {
-        return state.throwError(
-          "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
-        );
-      }
-
-      state.position += 1;
-      ch = following;
-
-      //
-      // Implicit notation case. Flow-style node as the key first, then ":", and the value.
-      //
-    } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
-      if (state.line === line) {
-        ch = state.peek();
-
-        while (isWhiteSpace(ch)) {
-          ch = state.next();
-        }
-
-        if (ch === COLON) {
-          ch = state.next();
-
-          if (!isWhiteSpaceOrEOL(ch)) {
-            return state.throwError(
-              "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
-            );
-          }
-
-          if (atExplicitKey) {
-            state.storeMappingPair(
-              result,
-              overridableKeys,
-              keyTag as string,
-              keyNode,
-              null,
-            );
-            keyTag = keyNode = valueNode = null;
-          }
-
-          detected = true;
-          atExplicitKey = false;
-          allowCompact = false;
-          keyTag = state.tag;
-          keyNode = state.result;
-        } else if (detected) {
-          return state.throwError(
-            "Cannot read an implicit mapping pair: missing colon",
-          );
-        } else {
-          state.tag = tag;
-          state.anchor = anchor;
-          return true; // Keep the result of `composeNode`.
-        }
-      } else if (detected) {
-        return state.throwError(
-          "Cannot read a block mapping entry: a multiline key may not be an implicit key",
-        );
-      } else {
-        state.tag = tag;
-        state.anchor = anchor;
-        return true; // Keep the result of `composeNode`.
-      }
-    } else {
-      break; // Reading is done. Go to the epilogue.
-    }
-
-    //
-    // Common reading code for both explicit and implicit notations.
-    //
-    if (state.line === line || state.lineIndent > nodeIndent) {
-      if (
-        composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
-      ) {
-        if (atExplicitKey) {
-          keyNode = state.result;
-        } else {
-          valueNode = state.result;
-        }
-      }
-
-      if (!atExplicitKey) {
-        state.storeMappingPair(
-          result,
-          overridableKeys,
-          keyTag as string,
-          keyNode,
-          valueNode,
-          line,
-          pos,
-        );
-        keyTag = keyNode = valueNode = null;
-      }
-
-      state.skipSeparationSpace(true, -1);
-      ch = state.peek();
-    }
-
-    if (state.lineIndent > nodeIndent && ch !== 0) {
-      return state.throwError(
-        "Cannot read block: bad indentation of a mapping entry",
-      );
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  //
-  // Epilogue.
-  //
-
-  // Special case: last mapping's node contains only the key in explicit notation.
-  if (atExplicitKey) {
-    state.storeMappingPair(
-      result,
-      overridableKeys,
-      keyTag as string,
-      keyNode,
-      null,
-    );
-  }
-
-  // Expose the resulting mapping.
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "mapping";
-    state.result = result;
-  }
-
-  return detected;
 }
 
 function readTagProperty(state: LoaderState): boolean {
@@ -1644,7 +1633,7 @@ function composeNode(
       if (
         (allowBlockCollections &&
           (state.readBlockSequence(blockIndent) ||
-            readBlockMapping(state, blockIndent, flowIndent))) ||
+            state.readBlockMapping(blockIndent, flowIndent))) ||
         state.readFlowCollection(flowIndent)
       ) {
         hasContent = true;
