@@ -12,7 +12,7 @@ export interface LinkedNode<T> {
 }
 
 /**
- * A doublely linked list is a linked data structures that consists
+ * A doubly linked list is a linked data structures that consists
  * of a set of nodes. Each node contains a value and two link fields,
  * one linking to the previous node and one linking to the next node.
  *
@@ -450,6 +450,21 @@ export class LinkedList<T> implements Iterable<T> {
     this.#length = 0;
   }
 
+  /**
+   * Create an iterator that retrieves values from the linked list.
+   *
+   * @example Getting an iterator for the linked list
+   * ```ts
+   * import { LinkedList } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const list = LinkedList.from([1, 2, 3, 4, 5]);
+   *
+   * assertEquals([...list], [1, 2, 3, 4, 5]);
+   * ```
+   *
+   * @returns An iterator for retrieving values from the linked list.
+   */
   *[Symbol.iterator](): IterableIterator<T> {
     let ptr = this.#head;
     while (ptr) {
