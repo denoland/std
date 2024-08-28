@@ -13,13 +13,6 @@ import { preferredLanguages } from "./_negotiation/language.ts";
 import { preferredMediaTypes } from "./_negotiation/media_type.ts";
 
 /**
- * The part of the {@linkcode Request} interface that the methods requires,
- * which allows for the working with objects which may not be strictly `Request`
- * objects.
- */
-export type Headered = { headers: { get(name: string): string | null } };
-
-/**
  * Returns an array of media types accepted by the request, in order of
  * preference. If there are no media types supplied in the request, then any
  * media type selector will be returned.
@@ -48,7 +41,7 @@ export type Headered = { headers: { get(name: string): string | null } };
  * @param request The request to get the acceptable media types for.
  * @returns An array of acceptable media types.
  */
-export function accepts(request: Headered): string[];
+export function accepts(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of media types, return the best match accepted in the
  * request. If no media type matches, then the function returns `undefined`.
@@ -73,11 +66,11 @@ export function accepts(request: Headered): string[];
  * @returns The best matching media type, if any match.
  */
 export function accepts(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...types: string[]
 ): string | undefined;
 export function accepts(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...types: string[]
 ): string | string[] | undefined {
   const accept = request.headers.get("accept");
@@ -108,7 +101,7 @@ export function accepts(
  * @param request The request to get the acceptable content encodings for.
  * @returns An array of content encodings this request accepts.
  */
-export function acceptsEncodings(request: Headered): string[];
+export function acceptsEncodings(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of content encodings, return the best match accepted in the
  * request. If no content encodings match, then the function returns
@@ -135,11 +128,11 @@ export function acceptsEncodings(request: Headered): string[];
  * @returns The best matching encoding, if any match.
  */
 export function acceptsEncodings(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...encodings: string[]
 ): string | undefined;
 export function acceptsEncodings(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...encodings: string[]
 ): string | string[] | undefined {
   const acceptEncoding = request.headers.get("accept-encoding");
@@ -174,7 +167,7 @@ export function acceptsEncodings(
  * @param request The request to get the acceptable languages for.
  * @returns An array of languages this request accepts.
  */
-export function acceptsLanguages(request: Headered): string[];
+export function acceptsLanguages(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of languages, return the best match accepted in the request.
  * If no languages match, then the function returns `undefined`.
@@ -198,11 +191,11 @@ export function acceptsLanguages(request: Headered): string[];
  * @returns The best matching language, if any match.
  */
 export function acceptsLanguages(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...langs: string[]
 ): string | undefined;
 export function acceptsLanguages(
-  request: Headered,
+  request: Pick<Request, "headers">,
   ...langs: string[]
 ): string | string[] | undefined {
   const acceptLanguage = request.headers.get("accept-language");
