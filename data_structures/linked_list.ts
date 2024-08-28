@@ -293,7 +293,9 @@ export class LinkedList<T> implements Iterable<T> {
     const dt = this.#length - index - 1;
 
     if (index < 0 || dt < 0) {
-      throw new RangeError("The index is out of range");
+      throw new RangeError(
+        "Cannot insert the value: The index is out of range",
+      );
     }
 
     const node: LinkedNode<T> = { value, prev: null, next: null };

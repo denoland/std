@@ -70,13 +70,13 @@ Deno.test("LinkedList.insert() throws if the given index is out of range", () =>
   assertThrows(
     () => list.insert(10, -3),
     RangeError,
-    "The index is out of range",
+    "Cannot insert the value: The index is out of range",
   );
 
   assertThrows(
     () => list.insert(11, list.length + 1),
     RangeError,
-    "The index is out of range",
+    "Cannot insert the value: The index is out of range",
   );
 });
 
