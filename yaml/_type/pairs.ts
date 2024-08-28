@@ -23,17 +23,20 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 
   return true;
 }
+
 function constructYamlPairs(
   data: Record<string, unknown>[] | null,
 ): [string, unknown][] {
-  return data !== null ? data.flatMap(Object.entries) : [];
-  const result: [string, unknown][] = Array.from({ length: data.length });
-  for (const [index, pair] of data.entries()) {
-    const key = Object.keys(pair)[0] as keyof typeof pair;
-    const value = pair[key];
-    result[index] = [key, value];
-  }
-  return result;
+  /**
+   * @example
+   * ```ts
+   * import { assertEquals } from "@std/assert"
+   * const data = [ { Monday: 3 }, { Tuesday: 4 } ]
+   * const pairs = data.flatMap(Object.entries)
+   * assertEquals(pairs, [ [ "Monday", 3 ], [ "Tuesday", 4 ] ])
+   * ```
+   */
+  return data?.flatMap(Object.entries) ?? [];
 }
 
 export const pairs: Type<"sequence"> = {
