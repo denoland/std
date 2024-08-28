@@ -25,9 +25,7 @@ Deno.test("LinkedList.pop() removes the last node and returns its value", () => 
   assertEquals(list.pop(), 100);
   assertEquals(list.pop(), 10);
   assertEquals(list.length, 0);
-
-  const empty = new LinkedList();
-  assertEquals(empty.pop(), undefined);
+  assertEquals(list.pop(), undefined);
 });
 
 Deno.test("LinkedList.unshift() adds the value to the front of the list", () => {
@@ -46,9 +44,7 @@ Deno.test("LinkedList.shift() removes the first node and returns its value", () 
   assertEquals(list.shift(), 100);
   assertEquals(list.shift(), 1000);
   assertEquals(list.length, 0);
-
-  const empty = new LinkedList();
-  assertEquals(empty.shift(), undefined);
+  assertEquals(list.shift(), undefined);
 });
 
 Deno.test("LinkedList.insert() adds the value to the given index", () => {
