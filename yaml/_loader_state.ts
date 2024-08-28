@@ -1377,6 +1377,31 @@ export class LoaderState {
 
     return true;
   }
+  readAnchorProperty(): boolean {
+    let ch = this.peek();
+    if (ch !== AMPERSAND) return false;
+
+    if (this.anchor !== null) {
+      return this.throwError(
+        "Cannot read anchor property: duplicate anchor property",
+      );
+    }
+    ch = this.next();
+
+    const position = this.position;
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+      ch = this.next();
+    }
+
+    if (this.position === position) {
+      return this.throwError(
+        "Cannot read anchor property: name of an anchor node must contain at least one character",
+      );
+    }
+
+    this.anchor = this.input.slice(position, this.position);
+    return true;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1506,32 +1531,6 @@ export class LoaderState {
   }
 }
 
-function readAnchorProperty(state: LoaderState): boolean {
-  let ch = state.peek();
-  if (ch !== AMPERSAND) return false;
-
-  if (state.anchor !== null) {
-    return state.throwError(
-      "Cannot read anchor property: duplicate anchor property",
-    );
-  }
-  ch = state.next();
-
-  const position = state.position;
-  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.next();
-  }
-
-  if (state.position === position) {
-    return state.throwError(
-      "Cannot read anchor property: name of an anchor node must contain at least one character",
-    );
-  }
-
-  state.anchor = state.input.slice(position, state.position);
-  return true;
-}
-
 function readAlias(state: LoaderState): boolean {
   if (state.peek() !== ASTERISK) return false;
 
@@ -1599,7 +1598,7 @@ function composeNode(
   }
 
   if (indentStatus === 1) {
-    while (state.readTagProperty() || readAnchorProperty(state)) {
+    while (state.readTagProperty() || state.readAnchorProperty()) {
       if (state.skipSeparationSpace(true, -1)) {
         atNewLine = true;
         allowBlockCollections = allowBlockStyles;
