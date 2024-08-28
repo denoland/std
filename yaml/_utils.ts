@@ -4,7 +4,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 export function isBoolean(value: unknown): value is boolean {
-  return typeof value === "boolean" || value instanceof Boolean;
+  return typeof value === "boolean";
 }
 
 export function isObject(value: unknown): value is Record<string, unknown> {
