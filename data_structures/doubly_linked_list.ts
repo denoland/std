@@ -12,8 +12,8 @@ export interface DoublyLinkedNode<T> {
 }
 
 /**
- * A doubly linked list is a linked data structures that consists
- * of a set of nodes. Each node contains a value and two link fields,
+ * A doubly linked list is a linked data structure that consists of
+ * a set of nodes. Each node contains a value and two link fields,
  * one linking to the previous node and one linking to the next node.
  *
  * | Method                 | Average Case | Worst Case |
