@@ -24,24 +24,20 @@ function resolveYamlPairs(data: unknown[][]): boolean {
   return true;
 }
 
-function constructYamlPairs(
-  data: Record<string, unknown>[] | null,
-): [string, unknown][] {
-  /**
-   * @example
-   * ```ts
-   * import { assertEquals } from "@std/assert"
-   * const data = [ { Monday: 3 }, { Tuesday: 4 } ]
-   * const pairs = data.flatMap(Object.entries)
-   * assertEquals(pairs, [ [ "Monday", 3 ], [ "Tuesday", 4 ] ])
-   * ```
-   */
-  return data?.flatMap(Object.entries) ?? [];
-}
-
 export const pairs: Type<"sequence"> = {
   tag: "tag:yaml.org,2002:pairs",
-  construct: constructYamlPairs,
+  construct(data: Record<string, unknown>[] | null): [string, unknown][] {
+    /**
+     * @example
+     * ```ts
+     * import { assertEquals } from "@std/assert"
+     * const data = [ { Monday: 3 }, { Tuesday: 4 } ]
+     * const pairs = data.flatMap(Object.entries)
+     * assertEquals(pairs, [ [ "Monday", 3 ], [ "Tuesday", 4 ] ])
+     * ```
+     */
+    return data?.flatMap(Object.entries) ?? [];
+  },
   kind: "sequence",
   resolve: resolveYamlPairs,
 };
