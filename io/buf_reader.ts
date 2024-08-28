@@ -226,7 +226,7 @@ export class BufReader implements Reader {
     }
 
     if (this.#w >= this.#buf.byteLength) {
-      throw Error("Buffer full while filling");
+      throw new Error("Buffer full while filling");
     }
 
     // Read new data: try a limited number of times.
@@ -636,7 +636,7 @@ export class BufReader implements Reader {
    */
   async peek(n: number): Promise<Uint8Array | null> {
     if (n < 0) {
-      throw Error("Peek count cannot be negative");
+      throw new Error("Peek count cannot be negative");
     }
 
     let avail = this.#w - this.#r;

@@ -171,7 +171,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
       return;
     }
     if (n < 0 || n > this.length) {
-      throw Error("Buffer truncation out of range");
+      throw new Error("Buffer truncation out of range");
     }
     this.#reslice(this.#off + n);
   }
@@ -389,7 +389,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    */
   grow(n: number) {
     if (n < 0) {
-      throw Error("Buffer growth cannot be negative");
+      throw new Error("Buffer growth cannot be negative");
     }
     const m = this.#grow(n);
     this.#reslice(m);
