@@ -27,16 +27,7 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 export const pairs: Type<"sequence"> = {
   tag: "tag:yaml.org,2002:pairs",
   construct(data: Record<string, unknown>[] | null): [string, unknown][] {
-    /**
-     * @example
-     * ```ts
-     * import { assertEquals } from "@std/assert"
-     * const data = [ { Monday: 3 }, { Tuesday: 4 } ]
-     * const actual = data.flatMap(Object.entries)
-     * const expected = [ [ "Monday", 3 ], [ "Tuesday", 4 ] ]
-     * assertEquals(actual, expected)
-     * ```
-     */
+    // Converts an array of objects into an array of key-value pairs.
     return data?.flatMap(Object.entries) ?? [];
   },
   kind: "sequence",
