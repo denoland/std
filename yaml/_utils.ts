@@ -15,6 +15,6 @@ export function isNegativeZero(i: number): boolean {
   return i === 0 && Number.NEGATIVE_INFINITY === 1 / i;
 }
 
-export function getObjectTypeString(object: unknown) {
-  return Object.prototype.toString.call(object);
+export function isPlainObject(object: unknown): object is object {
+  return Object.prototype.toString.call(object) === "[object Object]";
 }

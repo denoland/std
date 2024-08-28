@@ -4,12 +4,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { getObjectTypeString } from "../_utils.ts";
+import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
   const objectKeys = new Set();
   for (const object of data) {
-    if (getObjectTypeString(object) !== "[object Object]") return false;
+    if (!isPlainObject(object)) return false;
     const keys = Object.keys(object);
     if (keys.length !== 1) return false;
     for (const key of keys) {
