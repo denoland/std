@@ -117,6 +117,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * The complexity of this operation is O(1).
    *
    * @param value The values to be added.
+   * @returns New length of the list.
    *
    * @example Usage
    * ```ts
@@ -134,7 +135,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * assertEquals([...list], [1, 2, 3]);
    * ```
    */
-  push(...values: T[]): void {
+  push(...values: T[]): number {
     for (const value of values) {
       const node: DoublyLinkedNode<T> = { value, prev: this.#tail, next: null };
 
@@ -147,6 +148,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
       this.#tail = node;
     }
     this.#length += values.length;
+    return this.#length;
   }
 
   /**
@@ -195,6 +197,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * The complexity of this operation is O(1).
    *
    * @param value The values to be added.
+   * @returns New length of the list.
    *
    * @example Usage
    * ```ts
@@ -212,7 +215,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * assertEquals([...list], [3, 2, 1]);
    * ```
    */
-  unshift(...values: T[]): void {
+  unshift(...values: T[]): number {
     for (const value of values) {
       const node: DoublyLinkedNode<T> = { value, prev: null, next: this.#head };
 
@@ -225,6 +228,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
       this.#head = node;
     }
     this.#length += values.length;
+    return this.#length;
   }
 
   /**
@@ -274,6 +278,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    *
    * @param value The value to insert.
    * @param index The position to insert.
+   * @returns New length of the list.
    * @throws If `index < 0` or `index > length`
    *
    * @example Usage
@@ -297,7 +302,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * assertEquals([...list], [1, 2, 3, 4, 5, 6, 7, 8]);
    * ```
    */
-  insert(value: T, index: number): void {
+  insert(value: T, index: number): number {
     if (index === 0) {
       return this.unshift(value);
     }
@@ -335,6 +340,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
     ptr.prev = node;
 
     ++this.#length;
+    return this.#length;
   }
 
   /**
