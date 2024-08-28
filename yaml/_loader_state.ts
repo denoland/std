@@ -1276,6 +1276,132 @@ export class LoaderState {
 
     return detected;
   }
+  readTagProperty(): boolean {
+    let position: number;
+    let isVerbatim = false;
+    let isNamed = false;
+    let tagHandle = "";
+    let tagName: string;
+    let ch: number;
+
+    ch = this.peek();
+
+    if (ch !== EXCLAMATION) return false;
+
+    if (this.tag !== null) {
+      return this.throwError(
+        "Cannot read tag property: duplication of a tag property",
+      );
+    }
+
+    ch = this.next();
+
+    if (ch === SMALLER_THAN) {
+      isVerbatim = true;
+      ch = this.next();
+    } else if (ch === EXCLAMATION) {
+      isNamed = true;
+      tagHandle = "!!";
+      ch = this.next();
+    } else {
+      tagHandle = "!";
+    }
+
+    position = this.position;
+
+    if (isVerbatim) {
+      do {
+        ch = this.next();
+      } while (ch !== 0 && ch !== GREATER_THAN);
+
+      if (this.position < this.length) {
+        tagName = this.input.slice(position, this.position);
+        ch = this.next();
+      } else {
+        return this.throwError(
+          "Cannot read tag property: unexpected end of stream",
+        );
+      }
+    } else {
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        if (ch === EXCLAMATION) {
+          if (!isNamed) {
+            tagHandle = this.input.slice(position - 1, this.position + 1);
+
+            if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
+              return this.throwError(
+                "Cannot read tag property: named tag handle contains invalid characters",
+              );
+            }
+
+            isNamed = true;
+            position = this.position + 1;
+          } else {
+            return this.throwError(
+              "Cannot read tag property: tag suffix cannot contain an exclamation mark",
+            );
+          }
+        }
+
+        ch = this.next();
+      }
+
+      tagName = this.input.slice(position, this.position);
+
+      if (PATTERN_FLOW_INDICATORS.test(tagName)) {
+        return this.throwError(
+          "Cannot read tag property: tag suffix cannot contain flow indicator characters",
+        );
+      }
+    }
+
+    if (tagName && !PATTERN_TAG_URI.test(tagName)) {
+      return this.throwError(
+        `Cannot read tag property: invalid characters in tag name "${tagName}"`,
+      );
+    }
+
+    if (isVerbatim) {
+      this.tag = tagName;
+    } else if (this.tagMap.has(tagHandle)) {
+      this.tag = this.tagMap.get(tagHandle) + tagName;
+    } else if (tagHandle === "!") {
+      this.tag = `!${tagName}`;
+    } else if (tagHandle === "!!") {
+      this.tag = `tag:yaml.org,2002:${tagName}`;
+    } else {
+      return this.throwError(
+        `Cannot read tag property: undeclared tag handle "${tagHandle}"`,
+      );
+    }
+
+    return true;
+  }
+  readAnchorProperty(): boolean {
+    let ch = this.peek();
+    if (ch !== AMPERSAND) return false;
+
+    if (this.anchor !== null) {
+      return this.throwError(
+        "Cannot read anchor property: duplicate anchor property",
+      );
+    }
+    ch = this.next();
+
+    const position = this.position;
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+      ch = this.next();
+    }
+
+    if (this.position === position) {
+      return this.throwError(
+        "Cannot read anchor property: name of an anchor node must contain at least one character",
+      );
+    }
+
+    this.anchor = this.input.slice(position, this.position);
+    return true;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1405,134 +1531,6 @@ export class LoaderState {
   }
 }
 
-function readTagProperty(state: LoaderState): boolean {
-  let position: number;
-  let isVerbatim = false;
-  let isNamed = false;
-  let tagHandle = "";
-  let tagName: string;
-  let ch: number;
-
-  ch = state.peek();
-
-  if (ch !== EXCLAMATION) return false;
-
-  if (state.tag !== null) {
-    return state.throwError(
-      "Cannot read tag property: duplication of a tag property",
-    );
-  }
-
-  ch = state.next();
-
-  if (ch === SMALLER_THAN) {
-    isVerbatim = true;
-    ch = state.next();
-  } else if (ch === EXCLAMATION) {
-    isNamed = true;
-    tagHandle = "!!";
-    ch = state.next();
-  } else {
-    tagHandle = "!";
-  }
-
-  position = state.position;
-
-  if (isVerbatim) {
-    do {
-      ch = state.next();
-    } while (ch !== 0 && ch !== GREATER_THAN);
-
-    if (state.position < state.length) {
-      tagName = state.input.slice(position, state.position);
-      ch = state.next();
-    } else {
-      return state.throwError(
-        "Cannot read tag property: unexpected end of stream",
-      );
-    }
-  } else {
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-      if (ch === EXCLAMATION) {
-        if (!isNamed) {
-          tagHandle = state.input.slice(position - 1, state.position + 1);
-
-          if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-            return state.throwError(
-              "Cannot read tag property: named tag handle contains invalid characters",
-            );
-          }
-
-          isNamed = true;
-          position = state.position + 1;
-        } else {
-          return state.throwError(
-            "Cannot read tag property: tag suffix cannot contain an exclamation mark",
-          );
-        }
-      }
-
-      ch = state.next();
-    }
-
-    tagName = state.input.slice(position, state.position);
-
-    if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      return state.throwError(
-        "Cannot read tag property: tag suffix cannot contain flow indicator characters",
-      );
-    }
-  }
-
-  if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    return state.throwError(
-      `Cannot read tag property: invalid characters in tag name "${tagName}"`,
-    );
-  }
-
-  if (isVerbatim) {
-    state.tag = tagName;
-  } else if (state.tagMap.has(tagHandle)) {
-    state.tag = state.tagMap.get(tagHandle) + tagName;
-  } else if (tagHandle === "!") {
-    state.tag = `!${tagName}`;
-  } else if (tagHandle === "!!") {
-    state.tag = `tag:yaml.org,2002:${tagName}`;
-  } else {
-    return state.throwError(
-      `Cannot read tag property: undeclared tag handle "${tagHandle}"`,
-    );
-  }
-
-  return true;
-}
-
-function readAnchorProperty(state: LoaderState): boolean {
-  let ch = state.peek();
-  if (ch !== AMPERSAND) return false;
-
-  if (state.anchor !== null) {
-    return state.throwError(
-      "Cannot read anchor property: duplicate anchor property",
-    );
-  }
-  ch = state.next();
-
-  const position = state.position;
-  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.next();
-  }
-
-  if (state.position === position) {
-    return state.throwError(
-      "Cannot read anchor property: name of an anchor node must contain at least one character",
-    );
-  }
-
-  state.anchor = state.input.slice(position, state.position);
-  return true;
-}
-
 function readAlias(state: LoaderState): boolean {
   if (state.peek() !== ASTERISK) return false;
 
@@ -1600,7 +1598,7 @@ function composeNode(
   }
 
   if (indentStatus === 1) {
-    while (readTagProperty(state) || readAnchorProperty(state)) {
+    while (state.readTagProperty() || state.readAnchorProperty()) {
       if (state.skipSeparationSpace(true, -1)) {
         atNewLine = true;
         allowBlockCollections = allowBlockStyles;

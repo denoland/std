@@ -23,25 +23,13 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 
   return true;
 }
-function constructYamlPairs(data: string) {
-  if (data === null) return [];
-
-  const result = Array.from({ length: data.length });
-
-  for (let index = 0; index < data.length; index += 1) {
-    const pair = data[index]!;
-
-    const keys = Object.keys(pair);
-
-    result[index] = [keys[0], pair[keys[0] as keyof typeof pair]];
-  }
-
-  return result;
-}
 
 export const pairs: Type<"sequence"> = {
   tag: "tag:yaml.org,2002:pairs",
-  construct: constructYamlPairs,
+  construct(data: Record<string, unknown>[] | null): [string, unknown][] {
+    // Converts an array of objects into an array of key-value pairs.
+    return data?.flatMap(Object.entries) ?? [];
+  },
   kind: "sequence",
   resolve: resolveYamlPairs,
 };
