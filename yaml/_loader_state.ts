@@ -38,7 +38,7 @@ import {
 
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject, isPlainObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -456,10 +456,7 @@ export class LoaderState {
           );
         }
 
-        if (
-          typeof keyNode === "object" &&
-          getObjectTypeString(keyNode[index]) === "[object Object]"
-        ) {
+        if (typeof keyNode === "object" && isPlainObject(keyNode[index])) {
           keyNode[index] = "[object Object]";
         }
       }
@@ -468,10 +465,7 @@ export class LoaderState {
     // Avoid code execution in load() via toString property
     // (still use its own toString for arrays, timestamps,
     // and whatever user schema extensions happen to have @@toStringTag)
-    if (
-      typeof keyNode === "object" &&
-      getObjectTypeString(keyNode) === "[object Object]"
-    ) {
+    if (typeof keyNode === "object" && isPlainObject(keyNode)) {
       keyNode = "[object Object]";
     }
 
