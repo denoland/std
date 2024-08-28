@@ -8,20 +8,7 @@ import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlPairs(data: unknown[][]): boolean {
   if (data === null) return true;
-
-  const result = Array.from({ length: data.length });
-
-  for (const [index, pair] of data.entries()) {
-    if (!isPlainObject(pair)) return false;
-
-    const keys = Object.keys(pair);
-
-    if (keys.length !== 1) return false;
-
-    result[index] = [keys[0], pair[keys[0] as keyof typeof pair]];
-  }
-
-  return true;
+  return data.every((it) => isPlainObject(it) && Object.keys(it).length === 1);
 }
 function constructYamlPairs(data: string) {
   if (data === null) return [];
