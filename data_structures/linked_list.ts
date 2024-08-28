@@ -70,7 +70,20 @@ export class LinkedList<T> implements Iterable<T> {
     this.#tail = null;
   }
 
-  /** The number of nodes in the linked list. */
+  /**
+   * The number of nodes in the linked list.
+   *
+   * @returns The number of nodes.
+   *
+   * @example Usage
+   * ```ts
+   * import { LinkedList } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const list = LinkedList.from([1, 2, 3, 4]);
+   * assertEquals(list.length, 4);
+   * ```
+   */
   get length(): number {
     return this.#length;
   }
@@ -89,6 +102,8 @@ export class LinkedList<T> implements Iterable<T> {
    * const list = LinkedList.from([1, 2, 3]);
    * assertEquals([...list], [1, 2, 3]);
    * ```
+   *
+   * @typeparam T The type of the values being stored in the list.
    */
   static from<T>(
     iterable: ArrayLike<T> | Iterable<T> | LinkedList<T>,
@@ -140,7 +155,7 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @returns The removed node's value, `undefined` if this list is empty.
+   * @returns The removed node's value, `undefined` if the list is empty.
    *
    * @example Usage
    * ```ts
@@ -216,7 +231,7 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * The complexity of this operation is O(1).
    *
-   * @returns The removed node's value, `undefined` if this list is empty.
+   * @returns The removed node's value, `undefined` if the list is empty.
    *
    * @example Usage
    * ```ts
@@ -252,7 +267,7 @@ export class LinkedList<T> implements Iterable<T> {
   }
 
   /**
-   * Inserts the given value to the specified index.
+   * Inserts the given value to the given index.
    *
    * The complexity of this operation is linear O(n).
    *
