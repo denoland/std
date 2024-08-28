@@ -1,14 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Represents a linked list's node. */
-export interface LinkedNode<T> {
+/** Represents a doubly linked list's node. */
+export interface DoublyLinkedNode<T> {
   /** The value of the node. */
   value: T;
   /** The next node. */
-  next: LinkedNode<T> | null;
+  next: DoublyLinkedNode<T> | null;
   /** The previous node. */
-  prev: LinkedNode<T> | null;
+  prev: DoublyLinkedNode<T> | null;
 }
 
 /**
@@ -24,21 +24,18 @@ export interface LinkedNode<T> {
  * | shift()                | O(1)         | O(1)       |
  * | insert(value, index)   | O(n)         | O(n)       |
  * | remove(index)          | O(n)         | O(n)       |
- * | has(value)             | O(n)         | O(n)       |
+ * | includes(value)        | O(n)         | O(n)       |
  *
  * @example Usage
  * ```ts
- * import { LinkedList } from "@std/data-structures";
+ * import { DoublyLinkedList } from "@std/data-structures";
  * import { assertEquals } from "@std/assert";
  *
- * const list = new LinkedList<string>();
+ * const list = new DoublyLinkedList<string>();
  * assertEquals(list.length, 0);
  *
- * list.push("a");
- * list.push("b");
- * list.push("c");
- * list.unshift("x");
- * list.unshift("y");
+ * list.push("a", "b", "c");
+ * list.unshift("x", "y");
  *
  * assertEquals(list.length, 5);
  * assertEquals(list.pop(), "c");
@@ -50,19 +47,19 @@ export interface LinkedNode<T> {
  *
  * assertEquals([...list], ["x", "z", "a", "b", "d"]);
  * assertEquals(list.remove(2), "a");
- * assertEquals(list.has("d"), true);
- * assertEquals(list.has("a"), false);
+ * assertEquals(list.includes("d"), true);
+ * assertEquals(list.includes("a"), false);
  * ```
  *
  * @typeparam T The type of the values being stored in the list.
  */
-export class LinkedList<T> implements Iterable<T> {
+export class DoublyLinkedList<T> implements Iterable<T> {
   /** The number of nodes in the linked list. */
   #length: number;
   /** The first node of the linked list. */
-  #head: LinkedNode<T> | null;
+  #head: DoublyLinkedNode<T> | null;
   /** The last node of the linked list. */
-  #tail: LinkedNode<T> | null;
+  #tail: DoublyLinkedNode<T> | null;
 
   constructor() {
     this.#length = 0;
@@ -77,10 +74,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([1, 2, 3, 4]);
+   * const list = DoublyLinkedList.from([1, 2, 3, 4]);
    * assertEquals(list.length, 4);
    * ```
    */
@@ -96,37 +93,37 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([1, 2, 3]);
+   * const list = DoublyLinkedList.from([1, 2, 3]);
    * assertEquals([...list], [1, 2, 3]);
    * ```
    *
    * @typeparam T The type of the values being stored in the list.
    */
   static from<T>(
-    iterable: ArrayLike<T> | Iterable<T> | LinkedList<T>,
-  ): LinkedList<T> {
-    const list = new LinkedList<T>();
+    iterable: ArrayLike<T> | Iterable<T> | DoublyLinkedList<T>,
+  ): DoublyLinkedList<T> {
+    const list = new DoublyLinkedList<T>();
     const data = Array.from(iterable);
     for (const value of data) list.push(value);
     return list;
   }
 
   /**
-   * Appends a new value to the back of the linked list.
+   * Appends one or more values to the back of the linked list.
    *
    * The complexity of this operation is O(1).
    *
-   * @param value The value to be added.
+   * @param value The values to be added.
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = new LinkedList();
+   * const list = new DoublyLinkedList();
    * assertEquals(list.length, 0);
    *
    * list.push(1);
@@ -137,17 +134,19 @@ export class LinkedList<T> implements Iterable<T> {
    * assertEquals([...list], [1, 2, 3]);
    * ```
    */
-  push(value: T): void {
-    const node: LinkedNode<T> = { value, prev: this.#tail, next: null };
+  push(...values: T[]): void {
+    for (const value of values) {
+      const node: DoublyLinkedNode<T> = { value, prev: this.#tail, next: null };
 
-    if (this.#tail) {
-      this.#tail.next = node;
-    } else {
-      this.#head = node;
+      if (this.#tail) {
+        this.#tail.next = node;
+      } else {
+        this.#head = node;
+      }
+
+      this.#tail = node;
     }
-
-    this.#tail = node;
-    ++this.#length;
+    this.#length += values.length;
   }
 
   /**
@@ -159,10 +158,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from(["a", "b", "c", "d"]);
+   * const list = DoublyLinkedList.from(["a", "b", "c", "d"]);
    * assertEquals(list.length, 4);
    *
    * assertEquals(list.pop(), "d");
@@ -191,18 +190,18 @@ export class LinkedList<T> implements Iterable<T> {
   }
 
   /**
-   * Appends a new value to the front of the linked list.
+   * Appends one or more values to the front of the linked list.
    *
    * The complexity of this operation is O(1).
    *
-   * @param value The value to be added.
+   * @param value The values to be added.
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = new LinkedList();
+   * const list = new DoublyLinkedList();
    * assertEquals(list.length, 0);
    *
    * list.unshift(1);
@@ -213,17 +212,19 @@ export class LinkedList<T> implements Iterable<T> {
    * assertEquals([...list], [3, 2, 1]);
    * ```
    */
-  unshift(value: T): void {
-    const node: LinkedNode<T> = { value, prev: null, next: this.#head };
+  unshift(...values: T[]): void {
+    for (const value of values) {
+      const node: DoublyLinkedNode<T> = { value, prev: null, next: this.#head };
 
-    if (this.#head) {
-      this.#head.prev = node;
-    } else {
-      this.#tail = node;
+      if (this.#head) {
+        this.#head.prev = node;
+      } else {
+        this.#tail = node;
+      }
+
+      this.#head = node;
     }
-
-    this.#head = node;
-    ++this.#length;
+    this.#length += values.length;
   }
 
   /**
@@ -235,10 +236,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from(["a", "b", "c", "d"]);
+   * const list = DoublyLinkedList.from(["a", "b", "c", "d"]);
    * assertEquals(list.length, 4);
    *
    * assertEquals(list.shift(), "a");
@@ -277,10 +278,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([2, 4, 6, 8]);
+   * const list = DoublyLinkedList.from([2, 4, 6, 8]);
    * assertEquals([...list], [2, 4, 6, 8]);
    *
    * list.insert(1, 0);
@@ -313,8 +314,8 @@ export class LinkedList<T> implements Iterable<T> {
       );
     }
 
-    const node: LinkedNode<T> = { value, prev: null, next: null };
-    let ptr: LinkedNode<T>;
+    const node: DoublyLinkedNode<T> = { value, prev: null, next: null };
+    let ptr: DoublyLinkedNode<T>;
 
     if (dt < this.#length / 2) {
       ptr = this.#tail!;
@@ -349,10 +350,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([2, 4, 6, 8]);
+   * const list = DoublyLinkedList.from([2, 4, 6, 8]);
    * assertEquals([...list], [2, 4, 6, 8]);
    *
    * list.remove(1);
@@ -377,7 +378,7 @@ export class LinkedList<T> implements Iterable<T> {
       return undefined;
     }
 
-    let ptr: LinkedNode<T>;
+    let ptr: DoublyLinkedNode<T>;
 
     if (dt < this.#length / 2) {
       ptr = this.#tail!;
@@ -410,16 +411,16 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([2, 4, 6, 8]);
+   * const list = DoublyLinkedList.from([2, 4, 6, 8]);
    *
-   * assertEquals(list.has(4), true);
-   * assertEquals(list.has(0), false);
+   * assertEquals(list.includes(4), true);
+   * assertEquals(list.includes(0), false);
    * ```
    */
-  has(value: T): boolean {
+  includes(value: T): boolean {
     if (!this.#head || !this.#tail) {
       return false;
     }
@@ -446,10 +447,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Usage
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from(["hello", "world"]);
+   * const list = DoublyLinkedList.from(["hello", "world"]);
    * assertEquals(list.length, 2);
    *
    * list.clear();
@@ -470,10 +471,10 @@ export class LinkedList<T> implements Iterable<T> {
    *
    * @example Getting an iterator for the linked list
    * ```ts
-   * import { LinkedList } from "@std/data-structures";
+   * import { DoublyLinkedList } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
-   * const list = LinkedList.from([1, 2, 3, 4, 5]);
+   * const list = DoublyLinkedList.from([1, 2, 3, 4, 5]);
    *
    * assertEquals([...list], [1, 2, 3, 4, 5]);
    * ```
