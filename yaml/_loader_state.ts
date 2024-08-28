@@ -38,7 +38,7 @@ import {
 
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject, isPlainObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -456,10 +456,7 @@ export class LoaderState {
           );
         }
 
-        if (
-          typeof keyNode === "object" &&
-          getObjectTypeString(keyNode[index]) === "[object Object]"
-        ) {
+        if (typeof keyNode === "object" && isPlainObject(keyNode[index])) {
           keyNode[index] = "[object Object]";
         }
       }
@@ -468,10 +465,7 @@ export class LoaderState {
     // Avoid code execution in load() via toString property
     // (still use its own toString for arrays, timestamps,
     // and whatever user schema extensions happen to have @@toStringTag)
-    if (
-      typeof keyNode === "object" &&
-      getObjectTypeString(keyNode) === "[object Object]"
-    ) {
+    if (typeof keyNode === "object" && isPlainObject(keyNode)) {
       keyNode = "[object Object]";
     }
 
@@ -943,6 +937,345 @@ export class LoaderState {
       "Cannot read flow collection: unexpected end of the stream within a flow collection",
     );
   }
+  // Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
+  // https://yaml.org/spec/1.2.2/#81-block-scalar-styles
+  readBlockScalar(nodeIndent: number): boolean {
+    let chomping = CHOMPING_CLIP;
+    let didReadContent = false;
+    let detectedIndent = false;
+    let textIndent = nodeIndent;
+    let emptyLines = 0;
+    let atMoreIndented = false;
+
+    let ch = this.peek();
+
+    let folding = false;
+    if (ch === VERTICAL_LINE) {
+      folding = false;
+    } else if (ch === GREATER_THAN) {
+      folding = true;
+    } else {
+      return false;
+    }
+
+    this.kind = "scalar";
+    this.result = "";
+
+    let tmp = 0;
+    while (ch !== 0) {
+      ch = this.next();
+
+      if (ch === PLUS || ch === MINUS) {
+        if (CHOMPING_CLIP === chomping) {
+          chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
+        } else {
+          return this.throwError(
+            "Cannot read block: chomping mode identifier repeated",
+          );
+        }
+      } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
+        if (tmp === 0) {
+          return this.throwError(
+            "Cannot read block: indentation width must be greater than 0",
+          );
+        } else if (!detectedIndent) {
+          textIndent = nodeIndent + tmp - 1;
+          detectedIndent = true;
+        } else {
+          return this.throwError(
+            "Cannot read block: indentation width identifier repeated",
+          );
+        }
+      } else {
+        break;
+      }
+    }
+
+    if (isWhiteSpace(ch)) {
+      do {
+        ch = this.next();
+      } while (isWhiteSpace(ch));
+
+      if (ch === SHARP) {
+        do {
+          ch = this.next();
+        } while (!isEOL(ch) && ch !== 0);
+      }
+    }
+
+    while (ch !== 0) {
+      this.readLineBreak();
+      this.lineIndent = 0;
+
+      ch = this.peek();
+
+      while (
+        (!detectedIndent || this.lineIndent < textIndent) &&
+        ch === SPACE
+      ) {
+        this.lineIndent++;
+        ch = this.next();
+      }
+
+      if (!detectedIndent && this.lineIndent > textIndent) {
+        textIndent = this.lineIndent;
+      }
+
+      if (isEOL(ch)) {
+        emptyLines++;
+        continue;
+      }
+
+      // End of the scalar.
+      if (this.lineIndent < textIndent) {
+        // Perform the chomping.
+        if (chomping === CHOMPING_KEEP) {
+          this.result += "\n".repeat(
+            didReadContent ? 1 + emptyLines : emptyLines,
+          );
+        } else if (chomping === CHOMPING_CLIP) {
+          if (didReadContent) {
+            // i.e. only if the scalar is not empty.
+            this.result += "\n";
+          }
+        }
+
+        // Break this `while` cycle and go to the function's epilogue.
+        break;
+      }
+
+      // Folded style: use fancy rules to handle line breaks.
+      if (folding) {
+        // Lines starting with white space characters (more-indented lines) are not folded.
+        if (isWhiteSpace(ch)) {
+          atMoreIndented = true;
+          // except for the first content line (cf. Example 8.1)
+          this.result += "\n".repeat(
+            didReadContent ? 1 + emptyLines : emptyLines,
+          );
+
+          // End of more-indented block.
+        } else if (atMoreIndented) {
+          atMoreIndented = false;
+          this.result += "\n".repeat(emptyLines + 1);
+
+          // Just one line break - perceive as the same line.
+        } else if (emptyLines === 0) {
+          if (didReadContent) {
+            // i.e. only if we have already read some scalar content.
+            this.result += " ";
+          }
+
+          // Several line breaks - perceive as different lines.
+        } else {
+          this.result += "\n".repeat(emptyLines);
+        }
+
+        // Literal style: just add exact number of line breaks between content lines.
+      } else {
+        // Keep all line breaks except the header line break.
+        this.result += "\n".repeat(
+          didReadContent ? 1 + emptyLines : emptyLines,
+        );
+      }
+
+      didReadContent = true;
+      detectedIndent = true;
+      emptyLines = 0;
+      const captureStart = this.position;
+
+      while (!isEOL(ch) && ch !== 0) {
+        ch = this.next();
+      }
+
+      this.captureSegment(captureStart, this.position, false);
+    }
+
+    return true;
+  }
+  readBlockMapping(nodeIndent: number, flowIndent: number): boolean {
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result = {};
+    const overridableKeys = new Set<string>();
+    let following: number;
+    let allowCompact = false;
+    let line: number;
+    let pos: number;
+    let keyTag = null;
+    let keyNode = null;
+    let valueNode = null;
+    let atExplicitKey = false;
+    let detected = false;
+    let ch: number;
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      following = this.peek(1);
+      line = this.line; // Save the current line.
+      pos = this.position;
+
+      //
+      // Explicit notation case. There are two separate blocks:
+      // first for the key (denoted by "?") and second for the value (denoted by ":")
+      //
+      if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
+        if (ch === QUESTION) {
+          if (atExplicitKey) {
+            this.storeMappingPair(
+              result,
+              overridableKeys,
+              keyTag as string,
+              keyNode,
+              null,
+            );
+            keyTag = keyNode = valueNode = null;
+          }
+
+          detected = true;
+          atExplicitKey = true;
+          allowCompact = true;
+        } else if (atExplicitKey) {
+          // i.e. 0x3A/* : */ === character after the explicit key.
+          atExplicitKey = false;
+          allowCompact = true;
+        } else {
+          return this.throwError(
+            "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
+          );
+        }
+
+        this.position += 1;
+        ch = following;
+
+        //
+        // Implicit notation case. Flow-style node as the key first, then ":", and the value.
+        //
+      } else if (composeNode(this, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+        if (this.line === line) {
+          ch = this.peek();
+
+          while (isWhiteSpace(ch)) {
+            ch = this.next();
+          }
+
+          if (ch === COLON) {
+            ch = this.next();
+
+            if (!isWhiteSpaceOrEOL(ch)) {
+              return this.throwError(
+                "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
+              );
+            }
+
+            if (atExplicitKey) {
+              this.storeMappingPair(
+                result,
+                overridableKeys,
+                keyTag as string,
+                keyNode,
+                null,
+              );
+              keyTag = keyNode = valueNode = null;
+            }
+
+            detected = true;
+            atExplicitKey = false;
+            allowCompact = false;
+            keyTag = this.tag;
+            keyNode = this.result;
+          } else if (detected) {
+            return this.throwError(
+              "Cannot read an implicit mapping pair: missing colon",
+            );
+          } else {
+            this.tag = tag;
+            this.anchor = anchor;
+            return true; // Keep the result of `composeNode`.
+          }
+        } else if (detected) {
+          return this.throwError(
+            "Cannot read a block mapping entry: a multiline key may not be an implicit key",
+          );
+        } else {
+          this.tag = tag;
+          this.anchor = anchor;
+          return true; // Keep the result of `composeNode`.
+        }
+      } else {
+        break; // Reading is done. Go to the epilogue.
+      }
+
+      //
+      // Common reading code for both explicit and implicit notations.
+      //
+      if (this.line === line || this.lineIndent > nodeIndent) {
+        if (
+          composeNode(this, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
+        ) {
+          if (atExplicitKey) {
+            keyNode = this.result;
+          } else {
+            valueNode = this.result;
+          }
+        }
+
+        if (!atExplicitKey) {
+          this.storeMappingPair(
+            result,
+            overridableKeys,
+            keyTag as string,
+            keyNode,
+            valueNode,
+            line,
+            pos,
+          );
+          keyTag = keyNode = valueNode = null;
+        }
+
+        this.skipSeparationSpace(true, -1);
+        ch = this.peek();
+      }
+
+      if (this.lineIndent > nodeIndent && ch !== 0) {
+        return this.throwError(
+          "Cannot read block: bad indentation of a mapping entry",
+        );
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    //
+    // Epilogue.
+    //
+
+    // Special case: last mapping's node contains only the key in explicit notation.
+    if (atExplicitKey) {
+      this.storeMappingPair(
+        result,
+        overridableKeys,
+        keyTag as string,
+        keyNode,
+        null,
+      );
+    }
+
+    // Expose the resulting mapping.
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "mapping";
+      this.result = result;
+    }
+
+    return detected;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1070,349 +1403,6 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-// Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
-// https://yaml.org/spec/1.2.2/#81-block-scalar-styles
-function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
-  let chomping = CHOMPING_CLIP;
-  let didReadContent = false;
-  let detectedIndent = false;
-  let textIndent = nodeIndent;
-  let emptyLines = 0;
-  let atMoreIndented = false;
-
-  let ch = state.peek();
-
-  let folding = false;
-  if (ch === VERTICAL_LINE) {
-    folding = false;
-  } else if (ch === GREATER_THAN) {
-    folding = true;
-  } else {
-    return false;
-  }
-
-  state.kind = "scalar";
-  state.result = "";
-
-  let tmp = 0;
-  while (ch !== 0) {
-    ch = state.next();
-
-    if (ch === PLUS || ch === MINUS) {
-      if (CHOMPING_CLIP === chomping) {
-        chomping = ch === PLUS ? CHOMPING_KEEP : CHOMPING_STRIP;
-      } else {
-        return state.throwError(
-          "Cannot read block: chomping mode identifier repeated",
-        );
-      }
-    } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
-      if (tmp === 0) {
-        return state.throwError(
-          "Cannot read block: indentation width must be greater than 0",
-        );
-      } else if (!detectedIndent) {
-        textIndent = nodeIndent + tmp - 1;
-        detectedIndent = true;
-      } else {
-        return state.throwError(
-          "Cannot read block: indentation width identifier repeated",
-        );
-      }
-    } else {
-      break;
-    }
-  }
-
-  if (isWhiteSpace(ch)) {
-    do {
-      ch = state.next();
-    } while (isWhiteSpace(ch));
-
-    if (ch === SHARP) {
-      do {
-        ch = state.next();
-      } while (!isEOL(ch) && ch !== 0);
-    }
-  }
-
-  while (ch !== 0) {
-    state.readLineBreak();
-    state.lineIndent = 0;
-
-    ch = state.peek();
-
-    while (
-      (!detectedIndent || state.lineIndent < textIndent) &&
-      ch === SPACE
-    ) {
-      state.lineIndent++;
-      ch = state.next();
-    }
-
-    if (!detectedIndent && state.lineIndent > textIndent) {
-      textIndent = state.lineIndent;
-    }
-
-    if (isEOL(ch)) {
-      emptyLines++;
-      continue;
-    }
-
-    // End of the scalar.
-    if (state.lineIndent < textIndent) {
-      // Perform the chomping.
-      if (chomping === CHOMPING_KEEP) {
-        state.result += "\n".repeat(
-          didReadContent ? 1 + emptyLines : emptyLines,
-        );
-      } else if (chomping === CHOMPING_CLIP) {
-        if (didReadContent) {
-          // i.e. only if the scalar is not empty.
-          state.result += "\n";
-        }
-      }
-
-      // Break this `while` cycle and go to the function's epilogue.
-      break;
-    }
-
-    // Folded style: use fancy rules to handle line breaks.
-    if (folding) {
-      // Lines starting with white space characters (more-indented lines) are not folded.
-      if (isWhiteSpace(ch)) {
-        atMoreIndented = true;
-        // except for the first content line (cf. Example 8.1)
-        state.result += "\n".repeat(
-          didReadContent ? 1 + emptyLines : emptyLines,
-        );
-
-        // End of more-indented block.
-      } else if (atMoreIndented) {
-        atMoreIndented = false;
-        state.result += "\n".repeat(emptyLines + 1);
-
-        // Just one line break - perceive as the same line.
-      } else if (emptyLines === 0) {
-        if (didReadContent) {
-          // i.e. only if we have already read some scalar content.
-          state.result += " ";
-        }
-
-        // Several line breaks - perceive as different lines.
-      } else {
-        state.result += "\n".repeat(emptyLines);
-      }
-
-      // Literal style: just add exact number of line breaks between content lines.
-    } else {
-      // Keep all line breaks except the header line break.
-      state.result += "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
-    }
-
-    didReadContent = true;
-    detectedIndent = true;
-    emptyLines = 0;
-    const captureStart = state.position;
-
-    while (!isEOL(ch) && ch !== 0) {
-      ch = state.next();
-    }
-
-    state.captureSegment(captureStart, state.position, false);
-  }
-
-  return true;
-}
-
-function readBlockMapping(
-  state: LoaderState,
-  nodeIndent: number,
-  flowIndent: number,
-): boolean {
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result = {};
-  const overridableKeys = new Set<string>();
-  let following: number;
-  let allowCompact = false;
-  let line: number;
-  let pos: number;
-  let keyTag = null;
-  let keyNode = null;
-  let valueNode = null;
-  let atExplicitKey = false;
-  let detected = false;
-  let ch: number;
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    following = state.peek(1);
-    line = state.line; // Save the current line.
-    pos = state.position;
-
-    //
-    // Explicit notation case. There are two separate blocks:
-    // first for the key (denoted by "?") and second for the value (denoted by ":")
-    //
-    if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
-      if (ch === QUESTION) {
-        if (atExplicitKey) {
-          state.storeMappingPair(
-            result,
-            overridableKeys,
-            keyTag as string,
-            keyNode,
-            null,
-          );
-          keyTag = keyNode = valueNode = null;
-        }
-
-        detected = true;
-        atExplicitKey = true;
-        allowCompact = true;
-      } else if (atExplicitKey) {
-        // i.e. 0x3A/* : */ === character after the explicit key.
-        atExplicitKey = false;
-        allowCompact = true;
-      } else {
-        return state.throwError(
-          "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
-        );
-      }
-
-      state.position += 1;
-      ch = following;
-
-      //
-      // Implicit notation case. Flow-style node as the key first, then ":", and the value.
-      //
-    } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
-      if (state.line === line) {
-        ch = state.peek();
-
-        while (isWhiteSpace(ch)) {
-          ch = state.next();
-        }
-
-        if (ch === COLON) {
-          ch = state.next();
-
-          if (!isWhiteSpaceOrEOL(ch)) {
-            return state.throwError(
-              "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
-            );
-          }
-
-          if (atExplicitKey) {
-            state.storeMappingPair(
-              result,
-              overridableKeys,
-              keyTag as string,
-              keyNode,
-              null,
-            );
-            keyTag = keyNode = valueNode = null;
-          }
-
-          detected = true;
-          atExplicitKey = false;
-          allowCompact = false;
-          keyTag = state.tag;
-          keyNode = state.result;
-        } else if (detected) {
-          return state.throwError(
-            "Cannot read an implicit mapping pair: missing colon",
-          );
-        } else {
-          state.tag = tag;
-          state.anchor = anchor;
-          return true; // Keep the result of `composeNode`.
-        }
-      } else if (detected) {
-        return state.throwError(
-          "Cannot read a block mapping entry: a multiline key may not be an implicit key",
-        );
-      } else {
-        state.tag = tag;
-        state.anchor = anchor;
-        return true; // Keep the result of `composeNode`.
-      }
-    } else {
-      break; // Reading is done. Go to the epilogue.
-    }
-
-    //
-    // Common reading code for both explicit and implicit notations.
-    //
-    if (state.line === line || state.lineIndent > nodeIndent) {
-      if (
-        composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
-      ) {
-        if (atExplicitKey) {
-          keyNode = state.result;
-        } else {
-          valueNode = state.result;
-        }
-      }
-
-      if (!atExplicitKey) {
-        state.storeMappingPair(
-          result,
-          overridableKeys,
-          keyTag as string,
-          keyNode,
-          valueNode,
-          line,
-          pos,
-        );
-        keyTag = keyNode = valueNode = null;
-      }
-
-      state.skipSeparationSpace(true, -1);
-      ch = state.peek();
-    }
-
-    if (state.lineIndent > nodeIndent && ch !== 0) {
-      return state.throwError(
-        "Cannot read block: bad indentation of a mapping entry",
-      );
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  //
-  // Epilogue.
-  //
-
-  // Special case: last mapping's node contains only the key in explicit notation.
-  if (atExplicitKey) {
-    state.storeMappingPair(
-      result,
-      overridableKeys,
-      keyTag as string,
-      keyNode,
-      null,
-    );
-  }
-
-  // Expose the resulting mapping.
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "mapping";
-    state.result = result;
-  }
-
-  return detected;
 }
 
 function readTagProperty(state: LoaderState): boolean {
@@ -1643,13 +1633,13 @@ function composeNode(
       if (
         (allowBlockCollections &&
           (state.readBlockSequence(blockIndent) ||
-            readBlockMapping(state, blockIndent, flowIndent))) ||
+            state.readBlockMapping(blockIndent, flowIndent))) ||
         state.readFlowCollection(flowIndent)
       ) {
         hasContent = true;
       } else {
         if (
-          (allowBlockScalars && readBlockScalar(state, flowIndent)) ||
+          (allowBlockScalars && state.readBlockScalar(flowIndent)) ||
           state.readSingleQuotedScalar(flowIndent) ||
           state.readDoubleQuotedScalar(flowIndent)
         ) {
