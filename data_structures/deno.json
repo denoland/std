@@ -6,6 +6,7 @@
     "./binary-heap": "./binary_heap.ts",
     "./binary-search-tree": "./binary_search_tree.ts",
     "./comparators": "./comparators.ts",
+    "./doubly-linked-list": "./doubly_linked_list.ts",
     "./red-black-tree": "./red_black_tree.ts"
   }
 }
