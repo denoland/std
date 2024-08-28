@@ -26,7 +26,7 @@ function resolveYamlPairs(data: unknown[][]): boolean {
 function constructYamlPairs(
   data: Record<string, unknown>[] | null,
 ): [string, unknown][] {
-  if (data === null) return [];
+  return data !== null ? data.flatMap(Object.entries) : [];
   const result: [string, unknown][] = Array.from({ length: data.length });
   for (const [index, pair] of data.entries()) {
     const key = Object.keys(pair)[0] as keyof typeof pair;
