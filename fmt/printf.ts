@@ -242,7 +242,7 @@ class Printf {
           }
           break;
         default:
-          throw Error(
+          throw new Error(
             `State ${this.state} should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues`,
           );
       }
