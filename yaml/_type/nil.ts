@@ -5,39 +5,23 @@
 
 import type { Type } from "../_type.ts";
 
-function resolveYamlNull(data: string): boolean {
-  const max = data.length;
-
-  return (
-    (max === 1 && data === "~") ||
-    (max === 4 && (data === "null" || data === "Null" || data === "NULL"))
-  );
-}
-
-function constructYamlNull(): null {
-  return null;
-}
-
-function isNull(object: unknown): object is null {
-  return object === null;
-}
-
 export const nil: Type<"scalar", null> = {
   tag: "tag:yaml.org,2002:null",
-  construct: constructYamlNull,
-  defaultStyle: "lowercase",
   kind: "scalar",
-  predicate: isNull,
-  represent: {
-    lowercase(): string {
-      return "null";
-    },
-    uppercase(): string {
-      return "NULL";
-    },
-    camelcase(): string {
-      return "Null";
-    },
+  defaultStyle: "lowercase",
+  predicate: (object: unknown): object is null => object === null,
+  construct: () => null,
+  resolve: (data: string): boolean => {
+    return (
+      data === "~" ||
+      data === "null" ||
+      data === "Null" ||
+      data === "NULL"
+    );
   },
-  resolve: resolveYamlNull,
+  represent: {
+    lowercase: (): string => "null",
+    uppercase: (): string => "NULL",
+    camelcase: (): string => "Null",
+  },
 };

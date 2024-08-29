@@ -93,7 +93,7 @@ export async function assertRejects<E extends Error = Error>(
       isPromiseReturned = true;
       await possiblePromise;
     } else {
-      throw Error();
+      throw new Error();
     }
   } catch (error) {
     if (!isPromiseReturned) {
