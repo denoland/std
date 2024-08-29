@@ -25,6 +25,8 @@ export function join(...paths: string[]): string;
 /**
  * Join all given a sequence of `paths`,then normalizes the resulting path.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
  * import { join } from "@std/path/windows/join";
