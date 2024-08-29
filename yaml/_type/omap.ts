@@ -7,28 +7,16 @@ import type { Type } from "../_type.ts";
 import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
-  const objectKeys: string[] = [];
-  let pairKey = "";
-  let pairHasKey = false;
-
-  for (const pair of data) {
-    pairHasKey = false;
-
-    if (!isPlainObject(pair)) return false;
-
-    for (pairKey in pair) {
-      if (Object.hasOwn(pair, pairKey)) {
-        if (!pairHasKey) pairHasKey = true;
-        else return false;
-      }
+  const objectKeys = new Set();
+  for (const object of data) {
+    if (!isPlainObject(object)) return false;
+    const keys = Object.keys(object);
+    if (keys.length !== 1) return false;
+    for (const key of keys) {
+      if (objectKeys.has(key)) return false;
+      objectKeys.add(key);
     }
-
-    if (!pairHasKey) return false;
-
-    if (!objectKeys.includes(pairKey)) objectKeys.push(pairKey);
-    else return false;
   }
-
   return true;
 }
 
