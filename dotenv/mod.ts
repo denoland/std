@@ -4,6 +4,21 @@
  * Parses and loads environment variables from a `.env` file into the current
  * process, or stringify data into a `.env` file format.
  *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ *
+ * ```ts no-eval
+ * // Automatically load environment variables from a `.env` file
+ * import "@std/dotenv/load";
+ * ```
+ *
+ * ```ts
+ * import { parse, stringify } from "@std/dotenv";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(parse("GREETING=hello world"), { GREETING: "hello world" });
+ * assertEquals(stringify({ GREETING: "hello world" }), "GREETING='hello world'");
+ * ```
+ *
  * @module
  */
 
@@ -29,64 +44,29 @@ export interface LoadOptions {
    * @default {false}
    */
   export?: boolean;
-
-  /**
-   * Optional path to `.env.example` file which is used for validation.
-   * To prevent the default value from being used, set to `null`.
-   *
-   * @default {"./.env.example"}
-   */
-  examplePath?: string | null;
-
-  /**
-   * Set to `true` to allow required env variables to be empty. Otherwise, it
-   * will throw an error if any variable is empty.
-   *
-   * @default {false}
-   */
-  allowEmptyValues?: boolean;
-
-  /**
-   * Optional path to `.env.defaults` file which is used to define default
-   * (fallback) values. To prevent the default value from being used,
-   * set to `null`.
-   *
-   * ```sh
-   * # .env.defaults
-   * # Will not be set if GREETING is set in base .env file
-   * GREETING="a secret to everybody"
-   * ```
-   *
-   * @default {"./.env.defaults"}
-   */
-  defaultsPath?: string | null;
 }
 
-/** Works identically to {@linkcode load}, but synchronously. */
+/**
+ * Works identically to {@linkcode load}, but synchronously.
+ *
+ * @example Usage
+ * ```ts no-eval
+ * import { loadSync } from "@std/dotenv";
+ *
+ * const conf = loadSync();
+ * ```
+ *
+ * @param options Options for loading the environment variables.
+ * @returns The parsed environment variables.
+ */
 export function loadSync(
-  {
-    envPath = ".env",
-    examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
-    export: _export = false,
-    allowEmptyValues = false,
-  }: LoadOptions = {},
+  options: LoadOptions = {},
 ): Record<string, string> {
+  const {
+    envPath = ".env",
+    export: _export = false,
+  } = options;
   const conf = envPath ? parseFileSync(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = parseFileSync(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
-
-  if (examplePath) {
-    const confExample = parseFileSync(examplePath);
-    assertSafe(conf, confExample, allowEmptyValues);
-  }
 
   if (_export) {
     for (const [key, value] of Object.entries(conf)) {
@@ -106,6 +86,8 @@ export function loadSync(
  * Inspired by the node modules {@linkcode https://github.com/motdotla/dotenv | dotenv}
  * and {@linkcode https://github.com/motdotla/dotenv-expand | dotenv-expand}.
  *
+ * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ *
  * ## Basic usage
  * ```sh
  * # .env
@@ -114,11 +96,12 @@ export function loadSync(
  *
  * Then import the environment variables using the `load` function.
  *
- * ```ts
+ * @example Basic usage
+ * ```ts no-eval
  * // app.ts
  * import { load } from "@std/dotenv";
  *
- * console.log(await load({export: true})); // { GREETING: "hello world" }
+ * console.log(await load({ export: true })); // { GREETING: "hello world" }
  * console.log(Deno.env.get("GREETING")); // hello world
  * ```
  *
@@ -131,7 +114,8 @@ export function loadSync(
  * Import the `load.ts` module to auto-import from the `.env` file and into
  * the process environment.
  *
- * ```ts
+ * @example Auto-loading
+ * ```ts no-eval
  * // app.ts
  * import "@std/dotenv/load";
  *
@@ -147,53 +131,6 @@ export function loadSync(
  * |File|Purpose|
  * |----|-------|
  * |.env|primary file for storing key-value environment entries
- * |.env.example|this file does not set any values, but specifies env variables which must be present in the configuration object or process environment after loading dotenv
- * |.env.defaults|specify default values for env variables to be used when there is no entry in the `.env` file
- *
- * ### Example file
- *
- * The purpose of the example file is to provide a list of environment
- * variables which must be set or already present in the process environment
- * or an exception will be thrown.  These
- * variables may be set externally or loaded via the `.env` or
- * `.env.defaults` files.  A description may also be provided to help
- * understand the purpose of the env variable. The values in this file
- * are for documentation only and are not set in the environment. Example:
- *
- * ```sh
- * # .env.example
- *
- * # With optional description (this is not set in the environment)
- * DATA_KEY=API key for the api.data.com service.
- *
- * # Without description
- * DATA_URL=
- * ```
- *
- * When the above file is present, after dotenv is loaded, if either
- * DATA_KEY or DATA_URL is not present in the environment an exception
- * is thrown.
- *
- * ### Defaults
- *
- * This file is used to provide a list of default environment variables
- * which will be used if there is no overriding variable in the `.env`
- * file.
- *
- * ```sh
- * # .env.defaults
- * KEY_1=DEFAULT_VALUE
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
- * ```sh
- * # .env
- * KEY_1=ABCD
- * ```
- * The environment variables set after dotenv loads are:
- * ```sh
- * KEY_1=ABCD
- * KEY_2=ANOTHER_DEFAULT_VALUE
- * ```
  *
  * ## Configuration
  *
@@ -203,21 +140,18 @@ export function loadSync(
  * |Option|Default|Description
  * |------|-------|-----------
  * |envPath|./.env|Path and filename of the `.env` file.  Use null to prevent the .env file from being loaded.
- * |defaultsPath|./.env.defaults|Path and filename of the `.env.defaults` file. Use null to prevent the .env.defaults file from being loaded.
- * |examplePath|./.env.example|Path and filename of the `.env.example` file. Use null to prevent the .env.example file from being loaded.
- * |export|false|When true, this will export all environment variables in the `.env` and `.env.default` files to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
- * |allowEmptyValues|false|Allows empty values for specified env variables (throws otherwise)
+ * |export|false|When true, this will export all environment variables in the `.env` file to the process environment (e.g. for use by `Deno.env.get()`) but only if they are not already set.  If a variable is already in the process, the `.env` value is ignored.
  *
  * ### Example configuration
- * ```ts
+ *
+ * @example Using with options
+ * ```ts no-eval
  * import { load } from "@std/dotenv";
  *
  * const conf = await load({
- *     envPath: "./.env_prod",
- *     examplePath: "./.env_required",
- *     export: true,
- *     allowEmptyValues: true,
- *   });
+ *   envPath: "./.env_prod", // Uses .env_prod instead of .env
+ *   export: true, // Exports all variables to the environment
+ * });
  * ```
  *
  * ## Permissions
@@ -227,7 +161,7 @@ export function loadSync(
  * in your `.env` file, you will need the `--allow-env` permission.  E.g.
  *
  * ```sh
- * deno run --allow-read=.env,.env.defaults,.env.example --allow-env=ENV1,ENV2 app.ts
+ * deno run --allow-read=.env --allow-env=ENV1,ENV2 app.ts
  * ```
  *
  * ## Parsing Rules
@@ -269,31 +203,18 @@ export function loadSync(
  *   `{ KEY: "default" }`. Also there is possible to do this case
  *   `KEY=${NO_SUCH_KEY:-${EXISTING_KEY:-default}}` which becomes
  *   `{ KEY: "<EXISTING_KEY_VALUE_FROM_ENV>" }`)
+ *
+ * @param options The options
+ * @returns The parsed environment variables
  */
 export async function load(
-  {
-    envPath = ".env",
-    examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
-    export: _export = false,
-    allowEmptyValues = false,
-  }: LoadOptions = {},
+  options: LoadOptions = {},
 ): Promise<Record<string, string>> {
+  const {
+    envPath = ".env",
+    export: _export = false,
+  } = options;
   const conf = envPath ? await parseFile(envPath) : {};
-
-  if (defaultsPath) {
-    const confDefaults = await parseFile(defaultsPath);
-    for (const [key, value] of Object.entries(confDefaults)) {
-      if (!(key in conf)) {
-        conf[key] = value;
-      }
-    }
-  }
-
-  if (examplePath) {
-    const confExample = await parseFile(examplePath);
-    assertSafe(conf, confExample, allowEmptyValues);
-  }
 
   if (_export) {
     for (const [key, value] of Object.entries(conf)) {
@@ -324,61 +245,5 @@ async function parseFile(
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
-  }
-}
-
-function assertSafe(
-  conf: Record<string, string>,
-  confExample: Record<string, string>,
-  allowEmptyValues: boolean,
-) {
-  const missingEnvVars: string[] = [];
-
-  for (const key in confExample) {
-    if (key in conf) {
-      if (!allowEmptyValues && conf[key] === "") {
-        missingEnvVars.push(key);
-      }
-    } else if (Deno.env.get(key) !== undefined) {
-      if (!allowEmptyValues && Deno.env.get(key) === "") {
-        missingEnvVars.push(key);
-      }
-    } else {
-      missingEnvVars.push(key);
-    }
-  }
-
-  if (missingEnvVars.length > 0) {
-    const errorMessages = [
-      `The following variables were defined in the example file but are not present in the environment:\n  ${
-        missingEnvVars.join(
-          ", ",
-        )
-      }`,
-      `Make sure to add them to your env file.`,
-      !allowEmptyValues &&
-      `If you expect any of these variables to be empty, you can set the allowEmptyValues option to true.`,
-    ];
-
-    throw new MissingEnvVarsError(
-      errorMessages.filter(Boolean).join("\n\n"),
-      missingEnvVars,
-    );
-  }
-}
-
-/**
- * Error thrown in {@linkcode load} and {@linkcode loadSync} when required
- * environment variables are missing.
- */
-export class MissingEnvVarsError extends Error {
-  /** The keys of the missing environment variables. */
-  missing: string[];
-  /** Constructs a new instance. */
-  constructor(message: string, missing: string[]) {
-    super(message);
-    this.name = "MissingEnvVarsError";
-    this.missing = missing;
-    Object.setPrototypeOf(this, new.target.prototype);
   }
 }

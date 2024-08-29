@@ -14,7 +14,7 @@ import { diff } from "./diff.ts";
  * @example Usage
  * ```ts
  * import { unescape } from "@std/internal/diff-str";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(unescape("Hello\nWorld"), "Hello\\n\nWorld");
  * ```
@@ -45,7 +45,7 @@ const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
  * @example Usage
  * ```ts
  * import { tokenize } from "@std/internal/diff-str";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(tokenize("Hello\nWorld"), ["Hello\n", "World"]);
  * ```
@@ -81,7 +81,7 @@ export function tokenize(string: string, wordDiff = false): string[] {
  * @example Usage
  * ```ts
  * import { createDetails } from "@std/internal/diff-str";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const tokens = [
  *   { type: "added", value: "a" },
@@ -114,6 +114,8 @@ export function createDetails(
     });
 }
 
+const NON_WHITESPACE_REGEXP = /\S/;
+
 /**
  * Renders the differences between the actual and expected strings. Partially
  * inspired from {@link https://github.com/kpdecker/jsdiff}.
@@ -126,7 +128,7 @@ export function createDetails(
  * @example Usage
  * ```ts
  * import { diffStr } from "@std/internal/diff-str";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(diffStr("Hello!", "Hello"), [
  *   {
@@ -185,7 +187,7 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
       tokens = diff(tokenized[0], tokenized[1]);
       if (
         tokens.some(({ type, value }) =>
-          type === "common" && value.trim().length
+          type === "common" && NON_WHITESPACE_REGEXP.test(value)
         )
       ) {
         break;

@@ -12,44 +12,45 @@ import { compare } from "./compare.ts";
  * @example Usage
  * ```ts
  * import { parse, parseRange, lessThanRange } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
- * const v0 = parse("1.2.3");
- * const v1 = parse("1.0.0");
+ * const version1 = parse("1.2.3");
+ * const version2 = parse("1.0.0");
  * const range = parseRange(">=1.2.3 <1.2.4");
- * assertFalse(lessThanRange(v0, range));
- * assert(lessThanRange(v1, range));
+ *
+ * assert(!lessThanRange(version1, range));
+ * assert(lessThanRange(version2, range));
  * ```
  *
- * @param semver The version to check.
+ * @param version The version to check.
  * @param range The range to check against.
  * @returns `true` if the SemVer is less than the range, `false` otherwise.
  */
-export function lessThanRange(semver: SemVer, range: Range): boolean {
+export function lessThanRange(version: SemVer, range: Range): boolean {
   return range.every((comparatorSet) =>
-    lessThanComparatorSet(semver, comparatorSet)
+    lessThanComparatorSet(version, comparatorSet)
   );
 }
 
-function lessThanComparatorSet(semver: SemVer, comparatorSet: Comparator[]) {
+function lessThanComparatorSet(version: SemVer, comparatorSet: Comparator[]) {
   // If the comparator set contains wildcard, then the semver is not greater than the range.
   if (comparatorSet.some(isWildcardComparator)) return false;
   // If the SemVer satisfies the comparator set, then it's not less than the range.
-  if (testComparatorSet(semver, comparatorSet)) return false;
+  if (testComparatorSet(version, comparatorSet)) return false;
   // If the SemVer is greater than any of the comparator set, then it's not less than the range.
   if (
     comparatorSet.some((comparator) =>
-      greaterThanComparator(semver, comparator)
+      greaterThanComparator(version, comparator)
     )
   ) return false;
   return true;
 }
 
 function greaterThanComparator(
-  semver: SemVer,
+  version: SemVer,
   comparator: Comparator,
 ): boolean {
-  const cmp = compare(semver, comparator);
+  const cmp = compare(version, comparator);
   switch (comparator.operator) {
     case "=":
     case undefined:

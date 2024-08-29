@@ -16,7 +16,7 @@ import { assertArgs } from "../_common/relative.ts";
  * @example Usage
  * ```ts
  * import { relative } from "@std/path/windows/relative";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const relativePath = relative("C:\\foobar\\test\\aaa", "C:\\foobar\\impl\\bbb");
  * assertEquals(relativePath, "..\\..\\impl\\bbb");

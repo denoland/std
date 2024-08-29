@@ -14,17 +14,14 @@ import { parse } from "./parse.ts";
  * assertFalse(canParse("invalid"));
  * ```
  *
- * @param version The version string to check
+ * @param value The version string to check
  * @returns `true` if the string can be parsed as SemVer, `false` otherwise
  */
-export function canParse(version: string): boolean {
+export function canParse(value: string): boolean {
   try {
-    parse(version);
+    parse(value);
     return true;
-  } catch (err) {
-    if (!(err instanceof TypeError)) {
-      throw err;
-    }
+  } catch {
     return false;
   }
 }

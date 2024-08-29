@@ -4,6 +4,7 @@
 import { CHAR_DOT } from "../_common/constants.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the extension of the `path` with leading period.
@@ -11,7 +12,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { extname } from "@std/path/posix/extname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(extname("/home/user/Documents/file.ts"), ".ts");
  * assertEquals(extname("/home/user/Documents/"), "");
@@ -21,7 +22,34 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param path The path to get the extension from.
  * @returns The extension (ex. for `file.ts` returns `.ts`).
  */
-export function extname(path: string): string {
+export function extname(path: string): string;
+/**
+ * Return the extension of the `path` with leading period.
+ *
+ * Note: Hashes and query parameters are ignore when constructing a URL.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ *
+ * ```ts
+ * import { extname } from "@std/path/posix/extname";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts?a=b")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts#header")), ".ts");
+ * ```
+ *
+ * @param path The path to get the extension from.
+ * @returns The extension (ex. for `file.ts` returns `.ts`).
+ */
+export function extname(path: URL): string;
+export function extname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+
   assertPath(path);
 
   let startDot = -1;

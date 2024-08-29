@@ -14,11 +14,14 @@ export interface ToReadableStreamOptions {
    */
   autoClose?: boolean;
 
-  /** The size of chunks to allocate to read, the default is ~16KiB, which is
-   * the maximum size that Deno operations can currently support. */
+  /**
+   * The size of chunks to allocate to read.
+   *
+   * @default {16640}
+   */
   chunkSize?: number;
 
-  /** The queuing strategy to create the `ReadableStream` with. */
+  /** The queuing strategy to create the {@linkcode ReadableStream} with. */
   strategy?: QueuingStrategy<Uint8Array>;
 }
 
@@ -30,22 +33,28 @@ export interface ToReadableStreamOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a `Closer`).
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { toReadableStream } from "@std/io/to-readable-stream";
  *
- * const file = await Deno.open("./file.txt", { read: true });
+ * const file = await Deno.open("./README.md", { read: true });
  * const fileStream = toReadableStream(file);
  * ```
+ *
+ * @param reader The reader to read from
+ * @param options The options
+ * @returns The readable stream
  */
 export function toReadableStream(
   reader: Reader | (Reader & Closer),
-  {
+  options?: ToReadableStreamOptions,
+): ReadableStream<Uint8Array> {
+  const {
     autoClose = true,
     chunkSize = DEFAULT_CHUNK_SIZE,
     strategy,
-  }: ToReadableStreamOptions = {},
-): ReadableStream<Uint8Array> {
+  } = options ?? {};
+
   return new ReadableStream({
     async pull(controller) {
       const chunk = new Uint8Array(chunkSize);

@@ -4,8 +4,11 @@
 import { fromFileUrl } from "@std/path/from-file-url";
 
 /**
- * Convert a URL or string to a path
- * @param pathUrl A URL or string to be converted
+ * Convert a URL or string to a path.
+ *
+ * @param pathUrl A URL or string to be converted.
+ *
+ * @returns The path as a string.
  */
 export function toPathString(
   pathUrl: string | URL,

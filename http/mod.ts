@@ -8,9 +8,14 @@
  * A small program for serving local files over HTTP.
  *
  * ```sh
- * deno run --allow-net --allow-read --allow-sys jsr:@std/http/file-server
- * > HTTP server listening on http://localhost:4507/
+ * deno run --allow-net --allow-read jsr:@std/http/file-server
+ * Listening on:
+ * - Local: http://localhost:8000
  * ```
+ *
+ * When the `--allow-sys=networkInterfaces` permission is provided, the file
+ * server will also display the local area network addresses that can be used to
+ * access the server.
  *
  * ## HTTP Status Code and Status Text
  *
@@ -35,12 +40,6 @@
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
- * ## Cookie maps
- *
- * An alternative to `cookie.ts` is `cookie_map.ts` which provides `CookieMap`,
- * `SecureCookieMap`, and `mergeHeaders` to manage request and response cookies
- * with the familiar `Map` interface.
- *
  * ## User agent handling
  *
  * The {@linkcode UserAgent} class provides user agent string parsing, allowing
@@ -59,6 +58,37 @@
  * });
  * ```
  *
+ * ### Routing
+ *
+ * {@linkcode route} provides an easy way to route requests to different
+ * handlers based on the request path and method.
+ *
+ * ```ts no-eval
+ * import { route, type Route } from "@std/http/route";
+ * import { serveDir } from "@std/http/file-server";
+ *
+ * const routes: Route[] = [
+ *   {
+ *     pattern: new URLPattern({ pathname: "/about" }),
+ *     handler: () => new Response("About page"),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/users/:id" }),
+ *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/static/*" }),
+ *     handler: (req: Request) => serveDir(req)
+ *   }
+ * ];
+ *
+ * function defaultHandler(_req: Request) {
+ *   return new Response("Not found", { status: 404 });
+ * }
+ *
+ * Deno.serve(route(routes, defaultHandler));
+ * ```
+ *
  * @module
  */
 
@@ -66,8 +96,10 @@ export * from "./cookie.ts";
 export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
-export * from "./server.ts";
-export * from "./unstable_signed_cookie.ts";
+export * from "./signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";
+export * from "./route.ts";
+export * from "./header.ts";
+export * from "./method.ts";

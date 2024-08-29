@@ -4,12 +4,13 @@
 /**
  * Stringify an object into a valid `.env` file format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { stringify } from "@std/dotenv/stringify";
+ * import { assertEquals } from "@std/assert";
  *
  * const object = { GREETING: "hello world" };
- * const string = stringify(object); // GREETING='hello world'
+ * assertEquals(stringify(object), "GREETING='hello world'");
  * ```
  *
  * @param object object to be stringified
@@ -26,7 +27,7 @@ export function stringify(object: Record<string, string>): string {
         `key starts with a '#' indicates a comment and is ignored: '${key}'`,
       );
       continue;
-    } else if (escapedValue.includes("\n")) {
+    } else if (escapedValue.includes("\n") || escapedValue.includes("'")) {
       // escape inner new lines
       escapedValue = escapedValue.replaceAll("\n", "\\n");
       quote = `"`;

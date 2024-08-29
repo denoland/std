@@ -19,20 +19,25 @@ export interface toWritableStreamOptions {
 /**
  * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
  *
- * @example
- * ```ts
+ * @example Usage
+ * ```ts no-assert
  * import { toWritableStream } from "@std/io/to-writable-stream";
  *
- * const file = await Deno.open("./file.txt", { create: true, write: true });
- * await ReadableStream.from("Hello World")
+ * await ReadableStream.from(["Hello World"])
  *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(toWritableStream(file));
+ *   .pipeTo(toWritableStream(Deno.stdout));
  * ```
+ *
+ * @param writer The writer to write to
+ * @param options The options
+ * @returns The writable stream
  */
 export function toWritableStream(
   writer: Writer,
-  { autoClose = true }: toWritableStreamOptions = {},
+  options?: toWritableStreamOptions,
 ): WritableStream<Uint8Array> {
+  const { autoClose = true } = options ?? {};
+
   return new WritableStream({
     async write(chunk, controller) {
       try {

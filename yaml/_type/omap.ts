@@ -3,39 +3,28 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
+import { isPlainObject } from "../_utils.ts";
 
-const { hasOwn } = Object;
-const _toString = Object.prototype.toString;
-
-function resolveYamlOmap(data: Any): boolean {
-  const objectKeys: string[] = [];
-  let pairKey = "";
-  let pairHasKey = false;
-
-  for (const pair of data) {
-    pairHasKey = false;
-
-    if (_toString.call(pair) !== "[object Object]") return false;
-
-    for (pairKey in pair) {
-      if (hasOwn(pair, pairKey)) {
-        if (!pairHasKey) pairHasKey = true;
-        else return false;
-      }
+function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
+  const objectKeys = new Set();
+  for (const object of data) {
+    if (!isPlainObject(object)) return false;
+    const keys = Object.keys(object);
+    if (keys.length !== 1) return false;
+    for (const key of keys) {
+      if (objectKeys.has(key)) return false;
+      objectKeys.add(key);
     }
-
-    if (!pairHasKey) return false;
-
-    if (objectKeys.indexOf(pairKey) === -1) objectKeys.push(pairKey);
-    else return false;
   }
-
   return true;
 }
 
-export const omap = new Type("tag:yaml.org,2002:omap", {
+export const omap: Type<"sequence", Record<PropertyKey, unknown>[]> = {
+  tag: "tag:yaml.org,2002:omap",
   kind: "sequence",
   resolve: resolveYamlOmap,
-});
+  construct(data) {
+    return data;
+  },
+};

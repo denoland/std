@@ -11,7 +11,7 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { resolve } from "@std/path/posix/resolve";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const path = resolve("/foo", "bar", "baz/asdf", "quux", "..");
  * assertEquals(path, "/foo/bar/baz/asdf");
@@ -32,7 +32,9 @@ export function resolve(...pathSegments: string[]): string {
       // deno-lint-ignore no-explicit-any
       const { Deno } = globalThis as any;
       if (typeof Deno?.cwd !== "function") {
-        throw new TypeError("Resolved a relative path without a CWD.");
+        throw new TypeError(
+          "Resolved a relative path without a current working directory (CWD)",
+        );
       }
       path = Deno.cwd();
     }

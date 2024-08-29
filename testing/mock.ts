@@ -26,7 +26,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -72,7 +72,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -125,7 +125,7 @@
  *   assertSpyCalls,
  *   spy,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function multiply(a: number, b: number): number {
  *   return a * b;
@@ -187,7 +187,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -238,7 +238,7 @@
  *   returnsNext,
  *   stub,
  * } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * function randomInt(lowerBound: number, upperBound: number): number {
  *   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
@@ -319,13 +319,30 @@
  * @module
  */
 
-import { assertEquals } from "@std/assert/assert-equals";
-import { assertIsError } from "@std/assert/assert-is-error";
-import { assertRejects } from "@std/assert/assert-rejects";
+import { assertEquals } from "@std/assert/equals";
+import { assertIsError } from "@std/assert/is-error";
+import { assertRejects } from "@std/assert/rejects";
 import { AssertionError } from "@std/assert/assertion-error";
 
-/** An error related to spying on a function or instance method. */
+/**
+ * An error related to spying on a function or instance method.
+ *
+ * @example Usage
+ * ```ts
+ * import { MockError, spy } from "@std/testing/mock";
+ * import { assertThrows } from "@std/assert";
+ *
+ * assertThrows(() => {
+ *   spy({} as any, "no-such-method");
+ * }, MockError);
+ * ```
+ */
 export class MockError extends Error {
+  /**
+   * Construct MockError
+   *
+   * @param message The error message.
+   */
   constructor(message: string) {
     super(message);
     this.name = "MockError";
@@ -418,14 +435,24 @@ function functionSpy<
     restore: {
       enumerable: true,
       value: () => {
-        throw new MockError("function cannot be restored");
+        throw new MockError(
+          "Cannot restore: function cannot be restored",
+        );
       },
     },
   });
   return spy;
 }
 
-/** Checks if a function is a spy. */
+/**
+ * Checks if a function is a spy.
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function to check
+ * @return `true` if the function is a spy, `false` otherwise.
+ */
 function isSpy<Self, Args extends unknown[], Return>(
   func: ((this: Self, ...args: Args) => Return) | unknown,
 ): func is Spy<Self, Args, Return> {
@@ -458,8 +485,53 @@ function unregisterMock(spy: Spy<any, any[], any>) {
 /**
  * Creates a session that tracks all mocks created before it's restored.
  * If a callback is provided, it restores all mocks created within it.
+ *
+ * @example Usage
+ * ```ts
+ * import { mockSession, restore, stub } from "@std/testing/mock";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
+ *
+ * const setTimeout = globalThis.setTimeout;
+ * const id = mockSession();
+ *
+ * stub(globalThis, "setTimeout");
+ *
+ * assertNotEquals(globalThis.setTimeout, setTimeout);
+ *
+ * restore(id);
+ *
+ * assertEquals(globalThis.setTimeout, setTimeout);
+ * ```
+ *
+ * @returns The id of the created session.
  */
 export function mockSession(): number;
+/**
+ * Creates a session that tracks all mocks created before it's restored.
+ * If a callback is provided, it restores all mocks created within it.
+ *
+ * @example Usage
+ * ```ts
+ * import { mockSession, restore, stub } from "@std/testing/mock";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
+ *
+ * const setTimeout = globalThis.setTimeout;
+ * const session = mockSession(() => {
+ *   stub(globalThis, "setTimeout");
+ *   assertNotEquals(globalThis.setTimeout, setTimeout);
+ * });
+ *
+ * session();
+ *
+ * assertEquals(globalThis.setTimeout, setTimeout); // stub is restored
+ * ```
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function to be used for the created session.
+ * @returns The function to execute the session.
+ */
 export function mockSession<
   Self,
   Args extends unknown[],
@@ -490,7 +562,30 @@ export function mockSession<
   }
 }
 
-/** Creates an async session that tracks all mocks created before the promise resolves. */
+/**
+ * Creates an async session that tracks all mocks created before the promise resolves.
+ *
+ * @example Usage
+ * ```ts
+ * import { mockSessionAsync, restore, stub } from "@std/testing/mock";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
+ *
+ * const setTimeout = globalThis.setTimeout;
+ * const session = mockSessionAsync(async () => {
+ *   stub(globalThis, "setTimeout");
+ *   assertNotEquals(globalThis.setTimeout, setTimeout);
+ * });
+ *
+ * await session();
+ *
+ * assertEquals(globalThis.setTimeout, setTimeout); // stub is restored
+ * ```
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @param func The function.
+ * @returns The return value of the function.
+ */
 export function mockSessionAsync<
   Self,
   Args extends unknown[],
@@ -512,6 +607,24 @@ export function mockSessionAsync<
 /**
  * Restores all mocks registered in the current session that have not already been restored.
  * If an id is provided, it will restore all mocks registered in the session associed with that id that have not already been restored.
+ *
+ * @example Usage
+ * ```ts
+ * import { mockSession, restore, stub } from "@std/testing/mock";
+ * import { assertEquals, assertNotEquals } from "@std/assert";
+ *
+ * const setTimeout = globalThis.setTimeout;
+ *
+ * stub(globalThis, "setTimeout");
+ *
+ * assertNotEquals(globalThis.setTimeout, setTimeout);
+ *
+ * restore();
+ *
+ * assertEquals(globalThis.setTimeout, setTimeout);
+ * ```
+ *
+ * @param id The id of the session to restore. If not provided, all mocks registered in the current session are restored.
  */
 export function restore(id?: number) {
   id ??= (sessions.length || 1) - 1;
@@ -532,15 +645,21 @@ function methodSpy<
   Return,
 >(self: Self, property: keyof Self): MethodSpy<Self, Args, Return> {
   if (typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError(
+      "Cannot spy: property is not an instance method",
+    );
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError(
+      "Cannot spy: already spying on instance method",
+    );
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError(
+      "Cannot spy: non-configurable instance method",
+    );
   }
 
   const original = self[property] as unknown as (
@@ -579,7 +698,9 @@ function methodSpy<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError(
+            "Cannot restore: instance method already restored",
+          );
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -615,6 +736,7 @@ export interface ConstructorSpy<
   // deno-lint-ignore no-explicit-any
   Args extends unknown[] = any[],
 > {
+  /** Construct an instance. */
   new (...args: Args): Self;
   /** The function that is being spied on. */
   original: new (...args: Args) => Self;
@@ -637,10 +759,11 @@ function constructorSpy<
   const calls: SpyCall<Self, Args, Self>[] = [];
   // @ts-ignore TS2509: Can't know the type of `original` statically.
   const spy = class extends original {
+    // deno-lint-ignore constructor-super
     constructor(...args: Args) {
-      super(...args);
       const call: SpyCall<Self, Args, Self> = { args };
       try {
+        super(...args);
         call.returned = this as unknown as Self;
       } catch (error) {
         call.error = error as Error;
@@ -654,28 +777,39 @@ function constructorSpy<
     static readonly calls = calls;
     static readonly restored = false;
     static restore() {
-      throw new MockError("constructor cannot be restored");
+      throw new MockError(
+        "Cannot restore: constructor cannot be restored",
+      );
     }
   } as ConstructorSpy<Self, Args>;
   return spy;
 }
 
-/** Utility for extracting the arguments type from a property */
-type GetParametersFromProp<
+/**
+ * Utility for extracting the arguments type from a property
+ *
+ * @internal
+ */
+export type GetParametersFromProp<
   Self,
   Prop extends keyof Self,
 > = Self[Prop] extends (...args: infer Args) => unknown ? Args
   : unknown[];
 
-/** Utility for extracting the return type from a property */
-type GetReturnFromProp<
+/**
+ * Utility for extracting the return type from a property
+ *
+ * @internal
+ */
+export type GetReturnFromProp<
   Self,
   Prop extends keyof Self,
 > // deno-lint-ignore no-explicit-any
  = Self[Prop] extends (...args: any[]) => infer Return ? Return
   : unknown;
 
-type SpyLike<
+/** SpyLink object type. */
+export type SpyLike<
   // deno-lint-ignore no-explicit-any
   Self = any,
   // deno-lint-ignore no-explicit-any
@@ -684,7 +818,35 @@ type SpyLike<
   Return = any,
 > = Spy<Self, Args, Return> | ConstructorSpy<Self, Args>;
 
-/** Wraps a function or instance method with a Spy. */
+/** Creates a spy function.
+ *
+ * @example Usage
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   spy,
+ * } from "@std/testing/mock";
+ *
+ * const func = spy();
+ *
+ * func();
+ * func(1);
+ * func(2, 3);
+ *
+ * assertSpyCalls(func, 3);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCall(func, 0, { args: [] });
+ * assertSpyCall(func, 1, { args: [1] });
+ * assertSpyCall(func, 2, { args: [2, 3] });
+ * ```
+ *
+ * @typeParam Self The self type of the function.
+ * @typeParam Args The arguments type of the function.
+ * @typeParam Return The return type of the function.
+ * @returns The spy function.
+ */
 export function spy<
   // deno-lint-ignore no-explicit-any
   Self = any,
@@ -692,18 +854,113 @@ export function spy<
   Args extends unknown[] = any[],
   Return = undefined,
 >(): Spy<Self, Args, Return>;
+/**
+ * Create a spy function with the given implementation.
+ *
+ * @example Usage
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   spy,
+ * } from "@std/testing/mock";
+ *
+ * const func = spy((a: number, b: number) => a + b);
+ *
+ * func(3, 4);
+ * func(5, 6);
+ *
+ * assertSpyCalls(func, 2);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCall(func, 0, { args: [3, 4], returned: 7 });
+ * assertSpyCall(func, 1, { args: [5, 6], returned: 11 });
+ * ```
+ *
+ * @typeParam Self The self type of the function to wrap
+ * @typeParam Args The arguments type of the function to wrap
+ * @typeParam Return The return type of the function to wrap
+ * @param func The function to wrap
+ * @returns The wrapped function.
+ */
 export function spy<
   Self,
   Args extends unknown[],
   Return,
 >(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
+/**
+ * Create a spy constructor.
+ *
+ * @example Usage
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   spy,
+ * } from "@std/testing/mock";
+ *
+ * class Foo {
+ *   constructor(value: string) {}
+ * };
+ *
+ * const Constructor = spy(Foo);
+ *
+ * new Constructor("foo");
+ * new Constructor("bar");
+ *
+ * assertSpyCalls(Constructor, 2);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCall(Constructor, 0, { args: ["foo"] });
+ * assertSpyCall(Constructor, 1, { args: ["bar"] });
+ * ```
+ *
+ * @typeParam Self The type of the instance of the class.
+ * @typeParam Args The arguments type of the constructor
+ * @param constructor The constructor to spy.
+ * @returns The wrapped constructor.
+ */
 export function spy<
   Self,
   Args extends unknown[],
-  Return = undefined,
 >(
   constructor: new (...args: Args) => Self,
 ): ConstructorSpy<Self, Args>;
+/**
+ * Wraps a instance method with a Spy.
+ *
+ * @example Usage
+ * ```ts
+ * import {
+ *   assertSpyCall,
+ *   assertSpyCalls,
+ *   spy,
+ * } from "@std/testing/mock";
+ *
+ * const obj = {
+ *   method(a: number, b: number): number {
+ *     return a + b;
+ *   },
+ * };
+ *
+ * const methodSpy = spy(obj, "method");
+ *
+ * obj.method(1, 2);
+ * obj.method(3, 4);
+ *
+ * assertSpyCalls(methodSpy, 2);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCall(methodSpy, 0, { args: [1, 2], returned: 3 });
+ * assertSpyCall(methodSpy, 1, { args: [3, 4], returned: 7 });
+ * ```
+ *
+ * @typeParam Self The type of the instance to spy the method of.
+ * @typeParam Prop The property to spy.
+ * @param self The instance to spy.
+ * @param property The property of the method to spy.
+ * @returns The spy function.
+ */
 export function spy<
   Self,
   Prop extends keyof Self,
@@ -754,7 +1011,35 @@ export interface Stub<
   fake: (this: Self, ...args: Args) => Return;
 }
 
-/** Replaces an instance method with a Stub. */
+/**
+ * Replaces an instance method with a Stub with empty implementation.
+ *
+ * @example Usage
+ * ```ts
+ * import { stub, assertSpyCalls } from "@std/testing/mock";
+ *
+ * const obj = {
+ *   method() {
+ *     // some inconventient feature for testing
+ *   },
+ * };
+ *
+ * const methodStub = stub(obj, "method");
+ *
+ * for (const _ of Array(5)) {
+ *   obj.method();
+ * }
+ *
+ * assertSpyCalls(methodStub, 5);
+ * ```
+
+ *
+ * @typeParam Self The self type of the instance to replace a method of.
+ * @typeParam Prop The property of the instance to replace.
+ * @param self The instance to replace a method of.
+ * @param property The property of the instance to replace.
+ * @returns The stub function which replaced the original.
+ */
 export function stub<
   Self,
   Prop extends keyof Self,
@@ -762,6 +1047,32 @@ export function stub<
   self: Self,
   property: Prop,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
+/**
+ * Replaces an instance method with a Stub with the given implementation.
+ *
+ * @example Usage
+ * ```ts
+ * import { stub } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const obj = {
+ *   method(): number {
+ *     return Math.random();
+ *   },
+ * };
+ *
+ * const methodStub = stub(obj, "method", () => 0.5);
+ *
+ * assertEquals(obj.method(), 0.5);
+ * ```
+ *
+ * @typeParam Self The self type of the instance to replace a method of.
+ * @typeParam Prop The property of the instance to replace.
+ * @param self The instance to replace a method of.
+ * @param property The property of the instance to replace.
+ * @param func The fake implementation of the function.
+ * @returns The stub function which replaced the original.
+ */
 export function stub<
   Self,
   Prop extends keyof Self,
@@ -783,15 +1094,19 @@ export function stub<
   func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
   if (self[property] !== undefined && typeof self[property] !== "function") {
-    throw new MockError("property is not an instance method");
+    throw new MockError(
+      "Cannot stub: property is not an instance method",
+    );
   }
   if (isSpy(self[property])) {
-    throw new MockError("already spying on instance method");
+    throw new MockError(
+      "Cannot stub: already spying on instance method",
+    );
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
-    throw new MockError("cannot spy on non configurable instance method");
+    throw new MockError("Cannot stub: non-configurable instance method");
   }
 
   const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
@@ -836,7 +1151,9 @@ export function stub<
       enumerable: true,
       value: () => {
         if (restored) {
-          throw new MockError("instance method already restored");
+          throw new MockError(
+            "Cannot restore: instance method already restored",
+          );
         }
         if (propertyDescriptor) {
           Object.defineProperty(self, property, propertyDescriptor);
@@ -867,6 +1184,24 @@ export function stub<
 
 /**
  * Asserts that a spy is called as much as expected and no more.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCalls, spy } from "@std/testing/mock";
+ *
+ * const func = spy();
+ *
+ * func();
+ * func();
+ *
+ * assertSpyCalls(func, 2);
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param expectedCalls The number of the expected calls.
  */
 export function assertSpyCalls<
   Self,
@@ -881,8 +1216,8 @@ export function assertSpyCalls<
   } catch (e) {
     assertIsError(e);
     let message = spy.calls.length < expectedCalls
-      ? "spy not called as much as expected:\n"
-      : "spy called more than expected:\n";
+      ? "Spy not called as much as expected:\n"
+      : "Spy called more than expected:\n";
     message += e.message.split("\n").slice(1).join("\n");
     throw new AssertionError(message);
   }
@@ -906,6 +1241,7 @@ export interface ExpectedSpyCall<
    * If you expect a promise to reject, expect error instead.
    */
   returned?: Return;
+  /** The expected thrown error. */
   error?: {
     /** The class for the error that was thrown by a function. */
     // deno-lint-ignore no-explicit-any
@@ -924,12 +1260,33 @@ function getSpyCall<
   callIndex: number,
 ): SpyCall {
   if (spy.calls.length < (callIndex + 1)) {
-    throw new AssertionError("spy not called as much as expected");
+    throw new AssertionError("Spy not called as much as expected");
   }
   return spy.calls[callIndex]!;
 }
 /**
  * Asserts that a spy is called as expected.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCall, spy } from "@std/testing/mock";
+ *
+ * const func = spy((a: number, b: number) => a + b);
+ *
+ * func(3, 4);
+ * func(5, 6);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCall(func, 0, { args: [3, 4], returned: 7 });
+ * assertSpyCall(func, 1, { args: [5, 6], returned: 11 });
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param expected The expected spy call.
  */
 export function assertSpyCall<
   Self,
@@ -948,7 +1305,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy not called with expected args:\n" +
+          "Spy not called with expected args:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -960,8 +1317,8 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         let message = expected.self
-          ? "spy not called as method on expected self:\n"
-          : "spy not expected to be called as method on object:\n";
+          ? "Spy not called as method on expected self:\n"
+          : "Spy not expected to be called as method on object:\n";
         message += e.message.split("\n").slice(1).join("\n");
         throw new AssertionError(message);
       }
@@ -970,12 +1327,12 @@ export function assertSpyCall<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
+          "Do not expect error and return, only one should be expected",
         );
       }
       if (call.error) {
         throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
+          "Spy call did not return expected value, an error was thrown.",
         );
       }
       try {
@@ -983,7 +1340,7 @@ export function assertSpyCall<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not return expected value:\n" +
+          "Spy call did not return expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -992,7 +1349,7 @@ export function assertSpyCall<
     if ("error" in expected) {
       if ("returned" in call) {
         throw new AssertionError(
-          "spy call did not throw an error, a value was returned.",
+          "Spy call did not throw an error, a value was returned.",
         );
       }
       assertIsError(
@@ -1006,6 +1363,29 @@ export function assertSpyCall<
 
 /**
  * Asserts that an async spy is called as expected.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCallAsync, spy } from "@std/testing/mock";
+ *
+ * const func = spy((a: number, b: number) => new Promise((resolve) => {
+ *   setTimeout(() => resolve(a + b), 100)
+ * }));
+ *
+ * await func(3, 4);
+ * await func(5, 6);
+ *
+ * // asserts each call made to the spy function.
+ * await assertSpyCallAsync(func, 0, { args: [3, 4], returned: 7 });
+ * await assertSpyCallAsync(func, 1, { args: [5, 6], returned: 11 });
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param expected The expected spy call.
  */
 export async function assertSpyCallAsync<
   Self,
@@ -1026,12 +1406,12 @@ export async function assertSpyCallAsync<
 
   if (call.error) {
     throw new AssertionError(
-      "spy call did not return a promise, an error was thrown.",
+      "Spy call did not return a promise, an error was thrown.",
     );
   }
   if (call.returned !== Promise.resolve(call.returned)) {
     throw new AssertionError(
-      "spy call did not return a promise, a value was returned.",
+      "Spy call did not return a promise, a value was returned.",
     );
   }
 
@@ -1039,12 +1419,7 @@ export async function assertSpyCallAsync<
     if ("returned" in expected) {
       if ("error" in expected) {
         throw new TypeError(
-          "do not expect error and return, only one should be expected",
-        );
-      }
-      if (call.error) {
-        throw new AssertionError(
-          "spy call did not return expected value, an error was thrown.",
+          "Do not expect error and return, only one should be expected",
         );
       }
       let expectedResolved;
@@ -1052,7 +1427,7 @@ export async function assertSpyCallAsync<
         expectedResolved = await expected.returned;
       } catch {
         throw new TypeError(
-          "do not expect rejected promise, expect error instead",
+          "Do not expect rejected promise, expect error instead",
         );
       }
 
@@ -1060,7 +1435,7 @@ export async function assertSpyCallAsync<
       try {
         resolved = await call.returned;
       } catch {
-        throw new AssertionError("spy call returned promise was rejected");
+        throw new AssertionError("Spy call returned promise was rejected");
       }
 
       try {
@@ -1068,7 +1443,7 @@ export async function assertSpyCallAsync<
       } catch (e) {
         assertIsError(e);
         throw new AssertionError(
-          "spy call did not resolve to expected value:\n" +
+          "Spy call did not resolve to expected value:\n" +
             e.message.split("\n").slice(1).join("\n"),
         );
       }
@@ -1086,6 +1461,32 @@ export async function assertSpyCallAsync<
 
 /**
  * Asserts that a spy is called with a specific arg as expected.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCallArg, spy } from "@std/testing/mock";
+ *
+ * const func = spy((a: number, b: number) => a + b);
+ *
+ * func(3, 4);
+ * func(5, 6);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCallArg(func, 0, 0, 3);
+ * assertSpyCallArg(func, 0, 1, 4);
+ * assertSpyCallArg(func, 1, 0, 5);
+ * assertSpyCallArg(func, 1, 1, 6);
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArg The expected type of the argument for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param argIndex The index of the arguments to check.
+ * @param expected The expected argument.
+ * @returns The actual argument.
  */
 export function assertSpyCallArg<
   Self,
@@ -1109,6 +1510,29 @@ export function assertSpyCallArg<
  * If a start and end index is not provided, the expected will be compared against all args.
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCallArgs, spy } from "@std/testing/mock";
+ *
+ * const func = spy((a: number, b: number) => a + b);
+ *
+ * func(3, 4);
+ * func(5, 6);
+ *
+ * // asserts each call made to the spy function.
+ * assertSpyCallArgs(func, 0, [3, 4]);
+ * assertSpyCallArgs(func, 1, [5, 6]);
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param expected The expected arguments.
+ * @returns The actual arguments.
  */
 export function assertSpyCallArgs<
   Self,
@@ -1120,6 +1544,33 @@ export function assertSpyCallArgs<
   callIndex: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
+/**
+ * Asserts that an spy is called with a specific range of args as expected.
+ * If a start and end index is not provided, the expected will be compared against all args.
+ * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
+ * The end index is not included in the range of args that are compared.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCallArgs, spy } from "@std/testing/mock";
+ *
+ * const func = spy((...args) => {});
+ *
+ * func(0, 1, 2, 3, 4, 5);
+ *
+ * assertSpyCallArgs(func, 0, 3, [3, 4, 5]);
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check.
+ * @param callIndex The index of the call to check.
+ * @param argsStart The start index of the arguments to check. If not specified, it checks the arguments from the beignning.
+ * @param expected The expected arguments.
+ * @returns The actual arguments.
+ */
 export function assertSpyCallArgs<
   Self,
   Args extends unknown[],
@@ -1131,6 +1582,34 @@ export function assertSpyCallArgs<
   argsStart: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
+/**
+ * Asserts that an spy is called with a specific range of args as expected.
+ * If a start and end index is not provided, the expected will be compared against all args.
+ * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
+ * The end index is not included in the range of args that are compared.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertSpyCallArgs, spy } from "@std/testing/mock";
+ *
+ * const func = spy((...args) => {});
+ *
+ * func(0, 1, 2, 3, 4, 5);
+ *
+ * assertSpyCallArgs(func, 0, 3, 4, [3]);
+ * ```
+ *
+ * @typeParam Self The self type of the spy function.
+ * @typeParam Args The arguments type of the spy function.
+ * @typeParam Return The return type of the spy function.
+ * @typeParam ExpectedArgs The expected type of the arguments for the spy to be called.
+ * @param spy The spy to check
+ * @param callIndex The index of the call to check
+ * @param argsStart The start index of the arguments to check. If not specified, it checks the arguments from the beignning.
+ * @param argsEnd The end index of the arguments to check. If not specified, it checks the arguments until the end.
+ * @param expected The expected arguments.
+ * @returns The actual arguments
+ */
 export function assertSpyCallArgs<
   Self,
   Args extends unknown[],
@@ -1139,8 +1618,8 @@ export function assertSpyCallArgs<
 >(
   spy: SpyLike<Self, Args, Return>,
   callIndex: number,
-  argStart: number,
-  argEnd: number,
+  argsStart: number,
+  argsEnd: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
 export function assertSpyCallArgs<
@@ -1173,7 +1652,23 @@ export function assertSpyCallArgs<
   return args as ExpectedArgs;
 }
 
-/** Creates a function that returns the instance the method was called on. */
+/**
+ * Creates a function that returns the instance the method was called on.
+ *
+ * @example Usage
+ * ```ts
+ * import { returnsThis } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const func = returnsThis();
+ * const obj = { func };
+ * assertEquals(obj.func(), obj);
+ * ```
+ *
+ * @typeParam Self The self type of the returned function.
+ * @typeParam Args The arguments type of the returned function.
+ * @returns A function that returns the instance the method was called on.
+ */
 export function returnsThis<
   // deno-lint-ignore no-explicit-any
   Self = any,
@@ -1185,9 +1680,28 @@ export function returnsThis<
   };
 }
 
-/** Creates a function that returns one of its arguments. */
-// deno-lint-ignore no-explicit-any
-export function returnsArg<Arg, Self = any>(
+/**
+ * Creates a function that returns one of its arguments.
+ *
+ * @example Usage
+ * ```ts
+ * import { returnsArg } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const func = returnsArg(1);
+ * assertEquals(func(1, 2, 3), 2);
+ * ```
+ *
+ * @typeParam Arg The type of returned argument.
+ * @typeParam Self The self type of the returned function.
+ * @param idx The index of the arguments to use.
+ * @returns A function that returns one of its arguments.
+ */
+export function returnsArg<
+  Arg,
+  // deno-lint-ignore no-explicit-any
+  Self = any,
+>(
   idx: number,
 ): (this: Self, ...args: Arg[]) => Arg | undefined {
   return function (...args: Arg[]): Arg | undefined {
@@ -1195,7 +1709,24 @@ export function returnsArg<Arg, Self = any>(
   };
 }
 
-/** Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end. */
+/**
+ * Creates a function that returns its arguments or a subset of them. If end is specified, it will return arguments up to but not including the end.
+ *
+ * @example Usage
+ * ```ts
+ * import { returnsArgs } from "@std/testing/mock";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const func = returnsArgs();
+ * assertEquals(func(1, 2, 3), [1, 2, 3]);
+ * ```
+ *
+ * @typeParam Args The arguments type of the returned function
+ * @typeParam Self The self type of the returned function
+ * @param start The start index of the arguments to return. Default is 0.
+ * @param end The end index of the arguments to return.
+ * @returns A function that returns its arguments or a subset of them.
+ */
 export function returnsArgs<
   Args extends unknown[],
   // deno-lint-ignore no-explicit-any
@@ -1209,7 +1740,27 @@ export function returnsArgs<
   };
 }
 
-/** Creates a function that returns the iterable values. Any iterable values that are errors will be thrown. */
+/**
+ * Creates a function that returns the iterable values. Any iterable values that are errors will be thrown.
+ *
+ * @example Usage
+ * ```ts
+ * import { returnsNext } from "@std/testing/mock";
+ * import { assertEquals, assertThrows } from "@std/assert";
+ *
+ * const func = returnsNext([1, 2, new Error("foo"), 3]);
+ * assertEquals(func(), 1);
+ * assertEquals(func(), 2);
+ * assertThrows(() => func(), Error, "foo");
+ * assertEquals(func(), 3);
+ * ```
+ *
+ * @typeParam Return The type of each item of the iterable
+ * @typeParam Self The self type of the returned function
+ * @typeParam Args The arguments type of the returned function
+ * @param values The iterable values
+ * @return A function that returns the iterable values
+ */
 export function returnsNext<
   Return,
   // deno-lint-ignore no-explicit-any
@@ -1226,7 +1777,9 @@ export function returnsNext<
   return function () {
     const next = gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;
@@ -1235,7 +1788,27 @@ export function returnsNext<
   };
 }
 
-/** Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown. */
+/**
+ * Creates a function that resolves the awaited iterable values. Any awaited iterable values that are errors will be thrown.
+ *
+ * @example Usage
+ * ```ts
+ * import { resolvesNext } from "@std/testing/mock";
+ * import { assertEquals, assertRejects } from "@std/assert";
+ *
+ * const func = resolvesNext([1, 2, new Error("foo"), 3]);
+ * assertEquals(await func(), 1);
+ * assertEquals(await func(), 2);
+ * assertRejects(() => func(), Error, "foo");
+ * assertEquals(await func(), 3);
+ * ```
+ *
+ * @typeParam Return The type of each item of the iterable
+ * @typeParam Self The self type of the returned function
+ * @typeParam Args The type of arguments of the returned function
+ * @param iterable The iterable to use
+ * @returns A function that resolves the awaited iterable values
+ */
 export function resolvesNext<
   Return,
   // deno-lint-ignore no-explicit-any
@@ -1254,7 +1827,9 @@ export function resolvesNext<
   return async function () {
     const next = await gen.next();
     if (next.done) {
-      throw new MockError(`not expected to be called more than ${calls} times`);
+      throw new MockError(
+        `Not expected to be called more than ${calls} time(s)`,
+      );
     }
     calls++;
     const { value } = next;

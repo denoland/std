@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import db from "./vendor/mime-db.v1.52.0.ts";
+import db from "./vendor/db.ts";
 import type { DBEntry } from "./_util.ts";
 
 export type KeyOfDb = keyof typeof db;
@@ -32,6 +32,7 @@ for (const type of Object.keys(db) as KeyOfDb[]) {
 
       if (
         current !== "application/octet-stream" &&
+        current !== "application/mp4" &&
         (from > to ||
           // @ts-ignore work around https://github.com/denoland/dnt/issues/148
           (from === to && current.startsWith("application/")))

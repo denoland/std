@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { ERROR_WHILE_MAPPING_MESSAGE, pooledMap } from "./pool.ts";
+import { pooledMap } from "./pool.ts";
 import {
   assert,
   assertEquals,
@@ -13,13 +13,13 @@ Deno.test("pooledMap()", async () => {
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise<number>((r) => setTimeout(() => r(i), 1000)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
   );
   const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
   const diff = new Date().getTime() - start.getTime();
-  assert(diff >= 2000);
-  assert(diff < 3000);
+  assert(diff >= 200);
+  assert(diff < 300);
 });
 
 Deno.test("pooledMap() handles errors", async () => {
@@ -38,7 +38,7 @@ Deno.test("pooledMap() handles errors", async () => {
       }
     },
     AggregateError,
-    ERROR_WHILE_MAPPING_MESSAGE,
+    "Cannot complete the mapping as an error was thrown from an item",
   );
   assertEquals(error.errors.length, 2);
   assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
@@ -47,19 +47,10 @@ Deno.test("pooledMap() handles errors", async () => {
 });
 
 Deno.test("pooledMap() returns ordered items", async () => {
-  function getRandomInt(min: number, max: number): number {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
-  }
-
   const results = pooledMap(
     2,
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    (i) =>
-      new Promise<number>((r) =>
-        setTimeout(() => r(i), getRandomInt(5, 20) * 100)
-      ),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 100 / i)),
   );
 
   const returned = await Array.fromAsync(results);

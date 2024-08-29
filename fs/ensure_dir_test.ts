@@ -105,7 +105,7 @@ Deno.test("ensureDir() rejects if input is a file", async function () {
         await ensureDir(testFile);
       },
       Error,
-      `Ensure path exists, expected 'dir', got 'file'`,
+      `Failed to ensure directory exists: expected 'dir', got 'file'`,
     );
   } finally {
     await Deno.remove(baseDir, { recursive: true });
@@ -124,7 +124,7 @@ Deno.test("ensureDirSync() throws if input is a file", function () {
         ensureDirSync(testFile);
       },
       Error,
-      `Ensure path exists, expected 'dir', got 'file'`,
+      `Failed to ensure directory exists: expected 'dir', got 'file'`,
     );
   } finally {
     Deno.removeSync(baseDir, { recursive: true });
@@ -139,7 +139,7 @@ Deno.test("ensureDir() rejects links to files", async function () {
       await ensureDir(lf);
     },
     Error,
-    `Ensure path exists, expected 'dir', got 'file'`,
+    `Failed to ensure directory exists: expected 'dir', got 'file'`,
   );
 });
 
@@ -151,7 +151,7 @@ Deno.test("ensureDirSync() rejects links to files", function () {
       ensureDirSync(lf);
     },
     Error,
-    `Ensure path exists, expected 'dir', got 'file'`,
+    `Failed to ensure directory exists: expected 'dir', got 'file'`,
   );
 });
 
@@ -185,5 +185,24 @@ Deno.test({
       () => ensureDirSync(baseDir),
       Deno.errors.PermissionDenied,
     );
+  },
+});
+
+Deno.test({
+  name: "ensureDir() isn't racy",
+  async fn() {
+    for (const _ of Array(100)) {
+      const dir = path.join(
+        await Deno.makeTempDir(),
+        "check",
+        "race",
+      );
+
+      // It doesn't throw with successive calls.
+      await Promise.all([
+        ensureDir(dir),
+        ensureDir(dir),
+      ]);
+    }
   },
 });

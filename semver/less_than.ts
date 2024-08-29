@@ -4,26 +4,27 @@ import type { SemVer } from "./types.ts";
 import { compare } from "./compare.ts";
 
 /**
- * Less than comparison
+ * Less than comparison for two SemVers.
  *
- * This is equal to `compare(s0, s1) < 0`.
+ * This is equal to `compare(version1, version2) < 0`.
  *
  * @example Usage
  * ```ts
  * import { parse, lessThan } from "@std/semver";
- * import { assert, assertFalse } from "@std/assert";
+ * import { assert } from "@std/assert";
  *
- * const s0 = parse("1.2.3");
- * const s1 = parse("1.2.4");
- * assert(lessThan(s0, s1));
- * assertFalse(lessThan(s1, s0));
- * assertFalse(lessThan(s0, s0));
+ * const version1 = parse("1.2.3");
+ * const version2 = parse("1.2.4");
+ *
+ * assert(lessThan(version1, version2));
+ * assert(!lessThan(version2, version1));
+ * assert(!lessThan(version1, version1));
  * ```
  *
- * @param s0 the first version to compare
- * @param s1 the second version to compare
- * @returns `true` if `s0` is less than `s1`, `false` otherwise
+ * @param version1 the first version to compare
+ * @param version2 the second version to compare
+ * @returns `true` if `version1` is less than `version2`, `false` otherwise
  */
-export function lessThan(s0: SemVer, s1: SemVer): boolean {
-  return compare(s0, s1) < 0;
+export function lessThan(version1: SemVer, version2: SemVer): boolean {
+  return compare(version1, version2) < 0;
 }

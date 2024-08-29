@@ -5,8 +5,12 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
 
 /** Options for {@linkcode format}. */
 export interface FormatOptions {
-  /** Whether returns the formatted date in UTC instead of local time. */
-  utc?: boolean;
+  /**
+   * The timezone the formatted date should be in.
+   *
+   * @default {undefined}
+   */
+  timeZone?: "UTC";
 }
 
 /**
@@ -44,7 +48,7 @@ export interface FormatOptions {
  * @example Basic usage
  * ```ts no-eval
  * import { format } from "@std/datetime/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
@@ -61,11 +65,11 @@ export interface FormatOptions {
  *
  * ```ts no-eval
  * import { format } from "@std/datetime/format";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const date = new Date(2019, 0, 20, 16, 34, 23, 123);
  *
- * assertEquals(format(date, "yyyy-MM-dd HH:mm:ss", { utc: true }), "2019-01-20 05:34:23");
+ * assertEquals(format(date, "yyyy-MM-dd HH:mm:ss", { timeZone: "UTC" }), "2019-01-20 05:34:23");
  * ```
  */
 export function format(
@@ -74,8 +78,5 @@ export function format(
   options: FormatOptions = {},
 ): string {
   const formatter = new DateTimeFormatter(formatString);
-  return formatter.format(
-    date,
-    options.utc ? { timeZone: "UTC" } : undefined,
-  );
+  return formatter.format(date, options);
 }

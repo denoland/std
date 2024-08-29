@@ -3,37 +3,23 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
-import { isBoolean } from "../_utils.ts";
+import type { Type } from "../_type.ts";
 
-function resolveYamlBoolean(data: string): boolean {
-  const max = data.length;
+const YAML_TRUE_BOOLEANS = ["true", "True", "TRUE"];
+const YAML_FALSE_BOOLEANS = ["false", "False", "FALSE"];
+const YAML_BOOLEANS = [...YAML_TRUE_BOOLEANS, ...YAML_FALSE_BOOLEANS];
 
-  return (
-    (max === 4 && (data === "true" || data === "True" || data === "TRUE")) ||
-    (max === 5 && (data === "false" || data === "False" || data === "FALSE"))
-  );
-}
-
-function constructYamlBoolean(data: string): boolean {
-  return data === "true" || data === "True" || data === "TRUE";
-}
-
-export const bool = new Type("tag:yaml.org,2002:bool", {
-  construct: constructYamlBoolean,
-  defaultStyle: "lowercase",
+export const bool: Type<"scalar", boolean> = {
+  tag: "tag:yaml.org,2002:bool",
   kind: "scalar",
-  predicate: isBoolean,
+  defaultStyle: "lowercase",
+  predicate: (value: unknown): value is boolean =>
+    typeof value === "boolean" || value instanceof Boolean,
+  construct: (data: string): boolean => YAML_TRUE_BOOLEANS.includes(data),
+  resolve: (data: string): boolean => YAML_BOOLEANS.includes(data),
   represent: {
-    lowercase(object: boolean): string {
-      return object ? "true" : "false";
-    },
-    uppercase(object: boolean): string {
-      return object ? "TRUE" : "FALSE";
-    },
-    camelcase(object: boolean): string {
-      return object ? "True" : "False";
-    },
+    lowercase: (object: boolean): string => object ? "true" : "false",
+    uppercase: (object: boolean): string => object ? "TRUE" : "FALSE",
+    camelcase: (object: boolean): string => object ? "True" : "False",
   },
-  resolve: resolveYamlBoolean,
-});
+};

@@ -12,13 +12,6 @@ import { preferredEncodings } from "./_negotiation/encoding.ts";
 import { preferredLanguages } from "./_negotiation/language.ts";
 import { preferredMediaTypes } from "./_negotiation/media_type.ts";
 
-/** Loose copy of {@linkcode Request}. */
-export type Request = {
-  headers: {
-    get(key: string): string | null;
-  };
-};
-
 /**
  * Returns an array of media types accepted by the request, in order of
  * preference. If there are no media types supplied in the request, then any
@@ -27,7 +20,7 @@ export type Request = {
  * @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -48,7 +41,7 @@ export type Request = {
  * @param request The request to get the acceptable media types for.
  * @returns An array of acceptable media types.
  */
-export function accepts(request: Request): string[];
+export function accepts(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of media types, return the best match accepted in the
  * request. If no media type matches, then the function returns `undefined`.
@@ -56,7 +49,7 @@ export function accepts(request: Request): string[];
  *  @example Usage
  * ```ts
  * import { accepts } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -73,11 +66,11 @@ export function accepts(request: Request): string[];
  * @returns The best matching media type, if any match.
  */
 export function accepts(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...types: string[]
 ): string | undefined;
 export function accepts(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...types: string[]
 ): string | string[] | undefined {
   const accept = request.headers.get("accept");
@@ -96,7 +89,7 @@ export function accepts(
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -108,7 +101,7 @@ export function accepts(
  * @param request The request to get the acceptable content encodings for.
  * @returns An array of content encodings this request accepts.
  */
-export function acceptsEncodings(request: Request): string[];
+export function acceptsEncodings(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of content encodings, return the best match accepted in the
  * request. If no content encodings match, then the function returns
@@ -121,7 +114,7 @@ export function acceptsEncodings(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsEncodings } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
@@ -135,11 +128,11 @@ export function acceptsEncodings(request: Request): string[];
  * @returns The best matching encoding, if any match.
  */
 export function acceptsEncodings(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...encodings: string[]
 ): string | undefined;
 export function acceptsEncodings(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...encodings: string[]
 ): string | string[] | undefined {
   const acceptEncoding = request.headers.get("accept-encoding");
@@ -160,7 +153,7 @@ export function acceptsEncodings(
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -174,7 +167,7 @@ export function acceptsEncodings(
  * @param request The request to get the acceptable languages for.
  * @returns An array of languages this request accepts.
  */
-export function acceptsLanguages(request: Request): string[];
+export function acceptsLanguages(request: Pick<Request, "headers">): string[];
 /**
  * For a given set of languages, return the best match accepted in the request.
  * If no languages match, then the function returns `undefined`.
@@ -182,7 +175,7 @@ export function acceptsLanguages(request: Request): string[];
  * @example Usage
  * ```ts
  * import { acceptsLanguages } from "@std/http/negotiation";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const request = new Request("https://example.com/", {
  *   headers: {
@@ -198,11 +191,11 @@ export function acceptsLanguages(request: Request): string[];
  * @returns The best matching language, if any match.
  */
 export function acceptsLanguages(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...langs: string[]
 ): string | undefined;
 export function acceptsLanguages(
-  request: Request,
+  request: Pick<Request, "headers">,
   ...langs: string[]
 ): string | string[] | undefined {
   const acceptLanguage = request.headers.get("accept-language");

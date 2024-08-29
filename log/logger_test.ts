@@ -5,15 +5,15 @@ import { type LevelName, LogLevels } from "./levels.ts";
 import { BaseHandler } from "./base_handler.ts";
 
 class TestHandler extends BaseHandler {
-  public messages: string[] = [];
-  public records: LogRecord[] = [];
+  messages: string[] = [];
+  records: LogRecord[] = [];
 
   override handle(record: LogRecord) {
     this.records.push(record);
     super.handle(record);
   }
 
-  public override log(str: string) {
+  override log(str: string) {
     this.messages.push(str);
   }
 }

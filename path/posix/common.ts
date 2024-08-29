@@ -9,7 +9,7 @@ import { SEPARATOR } from "./constants.ts";
  * @example Usage
  * ```ts
  * import { common } from "@std/path/posix/common";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const path = common([
  *   "./deno/std/path/mod.ts",

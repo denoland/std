@@ -1,0 +1,10 @@
+{
+  "name": "@std/cache",
+  "version": "0.1.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./lru-cache": "./lru_cache.ts",
+    "./memoize": "./memoize.ts",
+    "./ttl-cache": "./ttl_cache.ts"
+  }
+}

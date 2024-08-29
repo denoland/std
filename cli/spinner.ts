@@ -18,7 +18,11 @@ const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧",
 // deno-lint-ignore ban-types
 export type Ansi = string & {};
 
-/** Color options for {@linkcode SpinnerOptions.color}. */
+/**
+ * Color options for {@linkcode SpinnerOptions.color}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export type Color =
   | "black"
   | "red"
@@ -43,7 +47,11 @@ const COLORS: Record<Color, string> = {
   gray: "\u001b[90m",
 };
 
-/** Options for {@linkcode Spinner}. */
+/**
+ * Options for {@linkcode Spinner}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface SpinnerOptions {
   /**
    * The sequence of characters to be iterated through for animation.
@@ -71,6 +79,8 @@ export interface SpinnerOptions {
 
 /**
  * A spinner that can be used to indicate that something is loading.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
@@ -120,20 +130,15 @@ export class Spinner {
   /**
    * Creates a new spinner.
    *
-   * @example Usage
-   * ```ts no-assert
-   * import { Spinner } from "@std/cli/spinner";
-   *
-   * const spinner = new Spinner({ message: "Loading..." });
-   * spinner.stop();
-   * ```
+   * @param options Options for the spinner.
    */
-  constructor({
-    spinner = DEFAULT_SPINNER,
-    message = "",
-    interval = DEFAULT_INTERVAL,
-    color,
-  }: SpinnerOptions = {}) {
+  constructor(options?: SpinnerOptions) {
+    const {
+      spinner = DEFAULT_SPINNER,
+      message = "",
+      interval = DEFAULT_INTERVAL,
+      color,
+    } = options ?? {};
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;

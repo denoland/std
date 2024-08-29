@@ -12,7 +12,7 @@
  * @example Merge 2 streams
  * ```ts
  * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from([1, 2]);
  * const stream2 = ReadableStream.from([3, 4, 5]);
@@ -25,7 +25,7 @@
  * @example Merge 3 streams
  * ```ts
  * import { mergeReadableStreams } from "@std/streams/merge-readable-streams";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream1 = ReadableStream.from([1, 2]);
  * const stream2 = ReadableStream.from([3, 4, 5]);

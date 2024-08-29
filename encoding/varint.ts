@@ -8,7 +8,7 @@
  *
  * ```ts
  * import { encodeVarint, decodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array(10);
  * assertEquals(
@@ -74,7 +74,7 @@ const U64_VIEW = new BigUint64Array(AB);
  * @example Usage
  * ```ts
  * import { decodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * assertEquals(decodeVarint(buf), [270n, 2]);
@@ -131,7 +131,9 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
   // If 11 bytes have been read it means that the varint is malformed
   // If `i` is bigger than the buffer it means we overread the buffer and the varint is malformed
   if ((nRead === 10 && intermediate > -1) || nRead === 11 || i > buf.length) {
-    throw new RangeError("malformed or overflow varint");
+    throw new RangeError(
+      "Cannot decode the varint input: Malformed or overflow varint",
+    );
   }
 
   // Write the intermediate value to the "empty" slot
@@ -160,7 +162,7 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
  * @example Usage
  * ```ts
  * import { decodeVarint32 } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array([0x8E, 0x02]);
  * assertEquals(decodeVarint32(buf), [270, 2]);
@@ -178,7 +180,9 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
     decoded += (byte & REST) * Math.pow(2, shift);
     if (!(byte & MSB)) return [decoded, i + 1];
   }
-  throw new RangeError("malformed or overflow varint");
+  throw new RangeError(
+    "Cannot decode the varint input: Malformed or overflow varint",
+  );
 }
 
 /**
@@ -202,7 +206,7 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * @example Usage
  * ```ts
  * import { encodeVarint } from "@std/encoding/varint";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const buf = new Uint8Array(10);
  * assertEquals(encodeVarint(42n, buf), [new Uint8Array([42]), 1]);
@@ -214,7 +218,11 @@ export function encodeVarint(
   offset = 0,
 ): [Uint8Array, number] {
   num = BigInt(num);
-  if (num < 0n) throw new RangeError("signed input given");
+  if (num < 0n) {
+    throw new RangeError(
+      `Cannot encode the input into varint as it should be non-negative integer: received ${num}`,
+    );
+  }
   for (
     let i = offset;
     i <= Math.min(buf.length, MaxVarintLen64);
@@ -228,5 +236,7 @@ export function encodeVarint(
     buf[i] = Number((num & 0xFFn) | MSBN);
     num >>= SHIFTN;
   }
-  throw new RangeError(`${num} overflows uint64`);
+  throw new RangeError(
+    `Cannot encode the input ${num} into varint as it overflows uint64`,
+  );
 }

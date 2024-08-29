@@ -41,7 +41,7 @@ const {
  *   descend,
  *   RedBlackTree,
  * } from "@std/data-structures";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const values = [3, 10, 13, 4, 6, 7, 1, 14];
  * const tree = new RedBlackTree<number>();
@@ -104,28 +104,12 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
   /**
    * Construct an empty red-black tree.
    *
-   * @example Creating an empty red-black tree
-   * ```ts no-assert
-   * import { RedBlackTree } from "@std/data-structures";
-   *
-   * const tree = new RedBlackTree<number>();
-   * ```
-   *
-   * @example Creating a red-black tree with a custom comparison function
-   * ```ts no-assert
-   * import { RedBlackTree, ascend } from "@std/data-structures";
-   *
-   * const tree = new RedBlackTree<{ price: number, name: string }>(
-   *   (a, b) => ascend(a.price, b.price) || ascend(a.name, b.name)
-   * );
-   * ```
-   *
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
   constructor(compare: (a: T, b: T) => number = ascend) {
     if (typeof compare !== "function") {
       throw new TypeError(
-        "compare must be a function, did you mean to call RedBlackTree.from?",
+        "Cannot construct a RedBlackTree: the 'compare' parameter is not a function, did you mean to call RedBlackTree.from?",
       );
     }
     super(compare);
@@ -331,7 +315,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Inserting a value into the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const tree = new RedBlackTree<number>();
    *
@@ -388,7 +372,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    * @example Removing values from the tree
    * ```ts
    * import { RedBlackTree } from "@std/data-structures";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    *
    * const tree = RedBlackTree.from<number>([42]);
    *

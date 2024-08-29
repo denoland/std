@@ -10,7 +10,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * @example Usage
  * ```ts
  * import { toFileUrl } from "@std/path/posix/to-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toFileUrl("/home/foo"), new URL("file:///home/foo"));
  * assertEquals(toFileUrl("/home/foo bar"), new URL("file:///home/foo%20bar"));
@@ -21,7 +21,7 @@ import { isAbsolute } from "./is_absolute.ts";
  */
 export function toFileUrl(path: string): URL {
   if (!isAbsolute(path)) {
-    throw new TypeError("Must be an absolute path.");
+    throw new TypeError(`Path must be absolute: received "${path}"`);
   }
 
   const url = new URL("file:///");

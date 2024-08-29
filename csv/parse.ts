@@ -3,22 +3,15 @@
 
 import {
   convertRowToObject,
-  ERR_BARE_QUOTE,
-  ERR_FIELD_COUNT,
-  ERR_INVALID_DELIM,
-  ERR_QUOTE,
-  ParseError,
+  createBareQuoteErrorMessage,
+  createQuoteErrorMessage,
   type ParseResult,
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
+import { codePointLength } from "./_shared.ts";
 
-export {
-  ParseError,
-  type ParseResult,
-  type ReadOptions,
-  type RecordWithColumn,
-};
+export type { ParseResult, RecordWithColumn };
 
 const BYTE_ORDER_MARK = "\ufeff";
 
@@ -50,67 +43,54 @@ class Parser {
   #readLine(): string | null {
     if (this.#isEOF()) return null;
 
-    if (
-      !this.#input.startsWith("\r\n", this.#cursor) ||
-      !this.#input.startsWith("\n", this.#cursor)
-    ) {
-      let buffer = "";
-      let hadNewline = false;
-      while (this.#cursor < this.#input.length) {
-        if (this.#input.startsWith("\r\n", this.#cursor)) {
-          hadNewline = true;
-          this.#cursor += 2;
-          break;
-        }
-        if (
-          this.#input.startsWith("\n", this.#cursor)
-        ) {
-          hadNewline = true;
-          this.#cursor += 1;
-          break;
-        }
-        buffer += this.#input[this.#cursor];
+    let buffer = "";
+    let hadNewline = false;
+    while (this.#cursor < this.#input.length) {
+      if (this.#input.startsWith("\r\n", this.#cursor)) {
+        hadNewline = true;
+        this.#cursor += 2;
+        break;
+      }
+      if (
+        this.#input.startsWith("\n", this.#cursor)
+      ) {
+        hadNewline = true;
         this.#cursor += 1;
+        break;
       }
-      if (!hadNewline && buffer.endsWith("\r")) {
-        buffer = buffer.slice(0, -1);
-      }
-
-      return buffer;
+      buffer += this.#input[this.#cursor];
+      this.#cursor += 1;
     }
-    return null;
+    if (!hadNewline && buffer.endsWith("\r")) {
+      buffer = buffer.slice(0, -1);
+    }
+
+    return buffer;
   }
   #isEOF(): boolean {
     return this.#cursor >= this.#input.length;
   }
-  #parseRecord(startLine: number): string[] | null {
-    let line = this.#readLine();
-    if (line === null) return null;
-    if (line.length === 0) {
+  #parseRecord(zeroBasedStartLine: number): string[] | null {
+    let fullLine = this.#readLine();
+    if (fullLine === null) return null;
+    if (fullLine.length === 0) {
       return [];
     }
 
-    function runeCount(s: string): number {
-      // Array.from considers the surrogate pair.
-      return Array.from(s).length;
-    }
-
-    let lineIndex = startLine + 1;
+    let zeroBasedLine = zeroBasedStartLine;
 
     // line starting with comment character is ignored
-    if (this.#options.comment && line[0] === this.#options.comment) {
+    if (this.#options.comment && fullLine[0] === this.#options.comment) {
       return [];
     }
 
-    let fullLine = line;
-    let quoteError: ParseError | null = null;
+    let line = fullLine;
     const quote = '"';
     const quoteLen = quote.length;
     const separatorLen = this.#options.separator.length;
     let recordBuffer = "";
     const fieldIndexes = [] as number[];
-    parseField:
-    for (;;) {
+    parseField: while (true) {
       if (this.#options.trimLeadingSpace) {
         line = line.trimStart();
       }
@@ -126,16 +106,16 @@ class Parser {
         if (!this.#options.lazyQuotes) {
           const j = field.indexOf(quote);
           if (j >= 0) {
-            const col = runeCount(
+            const col = codePointLength(
               fullLine.slice(0, fullLine.length - line.slice(j).length),
             );
-            quoteError = new ParseError(
-              startLine + 1,
-              lineIndex,
-              col,
-              ERR_BARE_QUOTE,
+            throw new SyntaxError(
+              createBareQuoteErrorMessage(
+                zeroBasedStartLine,
+                zeroBasedLine,
+                col,
+              ),
             );
-            break parseField;
           }
         }
         recordBuffer += field;
@@ -148,7 +128,7 @@ class Parser {
       } else {
         // Quoted string field
         line = line.substring(quoteLen);
-        for (;;) {
+        while (true) {
           const i = line.indexOf(quote);
           if (i >= 0) {
             // Hit next quote.
@@ -172,60 +152,49 @@ class Parser {
               recordBuffer += quote;
             } else {
               // `"*` sequence (invalid non-escaped quote).
-              const col = runeCount(
+              const col = codePointLength(
                 fullLine.slice(0, fullLine.length - line.length - quoteLen),
               );
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
+              throw new SyntaxError(
+                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
               );
-              break parseField;
             }
           } else if (line.length > 0 || !(this.#isEOF())) {
             // Hit end of line (copy all data so far).
             recordBuffer += line;
             const r = this.#readLine();
-            lineIndex++;
             line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
             fullLine = line;
             if (r === null) {
               // Abrupt end of file (EOF or error).
               if (!this.#options.lazyQuotes) {
-                const col = runeCount(fullLine);
-                quoteError = new ParseError(
-                  startLine + 1,
-                  lineIndex,
-                  col,
-                  ERR_QUOTE,
+                const col = codePointLength(fullLine);
+                throw new SyntaxError(
+                  createQuoteErrorMessage(
+                    zeroBasedStartLine,
+                    zeroBasedLine,
+                    col,
+                  ),
                 );
-                break parseField;
               }
               fieldIndexes.push(recordBuffer.length);
               break parseField;
             }
+            zeroBasedLine++;
             recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
           } else {
             // Abrupt end of file (EOF on error).
             if (!this.#options.lazyQuotes) {
-              const col = runeCount(fullLine);
-              quoteError = new ParseError(
-                startLine + 1,
-                lineIndex,
-                col,
-                ERR_QUOTE,
+              const col = codePointLength(fullLine);
+              throw new SyntaxError(
+                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
               );
-              break parseField;
             }
             fieldIndexes.push(recordBuffer.length);
             break parseField;
           }
         }
       }
-    }
-    if (quoteError) {
-      throw quoteError;
     }
     const result = [] as string[];
     let preIdx = 0;
@@ -239,7 +208,7 @@ class Parser {
     this.#input = input.startsWith(BYTE_ORDER_MARK) ? input.slice(1) : input;
     this.#cursor = 0;
     const result: string[][] = [];
-    let _nbFields: number | undefined;
+
     let lineResult: string[];
     let first = true;
     let lineIndex = 0;
@@ -253,10 +222,29 @@ class Parser {
         INVALID_RUNE.includes(options.comment)) ||
       options.separator === options.comment
     ) {
-      throw new Error(ERR_INVALID_DELIM);
+      throw new Error("Cannot parse input: invalid delimiter");
     }
 
-    for (;;) {
+    // The number of fields per record that is either inferred from the first
+    // row (when options.fieldsPerRecord = 0), or set by the caller (when
+    // options.fieldsPerRecord > 0).
+    //
+    // Each possible variant means the following:
+    // "ANY": Variable number of fields is allowed.
+    // "UNINITIALIZED": The first row has not been read yet. Once it's read, the
+    //                  number of fields will be set.
+    // <number>: The number of fields per record that every record must follow.
+    let _nbFields: "ANY" | "UNINITIALIZED" | number;
+    if (options.fieldsPerRecord === undefined || options.fieldsPerRecord < 0) {
+      _nbFields = "ANY";
+    } else if (options.fieldsPerRecord === 0) {
+      _nbFields = "UNINITIALIZED";
+    } else {
+      // TODO: Should we check if it's a valid integer?
+      _nbFields = options.fieldsPerRecord;
+    }
+
+    while (true) {
       const r = this.#parseRecord(lineIndex);
       if (r === null) break;
       lineResult = r;
@@ -265,18 +253,16 @@ class Parser {
       // the number of fields in the first record
       if (first) {
         first = false;
-        if (options.fieldsPerRecord !== undefined) {
-          if (options.fieldsPerRecord === 0) {
-            _nbFields = lineResult.length;
-          } else {
-            _nbFields = options.fieldsPerRecord;
-          }
+        if (_nbFields === "UNINITIALIZED") {
+          _nbFields = lineResult.length;
         }
       }
 
       if (lineResult.length > 0) {
-        if (_nbFields && _nbFields !== lineResult.length) {
-          throw new ParseError(lineIndex, lineIndex, null, ERR_FIELD_COUNT);
+        if (typeof _nbFields === "number" && _nbFields !== lineResult.length) {
+          throw new SyntaxError(
+            `Syntax error on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
+          );
         }
         result.push(lineResult);
       }
@@ -286,12 +272,55 @@ class Parser {
 }
 
 /** Options for {@linkcode parse}. */
-export interface ParseOptions extends ReadOptions {
+export interface ParseOptions {
+  /** Character which separates values.
+   *
+   * @default {","}
+   */
+  separator?: string;
+  /** Character to start a comment.
+   *
+   * Lines beginning with the comment character without preceding whitespace
+   * are ignored. With leading whitespace the comment character becomes part of
+   * the field, even you provide `trimLeadingSpace: true`.
+   *
+   * By default, no character is considered to be a start of a comment.
+   */
+  comment?: string;
+  /** Flag to trim the leading space of the value.
+   *
+   * This is done even if the field delimiter, `separator`, is white space.
+   *
+   * @default {false}
+   */
+  trimLeadingSpace?: boolean;
+  /**
+   * Allow unquoted quote in a quoted field or non-double-quoted quotes in
+   * quoted field.
+   *
+   * @default {false}
+   */
+  lazyQuotes?: boolean;
+  /**
+   * Enabling checking number of expected fields for each row.
+   *
+   * If positive, each record is required to have the given number of fields.
+   * If 0, it will be set to the number of fields in the first row, so that
+   * future rows must have the same field count.
+   * If negative, no check is made and records may have a variable number of
+   * fields.
+   *
+   * If the wrong number of fields is in a row, a {@linkcode SyntaxError} is
+   * thrown.
+   */
+  fieldsPerRecord?: number;
   /**
    * If you provide `skipFirstRow: true` and `columns`, the first line will be
    * skipped.
    * If you provide `skipFirstRow: true` but not `columns`, the first line will
    * be skipped and used as header definitions.
+   *
+   * @default {false}
    */
   skipFirstRow?: boolean;
 
@@ -300,17 +329,30 @@ export interface ParseOptions extends ReadOptions {
 }
 
 /**
- * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns.
+ * Parses CSV string into an array of arrays of strings.
  *
  * @example Usage
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * const string = "a,b,c\nd,e,f";
+ * const string = "a,b,c\n#d,e,f";
  *
- * assertEquals(parse(string), [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertEquals(parse(string), [["a", "b", "c"], ["#d", "e", "f"]]);
+ * ```
+ *
+ * @example Quoted fields
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = `"a ""word""","comma,","newline\n"\nfoo,bar,baz`;
+ * const result = parse(string);
+ *
+ * assertEquals(result, [
+ *   ['a "word"', "comma,", "newline\n"],
+ *   ["foo", "bar", "baz"]
+ * ]);
  * ```
  *
  * @param input The input to parse.
@@ -318,54 +360,171 @@ export interface ParseOptions extends ReadOptions {
  */
 export function parse(input: string): string[][];
 /**
- * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns.
+ * Parses CSV string into an array of objects or an array of arrays of strings.
  *
- * @example Usage
+ * If `columns` or `skipFirstRow` option is provided, it returns an array of
+ * objects, otherwise it returns an array of arrays of string.
+ *
+ * @example Don't skip first row with `skipFirstRow: false`
  * ```ts
  * import { parse } from "@std/csv/parse";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
  *
  * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { skipFirstRow: false });
  *
- * assertEquals(parse(string, { skipFirstRow: false }), [["a", "b", "c"], ["d", "e", "f"]]);
- * assertEquals(parse(string, { skipFirstRow: true }), [{ a: "d", b: "e", c: "f" }]);
- * assertEquals(parse(string, { columns: ["x", "y", "z"] }), [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * assertType<IsExact<typeof result, string[][]>>(true);
+ * ```
+ *
+ * @example Skip first row with `skipFirstRow: true`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { skipFirstRow: true });
+ *
+ * assertEquals(result, [{ a: "d", b: "e", c: "f" }]);
+ * assertType<IsExact<typeof result, Record<string, string>[]>>(true);
+ * ```
+ *
+ * @example Specify columns with `columns` option
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { columns: ["x", "y", "z"] });
+ *
+ * assertEquals(result, [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * ```
+ *
+ * @example Specify columns with `columns` option and skip first row with
+ * `skipFirstRow: true`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ * import { assertType, IsExact } from "@std/testing/types"
+ *
+ * const string = "a,b,c\nd,e,f";
+ * const result = parse(string, { columns: ["x", "y", "z"], skipFirstRow: true });
+ *
+ * assertEquals(result, [{ x: "d", y: "e", z: "f" }]);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * ```
+ *
+ * @example TSV (tab-separated values) with `separator: "\t"`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = "a\tb\tc\nd\te\tf";
+ * const result = parse(string, { separator: "\t" });
+ *
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * ```
+ *
+ * @example Trim leading space with `trimLeadingSpace: true`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = " a,  b,    c\n";
+ * const result = parse(string, { trimLeadingSpace: true });
+ *
+ * assertEquals(result, [["a", "b", "c"]]);
+ * ```
+ *
+ * @example Lazy quotes with `lazyQuotes: true`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = `a "word","1"2",a","b`;
+ * const result = parse(string, { lazyQuotes: true });
+ *
+ * assertEquals(result, [['a "word"', '1"2', 'a"', 'b']]);
+ * ```
+ *
+ * @example Set comment prefix with `comment` option
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = "a,b,c\n# THIS IS A COMMENT LINE\nd,e,f";
+ * const result = parse(string, { comment: "#" });
+ *
+ * assertEquals(result, [["a", "b", "c"], ["d", "e", "f"]]);
+ * ```
+ *
+ * @example Infer the number of fields from the first row with `fieldsPerRecord: 0`
+ *  ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * // Note that the second row has more fields than the first row
+ * const string = "a,b\nc,d,e";
+ * assertThrows(
+ *   () => parse(string, { fieldsPerRecord: 0 }),
+ *   SyntaxError,
+ *   "Syntax error on line 2: expected 2 fields but got 3",
+ * );
+ * ```
+ *
+ * @example Enforce the number of fields for each row with `fieldsPerRecord: 2`
+ *  ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertThrows } from "@std/assert/throws";
+ *
+ * const string = "a,b\nc,d,e";
+ * assertThrows(
+ *   () => parse(string, { fieldsPerRecord: 2 }),
+ *   SyntaxError,
+ *   "Syntax error on line 2: expected 2 fields but got 3",
+ * );
  * ```
  *
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
- * @param opt The options for parsing.
- * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unknown>[]`.
+ * @param options The options for parsing.
+ * @returns If you don't provide `options.skipFirstRow` or `options.columns`, it
+ * returns `string[][]`. If you provide `options.skipFirstRow` or
+ * `options.columns`, it returns `Record<string, string>[]`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T,
+  options: T,
 ): ParseResult<ParseOptions, T>;
 export function parse<const T extends ParseOptions>(
   input: string,
-  opt: T = { skipFirstRow: false } as T,
+  options: T = { skipFirstRow: false } as T,
 ): ParseResult<ParseOptions, T> {
-  const parser = new Parser(opt);
+  const parser = new Parser(options);
   const r = parser.parse(input);
 
-  if (opt.skipFirstRow || opt.columns) {
+  if (options.skipFirstRow || options.columns) {
     let headers: readonly string[] = [];
 
-    if (opt.skipFirstRow) {
+    if (options.skipFirstRow) {
       const head = r.shift();
-      if (head === undefined) throw new TypeError("Headers must be defined");
+      if (head === undefined) {
+        throw new TypeError("Cannot parse input: headers must be defined");
+      }
       headers = head;
     }
 
-    if (opt.columns) {
-      headers = opt.columns;
+    if (options.columns) {
+      headers = options.columns;
     }
 
-    const firstLineIndex = opt.skipFirstRow ? 1 : 0;
+    const zeroBasedFirstLineIndex = options.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
-      return convertRowToObject(row, headers, firstLineIndex + i);
+      return convertRowToObject(row, headers, zeroBasedFirstLineIndex + i);
     }) as ParseResult<ParseOptions, T>;
   }
   return r as ParseResult<ParseOptions, T>;

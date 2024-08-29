@@ -16,11 +16,15 @@ import { strip } from "./_strip.ts";
  * @example Usage
  * ```ts
  * import { dirname } from "@std/url/dirname";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(dirname("https://deno.land/std/path/mod.ts"), new URL("https://deno.land/std/path"));
  * assertEquals(dirname(new URL("https://deno.land/std/path/mod.ts")), new URL("https://deno.land/std/path"));
  * ```
+ *
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/path/doc/posix/~/dirname | @std/path/posix/dirname}
+ * instead (examples included). `@std/url` will be removed in the future.
  */
 
 export function dirname(url: string | URL): URL {

@@ -15,27 +15,32 @@ import {
   type DocNodeBase,
   type DocNodeClass,
   type DocNodeFunction,
+  type DocNodeInterface,
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
+import { pooledMap } from "@std/async/pool";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
 const ENTRY_POINTS = [
+  "../archive/mod.ts",
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
+  "../cache/mod.ts",
   "../cli/mod.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",
   "../data_structures/mod.ts",
   "../datetime/mod.ts",
+  "../dotenv/mod.ts",
   "../encoding/mod.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
@@ -43,29 +48,43 @@ const ENTRY_POINTS = [
   "../fmt/duration.ts",
   "../fmt/printf.ts",
   "../front_matter/mod.ts",
+  "../fs/mod.ts",
   "../html/mod.ts",
   "../http/mod.ts",
+  "../ini/mod.ts",
   "../internal/mod.ts",
+  "../io/mod.ts",
+  "../json/mod.ts",
   "../jsonc/mod.ts",
   "../media_types/mod.ts",
+  "../msgpack/mod.ts",
+  "../net/mod.ts",
   "../path/mod.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
+  "../regexp/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
   "../text/mod.ts",
+  "../testing/bdd.ts",
+  "../testing/mock.ts",
+  "../testing/snapshot.ts",
+  "../testing/time.ts",
+  "../testing/types.ts",
   "../toml/mod.ts",
   "../ulid/mod.ts",
   "../url/mod.ts",
   "../uuid/mod.ts",
   "../webgpu/mod.ts",
+  "../yaml/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT = /import \{.*\} from "@std\/assert(?:\/.*)?";/gm;
+const ASSERTION_IMPORT =
+  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
-const snippetPromises: Promise<void>[] = [];
+const snippetPromises: (() => Promise<void>)[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -148,14 +167,22 @@ function assertHasParamTag(
 }
 
 async function assertSnippetEvals(
-  snippet: string,
-  document: { jsDoc: JsDoc; location: Location },
+  {
+    snippet,
+    document,
+    expectError,
+  }: {
+    snippet: string;
+    document: { jsDoc: JsDoc; location: Location };
+    expectError: boolean;
+  },
 ) {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       "--ext=ts",
       "--unstable-webgpu",
+      "--check",
       "--no-lock",
       snippet,
     ],
@@ -170,11 +197,19 @@ async function assertSnippetEvals(
   try {
     const { success, stderr } = await command.output();
     const error = new TextDecoder().decode(stderr);
-    assert(
-      success,
-      `Failed to execute snippet: \n${snippet}\n${error}`,
-      document,
-    );
+    if (expectError) {
+      assert(
+        !success,
+        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
+        document,
+      );
+    } else {
+      assert(
+        success,
+        `Failed to execute snippet: \n${snippet}\n${error}`,
+        document,
+      );
+    }
   } finally {
     clearTimeout(timeoutId);
   }
@@ -211,7 +246,14 @@ function assertSnippetsWork(
         document,
       );
     }
-    snippetPromises.push(assertSnippetEvals(snippet, document));
+    snippetPromises.push(
+      () =>
+        assertSnippetEvals({
+          snippet,
+          document,
+          expectError: delim?.includes("expect-error") ?? false,
+        }),
+    );
   }
 }
 
@@ -394,7 +436,6 @@ function assertConstructorDocs(
       assertHasParamTag(constructor, param.left.name);
     }
   }
-  assertHasExampleTag(constructor);
 }
 
 /**
@@ -405,9 +446,43 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
   assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
+/**
+ * Ensures an interface document:
+ * - Has `@default` tags for all optional properties.
+ */
+// deno-lint-ignore no-unused-vars
+function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  for (const prop of document.interfaceDef.properties) {
+    if (!prop.optional) continue;
+    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
+      diagnostics.push(
+        new DocumentError(
+          "Optional interface properties should have default values",
+          document,
+        ),
+      );
+    }
+  }
+}
+
+// deno-lint-ignore no-unused-vars
+function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
+  // TODO(iuioiua): This is currently disabled deliberately, as it throws errors
+  // for interface properties that don't have a `@default` tag. Re-enable this
+  // when checking for `@default` tags again, or when a solution is found for
+  // ignoring some properties (those that don't require a `@default` tag).
+  // assertHasDefaultTags(document);
+}
+
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/") && specifier.split("/").length > 2) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_") + ".ts";
+  if (specifier.startsWith("@std/")) {
+    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
+    const parts = specifier.split("/");
+    if (parts.length === 2) {
+      specifier += "/mod.ts";
+    } else if (parts.length > 2) {
+      specifier += ".ts";
+    }
   }
   return new URL(specifier, referrer).href;
 }
@@ -430,6 +505,8 @@ async function checkDocs(specifier: string) {
         assertClassDocs(document);
         break;
       }
+      case "interface":
+        assertInterfaceDocs(document);
     }
   }
 }
@@ -453,13 +530,16 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-const promises = [];
-for (const url of ENTRY_POINT_URLS) {
-  promises.push(checkDocs(url));
-}
+await Promise.all(ENTRY_POINT_URLS.map(checkDocs));
 
-await Promise.all(promises);
-await Promise.all(snippetPromises);
+const iter = pooledMap(
+  navigator.hardwareConcurrency,
+  snippetPromises,
+  (fn) => fn(),
+);
+for await (const _ of iter) {
+  // noop
+}
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
     console.error(

@@ -10,7 +10,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * @example Usage
  * ```ts
  * import { toFileUrl } from "@std/path/windows/to-file-url";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(toFileUrl("\\home\\foo"), new URL("file:///home/foo"));
  * assertEquals(toFileUrl("C:\\Users\\foo"), new URL("file:///C:/Users/foo"));
@@ -21,7 +21,7 @@ import { isAbsolute } from "./is_absolute.ts";
  */
 export function toFileUrl(path: string): URL {
   if (!isAbsolute(path)) {
-    throw new TypeError("Must be an absolute path.");
+    throw new TypeError(`Path must be absolute: received "${path}"`);
   }
   const [, hostname, pathname] = path.match(
     /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
@@ -31,7 +31,7 @@ export function toFileUrl(path: string): URL {
   if (hostname !== undefined && hostname !== "localhost") {
     url.hostname = hostname;
     if (!url.hostname) {
-      throw new TypeError("Invalid hostname.");
+      throw new TypeError(`Invalid hostname: "${url.hostname}"`);
     }
   }
   return url;

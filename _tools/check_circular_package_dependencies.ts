@@ -39,6 +39,7 @@ type Mod =
   | "assert"
   | "async"
   | "bytes"
+  | "cache"
   | "cli"
   | "collections"
   | "crypto"
@@ -80,6 +81,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   assert: ["mod.ts"],
   async: ["mod.ts"],
   bytes: ["mod.ts"],
+  cache: ["mod.ts"],
   cli: ["mod.ts"],
   collections: ["mod.ts"],
   crypto: ["mod.ts"],
@@ -218,7 +220,7 @@ function checkCircularDeps(
 
 /** Formats label for diagram */
 function formatLabel(mod: string) {
-  return '"' + mod.replace(/_/g, "_\\n") + '"';
+  return '"' + mod.replace(/_/g, "-\\n") + '"';
 }
 
 /** Returns node style (in DOT language) for each state */
@@ -238,7 +240,7 @@ if (Deno.args.includes("--graph")) {
     const info = deps[mod]!;
     lines.push(`  ${formatLabel(mod)} ${stateToNodeStyle(info.state)};`);
     for (const dep of info.set) {
-      lines.push(`  ${formatLabel(mod)} -> ${dep};`);
+      lines.push(`  ${formatLabel(mod)} -> ${formatLabel(dep)};`);
     }
   }
   lines.push("}");
@@ -247,12 +249,6 @@ if (Deno.args.includes("--graph")) {
   const svg = await graphviz.graphviz.dot(graph, "svg");
   console.log("Writing dependency graph image to .github/dependency_graph.svg");
   await Deno.writeTextFile(".github/dependency_graph.svg", svg);
-} else if (Deno.args.includes("--table")) {
-  console.log("| Package         | Status     |");
-  console.log("| --------------- | ---------- |");
-  for (const [mod, info] of Object.entries(deps)) {
-    console.log(`| ${mod.padEnd(15)} | ${info.state.padEnd(10)} |`);
-  }
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {

@@ -7,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @example Usage
  * ```ts no-eval
- * import { unreachable } from "@std/assert/unreachable";
+ * import { unreachable } from "@std/assert";
  *
  * unreachable(); // Throws
  * ```

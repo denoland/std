@@ -2,16 +2,11 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
 import { resolve } from "@std/path";
 import { Tar, type TarMeta } from "./tar.ts";
-import {
-  TarEntry,
-  type TarHeader,
-  type TarMetaWithLinkName,
-  Untar,
-} from "./untar.ts";
+import { TarEntry, type TarMetaWithLinkName, Untar } from "./untar.ts";
 import { Buffer } from "@std/io/buffer";
 import { copy } from "@std/io/copy";
 import { readAll } from "@std/io/read-all";
-import { filePath, testdataDir } from "./_test_common.ts";
+import { filePath, testdataDir } from "./_test_utils.ts";
 
 interface TestEntry {
   name: string;
@@ -323,26 +318,6 @@ Deno.test({
   fn() {
     // test TarEntry class
     assertExists(TarEntry);
-    // Test TarEntry type
-    const bufSizes = [1, 53, 256, 511];
-    const header: TarHeader = {
-      fileName: new Uint8Array(bufSizes),
-      fileMode: new Uint8Array(bufSizes),
-      uid: new Uint8Array(bufSizes),
-      gid: new Uint8Array(bufSizes),
-      fileSize: new Uint8Array(bufSizes),
-      mtime: new Uint8Array(bufSizes),
-      checksum: new Uint8Array(bufSizes),
-      type: new Uint8Array(bufSizes),
-      linkName: new Uint8Array(bufSizes),
-      ustar: new Uint8Array(bufSizes),
-      owner: new Uint8Array(bufSizes),
-      group: new Uint8Array(bufSizes),
-      majorNumber: new Uint8Array(bufSizes),
-      minorNumber: new Uint8Array(bufSizes),
-      fileNamePrefix: new Uint8Array(bufSizes),
-      padding: new Uint8Array(bufSizes),
-    };
     const content = new TextEncoder().encode("hello tar world!");
     const reader = new Buffer(content);
     const tarMeta = {
@@ -356,7 +331,7 @@ Deno.test({
       group: "deno",
       type: "directory",
     };
-    const tarEntry: TarEntry = new TarEntry(tarMeta, header, reader);
+    const tarEntry: TarEntry = new TarEntry(tarMeta, reader);
     assertExists(tarEntry);
   },
 });

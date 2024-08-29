@@ -2,15 +2,34 @@
 // This module is browser compatible.
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
-// NOTE: this metric may change in future versions (e.g. better than levenshteinDistance)
-const getWordDistance = levenshteinDistance;
+/** Options for {@linkcode compareSimilarity}. */
+export interface CompareSimilarityOptions {
+  /**
+   * Whether the distance should include case.
+   *
+   * @default {false}
+   */
+  caseSensitive?: boolean;
+  /**
+   * A custom comparison function to use for comparing strings.
+   *
+   * @param a The first string for comparison.
+   * @param b The second string for comparison.
+   * @returns The distance between the two strings.
+   * @default {levenshteinDistance}
+   */
+  compareFn?: (a: string, b: string) => number;
+}
 
 /**
- * Sort based on word similarity.
+ * Takes a string and generates a comparator function to determine which of two
+ * strings is more similar to the given one.
+ *
+ * By default, calculates the distance between words using the
+ * {@link https://en.wikipedia.org/wiki/Levenshtein_distance | Levenshtein distance}.
  *
  * @param givenWord The string to measure distance against.
- * @param options An options bag containing a `caseSensitive` flag indicating
- * whether the distance should include case. Default is false.
+ * @param options Options for the sort.
  * @returns The difference in distance. This will be a negative number if `a`
  * is more similar to `givenWord` than `b`, a positive number if `b` is more
  * similar, or `0` if they are equally similar.
@@ -21,30 +40,25 @@ const getWordDistance = levenshteinDistance;
  *
  * ```ts
  * import { compareSimilarity } from "@std/text/compare-similarity";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const words = ["hi", "hello", "help"];
- * const sortedWords = words.sort(compareSimilarity("hep"));
+ * const sortedWords = words.toSorted(compareSimilarity("hep"));
  *
  * assertEquals(sortedWords, ["help", "hi", "hello"]);
  * ```
- * @note
- * the ordering of words may change with version-updates
- * e.g. word-distance metric may change (improve)
- * use a named-distance (e.g. levenshteinDistance) to
- * guarantee a particular ordering
  */
 export function compareSimilarity(
   givenWord: string,
-  options?: { caseSensitive?: boolean },
+  options?: CompareSimilarityOptions,
 ): (a: string, b: string) => number {
-  const { caseSensitive } = { ...options };
-  if (caseSensitive) {
+  const { compareFn = levenshteinDistance } = { ...options };
+  if (options?.caseSensitive) {
     return (a: string, b: string) =>
-      getWordDistance(givenWord, a) - getWordDistance(givenWord, b);
+      compareFn(givenWord, a) - compareFn(givenWord, b);
   }
   givenWord = givenWord.toLowerCase();
   return (a: string, b: string) =>
-    getWordDistance(givenWord, a.toLowerCase()) -
-    getWordDistance(givenWord, b.toLowerCase());
+    compareFn(givenWord, a.toLowerCase()) -
+    compareFn(givenWord, b.toLowerCase());
 }

@@ -2,8 +2,9 @@
 // This module is browser compatible.
 
 /**
- * Provide help with asynchronous tasks like delays, debouncing, deferring, or
- * pooling.
+ * Provide helpers with asynchronous tasks like {@linkcode delay | delays},
+ * {@linkcode debounce | debouncing}, {@linkcode retry | retrying}, or
+ * {@linkcode pooledMap | pooling}.
  *
  * ```ts no-assert
  * import { delay } from "@std/async/delay";

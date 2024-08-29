@@ -43,7 +43,7 @@ export function getLevelByName(name: LevelName): LogLevel {
   if (level !== undefined) {
     return level;
   }
-  throw new Error(`no log level found for name: ${name}`);
+  throw new Error(`Cannot get log level: no level named ${name}`);
 }
 
 /** Returns the stringy log level name provided the numeric log level. */
@@ -52,5 +52,5 @@ export function getLevelName(level: LogLevel): LevelName {
   if (levelName) {
     return levelName;
   }
-  throw new Error(`no level name found for level: ${level}`);
+  throw new Error(`Cannot get log level: no name for level: ${level}`);
 }

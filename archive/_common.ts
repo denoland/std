@@ -3,7 +3,11 @@
 import { PartialReadError } from "@std/io/buf-reader";
 import type { Reader } from "@std/io/types";
 
-/** Base interface for {@linkcode TarMeta} */
+/**
+ * Base interface for {@linkcode TarMeta}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface TarInfo {
   /**
    * The underlying raw `st_mode` bits that contain the standard Unix
@@ -37,7 +41,11 @@ export interface TarInfo {
   type?: string;
 }
 
-/** Base interface for {@linkcode TarMetaWithLinkName}. */
+/**
+ * Base interface for {@linkcode TarMetaWithLinkName}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface TarMeta extends TarInfo {
   /**
    * The name of the file, with directory names (if any) preceding the file
@@ -170,7 +178,7 @@ export async function readBlock(
       if (bytesRead === 0) {
         return null;
       } else {
-        throw new PartialReadError();
+        throw new PartialReadError(p.subarray(0, bytesRead));
       }
     }
     bytesRead += rr;

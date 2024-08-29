@@ -3,45 +3,20 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
-import type { Any } from "../_utils.ts";
+import type { Type } from "../_type.ts";
+import { isPlainObject } from "../_utils.ts";
 
-const _toString = Object.prototype.toString;
-
-function resolveYamlPairs(data: Any[][]): boolean {
-  const result = Array.from({ length: data.length });
-
-  for (const [index, pair] of data.entries()) {
-    if (_toString.call(pair) !== "[object Object]") return false;
-
-    const keys = Object.keys(pair);
-
-    if (keys.length !== 1) return false;
-
-    result[index] = [keys[0], pair[keys[0] as Any]];
-  }
-
-  return true;
+function resolveYamlPairs(data: unknown[][]): boolean {
+  if (data === null) return true;
+  return data.every((it) => isPlainObject(it) && Object.keys(it).length === 1);
 }
 
-function constructYamlPairs(data: string): Any[] {
-  if (data === null) return [];
-
-  const result = Array.from({ length: data.length });
-
-  for (let index = 0; index < data.length; index += 1) {
-    const pair = data[index]!;
-
-    const keys = Object.keys(pair);
-
-    result[index] = [keys[0], pair[keys[0] as Any]];
-  }
-
-  return result;
-}
-
-export const pairs = new Type("tag:yaml.org,2002:pairs", {
-  construct: constructYamlPairs,
+export const pairs: Type<"sequence"> = {
+  tag: "tag:yaml.org,2002:pairs",
+  construct(data: Record<string, unknown>[] | null): [string, unknown][] {
+    // Converts an array of objects into an array of key-value pairs.
+    return data?.flatMap(Object.entries) ?? [];
+  },
   kind: "sequence",
   resolve: resolveYamlPairs,
-});
+};

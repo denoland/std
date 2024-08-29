@@ -11,9 +11,6 @@ import {
 
 export type { GlobOptions };
 
-/** Options for {@linkcode globToRegExp}. */
-export type GlobToRegExpOptions = GlobOptions;
-
 /**
  * Converts a glob string to a regular expression.
  *
@@ -74,7 +71,7 @@ export type GlobToRegExpOptions = GlobOptions;
  * @example Usage
  * ```ts
  * import { globToRegExp } from "@std/path/glob-to-regexp";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(globToRegExp("*.js"), /^[^\\/]*\.js(?:\\|\/)*$/);
@@ -89,7 +86,7 @@ export type GlobToRegExpOptions = GlobOptions;
  */
 export function globToRegExp(
   glob: string,
-  options: GlobToRegExpOptions = {},
+  options: GlobOptions = {},
 ): RegExp {
   return isWindows
     ? windowsGlobToRegExp(glob, options)

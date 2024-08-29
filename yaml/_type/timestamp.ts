@@ -3,7 +3,7 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { Type } from "../type.ts";
+import type { Type } from "../_type.ts";
 
 const YAML_DATE_REGEXP = new RegExp(
   "^([0-9][0-9][0-9][0-9])" + // [1] year
@@ -35,7 +35,9 @@ function constructYamlTimestamp(data: string): Date {
   let match = YAML_DATE_REGEXP.exec(data);
   if (match === null) match = YAML_TIMESTAMP_REGEXP.exec(data);
 
-  if (match === null) throw new Error("Date resolve error");
+  if (match === null) {
+    throw new Error("Cannot construct YAML timestamp: date resolve error");
+  }
 
   // match: [1] year [2] month [3] day
 
@@ -87,10 +89,13 @@ function representYamlTimestamp(date: Date): string {
   return date.toISOString();
 }
 
-export const timestamp = new Type("tag:yaml.org,2002:timestamp", {
+export const timestamp: Type<"scalar", Date> = {
+  tag: "tag:yaml.org,2002:timestamp",
   construct: constructYamlTimestamp,
-  instanceOf: Date,
+  predicate(object): object is Date {
+    return object instanceof Date;
+  },
   kind: "scalar",
   represent: representYamlTimestamp,
   resolve: resolveYamlTimestamp,
-});
+};

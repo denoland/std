@@ -12,7 +12,7 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @example Usage
  * ```ts
  * import { resolve } from "@std/path/windows/resolve";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const resolved = resolve("C:\\foo\\bar", "..\\baz");
  * assertEquals(resolved, "C:\\foo\\baz");
@@ -34,14 +34,18 @@ export function resolve(...pathSegments: string[]): string {
       path = pathSegments[i]!;
     } else if (!resolvedDevice) {
       if (typeof Deno?.cwd !== "function") {
-        throw new TypeError("Resolved a drive-letter-less path without a CWD.");
+        throw new TypeError(
+          "Resolved a drive-letter-less path without a current working directory (CWD)",
+        );
       }
       path = Deno.cwd();
     } else {
       if (
         typeof Deno?.env?.get !== "function" || typeof Deno?.cwd !== "function"
       ) {
-        throw new TypeError("Resolved a relative path without a CWD.");
+        throw new TypeError(
+          "Resolved a relative path without a current working directory (CWD)",
+        );
       }
       path = Deno.cwd();
 

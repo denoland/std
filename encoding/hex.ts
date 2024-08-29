@@ -13,7 +13,7 @@
  *   decodeHex,
  *   encodeHex,
  * } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  *
@@ -36,8 +36,10 @@ function errInvalidByte(byte: number) {
   return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
 }
 
-function errLength() {
-  return new RangeError("Odd length hex string");
+function errLength(len: number) {
+  return new RangeError(
+    `Cannot decode the hex string as the input length should be even: length is ${len}`,
+  );
 }
 
 /** Converts a hex character into its value. */
@@ -62,7 +64,7 @@ function fromHexChar(byte: number): number {
  * @example Usage
  * ```ts
  * import { encodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeHex("abc"), "616263");
  * ```
@@ -71,7 +73,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   const u8 = validateBinaryLike(src);
 
   const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < dst.length; i++) {
+  for (let i = 0; i < u8.length; i++) {
     const v = u8[i]!;
     dst[i * 2] = hexTable[v >> 4]!;
     dst[i * 2 + 1] = hexTable[v & 0x0f]!;
@@ -90,7 +92,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * @example Usage
  * ```ts
  * import { decodeHex } from "@std/encoding/hex";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   decodeHex("616263"),
@@ -111,7 +113,7 @@ export function decodeHex(src: string): Uint8Array {
     // Check for invalid char before reporting bad length,
     // since the invalid char (if present) is an earlier problem.
     fromHexChar(u8[dst.length * 2]!);
-    throw errLength();
+    throw errLength(u8.length);
   }
 
   return dst;

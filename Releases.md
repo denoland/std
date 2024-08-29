@@ -1,3 +1,1595 @@
+### 2024.08.26
+
+#### @std/archive 0.225.1 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(archive): complete documentation (#5636)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/assert 1.0.3 (patch)
+
+- feat(assert/unstable): add `assertNever` (#5690)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(assert): add additional example in assertObjectMatch docs (#5703)
+
+#### @std/async 1.0.4 (patch)
+
+- refactor(async): align the error messages to the style guide (#5758)
+- chore(async): add browser-compat declarations (#5730)
+
+#### @std/cache 0.1.1 (patch)
+
+- feat(cache/unstable): `TtlCache` (#5662)
+- docs(cache): tweak `LruCache` docs (#5790)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/cli 1.0.4 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(cli): align additional error messages (#5768)
+- test(cli): reduce flakiness of Spinner test (#5821)
+
+#### @std/crypto 1.0.3 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+- refactor(crypto): remove old unused `_fnv` folder (#5716)
+
+#### @std/csv 1.0.2 (patch)
+
+- fix(csv): accept readonly cell/header data (#5734) (#5735)
+- refactor(csv): align additional error messages (#5796)
+
+#### @std/data-structures 1.0.2 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/datetime 0.225.1 (patch)
+
+- docs(datetime): add constants to module docs (#5732)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/dotenv 0.225.1 (patch)
+
+- fix(dotenv): show warning when there is invalid key in `.env` file (#5745)
+
+#### @std/encoding 1.0.3 (patch)
+
+- feat(encoding/unstable): adds streaming versions for hex, base32, base32hex,
+  base64 and base64url (#4915)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(encoding): align additional error messages (#5767)
+
+#### @std/expect 1.0.1 (patch)
+
+- docs(expect): correct `expect()` docs (#5788)
+- refactor(expect): align additional error messages (#5811)
+
+#### @std/fmt 1.0.1 (patch)
+
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+
+#### @std/front-matter 1.0.3 (patch)
+
+- feat(front-matter/unstable): add pass-through `ParseOptions` argument for YAML
+  parser (#5748)
+- fix(front-matter): remove os specific newline (#5752)
+- fix(front-matter): allow whitespaces after the header (#5685)
+- refactor(archive,cache,datetime,fmt,front-matter): align error messages to the
+  style guide (#5706)
+- test(front-matter): remove duplicate tests (#5808)
+
+#### @std/fs 1.0.2 (patch)
+
+- refactor(fs): align additional error messages (#5802)
+
+#### @std/html 1.0.2 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+
+#### @std/http 1.0.4 (patch)
+
+- fix(http/unstable): match request method (#5772)
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(http): align additional error messages (#5791)
+
+#### @std/ini 1.0.0-rc.4 (prerelease)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+
+#### @std/internal 1.0.2 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- refactor(internal): align additional error messages (#5766)
+
+#### @std/io 0.224.6 (patch)
+
+- refactor(io): create a style guide for error messages, align error messages to
+  the style guide (#5671)
+
+#### @std/jsonc 1.0.1 (patch)
+
+- refactor(jsonc): align additional error messages (#5799)
+
+#### @std/log 0.224.6 (patch)
+
+- refactor(log): align additional error messages (#5801)
+- refactor(log): make `BaseHandler` abstract (#5737)
+- refactor(log): replace `protected` properties with `Symbol`s (#5724)
+
+#### @std/media-types 1.0.3 (patch)
+
+- perf(cli,http,ini,internal,media-types): replace `trim()` comparisons with
+  regexps (#5751)
+- refactor(media-types): align additional error messages (#5800)
+
+#### @std/msgpack 1.0.1 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/net 1.0.1 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+
+#### @std/path 1.0.3 (patch)
+
+- feat(path/unstable): support `URL` in `extname()` (#5818)
+- feat(path/unstable): support `URL` input in `dirname()` (#5747)
+- refactor(path,streams): align additional error messages (#5718)
+
+#### @std/semver 1.0.2 (patch)
+
+- refactor(semver): align additional error messages (#5785)
+- refactor(semver): unify param names (#5700)
+
+#### @std/streams 1.0.3 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- refactor(path,streams): align additional error messages (#5718)
+
+#### @std/testing 1.0.1 (patch)
+
+- fix(testing): fix `IsExact` edge cases (#5676)
+- refactor(testing): align additional error messages (#5810)
+
+#### @std/text 1.0.4 (patch)
+
+- docs(archive,assert,cache,cli,encoding,html,http,net,streams,text): remove
+  unstable Markdown alert (#5672)
+- docs(text): fix `slugify()` summary (#5722)
+- test(text): move case tests to separate files (#5807)
+
+#### @std/toml 1.0.1 (patch)
+
+- refactor(toml,msgpack,crypto,data-structures): align the error messages to the
+  style guide (#5705)
+
+#### @std/uuid 1.0.2 (patch)
+
+- refactor(uuid): align additional error messages (#5803)
+- test(uuid): assert error message of `version()` (#5819)
+
+#### @std/webgpu 0.224.6 (patch)
+
+- refactor(webgpu): align additional error messages (#5754)
+
+#### @std/yaml 1.0.4 (patch)
+
+- refactor(yaml): use `isObject()` (#5822)
+- refactor(yaml): cleanup `stringifyFlowMapping()` (#5743)
+- refactor(yaml): cleanup `stringifyBlockSequence()` (#5742)
+- refactor(yaml): cleanup `detectType()` (#5759)
+- refactor(yaml): inline `readPlainScalar()` (#5813)
+- refactor(yaml): move `getDuplicateReferences()` into `stringify()` (#5804)
+- refactor(yaml): inline `writeFoldedLines()` (#5812)
+- refactor(yaml): remove `Mark` class (#5805)
+- refactor(yaml): inline `testDocumentSeparator()` (#5793)
+- refactor(yaml): remove `any` types (#5782)
+- refactor(yaml): remove `schema` property from `DumperState` (#5798)
+- refactor(yaml): remove type mod file (#5795)
+- refactor(yaml): inline `skipSeparationSpace()` (#5792)
+- refactor(yaml): inline `readLineBreak()` (#5783)
+- refactor(yaml): inline `storeMappingPair()` (#5779)
+- refactor(yaml): remove `storeMappingPair()` result `null` type (#5781)
+- refactor(yaml): inline `mergeMappings()` (#5777)
+- refactor(yaml): use `Set` in `inspectNode()` (#5778)
+- refactor(yaml): inline `readBlockSequence()` (#5776)
+- refactor(yaml): inline `captureSegment()` (#5775)
+- refactor(yaml): inline `tagDirectiveHandler()` (#5771)
+- refactor(yaml): cleanup `stringifyFlowSequence()` (#5744)
+- refactor(yaml): change `styleMap` type to `Map` (#5760)
+- refactor(yaml): inline `yamlDirectiveHandler()` (#5763)
+- refactor(yaml): remove `ResultType` (#5765)
+- refactor(yaml): remove `ArrayObject` (#5761)
+- refactor(yaml): add `BOM` constant (#5764)
+- refactor(yaml): move options to options object (#5740)
+- refactor(yaml): replace `chooseScalarType()` callback with `implicitTypes`
+  argument (#5750)
+- refactor(yaml): remove variable underscore (#5741)
+- refactor(yaml): rename `DumperState` methods (#5738)
+- refactor(yaml): remove `dump` property (#5683)
+- refactor(yaml): remove `tag` property (#5689)
+- refactor(yaml): cleanup `Schema` (#5715)
+- refactor(yaml): use `Map`s for `TypeMap` (#5694)
+- refactor(yaml): add `stringify()` method to `DumperState` (#5707)
+- refactor(yaml): boolean constants (#5699)
+- refactor(yaml): use `Set` for `overridableKeys` (#5697)
+- refactor(yaml): use `Map` for `tagMap` and `anchorMap` (#5696)
+- refactor(yaml): redefine `include` as optional `Schema` (#5693)
+- refactor(yaml): remove `schema` property (#5692)
+- refactor(yaml): make `version` property required (#5691)
+- test(yaml): add `undefined` array entry test with `skipInvalid` option (#5814)
+- test(yaml): add `condenseFlow()` test (#5780)
+- test(yaml): add test for deprecated boolean syntax (#5713)
+- test(yaml): add edge case test for `stringify` (#5704)
+
+### 2024.08.16
+
+#### @std/cache 0.1.0 (minor)
+
+- feat(cache/unstable): add `memoize()` and `LruCache` (#4725)
+- fix(cache/unstable): fix flaky `memoize()` test with `FakeTime` (#5664)
+- chore(cache): add `@experimental` JSDoc tag to public symbols (#5666)
+
+#### @std/datetime 0.225.0 (minor)
+
+- BREAKING(datetime): replace `utc` with `timeZone` option (#5647)
+- fix(datetime): handle am / pm variants (#5406)
+- refactor(datetime): cleanup `DateTimeFormatter` and `parse()` function (#5649)
+
+#### @std/encoding 1.0.2 (patch)
+
+- feat(encoding/unstable): `decodeBase32Hex()` and `encodeBase32Hex()` (#4931)
+- test(encoding): cleanup base32 tests (#5665)
+
+#### @std/front-matter 1.0.2 (patch)
+
+- refactor(front-matter): remove `Extractor` type (#5659)
+
+#### @std/http 1.0.3 (patch)
+
+- refactor(http): use `methods` module in `file-server` module (#5668)
+
+#### @std/io 0.224.5 (patch)
+
+- docs(io): document `std/io` (#5656)
+- refactor(io): cleanup `BufferFullError` and `PartialReadError` logic (#5657)
+
+#### @std/streams 1.0.2 (patch)
+
+- feat(streams/unstable): `toLines()` (#5121)
+
+#### @std/text 1.0.3 (patch)
+
+- feat(text/unstable): add `slugify()` function (#5646)
+
+#### @std/uuid 1.0.1 (patch)
+
+- perf(uuid): make `uuidToBytes()` up to 2.5x faster (#5670)
+- perf(uuid): make `bytesToUuid()` up to 100x faster (#5655)
+
+#### @std/yaml 1.0.3 (patch)
+
+- refactor(yaml): remove `result` property (#5684)
+- refactor(yaml): move exports to import file (#5651)
+
+### 2024.08.07
+
+#### @std/http 1.0.2 (patch)
+
+- fix(http/unstable): make `info` parameter optional (#5652)
+
+### 2024.08.07
+
+#### @std/archive 0.225.0 (minor)
+
+- BREAKING(archive): remove `TarEntry.#header` (#5638)
+- fix(archive): make `data` property private in `Tar` (#5645)
+- fix(archive): make `block` and `reader` properties in `Untar` private (#5637)
+- docs(archive): mark public APIs as unstable/experimental (#5639)
+
+#### @std/csv 1.0.1 (patch)
+
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+#### @std/datetime 0.224.5 (patch)
+
+- refactor(datetime): remove `Tokenizer` class (#5622)
+
+#### @std/http 1.0.1 (patch)
+
+- feat(http/unstable): `route` module (#5644)
+- feat(http/unstable): `headers` module (#4317)
+- feat(http/unstable): `methods` module (#4320)
+- fix(http): handle wrong request method correctly (#5643)
+- refactor(http): use `headers` module in `file-server` module (#5642)
+
+#### @std/streams 1.0.1 (patch)
+
+- feat(streams/unstable): `FixedChunkStream` (#4995)
+- fix(csv,streams): use string arrays in `ReadableStream.from()` in docs and
+  tests (#5635)
+
+### 2024.08.05
+
+#### @std/async 1.0.3 (patch)
+
+- fix(async): abortable should not change original outputs (#5609)
+
+#### @std/cli 1.0.3 (patch)
+
+- refactor(cli): minor cleanups (#5628)
+- refactor(cli): `isNumber()` (#5607)
+
+#### @std/csv 1.0.0 (major)
+
+- chore(csv): release `csv@1.0.0` (#5219)
+
+#### @std/semver 1.0.1 (patch)
+
+- docs(semver): remove diagram line overlaps (#5624)
+
+#### @std/url 0.225.0 (minor)
+
+- chore(url): release `url@0.225.0` (#5631)
+- deprecation(url): deprecate `@std/url` (#5530)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/yaml 1.0.2 (patch)
+
+- refactor(yaml): move functions to class methods (#5625)
+
+### 2024.08.02
+
+#### @std/assert 1.0.2 (patch)
+
+- feat(assert/unstable): add `options` parameter to `AssertionError` constructor
+  (#5561)
+- chore(assert): mark `options` argument of `AssertionError` constructor
+  unstable (#5573)
+
+#### @std/async 1.0.2 (patch)
+
+- fix(async): `abortableAsyncIterable()` should call `.return()` on the
+  generator once aborted (#5560)
+- test(async): improve test speed of `async/pool_test.ts` (#5611)
+- test(async): fix `abortable.AsyncIterable() calls return before throwing` test
+  (#5596)
+
+#### @std/cli 1.0.2 (patch)
+
+- refactor(cli): use non-null assertion in `parseArgs()` logic (#5618)
+- refactor(cli): simplify `argv` and `notFlags` push (#5608)
+- refactor(cli): remove `broken` variable in favour of loop label (#5602)
+- refactor(cli): use `for of` instead of `for in` loop (#5598)
+- refactor(cli): make regexps constants (#5595)
+- chore(cli): simplify `parseArgs()` logic (#5601)
+- chore(cli): simplify `setNested()` and `hasNested()` (#5599)
+
+#### @std/csv 1.0.0-rc.6 (prerelease)
+
+- feat(csv): support `fieldsPerRecord` in `CsvParseStream` (#5600)
+- fix(csv): remove `undefined` from possible value type of parse result (#5617)
+- fix(csv): show 1-based line and column numbers in error messages (#5604)
+- docs(csv): more examples for `stringify` and `CsvStringifyStream` (#5606)
+- docs(csv): more examples for `parse` and `CsvParseStream` (#5605)
+- docs(csv): clarify `CsvParseStream` description (#5613)
+- docs(csv): clarify `parse` document (#5597)
+- docs(csv): correct thrown error type in `fieldsPerRecord` field description
+  (#5594)
+
+#### @std/datetime 0.224.4 (patch)
+
+- chore(datetime): remove console log (#5610)
+
+#### @std/fmt 1.0.0 (major)
+
+- BREAKING(fmt): rename `PrettyDurationOptions` to `FormatOptions` (#5591)
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- chore(fmt): release `fmt@1.0.0` (#5454)
+
+#### @std/front-matter 1.0.1 (patch)
+
+- refactor(front-matter): replace regexp factory with regexp literals (#5370)
+
+#### @std/fs 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+- docs(fs): fix incorrect examples for walk (#5559)
+
+#### @std/html 1.0.1 (patch)
+
+- feat(html/unstable): add `isValidCustomElementName()` (#5456)
+
+#### @std/http 1.0.0 (major)
+
+- BREAKING(http): remove `ETagSource` (#5577)
+- fix(http): better `eTag` return type for `string` and `Uint8Array` inputs
+  (#5571)
+- fix(http): update localhost strings in tests (#5563)
+- chore(http): release `http@1.0.0` (#5217)
+
+#### @std/ini 1.0.0-rc.3 (prerelease)
+
+- BREAKING(ini): reduce options for `stringify`, make `FormattingOptions` type
+  private (#5572)
+- feat(ini): add type param for value type (#5588)
+- fix(ini): correctly handle quoted values in `parse()` (#5592)
+- docs(ini): cleanup module documentation (#5566)
+- refactor(ini): cleanup dead code (#5576)
+- test(ini): copy tests from `ini/_ini_map_test.ts` (#5593)
+
+#### @std/io 0.224.4 (patch)
+
+- refactor(io): use `writeAll()` within `copy()` (#5580)
+
+#### @std/net 1.0.0 (major)
+
+- chore(net): release net@1.0.0 (#5457)
+
+#### @std/semver 1.0.0 (major)
+
+- BREAKING(semver): remove the handling of non-standard SemVers in format
+  function (#5587)
+- BREAKING(semver): do not accept undefined input in `tryParse` (#5584)
+- fix(semver): do not throw in `canParse` (#5583)
+- fix(semver): throw on invalid input in `parseRange()` (#5567)
+- fix(semver): correctly remove spaces between operators and versions in
+  `parseRange()` (#5564)
+- docs(semver): fix `Comparator` example (#5585)
+- docs(semver): clarify `compare` docs (#5586)
+- refactor(semver): throw `TypeError` if release is invalid in `increment()`
+  (#5565)
+- chore(semver): release `semver@1.0.0` (#5220)
+
+#### @std/testing 1.0.0 (major)
+
+- BREAKING(testing): replace `TimeError` exception in favor of built-in error
+  classes in some cases (#5550)
+- fix(testing): correct `stub()` error message (#5575)
+- docs(testing): mention default serializer (#5590)
+- refactor(testing): improve error messages in `mock` module (part 2) (#5569)
+- chore(testing): release `testing@1.0.0` (#5218)
+
+#### @std/text 1.0.2 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
+#### @std/url 1.0.0-rc.3 (prerelease)
+
+- deprecation(url): deprecate `@std/url` (#5530)
+
+#### @std/yaml 1.0.1 (patch)
+
+- docs(fmt,fs,text,yaml): fix Markdown alerts (#5568)
+
+### 2024.07.26
+
+#### @std/assert 1.0.1 (patch)
+
+- fix(assert): fix `assertObjectMatch()` prints arrays as objects (#5503)
+- fix(assert): `assertObjectMatch` doesn't print whole object (#5498)
+- chore(assert): remove redundant constructor example (#5506)
+
+#### @std/async 1.0.1 (patch)
+
+- chore(async): remove redundant constructor example (#5507)
+
+#### @std/cli 1.0.1 (patch)
+
+- test(cli): stop spinner without error (#5551)
+- chore(cli): remove redundant constructor example (#5508)
+
+#### @std/crypto 1.0.2 (patch)
+
+- fix(crypto): improve handling of `length` option (#5505)
+
+#### @std/csv 1.0.0-rc.5 (prerelease)
+
+- chore(csv): remove redundant constructor examples (#5509)
+
+#### @std/data-structures 1.0.1 (patch)
+
+- chore(data-structures): remove redundant constructor examples (#5510)
+
+#### @std/expect 1.0.0 (major)
+
+- docs(expect): add examples of matcher usages (#5553)
+- docs(expect): link to matcher docs (#5502)
+- docs(expect): minor doc tweaks (#5501)
+
+#### @std/front-matter 1.0.0 (major)
+
+- chore(front-matter): release `front-matter@1.0.0` (#5376)
+
+#### @std/fs 1.0.0 (major)
+
+- BREAKING(fs): throw `Deno.errors.NotSupported` instead of
+  `SubdirectoryMoveError` in `move[Sync]()` (#5532)
+- BREAKING(fs): throw `Deno.errors.NotFound` instead of `WalkError` in
+  `walk[Sync]()` (#5477)
+- docs(fs): make `preserveTimestamps` note more prominent (#5543)
+- chore(fs): release `fs@1.0.0` (#5214)
+- chore(fs): remove redundant constructor examples (#5511)
+
+#### @std/http 1.0.0-rc.6 (prerelease)
+
+- fix(http): only show LAN address when `--allow-sys` is provided (#5547)
+- chore(http): remove redundant constructor example (#5512)
+
+#### @std/json 1.0.0 (major)
+
+- chore(json): remove redundant constructor examples (#5513)
+- chore(json): release `json@1.0.0` (#5215)
+
+#### @std/jsonc 1.0.0 (major)
+
+- chore(jsonc): tweak `JsonValue` export (#5546)
+- chore(jsonc): release `jsonc@1.0.0` (#5216)
+
+#### @std/path 1.0.2 (patch)
+
+- docs(path): cleanup `@std/path/posix` and `@std/path/windows` module
+  documentation (#5529)
+- docs(path): add examples to `@std/path/posix` examples (#5371)
+
+#### @std/streams 1.0.0 (major)
+
+- fix(streams): strictly define `toJson()` and `toText()` input (#5517)
+- chore(streams): release `streams@1.0.0` (#5518)
+- chore(streams): remove redundant constructor examples (#5514)
+
+#### @std/testing 1.0.0-rc.5 (prerelease)
+
+- fix(testing): FakeTime fakes `AbortSignal.timeout` (#5500)
+- refactor(testing): improve error messages in `mock` module (#5549)
+- refactor(testing): improve `FakeTime` error messaging (#5533)
+- chore(testing): remove redundant constructor examples (#5515)
+
+#### @std/text 1.0.1 (patch)
+
+- feat(text/unstable): add toConstantCase() (#5110)
+- fix(text): unicode support and word splitting according to case (#5447)
+- perf(text): make `levenshteinDistance()` up to 147x faster (#5527)
+- test(text): add more testcases for `levenshteinDistance` (#5528)
+
+#### @std/yaml 1.0.0 (major)
+
+- docs(yaml): correct `core` schema note (#5552)
+- docs(yaml): document compatibility policy (#5542)
+- docs(yaml): document different schemas (#5531)
+- refactor(yaml): cleanup dead sexagesimal regexp code in float type (#5545)
+- refactor(yaml): remove deprecated sexagesimal functionality for integer types
+  (#5539)
+- refactor(yaml): cleanup dead code in float `Type` implementation (#5526)
+- test(yaml): test `arrayIndent = false` option (#5521)
+- test(yaml): improve test coverage for sequence type (#5536)
+- test(yaml): improve test coverage for mapping type (#5535)
+- test(yaml): improve test coverage for string type (#5534)
+- test(yaml): test sortKeys option behavior (#5523)
+- test(yaml): check `lineWidth` option behavior (#5524)
+- test(yaml): improve coverage for nil `Type` (#5525)
+- test(yaml): check the use of reserved characters (#5519)
+- test(yaml): check stringify behavior when `skipInvalid` specified (#5522)
+- test(yaml): test `indent` option of stringify (#5520)
+- test(yaml): add check of merge of list of mapping (#5496)
+- chore(yaml): release `yaml@1.0.0` (#5264)
+
+### 2024.07.19
+
+#### @std/async 1.0.0 (major)
+
+- chore(async): release `async@1.0.0` (#5211)
+
+#### @std/cli 1.0.0 (major)
+
+- docs(cli): fix options arguments display (#5486)
+- docs(cli): improve unstable API notices (#5482)
+- docs(cli): documentation tweaks (#5458)
+- chore(cli): release `cli@1.0.0` (#5212)
+
+#### @std/collections 1.0.5 (patch)
+
+- refactor(collections): use `Set.prototype.intersection()` method in
+  `intersect()` (#5417)
+
+#### @std/csv 1.0.0-rc.4 (prerelease)
+
+- BREAKING(csv): remove `ParseError` (#5405)
+
+#### @std/dotenv 0.225.0 (minor)
+
+- BREAKING(dotenv): remove `defaultPath` option from `load[Sync]()` (#5451)
+- BREAKING(dotenv): remove `examplePath` option from `load[Sync]()` (#5450)
+
+#### @std/expect 1.0.0-rc.3 (prerelease)
+
+- fix(expect): improve `expect` type to make it work better with `expect.extend`
+  (#5309)
+
+#### @std/fs 1.0.0-rc.6 (prerelease)
+
+- docs(fs): fix options argument display (#5491)
+- docs(fs): fix options argument display (#5487)
+
+#### @std/http 1.0.0-rc.5 (prerelease)
+
+- docs(http): fix options argument display (#5488)
+- docs(http): fix options argument display (#5489)
+- docs(http): improve unstable API notices (#5483)
+
+#### @std/json 1.0.0-rc.3 (prerelease)
+
+- docs(json): fix options argument display (#5490)
+
+#### @std/jsonc 1.0.0-rc.3 (prerelease)
+
+- docs(jsonc): remove docs for removed `options` parameter (#5438)
+
+#### @std/media-types 1.0.2 (patch)
+
+- fix(media-types): return `video/mp4` for `.mp4` extension (#5475)
+
+#### @std/net 1.0.0-rc.2 (prerelease)
+
+- docs(net): tweak `getNetworkAddress()` return doc (#5473)
+
+#### @std/path 1.0.1 (patch)
+
+- fix(path): support use in dnt (#5478)
+
+#### @std/semver 1.0.0-rc.3 (prerelease)
+
+- BREAKING(semver): replace `prerelease` and `buildmetadata` arguments with
+  options object (#5471)
+
+#### @std/streams 1.0.0-rc.4 (prerelease)
+
+- docs(streams): address documentation issues (#5480)
+- chore(streams): release `streams@1.0.0` (#5213)
+
+#### @std/text 1.0.0 (major)
+
+- BREAKING(text): align to single-export file pattern (#5428)
+- feat(text): add ability for user to control word comparison function (#5448)
+- docs(text): state complexity of `levenshteinDistance()` (#5472)
+- chore(text): release `text@1.0.0` (#5209)
+
+#### @std/ulid 1.0.0 (major)
+
+- fix(ulid): fix decode-time export path (#5432)
+- chore(ulid): release `ulid@1.0.0` (#5206)
+
+#### @std/yaml 1.0.0-rc.4 (prerelease)
+
+- BREAKING(yaml): replace `YamlError` with `TypeError` in `stringify()` (#5452)
+- BREAKING(yaml): replace `YamlError` with `SyntaxError` in `parse()` (#5446)
+- docs(yaml): list `extended` schema (#5444)
+- refactor(yaml): change `object` type from `any` to `unknown` in `writeNode`
+  (#5404)
+- refactor(yaml): remove `instanceOf` field of `Type` (#5462)
+- refactor(yaml): add `KindType` generic type argument to `Type` (#5461)
+- refactor(yaml): improve `Type.predicate` behavior (#5460)
+- refactor(yaml): remove `Type.loadKind` property (#5459)
+- refactor(yaml): remove dead code in `Schema` constructor (#5445)
+- refactor(yaml): make `Type.kind` required (#5442)
+
+### 2024.07.12
+
+#### @std/async 1.0.0-rc.4 (prerelease)
+
+- fix(async): improve debounce node.js compatibility (#5419)
+
+#### @std/cli 1.0.0-rc.5 (prerelease)
+
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/collections 1.0.4 (patch)
+
+- refactor(collections): inline `randomInteger` utility function (#5415)
+
+#### @std/csv 1.0.0-rc.3 (prerelease)
+
+- BREAKING(csv): throw `TypeError` in `stringify()` instead of `StringifyError`
+  (#5347)
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+- refactor(csv): rename `graphemeLength` to `codePointLength` (#5421)
+
+#### @std/data-structures 1.0.0 (major)
+
+- docs(data-structures): get all `@link` nodes working (#5422)
+- chore(data-structures): release `data-structures@1.0.0` (#5205)
+
+#### @std/datetime 0.224.3 (patch)
+
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/fmt 1.0.0-rc.1 (prerelease)
+
+- BREAKING(fmt): remove `stripColor` (#5374)
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+- docs(fmt): improve documentation (#5373)
+- chore(fmt): release `fmt@1.0.0-rc.1` (#5372)
+
+#### @std/front-matter 1.0.0-rc.2 (prerelease)
+
+- BREAKING(front-matter): remove `unknown` from `Format` union type (#5367)
+- docs(front-matter): fix description of `Extract` (#5383)
+- refactor(front-matter): remove `createExtractor()` (#5378)
+- refactor(front-matter): replace regexp objects with maps (#5379)
+
+#### @std/fs 1.0.0-rc.5 (prerelease)
+
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/html 1.0.0 (major)
+
+- chore(html): release `html@1.0.0` (#4988)
+
+#### @std/http 1.0.0-rc.4 (prerelease)
+
+- BREAKING(http): rename `Entity` to `ETagSource` and `calculate()` to `eTag()`
+  (#5144)
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/ini 1.0.0-rc.2 (prerelease)
+
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/log 0.224.5 (patch)
+
+- test(log): cleaunp `TextDecoder` use (#5407)
+
+#### @std/msgpack 1.0.0 (major)
+
+- chore(msgpack): release `msgpack@1.0.0` (#5210)
+
+#### @std/net 1.0.0-rc.1 (prerelease)
+
+- docs(net): update docs for `getAvailablePort()` (#5366)
+- docs(net): make `getNetworkAddress()` unstable status more prominent (#5368)
+- chore(net): release `net@1.0.0-rc.1` (#5349)
+
+#### @std/path 1.0.0 (major)
+
+- chore(path): release `path@1.0.0` (#5203)
+
+#### @std/regexp 1.0.0 (major)
+
+- docs(regexp): import `escape` from most specific place in examples (#5427)
+- chore(regexp): release `regexp@1.0.0` (#5207)
+
+#### @std/semver 1.0.0-rc.2 (prerelease)
+
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+
+#### @std/streams 1.0.0-rc.3 (prerelease)
+
+- fix(streams): toText() incorrect with multibyte strings in different chunks
+  (#5381)
+
+#### @std/testing 1.0.0-rc.4 (prerelease)
+
+- fix(testing): throw error when async func is passed to describe (#5385)
+- docs(cli,csv,datetime,fmt,fs,http,ini,semver,testing): assert optional
+  properties on types/interfaces have `@default` tag (#4933)
+- test(testing): fix flakiness of snapshot test (#5414)
+
+#### @std/text 1.0.0-rc.3 (prerelease)
+
+- docs(text): refine documents in text module (#5425)
+
+#### @std/toml 1.0.0 (major)
+
+- BREAKING(toml): throw `SyntaxError` in `parse()` instead of `TOMLParseError`
+  (#5346)
+- refactor(toml): improve early returns (#5338)
+- chore(toml): release `toml@1.0.0` (#5204)
+
+#### @std/ulid 1.0.0-rc.4 (prerelease)
+
+- feat(ulid): add single-export endpoints (#5426)
+
+#### @std/yaml 1.0.0-rc.3 (prerelease)
+
+- refactor(yaml): fix `onWarning` arg type (#5395)
+- refactor(yaml): rearrange constants and functions (#5411)
+- refactor(yaml): remove passing `this.dump` as method param (#5413)
+- refactor(yaml): add writeNode options (#5409)
+- refactor(yaml): remove obsolete export from `trimTrailingNewline()` (#5412)
+- refactor(yaml): remove nested functions (#5389)
+- refactor(yaml): make `Type` generic (#5394)
+- refactor(yaml): replace `indexOf()` tests with `includes()` (#5390)
+- refactor(yaml): correct `testAmbiguousType` type (#5399)
+- refactor(yaml): correct `duplicate` and `usedDuplicates` types (#5398)
+- refactor(yaml): correct `sortKeys` type (#5397)
+- refactor(yaml): replace `keyNode` any type (#5396)
+- refactor(yaml): replace `implicit` `any[]` type with `Type[]` (#5393)
+- refactor(yaml): replace `any` with `unknown` in `ResultType` constituents
+  (#5392)
+- refactor(yaml): extract and rename regexp constant (#5391)
+- refactor(yaml): move state functions inside class (#5388)
+- refactor(yaml): simplify `foldLine()` (#5386)
+- refactor(yaml): simplify `indentString()` (#5335)
+- refactor(yaml): camelcase `iskey` (#5365)
+- refactor(yaml): remove `Any` type (#5306)
+
+### 2024.07.09
+
+#### @std/assert 1.0.0 (major)
+
+- docs(assert): improve `assertObjectMatch` docs (#5296)
+- docs(assert): improve `assertNotStrictEquals` example (#5295)
+- docs(assert): update `assertMatch` example (#5294)
+- test(assert): add "`assert()` throws if expr is falsy" test (#5267)
+- chore(assert): release `assert@1.0.0` (#4989)
+
+#### @std/bytes 1.0.2 (patch)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/cli 1.0.0-rc.4 (prerelease)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/collections 1.0.3 (patch)
+
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/crypto 1.0.1 (patch)
+
+- test(crypto): test `timingSafeEqual()` in handling `DataView`s (#5268)
+
+#### @std/csv 1.0.0-rc.2 (prerelease)
+
+- refactor(csv): rename arguments, variables and loop (#5297)
+- refactor(csv): remove `runeCount()` function (#5298)
+- refactor(csv): throw errors immediately (#5299)
+- test(csv): add grapheme length test (#5304)
+
+#### @std/encoding 1.0.1 (patch)
+
+- perf(encoding): fix loop times in `encodeHex()` (#5344)
+
+#### @std/expect 1.0.0-rc.2 (prerelease)
+
+- fix(expect): make `.not` aware of whether is it is in async context (#5308)
+- fix(bytes,cli,collections,expect): add missing non-null assertions (#5280)
+
+#### @std/fmt 0.225.6 (patch)
+
+- fix(fmt): fix the case when mantissa exceeds 10 by rounding and exponent is
+  negative (#5279)
+- test(fmt): add test cases for `printf()` (#5278)
+
+#### @std/front-matter 1.0.0-rc.1 (prerelease)
+
+- BREAKING(front-matter): make `Extractor` helper type private (#5334)
+- BREAKING(front-matter): remove `createExtractor()` (#5266)
+- fix(front-matter): improve `extract` types (#5325)
+- chore(front-matter): release `front-matter@1.0.0-rc.1` (#5263)
+
+#### @std/fs 1.0.0-rc.4 (prerelease)
+
+- fix(fs): accept `exts` without leading period in `walk[Sync]()` (#5345)
+
+#### @std/http 1.0.0-rc.3 (prerelease)
+
+- fix(http): allow deleting cookie with `secure`, `httpOnly` and `partitioned`
+  attributes (#5354)
+
+#### @std/ini 1.0.0-rc.1 (prerelease)
+
+- BREAKING(ini): make `IniMap` private (#5351)
+- docs(ini): link options interfaces to functions that use them (#5359)
+- chore(ini): release `ini@1.0.0-rc.1` (#5357)
+
+#### @std/net 0.224.5 (patch)
+
+- chore(net): mark `getNetworkAddress()` unstable (#5348)
+
+#### @std/path 1.0.0-rc.4 (prerelease)
+
+- BREAKING(path): remove `FormatInputPathObject` (#5321)
+- BREAKING(path): remove `GlobToRegExpOptions` (#5320)
+
+#### @std/testing 1.0.0-rc.3 (prerelease)
+
+- fix(testing): cause type error for async function as describe body (#5355)
+- fix(testing): escape CR in snapshot files (#5352)
+
+#### @std/toml 1.0.0-rc.4 (prerelease)
+
+- refactor(toml): remove Utils object (#5342)
+- refactor(toml): remove `Patterns` object (#5343)
+- refactor(toml): rename functions to camel case (#5339)
+
+#### @std/yaml 1.0.0-rc.2 (prerelease)
+
+- BREAKING(yaml): rename `StringifyOptions.noRefs` to
+  `StringifyOptions.useAnchors` (#5288)
+- BREAKING(yaml): remove style aliases of `!!int` type (#5307)
+- BREAKING(yaml): rename `StringifyOptions.noCompatMode` to
+  `StringifyOptions.compatMode` (#5287)
+- BREAKING(yaml): rename `ParseOptions.noArrayIndent` to
+  `ParseOptions.arrayIndent` (#5286)
+- BREAKING(yaml): rename `ParseOptions.json` to
+  `ParseOptions.allowDuplicateKeys` (#5282)
+- fix(yaml): fix `StringifyOptions.noRefs` (#5292)
+- fix(yaml): fix `!!int` style variation handling in `stringfiy` (#5256)
+- docs(yaml): improve documentation (#5324)
+- refactor(yaml): cleanup dead code in `Mark` class (#5327)
+- refactor(yaml): simplify `YamlError` (#5328)
+- refactor(yaml): simplify and rename `dropEndingNewline()` (#5336)
+- refactor(yaml): move `getObjectTypeString()` (#5332)
+- refactor(yaml): remove obsolete static `Schema.SCHEMA_DEFAULT` property
+  (#5326)
+- refactor(yaml): cleanup `detectType()` (#5313)
+- refactor(yaml): cleanup `mergeMappings()` (#5314)
+- refactor(yaml): rename util functions (#5310)
+- refactor(yaml): replace `usedDuplicates()` array with `Set` (#5312)
+- refactor(yaml): cleanup `inspectNode()` (#5311)
+- refactor(yaml): simplify `encodeHex()` (#5305)
+- refactor(yaml): add `readIndent()` method (#5302)
+- refactor(yaml): remove repeat helper function (#5303)
+- refactor(yaml): rename `throwWarning()` to `dispatchWarning()` (#5301)
+- refactor(yaml): move char check functions (#5300)
+- refactor(yaml): remove first argument from `ParseOptions.onWarning` (#5284)
+- refactor(yaml): add `peek()` and `next()` to `LoaderState` (#5276)
+- refactor(yaml): replace `Type` class with interface (#5262)
+- refactor(yaml): simplify isWhiteSpaceOrEOL (#5271)
+- refactor(yaml): simplify `sanitizeInput()` (#5274)
+- refactor(yaml): inline error functions as methods (#5273)
+- refactor(yaml): remove `State` class (#5275)
+- refactor(yaml): move loader and dumper files (#5270)
+- refactor(yaml): make `readDocument()` and `readDocuments()` generator
+  functions (#5255)
+- refactor(yaml): merge `yaml/_dumper/` files (#5260)
+- refactor(yaml): merge `yaml/_loader/` files (#5259)
+- refactor(yaml): add default options object (#5261)
+- test(yaml): test parsing of single quoted scalars (#5356)
+- test(yaml): add test cases of stringify (#5350)
+- test(yaml): test block scalar output of stringify (#5341)
+- test(yaml): add test for `ParseOptions.json` option (#5283)
+- test(yaml): add test of parsing !!int types (#5253)
+
+### 2024.07.02
+
+#### @std/archive 0.224.3 (patch)
+
+- test(archive): fix typo in `tar_test.ts` (#5196)
+
+#### @std/assert 1.0.0-rc.3 (prerelease)
+
+- BREAKING(assert): remove `assert` from module names (#5176)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/async 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/bytes 1.0.1 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/cli 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/collections 1.0.2 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/crypto 1.0.0 (major)
+
+- refactor: import from `@std/assert` (#5199)
+- chore(crypto): release `crypto@1.0.0` (#4990)
+
+#### @std/csv 1.0.0-rc.1 (prerelease)
+
+- BREAKING(csv): remove `csv` from module names (#5172)
+- BREAKING(csv): make `ReadOptions` private (#5169)
+- docs(csv): fix description of `ParseResult` (#5170)
+- docs(csv): add module docs (#5157)
+- refactor(csv): minor cleanup (#5166)
+- refactor: import from `@std/assert` (#5199)
+- refactor(csv): minor cleanups (#5158)
+- refactor(csv): remove dead code and improve `CsvParseStream` test (#5153)
+- refactor(csv): remove dead code and improve tests (#5151)
+- test(csv): improve `CsvStringifyStream` test (#5154)
+- test(csv): improve stringify testing (#5150)
+- chore(csv): release `csv@1.0.0-rc.1` (#5159)
+
+#### @std/data-structures 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/datetime 0.224.2 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/dotenv 0.224.2 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/encoding 1.0.0 (major)
+
+- refactor: import from `@std/assert` (#5199)
+- chore(encoding): release `encoding@1.0.0` (#4991)
+
+#### @std/expect 1.0.0-rc.1 (prerelease)
+
+- BREAKING(expect): remove special handling of Immutable.js objects (#5228)
+- fix(expect): fix validation of nth param in `toHaveBeenNthCalledWith` matcher
+  (#5227)
+- refactor(expect,testing): update `@std/assert` imports (#5242)
+- refactor(expect): remove `expect.addSnapshotSerializer(s)` (#5231)
+- refactor: import from `@std/assert` (#5199)
+- test(expect): test edge cases of matchers (#5226)
+- test(expect): add test of `iterableEquality` (#5222)
+- test(expect): improve `expect` test cases (#5221)
+- chore(expect): release `expect@1.0.0-rc.1` (#5235)
+
+#### @std/fmt 0.225.5 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/front-matter 0.224.3 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/fs 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/html 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/http 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/ini 0.225.2 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/internal 1.0.1 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/io 0.224.3 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/json 1.0.0-rc.2 (prerelease)
+
+- BREAKING(json): remove `json` from module names (#5173)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/jsonc 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/log 0.224.4 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/media-types 1.0.1 (patch)
+
+- fix(media-types): update `db.ts` (#5193)
+- refactor: import from `@std/assert` (#5199)
+- chore(media-types): release `media-types@1.0.1` (#5197)
+
+#### @std/msgpack 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/net 0.224.4 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/path 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/semver 1.0.0-rc.1 (prerelease)
+
+- BREAKING(semver): remove `SEMVER_SPEC_VERSION` (#5180)
+- BREAKING(semver): make invalid SemVer constants private (#5168)
+- BREAKING(semver): remove deprecated `rangeMax()`, `rangeMin()` and
+  `testRange()` APIs (#5160)
+- docs(semver): minor documentation cleanups (#5178)
+- refactor: import from `@std/assert` (#5199)
+- test(semver): add `tryParse()` tests (#5161)
+- chore(semver): release `semver@1.0.0-rc.1` (#5181)
+
+#### @std/streams 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/testing 1.0.0-rc.2 (prerelease)
+
+- fix(testing): throw error eagerly when insufficient permissions are granted to
+  write to snapshot file in update mode (#5201)
+- refactor(expect,testing): update `@std/assert` imports (#5242)
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/text 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/toml 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/ulid 1.0.0-rc.3 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/url 1.0.0-rc.2 (prerelease)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/uuid 1.0.0 (major)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/webgpu 0.224.5 (patch)
+
+- refactor: import from `@std/assert` (#5199)
+
+#### @std/yaml 1.0.0-rc.1 (prerelease)
+
+- BREAKING(yaml): remove `ParseOptions.legacy` option (#5229)
+- BREAKING(yaml): remove `filename` option from `parse()` and `stringify()`
+  (#5223)
+- BREAKING(yaml): remove `listener` option from `parse()` and `stringify()`
+  (#5224)
+- BREAKING(yaml): make `Schema` and `Type` private and stop supporting
+  user-defined schemas (#5175)
+- BREAKING(yaml): rename `DumpOptions` to `StringifyOptions` (#5171)
+- BREAKING(yaml): remove `iterator` argument from `parseAll()` (#5148)
+- fix(yaml): fix `!!pairs` parsing (#5192)
+- fix(yaml): fix merge (<<) type handling in `parse()` (#5185)
+- refactor(yaml): replace chars and comments with constants (#5250)
+- refactor(yaml): add `sanitizeInput()` function (#5248)
+- refactor(yaml): remove inferred `Schema` type (#5252)
+- refactor(yaml): add default options object (#5249)
+- refactor(yaml): share char constants (#5246)
+- refactor(yaml): remove `DirectiveHandler` type (#5247)
+- refactor(yaml): minor cleanups (#5239)
+- refactor(yaml): simplify schema (#5236)
+- refactor(yaml): consolidate `yaml/schema/*.ts` code into `yaml/_schema.ts`
+  (#5225)
+- refactor: import from `@std/assert` (#5199)
+- refactor(yaml): remove unused `func` type (#5191)
+- refactor(yaml): remove dead code (#5189)
+- refactor(yaml): simplify map initializations (#5183)
+- refactor(yaml): rename `YAMLError` to `YamlError` (#5149)
+- test(yaml): test handling of boolean values (#5251)
+- test(yaml): check handling of binary type (#5245)
+- test(yaml): add `parse()` test for duplicate keys (#5240)
+- test(yaml): add test cases of handling ? mark in YAML (#5234)
+- test(yaml): test `!!timestamp` type handling (#5237)
+- test(yaml): test `stringify()` case when string encoded into hex sequences
+  (#5230)
+- test(yaml): test anchor and alias handling of `parse()` (#5190)
+- test(yaml): add misc `parse()` test cases (#5188)
+- test(yaml): add test for block scalars (#5187)
+- test(yaml): improve `parse()` testing (#5182)
+- chore(yaml): release `yaml@1.0.0-rc.1` (#5244)
+- chore(yaml): remove `example` folder (#5238)
+
+### 2024.06.26
+
+#### @std/cli 1.0.0-rc.2 (prerelease)
+
+- test(cli): improve `Spinner` test (#5108)
+
+#### @std/collections 1.0.1 (patch)
+
+- perf(collections): use `for` loop instead of `forEach()` in `unzip()` (#5104)
+
+#### @std/fs 1.0.0-rc.2 (prerelease)
+
+- docs(fs): add not supported docs for `CopyOptions.preserveTimestamps` (#5143)
+
+#### @std/http 1.0.0-rc.1 (prerelease)
+
+- BREAKING(http): rename `verifyCookie()` to `verifySignedCookie()` (#5138)
+- BREAKING(http): improve thrown errors in `cookie` module (#5129)
+- BREAKING(http): change the default port of file-server to the same default of
+  `Deno.serve()` (#4888)
+- BREAKING(http): move `unstable-signed-cookie` to `signed-cookie` (#5101)
+- BREAKING(http): remove deprecated `server` module (#5100)
+- fix(http): handle the case fileInfo.mode=0 correctly (#5132)
+- docs(http): remove outdated mention of `CookieMap` (#5109)
+- refactor(http): change error thrown in `ServerSentEventStream` to
+  `SyntaxError` (#5135)
+- refactor(http): minor cleanup (#5126)
+- refactor(http): remove dead code and improve `UserAgent` testing (#5120)
+- chore(http): release `http@1.0.0-rc.1` (#5131)
+
+#### @std/jsonc 1.0.0-rc.1 (prerelease)
+
+- BREAKING(jsonc): remove `allowTrailingComma` option (#5119)
+- refactor(jsonc): minor cleanups (#5114)
+- chore(jsonc): release `jsonc@1.0.0-rc.1` (#5115)
+
+#### @std/media-types 1.0.0 (major)
+
+- BREAKING(media-types): rename `extensionsByType` to `allExtensions` (#5106)
+- docs(media-types): remove outdated historical note (#5105)
+- chore(media-types): release `media-types@1.0.0` (#4780)
+
+#### @std/testing 1.0.0-rc.1 (prerelease)
+
+- BREAKING(testing): remove deprecated `asserts` module (#5099)
+- BREAKING(testing): disable multiple `FakeTime` creations (#5130)
+- fix(testing): correctly throw in constructor with `spy()` (#5139)
+- fix(testing): function call of `Date` constructor is not correctly faked
+  (#5122)
+- docs(testing): add module docs (#5147)
+- refactor(testing): remove `@std/fmt/colors` dependency from `snapshot` module
+  (#5145)
+- refactor(testing): remove dead code and improve test of `testing/mock.ts`
+  (#5137)
+- test(testing): improve bdd testing (#5136)
+- test(testing): improve `FakeTime` testing (#5123)
+- chore(testing): release `testing@1.0.0-rc.1` (#5142)
+
+#### @std/yaml 0.224.3 (patch)
+
+- feat(yaml): support schema name for 'schema' option (#5118)
+- docs(yaml): improve `yaml` document (#5127)
+
+### 2024.06.21
+
+#### @std/archive 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/async 1.0.0-rc.2 (prerelease)
+
+- BREAKING(async): simplify `deadline()` logic, remove `DeadlineError` and
+  improve errors (#5058)
+- BREAKING(async): make `abortablePromise()` and `abortableAsyncIterable()`
+  private (#5056)
+
+#### @std/cli 1.0.0-rc.1 (prerelease)
+
+- chore(cli): release `cli@1.0.0-rc.1` (#5068)
+- chore(cli): make spinner unstable/experimental (#5067)
+
+#### @std/collections 1.0.0 (major)
+
+- chore(collections): release `collections@1.0.0` (#4773)
+
+#### @std/dotenv 0.224.1 (patch)
+
+- docs(dotenv): improve `dotenv` docs (#5095)
+
+#### @std/expect 0.224.5 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/fs 1.0.0-rc.1 (prerelease)
+
+- refactor(fs): improve `expandGlob()` implementation and testing (#5089)
+- refactor(fs): reduce the repetition in `exists.ts` (#5088)
+- refactor(fs): reduce the repetition in ensure_dir.ts (#5085)
+- refactor(fs): resolve directories when checking whether they are the same in
+  `isSubdir()` (#5076)
+- test(fs): improve `copy()` testing (#5084)
+- test(fs): improve `ensureSymlink()` test (#5087)
+- test(fs): check `ensureDir()` is not racy (#5086)
+- chore(fs): release `fs@1.0.0-rc.1` (#5091)
+
+#### @std/io 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/json 1.0.0-rc.1 (prerelease)
+
+- BREAKING(json): rename /common to /types (#5103)
+- BREAKING(json): remove `writableStrategy` and `readableStrategy` options
+  (#5097)
+- docs(json): lint `@std/json` docs (#4798)
+- test(json): improve json testing (#5075)
+- chore(json): release `json@1.0.0-rc.1` (#5102)
+
+#### @std/jsonc 0.224.3 (patch)
+
+- test(jsonc): remove dead code and improve testing (#5093)
+
+#### @std/log 0.224.3 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/streams 1.0.0-rc.1 (prerelease)
+
+- BREAKING(streams): remove `iterateReader`, `readableStreamFromReader`,
+  `readerFromIterable`, `readerFromStreamReader`, `writableStreamFromWriter`,
+  and `writerFromStreamWriter` (#5060)
+- fix(streams): prevent `earlyZipReadableStreams()` from possibly using
+  excessive memory (#5082)
+- test(streams): improve test coverage (#5078)
+- test(streams): improve `DelimiterStream` test cases (#5070)
+- test(streams): improve `Buffer` test (#5061)
+- chore(streams): release `streams@1.0.0-rc.1` (#5074)
+
+#### @std/testing 0.225.3 (patch)
+
+- refactor(testing): remove `FakeTime.start` setter (#5050)
+
+#### @std/toml 1.0.0-rc.2 (prerelease)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+#### @std/yaml 0.224.2 (patch)
+
+- refactor(archive,expect,io,log,toml,yaml): remove `private` and `public`
+  access modifiers (#5077)
+
+### 2024.06.17
+
+#### @std/async 1.0.0-rc.1 (prerelease)
+
+- BREAKING(async): stop exporting ERROR_WHILE_MAPPING_MESSAGE (#5041)
+- docs(async): improve module docs (#5039)
+- docs(async): avoid memory leak in example (#5040)
+- chore(async): release `async@1.0.0-rc.1` (#5035)
+- chore(async): mark `Tuple` and `TupleOf` as `@internal` (#5042)
+
+#### @std/cli 0.224.7 (patch)
+
+- refactor(cli): minor cleanups (#5052)
+- test(cli): improve spinner test coverage (#5047)
+- test(cli): improve test coverage (#5046)
+
+#### @std/http 0.224.5 (patch)
+
+- feat(http): support partitioned cookies (#5044)
+
+#### @std/msgpack 1.0.0-rc.1 (prerelease)
+
+- chore(msgpack): release `msgpack@1.0.0-rc.1` (#5030)
+
+#### @std/path 1.0.0-rc.2 (prerelease)
+
+- test(path): improve test coverage (#5038)
+
+#### @std/streams 0.224.5 (patch)
+
+- chore(streams): remove unused test util (#5048)
+
+#### @std/testing 0.225.2 (patch)
+
+- docs(testing): improve the docs of `@std/testing` (#5033)
+- refactor(testing): remove use of `public` keyword (#5051)
+
+#### @std/ulid 1.0.0-rc.2 (prerelease)
+
+- refactor(ulid): remove `len` argument from `encodeTime()` and `encodeRandom()`
+  (#5054)
+
+### 2024.06.12
+
+#### @std/assert 1.0.0-rc.2 (prerelease)
+
+- fix(assert): fix tolerance calculation when comparing negative values (#5019)
+
+#### @std/data-structures 1.0.0-rc.1 (prerelease)
+
+- chore(data-structures): release `data-structures@1.0.0-rc.1` (#4987)
+
+#### @std/fs 0.229.3 (patch)
+
+- docs(fs): improve documentation (#4788)
+
+#### @std/ini 0.225.1 (patch)
+
+- docs(ini): improve ini docs (#5020)
+
+#### @std/msgpack 0.224.3 (patch)
+
+- docs(msgpack): complete documentation (#5029)
+- test(msgpack): add test cases for `encode()` (#5028)
+- test(msgpack): add `decode()` test cases (#5027)
+
+#### @std/net 0.224.3 (patch)
+
+- docs(net): complete documentation (#4982)
+
+#### @std/regexp 1.0.0-rc.1 (prerelease)
+
+- docs(regexp): complete documentation (#5023)
+- chore(regexp): release `regexp@1.0.0-rc.1` (#5024)
+
+#### @std/text 1.0.0-rc.1 (prerelease)
+
+- refactor(text): minor cleanups and improvements (#5025)
+- chore(text): release `text@1.0.0-rc.1` (#5026)
+
+#### @std/ulid 1.0.0-rc.1 (prerelease)
+
+- refactor(ulid): improve error types and messages (#5022)
+- chore(ulid): release `ulid@1.0.0-rc.1` (#4997)
+
+#### @std/url 1.0.0-rc.1 (prerelease)
+
+- chore(url): release `url@1.0.0-rc.1` (#4981)
+
+### 2024.06.06
+
+#### @std/archive 0.224.1 (patch)
+
+- refactor(archive): cleanup use of `@std/assert` (#4975)
+
+#### @std/assert 1.0.0-rc.1 (prerelease)
+
+- BREAKING(assert): make `unreachable()` consistent with `@std/assert` (#4943)
+- BREAKING(assert): `assertAlmostEquals()` sets useful tolerance automatically
+  (#4460)
+- docs(assert): remove outdated API docs (#4937)
+- refactor(assert): minor cleanups (#4941)
+- chore(assert): release `assert@1.0.0-rc.1` (#4934)
+
+#### @std/async 0.224.2 (patch)
+
+- refactor(async): cleanup use of `@std/assert` (#4950)
+
+#### @std/bytes 1.0.0 (major)
+
+- chore(bytes): release `bytes@1.0.0` (#4746)
+
+#### @std/cli 0.224.6 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(cli): cleanup use of `@std/assert` (#4966)
+
+#### @std/csv 0.224.3 (patch)
+
+- refactor(csv): cleanup use of `@std/assert` (#4976)
+
+#### @std/data-structures 0.225.2 (patch)
+
+- refactor(data-structures): remove use of `public` keyword (#4983)
+
+#### @std/datetime 0.224.1 (patch)
+
+- docs(datetime): trim module documentation (#4971)
+
+#### @std/encoding 1.0.0-rc.2 (prerelease)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/fmt 0.225.4 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/fs 0.229.2 (patch)
+
+- refactor(fs): cleanup use of `@std/assert` (#4948)
+
+#### @std/html 1.0.0-rc.1 (prerelease)
+
+- chore(html): release `html@1.0.0-rc.1` (#4962)
+
+#### @std/http 0.224.4 (patch)
+
+- refactor(http): cleanup use of `@std/assert` (#4974)
+
+#### @std/io 0.224.1 (patch)
+
+- refactor(io): cleanup use of `@std/assert` (#4979)
+
+#### @std/jsonc 0.224.2 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(jsonc): cleanup use of `@std/assert` (#4968)
+
+#### @std/log 0.224.2 (patch)
+
+- refactor(log): cleanup use of `@std/assert` (#4973)
+
+#### @std/path 1.0.0-rc.1 (prerelease)
+
+- BREAKING(path): remove `path.posix` and `path.win32` (#4953)
+- BREAKING(path): remove separator argument from `common()` (#4947)
+- BREAKING(path): remove `GlobToRegExpOptions.os` and `OSType` export (#4928)
+- docs(path): fix typo in `normalize` doc (#4959)
+- docs(path): improve `join` jsdoc (#4958)
+- docs(path): fix typo (#4956)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(path): clean `isWindows` logic (#4972)
+- refactor(path): cleanup `join()` implementations (#4946)
+- test(path): improve `windows.parse()` test (#4952)
+- test(path): improve `normalizeGlob()` test coverage (#4940)
+- test(path): improve `normalize()` coverage (#4939)
+- chore(path): release `path@1.0.0-rc.1` (#4951)
+- chore(path): use `assertPath()` in `windows.join()` (#4960)
+
+#### @std/semver 0.224.3 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/streams 0.224.4 (patch)
+
+- refactor(streams): cleanup use of `@std/assert` (#4980)
+
+#### @std/testing 0.225.1 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/text 0.224.3 (patch)
+
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- refactor(text): cleanup use of `@std/assert` (#4977)
+
+#### @std/toml 1.0.0-rc.1 (prerelease)
+
+- BREAKING(toml): rename `FormatOptions` to `StringifyOptions` (#4963)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+- chore(toml): release `toml@1.0.0-rc.1` (#4969)
+- chore(toml): minor cleanup (#4964)
+
+#### @std/url 0.224.1 (patch)
+
+- docs(url): complete documentation (#4965)
+- docs(cli,encoding,fmt,jsonc,path,semver,testing,text,toml,url): remove "This
+  module is browser compatible" note (#4945)
+
+#### @std/webgpu 0.224.4 (patch)
+
+- refactor(webgpu): cleanup use of `@std/assert` (#4978)
+
 ### 2024.06.03
 
 #### @std/assert 0.226.0 (minor)

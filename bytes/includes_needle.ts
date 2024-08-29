@@ -18,7 +18,7 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  * @example Basic usage
  * ```ts
  * import { includesNeedle } from "@std/bytes/includes-needle";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);
@@ -29,7 +29,7 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  * @example Start index
  * ```ts
  * import { includesNeedle } from "@std/bytes/includes-needle";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
  * const needle = new Uint8Array([1, 2]);

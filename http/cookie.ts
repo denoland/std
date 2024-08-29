@@ -13,7 +13,11 @@ export interface Cookie {
   name: string;
   /** Value of the cookie. */
   value: string;
-  /** The cookie's `Expires` attribute, either as an explicit date or UTC milliseconds.
+  /**
+   * The cookie's `Expires` attribute, either as an explicit date or UTC
+   * milliseconds. If `undefined`, the cookie will expire when the client's
+   * session ends.
+   *
    * @example <caption>Explicit date:</caption>
    *
    * ```ts
@@ -39,22 +43,57 @@ export interface Cookie {
    * ```
    */
   expires?: Date | number;
-  /** The cookie's `Max-Age` attribute, in seconds. Must be a non-negative integer. A cookie with a `maxAge` of `0` expires immediately. */
+  /**
+   * The cookie's `Max-Age` attribute, in seconds. Must be a non-negative
+   * integer. A cookie with a `maxAge` of `0` expires immediately.
+   */
   maxAge?: number;
-  /** The cookie's `Domain` attribute. Specifies those hosts to which the cookie will be sent. */
+  /**
+   * The cookie's `Domain` attribute. Specifies those hosts to which the cookie
+   * will be sent.
+   */
   domain?: string;
-  /** The cookie's `Path` attribute. A cookie with a path will only be included in the `Cookie` request header if the requested URL matches that path. */
+  /**
+   * The cookie's `Path` attribute. A cookie with a path will only be included
+   * in the `Cookie` request header if the requested URL matches that path.
+   */
   path?: string;
-  /** The cookie's `Secure` attribute. If `true`, the cookie will only be included in the `Cookie` request header if the connection uses SSL and HTTPS. */
+  /**
+   * The cookie's `Secure` attribute. If `true`, the cookie will only be
+   * included in the `Cookie` request header if the connection uses SSL and
+   * HTTPS.
+   *
+   * @default {false}
+   */
   secure?: boolean;
-  /** The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript. */
+  /**
+   * The cookie's `HTTPOnly` attribute. If `true`, the cookie cannot be accessed via JavaScript.
+   *
+   * @default {false}
+   */
   httpOnly?: boolean;
+  /**
+   * The cookie's `Partitioned` attribute.
+   * If `true`, the cookie will be only be included in the `Cookie` request header if
+   * the domain it is embedded by matches the domain the cookie was originally set from.
+   *
+   * Warning: This is an attribute that has not been fully standardized yet.
+   * It may change in the future without following the semver semantics of the package.
+   * Clients may ignore the attribute until they understand it.
+   *
+   * @default {false}
+   */
+  partitioned?: boolean;
   /**
    * Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests.
    */
   sameSite?: "Strict" | "Lax" | "None";
-  /** Additional key value pairs with the form "key=value" */
+  /**
+   * Additional key value pairs with the form "key=value".
+   *
+   * @default {[]}
+   */
   unparsed?: string[];
 }
 
@@ -86,10 +125,13 @@ function toString(cookie: Cookie): string {
   if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
+  if (cookie.partitioned) {
+    out.push("Partitioned");
+  }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
     if (cookie.maxAge < 0) {
       throw new RangeError(
-        "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
+        `Cannot serialize cookie as Max-Age must be >= 0: received ${cookie.maxAge}`,
       );
     }
     out.push(`Max-Age=${cookie.maxAge}`);
@@ -122,7 +164,7 @@ function toString(cookie: Cookie): string {
  */
 function validateName(name: string | undefined | null) {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
-    throw new TypeError(`Invalid cookie name: "${name}".`);
+    throw new SyntaxError(`Invalid cookie name: "${name}"`);
   }
 }
 
@@ -141,8 +183,8 @@ function validatePath(path: string | null) {
       c < String.fromCharCode(0x20) || c > String.fromCharCode(0x7E) ||
       c === ";"
     ) {
-      throw new Error(
-        path + ": Invalid cookie path char '" + c + "'",
+      throw new SyntaxError(
+        `Cookie path "${path}" contains invalid character: "${c}"`,
       );
     }
   }
@@ -162,13 +204,14 @@ function validateValue(name: string, value: string | null) {
       c === String.fromCharCode(0x2c) || c === String.fromCharCode(0x3b) ||
       c === String.fromCharCode(0x5c) || c === String.fromCharCode(0x7f)
     ) {
-      throw new Error(
+      throw new SyntaxError(
         "RFC2616 cookie '" + name + "' cannot contain character '" + c + "'",
       );
     }
     if (c > String.fromCharCode(0x80)) {
-      throw new Error(
-        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value" +
+      throw new SyntaxError(
+        "RFC2616 cookie '" + name +
+          "' can only have US-ASCII chars as value: It contains 0x" +
           c.charCodeAt(0).toString(16),
       );
     }
@@ -184,7 +227,7 @@ function validateDomain(domain: string) {
   const char1 = domain.charAt(0);
   const charN = domain.charAt(domain.length - 1);
   if (char1 === "-" || charN === "." || charN === "-") {
-    throw new Error(
+    throw new SyntaxError(
       "Invalid first/last char in cookie domain: " + domain,
     );
   }
@@ -196,7 +239,7 @@ function validateDomain(domain: string) {
  * @example Usage
  * ```ts
  * import { getCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * headers.set("Cookie", "full=of; tasty=chocolate");
@@ -216,7 +259,7 @@ export function getCookies(headers: Headers): Record<string, string> {
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
       if (cookieKey === undefined) {
-        throw new TypeError("Cookie cannot start with '='");
+        throw new SyntaxError("Cookie cannot start with '='");
       }
       const key = cookieKey.trim();
       out[key] = cookieVal.join("=");
@@ -232,7 +275,7 @@ export function getCookies(headers: Headers): Record<string, string> {
  * @example Usage
  * ```ts
  * import { Cookie, setCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * const cookie: Cookie = { name: "Space", value: "Cat" };
@@ -256,7 +299,10 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 }
 
 /**
- * Set the cookie header with empty value in the headers to delete it
+ * Set the cookie header with empty value in the headers to delete it.
+ *
+ * The attributes (`path`, `domain`, `secure`, `httpOnly`, `partitioned`) need
+ * to match the values when the cookie was set.
  *
  * > Note: Deleting a `Cookie` will set its expiration date before now. Forcing
  * > the browser to delete it.
@@ -264,7 +310,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * @example Usage
  * ```ts
  * import { deleteCookie } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers();
  * deleteCookie(headers, "deno");
@@ -281,7 +327,10 @@ export function setCookie(headers: Headers, cookie: Cookie) {
 export function deleteCookie(
   headers: Headers,
   name: string,
-  attributes?: { path?: string; domain?: string },
+  attributes?: Pick<
+    Cookie,
+    "path" | "domain" | "secure" | "httpOnly" | "partitioned"
+  >,
 ) {
   setCookie(headers, {
     name: name,
@@ -382,7 +431,7 @@ function parseSetCookie(value: string): Cookie | null {
  * @example Usage
  * ```ts
  * import { getSetCookies } from "@std/http/cookie";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const headers = new Headers([
  *   ["Set-Cookie", "lulu=meow; Secure; Max-Age=3600"],

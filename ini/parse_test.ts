@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { IniMap, parse, type ParseOptions } from "./mod.ts";
+import { parse, type ParseOptions } from "./mod.ts";
 import {
   assert,
   assertEquals,
@@ -37,6 +37,11 @@ Deno.test({
       reviver: (_, value) => Number(value),
     });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
+    assertValidParse('value="value"', { value: "value" });
+    assertValidParse("#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100", {
+      keyA: "1977-05-25",
+      section1: { keyA: "100" },
+    });
   },
 });
 
@@ -99,7 +104,7 @@ Deno.test({
     });
     assertEquals(ini, json);
     assertEquals((ini as Record<string, number>).__proto__, 100);
-    assertEquals((ini as Record<string, string>).__proto__, json.__proto__);
+    assertEquals((ini as Record<string, undefined>).__proto__, json.__proto__);
     assertStrictEquals(Object.getPrototypeOf(ini), Object.prototype);
     assertStrictEquals(
       Object.getPrototypeOf(ini),
@@ -118,11 +123,6 @@ Deno.test({
     });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
-    assertEquals(
-      IniMap.from("#comment\naaa=0\naaa=1", { deduplicate: true })
-        .toString(),
-      "#comment\naaa=1",
-    );
   },
 });
 

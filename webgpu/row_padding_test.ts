@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { getRowPadding, resliceBufferWithPadding } from "./row_padding.ts";
-import { assertEquals } from "@std/assert/assert-equals";
+import { assertEquals } from "@std/assert";
 
 Deno.test("getRowPadding()", () => {
   const { unpadded, padded } = getRowPadding(64);

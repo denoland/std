@@ -83,7 +83,7 @@ export interface GenerateOptions {
  * @example Usage
  * ```ts
  * import { generate, validate } from "@std/uuid/v1";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const options = {
  *   node: [0x01, 0x23, 0x45, 0x67, 0x89, 0xab],
@@ -142,7 +142,7 @@ export function generate(options: GenerateOptions = {}): string {
 
   if (node.length !== 6) {
     throw new Error(
-      "Cannot create UUID. The node option must be an array of 6 bytes",
+      "Cannot create UUID: the node option must be an array of 6 bytes",
     );
   }
 

@@ -25,7 +25,7 @@ Deno.test("TextLineStream parses simple input", async () => {
     "654321\r",
   ]);
 
-  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+  const stream2 = ReadableStream.from(["rewq0987\r\n\r\n654321\n"])
     .pipeThrough(new TextLineStream());
 
   assertEquals(await Array.fromAsync(stream2), [
@@ -60,7 +60,7 @@ Deno.test("TextLineStream parses with `allowCR` enabled", async () => {
     "654321",
   ]);
 
-  const stream2 = ReadableStream.from("rewq0987\r\n\r\n654321\n")
+  const stream2 = ReadableStream.from(["rewq0987\r\n\r\n654321\n"])
     .pipeThrough(new TextLineStream());
 
   assertEquals(await Array.fromAsync(stream2), [
@@ -72,7 +72,7 @@ Deno.test("TextLineStream parses with `allowCR` enabled", async () => {
 
 Deno.test("TextLineStream parses large chunks", async () => {
   const totalLines = 20_000;
-  const stream = ReadableStream.from("\n".repeat(totalLines))
+  const stream = ReadableStream.from(["\n".repeat(totalLines)])
     .pipeThrough(new TextLineStream());
   const lines = await Array.fromAsync(stream);
 

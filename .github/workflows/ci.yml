@@ -17,8 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          # TODO(kt3k): Enable this after CLI v1.43.0 released
-          # - v1.x
+          - v1.x
           - canary
         os:
           - ubuntu-latest
@@ -39,7 +38,9 @@ jobs:
 
       - name: Run tests (simulate Deno 2)
         if: matrix.deno == 'canary'
-        run: deno task test
+        run: |
+          deno task test
+          rm deno.lock # remove deno.lock (v4) as it's incompatible with v3
         env:
           DENO_FUTURE: 1
 
@@ -50,9 +51,9 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      - name: Type check browser compatible modules
-        shell: bash
-        run: deno task test:browser
+      # TODO(kt3k): Enable this test when `deno check` command supports workspace resolution
+      # - name: Type check browser compatible modules
+      #   run: deno task test:browser
 
       - name: Generate lcov
         run: deno task cov:gen
@@ -63,6 +64,35 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
+
+  test-node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - latest
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install
+        working-directory: _tools/node_test_runner
+
+      - name: Run tests
+        run: deno task test:node
 
   lint:
     runs-on: ${{ matrix.os }}

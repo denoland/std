@@ -14,7 +14,7 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  * @example Usage
  * ```ts
  * import { normalize } from "@std/path/normalize";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(normalize("C:\\foo\\bar\\..\\baz\\quux"), "C:\\foo\\baz\\quux");

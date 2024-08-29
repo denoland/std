@@ -3,7 +3,7 @@
 
 /**
  * Provides functions for dealing with and matching ETags, including
- * {@linkcode calculate} to calculate an etag for a given entity,
+ * {@linkcode eTag} to calculate an etag for a given entity,
  * {@linkcode ifMatch} for validating if an ETag matches against a `If-Match`
  * header and {@linkcode ifNoneMatch} for validating an Etag against an
  * `If-None-Match` header.
@@ -29,14 +29,11 @@ export interface FileInfo {
   size: number;
 }
 
-/** Represents an entity that can be used for generating an ETag. */
-export type Entity = string | Uint8Array | FileInfo;
-
 const encoder = new TextEncoder();
 
 const DEFAULT_ALGORITHM: AlgorithmIdentifier = "SHA-256";
 
-/** Options for {@linkcode calculate}. */
+/** Options for {@linkcode eTag}. */
 export interface ETagOptions {
   /**
    * A digest algorithm to use to calculate the etag.
@@ -45,8 +42,12 @@ export interface ETagOptions {
    */
   algorithm?: AlgorithmIdentifier;
 
-  /** Override the default behavior of calculating the `ETag`, either forcing
-   * a tag to be labelled weak or not. */
+  /**
+   * Override the default behavior of calculating the `ETag`, either forcing
+   * a tag to be labelled weak or not.
+   *
+   * Defaults to `true` when the entity is a `FileInfo` and `false` otherwise.
+   */
   weak?: boolean;
 }
 
@@ -91,18 +92,20 @@ async function calcFileInfo(
 }
 
 /**
- * Calculate an ETag for an entity. When the entity is a specific set of data
- * it will be fingerprinted as a "strong" tag, otherwise if it is just file
- * information, it will be calculated as a weak tag.
+ * Calculate an ETag for string or `Uint8Array` entities. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#etag_value | strong tag}
+ * of the form `"<ascii chars>"`, which guarantees the byte-for-byte equality of the resource.
+ *
+ * You can optionally set true to the `weak` option to get a weak tag.
  *
  * @example Usage
  * ```ts
- * import { calculate } from "@std/http/etag";
- * import { assert } from "@std/assert/assert";
+ * import { eTag } from "@std/http/etag";
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
- * const etag = await calculate(body);
+ * const etag = await eTag(body);
  * assert(etag);
  *
  * const res = new Response(body, { headers: { etag } });
@@ -112,8 +115,41 @@ async function calcFileInfo(
  * @param options Various additional options.
  * @returns The calculated ETag.
  */
-export async function calculate(
-  entity: Entity,
+export async function eTag(
+  entity: string | Uint8Array,
+  options?: ETagOptions,
+): Promise<string>;
+/**
+ * Calculate an ETag for file information entity. This returns a
+ * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag#w | weak tag}
+ * of the form `W\"<ascii chars>"`, which guarantees the equivalence of the resource,
+ * not the byte-for-byte equality.
+ *
+ * @example Usage
+ * ```ts
+ * import { eTag } from "@std/http/etag";
+ * import { assert } from "@std/assert";
+ *
+ * const fileInfo = await Deno.stat("README.md");
+ *
+ * const etag = await eTag(fileInfo);
+ * assert(etag);
+ *
+ * const body = (await Deno.open("README.md")).readable;
+ *
+ * const res = new Response(body, { headers: { etag } });
+ * ```
+ *
+ * @param entity The entity to get the ETag for.
+ * @param options Various additional options.
+ * @returns The calculated ETag.
+ */
+export async function eTag(
+  entity: FileInfo,
+  options?: ETagOptions,
+): Promise<string | undefined>;
+export async function eTag(
+  entity: string | Uint8Array | FileInfo,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);
@@ -125,6 +161,9 @@ export async function calculate(
   return tag ? weak ? `W/"${tag}"` : `"${tag}"` : undefined;
 }
 
+const STAR_REGEXP = /^\s*\*\s*$/;
+const COMMA_REGEXP = /\s*,\s*/;
+
 /** A helper function that takes the value from the `If-Match` header and a
  * calculated etag for the target. By using strong comparison, return `true` if
  * the values match, otherwise `false`.
@@ -135,16 +174,16 @@ export async function calculate(
  * @example Usage
  * ```ts no-eval
  * import {
- *   calculate,
+ *   eTag,
  *   ifMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
  * Deno.serve(async (req) => {
  *   const ifMatchValue = req.headers.get("if-match");
- *   const etag = await calculate(body);
+ *   const etag = await eTag(body);
  *   assert(etag);
  *   if (!ifMatchValue || ifMatch(ifMatchValue, etag)) {
  *     return new Response(body, { status: 200, headers: { etag } });
@@ -166,10 +205,10 @@ export function ifMatch(
   if (!value || !etag || etag.startsWith("W/")) {
     return false;
   }
-  if (value.trim() === "*") {
+  if (STAR_REGEXP.test(value)) {
     return true;
   }
-  const tags = value.split(/\s*,\s*/);
+  const tags = value.split(COMMA_REGEXP);
   return tags.includes(etag);
 }
 
@@ -183,16 +222,16 @@ export function ifMatch(
  * @example Usage
  * ```ts no-eval
  * import {
- *   calculate,
+ *   eTag,
  *   ifNoneMatch,
  * } from "@std/http/etag";
- * import { assert } from "@std/assert/assert"
+ * import { assert } from "@std/assert";
  *
  * const body = "hello deno!";
  *
  * Deno.serve(async (req) => {
  *   const ifNoneMatchValue = req.headers.get("if-none-match");
- *   const etag = await calculate(body);
+ *   const etag = await eTag(body);
  *   assert(etag);
  *   if (!ifNoneMatch(ifNoneMatchValue, etag)) {
  *     return new Response(null, { status: 304, headers: { etag } });
@@ -213,11 +252,11 @@ export function ifNoneMatch(
   if (!value || !etag) {
     return true;
   }
-  if (value.trim() === "*") {
+  if (STAR_REGEXP.test(value)) {
     return false;
   }
   etag = etag.startsWith("W/") ? etag.slice(2) : etag;
-  const tags = value.split(/\s*,\s*/).map((tag) =>
+  const tags = value.split(COMMA_REGEXP).map((tag) =>
     tag.startsWith("W/") ? tag.slice(2) : tag
   );
   return !tags.includes(etag);

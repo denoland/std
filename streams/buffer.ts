@@ -39,8 +39,8 @@ export interface BufferBytesOptions {
  * ```ts
  * import { Buffer } from "@std/streams/buffer";
  * import { toText } from "@std/streams/to-text";
- * import { assert } from "@std/assert/assert";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assert } from "@std/assert";
+ * import { assertEquals } from "@std/assert";
  *
  * // Create a new buffer
  * const buf = new Buffer();
@@ -131,29 +131,6 @@ export class Buffer {
    * Constructs a new instance.
    *
    * @param ab An optional buffer to use as the initial buffer.
-   *
-   * @example No initial buffer provided
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const buf = new Buffer();
-   * ```
-   *
-   * @example With a pre-allocated buffer
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const arrayBuffer = new ArrayBuffer(8);
-   * const buf = new Buffer(arrayBuffer);
-   * ```
-   *
-   * @example From Uint8Array
-   * ```ts no-assert
-   * import { Buffer } from "@std/streams/buffer";
-   *
-   * const array = new Uint8Array([0, 1, 2]);
-   * const buf = new Buffer(array.buffer);
-   * ```
    */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
@@ -176,8 +153,8 @@ export class Buffer {
    *
    * @example Copy the buffer
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
-   * import { assertNotEquals } from "@std/assert/assert-not-equals";
+   * import { assertEquals } from "@std/assert";
+   * import { assertNotEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
@@ -195,7 +172,7 @@ export class Buffer {
    *
    * @example Get a slice to the buffer
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
@@ -223,7 +200,7 @@ export class Buffer {
    *
    * @example Empty buffer
    * ```ts
-   * import { assert } from "@std/assert/assert";
+   * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -232,7 +209,7 @@ export class Buffer {
    *
    * @example Non-empty buffer
    * ```ts
-   * import { assert } from "@std/assert/assert";
+   * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([42]);
@@ -242,7 +219,7 @@ export class Buffer {
    *
    * @example Non-empty, but the content was already read
    * ```ts
-   * import { assert } from "@std/assert/assert";
+   * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([42]);
@@ -265,7 +242,7 @@ export class Buffer {
    *
    * @example Basic usage
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
@@ -275,7 +252,7 @@ export class Buffer {
    *
    * @example Length becomes 0 after the content is read
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([42]);
@@ -299,7 +276,7 @@ export class Buffer {
    *
    * @example Basic usage
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const arrayBuffer = new ArrayBuffer(256);
@@ -320,7 +297,7 @@ export class Buffer {
    *
    * @example Basic usage
    * ```ts
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
@@ -338,7 +315,9 @@ export class Buffer {
       return;
     }
     if (n < 0 || n > this.length) {
-      throw Error("bytes.Buffer: truncation out of range");
+      throw new Error(
+        `Buffer truncation value "${n}" is not between 0 and ${this.length}`,
+      );
     }
     this.#reslice(this.#off + n);
   }
@@ -348,7 +327,7 @@ export class Buffer {
    *
    * @example Basic usage
    * ```ts
-   * import { assert } from "@std/assert/assert";
+   * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const array = new Uint8Array([0, 1, 2]);
@@ -375,9 +354,6 @@ export class Buffer {
   }
 
   #reslice(len: number) {
-    if (len > this.#buf.buffer.byteLength) {
-      throw new RangeError("Length is greater than buffer capacity");
-    }
     this.#buf = new Uint8Array(this.#buf.buffer, 0, len);
   }
 
@@ -400,7 +376,9 @@ export class Buffer {
       // don't spend all our time copying.
       copy(this.#buf.subarray(this.#off), this.#buf);
     } else if (c + n > MAX_SIZE) {
-      throw new Error("The buffer cannot be grown beyond the maximum size.");
+      throw new Error(
+        `The buffer cannot grow beyond the maximum size of ${MAX_SIZE}`,
+      );
     } else {
       // Not enough space anywhere, we need to allocate.
       const buf = new Uint8Array(Math.min(2 * c + n, MAX_SIZE));
@@ -426,8 +404,8 @@ export class Buffer {
    *
    * @example Basic usage
    * ```ts
-   * import { assert } from "@std/assert/assert";
-   * import { assertEquals } from "@std/assert/assert-equals";
+   * import { assert } from "@std/assert";
+   * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -439,7 +417,9 @@ export class Buffer {
    */
   grow(n: number) {
     if (n < 0) {
-      throw Error("Buffer.grow: negative count");
+      throw new Error(
+        `Cannot grow buffer as growth must be positive: received ${n}`,
+      );
     }
     const m = this.#grow(n);
     this.#reslice(m);

@@ -8,7 +8,7 @@
  * @example Basic usage
  * ```ts
  * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   new Uint8Array([0, 1]),
@@ -25,7 +25,7 @@
  * @example Get a range of bytes from a fetch response body
  * ```ts
  * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const response = await fetch("https://example.com");
  * const rangedStream = response.body!
@@ -43,26 +43,14 @@ export class ByteSliceStream extends TransformStream<Uint8Array, Uint8Array> {
    *
    * @param start The zero-indexed byte index to start reading from.
    * @param end The zero-indexed byte index to stop reading at. Inclusive.
-   *
-   * @example No parameters
-   * ```ts no-assert
-   * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
-   *
-   * const byteSliceStream = new ByteSliceStream();
-   * ```
-   *
-   * @example start = 4, end = 11
-   * ```ts no-assert
-   * import { ByteSliceStream } from "@std/streams/byte-slice-stream";
-   *
-   * const byteSliceStream = new ByteSliceStream(4, 11);
-   * ```
    */
   constructor(start = 0, end: number = Infinity) {
     super({
       start: () => {
         if (start < 0) {
-          throw new RangeError("`start` must be greater than 0");
+          throw new RangeError(
+            `Cannot construct ByteSliceStream as start must be >= 0: received ${start}`,
+          );
         }
         end += 1;
       },

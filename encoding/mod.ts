@@ -5,7 +5,7 @@
  *
  * ```ts
  * import { encodeBase64, decodeBase64 } from "@std/encoding";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const foobar = new TextEncoder().encode("foobar");
  * assertEquals(encodeBase64(foobar), "Zm9vYmFy");
@@ -17,8 +17,14 @@
 
 export * from "./ascii85.ts";
 export * from "./base32.ts";
+export * from "./base32_stream.ts";
+export * from "./base32hex.ts";
+export * from "./base32hex_stream.ts";
 export * from "./base58.ts";
 export * from "./base64.ts";
+export * from "./base64_stream.ts";
 export * from "./base64url.ts";
+export * from "./base64url_stream.ts";
 export * from "./hex.ts";
+export * from "./hex_stream.ts";
 export * from "./varint.ts";

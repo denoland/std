@@ -39,6 +39,18 @@ Deno.test("expect().toHaveBeenNthCalledWith() should throw when mock call does n
       expect(mockFn).toHaveBeenNthCalledWith(2, "hello");
     },
     AssertionError,
-    'Expected the n-th call (n=2) of mock function is with "hello", but the n-th call does not exist.',
+    'Expected the n-th call (n=2) of mock function is with "hello", but the n-th call does not exist',
+  );
+});
+
+Deno.test("expect().toHaveBeenNthCalledWith() throw when n is not a positive integer", () => {
+  const mockFn = fn();
+
+  assertThrows(
+    () => {
+      expect(mockFn).toHaveBeenNthCalledWith(0, "hello");
+    },
+    Error,
+    "nth must be greater than 0: received 0",
   );
 });

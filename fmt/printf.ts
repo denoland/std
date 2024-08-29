@@ -6,7 +6,7 @@
  *
  * ```ts
  * import { sprintf } from "@std/fmt/printf";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(sprintf("%d", 9), "9");
  * assertEquals(sprintf("%o", 9), "11");
@@ -242,7 +242,9 @@ class Printf {
           }
           break;
         default:
-          throw Error("Should be unreachable, certainly a bug in the lib.");
+          throw new Error(
+            `State ${this.state} should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues`,
+          );
       }
     }
     // check for unhandled args
@@ -324,7 +326,9 @@ class Printf {
             return; // always end in verb
           }
         default:
-          throw new Error(`Should not be here ${this.state}, library bug!`);
+          throw new Error(
+            `State ${this.state} should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues`,
+          );
       } // switch state
     }
   }
@@ -408,7 +412,9 @@ class Printf {
           break;
         }
         default:
-          throw new Error("can't be here. bug.");
+          throw new Error(
+            `State ${this.state} should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues`,
+          );
       } // switch state
     }
   }
@@ -417,7 +423,9 @@ class Printf {
   handlePositional() {
     if (this.format[this.i] !== "[") {
       // sanity only
-      throw new Error("Can't happen? Bug.");
+      throw new Error(
+        "Should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues",
+      );
     }
     let positional = 0;
     const format = this.format;
@@ -450,7 +458,9 @@ class Printf {
     // deno-lint-ignore no-explicit-any
     const arg = this.args[this.argNum] as any;
     if ((arg || {}).constructor.name !== "Array") {
-      throw new Error(`arg ${arg} is not an array. Todo better error handling`);
+      throw new Error(
+        `Cannot handle less than '<' flag: 'arg' is not an array`,
+      );
     }
     let str = "[ ";
     for (let i = 0; i !== arg.length; ++i) {
@@ -611,7 +621,9 @@ class Printf {
           prefix += "0x";
           break;
         default:
-          throw new Error("cannot handle base: " + radix);
+          throw new Error(
+            `Cannot handle the radix ${radix}: only 2, 8, 16 are supported`,
+          );
       }
     }
     // don't add prefix in front of value truncated by precision=0, val=0
@@ -699,7 +711,9 @@ class Printf {
 
     const m = n.toExponential().match(FLOAT_REGEXP);
     if (!m) {
-      throw Error("can't happen, bug");
+      throw new Error(
+        "Should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues",
+      );
     }
     const precision = this.flags.precision !== -1
       ? this.flags.precision
@@ -718,7 +732,7 @@ class Printf {
       if (10 <= mantissa) {
         mantissa = 1;
         const r = parseInt(esign + e) + 1;
-        e = r.toString();
+        e = Math.abs(r).toString();
         esign = r < 0 ? "-" : "+";
       }
     }
@@ -817,7 +831,9 @@ class Printf {
 
     const m = n.toExponential().match(FLOAT_REGEXP);
     if (!m) {
-      throw Error("can't happen");
+      throw new Error(
+        "Should be unreachable, please file a bug report against Deno at https://github.com/denoland/std/issues",
+      );
     }
 
     const X = parseInt(m[F.exponent]!) * (m[F.esign] === "-" ? -1 : 1);
@@ -881,7 +897,7 @@ class Printf {
       }
       default:
         throw new Error(
-          "currently only number and string are implemented for hex",
+          `Cannot format hex, only number and string are supported for hex formatting: ${typeof val} is given`,
         );
     }
   }

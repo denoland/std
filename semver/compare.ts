@@ -8,40 +8,37 @@ import {
 } from "./_shared.ts";
 
 /**
- * Compare two semantic version objects.
+ * Compare two SemVers.
  *
- * Returns `0` if `s0 === s1`, or `1` if `s0` is greater, or `-1` if `s1` is
+ * Returns `0` if `version1` equals `version2`, or `1` if `version1` is greater, or `-1` if `version2` is
  * greater.
  *
- * Sorts in ascending order if passed to `Array.sort()`,
+ * Sorts in ascending order if passed to {@linkcode Array.sort}.
  *
  * @example Usage
  * ```ts
  * import { parse, compare } from "@std/semver";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
- * const s0 = parse("1.2.3");
- * const s1 = parse("1.2.4");
+ * const version1 = parse("1.2.3");
+ * const version2 = parse("1.2.4");
  *
- * assertEquals(compare(s0, s1), -1);
- * assertEquals(compare(s1, s0), 1);
- * assertEquals(compare(s0, s0), 0);
+ * assertEquals(compare(version1, version2), -1);
+ * assertEquals(compare(version2, version1), 1);
+ * assertEquals(compare(version1, version1), 0);
  * ```
  *
- * @param s0 The first SemVer to compare
- * @param s1 The second SemVer to compare
- * @returns `1` if `s0` is greater, `0` if equal, or `-1` if `s1` is greater
+ * @param version1 The first SemVer to compare
+ * @param version2 The second SemVer to compare
+ * @returns `1` if `version1` is greater, `0` if equal, or `-1` if `version2` is greater
  */
-export function compare(
-  s0: SemVer,
-  s1: SemVer,
-): 1 | 0 | -1 {
-  if (s0 === s1) return 0;
+export function compare(version1: SemVer, version2: SemVer): 1 | 0 | -1 {
+  if (version1 === version2) return 0;
   return (
-    compareNumber(s0.major, s1.major) ||
-    compareNumber(s0.minor, s1.minor) ||
-    compareNumber(s0.patch, s1.patch) ||
-    checkIdentifier(s0.prerelease, s1.prerelease) ||
-    compareIdentifier(s0.prerelease, s1.prerelease)
+    compareNumber(version1.major, version2.major) ||
+    compareNumber(version1.minor, version2.minor) ||
+    compareNumber(version1.patch, version2.patch) ||
+    checkIdentifier(version1.prerelease, version2.prerelease) ||
+    compareIdentifier(version1.prerelease, version2.prerelease)
   );
 }

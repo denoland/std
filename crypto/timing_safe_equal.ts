@@ -26,7 +26,7 @@ function toDataView(
  * @example Usage
  * ```ts
  * import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
- * import { assert } from "@std/assert/assert";
+ * import { assert } from "@std/assert";
  *
  * const a = await crypto.subtle.digest(
  *   "SHA-384",

@@ -1,12 +1,20 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Utility for representing n-tuple. Used in {@linkcode tee}. */
+/**
+ * Utility for representing n-tuple. Used in {@linkcode tee}.
+ *
+ * @internal
+ */
 export type Tuple<T, N extends number> = N extends N
   ? number extends N ? T[] : TupleOf<T, N, []>
   : never;
 
-/** Utility for representing n-tuple of. Used in {@linkcode Tuple}. */
+/**
+ * Utility for representing n-tuple of. Used in {@linkcode Tuple}.
+ *
+ * @internal
+ */
 export type TupleOf<T, N extends number, R extends unknown[]> =
   R["length"] extends N ? R
     : TupleOf<T, N, [T, ...R]>;
@@ -54,7 +62,7 @@ class Queue<T> {
  * @example Usage
  * ```ts
  * import { tee } from "@std/async/tee";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const gen = async function* gen() {
  *   yield 1;

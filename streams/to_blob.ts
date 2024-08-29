@@ -11,7 +11,7 @@
  * @example Basic usage
  * ```ts
  * import { toBlob } from "@std/streams/to-blob";
- * import { assertEquals } from "@std/assert/assert-equals";
+ * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
  *   new Uint8Array([1, 2]),
