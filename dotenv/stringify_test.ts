@@ -2,7 +2,6 @@
 
 import { assertEquals } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { parse } from "./parse.ts";
 
 Deno.test("stringify()", async (t) => {
   await t.step(
@@ -79,12 +78,9 @@ Deno.test("stringify()", async (t) => {
         `NULL=`,
       ),
   );
-  await t.step(
-    "parse",
-    () =>
-      assertEquals(
-        parse(stringify({ PARSE: "par'se" })),
-        { PARSE: "par'se" },
-      ),
-  );
+  await t.step("handles single-quote characters", () =>
+    assertEquals(
+      stringify({ PARSE: "par'se" }),
+      `PARSE="par'se"`,
+    ));
 });
