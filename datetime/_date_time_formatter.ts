@@ -191,7 +191,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -209,7 +209,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -227,7 +227,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -249,7 +249,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -267,7 +267,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -285,7 +285,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -313,7 +313,7 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`FormatterError: { ${part.type} ${part.value} }`);
+          throw new Error(`FormatterError: { ${part.type} ${part.value} }`);
       }
     }
 
@@ -339,7 +339,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -368,7 +368,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -385,7 +385,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -412,7 +412,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -429,7 +429,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -446,7 +446,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -481,7 +481,7 @@ export class DateTimeFormatter {
         }
         case "literal": {
           if (!string.startsWith(part.value as string)) {
-            throw Error(
+            throw new Error(
               `Literal "${part.value}" not found "${string.slice(0, 25)}"`,
             );
           }
@@ -490,13 +490,13 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(
+          throw new Error(
             `Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`,
           );
       }
 
       if (!value) {
-        throw Error(
+        throw new Error(
           `Cannot format value: The value is not valid for part { ${type} ${value} } ${
             string.slice(
               0,
@@ -511,7 +511,7 @@ export class DateTimeFormatter {
     }
 
     if (string.length) {
-      throw Error(
+      throw new Error(
         `datetime string was not fully parsed! ${string.slice(0, 25)}`,
       );
     }
