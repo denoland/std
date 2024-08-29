@@ -100,7 +100,7 @@ Deno.test("TarStream() with negative size", async () => {
 
   await assertRejects(
     () => Array.fromAsync(readable),
-    Error,
+    RangeError,
     "Size cannot exceed 64 Gibs",
   );
 });
@@ -125,7 +125,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
 
   await assertRejects(
     () => Array.fromAsync(readable),
-    Error,
+    RangeError,
     "Size cannot exceed 64 Gibs",
   );
 });
@@ -150,7 +150,7 @@ Deno.test("TarStream() with NaN size", async () => {
 
   await assertRejects(
     () => Array.fromAsync(readable),
-    Error,
+    RangeError,
     "Size cannot exceed 64 Gibs",
   );
 });
@@ -238,7 +238,7 @@ Deno.test("TarStream() with invalid options", async () => {
 
   await assertRejects(
     () => Array.fromAsync(readable),
-    Error,
+    TypeError,
     "Invalid TarStreamOptions Provided",
   );
 });

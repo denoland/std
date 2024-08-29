@@ -154,7 +154,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
       transform(chunk, controller) {
         if (chunk.options && !validTarStreamOptions(chunk.options)) {
           return controller.error(
-            new Error("Invalid TarStreamOptions Provided"),
+            new TypeError("Invalid TarStreamOptions Provided"),
           );
         }
 
@@ -163,7 +163,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           (chunk.size < 0 || 8 ** 12 < chunk.size ||
             chunk.size.toString() === "NaN")
         ) {
-          return controller.error(new Error("Size cannot exceed 64 Gibs"));
+          return controller.error(new RangeError("Size cannot exceed 64 Gibs"));
         }
 
         const path = parsePath(chunk.path);
