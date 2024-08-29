@@ -984,6 +984,7 @@ Deno.test("parse() handles unordered set", () => {
 ? Ken Griffey`),
     { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
   );
+  assertEquals(parse(`--- !!set`), {});
 });
 
 Deno.test("parse() throws with empty mapping key", () => {
