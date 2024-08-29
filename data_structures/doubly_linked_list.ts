@@ -49,13 +49,17 @@ export interface DoublyLinkedNode<T> {
  * assertEquals(list.shift(), "y");
  * assertEquals([...list], ["x", "a", "b"]);
  *
- * list.insert("z", 1);
- * list.insert("d", 4);
+ * list.insert(1, "z");
+ * list.insert(4, "d");
  *
  * assertEquals([...list], ["x", "z", "a", "b", "d"]);
  * assertEquals(list.remove(2), "a");
  * assertEquals(list.includes("d"), true);
  * assertEquals(list.includes("a"), false);
+ * assertEquals([...list], ["x", "z", "b", "d"]);
+ *
+ * assertEquals(list.set(4, "c"), "d");
+ * assertEquals([...list], ["x", "z", "b", "c"]);
  * ```
  *
  * @typeparam T The type of the values being stored in the list.
