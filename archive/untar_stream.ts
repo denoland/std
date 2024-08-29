@@ -106,42 +106,23 @@ export interface PosixUstarFormat {
 }
 
 /**
- * The header of an entry in the archive.
+ * The structure of an entry extracted from a Tar archive.
  */
-export interface TarStreamHeader {
+export interface TarStreamEntry {
   /**
-   * The type 'header' indicating the start of a new entry.
+   * The header information attributed to the entry, presented in one of two
+   * valid forms.
    */
-  type: "header";
+  header: OldStyleFormat | PosixUstarFormat;
   /**
-   * The path of the entry.
+   * The path of the entry as stated in the archive.
    */
   path: string;
   /**
-   * The header of the entry.
+   * If present, the content of the entry. e.g. a file's content.
    */
-  header: OldStyleFormat | PosixUstarFormat;
+  readable?: ReadableStream<Uint8Array>;
 }
-
-/**
- * The data belonging to the last entry returned.
- */
-export interface TarStreamData {
-  /**
-   * The type 'data' indicating a chunk of content from the last 'header'
-   * resolved.
-   */
-  type: "data";
-  /**
-   * A chunk of content of from the entry.
-   */
-  data: Uint8Array;
-}
-
-/**
- * The type extracted from the archive.
- */
-export type TarStreamChunk = TarStreamHeader | TarStreamData;
 
 /**
  * ### Overview
@@ -156,9 +137,9 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  *
  * ### Usage
  * When expanding the archive, as demonstrated in the example, one must decide
- * to either consume the Readable Stream, if present, or cancel it. The next
- * entry won't be resolved until the previous ReadableStream is either consumed
- * or cancelled.
+ * to either consume the ReadableStream property, if present, or cancel it. The
+ * next entry won't be resolved until the previous ReadableStream is either
+ * consumed or cancelled.
  *
  * ### Understanding Compressed
  * A tar archive may be compressed, often identified by an additional file
@@ -168,26 +149,26 @@ export type TarStreamChunk = TarStreamHeader | TarStreamData;
  * @example Usage
  * ```ts no-eval
  * import { UntarStream } from "@std/archive/untar-stream";
+ * import { dirname, normalize } from "@std/path";
  *
- * let fileWriter: WritableStreamDefaultWriter | undefined;
  * for await (
- *   const entry of (await Deno.open('./out.tar.gz'))
+ *   const entry of (await Deno.open("./out.tar.gz"))
  *     .readable
- *     .pipeThrough(new DecompressionStream('gzip'))
+ *     .pipeThrough(new DecompressionStream("gzip"))
  *     .pipeThrough(new UntarStream())
  * ) {
- *   if (entry.type === "header") {
- *     fileWriter?.close();
- *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
- *   } else await fileWriter!.write(entry.data);
+ *   const path = normalize(entry.path);
+ *   await Deno.mkdir(dirname(path));
+ *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
  * }
  * ```
  */
 export class UntarStream
-  implements TransformStream<Uint8Array, TarStreamChunk> {
-  #readable: ReadableStream<TarStreamChunk>;
+  implements TransformStream<Uint8Array, TarStreamEntry> {
+  #readable: ReadableStream<TarStreamEntry>;
   #writable: WritableStream<Uint8Array>;
   #gen: AsyncGenerator<Uint8Array>;
+  #lock = false;
   constructor() {
     const { readable, writable } = new TransformStream<
       Uint8Array,
@@ -217,9 +198,13 @@ export class UntarStream
     }();
   }
 
-  async *#untar(): AsyncGenerator<TarStreamChunk> {
+  async *#untar(): AsyncGenerator<TarStreamEntry> {
     const decoder = new TextDecoder();
     while (true) {
+      while (this.#lock) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+
       const { done, value } = await this.#gen.next();
       if (done) break;
 
@@ -270,17 +255,14 @@ export class UntarStream
       }
 
       yield {
-        type: "header",
         path: ("prefix" in header && header.prefix.length
           ? header.prefix + "/"
           : "") + header.name,
         header,
+        readable: ["1", "2", "3", "4", "5", "6"].includes(header.typeflag)
+          ? undefined
+          : this.#readableFile(header.size),
       };
-      if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
-        for await (const data of this.#genFile(header.size)) {
-          yield { type: "data", data };
-        }
-      }
     }
   }
 
@@ -293,6 +275,43 @@ export class UntarStream
     }
   }
 
+  #readableFile(size: number): ReadableStream<Uint8Array> {
+    this.#lock = true;
+    const releaseLock = () => this.#lock = false;
+    const gen = this.#genFile(size);
+    return new ReadableStream({
+      type: "bytes",
+      async pull(controller) {
+        const { done, value } = await gen.next();
+        if (done) {
+          releaseLock();
+          controller.close();
+          return controller.byobRequest?.respond(0);
+        }
+        if (controller.byobRequest?.view) {
+          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
+
+          const size = buffer.length;
+          if (size < value.length) {
+            buffer.set(value.slice(0, size));
+            controller.byobRequest.respond(size);
+            controller.enqueue(value.slice(size));
+          } else {
+            buffer.set(value);
+            controller.byobRequest.respond(value.length);
+          }
+        } else {
+          controller.enqueue(value);
+        }
+      },
+      async cancel() {
+        // deno-lint-ignore no-empty
+        for await (const _ of gen) {}
+        releaseLock();
+      },
+    });
+  }
+
   /**
    * The ReadableStream
    *
@@ -301,22 +320,21 @@ export class UntarStream
    * @example Usage
    * ```ts no-eval
    * import { UntarStream } from "@std/archive/untar-stream";
+   * import { dirname, normalize } from "@std/path";
    *
-   * let fileWriter: WritableStreamDefaultWriter | undefined;
    * for await (
-   *   const entry of (await Deno.open('./out.tar.gz'))
+   *   const entry of (await Deno.open("./out.tar.gz"))
    *     .readable
-   *     .pipeThrough(new DecompressionStream('gzip'))
+   *     .pipeThrough(new DecompressionStream("gzip"))
    *     .pipeThrough(new UntarStream())
    * ) {
-   *   if (entry.type === "header") {
-   *     fileWriter?.close();
-   *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
-   *   } else await fileWriter!.write(entry.data);
+   *   const path = normalize(entry.path);
+   *   await Deno.mkdir(dirname(path));
+   *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
    * }
    * ```
    */
-  get readable(): ReadableStream<TarStreamChunk> {
+  get readable(): ReadableStream<TarStreamEntry> {
     return this.#readable;
   }
 
@@ -328,18 +346,17 @@ export class UntarStream
    * @example Usage
    * ```ts no-eval
    * import { UntarStream } from "@std/archive/untar-stream";
+   * import { dirname, normalize } from "@std/path";
    *
-   * let fileWriter: WritableStreamDefaultWriter | undefined;
    * for await (
-   *   const entry of (await Deno.open('./out.tar.gz'))
+   *   const entry of (await Deno.open("./out.tar.gz"))
    *     .readable
-   *     .pipeThrough(new DecompressionStream('gzip'))
+   *     .pipeThrough(new DecompressionStream("gzip"))
    *     .pipeThrough(new UntarStream())
    * ) {
-   *   if (entry.type === "header") {
-   *     fileWriter?.close();
-   *     fileWriter = (await Deno.create(entry.path)).writable.getWriter();
-   *   } else await fileWriter!.write(entry.data);
+   *   const path = normalize(entry.path);
+   *   await Deno.mkdir(dirname(path));
+   *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
    * }
    * ```
    */

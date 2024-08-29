@@ -38,7 +38,8 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
 
   const headers: (OldStyleFormat | PosixUstarFormat)[] = [];
   for await (const item of readable) {
-    if (item.type === "header") headers.push(item.header);
+    headers.push(item.header);
+    await item.readable?.cancel();
   }
   assertEquals(headers, [{
     name: "./potato",
@@ -91,12 +92,10 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  const buffer = new Uint8Array(text.length);
-  let offset = 0;
+  let buffer = new Uint8Array();
   for await (const item of readable) {
-    if (item.type === "data") {
-      buffer.set(item.data, offset);
-      offset += item.data.length;
+    if (item.readable) {
+      buffer = concat(await Array.fromAsync(item.readable));
     }
   }
   assertEquals(buffer, text);
@@ -119,14 +118,13 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  assertEquals(
-    concat(
-      (await Array.fromAsync(readable)).filter((x) => x.type === "data").map(
-        (x) => x.data,
-      ),
-    ),
-    data,
-  );
+  let buffer = new Uint8Array();
+  for await (const entry of readable) {
+    if (entry.readable) {
+      buffer = concat(await Array.fromAsync(entry.readable));
+    }
+  }
+  assertEquals(buffer, data);
 });
 
 Deno.test("UntarStream() with invalid size", async () => {
@@ -148,7 +146,14 @@ Deno.test("UntarStream() with invalid size", async () => {
     .pipeThrough(new UntarStream());
 
   await assertRejects(
-    () => Array.fromAsync(readable),
+    async () => {
+      for await (const entry of readable) {
+        if (entry.readable) {
+          // deno-lint-ignore no-empty
+          for await (const _ of entry.readable) {}
+        }
+      }
+    },
     Error,
     "Tarball has an unexpected number of bytes",
   );
@@ -173,7 +178,14 @@ Deno.test("UntarStream() with invalid ending", async () => {
     .pipeThrough(new UntarStream());
 
   await assertRejects(
-    () => Array.fromAsync(readable),
+    async () => {
+      for await (const entry of readable) {
+        if (entry.readable) {
+          // deno-lint-ignore no-empty
+          for await (const _ of entry.readable) {}
+        }
+      }
+    },
     Error,
     "Tarball has invalid ending",
   );
@@ -184,7 +196,14 @@ Deno.test("UntarStream() with too small size", async () => {
     .pipeThrough(new UntarStream());
 
   await assertRejects(
-    () => Array.fromAsync(readable),
+    async () => {
+      for await (const entry of readable) {
+        if (entry.readable) {
+          // deno-lint-ignore no-empty
+          for await (const _ of entry.readable) {}
+        }
+      }
+    },
     Error,
     "Tarball was too small to be valid",
   );
@@ -209,7 +228,14 @@ Deno.test("UntarStream() with invalid checksum", async () => {
     .pipeThrough(new UntarStream());
 
   await assertRejects(
-    () => Array.fromAsync(readable),
+    async () => {
+      for await (const entry of readable) {
+        if (entry.readable) {
+          // deno-lint-ignore no-empty
+          for await (const _ of entry.readable) {}
+        }
+      }
+    },
     Error,
     "Tarball header failed to pass checksum",
   );

@@ -4,12 +4,7 @@ import {
   TarStream,
   type TarStreamInput,
 } from "./tar_stream.ts";
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../assert/mod.ts";
+import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
 import { UntarStream } from "./untar_stream.ts";
 import { concat } from "../bytes/mod.ts";
 
@@ -188,9 +183,9 @@ Deno.test("parsePath()", async () => {
     "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
     "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
   ];
-  for await (const tarChunk of readable) {
-    assert(tarChunk.type === "header");
-    assertEquals(tarChunk.path, output.shift());
+  for await (const tarEntry of readable) {
+    assertEquals(tarEntry.path, output.shift());
+    tarEntry.readable?.cancel();
   }
 });
 
