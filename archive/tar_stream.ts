@@ -120,21 +120,21 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *
  * @example Usage
  * ```ts no-eval
- * import { TarStream } from "@std/archive/tar-stream";
+ * import { TarStream, type TarStreamInput } from "@std/archive/tar-stream";
  *
- * await ReadableStream.from([
+ * await ReadableStream.from<TarStreamInput>([
  *   {
  *     path: 'potato/'
  *   },
  *   {
  *     path: 'deno.json',
  *     size: (await Deno.stat('deno.json')).size,
- *     iterable: (await Deno.open('deno.json')).readable
+ *     readable: (await Deno.open('deno.json')).readable
  *   },
  *   {
  *     path: '.vscode/settings.json',
  *     size: (await Deno.stat('.vscode/settings.json')).size,
- *     iterable: (await Deno.open('.vscode/settings.json')).readable
+ *     readable: (await Deno.open('.vscode/settings.json')).readable
  *   }
  * ])
  *   .pipeThrough(new TarStream())
@@ -408,9 +408,7 @@ export function assertValidPath(path: string) {
  * assertValidTarStreamOptions({ mode: 755 })
  * ```
  */
-export function assertValidTarStreamOptions(
-  options: TarStreamOptions,
-) {
+export function assertValidTarStreamOptions(options: TarStreamOptions) {
   if (
     options.mode &&
     (options.mode.toString().length > 6 ||
