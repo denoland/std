@@ -6,9 +6,9 @@ export type { RandomOptions };
 /**
  * Shuffles the provided array, returning a copy and without modifying the original array.
  *
- * @typeParam T - The type of the items in the array
- * @param items - The items to shuffle
- * @param options - The options for the random number generator
+ * @typeParam T The type of the items in the array
+ * @param items The items to shuffle
+ * @param options The options for the random number generator
  * @returns A shuffled copy of the provided items
  *
  * @example Usage
