@@ -1086,3 +1086,39 @@ Deno.test("parse() handles string", () => {
   assertEquals(parse("!!str"), "");
   assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
 });
+
+Deno.test({
+  name: "parse() handles regexp value with extended schema option",
+  fn() {
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> ^foo$\n", { schema: "extended" }),
+      /^foo$/,
+    );
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> /^foo$/\n", { schema: "extended" }),
+      /^foo$/,
+    );
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> /^foo$/g\n", {
+        schema: "extended",
+      }),
+      /^foo$/g,
+    );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> /^foo$/gg\n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> \n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
+  },
+});
