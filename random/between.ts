@@ -29,7 +29,7 @@ export function randomBetween(
   if (!Number.isFinite(min)) {
     throw new RangeError(`min cannot be ${min}`);
   }
-  if (!isFinite(max)) {
+  if (!Number.isFinite(max)) {
     throw new RangeError(`max cannot be ${max}`);
   }
   if (max < min) {
