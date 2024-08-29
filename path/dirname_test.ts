@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { dirname } from "./dirname.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
@@ -87,6 +87,20 @@ Deno.test("posix.dirname()", function () {
   assertEquals(posix.dirname("/foo/bar/baz\\"), "/foo/bar");
 });
 
+Deno.test("posix.dirname() works with file URLs", () => {
+  assertEquals(
+    posix.dirname(new URL("file:///home/user/Documents/image.png")),
+    "/home/user/Documents",
+  );
+
+  // throws with non-file URLs
+  assertThrows(
+    () => posix.dirname(new URL("https://deno.land/")),
+    TypeError,
+    'URL must be a file URL: received "https:"',
+  );
+});
+
 Deno.test("windows.dirname()", function () {
   for (const [name, expected] of WINDOWS_TESTSUITE) {
     assertEquals(windows.dirname(name), expected);
@@ -100,4 +114,18 @@ Deno.test("windows.dirname()", function () {
   for (const [name, expected] of POSIX_TESTSUITE) {
     assertEquals(windows.dirname(name), expected);
   }
+});
+
+Deno.test("windows.dirname() works with file URLs", () => {
+  assertEquals(
+    windows.dirname(new URL("file:///C:/home/user/Documents/image.png")),
+    "C:\\home\\user\\Documents",
+  );
+
+  // throws with non-file URLs
+  assertThrows(
+    () => windows.dirname(new URL("https://deno.land/")),
+    TypeError,
+    'URL must be a file URL: received "https:"',
+  );
 });

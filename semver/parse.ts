@@ -23,41 +23,44 @@ import { FULL_REGEXP, MAX_LENGTH } from "./_shared.ts";
  * ```
  *
  * @throws {TypeError} If the input string is invalid.
- * @param version The version string to parse
+ * @param value The version string to parse
  * @returns A valid SemVer
  */
-export function parse(version: string): SemVer {
-  if (typeof version !== "string") {
+export function parse(value: string): SemVer {
+  if (typeof value !== "string") {
     throw new TypeError(
-      `version must be a string`,
+      `Cannot parse version as version must be a string: received ${typeof value}`,
     );
   }
 
-  if (version.length > MAX_LENGTH) {
+  if (value.length > MAX_LENGTH) {
     throw new TypeError(
-      `version is longer than ${MAX_LENGTH} characters`,
+      `Cannot parse version as version length is too long: length is ${value.length}, max length is ${MAX_LENGTH}`,
     );
   }
 
-  version = version.trim();
+  value = value.trim();
 
-  const groups = version.match(FULL_REGEXP)?.groups;
-  if (!groups) throw new TypeError(`Invalid version: ${version}`);
+  const groups = value.match(FULL_REGEXP)?.groups;
+  if (!groups) throw new TypeError(`Cannot parse version: ${value}`);
 
-  const major = parseNumber(groups.major!, "Invalid major version");
-  const minor = parseNumber(groups.minor!, "Invalid minor version");
-  const patch = parseNumber(groups.patch!, "Invalid patch version");
+  const major = parseNumber(
+    groups.major!,
+    `Cannot parse version ${value}: invalid major version`,
+  );
+  const minor = parseNumber(
+    groups.minor!,
+    `Cannot parse version ${value}: invalid minor version`,
+  );
+  const patch = parseNumber(
+    groups.patch!,
+    `Cannot parse version ${value}: invalid patch version`,
+  );
 
   const prerelease = groups.prerelease
     ? parsePrerelease(groups.prerelease)
     : [];
   const build = groups.buildmetadata ? parseBuild(groups.buildmetadata) : [];
 
-  return {
-    major,
-    minor,
-    patch,
-    prerelease,
-    build,
-  };
+  return { major, minor, patch, prerelease, build };
 }

@@ -4,6 +4,7 @@
 import { CHAR_DOT } from "../_common/constants.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the extension of the `path` with leading period.
@@ -18,26 +19,37 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(extname("/home/user/Documents/image.png"), ".png");
  * ```
  *
- * @example Working with URLs
+ * @param path The path to get the extension from.
+ * @returns The extension (ex. for `file.ts` returns `.ts`).
+ */
+export function extname(path: string): string;
+/**
+ * Return the extension of the `path` with leading period.
  *
- * Note: This function doesn't automatically strip hash and query parts from
- * URLs. If your URL contains a hash or query, remove them before passing the
- * URL to the function. This can be done by passing the URL to `new URL(url)`,
- * and setting the `hash` and `search` properties to empty strings.
+ * Note: Hashes and query parameters are ignore when constructing a URL.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
  *
  * ```ts
  * import { extname } from "@std/path/posix/extname";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(extname("https://deno.land/std/path/mod.ts"), ".ts");
- * assertEquals(extname("https://deno.land/std/path/mod.ts?a=b"), ".ts?a=b");
- * assertEquals(extname("https://deno.land/std/path/mod.ts#header"), ".ts#header");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts?a=b")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts#header")), ".ts");
  * ```
  *
  * @param path The path to get the extension from.
  * @returns The extension (ex. for `file.ts` returns `.ts`).
  */
-export function extname(path: string): string {
+export function extname(path: URL): string;
+export function extname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
+
   assertPath(path);
 
   let startDot = -1;

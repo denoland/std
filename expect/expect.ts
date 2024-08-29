@@ -133,13 +133,11 @@ const matchers: Record<MatcherKey, Matcher> = {
  * tests will still work, but the error messages on failing tests will look
  * strange.
  *
- * @param value - The value to perform assertions on.
- * @param customMessage - An optional custom message to include in the assertion error.
+ * @param value The value to perform assertions on.
+ * @param customMessage An optional custom message to include in the assertion error.
  * @returns An expected object that can be used to chain matchers.
  *
  * @typeParam T The interface used for `expect`. This is usually needed only if you want to use `expect.extend` to create custom matchers.
- *
- * @module
  */
 export function expect<T extends Expected = Expected>(
   value: unknown,
@@ -156,7 +154,7 @@ export function expect<T extends Expected = Expected>(
 
       if (name === "resolves") {
         if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be Promiselike");
+          throw new AssertionError("Expected value must be PromiseLike");
         }
 
         isPromised = true;
@@ -165,13 +163,13 @@ export function expect<T extends Expected = Expected>(
 
       if (name === "rejects") {
         if (!isPromiseLike(value)) {
-          throw new AssertionError("expected value must be a PromiseLike");
+          throw new AssertionError("Expected value must be a PromiseLike");
         }
 
         value = value.then(
           (value) => {
             throw new AssertionError(
-              `Promise did not reject. resolved to ${value}`,
+              `Promise did not reject: resolved to ${value}`,
             );
           },
           (err) => err,

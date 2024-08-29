@@ -1,6 +1,6 @@
 {
   "name": "@std/assert",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "exports": {
     ".": "./mod.ts",
     "./assert": "./assert.ts",
@@ -16,6 +16,7 @@
     "./less": "./less.ts",
     "./less-or-equal": "./less_or_equal.ts",
     "./match": "./match.ts",
+    "./never": "./never.ts",
     "./not-equals": "./not_equals.ts",
     "./not-instance-of": "./not_instance_of.ts",
     "./not-match": "./not_match.ts",

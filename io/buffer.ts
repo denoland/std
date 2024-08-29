@@ -171,7 +171,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
       return;
     }
     if (n < 0 || n > this.length) {
-      throw Error("bytes.Buffer: truncation out of range");
+      throw new Error("Buffer truncation out of range");
     }
     this.#reslice(this.#off + n);
   }
@@ -352,7 +352,9 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
       // don't spend all our time copying.
       copy(this.#buf.subarray(this.#off), this.#buf);
     } else if (c + n > MAX_SIZE) {
-      throw new Error("The buffer cannot be grown beyond the maximum size.");
+      throw new Error(
+        `The buffer cannot be grown beyond the maximum size of "${MAX_SIZE}"`,
+      );
     } else {
       // Not enough space anywhere, we need to allocate.
       const buf = new Uint8Array(Math.min(2 * c + n, MAX_SIZE));
@@ -387,7 +389,7 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    */
   grow(n: number) {
     if (n < 0) {
-      throw Error("Buffer.grow: negative count");
+      throw new Error("Buffer growth cannot be negative");
     }
     const m = this.#grow(n);
     this.#reslice(m);

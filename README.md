@@ -6,12 +6,10 @@
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
-<!--deno-fmt-ignore-start-->
 > [!IMPORTANT]
 > Newer versions of the Standard Library are now hosted on
 > [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
 > at [deno.land/std](https://deno.land/std).
-<!--deno-fmt-ignore-end-->
 
 ## Packages
 
@@ -24,6 +22,7 @@ documentation:
 | [assert](https://jsr.io/@std/assert)                   | [![JSR](https://jsr.io/badges/@std/assert)](https://jsr.io/@std/assert)                   |
 | [async](https://jsr.io/@std/async)                     | [![JSR](https://jsr.io/badges/@std/async)](https://jsr.io/@std/async)                     |
 | [bytes](https://jsr.io/@std/bytes)                     | [![JSR](https://jsr.io/badges/@std/bytes)](https://jsr.io/@std/bytes)                     |
+| [cache](https://jsr.io/@std/cache)                     | [![JSR](https://jsr.io/badges/@std/cache)](https://jsr.io/@std/cache)                     |
 | [cli](https://jsr.io/@std/cli)                         | [![JSR](https://jsr.io/badges/@std/cli)](https://jsr.io/@std/cli)                         |
 | [collections](https://jsr.io/@std/collections)         | [![JSR](https://jsr.io/badges/@std/collections)](https://jsr.io/@std/collections)         |
 | [crypto](https://jsr.io/@std/crypto)                   | [![JSR](https://jsr.io/badges/@std/crypto)](https://jsr.io/@std/crypto)                   |
@@ -59,17 +58,6 @@ documentation:
 | [webgpu](https://jsr.io/@std/webgpu)                   | [![JSR](https://jsr.io/badges/@std/webgpu)](https://jsr.io/@std/webgpu)                   |
 | [yaml](https://jsr.io/@std/yaml)                       | [![JSR](https://jsr.io/badges/@std/yaml)](https://jsr.io/@std/yaml)                       |
 
-<!--deno-fmt-ignore-start-->
-> [!NOTE]
-> Settled status means a package is unlikely to have breaking changes, but has
-> not yet achieved v1 status.
-<!--deno-fmt-ignore-end-->
-
-## Stabilization
-
-The Standard Library is now in the process of stabilizing its packages. See
-[#4600](https://github.com/denoland/std/issues/4600) for details.
-
 ## Architecture
 
 Check out the architecture guide [here](./.github/ARCHITECTURE.md).
@@ -90,21 +78,25 @@ package versions <1.0.0 follow
 
 ## Badge
 
-[![Built with the Deno Standard Library](./badge.svg)](https://jsr.io/@std)
+> [!NOTE]
+> Previously, this repo hosted the badge SVG file. Now, the badge is retrieved
+> directly from [Shields.io](https://shields.io/).
+
+[![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_std-blue?logo=deno)](https://jsr.io/@std)
 
 ```html
 <a href="https://jsr.io/@std">
   <img
     width="135"
     height="20"
-    src="https://raw.githubusercontent.com/denoland/std/main/badge.svg"
+    src="https://img.shields.io/badge/Built_with_std-blue?logo=deno"
     alt="Built with the Deno Standard Library"
   />
 </a>
 ```
 
 ```md
-[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/std/main/badge.svg)](https://jsr.io/@std)
+[![Built with the Deno Standard Library](https://img.shields.io/badge/Built_with_std-blue?logo=deno)](https://jsr.io/@std)
 ```
 
 ## Frequently Asked Questions

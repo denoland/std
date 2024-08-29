@@ -4,48 +4,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { Type } from "../_type.ts";
-import { getObjectTypeString } from "../_utils.ts";
+import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlPairs(data: unknown[][]): boolean {
   if (data === null) return true;
-
-  const result = Array.from({ length: data.length });
-
-  for (const [index, pair] of data.entries()) {
-    if (getObjectTypeString(pair) !== "[object Object]") {
-      return false;
-    }
-
-    const keys = Object.keys(pair);
-
-    if (keys.length !== 1) return false;
-
-    // deno-lint-ignore no-explicit-any
-    result[index] = [keys[0], pair[keys[0] as any]];
-  }
-
-  return true;
-}
-function constructYamlPairs(data: string) {
-  if (data === null) return [];
-
-  const result = Array.from({ length: data.length });
-
-  for (let index = 0; index < data.length; index += 1) {
-    const pair = data[index]!;
-
-    const keys = Object.keys(pair);
-
-    // deno-lint-ignore no-explicit-any
-    result[index] = [keys[0], pair[keys[0] as any]];
-  }
-
-  return result;
+  return data.every((it) => isPlainObject(it) && Object.keys(it).length === 1);
 }
 
 export const pairs: Type<"sequence"> = {
   tag: "tag:yaml.org,2002:pairs",
-  construct: constructYamlPairs,
+  construct(data: Record<string, unknown>[] | null): [string, unknown][] {
+    // Converts an array of objects into an array of key-value pairs.
+    return data?.flatMap(Object.entries) ?? [];
+  },
   kind: "sequence",
   resolve: resolveYamlPairs,
 };

@@ -9,21 +9,19 @@ export type Format = "yaml" | "toml" | "json";
 const BOM = "\\ufeff?";
 
 const YAML_DELIMITER = "= yaml =|---";
-const YAML_HEADER = `(---yaml|${YAML_DELIMITER})`;
+const YAML_HEADER = `(---yaml|${YAML_DELIMITER})\\s*`;
 const YAML_FOOTER = `(?:---|${YAML_DELIMITER})`;
 
 const TOML_DELIMITER = "\\+\\+\\+|= toml =";
-const TOML_HEADER = `(---toml|${TOML_DELIMITER})`;
+const TOML_HEADER = `(---toml|${TOML_DELIMITER})\\s*`;
 const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
 
 const JSON_DELIMITER = `= json =`;
-const JSON_HEADER = `(---json|${JSON_DELIMITER})`;
+const JSON_HEADER = `(---json|${JSON_DELIMITER})\\s*`;
 const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
 const DATA = "([\\s\\S]+?)";
-const NEWLINE = `${
-  globalThis?.Deno?.build?.os === "windows" ? "\\r?" : ""
-}(?:\\n)?`;
+const NEWLINE = "\\r?\\n?";
 
 export const RECOGNIZE_YAML_REGEXP = new RegExp(`^${YAML_HEADER}$`, "im");
 export const RECOGNIZE_TOML_REGEXP = new RegExp(`^${TOML_HEADER}$`, "im");

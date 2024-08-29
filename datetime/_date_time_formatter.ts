@@ -191,7 +191,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -209,7 +209,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -227,7 +227,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -249,7 +249,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -267,7 +267,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -285,7 +285,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `FormatterError: value "${part.value}" is not supported`,
               );
           }
@@ -313,7 +313,7 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`FormatterError: { ${part.type} ${part.value} }`);
+          throw new Error(`FormatterError: { ${part.type} ${part.value} }`);
       }
     }
 
@@ -339,7 +339,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -368,7 +368,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -385,7 +385,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -397,7 +397,7 @@ export class DateTimeFormatter {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
                 console.error(
-                  `Trying to parse hour greater than 12. Use 'H' instead of 'h'.`,
+                  `Trying to parse hour greater than 12, use 'H' instead of 'h'.`,
                 );
               }
               break;
@@ -406,13 +406,13 @@ export class DateTimeFormatter {
               value = /^\d{2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
                 console.error(
-                  `Trying to parse hour greater than 12. Use 'HH' instead of 'hh'.`,
+                  `Trying to parse hour greater than 12, use 'HH' instead of 'hh'.`,
                 );
               }
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -429,7 +429,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -446,7 +446,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
-              throw Error(
+              throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
           }
@@ -462,12 +462,26 @@ export class DateTimeFormatter {
           break;
         }
         case "dayPeriod": {
-          value = /^(A|P)M/.exec(string)?.[0] as string;
+          value = /^[AP](?:\.M\.|M\.?)/i.exec(string)?.[0] as string;
+          switch (value.toUpperCase()) {
+            case "AM":
+            case "AM.":
+            case "A.M.":
+              value = "AM";
+              break;
+            case "PM":
+            case "PM.":
+            case "P.M.":
+              value = "PM";
+              break;
+            default:
+              throw new Error(`DayPeriod '${value}' is not supported.`);
+          }
           break;
         }
         case "literal": {
           if (!string.startsWith(part.value as string)) {
-            throw Error(
+            throw new Error(
               `Literal "${part.value}" not found "${string.slice(0, 25)}"`,
             );
           }
@@ -476,12 +490,14 @@ export class DateTimeFormatter {
         }
 
         default:
-          throw Error(`${part.type} ${part.value}`);
+          throw new Error(
+            `Cannot format the date, the value (${part.value}) of the type (${part.type}) is given`,
+          );
       }
 
       if (!value) {
-        throw Error(
-          `value not valid for part { ${type} ${value} } ${
+        throw new Error(
+          `Cannot format value: The value is not valid for part { ${type} ${value} } ${
             string.slice(
               0,
               25,
@@ -495,7 +511,7 @@ export class DateTimeFormatter {
     }
 
     if (string.length) {
-      throw Error(
+      throw new Error(
         `datetime string was not fully parsed! ${string.slice(0, 25)}`,
       );
     }
@@ -542,7 +558,24 @@ export class DateTimeFormatter {
           const dayPeriod = parts.find(
             (part: DateTimeFormatPart) => part.type === "dayPeriod",
           );
-          if (dayPeriod?.value === "PM") value += 12;
+          if (dayPeriod) {
+            switch (dayPeriod.value.toUpperCase()) {
+              case "AM":
+              case "AM.":
+              case "A.M.":
+                // ignore
+                break;
+              case "PM":
+              case "PM.":
+              case "P.M.":
+                value += 12;
+                break;
+              default:
+                throw new Error(
+                  `dayPeriod '${dayPeriod.value}' is not supported.`,
+                );
+            }
+          }
           utc ? date.setUTCHours(value) : date.setHours(value);
           break;
         }

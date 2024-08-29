@@ -35,7 +35,9 @@ function constructYamlTimestamp(data: string): Date {
   let match = YAML_DATE_REGEXP.exec(data);
   if (match === null) match = YAML_TIMESTAMP_REGEXP.exec(data);
 
-  if (match === null) throw new Error("Date resolve error");
+  if (match === null) {
+    throw new Error("Cannot construct YAML timestamp: date resolve error");
+  }
 
   // match: [1] year [2] month [3] day
 

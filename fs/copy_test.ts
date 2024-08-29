@@ -64,7 +64,7 @@ testCopy(
         await copy(srcFile, destFile);
       },
       Error,
-      "Source and destination cannot be the same.",
+      "Source and destination cannot be the same",
     );
   },
 );
@@ -102,7 +102,7 @@ testCopy(
         await copy(srcFile, destFile);
       },
       Error,
-      `'${destFile}' already exists.`,
+      `'${destFile}' already exists`,
     );
 
     // Modify destination file.
@@ -186,7 +186,7 @@ testCopy(
         await copy(srcDir, destDir);
       },
       Error,
-      `Cannot copy '${srcDir}' to a subdirectory of itself, '${destDir}'.`,
+      `Cannot copy '${srcDir}' to a subdirectory of itself: '${destDir}'`,
     );
   },
 );
@@ -205,7 +205,7 @@ testCopy(
         await copy(srcDir, destDir);
       },
       Error,
-      `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'.`,
+      `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'`,
     );
   },
 );
@@ -241,7 +241,7 @@ testCopy(
         await copy(srcDir, destDir);
       },
       Error,
-      `'${destDir}' already exists.`,
+      `'${destDir}' already exists`,
     );
 
     // Modify the file in the destination directory.
@@ -372,7 +372,7 @@ testCopySync(
         copySync(srcFile, srcFile);
       },
       Error,
-      "Source and destination cannot be the same.",
+      "Source and destination cannot be the same",
     );
   },
 );
@@ -401,7 +401,7 @@ testCopySync("copySync() copies file to new destination", (tempDir: string) => {
       copySync(srcFile, destFile);
     },
     Error,
-    `'${destFile}' already exists.`,
+    `'${destFile}' already exists`,
   );
 
   // Modify destination file.
@@ -432,7 +432,7 @@ testCopySync(
         copySync(srcDir, destDir);
       },
       Error,
-      `Cannot copy '${srcDir}' to a subdirectory of itself, '${destDir}'.`,
+      `Cannot copy '${srcDir}' to a subdirectory of itself: '${destDir}'`,
     );
   },
 );
@@ -451,7 +451,7 @@ testCopySync(
         copySync(srcDir, destDir);
       },
       Error,
-      `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'.`,
+      `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'`,
     );
   },
 );
@@ -485,7 +485,7 @@ testCopySync("copySync() copies a directory", (tempDir: string) => {
       copySync(srcDir, destDir);
     },
     Error,
-    `'${destDir}' already exists.`,
+    `'${destDir}' already exists`,
   );
 
   // Modify the file in the destination directory.

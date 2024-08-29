@@ -42,12 +42,12 @@ Deno.test("generate() throws on invalid namespace", async () => {
   await assertRejects(
     async () => await generate("invalid-uuid", new Uint8Array()),
     TypeError,
-    "Invalid namespace UUID",
+    "Cannot generate UUID: invalid namespace invalid-uuid",
   );
   await assertRejects(
     async () =>
       await generate("1b671a64-40d5-491e-99b0-da01ff1f334Z", new Uint8Array()),
     TypeError,
-    "Invalid namespace UUID",
+    "Cannot generate UUID: invalid namespace 1b671a64-40d5-491e-99b0-da01ff1f334Z",
   );
 });

@@ -87,10 +87,10 @@ export interface IncrementOptions {
 export function increment(
   version: SemVer,
   release: ReleaseType,
-  options?: IncrementOptions,
+  options: IncrementOptions = {},
 ): SemVer {
-  const build = options?.build !== undefined
-    ? parseBuild(options?.build)
+  const build = options.build !== undefined
+    ? parseBuild(options.build)
     : version.build;
 
   switch (release) {
@@ -99,7 +99,7 @@ export function increment(
         major: version.major + 1,
         minor: 0,
         patch: 0,
-        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options.prerelease),
         build,
       };
     case "preminor":
@@ -107,7 +107,7 @@ export function increment(
         major: version.major,
         minor: version.minor + 1,
         patch: 0,
-        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options.prerelease),
         build,
       };
     case "prepatch":
@@ -115,7 +115,7 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch: version.patch + 1,
-        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options.prerelease),
         build,
       };
     case "prerelease": {
@@ -126,7 +126,7 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch,
-        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options.prerelease),
         build,
       };
     }
@@ -186,11 +186,13 @@ export function increment(
         major: version.major,
         minor: version.minor,
         patch: version.patch,
-        prerelease: bumpPrerelease(version.prerelease, options?.prerelease),
+        prerelease: bumpPrerelease(version.prerelease, options.prerelease),
         build,
       };
     }
     default:
-      throw new TypeError(`Invalid increment argument: ${release}`);
+      throw new TypeError(
+        `Cannot increment version: invalid argument ${release}`,
+      );
   }
 }

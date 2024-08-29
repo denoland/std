@@ -22,12 +22,14 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
+import { pooledMap } from "@std/async/pool";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
 const ENTRY_POINTS = [
+  "../archive/mod.ts",
   "../assert/mod.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
@@ -83,7 +85,7 @@ const ASSERTION_IMPORT =
   /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
-const snippetPromises: Promise<void>[] = [];
+const snippetPromises: (() => Promise<void>)[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -166,14 +168,22 @@ function assertHasParamTag(
 }
 
 async function assertSnippetEvals(
-  snippet: string,
-  document: { jsDoc: JsDoc; location: Location },
+  {
+    snippet,
+    document,
+    expectError,
+  }: {
+    snippet: string;
+    document: { jsDoc: JsDoc; location: Location };
+    expectError: boolean;
+  },
 ) {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "eval",
       "--ext=ts",
       "--unstable-webgpu",
+      "--check",
       "--no-lock",
       snippet,
     ],
@@ -188,11 +198,19 @@ async function assertSnippetEvals(
   try {
     const { success, stderr } = await command.output();
     const error = new TextDecoder().decode(stderr);
-    assert(
-      success,
-      `Failed to execute snippet: \n${snippet}\n${error}`,
-      document,
-    );
+    if (expectError) {
+      assert(
+        !success,
+        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
+        document,
+      );
+    } else {
+      assert(
+        success,
+        `Failed to execute snippet: \n${snippet}\n${error}`,
+        document,
+      );
+    }
   } finally {
     clearTimeout(timeoutId);
   }
@@ -229,7 +247,14 @@ function assertSnippetsWork(
         document,
       );
     }
-    snippetPromises.push(assertSnippetEvals(snippet, document));
+    snippetPromises.push(
+      () =>
+        assertSnippetEvals({
+          snippet,
+          document,
+          expectError: delim?.includes("expect-error") ?? false,
+        }),
+    );
   }
 }
 
@@ -506,13 +531,16 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-const promises = [];
-for (const url of ENTRY_POINT_URLS) {
-  promises.push(checkDocs(url));
-}
+await Promise.all(ENTRY_POINT_URLS.map(checkDocs));
 
-await Promise.all(promises);
-await Promise.all(snippetPromises);
+const iter = pooledMap(
+  navigator.hardwareConcurrency,
+  snippetPromises,
+  (fn) => fn(),
+);
+for await (const _ of iter) {
+  // noop
+}
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
     console.error(

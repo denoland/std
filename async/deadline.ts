@@ -1,9 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-// TODO(iuioiua): Add web-compatible declaration once TypeScript 5.5 is released
-// and in the Deno runtime. See https://github.com/microsoft/TypeScript/pull/58211
-//
-// Note: this code is still compatible with recent
-// web browsers. See https://caniuse.com/?search=AbortSignal.any
+// This module is browser compatible.
+
 import { abortable } from "./abortable.ts";
 
 /** Options for {@linkcode deadline}. */
@@ -19,8 +16,12 @@ export interface DeadlineOptions {
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
  *
- * @throws {DOMException} When the provided duration runs out before resolving
- * or if the optional signal is aborted, and `signal.reason` is undefined.
+ * @throws {DOMException & { name: "TimeoutError" }} If the provided duration
+ * runs out before resolving.
+ * @throws {DOMException & { name: "AbortError" }} If the optional signal is
+ * aborted with the default `reason` before resolving or timing out.
+ * @throws {AbortSignal["reason"]} If the optional signal is aborted with a
+ * custom `reason` before resolving or timing out.
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make rejectable.
  * @param ms Duration in milliseconds for when the promise should time out.

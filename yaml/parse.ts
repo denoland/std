@@ -36,7 +36,7 @@ function sanitizeInput(input: string) {
   input = String(input);
 
   if (input.length > 0) {
-    // Add tailing `\n` if not exists
+    // Add trailing `\n` if not exists
     if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
 
     // Strip BOM
@@ -85,7 +85,7 @@ export function parse(
   const document = documentGenerator.next().value;
   if (!documentGenerator.next().done) {
     throw new SyntaxError(
-      "expected a single document in the stream, but found more",
+      "Found more than 1 document in the stream: expected a single document",
     );
   }
   return document ?? null;

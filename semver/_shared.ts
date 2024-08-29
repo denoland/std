@@ -6,7 +6,9 @@ export function compareNumber(
   a: number,
   b: number,
 ): 1 | 0 | -1 {
-  if (isNaN(a) || isNaN(b)) throw new Error("Comparison against non-numbers");
+  if (isNaN(a) || isNaN(b)) {
+    throw new Error("Cannot compare against non-numbers");
+  }
   return a === b ? 0 : a < b ? -1 : 1;
 }
 

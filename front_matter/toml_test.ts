@@ -1,22 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { test } from "./test.ts";
 import { extract } from "./toml.ts";
 import {
   runExtractTomlTests,
   runExtractTomlTests2,
   runExtractTypeErrorTests,
-  runTestInvalidInputTests,
-  runTestValidInputTests,
 } from "./_test_utils.ts";
-
-Deno.test("toml() tests valid input true", () => {
-  runTestValidInputTests("toml", test);
-});
-
-Deno.test("toml() tests invalid input false", () => {
-  runTestInvalidInputTests("toml", test);
-});
+import { assertEquals } from "@std/assert/equals";
 
 Deno.test("toml() extracts type error on invalid input", () => {
   runExtractTypeErrorTests("toml", extract);
@@ -28,4 +18,10 @@ Deno.test("toml() parses toml delineate by ---toml", async () => {
 
 Deno.test("toml() parses toml delineate by +++", async () => {
   await runExtractTomlTests2(extract);
+});
+
+Deno.test("extractToml() allows whitespaces after the header", () => {
+  assertEquals(extract("---toml  \nfoo = 0\n---\n").attrs, { foo: 0 });
+  assertEquals(extract("+++  \nfoo = 0\n--- \n").attrs, { foo: 0 });
+  assertEquals(extract("= toml =  \nfoo = 0\n---\n").attrs, { foo: 0 });
 });

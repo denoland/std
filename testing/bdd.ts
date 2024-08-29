@@ -562,7 +562,7 @@ export interface it {
 export function it<T>(...args: ItArgs<T>) {
   if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
-      "cannot register new test cases after already registered test cases start running",
+      "Cannot register new test cases after already registered test cases start running",
     );
   }
   const options = itDefinition(...args);
@@ -717,7 +717,7 @@ function addHook<T>(
   if (!TestSuiteInternal.current) {
     if (TestSuiteInternal.started) {
       throw new Error(
-        "cannot add global hooks after a global test is registered",
+        "Cannot add global hooks after a global test is registered",
       );
     }
     TestSuiteInternal.current = new TestSuiteInternal({
@@ -1070,7 +1070,7 @@ export function describe<T>(
 ): TestSuite<T> {
   if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
-      "cannot register new test suites after already registered test cases start running",
+      "Cannot register new test suites after already registered test cases start running",
     );
   }
   const options = describeDefinition(...args);

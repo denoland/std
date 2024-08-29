@@ -226,7 +226,7 @@ export class BufReader implements Reader {
     }
 
     if (this.#w >= this.#buf.byteLength) {
-      throw Error("bufio: tried to fill full buffer");
+      throw new Error("Buffer full while filling");
     }
 
     // Read new data: try a limited number of times.
@@ -498,7 +498,7 @@ export class BufReader implements Reader {
         // Put the '\r' back on buf and drop it from line.
         // Let the next call to ReadLine check for "\r\n".
         if (this.#r <= 0) {
-          throw new Error("bufio: tried to rewind past start of buffer");
+          throw new Error("Tried to rewind past start of buffer");
         }
         this.#r--;
         partial = partial.subarray(0, partial.byteLength - 1);
@@ -636,7 +636,7 @@ export class BufReader implements Reader {
    */
   async peek(n: number): Promise<Uint8Array | null> {
     if (n < 0) {
-      throw Error("negative count");
+      throw new Error("Peek count cannot be negative");
     }
 
     let avail = this.#w - this.#r;

@@ -140,11 +140,15 @@ Deno.test({
 Deno.test({
   name: "stringify() throws with `!!js/*` yaml types with default schemas",
   fn() {
-    const object = { undefined: undefined };
     assertThrows(
-      () => stringify(object),
+      () => stringify(undefined),
       TypeError,
-      "unacceptable kind of an object to dump",
+      "Cannot stringify undefined",
+    );
+    assertThrows(
+      () => stringify(() => {}),
+      TypeError,
+      "Cannot stringify function",
     );
   },
 });
@@ -666,4 +670,100 @@ Oren: Ben-Kiki
 
 Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
+});
+
+Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
+  assertEquals(stringify("On", { compatMode: true }), "'On'\n");
+  assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
+  assertEquals(stringify("Yes", { compatMode: true }), "'Yes'\n");
+  assertEquals(stringify("No", { compatMode: true }), "'No'\n");
+});
+
+Deno.test("stringify() handles undefined with skipInvalid option", () => {
+  assertEquals(
+    stringify(undefined, { skipInvalid: true }),
+    "",
+  );
+});
+
+Deno.test({
+  name: "stringify() handles object with condenseFlow option",
+  fn() {
+    assertEquals(
+      stringify({ foo: ["bar", "baz"], bar: { hello: "world" } }, {
+        flowLevel: 1,
+        condenseFlow: true,
+      }),
+      `foo: [bar,baz]\nbar: {"hello":world}\n`,
+    );
+  },
+});
+
+Deno.test("stringify() returns emtpy array on invalid entries", () => {
+  assertEquals(
+    stringify([undefined], { skipInvalid: true }),
+    "[]\n",
+  );
+});
+
+Deno.test("stringify() handles duplicate array references", () => {
+  const a = ["foo"];
+  assertEquals(
+    stringify([a, a]),
+    "- &ref_0\n  - foo\n- *ref_0\n",
+  );
+});
+
+Deno.test({
+  name:
+    "stringify() handles undefined array entry with skipInvalid and flowLevel option",
+  fn() {
+    assertEquals(
+      stringify({ foo: [undefined] }, {
+        flowLevel: 1,
+        skipInvalid: true,
+      }),
+      `foo: []\n`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() handles undefined object entry with skipInvalid and flowLevel option",
+  fn() {
+    assertEquals(
+      stringify({ foo: { bar: undefined } }, {
+        flowLevel: 1,
+        skipInvalid: true,
+      }),
+      `foo: {}\n`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "stringify() handles undefined object entry with big key and skipInvalid and flowLevel option",
+  fn() {
+    const key = "a".repeat(1025);
+    assertEquals(
+      stringify({ [key]: { bar: undefined } }, {
+        flowLevel: 1,
+        skipInvalid: true,
+      }),
+      `? aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n: {}\n`,
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() handles duplicate binary references",
+  fn() {
+    const a = new Uint8Array();
+    assertEquals(
+      stringify([a, a]),
+      "- !<tag:yaml.org,2002:binary> AAAA\n- !<tag:yaml.org,2002:binary> AAAA\n",
+    );
+  },
 });

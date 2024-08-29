@@ -148,22 +148,118 @@ delimiter. E.g.
  */
 ````
 
+You can also write code snippets that are expected to fail either at compile
+time or at runtime by adding `expect-error`. However, if the fenced code is
+supposed to not pass type checking, you may also want to specify `ignore`
+directive, because we run `deno test --doc` command in CI, which does type
+checking against fenced code snippets except for those with `ignore` directive.
+So concrete examples are:
+
+````ts
+/**
+ * ```ts expect-error ignore
+ * // Does not pass type checking
+ * const x: string = 1;
+ * ```
+ *
+ * ```ts expect-error
+ * import { assert } from "@std/assert/assert";
+ *
+ * // Fails at runtime
+ * assert(false);
+ * ```
+ */
+````
+
 ### Notices for unstable APIs
 
 Each unstable API must have the
-[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag and a
-[warning alert](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts)
-after the starting description.
+[`@experimental`](https://tsdoc.org/pages/tags/experimental/) TSDoc tag after
+the starting description.
 
 ```ts
 /**
  * <description>
  *
- * > [!WARNING]
- * > **UNSTABLE**: New API, yet to be vetted.
- *
- * @experimental
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * ...
  */
 ```
+
+### Error Messages
+
+User-facing error messages should be clear, concise, and consistent. Error
+messages should be in sentence case but should not end with a period. Error
+messages should be free of grammatical errors and typos and written in American
+English.
+
+> ⚠️ Note that the error message style guide is a work in progress, and not all
+> the error messages have been updated to conform to the current styles. Error
+> message styles that should be followed:
+
+1. Messages should start with an upper case:
+
+```
+Bad: cannot parse input
+Good: Cannot parse input
+```
+
+2. Messages should not end with a period:
+
+```
+Bad: Cannot parse input.
+Good: Cannot parse input
+```
+
+3. Message should use quotes for values for strings:
+
+```
+Bad: Cannot parse input hello, world
+Good: Cannot parse input "hello, world"
+Good: Attempting to grow buffer by 10 bytes, which would exceed the maximum size of 100 bytes
+```
+
+4. Message should state the action that lead to the error:
+
+```
+Bad: Invalid input x
+Good: Cannot parse input x
+```
+
+5. Active voice should be used:
+
+```
+Bad: Input x cannot be parsed
+Good: Cannot parse input x
+```
+
+6. Messages should not use contractions:
+
+```
+Bad: Can't parse input x
+Good: Cannot parse input x
+```
+
+7. Messages should use a colon when providing additional information. Periods
+   should never be used. Other punctuation may be used as needed:
+
+```
+Bad: Cannot parse input x. value is empty
+Good: Cannot parse input x: value is empty
+```
+
+8. Additional information should describe the current state, if possible, it
+   should also describe the desired state in an affirmative voice:
+
+```
+Bad: Cannot compute the square root for x: value must not be negative
+Good: Cannot compute the square root for x: current value is ${x}
+Better: Cannot compute the square root for x as x must be >= 0: current value is ${x}
+```
+
+#### Exceptions
+
+The assertion package uses periods to end sentences in error messages. There are
+a number of downstream packages that expect this behavior and changing it would
+be a breaking change.

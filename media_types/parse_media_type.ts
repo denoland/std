@@ -3,6 +3,7 @@
 
 import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
 
+const SEMICOLON_REGEXP = /^\s*;\s*$/;
 /**
  * Parses the media type and any optional parameters, per
  * {@link https://www.rfc-editor.org/rfc/rfc1521.html | RFC 1521}.
@@ -51,11 +52,13 @@ export function parseMediaType(
     }
     const [key, value, rest] = consumeMediaParam(type);
     if (!key) {
-      if (rest.trim() === ";") {
+      if (SEMICOLON_REGEXP.test(rest)) {
         // ignore trailing semicolons
         break;
       }
-      throw new TypeError("Invalid media parameter.");
+      throw new TypeError(
+        `Cannot parse media type: invalid parameter "${type}"`,
+      );
     }
 
     let pmap = params;
@@ -67,7 +70,7 @@ export function parseMediaType(
       pmap = continuation.get(baseName)!;
     }
     if (key in pmap) {
-      throw new TypeError("Duplicate key parsed.");
+      throw new TypeError("Cannot parse media type: duplicate key");
     }
     pmap[key] = value;
     type = rest;
