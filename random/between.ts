@@ -26,7 +26,7 @@ export function randomBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  if (!isFinite(min)) {
+  if (!Number.isFinite(min)) {
     throw new RangeError(`min cannot be ${min}`);
   }
   if (!isFinite(max)) {
