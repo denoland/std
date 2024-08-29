@@ -5,4 +5,4 @@
 // Check Deno, then the remaining runtimes (e.g. Node, Bun and the browser)
 export const isWindows: boolean =
   (globalThis as any).Deno?.build.os === "windows" ||
-  (navigator as any).platform?.startsWith("Win");
+  (navigator as any).platform?.startsWith("Win") || false;
