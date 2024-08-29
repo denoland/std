@@ -27,7 +27,7 @@ export function stringify(object: Record<string, string>): string {
         `key starts with a '#' indicates a comment and is ignored: '${key}'`,
       );
       continue;
-    } else if (escapedValue.includes("\n")) {
+    } else if (escapedValue.includes("\n") || escapedValue.includes("'")) {
       // escape inner new lines
       escapedValue = escapedValue.replaceAll("\n", "\\n");
       quote = `"`;
