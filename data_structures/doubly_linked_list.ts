@@ -95,7 +95,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
   /**
    * Gets the first node of the linked list.
    *
-   * @returns The head node of the list.
+   * @returns The head of the list.
    *
    * @example Usage
    * ```ts
@@ -113,7 +113,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
   /**
    * Gets the last node of the linked list.
    *
-   * @returns The tail node of the list.
+   * @returns The tail of the list.
    *
    * @example Usage
    * ```ts
