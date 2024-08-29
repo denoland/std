@@ -1,11 +1,8 @@
+// deno-lint-ignore-file no-explicit-any
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-// deno-lint-ignore no-explicit-any
-const { process, Deno } = globalThis as any;
-
-// TODO(iuioiua): Simplify if `process` becomes a global in Deno
-// Check Deno, then the browser, then Node and Bun
-export const isWindows: boolean = Deno?.build.os === "windows" ||
-  navigator.userAgent.includes("Windows") ||
-  process?.platform === "win32";
+// Check Deno, then the remaining runtimes (e.g. Node, Bun and the browser)
+export const isWindows: boolean =
+  (globalThis as any).Deno?.build.os === "windows" ||
+  (navigator as any).platform?.startsWith("Win");
