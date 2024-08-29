@@ -377,10 +377,11 @@ function parsePath(
 }
 
 /**
- * assertValidPath is a function that validates the correctness of a path that
- * may be piped to a `TarStream`. It provides a means to check that a path is
- * valid before pipping it through the `TarStream`, where if invalid will throw an
- * error. Ruining any progress made when archiving.
+ * Asserts that the path provided is valid for a {@linkcode TarStream}.
+ *
+ * It provides a means to check that a path is valid before pipping it through
+ * the `TarStream`, where if invalid will throw an error. Ruining any progress
+ * made when archiving.
  *
  * @param path The path as a string
  *
@@ -396,8 +397,7 @@ export function assertValidPath(path: string) {
 }
 
 /**
- * assertValidTarStreamOptions is a function that returns a true if all of the options
- * provided are in the correct format, otherwise returns false.
+ * Asserts that the options provided are valid for a {@linkcode TarStream}.
  *
  * @param options The TarStreamOptions
  *
