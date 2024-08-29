@@ -31,7 +31,7 @@ Deno.test({
   name: "sample() handles array of numbers",
   fn() {
     const input = [1, 2, 3];
-    const actual = sample([1, 2, 3]);
+    const actual = sample(input);
 
     assert(actual && input.includes(actual));
   },
