@@ -383,7 +383,6 @@ function parsePath(
  * error. Ruining any progress made when archiving.
  *
  * @param path The path as a string
- * @return void
  *
  * @example Usage
  * ```ts no-assert
@@ -392,7 +391,7 @@ function parsePath(
  * assertValidPath('MyFile.txt');
  * ```
  */
-export function assertValidPath(path: string): void {
+export function assertValidPath(path: string) {
   parsePath(path);
 }
 
@@ -401,7 +400,6 @@ export function assertValidPath(path: string): void {
  * provided are in the correct format, otherwise returns false.
  *
  * @param options The TarStreamOptions
- * @return boolean
  *
  * @example Usage
  * ```ts no-assert
@@ -412,7 +410,7 @@ export function assertValidPath(path: string): void {
  */
 export function assertValidTarStreamOptions(
   options: TarStreamOptions,
-): void {
+) {
   if (
     options.mode &&
     (options.mode.toString().length > 6 ||
