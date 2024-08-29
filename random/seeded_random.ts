@@ -121,7 +121,7 @@ export class SeededRandom {
    * });
    * ```
    */
-  constructor({ seed }: SeededRandomConstructorOptions) {
+  constructor(seed: <type>) {
     this.#seed(seed);
 
     // For convenience, allowing destructuring and direct usage in callbacks
