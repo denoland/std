@@ -26,6 +26,8 @@ export interface DoublyLinkedNode<T> {
  * | remove(index)          | O(n)         | O(n)       |
  * | includes(value)        | O(n)         | O(n)       |
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
  * import { DoublyLinkedList } from "@std/data-structures";
