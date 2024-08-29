@@ -18,7 +18,7 @@ export type SampleOptions = RandomOptions & {
    *
    * @default {undefined}
    */
-  weights?: readonly number[] | undefined;
+  weights?: readonly number[];
 };
 
 const defaultOptions: SampleOptions = {
