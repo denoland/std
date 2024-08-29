@@ -767,3 +767,18 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() handles regexp value with extended schema option",
+  fn() {
+    assertEquals(
+      stringify(new RegExp("^foo$"), { schema: "extended" }),
+      "!<tag:yaml.org,2002:js/regexp> /^foo$/\n",
+    );
+
+    assertEquals(
+      stringify(new RegExp("^foo$", "g"), { schema: "extended" }),
+      "!<tag:yaml.org,2002:js/regexp> /^foo$/g\n",
+    );
+  },
+});
