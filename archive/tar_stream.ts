@@ -152,10 +152,12 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
       TarStreamInputInternal
     >({
       transform(chunk, controller) {
-        if (chunk.options && !validTarStreamOptions(chunk.options)) {
-          return controller.error(
-            new TypeError("Invalid TarStreamOptions Provided"),
-          );
+        if (chunk.options) {
+          try {
+            assertValidTarStreamOptions(chunk.options);
+          } catch (e) {
+            return controller.error(e);
+          }
         }
 
         if (
@@ -384,7 +386,7 @@ function parsePath(
  * @return void
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { assertValidPath } from "@std/archive";
  *
  * assertValidPath('MyFile.txt');
@@ -395,60 +397,58 @@ export function assertValidPath(path: string): void {
 }
 
 /**
- * validTarStreamOptions is a function that returns a true if all of the options
+ * assertValidTarStreamOptions is a function that returns a true if all of the options
  * provided are in the correct format, otherwise returns false.
  *
  * @param options The TarStreamOptions
  * @return boolean
  *
  * @example Usage
- * ```ts
- * import { validTarStreamOptions } from "@std/archive";
- * import { assertEquals } from "@std/assert";
+ * ```ts no-assert
+ * import { assertValidTarStreamOptions } from "@std/archive";
  *
- * assertEquals(validTarStreamOptions({ mode: 755 }), true);
+ * assertValidTarStreamOptions({ mode: 755 })
  * ```
  */
-export function validTarStreamOptions(
+export function assertValidTarStreamOptions(
   options: TarStreamOptions,
-): boolean {
+): void {
   if (
     options.mode &&
     (options.mode.toString().length > 6 ||
       !/^[0-7]*$/.test(options.mode.toString()))
-  ) return false;
+  ) throw new TypeError("Invalid Mode Provided");
   if (
     options.uid &&
     (options.uid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.uid.toString()))
-  ) return false;
+  ) throw new TypeError("Invalid UID Provided");
   if (
     options.gid &&
     (options.gid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.gid.toString()))
-  ) return false;
+  ) throw new TypeError("Invalid GID Provided");
   if (
     options.mtime != undefined &&
     (options.mtime.toString(8).length > 11 ||
       options.mtime.toString() === "NaN")
-  ) return false;
+  ) throw new TypeError("Invalid MTime Provided");
   if (
     options.uname &&
     // deno-lint-ignore no-control-regex
     (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
-  ) return false;
+  ) throw new TypeError("Invalid UName Provided");
   if (
     options.gname &&
     // deno-lint-ignore no-control-regex
     (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
-  ) return false;
+  ) throw new TypeError("Invalid GName Provided");
   if (
     options.devmajor &&
     (options.devmajor.length > 8)
-  ) return false;
+  ) throw new TypeError("Invalid DevMajor Provided");
   if (
     options.devminor &&
     (options.devminor.length > 8)
-  ) return false;
-  return true;
+  ) throw new TypeError("Invalid DevMinor Provided");
 }

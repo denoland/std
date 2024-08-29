@@ -1,10 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
+  assertValidTarStreamOptions,
   TarStream,
   type TarStreamInput,
-  validTarStreamOptions,
 } from "./tar_stream.ts";
-import { assert, assertEquals, assertRejects } from "../assert/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertThrows,
+} from "../assert/mod.ts";
 import { UntarStream } from "./untar_stream.ts";
 import { concat } from "../bytes/mod.ts";
 
@@ -190,45 +195,100 @@ Deno.test("parsePath()", async () => {
 });
 
 Deno.test("validTarStreamOptions()", () => {
-  assertEquals(validTarStreamOptions({}), true);
+  assertValidTarStreamOptions({});
 
-  assertEquals(validTarStreamOptions({ mode: 0 }), true);
-  assertEquals(validTarStreamOptions({ mode: 8 }), false);
-  assertEquals(validTarStreamOptions({ mode: 1111111 }), false);
-
-  assertEquals(validTarStreamOptions({ uid: 0 }), true);
-  assertEquals(validTarStreamOptions({ uid: 8 }), false);
-  assertEquals(validTarStreamOptions({ uid: 1111111 }), false);
-
-  assertEquals(validTarStreamOptions({ gid: 0 }), true);
-  assertEquals(validTarStreamOptions({ gid: 8 }), false);
-  assertEquals(validTarStreamOptions({ gid: 1111111 }), false);
-
-  assertEquals(validTarStreamOptions({ mtime: 0 }), true);
-  assertEquals(validTarStreamOptions({ mtime: NaN }), false);
-  assertEquals(
-    validTarStreamOptions({ mtime: Math.floor(new Date().getTime() / 1000) }),
-    true,
+  assertValidTarStreamOptions({ mode: 0 });
+  assertThrows(
+    () => assertValidTarStreamOptions({ mode: 8 }),
+    TypeError,
+    "Invalid Mode Provided",
   );
-  assertEquals(validTarStreamOptions({ mtime: new Date().getTime() }), false);
+  assertThrows(
+    () => assertValidTarStreamOptions({ mode: 1111111 }),
+    TypeError,
+    "Invalid Mode Provided",
+  );
 
-  assertEquals(validTarStreamOptions({ uname: "" }), true);
-  assertEquals(validTarStreamOptions({ uname: "abcdef" }), true);
-  assertEquals(validTarStreamOptions({ uname: "å-abcdef" }), false);
-  assertEquals(validTarStreamOptions({ uname: "a".repeat(100) }), false);
+  assertValidTarStreamOptions({ uid: 0 });
+  assertThrows(
+    () => assertValidTarStreamOptions({ uid: 8 }),
+    TypeError,
+    "Invalid UID Provided",
+  );
+  assertThrows(
+    () => assertValidTarStreamOptions({ uid: 1111111 }),
+    TypeError,
+    "Invalid UID Provided",
+  );
 
-  assertEquals(validTarStreamOptions({ gname: "" }), true);
-  assertEquals(validTarStreamOptions({ gname: "abcdef" }), true);
-  assertEquals(validTarStreamOptions({ gname: "å-abcdef" }), false);
-  assertEquals(validTarStreamOptions({ gname: "a".repeat(100) }), false);
+  assertValidTarStreamOptions({ gid: 0 });
+  assertThrows(
+    () => assertValidTarStreamOptions({ gid: 8 }),
+    TypeError,
+    "Invalid GID Provided",
+  );
+  assertThrows(
+    () => assertValidTarStreamOptions({ gid: 1111111 }),
+    TypeError,
+    "Invalid GID Provided",
+  );
 
-  assertEquals(validTarStreamOptions({ devmajor: "" }), true);
-  assertEquals(validTarStreamOptions({ devmajor: "1234" }), true);
-  assertEquals(validTarStreamOptions({ devmajor: "123456789" }), false);
+  assertValidTarStreamOptions({ mtime: 0 });
+  assertThrows(
+    () => assertValidTarStreamOptions({ mtime: NaN }),
+    TypeError,
+    "Invalid MTime Provided",
+  );
+  assertValidTarStreamOptions({
+    mtime: Math.floor(new Date().getTime() / 1000),
+  });
+  assertThrows(
+    () => assertValidTarStreamOptions({ mtime: new Date().getTime() }),
+    TypeError,
+    "Invalid MTime Provided",
+  );
 
-  assertEquals(validTarStreamOptions({ devminor: "" }), true);
-  assertEquals(validTarStreamOptions({ devminor: "1234" }), true);
-  assertEquals(validTarStreamOptions({ devminor: "123456789" }), false);
+  assertValidTarStreamOptions({ uname: "" });
+  assertValidTarStreamOptions({ uname: "abcdef" });
+  assertThrows(
+    () => assertValidTarStreamOptions({ uname: "å-abcdef" }),
+    TypeError,
+    "Invalid UName Provided",
+  );
+  assertThrows(
+    () => assertValidTarStreamOptions({ uname: "a".repeat(100) }),
+    TypeError,
+    "Invalid UName Provided",
+  );
+
+  assertValidTarStreamOptions({ gname: "" });
+  assertValidTarStreamOptions({ gname: "abcdef" });
+  assertThrows(
+    () => assertValidTarStreamOptions({ gname: "å-abcdef" }),
+    TypeError,
+    "Invalid GName Provided",
+  );
+  assertThrows(
+    () => assertValidTarStreamOptions({ gname: "a".repeat(100) }),
+    TypeError,
+    "Invalid GName Provided",
+  );
+
+  assertValidTarStreamOptions({ devmajor: "" });
+  assertValidTarStreamOptions({ devmajor: "1234" });
+  assertThrows(
+    () => assertValidTarStreamOptions({ devmajor: "123456789" }),
+    TypeError,
+    "Invalid DevMajor Provided",
+  );
+
+  assertValidTarStreamOptions({ devminor: "" });
+  assertValidTarStreamOptions({ devminor: "1234" });
+  assertThrows(
+    () => assertValidTarStreamOptions({ devminor: "123456789" }),
+    TypeError,
+    "Invalid DevMinor Provided",
+  );
 });
 
 Deno.test("TarStream() with invalid options", async () => {
@@ -239,7 +299,7 @@ Deno.test("TarStream() with invalid options", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     TypeError,
-    "Invalid TarStreamOptions Provided",
+    "Invalid Mode Provided",
   );
 });
 
