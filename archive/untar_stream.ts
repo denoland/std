@@ -119,7 +119,7 @@ export interface TarStreamEntry {
    */
   path: string;
   /**
-   * If present, the content of the entry. e.g. a file's content.
+   * The content of the entry, if the entry is a file.
    */
   readable?: ReadableStream<Uint8Array>;
 }
@@ -128,12 +128,13 @@ export interface TarStreamEntry {
  * ### Overview
  * A TransformStream to expand a tar archive.  Tar archives allow for storing
  * multiple files in a single file (called an archive, or sometimes a tarball).
- *   These archives typically have a single '.tar' extension.  This
+ *
+ * These archives typically have a single '.tar' extension.  This
  * implementation follows the [FreeBSD 15.0](https://man.freebsd.org/cgi/man.cgi?query=tar&sektion=5&apropos=0&manpath=FreeBSD+15.0-CURRENT) spec.
  *
  * ### Supported File Formats
  * Only the ustar file format is supported.  This is the most common format.
- *   Additionally the numeric extension for file size.
+ * Additionally the numeric extension for file size.
  *
  * ### Usage
  * When expanding the archive, as demonstrated in the example, one must decide
