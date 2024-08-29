@@ -375,35 +375,23 @@ function parsePath(
 }
 
 /**
- * The type that may be returned from the `validPath` function.
- */
-export type PathResult = { ok: true } | { ok: false; error: string };
-
-/**
- * validPath is a function that validates the correctness of a path that
+ * assertValidPath is a function that validates the correctness of a path that
  * may be piped to a `TarStream`. It provides a means to check that a path is
  * valid before pipping it through the `TarStream`, where if invalid will throw an
  * error. Ruining any progress made when archiving.
  *
  * @param path The path as a string
- * @return { ok: true } | { ok: false, error: string }
+ * @return void
  *
  * @example Usage
  * ```ts
- * import { validPath, type PathResult } from "@std/archive";
- * import { assertEquals } from "@std/assert";
+ * import { assertValidPath } from "@std/archive";
  *
- * assertEquals<PathResult>(validPath('MyFile.txt'), { ok: true });
+ * assertValidPath('MyFile.txt');
  * ```
  */
-export function validPath(path: string): PathResult {
-  try {
-    parsePath(path);
-    return { ok: true };
-  } catch (error) {
-    if (!(error instanceof Error)) throw error;
-    return { ok: false, error: error.message };
-  }
+export function assertValidPath(path: string): void {
+  parsePath(path);
 }
 
 /**
