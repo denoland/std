@@ -1,29 +1,10 @@
+// deno-lint-ignore-file no-explicit-any
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-// Keep this up-to-date with Deno.build.os
-/**
- * Operating system type, equivalent to the type of
- * {@linkcode https://deno.land/api?s=Deno.build | Deno.build.os}.
- */
-type OSType =
-  | "darwin"
-  | "linux"
-  | "windows"
-  | "freebsd"
-  | "netbsd"
-  | "aix"
-  | "solaris"
-  | "illumos"
-  | "android";
-
-function getOsType(): OSType {
-  // deno-lint-ignore no-explicit-any
-  return (globalThis as any).Deno?.build.os ||
-    // deno-lint-ignore no-explicit-any
-    ((globalThis as any).navigator?.userAgent.includes("Win")
-      ? "windows"
-      : "linux");
-}
-
-export const isWindows: boolean = getOsType() === "windows";
+// Check Deno, then the remaining runtimes (e.g. Node, Bun and the browser)
+export const isWindows: boolean =
+  (globalThis as any).Deno?.build.os === "windows" ||
+  (globalThis as any).navigator?.platform?.startsWith("Win") ||
+  (globalThis as any).process?.platform?.startsWith("win") ||
+  false;
