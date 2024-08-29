@@ -2,8 +2,8 @@
 
 import { sample } from "./sample.ts";
 import {
-  assert,
   assertAlmostEquals,
+  assertArrayIncludes,
   assertEquals,
   assertThrows,
 } from "@std/assert";

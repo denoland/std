@@ -1,6 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
+ * A function implementing the same contract as `Math.random`, i.e. returning a
+ * random number in the range [0, 1).
+ */
+export type Prng = typeof Math.random;
+
+/**
  * Options for random number generation.
  */
 export type RandomOptions = {
@@ -9,7 +15,7 @@ export type RandomOptions = {
    * randomization.
    * @default {Math.random}
    */
-  random: () => number;
+  random: Prng;
 };
 
 export const defaultOptions: RandomOptions = {
