@@ -52,7 +52,7 @@ Deno.test({
     ];
     const actual = sample(input);
 
-    assert(actual && input.includes(actual));
+    assertArrayIncludes(input, [actual]);
   },
 });
 
