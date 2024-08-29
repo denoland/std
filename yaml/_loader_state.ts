@@ -38,7 +38,7 @@ import {
 
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
-import { getObjectTypeString, isObject } from "./_utils.ts";
+import { isObject, isPlainObject } from "./_utils.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -388,7 +388,7 @@ export class LoaderState {
       }
 
       line = this.line;
-      composeNode(this, nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      this.composeNode(nodeIndent, CONTEXT_BLOCK_IN, false, true);
       result.push(this.result);
       this.skipSeparationSpace(true, -1);
 
@@ -456,10 +456,7 @@ export class LoaderState {
           );
         }
 
-        if (
-          typeof keyNode === "object" &&
-          getObjectTypeString(keyNode[index]) === "[object Object]"
-        ) {
+        if (typeof keyNode === "object" && isPlainObject(keyNode[index])) {
           keyNode[index] = "[object Object]";
         }
       }
@@ -468,10 +465,7 @@ export class LoaderState {
     // Avoid code execution in load() via toString property
     // (still use its own toString for arrays, timestamps,
     // and whatever user schema extensions happen to have @@toStringTag)
-    if (
-      typeof keyNode === "object" &&
-      getObjectTypeString(keyNode) === "[object Object]"
-    ) {
+    if (typeof keyNode === "object" && isPlainObject(keyNode)) {
       keyNode = "[object Object]";
     }
 
@@ -890,7 +884,7 @@ export class LoaderState {
       }
 
       line = this.line;
-      composeNode(this, nodeIndent, CONTEXT_FLOW_IN, false, true);
+      this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
       keyTag = this.tag || null;
       keyNode = this.result;
       this.skipSeparationSpace(true, nodeIndent);
@@ -901,7 +895,7 @@ export class LoaderState {
         isPair = true;
         ch = this.next();
         this.skipSeparationSpace(true, nodeIndent);
-        composeNode(this, nodeIndent, CONTEXT_FLOW_IN, false, true);
+        this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
         valueNode = this.result;
       }
 
@@ -1099,6 +1093,508 @@ export class LoaderState {
 
     return true;
   }
+  readBlockMapping(nodeIndent: number, flowIndent: number): boolean {
+    const tag = this.tag;
+    const anchor = this.anchor;
+    const result = {};
+    const overridableKeys = new Set<string>();
+    let following: number;
+    let allowCompact = false;
+    let line: number;
+    let pos: number;
+    let keyTag = null;
+    let keyNode = null;
+    let valueNode = null;
+    let atExplicitKey = false;
+    let detected = false;
+    let ch: number;
+
+    if (this.anchor !== null && typeof this.anchor !== "undefined") {
+      this.anchorMap.set(this.anchor, result);
+    }
+
+    ch = this.peek();
+
+    while (ch !== 0) {
+      following = this.peek(1);
+      line = this.line; // Save the current line.
+      pos = this.position;
+
+      //
+      // Explicit notation case. There are two separate blocks:
+      // first for the key (denoted by "?") and second for the value (denoted by ":")
+      //
+      if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
+        if (ch === QUESTION) {
+          if (atExplicitKey) {
+            this.storeMappingPair(
+              result,
+              overridableKeys,
+              keyTag as string,
+              keyNode,
+              null,
+            );
+            keyTag = keyNode = valueNode = null;
+          }
+
+          detected = true;
+          atExplicitKey = true;
+          allowCompact = true;
+        } else if (atExplicitKey) {
+          // i.e. 0x3A/* : */ === character after the explicit key.
+          atExplicitKey = false;
+          allowCompact = true;
+        } else {
+          return this.throwError(
+            "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
+          );
+        }
+
+        this.position += 1;
+        ch = following;
+
+        //
+        // Implicit notation case. Flow-style node as the key first, then ":", and the value.
+        //
+      } else if (this.composeNode(flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+        if (this.line === line) {
+          ch = this.peek();
+
+          while (isWhiteSpace(ch)) {
+            ch = this.next();
+          }
+
+          if (ch === COLON) {
+            ch = this.next();
+
+            if (!isWhiteSpaceOrEOL(ch)) {
+              return this.throwError(
+                "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
+              );
+            }
+
+            if (atExplicitKey) {
+              this.storeMappingPair(
+                result,
+                overridableKeys,
+                keyTag as string,
+                keyNode,
+                null,
+              );
+              keyTag = keyNode = valueNode = null;
+            }
+
+            detected = true;
+            atExplicitKey = false;
+            allowCompact = false;
+            keyTag = this.tag;
+            keyNode = this.result;
+          } else if (detected) {
+            return this.throwError(
+              "Cannot read an implicit mapping pair: missing colon",
+            );
+          } else {
+            this.tag = tag;
+            this.anchor = anchor;
+            return true; // Keep the result of `composeNode`.
+          }
+        } else if (detected) {
+          return this.throwError(
+            "Cannot read a block mapping entry: a multiline key may not be an implicit key",
+          );
+        } else {
+          this.tag = tag;
+          this.anchor = anchor;
+          return true; // Keep the result of `composeNode`.
+        }
+      } else {
+        break; // Reading is done. Go to the epilogue.
+      }
+
+      //
+      // Common reading code for both explicit and implicit notations.
+      //
+      if (this.line === line || this.lineIndent > nodeIndent) {
+        if (
+          this.composeNode(nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
+        ) {
+          if (atExplicitKey) {
+            keyNode = this.result;
+          } else {
+            valueNode = this.result;
+          }
+        }
+
+        if (!atExplicitKey) {
+          this.storeMappingPair(
+            result,
+            overridableKeys,
+            keyTag as string,
+            keyNode,
+            valueNode,
+            line,
+            pos,
+          );
+          keyTag = keyNode = valueNode = null;
+        }
+
+        this.skipSeparationSpace(true, -1);
+        ch = this.peek();
+      }
+
+      if (this.lineIndent > nodeIndent && ch !== 0) {
+        return this.throwError(
+          "Cannot read block: bad indentation of a mapping entry",
+        );
+      } else if (this.lineIndent < nodeIndent) {
+        break;
+      }
+    }
+
+    //
+    // Epilogue.
+    //
+
+    // Special case: last mapping's node contains only the key in explicit notation.
+    if (atExplicitKey) {
+      this.storeMappingPair(
+        result,
+        overridableKeys,
+        keyTag as string,
+        keyNode,
+        null,
+      );
+    }
+
+    // Expose the resulting mapping.
+    if (detected) {
+      this.tag = tag;
+      this.anchor = anchor;
+      this.kind = "mapping";
+      this.result = result;
+    }
+
+    return detected;
+  }
+  readTagProperty(): boolean {
+    let position: number;
+    let isVerbatim = false;
+    let isNamed = false;
+    let tagHandle = "";
+    let tagName: string;
+    let ch: number;
+
+    ch = this.peek();
+
+    if (ch !== EXCLAMATION) return false;
+
+    if (this.tag !== null) {
+      return this.throwError(
+        "Cannot read tag property: duplication of a tag property",
+      );
+    }
+
+    ch = this.next();
+
+    if (ch === SMALLER_THAN) {
+      isVerbatim = true;
+      ch = this.next();
+    } else if (ch === EXCLAMATION) {
+      isNamed = true;
+      tagHandle = "!!";
+      ch = this.next();
+    } else {
+      tagHandle = "!";
+    }
+
+    position = this.position;
+
+    if (isVerbatim) {
+      do {
+        ch = this.next();
+      } while (ch !== 0 && ch !== GREATER_THAN);
+
+      if (this.position < this.length) {
+        tagName = this.input.slice(position, this.position);
+        ch = this.next();
+      } else {
+        return this.throwError(
+          "Cannot read tag property: unexpected end of stream",
+        );
+      }
+    } else {
+      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        if (ch === EXCLAMATION) {
+          if (!isNamed) {
+            tagHandle = this.input.slice(position - 1, this.position + 1);
+
+            if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
+              return this.throwError(
+                "Cannot read tag property: named tag handle contains invalid characters",
+              );
+            }
+
+            isNamed = true;
+            position = this.position + 1;
+          } else {
+            return this.throwError(
+              "Cannot read tag property: tag suffix cannot contain an exclamation mark",
+            );
+          }
+        }
+
+        ch = this.next();
+      }
+
+      tagName = this.input.slice(position, this.position);
+
+      if (PATTERN_FLOW_INDICATORS.test(tagName)) {
+        return this.throwError(
+          "Cannot read tag property: tag suffix cannot contain flow indicator characters",
+        );
+      }
+    }
+
+    if (tagName && !PATTERN_TAG_URI.test(tagName)) {
+      return this.throwError(
+        `Cannot read tag property: invalid characters in tag name "${tagName}"`,
+      );
+    }
+
+    if (isVerbatim) {
+      this.tag = tagName;
+    } else if (this.tagMap.has(tagHandle)) {
+      this.tag = this.tagMap.get(tagHandle) + tagName;
+    } else if (tagHandle === "!") {
+      this.tag = `!${tagName}`;
+    } else if (tagHandle === "!!") {
+      this.tag = `tag:yaml.org,2002:${tagName}`;
+    } else {
+      return this.throwError(
+        `Cannot read tag property: undeclared tag handle "${tagHandle}"`,
+      );
+    }
+
+    return true;
+  }
+  readAnchorProperty(): boolean {
+    let ch = this.peek();
+    if (ch !== AMPERSAND) return false;
+
+    if (this.anchor !== null) {
+      return this.throwError(
+        "Cannot read anchor property: duplicate anchor property",
+      );
+    }
+    ch = this.next();
+
+    const position = this.position;
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+      ch = this.next();
+    }
+
+    if (this.position === position) {
+      return this.throwError(
+        "Cannot read anchor property: name of an anchor node must contain at least one character",
+      );
+    }
+
+    this.anchor = this.input.slice(position, this.position);
+    return true;
+  }
+  readAlias(): boolean {
+    if (this.peek() !== ASTERISK) return false;
+
+    let ch = this.next();
+
+    const position = this.position;
+
+    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+      ch = this.next();
+    }
+
+    if (this.position === position) {
+      return this.throwError(
+        "Cannot read alias: alias name must contain at least one character",
+      );
+    }
+
+    const alias = this.input.slice(position, this.position);
+    if (!this.anchorMap.has(alias)) {
+      return this.throwError(
+        `Cannot read alias: unidentified alias "${alias}"`,
+      );
+    }
+
+    this.result = this.anchorMap.get(alias);
+    this.skipSeparationSpace(true, -1);
+    return true;
+  }
+
+  composeNode(
+    parentIndent: number,
+    nodeContext: number,
+    allowToSeek: boolean,
+    allowCompact: boolean,
+  ): boolean {
+    let allowBlockScalars: boolean;
+    let allowBlockCollections: boolean;
+    let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
+    let atNewLine = false;
+    let hasContent = false;
+    let type: Type<KindType>;
+    let flowIndent: number;
+    let blockIndent: number;
+
+    this.tag = null;
+    this.anchor = null;
+    this.kind = null;
+    this.result = null;
+
+    const allowBlockStyles = (allowBlockScalars =
+      allowBlockCollections =
+        CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
+
+    if (allowToSeek) {
+      if (this.skipSeparationSpace(true, -1)) {
+        atNewLine = true;
+
+        if (this.lineIndent > parentIndent) {
+          indentStatus = 1;
+        } else if (this.lineIndent === parentIndent) {
+          indentStatus = 0;
+        } else if (this.lineIndent < parentIndent) {
+          indentStatus = -1;
+        }
+      }
+    }
+
+    if (indentStatus === 1) {
+      while (this.readTagProperty() || this.readAnchorProperty()) {
+        if (this.skipSeparationSpace(true, -1)) {
+          atNewLine = true;
+          allowBlockCollections = allowBlockStyles;
+
+          if (this.lineIndent > parentIndent) {
+            indentStatus = 1;
+          } else if (this.lineIndent === parentIndent) {
+            indentStatus = 0;
+          } else if (this.lineIndent < parentIndent) {
+            indentStatus = -1;
+          }
+        } else {
+          allowBlockCollections = false;
+        }
+      }
+    }
+
+    if (allowBlockCollections) {
+      allowBlockCollections = atNewLine || allowCompact;
+    }
+
+    if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
+      const cond = CONTEXT_FLOW_IN === nodeContext ||
+        CONTEXT_FLOW_OUT === nodeContext;
+      flowIndent = cond ? parentIndent : parentIndent + 1;
+
+      blockIndent = this.position - this.lineStart;
+
+      if (indentStatus === 1) {
+        if (
+          (allowBlockCollections &&
+            (this.readBlockSequence(blockIndent) ||
+              this.readBlockMapping(blockIndent, flowIndent))) ||
+          this.readFlowCollection(flowIndent)
+        ) {
+          hasContent = true;
+        } else {
+          if (
+            (allowBlockScalars && this.readBlockScalar(flowIndent)) ||
+            this.readSingleQuotedScalar(flowIndent) ||
+            this.readDoubleQuotedScalar(flowIndent)
+          ) {
+            hasContent = true;
+          } else if (this.readAlias()) {
+            hasContent = true;
+
+            if (this.tag !== null || this.anchor !== null) {
+              return this.throwError(
+                "Cannot compose node: alias node should not have any properties",
+              );
+            }
+          } else if (
+            this.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
+          ) {
+            hasContent = true;
+
+            if (this.tag === null) {
+              this.tag = "?";
+            }
+          }
+
+          if (this.anchor !== null) {
+            this.anchorMap.set(this.anchor, this.result);
+          }
+        }
+      } else if (indentStatus === 0) {
+        // Special case: block sequences are allowed to have same indentation level as the parent.
+        // http://www.yaml.org/spec/1.2/spec.html#id2799784
+        hasContent = allowBlockCollections &&
+          this.readBlockSequence(blockIndent);
+      }
+    }
+
+    if (this.tag !== null && this.tag !== "!") {
+      if (this.tag === "?") {
+        for (
+          let typeIndex = 0;
+          typeIndex < this.implicitTypes.length;
+          typeIndex++
+        ) {
+          type = this.implicitTypes[typeIndex]!;
+
+          // Implicit resolving is not allowed for non-scalar types, and '?'
+          // non-specific tag is only assigned to plain scalars. So, it isn't
+          // needed to check for 'kind' conformity.
+
+          if (type.resolve(this.result)) {
+            // `state.result` updated in resolver if matched
+            this.result = type.construct(this.result);
+            this.tag = type.tag;
+            if (this.anchor !== null) {
+              this.anchorMap.set(this.anchor, this.result);
+            }
+            break;
+          }
+        }
+      } else if (this.typeMap[this.kind ?? "fallback"].has(this.tag)) {
+        const map = this.typeMap[this.kind ?? "fallback"];
+        type = map.get(this.tag)!;
+
+        if (this.result !== null && type.kind !== this.kind) {
+          return this.throwError(
+            `Unacceptable node kind for !<${this.tag}> tag: it should be "${type.kind}", not "${this.kind}"`,
+          );
+        }
+
+        if (!type.resolve(this.result)) {
+          // `state.result` updated in resolver if matched
+          return this.throwError(
+            `Cannot resolve a node with !<${this.tag}> explicit tag`,
+          );
+        } else {
+          this.result = type.construct(this.result);
+          if (this.anchor !== null) {
+            this.anchorMap.set(this.anchor, this.result);
+          }
+        }
+      } else {
+        return this.throwError(`Cannot resolve unknown tag !<${this.tag}>`);
+      }
+    }
+
+    return this.tag !== null || this.anchor !== null || hasContent;
+  }
 
   readDocument() {
     const documentStart = this.position;
@@ -1195,7 +1691,7 @@ export class LoaderState {
       );
     }
 
-    composeNode(this, this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    this.composeNode(this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
     this.skipSeparationSpace(true, -1);
 
     if (
@@ -1226,513 +1722,4 @@ export class LoaderState {
       yield this.readDocument();
     }
   }
-}
-
-function readBlockMapping(
-  state: LoaderState,
-  nodeIndent: number,
-  flowIndent: number,
-): boolean {
-  const tag = state.tag;
-  const anchor = state.anchor;
-  const result = {};
-  const overridableKeys = new Set<string>();
-  let following: number;
-  let allowCompact = false;
-  let line: number;
-  let pos: number;
-  let keyTag = null;
-  let keyNode = null;
-  let valueNode = null;
-  let atExplicitKey = false;
-  let detected = false;
-  let ch: number;
-
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
-    state.anchorMap.set(state.anchor, result);
-  }
-
-  ch = state.peek();
-
-  while (ch !== 0) {
-    following = state.peek(1);
-    line = state.line; // Save the current line.
-    pos = state.position;
-
-    //
-    // Explicit notation case. There are two separate blocks:
-    // first for the key (denoted by "?") and second for the value (denoted by ":")
-    //
-    if ((ch === QUESTION || ch === COLON) && isWhiteSpaceOrEOL(following)) {
-      if (ch === QUESTION) {
-        if (atExplicitKey) {
-          state.storeMappingPair(
-            result,
-            overridableKeys,
-            keyTag as string,
-            keyNode,
-            null,
-          );
-          keyTag = keyNode = valueNode = null;
-        }
-
-        detected = true;
-        atExplicitKey = true;
-        allowCompact = true;
-      } else if (atExplicitKey) {
-        // i.e. 0x3A/* : */ === character after the explicit key.
-        atExplicitKey = false;
-        allowCompact = true;
-      } else {
-        return state.throwError(
-          "Cannot read block as explicit mapping pair is incomplete: a key node is missed or followed by a non-tabulated empty line",
-        );
-      }
-
-      state.position += 1;
-      ch = following;
-
-      //
-      // Implicit notation case. Flow-style node as the key first, then ":", and the value.
-      //
-    } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
-      if (state.line === line) {
-        ch = state.peek();
-
-        while (isWhiteSpace(ch)) {
-          ch = state.next();
-        }
-
-        if (ch === COLON) {
-          ch = state.next();
-
-          if (!isWhiteSpaceOrEOL(ch)) {
-            return state.throwError(
-              "Cannot read block: a whitespace character is expected after the key-value separator within a block mapping",
-            );
-          }
-
-          if (atExplicitKey) {
-            state.storeMappingPair(
-              result,
-              overridableKeys,
-              keyTag as string,
-              keyNode,
-              null,
-            );
-            keyTag = keyNode = valueNode = null;
-          }
-
-          detected = true;
-          atExplicitKey = false;
-          allowCompact = false;
-          keyTag = state.tag;
-          keyNode = state.result;
-        } else if (detected) {
-          return state.throwError(
-            "Cannot read an implicit mapping pair: missing colon",
-          );
-        } else {
-          state.tag = tag;
-          state.anchor = anchor;
-          return true; // Keep the result of `composeNode`.
-        }
-      } else if (detected) {
-        return state.throwError(
-          "Cannot read a block mapping entry: a multiline key may not be an implicit key",
-        );
-      } else {
-        state.tag = tag;
-        state.anchor = anchor;
-        return true; // Keep the result of `composeNode`.
-      }
-    } else {
-      break; // Reading is done. Go to the epilogue.
-    }
-
-    //
-    // Common reading code for both explicit and implicit notations.
-    //
-    if (state.line === line || state.lineIndent > nodeIndent) {
-      if (
-        composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
-      ) {
-        if (atExplicitKey) {
-          keyNode = state.result;
-        } else {
-          valueNode = state.result;
-        }
-      }
-
-      if (!atExplicitKey) {
-        state.storeMappingPair(
-          result,
-          overridableKeys,
-          keyTag as string,
-          keyNode,
-          valueNode,
-          line,
-          pos,
-        );
-        keyTag = keyNode = valueNode = null;
-      }
-
-      state.skipSeparationSpace(true, -1);
-      ch = state.peek();
-    }
-
-    if (state.lineIndent > nodeIndent && ch !== 0) {
-      return state.throwError(
-        "Cannot read block: bad indentation of a mapping entry",
-      );
-    } else if (state.lineIndent < nodeIndent) {
-      break;
-    }
-  }
-
-  //
-  // Epilogue.
-  //
-
-  // Special case: last mapping's node contains only the key in explicit notation.
-  if (atExplicitKey) {
-    state.storeMappingPair(
-      result,
-      overridableKeys,
-      keyTag as string,
-      keyNode,
-      null,
-    );
-  }
-
-  // Expose the resulting mapping.
-  if (detected) {
-    state.tag = tag;
-    state.anchor = anchor;
-    state.kind = "mapping";
-    state.result = result;
-  }
-
-  return detected;
-}
-
-function readTagProperty(state: LoaderState): boolean {
-  let position: number;
-  let isVerbatim = false;
-  let isNamed = false;
-  let tagHandle = "";
-  let tagName: string;
-  let ch: number;
-
-  ch = state.peek();
-
-  if (ch !== EXCLAMATION) return false;
-
-  if (state.tag !== null) {
-    return state.throwError(
-      "Cannot read tag property: duplication of a tag property",
-    );
-  }
-
-  ch = state.next();
-
-  if (ch === SMALLER_THAN) {
-    isVerbatim = true;
-    ch = state.next();
-  } else if (ch === EXCLAMATION) {
-    isNamed = true;
-    tagHandle = "!!";
-    ch = state.next();
-  } else {
-    tagHandle = "!";
-  }
-
-  position = state.position;
-
-  if (isVerbatim) {
-    do {
-      ch = state.next();
-    } while (ch !== 0 && ch !== GREATER_THAN);
-
-    if (state.position < state.length) {
-      tagName = state.input.slice(position, state.position);
-      ch = state.next();
-    } else {
-      return state.throwError(
-        "Cannot read tag property: unexpected end of stream",
-      );
-    }
-  } else {
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
-      if (ch === EXCLAMATION) {
-        if (!isNamed) {
-          tagHandle = state.input.slice(position - 1, state.position + 1);
-
-          if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-            return state.throwError(
-              "Cannot read tag property: named tag handle contains invalid characters",
-            );
-          }
-
-          isNamed = true;
-          position = state.position + 1;
-        } else {
-          return state.throwError(
-            "Cannot read tag property: tag suffix cannot contain an exclamation mark",
-          );
-        }
-      }
-
-      ch = state.next();
-    }
-
-    tagName = state.input.slice(position, state.position);
-
-    if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      return state.throwError(
-        "Cannot read tag property: tag suffix cannot contain flow indicator characters",
-      );
-    }
-  }
-
-  if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    return state.throwError(
-      `Cannot read tag property: invalid characters in tag name "${tagName}"`,
-    );
-  }
-
-  if (isVerbatim) {
-    state.tag = tagName;
-  } else if (state.tagMap.has(tagHandle)) {
-    state.tag = state.tagMap.get(tagHandle) + tagName;
-  } else if (tagHandle === "!") {
-    state.tag = `!${tagName}`;
-  } else if (tagHandle === "!!") {
-    state.tag = `tag:yaml.org,2002:${tagName}`;
-  } else {
-    return state.throwError(
-      `Cannot read tag property: undeclared tag handle "${tagHandle}"`,
-    );
-  }
-
-  return true;
-}
-
-function readAnchorProperty(state: LoaderState): boolean {
-  let ch = state.peek();
-  if (ch !== AMPERSAND) return false;
-
-  if (state.anchor !== null) {
-    return state.throwError(
-      "Cannot read anchor property: duplicate anchor property",
-    );
-  }
-  ch = state.next();
-
-  const position = state.position;
-  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.next();
-  }
-
-  if (state.position === position) {
-    return state.throwError(
-      "Cannot read anchor property: name of an anchor node must contain at least one character",
-    );
-  }
-
-  state.anchor = state.input.slice(position, state.position);
-  return true;
-}
-
-function readAlias(state: LoaderState): boolean {
-  if (state.peek() !== ASTERISK) return false;
-
-  let ch = state.next();
-
-  const position = state.position;
-
-  while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
-    ch = state.next();
-  }
-
-  if (state.position === position) {
-    return state.throwError(
-      "Cannot read alias: alias name must contain at least one character",
-    );
-  }
-
-  const alias = state.input.slice(position, state.position);
-  if (!state.anchorMap.has(alias)) {
-    return state.throwError(`Cannot read alias: unidentified alias "${alias}"`);
-  }
-
-  state.result = state.anchorMap.get(alias);
-  state.skipSeparationSpace(true, -1);
-  return true;
-}
-
-function composeNode(
-  state: LoaderState,
-  parentIndent: number,
-  nodeContext: number,
-  allowToSeek: boolean,
-  allowCompact: boolean,
-): boolean {
-  let allowBlockScalars: boolean;
-  let allowBlockCollections: boolean;
-  let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
-  let atNewLine = false;
-  let hasContent = false;
-  let type: Type<KindType>;
-  let flowIndent: number;
-  let blockIndent: number;
-
-  state.tag = null;
-  state.anchor = null;
-  state.kind = null;
-  state.result = null;
-
-  const allowBlockStyles = (allowBlockScalars =
-    allowBlockCollections =
-      CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
-
-  if (allowToSeek) {
-    if (state.skipSeparationSpace(true, -1)) {
-      atNewLine = true;
-
-      if (state.lineIndent > parentIndent) {
-        indentStatus = 1;
-      } else if (state.lineIndent === parentIndent) {
-        indentStatus = 0;
-      } else if (state.lineIndent < parentIndent) {
-        indentStatus = -1;
-      }
-    }
-  }
-
-  if (indentStatus === 1) {
-    while (readTagProperty(state) || readAnchorProperty(state)) {
-      if (state.skipSeparationSpace(true, -1)) {
-        atNewLine = true;
-        allowBlockCollections = allowBlockStyles;
-
-        if (state.lineIndent > parentIndent) {
-          indentStatus = 1;
-        } else if (state.lineIndent === parentIndent) {
-          indentStatus = 0;
-        } else if (state.lineIndent < parentIndent) {
-          indentStatus = -1;
-        }
-      } else {
-        allowBlockCollections = false;
-      }
-    }
-  }
-
-  if (allowBlockCollections) {
-    allowBlockCollections = atNewLine || allowCompact;
-  }
-
-  if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
-    const cond = CONTEXT_FLOW_IN === nodeContext ||
-      CONTEXT_FLOW_OUT === nodeContext;
-    flowIndent = cond ? parentIndent : parentIndent + 1;
-
-    blockIndent = state.position - state.lineStart;
-
-    if (indentStatus === 1) {
-      if (
-        (allowBlockCollections &&
-          (state.readBlockSequence(blockIndent) ||
-            readBlockMapping(state, blockIndent, flowIndent))) ||
-        state.readFlowCollection(flowIndent)
-      ) {
-        hasContent = true;
-      } else {
-        if (
-          (allowBlockScalars && state.readBlockScalar(flowIndent)) ||
-          state.readSingleQuotedScalar(flowIndent) ||
-          state.readDoubleQuotedScalar(flowIndent)
-        ) {
-          hasContent = true;
-        } else if (readAlias(state)) {
-          hasContent = true;
-
-          if (state.tag !== null || state.anchor !== null) {
-            return state.throwError(
-              "Cannot compose node: alias node should not have any properties",
-            );
-          }
-        } else if (
-          state.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
-        ) {
-          hasContent = true;
-
-          if (state.tag === null) {
-            state.tag = "?";
-          }
-        }
-
-        if (state.anchor !== null) {
-          state.anchorMap.set(state.anchor, state.result);
-        }
-      }
-    } else if (indentStatus === 0) {
-      // Special case: block sequences are allowed to have same indentation level as the parent.
-      // http://www.yaml.org/spec/1.2/spec.html#id2799784
-      hasContent = allowBlockCollections &&
-        state.readBlockSequence(blockIndent);
-    }
-  }
-
-  if (state.tag !== null && state.tag !== "!") {
-    if (state.tag === "?") {
-      for (
-        let typeIndex = 0;
-        typeIndex < state.implicitTypes.length;
-        typeIndex++
-      ) {
-        type = state.implicitTypes[typeIndex]!;
-
-        // Implicit resolving is not allowed for non-scalar types, and '?'
-        // non-specific tag is only assigned to plain scalars. So, it isn't
-        // needed to check for 'kind' conformity.
-
-        if (type.resolve(state.result)) {
-          // `state.result` updated in resolver if matched
-          state.result = type.construct(state.result);
-          state.tag = type.tag;
-          if (state.anchor !== null) {
-            state.anchorMap.set(state.anchor, state.result);
-          }
-          break;
-        }
-      }
-    } else if (state.typeMap[state.kind ?? "fallback"].has(state.tag)) {
-      const map = state.typeMap[state.kind ?? "fallback"];
-      type = map.get(state.tag)!;
-
-      if (state.result !== null && type.kind !== state.kind) {
-        return state.throwError(
-          `Unacceptable node kind for !<${state.tag}> tag: it should be "${type.kind}", not "${state.kind}"`,
-        );
-      }
-
-      if (!type.resolve(state.result)) {
-        // `state.result` updated in resolver if matched
-        return state.throwError(
-          `Cannot resolve a node with !<${state.tag}> explicit tag`,
-        );
-      } else {
-        state.result = type.construct(state.result);
-        if (state.anchor !== null) {
-          state.anchorMap.set(state.anchor, state.result);
-        }
-      }
-    } else {
-      return state.throwError(`Cannot resolve unknown tag !<${state.tag}>`);
-    }
-  }
-
-  return state.tag !== null || state.anchor !== null || hasContent;
 }

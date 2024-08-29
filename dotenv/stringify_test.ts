@@ -78,4 +78,9 @@ Deno.test("stringify()", async (t) => {
         `NULL=`,
       ),
   );
+  await t.step("handles single-quote characters", () =>
+    assertEquals(
+      stringify({ PARSE: "par'se" }),
+      `PARSE="par'se"`,
+    ));
 });
