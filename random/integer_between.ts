@@ -25,7 +25,7 @@ export type { RandomOptions };
 export function randomIntegerBetween(
   min: number,
   max: number,
-  options?: RandomOptions,
+  prng: Prng = Math.random,
 ): number {
   if (!Number.isInteger(min) || !Number.isInteger(max)) {
     throw new RangeError("min and max must be integers");
