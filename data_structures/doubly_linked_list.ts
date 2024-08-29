@@ -1,7 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Represents a doubly linked list's node. */
+/**
+ * Represents a doubly linked list's node.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface DoublyLinkedNode<T> {
   /** The value of the node. */
   value: T;
@@ -16,6 +20,8 @@ export interface DoublyLinkedNode<T> {
  * a set of nodes. Each node contains a value and two link fields,
  * one linking to the previous node and one linking to the next node.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * | Method                 | Average Case | Worst Case |
  * | ---------------------- | ------------ | ---------- |
  * | push(value)            | O(1)         | O(1)       |
@@ -25,8 +31,6 @@ export interface DoublyLinkedNode<T> {
  * | insert(value, index)   | O(n)         | O(n)       |
  * | remove(index)          | O(n)         | O(n)       |
  * | includes(value)        | O(n)         | O(n)       |
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts
