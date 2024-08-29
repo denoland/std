@@ -6,6 +6,6 @@ const { process, Deno } = globalThis as any;
 
 // TODO(iuioiua): Simplify if `process` becomes a global in Deno
 // Check Deno, then the browser, then Node and Bun
-export const isWindows = Deno?.build.os === "windows" ||
+export const isWindows: boolean = Deno?.build.os === "windows" ||
   navigator.userAgent.includes("Windows") ||
   process?.platform === "win32";
