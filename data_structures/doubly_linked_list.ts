@@ -58,7 +58,7 @@ export interface DoublyLinkedNode<T> {
  * assertEquals(list.includes("a"), false);
  * assertEquals([...list], ["x", "z", "b", "d"]);
  *
- * assertEquals(list.set(4, "c"), "d");
+ * assertEquals(list.set(3, "c"), "d");
  * assertEquals([...list], ["x", "z", "b", "c"]);
  * ```
  *

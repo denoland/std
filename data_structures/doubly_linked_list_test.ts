@@ -112,6 +112,9 @@ Deno.test("DoublyLinkedList.set() replaces the node value with new value", () =>
   assertEquals(list.set(-3, 5), undefined);
   assertEquals(list.set(list.length, 40), undefined);
   assertEquals([...list], [10, 15, 30, 50]);
+
+  const empty = new DoublyLinkedList();
+  assertEquals(empty.set(0, 4), undefined);
 });
 
 Deno.test("DoublyLinkedList.includes() checks if the list contains the given value", () => {
