@@ -154,7 +154,7 @@ Deno.test("UntarStream() with invalid size", async () => {
         }
       }
     },
-    Error,
+    RangeError,
     "Tarball has an unexpected number of bytes",
   );
 });
@@ -186,7 +186,7 @@ Deno.test("UntarStream() with invalid ending", async () => {
         }
       }
     },
-    Error,
+    TypeError,
     "Tarball has invalid ending",
   );
 });
@@ -204,7 +204,7 @@ Deno.test("UntarStream() with too small size", async () => {
         }
       }
     },
-    Error,
+    RangeError,
     "Tarball was too small to be valid",
   );
 });

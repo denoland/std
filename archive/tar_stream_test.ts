@@ -336,7 +336,7 @@ Deno.test("parsePath() with too long path", async () => {
 
   await assertRejects(
     () => Array.fromAsync(readable),
-    Error,
+    TypeError,
     "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
   );
 });

@@ -369,7 +369,7 @@ function parsePath(
 
   const prefix = name.slice(0, suitableSlashPos);
   if (prefix.length > 155) {
-    throw new Error(
+    throw new TypeError(
       "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
