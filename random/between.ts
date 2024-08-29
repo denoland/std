@@ -7,9 +7,9 @@ export type { RandomOptions };
  *
  * The number is in the range `[min, max)`, i.e. `min` is included but `max` is excluded.
  *
- * @param min - The minimum value (inclusive)
- * @param max - The maximum value (exclusive)
- * @param options - The options for the random number generator
+ * @param min The minimum value (inclusive)
+ * @param max The maximum value (exclusive)
+ * @param options The options for the random number generator
  * @returns A random number between the provided minimum and maximum values
  *
  * @example Usage
