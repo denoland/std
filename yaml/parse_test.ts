@@ -1120,5 +1120,13 @@ Deno.test({
       SyntaxError,
       "Cannot resolve a node",
     );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> /\n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
   },
 });
