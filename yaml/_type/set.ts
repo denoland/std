@@ -8,7 +8,8 @@ import type { Type } from "../_type.ts";
 export const set: Type<"mapping", Record<PropertyKey, unknown>> = {
   tag: "tag:yaml.org,2002:set",
   kind: "mapping",
-  construct: (data: Record<string, unknown>) => data !== null ? data : {},
+  construct: (data: Record<string, unknown>): Record<string, unknown> =>
+    data !== null ? data : {},
   resolve: (data: Record<string, unknown>): boolean => {
     if (data === null) return true;
     return Object.values(data).every((it) => it === null);
