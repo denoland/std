@@ -781,69 +781,61 @@ export class DumperState {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
 
-    let duplicateIndex = -1;
-    let duplicate = false;
     if (isObject(value)) {
-      duplicateIndex = this.duplicates.indexOf(value);
-      duplicate = duplicateIndex !== -1;
-    }
+      const duplicateIndex = this.duplicates.indexOf(value);
+      const duplicate = duplicateIndex !== -1;
 
-    if (
-      (tag !== null && tag !== "?") ||
-      duplicate ||
-      (this.indent !== 2 && level > 0)
-    ) {
-      compact = false;
-    }
-
-    if (duplicate && this.usedDuplicates.has(value)) {
-      return `*ref_${duplicateIndex}`;
-    } else {
-      if (isObject(value)) {
-        if (duplicate) {
-          this.usedDuplicates.add(value);
-        }
-        if (!Array.isArray(value)) {
-          if (block && Object.keys(value).length !== 0) {
-            value = this.stringifyBlockMapping(value, { tag, level, compact });
-            if (duplicate) {
-              value = `&ref_${duplicateIndex}${value}`;
-            }
-          } else {
-            value = this.stringifyFlowMapping(value, { level });
-            if (duplicate) {
-              value = `&ref_${duplicateIndex} ${value}`;
-            }
+      if (duplicate) {
+        if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
+        this.usedDuplicates.add(value);
+      }
+      if (
+        (tag !== null && tag !== "?") ||
+        duplicate ||
+        (this.indent !== 2 && level > 0)
+      ) {
+        compact = false;
+      }
+      if (!Array.isArray(value)) {
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
           }
         } else {
-          const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
-          if (block && value.length !== 0) {
-            value = this.stringifyBlockSequence(value, {
-              level: arrayLevel,
-              compact,
-            });
-            if (duplicate) {
-              value = `&ref_${duplicateIndex}${value}`;
-            }
-          } else {
-            value = this.stringifyFlowSequence(value, { level: arrayLevel });
-            if (duplicate) {
-              value = `&ref_${duplicateIndex} ${value}`;
-            }
+          value = this.stringifyFlowMapping(value, { level });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      } else if (typeof value === "string") {
-        if (tag !== "?") {
-          value = this.stringifyScalar(value, { level, isKey });
-        }
       } else {
-        if (this.skipInvalid) return null;
-        throw new TypeError(`Cannot stringify ${typeof value}`);
+        const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
+        if (block && value.length !== 0) {
+          value = this.stringifyBlockSequence(value, {
+            level: arrayLevel,
+            compact,
+          });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowSequence(value, { level: arrayLevel });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
+        }
       }
+    } else if (typeof value === "string") {
+      if (tag !== "?") {
+        value = this.stringifyScalar(value, { level, isKey });
+      }
+    } else {
+      if (this.skipInvalid) return null;
+      throw new TypeError(`Cannot stringify ${typeof value}`);
+    }
 
-      if (tag !== null && tag !== "?") {
-        value = `!<${tag}> ${value}`;
-      }
+    if (tag !== null && tag !== "?") {
+      value = `!<${tag}> ${value}`;
     }
 
     return value as string;
