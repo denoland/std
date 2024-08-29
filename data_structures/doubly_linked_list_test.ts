@@ -6,6 +6,8 @@ import { DoublyLinkedList } from "./doubly_linked_list.ts";
 Deno.test("DoublyLinkedList.from() creates a linked list from an iterable object", () => {
   const list = DoublyLinkedList.from([2, 3, 4, 5]);
   assertEquals(list.length, 4);
+  assertEquals(list.head?.value, 2);
+  assertEquals(list.tail?.value, 5);
   assertEquals([...list], [2, 3, 4, 5]);
 });
 
@@ -48,11 +50,11 @@ Deno.test("DoublyLinkedList.shift() removes the first node and returns its value
 Deno.test("DoublyLinkedList.insert() adds the value to the given index", () => {
   const list = DoublyLinkedList.from(["c", "f"]);
 
-  list.insert("a", 0);
-  list.insert("b", 1);
-  list.insert("e", 3);
-  list.insert("g", list.length);
-  list.insert("d", 1);
+  list.insert(0, "a");
+  list.insert(1, "b");
+  list.insert(3, "e");
+  list.insert(list.length, "g");
+  list.insert(1, "d");
 
   assertEquals(list.length, 7);
   assertEquals([...list], ["a", "d", "b", "c", "e", "f", "g"]);
@@ -99,6 +101,17 @@ Deno.test("DoublyLinkedList.remove() removes the node at the given index and ret
 
   const empty = new DoublyLinkedList();
   assertEquals(empty.remove(0), undefined);
+});
+
+Deno.test("DoublyLinkedList.set() replaces the node value with new value", () => {
+  const list = DoublyLinkedList.from([10, 20, 30, 40]);
+  assertEquals(list.set(1, 15), 20);
+  assertEquals(list.set(3, 50), 40);
+  assertEquals([...list], [10, 15, 30, 50]);
+
+  assertEquals(list.set(-3, 5), undefined);
+  assertEquals(list.set(list.length, 40), undefined);
+  assertEquals([...list], [10, 15, 30, 50]);
 });
 
 Deno.test("DoublyLinkedList.includes() checks if the list contains the given value", () => {

@@ -28,8 +28,9 @@ export interface DoublyLinkedNode<T> {
  * | pop()                  | O(1)         | O(1)       |
  * | unshift(value)         | O(1)         | O(1)       |
  * | shift()                | O(1)         | O(1)       |
- * | insert(value, index)   | O(n)         | O(n)       |
+ * | insert(index, value)   | O(n)         | O(n)       |
  * | remove(index)          | O(n)         | O(n)       |
+ * | set(index, value)      | O(n)         | O(n)       |
  * | includes(value)        | O(n)         | O(n)       |
  *
  * @example Usage
@@ -92,6 +93,42 @@ export class DoublyLinkedList<T> implements Iterable<T> {
   }
 
   /**
+   * Gets the first node of the linked list.
+   *
+   * @returns The head node of the list.
+   *
+   * @example Usage
+   * ```ts
+   * import { DoublyLinkedList } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const list = DoublyLinkedList.from([1, 3, 5]);
+   * assertEquals(list.head?.value, 1);
+   * ```
+   */
+  get head(): DoublyLinkedNode<T> | null {
+    return this.#head;
+  }
+
+  /**
+   * Gets the last node of the linked list.
+   *
+   * @returns The tail node of the list.
+   *
+   * @example Usage
+   * ```ts
+   * import { DoublyLinkedList } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const list = DoublyLinkedList.from([1, 3, 5]);
+   * assertEquals(list.tail?.value, 5);
+   * ```
+   */
+  get tail(): DoublyLinkedNode<T> | null {
+    return this.#tail;
+  }
+
+  /**
    * Creates a new linked list from an iterable object.
    *
    * @param iterable An iterable object whose elements are added to the linked list.
@@ -123,7 +160,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * The complexity of this operation is O(1).
    *
    * @param value The values to be added.
-   * @returns New length of the list.
+   * @returns The new length of the list.
    *
    * @example Usage
    * ```ts
@@ -203,7 +240,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * The complexity of this operation is O(1).
    *
    * @param value The values to be added.
-   * @returns New length of the list.
+   * @returns The new length of the list.
    *
    * @example Usage
    * ```ts
@@ -284,7 +321,7 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    *
    * @param value The value to insert.
    * @param index The position to insert.
-   * @returns New length of the list.
+   * @returns The new length of the list.
    * @throws If `index < 0` or `index > length`
    *
    * @example Usage
@@ -295,20 +332,20 @@ export class DoublyLinkedList<T> implements Iterable<T> {
    * const list = DoublyLinkedList.from([2, 4, 6, 8]);
    * assertEquals([...list], [2, 4, 6, 8]);
    *
-   * list.insert(1, 0);
+   * list.insert(0, 1);
    * assertEquals([...list], [1, 2, 4, 6, 8]);
    *
-   * list.insert(3, 2);
+   * list.insert(2, 3);
    * assertEquals([...list], [1, 2, 3, 4, 6, 8]);
    *
-   * list.insert(5, 4);
+   * list.insert(4, 5);
    * assertEquals([...list], [1, 2, 3, 4, 5, 6, 8]);
    *
-   * list.insert(7, 6);
+   * list.insert(6, 7);
    * assertEquals([...list], [1, 2, 3, 4, 5, 6, 7, 8]);
    * ```
    */
-  insert(value: T, index: number): number {
+  insert(index: number, value: T): number {
     if (index === 0) {
       return this.unshift(value);
     }
@@ -410,6 +447,58 @@ export class DoublyLinkedList<T> implements Iterable<T> {
 
     --this.#length;
     return value;
+  }
+
+  /**
+   * Sets a new value to the node at the given index.
+   *
+   * The complexity of this operation is linear O(n).
+   *
+   * @param value The new value to set.
+   * @param index The position of the node to change the value.
+   * @returns The old value of the node. `undefined` if `index < 0` or `index >= length`.
+   *
+   * @example Usage
+   * ```ts
+   * import { DoublyLinkedList } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const list = DoublyLinkedList.from([2, 4, 6, 8]);
+   *
+   * assertEquals(list.set(0, 1), 2);
+   * assertEquals(list.set(3, 9), 8);
+   * assertEquals([...list], [1, 4, 6, 9]);
+   * ```
+   */
+  set(index: number, value: T): T | undefined {
+    if (!this.#head || !this.#tail) {
+      return undefined;
+    }
+
+    const dt = this.#length - index - 1;
+
+    if (index < 0 || dt < 0) {
+      return undefined;
+    }
+
+    let ptr: DoublyLinkedNode<T>;
+
+    if (dt < this.#length / 2) {
+      ptr = this.#tail!;
+      for (let i = 0; i < dt; ++i) {
+        ptr = ptr.prev!;
+      }
+    } else {
+      ptr = this.#head!;
+      for (let i = 0; i < index; ++i) {
+        ptr = ptr.next!;
+      }
+    }
+
+    const oldValue = ptr.value;
+    ptr.value = value;
+
+    return oldValue;
   }
 
   /**
