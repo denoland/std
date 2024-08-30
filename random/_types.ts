@@ -1,8 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * A function implementing the same contract as `Math.random`, i.e. returning a
- * random number in the range [0, 1).
+ * A pseudo-random number generator implementing the same contract as
+ * `Math.random`, i.e. taking zero arguments and returning a random number in
+ * the range `[0, 1)`. The behavior of a function that accepts this type as an
+ * option may be customized by using a function with different behavior from
+ * `Math.random`, for example it may be seeded or intentionally biased to give
+ * a different distribution of results.
  */
 export type Prng = typeof Math.random;
 
@@ -11,8 +15,8 @@ export type Prng = typeof Math.random;
  */
 export type RandomOptions = {
   /**
-   * A function returning a random number between 0 and 1, used for
-   * randomization.
+   * A pseudo-random number generator returning a random number in the range
+   * `[0, 1)`, used for randomization.
    * @default {Math.random}
    */
   random: Prng;
