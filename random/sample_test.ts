@@ -90,6 +90,17 @@ Deno.test("sample() with weights throws if the total weight is 0", () => {
   );
 });
 
+Deno.test("sample() with weights throws if the wrong number of weights is provided", () => {
+  const items = ["a", "b", "c"];
+  const weights = [1, 2, 3, 4];
+
+  assertThrows(
+    () => sample(items, { weights }),
+    RangeError,
+    "The length of the weights array must match the length of the input array",
+  );
+});
+
 Deno.test("sample() with weights never picks an item with weight of 0", () => {
   const items = ["a", "b"];
   const weights = [1, 0];

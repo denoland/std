@@ -1,7 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
-import { DEFAULT_INC, MUL, U32_CEIL, U64_CEIL } from "./_constants.ts";
+import { U32_CEIL, U64_CEIL } from "./_constants.ts";
+
+/** Multiplier for the PCG32 algorithm. */
+export const PCG32_MUL: bigint = 6364136223846793005n;
+/** Initial increment for the PCG32 algorithm. */
+export const PCG32_INC: bigint = 11634580027462260723n;
 
 export type PcgMutableState = {
   state: bigint;
@@ -30,7 +35,7 @@ export function fromSeed(seed: Uint8Array) {
  * Mutates `pcg` by advancing `pcg.state`.
  */
 export function step(pgc: PcgMutableState) {
-  pgc.state = (pgc.state * MUL + (pgc.inc | 1n)) % U64_CEIL;
+  pgc.state = (pgc.state * PCG32_MUL + (pgc.inc | 1n)) % U64_CEIL;
 }
 
 /**
@@ -81,7 +86,7 @@ export function seedFromU64(state: bigint, numBytes: number): Uint8Array {
 
   const seed = new Uint8Array(numBytes);
 
-  const pgc = { state: state, inc: DEFAULT_INC };
+  const pgc: PcgMutableState = { state: state, inc: PCG32_INC };
 
   // We advance the state first (to get away from the input value,
   // in case it has low Hamming Weight).
