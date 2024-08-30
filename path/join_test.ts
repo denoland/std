@@ -6,7 +6,9 @@ import { join } from "./join.ts";
 
 const backslashRE = /\\/g;
 
-const joinTests =
+type TestCase = [string[] | [URL, ...string[]], string];
+
+const joinTests: TestCase[] =
   // arguments                     result
   [
     [[".", "x/b", "..", "/b/c.js"], "x/b/c.js"],
@@ -56,10 +58,18 @@ const joinTests =
     [["/", "", "/foo"], "/foo"],
     [["", "/", "foo"], "/foo"],
     [["", "/", "/foo"], "/foo"],
+
+    // URLs
+    [[new URL("file:///"), "x/b", "..", "/b/c.js"], "/x/b/c.js"],
+    [[new URL("file:///foo"), "../../../bar"], "/bar"],
+    [
+      [new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."],
+      "/foo/bar/baz/asdf",
+    ],
   ];
 
 // Windows-specific join tests
-const windowsJoinTests = [
+const windowsJoinTests: TestCase[] = [
   // arguments                     result
   // UNC path expected
   [["//foo/bar"], "\\\\foo\\bar\\"],
@@ -106,11 +116,15 @@ const windowsJoinTests = [
   [["c:.", "file"], "c:file"],
   [["c:", "/"], "c:\\"],
   [["c:", "file"], "c:\\file"],
+  // URLs
+  [[new URL("file:///c:")], "c:\\"],
+  [[new URL("file:///c:"), "file"], "c:\\file"],
+  [[new URL("file:///c:/"), "file"], "c:\\file"],
 ];
 
 Deno.test("posix.join()", function () {
   joinTests.forEach(function (p) {
-    const _p = p[0] as string[];
+    const _p = p[0];
     const actual = posix.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
@@ -118,12 +132,12 @@ Deno.test("posix.join()", function () {
 
 Deno.test("windows.join()", function () {
   joinTests.forEach(function (p) {
-    const _p = p[0] as string[];
+    const _p = p[0];
     const actual = windows.join.apply(null, _p).replace(backslashRE, "/");
     assertEquals(actual, p[1]);
   });
   windowsJoinTests.forEach(function (p) {
-    const _p = p[0] as string[];
+    const _p = p[0];
     const actual = windows.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
