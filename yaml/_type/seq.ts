@@ -7,11 +7,7 @@ import type { Type } from "../_type.ts";
 
 export const seq: Type<"sequence", unknown[]> = {
   tag: "tag:yaml.org,2002:seq",
-  resolve() {
-    return true;
-  },
-  construct(data) {
-    return data !== null ? data : [];
-  },
   kind: "sequence",
+  resolve: (): boolean => true,
+  construct: (data: unknown[] | null): unknown[] => data !== null ? data : [],
 };
