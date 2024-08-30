@@ -9,12 +9,12 @@
  * import { SeededRandom } from "@std/random";
  * import { assertEquals } from "@std/assert";
  *
- * const { random } = new SeededRandom(new Uint8Array([
+ * const r = new SeededRandom(new Uint8Array([
  *  0xa6, 0x25, 0xd9, 0xbf, 0xc9, 0x1e, 0xfb, 0x5c,
  *  0xba, 0x4a, 0x86, 0x3c, 0xa4, 0xda, 0x89, 0x72,
  * ]));
  *
- * assertEquals(randomIntegerBetween(1, 10, { random }), 5);
+ * assertEquals(randomIntegerBetween(1, 10, { prng: r.random }), 5);
  * ```
  *
  * @module

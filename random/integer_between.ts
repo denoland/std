@@ -30,6 +30,6 @@ export function randomIntegerBetween(
     throw new RangeError("min and max must be integers");
   }
 
-  const opts = { random: Math.random, ...options };
+  const opts = { prng: Math.random, ...options };
   return Math.floor(randomBetween(min, max + 1, opts));
 }

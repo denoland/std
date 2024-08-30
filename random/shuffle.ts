@@ -27,7 +27,7 @@ export function shuffle<T>(
   items: readonly T[],
   options?: Partial<RandomOptions>,
 ): T[] {
-  const opts = { random: Math.random, ...options };
+  const opts = { prng: Math.random, ...options };
 
   const result = [...items];
 

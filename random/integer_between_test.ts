@@ -9,10 +9,10 @@ import {
 } from "@std/assert";
 
 Deno.test("randomIntegerBetween() generates a random integer between the provided minimum and maximum values", () => {
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
   const results = Array.from(
     { length: 1e4 },
-    () => randomIntegerBetween(1, 10, { random }),
+    () => randomIntegerBetween(1, 10, { prng: r.random }),
   );
 
   assertEquals(Math.min(...results), 1);
@@ -41,10 +41,10 @@ Deno.test("randomIntegerBetween() throws if max is less than min", () => {
 });
 
 Deno.test("randomIntegerBetween() allows negative min and max", () => {
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
   const results = Array.from(
     { length: 3 },
-    () => randomIntegerBetween(-10, -1, { random }),
+    () => randomIntegerBetween(-10, -1, { prng: r.random }),
   );
 
   assertEquals(results, [-10, -10, -3]);

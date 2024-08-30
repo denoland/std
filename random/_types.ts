@@ -3,8 +3,8 @@
 /**
  * A pseudo-random number generator implementing the same contract as
  * `Math.random`, i.e. taking zero arguments and returning a random number in
- * the range `[0, 1)`. The behavior of a function that accepts this type as an
- * option may be customized by using a function with different behavior from
+ * the range `[0, 1)`. The behavior of a function that accepts a `Prng` an
+ * option may be customized by passing a `Prng` with different behavior from
  * `Math.random`, for example it may be seeded or intentionally biased to give
  * a different distribution of results.
  */
@@ -19,5 +19,5 @@ export type RandomOptions = {
    * `[0, 1)`, used for randomization.
    * @default {Math.random}
    */
-  random: Prng;
+  prng: Prng;
 };

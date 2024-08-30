@@ -19,7 +19,7 @@ export type SampleOptions = RandomOptions & {
 };
 
 const defaultOptions: SampleOptions = {
-  random: Math.random,
+  prng: Math.random,
   weights: undefined,
 };
 
@@ -59,7 +59,7 @@ export function sample<T>(
   array: readonly T[],
   options?: Partial<SampleOptions>,
 ): T | undefined {
-  const { random, weights } = { ...defaultOptions, ...options };
+  const { prng, weights } = { ...defaultOptions, ...options };
 
   if (weights) {
     if (weights.length !== array.length) {
@@ -76,7 +76,7 @@ export function sample<T>(
       throw new RangeError("Total weight must be greater than 0");
     }
 
-    const rand = random() * total;
+    const rand = prng() * total;
     let current = 0;
 
     for (const [idx, item] of array.entries()) {
@@ -94,6 +94,6 @@ export function sample<T>(
 
   const length = array.length;
   return length
-    ? array[randomIntegerBetween(0, length - 1, { random })]
+    ? array[randomIntegerBetween(0, length - 1, { prng })]
     : undefined;
 }

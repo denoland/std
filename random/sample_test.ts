@@ -63,9 +63,12 @@ Deno.test("sample() returns undefined if the array is empty", () => {
 
 Deno.test("sample() picks a random item from the provided items", () => {
   const items = ["a", "b", "c"];
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
 
-  const picks = Array.from({ length: 10 }, () => sample(items, { random }));
+  const picks = Array.from(
+    { length: 10 },
+    () => sample(items, { prng: r.random }),
+  );
 
   assertEquals(picks, ["a", "a", "c", "c", "a", "b", "b", "a", "c", "c"]);
 });
@@ -99,11 +102,11 @@ Deno.test("sample() with weights picks a random item from the provided items wit
   const weights = weightedItems.map(([, weight]) => weight);
   const values = weightedItems.map(([value]) => value);
   const totalWeight = weights.reduce((sum, n) => sum + n, 0);
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
 
   const picks = Array.from(
     { length: 1000 },
-    () => sample(values, { random, weights }),
+    () => sample(values, { prng: r.random, weights }),
   );
 
   const groups = Object.values(
@@ -124,11 +127,11 @@ Deno.test("sample() with weights picks a random item from the provided items wit
 
 Deno.test("sample() with weights works with a Map", () => {
   const weightedItems = new Map([["a", 1], ["b", 2], ["c", 999]]);
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
 
   const result = sample([...weightedItems.keys()], {
     weights: [...weightedItems.values()],
-    random,
+    prng: r.random,
   });
 
   assertEquals(result, "c");

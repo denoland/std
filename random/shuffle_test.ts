@@ -24,12 +24,12 @@ Deno.test("shuffle() handles arrays with only one item", () => {
 });
 
 Deno.test("shuffle() shuffles the provided array", () => {
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
   const items = [1, 2, 3, 4, 5];
 
-  assertEquals(shuffle(items, { random }), [4, 2, 3, 5, 1]);
-  assertEquals(shuffle(items, { random }), [4, 5, 2, 3, 1]);
-  assertEquals(shuffle(items, { random }), [2, 1, 3, 5, 4]);
+  assertEquals(shuffle(items, { prng: r.random }), [4, 2, 3, 5, 1]);
+  assertEquals(shuffle(items, { prng: r.random }), [4, 5, 2, 3, 1]);
+  assertEquals(shuffle(items, { prng: r.random }), [2, 1, 3, 5, 4]);
 });
 
 Deno.test("shuffle() returns a copy and without modifying the original array", () => {
@@ -43,10 +43,13 @@ Deno.test("shuffle() returns a copy and without modifying the original array", (
 });
 
 Deno.test("shuffle() gives relatively uniform distribution of results", () => {
-  const { random } = SeededRandom.fromState(PCG32_INITIALIZER);
+  const r = SeededRandom.fromState(PCG32_INITIALIZER);
   const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  const results = Array.from({ length: 1e3 }, () => shuffle(items, { random }));
+  const results = Array.from(
+    { length: 1e3 },
+    () => shuffle(items, { prng: r.random }),
+  );
 
   for (const idx of items.keys()) {
     const groupsByidx = Object.values(

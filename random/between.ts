@@ -35,6 +35,6 @@ export function randomBetween(
     throw new RangeError("max must be greater than or equal to min");
   }
 
-  const { random } = { random: Math.random, ...options };
-  return random() * (max - min) + min;
+  const { prng } = { prng: Math.random, ...options };
+  return prng() * (max - min) + min;
 }
