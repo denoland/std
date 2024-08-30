@@ -351,11 +351,14 @@ Deno.test({
     assertEquals(
       parse(`
         - 0
+        - +0
+        - -0
         - 42
+        - +42
         - -42
         - 1_000
       `),
-      [0, 42, -42, 1000],
+      [0, 0, 0, 42, 42, -42, 1000],
     );
 
     // binary, octal, and hexadecimal
@@ -984,6 +987,7 @@ Deno.test("parse() handles unordered set", () => {
 ? Ken Griffey`),
     { "Mark McGwire": null, "Sammy Sosa": null, "Ken Griffey": null },
   );
+  assertEquals(parse(`--- !!set`), {});
 });
 
 Deno.test("parse() throws with empty mapping key", () => {
@@ -1085,4 +1089,48 @@ Deno.test("parse() handles mapping", () => {
 Deno.test("parse() handles string", () => {
   assertEquals(parse("!!str"), "");
   assertEquals(parse("!!str 2002-04-28"), "2002-04-28");
+});
+
+Deno.test({
+  name: "parse() handles regexp value with extended schema option",
+  fn() {
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> ^foo$\n", { schema: "extended" }),
+      /^foo$/,
+    );
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> /^foo$/\n", { schema: "extended" }),
+      /^foo$/,
+    );
+    assertEquals(
+      parse("!<tag:yaml.org,2002:js/regexp> /^foo$/g\n", {
+        schema: "extended",
+      }),
+      /^foo$/g,
+    );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> /^foo$/gg\n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> \n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
+    assertThrows(
+      () =>
+        parse("!<tag:yaml.org,2002:js/regexp> /\n", {
+          schema: "extended",
+        }),
+      SyntaxError,
+      "Cannot resolve a node",
+    );
+  },
 });
