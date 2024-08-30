@@ -2,6 +2,8 @@
 
 /**
  * The interface required to provide a file.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarStreamFile {
   /**
@@ -24,6 +26,8 @@ export interface TarStreamFile {
 
 /**
  * The interface required to provide a directory.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarStreamDir {
   /**
@@ -39,6 +43,8 @@ export interface TarStreamDir {
 /**
  * A union type merging all the TarStream interfaces that can be piped into the
  * TarStream class.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarStreamInput = TarStreamFile | TarStreamDir;
 type TarStreamInputInternal =
@@ -47,6 +53,8 @@ type TarStreamInputInternal =
 
 /**
  * The options that can go along with a file or directory.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarStreamOptions {
   /**
@@ -95,7 +103,7 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
 
 /**
  * ### Overview
- * A TransformStream to create a tar archive.  Tar archives allow for storing
+ * A TransformStream to create a tar archive. Tar archives allow for storing
  * multiple files in a single file (called an archive, or sometimes a tarball).
  *   These archives typically have a single '.tar' extension.  This
  * implementation follows the [FreeBSD 15.0](https://man.freebsd.org/cgi/man.cgi?query=tar&sektion=5&apropos=0&manpath=FreeBSD+15.0-CURRENT) spec.
@@ -117,6 +125,8 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  * ### Compression
  * Tar archives are not compressed by default.  If you'd like to compress the
  * archive, you may do so by piping it through a compression stream.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
@@ -379,6 +389,8 @@ function parsePath(
 /**
  * Asserts that the path provided is valid for a {@linkcode TarStream}.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * It provides a means to check that a path is valid before pipping it through
  * the `TarStream`, where if invalid will throw an error. Ruining any progress
  * made when archiving.
@@ -398,6 +410,8 @@ export function assertValidPath(path: string) {
 
 /**
  * Asserts that the options provided are valid for a {@linkcode TarStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param options The TarStreamOptions
  *

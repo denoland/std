@@ -3,6 +3,8 @@ import { FixedChunkStream } from "@std/streams";
 
 /**
  * The original tar	archive	header format.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface OldStyleFormat {
   /**
@@ -41,6 +43,8 @@ export interface OldStyleFormat {
 
 /**
  * The POSIX ustar archive header format.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface PosixUstarFormat {
   /**
@@ -107,6 +111,8 @@ export interface PosixUstarFormat {
 
 /**
  * The structure of an entry extracted from a Tar archive.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarStreamEntry {
   /**
@@ -146,6 +152,8 @@ export interface TarStreamEntry {
  * A tar archive may be compressed, often identified by an additional file
  * extension, such as '.tar.gz' for gzip. This TransformStream does not support
  * decompression which must be done before expanding the archive.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
  * ```ts no-eval
