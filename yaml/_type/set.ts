@@ -5,25 +5,13 @@
 
 import type { Type } from "../_type.ts";
 
-function resolveYamlSet(data: Record<string, unknown>): boolean {
-  if (data === null) return true;
-
-  for (const key in data) {
-    if (Object.hasOwn(data, key)) {
-      if (data[key] !== null) return false;
-    }
-  }
-
-  return true;
-}
-
-function constructYamlSet(data: string) {
-  return data !== null ? data : {};
-}
-
 export const set: Type<"mapping", Record<PropertyKey, unknown>> = {
   tag: "tag:yaml.org,2002:set",
-  construct: constructYamlSet,
   kind: "mapping",
-  resolve: resolveYamlSet,
+  construct: (data: Record<string, unknown>): Record<string, unknown> =>
+    data !== null ? data : {},
+  resolve: (data: Record<string, unknown>): boolean => {
+    if (data === null) return true;
+    return Object.values(data).every((it) => it === null);
+  },
 };
