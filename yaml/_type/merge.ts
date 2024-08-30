@@ -9,5 +9,5 @@ export const merge: Type<"scalar", unknown> = {
   tag: "tag:yaml.org,2002:merge",
   kind: "scalar",
   resolve: (data: unknown): boolean => data === "<<" || data === null,
-  construct: (data) => data,
+  construct: (data: unknown): unknown => data,
 };
