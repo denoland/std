@@ -20,7 +20,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sample() handles empty input",
+  name: "sample() returns undefined if the array is empty",
   fn() {
     const actual = sample([]);
     assertEquals(actual, undefined);
@@ -54,11 +54,6 @@ Deno.test({
 
     assertArrayIncludes(input, [actual]);
   },
-});
-
-Deno.test("sample() returns undefined if the array is empty", () => {
-  const items: string[] = [];
-  assertEquals(sample(items), undefined);
 });
 
 Deno.test("sample() picks a random item from the provided items", () => {

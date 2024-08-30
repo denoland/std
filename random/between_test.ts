@@ -47,7 +47,11 @@ Deno.test("randomBetween() throws if min or max are +/-Infinity", () => {
 });
 
 Deno.test("randomBetween() throws if max is less than min", () => {
-  assertThrows(() => randomBetween(10, 1), RangeError);
+  assertThrows(
+    () => randomBetween(10, 1),
+    RangeError,
+    "max must be greater than or equal to min",
+  );
 });
 
 Deno.test("randomBetween() allows negative min and max", () => {

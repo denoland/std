@@ -28,17 +28,37 @@ Deno.test("randomIntegerBetween() generates a random integer between the provide
 });
 
 Deno.test("randomIntegerBetween() throws if min or max are NaN", () => {
-  assertThrows(() => randomIntegerBetween(NaN, 1), RangeError);
-  assertThrows(() => randomIntegerBetween(1, NaN), RangeError);
+  assertThrows(
+    () => randomIntegerBetween(NaN, 1),
+    RangeError,
+    "min and max must be integers",
+  );
+  assertThrows(
+    () => randomIntegerBetween(1, NaN),
+    RangeError,
+    "min and max must be integers",
+  );
 });
 
 Deno.test("randomIntegerBetween() throws if min or max are +/-Infinity", () => {
-  assertThrows(() => randomIntegerBetween(-Infinity, 1), RangeError);
-  assertThrows(() => randomIntegerBetween(1, Infinity), RangeError);
+  assertThrows(
+    () => randomIntegerBetween(-Infinity, 1),
+    RangeError,
+    "min and max must be integers",
+  );
+  assertThrows(
+    () => randomIntegerBetween(1, Infinity),
+    RangeError,
+    "min and max must be integers",
+  );
 });
 
 Deno.test("randomIntegerBetween() throws if max is less than min", () => {
-  assertThrows(() => randomIntegerBetween(10, 1), RangeError);
+  assertThrows(
+    () => randomIntegerBetween(10, 1),
+    RangeError,
+    "max must be greater than or equal to min",
+  );
 });
 
 Deno.test("randomIntegerBetween() allows negative min and max", () => {
@@ -52,8 +72,16 @@ Deno.test("randomIntegerBetween() allows negative min and max", () => {
 });
 
 Deno.test("randomIntegerBetween() throws on non-integer min and max", () => {
-  assertThrows(() => randomIntegerBetween(1.1, 10), RangeError);
-  assertThrows(() => randomIntegerBetween(1, 10.1), RangeError);
+  assertThrows(
+    () => randomIntegerBetween(1.1, 10),
+    RangeError,
+    "min and max must be integers",
+  );
+  assertThrows(
+    () => randomIntegerBetween(1, 10.1),
+    RangeError,
+    "min and max must be integers",
+  );
 });
 
 Deno.test("randomIntegerBetween() allows min and max to be the same, in which case it returns constant values", () => {
