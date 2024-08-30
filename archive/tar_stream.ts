@@ -399,9 +399,37 @@ function parsePath(
  *
  * @example Usage
  * ```ts no-assert
- * import { assertValidPath } from "@std/archive";
+ * import { assertValidPath, TarStream, type TarStreamInput } from "@std/archive";
  *
- * assertValidPath('MyFile.txt');
+ * const paths = (await Array.fromAsync(Deno.readDir("./")))
+ *   .filter(entry => entry.isFile)
+ *   .map((entry) => entry.name)
+ *   // Filter out any paths that are invalid as they are to be placed inside a Tar.
+ *   .filter(path => {
+ *     try {
+ *       assertValidPath(path);
+ *       return true;
+ *     } catch (error) {
+ *       console.error(error);
+ *       return false;
+ *     }
+ *   });
+ *
+ * await ReadableStream.from(paths)
+ *   .pipeThrough(
+ *     new TransformStream<string, TarStreamInput>({
+ *       async transform(path, controller) {
+ *         controller.enqueue({
+ *           path,
+ *           size: (await Deno.stat(path)).size,
+ *           readable: (await Deno.open(path)).readable,
+ *         });
+ *       },
+ *     }),
+ *   )
+ *   .pipeThrough(new TarStream())
+ *   .pipeThrough(new CompressionStream('gzip'))
+ *   .pipeTo((await Deno.create('./archive.tar.gz')).writable);
  * ```
  */
 export function assertValidPath(path: string) {
@@ -417,9 +445,34 @@ export function assertValidPath(path: string) {
  *
  * @example Usage
  * ```ts no-assert
- * import { assertValidTarStreamOptions } from "@std/archive";
+ * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/archive";
  *
- * assertValidTarStreamOptions({ mode: 755 })
+ *  const paths = (await Array.fromAsync(Deno.readDir('./')))
+ *   .filter(entry => entry.isFile)
+ *   .map(entry => entry.name);
+ *
+ * await ReadableStream.from(paths)
+ *   .pipeThrough(new TransformStream<string, TarStreamInput>({
+ *     async transform(path, controller) {
+ *       const stats = await Deno.stat(path);
+ *       const options = { mtime: stats.mtime?.getTime()! / 1000 };
+ *       try {
+ *         // Filter out any paths that would have an invalid options provided.
+ *         assertValidTarStreamOptions(options);
+ *         controller.enqueue({
+ *           path,
+ *           size: stats.size,
+ *           readable: (await Deno.open(path)).readable,
+ *           options,
+ *         });
+ *       } catch (error) {
+ *         console.error(error);
+ *       }
+ *     },
+ *   }))
+ *   .pipeThrough(new TarStream())
+ *   .pipeThrough(new CompressionStream('gzip'))
+ *   .pipeTo((await Deno.create('./archive.tar.gz')).writable);
  * ```
  */
 export function assertValidTarStreamOptions(options: TarStreamOptions) {
