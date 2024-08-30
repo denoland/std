@@ -535,6 +535,12 @@ Deno.test("stringify() changes the key order when the sortKeys option is specifi
 1.0.10: null
 `,
   );
+
+  assertThrows(
+    () => stringify(object, { sortKeys: "true" as unknown as boolean }),
+    TypeError,
+    '"sortKeys" must be a boolean or a function: received string',
+  );
 });
 
 Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
