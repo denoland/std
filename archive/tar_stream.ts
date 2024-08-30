@@ -415,6 +415,7 @@ function parsePath(
  *     }
  *   });
  *
+ * await Deno.mkdir('./out/', { recursive: true })
  * await ReadableStream.from(paths)
  *   .pipeThrough(
  *     new TransformStream<string, TarStreamInput>({
@@ -429,7 +430,7 @@ function parsePath(
  *   )
  *   .pipeThrough(new TarStream())
  *   .pipeThrough(new CompressionStream('gzip'))
- *   .pipeTo((await Deno.create('./archive.tar.gz')).writable);
+ *   .pipeTo((await Deno.create('./out/archive.tar.gz')).writable);
  * ```
  */
 export function assertValidPath(path: string) {
@@ -451,6 +452,7 @@ export function assertValidPath(path: string) {
  *   .filter(entry => entry.isFile)
  *   .map(entry => entry.name);
  *
+ * await Deno.mkdir('./out/', { recursive: true })
  * await ReadableStream.from(paths)
  *   .pipeThrough(new TransformStream<string, TarStreamInput>({
  *     async transform(path, controller) {
@@ -472,7 +474,7 @@ export function assertValidPath(path: string) {
  *   }))
  *   .pipeThrough(new TarStream())
  *   .pipeThrough(new CompressionStream('gzip'))
- *   .pipeTo((await Deno.create('./archive.tar.gz')).writable);
+ *   .pipeTo((await Deno.create('./out/archive.tar.gz')).writable);
  * ```
  */
 export function assertValidTarStreamOptions(options: TarStreamOptions) {
