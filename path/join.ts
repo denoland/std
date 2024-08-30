@@ -25,7 +25,7 @@ import { join as windowsJoin } from "./windows/join.ts";
  */
 export function join(...paths: string[]): string;
 /**
- * Join all given a sequence of `paths`,then normalizes the resulting path.
+ * Join all given a sequence of `paths`, then normalizes the resulting path.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
