@@ -315,7 +315,7 @@ export class Buffer {
       return;
     }
     if (n < 0 || n > this.length) {
-      throw Error(
+      throw new Error(
         `Buffer truncation value "${n}" is not between 0 and ${this.length}`,
       );
     }
@@ -417,7 +417,7 @@ export class Buffer {
    */
   grow(n: number) {
     if (n < 0) {
-      throw Error(
+      throw new Error(
         `Cannot grow buffer as growth must be positive: received ${n}`,
       );
     }

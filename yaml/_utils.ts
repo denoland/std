@@ -3,10 +3,6 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-export function isBoolean(value: unknown): value is boolean {
-  return typeof value === "boolean";
-}
-
 export function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object";
 }
