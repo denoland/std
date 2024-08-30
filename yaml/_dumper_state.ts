@@ -740,13 +740,13 @@ export class DumperState {
     if (typeof type.represent === "function") {
       return type.represent(value, style);
     }
-    if (Object.hasOwn(type.represent, style)) {
-      const represent = type.represent[style] as RepresentFn<unknown>;
-      return represent(value, style);
+    const represent = type.represent[style];
+    if (!represent) {
+      throw new TypeError(
+        `!<${type.tag}> tag resolver accepts not "${style}" style`,
+      );
     }
-    throw new TypeError(
-      `!<${type.tag}> tag resolver accepts not "${style}" style`,
-    );
+    return represent(value, style);
   }
 
   detectType(value: unknown): { tag: string | null; value: unknown } {
