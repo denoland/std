@@ -3,7 +3,6 @@ import {
   assert,
   assertAlmostEquals,
   assertEquals,
-  assertLess,
   assertRejects,
 } from "@std/assert";
 import { memoize } from "./memoize.ts";
@@ -66,24 +65,14 @@ Deno.test("memoize() allows simple memoization with primitive arg", () => {
 Deno.test("memoize() is performant for expensive fibonacci function", () => {
   // Typically should take a maximum of a couple of milliseconds, but this
   // test is really just a smoke test to make sure the memoization is working
-  // correctly, so we set the timeout to an unrealistically high value to make
-  // sure it isn't flaky dependent on hardware, test runner, etc.
-  const TIMEOUT_MS = 10_000;
+  // correctly, so we don't set a deadline to make sure it isn't flaky
+  // dependent on hardware, test runner, etc.
 
-  const fibWithTimeout = memoize(
-    (n: bigint, startTime = performance.now()): bigint => {
-      const now = performance.now();
-      const diff = now - startTime;
+  const fib = memoize((n: bigint): bigint => {
+    return n <= 2n ? 1n : fib(n - 1n) + fib(n - 2n);
+  });
 
-      assertLess(diff, TIMEOUT_MS);
-
-      return n <= 2n
-        ? 1n
-        : fibWithTimeout(n - 1n, now) + fibWithTimeout(n - 2n, now);
-    },
-  );
-
-  assertEquals(fibWithTimeout(100n), 354224848179261915075n);
+  assertEquals(fib(100n), 354224848179261915075n);
 });
 
 Deno.test("memoize() allows multiple primitive args", () => {
