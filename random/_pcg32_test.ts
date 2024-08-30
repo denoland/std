@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { U64_CEIL } from "./_constants.ts";
 import { assertEquals } from "../assert/equals.ts";
 import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
 
@@ -49,6 +48,8 @@ Deno.test("seedFromU64() generates seeds from bigints", async (t) => {
       }
     },
   );
+
+  const U64_CEIL = 2n ** 64n;
 
   await t.step("wraps bigint input to u64", async (t) => {
     await t.step("exact multiple of U64_CEIL", () => {

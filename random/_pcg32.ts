@@ -1,8 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
-import { U32_CEIL, U64_CEIL } from "./_constants.ts";
-
 /** Multiplier for the PCG32 algorithm. */
 const PCG32_MUL: bigint = 6364136223846793005n;
 /** Initial increment for the PCG32 algorithm. Only used during seeding. */
@@ -44,7 +42,7 @@ export function fromSeed(seed: Uint8Array) {
  * Mutates `pcg` by advancing `pcg.state`.
  */
 function step(pgc: PcgMutableState) {
-  pgc.state = (pgc.state * PCG32_MUL + (pgc.inc | 1n)) % U64_CEIL;
+  pgc.state = BigInt.asUintN(64, pgc.state * PCG32_MUL + (pgc.inc | 1n));
 }
 
 /**
@@ -54,7 +52,7 @@ function fromStateIncr(state: bigint, increment: bigint): PcgMutableState {
   const pcg: PcgMutableState = { state, inc: increment };
 
   // Move away from initial value:
-  pcg.state = (pcg.state + pcg.inc) % U64_CEIL;
+  pcg.state = BigInt.asUintN(64, pcg.state + pcg.inc);
 
   step(pcg);
 
@@ -78,13 +76,13 @@ export function nextU32(pcg: PcgMutableState): number {
 
   // Output function XSH RR: xorshift high (bits), followed by a random rotate
   const rot = state >> ROTATE;
-  const xsh = (((state >> XSHIFT) ^ state) >> SPARE) % U32_CEIL;
+  const xsh = BigInt.asUintN(32, ((state >> XSHIFT) ^ state) >> SPARE);
   return Number(rotateRightU32(xsh, rot));
 }
 
 // `n`, `rot`, and return val are all u32
 function rotateRightU32(n: bigint, rot: bigint): bigint {
-  const left = (n << (-rot & 31n)) % U32_CEIL;
+  const left = BigInt.asUintN(32, n << (-rot & 31n));
   const right = n >> rot;
   return (left | right);
 }
@@ -94,8 +92,7 @@ function rotateRightU32(n: bigint, rot: bigint): bigint {
  * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
  */
 export function seedFromU64(state: bigint, numBytes: number): Uint8Array {
-  // wrap to u64
-  state = ((state % U64_CEIL) + U64_CEIL) % U64_CEIL;
+  state = BigInt.asUintN(64, state);
 
   const seed = new Uint8Array(numBytes);
 
