@@ -5,7 +5,7 @@ import { assertEquals } from "../assert/equals.ts";
 import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
 
 Deno.test("seedFromU64() generates seeds from bigints", async (t) => {
-  await t.step("First 10 16-bit seeds are same as rand crate", async (t) => {
+  await t.step("first 10 16-bit seeds are same as rand crate", async (t) => {
     /**
      * Expected results obtained by copying the Rust code from
      * https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
@@ -33,21 +33,24 @@ Deno.test("seedFromU64() generates seeds from bigints", async (t) => {
     }
   });
 
-  await t.step("Can generate arbitrary-length seeds", async (t) => {
-    // deno-fmt-ignore
-    const expectedBytes = [234, 216, 29, 114, 93, 38, 16, 78, 137, 156, 59, 248, 66, 206, 120, 46, 186];
+  await t.step(
+    "generates arbitrary-length seed data from a single bigint",
+    async (t) => {
+      // deno-fmt-ignore
+      const expectedBytes = [234, 216, 29, 114, 93, 38, 16, 78, 137, 156, 59, 248, 66, 206, 120, 46, 186];
 
-    for (const i of expectedBytes.keys()) {
-      const slice = expectedBytes.slice(0, i + 1);
+      for (const i of expectedBytes.keys()) {
+        const slice = expectedBytes.slice(0, i + 1);
 
-      await t.step(`With length ${i + 1}`, () => {
-        const actual = Array.from(seedFromU64(1n, i + 1));
-        assertEquals(actual, slice);
-      });
-    }
-  });
+        await t.step(`With length ${i + 1}`, () => {
+          const actual = Array.from(seedFromU64(1n, i + 1));
+          assertEquals(actual, slice);
+        });
+      }
+    },
+  );
 
-  await t.step("Wraps biging input", async (t) => {
+  await t.step("wraps bigint input to u64", async (t) => {
     await t.step("exact multiple of U64_CEIL", () => {
       const expected = Array.from(seedFromU64(BigInt(0n), 16));
       const actual = Array.from(seedFromU64(U64_CEIL * 99n, 16));

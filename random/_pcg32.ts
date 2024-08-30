@@ -4,11 +4,20 @@
 import { U32_CEIL, U64_CEIL } from "./_constants.ts";
 
 /** Multiplier for the PCG32 algorithm. */
-export const PCG32_MUL: bigint = 6364136223846793005n;
-/** Initial increment for the PCG32 algorithm. */
-export const PCG32_INC: bigint = 11634580027462260723n;
+const PCG32_MUL: bigint = 6364136223846793005n;
+/** Initial increment for the PCG32 algorithm. Only used during seeding. */
+const PCG32_INC: bigint = 11634580027462260723n;
 
-export type PcgMutableState = {
+// Constants are for 64-bit state, 32-bit output
+const ROTATE = 59n; // 64 - 5
+const XSHIFT = 18n; // (5 + 32) / 2
+const SPARE = 27n; // 64 - 32 - 5
+
+/**
+ * Internal state for the PCG32 algorithm.
+ * `state` prop is mutated by each step, whereas `inc` prop remains constant.
+ */
+type PcgMutableState = {
   state: bigint;
   inc: bigint;
 };
@@ -34,7 +43,7 @@ export function fromSeed(seed: Uint8Array) {
 /**
  * Mutates `pcg` by advancing `pcg.state`.
  */
-export function step(pgc: PcgMutableState) {
+function step(pgc: PcgMutableState) {
   pgc.state = (pgc.state * PCG32_MUL + (pgc.inc | 1n)) % U64_CEIL;
 }
 
@@ -64,16 +73,20 @@ function fromStateIncr(state: bigint, increment: bigint): PcgMutableState {
  * @returns A Uint8Array representing the next PCG32 32-bit integer as 4 bytes (little-endian).
  */
 export function nextU32(pcg: PcgMutableState): number {
-  const xorShifted = (((pcg.state >> 18n) ^ pcg.state) >> 27n) % U32_CEIL;
-  const rot = (pcg.state >> 59n) % U32_CEIL;
-
-  const x = Number(
-    ((xorShifted >> rot) | (xorShifted << ((-rot) & 31n))) % U32_CEIL,
-  );
-
+  const { state } = pcg;
   step(pcg);
 
-  return Number(x);
+  // Output function XSH RR: xorshift high (bits), followed by a random rotate
+  const rot = state >> ROTATE;
+  const xsh = (((state >> XSHIFT) ^ state) >> SPARE) % U32_CEIL;
+  return Number(rotateRightU32(xsh, rot));
+}
+
+// `n`, `rot`, and return val are all u32
+function rotateRightU32(n: bigint, rot: bigint): bigint {
+  const left = (n << (-rot & 31n)) % U32_CEIL;
+  const right = n >> rot;
+  return (left | right);
 }
 
 /**
