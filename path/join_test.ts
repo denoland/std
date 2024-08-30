@@ -62,6 +62,10 @@ const joinTests: TestCase[] =
     // URLs
     [[new URL("file:///"), "x/b", "..", "/b/c.js"], "/x/b/c.js"],
     [[new URL("file:///foo"), "../../../bar"], "/bar"],
+    [
+      [new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."],
+      "/foo/bar/baz/asdf",
+    ],
   ];
 
 // Windows-specific join tests
