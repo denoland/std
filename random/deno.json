@@ -6,7 +6,7 @@
     "./between": "./between.ts",
     "./integer-between": "./integer_between.ts",
     "./sample": "./sample.ts",
-    "./seeded-random": "./seeded_random.ts",
+    "./seeded": "./seeded.ts",
     "./shuffle": "./shuffle.ts"
   }
 }

@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { randomBetween } from "./between.ts";
-import { PCG32_INITIALIZER, SeededRandom } from "./seeded_random.ts";
+import { randomSeeded } from "./seeded.ts";
 import {
   assertAlmostEquals,
   assertEquals,
@@ -10,10 +10,10 @@ import {
 } from "@std/assert";
 
 Deno.test("randomBetween() generates a random number between the provided minimum and maximum values", () => {
-  const r = SeededRandom.fromState(PCG32_INITIALIZER);
+  const prng = randomSeeded(0n);
   const results = Array.from(
     { length: 1e4 },
-    () => randomBetween(1, 10, { prng: r.random }),
+    () => randomBetween(1, 10, { prng }),
   );
 
   const min = Math.min(...results);
@@ -51,30 +51,30 @@ Deno.test("randomBetween() throws if max is less than min", () => {
 });
 
 Deno.test("randomBetween() allows negative min and max", () => {
-  const r = SeededRandom.fromState(PCG32_INITIALIZER);
+  const prng = randomSeeded(0n);
   const results = Array.from(
     { length: 3 },
-    () => randomBetween(-10, -1, { prng: r.random }),
+    () => randomBetween(-10, -1, { prng }),
   );
 
   assertEquals(results, [
-    -9.255586388288066,
-    -9.912607186706737,
-    -2.862219122471288,
+    -9.374074870022014,
+    -1.1224633122328669,
+    -9.295748566510156,
   ]);
 });
 
 Deno.test("randomBetween() allows non-integer min and max", () => {
-  const r = SeededRandom.fromState(PCG32_INITIALIZER);
+  const prng = randomSeeded(0n);
   const results = Array.from(
     { length: 3 },
-    () => randomBetween(1.5, 2.5, { prng: r.random }),
+    () => randomBetween(1.5, 2.5, { prng }),
   );
 
   assertEquals(results, [
-    1.5827126235235482,
-    1.5097103125881404,
-    2.293086764169857,
+    1.5695472366642207,
+    2.4863929653074592,
+    1.5782501592766494,
   ]);
 });
 

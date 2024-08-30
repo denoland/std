@@ -5,8 +5,7 @@
  * `Math.random`, i.e. taking zero arguments and returning a random number in
  * the range `[0, 1)`. The behavior of a function that accepts a `Prng` an
  * option may be customized by passing a `Prng` with different behavior from
- * `Math.random`, for example it may be seeded or intentionally biased to give
- * a different distribution of results.
+ * `Math.random`, for example it may be seeded.
  */
 export type Prng = typeof Math.random;
 
