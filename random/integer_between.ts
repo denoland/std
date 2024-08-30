@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { defaultOptions, type RandomOptions } from "./_types.ts";
+import type { RandomOptions } from "./_types.ts";
 import { randomBetween } from "./between.ts";
-export type { RandomOptions };
 
 /**
  * Generates a random integer between the provided minimum and maximum values.
@@ -31,6 +30,6 @@ export function randomIntegerBetween(
     throw new RangeError("min and max must be integers");
   }
 
-  const opts = { ...defaultOptions, ...options };
+  const opts = { random: Math.random, ...options };
   return Math.floor(randomBetween(min, max + 1, opts));
 }

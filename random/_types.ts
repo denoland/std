@@ -17,7 +17,3 @@ export type RandomOptions = {
    */
   random: Prng;
 };
-
-export const defaultOptions: RandomOptions = {
-  random: Math.random,
-};

@@ -36,6 +36,14 @@
     "@std/net": "jsr:@std/net@^1.0.1",
     "@std/path": "jsr:@std/path@^1.0.3",
     "@std/regexp": "jsr:@std/regexp@^1.0.0",
+
+    "@std/random": "./random/mod.ts",
+    "@std/random/between": "./random/between.ts",
+    "@std/random/integer-between": "./random/integer_between.ts",
+    "@std/random/sample": "./random/sample.ts",
+    "@std/random/seeded-random": "./random/seeded_random.ts",
+    "@std/random/shuffle": "./random/shuffle.ts",
+
     "@std/semver": "jsr:@std/semver@^1.0.2",
     "@std/streams": "jsr:@std/streams@^1.0.3",
     "@std/testing": "jsr:@std/testing@^1.0.1",

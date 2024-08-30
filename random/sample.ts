@@ -1,10 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  defaultOptions as defaultRandomOptions,
-  type RandomOptions,
-} from "./_types.ts";
+import type { RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";
 
 /**
@@ -22,7 +19,7 @@ export type SampleOptions = RandomOptions & {
 };
 
 const defaultOptions: SampleOptions = {
-  ...defaultRandomOptions,
+  random: Math.random,
   weights: undefined,
 };
 

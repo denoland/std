@@ -25,3 +25,4 @@ export * from "./integer_between.ts";
 export * from "./sample.ts";
 export * from "./seeded_random.ts";
 export * from "./shuffle.ts";
+export type * from "./_types.ts";

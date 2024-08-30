@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { defaultOptions, type RandomOptions } from "./_types.ts";
+import type { RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";
-export type { RandomOptions };
 
 /**
  * Shuffles the provided array, returning a copy and without modifying the original array.
@@ -28,7 +27,7 @@ export function shuffle<T>(
   items: readonly T[],
   options?: Partial<RandomOptions>,
 ): T[] {
-  const opts = { ...defaultOptions, ...options };
+  const opts = { random: Math.random, ...options };
 
   const result = [...items];
 
