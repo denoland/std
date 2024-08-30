@@ -28,7 +28,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
+import type { KindType, StyleVariant, Type } from "./_type.ts";
 import { isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
