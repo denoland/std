@@ -351,11 +351,14 @@ Deno.test({
     assertEquals(
       parse(`
         - 0
+        - +0
+        - -0
         - 42
+        - +42
         - -42
         - 1_000
       `),
-      [0, 42, -42, 1000],
+      [0, 0, 0, 42, 42, -42, 1000],
     );
 
     // binary, octal, and hexadecimal
