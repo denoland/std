@@ -716,7 +716,8 @@ export class LoaderState {
     this.position++;
     captureStart = captureEnd = this.position;
 
-    while ((ch = this.peek()) !== 0) {
+    while (!this.#isEof()) {
+      ch = this.peek();
       if (ch === SINGLE_QUOTE) {
         this.captureSegment(captureStart, this.position, true);
         ch = this.next();
@@ -762,7 +763,9 @@ export class LoaderState {
     let captureEnd = this.position;
     let captureStart = this.position;
     let tmp: number;
-    while ((ch = this.peek()) !== 0) {
+    while (!this.#isEof()) {
+      ch = this.peek();
+
       if (ch === DOUBLE_QUOTE) {
         this.captureSegment(captureStart, this.position, true);
         this.position++;
@@ -1614,7 +1617,7 @@ export class LoaderState {
     this.tagMap = new Map();
     this.anchorMap = new Map();
 
-    while ((ch = this.peek()) !== 0) {
+    while (!this.#isEof()) {
       this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
