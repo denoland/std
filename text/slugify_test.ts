@@ -16,11 +16,11 @@ Deno.test("slugify() handles whitespaces", () => {
   assertEquals(slugify("Hello\r\nWorld"), "hello-world");
 });
 
-Deno.test("slugify() replaces diacritic characters", () => {
-  assertEquals(slugify("déjà vu"), "deja-vu");
-  assertEquals(slugify("Cliché"), "cliche");
-  assertEquals(slugify("façade"), "facade");
-  assertEquals(slugify("résumé"), "resume");
+Deno.test("slugify() normalizes diacritic characters to NFC form", () => {
+  assertEquals(slugify("déjà vu".normalize("NFD")), "déjà-vu".normalize("NFC"));
+  assertEquals(slugify("Cliché".normalize("NFD")), "cliché".normalize("NFC"));
+  assertEquals(slugify("façade".normalize("NFD")), "façade".normalize("NFC"));
+  assertEquals(slugify("résumé".normalize("NFD")), "résumé".normalize("NFC"));
 });
 
 Deno.test("slugify() handles dashes", () => {
@@ -32,7 +32,8 @@ Deno.test("slugify() handles empty string", () => {
   assertEquals(slugify(""), "");
 });
 
-Deno.test("slugify() removes unknown special characters", () => {
+Deno.test("slugify() replaces non-word characters with dashes", () => {
+  assertEquals(slugify("Hello, world!"), "hello-world");
   assertEquals(slugify("hello ~ world"), "hello-world");
 
   assertEquals(
@@ -53,6 +54,23 @@ Deno.test("slugify() removes unknown special characters", () => {
   );
   assertEquals(
     slugify("Bitcoin soars past $33,000, its highest ever"),
-    "bitcoin-soars-past-33000-its-highest-ever",
+    "bitcoin-soars-past-33-000-its-highest-ever",
   );
+
+  assertEquals(slugify("The value of Pi is 3.14"), "the-value-of-pi-is-3-14");
+  assertEquals(slugify("La valeur de Pi est 3,14"), "la-valeur-de-pi-est-3-14");
+  assertEquals(slugify("O(n)"), "o-n");
+  assertEquals(slugify("甲（乙）"), "甲-乙");
+});
+
+Deno.test("slugify() works for non-Latin alphabets", () => {
+  assertEquals(slugify("Συστημάτων Γραφής"), "συστημάτων-γραφής");
+  assertEquals(slugify("三人行，必有我师焉"), "三人行-必有我师焉");
+});
+
+Deno.test("slugify() strips curly/straight quotes/apostrophes", () => {
+  assertEquals(slugify("What’s up?"), "whats-up");
+  assertEquals(slugify("What's up?"), "whats-up");
+  assertEquals(slugify("甲“‘乙’”"), "甲乙");
+  assertEquals(slugify(`甲"'乙'"`), "甲乙");
 });

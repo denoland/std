@@ -10,8 +10,8 @@
  * import { slugify } from "@std/text/slugify";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(slugify("hello world"), "hello-world");
- * assertEquals(slugify("déjà vu"), "deja-vu");
+ * assertEquals(slugify("Hello, world!"), "hello-world");
+ * assertEquals(slugify("Συστημάτων Γραφής"), "συστημάτων-γραφής");
  * ```
  *
  * @param input The string that is going to be converted into a slug
@@ -19,10 +19,11 @@
  */
 export function slugify(input: string): string {
   return input
-    .trim()
-    .normalize("NFD")
-    .replaceAll(/[^a-zA-Z0-9\s-]/g, "")
-    .replaceAll(/\s+|-+/g, "-")
-    .replaceAll(/^-+|-+$/g, "")
-    .toLowerCase();
+    .toLowerCase()
+    .normalize()
+    // straight quotes + initial/final punctuation (curly quotes etc.)
+    .replaceAll(/['"\p{Pi}\p{Pf}]/gu, "")
+    // all other non-word chars (whitespace, commas, periods, symbols, etc.)
+    .replaceAll(/[^\p{L}\p{M}\p{N}]+/gu, "-")
+    .replaceAll(/^-|-$/g, "");
 }
