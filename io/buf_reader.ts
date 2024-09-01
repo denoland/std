@@ -121,13 +121,13 @@ export interface ReadLineResult {
  *
  * @example Usage
  * ```ts
- * import { BufReader } from "@std/io";
+ * import { BufReader, Buffer } from "@std/io";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const encoder = new TextEncoder();
  * const decoder = new TextDecoder();
  *
- * const reader = new BufReader(new Deno.Buffer(encoder.encode("hello world")));
+ * const reader = new BufReader(new Buffer(encoder.encode("hello world")));
  * const buf = new Uint8Array(11);
  * await reader.read(buf);
  * assertEquals(decoder.decode(buf), "hello world");
