@@ -706,7 +706,8 @@ export class DumperState {
       results.push(pairBuffer);
     }
 
-    return (compact ? "" : separator) + results.join(separator) || "{}"; // Empty mapping if no valid pairs.
+    const prefix = compact ? "" : separator;
+    return results.length ? prefix + results.join(separator) : "{}"; // Empty mapping if no valid pairs.
   }
 
   getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {
