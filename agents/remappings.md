@@ -1,6 +1,14 @@
 ---
 config:
   temperature: 0
+state:
+  switchboard # load up a slice of the state into the agent every time
+files:
+  some/file/to/load.json # load up a file into the agent.
+  # or use links to load up arbitrary data into the agent.
+  # could add paths within a file, and us pid addressing.
+  # use this method to load time and browser fingerprint.
+
 prompt-additions:
   - time      # Adds the line "The time now is: 2024-08-26T23:40:59.133Z"
   - timezone  # Adds the line "The Users timezone is: America/New_York"
