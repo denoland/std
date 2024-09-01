@@ -118,7 +118,7 @@ export const v5 = {
  * import { assert } from "@std/assert";
  *
  * const uuid = v7.generate();
- * assert(v7.validate(uuid as string));
+ * assert(v7.validate(uuid));
  * ```
  */
 export const v7 = {

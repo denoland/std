@@ -11,7 +11,7 @@ Deno.test("generate() generates a non-empty string", () => {
 
 Deno.test("generate() generates UUIDs in version 7 format", () => {
   for (let i = 0; i < 10000; i++) {
-    const u = generate() as string;
+    const u = generate();
     assert(validate(u), `${u} is not a valid uuid v7`);
   }
 });
@@ -39,3 +39,4 @@ Deno.test("validate() checks if a string is a valid v5 UUID", () => {
   assert(validate(u), `generated ${u} should be valid`);
   assert(validate(t), `${t} should be valid`);
 });
+
