@@ -31,7 +31,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(result).toEqual('local reply')
     })
 
-    const resumed = await Backchat.upsert(engine, key, backchat.threadId)
+    const resumed = await Backchat.upsert(engine, key, backchat.id)
     await t.step('resume session', async () => {
       // TODO this should check if the session is valid
       expect(resumed.pid).toEqual(backchat.pid)
@@ -45,7 +45,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
       const almost = `bac_${hash('almost')}`
       const next = await Backchat.upsert(engine, key, almost)
-      expect(next.threadId).not.toEqual(almost)
+      expect(next.id).not.toEqual(almost)
     })
     await engine.stop()
   })

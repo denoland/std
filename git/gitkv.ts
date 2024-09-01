@@ -65,12 +65,14 @@ export class GitKV {
       return head
     }
 
+    if (opts && opts.encoding && opts.encoding !== 'utf8') {
+      throw new Error('only utf8 encoding is supported')
+    }
+
     const pathKey = this.#getAllowedPathKey(path)
     let result: Uint8Array
     if (await this.#cache.has(pathKey)) {
-      const cached = await this.#cache.get(pathKey)
-      assert(cached, 'cache fail')
-      result = cached
+      result = this.#cache.get(pathKey)
     } else {
       const dbResult = await this.#db.blobGet(pathKey)
 
@@ -80,9 +82,6 @@ export class GitKV {
       }
       result = dbResult.value
       await this.#cache.set(pathKey, result)
-    }
-    if (opts && opts.encoding && opts.encoding !== 'utf8') {
-      throw new Error('only utf8 encoding is supported')
     }
     if (opts && opts.encoding === 'utf8') {
       const string = new TextDecoder().decode(result)
@@ -262,23 +261,22 @@ class Cache {
 
     await this.#load()
     if (this.#big) {
-      const result = await this.#big.match(url)
-      result?.body?.cancel()
-      return !!result
-    }
-  }
-  async get(key: Deno.KvKey) {
-    const url = toUrl(key)
-    if (Cache.#local.has(url)) {
-      return Cache.#local.get(url)
-    }
-    await this.#load()
-    if (this.#big) {
       const cached = await this.#big.match(url)
       if (cached) {
-        const ab = await cached.arrayBuffer()
-        return new Uint8Array(ab)
+        const buffer = await cached.arrayBuffer()
+        const value = new Uint8Array(buffer)
+        Cache.#local.set(url, value)
+        return true
       }
+    }
+    return false
+  }
+  get(key: Deno.KvKey) {
+    const url = toUrl(key)
+    if (Cache.#local.has(url)) {
+      const result = Cache.#local.get(url)
+      assert(result, 'cache inconsistency')
+      return result
     }
     throw new Error('not found: ' + key.join('/'))
   }

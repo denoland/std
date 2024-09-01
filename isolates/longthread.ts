@@ -55,7 +55,7 @@ export const functions: Functions<Api> = {
       messages: [],
       toolCommits: {},
       stateboards: [],
-      foci: [],
+      focusedFiles: [],
     }
     api.writeJSON(threadPath, thread)
   },
@@ -69,13 +69,21 @@ export const functions: Functions<Api> = {
     await loop(path, api)
   },
   switchboard: async ({ content, actorId }, api) => {
+    // if our focus is somehwere else, relay it along ?
+    // can figure out if we want to intercept it somewhere else.
+    // if backchat receives a prompt, it automatically makes it the focus
+
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
 
+    // or the thread could have a switchboard state that gets loaded up
+    // somehow specify in the agent what the allowed agent types are
+
     const path = `agents/switchboard.md`
     const { halt } = await api.actions<completions.Api>('ai-completions')
+    // halt should force a tool call as opposed to normal completion
     const params = await halt({ path, content })
 
     log('switchboard:', params)

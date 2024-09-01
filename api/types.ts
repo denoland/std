@@ -13,16 +13,12 @@ import type OpenAI from 'openai'
 type CommitOid = string
 
 export { Backchat }
-export enum PROCTYPE {
-  SERIAL = 'SERIAL',
-  BRANCH = 'BRANCH',
-  DAEMON = 'DAEMON',
-  EFFECT = 'EFFECT',
-  // TODO FORGET = 'FORGET', // allow fire and forget actions
-  // BUT forget needs to be a separate option as we need DAEMON and FORGET
-  // together to allow for a fire and forget branches
-  // OR make DAEMON be the same as FORGET since no new info need be returned ?
-}
+export const Proctype = z.enum(['SERIAL', 'BRANCH', 'DAEMON', 'EFFECT'])
+// TODO FORGET = 'FORGET', // allow fire and forget actions
+// BUT forget needs to be a separate option as we need DAEMON and FORGET
+// together to allow for a fire and forget branches
+// OR make DAEMON be the same as FORGET since no new info need be returned ?
+
 export const WIDGETS = z.enum([
   'TPS_REPORT',
   'FILES',
@@ -32,7 +28,28 @@ export const WIDGETS = z.enum([
   'THREADS',
   'REPOS',
 ])
+export const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
+export const machineIdRegex = /^mac_[2-7a-z]{33}$/
+export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
+export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
+export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/
+export const agentHashRegex = /^age_[0-9A-HJKMNP-TV-Z]{16}$/
 
+export const SU_ACTOR = 'act_0000000000000000'
+export const SU_BACKCHAT = 'bac_0000000000000000'
+export const zodPid = z.object({
+  repoId: z.string().regex(repoIdRegex),
+  account: z.string().regex(githubRegex),
+  repository: z.string().regex(githubRegex),
+  branches: z.array(z.string()).min(1),
+})
+export const triad = z.object({
+  path: z.string(),
+  pid: zodPid,
+  commit: z.string(),
+})
+export type Triad = z.infer<typeof triad>
 export type { JSONSchemaType }
 export type ApiFunction = {
   (): unknown | Promise<unknown>
@@ -121,6 +138,11 @@ export type IoStruct = {
   branches: {
     [sequence: number]: BranchName
   }
+  /**
+   * Isolates can store values here and know they will not leak into other
+   * branches, and will be quick to access since the io file is always loaded.
+   */
+  config: { [key: string]: JsonValue }
 }
 type BranchName = string
 
@@ -142,6 +164,9 @@ export const ENTRY_BRANCH = 'main'
 export type PartialPID = Omit<PID, 'repoId'>
 
 export const thread = z.object({
+  /** If this thread is deferring to another thread, rather than taking on the
+   * the current messages directly */
+  defer: zodPid.optional(),
   /** If the messages were truncated, this is the offset count */
   messageOffset: z.number(),
   messages: z.array(completionMessage),
@@ -173,10 +198,11 @@ export const thread = z.object({
     setter: z.number(),
     commit: z.string(),
   })),
-  /** History of what the focus was set to */
-  foci: z.array(z.object({
+  /** History of what the focus file path was set to (like the CWD).  Allows
+   * statements like "the previous file", "that other file", and "three files
+   * ago"  */
+  focusedFiles: z.array(z.object({
     /** The message number that set the focus */
-
     setter: z.number(),
     focus: z.object({
       // Define the structure of PathTriad here
@@ -184,9 +210,7 @@ export const thread = z.object({
   })),
 })
 export type Thread = z.infer<typeof thread>
-export type BackchatThread = Thread & {
-  focus: string
-}
+
 export type AssistantsThread = Thread & {
   externalId: string
   messages: OpenAI.Beta.Threads.Message[]
@@ -210,49 +234,52 @@ export type PierceRequest = Invocation & {
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
 }
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | {
-    [key: string]: JsonValue
-  }
 export type Params = { [key: string]: JsonValue }
-export type Invocation = {
-  isolate: string
-  functionName: string
-  params: Params
-  proctype: PROCTYPE
+
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
+type Literal = z.infer<typeof literalSchema>
+export type JsonValue = Literal | { [key: string]: JsonValue } | JsonValue[]
+const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
+)
+
+const invocation = z.object({
+  isolate: z.string(),
+  functionName: z.string(),
+  params: z.record(jsonSchema),
+  proctype: Proctype,
   /**
    * Allow a custom name for the new branch, if this is a branching request
    */
-  branch?: string
+  branch: z.string().optional(),
   /**
    * If the custom branch name might not be unique, a prefix can be given and
    * the sequence number will be appended to the branch name, ensuring
    * uniqueness.
    */
-  branchPrefix?: string
+  branchPrefix: z.string().optional(),
   /**
    * If the request is a branching request, this will be the name of the new
    * branch.  If the branch already exists, the request will fail.
    */
-  branchName?: string
+  branchName: z.string().optional(),
   /** Relative paths to delete in the branch */
-  deletes?: string[]
-  effect?: boolean | {
-    /** does this side effect have access to the network ? */
-    net?: boolean
-    /** does this side effect have access to the files of the repo ? */
-    files?: boolean
-    /** can this side effect make execution requests in artifact ? */
-    artifact?: boolean
-    /** Specify the maximum time to wait for this side effect to complete */
-    timeout?: number
-  }
-}
+  deletes: z.array(z.string()).optional(),
+  effect: z.union([
+    z.boolean(),
+    z.object({
+      /** does this side effect have access to the network ? */
+      net: z.boolean().optional(),
+      /** does this side effect have access to the files of the repo ? */
+      files: z.boolean().optional(),
+      /** can this side effect make execution requests in artifact ? */
+      artifact: z.boolean().optional(),
+      /** Specify the maximum time to wait for this side effect to complete */
+      timeout: z.number().optional(),
+    }),
+  ]).optional(),
+})
+export type Invocation = z.infer<typeof invocation>
 /**
  * The Process Identifier used to address a specific process branch.
  */
@@ -280,28 +307,26 @@ export type SolidRequest = Invocation & {
 export type RemoteRequest = SolidRequest & {
   commit: string
 }
-export type UnsequencedRequest = Omit<
-  RemoteRequest,
-  'sequence' | 'source' | 'commit'
->
+export type UnsequencedRequest = z.infer<typeof unsequencedRequest>
+export const unsequencedRequest = invocation.extend({ target: zodPid })
 
 export type Request = PierceRequest | SolidRequest | RemoteRequest
 
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (procOpts?: ProcessOptions) => {
   if (!procOpts) {
-    return PROCTYPE.SERIAL
+    return Proctype.enum.SERIAL
   }
   if (procOpts.noClose) {
-    return PROCTYPE.DAEMON
+    return Proctype.enum.DAEMON
   }
   if (
     procOpts.deletes || procOpts.branch || procOpts.branchName ||
     procOpts.prefix
   ) {
-    return PROCTYPE.BRANCH
+    return Proctype.enum.BRANCH
   }
-  return PROCTYPE.SERIAL
+  return Proctype.enum.SERIAL
 }
 /** Here is where additional AI models and runner techniques can be added */
 export enum AGENT_RUNNERS {
@@ -589,16 +614,6 @@ const checkUndefined = (params: Params) => {
     }
   }
 }
-export const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
-export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
-export const machineIdRegex = /^mac_[2-7a-z]{33}$/
-export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
-export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
-export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/
-export const agentHashRegex = /^age_[0-9A-HJKMNP-TV-Z]{16}$/
-
-export const SU_ACTOR = 'act_0000000000000000'
-export const SU_BACKCHAT = 'bac_0000000000000000'
 
 export const generateActorId = (seed: string) => {
   return 'act_' + hash(seed)
@@ -719,18 +734,6 @@ export const getThreadPath = (pid: PID) => {
   const path = `threads/${threadPath}.json`
   return path
 }
-export const zodPid = z.object({
-  repoId: z.string().regex(repoIdRegex),
-  account: z.string().regex(githubRegex),
-  repository: z.string().regex(githubRegex),
-  branches: z.array(z.string()).min(1),
-})
-export const triad = z.object({
-  path: z.string(),
-  pid: zodPid,
-  commit: z.string(),
-})
-export type Triad = z.infer<typeof triad>
 
 export const agent = z.object({
   name: z.string().regex(/^[a-zA-Z0-9_-]+$/),

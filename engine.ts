@@ -15,7 +15,7 @@ import {
   PID,
   PierceRequest,
   print,
-  PROCTYPE,
+  Proctype,
   Provisioner,
 } from './constants.ts'
 import IA from './isolate-api.ts'
@@ -203,7 +203,7 @@ export class Engine implements EngineInterface {
       isolate: 'actors',
       functionName: '@@install',
       params: { superuser },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
     }
     const promise = watcher.watch(pierce.ulid)
 

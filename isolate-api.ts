@@ -21,6 +21,8 @@ import {
   UnsequencedRequest,
 } from '@/constants.ts'
 import { type Isolate } from '@/isolates/index.ts'
+import IOChannel from '@io/io-channel.ts'
+import { z, ZodTypeAny } from 'zod'
 const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
@@ -100,6 +102,25 @@ export default class IA<T extends object = Default> {
     // return an abort signal
     assert(this.isEffect, 'signal only available for side effects')
     return this.#abort.signal
+  }
+  // TODO make get and set config be synchronous
+  async config<T>(schema: z.ZodObject<Record<string, ZodTypeAny>>) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    const io = await IOChannel.read(this.#fs)
+    assert(io, 'config not found')
+    return schema.parse(io.config) as T
+  }
+  async updateConfig(
+    updater: (config: IoStruct['config']) => IoStruct['config'],
+    schema: z.ZodObject<Record<string, ZodTypeAny>>,
+  ) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    const io = await IOChannel.read(this.#fs)
+    assert(io, 'config not found')
+    const config = schema.parse(io.config)
+    const next = schema.parse(updater(config))
+    assert(io, 'config not found')
+    io.config = next
   }
 
   async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
@@ -216,6 +237,7 @@ export default class IA<T extends object = Default> {
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
+
   async isActiveChild(pid: PID) {
     if (!isChildOf(pid, this.pid)) {
       throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))

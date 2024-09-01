@@ -39,6 +39,7 @@ export type C = {
 export type Functions<Api> = {
   [K in keyof Api]: Function<Api[K]>
 }
+
 type Function<T> = T extends (...args: infer Args) => infer R
   ? (...args: [...Args, IA]) => R
   : never

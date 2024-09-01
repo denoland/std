@@ -12,7 +12,7 @@ import {
 import { assert, Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
 import * as loadAgent from '@/isolates/load-agent.ts'
-import { getArgs } from '@/isolates/ai-completions.ts'
+import { getChatParams } from '@/isolates/ai-completions.ts'
 import { loadTools } from '@/isolates/ai-load-tools.ts'
 import { addIteration, outcome, testFile } from '@/api/tps-report.ts'
 import { z } from 'zod'
@@ -158,7 +158,7 @@ export const functions: Functions<Api> = {
     const { load } = await api.functions<loadAgent.Api>('load-agent')
     const agent = await load({ path })
     const tools = await loadTools(agent.commands, api)
-    const request = getArgs(agent, messages, tools)
+    const request = getChatParams(agent, messages, tools)
     return { request, response }
   },
 }

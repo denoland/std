@@ -61,7 +61,7 @@ export const functions: Functions<Api> = {
       externalId,
       additionalMessages: [],
       stateboards: [],
-      foci: [],
+      focusedFiles: [],
     }
     api.writeJSON(threadPath, thread)
     return api.pid

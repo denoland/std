@@ -13,7 +13,7 @@ import {
   PID,
   PierceRequest,
   ProcessOptions,
-  PROCTYPE,
+  Proctype,
   RpcOpts,
   SU_ACTOR,
   SU_BACKCHAT,
@@ -50,8 +50,8 @@ export class Backchat {
   }
   /**
    * If the resume parameter is provided, the backchat will attempt to resume
-   * the backchat session with the given id.  If the session is not found, a new
-   * session will be created.
+   * the backchat branch with the given id.  If the branch is not found, a new
+   * branch will be created with a new id.
    * @param engine
    * @param key The Machine private key
    * @param resume the backchat id to attempt to resume
@@ -71,8 +71,12 @@ export class Backchat {
   get pid() {
     return this.#pid
   }
-  get threadId() {
-    return this.pid.branches[2]
+  get id() {
+    const id = this.pid.branches[2]
+    if (!backchatIdRegex.test(id)) {
+      throw new Error('Invalid backchat id: ' + id)
+    }
+    return id
   }
   get machineId() {
     return this.#crypto.machineId
@@ -96,6 +100,7 @@ export class Backchat {
    * tmp files that are created when a user attaches files in the browser.  Can
    * also include structured data that widgets have prepared.
    */
+  // TODO adorn with other types of input, like file paths and selections
   async prompt(content: string, threadId?: string, attachments?: string[]) {
     const pierce: PierceRequest = {
       target: this.#pid,
@@ -103,7 +108,7 @@ export class Backchat {
       isolate: 'backchat',
       functionName: 'prompt',
       params: { content },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
     }
     if (threadId) {
       pierce.params.threadId = threadId
@@ -130,7 +135,7 @@ export class Backchat {
       isolate: 'backchat',
       functionName: 'relay',
       params: { request },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
     }
     const promise = this.#watcher.watch(pierce.ulid)
     // TODO handle an error in pierce
@@ -150,10 +155,17 @@ export class Backchat {
     }
     return await this.#engine.transcribe(params.audio)
   }
+  /**
+   * Initialize a new repository, optionally installing an isolate with the
+   * given parameters.
+   */
   async init({ repo, isolate, params }: Init) {
     const actor = await this.#getActor()
     return actor.init({ repo, isolate, params })
   }
+  /** Clone the given repo from github, optionally installing an isolate with
+   * the given parameters
+   */
   async clone({ repo, isolate, params }: Init) {
     const actor = await this.#getActor()
     return actor.clone({ repo, isolate, params })

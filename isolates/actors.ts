@@ -220,7 +220,7 @@ export const functions: Functions<Api> = {
     }
     const { create } = await api.actions<backchat.Api>('backchat', opts)
     // TODO set permissions on .io.json
-    await create()
+    await create({})
     // TODO optionally start a default thread
     const pid = addBranches(api.pid, backchatId)
     log('backchat pid', print(pid))

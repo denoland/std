@@ -8,7 +8,7 @@ import {
   PartialPID,
   PID,
   PierceRequest,
-  PROCTYPE,
+  Proctype,
   UnsequencedRequest,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
@@ -28,7 +28,7 @@ Deno.test('pierce branch', async (t) => {
     isolate: 'mock',
     functionName: 'mock',
     params: {},
-    proctype: PROCTYPE.SERIAL,
+    proctype: Proctype.enum.SERIAL,
   }
   const branchPierce = (ulid: string): PierceRequest => ({
     target,
@@ -36,7 +36,7 @@ Deno.test('pierce branch', async (t) => {
     isolate: 'test-isolate',
     functionName: 'test',
     params: { request: mockRequest },
-    proctype: PROCTYPE.BRANCH,
+    proctype: Proctype.enum.BRANCH,
   })
   const reply: MergeReply = {
     target,
@@ -63,7 +63,7 @@ Deno.test('pierce branch', async (t) => {
     const io = await next.readJSON<IoStruct>('.io.json')
     expect(io.sequence).toBe(1)
     expect(io.requests[0]).toEqual(pierce)
-    expect(io.requests[0].proctype).toEqual(PROCTYPE.BRANCH)
+    expect(io.requests[0].proctype).toEqual(Proctype.enum.BRANCH)
   })
   await t.step('child', async () => {
     const parentFs = FS.open(baseFs.pid, head, db)

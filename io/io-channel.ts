@@ -10,7 +10,7 @@ import {
   isRemoteRequest,
   MergeReply,
   PID,
-  PROCTYPE,
+  Proctype,
   RemoteRequest,
   Request,
   SolidReply,
@@ -29,6 +29,7 @@ const createBase = (): IoStruct => ({
   parents: {},
   pendings: {},
   branches: {},
+  config: {},
 })
 
 export default class IOChannel {
@@ -52,6 +53,7 @@ export default class IOChannel {
     check(io, pid)
     return new IOChannel(io, pid)
   }
+
   static async read(fs: FS) {
     if (await fs.exists('.io.json')) {
       const io = await fs.readJSON<IoStruct>('.io.json')
@@ -73,6 +75,12 @@ export default class IOChannel {
   static blank(fs: FS) {
     const io = new IOChannel(createBase(), fs.pid, fs)
     io.#save()
+  }
+  get config() {
+    return this.#io.config
+  }
+  set config(value: IoStruct['config']) {
+    this.#io.config = value
   }
   #save() {
     if (!this.#fs) {
@@ -110,7 +118,7 @@ export default class IOChannel {
 
     for (const sequence of unreplied) {
       const rawRequest = this.#io.requests[sequence]
-      if (rawRequest.proctype !== PROCTYPE.SERIAL) {
+      if (rawRequest.proctype !== Proctype.enum.SERIAL) {
         continue
       }
       if (!equal(rawRequest.target, this.#pid)) {
@@ -200,13 +208,13 @@ export default class IOChannel {
         }
       }
       delete this.#io.pendings[sequence]
-      if (request.proctype !== PROCTYPE.DAEMON) {
+      if (request.proctype !== Proctype.enum.DAEMON) {
         delete this.#io.branches[sequence]
       }
     }
     for (const key of pendingsToBlank) {
       const request = this.#io.requests[key]
-      if (request.proctype !== PROCTYPE.DAEMON) {
+      if (request.proctype !== Proctype.enum.DAEMON) {
         delete this.#io.branches[key]
       }
       delete this.#io.requests[key]
@@ -271,8 +279,9 @@ export default class IOChannel {
   }
   getBranchPid(sequence: number) {
     const request = this.getRequest(sequence)
-    const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
-    assert(branchTypes.includes(request.proctype), 'not a branch request')
+    const isBranch = request.proctype === Proctype.enum.BRANCH ||
+      request.proctype === Proctype.enum.DAEMON
+    assert(isBranch, 'not a branch request')
 
     let branchName = sequence + ''
     if (request.branchName) {
@@ -330,8 +339,10 @@ export default class IOChannel {
   }
   #addRequest(request: Request, sequence: number) {
     this.#io.requests[sequence] = request
-    const { proctype } = request
-    if (proctype === PROCTYPE.DAEMON || proctype === PROCTYPE.BRANCH) {
+    if (
+      request.proctype === Proctype.enum.DAEMON ||
+      request.proctype === Proctype.enum.BRANCH
+    ) {
       if (equal(request.target, this.#pid)) {
         const pid = this.getBranchPid(sequence)
         this.#io.branches[sequence] = pid.branches[pid.branches.length - 1]

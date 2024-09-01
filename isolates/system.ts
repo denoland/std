@@ -10,7 +10,7 @@ import {
   PID,
   pidSchema,
   print,
-  PROCTYPE,
+  Proctype,
 } from '@/constants.ts'
 import { isBaseRepo } from '@/constants.ts'
 const log = Debug('AI:system')
@@ -108,7 +108,7 @@ export const functions: Functions<Api> = {
         // TODO fire an error if this isolate is not installable
         functionName: '@@install',
         params,
-        proctype: PROCTYPE.SERIAL,
+        proctype: Proctype.enum.SERIAL,
         target: pid,
       })
       log('installed', print(pid))
@@ -134,7 +134,7 @@ export const functions: Functions<Api> = {
         isolate,
         functionName: '@@install',
         params: params || {},
-        proctype: PROCTYPE.SERIAL,
+        proctype: Proctype.enum.SERIAL,
         target: pid,
       })
     }

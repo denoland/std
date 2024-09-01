@@ -4,7 +4,7 @@
 
 import { IoStruct, partialFromRepo } from '@/constants.ts'
 import IOChannel from '@io/io-channel.ts'
-import { PROCTYPE } from '@/api/types.ts'
+import { Proctype } from '@/api/types.ts'
 import { expect } from '@utils'
 
 const partial = partialFromRepo('system/system')
@@ -59,10 +59,10 @@ const serialAccumulation: () => IoStruct = () => ({
           isolate: 'repo',
           functionName: 'rm',
           params: { repo: 'test/test' },
-          proctype: PROCTYPE.SERIAL,
+          proctype: Proctype.enum.SERIAL,
         },
       },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
     },
     1: {
       target: {
@@ -74,7 +74,7 @@ const serialAccumulation: () => IoStruct = () => ({
       isolate: 'repo',
       functionName: 'rm',
       params: { repo: 'test/test' },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
       sequence: 1,
       source: {
         repoId: '0',
@@ -90,4 +90,5 @@ const serialAccumulation: () => IoStruct = () => ({
     0: [{ commit: '1222aa01861192073e2a02c803767f75574ff5be', sequences: [1] }],
   },
   branches: {},
+  config: {},
 })

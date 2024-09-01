@@ -157,7 +157,7 @@ const complete = async (
   const agent: Agent = await load({ path })
   const tools = await loadTools(agent.commands, api)
 
-  const args = getArgs(agent, messages, tools)
+  const args = getChatParams(agent, messages, tools)
 
   log('completion started with model: %o', args.model, print(api.pid))
   let retries = 0
@@ -181,7 +181,7 @@ const complete = async (
   throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
 }
 
-export const getArgs = (
+export const getChatParams = (
   agent: Agent,
   messages: Thread['messages'],
   tools: OpenAI.ChatCompletionTool[],

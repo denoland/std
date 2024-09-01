@@ -5,7 +5,7 @@ import {
   C,
   isPierceRequest,
   PartialPID,
-  PROCTYPE,
+  Proctype,
   SolidRequest,
 } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
@@ -29,7 +29,7 @@ const partialRequest: PartialRequest = {
   isolate: 'io-fixture',
   functionName: 'local',
   params: {},
-  proctype: PROCTYPE.SERIAL,
+  proctype: Proctype.enum.SERIAL,
   source,
   sequence: 0,
 }
@@ -106,7 +106,7 @@ Deno.test('compound', async (t) => {
   }
   const compound = {
     isolate: 'io-fixture',
-    proctype: PROCTYPE.SERIAL,
+    proctype: Proctype.enum.SERIAL,
     source,
     sequence: 0,
     functionName: 'compound',

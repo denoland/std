@@ -10,7 +10,7 @@ import {
   PID,
   PierceRequest,
   Poolable,
-  PROCTYPE,
+  Proctype,
   RemoteRequest,
   Request,
   SolidReply,
@@ -94,7 +94,7 @@ export const solidify = async (
         assert(isMergeReply(poolable), 'branch requires merge reply')
         log('branch reply', poolable.commit)
         parents.push(poolable.commit)
-        if (request.proctype === PROCTYPE.BRANCH) {
+        if (request.proctype === Proctype.enum.BRANCH) {
           const { sequence } = poolable
           const branchPid = io.getBranchPid(sequence)
           deletes.push({ pid: branchPid, commit: poolable.commit })
@@ -157,14 +157,14 @@ const isBranch = (request: SolidRequest | PierceRequest, thisPid: PID) => {
       return false
     }
   }
-  return request.proctype === PROCTYPE.BRANCH ||
-    request.proctype === PROCTYPE.DAEMON
+  return request.proctype === Proctype.enum.BRANCH ||
+    request.proctype === Proctype.enum.DAEMON
 }
 const collectBranch = (req: Request, sequence: number, branches: number[]) => {
   const { proctype } = req
-  if (proctype === PROCTYPE.BRANCH || proctype === PROCTYPE.DAEMON) {
+  if (proctype === Proctype.enum.BRANCH || proctype === Proctype.enum.DAEMON) {
     branches.push(sequence)
   } else {
-    assert(proctype === PROCTYPE.SERIAL, `invalid proctype: ${proctype}`)
+    assert(proctype === Proctype.enum.SERIAL, `invalid proctype: ${proctype}`)
   }
 }

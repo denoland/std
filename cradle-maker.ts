@@ -21,7 +21,7 @@ export const cradleMaker = async (init?: Provisioner) => {
   if (!seedSet) {
     seeds.set(init, {
       seed: await engine.dump(),
-      backchatId: backchat.threadId,
+      backchatId: backchat.id,
     })
   }
   return { backchat, engine, privateKey }
