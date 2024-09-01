@@ -39,4 +39,3 @@ Deno.test("validate() checks if a string is a valid v5 UUID", () => {
   assert(validate(u), `generated ${u} should be valid`);
   assert(validate(t), `${t} should be valid`);
 });
-
