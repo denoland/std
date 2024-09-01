@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { accepts } from "./negotiation.ts";
 
 /**
  * Request handler for {@linkcode Route}.
@@ -34,6 +35,10 @@ export interface Route {
    */
   method?: string;
   /**
+   * Accept header.
+   */
+  accepts?: string[];
+  /**
    * Request handler.
    */
   handler: Handler;
@@ -57,6 +62,12 @@ export interface Route {
  *   {
  *     pattern: new URLPattern({ pathname: "/users/:id" }),
  *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/api/users/:id" }),
+ *     method: "GET",
+ *     accepts: ["application/json"],
+ *     handler: (_req, _info, params) => new Response(JSON.stringify({ id: params?.pathname.groups.id })),
  *   },
  *   {
  *     pattern: new URLPattern({ pathname: "/static/*" }),
@@ -92,7 +103,12 @@ export function route(
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
       if (match && request.method === (route.method ?? "GET")) {
-        return route.handler(request, info, match);
+        if (
+          (!route.accepts?.length) ||
+          (request.headers.has("Accept") && accepts(request, ...route.accepts))
+        ) {
+          return route.handler(request, info, match);
+        }
       }
     }
     return defaultHandler(request, info);

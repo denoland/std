@@ -2,6 +2,7 @@
 
 import { type Route, route } from "./route.ts";
 import { assertEquals } from "../assert/equals.ts";
+import { assertMatch } from "../assert/match.ts";
 
 const routes: Route[] = [
   {
@@ -17,6 +18,23 @@ const routes: Route[] = [
     pattern: new URLPattern({ pathname: "/users/:id" }),
     method: "POST",
     handler: () => new Response("Done"),
+  },
+  {
+    pattern: new URLPattern({ pathname: "/api/users/:id" }),
+    accepts: ["application/xml"],
+    handler: (_request, _info, params) =>
+      new Response(`<user><id>${params?.pathname.groups.id}</id></user>`),
+  },
+  {
+    pattern: new URLPattern({ pathname: "/api/users/:id" }),
+    accepts: ["application/json"],
+    handler: (_request, _info, params) =>
+      new Response(JSON.stringify({ id: params?.pathname.groups.id })),
+  },
+  {
+    pattern: new URLPattern({ pathname: "/api/users/:id" }),
+    accepts: [],
+    handler: () => new Response(null, { status: 406 }),
   },
 ];
 
@@ -46,6 +64,29 @@ Deno.test("route()", async (t) => {
     const response2 = await handler(request2);
     assertEquals(await response2?.text(), "Done");
     assertEquals(response2?.status, 200);
+  });
+
+  await t.step("honors 'Accept' header", async (t) => {
+    await t.step("example: 'application/xml'", async () => {
+      const request = new Request("http://example.com/api/users/123", {
+        headers: { Accept: "application/xml" },
+      });
+      const response = await handler(request);
+      assertMatch(await response?.text(), /^<user>[\s\S]+<\/user>$/);
+    });
+    await t.step("example: 'application/json'", async () => {
+      const request = new Request("http://example.com/api/users/123", {
+        headers: { Accept: "application/json" },
+      });
+      const response = await handler(request);
+      assertMatch(await response?.text(), /^{[\s\S]+}$/);
+    });
+    await t.step("example: not set", async () => {
+      const request = new Request("http://example.com/api/users/123");
+      const response = await handler(request);
+      assertEquals(response?.status, 406);
+      assertEquals(await response?.text(), "");
+    });
   });
 
   await t.step("handles default handler", async () => {
