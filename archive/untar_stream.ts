@@ -192,17 +192,23 @@ export class UntarStream
         const chunk of readable.pipeThrough(new FixedChunkStream(512))
       ) {
         if (chunk.length !== 512) {
-          throw new RangeError("Tarball has an unexpected number of bytes");
+          throw new RangeError(
+            `Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (${chunk.length})`,
+          );
         }
 
         buffer.push(chunk);
         if (buffer.length > 2) yield buffer.shift()!;
       }
       if (buffer.length < 2) {
-        throw new RangeError("Tarball was too small to be valid");
+        throw new RangeError(
+          "Cannot extract the tar achive: The tarball is too small to be valid",
+        );
       }
       if (!buffer.every((value) => value.every((x) => x === 0))) {
-        throw new TypeError("Tarball has invalid ending");
+        throw new TypeError(
+          "Cannot extract the tar archive: The tarball has invalid ending",
+        );
       }
     }();
   }
@@ -224,7 +230,9 @@ export class UntarStream
       );
       value.fill(32, 148, 156);
       if (value.reduce((x, y) => x + y) !== checksum) {
-        throw new SyntaxError("Tarball header failed to pass checksum");
+        throw new SyntaxError(
+          "Cannot extract the tar archive: An archive entry has invalid header checksum",
+        );
       }
 
       // Decode Header
@@ -278,7 +286,11 @@ export class UntarStream
   async *#genFile(size: number): AsyncGenerator<Uint8Array> {
     for (let i = Math.ceil(size / 512); i > 0; --i) {
       const { done, value } = await this.#gen.next();
-      if (done) throw new SyntaxError("Unexpected end of Tarball");
+      if (done) {
+        throw new SyntaxError(
+          "Cannot extract the tar archive: Unexpected end of Tarball",
+        );
+      }
       if (i === 1 && size % 512) yield value.subarray(0, size % 512);
       else yield value;
     }

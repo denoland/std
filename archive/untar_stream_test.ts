@@ -155,7 +155,7 @@ Deno.test("UntarStream() with invalid size", async () => {
       }
     },
     RangeError,
-    "Tarball has an unexpected number of bytes",
+    "Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (100)",
   );
 });
 
@@ -187,7 +187,7 @@ Deno.test("UntarStream() with invalid ending", async () => {
       }
     },
     TypeError,
-    "Tarball has invalid ending",
+    "Cannot extract the tar archive: The tarball has invalid ending",
   );
 });
 
@@ -205,7 +205,7 @@ Deno.test("UntarStream() with too small size", async () => {
       }
     },
     RangeError,
-    "Tarball was too small to be valid",
+    "Cannot extract the tar achive: The tarball is too small to be valid",
   );
 });
 
@@ -237,6 +237,6 @@ Deno.test("UntarStream() with invalid checksum", async () => {
       }
     },
     Error,
-    "Tarball header failed to pass checksum",
+    "Cannot extract the tar archive: An archive entry has invalid header checksum",
   );
 });
