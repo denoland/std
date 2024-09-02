@@ -492,24 +492,24 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     options.mode &&
     (options.mode.toString().length > 6 ||
       !/^[0-7]*$/.test(options.mode.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid Mode Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid Mode provided");
   if (
     options.uid &&
     (options.uid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.uid.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid UID Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid UID provided");
   if (
     options.gid &&
     (options.gid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.gid.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid GID Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
   if (
     options.mtime != undefined &&
     (options.mtime.toString(8).length > 11 ||
       options.mtime.toString() === "NaN")
   ) {
     throw new TypeError(
-      "Cannot add to the tar archive: Invalid MTime Provided",
+      "Cannot add to the tar archive: Invalid MTime provided",
     );
   }
   if (
@@ -518,7 +518,7 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
   ) {
     throw new TypeError(
-      "Cannot add to the tar archive: Invalid UName Provided",
+      "Cannot add to the tar archive: Invalid UName provided",
     );
   }
   if (
@@ -527,7 +527,7 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
   ) {
     throw new TypeError(
-      "Cannot add to the tar archive: Invalid GName Provided",
+      "Cannot add to the tar archive: Invalid GName provided",
     );
   }
   if (
@@ -535,7 +535,7 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     (options.devmajor.length > 8)
   ) {
     throw new TypeError(
-      "Cannot add to the tar archive: Invalid DevMajor Provided",
+      "Cannot add to the tar archive: Invalid DevMajor provided",
     );
   }
   if (
@@ -543,7 +543,7 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     (options.devminor.length > 8)
   ) {
     throw new TypeError(
-      "Cannot add to the tar archive: Invalid DevMinor Provided",
+      "Cannot add to the tar archive: Invalid DevMinor provided",
     );
   }
 }
