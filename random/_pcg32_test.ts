@@ -8,7 +8,7 @@ Deno.test("seedFromU64() generates seeds from bigints", async (t) => {
     /**
      * Expected results obtained by copying the Rust code from
      * https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
-     * but returning `seed` instead of `Self::from_seed(seed)`
+     * but directly returning `seed` instead of `Self::from_seed(seed)`
      */
     // deno-fmt-ignore
     const expectedResults = [
@@ -110,9 +110,8 @@ Deno.test("nextU32() generates random 32-bit integers", async (t) => {
     2362354238,
   ];
 
-  const originalSeed = 0n;
-  const inputs = fromSeed(seedFromU64(originalSeed, 16));
-  const next = () => nextU32(inputs);
+  const pgc = fromSeed(seedFromU64(0n, 16));
+  const next = () => nextU32(pgc);
 
   for (const [i, expected] of expectedResults.entries()) {
     await t.step(`#${i + 1} generated uint32`, () => {

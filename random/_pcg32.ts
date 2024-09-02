@@ -2,9 +2,9 @@
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
 /** Multiplier for the PCG32 algorithm. */
-const PCG32_MUL: bigint = 6364136223846793005n;
+const MUL: bigint = 6364136223846793005n;
 /** Initial increment for the PCG32 algorithm. Only used during seeding. */
-const PCG32_INC: bigint = 11634580027462260723n;
+const INC: bigint = 11634580027462260723n;
 
 // Constants are for 64-bit state, 32-bit output
 const ROTATE = 59n; // 64 - 5
@@ -42,7 +42,7 @@ export function fromSeed(seed: Uint8Array) {
  * Mutates `pcg` by advancing `pcg.state`.
  */
 function step(pgc: PcgMutableState) {
-  pgc.state = BigInt.asUintN(64, pgc.state * PCG32_MUL + (pgc.inc | 1n));
+  pgc.state = BigInt.asUintN(64, pgc.state * MUL + (pgc.inc | 1n));
 }
 
 /**
@@ -68,7 +68,7 @@ function fromStateIncr(state: bigint, increment: bigint): PcgMutableState {
  * `pcg.state` is internally advanced by the function.
  *
  * @param pcg The state and increment values to use for the PCG32 algorithm.
- * @returns A Uint8Array representing the next PCG32 32-bit integer as 4 bytes (little-endian).
+ * @returns The next pseudo-random 32-bit integer.
  */
 export function nextU32(pcg: PcgMutableState): number {
   const { state } = pcg;
@@ -96,7 +96,7 @@ export function seedFromU64(state: bigint, numBytes: number): Uint8Array {
 
   const seed = new Uint8Array(numBytes);
 
-  const pgc: PcgMutableState = { state: state, inc: PCG32_INC };
+  const pgc: PcgMutableState = { state: state, inc: INC };
 
   // We advance the state first (to get away from the input value,
   // in case it has low Hamming Weight).
