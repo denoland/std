@@ -9,6 +9,8 @@ const UUID_RE =
  * Determines whether a string is a valid
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param id UUID value.
  *
  * @returns `true` if the string is a valid UUIDv7, otherwise `false`.
@@ -26,7 +28,11 @@ export function validate(id: string): boolean {
   return UUID_RE.test(id);
 }
 
-/** Options for {@linkcode generate}. */
+/**
+ * Options for {@linkcode generate}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface GenerateOptions {
   /**
    * Unix epoch timestamp in milliseconds.
@@ -37,6 +43,8 @@ export interface GenerateOptions {
   /**
    * Random values to use in the UUID.
    * Generally you should not need to set these, but it can be useful for testing.
+   *
+   * @internal
    */
   random?: {
     /** 12 bits of randomness. */
@@ -54,6 +62,7 @@ const variant = 0b10;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @param options Options for generating the UUIDv7.
  * @returns Returns a UUIDv7 string
  *
  * @example Usage
