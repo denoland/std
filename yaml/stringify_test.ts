@@ -124,6 +124,12 @@ Deno.test({
       stringify([true, false], { styles: { "!!bool": "uppercase" } }),
       "- TRUE\n- FALSE\n",
     );
+
+    assertThrows(
+      () => stringify([true, false], { styles: { "!!bool": "octal" } }),
+      TypeError,
+      '!<tag:yaml.org,2002:bool> tag resolver accepts not "octal" style',
+    );
   },
 });
 

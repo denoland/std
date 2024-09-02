@@ -63,14 +63,16 @@ Deno.test("memoize() allows simple memoization with primitive arg", () => {
 });
 
 Deno.test("memoize() is performant for expensive fibonacci function", () => {
-  const fib = memoize((n: bigint): bigint =>
-    n <= 2n ? 1n : fib(n - 1n) + fib(n - 2n)
-  );
+  // Typically should take a maximum of a couple of milliseconds, but this
+  // test is really just a smoke test to make sure the memoization is working
+  // correctly, so we don't set a deadline to make sure it isn't flaky
+  // dependent on hardware, test runner, etc.
 
-  const startTime = Date.now();
+  const fib = memoize((n: bigint): bigint => {
+    return n <= 2n ? 1n : fib(n - 1n) + fib(n - 2n);
+  });
+
   assertEquals(fib(100n), 354224848179261915075n);
-
-  assertAlmostEquals(Date.now(), startTime, 10);
 });
 
 Deno.test("memoize() allows multiple primitive args", () => {
