@@ -116,10 +116,10 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-// Returns true if the character can be printed without escaping.
-// From YAML 1.2: "any allowed characters known to be non-printable
-// should also be escaped. [However,] This isn’t mandatory"
-// Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
+/**
+ * @link https://yaml.org/spec/1.2.2/ 5.1. Character Set
+ * @return `true` if the character is printable without escaping, `false` otherwise.
+ */
 function isPrintable(c: number): boolean {
   return (
     (0x00020 <= c && c <= 0x00007e) ||
@@ -129,45 +129,32 @@ function isPrintable(c: number): boolean {
   );
 }
 
-// Simplified test for values allowed after the first character in plain style.
+/**
+ * @return `true` if value is allowed after the first character in plain style, `false` otherwise.
+ */
 function isPlainSafe(c: number): boolean {
-  // Uses a subset of nb-char - c-flow-indicator - ":" - "#"
-  // where nb-char ::= c-printable - b-char - c-byte-order-mark.
   return (
     isPrintable(c) &&
     c !== BOM &&
-    // - c-flow-indicator
     c !== COMMA &&
     c !== LEFT_SQUARE_BRACKET &&
     c !== RIGHT_SQUARE_BRACKET &&
     c !== LEFT_CURLY_BRACKET &&
     c !== RIGHT_CURLY_BRACKET &&
-    // - ":" - "#"
     c !== COLON &&
     c !== SHARP
   );
 }
 
-// Simplified test for values allowed as the first character in plain style.
+/**
+ * @return `true` if value is allowed as the first character in plain style, `false` otherwise.
+ */
 function isPlainSafeFirst(c: number): boolean {
-  // Uses a subset of ns-char - c-indicator
-  // where ns-char = nb-char - s-white.
   return (
-    isPrintable(c) &&
-    c !== BOM &&
-    !isWhiteSpace(c) && // - s-white
-    // - (c-indicator ::=
-    // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
+    isPlainSafe(c) &&
+    !isWhiteSpace(c) &&
     c !== MINUS &&
     c !== QUESTION &&
-    c !== COLON &&
-    c !== COMMA &&
-    c !== LEFT_SQUARE_BRACKET &&
-    c !== RIGHT_SQUARE_BRACKET &&
-    c !== LEFT_CURLY_BRACKET &&
-    c !== RIGHT_CURLY_BRACKET &&
-    // | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
-    c !== SHARP &&
     c !== AMPERSAND &&
     c !== ASTERISK &&
     c !== EXCLAMATION &&
@@ -175,7 +162,6 @@ function isPlainSafeFirst(c: number): boolean {
     c !== GREATER_THAN &&
     c !== SINGLE_QUOTE &&
     c !== DOUBLE_QUOTE &&
-    // | “%” | “@” | “`”)
     c !== PERCENT &&
     c !== COMMERCIAL_AT &&
     c !== GRAVE_ACCENT
