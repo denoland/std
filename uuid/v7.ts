@@ -41,17 +41,12 @@ export interface GenerateOptions {
    */
   timestamp?: number;
   /**
-   * Random values to use in the UUID.
+   * 10 bytes of random value to use in the UUID.
    * Generally you should not need to set these, but it can be useful for testing.
    *
    * @internal
    */
-  random?: {
-    /** 12 bits of randomness. */
-    a: Uint8Array;
-    /** 62 bits of randomness. */
-    b: Uint8Array;
-  };
+  random?: Uint8Array;
 }
 
 const version = 0b0111;
@@ -79,21 +74,15 @@ export function generate(options: GenerateOptions = {}): string {
   const view = new DataView(bytes.buffer);
   // Unix timestamp in milliseconds (truncated to 48 bits)
   const timestamp = BigInt(options.timestamp ?? Date.now());
-  view.setUint32(0, Number(timestamp >> 16n) & 0xffffffff);
-  view.setUint16(4, Number(timestamp & 0xffffn));
-  // Version (4 bits) & Random (12 bits)
-  const randA = options.random?.a ?? crypto.getRandomValues(new Uint8Array(2));
-  view.setUint8(6, randA[0]! & 0x0f | version << 4);
-  view.setUint8(7, randA[1]!);
-  // Variant (2 bits) & Random (62 bits)
-  const randB = options.random?.b ?? crypto.getRandomValues(new Uint8Array(8));
-  view.setUint8(8, randB[0]! & 0x3f | variant << 6);
-  view.setUint8(9, randB[1]!);
-  view.setUint8(10, randB[2]!);
-  view.setUint8(11, randB[3]!);
-  view.setUint8(12, randB[4]!);
-  view.setUint8(13, randB[5]!);
-  view.setUint8(14, randB[6]!);
-  view.setUint8(15, randB[7]!);
+  view.setBigUint64(0, timestamp << 16n);
+  if (options.random) {
+    bytes.set(options.random, 6);
+  } else {
+    crypto.getRandomValues(bytes.subarray(6));
+  }
+  // Version (4 bits) Occupies bits 48 through 51 of octet 6.
+  view.setUint8(6, (view.getUint8(6) & 0b00001111) | (version << 4));
+  // Variant (2 bits) Occupies bits 64 through 65 of octet 8.
+  view.setUint8(8, (view.getUint8(8) & 0b00111111) | (variant << 6));
   return bytesToUuid(bytes);
 }

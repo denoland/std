@@ -23,12 +23,20 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
    */
   const u = generate({
     timestamp: 0x017F22E279B0,
-    random: {
-      // 0xCC3
-      a: new Uint8Array([0xC, 0xC3]),
-      // 0b01, 0x8C4DC0C0C07398F
-      b: new Uint8Array([0x18, 0xC4, 0xDC, 0x0C, 0x0C, 0x07, 0x39, 0x8F]),
-    },
+    random: new Uint8Array([
+      // rand_a = 0xCC3
+      0xC,
+      0xC3,
+      // rand_b = 0b01, 0x8C4DC0C0C07398F
+      0x18,
+      0xC4,
+      0xDC,
+      0x0C,
+      0x0C,
+      0x07,
+      0x39,
+      0x8F,
+    ]),
   });
   assertEquals(u, "017f22e2-79b0-7cc3-98c4-dc0c0c07398f");
 });
