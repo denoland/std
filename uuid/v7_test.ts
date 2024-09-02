@@ -33,7 +33,7 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
   assertEquals(u, "017f22e2-79b0-7cc3-98c4-dc0c0c07398f");
 });
 
-Deno.test("validate() checks if a string is a valid v5 UUID", () => {
+Deno.test("validate() checks if a string is a valid v7 UUID", () => {
   const u = generate();
   const t = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
   assert(validate(u), `generated ${u} should be valid`);
