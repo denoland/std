@@ -7,6 +7,10 @@
  */
 export interface TarStreamFile {
   /**
+   * The type of the input.
+   */
+  type: "file";
+  /**
    * The path to the file, relative to the archive's root directory.
    */
   path: string;
@@ -31,6 +35,10 @@ export interface TarStreamFile {
  */
 export interface TarStreamDir {
   /**
+   * The type of the input.
+   */
+  type: "directory";
+  /**
    * The path of the directory, relative to the archive's root directory.
    */
   path: string;
@@ -47,6 +55,7 @@ export interface TarStreamDir {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarStreamInput = TarStreamFile | TarStreamDir;
+
 type TarStreamInputInternal =
   & (Omit<TarStreamFile, "path"> | Omit<TarStreamDir, "path">)
   & { path: [Uint8Array, Uint8Array] };
@@ -134,14 +143,17 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *
  * await ReadableStream.from<TarStreamInput>([
  *   {
+ *     type: "directory",
  *     path: 'potato/'
  *   },
  *   {
+ *     type: "file",
  *     path: 'deno.json',
  *     size: (await Deno.stat('deno.json')).size,
  *     readable: (await Deno.open('deno.json')).readable
  *   },
  *   {
+ *     type: "file",
  *     path: '.vscode/settings.json',
  *     size: (await Deno.stat('.vscode/settings.json')).size,
  *     readable: (await Deno.open('.vscode/settings.json')).readable
@@ -294,17 +306,20 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * await ReadableStream.from([
    *   {
+   *     type: "directory",
    *     path: 'potato/'
    *   },
    *   {
+   *     type: "file",
    *     path: 'deno.json',
    *     size: (await Deno.stat('deno.json')).size,
-   *     iterable: (await Deno.open('deno.json')).readable
+   *     readable: (await Deno.open('deno.json')).readable
    *   },
    *   {
+   *     type: "file",
    *     path: '.vscode/settings.json',
    *     size: (await Deno.stat('.vscode/settings.json')).size,
-   *     iterable: (await Deno.open('.vscode/settings.json')).readable
+   *     readable: (await Deno.open('.vscode/settings.json')).readable
    *   }
    * ])
    *   .pipeThrough(new TarStream())
@@ -327,17 +342,20 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * await ReadableStream.from([
    *   {
+   *     type: "directory",
    *     path: 'potato/'
    *   },
    *   {
+   *     type: "file",
    *     path: 'deno.json',
    *     size: (await Deno.stat('deno.json')).size,
-   *     iterable: (await Deno.open('deno.json')).readable
+   *     readable: (await Deno.open('deno.json')).readable
    *   },
    *   {
+   *     type: "file",
    *     path: '.vscode/settings.json',
    *     size: (await Deno.stat('.vscode/settings.json')).size,
-   *     iterable: (await Deno.open('.vscode/settings.json')).readable
+   *     readable: (await Deno.open('.vscode/settings.json')).readable
    *   }
    * ])
    *   .pipeThrough(new TarStream())
@@ -408,7 +426,7 @@ function parsePath(
  * @param path The path as a string
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts no-assert no-eval
  * import { assertValidPath, TarStream, type TarStreamInput } from "@std/archive";
  *
  * const paths = (await Array.fromAsync(Deno.readDir("./")))
@@ -431,6 +449,7 @@ function parsePath(
  *     new TransformStream<string, TarStreamInput>({
  *       async transform(path, controller) {
  *         controller.enqueue({
+ *           type: "file",
  *           path,
  *           size: (await Deno.stat(path)).size,
  *           readable: (await Deno.open(path)).readable,
@@ -455,7 +474,7 @@ export function assertValidPath(path: string) {
  * @param options The TarStreamOptions
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts no-assert no-eval
  * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/archive";
  *
  *  const paths = (await Array.fromAsync(Deno.readDir('./')))
@@ -472,6 +491,7 @@ export function assertValidPath(path: string) {
  *         // Filter out any paths that would have an invalid options provided.
  *         assertValidTarStreamOptions(options);
  *         controller.enqueue({
+ *           type: "file",
  *           path,
  *           size: stats.size,
  *           readable: (await Deno.open(path)).readable,

@@ -13,9 +13,11 @@ Deno.test("TarStream() with default stream", async () => {
 
   const reader = ReadableStream.from<TarStreamInput>([
     {
+      type: "directory",
       path: "./potato",
     },
     {
+      type: "file",
       path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
@@ -51,9 +53,11 @@ Deno.test("TarStream() with byte stream", async () => {
 
   const reader = ReadableStream.from<TarStreamInput>([
     {
+      type: "directory",
       path: "./potato",
     },
     {
+      type: "file",
       path: "./text.txt",
       size: text.length,
       readable: ReadableStream.from([text.slice()]),
@@ -91,6 +95,7 @@ Deno.test("TarStream() with negative size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
+      type: "file",
       path: "name",
       size: -text.length,
       readable: ReadableStream.from([text.slice()]),
@@ -116,6 +121,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
+      type: "file",
       path: "name",
       size,
       readable: ReadableStream.from(iterable),
@@ -141,6 +147,7 @@ Deno.test("TarStream() with NaN size", async () => {
 
   const readable = ReadableStream.from<TarStreamInput>([
     {
+      type: "file",
       path: "name",
       size,
       readable: ReadableStream.from(iterable),
@@ -158,18 +165,22 @@ Deno.test("TarStream() with NaN size", async () => {
 Deno.test("parsePath()", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
     {
+      type: "directory",
       path:
         "./Veeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeery/LongPath",
     },
     {
+      type: "directory",
       path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/path",
     },
     {
+      type: "directory",
       path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
     },
     {
+      type: "directory",
       path:
         "./some random path/with/loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong/file",
     },
@@ -196,43 +207,43 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ mode: 8 }),
     TypeError,
-    "Invalid Mode Provided",
+    "Invalid Mode provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ mode: 1111111 }),
     TypeError,
-    "Invalid Mode Provided",
+    "Invalid Mode provided",
   );
 
   assertValidTarStreamOptions({ uid: 0 });
   assertThrows(
     () => assertValidTarStreamOptions({ uid: 8 }),
     TypeError,
-    "Invalid UID Provided",
+    "Invalid UID provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ uid: 1111111 }),
     TypeError,
-    "Invalid UID Provided",
+    "Invalid UID provided",
   );
 
   assertValidTarStreamOptions({ gid: 0 });
   assertThrows(
     () => assertValidTarStreamOptions({ gid: 8 }),
     TypeError,
-    "Invalid GID Provided",
+    "Invalid GID provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ gid: 1111111 }),
     TypeError,
-    "Invalid GID Provided",
+    "Invalid GID provided",
   );
 
   assertValidTarStreamOptions({ mtime: 0 });
   assertThrows(
     () => assertValidTarStreamOptions({ mtime: NaN }),
     TypeError,
-    "Invalid MTime Provided",
+    "Invalid MTime provided",
   );
   assertValidTarStreamOptions({
     mtime: Math.floor(new Date().getTime() / 1000),
@@ -240,7 +251,7 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ mtime: new Date().getTime() }),
     TypeError,
-    "Invalid MTime Provided",
+    "Invalid MTime provided",
   );
 
   assertValidTarStreamOptions({ uname: "" });
@@ -248,12 +259,12 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ uname: "å-abcdef" }),
     TypeError,
-    "Invalid UName Provided",
+    "Invalid UName provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ uname: "a".repeat(100) }),
     TypeError,
-    "Invalid UName Provided",
+    "Invalid UName provided",
   );
 
   assertValidTarStreamOptions({ gname: "" });
@@ -261,12 +272,12 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ gname: "å-abcdef" }),
     TypeError,
-    "Invalid GName Provided",
+    "Invalid GName provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ gname: "a".repeat(100) }),
     TypeError,
-    "Invalid GName Provided",
+    "Invalid GName provided",
   );
 
   assertValidTarStreamOptions({ devmajor: "" });
@@ -274,7 +285,7 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ devmajor: "123456789" }),
     TypeError,
-    "Invalid DevMajor Provided",
+    "Invalid DevMajor provided",
   );
 
   assertValidTarStreamOptions({ devminor: "" });
@@ -282,19 +293,19 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ devminor: "123456789" }),
     TypeError,
-    "Invalid DevMinor Provided",
+    "Invalid DevMinor provided",
   );
 });
 
 Deno.test("TarStream() with invalid options", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
-    { path: "potato", options: { mode: 9 } },
+    { type: "directory", path: "potato", options: { mode: 9 } },
   ]).pipeThrough(new TarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
     TypeError,
-    "Invalid Mode Provided",
+    "Invalid Mode provided",
   );
 });
 
@@ -302,6 +313,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
   const text = new TextEncoder().encode("Hello World!");
   const readable = ReadableStream.from<TarStreamInput>([
     {
+      type: "file",
       path: "potato",
       size: text.length + 1,
       readable: ReadableStream.from([text.slice()]),
@@ -317,6 +329,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
 
 Deno.test("parsePath() with too long path", async () => {
   const readable = ReadableStream.from<TarStreamInput>([{
+    type: "directory",
     path: "0".repeat(300),
   }])
     .pipeThrough(new TarStream());
@@ -330,6 +343,7 @@ Deno.test("parsePath() with too long path", async () => {
 
 Deno.test("parsePath() with too long path", async () => {
   const readable = ReadableStream.from<TarStreamInput>([{
+    type: "directory",
     path: "0".repeat(160) + "/",
   }])
     .pipeThrough(new TarStream());
