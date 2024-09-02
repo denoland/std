@@ -42,10 +42,22 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
 });
 
 Deno.test("generate() throws on invalid timestamp", () => {
-  assertThrows(() => generate({ timestamp: -1 }), RangeError, "Cannot generate UUID as timestamp must be non-negative: timestamp -1");
-  assertThrows(() => generate({ timestamp: NaN }), Error, "Cannot generate UUID as timestamp is NaN")
-  assertThrows(() => generate({ timestamp: 2.3 }), Error, "Cannot generate UUID as timestamp must be an integer: timestamp 2.3")
-})
+  assertThrows(
+    () => generate({ timestamp: -1 }),
+    RangeError,
+    "Cannot generate UUID as timestamp must be non-negative: timestamp -1",
+  );
+  assertThrows(
+    () => generate({ timestamp: NaN }),
+    Error,
+    "Cannot generate UUID as timestamp is NaN",
+  );
+  assertThrows(
+    () => generate({ timestamp: 2.3 }),
+    Error,
+    "Cannot generate UUID as timestamp must be an integer: timestamp 2.3",
+  );
+});
 
 Deno.test("validate() checks if a string is a valid v7 UUID", () => {
   const u = generate();
@@ -53,4 +65,3 @@ Deno.test("validate() checks if a string is a valid v7 UUID", () => {
   assert(validate(u), `generated ${u} should be valid`);
   assert(validate(t), `${t} should be valid`);
 });
-

@@ -75,13 +75,17 @@ export function generate(options: GenerateOptions = {}): string {
   // Unix timestamp in milliseconds (truncated to 48 bits)
   if (options.timestamp !== undefined) {
     if (options.timestamp < 0) {
-      throw new RangeError(`Cannot generate UUID as timestamp must be non-negative: timestamp ${options.timestamp}`);
+      throw new RangeError(
+        `Cannot generate UUID as timestamp must be non-negative: timestamp ${options.timestamp}`,
+      );
     }
     if (Number.isNaN(options.timestamp)) {
       throw new Error("Cannot generate UUID as timestamp is NaN");
     }
     if (!Number.isInteger(options.timestamp)) {
-      throw new Error(`Cannot generate UUID as timestamp must be an integer: timestamp ${options.timestamp}`);
+      throw new Error(
+        `Cannot generate UUID as timestamp must be an integer: timestamp ${options.timestamp}`,
+      );
     }
   }
   const timestamp = BigInt(options.timestamp ?? Date.now());
