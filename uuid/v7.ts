@@ -74,21 +74,13 @@ export function generate(options: GenerateOptions = {}): string {
   const view = new DataView(bytes.buffer);
   // Unix timestamp in milliseconds (truncated to 48 bits)
   if (options.timestamp !== undefined) {
-    if (options.timestamp < 0) {
-      throw new RangeError(
-        `Cannot generate UUID as timestamp must be non-negative: timestamp ${options.timestamp}`,
-      );
-    }
-    if (Number.isNaN(options.timestamp)) {
-      throw new Error("Cannot generate UUID as timestamp is NaN");
-    }
-    if (!Number.isInteger(options.timestamp)) {
+    if (!Number.isInteger(options.timestamp) || options.timestamp < 0) {
       throw new Error(
-        `Cannot generate UUID as timestamp must be an integer: timestamp ${options.timestamp}`,
+        `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${options.timestamp}`,
       );
     }
   }
-  const timestamp = BigInt(options.timestamp ?? Date.now());
+  const timestamp = BigInt(Date.now());
   view.setBigUint64(0, timestamp << 16n);
   if (options.random) {
     bytes.set(options.random, 6);
