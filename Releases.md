@@ -1,3 +1,103 @@
+### 2024.09.02
+
+#### @std/archive 0.225.2 (patch)
+
+- feat(archive): `UntarStream` and `TarStream` (#4548)
+
+#### @std/assert 1.0.4 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/async 1.0.5 (patch)
+
+- docs(async): add note about `deadline()` `DOMException` name of `TimeoutError`
+  (#5833)
+
+#### @std/cache 0.1.2 (patch)
+
+- fix(cache/unstable): fix flaky fibonacci test (#5872)
+- docs(cache): document valid range information for TTL values (#5834)
+
+#### @std/datetime 0.225.2 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/dotenv 0.225.2 (patch)
+
+- fix(dotenv): handle single-quotes in values in `stringify()` (#5846)
+
+#### @std/expect 1.0.2 (patch)
+
+- refactor(expect): align error messages in the matchers (#5835)
+
+#### @std/fmt 1.0.2 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/http 1.0.5 (patch)
+
+- fix(http): less restrictive arguments for `accepts*()` functions (#5850)
+
+#### @std/io 0.224.7 (patch)
+
+- fix(io): don't use `Deno.Buffer` in examples (#5889)
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/msgpack 1.0.2 (patch)
+
+- fix(msgpack): accept readonly input data in `encode()` (#5832)
+
+#### @std/path 1.0.4 (patch)
+
+- feat(path/unstable): support `URL` in first arg of `join()` (#5863)
+- refactor(path): make `isWindows` check compatible with Node and Bun (#4961)
+
+#### @std/streams 1.0.4 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/yaml 1.0.5 (patch)
+
+- refactor(yaml): simplify merge type (#5877)
+- refactor(yaml): simplify set type (#5867)
+- refactor(yaml): simplify regexp type (#5860)
+- refactor(yaml): move `duplicate` and `duplicateIndex` (#5836)
+- refactor(yaml): inline `composeNode()` (#5861)
+- refactor(yaml): simplify `resolve()` for pairs (#5852)
+- refactor(yaml): simplify null type (#5858)
+- refactor(yaml): simplify boolean type (#5859)
+- refactor(yaml): inline `readAlias()` (#5856)
+- refactor(yaml): inline `readAnchorProperty()` (#5853)
+- refactor(yaml): simplify omap `resolve()` (#5843)
+- refactor(yaml): simplify pair `construct()` function (#5844)
+- refactor(yaml): inline `readTagProperty()` (#5849)
+- refactor(yaml): replace `getObjectTypeString()` with `isPlainObject()` (#5842)
+- refactor(yaml): inline `readBlockMapping()` (#5847)
+- refactor(yaml): inline `readBlockScalar()` (#5841)
+- refactor(yaml): inline `readFlowCollection()` (#5840)
+- refactor(yaml): change error message in `stringifyNode()` (#5839)
+- refactor(yaml): inline `readDoubleQuotedScalar()` (#5838)
+- refactor(yaml): align additional error messages (#5806)
+- refactor(yaml): move `isObject()` (#5823)
+- refactor(yaml): inline `readSingleQuotedScalar()` (#5827)
+- test(yaml): add invalid `represent` type test (#5874)
+- test(yaml): add positive timezone timestamp test (#5881)
+- test(yaml): add int type tests (#5868)
+- test(yaml): add set type test (#5866)
+- test(yaml): add regexp type tests (#5862)
+- test(yaml): add duplicate binary references test (#5837)
+- test(yaml): add undefined array entry with `skipInvalid` and `flowLevel`
+  options test (#5828)
+- test(yaml): add duplicate array reference test (#5825)
+- test(yaml): add undefined object entry with skipInvalid and flowLevel option
+  test (#5829)
+- chore(yaml): fix typo in inline comment (#5845)
+
 ### 2024.08.26
 
 #### @std/archive 0.225.1 (patch)
