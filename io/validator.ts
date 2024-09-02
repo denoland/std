@@ -7,7 +7,7 @@ import { Params } from '@/constants.ts'
 let _ajv: typeof Ajv.prototype | undefined
 const loadAjv = () => {
   if (!_ajv) {
-    _ajv = new Ajv({ allErrors: true })
+    _ajv = new Ajv({ allErrors: true, allowUnionTypes: true })
   }
   return _ajv
 }

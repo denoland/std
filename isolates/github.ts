@@ -1,4 +1,4 @@
-import * as Actors from '../isolates/actors.ts'
+import * as Actors from './actors.ts'
 import {
   addBranches,
   colorize,
@@ -184,15 +184,15 @@ type Credentials = {
 }
 type ActorPointer = Omit<Credentials, 'tokens'>
 
-export const init = async (backchat: Backchat) => {
-  const { homeAddress } = backchat
-  const { pid } = await backchat.init({
+export const init = async (superuser: Backchat) => {
+  const { homeAddress } = superuser
+  const { pid } = await superuser.init({
     repo: 'dreamcatcher-tech/github',
     isolate: 'github',
     params: { homeAddress },
   })
   log('github installed', print(pid))
   const opts = { target: homeAddress }
-  const actor = await backchat.actions<Actors.ActorAdmin>('actors', opts)
+  const actor = await superuser.actions<Actors.Api>('actors', opts)
   await actor.addAuthProvider({ name: 'github', provider: pid })
 }

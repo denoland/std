@@ -2,7 +2,6 @@ import { transcribe } from './isolates/ai-completions.ts'
 import Compartment from './io/compartment.ts'
 import '@std/dotenv/load'
 import {
-  ActorApi,
   addBranches,
   backchatIdRegex,
   C,
@@ -18,6 +17,7 @@ import {
   Proctype,
   Provisioner,
 } from './constants.ts'
+import * as actor from './api/isolates/actor.ts'
 import IA from './isolate-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
@@ -25,7 +25,7 @@ import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
 import { Crypto } from './api/crypto.ts'
 import { PierceWatcher } from './api/watcher.ts'
-import { ActorAdmin } from '@/isolates/actors.ts'
+import * as actors from './isolates/actors.ts'
 import { Backchat } from './api/client-backchat.ts'
 import { tryActorId } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')
@@ -132,16 +132,16 @@ export class Engine implements EngineInterface {
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
-    const actions = await this.#su.actions<ActorAdmin>('actors', { target })
+    const actions = await this.#su.actions<actors.Api>('actors', { target })
     await actions.createActor({ actorId, machineId, backchatId })
 
     return backchat
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
-    const actions = await this.#su.actions<ActorApi>('actors', { target })
+    const { backchat } = await this.#su.actions<actor.Api>('actor', { target })
     const backchatId = generateBackchatId(ulid())
-    const pid = await actions.backchat({ backchatId })
+    const pid = await backchat({ backchatId })
     return freezePid(pid)
   }
   async ensureHomeAddress(init?: Provisioner) {

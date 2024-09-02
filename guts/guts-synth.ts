@@ -4,8 +4,8 @@ import { log } from '@utils'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':synth: '
 
-  log.enable('AI:tests AI:synth AI:longthread')
-  Deno.test.only(prefix + 'run fixture test', async (t) => {
+  Deno.test(prefix + 'run fixture test', async (t) => {
+    log.enable('AI:tests AI:synth AI:longthread')
     const { backchat, engine } = await cradleMaker()
     log('start')
 

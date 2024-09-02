@@ -1,12 +1,5 @@
 import { expect, log } from '@utils'
-import {
-  addPeer,
-  Backchat,
-  BackchatThread,
-  CradleMaker,
-  getThreadPath,
-} from '@/constants.ts'
-import * as files from '@/isolates/files.ts'
+import { CradleMaker } from '@/constants.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':focus: '
@@ -15,19 +8,23 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    let focus: string = await getFocus(backchat)
+    let focus = await backchat.readBaseThread()
     // log.enable('AI:tests AI:backchat AI:longthread AI:agents')
     log('initial focus', focus)
 
     await t.step('first thread, files agent', async () => {
       expect(focus).toBeDefined()
       await backchat.prompt('hey what files have I got ?')
-      focus = await getFocus(backchat, focus, 'equals')
+      const next = await backchat.readBaseThread()
+      expect(next).toEqual(focus)
+      focus = next
     })
 
     await t.step('second thread', async () => {
       await backchat.prompt('start a new thread')
-      focus = await getFocus(backchat, focus)
+      const next = await backchat.readBaseThread()
+      expect(next).not.toEqual(focus)
+      focus = next
     })
     await t.step('list files in second thread', async () => {
       await backchat.prompt('files list')
@@ -62,6 +59,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
 
+  // TODO move this to be an md test
   Deno.test(prefix + 'infinite loop regression', async (t) => {
     const { backchat, engine } = await cradleMaker()
     await t.step('infinite loop', async () => {
@@ -72,15 +70,11 @@ export default (name: string, cradleMaker: CradleMaker) => {
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
       await backchat.prompt(prompt)
 
-      const threadPath = getThreadPath(backchat.pid)
-      const thread = await backchat.readJSON<BackchatThread>(threadPath)
-      const { focus } = thread
-      log(focus)
-      const target = addPeer(backchat.pid, focus)
+      const target = await backchat.readBaseThread()
 
-      const { ls } = await backchat.actions<files.Api>('files', { target })
-      const listing = await ls()
+      const listing = await backchat.ls({ target })
       expect(listing).toContain('Edinburgh.txt')
+
       const edinburgh = await backchat.read('Edinburgh.txt', target)
       expect(edinburgh).toEqual('I love to be in Edinburgh in the Spring')
     })
@@ -179,21 +173,4 @@ export default (name: string, cradleMaker: CradleMaker) => {
   // really want to work on a branch of HAL from a safe place, where it is doing
   // writes and reads to a fork, and testing things out in safety before
   // changing its own programming.
-}
-const getFocus = async (
-  backchat: Backchat,
-  previous?: string,
-  comparison?: 'equals',
-) => {
-  const threadPath = getThreadPath(backchat.pid)
-  const { focus } = await backchat.readJSON<BackchatThread>(threadPath)
-  if (previous) {
-    log('focus was: %o focus is: %o', previous, focus)
-    if (!comparison) {
-      expect(focus).not.toBe(previous)
-    } else {
-      expect(focus).toBe(previous)
-    }
-  }
-  return focus
 }

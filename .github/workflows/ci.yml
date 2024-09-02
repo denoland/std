@@ -38,7 +38,7 @@ jobs:
 
       - name: Cache dependencies
         uses: actions/cache@v4
-        with: 
+        with:
           path: |
             ~/.cache
             ~/.cache/deno
@@ -76,10 +76,10 @@ jobs:
           comment-on-alert: true
           fail-on-alert: true
 
-      - name: Create lcov file  
+      - name: Create lcov file
         if: github.ref == 'refs/heads/main'
         run: deno task cov:gen
-  
+
       - name: Upload coverage
         if: github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v4

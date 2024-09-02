@@ -1,6 +1,6 @@
 // copied from the artifact project
 import { Chalk } from 'chalk'
-import { z } from 'zod'
+import { z, ZodSchema } from 'zod'
 export type { AssistantMessage, CompletionMessage } from './zod.ts'
 import { completionMessage } from './zod.ts'
 import { ripemd160 } from '@noble/hashes/ripemd160'
@@ -28,7 +28,8 @@ export const WIDGETS = z.enum([
   'THREADS',
   'REPOS',
 ])
-export const githubRegex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+export const md5 = z.string().regex(/^[a-f0-9]{40}$/, 'Invalid MD5 hash')
+export const githubRegex = /^[a-zA-Z\d](?:[a-zA-Z\d]|[-.](?=[a-zA-Z\d])){0,38}$/
 export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
@@ -58,27 +59,7 @@ export type ApiFunction = {
 export type ApiFunctions = {
   [key: string]: ApiFunction
 }
-type RepoParams = { repo: string; isolate?: string; params?: Params }
-export type ActorApi = {
-  backchat: (params: { backchatId: string; machineId?: string }) => Promise<PID>
-  thread: (params: { threadId: string }) => Promise<PID>
-  /** Clones from github, using the github PAT (if any) for the calling machine.
-   * Updates the repo.json file in the actor branch to point to the new PID of
-   * the clone.
-   */
-  clone: (params: RepoParams) => Promise<PidHead>
 
-  init: (params: RepoParams) => Promise<PidHead>
-
-  rm: (
-    params: { repo?: string; all?: boolean },
-  ) => Promise<{ reposDeleted: number }>
-
-  /**
-   * List all the repos that this Actor has created.
-   */
-  lsRepos: (params: void) => Promise<string[]>
-}
 export type IsolateReturn = JsonValue | undefined | void
 export type ProcessOptions = {
   /**
@@ -142,7 +123,7 @@ export type IoStruct = {
    * Isolates can store values here and know they will not leak into other
    * branches, and will be quick to access since the io file is always loaded.
    */
-  config: { [key: string]: JsonValue }
+  state: { [key: string]: JsonValue }
 }
 type BranchName = string
 
@@ -239,7 +220,7 @@ export type Params = { [key: string]: JsonValue }
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
 type Literal = z.infer<typeof literalSchema>
 export type JsonValue = Literal | { [key: string]: JsonValue } | JsonValue[]
-const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
+export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
 )
 
@@ -770,3 +751,15 @@ export const chatParams = agent.shape.config.extend({
   })).optional(),
 })
 export type ChatParams = z.infer<typeof chatParams>
+export const backchatStateSchema = z.object({
+  /** The base thread that this backchat session points to - the thread of last resort */
+  base: zodPid,
+})
+export type ToApiType<
+  P extends Record<string, ZodSchema>,
+  R extends { [K in keyof P]: ZodSchema },
+> = {
+  [K in keyof P]: (
+    params: z.infer<P[K]>,
+  ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
+}

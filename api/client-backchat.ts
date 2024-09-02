@@ -1,9 +1,9 @@
 // THIS IS SYNCED FROM THE ARTIFACT PROJECT
 // TODO publish to standalone repo
 import {
-  ActorApi,
   addBranches,
   backchatIdRegex,
+  backchatStateSchema,
   EngineInterface,
   freezePid,
   getParent,
@@ -20,6 +20,7 @@ import {
   toActions,
   UnsequencedRequest,
 } from './types.ts'
+import * as actor from './isolates/actor.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './watcher.ts'
 import { Crypto } from './crypto.ts'
@@ -84,6 +85,11 @@ export class Backchat {
   get homeAddress() {
     return this.#engine.homeAddress
   }
+  async readBaseThread() {
+    const io = await this.readJSON<IoStruct>('.io.json')
+    const state = backchatStateSchema.parse(io.state)
+    return state.base
+  }
   /**
    * This is the main function that is used to interact with the backchat
    * system. The prompt is relayed thru a switchboard agent to select what is
@@ -127,7 +133,7 @@ export class Backchat {
     const execute = (request: UnsequencedRequest) => this.#action(request)
     return toActions<T>(target, isolate, schema, procOpts, execute)
   }
-  #action(request: UnsequencedRequest) {
+  async #action(request: UnsequencedRequest) {
     // TODO if the target is this branch, convert to a direct pierce
     const pierce: PierceRequest = {
       target: this.#pid,
@@ -139,8 +145,8 @@ export class Backchat {
     }
     const promise = this.#watcher.watch(pierce.ulid)
     // TODO handle an error in pierce
-    this.#engine.pierce(pierce)
-    return promise
+    await this.#engine.pierce(pierce)
+    return await promise
   }
   ping(params?: { data?: JsonValue }) {
     return this.#engine.ping(params?.data)
@@ -185,11 +191,11 @@ export class Backchat {
   }
   async lsRepos() {
     const actor = await this.#getActor()
-    return actor.lsRepos()
+    return actor.lsRepos({})
   }
   async #getActor() {
     const target = getParent(this.#pid)
-    const actor = await this.actions<ActorApi>('actors', { target })
+    const actor = await this.actions<actor.Api>('actor', { target })
     return actor
   }
   watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
@@ -218,7 +224,7 @@ export class Backchat {
     const actions = await this.actions<Files>('files', { target })
     return actions.rm({ path })
   }
-  async ls(path: string = '.', target: PID = this.pid) {
+  async ls({ path = '.', target = this.pid }: { path?: string; target?: PID }) {
     const actions = await this.actions<Files>('files', { target })
     return actions.ls({ path })
   }

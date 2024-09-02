@@ -1,6 +1,5 @@
+import { md5 } from './types.ts'
 import { z } from 'zod'
-
-const md5 = z.string().regex(/^[a-f0-9]{40}$/, 'Invalid MD5 hash')
 
 export const outcome = z
   .object({

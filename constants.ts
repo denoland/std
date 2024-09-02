@@ -261,13 +261,5 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
 export type Returns<T> = {
   [K in keyof T]: z.ZodSchema
 }
-export type ToApiType<
-  P extends Record<string, ZodSchema>,
-  R extends { [K in keyof P]: ZodSchema },
-> = {
-  [K in keyof P]: (
-    params: z.infer<P[K]>,
-  ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
-}
 
 export * from './api/types.ts'

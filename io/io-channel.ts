@@ -29,7 +29,7 @@ const createBase = (): IoStruct => ({
   parents: {},
   pendings: {},
   branches: {},
-  config: {},
+  state: {},
 })
 
 export default class IOChannel {
@@ -66,7 +66,7 @@ export default class IOChannel {
     let io = createBase()
 
     if (await fs.exists('.io.json')) {
-      io = await fs.readJSON('.io.json') as IoStruct
+      io = await fs.readJSON<IoStruct>('.io.json')
       check(io, fs.pid)
     }
     const channel = new IOChannel(io, fs.pid, fs)
@@ -76,11 +76,11 @@ export default class IOChannel {
     const io = new IOChannel(createBase(), fs.pid, fs)
     io.#save()
   }
-  get config() {
-    return this.#io.config
+  get state() {
+    return this.#io.state
   }
-  set config(value: IoStruct['config']) {
-    this.#io.config = value
+  set state(value: IoStruct['state']) {
+    this.#io.state = value
   }
   #save() {
     if (!this.#fs) {

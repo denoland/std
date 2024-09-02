@@ -9,6 +9,7 @@ import * as artifact from './artifact.ts'
 import * as session from './session.ts'
 
 import * as actors from './actors.ts'
+import * as actor from './actor.ts'
 import * as machines from './machines.ts'
 import * as backchat from './backchat.ts'
 import * as isolates from './isolates.ts'
@@ -45,6 +46,7 @@ const isolatesExport = {
 
   github,
   actors,
+  actor,
   machines,
   backchat,
   isolates,

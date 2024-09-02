@@ -104,23 +104,25 @@ export default class IA<T extends object = Default> {
     return this.#abort.signal
   }
   // TODO make get and set config be synchronous
-  async config<T>(schema: z.ZodObject<Record<string, ZodTypeAny>>) {
+  async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(schema: T) {
     assert(this.#accumulator.isActive, 'Activity is denied')
     const io = await IOChannel.read(this.#fs)
-    assert(io, 'config not found')
-    return schema.parse(io.config) as T
+    assert(io, 'io not found')
+    return schema.parse(io.state) as z.infer<T>
   }
-  async updateConfig(
-    updater: (config: IoStruct['config']) => IoStruct['config'],
-    schema: z.ZodObject<Record<string, ZodTypeAny>>,
+  async updateState<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
+    updater: (state: z.infer<T>) => z.infer<T>,
+    schema: T,
   ) {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    const io = await IOChannel.read(this.#fs)
-    assert(io, 'config not found')
-    const config = schema.parse(io.config)
-    const next = schema.parse(updater(config))
-    assert(io, 'config not found')
-    io.config = next
+    const io = await IOChannel.load(this.#fs)
+    assert(io, 'io not found')
+    const state = io.state as z.infer<T>
+    const result = updater(state)
+    const next = schema.parse(result) as z.infer<T>
+    assert(io, 'io not found')
+    io.state = next
+    io.save()
   }
 
   async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
