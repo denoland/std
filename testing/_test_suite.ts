@@ -42,24 +42,6 @@ export interface ItDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
 /** The names of all the different types of hooks. */
 export type HookNames = "beforeAll" | "afterAll" | "beforeEach" | "afterEach";
 
-/** Optional test definition keys. */
-const optionalTestDefinitionKeys: (keyof Deno.TestDefinition)[] = [
-  "only",
-  "permissions",
-  "ignore",
-  "sanitizeExit",
-  "sanitizeOps",
-  "sanitizeResources",
-];
-
-/** Optional test step definition keys. */
-const optionalTestStepDefinitionKeys: (keyof Deno.TestStepDefinition)[] = [
-  "ignore",
-  "sanitizeExit",
-  "sanitizeOps",
-  "sanitizeResources",
-];
-
 /**
  * A group of tests.
  */
@@ -126,14 +108,8 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       if (!ignore && this.hasOnlyStep) {
         only = true;
       }
-      TestSuiteInternal.registerTest({
+      const options: Deno.TestDefinition = {
         name,
-        ignore,
-        only,
-        permissions,
-        sanitizeExit,
-        sanitizeOps,
-        sanitizeResources,
         fn: async (t) => {
           TestSuiteInternal.runningCount++;
           try {
@@ -164,7 +140,26 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
             TestSuiteInternal.runningCount--;
           }
         },
-      });
+      };
+      if (ignore !== undefined) {
+        options.ignore = ignore;
+      }
+      if (only !== undefined) {
+        options.only = only;
+      }
+      if (permissions !== undefined) {
+        options.permissions = permissions;
+      }
+      if (sanitizeExit !== undefined) {
+        options.sanitizeExit = sanitizeExit;
+      }
+      if (sanitizeOps !== undefined) {
+        options.sanitizeOps = sanitizeOps;
+      }
+      if (sanitizeResources !== undefined) {
+        options.sanitizeResources = sanitizeResources;
+      }
+      TestSuiteInternal.registerTest(options);
     }
   }
 
@@ -196,9 +191,24 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   /** This is used internally to register tests. */
   static registerTest(options: Deno.TestDefinition) {
     options = { ...options };
-    optionalTestDefinitionKeys.forEach((key) => {
-      if (typeof options[key] === "undefined") delete options[key];
-    });
+    if (options.only === undefined) {
+      delete options.only;
+    }
+    if (options.permissions === undefined) {
+      delete options.permissions;
+    }
+    if (options.ignore === undefined) {
+      delete options.ignore;
+    }
+    if (options.sanitizeExit === undefined) {
+      delete options.sanitizeExit;
+    }
+    if (options.sanitizeOps === undefined) {
+      delete options.sanitizeOps;
+    }
+    if (options.sanitizeResources === undefined) {
+      delete options.sanitizeResources;
+    }
     Deno.test(options);
   }
 
@@ -289,10 +299,6 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
 
       const options: Deno.TestStepDefinition = {
         name,
-        ignore,
-        sanitizeExit,
-        sanitizeOps,
-        sanitizeResources,
         fn: async (t) => {
           if (permissions) {
             throw new Error(
@@ -328,9 +334,18 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
           }
         },
       };
-      optionalTestStepDefinitionKeys.forEach((key) => {
-        if (typeof options[key] === "undefined") delete options[key];
-      });
+      if (ignore !== undefined) {
+        options.ignore = ignore;
+      }
+      if (sanitizeExit !== undefined) {
+        options.sanitizeExit = sanitizeExit;
+      }
+      if (sanitizeOps !== undefined) {
+        options.sanitizeOps = sanitizeOps;
+      }
+      if (sanitizeResources !== undefined) {
+        options.sanitizeResources = sanitizeResources;
+      }
       await t.step(options);
     }
   }

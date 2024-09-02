@@ -418,6 +418,7 @@ x,,,
       await t.step(testCase.name, async () => {
         const options: CsvParseStreamOptions = {};
         if ("separator" in testCase) {
+          // @ts-expect-error: explicitly giving undefined
           options.separator = testCase.separator;
         }
         if ("comment" in testCase) {
@@ -510,7 +511,9 @@ Deno.test({
 
     // skipFirstRow option
     {
-      const { readable } = new CsvParseStream({ skipFirstRow: undefined });
+      const { readable } = new CsvParseStream(
+        { skipFirstRow: undefined } as object,
+      );
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
@@ -529,7 +532,7 @@ Deno.test({
 
     // columns option
     {
-      const { readable } = new CsvParseStream({ columns: undefined });
+      const { readable } = new CsvParseStream({ columns: undefined } as object);
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
@@ -553,14 +556,14 @@ Deno.test({
       const { readable } = new CsvParseStream({
         skipFirstRow: false,
         columns: undefined,
-      });
+      } as { skipFirstRow: false });
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
       const { readable } = new CsvParseStream({
         skipFirstRow: true,
         columns: undefined,
-      });
+      } as { skipFirstRow: true });
       type _ = AssertTrue<
         IsExact<
           typeof readable,

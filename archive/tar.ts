@@ -375,7 +375,6 @@ export class Tar {
       : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
     const tarData: TarDataWithSource = {
       fileName,
-      fileNamePrefix,
       fileMode: pad(mode, 7),
       uid: pad(uid, 7),
       gid: pad(gid, 7),
@@ -384,11 +383,18 @@ export class Tar {
       checksum: "        ",
       type: type.toString(),
       ustar: USTAR_MAGIC_HEADER,
-      owner: source.owner || "",
-      group: source.group || "",
-      filePath: source.filePath,
-      reader: source.reader,
+      owner: source.owner ?? "",
+      group: source.group ?? "",
     };
+    if (fileNamePrefix !== undefined) {
+      tarData.fileNamePrefix = fileNamePrefix;
+    }
+    if (source.filePath !== undefined) {
+      tarData.filePath = source.filePath;
+    }
+    if (source.reader !== undefined) {
+      tarData.reader = source.reader;
+    }
 
     // calculate the checksum
     let checksum = 0;

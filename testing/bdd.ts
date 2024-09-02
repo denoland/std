@@ -516,7 +516,7 @@ function itDefinition<T>(...args: ItArgs<T>): ItDefinition<T> {
   }
 
   return {
-    suite,
+    ...(suite !== undefined ? { suite } : {}),
     ...options,
     name,
     fn,
@@ -585,14 +585,8 @@ export function it<T>(...args: ItArgs<T>) {
       sanitizeOps,
       sanitizeResources,
     } = options;
-    TestSuiteInternal.registerTest({
+    const opts: Deno.TestDefinition = {
       name,
-      ignore,
-      only,
-      permissions,
-      sanitizeExit,
-      sanitizeOps,
-      sanitizeResources,
       async fn(t) {
         TestSuiteInternal.runningCount++;
         try {
@@ -601,7 +595,26 @@ export function it<T>(...args: ItArgs<T>) {
           TestSuiteInternal.runningCount--;
         }
       },
-    });
+    };
+    if (ignore !== undefined) {
+      opts.ignore = ignore;
+    }
+    if (only !== undefined) {
+      opts.only = only;
+    }
+    if (permissions !== undefined) {
+      opts.permissions = permissions;
+    }
+    if (sanitizeExit !== undefined) {
+      opts.sanitizeExit = sanitizeExit;
+    }
+    if (sanitizeOps !== undefined) {
+      opts.sanitizeOps = sanitizeOps;
+    }
+    if (sanitizeResources !== undefined) {
+      opts.sanitizeResources = sanitizeResources;
+    }
+    TestSuiteInternal.registerTest(opts);
   }
 }
 
@@ -999,7 +1012,9 @@ function describeDefinition<T>(
       options = {};
     } else {
       options = optionsOrFn ?? {};
-      if (!fn) fn = (options as Omit<DescribeDefinition<T>, "name">).fn;
+      if (fn === undefined) {
+        fn = (options as Omit<DescribeDefinition<T>, "name">).fn;
+      }
     }
   } else if (typeof optionsOrNameOrFn === "function") {
     fn = optionsOrNameOrFn;
@@ -1015,19 +1030,19 @@ function describeDefinition<T>(
     name = (options as DescribeDefinition<T>).name ?? fn?.name ?? "";
   }
 
-  if (!suite) {
+  if (suite === undefined) {
     suite = options.suite;
   }
-  if (!suite && TestSuiteInternal.current) {
+  if (suite === undefined && TestSuiteInternal.current) {
     const { symbol } = TestSuiteInternal.current;
     suite = { symbol };
   }
 
   return {
     ...options,
-    suite,
+    suite: suite!,
     name,
-    fn,
+    fn: fn!,
   };
 }
 

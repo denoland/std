@@ -112,7 +112,7 @@ export function stringify(
 ): string {
   const state = new DumperState({
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!),
+    schema: SCHEMA_MAP.get(options.schema!)!,
   });
   return state.stringify(data);
 }

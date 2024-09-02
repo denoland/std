@@ -26,7 +26,7 @@ async function createTar(entries: TestEntry[]): Promise<Tar> {
         contentSize: file.content.byteLength,
       };
     } else {
-      options = { filePath: file.filePath };
+      options = { filePath: file.filePath! };
     }
 
     await tar.append(file.name, options);

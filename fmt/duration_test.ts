@@ -85,7 +85,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        format(16.342, { style: undefined });
+        format(16.342, { style: undefined } as object);
       },
       TypeError,
       `style must be "narrow", "full", or "digital"!`,

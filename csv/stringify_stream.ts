@@ -107,7 +107,12 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
           if (columns && columns.length > 0) {
             try {
               controller.enqueue(
-                stringify([columns], { separator, headers: false }),
+                stringify(
+                  [columns],
+                  separator !== undefined
+                    ? { separator, headers: false }
+                    : { headers: false },
+                ),
               );
             } catch (error) {
               controller.error(error);
@@ -117,7 +122,12 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
         transform(chunk, controller) {
           try {
             controller.enqueue(
-              stringify([chunk], { separator, headers: false, columns }),
+              stringify(
+                [chunk],
+                separator !== undefined
+                  ? { separator, headers: false, columns }
+                  : { headers: false, columns },
+              ),
             );
           } catch (error) {
             controller.error(error);

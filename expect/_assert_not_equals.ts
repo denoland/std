@@ -24,14 +24,12 @@ import type { EqualOptions } from "./_types.ts";
 export function assertNotEquals<T>(
   actual: T,
   expected: T,
-  options?: EqualOptions,
+  options: EqualOptions = {},
 ) {
-  const { msg } = options || {};
-
   if (!equal(actual, expected, options)) {
     return;
   }
 
-  const message = buildNotEqualErrorMessage(actual, expected, { msg });
+  const message = buildNotEqualErrorMessage(actual, expected, options);
   throw new AssertionError(message);
 }

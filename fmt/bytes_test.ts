@@ -87,11 +87,11 @@ Deno.test("format() handles locale option", () => {
   assertEquals(format(10.1, { locale: false }), "10.1 B");
   assertEquals(format(1e30, { locale: false }), "1000000 YB");
 
-  assertEquals(format(-0.4, { locale: undefined }), "-0.4 B");
-  assertEquals(format(0.4, { locale: undefined }), "0.4 B");
-  assertEquals(format(1001, { locale: undefined }), "1 kB");
-  assertEquals(format(10.1, { locale: undefined }), "10.1 B");
-  assertEquals(format(1e30, { locale: undefined }), "1000000 YB");
+  assertEquals(format(-0.4, { locale: undefined } as object), "-0.4 B");
+  assertEquals(format(0.4, { locale: undefined } as object), "0.4 B");
+  assertEquals(format(1001, { locale: undefined } as object), "1 kB");
+  assertEquals(format(10.1, { locale: undefined } as object), "10.1 B");
+  assertEquals(format(1e30, { locale: undefined } as object), "1000000 YB");
 });
 
 Deno.test("format() handles signed option", () => {

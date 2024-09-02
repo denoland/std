@@ -179,7 +179,7 @@ export async function serveFile(
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
-  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+  let { etagAlgorithm: algorithm = "SHA-256", fileInfo } = options ?? {};
 
   try {
     fileInfo ??= await Deno.stat(filePath);
@@ -686,7 +686,8 @@ async function createServeDirResponse(
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const showDotfiles = opts.showDotfiles || false;
-  const { etagAlgorithm, showDirListing, quiet } = opts;
+  const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
+    opts;
 
   const url = new URL(req.url);
   const decodedUrl = decodeURIComponent(url.pathname);
@@ -855,21 +856,20 @@ function main() {
     console.log(message);
   }
 
-  if (useTls) {
-    Deno.serve({
-      port,
+  const opts:
+    | Deno.ServeTlsOptions
+    | (Deno.ServeTlsOptions & Deno.TlsCertifiedKeyOptions) = {
       hostname: host,
       onListen,
-      cert: Deno.readTextFileSync(certFile),
-      key: Deno.readTextFileSync(keyFile),
-    }, handler);
-  } else {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-    }, handler);
+    };
+  if (port !== undefined) {
+    opts.port = port;
   }
+  if (useTls) {
+    opts.cert = Deno.readTextFileSync(certFile);
+    opts.key = Deno.readTextFileSync(keyFile);
+  }
+  Deno.serve(opts, handler);
 }
 
 function printUsage() {

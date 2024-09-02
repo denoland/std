@@ -449,7 +449,9 @@ export class Untar {
       });
 
     meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-    meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
+    if (meta.type !== undefined) {
+      meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
+    }
 
     // Only create the `linkName` property for symbolic links to minimize
     // the effect on existing code that only deals with non-links.

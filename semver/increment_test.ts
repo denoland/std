@@ -11,9 +11,9 @@ Deno.test("increment()", async (t) => {
   const versions: [
     SemVer,
     ReleaseType,
-    string?,
-    string?,
-    string?,
+    string | undefined,
+    string | undefined,
+    string | undefined,
   ][] = [
     [
       { major: 1, minor: 2, patch: 3 },
@@ -920,7 +920,11 @@ Deno.test("increment()", async (t) => {
       "1.2.3-dev.0",
     ],
     [
-      { major: 1, minor: 2, patch: 3, prerelease: undefined },
+      { major: 1, minor: 2, patch: 3, prerelease: undefined } as {
+        major: 1;
+        minor: 2;
+        patch: 3;
+      },
       "pre",
       undefined,
       undefined,
@@ -934,7 +938,11 @@ Deno.test("increment()", async (t) => {
       "1.2.3-0",
     ],
     [
-      { major: 1, minor: 2, patch: 3, build: undefined },
+      { major: 1, minor: 2, patch: 3, build: undefined } as {
+        major: 1;
+        minor: 2;
+        patch: 3;
+      },
       "pre",
       undefined,
       undefined,
@@ -948,7 +956,17 @@ Deno.test("increment()", async (t) => {
       "1.2.3-0",
     ],
     [
-      { major: 1, minor: 2, patch: 3, prerelease: undefined, build: undefined },
+      {
+        major: 1,
+        minor: 2,
+        patch: 3,
+        prerelease: undefined,
+        build: undefined,
+      } as {
+        major: 1;
+        minor: 2;
+        patch: 3;
+      },
       "pre",
       undefined,
       undefined,
@@ -967,7 +985,7 @@ Deno.test("increment()", async (t) => {
     await t.step({
       name: `${op} ${format(version)}`,
       fn: () => {
-        const actual = increment(version, op, { prerelease, build });
+        const actual = increment(version, op, { prerelease, build } as object);
         assertEquals(format(actual), expected);
       },
     });

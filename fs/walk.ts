@@ -500,16 +500,23 @@ export async function* walk(
     }
 
     if (isSymlink || isDirectory) {
-      yield* walk(path, {
+      const opts: WalkOptions = {
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
         includeSymlinks,
         followSymlinks,
-        exts,
-        match,
-        skip,
-      });
+      };
+      if (exts !== undefined) {
+        opts.exts = exts;
+      }
+      if (match !== undefined) {
+        opts.match = match;
+      }
+      if (skip !== undefined) {
+        opts.skip = skip;
+      }
+      yield* walk(path, opts);
     } else if (includeFiles && include(path, exts, match, skip)) {
       yield { path, ...entry };
     }
@@ -923,16 +930,23 @@ export function* walkSync(
     }
 
     if (isSymlink || isDirectory) {
-      yield* walkSync(path, {
+      const opts: WalkOptions = {
         maxDepth: maxDepth - 1,
         includeFiles,
         includeDirs,
         includeSymlinks,
         followSymlinks,
-        exts,
-        match,
-        skip,
-      });
+      };
+      if (exts !== undefined) {
+        opts.exts = exts;
+      }
+      if (match !== undefined) {
+        opts.match = match;
+      }
+      if (skip !== undefined) {
+        opts.skip = skip;
+      }
+      yield* walkSync(path, opts);
     } else if (includeFiles && include(path, exts, match, skip)) {
       yield { path, ...entry };
     }
