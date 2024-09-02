@@ -28,7 +28,7 @@ import {
   VERTICAL_LINE,
 } from "./_chars.ts";
 import { DEFAULT_SCHEMA, type Schema } from "./_schema.ts";
-import type { KindType, RepresentFn, StyleVariant, Type } from "./_type.ts";
+import type { KindType, StyleVariant, Type } from "./_type.ts";
 import { isObject } from "./_utils.ts";
 
 const STYLE_PLAIN = 1;
@@ -740,13 +740,13 @@ export class DumperState {
     if (typeof type.represent === "function") {
       return type.represent(value, style);
     }
-    if (Object.hasOwn(type.represent, style)) {
-      const represent = type.represent[style] as RepresentFn<unknown>;
-      return represent(value, style);
+    const represent = type.represent[style];
+    if (!represent) {
+      throw new TypeError(
+        `!<${type.tag}> tag resolver accepts not "${style}" style`,
+      );
     }
-    throw new TypeError(
-      `!<${type.tag}> tag resolver accepts not "${style}" style`,
-    );
+    return represent(value, style);
   }
 
   detectType(value: unknown): { tag: string | null; value: unknown } {
