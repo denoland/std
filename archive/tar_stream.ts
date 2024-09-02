@@ -175,7 +175,11 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           (chunk.size < 0 || 8 ** 12 < chunk.size ||
             chunk.size.toString() === "NaN")
         ) {
-          return controller.error(new RangeError("Size cannot exceed 64 Gibs"));
+          return controller.error(
+            new RangeError(
+              "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
+            ),
+          );
         }
 
         const path = parsePath(chunk.path);
@@ -242,7 +246,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
           }
           if (chunk.size !== size) {
             throw new RangeError(
-              "Provided size did not match bytes read from provided readable",
+              `Cannot add to the tar archive: The provided size (${chunk.size}) did not match bytes read from provided readable (${size})`,
             );
           }
           if (chunk.size % 512) {
@@ -355,13 +359,19 @@ function parsePath(
   }
 
   if (name.length > 256) {
-    throw new RangeError("Path cannot exceed 256 bytes");
+    throw new RangeError(
+      `Cannot parse the path as the path lenth cannot exceed 256 bytes: The path length is ${name.length}`,
+    );
   }
 
   // If length of last part is > 100, then there's no possible answer to split the path
   let suitableSlashPos = Math.max(0, name.lastIndexOf(SLASH_CODE_POINT)); // always holds position of '/'
   if (name.length - suitableSlashPos > 100) {
-    throw new RangeError("Filename cannot exceed 100 bytes");
+    throw new RangeError(
+      `Cannot parse the path as the filename cannot exceed 100 bytes: The filename length is ${
+        name.length - suitableSlashPos
+      }`,
+    );
   }
 
   for (
@@ -380,7 +390,7 @@ function parsePath(
   const prefix = name.slice(0, suitableSlashPos);
   if (prefix.length > 155) {
     throw new TypeError(
-      "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
+      "Cannot parse the path as the path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
   return [prefix, name.slice(suitableSlashPos + 1)];
@@ -482,38 +492,58 @@ export function assertValidTarStreamOptions(options: TarStreamOptions) {
     options.mode &&
     (options.mode.toString().length > 6 ||
       !/^[0-7]*$/.test(options.mode.toString()))
-  ) throw new TypeError("Invalid Mode Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid Mode Provided");
   if (
     options.uid &&
     (options.uid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.uid.toString()))
-  ) throw new TypeError("Invalid UID Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid UID Provided");
   if (
     options.gid &&
     (options.gid.toString().length > 6 ||
       !/^[0-7]*$/.test(options.gid.toString()))
-  ) throw new TypeError("Invalid GID Provided");
+  ) throw new TypeError("Cannot add to the tar archive: Invalid GID Provided");
   if (
     options.mtime != undefined &&
     (options.mtime.toString(8).length > 11 ||
       options.mtime.toString() === "NaN")
-  ) throw new TypeError("Invalid MTime Provided");
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid MTime Provided",
+    );
+  }
   if (
     options.uname &&
     // deno-lint-ignore no-control-regex
     (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
-  ) throw new TypeError("Invalid UName Provided");
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid UName Provided",
+    );
+  }
   if (
     options.gname &&
     // deno-lint-ignore no-control-regex
     (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
-  ) throw new TypeError("Invalid GName Provided");
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid GName Provided",
+    );
+  }
   if (
     options.devmajor &&
     (options.devmajor.length > 8)
-  ) throw new TypeError("Invalid DevMajor Provided");
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid DevMajor Provided",
+    );
+  }
   if (
     options.devminor &&
     (options.devminor.length > 8)
-  ) throw new TypeError("Invalid DevMinor Provided");
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid DevMinor Provided",
+    );
+  }
 }

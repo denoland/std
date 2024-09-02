@@ -101,7 +101,7 @@ Deno.test("TarStream() with negative size", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Size cannot exceed 64 Gibs",
+    "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
   );
 });
 
@@ -126,7 +126,7 @@ Deno.test("TarStream() with 65 GiB size", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Size cannot exceed 64 Gibs",
+    "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
   );
 });
 
@@ -151,7 +151,7 @@ Deno.test("TarStream() with NaN size", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Size cannot exceed 64 Gibs",
+    "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
   );
 });
 
@@ -311,7 +311,7 @@ Deno.test("TarStream() with mismatching sizes", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Provided size did not match bytes read from provided readable",
+    "Cannot add to the tar archive: The provided size (13) did not match bytes read from provided readable (12)",
   );
 });
 
@@ -324,7 +324,7 @@ Deno.test("parsePath() with too long path", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Path cannot exceed 256 bytes",
+    "Cannot parse the path as the path lenth cannot exceed 256 bytes: The path length is 300",
   );
 });
 
@@ -337,6 +337,6 @@ Deno.test("parsePath() with too long path", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     TypeError,
-    "Path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
+    "Cannot parse the path as the path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
   );
 });
