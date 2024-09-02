@@ -19,7 +19,7 @@ jobs:
         deno:
           - v1.x
           - canary
-          - v2.x
+          - v2.0.0-rc.0
         os:
           - ubuntu-latest
           - windows-latest
