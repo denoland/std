@@ -360,7 +360,7 @@ function parsePath(
 
   if (name.length > 256) {
     throw new RangeError(
-      `Cannot parse the path as the path lenth cannot exceed 256 bytes: The path length is ${name.length}`,
+      `Cannot parse the path as the path length cannot exceed 256 bytes: The path length is ${name.length}`,
     );
   }
 

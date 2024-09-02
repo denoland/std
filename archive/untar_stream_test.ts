@@ -205,7 +205,7 @@ Deno.test("UntarStream() with too small size", async () => {
       }
     },
     RangeError,
-    "Cannot extract the tar achive: The tarball is too small to be valid",
+    "Cannot extract the tar archive: The tarball is too small to be valid",
   );
 });
 

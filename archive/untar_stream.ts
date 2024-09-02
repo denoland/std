@@ -202,7 +202,7 @@ export class UntarStream
       }
       if (buffer.length < 2) {
         throw new RangeError(
-          "Cannot extract the tar achive: The tarball is too small to be valid",
+          "Cannot extract the tar archive: The tarball is too small to be valid",
         );
       }
       if (!buffer.every((value) => value.every((x) => x === 0))) {

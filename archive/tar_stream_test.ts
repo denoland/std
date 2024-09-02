@@ -324,7 +324,7 @@ Deno.test("parsePath() with too long path", async () => {
   await assertRejects(
     () => Array.fromAsync(readable),
     RangeError,
-    "Cannot parse the path as the path lenth cannot exceed 256 bytes: The path length is 300",
+    "Cannot parse the path as the path length cannot exceed 256 bytes: The path length is 300",
   );
 });
 
