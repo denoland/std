@@ -8,11 +8,12 @@ import { readShort } from "./read_short.ts";
  *
  * @example Usage
  * ```ts
+ * import { Buffer } from "@std/io/buffer"
  * import { BufReader } from "@std/io/buf-reader";
  * import { readInt } from "@std/io/read-int";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const buf = new BufReader(new Deno.Buffer(new Uint8Array([0x12, 0x34, 0x56, 0x78])));
+ * const buf = new BufReader(new Buffer(new Uint8Array([0x12, 0x34, 0x56, 0x78])));
  * const int = await readInt(buf);
  * assertEquals(int, 0x12345678);
  * ```
