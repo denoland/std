@@ -80,7 +80,7 @@ export function generate(options: GenerateOptions = {}): string {
       );
     }
   }
-  const timestamp = BigInt(Date.now());
+  const timestamp = BigInt(options.timestamp ?? Date.now());
   view.setBigUint64(0, timestamp << 16n);
   if (options.random) {
     bytes.set(options.random, 6);
