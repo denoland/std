@@ -20,22 +20,12 @@ type PcgMutableState = {
   inc: bigint;
 };
 
-function writeU32ToBytesLe(n: number): Uint8Array {
-  const buffer = new ArrayBuffer(4);
-  new DataView(buffer).setUint32(0, n, true);
-  return new Uint8Array(buffer);
-}
-function getU64FromBytesLe(x: Uint8Array, offset: number): bigint {
-  return new DataView(x.buffer).getBigUint64(offset * 8, true);
-}
-
 /**
  * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_pcg/src/pcg64.rs#L129-L135
  */
 export function fromSeed(seed: Uint8Array) {
-  const state = getU64FromBytesLe(seed, 0);
-  const increment = getU64FromBytesLe(seed, 1) | 1n;
-  return fromStateIncr(state, increment);
+  const d = new DataView(seed.buffer);
+  return fromStateIncr(d.getBigUint64(0, true), d.getBigUint64(8, true) | 1n);
 }
 
 /**
@@ -48,14 +38,11 @@ function step(pgc: PcgMutableState) {
 /**
  * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_pcg/src/pcg64.rs#L99-L105
  */
-function fromStateIncr(state: bigint, increment: bigint): PcgMutableState {
-  const pcg: PcgMutableState = { state, inc: increment };
-
-  // Move away from initial value:
-  pcg.state = BigInt.asUintN(64, pcg.state + pcg.inc);
-
+function fromStateIncr(state: bigint, inc: bigint): PcgMutableState {
+  const pcg: PcgMutableState = { state, inc };
+  // Move away from initial value
+  pcg.state = BigInt.asUintN(64, state + inc);
   step(pcg);
-
   return pcg;
 }
 
@@ -71,9 +58,8 @@ function fromStateIncr(state: bigint, increment: bigint): PcgMutableState {
  * @returns The next pseudo-random 32-bit integer.
  */
 export function nextU32(pcg: PcgMutableState): number {
-  const { state } = pcg;
+  const state = pcg.state;
   step(pcg);
-
   // Output function XSH RR: xorshift high (bits), followed by a random rotate
   const rot = state >> ROTATE;
   const xsh = BigInt.asUintN(32, ((state >> XSHIFT) ^ state) >> SPARE);
@@ -92,26 +78,22 @@ function rotateRightU32(n: bigint, rot: bigint): bigint {
  * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
  */
 export function seedFromU64(state: bigint, numBytes: number): Uint8Array {
-  state = BigInt.asUintN(64, state);
-
   const seed = new Uint8Array(numBytes);
 
-  const pgc: PcgMutableState = { state: state, inc: INC };
-
+  const pgc: PcgMutableState = { state: BigInt.asUintN(64, state), inc: INC };
   // We advance the state first (to get away from the input value,
   // in case it has low Hamming Weight).
   step(pgc);
 
   for (let i = 0; i < Math.floor(numBytes / 4); ++i) {
-    seed.set(writeU32ToBytesLe(nextU32(pgc)), i * 4);
+    new DataView(seed.buffer).setUint32(i * 4, nextU32(pgc), true);
   }
 
-  if (numBytes % 4) {
-    const rem = numBytes % 4;
-    seed.set(
-      writeU32ToBytesLe(nextU32(pgc)).subarray(0, rem),
-      seed.byteLength - rem,
-    );
+  const rem = numBytes % 4;
+  if (rem) {
+    const bytes = new Uint8Array(4);
+    new DataView(bytes.buffer).setUint32(0, nextU32(pgc), true);
+    seed.set(bytes.subarray(0, rem), numBytes - rem);
   }
 
   return seed;
