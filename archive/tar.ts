@@ -70,7 +70,7 @@ const USTAR_MAGIC_HEADER = "ustar\u000000" as const;
  * Simple file reader
  */
 class FileReader implements Reader {
-  #file?: Deno.FsFile;
+  #file: Deno.FsFile | undefined;
   #filePath: string;
 
   constructor(filePath: string) {

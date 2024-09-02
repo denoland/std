@@ -980,11 +980,11 @@ const matchers: Matchers = {
  * ```
  */
 export class UserAgent {
-  #browser?: Browser;
-  #cpu?: Cpu;
-  #device?: Device;
-  #engine?: Engine;
-  #os?: Os;
+  #browser: Browser | undefined;
+  #cpu: Cpu | undefined;
+  #device: Device | undefined;
+  #engine: Engine | undefined;
+  #os: Os | undefined;
   #ua: string;
 
   /**
