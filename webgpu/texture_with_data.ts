@@ -5,14 +5,10 @@ import { describeTextureFormat } from "./describe_texture_format.ts";
 function textureDimensionArrayLayerCount(
   texture: GPUTextureDescriptor,
 ): number {
-  switch (texture.dimension) {
-    case "1d":
-    case "3d":
-      return 1;
-    case undefined:
-    case "2d":
-      return normalizeExtent3D(texture.size).depthOrArrayLayers ?? 1;
+  if (texture.dimension === "1d" || texture.dimension === "3d") {
+    return 1;
   }
+  return normalizeExtent3D(texture.size).depthOrArrayLayers ?? 1;
 }
 
 function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {

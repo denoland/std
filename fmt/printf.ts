@@ -719,7 +719,7 @@ class Printf {
       ? this.flags.precision
       : DEFAULT_PRECISION;
     const [fractional, rounding] = this.roundFractionToPrecision(
-      m[F.fractional] || "",
+      m[F.fractional] ?? "",
       precision,
     );
 

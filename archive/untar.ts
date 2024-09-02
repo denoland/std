@@ -168,7 +168,7 @@ export class TarEntry implements Reader {
     this.#reader = reader;
 
     // File Size
-    this.#size = this.fileSize || 0;
+    this.#size = this.fileSize ?? 0;
     // Entry Size
     const blocks = Math.ceil(this.#size / HEADER_LENGTH);
     this.#entrySize = blocks * HEADER_LENGTH;
@@ -259,7 +259,7 @@ export class TarEntry implements Reader {
     const n = await readBlock(this.#reader, block);
     const bytesLeft = this.#size - this.#read;
 
-    this.#read += n || 0;
+    this.#read += n ?? 0;
     if (n === null || bytesLeft <= 0) {
       if (n === null) this.#consumed = true;
       return null;

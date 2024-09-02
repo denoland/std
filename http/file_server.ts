@@ -682,7 +682,7 @@ async function createServeDirResponse(
   req: Request,
   opts: ServeDirOptions,
 ) {
-  const target = opts.fsRoot || ".";
+  const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const showDotfiles = opts.showDotfiles || false;
@@ -800,7 +800,7 @@ function main() {
     },
   });
   const port = serverArgs.port ? Number(serverArgs.port) : undefined;
-  const headers = serverArgs.header || [];
+  const headers = serverArgs.header ?? [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;

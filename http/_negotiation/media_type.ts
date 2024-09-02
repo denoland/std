@@ -131,8 +131,8 @@ function specify(
   if (keys.length) {
     if (
       keys.every((key) =>
-        (spec.params[key] || "").toLowerCase() ===
-          (p.params[key] || "").toLowerCase()
+        (spec.params[key] ?? "").toLowerCase() ===
+          (p.params[key] ?? "").toLowerCase()
       )
     ) {
       s |= 1;
@@ -161,9 +161,9 @@ function getMediaTypePriority(
 
     if (
       spec &&
-      ((priority.s || 0) - (spec.s || 0) ||
-          (priority.q || 0) - (spec.q || 0) ||
-          (priority.o || 0) - (spec.o || 0)) < 0
+      ((priority.s ?? 0) - (spec.s ?? 0) ||
+          (priority.q ?? 0) - (spec.q ?? 0) ||
+          (priority.o ?? 0) - (spec.o ?? 0)) < 0
     ) {
       priority = spec;
     }
@@ -176,7 +176,7 @@ export function preferredMediaTypes(
   accept?: string | null,
   provided?: string[],
 ): string[] {
-  const accepts = parseAccept(accept === undefined ? "*/*" : accept || "");
+  const accepts = parseAccept(accept === undefined ? "*/*" : accept ?? "");
 
   if (!provided) {
     return accepts

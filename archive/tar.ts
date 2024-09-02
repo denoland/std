@@ -112,7 +112,7 @@ function formatHeader(data: TarData): Uint8Array {
   const buffer = new Uint8Array(HEADER_LENGTH);
   let offset = 0;
   for (const { field, length } of USTAR_STRUCTURE) {
-    const entry = encoder.encode(data[field as keyof TarData] || "");
+    const entry = encoder.encode(data[field as keyof TarData] ?? "");
     buffer.set(entry, offset);
     offset += length;
   }
@@ -334,7 +334,7 @@ export class Tar {
       }
     }
 
-    source = source || {};
+    source = source ?? {};
 
     // set meta data
     let info: Deno.FileInfo | undefined;
@@ -351,8 +351,8 @@ export class Tar {
     const mtime = Math.floor(
       source.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
     );
-    const uid = source.uid || 0;
-    const gid = source.gid || 0;
+    const uid = source.uid ?? 0;
+    const gid = source.gid ?? 0;
 
     if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
