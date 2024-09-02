@@ -5,15 +5,9 @@
 
 import type { Type } from "../_type.ts";
 
-function resolveYamlMerge(data: string): boolean {
-  return data === "<<" || data === null;
-}
-
 export const merge: Type<"scalar", unknown> = {
   tag: "tag:yaml.org,2002:merge",
   kind: "scalar",
-  resolve: resolveYamlMerge,
-  construct(data) {
-    return data;
-  },
+  resolve: (data: unknown): boolean => data === "<<" || data === null,
+  construct: (data: unknown): unknown => data,
 };
