@@ -80,7 +80,7 @@ function parseMediaType(
     }
   }
 
-  return { type, subtype, params, q, i };
+  return { type, subtype, params, i, o: undefined, q, s: undefined };
 }
 
 function parseAccept(accept: string): MediaTypeSpecificity[] {
