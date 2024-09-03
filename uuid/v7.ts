@@ -1,6 +1,24 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+/** 
+ * Functions for working with UUID Version 7 strings.
+ * 
+ * UUID Version 7 is defined in {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | RFC 9562}.
+ * 
+ * @example
+ * ```ts
+ * import { generate, validate, extractTimestamp } from "@std/uuid/v7";
+ * import { assert, assertEquals } from "@std/assert";
+ * 
+ * const uuid = generate();
+ * assert(validate(uuid));
+ * assertEquals(extractTimestamp("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"), 1645557742000);
+ * ```
+ * 
+ * @module
+ */
+
 import { bytesToUuid } from "./_common.ts";
 
 const UUID_RE =
