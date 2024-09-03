@@ -960,7 +960,7 @@ Deno.test({
 
     // skipFirstRow option
     {
-      const parsed = parse("a\nb", { skipFirstRow: undefined } as object);
+      const parsed = parse("a\nb", {});
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
@@ -976,7 +976,7 @@ Deno.test({
 
     // columns option
     {
-      const parsed = parse("a\nb", { columns: undefined } as object);
+      const parsed = parse("a\nb", {});
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
@@ -996,14 +996,14 @@ Deno.test({
     {
       const parsed = parse(
         "a\nb",
-        { skipFirstRow: false, columns: undefined } as { skipFirstRow: false },
+        { skipFirstRow: false },
       );
       type _ = AssertTrue<IsExact<typeof parsed, string[][]>>;
     }
     {
       const parsed = parse(
         "a\nb",
-        { skipFirstRow: true, columns: undefined } as { skipFirstRow: true },
+        { skipFirstRow: true },
       );
       type _ = AssertTrue<
         IsExact<typeof parsed, Record<string, string>[]>

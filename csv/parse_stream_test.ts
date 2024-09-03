@@ -508,9 +508,7 @@ Deno.test({
 
     // skipFirstRow option
     {
-      const { readable } = new CsvParseStream(
-        { skipFirstRow: undefined } as object,
-      );
+      const { readable } = new CsvParseStream({});
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
@@ -529,7 +527,7 @@ Deno.test({
 
     // columns option
     {
-      const { readable } = new CsvParseStream({ columns: undefined } as object);
+      const { readable } = new CsvParseStream({});
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
@@ -550,17 +548,11 @@ Deno.test({
 
     // skipFirstRow option + columns option
     {
-      const { readable } = new CsvParseStream({
-        skipFirstRow: false,
-        columns: undefined,
-      } as { skipFirstRow: false });
+      const { readable } = new CsvParseStream({ skipFirstRow: false });
       type _ = AssertTrue<IsExact<typeof readable, ReadableStream<string[]>>>;
     }
     {
-      const { readable } = new CsvParseStream({
-        skipFirstRow: true,
-        columns: undefined,
-      } as { skipFirstRow: true });
+      const { readable } = new CsvParseStream({ skipFirstRow: true });
       type _ = AssertTrue<
         IsExact<
           typeof readable,
