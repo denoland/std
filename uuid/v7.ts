@@ -92,3 +92,34 @@ export function generate(options: GenerateOptions = {}): string {
   view.setUint8(8, (view.getUint8(8) & 0b00111111) | 0b10000000);
   return bytesToUuid(bytes);
 }
+
+/**
+ * Extracts the timestamp from a UUIDv7.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param uuid UUIDv7 string to extract the timestamp from.
+ * @returns Returns the timestamp in milliseconds.
+ *
+ * @throws {TypeError} If the UUID is not a valid UUIDv7.
+ *
+ * @example Usage
+ * ```ts
+ * import { extractTimeStamp } from "@std/uuid/v7";
+ * import { assertEquals } from "@std/testing";
+ *
+ * const uuid = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
+ * const timestamp = extractTimeStamp(uuid);
+ * assertEquals(timestamp, 1645557742000);
+ * ```
+ */
+export function extractTimestamp(uuid: string): number {
+  if (!validate(uuid)) {
+    throw new TypeError(
+      "Could not extract timestamp because the UUID was not a valid UUIDv7",
+    );
+  }
+  const timestampHex = uuid.slice(0, 8) + uuid.slice(9, 13);
+  const timestampInMilliseconds = parseInt(timestampHex, 16);
+  return timestampInMilliseconds;
+}

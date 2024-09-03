@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { generate, validate } from "./v7.ts";
+import { generate, validate, extractTimestamp } from "./v7.ts";
 
 Deno.test("generate() generates a non-empty string", () => {
   const u1 = generate();
@@ -64,4 +64,27 @@ Deno.test("validate() checks if a string is a valid v7 UUID", () => {
   const t = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
   assert(validate(u), `generated ${u} should be valid`);
   assert(validate(t), `${t} should be valid`);
+});
+
+
+Deno.test("extractTimestamp(uuid) extracts the timestamp from a UUIDv7", () => {
+  const u = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
+  const now = Date.now();
+  const u2 = generate({ timestamp: now });
+  assertEquals(extractTimestamp(u), 1645557742000);
+  assertEquals(extractTimestamp(u2), now);
+})
+
+
+Deno.test("extractTimestamp(uuid) throws on invalid UUID", () => {
+  assertThrows(
+    () => extractTimestamp("invalid-uuid"),
+    Error,
+    "Could not extract timestamp because the UUID was not a valid UUIDv7",
+  );
+  assertThrows(
+    () => extractTimestamp(crypto.randomUUID()),
+    Error,
+    "Could not extract timestamp because the UUID was not a valid UUIDv7",
+  );
 });
