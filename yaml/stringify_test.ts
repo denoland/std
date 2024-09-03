@@ -132,12 +132,20 @@ Deno.test({
       "False\n",
     );
     assertEquals(
+      stringify(new Boolean(true), { styles: { "!!bool": "camelcase" } }),
+      "True\n",
+    );
+    assertEquals(
       stringify(true, { styles: { "!!bool": "uppercase" } }),
       "TRUE\n",
     );
     assertEquals(
       stringify(false, { styles: { "!!bool": "uppercase" } }),
       "FALSE\n",
+    );
+    assertEquals(
+      stringify(new Boolean(true), { styles: { "!!bool": "uppercase" } }),
+      "TRUE\n",
     );
     assertThrows(
       () => stringify(true, { styles: { "!!bool": "octal" } }),
