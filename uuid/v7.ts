@@ -49,9 +49,6 @@ export interface GenerateOptions {
   random?: Uint8Array;
 }
 
-const version = 0b0111;
-const variant = 0b10;
-
 /**
  * Generates a {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
@@ -90,8 +87,8 @@ export function generate(options: GenerateOptions = {}): string {
     crypto.getRandomValues(bytes.subarray(6));
   }
   // Version (4 bits) Occupies bits 48 through 51 of octet 6.
-  view.setUint8(6, (view.getUint8(6) & 0b00001111) | (version << 4));
+  view.setUint8(6, (view.getUint8(6) & 0b00001111) | 0b01110000);
   // Variant (2 bits) Occupies bits 64 through 65 of octet 8.
-  view.setUint8(8, (view.getUint8(8) & 0b00111111) | (variant << 6));
+  view.setUint8(8, (view.getUint8(8) & 0b00111111) | 0b10000000);
   return bytesToUuid(bytes);
 }
