@@ -9,7 +9,7 @@ assessor: agents/test-assessor.md
 
 - list all customers
 
-**Expections:**
+**Expectations:**
 
 - 10 customers listed
 - it is short
