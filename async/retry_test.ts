@@ -35,6 +35,7 @@ Deno.test("retry() fails after five errors by default", async () => {
 Deno.test("retry() fails after five errors when undefined is passed", async () => {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
+    // @ts-expect-error: explicitly giving undefined
     retry(fiveErrors, {
       maxAttempts: undefined,
       minTimeout: 100,
