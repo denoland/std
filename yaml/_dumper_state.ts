@@ -760,19 +760,7 @@ export class DumperState {
       ) {
         compact = false;
       }
-      if (!Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
-        }
-      } else {
+      if (Array.isArray(value)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && value.length !== 0) {
           value = this.stringifyBlockSequence(value, {
@@ -784,6 +772,18 @@ export class DumperState {
           }
         } else {
           value = this.stringifyFlowSequence(value, { level: arrayLevel });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
+        }
+      } else {
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowMapping(value, { level });
           if (duplicate) {
             value = `&ref_${duplicateIndex} ${value}`;
           }
