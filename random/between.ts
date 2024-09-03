@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import type { RandomOptions } from "./_types.ts";
+import type { Prng, RandomOptions } from "./_types.ts";
+export type { Prng, RandomOptions };
 
 /**
  * Generates a random number between the provided minimum and maximum values.

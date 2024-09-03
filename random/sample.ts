@@ -1,7 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-import type { RandomOptions } from "./_types.ts";
+import type { Prng, RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";
+export type { Prng, RandomOptions };
 
 /**
  * Options for {@linkcode sample}.
@@ -13,8 +14,6 @@ export type SampleOptions = RandomOptions & {
    * An array of weights corresponding to each item in the input array.
    * If supplied, this is used to determine the probability of each item being
    * selected.
-   *
-   * @default {undefined}
    */
   weights?: readonly number[];
 };

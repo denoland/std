@@ -4,8 +4,6 @@
 /**
  * Utilities for generating random numbers.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * ```ts
  * import { randomIntegerBetween } from "@std/random";
  * import { randomSeeded } from "@std/random";
@@ -16,6 +14,8 @@
  * assertEquals(randomIntegerBetween(1, 10, { prng }), 3);
  * ```
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @module
  */
 
@@ -24,4 +24,3 @@ export * from "./integer_between.ts";
 export * from "./sample.ts";
 export * from "./seeded.ts";
 export * from "./shuffle.ts";
-export type * from "./_types.ts";
