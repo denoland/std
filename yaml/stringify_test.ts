@@ -226,49 +226,57 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() handles float types",
+  name: "stringify() handles float values",
   fn() {
-    const floats = [
-      4.1,
-      -1.473,
-      6.82e-5,
-      6.82e-12,
-      5e-12,
-      0,
-      -0,
-    ];
+    assertEquals(stringify(4.1), `4.1\n`);
+    assertEquals(stringify(-1.473), `-1.473\n`);
+    assertEquals(stringify(6.82e-5), `0.0000682\n`);
+    assertEquals(stringify(6.82e-12), `6.82e-12\n`);
+    assertEquals(stringify(5e-12), `5.e-12\n`);
+    assertEquals(stringify(0.0), `0\n`);
+    assertEquals(stringify(-0), `-0.0\n`);
+    assertEquals(stringify(new Number(1.234)), `1.234\n`);
+    assertEquals(stringify(new Number(-1.234)), `-1.234\n`);
+
+    assertEquals(stringify(Infinity), `.inf\n`);
+    assertEquals(stringify(-Infinity), `-.inf\n`);
+    assertEquals(stringify(NaN), `.nan\n`);
+  },
+});
+Deno.test({
+  name: "stringify() handles float values with styles option",
+  fn() {
     assertEquals(
-      stringify(floats),
-      `- 4.1
-- -1.473
-- 0.0000682
-- 6.82e-12
-- 5.e-12
-- 0
-- -0.0
-`,
-    );
-    const infNaN = [Infinity, -Infinity, NaN];
-    assertEquals(
-      stringify(infNaN),
-      `- .inf
-- -.inf
-- .nan
-`,
+      stringify(Infinity, {
+        styles: { "tag:yaml.org,2002:float": "uppercase" },
+      }),
+      `.INF\n`,
     );
     assertEquals(
-      stringify(infNaN, { styles: { "tag:yaml.org,2002:float": "uppercase" } }),
-      `- .INF
-- -.INF
-- .NAN
-`,
+      stringify(-Infinity, {
+        styles: { "tag:yaml.org,2002:float": "uppercase" },
+      }),
+      `-.INF\n`,
     );
     assertEquals(
-      stringify(infNaN, { styles: { "tag:yaml.org,2002:float": "camelcase" } }),
-      `- .Inf
-- -.Inf
-- .NaN
-`,
+      stringify(NaN, { styles: { "tag:yaml.org,2002:float": "uppercase" } }),
+      `.NAN\n`,
+    );
+    assertEquals(
+      stringify(Infinity, {
+        styles: { "tag:yaml.org,2002:float": "camelcase" },
+      }),
+      `.Inf\n`,
+    );
+    assertEquals(
+      stringify(-Infinity, {
+        styles: { "tag:yaml.org,2002:float": "camelcase" },
+      }),
+      `-.Inf\n`,
+    );
+    assertEquals(
+      stringify(NaN, { styles: { "tag:yaml.org,2002:float": "camelcase" } }),
+      `.NaN\n`,
     );
   },
 });
