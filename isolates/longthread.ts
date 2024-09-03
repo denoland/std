@@ -87,7 +87,7 @@ export const functions: Functions<Api> = {
     assert(config.tool_choice === 'required', 'tool_choice must be required')
     assert(commands.includes('agents:switch'), 'missing agents_switch')
 
-    // if our focus is somehwere else, relay it along ?
+    // if our focus is somewhere else, relay it along ?
     // can figure out if we want to intercept it somewhere else.
     // if backchat receives a prompt, it automatically makes it the focus
 

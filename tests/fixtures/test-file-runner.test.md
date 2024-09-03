@@ -11,7 +11,7 @@ iterations: 2
 - list all customers
 - list customers
 
-**Expections:**
+**Expectations:**
 
 - 10 customers listed
 - it is short

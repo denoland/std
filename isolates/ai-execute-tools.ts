@@ -68,9 +68,9 @@ export const executeTools = async (
       }
     } catch (error) {
       log('tool call error:', error)
-      const serializeable = serializeError(error)
-      delete serializeable.stack
-      message.content = JSON.stringify(serializeable)
+      const serializable = serializeError(error)
+      delete serializable.stack
+      message.content = JSON.stringify(serializable)
     }
     debugToolResult(message.content)
     thread.messages[messageIndex] = message

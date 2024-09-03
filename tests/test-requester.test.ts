@@ -5,7 +5,7 @@ import { actorId, fixture, requesterPath } from '@/tests/fixtures/fixture.ts'
 Deno.test('test-requester', async (t) => {
   // test interrogating the test suites
   // run multiple test files
-  // interupt a running test
+  // interrupt a running test
   // be notified when a test completes
 
   // at the start, can only do full awaiting of the test to complete
