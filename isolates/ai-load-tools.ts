@@ -21,7 +21,7 @@ type Action = (
   params: Params,
 ) => Promise<unknown>
 
-const load = async (commands: string[] = [], api: IA) => {
+export const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
   const validators: Record<string, (parameters: Params) => void> = {}

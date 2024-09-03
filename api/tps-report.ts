@@ -7,17 +7,17 @@ export const outcome = z
       'the chain of thought reasoning for how the outcome was reached',
     ),
     outcome: z.boolean().describe(
-      'the outcome of the test compared with the expectation',
+      'the outcome of the test iteration, true if the expectation was met, false if it was not',
     ),
     analysis: z.array(z.string()).optional().describe(
-      'the step by step analysis of WHY the system prompt of the agent under test did meet the expectation as well as it could have',
+      'the step by step analysis of WHY the system prompt of the agent under test did NOT perform as well in the outcome as it could have',
     ),
     improvements: z.array(z.string()).optional().describe(
-      'the improvement(s) to the agent prompt that would have resulted in better performance against the expectation',
+      'the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome',
     ),
   })
   .describe(
-    'After a single test iteration is assessed, along with chain of thought reasoning for how the outcome was reached',
+    'The assessment outcome of a single test iteration, including reasoning, analysis, and improvements',
   )
 
 export type TestIteration = z.infer<typeof testIteration>

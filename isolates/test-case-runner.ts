@@ -53,7 +53,7 @@ export const returns = {
   test: z.void(),
   caseRunner: z.void(),
   iteration: z.void(),
-  assessment: z.void(),
+  assessment: z.null(),
   openai: z.object({
     request: chatParams,
     response: assistantMessage,
@@ -114,7 +114,7 @@ export const functions: Functions<Api> = {
     log('starting assessment with:', assessor)
 
     const threadPath = getThreadPath(api.pid)
-    const stopOnTool = 'test-case-runner_assessment'
+    const stopOnTools = ['test-case-runner_assessment']
     const { drone } = await api
       .actions<longthread.Api>('longthread', { branch: true })
 
@@ -122,13 +122,10 @@ export const functions: Functions<Api> = {
       // TODO recreate the call to openai directly
       const content = `threadPath: ${threadPath}\n\nExpectation: ${expectation}`
       const path = assessor
-      const assistant = await drone({ path, content, actorId, stopOnTool })
-
-      assert(assistant.tool_calls?.length === 1, 'expected one tool call')
-      const args = JSON.parse(assistant.tool_calls[0].function.arguments)
-      const clean = outcome.parse(args)
-      log('outcome completed')
-      return clean
+      const result = await drone({ path, content, actorId, stopOnTools })
+      assert(result, 'missing result')
+      assert(result.functionName === stopOnTools[0], 'unexpected tool call')
+      return outcome.parse(result.args)
     })
 
     const outcomes = await Promise.all(promises)
@@ -143,9 +140,7 @@ export const functions: Functions<Api> = {
     log('writing tps report:', getTpsPath(path))
     api.writeJSON(getTpsPath(path), updated)
   },
-  assessment: () => {
-    throw new Error('Not callable')
-  },
+  assessment: () => null,
   openai: async ({ threadPath }, api) => {
     const thread = await api.readJSON<Thread>(threadPath)
     const messages = [...thread.messages]

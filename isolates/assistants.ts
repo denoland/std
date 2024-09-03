@@ -77,7 +77,8 @@ export const functions: Functions<Api> = {
         return
       }
       // TODO check tool responses come back correct
-      await executeTools(threadPath, api)
+      const noStopOnTools: string[] = []
+      await executeTools(threadPath, api, noStopOnTools)
     }
   },
   delete: async (_, api) => {

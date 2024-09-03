@@ -12,9 +12,9 @@ import { addBranches } from '@/constants.ts'
 
 Deno.test('test file runner', async (t) => {
   const { backchat, engine } = await fixture()
-  log.enable(
-    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
-  )
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  // )
 
   const opts = { branchName: 'runner', noClose: true }
   const { drone } = await backchat.actions<Api>('longthread', opts)
@@ -24,7 +24,14 @@ Deno.test('test file runner', async (t) => {
     const path = fileRunnerPath
     const content = firstTestPath
 
-    await drone({ path, content, actorId })
+    const result = await drone({
+      path,
+      content,
+      actorId,
+      stopOnTools: ['utils_resolve', 'utils_reject'],
+    })
+    expect(result?.functionName).toBe('utils_resolve')
+    expect(result?.args).toEqual({})
 
     const tpsPath = firstTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
@@ -40,9 +47,9 @@ Deno.test('test file runner', async (t) => {
 })
 Deno.test('test meeting bot', async (t) => {
   const { backchat, engine } = await fixture()
-  log.enable(
-    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
-  )
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  // )
   const opts = { branchName: 'runner', noClose: true }
   const { drone } = await backchat.actions<Api>('longthread', opts)
   const target = addBranches(backchat.pid, opts.branchName)
@@ -51,7 +58,14 @@ Deno.test('test meeting bot', async (t) => {
     const path = fileRunnerPath
     const content = meetingTestPath
 
-    await drone({ path, content, actorId })
+    const result = await drone({
+      path,
+      content,
+      actorId,
+      stopOnTools: ['utils_resolve', 'utils_reject'],
+    })
+    expect(result?.functionName).toBe('utils_resolve')
+    expect(result?.args).toEqual({})
 
     const tpsPath = meetingTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)

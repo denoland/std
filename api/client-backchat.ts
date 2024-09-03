@@ -88,7 +88,7 @@ export class Backchat {
   async readBaseThread() {
     const io = await this.readJSON<IoStruct>('.io.json')
     const state = backchatStateSchema.parse(io.state)
-    return state.base
+    return state.target
   }
   /**
    * This is the main function that is used to interact with the backchat

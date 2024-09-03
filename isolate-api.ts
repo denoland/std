@@ -17,6 +17,7 @@ import {
   PromisedIsolatePromise,
   RpcOpts,
   SolidRequest,
+  threadSchema,
   toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -210,6 +211,10 @@ export default class IA<T extends object = Default> {
       }
     }
     return this.#fs.readJSON<T>(path)
+  }
+  async readThread(threadPath: string) {
+    const thread = await this.readJSON(threadPath)
+    return threadSchema.parse(thread)
   }
   read(path: string) {
     assert(this.#accumulator.isActive, 'Activity is denied')

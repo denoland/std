@@ -1,5 +1,6 @@
 import { assert, Debug } from '@utils'
 import {
+  CompletionMessage,
   getThreadPath,
   IA,
   print,
@@ -7,8 +8,9 @@ import {
   toApi,
   ToApiType,
 } from '@/constants.ts'
-import { assistantMessage } from '@/api/zod.ts'
+import { ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
+import * as loadAgent from './load-agent.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -31,15 +33,18 @@ export const parameters = {
     path: z.string(),
     content: z.string(),
     actorId: z.string(),
-    /** tool name to stop on */
-    stopOnTool: z.string().optional(),
+    /** tool names to stop on */
+    stopOnTools: z.array(z.string()),
   }),
 }
 export const returns = {
   start: z.void(),
   run: z.void(),
   switchboard: z.void(),
-  drone: assistantMessage,
+  drone: z.union([
+    z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
+    z.undefined(),
+  ]),
 }
 
 export const api = toApi(parameters)
@@ -66,9 +71,22 @@ export const functions: Functions<Api> = {
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
-    await loop(path, api)
+    await loop(path, api, [])
   },
   switchboard: async ({ content, actorId }, api) => {
+    // TODO handle remote threadIds with symlinks in the threads dir
+
+    const path = `agents/switchboard.md`
+    // TODO change this to be a drone call
+    // verify the switchboard has the right tool loaded
+    // TODO verify stopOnTool function returns null
+
+    const { load } = await api.functions<loadAgent.Api>('load-agent')
+    const { config, commands } = await load({ path })
+    assert(!config.parallel_tool_calls, 'parallel_tool_calls must be false')
+    assert(config.tool_choice === 'required', 'tool_choice must be required')
+    assert(commands.includes('agents:switch'), 'missing agents_switch')
+
     // if our focus is somehwere else, relay it along ?
     // can figure out if we want to intercept it somewhere else.
     // if backchat receives a prompt, it automatically makes it the focus
@@ -81,54 +99,59 @@ export const functions: Functions<Api> = {
     // or the thread could have a switchboard state that gets loaded up
     // somehow specify in the agent what the allowed agent types are
 
-    const path = `agents/switchboard.md`
-    const { halt } = await api.actions<completions.Api>('ai-completions')
-    // halt should force a tool call as opposed to normal completion
-    const params = await halt({ path, content })
+    const assistant = await loop(path, api, ['agents_switch'])
 
-    log('switchboard:', params)
-    assert('path' in params, 'missing path in switchboard result')
-    assert(typeof params.path === 'string', 'invalid switchboard path')
-
-    await loop(params.path, api)
+    console.log('assistant', assistant)
   },
-  drone: async ({ path, content, actorId, stopOnTool }, api) => {
-    log('drone', path, content, actorId, stopOnTool)
+  drone: async ({ path, content, actorId, stopOnTools }, api) => {
+    // TODO verify stopOnTools are all present in the agent and have the
+    // expected return value of null
+    log('drone', path, content, actorId, stopOnTools)
     await functions.start({}, api)
 
     const threadPath = getThreadPath(api.pid)
-    let thread = await api.readJSON<Thread>(threadPath)
+    const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
-    await loop(path, api, stopOnTool)
-
-    thread = await api.readJSON<Thread>(threadPath)
-    const last = thread.messages[thread.messages.length - 1]
-    assert(last.role === 'assistant', 'not assistant response: ' + last.role)
-    return last
+    const result = await loop(path, api, stopOnTools)
+    return result
   },
 }
 
-const loop = async (path: string, api: IA, stopOnTool?: string) => {
+const loop = async (path: string, api: IA, stopOnTools: string[]) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
-  const HARD_STOP = 10
+  const HARD_STOP = 20
   let count = 0
-  while (!await isDone(threadPath, api) && count++ < HARD_STOP) {
+
+  while (!await isDone(threadPath, api, stopOnTools) && count++ < HARD_STOP) {
     await complete({ path })
-    if (await isDone(threadPath, api, stopOnTool)) {
-      return
+    if (await isDone(threadPath, api)) {
+      break
     }
     // TODO check tool responses come back correct
-    await executeTools(threadPath, api)
+    await executeTools(threadPath, api, stopOnTools)
   }
   if (count >= HARD_STOP) {
     // TODO test this actually works
     throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
   }
+
+  const thread = await api.readJSON<Thread>(threadPath)
+  const last = thread.messages[thread.messages.length - 1]
+  if (last.role === 'tool') {
+    const assistant = thread.messages[thread.messages.length - 2]
+    assert(assistant.role === 'assistant', 'not assistant: ' + last.role)
+    assert(assistant.tool_calls?.length === 1, 'expected one tool call')
+
+    const args = JSON.parse(assistant.tool_calls[0].function.arguments)
+    const functionName = assistant.tool_calls[0].function.name
+    log('tool call', functionName, args)
+    return { functionName, args }
+  }
 }
 
-const isDone = async (threadPath: string, api: IA, stopOnTool?: string) => {
+const isDone = async (threadPath: string, api: IA, stopOnTools?: string[]) => {
   const thread = await api.readJSON<Thread>(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (!last) {
@@ -138,34 +161,41 @@ const isDone = async (threadPath: string, api: IA, stopOnTool?: string) => {
     log(`${last.role}:${last.name}:`, last.content)
   }
   if (last.role === 'tool') {
-    // log('tool:', last.tool_call_id, last.content)
+    if (stopOnTools) {
+      const prior = thread.messages[thread.messages.length - 2]
+      if (isStopOnTool(prior, last, stopOnTools)) {
+        return true
+      }
+    }
   }
   if (last.role !== 'assistant') {
     return false
   }
   if ('tool_calls' in last) {
     log(last.name, last.tool_calls)
-    if (last.tool_calls?.length === 1) {
-      const tool = last.tool_calls[0]
-      if (tool.function.name === 'utils_resolve') {
-        log('resolved')
-        return true
-      }
-      if (tool.function.name === 'utils_reject') {
-        log('rejected')
-        return true
-      }
-      if (stopOnTool && tool.function.name === stopOnTool) {
-        log('stopping on tool:', stopOnTool)
-        // TODO do a parsing check and error if the tool parameters are wrong,
-        // to allow the agent to fix the erroneous tool call
-        return true
-      }
-    }
     return false
   }
-  if ('tool_call_id' in last) {
-    log(last.name, last.content)
+  return true
+}
+
+const isStopOnTool = (
+  prior: CompletionMessage,
+  tool: ToolMessage,
+  stopOnTools: string[],
+) => {
+  if (prior.role !== 'assistant') {
+    return false
+  }
+  if (!prior.tool_calls) {
+    return false
+  }
+  if (prior.tool_calls.length !== 1) {
+    return false
+  }
+  if (!stopOnTools.includes(prior.tool_calls[0].function.name)) {
+    return false
+  }
+  if (tool.content !== 'null') {
     return false
   }
   return true

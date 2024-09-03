@@ -34,14 +34,14 @@ const ChatCompletionContentResponseSchema = z.union([
   z.array(ChatCompletionContentPartTextSchema),
 ])
 
-const ChatCompletionSystemMessageParamSchema = z.object({
+const systemMessage = z.object({
   content: ChatCompletionContentResponseSchema,
   role: z.literal('system'),
   name: z.string().optional(),
 })
 
 // Define the user message schema
-const ChatCompletionUserMessageParamSchema = z.object({
+const userMessage = z.object({
   content: ChatCompletionContentSchema,
   role: z.literal('user'),
   name: z.string().optional(),
@@ -76,19 +76,17 @@ export const assistantMessage = z.object({
     .optional(),
 })
 
-// Define the tool message schema
-const ChatCompletionToolMessageParamSchema = z.object({
+export type ToolMessage = z.infer<typeof toolMessage>
+const toolMessage = z.object({
   role: z.literal('tool'),
   content: ChatCompletionContentResponseSchema,
   tool_call_id: z.string(),
 })
 
-export type CompletionMessage = z.infer<
-  typeof completionMessage
->
+export type CompletionMessage = z.infer<typeof completionMessage>
 export const completionMessage = z.union([
-  ChatCompletionSystemMessageParamSchema,
-  ChatCompletionUserMessageParamSchema,
+  systemMessage,
+  userMessage,
   assistantMessage,
-  ChatCompletionToolMessageParamSchema,
+  toolMessage,
 ])

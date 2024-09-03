@@ -2,10 +2,10 @@ import { CradleMaker } from '@/constants.ts'
 import { log } from '@utils'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':synth: '
+  const prefix = name + ':tps: '
 
   Deno.test(prefix + 'run fixture test', async (t) => {
-    log.enable('AI:tests AI:synth AI:longthread')
+    log.enable('AI:tests AI:longthread')
     const { backchat, engine } = await cradleMaker()
     log('start')
 

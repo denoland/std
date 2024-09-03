@@ -1,48 +1,33 @@
-import { Functions, print } from '@/constants.ts'
+import { Functions, print, toApi, ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
+import { z } from 'zod'
 const log = Debug('AI:agents')
 
-export const api = {
-  search: {
-    type: 'object',
-    description: 'Search for agents that can complete the job',
-    properties: {
-      query: {
-        type: 'string',
-        description:
-          'The highly descriptive natrual language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
-      },
-    },
-    additionalProperties: false,
-  },
-  switch: {
-    type: 'object',
-    description:
-      'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
-    required: ['reasoning', 'path'],
-    properties: {
-      reasoning: {
-        type: 'array',
-        items: { type: 'string' },
-      },
-      path: {
-        type: 'string',
-        description: 'The path to the agent file to switch to',
-      },
-    },
-    additionalProperties: false,
-  },
+export const parameters = {
+  search: z.object({ query: z.string() }).describe(
+    'The highly descriptive natrual language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
+  ),
+  switch: z.object({
+    reasoning: z.array(z.string()),
+    path: z.string().describe('The path to the agent file to switch to'),
+  }).describe(
+    'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
+  ),
 }
-interface SearchResult {
-  path: string
-  name: string
-  reason: string
-  imageUrl?: string
+export const returns = {
+  search: z.array(
+    z.object({
+      path: z.string(),
+      name: z.string(),
+      reason: z.string(),
+      imageUrl: z.string().optional(),
+    }),
+  ),
+  switch: z.null(),
 }
-export type Api = {
-  search: (params: { query: string }) => Promise<SearchResult[]>
-  switch: (params: { reasoning: string[]; path: string }) => Promise<void>
-}
+export const api = toApi(parameters)
+
+export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
   search: async ({ query }, api) => {
@@ -66,14 +51,8 @@ export const functions: Functions<Api> = {
       reason: 'no reason available',
     }))
   },
-  switch: async ({ path }, api) => {
+  switch: ({ path }, api) => {
     log('switch', path, print(api.pid))
-
-    // then this gets called, we need to break out of the tool execution, since
-    // we are now going to halt the current execution
-    // could submit tool results, but carry on the execution with the new agent
-    // this would let us show the switch in the ui.
-
-    // all we want is to not pollute the thread by executing in thread.
+    return null
   },
 }

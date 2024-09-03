@@ -1,8 +1,7 @@
-import { assert, Debug } from '@utils'
+import { Debug } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
 import {
-  actorIdRegex,
   Agent,
   AssistantMessage,
   ChatParams,
@@ -10,12 +9,14 @@ import {
   Functions,
   getThreadPath,
   IA,
-  Params,
   print,
   Thread,
+  toApi,
+  ToApiType,
 } from '@/constants.ts'
-import { loadTools, loadValidators } from './ai-load-tools.ts'
+import { loadTools } from './ai-load-tools.ts'
 import * as loadAgent from './load-agent.ts'
+import { z } from 'zod'
 
 const log = Debug('AI:completions')
 
@@ -36,115 +37,27 @@ export const transcribe = async (file: File) => {
   return transcription.text
 }
 
-export const api = {
-  complete: {
-    type: 'object',
-    required: ['path'],
-    additionalProperties: false,
-    properties: { path: { type: 'string' } },
-  },
-  once: {
-    type: 'object',
-    required: ['path', 'content', 'actorId'],
-    additionalProperties: false,
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' },
-      actorId: { type: 'string', pattern: actorIdRegex.source },
-    },
-  },
-  halt: {
-    type: 'object',
-    required: ['content', 'path'],
-    additionalProperties: false,
-    properties: { content: { type: 'string' }, path: { type: 'string' } },
-  },
-  oneshot: {
-    type: 'object',
-    required: ['path', 'contents', 'actorId'],
-    additionalProperties: false,
-    properties: {
-      path: { type: 'string' },
-      contents: { type: 'array', items: { type: 'string' } },
-      actorId: { type: 'string', pattern: actorIdRegex.source },
-    },
-  },
+export const parameters = {
+  complete: z.object({ path: z.string() }),
+}
+export const returns = {
+  complete: z.void(),
 }
 
-export type Api = {
-  complete: (params: { path: string }) => Promise<void>
-  once: (
-    params: {
-      path: string
-      content: string
-      actorId: string
-    },
-  ) => Promise<AssistantMessage>
-  halt: (
-    params: { content: string; path: string },
-  ) => Promise<Params>
-  oneshot: (
-    params: { path: string; contents: string[]; actorId: string },
-  ) => Promise<AssistantMessage>
-}
+export const api = toApi(parameters)
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
 export const functions: Functions<Api> = {
   async complete({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
-    const thread = await api.readJSON<Thread>(threadPath)
-    // TODO assert thread is correctly formatted
+    const thread = await api.readThread(threadPath)
 
     const assistant = await complete(path, thread.messages, api)
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
-  },
-  async once({ path, content, actorId }, api) {
-    const threadPath = getThreadPath(api.pid)
-    log('once %o', threadPath, print(api.pid))
-    const thread = await api.readJSON<Thread>(threadPath)
-    const message: Thread['messages'][number] = {
-      role: 'user',
-      content,
-      name: actorId,
-    }
-    const messages = [...thread.messages, message]
-    // TODO verify the agent is restricted to a single function call
-    const result = await complete(path, messages, api)
-    return result
-  },
-  async halt({ content, path }, api) {
-    const threadPath = getThreadPath(api.pid)
-    log('halt %o', threadPath, content, path, print(api.pid))
-    const thread = await api.readJSON<Thread>(threadPath)
-    const assistant = await complete(path, thread.messages, api)
-
-    assert(assistant.tool_calls, 'tool_calls missing from halt call')
-    assert(assistant.tool_calls.length === 1, 'tool_calls length is not 1')
-    const result = assistant.tool_calls[0]
-    log('result', result)
-
-    const { load } = await api.functions<loadAgent.Api>('load-agent')
-    const agent = await load({ path })
-    const validators = await loadValidators(agent.commands, api)
-
-    const { name } = result.function
-    assert(validators[name], 'validator not found: ' + name)
-    const parsed = JSON.parse(result.function.arguments)
-    validators[name](parsed)
-
-    log('halt complete', name, parsed)
-    return parsed
-  },
-  async oneshot({ path, contents, actorId }, api) {
-    log('oneshot %o', path, actorId, print(api.pid))
-    const messages: Thread['messages'] = contents.map((content) => ({
-      role: 'user',
-      content,
-      name: actorId,
-    }))
-    const assistant = await complete(path, messages, api)
-    return assistant
   },
 }
 

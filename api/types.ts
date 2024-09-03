@@ -144,7 +144,7 @@ export const ENTRY_BRANCH = 'main'
 
 export type PartialPID = Omit<PID, 'repoId'>
 
-export const thread = z.object({
+export const threadSchema = z.object({
   /** If this thread is deferring to another thread, rather than taking on the
    * the current messages directly */
   defer: zodPid.optional(),
@@ -190,7 +190,7 @@ export const thread = z.object({
     }),
   })),
 })
-export type Thread = z.infer<typeof thread>
+export type Thread = z.infer<typeof threadSchema>
 
 export type AssistantsThread = Thread & {
   externalId: string
@@ -753,7 +753,7 @@ export const chatParams = agent.shape.config.extend({
 export type ChatParams = z.infer<typeof chatParams>
 export const backchatStateSchema = z.object({
   /** The base thread that this backchat session points to - the thread of last resort */
-  base: zodPid,
+  target: zodPid,
 })
 export type ToApiType<
   P extends Record<string, ZodSchema>,

@@ -22,8 +22,8 @@ export const returns = {
   delay: z.string().describe(
     'The current date and time in the format used by the system locale',
   ),
-  resolve: z.void(),
-  reject: z.void(),
+  resolve: z.null(),
+  reject: z.null(),
   time: z.string().datetime(),
 }
 export const api = toApi(parameters)
@@ -34,11 +34,7 @@ export const functions: Functions<Api> = {
     await new Promise((resolve) => setTimeout(resolve, milliseconds))
     return new Date().toLocaleString()
   },
-  resolve: () => {
-    throw new Error('Resolve should never execute')
-  },
-  reject: () => {
-    throw new Error('Reject should never execute')
-  },
+  resolve: () => null,
+  reject: () => null,
   time: () => new Date().toISOString(),
 }
