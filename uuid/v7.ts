@@ -94,11 +94,11 @@ export function generate(options: GenerateOptions = {}): string {
  *
  * @example Usage
  * ```ts
- * import { extractTimeStamp } from "@std/uuid/v7";
- * import { assertEquals } from "@std/testing";
+ * import { extractTimestamp } from "@std/uuid/v7";
+ * import { assertEquals } from "@std/assert";
  *
  * const uuid = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
- * const timestamp = extractTimeStamp(uuid);
+ * const timestamp = extractTimestamp(uuid);
  * assertEquals(timestamp, 1645557742000);
  * ```
  */
