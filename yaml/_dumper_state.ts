@@ -116,10 +116,10 @@ function generateNextLine(indent: number, level: number): string {
   return `\n${" ".repeat(indent * level)}`;
 }
 
-// Returns true if the character can be printed without escaping.
-// From YAML 1.2: "any allowed characters known to be non-printable
-// should also be escaped. [However,] This isn’t mandatory"
-// Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
+/**
+ * @link https://yaml.org/spec/1.2.2/ 5.1. Character Set
+ * @return `true` if the character is printable without escaping, `false` otherwise.
+ */
 function isPrintable(c: number): boolean {
   return (
     (0x00020 <= c && c <= 0x00007e) ||
@@ -129,45 +129,32 @@ function isPrintable(c: number): boolean {
   );
 }
 
-// Simplified test for values allowed after the first character in plain style.
+/**
+ * @return `true` if value is allowed after the first character in plain style, `false` otherwise.
+ */
 function isPlainSafe(c: number): boolean {
-  // Uses a subset of nb-char - c-flow-indicator - ":" - "#"
-  // where nb-char ::= c-printable - b-char - c-byte-order-mark.
   return (
     isPrintable(c) &&
     c !== BOM &&
-    // - c-flow-indicator
     c !== COMMA &&
     c !== LEFT_SQUARE_BRACKET &&
     c !== RIGHT_SQUARE_BRACKET &&
     c !== LEFT_CURLY_BRACKET &&
     c !== RIGHT_CURLY_BRACKET &&
-    // - ":" - "#"
     c !== COLON &&
     c !== SHARP
   );
 }
 
-// Simplified test for values allowed as the first character in plain style.
+/**
+ * @return `true` if value is allowed as the first character in plain style, `false` otherwise.
+ */
 function isPlainSafeFirst(c: number): boolean {
-  // Uses a subset of ns-char - c-indicator
-  // where ns-char = nb-char - s-white.
   return (
-    isPrintable(c) &&
-    c !== BOM &&
-    !isWhiteSpace(c) && // - s-white
-    // - (c-indicator ::=
-    // “-” | “?” | “:” | “,” | “[” | “]” | “{” | “}”
+    isPlainSafe(c) &&
+    !isWhiteSpace(c) &&
     c !== MINUS &&
     c !== QUESTION &&
-    c !== COLON &&
-    c !== COMMA &&
-    c !== LEFT_SQUARE_BRACKET &&
-    c !== RIGHT_SQUARE_BRACKET &&
-    c !== LEFT_CURLY_BRACKET &&
-    c !== RIGHT_CURLY_BRACKET &&
-    // | “#” | “&” | “*” | “!” | “|” | “>” | “'” | “"”
-    c !== SHARP &&
     c !== AMPERSAND &&
     c !== ASTERISK &&
     c !== EXCLAMATION &&
@@ -175,7 +162,6 @@ function isPlainSafeFirst(c: number): boolean {
     c !== GREATER_THAN &&
     c !== SINGLE_QUOTE &&
     c !== DOUBLE_QUOTE &&
-    // | “%” | “@” | “`”)
     c !== PERCENT &&
     c !== COMMERCIAL_AT &&
     c !== GRAVE_ACCENT
@@ -653,84 +639,62 @@ export class DumperState {
       compact: boolean;
     },
   ): string {
-    const objectKeyList = Object.keys(object);
-    let result = "";
+    const keys = Object.keys(object);
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
       // Default sorting
-      objectKeyList.sort();
+      keys.sort();
     } else if (typeof this.sortKeys === "function") {
       // Custom sort function
-      objectKeyList.sort(this.sortKeys);
+      keys.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
       throw new TypeError(
-        '"sortKeys" must be a boolean or a function: received ${typeof this.sortKeys}',
+        `"sortKeys" must be a boolean or a function: received ${typeof this
+          .sortKeys}`,
       );
     }
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = "";
+    const separator = generateNextLine(this.indent, level);
 
-      if (!compact || index !== 0) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
+    const results = [];
 
-      const objectValue = object[objectKey];
+    for (const key of keys) {
+      const value = object[key];
 
-      const keyString = this.stringifyNode(objectKey, {
+      const keyString = this.stringifyNode(key, {
         level: level + 1,
         block: true,
         compact: true,
         isKey: true,
       });
-      if (keyString === null) {
-        continue; // Skip this pair because of invalid key.
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key.
 
       const explicitPair = (tag !== null && tag !== "?") ||
         (keyString.length > 1024);
 
-      if (explicitPair) {
-        if (keyString && LINE_FEED === keyString.charCodeAt(0)) {
-          pairBuffer += "?";
-        } else {
-          pairBuffer += "? ";
-        }
-      }
-
-      pairBuffer += keyString;
-
-      if (explicitPair) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
-
-      const valueString = this.stringifyNode(objectValue, {
+      const valueString = this.stringifyNode(value, {
         level: level + 1,
         block: true,
         compact: explicitPair,
         isKey: false,
       });
-      if (
-        valueString === null
-      ) {
-        continue; // Skip this pair because of invalid value.
-      }
+      if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      if (valueString && LINE_FEED === valueString.charCodeAt(0)) {
-        pairBuffer += ":";
-      } else {
-        pairBuffer += ": ";
+      let pairBuffer = "";
+      if (explicitPair) {
+        pairBuffer += keyString.charCodeAt(0) === LINE_FEED ? "?" : "? ";
       }
-
+      pairBuffer += keyString;
+      if (explicitPair) pairBuffer += separator;
+      pairBuffer += valueString.charCodeAt(0) === LINE_FEED ? ":" : ": ";
       pairBuffer += valueString;
-
-      // Both key and value are valid.
-      result += pairBuffer;
+      results.push(pairBuffer);
     }
 
-    return result || "{}"; // Empty mapping if no valid pairs.
+    const prefix = compact ? "" : separator;
+    return results.length ? prefix + results.join(separator) : "{}"; // Empty mapping if no valid pairs.
   }
 
   getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {

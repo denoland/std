@@ -3,7 +3,6 @@
 
 import {
   convertRowToObject,
-  defaultReadOptions,
   type LineReader,
   parseRecord,
   type ParseResult,
@@ -370,8 +369,9 @@ export class CsvParseStream<
    */
   constructor(options?: T) {
     this.#options = {
-      ...defaultReadOptions,
       ...options,
+      separator: options?.separator ?? ",",
+      trimLeadingSpace: options?.trimLeadingSpace ?? false,
     };
 
     if (
