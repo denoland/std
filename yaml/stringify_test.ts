@@ -77,11 +77,18 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() serializes integers",
+  name: "stringify() handles integers",
   fn() {
     assertEquals(stringify(42), "42\n");
     assertEquals(stringify(-42), "-42\n");
 
+    assertEquals(stringify(new Number(42)), "42\n");
+    assertEquals(stringify(new Number(-42)), "-42\n");
+  },
+});
+Deno.test({
+  name: "stringify() handles integers with styles option",
+  fn() {
     // binary, octal, and hexadecimal can be specified in styles options
     assertEquals(
       stringify(42, { styles: { "!!int": "binary" } }),
@@ -106,6 +113,11 @@ Deno.test({
     assertEquals(
       stringify(-42, { styles: { "!!int": "hexadecimal" } }),
       "-0x2A\n",
+    );
+    assertThrows(
+      () => stringify(42, { styles: { "!!int": "camelcase" } }),
+      TypeError,
+      '!<tag:yaml.org,2002:int> tag resolver accepts not "camelcase" style',
     );
   },
 });
