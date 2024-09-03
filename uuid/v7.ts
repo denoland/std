@@ -47,6 +47,8 @@ export interface GenerateOptions {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @throws {RangeError} If the timestamp is not a non-negative integer.
+ *
  * @param options Options for generating the UUIDv7.
  * @returns Returns a UUIDv7 string
  *
@@ -68,7 +70,7 @@ export function generate(options: GenerateOptions = {}): string {
       !Number.isInteger(options.timestamp) || options.timestamp < 0
     )
   ) {
-    throw new Error(
+    throw new RangeError(
       `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${options.timestamp}`,
     );
   }
@@ -109,6 +111,5 @@ export function extractTimestamp(uuid: string): number {
     );
   }
   const timestampHex = uuid.slice(0, 8) + uuid.slice(9, 13);
-  const timestampInMilliseconds = parseInt(timestampHex, 16);
-  return timestampInMilliseconds;
+  return parseInt(timestampHex, 16);
 }
