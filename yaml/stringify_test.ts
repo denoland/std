@@ -99,6 +99,10 @@ Deno.test({
       "-0b101010\n",
     );
     assertEquals(
+      stringify(new Number(42), { styles: { "!!int": "binary" } }),
+      "0b101010\n",
+    );
+    assertEquals(
       stringify(42, { styles: { "!!int": "octal" } }),
       "052\n",
     );
@@ -107,12 +111,20 @@ Deno.test({
       "-052\n",
     );
     assertEquals(
+      stringify(new Number(42), { styles: { "!!int": "octal" } }),
+      "052\n",
+    );
+    assertEquals(
       stringify(42, { styles: { "!!int": "hexadecimal" } }),
       "0x2A\n",
     );
     assertEquals(
       stringify(-42, { styles: { "!!int": "hexadecimal" } }),
       "-0x2A\n",
+    );
+    assertEquals(
+      stringify(new Number(42), { styles: { "!!int": "hexadecimal" } }),
+      "0x2A\n",
     );
     assertThrows(
       () => stringify(42, { styles: { "!!int": "camelcase" } }),
