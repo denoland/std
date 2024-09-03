@@ -639,16 +639,15 @@ export class DumperState {
       compact: boolean;
     },
   ): string {
-    const objectKeyList = Object.keys(object);
-    let result = "";
+    const keys = Object.keys(object);
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
       // Default sorting
-      objectKeyList.sort();
+      keys.sort();
     } else if (typeof this.sortKeys === "function") {
       // Custom sort function
-      objectKeyList.sort(this.sortKeys);
+      keys.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
       throw new TypeError(
@@ -657,67 +656,45 @@ export class DumperState {
       );
     }
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = "";
+    const separator = generateNextLine(this.indent, level);
 
-      if (!compact || index !== 0) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
+    const results = [];
 
-      const objectValue = object[objectKey];
+    for (const key of keys) {
+      const value = object[key];
 
-      const keyString = this.stringifyNode(objectKey, {
+      const keyString = this.stringifyNode(key, {
         level: level + 1,
         block: true,
         compact: true,
         isKey: true,
       });
-      if (keyString === null) {
-        continue; // Skip this pair because of invalid key.
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key.
 
       const explicitPair = (tag !== null && tag !== "?") ||
         (keyString.length > 1024);
 
-      if (explicitPair) {
-        if (keyString && LINE_FEED === keyString.charCodeAt(0)) {
-          pairBuffer += "?";
-        } else {
-          pairBuffer += "? ";
-        }
-      }
-
-      pairBuffer += keyString;
-
-      if (explicitPair) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
-
-      const valueString = this.stringifyNode(objectValue, {
+      const valueString = this.stringifyNode(value, {
         level: level + 1,
         block: true,
         compact: explicitPair,
         isKey: false,
       });
-      if (
-        valueString === null
-      ) {
-        continue; // Skip this pair because of invalid value.
-      }
+      if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      if (valueString && LINE_FEED === valueString.charCodeAt(0)) {
-        pairBuffer += ":";
-      } else {
-        pairBuffer += ": ";
+      let pairBuffer = "";
+      if (explicitPair) {
+        pairBuffer += keyString.charCodeAt(0) === LINE_FEED ? "?" : "? ";
       }
-
+      pairBuffer += keyString;
+      if (explicitPair) pairBuffer += separator;
+      pairBuffer += valueString.charCodeAt(0) === LINE_FEED ? ":" : ": ";
       pairBuffer += valueString;
-
-      // Both key and value are valid.
-      result += pairBuffer;
+      results.push(pairBuffer);
     }
 
-    return result || "{}"; // Empty mapping if no valid pairs.
+    const prefix = compact ? "" : separator;
+    return results.length ? prefix + results.join(separator) : "{}"; // Empty mapping if no valid pairs.
   }
 
   getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {
