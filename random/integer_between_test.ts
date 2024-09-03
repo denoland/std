@@ -31,12 +31,12 @@ Deno.test("randomIntegerBetween() throws if min or max are NaN", () => {
   assertThrows(
     () => randomIntegerBetween(NaN, 1),
     RangeError,
-    "min and max must be integers",
+    "min and max must be finite",
   );
   assertThrows(
     () => randomIntegerBetween(1, NaN),
     RangeError,
-    "min and max must be integers",
+    "min and max must be finite",
   );
 });
 
@@ -44,12 +44,12 @@ Deno.test("randomIntegerBetween() throws if min or max are +/-Infinity", () => {
   assertThrows(
     () => randomIntegerBetween(-Infinity, 1),
     RangeError,
-    "min and max must be integers",
+    "min and max must be finite",
   );
   assertThrows(
     () => randomIntegerBetween(1, Infinity),
     RangeError,
-    "min and max must be integers",
+    "min and max must be finite",
   );
 });
 
@@ -71,18 +71,22 @@ Deno.test("randomIntegerBetween() allows negative min and max", () => {
   assertEquals(results, [-8, -6, -3]);
 });
 
-Deno.test("randomIntegerBetween() throws on non-integer min and max", () => {
-  assertThrows(
-    () => randomIntegerBetween(1.1, 10),
-    RangeError,
-    "min and max must be integers",
-  );
-  assertThrows(
-    () => randomIntegerBetween(1, 10.1),
-    RangeError,
-    "min and max must be integers",
-  );
-});
+Deno.test(
+  "randomIntegerBetween() returns evenly-distributed values in [ceil(min), floor(max)] for non-integer min and max",
+  () => {
+    const prng = randomSeeded(1n);
+    const getRand = () => randomIntegerBetween(-0.001, 1.999, { prng });
+    const length = 1000;
+    const results = Array.from({ length }, () => getRand());
+
+    const { 0: zeroes = [], 1: ones = [] } = Object.values(
+      Object.groupBy(results, (result) => Math.floor(result)),
+    );
+
+    assertAlmostEquals(zeroes.length, length / 2, length / 10);
+    assertAlmostEquals(ones.length, length / 2, length / 10);
+  },
+);
 
 Deno.test("randomIntegerBetween() allows min and max to be the same, in which case it returns constant values", () => {
   const results = Array.from({ length: 3 }, () => randomIntegerBetween(99, 99));

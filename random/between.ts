@@ -1,10 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { RandomOptions } from "./_types.ts";
 
 /**
  * Generates a random number between the provided minimum and maximum values.
  *
  * The number is in the range `[min, max)`, i.e. `min` is included but `max` is excluded.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param min The minimum value (inclusive)
  * @param max The maximum value (exclusive)

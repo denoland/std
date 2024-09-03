@@ -1,10 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
 import type { Prng } from "./_types.ts";
 
 /**
  * Creates a pseudo-random number generator that generates random numbers in
  * the range `[0, 1)`, based on the given seed.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param seed The seed used to initialize the random number generator's state.
  * @returns A pseudo-random number generator function, which will generate
@@ -33,5 +36,5 @@ export function randomSeeded(seed: bigint): Prng {
  * value back by multiplying by 2 ** 32.
  */
 function uint32ToFloat64(u32: number): number {
-  return u32 / (2 ** 32);
+  return u32 / 2 ** 32;
 }

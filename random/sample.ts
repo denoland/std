@@ -1,11 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-
 import type { RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";
 
 /**
  * Options for {@linkcode sample}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type SampleOptions = RandomOptions & {
   /**
@@ -25,6 +26,8 @@ const defaultOptions: SampleOptions = {
 
 /**
  * Returns a random element from the given array.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam T The type of the elements in the array.
  * @typeParam O The type of the accumulator.

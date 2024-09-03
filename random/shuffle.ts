@@ -1,9 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";
 
 /**
  * Shuffles the provided array, returning a copy and without modifying the original array.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam T The type of the items in the array
  * @param items The items to shuffle

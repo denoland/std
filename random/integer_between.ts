@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 import type { RandomOptions } from "./_types.ts";
 import { randomBetween } from "./between.ts";
 
@@ -6,6 +7,8 @@ import { randomBetween } from "./between.ts";
  * Generates a random integer between the provided minimum and maximum values.
  *
  * The number is in the range `[min, max]`, i.e. both `min` and `max` are included.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param min The minimum value (inclusive)
  * @param max The maximum value (inclusive)
@@ -26,10 +29,10 @@ export function randomIntegerBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  if (!Number.isInteger(min) || !Number.isInteger(max)) {
-    throw new RangeError("min and max must be integers");
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    throw new RangeError("min and max must be finite");
   }
 
   const opts = { prng: Math.random, ...options };
-  return Math.floor(randomBetween(min, max + 1, opts));
+  return Math.floor(randomBetween(Math.ceil(min), Math.floor(max) + 1, opts));
 }

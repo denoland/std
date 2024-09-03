@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * A pseudo-random number generator implementing the same contract as
@@ -6,11 +7,15 @@
  * the range `[0, 1)`. The behavior of a function that accepts a `Prng` an
  * option may be customized by passing a `Prng` with different behavior from
  * `Math.random`, for example it may be seeded.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type Prng = typeof Math.random;
 
 /**
  * Options for random number generation.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type RandomOptions = {
   /**

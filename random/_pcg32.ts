@@ -62,7 +62,7 @@ export function nextU32(pcg: PcgMutableState): number {
   step(pcg);
   // Output function XSH RR: xorshift high (bits), followed by a random rotate
   const rot = state >> ROTATE;
-  const xsh = BigInt.asUintN(32, ((state >> XSHIFT) ^ state) >> SPARE);
+  const xsh = BigInt.asUintN(32, (state >> XSHIFT ^ state) >> SPARE);
   return Number(rotateRightU32(xsh, rot));
 }
 
@@ -70,7 +70,7 @@ export function nextU32(pcg: PcgMutableState): number {
 function rotateRightU32(n: bigint, rot: bigint): bigint {
   const left = BigInt.asUintN(32, n << (-rot & 31n));
   const right = n >> rot;
-  return (left | right);
+  return left | right;
 }
 
 /**
