@@ -50,8 +50,13 @@ function constructYamlFloat(data: string): number {
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
-function representYamlFloat(object: number, style?: StyleVariant): string {
-  if (isNaN(object)) {
+function representYamlFloat(
+  // deno-lint-ignore ban-types
+  object: number | Number,
+  style?: StyleVariant,
+): string {
+  const value = object instanceof Number ? object.valueOf() : object;
+  if (isNaN(value)) {
     switch (style) {
       case "lowercase":
         return ".nan";
@@ -60,7 +65,7 @@ function representYamlFloat(object: number, style?: StyleVariant): string {
       case "camelcase":
         return ".NaN";
     }
-  } else if (Number.POSITIVE_INFINITY === object) {
+  } else if (Number.POSITIVE_INFINITY === value) {
     switch (style) {
       case "lowercase":
         return ".inf";
@@ -69,7 +74,7 @@ function representYamlFloat(object: number, style?: StyleVariant): string {
       case "camelcase":
         return ".Inf";
     }
-  } else if (Number.NEGATIVE_INFINITY === object) {
+  } else if (Number.NEGATIVE_INFINITY === value) {
     switch (style) {
       case "lowercase":
         return "-.inf";
@@ -78,11 +83,11 @@ function representYamlFloat(object: number, style?: StyleVariant): string {
       case "camelcase":
         return "-.Inf";
     }
-  } else if (isNegativeZero(object)) {
+  } else if (isNegativeZero(value)) {
     return "-0.0";
   }
 
-  const res = object.toString(10);
+  const res = value.toString(10);
 
   // JS stringifier can build scientific format without dots: 5e-100,
   // while YAML requires dot: 5.e-100. Fix it with simple hack
@@ -91,6 +96,7 @@ function representYamlFloat(object: number, style?: StyleVariant): string {
 }
 
 function isFloat(object: unknown): object is number {
+  if (object instanceof Number) object = object.valueOf();
   return typeof object === "number" &&
     (object % 1 !== 0 || isNegativeZero(object));
 }
