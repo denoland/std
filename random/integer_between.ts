@@ -33,6 +33,7 @@ export function randomIntegerBetween(
     throw new RangeError("min and max must be finite");
   }
 
-  const opts = { prng: Math.random, ...options };
-  return Math.floor(randomBetween(Math.ceil(min), Math.floor(max) + 1, opts));
+  return Math.floor(
+    randomBetween(Math.ceil(min), Math.floor(max) + 1, options),
+  );
 }

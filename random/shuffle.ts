@@ -28,10 +28,8 @@ import { randomIntegerBetween } from "./integer_between.ts";
  */
 export function shuffle<T>(
   items: readonly T[],
-  options?: Partial<RandomOptions>,
+  options?: RandomOptions,
 ): T[] {
-  const opts = { prng: Math.random, ...options };
-
   const result = [...items];
 
   // https://en.wikipedia.org/wiki/Fisher–Yates_shuffle#The_modern_algorithm
@@ -39,7 +37,7 @@ export function shuffle<T>(
   // for i from n−1 down to 1 do
   for (let i = result.length - 1; i >= 1; --i) {
     // j ← random integer such that 0 ≤ j ≤ i
-    const j = randomIntegerBetween(0, i, opts);
+    const j = randomIntegerBetween(0, i, options);
     // exchange a[j] and a[i]
     [result[i], result[j]] = [result[j]!, result[i]!];
   }

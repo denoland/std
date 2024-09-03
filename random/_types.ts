@@ -23,5 +23,5 @@ export type RandomOptions = {
    * `[0, 1)`, used for randomization.
    * @default {Math.random}
    */
-  prng: Prng;
+  prng?: Prng;
 };
