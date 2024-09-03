@@ -118,17 +118,18 @@ export interface FormatOptions {
  */
 export function format(
   ms: number,
-  options: FormatOptions = {},
+  options?: FormatOptions,
 ): string {
-  const opt = Object.assign(
-    { style: "narrow", ignoreZero: false },
-    options,
-  );
+  const {
+    style = "narrow",
+    ignoreZero = false,
+  } = options ?? {};
+
   const duration = millisecondsToDurationObject(ms);
   const durationArr = durationArray(duration);
-  switch (opt.style) {
+  switch (style) {
     case "narrow": {
-      if (opt.ignoreZero) {
+      if (ignoreZero) {
         return `${
           durationArr.filter((x) => x.value).map((x) =>
             `${x.value}${x.type === "us" ? "µs" : x.type}`
@@ -142,7 +143,7 @@ export function format(
       }`;
     }
     case "full": {
-      if (opt.ignoreZero) {
+      if (ignoreZero) {
         return `${
           durationArr.filter((x) => x.value).map((x) =>
             `${x.value} ${keyList[x.type]}`
@@ -159,7 +160,7 @@ export function format(
           ? addZero(x.value, 3)
           : addZero(x.value, 2)
       );
-      if (opt.ignoreZero) {
+      if (ignoreZero) {
         let cont = true;
         while (cont) {
           if (!Number(arr[arr.length - 1])) arr.pop();
