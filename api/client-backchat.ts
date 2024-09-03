@@ -7,6 +7,7 @@ import {
   EngineInterface,
   freezePid,
   getParent,
+  getThreadPath,
   IoStruct,
   JsonValue,
   Params,
@@ -17,6 +18,7 @@ import {
   RpcOpts,
   SU_ACTOR,
   SU_BACKCHAT,
+  threadSchema,
   toActions,
   UnsequencedRequest,
 } from './types.ts'
@@ -24,6 +26,8 @@ import * as actor from './isolates/actor.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './watcher.ts'
 import { Crypto } from './crypto.ts'
+import { ZodObject, ZodTypeAny } from 'zod'
+import z from 'zod'
 type Init = {
   repo: string
   isolate?: string
@@ -127,6 +131,19 @@ export class Backchat {
     await this.#engine.pierce(pierce)
     await promise
   }
+  async newThread() {
+    const pierce: PierceRequest = {
+      target: this.#pid,
+      ulid: ulid(),
+      isolate: 'backchat',
+      functionName: 'create',
+      params: {},
+      proctype: Proctype.enum.SERIAL,
+    }
+    const promise = this.#watcher.watch(pierce.ulid)
+    await this.#engine.pierce(pierce)
+    return await promise
+  }
   async actions<T>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts
     const schema = await this.apiSchema(isolate)
@@ -209,6 +226,17 @@ export class Backchat {
   }
   readJSON<T>(path: string, pid: PID = this.pid, commit?: string) {
     return this.#engine.readJSON<T>(path, pid, commit)
+  }
+  async readThread(pid: PID) {
+    const thread = await this.readJSON(getThreadPath(pid), pid)
+    return threadSchema.parse(thread)
+  }
+  async state<T extends ZodObject<Record<string, ZodTypeAny>>>(
+    pid: PID,
+    schema: T,
+  ) {
+    const io = await this.readJSON<IoStruct>('.io.json', pid)
+    return schema.parse(io.state) as z.infer<T>
   }
   exists(path: string, pid: PID = this.pid) {
     return this.#engine.exists(path, pid)

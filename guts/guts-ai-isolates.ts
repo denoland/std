@@ -1,6 +1,6 @@
-import * as engageHelp from '../isolates/ai.ts'
 import { expect, log } from '@utils'
 import { CradleMaker, getParent } from '@/constants.ts'
+import * as longthread from '@/isolates/longthread.ts'
 
 const agent = `
 ---
@@ -12,91 +12,95 @@ commands:
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':isolates: '
+  const actorId = 'test'
+  const path = 'agents/files.md'
+
   Deno.test(prefix + 'files:ls', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const actor = getParent(backchat.pid)
-    await backchat.write('agents/files.md', agent, actor)
-    await backchat.write('tmp', '', actor)
+    const home = getParent(backchat.pid)
+    await backchat.write(path, agent, home)
+    await backchat.write('tmp', '', home)
 
-    const { engage } = await backchat.actions<engageHelp.Api>('thread', pid)
+    const target = await backchat.readBaseThread()
+    const { run } = await backchat.actions<longthread.Api>('longthread', {
+      target,
+    })
     await t.step('ls', async () => {
-      const text = 'ls'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      expect(result).not.toContain('.io.json')
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      const thread = await backchat.readThread(target)
+      log('thread', thread)
     })
     await t.step('ls .', async () => {
-      const text = 'ls .'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls .'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      expect(result).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
+
+      const thread = await backchat.readThread(target)
+      log('thread', thread)
     })
     await t.step('ls /', async () => {
-      const text = 'ls /'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls /'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      expect(result).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
+
+      const thread = await backchat.readThread(target)
+      log('thread', thread)
     })
     await t.step('ls --all', async () => {
-      const text = 'ls --all'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls --all'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      expect(result).toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).toContain('.io.json')
+
+      const thread = await backchat.readThread(target)
+      log('thread', thread)
     })
 
     await engine.stop()
   })
   Deno.test(prefix + 'files:write', async (t) => {
-    const terminal = await cradleMaker()
-    const { pid } = await terminal.init({ repo: 'test/write' })
-    await terminal.write('helps/files.md', agent, pid)
-    const isolate = 'engage-help'
-    const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
+    const { backchat, engine } = await cradleMaker()
+    const { pid } = await backchat.init({ repo: 'test/write' })
+
+    const home = getParent(backchat.pid)
+    await backchat.write(path, agent, home)
+
+    const target = await backchat.readBaseThread()
+    const { run } = await backchat.actions<longthread.Api>('longthread', {
+      target,
+    })
 
     await t.step('write', async () => {
-      const text = 'write "c" to the file test.txt'
-      const result = await engage({ help: 'files', text })
+      const content = 'write "c" to the file test.txt'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      await terminal.delete(SESSION_PATH, pid)
+
+      const read = await backchat.read('test.txt', pid)
+      expect(read).toBe('c')
     })
 
     await t.step('ls', async () => {
-      const text = 'ls'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      expect(result).toContain('test.txt')
 
-      await terminal.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).toContain('test.txt')
     })
 
-    await terminal.engineStop()
+    await engine.stop()
   })
 }

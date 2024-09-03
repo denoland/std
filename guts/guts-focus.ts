@@ -6,7 +6,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   // TODO make a fake thread, and then test summoner
 
-  Deno.test.only(prefix + 'thread management', async (t) => {
+  Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus = await backchat.readBaseThread()
     log.enable('AI:tests AI:backchat AI:longthread AI:agents')

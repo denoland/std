@@ -159,7 +159,7 @@ export const functions: Functions<Api> = {
   },
 }
 
-const stateSchema = z.object({
+export const stateSchema = z.object({
   /** The machineId of the superuser */
   superuser: z.string().regex(machineIdRegex),
   authProviders: z.record(zodPid),

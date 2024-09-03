@@ -7,8 +7,8 @@ import backchats from './guts-backchats.ts'
 import focus from './guts-focus.ts'
 import git from './guts-git.ts'
 import tpsReports from './guts-tps-reports.ts'
-// import benchmarks from './benchmarks.ts'
-// import isolates from './guts-ai-isolates.ts'
+import benchmarks from './guts-benchmarks.ts'
+import isolates from './guts-ai-isolates.ts'
 import { CradleMaker } from '@/constants.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
@@ -19,6 +19,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
   focus(name, cradleMaker)
   git(name, cradleMaker)
   tpsReports(name, cradleMaker)
-  // isolates(name, cradleMaker)
-  // benchmarks(name, cradleMaker)
+  isolates(name, cradleMaker)
+  benchmarks(name, cradleMaker)
 }

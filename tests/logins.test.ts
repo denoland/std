@@ -1,26 +1,20 @@
-import { Engine } from '@/engine.ts'
-import * as Github from '@/isolates/github.ts'
-import * as Actors from '../isolates/actors.ts'
+import * as github from '@/isolates/github.ts'
+import * as actors from '../isolates/actors.ts'
 import { expect } from '@utils'
 import { Tokens } from '@deno/kv-oauth'
 import { getActorId } from '@/constants.ts'
-import DB from '@/db.ts'
 import { Crypto } from '../api/crypto.ts'
 import { Backchat } from '../api/client-backchat.ts'
+import { cradleMaker } from '@/cradle-maker.ts'
 
 Deno.test('login with github', async (t) => {
-  const superuserKey = Crypto.generatePrivateKey()
-  const aesKey = DB.generateAesKey()
-  const engine = await Engine.provision(superuserKey, aesKey, Github.init)
-  const backchat = await Backchat.upsert(engine, Crypto.generatePrivateKey())
+  const { backchat, engine } = await cradleMaker(github.init)
   const home = backchat.homeAddress
-  const config = await backchat.readJSON<Actors.AdminConfig>(
-    'config.json',
-    home,
-  )
-  const authProvider = config.authProviders.github
+
+  const state = await backchat.state(home, actors.stateSchema)
+  const authProvider = state.authProviders.github
   const opts = { target: authProvider }
-  const github = await backchat.actions<Github.Api>('github', opts)
+  const actions = await backchat.actions<github.Api>('github', opts)
 
   const githubUserId = 'github-user-id'
 
@@ -30,15 +24,15 @@ Deno.test('login with github', async (t) => {
     const authSessionId = 'mock-session-id'
 
     // log.enable('AI:actors AI:github')
-    await github.registerAttempt({ actorId, authSessionId })
+    await actions.registerAttempt({ actorId, authSessionId })
     const tokens: Tokens = {
       accessToken: 'mock-token-1',
       tokenType: 'bearer',
     }
-    await github.authorize({ authSessionId, tokens, githubUserId })
+    await actions.authorize({ authSessionId, tokens, githubUserId })
 
     const opts = { target: engine.homeAddress }
-    const admin = await backchat.actions<Actors.ActorAdmin>('actors', opts)
+    const admin = await backchat.actions<actors.Api>('actors', opts)
     const newActorId = await admin.surrender({ authProvider })
     expect(newActorId).toEqual(actorId)
   })
@@ -48,12 +42,12 @@ Deno.test('login with github', async (t) => {
     expect(second.pid).not.toEqual(backchat.pid)
     const actorId = getActorId(second.pid)
     const authSessionId = 'mock-session-id-2'
-    await github.registerAttempt({ actorId, authSessionId })
+    await actions.registerAttempt({ actorId, authSessionId })
     const tokens: Tokens = { accessToken: 'mock-token-2', tokenType: 'bearer' }
-    await github.authorize({ authSessionId, tokens, githubUserId })
+    await actions.authorize({ authSessionId, tokens, githubUserId })
 
     const opts = { target: engine.homeAddress }
-    const admin = await second.actions<Actors.ActorAdmin>('actors', opts)
+    const admin = await second.actions<actors.Api>('actors', opts)
     await admin.surrender({ authProvider })
 
     // TODO assert that the PID for the session has changed

@@ -28,7 +28,7 @@ const cradleMaker = async (init?: Provisioner) => {
   if (!seedSet) {
     seeds.set(init, {
       seed: await server.dump(),
-      backchatId: backchat.threadId,
+      backchatId: backchat.id,
     })
   }
 

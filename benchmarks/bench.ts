@@ -1,4 +1,3 @@
-// @deno-types="npm:@types/benchmark"
 import Benchmark from 'benchmark'
 import { Debug } from '@utils'
 import { Engine } from '@/engine.ts'
@@ -34,13 +33,12 @@ const machineEngine = await engineFactory()
 const machineEnginePrivateKey = Crypto.generatePrivateKey()
 Crypto.load(machineEnginePrivateKey) // do premul crypto
 
-const sessionStartSession = await factory()
-const sessionReloadSession = await factory()
+const backchatStartThread = await factory()
+const backchatReload = await factory()
 
-const coldPingSession = await factory()
-const hotPingSession = await factory()
-const hotPingActions = await hotPingSession.actions<Api>('io-fixture')
-const installSession = await factory()
+const hotPing = await factory()
+const hotPingActions = await hotPing.actions<Api>('io-fixture')
+const install = await factory()
 let installCounter = 0
 
 log('setup complete')
@@ -57,48 +55,45 @@ suite
   })
   // MACHINE
   .add('machine root session', {
-    // generate a new machine key and await the root session
+    // generate a new machine key and await backchat to upsert
     defer: true,
     async fn(deferred: Benchmark.Deferred) {
       const privateKey = Crypto.generatePrivateKey()
-      const machine = Machine.load(machineEngine, privateKey)
-      await machine.rootTerminalPromise
+      await Backchat.upsert(machineEngine, privateKey)
       deferred.resolve()
     },
   })
   .add('machine reload', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const machine = Machine.load(machineEngine, machineEnginePrivateKey)
-      await machine.rootTerminalPromise
+      await Backchat.upsert(machineEngine, machineEnginePrivateKey)
       deferred.resolve()
     },
   })
   // SESSION
   .add('boot', {
-    // start an engine and await the first non root session
+    // start an engine and await backchat to upsert
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = await factory()
-      await session.initializationPromise
+      await factory()
       deferred.resolve()
     },
   })
   .add('session start', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = sessionStartSession.newTerminal()
-      await session.initializationPromise
+      await backchatStartThread.newThread()
       deferred.resolve()
-      session.stop()
     },
   })
   .add('session reload', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const { pid } = sessionReloadSession
-      const session = sessionReloadSession.resumeTerminal(pid)
-      await session.initializationPromise
+      await Backchat.upsert(
+        machineEngine,
+        machineEnginePrivateKey,
+        backchatReload.id,
+      )
       deferred.resolve()
     },
   })
@@ -122,8 +117,11 @@ suite
     // make a new session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = coldPingSession.newTerminal()
-      const fixture = await session.actions<Api>('io-fixture')
+      const backchat = await Backchat.upsert(
+        machineEngine,
+        machineEnginePrivateKey,
+      )
+      const fixture = await backchat.actions<Api>('io-fixture')
       const result = await fixture.local()
       assert(result === 'local reply')
       deferred.resolve()
@@ -152,7 +150,7 @@ suite
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       const repo = 'install/' + installCounter++
-      await installSession.init({ repo })
+      await install.init({ repo })
       deferred.resolve()
     },
   })

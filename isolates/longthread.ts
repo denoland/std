@@ -8,7 +8,7 @@ import {
   toApi,
   ToApiType,
 } from '@/constants.ts'
-import { ToolMessage } from '@/api/zod.ts'
+import { assistantMessage, ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
 import * as loadAgent from './load-agent.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
@@ -39,7 +39,7 @@ export const parameters = {
 }
 export const returns = {
   start: z.void(),
-  run: z.void(),
+  run: assistantMessage,
   switchboard: z.void(),
   drone: z.union([
     z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
@@ -68,10 +68,16 @@ export const functions: Functions<Api> = {
     // TODO sniff actorId from the action source
     log('run', path, content, actorId)
     const threadPath = getThreadPath(api.pid)
-    const thread = await api.readJSON<Thread>(threadPath)
+    let thread = await api.readThread(threadPath)
+
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
     await loop(path, api, [])
+    thread = await api.readThread(threadPath)
+    const last = thread.messages[thread.messages.length - 1]
+    assert(last.role === 'assistant', 'not assistant: ' + last.role)
+    assert(typeof last.content === 'string', 'expected string content')
+    return last
   },
   switchboard: async ({ content, actorId }, api) => {
     // TODO handle remote threadIds with symlinks in the threads dir
@@ -137,7 +143,7 @@ const loop = async (path: string, api: IA, stopOnTools: string[]) => {
     throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
   }
 
-  const thread = await api.readJSON<Thread>(threadPath)
+  const thread = await api.readThread(threadPath)
   const last = thread.messages[thread.messages.length - 1]
   if (last.role === 'tool') {
     const assistant = thread.messages[thread.messages.length - 2]

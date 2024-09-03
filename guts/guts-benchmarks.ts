@@ -2,16 +2,17 @@ import { expect, log } from '@utils'
 import { assert } from '@std/assert'
 import { CradleMaker, IoStruct } from '@/constants.ts'
 import 'benchmark' // load these modules into cache for ghactions
+import { Api } from '@/isolates/io-fixture.ts'
+import * as files from '@/isolates/files.ts'
 
-const ioFixture = 'io-fixture'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':benchmarks: '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const terminal = await cradleMaker()
+    const { backchat, engine } = await cradleMaker()
     const repo = 'benchmark/serial'
-    const { pid: target } = await terminal.init({ repo })
-    const { local } = await terminal.actions(ioFixture, target)
+    const { pid: target } = await backchat.init({ repo })
+    const { local } = await backchat.actions<Api>('io-fixture', { target })
 
     await t.step('serial', async () => {
       const promises = []
@@ -28,20 +29,23 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
       // TODO get historical splices and confirm depth of actions
     })
-    await terminal.rm({ repo })
-    await terminal.engineStop()
+    await backchat.rm({ repo })
+    await engine.stop()
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const terminal = await cradleMaker()
+    const { backchat, engine } = await cradleMaker()
     const repo = 'benchmark/parallel'
 
-    const { pid: target } = await terminal.init({ repo })
-    const { local } = await terminal.actions(ioFixture, target)
+    const { pid: target } = await backchat.init({ repo })
+    const { local } = await backchat.actions<Api>('io-fixture', {
+      target,
+      branch: true,
+    })
     await t.step('parallel', async () => {
       const promises = []
       const count = 20
       for (let i = 0; i < count; i++) {
-        promises.push(local({}, { branch: true }))
+        promises.push(local())
       }
       log('promises start')
       const results = await Promise.all(promises)
@@ -51,36 +55,38 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('done')
     })
     await t.step('io.json is blank', async () => {
-      const sessionIo = await terminal.readJSON<IoStruct>('.io.json')
-      expect(Object.keys(sessionIo.requests)).toHaveLength(1)
-      expect(Object.keys(sessionIo.executed)).toHaveLength(0)
-      expect(Object.keys(sessionIo.replies)).toHaveLength(1)
-      expect(Object.keys(sessionIo.pendings)).toHaveLength(0)
-      expect(Object.keys(sessionIo.branches)).toHaveLength(0)
+      const backchatIo = await backchat.readJSON<IoStruct>('.io.json')
+      expect(Object.keys(backchatIo.requests)).toHaveLength(1)
+      expect(Object.keys(backchatIo.executed)).toHaveLength(0)
+      expect(Object.keys(backchatIo.replies)).toHaveLength(1)
+      expect(Object.keys(backchatIo.pendings)).toHaveLength(0)
+      expect(Object.keys(backchatIo.branches)).toHaveLength(0)
 
-      const targetIo = await terminal.readJSON<IoStruct>('.io.json', target)
+      const targetIo = await backchat.readJSON<IoStruct>('.io.json', target)
 
       expect(Object.keys(targetIo.executed)).toHaveLength(0)
       expect(Object.keys(targetIo.pendings)).toHaveLength(0)
       expect(Object.keys(targetIo.branches)).toHaveLength(0)
       // TODO verify there are no child branches of target remaining
     })
-    await terminal.rm({ repo })
-    await terminal.engineStop()
+    await backchat.rm({ repo })
+    await engine.stop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
-    const session = await cradleMaker()
+    const { backchat, engine } = await cradleMaker()
     const repo = 'benchmark/flare'
-    await session.rm({ repo })
+    await backchat.rm({ repo })
     const target = {
       repoId: '0',
       account: 't',
       repository: 'flare',
       branches: ['main'],
     }
-    const { pid } = await session.init({ repo })
+    const { pid } = await backchat.init({ repo })
     expect(target).toEqual(pid)
-    const { parallel, squared } = await session.actions(ioFixture, target)
+    const { parallel, squared } = await backchat.actions<Api>('io-fixture', {
+      target,
+    })
 
     await t.step('flare', async () => {
       const count = 50
@@ -107,24 +113,24 @@ export default (name: string, cradleMaker: CradleMaker) => {
         }
       }
     })
-    await session.engineStop()
+    await engine.stop()
   })
   Deno.test.ignore(prefix + 'records', async (t) => {
-    const session = await cradleMaker()
+    const { backchat, engine } = await cradleMaker()
     const repo = 'benchmark/records'
-    await session.rm({ repo })
-    const { pid: target } = await session.init({ repo })
+    await backchat.rm({ repo })
+    const { pid: target } = await backchat.init({ repo })
     const count = 100
 
     await t.step('touch', async () => {
-      const { touch } = await session.actions(ioFixture, target)
+      const { touch } = await backchat.actions<Api>('io-fixture', { target })
       const prefix = 'cust-'
       log('start')
       await touch({ count, prefix, suffix: '.txt' })
       log('stop after:', count)
     })
     await t.step('ls', async () => {
-      const { ls } = await session.actions('files', target)
+      const { ls } = await backchat.actions<files.Api>('files', { target })
       const result = await ls({ count: true })
       log('result', result)
       expect(result).toBe(count + 1)
@@ -132,14 +138,16 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('update 1', async () => {
       const path = `cust-${count - 1}.txt`
       const content = 'this is the new content'
-      const { write, read } = await session.actions('files', target)
+      const { write, read } = await backchat.actions<files.Api>('files', {
+        target,
+      })
       await write({ path, content })
       const result = await read({ path })
       log('contents', result)
       expect(result).toEqual(content)
     })
 
-    await session.engineStop()
+    await engine.stop()
 
     // then time how long it takes to write text to those files both at
     // creation, and also afterwards.
