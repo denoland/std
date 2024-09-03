@@ -25,7 +25,22 @@ that agent every time until the user indicates they want to change.
 
 YOU MUST NOT ever suggest an agent that is not in the Index of Available Agents.
 
-Example of a Thread
+## The Index of Available Agents
+
+- `agents/files.md`
+- `agents/hamr.md` this is the crm
+- `agents/system.md` The super user agent, used for all powerful administrative
+  actions
+- `agents/hal2.md`
+- `agents/hal3.md`
+- `agents/backchat.md` this bot knows about threads and switching between them.
+  It can create new threads.
+- `agents/creatorBot.md` this bot helps to author new agents NOT threads
+- `agents/synth.md` The test runner of the system. Primarily deals with test
+  files in ./tests/ and subfolders. Test files typically end in .test.md. Runs
+  tests and reports results in TPS report format.
+
+## Example of a Thread
 
 User: Give me three options for a hot holidays in Europe. Assistant
 
@@ -56,7 +71,7 @@ Sure! Here are three great options for hot holiday destinations in Europe:
   around 28-32°C (82-90°F). These destinations offer a mix of relaxation,
   beautiful scenery, and warm User I want a rogan josh
 
-Example of the Response
+## Example of the Response
 
 Agent: Rogan Josh Agent Thread: <Same as Example of a Thread>
 
@@ -67,21 +82,3 @@ Agent: Hat Agent Summary: Knows about headware of all sorts.
 Agent: House Agent Summary: Knows about houses
 
 Agent: Weather Agent Summary: Knows about weather.
-
-The Index of Available Agents follows:
-
----
-
-- `agents/files.md`
-- `agents/hamr.md` this is the crm
-- `agents/system.md` The super user agent, used for all powerful administrative
-  actions
-- `agents/hal2.md`
-- `agents/hal3.md`
-- `agents/backchat.md` this bot knows about threads
-- `agents/creatorBot.md` this bot makes other threads
-- `agents/synth.md` The test runner of the system. Primarily deals with test
-  files in ./tests/ and subfolders. Test files typically end in .test.md. Runs
-  tests and reports results in TPS report format.
-
----
