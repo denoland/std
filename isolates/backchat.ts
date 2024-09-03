@@ -70,6 +70,7 @@ export const functions: Functions<Api> = {
       target,
     })
     const agent = switchboard({ content, actorId })
+    log('agent', agent)
   },
   relay: ({ request }, api) => {
     // TODO replace this with native relay ability

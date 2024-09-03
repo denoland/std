@@ -52,8 +52,8 @@ export const functions: Functions<Api> = {
 
     return getBaseName(pid)
   },
-  deleteController: async ({ controllerId }, api) => {
-    console.log('deleting controller', controllerId)
+  deleteController: ({ controllerId }, api) => {
+    console.log('deleting controller', controllerId, print(api.pid))
   },
 }
 

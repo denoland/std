@@ -79,7 +79,7 @@ export const functions: Functions<Api> = {
     await Promise.all(promises)
     log('done', files)
   },
-  stop: async ({ controllerId }, api) => {
+  stop: ({ controllerId }, api) => {
     log('stop', controllerId, print(api.pid))
   },
 }

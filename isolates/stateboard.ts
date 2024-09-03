@@ -29,7 +29,7 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
-  show: async ({ pid, commit, path, widget }) => {
+  show: ({ pid, commit, path, widget }) => {
     console.log('show', pid, commit, path, widget)
   },
 }
