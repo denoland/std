@@ -73,12 +73,14 @@ export function generate(options: GenerateOptions = {}): string {
   const bytes = new Uint8Array(16);
   const view = new DataView(bytes.buffer);
   // Unix timestamp in milliseconds (truncated to 48 bits)
-  if (options.timestamp !== undefined) {
-    if (!Number.isInteger(options.timestamp) || options.timestamp < 0) {
-      throw new Error(
-        `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${options.timestamp}`,
-      );
-    }
+  if (
+    options.timestamp !== undefined && (
+      !Number.isInteger(options.timestamp) || options.timestamp < 0
+    )
+  ) {
+    throw new Error(
+      `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${options.timestamp}`,
+    );
   }
   const timestamp = BigInt(options.timestamp ?? Date.now());
   view.setBigUint64(0, timestamp << 16n);
