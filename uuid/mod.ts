@@ -116,6 +116,8 @@ export const v5 = {
  * Generator and validator for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
  * import { v7 } from "@std/uuid";
