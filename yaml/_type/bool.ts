@@ -18,8 +18,20 @@ export const bool: Type<"scalar", boolean> = {
   construct: (data: string): boolean => YAML_TRUE_BOOLEANS.includes(data),
   resolve: (data: string): boolean => YAML_BOOLEANS.includes(data),
   represent: {
-    lowercase: (object: boolean): string => object ? "true" : "false",
-    uppercase: (object: boolean): string => object ? "TRUE" : "FALSE",
-    camelcase: (object: boolean): string => object ? "True" : "False",
+    // deno-lint-ignore ban-types
+    lowercase: (object: boolean | Boolean): string => {
+      const value = object instanceof Boolean ? object.valueOf() : object;
+      return value ? "true" : "false";
+    },
+    // deno-lint-ignore ban-types
+    uppercase: (object: boolean | Boolean): string => {
+      const value = object instanceof Boolean ? object.valueOf() : object;
+      return value ? "TRUE" : "FALSE";
+    },
+    // deno-lint-ignore ban-types
+    camelcase: (object: boolean | Boolean): string => {
+      const value = object instanceof Boolean ? object.valueOf() : object;
+      return value ? "True" : "False";
+    },
   },
 };

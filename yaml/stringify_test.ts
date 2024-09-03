@@ -111,22 +111,41 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() serializes boolean values",
+  name: "stringify() handles boolean values",
   fn() {
-    assertEquals(stringify([true, false]), "- true\n- false\n");
+    assertEquals(stringify(true), "true\n");
+    assertEquals(stringify(false), "false\n");
 
-    // casing can be controlled with styles options
+    assertEquals(stringify(new Boolean(true)), "true\n");
+    assertEquals(stringify(new Boolean(false)), "false\n");
+  },
+});
+Deno.test({
+  name: "stringify() handles boolean with styles option",
+  fn() {
     assertEquals(
-      stringify([true, false], { styles: { "!!bool": "camelcase" } }),
-      "- True\n- False\n",
+      stringify(true, { styles: { "!!bool": "camelcase" } }),
+      "True\n",
     );
     assertEquals(
-      stringify([true, false], { styles: { "!!bool": "uppercase" } }),
-      "- TRUE\n- FALSE\n",
+      stringify(false, { styles: { "!!bool": "camelcase" } }),
+      "False\n",
     );
-
+    assertEquals(
+      stringify(true, { styles: { "!!bool": "uppercase" } }),
+      "TRUE\n",
+    );
+    assertEquals(
+      stringify(false, { styles: { "!!bool": "uppercase" } }),
+      "FALSE\n",
+    );
     assertThrows(
-      () => stringify([true, false], { styles: { "!!bool": "octal" } }),
+      () => stringify(true, { styles: { "!!bool": "octal" } }),
+      TypeError,
+      '!<tag:yaml.org,2002:bool> tag resolver accepts not "octal" style',
+    );
+    assertThrows(
+      () => stringify(false, { styles: { "!!bool": "octal" } }),
       TypeError,
       '!<tag:yaml.org,2002:bool> tag resolver accepts not "octal" style',
     );
