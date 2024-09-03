@@ -652,7 +652,8 @@ export class DumperState {
     } else if (this.sortKeys) {
       // Something is wrong
       throw new TypeError(
-        '"sortKeys" must be a boolean or a function: received ${typeof this.sortKeys}',
+        `"sortKeys" must be a boolean or a function: received ${typeof this
+          .sortKeys}`,
       );
     }
 
