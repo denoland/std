@@ -125,7 +125,7 @@ export function generate(options: GenerateOptions = {}): string {
 export function extractTimestamp(uuid: string): number {
   if (!validate(uuid)) {
     throw new TypeError(
-      `Cannot extract timestamp because the UUID is not a valid UUIDv7: uuid is "${uuid}"`
+      `Cannot extract timestamp because the UUID is not a valid UUIDv7: uuid is "${uuid}"`,
     );
   }
   const timestampHex = uuid.slice(0, 8) + uuid.slice(9, 13);
