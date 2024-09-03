@@ -856,20 +856,21 @@ function main() {
     console.log(message);
   }
 
-  const opts:
-    | Deno.ServeTlsOptions
-    | (Deno.ServeTlsOptions & Deno.TlsCertifiedKeyOptions) = {
+  // TODO(petamoriken): Migrate `Deno.ServeTcpOptions | (Deno.ServeTcpOptions & Deno.TlsCertifiedKeyOptions)` in v2
+  const options:
+    & Deno.ServeOptions
+    & { port?: number; hostname?: string; cert?: string; key?: string } = {
       hostname: host,
       onListen,
     };
   if (port !== undefined) {
-    opts.port = port;
+    options.port = port;
   }
   if (useTls) {
-    opts.cert = Deno.readTextFileSync(certFile);
-    opts.key = Deno.readTextFileSync(keyFile);
+    options.cert = Deno.readTextFileSync(certFile);
+    options.key = Deno.readTextFileSync(keyFile);
   }
-  Deno.serve(opts, handler);
+  Deno.serve(options, handler);
 }
 
 function printUsage() {
