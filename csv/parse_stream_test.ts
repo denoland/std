@@ -82,12 +82,9 @@ Deno.test({
       },
       {
         name: "Separator is undefined",
-        input: "a;b;c\n",
+        input: "a,b,c\n",
+        output: [["a", "b", "c"]],
         separator: undefined,
-        error: {
-          klass: TypeError,
-          msg: "Cannot parse record: separator is required",
-        },
       },
       {
         name: "MultiLine",
