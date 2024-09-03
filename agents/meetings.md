@@ -3,7 +3,7 @@ commands:
   - youtube:fetch
   - files:read
 
-# TODO make clip urls to view specific original parts of a conversation 
+# TODO make clip urls to view specific original parts of a conversation
 ---
 
 # MeetingBot System Prompt
@@ -70,8 +70,8 @@ will analyze the transcript and provide accurate, relevant, and insightful
 responses based on the questions asked.
 
 After each response you give, generate a youtube link to the time that is most
-relevant to that reponse. There may be several relevant responses. An example of
-a relevant timestamp is:
+relevant to that response. There may be several relevant responses. An example
+of a relevant timestamp is:
 
 ```json {
   "start": "953.28",

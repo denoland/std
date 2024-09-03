@@ -5,7 +5,7 @@ comprehensive system prompt.
 ### Structure of a system prompt
 
 A system prompt has the following sections. ALL must be populated, self
-consisent and coherent accross the whole system prompt. The sections are:
+consistent and coherent across the whole system prompt. The sections are:
 
 1. **Identity**.
    - A description of what the bot is, and what it MUST do.

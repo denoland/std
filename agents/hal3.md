@@ -97,10 +97,10 @@ MUST follow to understand the GOAL and CONSTRAINTS.
 ## CONSTRAINTS FORMAT
 
 1. MUSTs - Things that I definitely want to happen to meet the Final Goal.
-2. SHOULD - Things that I prefer to happen to meet the Final Goal. SHOULDs have
+2. SHOULD - Things that I prefer to happen to meet the Final Goal. SHOULDS have
    a lower priority than MUSTs.
 3. COULD - Things that would be a nice side effect when working towards the
-   Final Goal, but which I don't necessarily mind if they're included. COULDs
+   Final Goal, but which I don't necessarily mind if they're included. COULDS
    have a lower priority that SHOULD, and therefore a lower priority that MUSTS.
 4. MUST NOTs - Things that cannot happen. MUST NOTs have the highest priority.
 

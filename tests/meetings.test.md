@@ -14,6 +14,6 @@ Given the youtube url, analyze the transcript
   answered, any ambiguities, any logical fallacies, and any time where a similar
   topic was talked about but which a different definition appeared to be used.
 
-**Expections:**
+**Expectations:**
 
 - says something about a test framework

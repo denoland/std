@@ -18,7 +18,7 @@ Ensure that the number of customers returned is identical to the state
 list all customers
 ```
 
-**Expections:**
+**Expectations:**
 
 - 10 customers listed
 - the response is short

@@ -78,7 +78,7 @@ appears that they want two options of a field, DIRECT THEM to MAKE A CHOICE.
 - tracks being present or not ?
 - does the customer have tracks or not should be an early question
 - do not offer valiances and fenials at the same time
-- window types should not show the list, but just leave an open ended quesiton
+- window types should not show the list, but just leave an open ended question
 - each room should ask how many windows there are
 - in a bedroom the fabric choice should be plain
 - blackout is a lining, not a fabric
@@ -129,7 +129,7 @@ The response format MUST BE in the following order:
 
 ## Format for the Picture
 
-AT THE START OF EVERY RESONSE YOU ARE TO DISPLAY a URL of the following format:
+AT THE START OF EVERY RESPONSE YOU ARE TO DISPLAY a URL of the following format:
 
 ![Alt text](https://dummyimage.com/600x400&text=Pic_Goes_Here|XXX-YYY|AAA-BBB)
 

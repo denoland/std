@@ -38,5 +38,5 @@ First, read in the file from the "Thread Path" using the function
 "test-case-runner_openai". Think carefully about the information you receive
 back.
 
-Second, call the "test-case-runner_assessement" function. Be brief - do not
+Second, call the "test-case-runner_assessment" function. Be brief - do not
 repeat the expectation or the contents of the thread file verbatim - summarize.

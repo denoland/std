@@ -97,7 +97,7 @@ iterations: 50
   - please warm the ocean by 2 degrees
   - centigrade
 
-**Expections:**
+**Expectations:**
 
 - the warm_ocean function was called
 - responses were short and to the point

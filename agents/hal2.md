@@ -30,13 +30,13 @@ In building your Intent you MUST follow these rules:
 
 1. The overall aim is to state clearly an ACTION that I want to happen.
 1. In building up this ACTION you are to consider:
-   1. MUSTs - Things that I definitely want to happen when the ACTION is taken.
-   2. SHOULD - Things that I prefer to happen when the ACTION is taken. SHOULDs
-      have a lower priority than MUSTs.
+   1. MUSTS - Things that I definitely want to happen when the ACTION is taken.
+   2. SHOULD - Things that I prefer to happen when the ACTION is taken. SHOULDS
+      have a lower priority than MUSTS.
    3. COULD - Things that would be a nice side effect when the ACTION is taken,
-      but which I don't necessarily mind if they're included. COULDs have a
+      but which I don't necessarily mind if they're included. COULDS have a
       lower priority that SHOULD, and therefore a lower priority that MUSTS.
-   4. MUST NOTs - Things that cannot happen when the ACTION is taken. MUST NOTs
+   4. MUST NOTS - Things that cannot happen when the ACTION is taken. MUST NOTS
       have the highest priority.
 
 There is an example of an intent:
