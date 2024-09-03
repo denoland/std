@@ -40,13 +40,6 @@ export interface GenerateOptions {
    * @default {Date.now()}
    */
   timestamp?: number;
-  /**
-   * 10 bytes of random value to use in the UUID.
-   * Generally you should not need to set these, but it can be useful for testing.
-   *
-   * @internal
-   */
-  random?: Uint8Array;
 }
 
 /**
@@ -81,11 +74,7 @@ export function generate(options: GenerateOptions = {}): string {
   }
   const timestamp = BigInt(options.timestamp ?? Date.now());
   view.setBigUint64(0, timestamp << 16n);
-  if (options.random) {
-    bytes.set(options.random, 6);
-  } else {
-    crypto.getRandomValues(bytes.subarray(6));
-  }
+  crypto.getRandomValues(bytes.subarray(6));
   // Version (4 bits) Occupies bits 48 through 51 of octet 6.
   view.setUint8(6, (view.getUint8(6) & 0b00001111) | 0b01110000);
   // Variant (2 bits) Occupies bits 64 through 65 of octet 8.
