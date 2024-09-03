@@ -84,11 +84,11 @@ Deno.test("extractTimestamp(uuid) throws on invalid UUID", () => {
   assertThrows(
     () => extractTimestamp("invalid-uuid"),
     TypeError,
-    "Could not extract timestamp because the UUID was not a valid UUIDv7",
+    `Cannot extract timestamp because the UUID is not a valid UUIDv7: uuid is "invalid-uuid"`,
   );
   assertThrows(
     () => extractTimestamp(crypto.randomUUID()),
     TypeError,
-    "Could not extract timestamp because the UUID was not a valid UUIDv7",
+    `Cannot extract timestamp because the UUID is not a valid UUIDv7:`,
   );
 });
