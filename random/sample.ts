@@ -53,8 +53,9 @@ const defaultOptions: SampleOptions = {
  * ```ts no-assert
  * import { sample } from "@std/random/sample";
  *
- * const weighted = new Map([["a", 5], ["b", 3], ["c", 2]]);
- * const result = sample([...weighted.keys()], { weights: [...weighted.values()] });
+ * const values = ["a", "b", "c"];
+ * const weights = [5, 3, 2];
+ * const result = sample(values, { weights });
  * // gives "a" 50% of the time, "b" 30% of the time, and "c" 20% of the time
  * ```
  */
