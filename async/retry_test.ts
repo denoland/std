@@ -23,10 +23,20 @@ Deno.test("retry()", async () => {
   assertEquals(result, 3);
 });
 
-Deno.test("retry() fails after max errors is passed", async () => {
+Deno.test("retry() fails after five errors by default", async () => {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
     retry(fiveErrors, {
+      minTimeout: 100,
+    })
+  );
+});
+
+Deno.test("retry() fails after five errors when undefined is passed", async () => {
+  const fiveErrors = generateErroringFunction(5);
+  await assertRejects(() =>
+    retry(fiveErrors, {
+      maxAttempts: undefined,
       minTimeout: 100,
     })
   );
