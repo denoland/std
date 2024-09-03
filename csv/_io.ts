@@ -51,11 +51,6 @@ export interface ReadOptions {
   fieldsPerRecord?: number;
 }
 
-export const defaultReadOptions: ReadOptions = {
-  separator: ",",
-  trimLeadingSpace: false,
-};
-
 export interface LineReader {
   readLine(): Promise<string | null>;
   isEOF(): boolean;
