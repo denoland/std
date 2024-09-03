@@ -4,6 +4,8 @@
 /**
  * Utilities for generating random numbers.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * ```ts
  * import { randomIntegerBetween } from "@std/random";
  * import { randomSeeded } from "@std/random";
