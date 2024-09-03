@@ -857,12 +857,16 @@ function main() {
   }
 
   // TODO(petamoriken): Migrate `Deno.ServeTcpOptions | (Deno.ServeTcpOptions & Deno.TlsCertifiedKeyOptions)` in v2
-  const options:
-    & Deno.ServeOptions
-    & { port?: number; hostname?: string; cert?: string; key?: string } = {
-      hostname: host,
-      onListen,
-    };
+  const options: {
+    port?: number;
+    hostname?: string;
+    onListen?: (localAddr: Deno.NetAddr) => void;
+    cert?: string;
+    key?: string;
+  } = {
+    hostname: host,
+    onListen,
+  };
   if (port !== undefined) {
     options.port = port;
   }
