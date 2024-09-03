@@ -744,8 +744,12 @@ export class DumperState {
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
-
-    if (isObject(value)) {
+    if (typeof value === "string" || value instanceof String) {
+      value = value instanceof String ? value.valueOf() : value;
+      if (tag !== "?") {
+        value = this.stringifyScalar(value as string, { level, isKey });
+      }
+    } else if (isObject(value)) {
       const duplicateIndex = this.duplicates.indexOf(value);
       const duplicate = duplicateIndex !== -1;
 
@@ -788,10 +792,6 @@ export class DumperState {
             value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      }
-    } else if (typeof value === "string") {
-      if (tag !== "?") {
-        value = this.stringifyScalar(value, { level, isKey });
       }
     } else {
       if (this.skipInvalid) return null;
