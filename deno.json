@@ -72,6 +72,6 @@
     "indentWidth": 2,
     "useTabs": false
   },
-  "unstable": ["kv", "fmt-html", "fmt-css", "fmt-yaml", "fmt-component"],
+  "unstable": ["kv", "fmt-html", "fmt-css", "fmt-component"],
   "exports": "./main.ts"
 }
