@@ -10,35 +10,24 @@ const REGEXP = /^\/(?<regexp>[\s\S]+)\/(?<modifiers>[gismuy]*)$/;
 export const regexp: Type<"scalar", RegExp> = {
   tag: "tag:yaml.org,2002:js/regexp",
   kind: "scalar",
-  resolve(data: string): boolean {
-    if ((data === null) || (!data.length)) {
-      return false;
-    }
+  resolve(data: string | null): boolean {
+    if (data === null || !data.length) return false;
 
-    const regexp = `${data}`;
-    if (regexp.charAt(0) === "/") {
+    if (data.charAt(0) === "/") {
       // Ensure regex is properly terminated
-      if (!REGEXP.test(data)) {
-        return false;
-      }
+      const groups = data.match(REGEXP)?.groups;
+      if (!groups) return false;
       // Check no duplicate modifiers
-      const modifiers = [...(regexp.match(REGEXP)?.groups?.modifiers ?? "")];
-      if (new Set(modifiers).size < modifiers.length) {
-        return false;
-      }
+      const modifiers = groups.modifiers ?? "";
+      if (new Set(modifiers).size < modifiers.length) return false;
     }
 
     return true;
   },
-  construct(data: string) {
-    const { regexp = `${data}`, modifiers = "" } =
-      `${data}`.match(REGEXP)?.groups ?? {};
+  construct(data: string): RegExp {
+    const { regexp = data, modifiers = "" } = data.match(REGEXP)?.groups ?? {};
     return new RegExp(regexp, modifiers);
   },
-  predicate(object: unknown) {
-    return object instanceof RegExp;
-  },
-  represent(object: RegExp) {
-    return object.toString();
-  },
+  predicate: (object: unknown): object is RegExp => object instanceof RegExp,
+  represent: (object: RegExp): string => object.toString(),
 };

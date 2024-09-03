@@ -88,12 +88,24 @@ Deno.test({
       "0b101010\n",
     );
     assertEquals(
+      stringify(-42, { styles: { "!!int": "binary" } }),
+      "-0b101010\n",
+    );
+    assertEquals(
       stringify(42, { styles: { "!!int": "octal" } }),
       "052\n",
     );
     assertEquals(
+      stringify(-42, { styles: { "!!int": "octal" } }),
+      "-052\n",
+    );
+    assertEquals(
       stringify(42, { styles: { "!!int": "hexadecimal" } }),
       "0x2A\n",
+    );
+    assertEquals(
+      stringify(-42, { styles: { "!!int": "hexadecimal" } }),
+      "-0x2A\n",
     );
   },
 });
@@ -111,6 +123,12 @@ Deno.test({
     assertEquals(
       stringify([true, false], { styles: { "!!bool": "uppercase" } }),
       "- TRUE\n- FALSE\n",
+    );
+
+    assertThrows(
+      () => stringify([true, false], { styles: { "!!bool": "octal" } }),
+      TypeError,
+      '!<tag:yaml.org,2002:bool> tag resolver accepts not "octal" style',
     );
   },
 });
