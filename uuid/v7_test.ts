@@ -37,7 +37,6 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
     0x39,
     0x8F,
   ]);
-  // Mock crypto.getRandomValues using Deno's built-in Math.random
   using _getRandomValuesStub = stub(crypto, "getRandomValues", (array) => {
     for (let index = 0; index < (random.length); index++) {
       array[index] = random[index]!;
