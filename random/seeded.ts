@@ -5,7 +5,8 @@ import type { Prng } from "./_types.ts";
 
 /**
  * Creates a pseudo-random number generator that generates random numbers in
- * the range `[0, 1)`, based on the given seed.
+ * the range `[0, 1)`, based on the given seed. The algorithm used for
+ * generation is {@link https://www.pcg-random.org/download.html | PCG32}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
