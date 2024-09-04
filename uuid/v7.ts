@@ -55,7 +55,7 @@ export function validate(id: string): boolean {
  *
  * @throws {RangeError} If the timestamp is not a non-negative integer.
  *
- * @param timestamp [Date.now()] Unix Epoch timestamp in milliseconds.
+ * @param timestamp Unix Epoch timestamp in milliseconds.
  *
  * @returns Returns a UUIDv7 string
  *
@@ -115,5 +115,3 @@ export function extractTimestamp(uuid: string): number {
   const timestampHex = uuid.slice(0, 8) + uuid.slice(9, 13);
   return parseInt(timestampHex, 16);
 }
-
-generate();
