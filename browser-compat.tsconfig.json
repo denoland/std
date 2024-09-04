@@ -12,6 +12,7 @@
     "./assert",
     "./async",
     "./bytes",
+    "./cbor",
     "./cli",
     "./collections",
     "./crypto",
