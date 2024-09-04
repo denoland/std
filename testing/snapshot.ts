@@ -459,7 +459,7 @@ class AssertSnapshotContext {
    * the count by 1.
    */
   getCount(snapshotName: string) {
-    let count = this.#snapshotCounts.get(snapshotName) || 0;
+    let count = this.#snapshotCounts.get(snapshotName) ?? 0;
     this.#snapshotCounts.set(snapshotName, ++count);
     return count;
   }
@@ -624,7 +624,7 @@ export async function assertSnapshot(
     }
 
     return {
-      msg: msgOrOpts,
+      msg: msgOrOpts!,
     };
   }
   function getTestName(

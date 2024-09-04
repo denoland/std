@@ -35,8 +35,10 @@ export function dirname(path: string): string;
  * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
+ *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");
  *   assertEquals(dirname(new URL("file:///C:/home/user/Documents/image.png")), "C:\\home\\user\\Documents");
  * } else {
+ *   assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
  *   assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
  * }
  * ```
@@ -44,8 +46,7 @@ export function dirname(path: string): string;
  * @param path Path to extract the directory from.
  * @returns The directory path.
  */
-export function dirname(path: URL): string;
+export function dirname(path: string | URL): string;
 export function dirname(path: string | URL): string {
-  // deno-lint-ignore no-explicit-any
-  return isWindows ? windowsDirname(path as any) : posixDirname(path as any);
+  return isWindows ? windowsDirname(path) : posixDirname(path);
 }

@@ -70,7 +70,7 @@ const USTAR_MAGIC_HEADER = "ustar\u000000" as const;
  * Simple file reader
  */
 class FileReader implements Reader {
-  #file?: Deno.FsFile;
+  #file: Deno.FsFile | undefined;
   #filePath: string;
 
   constructor(filePath: string) {
@@ -112,7 +112,7 @@ function formatHeader(data: TarData): Uint8Array {
   const buffer = new Uint8Array(HEADER_LENGTH);
   let offset = 0;
   for (const { field, length } of USTAR_STRUCTURE) {
-    const entry = encoder.encode(data[field as keyof TarData] || "");
+    const entry = encoder.encode(data[field as keyof TarData] ?? "");
     buffer.set(entry, offset);
     offset += length;
   }
@@ -334,7 +334,7 @@ export class Tar {
       }
     }
 
-    source = source || {};
+    source = source ?? {};
 
     // set meta data
     let info: Deno.FileInfo | undefined;
@@ -351,8 +351,8 @@ export class Tar {
     const mtime = Math.floor(
       source.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
     );
-    const uid = source.uid || 0;
-    const gid = source.gid || 0;
+    const uid = source.uid ?? 0;
+    const gid = source.gid ?? 0;
 
     if (typeof source.owner === "string" && source.owner.length >= 32) {
       throw new Error(
@@ -375,7 +375,6 @@ export class Tar {
       : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
     const tarData: TarDataWithSource = {
       fileName,
-      fileNamePrefix,
       fileMode: pad(mode, 7),
       uid: pad(uid, 7),
       gid: pad(gid, 7),
@@ -384,11 +383,18 @@ export class Tar {
       checksum: "        ",
       type: type.toString(),
       ustar: USTAR_MAGIC_HEADER,
-      owner: source.owner || "",
-      group: source.group || "",
-      filePath: source.filePath,
-      reader: source.reader,
+      owner: source.owner ?? "",
+      group: source.group ?? "",
     };
+    if (fileNamePrefix !== undefined) {
+      tarData.fileNamePrefix = fileNamePrefix;
+    }
+    if (source.filePath !== undefined) {
+      tarData.filePath = source.filePath;
+    }
+    if (source.reader !== undefined) {
+      tarData.reader = source.reader;
+    }
 
     // calculate the checksum
     let checksum = 0;

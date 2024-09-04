@@ -72,7 +72,7 @@ export class Logger {
   ) {
     this.#loggerName = loggerName;
     this.#level = getLevelByName(levelName);
-    this.handlers = options.handlers || [];
+    this.handlers = options.handlers ?? [];
   }
 
   /** Use this to retrieve the current numeric log level. */

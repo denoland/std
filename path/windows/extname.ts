@@ -32,14 +32,14 @@ export function extname(path: string): string;
  * import { extname } from "@std/path/windows/extname";
  * import { assertEquals } from "@std/assert";
  *
- * const ext = extname(new URL("file:///C:/foo/bar/baz.ext"));
- * assertEquals(ext, ".ext");
+ * assertEquals(extname("file.ts"), ".ts");
+ * assertEquals(extname(new URL("file:///C:/foo/bar/baz.ext")), ".ext");
  * ```
  *
  * @param path The path to get the extension from.
  * @returns The extension of the `path`.
  */
-export function extname(path: URL): string;
+export function extname(path: string | URL): string;
 export function extname(path: string | URL): string {
   if (path instanceof URL) {
     path = fromFileUrl(path);

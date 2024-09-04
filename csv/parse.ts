@@ -21,9 +21,9 @@ class Parser {
   #options: {
     separator: string;
     trimLeadingSpace: boolean;
-    comment?: string;
-    lazyQuotes?: boolean;
-    fieldsPerRecord?: number;
+    comment: string | undefined;
+    lazyQuotes: boolean | undefined;
+    fieldsPerRecord: number | undefined;
   };
   constructor({
     separator = ",",

@@ -6,12 +6,17 @@ import type { Tester } from "./_types.ts";
 import { equal } from "./_equal.ts";
 
 export function buildEqualOptions(options: EqualOptionUtil): EqualOptions {
-  const { customMessage, customTesters = [], strictCheck } = options || {};
-  return {
+  const { customMessage, customTesters = [], strictCheck } = options ?? {};
+  const ret: EqualOptions = {
     customTesters,
-    msg: customMessage,
-    strictCheck,
   };
+  if (customMessage !== undefined) {
+    ret.msg = customMessage;
+  }
+  if (strictCheck !== undefined) {
+    ret.strictCheck = strictCheck;
+  }
+  return ret;
 }
 
 export function isPromiseLike(value: unknown): value is PromiseLike<unknown> {

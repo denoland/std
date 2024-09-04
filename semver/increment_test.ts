@@ -1,19 +1,25 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
-import type { ReleaseType, SemVer } from "./types.ts";
+import type { ReleaseType } from "./types.ts";
 import { increment } from "./increment.ts";
 import { format } from "./format.ts";
 
+interface LooseSemVer {
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease?: (string | number)[] | undefined;
+  build?: string[] | undefined;
+}
+
 Deno.test("increment()", async (t) => {
-  //  [version, inc, result, identifier]
-  //  increment(version, inc) -> result
   const versions: [
-    SemVer,
-    ReleaseType,
-    string?,
-    string?,
-    string?,
+    version: LooseSemVer,
+    op: ReleaseType,
+    prerelease: string | undefined,
+    build: string | undefined,
+    expected: string | undefined,
   ][] = [
     [
       { major: 1, minor: 2, patch: 3 },
@@ -948,7 +954,13 @@ Deno.test("increment()", async (t) => {
       "1.2.3-0",
     ],
     [
-      { major: 1, minor: 2, patch: 3, prerelease: undefined, build: undefined },
+      {
+        major: 1,
+        minor: 2,
+        patch: 3,
+        prerelease: undefined,
+        build: undefined,
+      },
       "pre",
       undefined,
       undefined,
@@ -965,8 +977,10 @@ Deno.test("increment()", async (t) => {
 
   for (const [version, op, prerelease, build, expected] of versions) {
     await t.step({
+      // @ts-expect-error: explicitly giving undefined
       name: `${op} ${format(version)}`,
       fn: () => {
+        // @ts-expect-error: explicitly giving undefined
         const actual = increment(version, op, { prerelease, build });
         assertEquals(format(actual), expected);
       },

@@ -13,6 +13,7 @@ import {
   assertSpyCallArgs,
   assertSpyCallAsync,
   assertSpyCalls,
+  type ExpectedSpyCall,
   type MethodSpy,
   MockError,
   mockSession,
@@ -1100,7 +1101,7 @@ Deno.test("assertSpyCall() works with method", () => {
         args: [7, 4],
         self: undefined,
         returned: 7,
-      }),
+      } as ExpectedSpyCall),
     AssertionError,
     "Spy not called with expected args",
   );
@@ -1116,7 +1117,7 @@ Deno.test("assertSpyCall() works with method", () => {
     () =>
       assertSpyCall(spyMethod, 0, {
         self: undefined,
-      }),
+      } as ExpectedSpyCall),
     AssertionError,
     "Spy not expected to be called as method on object",
   );
@@ -1477,7 +1478,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
         args: [7, 4],
         self: undefined,
         returned: 7,
-      }),
+      } as ExpectedSpyCall),
     AssertionError,
     "Spy not called with expected args",
   );
@@ -1493,7 +1494,7 @@ Deno.test("assertSpyCallAsync() works with method", async () => {
     () =>
       assertSpyCallAsync(spyMethod, 0, {
         self: undefined,
-      }),
+      } as ExpectedSpyCall),
     AssertionError,
     "Spy not expected to be called as method on object",
   );

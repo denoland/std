@@ -43,8 +43,10 @@ export function basename(path: string, suffix?: string): string;
  * import { assertEquals } from "@std/assert";
  *
  * if (Deno.build.os === "windows") {
+ *   assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
  *   assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
  * } else {
+ *   assertEquals(basename("/home/user/Documents/image.png"), "image.png");
  *   assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
  * }
  * ```
@@ -57,8 +59,6 @@ export function basename(path: string, suffix?: string): string;
 export function basename(path: string | URL, suffix?: string): string;
 export function basename(path: string | URL, suffix = ""): string {
   return isWindows
-    // deno-lint-ignore no-explicit-any
-    ? windowsBasename(path as any, suffix)
-    // deno-lint-ignore no-explicit-any
-    : posixBasename(path as any, suffix);
+    ? windowsBasename(path, suffix)
+    : posixBasename(path, suffix);
 }

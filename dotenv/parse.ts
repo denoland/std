@@ -26,7 +26,7 @@ function expandCharacters(str: string): string {
 
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1] || "",
+    ($1: keyof CharactersMap): string => charactersMap[$1] ?? "",
   );
 }
 

@@ -16,18 +16,6 @@ import { fromFileUrl } from "./from_file_url.ts";
  *
  * assertEquals(dirname("/home/user/Documents/"), "/home/user");
  * assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
- * assertEquals(dirname("https://deno.land/std/path/mod.ts"), "https://deno.land/std/path");
- * ```
- *
- * @example Working with URLs
- *
- * ```ts
- * import { dirname } from "@std/path/posix/dirname";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(dirname("https://deno.land/std/path/mod.ts"), "https://deno.land/std/path");
- * assertEquals(dirname("https://deno.land/std/path/mod.ts?a=b"), "https://deno.land/std/path");
- * assertEquals(dirname("https://deno.land/std/path/mod.ts#header"), "https://deno.land/std/path");
  * ```
  *
  * @param path The path to get the directory from.
@@ -44,13 +32,15 @@ export function dirname(path: string): string;
  * import { dirname } from "@std/path/posix/dirname";
  * import { assertEquals } from "@std/assert";
  *
+ * assertEquals(dirname("/home/user/Documents/"), "/home/user");
+ * assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
  * assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
  * ```
  *
  * @param path The file url to get the directory from.
  * @returns The directory path.
  */
-export function dirname(path: URL): string;
+export function dirname(path: string | URL): string;
 export function dirname(path: string | URL): string {
   if (path instanceof URL) {
     path = fromFileUrl(path);
