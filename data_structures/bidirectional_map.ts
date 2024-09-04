@@ -34,7 +34,7 @@
  * map.set(2, "one");
  *
  * assertEquals(map.size, 1);
- * assertEquals(map.get(1), "one");
+ * assertEquals(map.get(1), undefined);
  * assertEquals(map.getReverse("one"), 2);
  * ```
  *
@@ -215,6 +215,14 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
   /**
    * A String value that is used in the creation of the default string description of an object.
    * Called by the built-in method `Object.prototype.toString`.
+   * 
+   * @example Usage
+   * ```ts
+   * import { BidirectionalMap } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   * 
+   * const map = new BidirectionalMap();
+   * assertEquals(map.toString(), "[object BidirectionalMap]");
    */
   readonly [Symbol.toStringTag]: string = "BidirectionalMap";
 }

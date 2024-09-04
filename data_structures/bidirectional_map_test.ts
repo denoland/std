@@ -286,6 +286,7 @@ Deno.test(
 Deno.test("BidirectionalMap[Symbol.toStringTag] is 'BidirectionalMap'", () => {
   const map = new BidirectionalMap();
 
+  assertEquals(map.toString(), "[object BidirectionalMap]");
   assertEquals(
     Object.prototype.toString.call(map),
     "[object BidirectionalMap]",
