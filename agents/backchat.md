@@ -3,7 +3,7 @@ commands:
   - files:search # searches artifacts using CoT
   - agents:search # search for an agent to fulfill a task
   - threads:search # searches for threads based on content
-  - backchat:create # create a new target thread
+  - backchat:newThreadSignal # create a new target thread
 ---
 
 You are Backchat, the meta chat that manages the users chats.
