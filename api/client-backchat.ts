@@ -102,16 +102,13 @@ export class Backchat {
    * @param content The optional text that is to be parsed by the AI.  It can be
    * empty if there are files attached or to indicate a positive response to
    * something.
-   * @param threadId The thread we targeting with the prompt.  The client may
-   * have used history to navigate to a different threadId.  As soon as this is
-   * processed, the focus of backchat will be switched.
    * @param attachments The relative paths to the files that were attached with
    * the  prompt, which may include directories.  May include pointers to the
    * tmp files that are created when a user attaches files in the browser.  Can
    * also include structured data that widgets have prepared.
    */
   // TODO adorn with other types of input, like file paths and selections
-  async prompt(content: string, threadId?: string, attachments?: string[]) {
+  async prompt(content: string, attachments?: string[]) {
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
@@ -119,9 +116,6 @@ export class Backchat {
       functionName: 'prompt',
       params: { content },
       proctype: Proctype.enum.SERIAL,
-    }
-    if (threadId) {
-      pierce.params.threadId = threadId
     }
     if (attachments) {
       pierce.params.attachments = attachments

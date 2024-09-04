@@ -1,75 +1,36 @@
 import {
   actorIdRegex,
   addBranches,
-  agentHashRegex,
   Functions,
   getRoot,
-  IA,
   PID,
+  toApi,
+  ToApiType,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import { assert, Debug } from '@utils'
+import { z } from 'zod'
 
-const log = Debug('AI:machines')
+export const parameters = {
+  upsert: z.object({
+    machineId: z.string(),
+    actorId: z.string(),
+  }),
+}
+export const returns = {
+  upsert: z.void(),
+}
 
-export const api = {
-  upsert: {
-    type: 'object',
-    required: ['machineId', 'actorId'],
-    properties: {
-      machineId: { type: 'string' },
-      actorId: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
-  register: {
-    type: 'object',
-    required: ['agentHash', 'assistantId'],
-    properties: {
-      agentHash: { type: 'string', pattern: agentHashRegex.source },
-      assistantId: { type: 'string', pattern: /^asst_/.source },
-    },
-    additionalProperties: false,
-  },
-  deleteAllAgents: {
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
-}
-export type Api = {
-  upsert: (params: { machineId: string; actorId: string }) => void
-  /** Register an agentHash to an OpenAI assistant id */
-  register: (params: { agentHash: string; assistantId: string }) => void
-  deleteAllAgents: (params: void) => Promise<string[]>
-}
+export const api = toApi(parameters)
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
 export const functions: Functions<Api> = {
   upsert({ machineId, actorId }, api) {
     const path = shardedPath(MACHINES, 'mac_', machineId)
     api.writeJSON(path, actorId)
   },
-  register({ agentHash, assistantId }, api) {
-    assert(agentHashRegex.test(agentHash), 'invalid agent hash: ' + agentHash)
-    assert(assistantId.startsWith('asst_'), 'invalid assistant: ' + assistantId)
-    const path = shardedPath(ASSISTANTS, 'age_', agentHash)
-    api.writeJSON(path, assistantId)
-  },
-  deleteAllAgents: async (_, api) => {
-    const agents = await api.ls(ASSISTANTS)
-    const ids = []
-    for (const shard of agents) {
-      const agents = await api.ls(`${ASSISTANTS}${shard}`)
-      for (const agent of agents) {
-        const path = `${ASSISTANTS}${shard}${agent}`
-        const id = await api.readJSON<string>(path)
-        ids.push(id)
-        api.delete(path)
-      }
-    }
-    return ids
-  },
 }
-const ASSISTANTS = '.assistants/'
 const MACHINES = '.machines/'
 
 const shardedPath = (folder: string, prefix: string, id: string) => {
@@ -92,23 +53,4 @@ export const tryActorId = async (machineId: string, fs: FS) => {
 export const getMachineTarget = (pid: PID) => {
   const base = getRoot(pid)
   return addBranches(base, 'machines')
-}
-
-export const tryAssistantId = async (agentHash: string, api: IA) => {
-  assert(agentHashRegex.test(agentHash), 'invalid agent hash: ' + agentHash)
-  const path = shardedPath(ASSISTANTS, 'age_', agentHash)
-  const target = getMachineTarget(api.pid)
-  // TODO make the api do this without an action
-  try {
-    const assistantId = await api.readJSON(path, { target })
-    assert(typeof assistantId === 'string', 'expected string assistant id')
-    assert(assistantId.startsWith('asst_'), 'invalid assistant: ' + assistantId)
-    return assistantId
-  } catch (error) {
-    if (error.code === 'NotFoundError') {
-      log('no assistant found for agentHash', agentHash)
-      return
-    }
-    throw error
-  }
 }

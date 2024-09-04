@@ -13,10 +13,6 @@ export const loadActions = async (commands: string[] = [], api: IA) => {
   const result = await load(commands, api)
   return result.actions
 }
-export const loadValidators = async (commands: string[] = [], api: IA) => {
-  const result = await load(commands, api)
-  return result.validators
-}
 type Action = (
   params: Params,
 ) => Promise<unknown>
@@ -24,7 +20,6 @@ type Action = (
 export const load = async (commands: string[] = [], api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
-  const validators: Record<string, (parameters: Params) => void> = {}
 
   for (const cmd of commands) {
     const isAgent = !cmd.includes(':')
@@ -42,8 +37,6 @@ export const load = async (commands: string[] = [], api: IA) => {
       assert(actions[functionName], `missing action: ${cmd}`)
       return actions[functionName](params)
     }
-    // TODO use the compartment for running these
-    validators[name] = validator(schema[functionName], name)
     const tool = isolateToGptApi(name, schema[functionName])
 
     assert(action, `missing action: ${cmd}`)
@@ -54,7 +47,7 @@ export const load = async (commands: string[] = [], api: IA) => {
     tools.push(tool)
   }
 
-  return { tools, actions, validators }
+  return { tools, actions }
 }
 const isolateToGptApi = (name: string, schema: JSONSchemaType<object>) => {
   assert(typeof schema === 'object', `api must be an object: ${name}`)

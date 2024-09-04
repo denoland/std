@@ -22,9 +22,6 @@ import * as threads from './threads.ts'
 import * as completions from './ai-completions.ts'
 import * as loadTools from './ai-load-tools.ts'
 
-import * as assistantsEffects from './assistants-effects.ts'
-import * as assistants from './assistants.ts'
-
 import * as longthread from './longthread.ts'
 import * as stateboard from './stateboard.ts'
 
@@ -57,9 +54,6 @@ const isolatesExport = {
 
   'ai-completions': completions,
   'ai-load-tools': loadTools,
-
-  'assistants-effects': assistantsEffects,
-  assistants,
 
   longthread,
   stateboard,
