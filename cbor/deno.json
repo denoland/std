@@ -1,0 +1,8 @@
+{
+  "name": "@std/cbor",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./encode": "./encode.ts"
+  }
+}
