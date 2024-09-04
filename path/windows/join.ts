@@ -32,8 +32,8 @@ export function join(...paths: string[]): string;
  * import { join } from "@std/path/windows/join";
  * import { assertEquals } from "@std/assert";
  *
- * const joined = join(new URL("file:///C:/foo"), "bar", "baz\\..");
- * assertEquals(joined, "C:\\foo\\bar");
+ * assertEquals(join("C:\\foo", "bar", "baz\\.."), "C:\\foo\\bar");
+ * assertEquals(join(new URL("file:///C:/foo"), "bar", "baz\\.."), "C:\\foo\\bar");
  * ```
  *
  * @param path The path to join. This can be string or file URL.

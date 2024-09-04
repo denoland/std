@@ -720,8 +720,8 @@ function methodSpy<
 
   Object.defineProperty(self, property, {
     configurable: true,
-    enumerable: propertyDescriptor?.enumerable,
-    writable: propertyDescriptor?.writable,
+    enumerable: propertyDescriptor?.enumerable ?? false,
+    writable: propertyDescriptor?.writable ?? false,
     value: spy,
   });
 
@@ -1173,8 +1173,8 @@ export function stub<
 
   Object.defineProperty(self, property, {
     configurable: true,
-    enumerable: propertyDescriptor?.enumerable,
-    writable: propertyDescriptor?.writable,
+    enumerable: propertyDescriptor?.enumerable ?? false,
+    writable: propertyDescriptor?.writable ?? false,
     value: stub,
   });
 

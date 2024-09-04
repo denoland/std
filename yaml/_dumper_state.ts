@@ -639,84 +639,62 @@ export class DumperState {
       compact: boolean;
     },
   ): string {
-    const objectKeyList = Object.keys(object);
-    let result = "";
+    const keys = Object.keys(object);
 
     // Allow sorting keys so that the output file is deterministic
     if (this.sortKeys === true) {
       // Default sorting
-      objectKeyList.sort();
+      keys.sort();
     } else if (typeof this.sortKeys === "function") {
       // Custom sort function
-      objectKeyList.sort(this.sortKeys);
+      keys.sort(this.sortKeys);
     } else if (this.sortKeys) {
       // Something is wrong
       throw new TypeError(
-        '"sortKeys" must be a boolean or a function: received ${typeof this.sortKeys}',
+        `"sortKeys" must be a boolean or a function: received ${typeof this
+          .sortKeys}`,
       );
     }
 
-    for (const [index, objectKey] of objectKeyList.entries()) {
-      let pairBuffer = "";
+    const separator = generateNextLine(this.indent, level);
 
-      if (!compact || index !== 0) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
+    const results = [];
 
-      const objectValue = object[objectKey];
+    for (const key of keys) {
+      const value = object[key];
 
-      const keyString = this.stringifyNode(objectKey, {
+      const keyString = this.stringifyNode(key, {
         level: level + 1,
         block: true,
         compact: true,
         isKey: true,
       });
-      if (keyString === null) {
-        continue; // Skip this pair because of invalid key.
-      }
+      if (keyString === null) continue; // Skip this pair because of invalid key.
 
       const explicitPair = (tag !== null && tag !== "?") ||
         (keyString.length > 1024);
 
-      if (explicitPair) {
-        if (keyString && LINE_FEED === keyString.charCodeAt(0)) {
-          pairBuffer += "?";
-        } else {
-          pairBuffer += "? ";
-        }
-      }
-
-      pairBuffer += keyString;
-
-      if (explicitPair) {
-        pairBuffer += generateNextLine(this.indent, level);
-      }
-
-      const valueString = this.stringifyNode(objectValue, {
+      const valueString = this.stringifyNode(value, {
         level: level + 1,
         block: true,
         compact: explicitPair,
         isKey: false,
       });
-      if (
-        valueString === null
-      ) {
-        continue; // Skip this pair because of invalid value.
-      }
+      if (valueString === null) continue; // Skip this pair because of invalid value.
 
-      if (valueString && LINE_FEED === valueString.charCodeAt(0)) {
-        pairBuffer += ":";
-      } else {
-        pairBuffer += ": ";
+      let pairBuffer = "";
+      if (explicitPair) {
+        pairBuffer += keyString.charCodeAt(0) === LINE_FEED ? "?" : "? ";
       }
-
+      pairBuffer += keyString;
+      if (explicitPair) pairBuffer += separator;
+      pairBuffer += valueString.charCodeAt(0) === LINE_FEED ? ":" : ": ";
       pairBuffer += valueString;
-
-      // Both key and value are valid.
-      result += pairBuffer;
+      results.push(pairBuffer);
     }
 
-    return result || "{}"; // Empty mapping if no valid pairs.
+    const prefix = compact ? "" : separator;
+    return results.length ? prefix + results.join(separator) : "{}"; // Empty mapping if no valid pairs.
   }
 
   getTypeRepresentation(type: Type<KindType, unknown>, value: unknown) {
@@ -766,8 +744,12 @@ export class DumperState {
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
-
-    if (isObject(value)) {
+    if (typeof value === "string" || value instanceof String) {
+      value = value instanceof String ? value.valueOf() : value;
+      if (tag !== "?") {
+        value = this.stringifyScalar(value as string, { level, isKey });
+      }
+    } else if (isObject(value)) {
       const duplicateIndex = this.duplicates.indexOf(value);
       const duplicate = duplicateIndex !== -1;
 
@@ -782,19 +764,7 @@ export class DumperState {
       ) {
         compact = false;
       }
-      if (!Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
-        }
-      } else {
+      if (Array.isArray(value)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && value.length !== 0) {
           value = this.stringifyBlockSequence(value, {
@@ -810,10 +780,18 @@ export class DumperState {
             value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      }
-    } else if (typeof value === "string") {
-      if (tag !== "?") {
-        value = this.stringifyScalar(value, { level, isKey });
+      } else {
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowMapping(value, { level });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
+        }
       }
     } else {
       if (this.skipInvalid) return null;

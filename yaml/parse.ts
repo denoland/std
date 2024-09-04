@@ -79,7 +79,7 @@ export function parse(
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!),
+    schema: SCHEMA_MAP.get(options.schema!)!,
   });
   const documentGenerator = state.readDocuments();
   const document = documentGenerator.next().value;
@@ -122,7 +122,7 @@ export function parseAll(content: string, options: ParseOptions = {}): unknown {
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!),
+    schema: SCHEMA_MAP.get(options.schema!)!,
   });
   return [...state.readDocuments()];
 }

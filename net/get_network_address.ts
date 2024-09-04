@@ -19,7 +19,7 @@
  * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
  *
- * const hostname = getNetworkAddress();
+ * const hostname = getNetworkAddress()!;
  *
  * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
  * ```
@@ -28,7 +28,7 @@
  * ```ts no-assert no-eval
  * import { getNetworkAddress } from "@std/net/get-network-address";
  *
- * const hostname = getNetworkAddress("IPv6");
+ * const hostname = getNetworkAddress("IPv6")!;
  *
  * Deno.serve({ port: 0, hostname }, () => new Response("Hello, world!"));
  * ```

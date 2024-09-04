@@ -91,6 +91,9 @@ semver:
 streams:
   - changed-files:
     - any-glob-to-any-file: streams/**
+tar:
+  - changed-files:
+    - any-glob-to-any-file: tar/**
 testing:
   - changed-files:
     - any-glob-to-any-file: testing/**

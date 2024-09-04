@@ -22,8 +22,8 @@ import { join as posixJoin } from "@std/path/posix/join";
  * ```
  *
  * @deprecated Use
- * {@linkcode https://jsr.io/@std/path/doc/posix/~/join | @std/path/posix/join}
- * instead (examples included). `@std/url` will be removed in the future.
+ * {@linkcode https://jsr.io/@std/path/doc/~/join | @std/path/join}
+ * instead. `@std/url` will be removed in the future.
  */
 export function join(url: string | URL, ...paths: string[]): URL {
   url = new URL(url);

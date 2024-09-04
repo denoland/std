@@ -17,7 +17,7 @@ export function buildEqualErrorMessage<T>(
   expected: T,
   options: EqualErrorMessageOptions,
 ): string {
-  const { formatter = format, msg } = options || {};
+  const { formatter = format, msg } = options ?? {};
   const msgSuffix = msg ? `: ${msg}` : ".";
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
@@ -39,7 +39,7 @@ export function buildNotEqualErrorMessage<T>(
   expected: T,
   options: EqualErrorMessageOptions,
 ): string {
-  const { msg } = options || {};
+  const { msg } = options ?? {};
   const actualString = String(actual);
   const expectedString = String(expected);
 

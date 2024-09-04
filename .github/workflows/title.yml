@@ -68,6 +68,7 @@ jobs:
             regexp(/unstable)?
             semver(/unstable)?
             streams(/unstable)?
+            tar(/unstable)?
             testing(/unstable)?
             text(/unstable)?
             toml(/unstable)?

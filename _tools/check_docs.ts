@@ -66,6 +66,7 @@ const ENTRY_POINTS = [
   "../regexp/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
+  "../tar/mod.ts",
   "../text/mod.ts",
   "../testing/bdd.ts",
   "../testing/mock.ts",

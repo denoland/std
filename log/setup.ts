@@ -20,7 +20,7 @@ export function setup(config: LogConfig) {
   state.handlers.clear();
 
   // setup handlers
-  const handlers = state.config.handlers || {};
+  const handlers = state.config.handlers ?? {};
 
   for (const [handlerName, handler] of Object.entries(handlers)) {
     handler.setup();
@@ -31,9 +31,9 @@ export function setup(config: LogConfig) {
   state.loggers.clear();
 
   // setup loggers
-  const loggers = state.config.loggers || {};
+  const loggers = state.config.loggers ?? {};
   for (const [loggerName, loggerConfig] of Object.entries(loggers)) {
-    const handlerNames = loggerConfig.handlers || [];
+    const handlerNames = loggerConfig.handlers ?? [];
     const handlers: BaseHandler[] = [];
 
     handlerNames.forEach((handlerName) => {
@@ -43,7 +43,7 @@ export function setup(config: LogConfig) {
       }
     });
 
-    const levelName = loggerConfig.level || DEFAULT_LEVEL;
+    const levelName = loggerConfig.level ?? DEFAULT_LEVEL;
     const logger = new Logger(loggerName, levelName, { handlers: handlers });
     state.loggers.set(loggerName, logger);
   }

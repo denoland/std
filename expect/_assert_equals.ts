@@ -33,6 +33,6 @@ export function assertEquals<T>(
     return;
   }
 
-  const message = buildEqualErrorMessage(actual, expected, options || {});
+  const message = buildEqualErrorMessage(actual, expected, options ?? {});
   throw new AssertionError(message);
 }

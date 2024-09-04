@@ -46,7 +46,7 @@ function parseEncoding(
     return undefined;
   }
 
-  const encoding = match[1];
+  const encoding = match[1]!;
   let q = 1;
   if (match[2]) {
     const params = match[2].split(";");
@@ -59,7 +59,7 @@ function parseEncoding(
     }
   }
 
-  return { encoding, q, i };
+  return { encoding, o: undefined, q, i, s: undefined };
 }
 
 function specify(
@@ -104,8 +104,10 @@ function parseAcceptEncoding(accept: string): EncodingSpecificity[] {
   if (!hasIdentity) {
     parsedAccepts.push({
       encoding: "identity",
+      o: undefined,
       q: minQuality,
       i: accepts.length - 1,
+      s: undefined,
     });
   }
 

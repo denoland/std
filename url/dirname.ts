@@ -23,8 +23,8 @@ import { strip } from "./_strip.ts";
  * ```
  *
  * @deprecated Use
- * {@linkcode https://jsr.io/@std/path/doc/posix/~/dirname | @std/path/posix/dirname}
- * instead (examples included). `@std/url` will be removed in the future.
+ * {@linkcode https://jsr.io/@std/path/doc/~/dirname | @std/path/dirname}
+ * instead. `@std/url` will be removed in the future.
  */
 
 export function dirname(url: string | URL): URL {
