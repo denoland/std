@@ -248,9 +248,6 @@ class Cache {
   async #load() {
     if ('caches' in globalThis && !this.#big) {
       this.#big = await caches.open('hashbucket')
-      if (!isKvTestMode()) {
-        console.log('caching active')
-      }
     }
   }
   async has(key: Deno.KvKey) {

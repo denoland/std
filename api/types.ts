@@ -412,7 +412,6 @@ export type CommitObject = {
 }
 
 type ApiSchema = Record<string, JSONSchemaType<object>>
-type PidHead = { pid: PID; head: string }
 
 export interface EngineInterface {
   /**
