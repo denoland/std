@@ -4,22 +4,22 @@ import { AssertionError, assertThrows } from "@std/assert";
 import { describe, it, test } from "@std/testing/bdd";
 import { expect } from "./expect.ts";
 
-Deno.test("expect.hasAssertion()", () => {
-  test("test suite hasAssertion() should throw an error", () => {
+Deno.test("expect.hasAssertions()", () => {
+  test("test suite hasAssertions() should throw an error", () => {
     assertThrows(() => {
-      expect.hasAssertion();
+      expect.hasAssertions();
     }, AssertionError);
   });
 
-  describe("hasAssertion() describe test suite", () => {
+  describe("hasAssertions() describe test suite", () => {
     it("should throw an error", () => {
       assertThrows(() => {
-        expect.hasAssertion();
+        expect.hasAssertions();
       }, AssertionError);
     });
 
     it("pass", () => {
-      expect.hasAssertion();
+      expect.hasAssertions();
       expect("a").toBe("a");
     });
   });

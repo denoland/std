@@ -492,9 +492,9 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
 /**
- * `expect.hasAssertion` verifies that a certain number of assertions are called during a test.
+ * `expect.hasAssertions` verifies that a certain number of assertions are called during a test.
  *
- * Notice: expect.hasAssertion only can use in bdd function test suite, such as `test` or `it`.
+ * Notice: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
  *
  * @example
  * ```ts
@@ -503,7 +503,7 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * import { expect } from "@std/expect";
  *
  * test("it works", () => {
- *   expect.hasAssertion();
+ *   expect.hasAssertions();
  *   expect("a").not.toBe("b");
  * });
  * ```

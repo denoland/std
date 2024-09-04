@@ -24,7 +24,7 @@ export class AssertionState {
   }
 
   /**
-   * If `expect.hasAssertion` called, then through this method to update #state.assertionCheck value.
+   * If `expect.hasAssertions` called, then through this method to update #state.assertionCheck value.
    *
    * @param val Set #state.assertionCheck's value
    *
