@@ -8,9 +8,24 @@ Deno.test(`normalize() returns "." if input is empty`, function () {
   assertEquals(windows.normalize(""), ".");
 });
 
+Deno.test("posix.normalize() normalizes posix specific paths", () => {
+  assertEquals(
+    posix.normalize("/foo/bar//baz/asdf/quux/.."),
+    "/foo/bar/baz/asdf",
+  );
+  assertEquals(
+    posix.normalize(new URL("file:///foo/bar//baz/asdf/quux/..")),
+    "/foo/bar/baz/asdf/",
+  );
+});
+
 Deno.test("windows.normalize() normalizes windows specific paths", () => {
   assertEquals(
     windows.normalize("//server/share/dir/file.ext"),
     "\\\\server\\share\\dir\\file.ext",
+  );
+  assertEquals(
+    windows.normalize(new URL("file:///C:/foo/bar/../baz/quux")),
+    "C:\\foo\\baz\\quux",
   );
 });
