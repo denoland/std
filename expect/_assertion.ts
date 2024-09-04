@@ -4,7 +4,7 @@ import { getAssertionState } from "@std/internal/assertion-state";
 
 const assertionState = getAssertionState();
 
-export function hasAssertion() {
+export function hasAssertions() {
   assertionState.setAssertionCheck(true);
 }
 

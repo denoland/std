@@ -14,7 +14,7 @@ import type {
   Matchers,
 } from "./_types.ts";
 import { AssertionError } from "@std/assert/assertion-error";
-import { emitAssertionTrigger, hasAssertion } from "./_assertion.ts";
+import { emitAssertionTrigger, hasAssertions } from "./_assertion.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -508,4 +508,4 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * });
  * ```
  */
-expect.hasAssertion = hasAssertion as () => void;
+expect.hasAssertions = hasAssertions as () => void;
