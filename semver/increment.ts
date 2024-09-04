@@ -91,7 +91,7 @@ export function increment(
 ): SemVer {
   const build = options.build !== undefined
     ? parseBuild(options.build)
-    : version.build;
+    : version.build ?? [];
 
   switch (release) {
     case "premajor":

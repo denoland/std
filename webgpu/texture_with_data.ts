@@ -12,6 +12,10 @@ function textureDimensionArrayLayerCount(
     case undefined:
     case "2d":
       return normalizeExtent3D(texture.size).depthOrArrayLayers ?? 1;
+    default:
+      throw new TypeError(
+        `Cannot count texture dimension layer: dimension value is "${texture.dimension}"`,
+      );
   }
 }
 
@@ -22,11 +26,16 @@ function normalizeExtent3D(size: GPUExtent3D): GPUExtent3DDict {
         "Cannot normalize Extent3d: width is not defined",
       );
     }
-    return {
+    const dict: GPUExtent3DDict = {
       width: size[0],
-      height: size[1],
-      depthOrArrayLayers: size[2],
     };
+    if (size[1] !== undefined) {
+      dict.height = size[1];
+    }
+    if (size[2] !== undefined) {
+      dict.depthOrArrayLayers = size[2];
+    }
+    return dict;
   } else {
     return size;
   }
@@ -46,11 +55,14 @@ function extent3DPhysicalSize(
     Math.floor(((nSize.height ?? 1) + blockHeight - 1) / blockHeight) *
     blockHeight;
 
-  return {
+  const dict: GPUExtent3DDict = {
     width,
     height,
-    depthOrArrayLayers: nSize.depthOrArrayLayers,
   };
+  if (nSize.depthOrArrayLayers !== undefined) {
+    dict.depthOrArrayLayers = nSize.depthOrArrayLayers;
+  }
+  return dict;
 }
 
 function extent3DMipLevelSize(

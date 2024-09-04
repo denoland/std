@@ -198,7 +198,7 @@ export function createFp(
   }
   const isAdding = (down?.y === -1) ||
     k === M ||
-    (slide?.y || 0) > (down?.y || 0) + 1;
+    (slide?.y ?? 0) > (down?.y ?? 0) + 1;
   if (slide && isAdding) {
     const prev = slide.id;
     ptr++;

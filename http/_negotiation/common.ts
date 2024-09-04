@@ -31,9 +31,9 @@
 
 export interface Specificity {
   i: number;
-  o?: number;
+  o: number | undefined;
   q: number;
-  s?: number;
+  s: number | undefined;
 }
 
 export function compareSpecs(a: Specificity, b: Specificity): number {

@@ -179,7 +179,7 @@ export async function serveFile(
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
-  let { etagAlgorithm: algorithm, fileInfo } = options ?? {};
+  let { etagAlgorithm: algorithm = "SHA-256", fileInfo } = options ?? {};
 
   try {
     fileInfo ??= await Deno.stat(filePath);
@@ -682,11 +682,12 @@ async function createServeDirResponse(
   req: Request,
   opts: ServeDirOptions,
 ) {
-  const target = opts.fsRoot || ".";
+  const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const showDotfiles = opts.showDotfiles || false;
-  const { etagAlgorithm, showDirListing, quiet } = opts;
+  const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
+    opts;
 
   const url = new URL(req.url);
   const decodedUrl = decodeURIComponent(url.pathname);
@@ -800,7 +801,7 @@ function main() {
     },
   });
   const port = serverArgs.port ? Number(serverArgs.port) : undefined;
-  const headers = serverArgs.header || [];
+  const headers = serverArgs.header ?? [];
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
@@ -855,21 +856,25 @@ function main() {
     console.log(message);
   }
 
-  if (useTls) {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-      cert: Deno.readTextFileSync(certFile),
-      key: Deno.readTextFileSync(keyFile),
-    }, handler);
-  } else {
-    Deno.serve({
-      port,
-      hostname: host,
-      onListen,
-    }, handler);
+  // TODO(petamoriken): Migrate `Deno.ServeTcpOptions | (Deno.ServeTcpOptions & Deno.TlsCertifiedKeyOptions)` in v2
+  const options: {
+    port?: number;
+    hostname?: string;
+    onListen?: (localAddr: Deno.NetAddr) => void;
+    cert?: string;
+    key?: string;
+  } = {
+    hostname: host,
+    onListen,
+  };
+  if (port !== undefined) {
+    options.port = port;
   }
+  if (useTls) {
+    options.cert = Deno.readTextFileSync(certFile);
+    options.key = Deno.readTextFileSync(keyFile);
+  }
+  Deno.serve(options, handler);
 }
 
 function printUsage() {

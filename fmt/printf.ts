@@ -184,12 +184,12 @@ const F = {
 } as const;
 
 class Flags {
-  plus?: boolean;
-  dash?: boolean;
-  sharp?: boolean;
-  space?: boolean;
-  zero?: boolean;
-  lessthan?: boolean;
+  plus: boolean | undefined;
+  dash: boolean | undefined;
+  sharp: boolean | undefined;
+  space: boolean | undefined;
+  zero: boolean | undefined;
+  lessthan: boolean | undefined;
   width = -1;
   precision = -1;
 }
@@ -213,7 +213,7 @@ class Printf {
   haveSeen: boolean[];
 
   // barf, store precision and width errors for later processing ...
-  tmpError?: string;
+  tmpError: string | undefined;
 
   constructor(format: string, ...args: unknown[]) {
     this.format = format;
@@ -719,7 +719,7 @@ class Printf {
       ? this.flags.precision
       : DEFAULT_PRECISION;
     const [fractional, rounding] = this.roundFractionToPrecision(
-      m[F.fractional] || "",
+      m[F.fractional] ?? "",
       precision,
     );
 

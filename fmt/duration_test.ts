@@ -20,6 +20,7 @@ Deno.test({
   name: "format() handles default style (narrow)",
   fn() {
     assertEquals(
+      // @ts-expect-error: explicitly giving undefined
       format(99674, { style: undefined }),
       "0d 0h 1m 39s 674ms 0µs 0ns",
     );

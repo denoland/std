@@ -39,7 +39,7 @@ function asymmetricEqual(a: unknown, b: unknown) {
  * @param options for the equality check
  */
 export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
-  const { customTesters = [], strictCheck } = options || {};
+  const { customTesters = [], strictCheck } = options ?? {};
   const seen = new Map();
 
   return (function compare(a: unknown, b: unknown): boolean {
@@ -113,8 +113,8 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
         return true;
       }
 
-      const aKeys = Object.keys(a || {});
-      const bKeys = Object.keys(b || {});
+      const aKeys = Object.keys(a ?? {});
+      const bKeys = Object.keys(b ?? {});
       let aLen = aKeys.length;
       let bLen = bKeys.length;
 

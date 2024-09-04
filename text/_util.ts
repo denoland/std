@@ -12,7 +12,7 @@ const WORD_OR_NUMBER_REGEXP = new RegExp(
 );
 
 export function splitToWords(input: string) {
-  return input.match(WORD_OR_NUMBER_REGEXP) || [];
+  return input.match(WORD_OR_NUMBER_REGEXP) ?? [];
 }
 
 export function capitalizeWord(word: string): string {

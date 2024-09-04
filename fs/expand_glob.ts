@@ -66,12 +66,15 @@ function split(path: string): SplitPath {
     .replace(new RegExp(`^${s}|${s}$`, "g"), "")
     .split(SEPARATOR_PATTERN);
   const isAbsolute_ = isAbsolute(path);
-  return {
+  const split: SplitPath = {
     segments,
     isAbsolute: isAbsolute_,
-    hasTrailingSep: !!path.match(new RegExp(`${s}$`)),
-    winRoot: isWindows && isAbsolute_ ? segments.shift() : undefined,
+    hasTrailingSep: path.match(new RegExp(`${s}$`)) !== null,
   };
+  if (isWindows && isAbsolute_) {
+    split.winRoot = segments.shift()!;
+  }
+  return split;
 }
 
 function throwUnlessNotFound(error: unknown) {
@@ -276,9 +279,9 @@ export async function* expandGlob(
     includeDirs = true,
     extended = true,
     globstar = true,
-    caseInsensitive,
-    followSymlinks,
-    canonicalize,
+    caseInsensitive = false,
+    followSymlinks = false,
+    canonicalize = true,
   } = options ?? {};
 
   const {
@@ -433,9 +436,9 @@ export function* expandGlobSync(
     includeDirs = true,
     extended = true,
     globstar = true,
-    caseInsensitive,
-    followSymlinks,
-    canonicalize,
+    caseInsensitive = false,
+    followSymlinks = false,
+    canonicalize = true,
   } = options ?? {};
 
   const {

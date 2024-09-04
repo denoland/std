@@ -172,12 +172,20 @@ export function format(
 function getLocaleOptions(
   { maximumFractionDigits, minimumFractionDigits }: FormatOptions,
 ): LocaleOptions | undefined {
-  if (maximumFractionDigits || minimumFractionDigits) {
-    return {
-      maximumFractionDigits,
-      minimumFractionDigits,
-    };
+  if (
+    maximumFractionDigits === undefined && minimumFractionDigits === undefined
+  ) {
+    return;
   }
+
+  const ret: LocaleOptions = {};
+  if (maximumFractionDigits !== undefined) {
+    ret.maximumFractionDigits = maximumFractionDigits;
+  }
+  if (minimumFractionDigits !== undefined) {
+    ret.minimumFractionDigits = minimumFractionDigits;
+  }
+  return ret;
 }
 
 /**

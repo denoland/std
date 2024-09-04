@@ -36,7 +36,6 @@ const allFlags = GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST |
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(describeTextureFormat("rgba8unorm"), {
- *   requiredFeature: undefined,
  *   sampleType: "float",
  *   allowedUsages: 31,
  *   blockDimensions: [1, 1],
@@ -359,12 +358,15 @@ export function describeTextureFormat(
       throw new TypeError(`Unsupported GPUTextureFormat '${format}'`);
   }
 
-  return {
-    requiredFeature: info[0],
+  const ret: TextureFormatInfo = {
     sampleType: info[1],
     allowedUsages: info[2],
     blockDimensions: info[3],
     blockSize: info[4],
     components: info[5],
   };
+  if (info[0] !== undefined) {
+    ret.requiredFeature = info[0];
+  }
+  return ret;
 }

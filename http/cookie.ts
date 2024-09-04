@@ -384,7 +384,7 @@ function parseSetCookie(value: string): Cookie | null {
         cookie.httpOnly = true;
         break;
       case "samesite":
-        cookie.sameSite = value as Cookie["sameSite"];
+        cookie.sameSite = value as NonNullable<Cookie["sameSite"]>;
         break;
       default:
         if (!Array.isArray(cookie.unparsed)) {
