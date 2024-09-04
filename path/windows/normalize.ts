@@ -37,17 +37,8 @@ export function normalize(path: string): string;
  * import { normalize } from "@std/path/windows/normalize";
  * import { assertEquals } from "@std/assert";
  *
- * const normalized = normalize("C:\\foo\\..\\bar");
- * assertEquals(normalized, "C:\\bar");
- * ```
- *
- * @example Working with URLs
- * ```ts
- * import { normalize } from "@std/path/windows/normalize";
- * import { assertEquals } from "@std/assert";
- *
- * const normalized = normalize(new URL("file:///C:/foo/../bar"));
- * assertEquals(normalized, "C:\\bar");
+ * assertEquals(normalize("C:\\foo\\..\\bar"), "C:\\bar");
+ * assertEquals(normalize(new URL("file:///C:/foo/../bar")), "C:\\bar");
  * ```
  *
  * @param path The path to normalize. Path can be a string or a file URL object.

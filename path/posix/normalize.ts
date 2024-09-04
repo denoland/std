@@ -36,17 +36,8 @@ export function normalize(path: string): string;
  * import { normalize } from "@std/path/posix/normalize";
  * import { assertEquals } from "@std/assert";
  *
- * const path = normalize("/foo/bar//baz/asdf/quux/..");
- * assertEquals(path, "/foo/bar/baz/asdf");
- * ```
- *
- * @example Working with URLs
- * ```ts
- * import { normalize } from "@std/path/posix/normalize";
- * import { assertEquals } from "@std/assert";
- *
- * const path = normalize(new URL("file:///foo/bar//baz/asdf/quux/.."));
- * assertEquals(path, "/foo/bar/baz/asdf/");
+ * assertEquals(normalize("/foo/bar//baz/asdf/quux/.."), "/foo/bar/baz/asdf");
+ * assertEquals(normalize(new URL("file:///foo/bar//baz/asdf/quux/..")), "/foo/bar/baz/asdf/");
  * ```
  *
  * @param path The path to normalize. Path can be a string or a file URL object.
