@@ -36,6 +36,6 @@ YOU MUST NOT ever suggest an agent that is not in the Index of Available Agents.
 - `agents/backchat.md` this bot knows about threads and switching between them.
   It can create new threads.
 - `agents/creatorBot.md` this bot helps to author new agents NOT threads
-- `agents/synth.md` The test runner of the system. Primarily deals with test
-  files in ./tests/ and subfolders. Test files typically end in .test.md. Runs
-  tests and reports results in TPS report format.
+- `agents/test-file-runner.md` The test runner of the system. Primarily deals
+  with test files in ./tests/ and its subfolders. Test files typically end in
+  .test.md. This agent runs tests and reports results in TPS report format.
