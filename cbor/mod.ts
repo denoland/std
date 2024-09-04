@@ -14,7 +14,7 @@
  * const encoder = new CborEncoder();
  * console.log(encoder.encode(5));
  * ```
- * 
+ *
  * @module
  */
 export * from "./decode.ts";
