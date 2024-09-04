@@ -403,7 +403,7 @@
  */
 
 import { getAssertionState } from "@std/internal/assertion-state";
-import { emitNoAssertionError } from "./_bdd_utils.ts";
+import { AssertionError } from "@std/assert/assertion-error";
 import {
   type DescribeDefinition,
   type HookNames,
@@ -602,9 +602,12 @@ export function it<T>(...args: ItArgs<T>) {
           await fn.call({} as T, t);
         } finally {
           TestSuiteInternal.runningCount--;
-          if (assertionState.checkAssertionError()) {
-            emitNoAssertionError();
-          }
+        }
+
+        if (assertionState.checkAssertionError()) {
+          throw new AssertionError(
+            "Expected at least one assertion to be called but received none.",
+          );
         }
       },
     });
