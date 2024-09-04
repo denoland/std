@@ -139,7 +139,7 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *
  * @example Usage
  * ```ts no-eval
- * import { TarStream, type TarStreamInput } from "@std/archive/tar-stream";
+ * import { TarStream, type TarStreamInput } from "@std/tar/tar-stream";
  *
  * await ReadableStream.from<TarStreamInput>([
  *   {
@@ -302,7 +302,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * @example Usage
    * ```ts no-eval
-   * import { TarStream } from "@std/archive/tar-stream";
+   * import { TarStream } from "@std/tar/tar-stream";
    *
    * await ReadableStream.from([
    *   {
@@ -338,7 +338,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *
    * @example Usage
    * ```ts no-eval
-   * import { TarStream } from "@std/archive/tar-stream";
+   * import { TarStream } from "@std/tar/tar-stream";
    *
    * await ReadableStream.from([
    *   {
@@ -427,7 +427,7 @@ function parsePath(
  *
  * @example Usage
  * ```ts no-assert no-eval
- * import { assertValidPath, TarStream, type TarStreamInput } from "@std/archive";
+ * import { assertValidPath, TarStream, type TarStreamInput } from "@std/tar";
  *
  * const paths = (await Array.fromAsync(Deno.readDir("./")))
  *   .filter(entry => entry.isFile)
@@ -475,7 +475,7 @@ export function assertValidPath(path: string) {
  *
  * @example Usage
  * ```ts no-assert no-eval
- * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/archive";
+ * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/tar";
  *
  *  const paths = (await Array.fromAsync(Deno.readDir('./')))
  *   .filter(entry => entry.isFile)
