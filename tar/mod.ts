@@ -1,9 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * `TarStream` is a transform stream that transforms entries in a tar archive
- * into a structured format. `UntarStream` is the inverse transform stream that
- * transforms structured entries into a tar archive.
+ * Streaming utilities for working with tar archives.
  *
  * Files are not compressed, only collected into the archive.
  *
