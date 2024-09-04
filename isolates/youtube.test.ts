@@ -15,10 +15,11 @@ Deno.test('youtube', async () => {
   expect(result.path).toEqual(path)
   expect(result.success).toBeTruthy()
 
-  const data = await api
-    .readJSON<
-      { details: VideoDetails; transcript: { start: string; text: string }[] }
-    >(path)
+  type Result = {
+    details: VideoDetails
+    transcript: { start: string; text: string }[]
+  }
+  const data = await api.readJSON<Result>(path)
 
   expect(data.details).toBeDefined()
   expect(data.transcript).toBeDefined()

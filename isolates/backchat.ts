@@ -5,12 +5,15 @@ import {
   generateThreadId,
   getActorId,
   getActorPid,
+  getThreadPath,
   IA,
   print,
   threadIdRegex,
+  threadSchema,
   toApi,
   ToApiType,
   unsequencedRequest,
+  zodPid,
 } from '@/constants.ts'
 import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug } from '@utils'
@@ -25,6 +28,10 @@ export const parameters = {
   newThread: z.object({}).describe(
     'Create a new thread and set it as the current target thread',
   ),
+  changeThreadSignal: zodPid.describe(
+    'Signal to change the current target thread',
+  ),
+  changeThread: zodPid.describe('Change the current target thread'),
   prompt: z.object({
     content: z.string(),
     attachments: z.array(z.string()).optional(),
@@ -40,6 +47,10 @@ export const returns = {
   newThreadSignal: z.null(),
   /** The threadId of the new thread */
   newThread: z.string().regex(threadIdRegex),
+  /** stopOnTool command */
+  changeThreadSignal: z.null(),
+  /** The new target thread */
+  changeThread: z.void(),
   prompt: z.void(),
   relay: z.promise(z.unknown()),
 }
@@ -50,8 +61,8 @@ export const api = toApi(parameters)
 export const functions: Functions<Api> = {
   newThreadSignal: () => null,
   newThread: async (_, api) => {
-    log('create', print(api.pid))
-    const threadId = generateThreadId(api.commit + 'backchat:create')
+    log('newThread', print(api.pid))
+    const threadId = generateThreadId(api.commit + 'backchat:newThread')
 
     const target = getActorPid(api.pid)
     const { thread } = await api.actions<actor.Api>('actor', { target })
@@ -61,6 +72,17 @@ export const functions: Functions<Api> = {
       return { ...state, target: pid }
     }, backchatStateSchema)
     return threadId
+  },
+  changeThreadSignal: () => null,
+  changeThread: async (target, api) => {
+    log('changeThread', print(target))
+    const thread = await api.readJSON(getThreadPath(target), { target })
+    threadSchema.parse(thread)
+    // TODO check other parameters of the thread are suitable as a base target
+
+    await api.updateState((state) => {
+      return { ...state, target }
+    }, backchatStateSchema)
   },
   async prompt({ content, attachments }, api) {
     // TODO handle attachments
@@ -77,9 +99,12 @@ export const functions: Functions<Api> = {
     const { switchboard } = await api.actions<longthread.Api>('longthread', {
       target,
     })
-    const { newThread } = await switchboard({ content, actorId })
+    const { newThread, target: next } = await switchboard({ content, actorId })
     if (newThread) {
       await functions.newThread({}, api)
+    }
+    if (next) {
+      await functions.changeThread(next, api)
     }
   },
   relay: ({ request }, api) => {

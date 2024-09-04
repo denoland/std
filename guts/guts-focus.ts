@@ -4,12 +4,11 @@ import { CradleMaker } from '@/constants.ts'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':focus: '
 
-  // TODO make a fake thread, and then test summoner
+  // TODO make a remote thread, and then test summoner
 
-  Deno.test.only(prefix + 'thread management', async (t) => {
+  Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus = await backchat.readBaseThread()
-    log.enable('AI:tests AI:backchat AI:longthread AI:agents')
     log('initial focus', focus)
 
     await t.step('first thread, files agent', async () => {
@@ -26,34 +25,35 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(next).not.toEqual(focus)
       focus = next
     })
+
     await t.step('list files in second thread', async () => {
-      await backchat.prompt('files list')
+      await backchat.prompt('list the files I have')
       const next = await backchat.readBaseThread()
       expect(next).toEqual(focus)
     })
 
-    // await t.step('restart a thread', async () => {
-    //   const result = await backchat.prompt(
-    //     'backchat switch me back to the first thread',
-    //   )
-    //   log('result', result)
-    //   focus = await getFocus(backchat, focus)
-    // })
+    await t.step('restart a thread', async () => {
+      const result = await backchat.prompt('switch me back to the first thread')
+      log('result', result)
+      // TODO enable after providing thread search ability
+      // const next = await backchat.readBaseThread()
+      // expect(next).not.toEqual(focus)
+      // expect(next).toEqual(initialFocus)
+      // focus = next
+    })
 
     // test changing some files then have that show up on the other thread
 
-    // TODO test valid format but deleted / nonexistent session
+    // TODO test deleted / nonexistent thread
     await engine.stop()
   })
 
   Deno.test(prefix + 'update from github', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    // this test should cover passing on extra instructions to backchat
-    // it should go find the github bot, and call it with some base
-    // instructions
+
     await t.step('update', async () => {
       await backchat.prompt(
-        'Update HAL to the latest version by using the engage-help function with "hal-system" as the help name and "Update HAL" as the prompt.  Dont ask me any questions, just do it using your best guess.',
+        'Update the HAL repo to the latest version by using the system agent as an administrative action',
       )
     })
 
@@ -64,9 +64,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'infinite loop regression', async (t) => {
     const { backchat, engine } = await cradleMaker()
     await t.step('infinite loop', async () => {
-      await backchat.prompt(
-        'backchat start a thread with the agent: agents/files.md',
-      )
       const prompt =
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
       await backchat.prompt(prompt)

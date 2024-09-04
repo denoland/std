@@ -6,117 +6,78 @@ import {
   Functions,
   IA,
   isPID,
-  Params,
-  PID,
-  pidSchema,
+  jsonSchema,
+  md5,
   print,
   Proctype,
+  toApi,
+  ToApiType,
+  zodPid,
 } from '@/constants.ts'
 import { isBaseRepo } from '@/constants.ts'
+import { z } from 'zod'
 const log = Debug('AI:system')
 
-export const api = {
-  rm: {
-    description: 'remove a repository',
-    type: 'object',
-    required: ['pid'],
-    additionalProperties: false,
-    properties: { pid: pidSchema },
-  },
-  clone: {
-    description: 'clone a repository',
-    type: 'object',
-    required: ['repo'],
-    additionalProperties: false,
-    properties: {
-      repo: { type: 'string' },
-      isolate: { type: 'string' },
-      params: { type: 'object' },
-    },
-  },
-  init: {
-    description: 'initialize a repository',
-    type: 'object',
-    required: ['repo'],
-    additionalProperties: false,
-    properties: {
-      repo: { type: 'string' },
-      isolate: { type: 'string' },
-      params: { type: 'object' },
-    },
-  },
-  pull: {
-    description: 'pull a repository',
-    type: 'object',
-    required: ['repo'],
-    additionalProperties: false,
-    properties: { repo: { type: 'string' } },
-  },
-  sideEffectClone: {
-    description: 'clone a repository as a side effect',
-    type: 'object',
-    required: ['repo'],
-    additionalProperties: false,
-    properties: { repo: { type: 'string' } },
-  },
-  sideEffectInit: {
-    description: 'initialize a repository as a side effect',
-    type: 'object',
-    required: ['repo'],
-    additionalProperties: false,
-    properties: { repo: { type: 'string' } },
-  },
-  sideEffectFetch: {
-    description: 'fetch a repository as a side effect',
-    type: 'object',
-    required: ['pid', 'repo'],
-    additionalProperties: false,
-    properties: { repo: { type: 'string' }, pid: pidSchema },
-  },
+const init = z.object({
+  repo: z.string(),
+  isolate: z.string().optional(),
+  params: z.record(jsonSchema).optional(),
+})
+const headResult = z.object({ head: md5, elapsed: z.number().int().gt(0) })
+const pidResult = headResult.extend({
+  pid: zodPid,
+})
+
+export const parameters = {
+  rm: z.object({ pid: zodPid }).describe('remove a repository'),
+  clone: init.describe('clone a repository'),
+  init: init.describe('initialize a repository'),
+  pull: z.object({ repo: z.string() }).describe('pull a repository'),
+  sideEffectClone: z.object({ repo: z.string() }).describe(
+    'clone a repository as a side effect',
+  ),
+  sideEffectInit: z.object({ repo: z.string() }).describe(
+    'initialize a repository as a side effect',
+  ),
+  sideEffectFetch: z.object({
+    pid: zodPid,
+    repo: z.string(),
+  }).describe('fetch a repository as a side effect'),
 }
 
-export type Api = {
-  init: (
-    params: { repo: string; isolate?: string; params?: Params },
-  ) => Promise<{ pid: PID; head: string }>
-  clone: (
-    params: { repo: string; isolate?: string; params?: Params },
-  ) => Promise<{ pid: PID; head: string; elapsed: number }>
-  pull: (params: { repo: string }) => Promise<void>
-  rm: (params: { pid: PID }) => Promise<void>
-  sideEffectClone: (
-    params: { repo: string },
-  ) => Promise<{ pid: PID; head: string; elapsed: number }>
-  sideEffectInit: (
-    params: { repo: string },
-  ) => Promise<{ pid: PID; head: string }>
-  sideEffectFetch: (params: { pid: PID; repo: string }) => Promise<string>
+export const returns = {
+  rm: z.void(),
+  clone: pidResult,
+  init: pidResult,
+  pull: headResult,
+  sideEffectClone: pidResult,
+  sideEffectInit: pidResult,
+  sideEffectFetch: headResult,
 }
+
+export const api = toApi(parameters)
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
 export const functions: Functions<Api> = {
-  init: async (
-    p: { repo: string; isolate?: string; params?: Params },
-    api: IA<C>,
-  ) => {
-    const { repo, isolate, params = {} } = p
+  init: async ({ repo, isolate, params }, api) => {
     // TODO lock so only the actor branch can call this function
-
     const actions = await api.actions<Api>('system')
-    const { pid, head } = await actions.sideEffectInit({ repo })
+    const result = await actions.sideEffectInit({ repo })
     if (isolate) {
       await api.action({
         isolate,
         // TODO fire an error if this isolate is not installable
         functionName: '@@install',
-        params,
+        params: params || {},
         proctype: Proctype.enum.SERIAL,
-        target: pid,
+        target: result.pid,
       })
-      log('installed', print(pid))
+      log('installed', print(result.pid))
     }
-    return { pid, head }
+    return result
   },
-  rm: async (params: { pid: PID }, api: IA<C>) => {
-    const { pid } = params
+  rm: async ({ pid }, api: IA<C>) => {
     assert(isPID(pid), 'invalid pid')
     assert(isBaseRepo(pid), 'cannot remove a non-base repository')
     log('rm', print(pid))
@@ -124,22 +85,22 @@ export const functions: Functions<Api> = {
     assert(db, 'db not found')
     await db.rm(pid)
   },
-  clone: async ({ repo, isolate, params }, api: IA<C>) => {
+  clone: async ({ repo, isolate, params }, api) => {
     log('clone', repo, isolate, params)
 
     const actions = await api.actions<Api>('system')
-    const { pid, head, elapsed } = await actions.sideEffectClone({ repo })
+    const result = await actions.sideEffectClone({ repo })
     if (isolate) {
       await api.action({
         isolate,
         functionName: '@@install',
         params: params || {},
         proctype: Proctype.enum.SERIAL,
-        target: pid,
+        target: result.pid,
       })
     }
-    log('cloned %s in %ims', print(pid), elapsed)
-    return { pid, head, elapsed }
+    log('cloned %s in %ims', print(result.pid), result.elapsed)
+    return result
   },
   pull: async ({ repo }, api: IA<C>) => {
     log('pull', repo, print(api.pid))
@@ -152,10 +113,10 @@ export const functions: Functions<Api> = {
     const { db } = api.context
     assert(db, 'db not found')
     const fs = FS.open(pid, api.commit, db)
-    const oid = await fs.merge(fetchHead)
+    const oid = await fs.merge(fetchHead.head)
     if (api.commit === oid) {
       log('no changes')
-      return
+      return fetchHead
     }
 
     const atomic = await db.atomic().updateHead(pid, api.commit, oid)
@@ -163,9 +124,9 @@ export const functions: Functions<Api> = {
     if (!await atomic.commit()) {
       throw new Error('failed to commit: ' + repo)
     }
+    return fetchHead
   },
-
-  sideEffectClone: async ({ repo }: { repo: string }, api: IA<C>) => {
+  sideEffectClone: async ({ repo }, api: IA<C>) => {
     // TODO assert we got called by ourselves
     const { db } = api.context
     assert(db, 'db not found')
@@ -174,7 +135,7 @@ export const functions: Functions<Api> = {
     const elapsed = Date.now() - start
     return { pid, head: oid, elapsed }
   },
-  sideEffectInit: async ({ repo }: { repo: string }, api: IA<C>) => {
+  sideEffectInit: async ({ repo }, api: IA<C>) => {
     // TODO assert we got called by ourselves
     const { db } = api.context
     assert(db, 'db not found')
@@ -182,15 +143,15 @@ export const functions: Functions<Api> = {
     const [account, repository] = repo.split('/')
     const partial = { account, repository, branches: [ENTRY_BRANCH] }
 
+    const start = Date.now()
     const { pid, oid } = await FS.init(partial, db)
-    return { pid, head: oid }
+    return { pid, head: oid, elapsed: Date.now() - start }
   },
-  sideEffectFetch: async (
-    { pid, repo }: { pid: PID; repo: string },
-    api: IA<C>,
-  ) => {
+  sideEffectFetch: async ({ pid, repo }, api: IA<C>) => {
     const { db } = api.context
     assert(db, 'db not found')
-    return await FS.fetch(repo, pid, db)
+    const start = Date.now()
+    const head = await FS.fetch(repo, pid, db)
+    return { head, elapsed: Date.now() - start }
   },
 }

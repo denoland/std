@@ -22,6 +22,7 @@ import {
   UnsequencedRequest,
 } from '@/constants.ts'
 import { type Isolate } from '@/isolates/index.ts'
+import * as files from '@/isolates/files.ts'
 import IOChannel from '@io/io-channel.ts'
 import { z, ZodTypeAny } from 'zod'
 const log = Debug('AI:isolateApi')
@@ -202,13 +203,17 @@ export default class IA<T extends object = Default> {
     log('write', path)
     this.#fs.write(path, content)
   }
-  async readJSON<T>(path: string, fallback?: T): Promise<T> {
+  async readJSON<T>(
+    path: string,
+    opts?: { target?: PID; commit?: string },
+  ): Promise<T> {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    log('readJSON', path, fallback)
-    if (fallback !== undefined) {
-      if (!await this.#fs.exists(path)) {
-        return fallback
-      }
+    log('readJSON', path)
+    if (opts && opts.target) {
+      // TODO move to something native
+      const { read } = await this.actions<files.Api>('files', opts)
+      const string = await read({ path })
+      return JSON.parse(string) as T
     }
     return this.#fs.readJSON<T>(path)
   }

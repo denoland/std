@@ -7,6 +7,7 @@ import {
   Thread,
   toApi,
   ToApiType,
+  zodPid,
 } from '@/constants.ts'
 import { assistantMessage, ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
@@ -41,8 +42,14 @@ export const parameters = {
 export const returns = {
   start: z.void(),
   run: assistantMessage,
-  /** If the tools reqeuested a new thread to be formed */
-  switchboard: z.object({ newThread: z.boolean() }),
+  /** If the tools reqeuested a new thread to be formed, or a change to the
+   * backchat target thread */
+  switchboard: z.object({
+    newThread: z.boolean().optional(),
+    target: zodPid.optional(),
+  }).refine((v) => !(v.newThread && v.target), {
+    message: 'expected newThread or target exclusively',
+  }),
   drone: z.union([
     z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
     z.undefined(),
@@ -107,15 +114,23 @@ export const functions: Functions<Api> = {
 
     const stopOnTools = []
     if (next === `agents/backchat.md`) {
-      stopOnTools.push('backchat_newThreadSignal')
+      stopOnTools.push(
+        'backchat_newThreadSignal',
+        'backchat_changeThreadSignal',
+      )
     }
 
     const agentResult = await loop(next, api, stopOnTools)
-    const result = { newThread: false }
+    const result: z.infer<typeof returns.switchboard> = {}
     if (agentResult) {
       const { functionName } = agentResult
-      assert(functionName === 'backchat_newThreadSignal', 'not ' + functionName)
-      result.newThread = true
+      if (functionName === 'backchat_newThreadSignal') {
+        result.newThread = true
+      } else if (functionName === 'backchat_changeThreadSignal') {
+        result.target = api.pid
+      } else {
+        throw new Error('unexpected switchboard result: ' + functionName)
+      }
     }
     return result
   },
