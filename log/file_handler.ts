@@ -17,6 +17,9 @@ export type LogMode = "a" | "w" | "x";
 
 export interface FileHandlerOptions extends BaseHandlerOptions {
   filename: string;
+  /**
+   * @default {"a"}
+   */
   mode?: LogMode;
   /**
    * Buffer size for writing log messages to file, in bytes.
@@ -60,7 +63,7 @@ export class FileHandler extends BaseHandler {
     super(levelName, options);
     this[filenameSymbol] = options.filename;
     // default to append mode, write only
-    this[modeSymbol] = options.mode ? options.mode : "a";
+    this[modeSymbol] = options.mode ?? "a";
     this[openOptionsSymbol] = {
       createNew: this[modeSymbol] === "x",
       create: this[modeSymbol] !== "x",

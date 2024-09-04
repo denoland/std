@@ -131,6 +131,7 @@ function constructYamlInteger(data: string): number {
 }
 
 function isInteger(object: unknown): object is number {
+  if (object instanceof Number) object = object.valueOf();
   return typeof object === "number" && object % 1 === 0 &&
     !isNegativeZero(object);
 }
@@ -142,21 +143,31 @@ export const int: Type<"scalar", number> = {
   kind: "scalar",
   predicate: isInteger,
   represent: {
-    binary(obj: number): string {
-      return obj >= 0
-        ? `0b${obj.toString(2)}`
-        : `-0b${obj.toString(2).slice(1)}`;
+    // deno-lint-ignore ban-types
+    binary(object: number | Number): string {
+      const value = object instanceof Number ? object.valueOf() : object;
+      return value >= 0
+        ? `0b${value.toString(2)}`
+        : `-0b${value.toString(2).slice(1)}`;
     },
-    octal(obj: number): string {
-      return obj >= 0 ? `0${obj.toString(8)}` : `-0${obj.toString(8).slice(1)}`;
+    // deno-lint-ignore ban-types
+    octal(object: number | Number): string {
+      const value = object instanceof Number ? object.valueOf() : object;
+      return value >= 0
+        ? `0${value.toString(8)}`
+        : `-0${value.toString(8).slice(1)}`;
     },
-    decimal(obj: number): string {
-      return obj.toString(10);
+    // deno-lint-ignore ban-types
+    decimal(object: number | Number): string {
+      const value = object instanceof Number ? object.valueOf() : object;
+      return value.toString(10);
     },
-    hexadecimal(obj: number): string {
-      return obj >= 0
-        ? `0x${obj.toString(16).toUpperCase()}`
-        : `-0x${obj.toString(16).toUpperCase().slice(1)}`;
+    // deno-lint-ignore ban-types
+    hexadecimal(object: number | Number): string {
+      const value = object instanceof Number ? object.valueOf() : object;
+      return value >= 0
+        ? `0x${value.toString(16).toUpperCase()}`
+        : `-0x${value.toString(16).toUpperCase().slice(1)}`;
     },
   },
   resolve: resolveYamlInteger,

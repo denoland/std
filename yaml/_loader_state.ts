@@ -188,7 +188,7 @@ export class LoaderState {
   lineStart = 0;
   position = 0;
   line = 0;
-  onWarning?: (error: Error) => void;
+  onWarning: ((error: Error) => void) | undefined;
   allowDuplicateKeys: boolean;
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
@@ -197,9 +197,9 @@ export class LoaderState {
   checkLineBreaks = false;
   tagMap = new Map();
   anchorMap = new Map();
-  tag?: string | null;
-  anchor?: string | null;
-  kind?: string | null;
+  tag: string | null | undefined;
+  anchor: string | null | undefined;
+  kind: string | null | undefined;
   result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(

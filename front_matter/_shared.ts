@@ -15,7 +15,7 @@ export function extractAndParse<T>(
   if (!match || match.index !== 0) {
     throw new TypeError("Unexpected end of input");
   }
-  const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
+  const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") ?? "";
   const attrs = parse(frontMatter) as T;
   const body = input.replace(match[0], "");
   return { frontMatter, body, attrs };

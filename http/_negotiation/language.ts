@@ -33,7 +33,7 @@ import { compareSpecs, isQuality, type Specificity } from "./common.ts";
 
 interface LanguageSpecificity extends Specificity {
   prefix: string;
-  suffix?: string;
+  suffix: string | undefined;
   full: string;
 }
 
@@ -53,7 +53,7 @@ function parseLanguage(
     return undefined;
   }
 
-  const full = suffix ? `${prefix}-${suffix}` : prefix;
+  const full = suffix !== undefined ? `${prefix}-${suffix}` : prefix;
 
   let q = 1;
   if (match[3]) {
@@ -67,7 +67,7 @@ function parseLanguage(
     }
   }
 
-  return { prefix, suffix, full, q, i };
+  return { prefix, suffix, full, i, o: undefined, q, s: undefined };
 }
 
 function parseAcceptLanguage(accept: string): LanguageSpecificity[] {

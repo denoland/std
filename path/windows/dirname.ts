@@ -37,13 +37,14 @@ export function dirname(path: string): string;
  * import { dirname } from "@std/path/windows/dirname";
  * import { assertEquals } from "@std/assert";
  *
+ * assertEquals(dirname("C:\\foo\\bar\\baz.ext"), "C:\\foo\\bar");
  * assertEquals(dirname(new URL("file:///C:/foo/bar/baz.ext")), "C:\\foo\\bar");
  * ```
  *
  * @param path The path to get the directory from.
  * @returns The directory path.
  */
-export function dirname(path: URL): string;
+export function dirname(path: string | URL): string;
 export function dirname(path: string | URL): string {
   if (path instanceof URL) {
     path = fromFileUrl(path);

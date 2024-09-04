@@ -1,3 +1,208 @@
+### 2024.09.04
+
+#### @std/archive 0.225.2 (patch)
+
+- feat(archive): `UntarStream` and `TarStream` (#4548)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/assert 1.0.4 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/async 1.0.5 (patch)
+
+- fix(async,csv,fmt): assign default value when `undefined` is passed (#5893)
+- docs(async): add note about `deadline()` `DOMException` name of `TimeoutError`
+  (#5833)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/cache 0.1.2 (patch)
+
+- fix(cache/unstable): fix flaky fibonacci test (#5872)
+- docs(cache): document valid range information for TTL values (#5834)
+
+#### @std/cli 1.0.5 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/csv 1.0.3 (patch)
+
+- fix(async,csv,fmt): assign default value when `undefined` is passed (#5893)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/datetime 0.225.2 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/dotenv 0.225.2 (patch)
+
+- fix(dotenv): handle single-quotes in values in `stringify()` (#5846)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/encoding 1.0.4 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/expect 1.0.2 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+- refactor(expect): align error messages in the matchers (#5835)
+
+#### @std/fmt 1.0.2 (patch)
+
+- fix(async,csv,fmt): assign default value when `undefined` is passed (#5893)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/front-matter 1.0.4 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/fs 1.0.3 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/http 1.0.5 (patch)
+
+- fix(http): less restrictive arguments for `accepts*()` functions (#5850)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/internal 1.0.3 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/io 0.224.7 (patch)
+
+- fix(io): don't use `Deno.Buffer` in examples (#5889)
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/log 0.224.7 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/msgpack 1.0.2 (patch)
+
+- fix(msgpack): accept readonly input data in `encode()` (#5832)
+
+#### @std/net 1.0.2 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/path 1.0.4 (patch)
+
+- feat(path/unstable): support file `URL` arg in `normalize()` (#5902)
+- feat(path/unstable): support `URL` as 1st arg of `basename()` (#5900)
+- feat(path/unstable): support `URL` in first arg of `join()` (#5863)
+- fix(path/unstable): support `string | URL` in the 2nd overload of `basename`,
+  `dirname`, and `extname` (#5904)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+- refactor(path): make `isWindows` check compatible with Node and Bun (#4961)
+
+#### @std/semver 1.0.3 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/streams 1.0.4 (patch)
+
+- refactor(assert,datetime,fmt,io,streams): consistently `throw new Error()`
+  instead of `throw Error()` (#5855)
+
+#### @std/tar 0.1.0 (minor)
+
+- feat(tar/unstable): `@std/tar` (#5905)
+
+#### @std/testing 1.0.2 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/text 1.0.5 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/url 0.225.1 (patch)
+
+- docs(url): update deprecation docs (#5907)
+
+#### @std/uuid 1.0.3 (patch)
+
+- feat(uuid/unstable): `@std/uuid/v7` (#5887)
+
+#### @std/webgpu 0.224.7 (patch)
+
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+
+#### @std/yaml 1.0.5 (patch)
+
+- fix(yaml): handle string instances (#5897)
+- fix(yaml): handle Boolean instances correctly (#5894)
+- fix(yaml): handle integer number instances (#5895)
+- fix(yaml): handle float number instances (#5896)
+- fix(yaml): fix `sortKey` error message (#5873)
+- refactor(archive,async,cli,csv,dotenv,encoding,expect,fmt,front-matter,fs,http,internal,log,net,path,semver,testing,text,webgpu,yaml):
+  enable `"exactOptionalPropertyTypes"` option (#5892)
+- refactor(yaml): switch array test (#5898)
+- refactor(yaml): simplify `stringifyBlockMapping()` (#5885)
+- refactor(yaml): cleanup utility functions (#5886)
+- refactor(yaml): cleanup str type (#5879)
+- refactor(yaml): simplify seq type (#5878)
+- refactor(yaml): simplify merge type (#5877)
+- refactor(yaml): simplify set type (#5867)
+- refactor(yaml): simplify regexp type (#5860)
+- refactor(yaml): move `duplicate` and `duplicateIndex` (#5836)
+- refactor(yaml): inline `composeNode()` (#5861)
+- refactor(yaml): simplify `resolve()` for pairs (#5852)
+- refactor(yaml): simplify null type (#5858)
+- refactor(yaml): simplify boolean type (#5859)
+- refactor(yaml): inline `readAlias()` (#5856)
+- refactor(yaml): inline `readAnchorProperty()` (#5853)
+- refactor(yaml): simplify omap `resolve()` (#5843)
+- refactor(yaml): simplify pair `construct()` function (#5844)
+- refactor(yaml): inline `readTagProperty()` (#5849)
+- refactor(yaml): replace `getObjectTypeString()` with `isPlainObject()` (#5842)
+- refactor(yaml): inline `readBlockMapping()` (#5847)
+- refactor(yaml): inline `readBlockScalar()` (#5841)
+- refactor(yaml): inline `readFlowCollection()` (#5840)
+- refactor(yaml): change error message in `stringifyNode()` (#5839)
+- refactor(yaml): inline `readDoubleQuotedScalar()` (#5838)
+- refactor(yaml): align additional error messages (#5806)
+- refactor(yaml): move `isObject()` (#5823)
+- refactor(yaml): inline `readSingleQuotedScalar()` (#5827)
+- test(yaml): add invalid `represent` type test (#5874)
+- test(yaml): add positive timezone timestamp test (#5881)
+- test(yaml): add int type tests (#5868)
+- test(yaml): add set type test (#5866)
+- test(yaml): add regexp type tests (#5862)
+- test(yaml): add duplicate binary references test (#5837)
+- test(yaml): add undefined array entry with `skipInvalid` and `flowLevel`
+  options test (#5828)
+- test(yaml): add duplicate array reference test (#5825)
+- test(yaml): add undefined object entry with skipInvalid and flowLevel option
+  test (#5829)
+- chore(yaml): fix typo in inline comment (#5845)
+
 ### 2024.08.26
 
 #### @std/archive 0.225.1 (patch)

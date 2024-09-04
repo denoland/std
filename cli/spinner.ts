@@ -123,7 +123,7 @@ export class Spinner {
   message: string;
 
   #interval: number;
-  #color?: Color;
+  #color: Color | undefined;
   #intervalId: number | undefined;
   #active = false;
 

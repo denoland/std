@@ -78,7 +78,7 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
       (carry > 0 || i < length) && reverseIterator !== -1;
       reverseIterator--, i++
     ) {
-      carry += (b58Encoding[reverseIterator] || 0) * 256;
+      carry += (b58Encoding[reverseIterator] ?? 0) * 256;
       b58Encoding[reverseIterator] = Math.round(carry % 58);
       carry = Math.floor(carry / 58);
     }
@@ -153,7 +153,7 @@ export function decodeBase58(b58: string): Uint8Array {
       (carry > 0 || i < length) && reverseIterator !== -1;
       reverseIterator--, i++
     ) {
-      carry += 58 * (output[reverseIterator] || 0);
+      carry += 58 * (output[reverseIterator] ?? 0);
       output[reverseIterator] = Math.round(carry % 256);
       carry = Math.floor(carry / 256);
     }

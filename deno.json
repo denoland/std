@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "exactOptionalPropertyTypes": true,
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true
@@ -80,6 +81,7 @@
     "./regexp",
     "./semver",
     "./streams",
+    "./tar",
     "./testing",
     "./text",
     "./toml",

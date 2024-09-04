@@ -986,7 +986,7 @@ Deno.test("parseArgs() handles types of all boolean disabled and string args", f
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string;
         _: Array<string | number>;
       }
     >
@@ -1061,9 +1061,9 @@ Deno.test("parseArgs() handles types of all boolean and string args", function (
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
-        bar?: string | undefined;
-        "foo-bar"?: string | undefined;
+        foo?: string;
+        bar?: string;
+        "foo-bar"?: string;
         _: Array<string | number>;
       }
     >
@@ -1084,10 +1084,10 @@ Deno.test("parseArgs() handles types of all boolean and string args with default
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string;
         bar: string | number;
         baz: unknown;
-        "foo-bar"?: string | undefined;
+        "foo-bar"?: string;
         _: Array<string | number>;
       }
     >
@@ -1144,9 +1144,9 @@ Deno.test("parseArgs() handles types of string args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
-        bar?: string | undefined;
-        "foo-bar"?: string | undefined;
+        foo?: string;
+        bar?: string;
+        "foo-bar"?: string;
         _: Array<string | number>;
       }
     >
@@ -1166,10 +1166,10 @@ Deno.test("parseArgs() handles types of string args with defaults", function () 
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string;
         bar: string | boolean;
         baz: unknown;
-        "foo-bar"?: string | undefined;
+        "foo-bar"?: string;
         _: Array<string | number>;
       }
     >
@@ -1186,9 +1186,9 @@ Deno.test("parseArgs() handles types of boolean and string args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        beep?: string | undefined;
-        boop?: string | undefined;
-        "beep-boop"?: string | undefined;
+        beep?: string;
+        boop?: string;
+        "beep-boop"?: string;
         foo: boolean;
         bar: boolean;
         "foo-bar": boolean;
@@ -1214,8 +1214,8 @@ Deno.test("parseArgs() handles types of boolean and string args with defaults", 
       & { [x: string]: unknown }
       & {
         foo: boolean;
-        boop?: string | undefined;
-        "beep-boop"?: string | undefined;
+        boop?: string;
+        "beep-boop"?: string;
         bar: number | boolean;
         baz: unknown;
         beep: string | Date;
@@ -1294,12 +1294,12 @@ Deno.test("parseArgs() handles types of dotted string args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        blubb?: string | undefined;
+        blubb?: string;
         foo?: {
-          bar?: string | undefined;
+          bar?: string;
           baz?: {
-            biz?: string | undefined;
-            buz?: string | undefined;
+            biz?: string;
+            buz?: string;
           };
         };
         _: Array<string | number>;
@@ -1332,7 +1332,7 @@ Deno.test("parseArgs() handles types of dotted string args with defaults", funct
           bar: string | number;
           baz: {
             biz: string | Date;
-            buz?: string | undefined;
+            buz?: string;
           };
         };
         bla: unknown;
@@ -1357,14 +1357,14 @@ Deno.test("parseArgs() handles types of dotted string and boolean args", functio
           bar: boolean;
           baz: {
             biz: boolean;
-            buz?: string | undefined;
+            buz?: string;
           };
         };
-        bla?: string | undefined;
+        bla?: string;
         beep: {
-          boop?: string | undefined;
+          boop?: string;
           bib: {
-            bab?: string | undefined;
+            bab?: string;
             bub: boolean;
           };
         };
@@ -1406,7 +1406,7 @@ Deno.test("parseArgs() handles types of dotted string and boolean args with defa
           bar: boolean | number;
           baz: {
             biz: boolean | Date;
-            buz?: string | undefined;
+            buz?: string;
           };
         };
         beep: {
@@ -1448,7 +1448,7 @@ Deno.test("parseArgs() handles types of dotted string and boolean args with flat
           bar: boolean | number;
           baz: {
             biz: boolean | Date;
-            buz?: string | undefined;
+            buz?: string;
           };
         };
         beep: {
@@ -1480,8 +1480,8 @@ Deno.test("parseArgs() handles types of dotted args with union defaults", functi
       & {
         foo: number | {
           bar?: {
-            baz?: string | undefined;
-          } | undefined;
+            baz?: string;
+          };
         };
         beep: Date | {
           boop: {
@@ -1510,7 +1510,7 @@ Deno.test("parseArgs() handles types of dotted args with nested union defaults",
       & {
         foo: {
           bar: number | {
-            baz?: string | undefined;
+            baz?: string;
           };
         };
         beep: {
@@ -1577,7 +1577,7 @@ Deno.test("parseArgs() handles types of collect args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        bar?: string | undefined;
+        bar?: string;
         dotted: {
           boop: Array<string>;
           beep: boolean;
@@ -1703,11 +1703,11 @@ Deno.test("parseArgs() handles types of negatable args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        beep?: string | undefined;
-        boop?: string | false | undefined;
+        beep?: string;
+        boop?: string | false;
         dotted: {
-          zig?: string | false | undefined;
-          zag?: string | undefined;
+          zig?: string | false;
+          zag?: string;
           tick: boolean;
           tock: boolean;
         };
@@ -1739,11 +1739,11 @@ Deno.test("parseArgs() handles types of collect all args with defaults", functio
       & { [x: string]: unknown }
       & {
         foo: boolean;
-        beep?: string | undefined;
+        beep?: string;
         bar: number | boolean;
         boop: string | false | TextDecoder;
         dotted: {
-          zag?: string | undefined;
+          zag?: string;
           tock: boolean;
           tick: boolean | Date;
           zig: string | false | RegExp;
@@ -1770,8 +1770,8 @@ Deno.test("parseArgs() handles types of alias args", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        beep?: string | undefined;
-        boop?: string | undefined;
+        beep?: string;
+        boop?: string;
         foo: boolean;
         bar: boolean;
         baz: boolean;
@@ -1803,7 +1803,7 @@ Deno.test("parseArgs() handles types of alias args with options", function () {
       & {
         baz: boolean;
         biz: boolean;
-        bib?: string | undefined;
+        bib?: string;
         foo: number | boolean;
         bar: number | boolean;
         beep: string | false | Date;
@@ -1827,7 +1827,7 @@ Deno.test("parseArgs() handles types of double dash option", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string;
         _: Array<string | number>;
         "--": Array<string>;
       }
@@ -1849,7 +1849,7 @@ Deno.test("parseArgs() handles types of nullish defaults", function () {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string;
         bar: string | undefined;
         baz: string | null;
         _: Array<string | number>;
@@ -1864,7 +1864,7 @@ Deno.test("parseArgs() handles types of parse generics", function () {
     IsExact<
       typeof argv,
       {
-        foo?: number | undefined;
+        foo?: number;
         bar: string;
         _: Array<string | number>;
         "--": Array<string>;
@@ -1879,7 +1879,7 @@ Deno.test("parseArgs() handles types of args generics", function () {
     IsExact<
       ArgsResult,
       {
-        foo?: number | undefined;
+        foo?: number;
         bar: string;
         _: Array<string | number>;
         "--": Array<string>;
@@ -1893,14 +1893,14 @@ Deno.test("parseArgs() handles types of parse options generics", function () {
   assertType<
     IsExact<
       Pick<Opts, "string">,
-      { string?: "bar" | "baz" | ReadonlyArray<"bar" | "baz"> | undefined }
+      { string?: "bar" | "baz" | ReadonlyArray<"bar" | "baz"> }
     >
   >(true);
 
   assertType<
     IsExact<
       Pick<Opts, "boolean">,
-      { boolean?: "foo" | ReadonlyArray<"foo"> | undefined }
+      { boolean?: "foo" | ReadonlyArray<"foo"> }
     >
   >(true);
 
@@ -1913,7 +1913,7 @@ Deno.test("parseArgs() handles types of parse options generics", function () {
           bar?: unknown;
           baz?: unknown;
           foo?: unknown;
-        } | undefined;
+        };
       }
     >
   >(true);
@@ -1934,7 +1934,7 @@ Deno.test("parseArgs() handles types of parse options generic defaults", functio
         // deno-lint-ignore no-explicit-any
         [x: string]: any;
         _: (string | number)[];
-        "--"?: string[] | undefined;
+        "--"?: string[];
       }
     >
   >(true);

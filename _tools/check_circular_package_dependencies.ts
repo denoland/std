@@ -68,6 +68,7 @@ type Mod =
   | "regexp"
   | "semver"
   | "streams"
+  | "tar"
   | "testing"
   | "text"
   | "toml"
@@ -111,6 +112,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   regexp: ["mod.ts"],
   semver: ["mod.ts"],
   streams: ["mod.ts"],
+  tar: ["mod.ts"],
   testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
   text: ["mod.ts"],
   toml: ["mod.ts"],
