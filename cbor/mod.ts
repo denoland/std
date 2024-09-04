@@ -7,7 +7,6 @@
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  * spec.
  *
- * @example Usage
  * ```ts no-assert
  * import { CborEncoder } from "@std/cbor";
  *
