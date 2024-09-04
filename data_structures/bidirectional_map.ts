@@ -6,6 +6,9 @@
  * - Setting an existing value updates its key.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * 
+ * @typeParam K The type of the keys in the map.
+ * @typeParam V The type of the values in the map.
  *
  * @example Usage
  * ```ts
