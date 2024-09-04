@@ -62,7 +62,7 @@ export function sample<T>(
   if (weights) {
     if (weights.length !== array.length) {
       throw new RangeError(
-        "The length of the weights array must match the length of the input array",
+        "Cannot sample an item: The length of the weights array must match the length of the input array",
       );
     }
 
@@ -71,7 +71,7 @@ export function sample<T>(
     const total = Object.values(weights).reduce((sum, n) => sum + n, 0);
 
     if (total <= 0) {
-      throw new RangeError("Total weight must be greater than 0");
+      throw new RangeError("Cannot sample an item: Total weight must be greater than 0");
     }
 
     const rand = (options?.prng ?? Math.random)() * total;

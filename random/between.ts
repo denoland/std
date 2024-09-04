@@ -30,13 +30,13 @@ export function randomBetween(
   options?: RandomOptions,
 ): number {
   if (!Number.isFinite(min)) {
-    throw new RangeError(`min cannot be ${min}`);
+    throw new RangeError(`Cannot generate a random number: min cannot be ${min}`);
   }
   if (!Number.isFinite(max)) {
-    throw new RangeError(`max cannot be ${max}`);
+    throw new RangeError(`Cannot generate a random number: max cannot be ${max}`);
   }
   if (max < min) {
-    throw new RangeError("max must be greater than or equal to min");
+    throw new RangeError(`Cannot generate a random number as max must be greater than or equal to min: max=${max}, min=${min}`);
   }
 
   const x = (options?.prng ?? Math.random)();
