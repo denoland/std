@@ -116,5 +116,4 @@ export function extractTimestamp(uuid: string): number {
   return parseInt(timestampHex, 16);
 }
 
-
-generate()
+generate();
