@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertExists, assertThrows } from "@std/assert";
+import { assertEquals, assertExists } from "@std/assert";
 import { format } from "./duration.ts";
 
 Deno.test({
@@ -13,6 +13,16 @@ Deno.test({
   name: "format() handles narrow duration",
   fn() {
     assertEquals(format(99674), "0d 0h 1m 39s 674ms 0µs 0ns");
+  },
+});
+
+Deno.test({
+  name: "format() handles default style (narrow)",
+  fn() {
+    assertEquals(
+      format(99674, { style: undefined }),
+      "0d 0h 1m 39s 674ms 0µs 0ns",
+    );
   },
 });
 
@@ -77,18 +87,5 @@ Deno.test({
   name: "format() handles duration rounding error",
   fn() {
     assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
-  },
-});
-
-Deno.test({
-  name: "format() handles default style error",
-  fn() {
-    assertThrows(
-      () => {
-        format(16.342, { style: undefined });
-      },
-      TypeError,
-      `style must be "narrow", "full", or "digital"!`,
-    );
   },
 });

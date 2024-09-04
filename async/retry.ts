@@ -63,14 +63,6 @@ export interface RetryOptions {
   jitter?: number;
 }
 
-const defaultRetryOptions: Required<RetryOptions> = {
-  multiplier: 2,
-  maxTimeout: 60000,
-  maxAttempts: 5,
-  minTimeout: 1000,
-  jitter: 1,
-};
-
 /**
  * Calls the given (possibly asynchronous) function up to `maxAttempts` times.
  * Retries as long as the given function throws. If the attempts are exhausted,
@@ -122,31 +114,34 @@ const defaultRetryOptions: Required<RetryOptions> = {
  *
  * @typeParam T The return type of the function to retry and returned promise.
  * @param fn The function to retry.
- * @param opts Additional options.
+ * @param options Additional options.
  * @returns The promise that resolves with the value returned by the function to retry.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
-  opts?: RetryOptions,
+  options?: RetryOptions,
 ): Promise<T> {
-  const options: Required<RetryOptions> = {
-    ...defaultRetryOptions,
-    ...opts,
-  };
+  const {
+    multiplier = 2,
+    maxTimeout = 60000,
+    maxAttempts = 5,
+    minTimeout = 1000,
+    jitter = 1,
+  } = options ?? {};
 
-  if (options.maxTimeout <= 0) {
+  if (maxTimeout <= 0) {
     throw new TypeError(
-      `Cannot retry as 'maxTimeout' must be positive: current value is ${options.maxTimeout}`,
+      `Cannot retry as 'maxTimeout' must be positive: current value is ${maxTimeout}`,
     );
   }
-  if (options.minTimeout > options.maxTimeout) {
+  if (minTimeout > maxTimeout) {
     throw new TypeError(
-      `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${options.minTimeout}', 'maxTimeout=${options.maxTimeout}'`,
+      `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${minTimeout}', 'maxTimeout=${maxTimeout}'`,
     );
   }
-  if (options.jitter > 1) {
+  if (jitter > 1) {
     throw new TypeError(
-      `Cannot retry as 'jitter' must be <= 1: current value is ${options.jitter}`,
+      `Cannot retry as 'jitter' must be <= 1: current value is ${jitter}`,
     );
   }
 
@@ -155,16 +150,16 @@ export async function retry<T>(
     try {
       return await fn();
     } catch (error) {
-      if (attempt + 1 >= options.maxAttempts) {
-        throw new RetryError(error, options.maxAttempts);
+      if (attempt + 1 >= maxAttempts) {
+        throw new RetryError(error, maxAttempts);
       }
 
       const timeout = exponentialBackoffWithJitter(
-        options.maxTimeout,
-        options.minTimeout,
+        maxTimeout,
+        minTimeout,
         attempt,
-        options.multiplier,
-        options.jitter,
+        multiplier,
+        jitter,
       );
       await new Promise((r) => setTimeout(r, timeout));
     }
