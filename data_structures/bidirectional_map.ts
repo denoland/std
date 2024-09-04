@@ -215,12 +215,12 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
   /**
    * A String value that is used in the creation of the default string description of an object.
    * Called by the built-in method `Object.prototype.toString`.
-   * 
+   *
    * @example Usage
    * ```ts
    * import { BidirectionalMap } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
-   * 
+   *
    * const map = new BidirectionalMap();
    * assertEquals(map.toString(), "[object BidirectionalMap]");
    */
