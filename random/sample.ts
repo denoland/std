@@ -71,7 +71,9 @@ export function sample<T>(
     const total = Object.values(weights).reduce((sum, n) => sum + n, 0);
 
     if (total <= 0) {
-      throw new RangeError("Cannot sample an item: Total weight must be greater than 0");
+      throw new RangeError(
+        "Cannot sample an item: Total weight must be greater than 0",
+      );
     }
 
     const rand = (options?.prng ?? Math.random)() * total;
