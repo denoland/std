@@ -223,6 +223,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * const map = new BidirectionalMap();
    * assertEquals(map.toString(), "[object BidirectionalMap]");
+   * ```
    */
   readonly [Symbol.toStringTag]: string = "BidirectionalMap";
 }
