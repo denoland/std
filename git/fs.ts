@@ -343,6 +343,9 @@ export default class FS {
     if (path.endsWith('/')) {
       path = path.slice(0, -1)
     }
+    if (path.startsWith('./')) {
+      path = path.slice(2)
+    }
     assertPath(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts

@@ -9,7 +9,6 @@ import {
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import { assert, Debug } from '@utils'
-import * as files from '@/isolates/files.ts'
 
 const log = Debug('AI:machines')
 
@@ -100,10 +99,9 @@ export const tryAssistantId = async (agentHash: string, api: IA) => {
   const path = shardedPath(ASSISTANTS, 'age_', agentHash)
   const target = getMachineTarget(api.pid)
   // TODO make the api do this without an action
-  const { read } = await api.actions<files.Api>('files', { target })
   try {
-    const string = await read({ path })
-    const assistantId = JSON.parse(string)
+    const assistantId = await api.readJSON(path, { target })
+    assert(typeof assistantId === 'string', 'expected string assistant id')
     assert(assistantId.startsWith('asst_'), 'invalid assistant: ' + assistantId)
     return assistantId
   } catch (error) {

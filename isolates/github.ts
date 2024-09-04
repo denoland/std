@@ -143,9 +143,8 @@ export const functions = {
 
     if (await api.isActiveChild(target)) {
       // TODO make the api able to be focused remotely
-      const { read, write } = await api.actions<files.Api>('files', { target })
-      const string = await read({ path })
-      credentials = JSON.parse(string)
+      const { write } = await api.actions<files.Api>('files', { target })
+      credentials = await api.readJSON(path, { target })
       credentials.tokens[actorId] = tokens
       await write({ path, content: JSON.stringify(credentials) })
     } else {

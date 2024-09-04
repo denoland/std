@@ -207,12 +207,13 @@ export default class IA<T extends object = Default> {
     path: string,
     opts?: { target?: PID; commit?: string },
   ): Promise<T> {
+    // TODO implement readJSON<type> for remote reads, and take a schema
     assert(this.#accumulator.isActive, 'Activity is denied')
     log('readJSON', path)
     if (opts && opts.target) {
       // TODO move to something native
       const { read } = await this.actions<files.Api>('files', opts)
-      const string = await read({ path })
+      const string = await read({ path, reasoning: [] })
       return JSON.parse(string) as T
     }
     return this.#fs.readJSON<T>(path)
@@ -221,8 +222,13 @@ export default class IA<T extends object = Default> {
     const thread = await this.readJSON(threadPath)
     return threadSchema.parse(thread)
   }
-  read(path: string) {
+  async read(path: string, opts?: { target?: PID; commit?: string }) {
     assert(this.#accumulator.isActive, 'Activity is denied')
+    if (opts && opts.target) {
+      // TODO move to something native
+      const { read } = await this.actions<files.Api>('files', opts)
+      return read({ path, reasoning: [] })
+    }
     return this.#fs.read(path)
   }
   readOid(path: string) {

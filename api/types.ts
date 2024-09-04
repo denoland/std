@@ -155,7 +155,7 @@ export const threadSchema = z.object({
     /** The tool call id */
     z.string(),
     /** The commit hash the tool ended on */
-    z.string(),
+    md5,
   ),
   /** Have any files been changed in this threads branch */
   isDirty: z.boolean().optional(),

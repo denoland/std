@@ -74,6 +74,7 @@ export const executeTools = async (
     }
     debugToolResult(message.content)
     thread.messages[messageIndex] = message
+    thread.toolCommits[tool_call_id] = api.commit
     api.writeJSON(threadPath, thread)
   }
   log('done')

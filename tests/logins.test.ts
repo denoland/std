@@ -23,7 +23,6 @@ Deno.test('login with github', async (t) => {
     const actorId = getActorId(pid)
     const authSessionId = 'mock-session-id'
 
-    // log.enable('AI:actors AI:github')
     await actions.registerAttempt({ actorId, authSessionId })
     const tokens: Tokens = {
       accessToken: 'mock-token-1',

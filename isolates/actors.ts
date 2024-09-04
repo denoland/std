@@ -18,7 +18,6 @@ import {
 import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug, expect } from '@utils'
 import * as session from './session.ts'
-import * as files from './files.ts'
 import * as machines from './machines.ts'
 import { Crypto } from '../api/crypto.ts'
 import { z } from 'zod'
@@ -142,15 +141,13 @@ export const functions: Functions<Api> = {
 
     const actorId = getActorId(api.origin.source)
 
-    // ? is this allowed to happen ?
-
     // look up the pointer from the auth provider
     const target = addBranches(authProvider, actorId)
+
+    // TODO use state to replace pointer
+
     // TODO make this an api function exposed by the auth provider isolate
-    const authActor = await api.actions<files.Api>('files', { target })
-    // TODO implement readJSON<type> for remote reads
-    const pointerString = await authActor.read({ path: 'pointer.json' })
-    const pointer = JSON.parse(pointerString)
+    const pointer = await api.readJSON('pointer.json', { target })
     log('authPointer', pointer)
 
     return actorId

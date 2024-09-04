@@ -90,7 +90,7 @@ Deno.test('longthread chat', async (t) => {
 
     assert(error.role === 'tool', 'tool calls missing')
     expect(error.content)
-      .toBe('{\n  "name": "Error",\n  "message": "salami"\n}')
+      .toBe('{"name":"Error","message":"salami"}')
   })
   await t.step('double tool call', async () => {
     const content =
