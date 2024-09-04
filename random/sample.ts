@@ -15,7 +15,7 @@ export type SampleOptions = RandomOptions & {
    * If supplied, this is used to determine the probability of each item being
    * selected.
    */
-  weights?: readonly number[];
+  weights?: ArrayLike<number>;
 };
 
 /**
@@ -54,7 +54,7 @@ export type SampleOptions = RandomOptions & {
  * ```
  */
 export function sample<T>(
-  array: readonly T[],
+  array: ArrayLike<T>,
   options?: SampleOptions,
 ): T | undefined {
   const { weights } = { ...options };
@@ -77,17 +77,15 @@ export function sample<T>(
     const rand = (options?.prng ?? Math.random)() * total;
     let current = 0;
 
-    for (const [idx, item] of array.entries()) {
-      current += weights[idx]!;
-
+    for (let i = 0; i < array.length; ++i) {
+      current += weights[i]!;
       if (rand < current) {
-        return item;
+        return array[i]!;
       }
     }
 
-    throw new Error(
-      "Should be unreachable. Please open an issue at https://github.com/denoland/std/issues/new",
-    );
+    // this line should never be hit, but in case of rounding errors etc.
+    return array[0]!;
   }
 
   const length = array.length;

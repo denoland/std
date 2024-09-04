@@ -86,14 +86,22 @@ Deno.test("sample() with weights throws if the total weight is 0", () => {
 });
 
 Deno.test("sample() with weights throws if the wrong number of weights is provided", () => {
-  const items = ["a", "b", "c"];
-  const weights = [1, 2, 3, 4];
+  const items = ["a", "b", "c"] as const;
+  const weights = [1, 2, 3, 4] as const;
 
   assertThrows(
     () => sample(items, { weights }),
     RangeError,
     "The length of the weights array must match the length of the input array",
   );
+});
+
+Deno.test("sample() works with typed arrays", () => {
+  const items = new Uint8Array([0, 1, 2]);
+  const weights = new Uint8Array([10, 5, 250]);
+  const prng = randomSeeded(1n);
+
+  assertEquals(sample(items, { weights, prng }), 2);
 });
 
 Deno.test("sample() with weights never picks an item with weight of 0", () => {
