@@ -33,24 +33,81 @@ export type CborType = CborPrimitiveType | CborTag | CborType[] | {
  * This class will be returned out of CborDecoder if it doesn't automatically
  * know how to handle the tag number.
  * @example Usage
- * ```ts no-eval
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import { CborDecoder, CborEncoder, CborTag } from "@std/cbor";
+ * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
  *
+ * const decoder = new CborDecoder();
+ * const encoder = new CborEncoder();
+ *
+ * const rawMessage = new TextEncoder().encode("Hello World");
+ *
+ * const encodedMessage = encoder.encode(
+ *   new CborTag(
+ *     33, // TagNumber 33 specifies the tagContent must be a valid "base64url" "string".
+ *     encodeBase64Url(rawMessage),
+ *   ),
+ * );
+ * const decodedMessage = decoder.decode(encodedMessage);
+ * assert(decodedMessage instanceof CborTag);
+ * assert(typeof decodedMessage.tagContent === "string");
+ * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
  * ```
  */
 export class CborTag {
   /**
-   * Potato
+   * The number indicating how the tagContent should be interpreted based off
+   * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
    * @example Usage
-   * ```ts no-eval
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { CborDecoder, CborEncoder, CborTag } from "@std/cbor";
+   * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
    *
+   * const decoder = new CborDecoder();
+   * const encoder = new CborEncoder();
+   *
+   * const rawMessage = new TextEncoder().encode("Hello World");
+   *
+   * const encodedMessage = encoder.encode(
+   *   new CborTag(
+   *     33, // TagNumber 33 specifies the tagContent must be a valid "base64url" "string".
+   *     encodeBase64Url(rawMessage),
+   *   ),
+   * );
+   * const decodedMessage = decoder.decode(encodedMessage);
+   * assert(decodedMessage instanceof CborTag);
+   * assert(typeof decodedMessage.tagContent === "string");
+   * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
    * ```
    */
   tagNumber: number | bigint;
   /**
-   * Cake
+   * The content wrapped around the tagNumber indicating how it should be
+   * interpreted based off
+   * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
    * @example Usage
-   * ```ts no-eval
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { CborDecoder, CborEncoder, CborTag } from "@std/cbor";
+   * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
    *
+   * const decoder = new CborDecoder();
+   * const encoder = new CborEncoder();
+   *
+   * const rawMessage = new TextEncoder().encode("Hello World");
+   *
+   * const encodedMessage = encoder.encode(
+   *   new CborTag(
+   *     33, // TagNumber 33 specifies the tagContent must be a valid "base64url" "string".
+   *     encodeBase64Url(rawMessage),
+   *   ),
+   * );
+   * const decodedMessage = decoder.decode(encodedMessage);
+   * assert(decodedMessage instanceof CborTag);
+   * assert(typeof decodedMessage.tagContent === "string");
+   * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
    * ```
    */
   tagContent: CborType;
