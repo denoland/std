@@ -1,7 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-function isKeyedCollection(x: unknown): x is Set<unknown> {
-  return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
+
+type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
+
+function isKeyedCollection(x: unknown): x is KeyedCollection {
+  return x instanceof Set || x instanceof Map;
+}
+
+function getValFromKeyedCollection(kc: KeyedCollection, key: unknown) {
+  return kc instanceof Map ? kc.get(key) : key;
 }
 
 function constructorsEqual(a: object, b: object) {
@@ -82,15 +89,43 @@ export function equal(c: unknown, d: unknown): boolean {
           return false;
         }
 
+        const aKeys = [...a.keys()];
+        const primitiveKeysFastPath = aKeys.every((k) => {
+          return typeof k === "string" ||
+            typeof k === "number" ||
+            typeof k === "boolean" ||
+            typeof k === "bigint" ||
+            typeof k === "symbol" ||
+            k == null;
+        });
+        if (primitiveKeysFastPath) {
+          for (const key of aKeys) {
+            if (
+              !b.has(key) ||
+              !compare(
+                getValFromKeyedCollection(a, key),
+                getValFromKeyedCollection(b, key),
+              )
+            ) {
+              return false;
+            }
+          }
+          return true;
+        }
+
         let unmatchedEntries = a.size;
 
         for (const [aKey, aValue] of a.entries()) {
           for (const [bKey, bValue] of b.entries()) {
             /* Given that Map keys can be references, we need
              * to ensure that they are also deeply equal */
+
+            const keysSame = compare(aKey, bKey);
+            if (!keysSame) continue;
+
             if (
-              (aKey === aValue && bKey === bValue && compare(aKey, bKey)) ||
-              (compare(aKey, bKey) && compare(aValue, bValue))
+              (aKey === aValue && bKey === bValue && keysSame) ||
+              (keysSame && compare(aValue, bValue))
             ) {
               unmatchedEntries--;
               break;
