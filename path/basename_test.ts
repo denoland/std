@@ -1,19 +1,14 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { basename } from "./basename.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 
-type TestCase = readonly [
-  readonly [string | URL] | readonly [string | URL, string],
-  string,
-];
-
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/basename.pl
-const COREUTILS_TESTSUITE: TestCase[] = [
+const COREUTILS_TESTSUITE = [
   [["d/f"], "f"],
   [["/d/f"], "f"],
   [["d/f/"], "f"],
@@ -33,9 +28,9 @@ const COREUTILS_TESTSUITE: TestCase[] = [
   [["fs", "x"], "fs"],
   [["fs", ""], "fs"],
   [["fs/", "s/"], "fs"],
-];
+] as const;
 
-const POSIX_TESTSUITE: TestCase[] = [
+const POSIX_TESTSUITE = [
   [[""], ""],
   [["/dir/basename.ext"], "basename.ext"],
   [["/basename.ext"], "basename.ext"],
@@ -72,9 +67,9 @@ const POSIX_TESTSUITE: TestCase[] = [
   [[new URL("file:///aaa/bbb"), "bbb"], "bbb"],
   [[new URL("file:///aaa/bbb"), "a/bbb"], "bbb"],
   [[new URL("file://///a")], "a"],
-];
+] as const;
 
-const WIN32_TESTSUITE: TestCase[] = [
+const WIN32_TESTSUITE = [
   [["\\dir\\basename.ext"], "basename.ext"],
   [["\\basename.ext"], "basename.ext"],
   [["basename.ext"], "basename.ext"],
@@ -102,7 +97,7 @@ const WIN32_TESTSUITE: TestCase[] = [
   [[new URL("file:///C:/")], "\\"],
   [[new URL("file:///C:/aaa")], "aaa"],
   [[new URL("file://///")], "\\"],
-];
+] as const;
 
 Deno.test("posix.basename()", function () {
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
@@ -110,7 +105,8 @@ Deno.test("posix.basename()", function () {
   }
 
   for (const [[name, suffix], expected] of POSIX_TESTSUITE) {
-    assertEquals(posix.basename(name, suffix), expected);
+    // deno-lint-ignore no-explicit-any
+    assertEquals(posix.basename(name as any, suffix), expected);
   }
 
   // On unix a backslash is just treated as any other character.
@@ -132,17 +128,36 @@ Deno.test("posix.basename()", function () {
   );
 });
 
+Deno.test("posix.basename() throws with non-file URL", () => {
+  assertThrows(
+    () => posix.basename(new URL("https://deno.land/")),
+    TypeError,
+    'URL must be a file URL: received "https:"',
+  );
+});
+
 Deno.test("windows.basename()", function () {
   for (const [[name, suffix], expected] of WIN32_TESTSUITE) {
-    assertEquals(windows.basename(name, suffix), expected);
+    // deno-lint-ignore no-explicit-any
+    assertEquals(windows.basename(name as any, suffix), expected);
   }
 
   // windows should pass all "forward slash" posix tests as well.
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
-    assertEquals(windows.basename(name, suffix), expected);
+    // deno-lint-ignore no-explicit-any
+    assertEquals(windows.basename(name as any, suffix), expected);
   }
 
   for (const [[name, suffix], expected] of POSIX_TESTSUITE) {
-    assertEquals(windows.basename(name, suffix), expected);
+    // deno-lint-ignore no-explicit-any
+    assertEquals(windows.basename(name as any, suffix), expected);
   }
+});
+
+Deno.test("windows.basename() throws with non-file URL", () => {
+  assertThrows(
+    () => windows.basename(new URL("https://deno.land/")),
+    TypeError,
+    'URL must be a file URL: received "https:"',
+  );
 });
