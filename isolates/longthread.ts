@@ -128,8 +128,6 @@ export const functions: Functions<Api> = {
         result.newThread = true
       } else if (functionName === 'backchat_changeThreadSignal') {
         result.target = api.pid
-      } else {
-        throw new Error('unexpected switchboard result: ' + functionName)
       }
     }
     return result
@@ -154,13 +152,14 @@ const loop = async (path: string, api: IA, stopOnTools: string[]) => {
   const { complete } = await api.actions<completions.Api>('ai-completions')
   const HARD_STOP = 20
   let count = 0
+  stopOnTools = addDefaults(stopOnTools)
 
   while (!await isDone(threadPath, api, stopOnTools) && count++ < HARD_STOP) {
     await complete({ path })
     if (await isDone(threadPath, api)) {
       break
     }
-    // TODO check tool responses come back correct
+    // TODO check tool returns are checked against schema
     await executeTools(threadPath, api, stopOnTools)
   }
   if (count >= HARD_STOP) {
@@ -229,4 +228,14 @@ const isStopOnTool = (
     return false
   }
   return true
+}
+const addDefaults = (stopOnTools: string[]) => {
+  const result = [...stopOnTools]
+  if (!result.includes('utils_resolve')) {
+    result.push('utils_resolve')
+  }
+  if (!result.includes('utils_reject')) {
+    result.push('utils_reject')
+  }
+  return result
 }

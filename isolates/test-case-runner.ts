@@ -116,7 +116,7 @@ export const functions: Functions<Api> = {
     const threadPath = getThreadPath(api.pid)
     const stopOnTools = ['test-case-runner_assessment']
     const { drone } = await api
-      .actions<longthread.Api>('longthread', { branch: true })
+      .actions<longthread.Api>('longthread', { prefix: 'assess' })
 
     const promises = expectations.map(async (expectation) => {
       // TODO recreate the call to openai directly

@@ -5,7 +5,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':tps: '
 
   Deno.test(prefix + 'run fixture test', async (t) => {
-    log.enable('AI:tests AI:longthread')
     const { backchat, engine } = await cradleMaker()
     log('start')
 

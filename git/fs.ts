@@ -240,6 +240,11 @@ export default class FS {
       throw new Errors.NotFoundError(path)
     }
     assertPath(path)
+    // TODO unify how the slicing is done across all functions
+    if (path.startsWith('./')) {
+      path = path.slice(2)
+    }
+
     const dirname = posix.dirname(path)
     const filepath = dirname === '.' ? undefined : dirname
     const basename = posix.basename(path)
