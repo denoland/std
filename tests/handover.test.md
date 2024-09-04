@@ -1,6 +1,6 @@
 ---
 target: agents/hamr-switchboard.md
-assessor: agents/assessor.md
+assessor: agents/test-assessor.md
 ---
 
 # Customer onboarding story

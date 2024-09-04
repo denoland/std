@@ -1,6 +1,6 @@
 ---
 target: agents/system.md
-assessor: agents/assessor.md
+assessor: agents/test-assessor.md
 ---
 
 These tests are about the ability to update the main natural language repo that

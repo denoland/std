@@ -1,6 +1,6 @@
 ---
 target: agents/hamr.md
-assessor: agents/assessor.md
+assessor: agents/test-assessor.md
 ---
 
 ## Actors

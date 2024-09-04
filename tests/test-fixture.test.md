@@ -1,6 +1,6 @@
 ---
 target: agents/agent-fixture.md
-assessor: agents/assessor.md
+assessor: agents/test-assessor.md
 ---
 
 ## Call the local function

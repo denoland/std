@@ -1,13 +1,6 @@
 ---
 target: agents/hamr.md
-assessor: agents/assessor.md
-max_runs: 100
-synthetic_prompts: 50
-seed_variations: 30
-max_shot: 3
-min_shot: 1
-temperature_max: 2
-temperature_min: 1
+assessor: agents/test-assessor.md
 impersonations:
   - agents/customer-agent.md
   - actor/customer.md:
