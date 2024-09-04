@@ -41,7 +41,7 @@ const mocks = async (initialRequest: PartialRequest) => {
   io.addRequest(request)
   io.setExecution()
   io.save()
-  const { next } = await fs.writeCommitObject()
+  const { next } = await fs.writeCommitObject('mock exe')
   fs = next
   io = await IOChannel.load(fs)
   const stop = () => db.stop()
@@ -140,7 +140,7 @@ Deno.test('compound', async (t) => {
     expect(savedRequest).toEqual(sequenced[0])
     io.setExecution()
     io.save()
-    const { next } = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject('function cache')
 
     const result = await exe.execute(request, next.oid, context)
     expect('reply' in result).toBeTruthy()
@@ -161,7 +161,7 @@ Deno.test('compound', async (t) => {
     io.reply(reply)
     io.setExecution()
     io.save()
-    const { next } = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject('function replay')
 
     const c = { ...context, exe: Executor.createCacheContext() }
     const result = await c.exe.execute(request, next.oid, c)

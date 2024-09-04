@@ -1,6 +1,6 @@
 import Compartment from '@/io/compartment.ts'
 import { Api, VideoDetails } from './youtube.ts'
-import { assert, expect } from '@utils'
+import { expect } from '@utils'
 import { createMockApi } from '@/tests/fixtures/mock-api.ts'
 Deno.test('youtube', async () => {
   const compartment = await Compartment.create('youtube')
@@ -11,11 +11,16 @@ Deno.test('youtube', async () => {
   const lang = 'en'
 
   const path = 'test/youtube/fetch.json'
-  const details = await fetch({ path, videoID, lang })
-  const result = await api
-    .readJSON<{ details: VideoDetails; subs: string }>(path)
-  assert(result.details)
-  expect(result.details).toEqual(details)
-  expect(result.subs).toBeDefined()
+  const result = await fetch({ path, videoID, lang })
+  expect(result.path).toEqual(path)
+  expect(result.success).toBeTruthy()
+
+  const data = await api
+    .readJSON<
+      { details: VideoDetails; transcript: { start: string; text: string }[] }
+    >(path)
+
+  expect(data.details).toBeDefined()
+  expect(data.transcript).toBeDefined()
   stop()
 })

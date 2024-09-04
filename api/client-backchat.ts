@@ -227,7 +227,10 @@ export class Backchat {
   readJSON<T>(path: string, pid: PID = this.pid, commit?: string) {
     return this.#engine.readJSON<T>(path, pid, commit)
   }
-  async readThread(pid: PID) {
+  async readThread(pid?: PID) {
+    if (!pid) {
+      pid = await this.readBaseThread()
+    }
     const thread = await this.readJSON(getThreadPath(pid), pid)
     return threadSchema.parse(thread)
   }

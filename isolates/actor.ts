@@ -35,9 +35,9 @@ export const functions: Functions<actor.Api> = {
       noClose: true,
       branchName: backchatId,
     }
-    const { create } = await api.actions<backchat.Api>('backchat', opts)
+    const { newThread } = await api.actions<backchat.Api>('backchat', opts)
     // TODO set permissions on .io.json
-    await create({})
+    await newThread({})
     // TODO optionally start a default thread
     const pid = addBranches(api.pid, backchatId)
     log('backchat pid', print(pid))

@@ -14,6 +14,7 @@ import * as loadAgent from './load-agent.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
+import * as agents from '@/isolates/agents.ts'
 const log = Debug('AI:longthread')
 
 export const parameters = {
@@ -40,7 +41,8 @@ export const parameters = {
 export const returns = {
   start: z.void(),
   run: assistantMessage,
-  switchboard: z.void(),
+  /** If the tools reqeuested a new thread to be formed */
+  switchboard: z.object({ newThread: z.boolean() }),
   drone: z.union([
     z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
     z.undefined(),
@@ -66,7 +68,7 @@ export const functions: Functions<Api> = {
   },
   run: async ({ path, content, actorId }, api) => {
     // TODO sniff actorId from the action source
-    log('run', path, content, actorId)
+    log('run', { path, content, actorId })
     const threadPath = getThreadPath(api.pid)
     let thread = await api.readThread(threadPath)
 
@@ -93,21 +95,29 @@ export const functions: Functions<Api> = {
     assert(config.tool_choice === 'required', 'tool_choice must be required')
     assert(commands.includes('agents:switch'), 'missing agents_switch')
 
-    // if our focus is somewhere else, relay it along ?
-    // can figure out if we want to intercept it somewhere else.
-    // if backchat receives a prompt, it automatically makes it the focus
-
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
 
-    // or the thread could have a switchboard state that gets loaded up
-    // somehow specify in the agent what the allowed agent types are
+    const switchResult = await loop(path, api, ['agents_switch'])
+    assert(switchResult, 'expected switchboard result')
+    assert(switchResult.functionName === 'agents_switch', 'not agents_switch')
+    const { path: next } = agents.parameters.switch.parse(switchResult.args)
 
-    const assistant = await loop(path, api, ['agents_switch'])
+    const stopOnTools = []
+    if (next === `agents/backchat.md`) {
+      stopOnTools.push('backchat_newThreadSignal')
+    }
 
-    console.log('assistant', assistant)
+    const agentResult = await loop(next, api, stopOnTools)
+    const result = { newThread: false }
+    if (agentResult) {
+      const { functionName } = agentResult
+      assert(functionName === 'backchat_newThreadSignal', 'not ' + functionName)
+      result.newThread = true
+    }
+    return result
   },
   drone: async ({ path, content, actorId, stopOnTools }, api) => {
     // TODO verify stopOnTools are all present in the agent and have the
@@ -178,7 +188,6 @@ const isDone = async (threadPath: string, api: IA, stopOnTools?: string[]) => {
     return false
   }
   if ('tool_calls' in last) {
-    log(last.name, last.tool_calls)
     return false
   }
   return true

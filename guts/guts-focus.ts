@@ -6,7 +6,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   // TODO make a fake thread, and then test summoner
 
-  Deno.test(prefix + 'thread management', async (t) => {
+  Deno.test.only(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
     let focus = await backchat.readBaseThread()
     log.enable('AI:tests AI:backchat AI:longthread AI:agents')
@@ -28,7 +28,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await t.step('list files in second thread', async () => {
       await backchat.prompt('files list')
-      // focus = await getFocus(backchat, focus, 'equals')
+      const next = await backchat.readBaseThread()
+      expect(next).toEqual(focus)
     })
 
     // await t.step('restart a thread', async () => {

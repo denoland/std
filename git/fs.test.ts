@@ -38,7 +38,7 @@ Deno.test('git/init', async (t) => {
       ...trailing.map((path) => '/' + path),
     ]
     for (const path of forwards) {
-      const message = path.startsWith('/') || !path ? relative + path : git
+      const message = path.startsWith('/') || !path ? relative : git
       expect(() => fs.write(path, ''), path).toThrow(message)
       expect(() => fs.write(path, 'data'), path).toThrow(message)
       expect(() => fs.writeJSON(path, ''), path).toThrow(message)

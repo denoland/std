@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { CradleMaker, getParent } from '@/constants.ts'
+import { CradleMaker } from '@/constants.ts'
 import * as longthread from '@/isolates/longthread.ts'
 
 const agent = `
@@ -17,11 +17,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   Deno.test(prefix + 'files:ls', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const home = getParent(backchat.pid)
-    await backchat.write(path, agent, home)
-    await backchat.write('tmp', '', home)
-
     const target = await backchat.readBaseThread()
+    await backchat.write(path, agent, target)
+    await backchat.write('tmp', '', target)
+
     const { run } = await backchat.actions<longthread.Api>('longthread', {
       target,
     })
@@ -73,12 +72,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
   Deno.test(prefix + 'files:write', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const { pid } = await backchat.init({ repo: 'test/write' })
-
-    const home = getParent(backchat.pid)
-    await backchat.write(path, agent, home)
 
     const target = await backchat.readBaseThread()
+    await backchat.write(path, agent, target)
+
     const { run } = await backchat.actions<longthread.Api>('longthread', {
       target,
     })
@@ -88,7 +85,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const result = await run({ path, actorId, content })
       log('result', result)
 
-      const read = await backchat.read('test.txt', pid)
+      const read = await backchat.read('test.txt', target)
       expect(read).toBe('c')
     })
 

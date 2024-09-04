@@ -19,7 +19,10 @@ import { z } from 'zod'
 const log = Debug('AI:backchat')
 
 export const parameters = {
-  create: z.object({}).describe(
+  newThreadSignal: z.object({}).describe(
+    'Signal to create a new thread and set it as the current target thread',
+  ),
+  newThread: z.object({}).describe(
     'Create a new thread and set it as the current target thread',
   ),
   prompt: z.object({
@@ -33,8 +36,10 @@ export const parameters = {
   }).describe('Relay a request to the given target PID'),
 }
 export const returns = {
+  /** stopOnTool command */
+  newThreadSignal: z.null(),
   /** The threadId of the new thread */
-  create: z.string().regex(threadIdRegex),
+  newThread: z.string().regex(threadIdRegex),
   prompt: z.void(),
   relay: z.promise(z.unknown()),
 }
@@ -43,7 +48,8 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
-  create: async (_, api) => {
+  newThreadSignal: () => null,
+  newThread: async (_, api) => {
     log('create', print(api.pid))
     const threadId = generateThreadId(api.commit + 'backchat:create')
 
@@ -66,11 +72,15 @@ export const functions: Functions<Api> = {
     const { target } = await api.state(backchatStateSchema)
     log('base', print(target))
 
+    // TODO hit this thread with the topic router
+
     const { switchboard } = await api.actions<longthread.Api>('longthread', {
       target,
     })
-    const agent = switchboard({ content, actorId })
-    log('agent', agent)
+    const { newThread } = await switchboard({ content, actorId })
+    if (newThread) {
+      await functions.newThread({}, api)
+    }
   },
   relay: ({ request }, api) => {
     // TODO replace this with native relay ability
