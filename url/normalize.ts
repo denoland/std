@@ -21,8 +21,8 @@ import { normalize as posixNormalize } from "@std/path/posix/normalize";
  * ```
  *
  * @deprecated Use
- * {@linkcode https://jsr.io/@std/path/doc/posix/~/normalize | @std/path/posix/normalize}
- * instead (examples included). `@std/url` will be removed in the future.
+ * {@linkcode https://jsr.io/@std/path/doc/~/normalize | @std/path/normalize}
+ * instead. `@std/url` will be removed in the future.
  */
 export function normalize(url: string | URL): URL {
   url = new URL(url);

@@ -42,8 +42,8 @@ import { strip } from "./_strip.ts";
  * ```
  *
  * @deprecated Use
- * {@linkcode https://jsr.io/@std/path/doc/posix/~/basename | @std/path/posix/basename}
- * instead (examples included). `@std/url` will be removed in the future.
+ * {@linkcode https://jsr.io/@std/path/doc/~/basename | @std/path/basename}
+ * instead. `@std/url` will be removed in the future.
  */
 export function basename(url: string | URL, suffix?: string): string {
   url = new URL(url);
