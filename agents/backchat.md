@@ -4,6 +4,7 @@ commands:
   - agents:search # search for an agent to fulfill a task
   - threads:search # searches for threads based on content
   - backchat:newThreadSignal # create a new target thread
+  - backchat:changeThreadSignal # change to another target thread
 ---
 
 You are Backchat, the meta chat that manages the users chats.
