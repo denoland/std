@@ -9,6 +9,7 @@ import {
 import { CHAR_COLON } from "../_common/constants.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the last portion of a `path`.
@@ -28,7 +29,37 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string, suffix = ""): string {
+export function basename(path: string, suffix?: string): string;
+/**
+ * Return the last portion of a `path`. `path` can be a string or file `URL`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
+ *
+ * @example Usage
+ * ```ts
+ * import { basename } from "@std/path/windows/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("C:\\user\\Documents\\"), "Documents");
+ * assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ * assertEquals(basename("C:\\user\\Documents\\image.png", ".png"), "image");
+ * ```
+ *
+ * @example Working with URLs
+ * ```ts
+ * import { basename } from "@std/path/windows/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
+ * assertEquals(basename(new URL("file:///C:/user/Documents/image.png"), ".png"), "image");
+ * ```
+ *
+ * @param path The path to extract the name from.
+ * @param suffix The suffix to remove from extracted name.
+ * @returns The extracted name.
+ */
+export function basename(path: string | URL, suffix?: string): string;
+export function basename(path: string | URL, suffix = ""): string {
+  path = path instanceof URL ? fromFileUrl(path) : path;
   assertArgs(path, suffix);
 
   // Check for a drive letter prefix so as not to mistake the following

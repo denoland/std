@@ -6,9 +6,14 @@ import { basename } from "./basename.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 
+type TestCase = readonly [
+  readonly [string | URL] | readonly [string | URL, string],
+  string,
+];
+
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/basename.pl
-const COREUTILS_TESTSUITE = [
+const COREUTILS_TESTSUITE: TestCase[] = [
   [["d/f"], "f"],
   [["/d/f"], "f"],
   [["d/f/"], "f"],
@@ -28,9 +33,9 @@ const COREUTILS_TESTSUITE = [
   [["fs", "x"], "fs"],
   [["fs", ""], "fs"],
   [["fs/", "s/"], "fs"],
-] as const;
+];
 
-const POSIX_TESTSUITE = [
+const POSIX_TESTSUITE: TestCase[] = [
   [[""], ""],
   [["/dir/basename.ext"], "basename.ext"],
   [["/basename.ext"], "basename.ext"],
@@ -58,9 +63,18 @@ const POSIX_TESTSUITE = [
   [["///"], "/"],
   [["///", "bbb"], "/"],
   [["//", "bbb"], "/"],
-] as const;
+  [[new URL("file:///dir/basename.ext")], "basename.ext"],
+  [[new URL("file:///basename.ext"), ".ext"], "basename"],
+  [[new URL("file:///dir/basename.ext")], "basename.ext"],
+  [[new URL("file:///aaa/bbb/")], "bbb"],
+  [[new URL("file:///aaa/bbb"), "b"], "bb"],
+  [[new URL("file:///aaa/bbb"), "bb"], "b"],
+  [[new URL("file:///aaa/bbb"), "bbb"], "bbb"],
+  [[new URL("file:///aaa/bbb"), "a/bbb"], "bbb"],
+  [[new URL("file://///a")], "a"],
+];
 
-const WIN32_TESTSUITE = [
+const WIN32_TESTSUITE: TestCase[] = [
   [["\\dir\\basename.ext"], "basename.ext"],
   [["\\basename.ext"], "basename.ext"],
   [["basename.ext"], "basename.ext"],
@@ -84,7 +98,11 @@ const WIN32_TESTSUITE = [
   [["C:basename.ext\\\\"], "basename.ext"],
   [["C:foo"], "foo"],
   [["file:stream"], "file:stream"],
-] as const;
+  [[new URL("file:///")], "\\"],
+  [[new URL("file:///C:/")], "\\"],
+  [[new URL("file:///C:/aaa")], "aaa"],
+  [[new URL("file://///")], "\\"],
+];
 
 Deno.test("posix.basename()", function () {
   for (const [[name, suffix], expected] of COREUTILS_TESTSUITE) {
