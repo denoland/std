@@ -41,6 +41,9 @@ export function basename(path: string, suffix?: string): string;
  * import { basename } from "@std/path/windows/basename";
  * import { assertEquals } from "@std/assert";
  *
+ * assertEquals(basename("C:\\user\\Documents\\"), "Documents");
+ * assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ * assertEquals(basename("C:\\user\\Documents\\image.png", ".png"), "image");
  * assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
  * assertEquals(basename(new URL("file:///C:/user/Documents/image.png"), ".png"), "image");
  * ```
@@ -49,7 +52,7 @@ export function basename(path: string, suffix?: string): string;
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: URL, suffix?: string): string;
+export function basename(path: string | URL, suffix?: string): string;
 export function basename(path: string | URL, suffix = ""): string {
   path = path instanceof URL ? fromFileUrl(path) : path;
   assertArgs(path, suffix);
