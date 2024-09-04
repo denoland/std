@@ -15,4 +15,5 @@
  * console.log(encoder.encode(5));
  * ```
  */
+export * from "./decode.ts";
 export * from "./encode.ts";
