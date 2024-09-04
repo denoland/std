@@ -31,8 +31,8 @@ export function join(...paths: string[]): string;
  * import { join } from "@std/path/posix/join";
  * import { assertEquals } from "@std/assert";
  *
- * const path = join(new URL("file:///foo"), "bar", "baz/asdf", "quux", "..");
- * assertEquals(path, "/foo/bar/baz/asdf");
+ * assertEquals(join("/foo", "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
+ * assertEquals(join(new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
  * ```
  *
  * @param path The path to join. This can be string or file URL.

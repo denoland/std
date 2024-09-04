@@ -36,6 +36,9 @@ export function extname(path: string): string;
  * import { extname } from "@std/path/posix/extname";
  * import { assertEquals } from "@std/assert";
  *
+ * assertEquals(extname("/home/user/Documents/file.ts"), ".ts");
+ * assertEquals(extname("/home/user/Documents/"), "");
+ * assertEquals(extname("/home/user/Documents/image.png"), ".png");
  * assertEquals(extname(new URL("file:///home/user/Documents/file.ts")), ".ts");
  * assertEquals(extname(new URL("file:///home/user/Documents/file.ts?a=b")), ".ts");
  * assertEquals(extname(new URL("file:///home/user/Documents/file.ts#header")), ".ts");
@@ -44,7 +47,7 @@ export function extname(path: string): string;
  * @param path The path to get the extension from.
  * @returns The extension (ex. for `file.ts` returns `.ts`).
  */
-export function extname(path: URL): string;
+export function extname(path: string | URL): string;
 export function extname(path: string | URL): string {
   if (path instanceof URL) {
     path = fromFileUrl(path);
