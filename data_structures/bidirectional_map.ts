@@ -36,6 +36,7 @@
  * assertEquals(map.size, 1);
  * assertEquals(map.get(1), "one");
  * assertEquals(map.getReverse("one"), 2);
+ * ```
  *
  * @module
  */
