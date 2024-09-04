@@ -8,6 +8,7 @@ import {
 } from "../_common/basename.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the last portion of a `path`.
@@ -23,28 +24,33 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
  * ```
  *
- * @example Working with URLs
+ * @param path The path to extract the name from.
+ * @param suffix The suffix to remove from extracted name.
+ * @returns The extracted name.
+ */
+export function basename(path: string, suffix?: string): string;
+/**
+ * Return the last portion of a `path`.
+ * Trailing directory separators are ignored, and optional suffix is removed.
  *
- * Note: This function doesn't automatically strip hash and query parts from
- * URLs. If your URL contains a hash or query, remove them before passing the
- * URL to the function. This can be done by passing the URL to `new URL(url)`,
- * and setting the `hash` and `search` properties to empty strings.
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @example Usage
  * ```ts
  * import { basename } from "@std/path/posix/basename";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(basename("https://deno.land/std/path/mod.ts"), "mod.ts");
- * assertEquals(basename("https://deno.land/std/path/mod.ts", ".ts"), "mod");
- * assertEquals(basename("https://deno.land/std/path/mod.ts?a=b"), "mod.ts?a=b");
- * assertEquals(basename("https://deno.land/std/path/mod.ts#header"), "mod.ts#header");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png"), ".png"), "image");
  * ```
  *
  * @param path The path to extract the name from.
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string, suffix = ""): string {
+export function basename(path: URL, suffix?: string): string;
+export function basename(path: string | URL, suffix = ""): string {
+  path = path instanceof URL ? fromFileUrl(path) : path;
   assertArgs(path, suffix);
 
   const lastSegment = lastPathSegment(path, isPosixPathSeparator);
