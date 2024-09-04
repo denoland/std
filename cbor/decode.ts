@@ -12,13 +12,27 @@ import { CborTag, type CborType } from "./encode.ts";
  *
  * @example Usage
  * ```ts
- * import { assertEquals } from "@std/assert";
+ * import { assert, assertEquals } from "@std/assert";
  * import { CborDecoder, CborEncoder } from "@std/cbor";
  *
- * const encoder = new CborEncoder();
  * const decoder = new CborDecoder();
+ * const encoder = new CborEncoder();
  *
- * assertEquals(decoder.decode(encoder.encode('Hello World')), 'Hello World')
+ * const rawMessage = [
+ *   "Hello World",
+ *   35,
+ *   0.5,
+ *   false,
+ *   -1,
+ *   null,
+ *   Uint8Array.from([0, 1, 2, 3]),
+ * ];
+ *
+ * const encodedMessage = encoder.encode(rawMessage);
+ * const decodedMessage = decoder.decode(encodedMessage);
+ *
+ * assert(decodedMessage instanceof Array);
+ * assertEquals(decodedMessage, rawMessage);
  * ```
  */
 export class CborDecoder {
@@ -31,8 +45,28 @@ export class CborDecoder {
   /**
    * Decodes a {@link Uint8Array} into a {@link CborType}.
    * @example Usage
-   * ```ts no-eval
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { CborDecoder, CborEncoder } from "@std/cbor";
    *
+   * const decoder = new CborDecoder();
+   * const encoder = new CborEncoder();
+   *
+   * const rawMessage = [
+   *   "Hello World",
+   *   35,
+   *   0.5,
+   *   false,
+   *   -1,
+   *   null,
+   *   Uint8Array.from([0, 1, 2, 3]),
+   * ];
+   *
+   * const encodedMessage = encoder.encode(rawMessage);
+   * const decodedMessage = decoder.decode(encodedMessage);
+   *
+   * assert(decodedMessage instanceof Array);
+   * assertEquals(decodedMessage, rawMessage);
    * ```
    *
    * @param x Value to decode from CBOR format.
@@ -50,8 +84,28 @@ export class CborDecoder {
   /**
    * Decodes an array of {@link CborType} from a {@link Uint8Array}.
    * @example Usage
-   * ```ts no-eval
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { CborDecoder, CborEncoder } from "@std/cbor";
    *
+   * const decoder = new CborDecoder();
+   * const encoder = new CborEncoder();
+   *
+   * const rawMessage = [
+   *   "Hello World",
+   *   35,
+   *   0.5,
+   *   false,
+   *   -1,
+   *   null,
+   *   Uint8Array.from([0, 1, 2, 3]),
+   * ];
+   *
+   * const encodedMessage = encoder.encodeSequence(rawMessage);
+   * const decodedMessage = decoder.decodeSequence(encodedMessage);
+   *
+   * assert(decodedMessage instanceof Array);
+   * assertEquals(decodedMessage, rawMessage);
    * ```
    *
    * @param data Encoded data to be decoded from CBOR format.
