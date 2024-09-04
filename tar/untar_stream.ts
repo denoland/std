@@ -157,7 +157,7 @@ export interface TarStreamEntry {
  *
  * @example Usage
  * ```ts no-eval
- * import { UntarStream } from "@std/archive/untar-stream";
+ * import { UntarStream } from "@std/tar/untar-stream";
  * import { dirname, normalize } from "@std/path";
  *
  * for await (
@@ -271,16 +271,15 @@ export class UntarStream
         };
       }
 
-      const entry: TarStreamEntry = {
-        path: (
-          "prefix" in header && header.prefix.length ? header.prefix + "/" : ""
-        ) + header.name,
+      yield {
+        path: ("prefix" in header && header.prefix.length
+          ? header.prefix + "/"
+          : "") + header.name,
         header,
+        readable: ["1", "2", "3", "4", "5", "6"].includes(header.typeflag)
+          ? undefined
+          : this.#readableFile(header.size),
       };
-      if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
-        entry.readable = this.#readableFile(header.size);
-      }
-      yield entry;
     }
   }
 
@@ -341,7 +340,7 @@ export class UntarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UntarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
    * for await (
@@ -367,7 +366,7 @@ export class UntarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UntarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
    * for await (

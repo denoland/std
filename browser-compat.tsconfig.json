@@ -39,6 +39,7 @@
     "./regexp",
     "./semver",
     "./streams",
+    "./tar",
     "./testing",
     "./text",
     "./toml",

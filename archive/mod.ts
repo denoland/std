@@ -68,5 +68,3 @@
  */
 export * from "./tar.ts";
 export * from "./untar.ts";
-export * from "./tar_stream.ts";
-export * from "./untar_stream.ts";
