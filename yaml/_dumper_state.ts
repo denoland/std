@@ -744,8 +744,12 @@ export class DumperState {
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
-
-    if (isObject(value)) {
+    if (typeof value === "string" || value instanceof String) {
+      value = value instanceof String ? value.valueOf() : value;
+      if (tag !== "?") {
+        value = this.stringifyScalar(value as string, { level, isKey });
+      }
+    } else if (isObject(value)) {
       const duplicateIndex = this.duplicates.indexOf(value);
       const duplicate = duplicateIndex !== -1;
 
@@ -760,19 +764,7 @@ export class DumperState {
       ) {
         compact = false;
       }
-      if (!Array.isArray(value)) {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
-        }
-      } else {
+      if (Array.isArray(value)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && value.length !== 0) {
           value = this.stringifyBlockSequence(value, {
@@ -788,10 +780,18 @@ export class DumperState {
             value = `&ref_${duplicateIndex} ${value}`;
           }
         }
-      }
-    } else if (typeof value === "string") {
-      if (tag !== "?") {
-        value = this.stringifyScalar(value, { level, isKey });
+      } else {
+        if (block && Object.keys(value).length !== 0) {
+          value = this.stringifyBlockMapping(value, { tag, level, compact });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex}${value}`;
+          }
+        } else {
+          value = this.stringifyFlowMapping(value, { level });
+          if (duplicate) {
+            value = `&ref_${duplicateIndex} ${value}`;
+          }
+        }
       }
     } else {
       if (this.skipInvalid) return null;

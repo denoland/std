@@ -753,6 +753,7 @@ Oren: Ben-Kiki
 
 Deno.test("stringify() handles string", () => {
   assertEquals(stringify("Hello World"), "Hello World\n");
+  assertEquals(stringify(new String("Hello World")), "Hello World\n");
 });
 
 Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
