@@ -1,9 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/**
- * @module
- */
-
 import { concat } from "@std/bytes";
 import { numberToArray } from "./_common.ts";
 
