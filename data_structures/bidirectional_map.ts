@@ -1,3 +1,6 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * A BidirectionalMap is a Map that allows lookup by both key and value.
  *
