@@ -2,10 +2,12 @@
 import { randomBetween } from "./between.ts";
 import { randomSeeded } from "./seeded.ts";
 import {
+  assert,
   assertAlmostEquals,
   assertEquals,
   assertGreaterOrEqual,
   assertLessOrEqual,
+  assertNotEquals,
   assertThrows,
 } from "@std/assert";
 
@@ -85,4 +87,21 @@ Deno.test("randomBetween() allows non-integer min and max", () => {
 Deno.test("randomBetween() allows min and max to be the same, in which case it returns constant values", () => {
   const results = Array.from({ length: 3 }, () => randomBetween(9.99, 9.99));
   assertEquals(results, [9.99, 9.99, 9.99]);
+});
+
+Deno.test("randomBetween() never returns max, even if the prng returns its max value", () => {
+  const prng = () => 0.9999999999999999;
+  const result = randomBetween(1, 2, { prng });
+  assertNotEquals(result, 2);
+});
+
+Deno.test("randomBetween() doesn't overflow even for min = -Number.MAX_VALUE; max = Number.MAX_VALUE", () => {
+  for (const val of [0, 0.5, 0.9999999999999999]) {
+    const result = randomBetween(
+      -Number.MAX_VALUE,
+      Number.MAX_VALUE,
+      { prng: () => val! },
+    );
+    assert(Number.isFinite(result));
+  }
 });
