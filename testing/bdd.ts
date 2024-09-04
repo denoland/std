@@ -403,6 +403,7 @@
  */
 
 import { getAssertionState } from "@std/internal/assertion-state";
+import { emitNoAssertionError } from "./_bdd_utils.ts";
 import {
   type DescribeDefinition,
   type HookNames,
@@ -601,7 +602,9 @@ export function it<T>(...args: ItArgs<T>) {
           await fn.call({} as T, t);
         } finally {
           TestSuiteInternal.runningCount--;
-          assertionState.checkAssertionError();
+          if (assertionState.checkAssertionError()) {
+            emitNoAssertionError();
+          }
         }
       },
     });

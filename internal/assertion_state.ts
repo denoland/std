@@ -1,7 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { AssertionError } from "@std/assert/assertion-error";
-
 export class AssertionState {
   #state: {
     assertionCheck: boolean;
@@ -23,12 +21,8 @@ export class AssertionState {
     this.#state.assertionTriggered = val;
   }
 
-  checkAssertionError() {
-    if (this.#state.assertionCheck && !this.#state.assertionTriggered) {
-      throw new AssertionError(
-        "Expected at least one assertion to be called but received none.",
-      );
-    }
+  checkAssertionError(): boolean {
+    return this.#state.assertionCheck && !this.#state.assertionTriggered;
   }
 }
 

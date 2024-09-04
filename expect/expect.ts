@@ -499,14 +499,12 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * @example
  * ```ts
  *
- * import { test } from "@std/testing";
+ * import { test } from "@std/testing/bdd";
  * import { expect } from "@std/expect";
  *
  * test("it works", () => {
  *   expect.hasAssertion();
- *   prepareExpect(state => {
- *     expect(state).not.toBeUndefined
- *   });
+ *   expect("a").not.toBe("b");
  * });
  * ```
  */
