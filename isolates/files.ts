@@ -13,7 +13,7 @@ export const parameters = {
     'Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation',
   ),
   ls: z.object({
-    path: z.string().optional().default('.').describe(
+    path: z.string().optional().describe(
       'the relative path to the directory you want to list',
     ),
     count: z.boolean().optional().describe(

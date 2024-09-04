@@ -138,11 +138,11 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await t.step('update 1', async () => {
       const path = `cust-${count - 1}.txt`
       const content = 'this is the new content'
-      const { write, read } = await backchat.actions<files.Api>('files', {
+      const { write } = await backchat.actions<files.Api>('files', {
         target,
       })
       await write({ path, content })
-      const result = await read({ path })
+      const result = await backchat.read(path, target)
       log('contents', result)
       expect(result).toEqual(content)
     })
