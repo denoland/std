@@ -43,23 +43,23 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
     }
     return random;
   });
-  const u = generate({ timestamp });
+  const u = generate(timestamp);
   assertEquals(u, "017f22e2-79b0-7cc3-98c4-dc0c0c07398f");
 });
 
 Deno.test("generate() throws on invalid timestamp", () => {
   assertThrows(
-    () => generate({ timestamp: -1 }),
+    () => generate(-1),
     RangeError,
     "Cannot generate UUID as timestamp must be a non-negative integer: timestamp -1",
   );
   assertThrows(
-    () => generate({ timestamp: NaN }),
+    () => generate(NaN),
     RangeError,
     "Cannot generate UUID as timestamp must be a non-negative integer: timestamp NaN",
   );
   assertThrows(
-    () => generate({ timestamp: 2.3 }),
+    () => generate(2.3),
     RangeError,
     "Cannot generate UUID as timestamp must be a non-negative integer: timestamp 2.3",
   );
@@ -75,7 +75,7 @@ Deno.test("validate() checks if a string is a valid v7 UUID", () => {
 Deno.test("extractTimestamp(uuid) extracts the timestamp from a UUIDv7", () => {
   const u = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
   const now = Date.now();
-  const u2 = generate({ timestamp: now });
+  const u2 = generate(now);
   assertEquals(extractTimestamp(u), 1645557742000);
   assertEquals(extractTimestamp(u2), now);
 });

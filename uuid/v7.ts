@@ -49,27 +49,14 @@ export function validate(id: string): boolean {
 }
 
 /**
- * Options for {@linkcode generate}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface GenerateOptions {
-  /**
-   * Unix epoch timestamp in milliseconds.
-   *
-   * @default {Date.now()}
-   */
-  timestamp?: number;
-}
-
-/**
  * Generates a {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @throws {RangeError} If the timestamp is not a non-negative integer.
  *
- * @param options Options for generating the UUIDv7.
+ * @param timestamp [Date.now()] Unix Epoch timestamp in milliseconds.
+ *
  * @returns Returns a UUIDv7 string
  *
  * @example Usage
@@ -81,21 +68,16 @@ export interface GenerateOptions {
  * assert(validate(uuid));
  * ```
  */
-export function generate(options: GenerateOptions = {}): string {
+export function generate(timestamp: number = Date.now()): string {
   const bytes = new Uint8Array(16);
   const view = new DataView(bytes.buffer);
   // Unix timestamp in milliseconds (truncated to 48 bits)
-  if (
-    options.timestamp !== undefined && (
-      !Number.isInteger(options.timestamp) || options.timestamp < 0
-    )
-  ) {
+  if (!Number.isInteger(timestamp) || timestamp < 0) {
     throw new RangeError(
-      `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${options.timestamp}`,
+      `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${timestamp}`,
     );
   }
-  const timestamp = BigInt(options.timestamp ?? Date.now());
-  view.setBigUint64(0, timestamp << 16n);
+  view.setBigUint64(0, BigInt(timestamp) << 16n);
   crypto.getRandomValues(bytes.subarray(6));
   // Version (4 bits) Occupies bits 48 through 51 of octet 6.
   view.setUint8(6, (view.getUint8(6) & 0b00001111) | 0b01110000);
@@ -133,3 +115,6 @@ export function extractTimestamp(uuid: string): number {
   const timestampHex = uuid.slice(0, 8) + uuid.slice(9, 13);
   return parseInt(timestampHex, 16);
 }
+
+
+generate()
