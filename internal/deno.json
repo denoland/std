@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "exports": {
     ".": "./mod.ts",
+    "./assertion-state": "./assertion_state.ts",
     "./build-message": "./build_message.ts",
     "./diff-str": "./diff_str.ts",
     "./diff": "./diff.ts",

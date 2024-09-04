@@ -14,6 +14,7 @@ import type {
   Matchers,
 } from "./_types.ts";
 import { AssertionError } from "@std/assert/assertion-error";
+import { emitAssertionTrigger, hasAssertion } from "./_assertion.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -216,6 +217,8 @@ export function expect<T extends Expected = Expected>(
           } else {
             matcher(context, ...args);
           }
+
+          emitAssertionTrigger();
         }
 
         return isPromised
@@ -488,3 +491,23 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
 expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
+/**
+ * `expect.hasAssertion` verifies that a certain number of assertions are called during a test.
+ *
+ * Notice: expect.hasAssertion only can use in bdd function test suite, such as `test` or `it`.
+ *
+ * @example
+ * ```ts
+ *
+ * import { test } from "@std/testing";
+ * import { expect } from "@std/expect";
+ *
+ * test("it works", () => {
+ *   expect.hasAssertion();
+ *   prepareExpect(state => {
+ *     expect(state).not.toBeUndefined
+ *   });
+ * });
+ * ```
+ */
+expect.hasAssertion = hasAssertion as () => void;

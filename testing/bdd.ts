@@ -402,6 +402,7 @@
  * @module
  */
 
+import { getAssertionState } from "@std/internal/assertion-state";
 import {
   type DescribeDefinition,
   type HookNames,
@@ -565,6 +566,7 @@ export function it<T>(...args: ItArgs<T>) {
       "Cannot register new test cases after already registered test cases start running",
     );
   }
+  const assertionState = getAssertionState();
   const options = itDefinition(...args);
   const { suite } = options;
   const testSuite = suite
@@ -599,6 +601,7 @@ export function it<T>(...args: ItArgs<T>) {
           await fn.call({} as T, t);
         } finally {
           TestSuiteInternal.runningCount--;
+          assertionState.checkAssertionError();
         }
       },
     });
