@@ -2,8 +2,7 @@
 config:
   temperature: 0
 commands:
-  - agents:search # search for an agent to fulfill a task
-  - backchat:thread # start a new thread with an agent
+   # TODO make a switchboard function so HAL can switch to an agent with prompt
   - files:ls
   - files:write
   - files:read
