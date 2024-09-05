@@ -221,3 +221,36 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "sortBy() works with iterators",
+  fn() {
+    const set = new Set([10, 312, 99, 5.45, 100, -3, 4.6]);
+
+    assertEquals(
+      sortBy(set, (it) => it),
+      [-3, 4.6, 5.45, 10, 99, 100, 312],
+    );
+    assertEquals(
+      sortBy(set, (it) => it, { order: "desc" }),
+      [312, 100, 99, 10, 5.45, 4.6, -3],
+    );
+
+    const map = new Map([
+      ["a", 2],
+      ["c", 1],
+      ["b", 3],
+    ]);
+
+    assertEquals(sortBy(map, (it) => it[0]), [
+      ["a", 2],
+      ["b", 3],
+      ["c", 1],
+    ]);
+    assertEquals(sortBy(map, (it) => it[1], { order: "desc" }), [
+      ["b", 3],
+      ["a", 2],
+      ["c", 1],
+    ]);
+  },
+});
