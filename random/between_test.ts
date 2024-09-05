@@ -31,20 +31,28 @@ Deno.test("randomBetween() generates a random number between the provided minimu
 });
 
 Deno.test("randomBetween() throws if min or max are NaN", () => {
-  assertThrows(() => randomBetween(NaN, 1), RangeError, "min cannot be NaN");
-  assertThrows(() => randomBetween(1, NaN), RangeError, "max cannot be NaN");
+  assertThrows(
+    () => randomBetween(NaN, 1),
+    RangeError,
+    "Cannot generate a random number: min cannot be NaN",
+  );
+  assertThrows(
+    () => randomBetween(1, NaN),
+    RangeError,
+    "Cannot generate a random number: max cannot be NaN",
+  );
 });
 
 Deno.test("randomBetween() throws if min or max are +/-Infinity", () => {
   assertThrows(
     () => randomBetween(-Infinity, 1),
     RangeError,
-    "min cannot be -Infinity",
+    "Cannot generate a random number: min cannot be -Infinity",
   );
   assertThrows(
     () => randomBetween(1, Infinity),
     RangeError,
-    "max cannot be Infinity",
+    "Cannot generate a random number: max cannot be Infinity",
   );
 });
 
@@ -52,7 +60,7 @@ Deno.test("randomBetween() throws if max is less than min", () => {
   assertThrows(
     () => randomBetween(10, 1),
     RangeError,
-    "max must be greater than or equal to min",
+    "Cannot generate a random number as max must be greater than or equal to min: max=1, min=10",
   );
 });
 

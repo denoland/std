@@ -30,12 +30,6 @@ export function randomIntegerBetween(
   max: number,
   options?: RandomOptions,
 ): number {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) {
-    throw new RangeError(
-      "Cannot generate a random number: min and max must be finite",
-    );
-  }
-
   return Math.floor(
     randomBetween(Math.ceil(min), Math.floor(max) + 1, options),
   );
