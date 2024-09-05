@@ -26,7 +26,7 @@ export type Comparable = number | string | bigint | Date;
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * @typeParam T The type of the array elements.
+ * @typeParam T The type of the iterator elements.
  * @typeParam U The type of the selected values.
  *
  * @param iterator The iterator to sort.
