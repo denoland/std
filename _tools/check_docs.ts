@@ -62,6 +62,7 @@ const ENTRY_POINTS = [
   "../path/mod.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
+  "../random/mod.ts",
   "../regexp/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
