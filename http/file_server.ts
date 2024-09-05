@@ -402,18 +402,6 @@ async function serveDirIndex(
   });
 }
 
-function serveFallback(maybeError: unknown): Response {
-  if (maybeError instanceof URIError) {
-    return createStandardResponse(STATUS_CODE.BadRequest);
-  }
-
-  if (maybeError instanceof Deno.errors.NotFound) {
-    return createStandardResponse(STATUS_CODE.NotFound);
-  }
-
-  return createStandardResponse(STATUS_CODE.InternalServerError);
-}
-
 function serverLog(req: Request, status: number) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
@@ -650,7 +638,11 @@ export async function serveDir(
     response = await createServeDirResponse(req, opts);
   } catch (error) {
     if (!opts.quiet) logError(error as Error);
-    response = serveFallback(error);
+    if (error instanceof Deno.errors.NotFound) {
+      response = createStandardResponse(STATUS_CODE.NotFound);
+    } else {
+      response = createStandardResponse(STATUS_CODE.InternalServerError);
+    }
   }
 
   // Do not update the header if the response is a 301 redirect.
