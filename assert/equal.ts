@@ -99,6 +99,10 @@ export function equal(c: unknown, d: unknown): boolean {
             k == null;
         });
         if (primitiveKeysFastPath) {
+          if (a instanceof Set) {
+            return a.symmetricDifference(b).size === 0;
+          }
+
           for (const key of aKeys) {
             if (
               !b.has(key) ||
