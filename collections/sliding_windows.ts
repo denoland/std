@@ -86,7 +86,10 @@ export function slidingWindows<T>(
   ) {
     throw new RangeError("Both size and step must be positive integer.");
   }
-  if (options.maxWindows && options.maxWindows <= 0) {
+  if (
+    options.maxWindows &&
+    (Number.isInteger(options.maxWindows) && options.maxWindows <= 0)
+  ) {
     throw new RangeError("maxWindows must be a positive integer");
   }
 
