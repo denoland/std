@@ -294,3 +294,101 @@ Deno.test({
     ]);
   },
 });
+
+Deno.test("slidingWindows() handles a generator", () => {
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+  const result = slidingWindows(gen(), 3);
+  assertEquals(result, [
+    [1, 2, 3],
+    [2, 3, 4],
+    [3, 4, 5],
+  ]);
+});
+
+Deno.test("slidingWindows() handles a generator with step", () => {
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+  const result = slidingWindows(gen(), 5, { step: 2 });
+  assertEquals(result, [
+    [1, 2, 3, 4, 5],
+  ]);
+});
+
+Deno.test("slidingWindows() handles a generator with partial", () => {
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+  const result = slidingWindows(gen(), 3, { partial: true });
+  assertEquals(result, [
+    [1, 2, 3],
+    [2, 3, 4],
+    [3, 4, 5],
+    [4, 5],
+    [5],
+  ]);
+});
+
+Deno.test("slidingWindows() handles a Set", () => {
+  const set = new Set([1, 2, 3, 4, 5]);
+  const result = slidingWindows(set, 3);
+  assertEquals(result, [
+    [1, 2, 3],
+    [2, 3, 4],
+    [3, 4, 5],
+  ]);
+});
+
+Deno.test("slidingWindows() handles a Map", () => {
+  const map = new Map([
+    ["a", 1],
+    ["b", 2],
+    ["c", 3],
+    ["d", 4],
+    ["e", 5],
+  ]);
+  const result = slidingWindows(map, 3);
+  assertEquals(result, [
+    [["a", 1], ["b", 2], ["c", 3]],
+    [["b", 2], ["c", 3], ["d", 4]],
+    [["c", 3], ["d", 4], ["e", 5]],
+  ]);
+});
+
+Deno.test("slidingWindows() handles a string", () => {
+  const result = slidingWindows("abcde", 3);
+  assertEquals(result, [
+    ["a", "b", "c"],
+    ["b", "c", "d"],
+    ["c", "d", "e"],
+  ]);
+});
+
+Deno.test("slidingWindows() respects handles maxWindows with an infinite iterable", () => {
+  function* gen() {
+    let i = 0;
+    while (true) {
+      yield i++;
+    }
+  }
+  const result = slidingWindows(gen(), 3, { maxWindows: 3 });
+  assertEquals(result, [
+    [0, 1, 2],
+    [1, 2, 3],
+    [2, 3, 4],
+  ]);
+});
