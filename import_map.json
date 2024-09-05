@@ -36,6 +36,7 @@
     "@std/net": "jsr:@std/net@^1.0.2",
     "@std/path": "jsr:@std/path@^1.0.4",
     "@std/regexp": "jsr:@std/regexp@^1.0.0",
+    "@std/random": "jsr:@std/random@^0.1.0",
     "@std/semver": "jsr:@std/semver@^1.0.3",
     "@std/streams": "jsr:@std/streams@^1.0.4",
     "@std/tar": "jsr:@std/tar@^0.1.0",
