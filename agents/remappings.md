@@ -28,7 +28,7 @@ tools:
       unchanged:
         description: this parameter name is the same as the original function name so it does not need the 'was' property as the mapping is clear
       autoPopulated:
-        value: 'this is an example of an auto filled parameter
+        value: this is an example of an auto filled parameter
         # This parameter would not be presented to the model, and will always be filled in to the value given here.  This is useful for things like restricting the ls function only certain file names, or restricting read to only be certain file extensions.
 ---
 
