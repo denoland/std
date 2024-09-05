@@ -11,7 +11,7 @@ import {
 } from '@/constants.ts'
 import { assert, Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
-import * as loadAgent from '@/isolates/load-agent.ts'
+import { load } from '@/isolates/utils/load-agent.ts'
 import { getChatParams } from '@/isolates/ai-completions.ts'
 import { loadTools } from '@/isolates/ai-load-tools.ts'
 import { addIteration, outcome, testFile } from '@/api/tps-report.ts'
@@ -150,8 +150,7 @@ export const functions: Functions<Api> = {
     const path = response.name
     assert(path, 'path missing from last message')
 
-    const { load } = await api.functions<loadAgent.Api>('load-agent')
-    const agent = await load({ path })
+    const agent = await load(path, api)
     const tools = await loadTools(agent.commands, api)
     const request = getChatParams(agent, messages, tools)
     return { request, response }

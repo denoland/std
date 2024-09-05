@@ -11,7 +11,7 @@ import {
 } from '@/constants.ts'
 import { assistantMessage, ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
-import * as loadAgent from './load-agent.ts'
+import { load } from './utils/load-agent.ts'
 import { executeTools } from '@/isolates/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -96,8 +96,7 @@ export const functions: Functions<Api> = {
     // verify the switchboard has the right tool loaded
     // TODO verify stopOnTool function returns null
 
-    const { load } = await api.functions<loadAgent.Api>('load-agent')
-    const { config, commands } = await load({ path })
+    const { config, commands } = await load(path, api)
     assert(!config.parallel_tool_calls, 'parallel_tool_calls must be false')
     assert(config.tool_choice === 'required', 'tool_choice must be required')
     assert(commands.includes('agents:switch'), 'missing agents_switch')

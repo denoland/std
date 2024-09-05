@@ -1,7 +1,7 @@
 import { deserializeError } from 'serialize-error'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
-import { assert, Debug } from '@utils'
+import { assert, Debug, equal } from '@utils'
 import micromatch from 'micromatch'
 import {
   ApiFunctions,
@@ -121,10 +121,12 @@ export default class IA<T extends object = Default> {
     assert(io, 'io not found')
     const state = io.state as z.infer<T>
     const result = updater(state)
-    const next = schema.parse(result) as z.infer<T>
-    assert(io, 'io not found')
-    io.state = next
-    io.save()
+    if (!equal(state, result)) {
+      const next = schema.parse(result) as z.infer<T>
+      assert(io, 'io not found')
+      io.state = next
+      io.save()
+    }
   }
 
   async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {

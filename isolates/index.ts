@@ -3,7 +3,6 @@ import * as system from './system.ts'
 import * as fetch from './fetch.ts'
 import * as files from './files.ts'
 import * as ioFixture from './io-fixture.ts'
-import * as loadAgent from './load-agent.ts'
 import * as utils from './utils.ts'
 import * as artifact from './artifact.ts'
 import * as session from './session.ts'
@@ -36,7 +35,6 @@ const isolatesExport = {
   fetch,
   files,
   'io-fixture': ioFixture,
-  'load-agent': loadAgent,
   utils,
   artifact,
   session,

@@ -2,7 +2,6 @@ import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
 import { IA, JSONSchemaType, Params } from '@/constants.ts'
 import { isIsolate } from './index.ts'
-import validator from '@io/validator.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IA) => {

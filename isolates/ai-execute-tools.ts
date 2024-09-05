@@ -3,7 +3,7 @@ import { Debug } from '@utils'
 import { serializeError } from 'serialize-error'
 import { IA, Thread } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
-import * as loadAgent from './load-agent.ts'
+import { load } from './utils/load-agent.ts'
 const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
@@ -18,8 +18,7 @@ const loadToolCalls = async (threadPath: string, api: IA) => {
   assert(assistant.name, 'missing assistant name')
   const { tool_calls } = assistant
 
-  const { load } = await api.functions<loadAgent.Api>('load-agent')
-  const agent = await load({ path: assistant.name })
+  const agent = await load(assistant.name, api)
   return { tool_calls, agent, thread }
 }
 

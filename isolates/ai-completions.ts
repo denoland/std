@@ -15,7 +15,7 @@ import {
   ToApiType,
 } from '@/constants.ts'
 import { loadTools } from './ai-load-tools.ts'
-import * as loadAgent from './load-agent.ts'
+import { load } from './utils/load-agent.ts'
 import { z } from 'zod'
 
 const log = Debug('AI:completions')
@@ -66,8 +66,7 @@ const complete = async (
   messages: Thread['messages'],
   api: IA,
 ) => {
-  const { load } = await api.functions<loadAgent.Api>('load-agent')
-  const agent: Agent = await load({ path })
+  const agent: Agent = await load(path, api)
   const tools = await loadTools(agent.commands, api)
 
   const args = getChatParams(agent, messages, tools)

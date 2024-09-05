@@ -1,7 +1,7 @@
 import { Debug } from '@utils'
 import { getRepoBase, headKeyToPid } from '@/keys.ts'
 import type DB from '@/db.ts'
-import { assert, AssertionError, equal, isKvTestMode } from '@utils'
+import { assert, AssertionError, equal } from '@utils'
 import { PID } from '@/constants.ts'
 import { Atomic } from '@/atomic.ts'
 
