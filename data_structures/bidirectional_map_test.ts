@@ -146,6 +146,7 @@ Deno.test("BidirectionalMap.has() returns true if the key exists", () => {
   assertEquals(map.has("one"), true);
   assertEquals(map.has("two"), true);
   assertEquals(map.has("three"), true);
+  assertEquals(map.has("four"), false);
 });
 
 Deno.test(
@@ -160,6 +161,7 @@ Deno.test(
     assertEquals(map.hasReverse(1), true);
     assertEquals(map.hasReverse(2), true);
     assertEquals(map.hasReverse(3), true);
+    assertEquals(map.hasReverse(4), false);
   },
 );
 

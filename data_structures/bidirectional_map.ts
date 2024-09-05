@@ -2,11 +2,10 @@
 // This module is browser compatible.
 
 /**
- * A BidirectionalMap is a Map that allows lookup by both key and value.
+ * A {@linkcode Map} that allows lookup by both key and value.
  *
- * Keys and values must be unique:
- * - Setting an existing key updates its value.
- * - Setting an existing value updates its key.
+ * Keys and values must be unique. Setting an existing key updates its value.
+ * Setting an existing value updates its key.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -15,7 +14,7 @@
  *
  * @example Usage
  * ```ts
- * import { BidirectionalMap } from "@std/data-structures";
+ * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
  * import { assertEquals } from "@std/assert";
  *
  * const map = new BidirectionalMap([["one", 1]]);
@@ -26,7 +25,7 @@
  *
  * @example Inserting a value that already exists
  * ```ts
- * import { BidirectionalMap } from "@std/data-structures";
+ * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
  * import { assertEquals } from "@std/assert";
  *
  * const map = new BidirectionalMap();
@@ -37,40 +36,31 @@
  * assertEquals(map.get(1), undefined);
  * assertEquals(map.getReverse("one"), 2);
  * ```
- *
- * @module
  */
 export class BidirectionalMap<K, V> extends Map<K, V> {
   #reverseMap: Map<V, K>;
 
   /**
-   * Creates a new BidirectionalMap object.
+   * Creates a new instance.
    *
-   * @param iterable An iterable object whose elements are key-value pairs (arrays with two elements, e.g. [[ 1, 'one' ],[ 2, 'two' ]]). Each key-value pair is added to the new BidirectionalMap.
-   *
-   * @example Usage
-   * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
-   *
-   * const map = new BidirectionalMap([["one", 1]]);
-   * ```
+   * @param entries An iterable of key-value pairs for the initial entries.
    */
-  constructor(iterable?: Iterable<readonly [K, V]> | null) {
+  constructor(entries?: readonly (readonly [K, V])[] | null) {
     super();
     this.#reverseMap = new Map<V, K>();
-    if (iterable) {
-      for (const [key, value] of iterable) {
+    if (entries) {
+      for (const [key, value] of entries) {
         this.set(key, value);
       }
     }
   }
 
   /**
-   * Clears all entries in the BidirectionalMap.
+   * Clears all entries.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -78,22 +68,23 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    * assertEquals(map.size, 0);
    * ```
    */
-  override clear(): void {
+  override clear() {
     super.clear();
     this.#reverseMap.clear();
   }
 
   /**
-   * Adds a new element with a specified key and value to the BidirectionalMap. If an entry with the same key or value already exists, the entry will be updated.
+   * Adds a new element with a specified key and value. If an entry with the
+   * same key or value already exists, the entry will be updated.
    *
    * @param key The key to set.
    * @param value The value to associate with the key.
    *
-   * @returns The BidirectionalMap instance.
+   * @returns The instance.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap();
@@ -118,14 +109,16 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
   }
 
   /**
-   * Returns the key associated with the specified value in the BidirectionalMap object. If no key is associated with the specified value, undefined is returned.
+   * Returns the key associated with the specified value. If no key is
+   * associated with the specified value, `undefined` is returned.
    *
    * @param value The value to search for.
-   * @returns The key associated with the specified value, or undefined if no key is found.
+   * @returns The key associated with the specified value, or `undefined` if no
+   * key is found.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -138,15 +131,17 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
   }
 
   /**
-   * Removes the element with the specified key. If the element does not exist, the BidirectionalMap remains unchanged.
+   * Removes the element with the specified key. If the element does not exist,
+   * the instance remains unchanged.
    *
    * @param key The key of the element to remove.
    *
-   * @returns true if an element in the BidirectionalMap existed and has been removed, or false if the element does not exist.
+   * @returns `true` if an element in the instance existed and has been removed,
+   * or `false` if the element does not exist.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -158,19 +153,20 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
   override delete(key: K): boolean {
     const value = super.get(key);
     if (value === undefined) return false;
-    this.#reverseMap.delete(value);
-    return super.delete(key);
+    return super.delete(key) && this.#reverseMap.delete(value);
   }
 
   /**
-   * Removes the element with the specified value. If the element does not exist, the BidirectionalMap remains unchanged.
+   * Removes the element with the specified value. If the element does not
+   * exist, the instance remains unchanged.
    *
    * @param value The value of the element to remove.
-   * @returns true if an element in the BidirectionalMap existed and has been removed, or false if the element does not exist.
+   * @returns `true` if an element in the instance existed and has been removed,
+   * or `false` if the element does not exist.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -184,23 +180,21 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    */
   deleteReverse(value: V): boolean {
     const key = this.#reverseMap.get(value);
-    if (key === undefined) {
-      return false;
-    }
-    super.delete(key);
-    return this.#reverseMap.delete(value);
+    if (key === undefined) return false;
+    return super.delete(key) && this.#reverseMap.delete(value);
   }
 
   /**
-   * Checks if an element with the specified value exists in the BidirectionalMap.
+   * Checks if an element with the specified value exists.
    *
    * @param value The value to search for.
    *
-   * @returns boolean indicating whether an element with the specified value exists or not.
+   * @returns `true` if an element with the specified value exists, otherwise
+   * `false`.
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -218,12 +212,12 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures";
+   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap();
    * assertEquals(map.toString(), "[object BidirectionalMap]");
    * ```
    */
-  readonly [Symbol.toStringTag]: string = "BidirectionalMap";
+  readonly [Symbol.toStringTag] = "BidirectionalMap";
 }
