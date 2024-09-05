@@ -638,11 +638,9 @@ export async function serveDir(
     response = await createServeDirResponse(req, opts);
   } catch (error) {
     if (!opts.quiet) logError(error as Error);
-    if (error instanceof Deno.errors.NotFound) {
-      response = createStandardResponse(STATUS_CODE.NotFound);
-    } else {
-      response = createStandardResponse(STATUS_CODE.InternalServerError);
-    }
+    response = error instanceof Deno.errors.NotFound
+      ? createStandardResponse(STATUS_CODE.NotFound)
+      : createStandardResponse(STATUS_CODE.InternalServerError);
   }
 
   // Do not update the header if the response is a 301 redirect.
