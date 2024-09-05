@@ -849,7 +849,10 @@ function main() {
       networkAddress = getNetworkAddress();
     }
     const protocol = useTls ? "https" : "http";
-    let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
+    const host = (Deno.build.os === "windows" && hostname === "0.0.0.0")
+      ? "localhost"
+      : hostname;
+    let message = `Listening on:\n- Local: ${protocol}://${host}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {
       message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
