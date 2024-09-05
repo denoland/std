@@ -7,7 +7,7 @@ function slidingWindowsTest<T>(
   input: [
     collection: T[],
     size: number,
-    config?: { step?: number; partial?: boolean, maxWindows?: number },
+    config?: { step?: number; partial?: boolean; maxWindows?: number },
   ],
   expected: T[][],
   message?: string,
@@ -20,7 +20,7 @@ function slidingWindowsThrowsTest<T>(
   input: [
     collection: T[],
     size: number,
-    config?: { step?: number; partial?: boolean, maxWindows?: number },
+    config?: { step?: number; partial?: boolean; maxWindows?: number },
   ],
   ErrorClass: ErrorConstructor,
   msgIncludes?: string,
@@ -394,7 +394,6 @@ Deno.test("slidingWindows() respects handles maxWindows with an infinite iterabl
 });
 
 Deno.test("slidingWindows() handles invalid maxWindows", () => {
-
   slidingWindowsThrowsTest(
     [[1, 2, 3, 4, 5], 3, { maxWindows: 0 }],
     RangeError,
@@ -423,5 +422,5 @@ Deno.test("slidingWindows() respects handles maxWindows with an array", () => {
     [1],
     [2],
     [3],
-  ])
-})
+  ]);
+});
