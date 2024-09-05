@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * A {@linkcode Map} that allows lookup by both key and value.
+ * An extension of {@linkcode Map} that allows lookup by both key and value.
  *
  * Keys and values must be unique. Setting an existing key updates its value.
  * Setting an existing value updates its key.
