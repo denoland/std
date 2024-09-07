@@ -4,16 +4,17 @@ import { Api } from '@/isolates/session.ts'
 import { Api as IoApi } from '@/isolates/io-fixture.ts'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':process: '
+  const prefix = name + ':branching: '
   Deno.test(prefix + 'session', async (t) => {
     const { backchat, engine } = await cradleMaker()
     const repo = 'process/session'
 
     const { pid } = await backchat.init({ repo })
     const testBranch1Pid = addBranches(pid, 'session-1')
+
     const { create } = await backchat.actions<Api>('session', { target: pid })
     await t.step('create', async () => {
-      const branchPid = await create({})
+      const branchPid = await create({ prefix: 'session' })
       expect(branchPid).toEqual(testBranch1Pid)
 
       const opts = { target: testBranch1Pid }
@@ -22,7 +23,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(result).toEqual('local reply')
     })
     await t.step('second session', async () => {
-      const branchPid = await create({})
+      const branchPid = await create({ prefix: 'session' })
       const testBranch3Pid = addBranches(pid, 'session-3')
       expect(branchPid).toEqual(testBranch3Pid)
       const opts = { target: testBranch3Pid }

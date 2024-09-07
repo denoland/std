@@ -1,56 +1,33 @@
-import { IA, print } from '@/constants.ts'
+import { Functions, IA, print, ToApiType } from '@/constants.ts'
 import { log } from '@utils'
+import { z } from 'zod'
 
-interface SearchArgs {
-  query: string
-  after?: number
-  before?: number
+export const parameters = {
+  search: z.object({
+    query: z.string().describe('The search query'),
+    after: z.number().int().optional().describe(
+      'The timestamp to search after',
+    ),
+    before: z.number().int().optional().describe(
+      'The timestamp to search before',
+    ),
+  }).describe('Search for threads that can complete the job'),
 }
-interface SearchResult {
-  threadId: string
-  description: string
-  timestamp: number
+export const returns = {
+  search: z.array(
+    z.object({
+      threadId: z.string(),
+      description: z.string(),
+      timestamp: z.number().int(),
+    }),
+  ),
 }
-export type Api = {
-  search: (params: SearchArgs) => Promise<SearchResult[]>
-}
-export const functions = {
-  search: ({ query }: SearchArgs, api: IA) => {
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const functions: Functions<Api> = {
+  search: ({ query }, api) => {
     log('search', query, print(api.pid))
     return []
-  },
-}
-/**
- * Search can be just loading up all the threads, grabbing all the messages,
- * stripping out the sysprompt and tool calls, then using context to decided
- * which is better.
- *
- * Or, if we are updating the summary of each thread in the background, just
- * read the summaries and make a decision based on that.
- *
- * Could do batch ranking if things don't fit in the window.
- *
- * Ultimately the thread size and summary, chunks, and topication would be
- * handled inside the thread, each time there is a change to it.
- */
-export const api = {
-  search: {
-    type: 'object',
-    description: 'Search for threads that can complete the job',
-    properties: {
-      query: {
-        type: 'string',
-        description: 'The search query',
-      },
-      after: {
-        type: 'number',
-        description: 'The timestamp to search after',
-      },
-      before: {
-        type: 'number',
-        description: 'The timestamp to search before',
-      },
-    },
-    additionalProperties: false,
   },
 }
