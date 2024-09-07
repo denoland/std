@@ -1,7 +1,7 @@
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
-import { IA, JSONSchemaType, Params } from '@/constants.ts'
-import { isIsolate } from './index.ts'
+import { IA, Params } from '@/constants.ts'
+import { isIsolate } from '../index.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IA) => {
@@ -48,9 +48,13 @@ export const load = async (commands: string[] = [], api: IA) => {
 
   return { tools, actions }
 }
-const isolateToGptApi = (name: string, schema: JSONSchemaType<object>) => {
+const isolateToGptApi = (name: string, schema: object) => {
   assert(typeof schema === 'object', `api must be an object: ${name}`)
+  assert('type' in schema, `api must have a type: ${name}`)
   assert(typeof schema.type === 'string', `api.type must be a string: ${name}`)
+  assert('description' in schema, `api must have a description: ${name}`)
+  assert(typeof schema.description === 'string', `api.description not string`)
+
   const parameters: Record<string, unknown> = { ...schema }
   delete parameters.title
   delete parameters.description

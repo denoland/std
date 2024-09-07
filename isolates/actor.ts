@@ -8,17 +8,17 @@ import {
   IA,
   isActorBranch,
   machineIdRegex,
+  pidSchema,
   print,
   RpcOpts,
-  toApi,
-  zodPid,
 } from '@/constants.ts'
 import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug, equal } from '@utils'
 
 const log = Debug('AI:actor')
 
-export const api = toApi(actor.parameters)
+export const parameters = actor.parameters
+export const returns = actor.returns
 
 export const functions: Functions<actor.Api> = {
   async backchat({ backchatId, machineId }, api) {
@@ -135,7 +135,7 @@ const assertNoRepo = async (api: IA, repo: string) => {
 }
 
 const stateSchema = z.object({
-  repos: z.record(zodPid),
+  repos: z.record(pidSchema),
   machines: z.record(
     z.string().regex(machineIdRegex),
     z.object({

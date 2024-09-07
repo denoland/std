@@ -4,9 +4,9 @@ import {
   jsonSchema,
   machineIdRegex,
   md5,
+  pidSchema,
   threadIdRegex,
   ToApiType,
-  zodPid,
 } from '../types.ts'
 
 const repoParams = z.object({
@@ -15,7 +15,7 @@ const repoParams = z.object({
   params: z.record(jsonSchema).optional(),
 })
 const repoResult = z.object({
-  pid: zodPid,
+  pid: pidSchema,
   head: md5,
 })
 
@@ -43,11 +43,11 @@ export const parameters = {
 }
 
 export const returns = {
-  backchat: z.promise(zodPid),
-  thread: z.promise(zodPid),
-  init: z.promise(repoResult),
-  clone: z.promise(repoResult),
-  rm: z.promise(z.object({ reposDeleted: z.number() })),
-  lsRepos: z.promise(z.array(z.string())),
+  backchat: pidSchema,
+  thread: pidSchema,
+  init: repoResult,
+  clone: repoResult,
+  rm: z.object({ reposDeleted: z.number() }),
+  lsRepos: z.array(z.string()),
 }
 export type Api = ToApiType<typeof parameters, typeof returns>

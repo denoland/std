@@ -5,7 +5,6 @@ import {
   getBaseName,
   IA,
   print,
-  toApi,
   ToApiType,
 } from '@/constants.ts'
 import { Debug } from '@utils'
@@ -33,8 +32,6 @@ export const returns = {
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 
-export const api = toApi(parameters)
-
 export const functions: Functions<Api> = {
   '@@install': (_, api) => {
     log('installing', print(api.pid))
@@ -47,7 +44,7 @@ export const functions: Functions<Api> = {
       noClose: true,
       prefix: 'ctrl',
     })
-    const pid = await noop()
+    const pid = await noop({})
     log('created controller', print(pid))
 
     return getBaseName(pid)

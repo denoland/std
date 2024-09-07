@@ -1,9 +1,10 @@
 import { assert } from '@utils'
 import { z } from 'zod'
-import { Functions, Returns, toApi, type ToApiType } from '@/constants.ts'
+import { Functions, Returns, type ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as tps from '@/api/tps-report.ts'
 import { TestFile } from '@/api/tps-report.ts'
+import { load } from '@/isolates/utils/load-agent.ts'
 
 const log = Debug('AI:tps-report')
 
@@ -44,14 +45,12 @@ export const returns: Returns<typeof parameters> = {
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
-export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
-  upsert: async (
-    { testPath, agent, assessor, iterations },
-    api,
-  ) => {
+  upsert: async ({ testPath, agent, assessor, iterations }, api) => {
     log('upsertTpsReport', testPath, iterations)
+    await load(agent, api)
+    await load(assessor, api)
     const tpsPath = getTpsPath(testPath)
     const hash = await api.readOid(testPath)
     const tpsReport = tps.create(

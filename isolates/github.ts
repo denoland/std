@@ -2,19 +2,25 @@ import * as Actors from './actors.ts'
 import {
   addBranches,
   colorize,
+  Functions,
   IA,
   isBaseRepo,
   PID,
   pidSchema,
   print,
+  ToApiType,
 } from '@/constants.ts'
 import { Backchat } from '../api/client-backchat.ts'
 import type { Tokens } from '@deno/kv-oauth'
 import { assert, Debug } from '@utils'
 import * as files from './files.ts'
+import { z } from 'zod'
 const log = Debug('AI:github')
 
-export type Admin = {
+export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const parameters = {
+  '@@install': z.object({ homeAddress: pidSchema }),
   /**
    * Register an attempt to do the oauth loop, so that when the browser comes
    * back successfully, we can bind its PAT to the machine public key.
@@ -22,10 +28,10 @@ export type Admin = {
    * The actorId must have only one machine child, and must be unauthenticated
    * with the github provider.
    */
-  registerAttempt: (
-    params: { actorId: string; authSessionId: string },
-  ) => Promise<void>
-
+  registerAttempt: z.object({
+    actorId: z.string(),
+    authSessionId: z.string(),
+  }),
   /**
    * Only allowed for the installation owner / superuser.
    * Requires that a sessionId be active and valid.
@@ -35,69 +41,29 @@ export type Admin = {
    * Merges in the actorId to the primary actorId given by the userId, or
    * creates the primary mapping using the current actorId if none exists.
    */
-  authorize: (
-    params: { authSessionId: string; tokens: Tokens; githubUserId: string },
-  ) => Promise<void>
-}
-export type Actor = {
+  authorize: z.object({
+    authSessionId: z.string(),
+    tokens: z.object({
+      accessToken: z.string(),
+      tokenType: z.string(),
+    }),
+    githubUserId: z.string(),
+  }),
   /**
    * Deletes the record of the machineId from the actorId.
    * ActorId and authorization is determined from the PID of the caller.
    */
-  signout(params: { machineId: string }): Promise<void>
-}
-export type Api = Admin & Actor
-
-export type Selectors = {
-  /**
-   * Given a pid, read out the actorId
-   */
-  readActorId: (params: { pid: PID }) => Promise<string>
-
-  /** Checks for any blacklisted keys */
-  isAcceptable: (params: { machineId: string }) => Promise<boolean>
-
-  isAuthorized: (
-    params: { machineId: string; actorId: string },
-  ) => Promise<boolean>
+  signout: z.object({ machineId: z.string() }),
 }
 
-export const api = {
-  '@@install': {
-    type: 'object',
-    additionalProperties: false,
-    required: ['homeAddress'],
-    properties: { homeAddress: pidSchema },
-  },
-  registerAttempt: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['actorId', 'authSessionId'],
-    properties: {
-      actorId: { type: 'string' },
-      authSessionId: { type: 'string' },
-    },
-  },
-  authorize: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['authSessionId', 'tokens', 'githubUserId'],
-    properties: {
-      authSessionId: { type: 'string' },
-      tokens: {
-        type: 'object',
-        required: ['accessToken', 'tokenType'],
-        properties: {
-          accessToken: { type: 'string' },
-          tokenType: { type: 'string' },
-        },
-      },
-      githubUserId: { type: 'string' },
-    },
-  },
+export const returns = {
+  '@@install': z.void(),
+  registerAttempt: z.void(),
+  authorize: z.void(),
+  signout: z.void(),
 }
 
-export const functions = {
+export const functions: Functions<Api> = {
   '@@install': (params: { homeAddress: PID }, api: IA) => {
     log('install with homeAddress:', print(params.homeAddress))
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
@@ -160,6 +126,7 @@ export const functions = {
 
     // TODO add some info about the PAT
     // TODO use sharded names like in the machines branch ?
+    // TODO move to using state
     const pointer: ActorPointer = { actorId, githubUserId }
     const actorPid = addBranches(api.pid, actorId)
     if (await api.isActiveChild(actorPid)) {
@@ -172,6 +139,9 @@ export const functions = {
     })
     await write({ path: filename, content: JSON.stringify(pointer) })
     log('actorPid', print(actorPid))
+  },
+  signout: ({ machineId }) => {
+    throw new Error('not implemented' + machineId)
   },
 }
 type Credentials = {

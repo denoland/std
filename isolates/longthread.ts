@@ -3,16 +3,15 @@ import {
   CompletionMessage,
   getThreadPath,
   IA,
+  pidSchema,
   print,
   Thread,
-  toApi,
   ToApiType,
-  zodPid,
 } from '@/constants.ts'
 import { assistantMessage, ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
 import { load } from './utils/load-agent.ts'
-import { executeTools } from '@/isolates/ai-execute-tools.ts'
+import { executeTools } from './utils/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
 import * as agents from '@/isolates/agents.ts'
@@ -46,7 +45,7 @@ export const returns = {
    * backchat target thread */
   switchboard: z.object({
     newThread: z.boolean().optional(),
-    target: zodPid.optional(),
+    target: pidSchema.optional(),
   }).refine((v) => !(v.newThread && v.target), {
     message: 'expected newThread or target exclusively',
   }),
@@ -56,7 +55,6 @@ export const returns = {
   ]),
 }
 
-export const api = toApi(parameters)
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {

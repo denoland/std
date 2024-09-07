@@ -1,4 +1,4 @@
-import { Functions, print, toApi, ToApiType } from '@/constants.ts'
+import { Functions, print, ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import { z } from 'zod'
 const log = Debug('AI:agents')
@@ -25,7 +25,6 @@ export const returns = {
   ),
   switch: z.null(),
 }
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

@@ -7,13 +7,12 @@ import {
   getActorPid,
   getThreadPath,
   IA,
+  pidSchema,
   print,
   threadIdRegex,
   threadSchema,
-  toApi,
   ToApiType,
   unsequencedRequest,
-  zodPid,
 } from '@/constants.ts'
 import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug } from '@utils'
@@ -28,10 +27,10 @@ export const parameters = {
   newThread: z.object({}).describe(
     'Create a new thread and set it as the current target thread',
   ),
-  changeThreadSignal: zodPid.describe(
+  changeThreadSignal: pidSchema.describe(
     'Signal to change the current target thread',
   ),
-  changeThread: zodPid.describe('Change the current target thread'),
+  changeThread: pidSchema.describe('Change the current target thread'),
   prompt: z.object({
     content: z.string(),
     attachments: z.array(z.string()).optional(),
@@ -52,11 +51,9 @@ export const returns = {
   /** The new target thread */
   changeThread: z.void(),
   prompt: z.void(),
-  relay: z.promise(z.unknown()),
+  relay: z.unknown(),
 }
 export type Api = ToApiType<typeof parameters, typeof returns>
-
-export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
   newThreadSignal: () => null,

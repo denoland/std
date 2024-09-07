@@ -8,11 +8,10 @@ import {
   isPID,
   jsonSchema,
   md5,
+  pidSchema,
   print,
   Proctype,
-  toApi,
   ToApiType,
-  zodPid,
 } from '@/constants.ts'
 import { isBaseRepo } from '@/constants.ts'
 import { z } from 'zod'
@@ -25,11 +24,11 @@ const init = z.object({
 })
 const headResult = z.object({ head: md5, elapsed: z.number().int().gt(0) })
 const pidResult = headResult.extend({
-  pid: zodPid,
+  pid: pidSchema,
 })
 
 export const parameters = {
-  rm: z.object({ pid: zodPid }).describe('remove a repository'),
+  rm: z.object({ pid: pidSchema }).describe('remove a repository'),
   clone: init.describe('clone a repository'),
   init: init.describe('initialize a repository'),
   pull: z.object({ repo: z.string() }).describe('pull a repository'),
@@ -40,7 +39,7 @@ export const parameters = {
     'initialize a repository as a side effect',
   ),
   sideEffectFetch: z.object({
-    pid: zodPid,
+    pid: pidSchema,
     repo: z.string(),
   }).describe('fetch a repository as a side effect'),
 }
@@ -54,8 +53,6 @@ export const returns = {
   sideEffectInit: pidResult,
   sideEffectFetch: headResult,
 }
-
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

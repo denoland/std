@@ -8,7 +8,7 @@ import { Proctype } from '@/api/types.ts'
 import { expect } from '@utils'
 
 const partial = partialFromRepo('system/system')
-const pid = { ...partial, repoId: '0' }
+const pid = { ...partial, repoId: 'rep_R64KH614QH4TDW2V' }
 Deno.test('io-channel', () => {
   const json = serialAccumulation()
   const io = IOChannel.readObject(json, pid)
@@ -40,7 +40,7 @@ const serialAccumulation: () => IoStruct = () => ({
   requests: {
     0: {
       target: {
-        repoId: '0',
+        repoId: 'rep_R64KH614QH4TDW2V',
         account: 'system',
         repository: 'system',
         branches: ['main'],
@@ -51,7 +51,7 @@ const serialAccumulation: () => IoStruct = () => ({
       params: {
         request: {
           target: {
-            repoId: '0',
+            repoId: 'rep_R64KH614QH4TDW2V',
             account: 'system',
             repository: 'system',
             branches: ['main'],
@@ -66,7 +66,7 @@ const serialAccumulation: () => IoStruct = () => ({
     },
     1: {
       target: {
-        repoId: '0',
+        repoId: 'rep_R64KH614QH4TDW2V',
         account: 'system',
         repository: 'system',
         branches: ['main'],
@@ -77,7 +77,7 @@ const serialAccumulation: () => IoStruct = () => ({
       proctype: Proctype.enum.SERIAL,
       sequence: 1,
       source: {
-        repoId: '0',
+        repoId: 'rep_R64KH614QH4TDW2V',
         account: 'system',
         repository: 'system',
         branches: ['main'],

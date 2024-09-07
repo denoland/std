@@ -1,138 +1,68 @@
 import { Debug, delay, expect } from '@utils'
-import { Functions, IA, pidSchema } from '@/constants.ts'
-import { PID } from '@/constants.ts'
+import { Functions, IA, pidSchema, ToApiType } from '@/constants.ts'
 import { withMeta } from '@/api/types.ts'
+import { z } from 'zod'
 const log = Debug('AI:io-fixture')
 
-export const api = {
-  write: {
-    description: 'write a file',
-    type: 'object',
-    required: ['path', 'content'],
-    additionalProperties: false,
-    properties: { path: { type: 'string' }, content: { type: 'string' } },
-  },
-  writeSlow: {
-    description: 'write a file one character at a time',
-    type: 'object',
-    required: ['path', 'content'],
-    additionalProperties: false,
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' },
-      delayMs: { type: 'integer', minimum: 0 },
-    },
-  },
-  error: {
-    description: 'throw an error',
-    type: 'object',
-    additionalProperties: false,
-    required: ['message'],
-    properties: {
-      message: { type: 'string' },
-    },
-  },
-  branch: {
-    description: 'make a new branch',
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
-  compound: {
-    description: 'call another function',
-    type: 'object',
-    additionalProperties: false,
-    properties: { target: pidSchema },
-  },
-  parallel: {
-    description: 'call local in parallel',
-    type: 'object',
-    additionalProperties: false,
-    properties: { count: { type: 'integer', minimum: 1 } },
-  },
-  squared: {
-    description: 'call parallel in parallel',
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      count: { type: 'integer', minimum: 1 },
-      multiplier: { type: 'integer', minimum: 1 },
-    },
-  },
-  fileAccumulation: {
-    description: 'accumulate file writes',
-    type: 'object',
-    required: ['path', 'content', 'count'],
-    additionalProperties: false,
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' },
-      count: { type: 'integer', minimum: 1 },
-    },
-  },
-  loopAccumulation: {
-    description: 'loop accumulating file writes',
-    type: 'object',
-    required: ['path', 'content', 'count'],
-    additionalProperties: false,
-    properties: {
-      path: { type: 'string' },
-      content: { type: 'string' },
-      count: { type: 'integer', minimum: 1 },
-    },
-  },
-  pong: {
-    description: 'ping the AI',
-    type: 'object',
-    properties: {},
-  },
-  local: {
-    description: 'ping locally',
-    type: 'object',
-    properties: {},
-    additionalProperties: false,
-  },
-  ping: {
-    description: 'ping with a message, where the message will be returned',
-    type: 'object',
-    properties: { message: { type: 'string' } },
-    additionalProperties: false,
-  },
-  touch: {
-    description: 'touch a file in the root directory',
-    type: 'object',
-    properties: {
-      count: { type: 'integer', minimum: 1 },
-      prefix: { type: 'string' },
-      suffix: { type: 'string' },
-    },
-    required: ['count'],
-    additionalProperties: false,
-  },
+export const parameters = {
+  write: z.object({
+    path: z.string(),
+    content: z.string(),
+  }),
+  writeSlow: z.object({
+    path: z.string(),
+    content: z.string(),
+    delayMs: z.number().int().min(0),
+  }).describe('write a file one character at a time'),
+  error: z.object({ message: z.string() }).describe('throw an error'),
+  branch: z.object({}),
+  compound: z.object({ target: pidSchema }).describe('call another function'),
+  parallel: z.object({ count: z.number().int().min(1) }).describe(
+    'call local in parallel',
+  ),
+  squared: z.object({
+    count: z.number().int().min(1),
+    multiplier: z.number().int().min(1),
+  }).describe('call parallel in parallel'),
+  fileAccumulation: z.object({
+    path: z.string(),
+    content: z.string(),
+    count: z.number().int().min(1),
+  }).describe('accumulate file writes'),
+  loopAccumulation: z.object({
+    path: z.string(),
+    content: z.string(),
+    count: z.number().int().min(1),
+  }).describe('loop accumulating file writes'),
+  pong: z.object({}).describe('ping the AI'),
+  local: z.object({}).describe('ping locally'),
+  ping: z.object({ message: z.string().optional() }).describe(
+    'ping with a message',
+  ),
+  touch: z.object({
+    count: z.number().int().min(1),
+    prefix: z.string().optional(),
+    suffix: z.string().optional(),
+  }).describe('touch a file in the root directory'),
 }
-export type Api = {
-  write: (params: { path: string; content: string }) => void
-  writeSlow: (
-    params: { path: string; content: string; delayMs: number },
-  ) => Promise<void>
-  fileAccumulation: (
-    params: { path: string; content: string; count: number },
-  ) => Promise<void>
-  loopAccumulation: {
-    (params: { path: string; content: string; count: number }): Promise<void>
-  }
-  local: () => string
-  branch: (_: void) => Promise<string>
-  ping: (params: { message?: string }) => string | undefined
-  pong: () => string
-  error: (params: { message: string }) => void
-  compound: (params: { target?: PID }) => Promise<string>
-  parallel: (params: { count: number }) => Promise<string[]>
-  squared: (
-    params: { count: number; multiplier: number },
-  ) => Promise<string[][]>
-  touch: (params: { count: number; prefix?: string; suffix?: string }) => void
+export const returns = {
+  write: z.void(),
+  writeSlow: z.void(),
+  error: z.void(),
+  branch: z.string(),
+  compound: z.string(),
+  parallel: z.array(z.string()),
+  squared: z.array(z.array(z.string())),
+  fileAccumulation: z.void(),
+  loopAccumulation: z.void(),
+  pong: z.string(),
+  local: z.string(),
+  ping: z.string().optional(),
+  touch: z.void(),
 }
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
 export const functions: Functions<Api> = {
   write: ({ path, content }, api) => {
     log('write', path, content)
@@ -155,20 +85,20 @@ export const functions: Functions<Api> = {
   branch: async (_, api) => {
     log('branch')
     const { pong } = await api.actions<Api>('io-fixture', { branch: true })
-    const result = await pong()
+    const result = await pong({})
     return result
   },
   compound: async ({ target }, api) => {
     log('compound target:', target)
     const { pong } = await api.actions<Api>('io-fixture', { target })
-    const result = await pong()
+    const result = await pong({})
     return result
   },
   parallel: async ({ count }, api) => {
     const { local } = await api.actions<Api>('io-fixture', { branch: true })
     const promises = []
     for (let i = 0; i < count; i++) {
-      promises.push(local())
+      promises.push(local({}))
     }
     return Promise.all(promises)
   },

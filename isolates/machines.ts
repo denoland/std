@@ -4,7 +4,6 @@ import {
   Functions,
   getRoot,
   PID,
-  toApi,
   ToApiType,
 } from '@/constants.ts'
 import FS from '@/git/fs.ts'
@@ -20,8 +19,6 @@ export const parameters = {
 export const returns = {
   upsert: z.void(),
 }
-
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

@@ -5,7 +5,6 @@ import {
   backchatIdRegex,
   EngineInterface,
   freezePid,
-  JSONSchemaType,
   JsonValue,
   Params,
   PID,
@@ -23,7 +22,7 @@ export class WebClientEngine implements EngineInterface {
     init?: RequestInit,
   ) => Promise<Response>
   readonly #homeAddress: PID
-  readonly #schemas = new Map<string, JSONSchemaType<object>>()
+  readonly #schemas = new Map<string, object>()
   private constructor(url: string, fetcher: typeof fetch, homeAddress: PID) {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
@@ -137,6 +136,7 @@ export class WebClientEngine implements EngineInterface {
           if (!response.body) {
             throw new Error('response body is missing')
           }
+          retryCount = 0
           const spliceStream = toEvents(response.body)
           for await (const value of toIterable(spliceStream, abort.signal)) {
             if (value.event === 'splice') {
@@ -146,7 +146,6 @@ export class WebClientEngine implements EngineInterface {
             } else {
               console.error('unexpected event', value.event, value)
             }
-            retryCount = 0
           }
         } catch (error) {
           console.log('stream error:', error)

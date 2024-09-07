@@ -18,7 +18,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const promises = []
       const count = 20
       for (let i = 0; i < count; i++) {
-        promises.push(local())
+        promises.push(local({}))
       }
       log('promises start')
       const results = await Promise.all(promises)
@@ -45,7 +45,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const promises = []
       const count = 20
       for (let i = 0; i < count; i++) {
-        promises.push(local())
+        promises.push(local({}))
       }
       log('promises start')
       const results = await Promise.all(promises)

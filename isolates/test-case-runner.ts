@@ -5,7 +5,6 @@ import {
   IA,
   print,
   Thread,
-  toApi,
   type ToApiType,
   withMeta,
 } from '@/constants.ts'
@@ -13,7 +12,7 @@ import { assert, Debug } from '@utils'
 import * as longthread from '@/isolates/longthread.ts'
 import { load } from '@/isolates/utils/load-agent.ts'
 import { getChatParams } from '@/isolates/ai-completions.ts'
-import { loadTools } from '@/isolates/ai-load-tools.ts'
+import { loadTools } from './utils/ai-load-tools.ts'
 import { addIteration, outcome, testFile } from '@/api/tps-report.ts'
 import { z } from 'zod'
 import { assistantMessage } from '@/api/zod.ts'
@@ -47,7 +46,6 @@ export const parameters = {
   ),
   assessment: outcome,
 }
-export const api = toApi(parameters)
 
 export const returns = {
   test: z.void(),

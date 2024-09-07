@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { Functions, toApi, WIDGETS, zodPid } from '@/constants.ts'
+import { Functions, pidSchema, WIDGETS } from '@/constants.ts'
 import { ToApiType } from '@/constants.ts'
 
 export const parameters = {
   show: z
     .object({
-      pid: zodPid.optional().describe('defaults to the current pid'),
+      pid: pidSchema.optional().describe('defaults to the current pid'),
       commit: z
         .string()
         .optional()
@@ -26,7 +26,6 @@ export const returns = {
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
-export const api = toApi(parameters)
 
 export const functions: Functions<Api> = {
   show: ({ pid, commit, path, widget }) => {

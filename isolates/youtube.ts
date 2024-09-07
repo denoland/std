@@ -1,4 +1,4 @@
-import { Functions, toApi, ToApiType } from '@/constants.ts'
+import { Functions, ToApiType } from '@/constants.ts'
 import {
   getSubtitles,
   getVideoDetails,
@@ -36,7 +36,6 @@ export const returns = {
     path: z.string().describe('The path to the saved transcription json file'),
   }),
 }
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

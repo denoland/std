@@ -58,7 +58,8 @@ export type IsolateLifecycle = {
   '@@unmount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
 }
 export type Isolate = {
-  api: IsolateApiSchema
+  parameters: Record<string, ZodSchema>
+  returns: Record<string, ZodSchema>
   functions: IsolateFunctions
   lifecycles?: IsolateLifecycle
 }
@@ -217,30 +218,6 @@ export const isChildOf = (child: PID, parent: PID) => {
   return equal(childParent, parent)
 }
 export const isBaseRepo = (pid: PID) => pid.branches.length === 1
-
-export const pidSchema = {
-  type: 'object',
-  required: ['repoId', 'account', 'repository', 'branches'],
-  additionalProperties: false,
-  properties: {
-    repoId: {
-      type: 'string',
-    },
-    account: {
-      type: 'string',
-    },
-    repository: {
-      type: 'string',
-    },
-    branches: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-      minItems: 1,
-    },
-  },
-}
 
 export type Provisioner = (superBackchat: Backchat) => Promise<void>
 

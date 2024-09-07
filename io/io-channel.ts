@@ -5,6 +5,7 @@
 import { assert, equal } from '@utils'
 import {
   IoStruct,
+  ioStruct,
   isMergeReply,
   isPierceRequest,
   isRemoteRequest,
@@ -21,16 +22,17 @@ import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { IsolatePromise } from '@/constants.ts'
 
-const createBase = (): IoStruct => ({
-  sequence: 0,
-  requests: {},
-  executed: {},
-  replies: {},
-  parents: {},
-  pendings: {},
-  branches: {},
-  state: {},
-})
+const createBase = () =>
+  ioStruct.parse({
+    sequence: 0,
+    requests: {},
+    executed: {},
+    replies: {},
+    parents: {},
+    pendings: {},
+    branches: {},
+    state: {},
+  })
 
 export default class IOChannel {
   readonly #io: IoStruct
@@ -375,9 +377,12 @@ export default class IOChannel {
 }
 
 const check = (io: IoStruct, thisPid: PID) => {
+  // TODO move this to zod schema with refine
   // TODO check format
   // TODO check key sequences are sane
   // TODO do the same for reply values
+  ioStruct.parse(io)
+
   for (const replyKey of Object.keys(io.replies)) {
     assert(replyKey in io.requests, 'no reply key in requests')
   }

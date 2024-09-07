@@ -5,74 +5,37 @@ import {
   C,
   ExeResult,
   freezePid,
+  Functions,
   IsolateLifecycle,
   isPierceRequest,
   isQueueBranch,
   isQueueExe,
   isQueuePool,
   PID,
-  pidSchema,
-  PierceRequest,
   print,
   QueueMessage,
+  requestSchema,
   SolidRequest,
+  ToApiType,
 } from '@/constants.ts'
 import IA from '../isolate-api.ts'
 import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
+import { z } from 'zod'
 const log = Debug('AI:artifact')
 
-const request = {
-  type: 'object',
-  required: ['isolate', 'functionName', 'params', 'proctype', 'target', 'ulid'],
-  properties: {
-    isolate: { type: 'string' },
-    functionName: { type: 'string' },
-    params: { type: 'object' },
-    proctype: { enum: ['SERIAL', 'DAEMON', 'BRANCH'] },
-    target: pidSchema,
-    ulid: { type: 'string' },
-    branch: { type: 'string' },
-    branchPrefix: { type: 'string' },
-    effect: {
-      oneOf: [
-        { type: 'boolean' },
-        {
-          type: 'object',
-          properties: {
-            net: { type: 'boolean' },
-            files: { type: 'boolean' },
-            artifact: { type: 'boolean' },
-            timeout: { type: 'number' },
-          },
-        },
-      ],
-    },
-  },
-  additionalProperties: false,
-}
+export const parameters = { pierce: z.object({ pierce: requestSchema }) }
+export const returns = { pierce: z.void() }
 
-export const api = {
-  pierce: {
-    type: 'object',
-    required: ['pierce'],
-    properties: { pierce: request },
-  },
-}
+export type Api = ToApiType<typeof parameters, typeof returns>
 
-export interface Api {
-  pierce: (params: Pierce) => Promise<void>
-}
-interface Pierce {
-  pierce: PierceRequest
-}
 /**
  * Reason to keep artifact with an Isolate interface, is so we can control it
  * from within an isolate.
  */
-export const functions = {
-  async pierce({ pierce }: Pierce, api: IA<C>) {
+export const functions: Functions<Api> = {
+  async pierce({ pierce }, api: IA<C>) {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     log('target', print(pierce.target))

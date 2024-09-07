@@ -5,12 +5,20 @@ export type { AssistantMessage, CompletionMessage } from './zod.ts'
 import { completionMessage } from './zod.ts'
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32crockford } from '@scure/base'
-import { JSONSchemaType } from './types.ajv.ts'
 import type { Backchat } from './client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 import type OpenAI from 'openai'
 
 type CommitOid = string
+
+const sequenceInteger = z.number().int().gte(0)
+const sequenceKey = z.string().refine((data) => {
+  try {
+    return sequenceInteger.safeParse(Number.parseInt(data)).success
+  } catch (_error) {
+    return false
+  }
+}, 'sequence key must be an integer')
 
 export { Backchat }
 export const Proctype = z.enum(['SERIAL', 'BRANCH', 'DAEMON', 'EFFECT'])
@@ -39,7 +47,13 @@ export const agentHashRegex = /^age_[0-9A-HJKMNP-TV-Z]{16}$/
 
 export const SU_ACTOR = 'act_0000000000000000'
 export const SU_BACKCHAT = 'bac_0000000000000000'
-export const zodPid = z.object({
+export const pidSchema = z.object({
+  /**
+   * The hash of the genesis commit is used to identify this repo in a
+   * cryptographically secure way.  This repoId is used to reference this repo
+   * unique with strong guarantees that this is the correct repo that
+   * communication was intended with.
+   */
   repoId: z.string().regex(repoIdRegex),
   account: z.string().regex(githubRegex),
   repository: z.string().regex(githubRegex),
@@ -47,11 +61,10 @@ export const zodPid = z.object({
 })
 export const triad = z.object({
   path: z.string(),
-  pid: zodPid,
+  pid: pidSchema,
   commit: z.string(),
 })
 export type Triad = z.infer<typeof triad>
-export type { JSONSchemaType }
 export type ApiFunction = {
   (): unknown | Promise<unknown>
   (...args: [{ [key: string]: unknown }]): unknown | Promise<unknown>
@@ -94,52 +107,15 @@ export type ProcessOptions = {
   /** Provide file paths that will be deleted in the new branch */
   deletes?: string[]
 }
-export type IoStruct = {
-  sequence: number
-  /** The current sequence of the request being executed serially */
-  executing?: number
-  /** The sequences of requests that have been executed serially */
-  executed: { [key: number]: boolean }
-  requests: { [key: number]: Request }
-  replies: { [key: number]: Outcome }
-  /** If a reply is a merge reply, the commit that carried it is stored here */
-  parents: { [key: number]: CommitOid }
-  /**
-   * If a request generates child requests, they are tracked here.  The commit
-   * in each entry is the commit that caused the child requests to be generated.
-   * This is used to replay by resetting the fs to that commit and doing a
-   * replay.
-   */
-  pendings: {
-    [key: number]: { commit: CommitOid; sequences: number[] }[]
-  }
-  /** Active branches are stored here.  A branch is a daemon if it is listed
-   * here but its request has been replied to or it is gone from the requests
-   * list */
-  branches: {
-    [sequence: number]: BranchName
-  }
-  /**
-   * Isolates can store values here and know they will not leak into other
-   * branches, and will be quick to access since the io file is always loaded.
-   */
-  state: { [key: string]: JsonValue }
-}
-type BranchName = string
 
 export type DispatchFunctions = {
   [key: string]: (params?: Params) => Promise<unknown> | unknown
 }
 
 export type IsolateApiSchema = {
-  [key: string]: JSONSchemaType<object>
+  [key: string]: object
 }
-export type SerializableError = {
-  name: string
-  message: string
-  stack?: string
-}
-export type Outcome = { result?: JsonValue; error?: SerializableError }
+
 export const ENTRY_BRANCH = 'main'
 
 export type PartialPID = Omit<PID, 'repoId'>
@@ -147,7 +123,7 @@ export type PartialPID = Omit<PID, 'repoId'>
 export const threadSchema = z.object({
   /** If this thread is deferring to another thread, rather than taking on the
    * the current messages directly */
-  defer: zodPid.optional(),
+  defer: pidSchema.optional(),
   /** If the messages were truncated, this is the offset count */
   messageOffset: z.number(),
   messages: z.array(completionMessage),
@@ -207,11 +183,7 @@ export type PathTriad = {
   pid?: PID
   commit?: CommitOid
 }
-export type PierceRequest = Invocation & {
-  target: PID
-  ulid: string
-  params: Params
-}
+
 export const isPierceRequest = (p: Request): p is PierceRequest => {
   return 'ulid' in p
 }
@@ -264,35 +236,36 @@ export type Invocation = z.infer<typeof invocation>
 /**
  * The Process Identifier used to address a specific process branch.
  */
-export type PID = {
-  /**
-   * The hash of the genesis commit is used to identify this repo in a
-   * cryptographically secure way.  This repoId is used to reference this repo
-   * unique with strong guarantees that this is the correct repo that
-   * communication was intended with.
-   */
-  repoId: string
-  account: string
-  repository: string
-  branches: string[]
-}
+export type PID = z.infer<typeof pidSchema>
 /**
  * A request that has been included in a commit, therefore has a sequence number
  */
-export type SolidRequest = Invocation & {
-  target: PID
-  source: PID
-  sequence: number
-}
+export type SolidRequest = z.infer<typeof solidRequest>
+const solidRequest = invocation.extend({
+  target: pidSchema,
+  source: pidSchema,
+  sequence: sequenceInteger,
+})
+
 /** A request that travels between branches */
-export type RemoteRequest = SolidRequest & {
-  commit: string
-}
+export type RemoteRequest = z.infer<typeof remoteRequest>
+export const remoteRequest = solidRequest.extend({ commit: md5 })
+
+export type PierceRequest = z.infer<typeof pierceRequest>
+export const pierceRequest = invocation.extend({
+  target: pidSchema,
+  ulid: z.string(),
+})
+
 export type UnsequencedRequest = z.infer<typeof unsequencedRequest>
-export const unsequencedRequest = invocation.extend({ target: zodPid })
+export const unsequencedRequest = invocation.extend({ target: pidSchema })
 
-export type Request = PierceRequest | SolidRequest | RemoteRequest
-
+export type Request = z.infer<typeof requestSchema>
+export const requestSchema = z.union([
+  pierceRequest,
+  solidRequest,
+  remoteRequest,
+])
 // TODO remove this by passing ProcessOptions in with the Request
 export const getProcType = (procOpts?: ProcessOptions) => {
   if (!procOpts) {
@@ -411,8 +384,6 @@ export type CommitObject = {
   gpgsig?: string
 }
 
-type ApiSchema = Record<string, JSONSchemaType<object>>
-
 export interface EngineInterface {
   /**
    * The address in use as basis of identity for this engine.  May be a repo
@@ -429,7 +400,7 @@ export interface EngineInterface {
    * @param data Data that will be echoed back
    */
   ping(data?: JsonValue): Promise<IsolateReturn>
-  apiSchema(isolate: string): Promise<ApiSchema>
+  apiSchema(isolate: string): Promise<Record<string, object>>
   transcribe(audio: File): Promise<{ text: string }>
   pierce(pierce: PierceRequest): Promise<void>
   watch(
@@ -752,7 +723,7 @@ export const chatParams = agent.shape.config.extend({
 export type ChatParams = z.infer<typeof chatParams>
 export const backchatStateSchema = z.object({
   /** The base thread that this backchat session points to - the thread of last resort */
-  target: zodPid,
+  target: pidSchema,
 })
 export type ToApiType<
   P extends Record<string, ZodSchema>,
@@ -762,3 +733,58 @@ export type ToApiType<
     params: z.infer<P[K]>,
   ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
 }
+
+export const serializableError = z.object({
+  name: z.string(),
+  message: z.string(),
+  stack: z.string().optional(),
+})
+export type SerializableError = z.infer<typeof serializableError>
+
+export const outcomeSchema = z.object({
+  result: jsonSchema.optional(),
+  error: serializableError.optional(),
+}).refine((data) => {
+  if (data.error !== undefined) {
+    return data.result === undefined
+  }
+  return true
+}, 'result and error are mutually exclusive')
+
+export type Outcome = { result?: JsonValue; error?: SerializableError }
+
+export type IoStruct = z.infer<typeof ioStruct>
+export const ioStruct = z.object({
+  sequence: sequenceInteger,
+  /** The current sequence of the request being executed serially */
+  executing: sequenceInteger.optional(),
+  /** The sequences of requests that have been executed serially */
+  executed: z.record(sequenceKey, z.boolean()),
+  // TODO make the requests be a zod schema
+  requests: z.record(sequenceKey, requestSchema),
+  replies: z.record(sequenceKey, outcomeSchema),
+  /** If a reply is a merge reply, the commit that carried it is stored here */
+  parents: z.record(sequenceKey, md5),
+  /**
+   * If a request generates child requests, they are tracked here.  The commit
+   * in each entry is the commit that caused the child requests to be generated.
+   * This is used to replay by resetting the fs to that commit and doing a
+   * replay.
+   */
+  pendings: z.record(
+    sequenceKey,
+    z.array(z.object({
+      commit: md5,
+      sequences: z.array(sequenceInteger),
+    })),
+  ),
+  /** Active branches are stored here.  A branch is a daemon if it is listed
+   * here but its request has been replied to or it is gone from the requests
+   * list */
+  branches: z.record(sequenceKey, z.string()),
+  /**
+   * Isolates can store values here and know they will not leak into other
+   * branches, and will be quick to access since the io file is always loaded.
+   */
+  state: z.record(jsonSchema),
+})

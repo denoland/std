@@ -34,7 +34,6 @@
     "@std/path": "jsr:@std/path",
     "@types/benchmark": "npm:@types/benchmark",
     "@utils": "./utils.ts",
-    "ajv": "npm:ajv",
     "benchmark": "npm:benchmark",
     "chalk": "npm:chalk",
     "debug": "npm:debug",

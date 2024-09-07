@@ -7,13 +7,12 @@ import {
   getActorId,
   isBaseRepo,
   machineIdRegex,
+  pidSchema,
   print,
   RpcOpts,
   SU_ACTOR,
   SU_BACKCHAT,
-  toApi,
   ToApiType,
-  zodPid,
 } from '@/constants.ts'
 import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug, expect } from '@utils'
@@ -48,24 +47,23 @@ export const parameters = {
    * unification and at what commit.
    */
   surrender: z.object({
-    authProvider: zodPid,
+    authProvider: pidSchema,
   }),
   /**
    * Register an auth provider that is allowed to authorize merging actorIds.
    * Can only be called by the installation owner account.
    */
   addAuthProvider: z.object({
-    provider: zodPid,
+    provider: pidSchema,
     name: z.string(),
   }),
 }
 export const returns = {
   '@@install': z.void(),
-  createActor: z.promise(zodPid),
-  surrender: z.promise(z.string()),
+  createActor: pidSchema,
+  surrender: z.string(),
   addAuthProvider: z.void(),
 }
-export const api = toApi(parameters)
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
@@ -159,5 +157,5 @@ export const functions: Functions<Api> = {
 export const stateSchema = z.object({
   /** The machineId of the superuser */
   superuser: z.string().regex(machineIdRegex),
-  authProviders: z.record(zodPid),
+  authProviders: z.record(pidSchema),
 })

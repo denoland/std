@@ -72,12 +72,12 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { pid: target } = await backchat.init({ repo: 'cradle/pierce' })
     const actions = await backchat.actions<Api>('io-fixture', { target })
     await t.step('local', async () => {
-      const result = await actions.local()
+      const result = await actions.local({})
       log('local result', result)
       expect(result).toBe('local reply')
     })
     await t.step('second local', async () => {
-      const second = await actions.local()
+      const second = await actions.local({})
       expect(second).toBe('local reply')
     })
 

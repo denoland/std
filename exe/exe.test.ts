@@ -19,12 +19,13 @@ import { hash } from '@/constants.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
+const repoId = `rep_${hash('test')}`
 const partialPid: PartialPID = {
   account: 'exe',
   repository: 'test',
   branches: ['main'],
 }
-const source = { ...partialPid, repoId: 'other', account: 'higher' }
+const source = { ...partialPid, repoId, account: 'higher' }
 const partialRequest: PartialRequest = {
   isolate: 'io-fixture',
   functionName: 'local',
@@ -90,7 +91,11 @@ Deno.test('writes', async (t) => {
 })
 
 Deno.test('loopback', async () => {
-  const compound = { ...partialRequest, functionName: 'compound' }
+  const compound = {
+    ...partialRequest,
+    functionName: 'compound',
+    params: { target: source },
+  }
   const { request, context, exe, fs, stop } = await mocks(compound)
   const result = await exe.execute(request, fs.oid, context)
   expect('pending' in result).toBeTruthy()
@@ -133,8 +138,9 @@ Deno.test('compound', async (t) => {
       source: target,
       outcome: { result: 'compound reply' },
       sequence: sequenced[0].sequence,
-      commit: 'fakeCommit',
+      commit: '9e77f98333897ce63bf993280994d5e96c1679ff',
     }
+
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
     expect(savedRequest).toEqual(sequenced[0])
@@ -154,7 +160,7 @@ Deno.test('compound', async (t) => {
     const reply = {
       target,
       source: target,
-      commit: 'fakeCommit',
+      commit: '0088107ee2fe3d8350d64b8b0098081a3db08adc',
       outcome: { result: 'compound reply' },
       sequence: sequenced[0].sequence,
     }

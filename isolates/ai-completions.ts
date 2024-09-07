@@ -11,10 +11,9 @@ import {
   IA,
   print,
   Thread,
-  toApi,
   ToApiType,
 } from '@/constants.ts'
-import { loadTools } from './ai-load-tools.ts'
+import { loadTools } from './utils/ai-load-tools.ts'
 import { load } from './utils/load-agent.ts'
 import { z } from 'zod'
 
@@ -43,8 +42,6 @@ export const parameters = {
 export const returns = {
   complete: z.void(),
 }
-
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

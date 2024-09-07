@@ -1,13 +1,7 @@
 // in this branch is where the tps reports are stored
 // at the start all tps reports would be blanked ?
 import { z } from 'zod'
-import {
-  addBranches,
-  Functions,
-  getActorPid,
-  print,
-  toApi,
-} from '@/constants.ts'
+import { addBranches, Functions, getActorPid, print } from '@/constants.ts'
 import * as longthread from '@/isolates/longthread.ts'
 import * as session from '@/isolates/session.ts'
 import { Debug, equal } from '@utils'
@@ -31,7 +25,6 @@ export const parameters = {
     'Cancel the current run immediately',
   ),
 }
-export const api = toApi(parameters)
 export const returns = {
   start: z.void(),
   stop: z.void(),
@@ -67,7 +60,7 @@ export const functions: Functions<Api> = {
       const sopts = { branchName: file, noClose: true }
       const { noop } = await api.actions<session.Api>('session', sopts)
 
-      const lopts = { target: await noop() }
+      const lopts = { target: await noop({}) }
       const actions = await api.actions<longthread.Api>('longthread', lopts)
       await actions.start({})
       const actorId = 'test-runner'

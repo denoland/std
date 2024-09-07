@@ -3,7 +3,7 @@ import { Debug } from '@utils'
 import { serializeError } from 'serialize-error'
 import { IA, Thread } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
-import { load } from './utils/load-agent.ts'
+import { load } from './load-agent.ts'
 const base = 'AI:execute-tools'
 const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')

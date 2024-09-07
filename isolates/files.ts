@@ -1,5 +1,5 @@
 import { Debug } from '@utils'
-import { Functions, print, toApi, ToApiType } from '@/constants.ts'
+import { Functions, print, ToApiType } from '@/constants.ts'
 import { z } from 'zod'
 const log = Debug('AI:files')
 
@@ -72,8 +72,6 @@ export const returns = {
     z.object({ path: z.string(), description: z.string() }),
   ),
 }
-
-export const api = toApi(parameters)
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 

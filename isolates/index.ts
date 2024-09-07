@@ -19,7 +19,7 @@ import * as github from './github.ts'
 import * as threads from './threads.ts'
 
 import * as completions from './ai-completions.ts'
-import * as loadTools from './ai-load-tools.ts'
+import * as loadTools from './utils/ai-load-tools.ts'
 
 import * as longthread from './longthread.ts'
 import * as stateboard from './stateboard.ts'
