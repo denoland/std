@@ -27,6 +27,8 @@ YOU MUST NOT ever suggest an agent that is not in the Index of Available Agents.
 
 ## The Index of Available Agents
 
+- `agents/dumb-bot.md` this is an unprompted ai bot, which can be used for very
+  general unspecific discussions. It can read and write files.
 - `agents/files.md`
 - `agents/hamr.md` this is the crm
 - `agents/system.md` The super user agent, used for all powerful administrative
