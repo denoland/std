@@ -41,3 +41,32 @@ export function arrayToNumber(
       return view.getFloat64(0);
   }
 }
+
+export function upgradeStreamFromGen(
+  gen: AsyncGenerator<Uint8Array>,
+): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    type: "bytes",
+    async pull(controller) {
+      const { done, value } = await gen.next();
+      if (done) {
+        controller.byobRequest?.respond(0);
+        return controller.close();
+      }
+      if (controller.byobRequest?.view) {
+        const buffer = new Uint8Array(controller.byobRequest.view.buffer);
+        const size = buffer.length;
+        if (value.length > size) {
+          buffer.set(value.slice(0, size));
+          controller.byobRequest.respond(size);
+          controller.enqueue(value.slice(size));
+        } else {
+          buffer.set(value);
+          controller.byobRequest.respond(value.length);
+        }
+      } else {
+        controller.enqueue(value);
+      }
+    },
+  });
+}

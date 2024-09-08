@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./decode": "./decode.ts",
-    "./encode": "./encode.ts"
+    "./encode": "./encode.ts",
+    "./encode-stream": "./encode_stream.ts"
   }
 }

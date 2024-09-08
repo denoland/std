@@ -2,6 +2,7 @@
 
 import { concat } from "@std/bytes";
 import { numberToArray } from "./_common.ts";
+import type { CborInputStream } from "./encode_stream.ts";
 
 /**
  * This type specifies the primitive types that the implementation can
@@ -18,17 +19,18 @@ export type CborPrimitiveType =
   | Date;
 
 /**
- * This type specifies the values that the implementation can encode/decode
- * into/from.
+ * This type specifies the encodable and decodable values for {@link encodeCbor}
+ * and {@link CborDecoder}.
  */
 export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
   [k: string]: CborType;
 };
 
 /**
- * A class that wraps {@link CborType} values, assuming the `tagContent` is the
- * appropriate type and format for encoding. A list of the different types can
- * be found [here](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
+ * A class that wraps {@link CborType} and {@link CborInputStream} values,
+ * assuming the `tagContent` is the appropriate type and format for encoding.
+ * A list of the different types can be found
+ * [here](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
  *
  * This class will be returned out of CborDecoder if it doesn't automatically
  * know how to handle the tag number.
@@ -54,9 +56,9 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
  * ```
  *
- * @typeParam T extends {@link CborType}
+ * @typeParam T extends {@link CborType} | {@link CborInputStream}
  */
-export class CborTag<T extends CborType> {
+export class CborTag<T extends CborType | CborInputStream> {
   /**
    * The number indicating how the tagContent should be interpreted based off
    * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).

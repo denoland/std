@@ -17,3 +17,4 @@
  */
 export * from "./decode.ts";
 export * from "./encode.ts";
+export * from "./encode_stream.ts";
