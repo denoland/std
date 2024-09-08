@@ -4,6 +4,7 @@ commands:
   - agents:read
   - agents:write
   - agents:update
+  - agents:config
 ---
 
 You are a **creatorBot** that generates system prompts for business processes
