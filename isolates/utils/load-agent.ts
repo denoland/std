@@ -4,9 +4,8 @@ import { agent, AGENT_RUNNERS, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
-export const load = async (path: string, api: IA) => {
-  assert(path.endsWith('.md'), 'path must end with .md')
-  const string = await api.read(path)
+export const loadString = async (path: string, string: string, api: IA) => {
+  const name = posix.basename(path, posix.extname(path))
   const { data, content } = matter(string.trim())
   assert(typeof content === 'string', 'content missing')
   const config: Agent['config'] = {
@@ -26,10 +25,13 @@ export const load = async (path: string, api: IA) => {
   const { pid, commit } = api
   const source: Triad = { path, pid, commit }
   const instructions = await expandLinks(content.trim(), api)
-  const name = posix.basename(path, posix.extname(path))
-  const loaded = agent.parse({ ...defaults, name, instructions, source })
+  return agent.parse({ ...defaults, name, instructions, source })
+}
 
-  return loaded
+export const load = async (path: string, api: IA) => {
+  assert(path.endsWith('.md'), 'path must end with .md')
+  const string = await api.read(path)
+  return loadString(path, string, api)
 }
 
 export const loadAll = async (dir: string, api: IA) => {

@@ -1,12 +1,12 @@
 // the Grand Unified Test Suite™
 
 import { expect, log } from '@utils'
-import { Api } from '@/isolates/io-fixture.ts'
+import { Api, parameters } from '@/isolates/io-fixture.ts'
 import { CradleMaker } from '@/constants.ts'
 import { assert } from '@std/assert'
 
 export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ': '
+  const prefix = name + ':git: '
 
   Deno.test(prefix + 'io', async (t) => {
     const { backchat, engine } = await cradleMaker()
@@ -87,9 +87,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await t.step('params fails validation', async () => {
       const msg = 'Parameters Validation Error '
-      const invalid = { invalid: 'parameters' } as unknown as {
-        message: string
-      }
+      const invalid = { message: true } as unknown as { message: string }
+      expect(() => parameters.ping.strict().parse(invalid)).toThrow()
       await expect(actions.ping(invalid))
         .rejects.toThrow(msg)
     })

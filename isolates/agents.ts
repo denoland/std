@@ -1,6 +1,8 @@
 import { Functions, print, ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import { z } from 'zod'
+import * as files from './files.ts'
+import { loadString } from '@/isolates/utils/load-agent.ts'
 const log = Debug('AI:agents')
 
 export const parameters = {
@@ -13,6 +15,15 @@ export const parameters = {
   }).describe(
     'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
   ),
+  write: files.parameters.write.describe(
+    'Write an agent file with the provided contents.  The contents will be checked for formatting and errors before being written.',
+  ),
+  update: files.parameters.update.describe(
+    'Update an agent file using a regex and a replacement string.  The number of occurrences replaced will be returned to you as an integer.  If you want to append something to a file, you can use a regex to match the end of the file and replace it with the contents you want to append.  To delete portions of a file, you can use a regex to match the contents you want to delete and replace it with an empty string.  If the contents are not formatted correctly as an agent, an error will be thrown.',
+  ),
+  read: files.parameters.read.describe(
+    'Read an agent file.  The contents will be returned as a string. If the contents are not formatted correctly as an agent, an error will be thrown.',
+  ),
 }
 export const returns = {
   search: z.array(
@@ -24,6 +35,9 @@ export const returns = {
     }),
   ),
   switch: z.null(),
+  write: files.returns.write,
+  update: files.returns.update,
+  read: files.returns.read,
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -53,5 +67,23 @@ export const functions: Functions<Api> = {
   switch: ({ path }, api) => {
     log('switch', path, print(api.pid))
     return null
+  },
+  write: async ({ path, content = '' }, api) => {
+    log('write', path, content)
+    await loadString(path, content, api)
+    return files.functions.write({ path, content }, api)
+  },
+  update: async ({ path, regex, replacement }, api) => {
+    log('update', path, regex, replacement)
+    const { result: content, matches } = files.replace(path, regex, replacement)
+    await loadString(path, content, api)
+    await files.functions.write({ path, content }, api)
+    return { matchesUpdated: matches.length }
+  },
+  read: async ({ reasoning, path }, api) => {
+    log('read', path, print(api.pid))
+    const contents = await files.functions.read({ reasoning, path }, api)
+    await loadString(path, contents, api)
+    return contents
   },
 }

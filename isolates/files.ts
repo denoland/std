@@ -37,9 +37,17 @@ export const parameters = {
     ),
     regex: z.string().describe('a regular expression string'),
     replacement: z.string().describe('the replacement string'),
-  }).describe(
-    'Update a file using a regex and a replacement string.  The number of occurrences replaced will be returned to you as an integer.  If you want to append something to a file, you can use a regex to match the end of the file and replace it with the contents you want to append.  To delete portions of a file, you can use a regex to match the contents you want to delete and replace it with an empty string.  Path must be relative.',
-  ),
+  }).refine(({ regex }) => {
+    try {
+      new RegExp(regex)
+      return true
+    } catch (_) {
+      return false
+    }
+  })
+    .describe(
+      'Update a file using a regex and a replacement string.  The number of occurrences replaced will be returned to you as an integer.  If you want to append something to a file, you can use a regex to match the end of the file and replace it with the contents you want to append.  To delete portions of a file, you can use a regex to match the contents you want to delete and replace it with an empty string.  Path must be relative.',
+    ),
   rm: z.object({
     path: z.string().describe(
       'the relative path to the file you want to remove',
@@ -60,11 +68,13 @@ export const parameters = {
   ),
 }
 export const returns = {
+  /** The number of bytes written */
   write: z.object({
     charactersWritten: z.number(),
   }),
   ls: z.union([z.array(z.string()), z.number()]),
   read: z.string(),
+  /** The number of occurrences replaced */
   update: z.object({ matchesUpdated: z.number() }),
   rm: z.void(),
   mv: z.void(),
@@ -102,8 +112,7 @@ export const functions: Functions<Api> = {
   update: async ({ path, regex, replacement }, api) => {
     log('update', path, regex, replacement)
     const contents = await api.read(path)
-    const matches = contents.match(new RegExp(regex, 'g')) || []
-    const result = contents.replace(new RegExp(regex, 'g'), replacement)
+    const { matches, result } = replace(contents, regex, replacement)
     api.write(path, result)
     return { matchesUpdated: matches.length }
   },
@@ -126,4 +135,13 @@ export const functions: Functions<Api> = {
     const ls = await api.ls()
     return ls.map((path) => ({ path, description: '' }))
   },
+}
+export const replace = (
+  contents: string,
+  regex: string,
+  replacement: string,
+) => {
+  const matches = contents.match(new RegExp(regex, 'g')) || []
+  const result = contents.replace(new RegExp(regex, 'g'), replacement)
+  return { matches, result }
 }

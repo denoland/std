@@ -23,7 +23,7 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { assert, equal } from '@utils'
 import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
-import { z, ZodSchema } from 'zod'
+import { z, ZodObject, ZodSchema, ZodUnknown } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -58,7 +58,7 @@ export type IsolateLifecycle = {
   '@@unmount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
 }
 export type Isolate = {
-  parameters: Record<string, ZodSchema>
+  parameters: Record<string, ZodObject<Record<string, ZodUnknown>>>
   returns: Record<string, ZodSchema>
   functions: IsolateFunctions
   lifecycles?: IsolateLifecycle

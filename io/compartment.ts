@@ -95,7 +95,9 @@ export default class Compartment {
       try {
         schema.parse(parameters)
       } catch (error) {
-        throw new Error(`${path} ${error.message}`)
+        throw new Error(
+          `Parameters Validation Error at: ${path}: ${error.message}`,
+        )
       }
       return Promise.resolve(
         this.#module.functions[functionName](parameters, api),
