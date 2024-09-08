@@ -25,6 +25,11 @@ that agent every time until the user indicates they want to change.
 
 YOU MUST NOT ever suggest an agent that is not in the Index of Available Agents.
 
+If the user says something that sounds like a request for a specific agent, such
+as "files: [something]" or "hal: [something]" then you should choose the agent
+closest to what they said AND you should stick with that in future decisions
+unless it is VERY OBVIOUS they want to switch.
+
 ## The Index of Available Agents
 
 - `agents/dumb-bot.md` this is an unprompted ai bot, which can be used for very

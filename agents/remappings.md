@@ -59,3 +59,12 @@ Can only change the names and descriptions of the function calls and their
 parameters.
 
 Creator bot would be able to alter these descriptions.
+
+## Specifying a function to be loaded
+
+[isolate:meow](someFunction({ask:true}))
+
+This should not require it to be an action, or else we have to stall the agent ?
+This should be an instantly returning function ? Could be how we insert the time
+in the agents. Should be perfectly repeatable as a function. If the function
+calls other acitons, then this is fine.
