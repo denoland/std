@@ -8,10 +8,9 @@
  * spec.
  *
  * ```ts no-assert
- * import { CborEncoder } from "@std/cbor";
+ * import { encodeCbor } from "@std/cbor";
  *
- * const encoder = new CborEncoder();
- * console.log(encoder.encode(5));
+ * console.log(encodeCbor(5));
  * ```
  *
  * @module

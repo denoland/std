@@ -2,49 +2,47 @@
 
 import { assertEquals } from "@std/assert";
 import { concat } from "@std/bytes";
-import { CborEncoder, CborTag } from "./mod.ts";
+import { CborTag, encodeCbor } from "./mod.ts";
 
 function random(start: number, end: number): number {
   return Math.floor(Math.random() * (end - start) + start);
 }
 
-Deno.test("CborEncoder() encoding undefined", () => {
+Deno.test("encodeCbor() encoding undefined", () => {
   assertEquals(
-    new CborEncoder().encode(undefined),
+    encodeCbor(undefined),
     new Uint8Array([0b111_10111]),
   );
 });
 
-Deno.test("CborEncoder() encoding null", () => {
-  assertEquals(new CborEncoder().encode(null), new Uint8Array([0b111_10110]));
+Deno.test("encodeCbor() encoding null", () => {
+  assertEquals(encodeCbor(null), new Uint8Array([0b111_10110]));
 });
 
-Deno.test("CborEncoder() encoding true", () => {
-  assertEquals(new CborEncoder().encode(true), new Uint8Array([0b111_10101]));
+Deno.test("encodeCbor() encoding true", () => {
+  assertEquals(encodeCbor(true), new Uint8Array([0b111_10101]));
 });
 
-Deno.test("CborEncoder() encoding false", () => {
-  assertEquals(new CborEncoder().encode(false), new Uint8Array([0b111_10100]));
+Deno.test("encodeCbor() encoding false", () => {
+  assertEquals(encodeCbor(false), new Uint8Array([0b111_10100]));
 });
 
-Deno.test("CborEncoder() encoding numbers as Uint", () => {
-  const encoder = new CborEncoder();
-
+Deno.test("encodeCbor() encoding numbers as Uint", () => {
   let num: number | bigint = random(0, 24);
-  assertEquals(encoder.encode(num), new Uint8Array([0b000_00000 + num]));
+  assertEquals(encodeCbor(num), new Uint8Array([0b000_00000 + num]));
 
   num = random(24, 2 ** 8);
-  assertEquals(encoder.encode(num), new Uint8Array([0b000_11000, num]));
+  assertEquals(encodeCbor(num), new Uint8Array([0b000_11000, num]));
 
   num = random(2 ** 8, 2 ** 16);
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([0b000_11001, num >> 8 & 0xFF, num & 0xFF]),
   );
 
   num = random(2 ** 16, 2 ** 32);
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([
       0b000_11010,
       num >> 24 & 0xFF,
@@ -57,7 +55,7 @@ Deno.test("CborEncoder() encoding numbers as Uint", () => {
   // JavaScript fails at correctly bit-wising this many bits as a number.
   num = BigInt(Number.MAX_SAFE_INTEGER);
   assertEquals(
-    encoder.encode(Number.MAX_SAFE_INTEGER),
+    encodeCbor(Number.MAX_SAFE_INTEGER),
     new Uint8Array(
       [
         0b000_11011,
@@ -74,39 +72,37 @@ Deno.test("CborEncoder() encoding numbers as Uint", () => {
   );
 });
 
-Deno.test("CborEncoder() encoding numbers as Int", () => {
+Deno.test("encodeCbor() encoding numbers as Int", () => {
   const num = -random(1, 24); // -0 === 0
   assertEquals(
-    new CborEncoder().encode(num),
+    encodeCbor(num),
     new Uint8Array([0b001_00000 + (-num - 1)]),
   );
 });
 
-Deno.test("CborEncoder() encoding numbers as Float", () => {
+Deno.test("encodeCbor() encoding numbers as Float", () => {
   const num = Math.random() * 2 ** 32;
   const view = new DataView(new ArrayBuffer(8));
   view.setFloat64(0, num);
   assertEquals(
-    new CborEncoder().encode(num),
+    encodeCbor(num),
     concat([new Uint8Array([0b111_11011]), new Uint8Array(view.buffer)]),
   );
 });
 
-Deno.test("CborEncoder() encoding bigints as Uint", () => {
-  const encoder = new CborEncoder();
-
+Deno.test("encodeCbor() encoding bigints as Uint", () => {
   let num = BigInt(random(0, 24));
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([0b000_00000 + Number(num)]),
   );
 
   num = BigInt(random(24, 2 ** 8));
-  assertEquals(encoder.encode(num), new Uint8Array([0b000_11000, Number(num)]));
+  assertEquals(encodeCbor(num), new Uint8Array([0b000_11000, Number(num)]));
 
   num = BigInt(random(2 ** 8, 2 ** 16));
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([
       0b000_11001,
       Number(num >> 8n & 0xFFn),
@@ -116,7 +112,7 @@ Deno.test("CborEncoder() encoding bigints as Uint", () => {
 
   num = BigInt(random(2 ** 16, 2 ** 32));
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([
       0b000_11010,
       Number(num >> 24n & 0xFFn),
@@ -128,7 +124,7 @@ Deno.test("CborEncoder() encoding bigints as Uint", () => {
 
   num = BigInt(random(2 ** 32, 2 ** 64));
   assertEquals(
-    encoder.encode(num),
+    encodeCbor(num),
     new Uint8Array([
       0b000_11011,
       Number(num >> 56n & 0xFFn),
@@ -143,33 +139,32 @@ Deno.test("CborEncoder() encoding bigints as Uint", () => {
   );
 });
 
-Deno.test("CborEncoder() encoding bigints as Int", () => {
+Deno.test("encodeCbor() encoding bigints as Int", () => {
   const num = -BigInt(random(1, 24)); // -0 === 0
   assertEquals(
-    new CborEncoder().encode(num),
+    encodeCbor(num),
     new Uint8Array([0b001_00000 + Number(-num - 1n)]),
   );
 });
 
-Deno.test("CborEncoder() encoding strings", () => {
-  const encoder = new CborEncoder();
+Deno.test("encodeCbor() encoding strings", () => {
   const decoder = new TextDecoder();
 
   let bytes = new Uint8Array(random(0, 24)).map((_) => random(97, 123)); // Range: `a` - `z`
   assertEquals(
-    encoder.encode(decoder.decode(bytes)),
+    encodeCbor(decoder.decode(bytes)),
     new Uint8Array([0b011_00000 + bytes.length, ...bytes]),
   );
 
   bytes = new Uint8Array(random(24, 2 ** 8)).map((_) => random(97, 123)); // Range: `a` - `z`
   assertEquals(
-    encoder.encode(decoder.decode(bytes)),
+    encodeCbor(decoder.decode(bytes)),
     new Uint8Array([0b011_11000, bytes.length, ...bytes]),
   );
 
   bytes = new Uint8Array(random(2 ** 8, 2 ** 16)).map((_) => random(97, 123)); // Range: `a` - `z`
   assertEquals(
-    encoder.encode(decoder.decode(bytes)),
+    encodeCbor(decoder.decode(bytes)),
     new Uint8Array([
       0b011_11001,
       bytes.length >> 8 & 0xFF,
@@ -180,7 +175,7 @@ Deno.test("CborEncoder() encoding strings", () => {
 
   bytes = new Uint8Array(random(2 ** 16, 2 ** 17)).map((_) => random(97, 123)); // Range: `a` - `z`
   assertEquals(
-    encoder.encode(decoder.decode(bytes)),
+    encodeCbor(decoder.decode(bytes)),
     new Uint8Array([
       0b011_11010,
       bytes.length >> 24 & 0xFF,
@@ -194,24 +189,22 @@ Deno.test("CborEncoder() encoding strings", () => {
   // Can't test the next bracket up due to JavaScript limitations.
 });
 
-Deno.test("CborEncoder() encoding Uint8Arrays", () => {
-  const encoder = new CborEncoder();
-
+Deno.test("encodeCbor() encoding Uint8Arrays", () => {
   let bytes = new Uint8Array(random(0, 24));
   assertEquals(
-    encoder.encode(bytes),
+    encodeCbor(bytes),
     new Uint8Array([0b010_00000 + bytes.length, ...bytes]),
   );
 
   bytes = new Uint8Array(random(24, 2 ** 8));
   assertEquals(
-    encoder.encode(bytes),
+    encodeCbor(bytes),
     new Uint8Array([0b010_11000, bytes.length, ...bytes]),
   );
 
   bytes = new Uint8Array(random(2 ** 8, 2 ** 16));
   assertEquals(
-    encoder.encode(bytes),
+    encodeCbor(bytes),
     new Uint8Array([
       0b010_11001,
       bytes.length >> 8 & 0xFF,
@@ -222,7 +215,7 @@ Deno.test("CborEncoder() encoding Uint8Arrays", () => {
 
   bytes = new Uint8Array(random(2 ** 16, 2 ** 17));
   assertEquals(
-    encoder.encode(bytes),
+    encodeCbor(bytes),
     new Uint8Array([
       0b010_11010,
       bytes.length >> 24 & 0xFF,
@@ -236,77 +229,72 @@ Deno.test("CborEncoder() encoding Uint8Arrays", () => {
   // Can't test the next bracket up due to JavaScript limitations.
 });
 
-Deno.test("CborEncoder() encoding Dates", () => {
-  const encoder = new CborEncoder();
+Deno.test("encodeCbor() encoding Dates", () => {
   const date = new Date();
   assertEquals(
-    encoder.encode(date),
-    new Uint8Array([0b110_00001, ...encoder.encode(date.getTime() / 1000)]),
+    encodeCbor(date),
+    new Uint8Array([0b110_00001, ...encodeCbor(date.getTime() / 1000)]),
   );
 });
 
-Deno.test("CborEncoder() encoding arrays", () => {
-  const encoder = new CborEncoder();
-
+Deno.test("encodeCbor() encoding arrays", () => {
   let array = new Array(random(0, 24)).fill(0);
   assertEquals(
-    encoder.encode(array),
+    encodeCbor(array),
     new Uint8Array([
       0b100_00000 + array.length,
-      ...array.map((x) => [...encoder.encode(x)]).flat(),
+      ...array.map((x) => [...encodeCbor(x)]).flat(),
     ]),
   );
 
   array = new Array(random(24, 2 ** 8)).fill(0);
   assertEquals(
-    encoder.encode(array),
+    encodeCbor(array),
     new Uint8Array([
       0b100_11000,
       array.length,
-      ...array.map((x) => [...encoder.encode(x)]).flat(),
+      ...array.map((x) => [...encodeCbor(x)]).flat(),
     ]),
   );
 
   array = new Array(random(2 ** 8, 2 ** 16)).fill(0);
   assertEquals(
-    encoder.encode(array),
+    encodeCbor(array),
     new Uint8Array([
       0b100_11001,
       array.length >> 8 & 0xFF,
       array.length & 0xFF,
-      ...array.map((x) => [...encoder.encode(x)]).flat(),
+      ...array.map((x) => [...encodeCbor(x)]).flat(),
     ]),
   );
 
   array = new Array(random(2 ** 16, 2 ** 17)).fill(0);
   assertEquals(
-    encoder.encode(array),
+    encodeCbor(array),
     new Uint8Array([
       0b100_11010,
       array.length >> 24 & 0xFF,
       array.length >> 16 & 0xFF,
       array.length >> 8 & 0xFF,
       array.length & 0xFF,
-      ...array.map((x) => [...encoder.encode(x)]).flat(),
+      ...array.map((x) => [...encodeCbor(x)]).flat(),
     ]),
   );
 
   // Can't test the next bracket up due to JavaScript limitations.
 });
 
-Deno.test("CborEncoder() encoding objects", () => {
-  const encoder = new CborEncoder();
-
+Deno.test("encodeCbor() encoding objects", () => {
   let pairs = random(0, 24);
   let entries: [string, number][] = new Array(pairs).fill(0).map((
     _,
     i,
   ) => [i.toString(), i]);
   assertEquals(
-    encoder.encode(Object.fromEntries(entries)),
+    encodeCbor(Object.fromEntries(entries)),
     new Uint8Array([
       0b101_00000 + pairs,
-      ...entries.map(([k, v]) => [...encoder.encode(k), ...encoder.encode(v)])
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)])
         .flat(),
     ]),
   );
@@ -314,11 +302,11 @@ Deno.test("CborEncoder() encoding objects", () => {
   pairs = random(24, 2 ** 8);
   entries = new Array(pairs).fill(0).map((_, i) => [i.toString(), i]);
   assertEquals(
-    encoder.encode(Object.fromEntries(entries)),
+    encodeCbor(Object.fromEntries(entries)),
     new Uint8Array([
       0b101_11000,
       pairs,
-      ...entries.map(([k, v]) => [...encoder.encode(k), ...encoder.encode(v)])
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)])
         .flat(),
     ]),
   );
@@ -326,12 +314,12 @@ Deno.test("CborEncoder() encoding objects", () => {
   pairs = random(2 ** 8, 2 ** 16);
   entries = new Array(pairs).fill(0).map((_, i) => [i.toString(), i]);
   assertEquals(
-    encoder.encode(Object.fromEntries(entries)),
+    encodeCbor(Object.fromEntries(entries)),
     new Uint8Array([
       0b101_11001,
       pairs >> 8 & 0xFF,
       pairs & 0xFF,
-      ...entries.map(([k, v]) => [...encoder.encode(k), ...encoder.encode(v)])
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)])
         .flat(),
     ]),
   );
@@ -339,10 +327,10 @@ Deno.test("CborEncoder() encoding objects", () => {
   // Can't test the next two bracket up due to JavaScript limitations.
 });
 
-Deno.test("CborEncoder() encoding CborTag()", () => {
+Deno.test("encodeCbor() encoding CborTag()", () => {
   const bytes = new Uint8Array(random(0, 24)).map((_) => random(0, 256));
   assertEquals(
-    new CborEncoder().encode(new CborTag(2, bytes)),
+    encodeCbor(new CborTag(2, bytes)),
     new Uint8Array([0b110_00010, 0b010_00000 + bytes.length, ...bytes]),
   );
 });

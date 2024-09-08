@@ -13,10 +13,9 @@ import { CborTag, type CborType } from "./encode.ts";
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { CborDecoder, CborEncoder } from "@std/cbor";
+ * import { CborDecoder, encodeCbor } from "@std/cbor";
  *
  * const decoder = new CborDecoder();
- * const encoder = new CborEncoder();
  *
  * const rawMessage = [
  *   "Hello World",
@@ -28,7 +27,7 @@ import { CborTag, type CborType } from "./encode.ts";
  *   Uint8Array.from([0, 1, 2, 3]),
  * ];
  *
- * const encodedMessage = encoder.encode(rawMessage);
+ * const encodedMessage = encodeCbor(rawMessage);
  * const decodedMessage = decoder.decode(encodedMessage);
  *
  * assert(decodedMessage instanceof Array);
@@ -47,10 +46,9 @@ export class CborDecoder {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { CborDecoder, CborEncoder } from "@std/cbor";
+   * import { CborDecoder, encodeCbor } from "@std/cbor";
    *
    * const decoder = new CborDecoder();
-   * const encoder = new CborEncoder();
    *
    * const rawMessage = [
    *   "Hello World",
@@ -62,7 +60,7 @@ export class CborDecoder {
    *   Uint8Array.from([0, 1, 2, 3]),
    * ];
    *
-   * const encodedMessage = encoder.encode(rawMessage);
+   * const encodedMessage = encodeCbor(rawMessage);
    * const decodedMessage = decoder.decode(encodedMessage);
    *
    * assert(decodedMessage instanceof Array);
@@ -86,10 +84,10 @@ export class CborDecoder {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { CborDecoder, CborEncoder } from "@std/cbor";
+   * import { concat } from "@std/bytes";
+   * import { CborDecoder, encodeCbor } from "@std/cbor";
    *
    * const decoder = new CborDecoder();
-   * const encoder = new CborEncoder();
    *
    * const rawMessage = [
    *   "Hello World",
@@ -101,7 +99,7 @@ export class CborDecoder {
    *   Uint8Array.from([0, 1, 2, 3]),
    * ];
    *
-   * const encodedMessage = encoder.encodeSequence(rawMessage);
+   * const encodedMessage = concat(rawMessage.map(x => encodeCbor(x)))
    * const decodedMessage = decoder.decodeSequence(encodedMessage);
    *
    * assert(decodedMessage instanceof Array);
@@ -339,7 +337,7 @@ export class CborDecoder {
     return object;
   }
 
-  #decodeSix(aI: number): Date | CborTag {
+  #decodeSix(aI: number): Date | CborTag<CborType> {
     const tagNumber = this.#decodeZero(aI) as number;
     const tagContent = this.#decode();
     switch (tagNumber) {
