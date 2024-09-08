@@ -788,3 +788,6 @@ export const ioStruct = z.object({
    */
   state: z.record(jsonSchema),
 })
+export const reasoning = z.array(z.string()).describe(
+  'the brief step by step reasoning why this function was called and what it is trying to achieve',
+)

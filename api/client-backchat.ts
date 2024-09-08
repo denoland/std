@@ -13,7 +13,6 @@ import {
   Params,
   PID,
   PierceRequest,
-  ProcessOptions,
   Proctype,
   RpcOpts,
   SU_ACTOR,
@@ -23,6 +22,7 @@ import {
   UnsequencedRequest,
 } from './types.ts'
 import * as actor from './isolates/actor.ts'
+import * as files from './isolates/files.ts'
 import { ulid } from 'ulid'
 import { PierceWatcher } from './watcher.ts'
 import { Crypto } from './crypto.ts'
@@ -242,15 +242,15 @@ export class Backchat {
     return this.write(path, JSON.stringify(content), pid)
   }
   async write(path: string, content?: string, target: PID = this.pid) {
-    const actions = await this.actions<Files>('files', { target })
-    return actions.write({ path, content })
+    const actions = await this.actions<files.Api>('files', { target })
+    return actions.write({ reasoning: [], path, content })
   }
   async delete(path: string, target: PID = this.pid): Promise<void> {
-    const actions = await this.actions<Files>('files', { target })
-    return actions.rm({ path })
+    const actions = await this.actions<files.Api>('files', { target })
+    return actions.rm({ reasoning: [], path })
   }
   async ls({ path = '.', target = this.pid }: { path?: string; target?: PID }) {
-    const actions = await this.actions<Files>('files', { target })
+    const actions = await this.actions<files.Api>('files', { target })
     return actions.ls({ path })
   }
   deleteAccountUnrecoverably(): Promise<void> {
@@ -288,23 +288,4 @@ export class Backchat {
     this.#dnsCache.set(repo, promise)
     return promise
   }
-}
-
-type Files = {
-  write: (
-    params: { path: string; content?: string },
-    opts?: ProcessOptions,
-  ) => Promise<number>
-  rm: (params: { path: string }) => Promise<void>
-  ls: (
-    params?: { path?: string; count?: boolean; all?: boolean },
-  ) => Promise<string[] | number>
-  read: (params: { path: string }) => Promise<string>
-  update: (params: Update) => Promise<number>
-}
-
-interface Update {
-  path: string
-  regex: string
-  replacement: string
 }

@@ -1,4 +1,4 @@
-import { Functions, print, ToApiType } from '@/constants.ts'
+import { agent, Functions, print, reasoning, ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import { z } from 'zod'
 import * as files from './files.ts'
@@ -6,11 +6,11 @@ import { loadString } from '@/isolates/utils/load-agent.ts'
 const log = Debug('AI:agents')
 
 export const parameters = {
-  search: z.object({ query: z.string() }).describe(
+  search: z.object({ reasoning, query: z.string() }).describe(
     'The highly descriptive natural language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
   ),
   switch: z.object({
-    reasoning: z.array(z.string()),
+    reasoning,
     path: z.string().describe('The path to the agent file to switch to'),
   }).describe(
     'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
@@ -23,6 +23,18 @@ export const parameters = {
   ),
   read: files.parameters.read.describe(
     'Read an agent file.  The contents will be returned as a string. If the contents are not formatted correctly as an agent, an error will be thrown.',
+  ),
+  config: z.object({
+    reasoning,
+    path: z.string().describe('path to the agent file you want to update'),
+    description: z.string().optional().describe('description of the agent'),
+    config: agent.shape.config.optional().describe(
+      'configuration of the agent',
+    ),
+    runner: agent.shape.runner.optional().describe('runner of the agent'),
+    commands: agent.shape.commands.optional().describe('commands of the agent'),
+  }).describe(
+    'Update the configuration of the agent.  To remove an item, set it to "undefined"',
   ),
 }
 export const returns = {
@@ -38,6 +50,7 @@ export const returns = {
   write: files.returns.write,
   update: files.returns.update,
   read: files.returns.read,
+  config: z.void(),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -71,13 +84,13 @@ export const functions: Functions<Api> = {
   write: async ({ path, content = '' }, api) => {
     log('write', path, content)
     await loadString(path, content, api)
-    return files.functions.write({ path, content }, api)
+    return files.functions.write({ reasoning: [], path, content }, api)
   },
   update: async ({ path, regex, replacement }, api) => {
     log('update', path, regex, replacement)
     const { result: content, matches } = files.replace(path, regex, replacement)
     await loadString(path, content, api)
-    await files.functions.write({ path, content }, api)
+    await files.functions.write({ reasoning: [], path, content }, api)
     return { matchesUpdated: matches.length }
   },
   read: async ({ reasoning, path }, api) => {
@@ -85,5 +98,31 @@ export const functions: Functions<Api> = {
     const contents = await files.functions.read({ reasoning, path }, api)
     await loadString(path, contents, api)
     return contents
+  },
+  config: async ({ path, description, config, runner, commands }, api) => {
+    // TODO handle deletion of sections
+    log('config', path, description, config, runner, commands)
+    const contents = await files.functions.read({ reasoning: [], path }, api)
+    const agent = await loadString(path, contents, api)
+    if (description !== undefined) {
+      agent.description = description
+    }
+    if (config !== undefined) {
+      agent.config = config
+    }
+    if (runner !== undefined) {
+      agent.runner = runner
+    }
+    if (commands !== undefined) {
+      agent.commands = commands
+    }
+
+    // TODO handle the writing of the file with the instructions
+
+    await files.functions.write({
+      reasoning: [],
+      path,
+      content: agent.toString(),
+    }, api)
   },
 }

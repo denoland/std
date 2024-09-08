@@ -141,7 +141,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const { write } = await backchat.actions<files.Api>('files', {
         target,
       })
-      await write({ path, content })
+      await write({ reasoning: [], path, content })
       const result = await backchat.read(path, target)
       log('contents', result)
       expect(result).toEqual(content)

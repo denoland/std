@@ -112,7 +112,7 @@ export const functions: Functions<Api> = {
       const { write } = await api.actions<files.Api>('files', { target })
       credentials = await api.readJSON(path, { target })
       credentials.tokens[actorId] = tokens
-      await write({ path, content: JSON.stringify(credentials) })
+      await write({ reasoning: [], path, content: JSON.stringify(credentials) })
     } else {
       credentials = { actorId, githubUserId, tokens: { [actorId]: tokens } }
       log('create branch', print(target))
@@ -120,7 +120,7 @@ export const functions: Functions<Api> = {
         noClose: true,
         branchName: githubUserId,
       })
-      await write({ path, content: JSON.stringify(credentials) })
+      await write({ reasoning: [], path, content: JSON.stringify(credentials) })
       log('written')
     }
 
@@ -137,7 +137,11 @@ export const functions: Functions<Api> = {
       noClose: true,
       branchName: actorId,
     })
-    await write({ path: filename, content: JSON.stringify(pointer) })
+    await write({
+      reasoning: [],
+      path: filename,
+      content: JSON.stringify(pointer),
+    })
     log('actorPid', print(actorPid))
   },
   signout: ({ machineId }) => {

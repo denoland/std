@@ -122,7 +122,7 @@ suite
         machineEnginePrivateKey,
       )
       const fixture = await backchat.actions<Api>('io-fixture')
-      const result = await fixture.local()
+      const result = await fixture.local({})
       assert(result === 'local reply')
       deferred.resolve()
     },
@@ -131,7 +131,7 @@ suite
     // use an existing session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const result = await hotPingActions.local()
+      const result = await hotPingActions.local({})
       assert(result === 'local reply')
       deferred.resolve()
     },
