@@ -11,3 +11,11 @@ export function hasAssertions() {
 export function emitAssertionTrigger() {
   assertionState.setAssertionTriggered(true);
 }
+
+export function assertions(num: number) {
+  assertionState.setAssertionCount(num);
+}
+
+export function emitAssertionCountUpdate() {
+  assertionState.updateAssertionTriggerCount();
+}

@@ -603,6 +603,13 @@ export function it<T>(...args: ItArgs<T>) {
             "Expected at least one assertion to be called but received none.",
           );
         }
+
+        if (assertionState.checkAssertionCountSatisfied()) {
+          throw new AssertionError(
+            `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
+              `but received ${assertionState.assertionTriggeredCount}.`,
+          );
+        }
       },
     };
     if (ignore !== undefined) {
