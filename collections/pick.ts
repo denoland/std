@@ -29,6 +29,6 @@ export function pick<T extends object, K extends keyof T>(
   keys: readonly K[],
 ): Pick<T, K> {
   return Object.fromEntries(
-    keys.flatMap((k) => (Object.hasOwn(obj, k) ? [[k, obj[k]]] : [])),
+    keys.flatMap((k) => (k in obj ? [[k, obj[k]]] : [])),
   ) as Pick<T, K>;
 }

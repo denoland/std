@@ -15,10 +15,10 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "pick() returns a new object without properties missing in the original object",
+  name: "pick() returns a new object without properties missing in the original object",
   fn() {
-    const obj = JSON.parse('{ "a": 5, "b": 6, "c": 7, "d": 8 }');
+    // deno-lint-ignore no-explicit-any
+    const obj = { a: 5, b: 6, c: 7, d: 8 } as any;
     const picked: { a: 5; x?: 5; y?: 5 } = pick(obj, ["a", "x", "y"]);
 
     assertEquals(picked, { a: 5 });
@@ -27,8 +27,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "pick() returns a new object from the provided object with the provided keys",
+  name: "pick() returns a new object from the provided object with the provided keys",
   fn() {
     const obj = { a: 5, b: 6, c: 7, d: 8 };
     const picked = pick(obj, ["a", "c"]);
@@ -39,13 +38,26 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "pick() returns a new object from the provided object with the provided keys (all keys are provided)",
+  name: "pick() returns a new object from the provided object with the provided keys (all keys are provided)",
   fn() {
     const obj = { a: 5, b: 6, c: 7, d: 8 };
     const picked = pick(obj, ["a", "b", "c", "d"]);
 
     assertEquals(picked, { a: 5, b: 6, c: 7, d: 8 });
+    assertNotStrictEquals(picked, obj);
+  },
+});
+
+Deno.test({
+  name: "pick() returns a new object with own properties that is non-own in the original object)",
+  fn() {
+    // deno-lint-ignore no-explicit-any
+    const obj = { a: 5, b: 6, c: 7, d: 8 } as any;
+    const picked: { toString: typeof Object.prototype.toString } = pick(obj, [
+      "toString",
+    ]);
+
+    assertEquals(picked, { toString: Object.prototype.toString });
     assertNotStrictEquals(picked, obj);
   },
 });
