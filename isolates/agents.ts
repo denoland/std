@@ -12,6 +12,14 @@ export const parameters = {
   switch: z.object({
     reasoning,
     path: z.string().describe('The path to the agent file to switch to'),
+    alsoConsidered: z.array(
+      z.object({
+        path: z.string(),
+        reason: z.string().describe(
+          'reason why this agent was considered but rejected',
+        ),
+      }),
+    ).max(3),
   }).describe(
     'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
   ),
