@@ -50,7 +50,7 @@ Deno.test("CborTextEncoderStream()", async () => {
 
   const expectedOutput = concat([
     new Uint8Array([0b011_11111]),
-    ...strings.filter(x => x).map((x) => encodeCbor(x)),
+    ...strings.filter((x) => x).map((x) => encodeCbor(x)),
     new Uint8Array([0b111_11111]),
   ]);
 
