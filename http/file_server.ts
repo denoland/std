@@ -842,7 +842,10 @@ function main() {
     const host = (Deno.build.os === "windows" && hostname === "0.0.0.0")
       ? "localhost"
       : hostname;
-    let message = `Listening on:\n- Local: ${protocol}://${host}:${port}`;
+
+    const formattedHost = hostname.includes(":") ? `[${host}]` : host;
+    let message =
+      `Listening on:\n- Local: ${protocol}://${formattedHost}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {
       message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
