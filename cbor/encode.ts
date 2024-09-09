@@ -20,7 +20,7 @@ export type CborPrimitiveType =
 
 /**
  * This type specifies the encodable and decodable values for {@link encodeCbor}
- * and {@link CborDecoder}.
+ * and {@link decodeCbor}.
  */
 export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
   [k: string]: CborType;
@@ -32,15 +32,13 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  * A list of the different types can be found
  * [here](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
  *
- * This class will be returned out of CborDecoder if it doesn't automatically
+ * This class will be returned out of {@link decodeCbor} if it doesn't automatically
  * know how to handle the tag number.
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { CborDecoder, CborTag, encodeCbor } from "@std/cbor";
+ * import { CborTag, decodeCbor, encodeCbor } from "@std/cbor";
  * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
- *
- * const decoder = new CborDecoder();
  *
  * const rawMessage = new TextEncoder().encode("Hello World");
  *
@@ -50,7 +48,7 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  *     encodeBase64Url(rawMessage),
  *   ),
  * );
- * const decodedMessage = decoder.decode(encodedMessage);
+ * const decodedMessage = decodeCbor(encodedMessage);
  * assert(decodedMessage instanceof CborTag);
  * assert(typeof decodedMessage.tagContent === "string");
  * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -65,10 +63,8 @@ export class CborTag<T extends CborType | CborInputStream> {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { CborDecoder, CborTag, encodeCbor } from "@std/cbor";
+   * import { CborTag, decodeCbor, encodeCbor } from "@std/cbor";
    * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
-   *
-   * const decoder = new CborDecoder();
    *
    * const rawMessage = new TextEncoder().encode("Hello World");
    *
@@ -78,7 +74,7 @@ export class CborTag<T extends CborType | CborInputStream> {
    *     encodeBase64Url(rawMessage),
    *   ),
    * );
-   * const decodedMessage = decoder.decode(encodedMessage);
+   * const decodedMessage = decodeCbor(encodedMessage);
    * assert(decodedMessage instanceof CborTag);
    * assert(typeof decodedMessage.tagContent === "string");
    * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -92,10 +88,8 @@ export class CborTag<T extends CborType | CborInputStream> {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { CborDecoder, CborTag, encodeCbor } from "@std/cbor";
+   * import { CborTag, decodeCbor, encodeCbor } from "@std/cbor";
    * import { decodeBase64Url, encodeBase64Url } from "@std/encoding";
-   *
-   * const decoder = new CborDecoder();
    *
    * const rawMessage = new TextEncoder().encode("Hello World");
    *
@@ -105,7 +99,7 @@ export class CborTag<T extends CborType | CborInputStream> {
    *     encodeBase64Url(rawMessage),
    *   ),
    * );
-   * const decodedMessage = decoder.decode(encodedMessage);
+   * const decodedMessage = decodeCbor(encodedMessage);
    * assert(decodedMessage instanceof CborTag);
    * assert(typeof decodedMessage.tagContent === "string");
    * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -131,9 +125,7 @@ export class CborTag<T extends CborType | CborInputStream> {
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { CborDecoder, encodeCbor } from "@std/cbor";
- *
- * const decoder = new CborDecoder();
+ * import { decodeCbor, encodeCbor } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -146,7 +138,7 @@ export class CborTag<T extends CborType | CborInputStream> {
  * ];
  *
  * const encodedMessage = encodeCbor(rawMessage);
- * const decodedMessage = decoder.decode(encodedMessage);
+ * const decodedMessage = decodeCbor(encodedMessage);
  *
  * assert(decodedMessage instanceof Array);
  * assertEquals(decodedMessage, rawMessage);
