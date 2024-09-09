@@ -2,13 +2,8 @@
 // This module is browser compatible.
 
 type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
-
 function isKeyedCollection(x: unknown): x is KeyedCollection {
   return x instanceof Set || x instanceof Map;
-}
-
-function getValFromKeyedCollection(kc: KeyedCollection, key: unknown) {
-  return kc instanceof Map ? kc.get(key) : key;
 }
 
 function constructorsEqual(a: object, b: object) {
@@ -106,10 +101,7 @@ export function equal(c: unknown, d: unknown): boolean {
           for (const key of aKeys) {
             if (
               !b.has(key) ||
-              !compare(
-                getValFromKeyedCollection(a, key),
-                getValFromKeyedCollection(b, key),
-              )
+              !compare(a.get(key), (b as Map<unknown, unknown>).get(key))
             ) {
               return false;
             }
