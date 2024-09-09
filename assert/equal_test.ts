@@ -276,3 +276,71 @@ Deno.test("equal() WeakMap, WeakRef and WeakSet", () => {
   assertFalse(equal(new WeakSet(), { constructor: WeakSet }));
   assertFalse(equal(new WeakRef({}), { constructor: WeakRef }));
 });
+
+Deno.test("equal() fast path for primitive keyed collections", () => {
+  const arr = Array.from({ length: 10_000 }, (_, i) => i);
+
+  const set1 = new Set(arr);
+  const set2 = new Set(arr);
+  assert(equal(set1, set2));
+
+  const map1 = new Map(arr.map((v) => [v, v]));
+  const map2 = new Map(arr.map((v) => [v, v]));
+  assert(equal(map1, map2));
+
+  const set3 = new Set(arr);
+  const set4 = new Set(arr.with(-1, -1));
+  assertFalse(equal(set3, set4));
+
+  // entries [...] 9998 => 9998, 9999 => 9999
+  const map3 = new Map(arr.map((v) => [v, v]));
+  // entries [...] 9998 => 9998, -1 => -1
+  const map4 = new Map(arr.with(-1, -1).map((v) => [v, v]));
+  assertFalse(equal(map3, map4));
+
+  // entries [...] 9998 => 9998, 9999 => 9999
+  const map5 = new Map(arr.map((v, i) => [i, v]));
+  // entries [...] 9998 => 9998, 9999 => -1
+  const map6 = new Map(arr.with(-1, -1).map((v, i) => [i, v]));
+  assertFalse(equal(map5, map6));
+});
+
+Deno.test("equal() keyed collection edge cases", () => {
+  assert(equal(new Set([{ b: 2 }, { a: 1 }]), new Set([{ a: 1 }, { b: 2 }])));
+  assertFalse(
+    equal(new Set([{ b: 2 }, { a: 1 }]), new Set([{ a: 1 }, { b: 3 }])),
+  );
+
+  const sym = Symbol();
+  assert(equal(new Set([sym]), new Set([sym])));
+  assert(equal(new Set([sym, "a"]), new Set(["a", sym])));
+  assertFalse(equal(new Set([sym, "a"]), new Set(["b", sym])));
+  assertFalse(equal(new Set([Symbol()]), new Set([Symbol()])));
+  assert(equal(new Set([Symbol.for("x")]), new Set([Symbol.for("x")])));
+
+  assert(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 2 }, 2]]),
+  ));
+  assertFalse(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 2 }, 3]]),
+  ));
+  assertFalse(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 3 }, 2]]),
+  ));
+
+  assert(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [2, { b: 2 }]]),
+  ));
+  assertFalse(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [3, { b: 2 }]]),
+  ));
+  assertFalse(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [2, { b: 3 }]]),
+  ));
+});

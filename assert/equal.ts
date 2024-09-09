@@ -1,7 +1,9 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-function isKeyedCollection(x: unknown): x is Set<unknown> {
-  return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
+
+type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
+function isKeyedCollection(x: unknown): x is KeyedCollection {
+  return x instanceof Set || x instanceof Map;
 }
 
 function constructorsEqual(a: object, b: object) {
@@ -82,15 +84,43 @@ export function equal(c: unknown, d: unknown): boolean {
           return false;
         }
 
+        const aKeys = [...a.keys()];
+        const primitiveKeysFastPath = aKeys.every((k) => {
+          return typeof k === "string" ||
+            typeof k === "number" ||
+            typeof k === "boolean" ||
+            typeof k === "bigint" ||
+            typeof k === "symbol" ||
+            k == null;
+        });
+        if (primitiveKeysFastPath) {
+          if (a instanceof Set) {
+            return a.symmetricDifference(b).size === 0;
+          }
+
+          for (const key of aKeys) {
+            if (
+              !b.has(key) ||
+              !compare(a.get(key), (b as Map<unknown, unknown>).get(key))
+            ) {
+              return false;
+            }
+          }
+          return true;
+        }
+
         let unmatchedEntries = a.size;
 
         for (const [aKey, aValue] of a.entries()) {
           for (const [bKey, bValue] of b.entries()) {
             /* Given that Map keys can be references, we need
              * to ensure that they are also deeply equal */
+
+            if (!compare(aKey, bKey)) continue;
+
             if (
-              (aKey === aValue && bKey === bValue && compare(aKey, bKey)) ||
-              (compare(aKey, bKey) && compare(aValue, bValue))
+              (aKey === aValue && bKey === bValue) ||
+              (compare(aValue, bValue))
             ) {
               unmatchedEntries--;
               break;
