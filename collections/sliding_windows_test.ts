@@ -391,21 +391,21 @@ Deno.test("slidingWindows() handles invalid maxWindows", () => {
     RangeError,
     "maxWindows must be a positive integer",
   );
-  // slidingWindowsThrowsTest(
-  //   [[1, 2, 3, 4, 5], 3, { maxWindows: -1 }],
-  //   RangeError,
-  //   "maxWindows must be a positive integer",
-  // );
-  // slidingWindowsThrowsTest(
-  //   [[1, 2, 3, 4, 5], 3, { maxWindows: NaN }],
-  //   RangeError,
-  //   "maxWindows must be a positive integer",
-  // );
-  // slidingWindowsThrowsTest(
-  //   [[1, 2, 3, 4, 5], 3, { maxWindows: 0.5 }],
-  //   RangeError,
-  //   "maxWindows must be a positive integer",
-  // );
+  slidingWindowsThrowsTest(
+    [[1, 2, 3, 4, 5], 3, { maxWindows: -1 }],
+    RangeError,
+    "maxWindows must be a positive integer",
+  );
+  slidingWindowsThrowsTest(
+    [[1, 2, 3, 4, 5], 3, { maxWindows: NaN }],
+    RangeError,
+    "maxWindows must be a positive integer",
+  );
+  slidingWindowsThrowsTest(
+    [[1, 2, 3, 4, 5], 3, { maxWindows: 0.5 }],
+    RangeError,
+    "maxWindows must be a positive integer",
+  );
 });
 
 Deno.test("slidingWindows() respects handles maxWindows with an array", () => {
