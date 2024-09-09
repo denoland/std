@@ -1,10 +1,24 @@
 import { z } from 'zod'
-import { Functions, pidSchema, STATEBOARD_WIDGETS } from '@/constants.ts'
+import { Debug } from '@utils'
+import {
+  Functions,
+  getThreadPath,
+  pidSchema,
+  reasoning,
+  STATEBOARD_WIDGETS,
+  Thread,
+} from '@/constants.ts'
 import { ToApiType } from '@/constants.ts'
+import { assert } from '@std/assert/assert'
+
+const log = Debug('AI:stateboard')
 
 export const parameters = {
   show: z
     .object({
+      reasoning: reasoning.describe(
+        'the reasoning for showing the stateboard with the chosen parameters',
+      ),
       pid: pidSchema.optional().describe('defaults to the current pid'),
       commit: z
         .string()
@@ -28,7 +42,24 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  show: ({ pid, commit, path, widget }) => {
-    console.log('show', pid, commit, path, widget)
+  show: async ({ pid, commit, path, widget }, api) => {
+    log('show', pid, commit, path, widget)
+    const threadPath = getThreadPath(api.pid)
+    const thread = await api.readThread(threadPath)
+    const setter = getLastAssistantMessageId(thread)
+    thread.stateboards.push({ commit: api.commit, setter })
+    api.writeJSON(threadPath, thread)
   },
+}
+
+function getLastAssistantMessageId(thread: Thread) {
+  const messages = [...thread.messages]
+  while (messages.length > 0) {
+    const message = messages.pop()
+    assert(message, 'message should be defined')
+    if (message.role === 'assistant') {
+      return messages.length + thread.messageOffset
+    }
+  }
+  throw new Error('No assistant message found in thread')
 }
