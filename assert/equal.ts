@@ -96,13 +96,13 @@ export function equal(c: unknown, d: unknown): boolean {
         if (primitiveKeysFastPath) {
           if (a instanceof Set) {
             return a.symmetricDifference(b).size === 0;
-          } else if (b instanceof Set) {
-            // Already checked constructorsEqual
-            throw new Error("Unreachable");
           }
 
           for (const key of aKeys) {
-            if (!b.has(key) || !compare(a.get(key), b.get(key))) {
+            if (
+              !b.has(key) ||
+              !compare(a.get(key), (b as Map<unknown, unknown>).get(key))
+            ) {
               return false;
             }
           }
