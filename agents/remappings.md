@@ -31,6 +31,9 @@ tools:
       autoPopulated:
         value: this is an example of an auto filled parameter
         # This parameter would not be presented to the model, and will always be filled in to the value given here.  This is useful for things like restricting the ls function only certain file names, or restricting read to only be certain file extensions.
+      hidden:
+        was: notHidden
+        # given an optional parameter, it can be removed from sight to avoid confusion in the AI
 ---
 
 This is a test file used to test the mappings between functions in isolates and
@@ -62,7 +65,7 @@ Creator bot would be able to alter these descriptions.
 
 ## Specifying a function to be loaded
 
-[isolate:meow](someFunction({ask:true}))
+[isolate:meow](isolate://isolateName/someFunction/{ask:true})
 
 This should not require it to be an action, or else we have to stall the agent ?
 This should be an instantly returning function ? Could be how we insert the time
