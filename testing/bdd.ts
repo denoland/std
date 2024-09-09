@@ -600,7 +600,7 @@ export function it<T>(...args: ItArgs<T>) {
 
         if (assertionState.checkAssertionError()) {
           throw new AssertionError(
-            "Expected at least one assertion to be called but received none.",
+            "Expected at least one assertion to be called but received none",
           );
         }
       },

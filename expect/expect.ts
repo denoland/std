@@ -492,7 +492,7 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
 /**
- * `expect.hasAssertions` verifies that a certain number of assertions are called during a test.
+ * `expect.hasAssertions` verifies that at least one assertion is called during a test.
  *
  * Notice: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
  *
