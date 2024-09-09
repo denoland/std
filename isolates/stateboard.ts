@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Functions, pidSchema, WIDGETS } from '@/constants.ts'
+import { Functions, pidSchema, STATEBOARD_WIDGETS } from '@/constants.ts'
 import { ToApiType } from '@/constants.ts'
 
 export const parameters = {
@@ -15,7 +15,7 @@ export const parameters = {
         .optional()
         .describe('the path to show - defaults to "."'),
       // TODO make an allowed list of widgets
-      widget: WIDGETS.describe('the widget to show'),
+      widget: STATEBOARD_WIDGETS.describe('the widget to show'),
     })
     .describe(
       'Show the given path with the given widget on the stateboard',

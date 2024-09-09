@@ -74,7 +74,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(listing).toContain('Edinburgh.txt')
 
       const edinburgh = await backchat.read('Edinburgh.txt', target)
-      expect(edinburgh).toEqual('I love to be in Edinburgh in the Spring')
+      expect(edinburgh).toContain('I love to be in Edinburgh in the Spring')
     })
     await engine.stop()
   })

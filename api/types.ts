@@ -27,9 +27,11 @@ export const Proctype = z.enum(['SERIAL', 'BRANCH', 'DAEMON', 'EFFECT'])
 // together to allow for a fire and forget branches
 // OR make DAEMON be the same as FORGET since no new info need be returned ?
 
-export const WIDGETS = z.enum([
+export type STATEBOARD_WIDGETS = z.infer<typeof STATEBOARD_WIDGETS>
+export const STATEBOARD_WIDGETS = z.enum([
   'TPS_REPORT',
-  'FILES',
+  'FILE_EXPLORER',
+  'MARKDOWN_EDITOR',
   'BRANCH_EXPLORER',
   'COMMIT_GRAPH',
   'COMMIT_INFO',
