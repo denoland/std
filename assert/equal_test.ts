@@ -304,3 +304,43 @@ Deno.test("equal() fast path for primitive keyed collections", () => {
   const map6 = new Map(arr.with(-1, -1).map((v, i) => [i, v]));
   assertFalse(equal(map5, map6));
 });
+
+Deno.test("equal() keyed collection edge cases", () => {
+  assert(equal(new Set([{ b: 2 }, { a: 1 }]), new Set([{ a: 1 }, { b: 2 }])));
+  assertFalse(
+    equal(new Set([{ b: 2 }, { a: 1 }]), new Set([{ a: 1 }, { b: 3 }])),
+  );
+
+  const sym = Symbol();
+  assert(equal(new Set([sym]), new Set([sym])));
+  assert(equal(new Set([sym, "a"]), new Set(["a", sym])));
+  assertFalse(equal(new Set([sym, "a"]), new Set(["b", sym])));
+  assertFalse(equal(new Set([Symbol()]), new Set([Symbol()])));
+  assert(equal(new Set([Symbol.for("x")]), new Set([Symbol.for("x")])));
+
+  assert(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 2 }, 2]]),
+  ));
+  assertFalse(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 2 }, 3]]),
+  ));
+  assertFalse(equal(
+    new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
+    new Map([[{ a: 1 }, 1], [{ b: 3 }, 2]]),
+  ));
+
+  assert(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [2, { b: 2 }]]),
+  ));
+  assertFalse(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [3, { b: 2 }]]),
+  ));
+  assertFalse(equal(
+    new Map([[2, { b: 2 }], [1, { a: 1 }]]),
+    new Map([[1, { a: 1 }], [2, { b: 3 }]]),
+  ));
+});

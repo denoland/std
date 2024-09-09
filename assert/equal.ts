@@ -116,9 +116,11 @@ export function equal(c: unknown, d: unknown): boolean {
             /* Given that Map keys can be references, we need
              * to ensure that they are also deeply equal */
 
+            if (!compare(aKey, bKey)) continue;
+
             if (
-              (aKey === aValue && bKey === bValue && compare(aKey, bKey)) ||
-              (compare(aKey, bKey) && compare(aValue, bValue))
+              (aKey === aValue && bKey === bValue) ||
+              (compare(aValue, bValue))
             ) {
               unmatchedEntries--;
               break;
