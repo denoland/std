@@ -15,7 +15,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "pick() returns a new object without properties missing in the original object",
+  name:
+    "pick() returns a new object without properties missing in the original object",
   fn() {
     const obj = JSON.parse('{ "a": 5, "b": 6, "c": 7, "d": 8 }');
     const picked: { a: 5; x?: 5; y?: 5 } = pick(obj, ["a", "x", "y"]);
@@ -26,7 +27,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "pick() returns a new object from the provided object with the provided keys",
+  name:
+    "pick() returns a new object from the provided object with the provided keys",
   fn() {
     const obj = { a: 5, b: 6, c: 7, d: 8 };
     const picked = pick(obj, ["a", "c"]);
