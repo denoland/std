@@ -64,7 +64,7 @@ export function upgradeStreamFromGen(
           buffer.set(value);
           controller.byobRequest.respond(value.length);
         }
-      } else {
+      } else if (value.length) {
         controller.enqueue(value);
       }
     },
