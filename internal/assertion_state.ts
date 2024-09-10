@@ -69,13 +69,25 @@ export class AssertionState {
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
-   * if (assertionState.checkAssertionError()) {
+   * if (assertionState.checkAssertionErrorStateAndReset()) {
    *   // throw AssertionError("");
    * }
    * ```
    */
-  checkAssertionError(): boolean {
-    return this.#state.assertionCheck && !this.#state.assertionTriggered;
+  checkAssertionErrorStateAndReset(): boolean {
+    const result = this.#state.assertionCheck &&
+      !this.#state.assertionTriggered;
+
+    this.#resetAssertionState();
+
+    return result;
+  }
+
+  #resetAssertionState(): void {
+    this.#state = {
+      assertionCheck: false,
+      assertionTriggered: false,
+    };
   }
 }
 

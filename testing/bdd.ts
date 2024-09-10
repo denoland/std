@@ -598,7 +598,7 @@ export function it<T>(...args: ItArgs<T>) {
           TestSuiteInternal.runningCount--;
         }
 
-        if (assertionState.checkAssertionError()) {
+        if (assertionState.checkAssertionErrorStateAndReset()) {
           throw new AssertionError(
             "Expected at least one assertion to be called but received none",
           );
