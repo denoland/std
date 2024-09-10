@@ -64,14 +64,15 @@ type Mod =
   | "msgpack"
   | "net"
   | "path"
+  | "random"
   | "regexp"
   | "semver"
   | "streams"
+  | "tar"
   | "testing"
   | "text"
   | "toml"
   | "ulid"
-  | "url"
   | "uuid"
   | "webgpu"
   | "yaml";
@@ -106,14 +107,15 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   msgpack: ["mod.ts"],
   net: ["mod.ts"],
   path: ["mod.ts"],
+  random: ["mod.ts"],
   regexp: ["mod.ts"],
   semver: ["mod.ts"],
   streams: ["mod.ts"],
+  tar: ["mod.ts"],
   testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
   text: ["mod.ts"],
   toml: ["mod.ts"],
   ulid: ["mod.ts"],
-  url: ["mod.ts"],
   uuid: ["mod.ts"],
   webgpu: ["mod.ts"],
   yaml: ["mod.ts"],

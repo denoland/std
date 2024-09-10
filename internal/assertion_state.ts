@@ -142,13 +142,34 @@ export class AssertionState {
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
-   * if (assertionState.checkAssertionError()) {
+   * if (assertionState.checkAssertionErrorState()) {
    *   // throw AssertionError("");
    * }
    * ```
    */
-  checkAssertionError(): boolean {
-    return this.#state.assertionCheck && !this.#state.assertionTriggered;
+  checkAssertionErrorState(): boolean {
+    return this.#state.assertionCheck &&
+      !this.#state.assertionTriggered;
+  }
+
+  /**
+   * Reset all assertion state when every test suite function ran completely.
+   *
+   * @example Usage
+   * ```ts
+   * import { AssertionState } from "@std/internal";
+   *
+   * const assertionState = new AssertionState();
+   * assertionState.resetAssertionState();
+   * ```
+   */
+  resetAssertionState(): void {
+    this.#state = {
+      assertionCount: undefined,
+      assertionCheck: false,
+      assertionTriggered: false,
+      assertionTriggeredCount: 0,
+    };
   }
 
   /**
@@ -169,10 +190,8 @@ export class AssertionState {
    * ```
    */
   checkAssertionCountSatisfied(): boolean {
-    return (
-      this.#state.assertionCount !== undefined &&
-      this.#state.assertionCount <= this.#state.assertionTriggeredCount
-    );
+    return this.#state.assertionCount !== undefined &&
+      this.#state.assertionCount > this.#state.assertionTriggeredCount;
   }
 }
 

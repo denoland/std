@@ -598,18 +598,20 @@ export function it<T>(...args: ItArgs<T>) {
           TestSuiteInternal.runningCount--;
         }
 
-        if (assertionState.checkAssertionError()) {
+        if (assertionState.checkAssertionErrorState()) {
           throw new AssertionError(
-            "Expected at least one assertion to be called but received none.",
+            "Expected at least one assertion to be called but received none",
           );
         }
 
         if (assertionState.checkAssertionCountSatisfied()) {
           throw new AssertionError(
             `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
-              `but received ${assertionState.assertionTriggeredCount}.`,
+              `but received ${assertionState.assertionTriggeredCount}`,
           );
         }
+
+        assertionState.resetAssertionState();
       },
     };
     if (ignore !== undefined) {

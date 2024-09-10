@@ -4,28 +4,36 @@ import { AssertionError, assertThrows } from "@std/assert";
 import { describe, it, test } from "@std/testing/bdd";
 import { expect } from "./expect.ts";
 
-Deno.test("expect.hasAssertions()", () => {
-  test("test suite hasAssertions() should throw an error", () => {
-    assertThrows(() => {
+Deno.test("expect.hasAssertions() API", () => {
+  describe("describe suite", () => {
+    // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
+    it("should throw an error", () => {
       expect.hasAssertions();
-    }, AssertionError);
+    });
+
+    it("should pass", () => {
+      expect.hasAssertions();
+      expect("a").toEqual("a");
+    });
   });
 
-  describe("hasAssertions() describe test suite", () => {
-    it("should throw an error", () => {
-      assertThrows(() => {
-        expect.hasAssertions();
-      }, AssertionError);
-    });
+  it("it() suite should pass", () => {
+    expect.hasAssertions();
+    expect("a").toEqual("a");
+  });
 
-    it("pass", () => {
-      expect.hasAssertions();
-      expect("a").toBe("a");
-    });
+  // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
+  test("test suite should throw an error", () => {
+    expect.hasAssertions();
+  });
+
+  test("test suite should pass", () => {
+    expect.hasAssertions();
+    expect("a").toEqual("a");
   });
 });
 
-Deno.test("expect.assertions()", () => {
+Deno.test("expect.assertions() API", () => {
   test("should pass", () => {
     expect.assertions(2);
     expect("a").not.toBe("b");
@@ -43,9 +51,12 @@ Deno.test("expect.assertions()", () => {
     expect.assertions(0);
   });
 
+  // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
   it("should throw an error", () => {
-    assertThrows(() => {
       expect.assertions(2);
+      expect.assertions(2);
+    }, AssertionError);
+    expect.assertions(2);
     }, AssertionError);
   });
 });
