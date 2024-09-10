@@ -1,5 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { AssertionError, assertNever, assertThrows } from "./mod.ts";
+import { AssertionError, assertThrows } from "./mod.ts";
+import { assertNever } from "./unstable_never.ts";
 
 Deno.test("assertNever: exhaustiveness check", () => {
   type Kinds = "A" | "B";
