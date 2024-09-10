@@ -85,6 +85,9 @@ net:
 path:
   - changed-files:
     - any-glob-to-any-file: path/**
+random:
+  - changed-files:
+    - any-glob-to-any-file: random/**
 regexp:
   - changed-files:
     - any-glob-to-any-file: regexp/**
@@ -109,9 +112,6 @@ toml:
 ulid:
   - changed-files:
     - any-glob-to-any-file: ulid/**
-url:
-  - changed-files:
-    - any-glob-to-any-file: url/**
 uuid:
   - changed-files:
     - any-glob-to-any-file: uuid/**
