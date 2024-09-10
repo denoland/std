@@ -9,13 +9,6 @@ files:
   # could add paths within a file, and us pid addressing.
   # use this method to load time and browser fingerprint.
 
-prompt-additions:
-  - time        # Adds the line "The time now is: 2024-08-26T23:40:59.133Z"
-  - timezone    # Adds the line "The Users timezone is: America/New_York"
-  - geolocation # Adds approximate location
-  - OS          # Adds the line "The Users OS is Linux"
-  - browser     # Adds the line "The Users Browser is Google Chrome"
-  - name        # Adds the line "The Users name is [read from their actor profile]"
 tools:
   search-for-files:
     isolate: files
@@ -71,3 +64,8 @@ This should not require it to be an action, or else we have to stall the agent ?
 This should be an instantly returning function ? Could be how we insert the time
 in the agents. Should be perfectly repeatable as a function. If the function
 calls other acitons, then this is fine.
+
+If you think the user is in another timezone, use that, but otherwise the time
+now is: [asdfasdf](isolate://utils/now/{timezone:0})
+
+What is the weather: [asdfasdf](isolate://utils/now/{timezone:0})
