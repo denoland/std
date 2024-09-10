@@ -6,6 +6,7 @@ commands:
   - files:update
   - files:rm
   - files:mv
+  - stateboard:show
 ---
 
 You are a CRMBot for a trucking company. You WILL adhere to the rules and
