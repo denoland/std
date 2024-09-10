@@ -73,7 +73,6 @@ type Mod =
   | "text"
   | "toml"
   | "ulid"
-  | "url"
   | "uuid"
   | "webgpu"
   | "yaml";
@@ -117,7 +116,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   text: ["mod.ts"],
   toml: ["mod.ts"],
   ulid: ["mod.ts"],
-  url: ["mod.ts"],
   uuid: ["mod.ts"],
   webgpu: ["mod.ts"],
   yaml: ["mod.ts"],
