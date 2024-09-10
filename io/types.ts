@@ -2,7 +2,8 @@
 // This module is browser compatible.
 
 /**
- * An abstract interface which when implemented provides an interface to read bytes into an array buffer asynchronously.
+ * An abstract interface which when implemented provides an interface to read
+ * bytes into an array buffer asynchronously.
  */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
@@ -32,7 +33,8 @@ export interface Reader {
 }
 
 /**
- * An abstract interface which when implemented provides an interface to read bytes into an array buffer synchronously.
+ * An abstract interface which when implemented provides an interface to read
+ * bytes into an array buffer synchronously.
  */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
@@ -61,7 +63,8 @@ export interface ReaderSync {
 }
 
 /**
- * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource asynchronously.
+ * An abstract interface which when implemented provides an interface to write
+ * bytes from an array buffer to a file/resource asynchronously.
  */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
@@ -76,7 +79,8 @@ export interface Writer {
   write(p: Uint8Array): Promise<number>;
 }
 /**
- * An abstract interface which when implemented provides an interface to write bytes from an array buffer to a file/resource synchronously.
+ * An abstract interface which when implemented provides an interface to write
+ * bytes from an array buffer to a file/resource synchronously.
  */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
@@ -92,9 +96,62 @@ export interface WriterSync {
 }
 
 /**
- * An abstract interface which when implemented provides an interface to close files/resources that were previously opened.
+ * An abstract interface which when implemented provides an interface to close
+ * files/resources that were previously opened.
  */
 export interface Closer {
   /** Closes the resource, "freeing" the backing file/resource. */
   close(): void;
+}
+
+/**
+ * A enum which defines the seek mode for IO related APIs that support
+ * seeking.
+ */
+export enum SeekMode {
+  /* Seek from the start of the file/resource. */
+  Start = 0,
+  /* Seek from the current position within the file/resource. */
+  Current = 1,
+  /* Seek from the end of the current file/resource. */
+  End = 2,
+}
+
+/**
+ * An abstract interface which when implemented provides an interface to seek
+ * within an open file/resource asynchronously.
+ */
+export interface Seeker {
+  /** Seek sets the offset for the next `read()` or `write()` to offset,
+   * interpreted according to `whence`: `Start` means relative to the
+   * start of the file, `Current` means relative to the current offset,
+   * and `End` means relative to the end. Seek resolves to the new offset
+   * relative to the start of the file.
+   *
+   * Seeking to an offset before the start of the file is an error. Seeking to
+   * any positive offset is legal, but the behavior of subsequent I/O
+   * operations on the underlying object is implementation-dependent.
+   *
+   * It resolves with the updated offset.
+   */
+  seek(offset: number | bigint, whence: SeekMode): Promise<number>;
+}
+
+/**
+ * An abstract interface which when implemented provides an interface to seek
+ * within an open file/resource synchronously.
+ */
+export interface SeekerSync {
+  /** Seek sets the offset for the next `readSync()` or `writeSync()` to
+   * offset, interpreted according to `whence`: `Start` means relative
+   * to the start of the file, `Current` means relative to the current
+   * offset, and `End` means relative to the end.
+   *
+   * Seeking to an offset before the start of the file is an error. Seeking to
+   * any positive offset is legal, but the behavior of subsequent I/O
+   * operations on the underlying object is implementation-dependent.
+   *
+   * It returns the updated offset.
+   */
+  seekSync(offset: number | bigint, whence: SeekMode): number;
 }
