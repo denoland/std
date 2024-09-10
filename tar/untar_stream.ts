@@ -157,7 +157,7 @@ export interface TarStreamEntry {
  *
  * @example Usage
  * ```ts no-eval
- * import { UntarStream } from "@std/archive/untar-stream";
+ * import { UntarStream } from "@std/tar/untar-stream";
  * import { dirname, normalize } from "@std/path";
  *
  * for await (
@@ -341,7 +341,7 @@ export class UntarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UntarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
    * for await (
@@ -367,7 +367,7 @@ export class UntarStream
    *
    * @example Usage
    * ```ts no-eval
-   * import { UntarStream } from "@std/archive/untar-stream";
+   * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
    * for await (
