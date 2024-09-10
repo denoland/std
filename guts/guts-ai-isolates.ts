@@ -67,6 +67,18 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const thread = await backchat.readThread(target)
       log('thread', thread)
     })
+    await t.step('ls error', async () => {
+      const content = 'ls ./nonexistent'
+      const result = await run({ path, actorId, content })
+      log('result', result)
+
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
+      expect(result.content).toContain('does not exist')
+
+      const thread = await backchat.readThread(target)
+      log('thread', thread)
+    })
 
     await engine.stop()
   })

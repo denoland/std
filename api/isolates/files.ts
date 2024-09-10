@@ -46,8 +46,8 @@ export const parameters = {
         try {
             new RegExp(regex)
             return true
-        } catch (_) {
-            return false
+        } catch (error) {
+            return !error
         }
     })
         .describe(

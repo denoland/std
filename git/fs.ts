@@ -171,7 +171,10 @@ export default class FS {
   }
   logs(filepath?: string, depth?: number) {
     if (filepath) {
-      assertPath(filepath)
+      filepath = refine(filepath)
+    }
+    if (filepath === '.') {
+      filepath = undefined
     }
     return git.log({ ...this.#git, filepath, depth, ref: this.oid })
   }
@@ -211,14 +214,14 @@ export default class FS {
     return result.oid
   }
   async exists(path: string) {
-    assertPath(path)
+    path = refine(path)
+    if (path === '.') {
+      return true
+    }
     if (this.#deletes.has(path)) {
       return false
     }
     if (this.#upserts.has(path)) {
-      return true
-    }
-    if (path === '.') {
       return true
     }
 
@@ -236,13 +239,9 @@ export default class FS {
 
   async readOid(path: string): Promise<string> {
     // TODO test how this works for "."
+    path = refine(path)
     if (this.#deletes.has(path)) {
       throw new Errors.NotFoundError(path)
-    }
-    assertPath(path)
-    // TODO unify how the slicing is done across all functions
-    if (path.startsWith('./')) {
-      path = path.slice(2)
     }
 
     const dirname = posix.dirname(path)
@@ -258,7 +257,8 @@ export default class FS {
     throw new Errors.NotFoundError(path)
   }
   delete(path: string) {
-    assertPath(path)
+    path = refine(path)
+    assert(path !== '.', 'cannot delete root')
     // TODO delete a whole directory
     log('delete', path)
     this.#deletes.add(path)
@@ -267,48 +267,32 @@ export default class FS {
   writeJSON(path: string, json: unknown) {
     // TODO store json objects specially, only strinify on commit
     // then broadcast changes as json object purely
-    assertPath(path)
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
+    path = refine(path)
     const string = JSON.stringify(json, null, 2)
     assert(typeof string === 'string', 'stringify failed')
     return this.write(path, string)
   }
   write(path: string, data: string | Uint8Array) {
-    assertPath(path)
-    if (path.startsWith('./')) {
-      path = path.slice(2)
-    }
+    path = refine(path)
+    assert(path !== '.', 'cannot write to root')
+    // TODO ensure cannot write to a directory
     log('write', path, data)
     this.#upserts.set(path, { data })
     this.#deletes.delete(path)
   }
   async readJSON<T>(path: string): Promise<T> {
-    assertPath(path)
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
     const data = await this.read(path)
     return JSON.parse(data)
   }
   async read(path: string) {
-    assertPath(path)
-    if (path.startsWith('./')) {
-      path = path.slice(2)
-    }
-    if (this.#upserts.has(path)) {
-      const upsert = this.#upserts.get(path)
-      assert(upsert, 'upsert not found')
-      if ('data' in upsert) {
-        if (typeof upsert.data === 'string') {
-          return upsert.data
-        }
-        throw new Error('found binary data, not string')
-      }
-    }
     const blob = await this.readBinary(path)
     return new TextDecoder().decode(blob)
   }
   async readBinary(path: string): Promise<Uint8Array> {
-    assertPath(path)
-    log('read', path)
+    path = refine(path)
+    log('readBinary', path)
     if (this.#deletes.has(path)) {
       throw new Error('Could not find file or directory: ' + path)
     }
@@ -340,13 +324,7 @@ export default class FS {
     return { blob, oid: blobOid }
   }
   async ls(path: string = '.') {
-    if (path.endsWith('/')) {
-      path = path.slice(0, -1)
-    }
-    if (path.startsWith('./')) {
-      path = path.slice(2)
-    }
-    assertPath(path)
+    path = refine(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts
     log('ls', path)
@@ -400,6 +378,8 @@ export default class FS {
   }
   async mv(from: string, to: string) {
     // TODO check using directories
+    from = refine(from)
+    to = refine(to)
     assert(from !== to, 'source and destination are the same')
     assert(await this.exists(from), 'source does not exist: ' + from)
     assert(!await this.exists(to), 'destination already exists: ' + to)
@@ -414,7 +394,7 @@ export default class FS {
     assert(this.oid !== commit, 'cannot overwrite with same commit')
     assert(this.#overwrite !== commit, 'cannot overwrite the same commit twice')
     ignores.push(IO_PATH)
-    ignores.forEach(assertPath)
+    ignores.forEach(refine)
 
     const result = await git.readCommit({ ...this.#git, oid: commit })
     assert(result, 'commit not found: ' + commit)
@@ -611,13 +591,27 @@ const treeToLayers = (tree: Tree, layers: Tree[][] = [], level: number = 0) => {
   }
   return layers
 }
-const assertPath = (path: string) => {
+const refine = (path: string) => {
+  while (path.startsWith('/')) {
+    path = path.slice(1)
+  }
+  while (path.endsWith('/')) {
+    path = path.slice(0, -1)
+  }
+  while (path.startsWith('./')) {
+    path = path.slice(2)
+  }
+  if (!path) {
+    path = '.'
+  }
+  path = posix.normalize(path)
   assert(path, `path must be relative: ${path}`)
   assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
   assert(path !== '.git', '.git paths are forbidden: ' + path)
   assert(!path.startsWith('.git/'), '.git paths are forbidden: ' + path)
   assert(!path.endsWith('/'), 'path must not end with /: ' + path)
   assert(!path.startsWith('..'), 'path must not start with ..: ' + path)
+  return path
 }
 
 const generateFakeRepoId = () => {

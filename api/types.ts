@@ -15,8 +15,8 @@ const sequenceInteger = z.number().int().gte(0)
 const sequenceKey = z.string().refine((data) => {
   try {
     return sequenceInteger.safeParse(Number.parseInt(data)).success
-  } catch (_error) {
-    return false
+  } catch (error) {
+    return !error
   }
 }, 'sequence key must be an integer')
 
@@ -737,7 +737,7 @@ export type ToApiType<
 }
 
 export const serializableError = z.object({
-  name: z.string(),
+  name: z.string().optional(),
   message: z.string(),
   stack: z.string().optional(),
 })

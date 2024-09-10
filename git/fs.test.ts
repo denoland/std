@@ -15,45 +15,61 @@ Deno.test('git/init', async (t) => {
     )
     expect(await db.readHead(fs.pid)).toBe(fs.oid)
   })
-  await t.step('paths', async () => {
+  await t.step('git paths', async () => {
     const git = 'git paths are forbidden: '
-    const relative = 'path must be relative: '
+    const json = 'path must be *.json'
     const paths = [
-      '',
-      '/',
       '.git',
       '.git/something',
       '.git/objects/something',
       '.git/refs',
       '.git/refs/heads',
       '.git/refs/heads/main',
-      '/something',
     ]
     const trailing = [...paths, ...paths.map((path) => path + '/')]
     const forwards = [
       ...trailing,
-      '/something',
-      '/something/deep',
-      '//something',
       ...trailing.map((path) => '/' + path),
     ]
     for (const path of forwards) {
-      const message = path.startsWith('/') || !path ? relative : git
-      expect(() => fs.write(path, ''), path).toThrow(message)
-      expect(() => fs.write(path, 'data'), path).toThrow(message)
-      expect(() => fs.writeJSON(path, ''), path).toThrow(message)
-      expect(() => fs.writeJSON(path, 'data'), path).toThrow(message)
-      expect(() => fs.delete(path), path).toThrow(message)
-      await expect(fs.read(path), path).rejects.toThrow(message)
-      await expect(fs.readBinary(path), path).rejects.toThrow(message)
-      await expect(fs.readJSON(path), path).rejects.toThrow(message)
-      await expect(fs.ls(path), path).rejects.toThrow(message)
-      await expect(fs.exists(path), path).rejects.toThrow(message)
+      expect(() => fs.write(path, ''), path).toThrow(git)
+      expect(() => fs.write(path, 'data'), path).toThrow(git)
+      expect(() => fs.writeJSON(path, ''), path).toThrow(json)
+      expect(() => fs.writeJSON(path, 'data'), path).toThrow(json)
+      expect(() => fs.delete(path), path).toThrow(git)
+      await expect(fs.read(path), path).rejects.toThrow(git)
+      await expect(fs.readBinary(path), path).rejects.toThrow(git)
+      await expect(fs.readJSON(path), path).rejects.toThrow(json)
+      await expect(fs.ls(path), path).rejects.toThrow(git)
+      await expect(fs.exists(path), path).rejects.toThrow(git)
       if (path) {
-        expect(() => fs.logs(path), path).toThrow(message)
+        expect(() => fs.logs(path), path).toThrow(git)
       }
     }
   })
+  await t.step('complicated paths', async () => {
+    const paths = ['', '.', '/', '/something', '/something/deep', '//something']
+    for (const path of paths) {
+      if (['', '.', '/'].includes(path)) {
+        expect(() => fs.write(path, ''), path).toThrow()
+        expect(() => fs.write(path, 'data'), path).toThrow()
+        expect(() => fs.writeJSON(path, ''), path).toThrow()
+        expect(() => fs.writeJSON(path, 'data'), path).toThrow()
+        expect(() => fs.delete(path), path).toThrow()
+        await expect(fs.ls(path), path).resolves.not.toThrow()
+        await expect(Promise.resolve(fs.logs(path)), path).resolves.not
+          .toThrow()
+      } else {
+        console.log('path', path)
+        expect(() => fs.delete(path), path).not.toThrow()
+      }
+      await expect(fs.read(path), path).rejects.toThrow()
+      await expect(fs.readBinary(path), path).rejects.toThrow()
+      await expect(fs.readJSON(path), path).rejects.toThrow()
+      await expect(fs.exists(path), path).resolves.not.toThrow()
+    }
+  })
+
   await t.step('write', async () => {
     const path = 'hello.txt'
     const data = 'world'
