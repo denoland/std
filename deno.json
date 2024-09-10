@@ -86,7 +86,6 @@
     "./text",
     "./toml",
     "./ulid",
-    "./url",
     "./uuid",
     "./webgpu",
     "./yaml"
