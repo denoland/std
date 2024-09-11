@@ -38,9 +38,9 @@ import {
   type UstarFields,
 } from "./_common.ts";
 import { readAll } from "@std/io/read-all";
-import type { Reader } from "@std/io/types";
+import type { Reader, Seeker } from "@std/io/types";
 
-export type { Reader };
+export type { Reader, Seeker };
 
 /**
  * Extend TarMeta with the `linkName` property so that readers can access
@@ -148,7 +148,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
  * ```
  */
 export class TarEntry implements Reader {
-  #reader: Reader | (Reader & Deno.Seeker);
+  #reader: Reader | (Reader & Seeker);
   #size: number;
   #read = 0;
   #consumed = false;
@@ -162,7 +162,7 @@ export class TarEntry implements Reader {
    */
   constructor(
     meta: TarMetaWithLinkName,
-    reader: Reader | (Reader & Deno.Seeker),
+    reader: Reader | (Reader & Seeker),
   ) {
     Object.assign(this, meta);
     this.#reader = reader;
@@ -307,8 +307,8 @@ export class TarEntry implements Reader {
     if (this.#consumed) return;
     this.#consumed = true;
 
-    if (typeof (this.#reader as Deno.Seeker).seek === "function") {
-      await (this.#reader as Deno.Seeker).seek(
+    if (typeof (this.#reader as Seeker).seek === "function") {
+      await (this.#reader as Seeker).seek(
         this.#entrySize - this.#read,
         Deno.SeekMode.Current,
       );
