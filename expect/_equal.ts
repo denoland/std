@@ -5,8 +5,9 @@
 import type { EqualOptions } from "./_types.ts";
 import { AsymmetricMatcher } from "./_asymmetric_matchers.ts";
 
-function isKeyedCollection(x: unknown): x is Set<unknown> {
-  return [Symbol.iterator, "size"].every((k) => k in (x as Set<unknown>));
+type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
+function isKeyedCollection(x: unknown): x is KeyedCollection {
+  return x instanceof Set || x instanceof Map;
 }
 
 function constructorsEqual(a: object, b: object) {
@@ -151,6 +152,31 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       if (isKeyedCollection(a) && isKeyedCollection(b)) {
         if (a.size !== b.size) {
           return false;
+        }
+
+        const aKeys = [...a.keys()];
+        const primitiveKeysFastPath = aKeys.every((k) => {
+          return typeof k === "string" ||
+            typeof k === "number" ||
+            typeof k === "boolean" ||
+            typeof k === "bigint" ||
+            typeof k === "symbol" ||
+            k == null;
+        });
+        if (primitiveKeysFastPath) {
+          if (a instanceof Set) {
+            return a.symmetricDifference(b).size === 0;
+          }
+
+          for (const key of aKeys) {
+            if (
+              !b.has(key) ||
+              !compare(a.get(key), (b as Map<unknown, unknown>).get(key))
+            ) {
+              return false;
+            }
+          }
+          return true;
         }
 
         let unmatchedEntries = a.size;
