@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { HEADER } from "./header.ts";
+import { HEADER } from "./unstable_header.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test({
