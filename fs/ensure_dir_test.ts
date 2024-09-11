@@ -166,8 +166,11 @@ Deno.test({
     // but don't swallow that error.
     await assertRejects(
       async () => await ensureDir(baseDir),
-      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-      IS_DENO_2 ? Deno.errors.NotCapable : Deno.errors.PermissionDenied,
+      IS_DENO_2
+        ? // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+        // deno-lint-ignore no-explicit-any
+        (Deno as any).errors.NotCapable
+        : Deno.errors.PermissionDenied,
     );
   },
 });
