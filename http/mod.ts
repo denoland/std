@@ -64,7 +64,7 @@
  * handlers based on the request path and method.
  *
  * ```ts no-eval
- * import { route, type Route } from "@std/http/route";
+ * import { route, type Route } from "@std/http/unstable-route";
  * import { serveDir } from "@std/http/file-server";
  *
  * const routes: Route[] = [
