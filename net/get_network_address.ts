@@ -39,6 +39,7 @@ export function getNetworkAddress(
   return Deno.networkInterfaces()
     .find((i) =>
       i.family === family &&
+      i.mac !== "00:00:00:00:00:00" &&
       (family === "IPv4"
         // Cannot lie within 127.0.0.0/8
         ? !i.address.startsWith("127")
