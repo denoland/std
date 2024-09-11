@@ -39,6 +39,7 @@ for await (
       includeDirs: false,
       maxDepth: 1,
       skip: [
+        /unstable/,
         /dotenv(\/|\\)load\.ts$/,
         /front_matter(\/|\\)yaml\.ts$/,
         /front_matter(\/|\\)json\.ts$/,

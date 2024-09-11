@@ -16,7 +16,7 @@
     "./less": "./less.ts",
     "./less-or-equal": "./less_or_equal.ts",
     "./match": "./match.ts",
-    "./never": "./never.ts",
+    "./unstable-never": "./unstable_never.ts",
     "./not-equals": "./not_equals.ts",
     "./not-instance-of": "./not_instance_of.ts",
     "./not-match": "./not_match.ts",
