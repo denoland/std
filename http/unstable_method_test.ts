@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { METHOD } from "./method.ts";
+import { METHOD } from "./unstable_method.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test({

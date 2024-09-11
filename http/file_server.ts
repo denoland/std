@@ -52,8 +52,8 @@ import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/get-network-address";
-import { HEADER } from "./header.ts";
-import { METHOD } from "./method.ts";
+import { HEADER } from "./unstable_header.ts";
+import { METHOD } from "./unstable_method.ts";
 
 interface EntryInfo {
   mode: string;
