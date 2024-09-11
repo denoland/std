@@ -10,7 +10,7 @@
  *
  * @example
  * ```ts
- * import { generate, validate, extractTimestamp } from "@std/uuid/v7";
+ * import { generate, validate, extractTimestamp } from "@std/uuid/unstable-v7";
  * import { assert, assertEquals } from "@std/assert";
  *
  * const uuid = generate();
@@ -37,7 +37,7 @@ const UUID_RE =
  *
  * @example Usage
  * ```ts
- * import { validate } from "@std/uuid/v7";
+ * import { validate } from "@std/uuid/unstable-v7";
  * import { assert, assertFalse } from "@std/assert";
  *
  * assert(validate("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"));
@@ -61,7 +61,7 @@ export function validate(id: string): boolean {
  *
  * @example Usage
  * ```ts
- * import { generate, validate } from "@std/uuid/v7";
+ * import { generate, validate } from "@std/uuid/unstable-v7";
  * import { assert } from "@std/assert";
  *
  * const uuid = generate();
@@ -98,7 +98,7 @@ export function generate(timestamp: number = Date.now()): string {
  *
  * @example Usage
  * ```ts
- * import { extractTimestamp } from "@std/uuid/v7";
+ * import { extractTimestamp } from "@std/uuid/unstable-v7";
  * import { assertEquals } from "@std/assert";
  *
  * const uuid = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";

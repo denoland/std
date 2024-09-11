@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { extractTimestamp, generate, validate } from "./v7.ts";
+import { extractTimestamp, generate, validate } from "./unstable_v7.ts";
 import { stub } from "../testing/mock.ts";
 
 Deno.test("generate() generates a non-empty string", () => {
