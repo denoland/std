@@ -13,6 +13,6 @@
     "./status": "./status.ts",
     "./signed-cookie": "./signed_cookie.ts",
     "./user-agent": "./user_agent.ts",
-    "./route": "./route.ts"
+    "./unstable-route": "./unstable_route.ts"
   }
 }
