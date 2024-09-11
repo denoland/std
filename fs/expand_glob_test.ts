@@ -2,7 +2,6 @@
 import {
   assert,
   assertEquals,
-  assertMatch,
   assertRejects,
   assertStringIncludes,
   assertThrows,
@@ -13,6 +12,7 @@ import {
   type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
+import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 async function expandGlobArray(
   globString: string,
@@ -113,22 +113,30 @@ Deno.test(
   { permissions: {} },
   async function () {
     {
-      const e = await assertRejects(async () => {
-        await expandGlobArray("*", EG_OPTIONS);
-      }, Deno.errors.PermissionDenied);
-      assertMatch(
-        e.message,
-        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      await assertRejects(
+        async () => {
+          await expandGlobArray("*", EG_OPTIONS);
+        },
+        IS_DENO_2
+          // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+          // deno-lint-ignore no-explicit-any
+          ? (Deno as any).errors.NotCapable
+          : Deno.errors.PermissionDenied,
+        "run again with the --allow-read flag",
       );
     }
 
     {
-      const e = assertThrows(() => {
-        expandGlobSyncArray("*", EG_OPTIONS);
-      }, Deno.errors.PermissionDenied);
-      assertMatch(
-        e.message,
-        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+      assertThrows(
+        () => {
+          expandGlobSyncArray("*", EG_OPTIONS);
+        },
+        IS_DENO_2
+          // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+          // deno-lint-ignore no-explicit-any
+          ? (Deno as any).errors.NotCapable
+          : Deno.errors.PermissionDenied,
+        "run again with the --allow-read flag",
       );
     }
   },
@@ -299,7 +307,11 @@ Deno.test(
     assert(!success);
     assertEquals(code, 1);
     assertEquals(decoder.decode(stdout), "");
-    assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
+    assertStringIncludes(
+      decoder.decode(stderr),
+      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+      IS_DENO_2 ? "NotCapable" : "PermissionDenied",
+    );
   },
 );
 
