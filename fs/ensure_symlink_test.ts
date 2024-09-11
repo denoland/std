@@ -3,6 +3,7 @@
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
+import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -289,7 +290,8 @@ Deno.test(
 
     await assertRejects(async () => {
       await ensureSymlink(testFile, linkFile);
-    }, Deno.errors.PermissionDenied);
+      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+    }, IS_DENO_2 ? Deno.errors.NotCapable : Deno.errors.PermissionDenied);
   },
 );
 
@@ -302,6 +304,7 @@ Deno.test(
 
     assertThrows(() => {
       ensureSymlinkSync(testFile, linkFile);
-    }, Deno.errors.PermissionDenied);
+      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+    }, IS_DENO_2 ? Deno.errors.NotCapable : Deno.errors.PermissionDenied);
   },
 );

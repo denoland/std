@@ -8,6 +8,7 @@ import {
 } from "@std/assert";
 import { load, type LoadOptions, loadSync } from "./mod.ts";
 import * as path from "@std/path";
+import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -155,7 +156,8 @@ Deno.test(
     };
     assertThrows(
       () => loadSync(loadOptions),
-      Deno.errors.PermissionDenied,
+      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+      IS_DENO_2 ? Deno.errors.NotCapable : Deno.errors.PermissionDenied,
       `Requires env access to "EMPTY", run again with the --allow-env flag`,
     );
   },

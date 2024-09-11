@@ -13,6 +13,7 @@ import {
   type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
+import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 async function expandGlobArray(
   globString: string,
@@ -115,7 +116,8 @@ Deno.test(
     {
       const e = await assertRejects(async () => {
         await expandGlobArray("*", EG_OPTIONS);
-      }, Deno.errors.PermissionDenied);
+        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+      }, Deno.errors.NotCapable);
       assertMatch(
         e.message,
         /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
@@ -125,7 +127,8 @@ Deno.test(
     {
       const e = assertThrows(() => {
         expandGlobSyncArray("*", EG_OPTIONS);
-      }, Deno.errors.PermissionDenied);
+        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+      }, IS_DENO_2 ? Deno.errors.NotCapable : Deno.errors.PermissionDenied);
       assertMatch(
         e.message,
         /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
@@ -299,7 +302,11 @@ Deno.test(
     assert(!success);
     assertEquals(code, 1);
     assertEquals(decoder.decode(stdout), "");
-    assertStringIncludes(decoder.decode(stderr), "PermissionDenied");
+    // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+    assertStringIncludes(
+      decoder.decode(stderr),
+      IS_DENO_2 ? "NotCapable" : "PermissionDenied",
+    );
   },
 );
 
