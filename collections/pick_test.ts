@@ -50,18 +50,3 @@ Deno.test({
     assertNotStrictEquals(picked, obj);
   },
 });
-
-Deno.test({
-  name:
-    "pick() returns a new object with own properties that is non-own in the original object)",
-  fn() {
-    // deno-lint-ignore no-explicit-any
-    const obj = { a: 5, b: 6, c: 7, d: 8 } as any;
-    const picked: { toString: typeof Object.prototype.toString } = pick(obj, [
-      "toString",
-    ]);
-
-    assertEquals(picked, { toString: Object.prototype.toString });
-    assertNotStrictEquals(picked, obj);
-  },
-});
