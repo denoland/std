@@ -262,3 +262,31 @@ Deno.test("equal() matches when values have circular references", () => {
   mapB.set("prop", mapB);
   assert(equal(mapA, mapB));
 });
+
+Deno.test("equal() fast path for primitive keyed collections", () => {
+  const arr = Array.from({ length: 10_000 }, (_, i) => i);
+
+  const set1 = new Set(arr);
+  const set2 = new Set(arr);
+  assert(equal(set1, set2));
+
+  const map1 = new Map(arr.map((v) => [v, v]));
+  const map2 = new Map(arr.map((v) => [v, v]));
+  assert(equal(map1, map2));
+
+  const set3 = new Set(arr);
+  const set4 = new Set(arr.with(-1, -1));
+  assertFalse(equal(set3, set4));
+
+  // entries [...] 9998 => 9998, 9999 => 9999
+  const map3 = new Map(arr.map((v) => [v, v]));
+  // entries [...] 9998 => 9998, -1 => -1
+  const map4 = new Map(arr.with(-1, -1).map((v) => [v, v]));
+  assertFalse(equal(map3, map4));
+
+  // entries [...] 9998 => 9998, 9999 => 9999
+  const map5 = new Map(arr.map((v, i) => [i, v]));
+  // entries [...] 9998 => 9998, 9999 => -1
+  const map6 = new Map(arr.with(-1, -1).map((v, i) => [i, v]));
+  assertFalse(equal(map5, map6));
+});
