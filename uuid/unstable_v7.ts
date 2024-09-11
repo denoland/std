@@ -6,9 +6,6 @@
  *
  * UUID Version 7 is defined in {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | RFC 9562}.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @example
  * ```ts
  * import { generate, validate, extractTimestamp } from "@std/uuid/unstable-v7";
  * import { assert, assertEquals } from "@std/assert";
@@ -17,6 +14,8 @@
  * assert(validate(uuid));
  * assertEquals(extractTimestamp("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"), 1645557742000);
  * ```
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
