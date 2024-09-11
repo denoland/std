@@ -31,6 +31,9 @@ export const parameters = {
     'Signal to change the current target thread',
   ),
   changeThread: pidSchema.describe('Change the current target thread'),
+  changeRemote: z.object({ remote: pidSchema.optional() }).describe(
+    'Change the remote of the current target thread',
+  ),
   prompt: z.object({
     content: z.string(),
     attachments: z.array(z.string()).optional(),
@@ -50,6 +53,8 @@ export const returns = {
   changeThreadSignal: z.null(),
   /** The new target thread */
   changeThread: z.void(),
+  /** The new target thread */
+  changeRemote: z.void(),
   prompt: z.void(),
   relay: z.unknown(),
 }
@@ -80,6 +85,17 @@ export const functions: Functions<Api> = {
     await api.updateState((state) => {
       return { ...state, target }
     }, backchatStateSchema)
+  },
+  changeRemote: async ({ remote }, api) => {
+    assertBackchatThread(api)
+    log('changeRemote', print(remote))
+
+    const { target } = await api.state(backchatStateSchema)
+
+    const { changeRemote } = await api.actions<longthread.Api>('longthread', {
+      target,
+    })
+    await changeRemote({ remote })
   },
   async prompt({ content, attachments }, api) {
     // TODO handle attachments

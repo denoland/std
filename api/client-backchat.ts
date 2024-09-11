@@ -5,7 +5,6 @@ import {
   backchatIdRegex,
   backchatStateSchema,
   EngineInterface,
-  freezePid,
   getParent,
   getThreadPath,
   IoStruct,
@@ -40,7 +39,6 @@ export class Backchat {
   readonly #pid: PID
   readonly #abort = new AbortController()
   readonly #watcher: PierceWatcher
-  readonly #dnsCache = new Map<string, Promise<PID>>()
 
   private constructor(engine: EngineInterface, crypto: Crypto, pid: PID) {
     this.#engine = engine
@@ -94,6 +92,7 @@ export class Backchat {
     const state = backchatStateSchema.parse(io.state)
     return state.target
   }
+
   /**
    * This is the main function that is used to interact with the backchat
    * system. The prompt is relayed thru a switchboard agent to select what is
@@ -108,50 +107,41 @@ export class Backchat {
    * also include structured data that widgets have prepared.
    */
   // TODO adorn with other types of input, like file paths and selections
-  async prompt(content: string, attachments?: string[]) {
-    const pierce: PierceRequest = {
-      target: this.#pid,
-      ulid: ulid(),
-      isolate: 'backchat',
-      functionName: 'prompt',
-      params: { content },
-      proctype: Proctype.enum.SERIAL,
-    }
+  prompt(content: string, attachments?: string[]) {
+    const params: Params = { content }
     if (attachments) {
-      pierce.params.attachments = attachments
+      params.attachments = attachments
     }
-    const promise = this.#watcher.watch(pierce.ulid)
-    // TODO handle an error in pierce
-    await this.#engine.pierce(pierce)
-    await promise
+    return this.#backchatAction('prompt', params)
   }
-  async newThread() {
-    const pierce: PierceRequest = {
-      target: this.#pid,
-      ulid: ulid(),
-      isolate: 'backchat',
-      functionName: 'create',
-      params: {},
-      proctype: Proctype.enum.SERIAL,
+  newThread() {
+    return this.#backchatAction('newThread', {})
+  }
+  changeRemote(remote?: PID) {
+    const params: Params = {}
+    if (remote) {
+      params.remote = remote
     }
-    const promise = this.#watcher.watch(pierce.ulid)
-    await this.#engine.pierce(pierce)
-    return await promise
+    return this.#backchatAction('changeRemote', params)
   }
+
   async actions<T>(isolate: string, opts: RpcOpts = {}) {
     const { target = this.#pid, ...procOpts } = opts
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.#action(request)
     return toActions<T>(target, isolate, schema, procOpts, execute)
   }
-  async #action(request: UnsequencedRequest) {
+  #action(request: UnsequencedRequest) {
     // TODO if the target is this branch, convert to a direct pierce
+    return this.#backchatAction('relay', { request })
+  }
+  async #backchatAction(functionName: string, params: Params) {
     const pierce: PierceRequest = {
       target: this.#pid,
       ulid: ulid(),
       isolate: 'backchat',
-      functionName: 'relay',
-      params: { request },
+      functionName,
+      params,
       proctype: Proctype.enum.SERIAL,
     }
     const promise = this.#watcher.watch(pierce.ulid)
@@ -259,33 +249,5 @@ export class Backchat {
   async lsChildren() {
     const obj = await this.readJSON<IoStruct>('.io.json')
     return Object.values(obj.branches)
-  }
-  async dns(repo: string) {
-    const [account, repository, ...rest] = repo.split('/')
-    if (rest.length || !account || !repository) {
-      throw new Error('invalid repo: ' + repo)
-    }
-    if (this.#dnsCache.has(repo)) {
-      const pid = await this.#dnsCache.get(repo)
-      if (!pid) {
-        throw new Error('repo cache error: ' + repo)
-      }
-      freezePid(pid)
-      return pid
-    }
-    const promise = Promise.resolve().then(async () => {
-      const home = this.homeAddress
-      const superuser = addBranches(home, SU_ACTOR)
-
-      type Repos = { [repo: string]: PID }
-      const repos = await this.readJSON<Repos>('repos.json', superuser)
-      const pid = repos[repo]
-      if (!pid) {
-        throw new Error('repo not found: ' + repo)
-      }
-      return pid
-    })
-    this.#dnsCache.set(repo, promise)
-    return promise
   }
 }

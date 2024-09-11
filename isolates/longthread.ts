@@ -1,4 +1,4 @@
-import { assert, Debug } from '@utils'
+import { assert, Debug, equal } from '@utils'
 import {
   CompletionMessage,
   getThreadPath,
@@ -37,6 +37,9 @@ export const parameters = {
     /** tool names to stop on */
     stopOnTools: z.array(z.string()),
   }),
+  changeRemote: z.object({
+    remote: pidSchema.optional(),
+  }),
 }
 export const returns = {
   start: z.void(),
@@ -53,6 +56,7 @@ export const returns = {
     z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
     z.undefined(),
   ]),
+  changeRemote: z.void(),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -141,6 +145,37 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     const result = await loop(path, api, stopOnTools)
     return result
+  },
+  changeRemote: async ({ remote }, api) => {
+    const threadPath = getThreadPath(api.pid)
+    const thread = await api.readThread(threadPath)
+
+    if (equal(thread.remote, remote)) {
+      return
+    }
+    const id = 'call_keVDORgd16XuNBh0PMk5leKP'
+    thread.messages.push({
+      role: 'assistant',
+      tool_calls: [
+        {
+          type: 'function',
+          function: {
+            name: 'SYSTEM_changeRemote',
+            arguments: JSON.stringify(remote ? { remote } : {}),
+          },
+          id,
+        },
+      ],
+    }, { role: 'tool', content: 'null', tool_call_id: id })
+
+    if (remote) {
+      const opts = { target: remote }
+      await api.readThread(getThreadPath(remote), opts)
+      thread.remote = remote
+    } else {
+      delete thread.remote
+    }
+    api.writeJSON(threadPath, thread)
   },
 }
 

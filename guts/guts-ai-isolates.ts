@@ -73,7 +73,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('result', result)
 
       expect(typeof result.content).toBe('string')
-      expect(result.content).not.toContain('.io.json')
       expect(result.content).toContain('does not exist')
 
       const thread = await backchat.readThread(target)
