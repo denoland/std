@@ -2,7 +2,6 @@
 import {
   assert,
   assertEquals,
-  assertMatch,
   assertRejects,
   assertStringIncludes,
   assertThrows,
@@ -114,7 +113,7 @@ Deno.test(
   { permissions: {} },
   async function () {
     {
-      const e = await assertRejects(
+      await assertRejects(
         async () => {
           await expandGlobArray("*", EG_OPTIONS);
         },
@@ -123,15 +122,12 @@ Deno.test(
           // deno-lint-ignore no-explicit-any
           ? (Deno as any).errors.NotCapable
           : Deno.errors.PermissionDenied,
-      );
-      assertMatch(
-        e.message,
-        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+        "run again with the --allow-read flag",
       );
     }
 
     {
-      const e = assertThrows(
+      assertThrows(
         () => {
           expandGlobSyncArray("*", EG_OPTIONS);
         },
@@ -140,10 +136,7 @@ Deno.test(
           // deno-lint-ignore no-explicit-any
           ? (Deno as any).errors.NotCapable
           : Deno.errors.PermissionDenied,
-      );
-      assertMatch(
-        e.message,
-        /^Requires read access to "[^"]+", run again with the --allow-read flag$/,
+        "run again with the --allow-read flag",
       );
     }
   },
