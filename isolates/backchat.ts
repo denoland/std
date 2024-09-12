@@ -15,7 +15,7 @@ import {
   unsequencedRequest,
 } from '@/constants.ts'
 import * as actor from '@/api/isolates/actor.ts'
-import { assert, Debug } from '@utils'
+import { assert, Debug, equal } from '@utils'
 import * as longthread from './longthread.ts'
 import { z } from 'zod'
 const log = Debug('AI:backchat')
@@ -36,6 +36,7 @@ export const parameters = {
   ),
   prompt: z.object({
     content: z.string(),
+    target: pidSchema.optional(),
     attachments: z.array(z.string()).optional(),
   }).describe(
     'Send a prompt to the backchat target thread',
@@ -91,33 +92,41 @@ export const functions: Functions<Api> = {
     log('changeRemote', print(remote))
 
     const { target } = await api.state(backchatStateSchema)
+    if (equal(target, remote)) {
+      throw new Error('Remote is same as current target')
+    }
 
     const { changeRemote } = await api.actions<longthread.Api>('longthread', {
       target,
     })
     await changeRemote({ remote })
   },
-  async prompt({ content, attachments }, api) {
-    // TODO handle attachments
+  async prompt({ content, target, attachments }, api) {
+    // TODO handle attachments and empty content
+    // TODO hit this thread with the topic router
     log('prompt: %o', content)
     log('threadId: %o attachments: %o', attachments)
     assertBackchatThread(api)
+
+    if (!target) {
+      const state = await api.state(backchatStateSchema)
+      target = state.target
+    }
+
     const actorId = getActorId(api.pid)
-
-    const { target } = await api.state(backchatStateSchema)
-    log('base', print(target))
-
-    // TODO hit this thread with the topic router
 
     const { switchboard } = await api.actions<longthread.Api>('longthread', {
       target,
     })
-    const { newThread, target: next } = await switchboard({ content, actorId })
+    const { newThread, changeThread } = await switchboard({
+      content,
+      actorId,
+    })
     if (newThread) {
       await functions.newThread({}, api)
     }
-    if (next) {
-      await functions.changeThread(next, api)
+    if (changeThread) {
+      await functions.changeThread(changeThread, api)
     }
   },
   relay: ({ request }, api) => {

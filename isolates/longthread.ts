@@ -48,9 +48,9 @@ export const returns = {
    * backchat target thread */
   switchboard: z.object({
     newThread: z.boolean().optional(),
-    target: pidSchema.optional(),
-  }).refine((v) => !(v.newThread && v.target), {
-    message: 'expected newThread or target exclusively',
+    changeThread: pidSchema.optional(),
+  }).refine((v) => !(v.newThread && v.changeThread), {
+    message: 'expected newThread or changeThread exclusively',
   }),
   drone: z.union([
     z.object({ functionName: z.string(), args: z.record(z.unknown()) }),
@@ -128,7 +128,7 @@ export const functions: Functions<Api> = {
       if (functionName === 'backchat_newThreadSignal') {
         result.newThread = true
       } else if (functionName === 'backchat_changeThreadSignal') {
-        result.target = api.pid
+        result.changeThread = api.pid
       }
     }
     return result

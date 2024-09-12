@@ -107,10 +107,13 @@ export class Backchat {
    * also include structured data that widgets have prepared.
    */
   // TODO adorn with other types of input, like file paths and selections
-  prompt(content: string, attachments?: string[]) {
+  prompt(content: string, target?: PID, attachments?: string[]) {
     const params: Params = { content }
     if (attachments) {
       params.attachments = attachments
+    }
+    if (target) {
+      params.target = target
     }
     return this.#backchatAction('prompt', params)
   }
