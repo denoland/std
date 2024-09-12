@@ -21,7 +21,7 @@
  * @module
  */
 
-import { decodeBase32Hex, encodeBase32Hex } from "./base32hex.ts";
+import { decodeBase32Hex, encodeBase32Hex } from "./unstable_base32hex.ts";
 
 /**
  * Converts a Uint8Array stream into a base32hex-encoded stream.
@@ -33,7 +33,7 @@ import { decodeBase32Hex, encodeBase32Hex } from "./base32hex.ts";
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32Hex } from "@std/encoding/base32hex";
+ * import { encodeBase32Hex } from "@std/encoding/unstable-base32hex";
  * import { Base32HexEncoderStream } from "@std/encoding/unstable-base32hex-stream";
  * import { toText } from "@std/streams/to-text";
  *

@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { encodeBase32Hex } from "./base32hex.ts";
+import { encodeBase32Hex } from "./unstable_base32hex.ts";
 import {
   Base32HexDecoderStream,
   Base32HexEncoderStream,
