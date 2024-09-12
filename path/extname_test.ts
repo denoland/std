@@ -4,6 +4,8 @@
 import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { extname as posixUnstableExtname } from "./posix/unstable_extname.ts";
+import { extname as windowsUnstableExtname } from "./windows/unstable_extname.ts";
 
 const slashRE = /\//g;
 
@@ -70,11 +72,11 @@ Deno.test("posix.extname()", function () {
   assertEquals(posix.extname("file.\\\\"), ".\\\\");
 
   assertEquals(
-    posix.extname(new URL("file:///home/user/Documents/image.png")),
+    posixUnstableExtname(new URL("file:///home/user/Documents/image.png")),
     ".png",
   );
   assertEquals(
-    posix.extname(new URL("file:///home/user/Documents")),
+    posixUnstableExtname(new URL("file:///home/user/Documents")),
     "",
   );
 });
@@ -98,11 +100,11 @@ Deno.test("windows.extname()", function () {
   assertEquals(windows.extname("file.\\\\"), ".");
 
   assertEquals(
-    windows.extname(new URL("file:///C:/home/user/Documents/image.png")),
+    windowsUnstableExtname(new URL("file:///C:/home/user/Documents/image.png")),
     ".png",
   );
   assertEquals(
-    windows.extname(new URL("file:///C:/home/user/Documents")),
+    windowsUnstableExtname(new URL("file:///C:/home/user/Documents")),
     "",
   );
 });
