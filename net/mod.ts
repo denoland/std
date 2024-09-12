@@ -5,7 +5,7 @@
  *
  * ```ts no-assert no-eval
  * import { getAvailablePort } from "@std/net";
- * *
+ *
  * const command = new Deno.Command(Deno.execPath(), {
  *  args: ["test.ts", "--port", getAvailablePort().toString()],
  * });
