@@ -50,6 +50,7 @@ const ENTRY_POINTS = [
   "../front_matter/mod.ts",
   "../fs/mod.ts",
   "../html/mod.ts",
+  "../html/unstable_is_valid_custom_element_name.ts",
   "../http/mod.ts",
   "../ini/mod.ts",
   "../internal/mod.ts",
