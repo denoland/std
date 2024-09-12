@@ -6,7 +6,6 @@
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase64Url } from "@std/encoding/base64url";
  * import { Base64UrlDecoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
