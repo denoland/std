@@ -24,7 +24,7 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * ```
  *
  * Note: If you are working with file URLs,
- * use `basename` from `@std/path/unstable-basename`.
+ * use the new version of `basename` from `@std/path/unstable-basename`.
  *
  * @param path Path to extract the name from.
  * @param suffix Suffix to remove from extracted name.
