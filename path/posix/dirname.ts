@@ -17,6 +17,9 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use `dirname` from `@std/path/posix/unstable-dirname`.
+ *
  * @param path The path to get the directory from.
  * @returns The directory path.
  */

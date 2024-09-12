@@ -20,6 +20,9 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
  * }
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use `dirname` from `@std/path/unstable-dirname`.
+ *
  * @param path Path to extract the directory from.
  * @returns The directory path.
  */
