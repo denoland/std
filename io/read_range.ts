@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { copy as copyBytes } from "@std/bytes/copy";
-import type { Reader, ReaderSync } from "./types.ts";
+import type { Reader, ReaderSync, Seeker, SeekerSync } from "./types.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
@@ -41,7 +41,7 @@ export interface ByteRange {
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export async function readRange(
-  r: Reader & Deno.Seeker,
+  r: Reader & Seeker,
   range: ByteRange,
 ): Promise<Uint8Array> {
   // byte ranges are inclusive, so we have to add one to the end
@@ -94,7 +94,7 @@ export async function readRange(
  * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
  */
 export function readRangeSync(
-  r: ReaderSync & Deno.SeekerSync,
+  r: ReaderSync & SeekerSync,
   range: ByteRange,
 ): Uint8Array {
   // byte ranges are inclusive, so we have to add one to the end
