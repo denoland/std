@@ -5,7 +5,7 @@ import { encodeBase64Url } from "./base64url.ts";
 import {
   Base64UrlDecoderStream,
   Base64UrlEncoderStream,
-} from "./base64url_stream.ts";
+} from "./unstable_base64url_stream.ts";
 import { RandomSliceStream } from "./_random_slice_stream.ts";
 import { toText } from "@std/streams/to-text";
 import { concat } from "@std/bytes/concat";
