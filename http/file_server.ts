@@ -51,7 +51,7 @@ import { ByteSliceStream } from "@std/streams/byte-slice-stream";
 import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
-import { getNetworkAddress } from "@std/net/get-network-address";
+import { getNetworkAddress } from "../net/unstable_get_network_address.ts";
 import { HEADER } from "./unstable_header.ts";
 import { METHOD } from "./unstable_method.ts";
 

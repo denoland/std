@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { getNetworkAddress } from "./get_network_address.ts";
+import { getNetworkAddress } from "./unstable_get_network_address.ts";
 import { stub } from "@std/testing/mock";
 import { assertEquals } from "@std/assert";
 
