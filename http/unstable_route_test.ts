@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { type Route, route } from "./route.ts";
+import { type Route, route } from "./unstable_route.ts";
 import { assertEquals } from "../assert/equals.ts";
 
 const routes: Route[] = [
