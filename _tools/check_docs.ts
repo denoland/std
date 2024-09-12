@@ -49,6 +49,7 @@ const ENTRY_POINTS = [
   "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_base32_stream.ts",
   "../encoding/unstable_base64url_stream.ts",
+  "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_hex_stream.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",

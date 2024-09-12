@@ -7,14 +7,12 @@
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7 | base32hex}
  * encoding and decoding.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * Modified from {@link [base32]}.
  *
  * This module is browser compatible.
  *
  * ```ts
- * import { encodeBase32Hex, decodeBase32Hex } from "@std/encoding/base32hex";
+ * import { encodeBase32Hex, decodeBase32Hex } from "@std/encoding/unstable-base32hex";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32Hex("foobar"), "CPNMUOJ1E8======");
@@ -24,6 +22,8 @@
  *   new TextEncoder().encode("foobar")
  * );
  * ```
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
@@ -45,7 +45,7 @@ lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
  *
  * @example Usage
  * ```ts
- * import { decodeBase32Hex } from "@std/encoding/base32hex";
+ * import { decodeBase32Hex } from "@std/encoding/unstable-base32hex";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
@@ -70,7 +70,7 @@ export function decodeBase32Hex(b32: string): Uint8Array {
  *
  * @example Usage
  * ```ts
- * import { encodeBase32Hex } from "@std/encoding/base32hex";
+ * import { encodeBase32Hex } from "@std/encoding/unstable-base32hex";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
