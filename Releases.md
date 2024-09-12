@@ -6,11 +6,11 @@
 
 #### @std/assert 1.0.5 (patch)
 
+- BREAKING(assert/unstable): move unstable `assertNever` under
+  `@std/assert/unstable-never` (#5928)
 - fix(assert): value-equal complex keys (#5914)
 - perf(assert): add fast path for primitive keyed collections in `equal()`
   (#5913)
-- refactor(assert): move unstable `assertNever` under
-  `@std/assert/unstable-never` (#5928)
 - refactor(assert,expect): import internal APIs from more specific paths (#5923)
 - refactor(assert): remove unnecessary `getValFromKeyedCollection()` (#5921)
 
@@ -65,10 +65,10 @@
 #### @std/http 1.0.6 (patch)
 
 - BREAKING(http/unstable): move `route` to `./unstable-route` (#5939)
+- BREAKING(http/unstable): move unstable APIs (`header`, `method`,
+  `signed-cookie`) (#5938)
 - fix(http): invalid ipv6 hostname printed to console (#5924)
 - fix(http): show hostname as 'localhost' for 0.0.0.0 on windows (#5918)
-- refactor(http): move unstable APIs (`header`, `method`, `signed-cookie`)
-  (#5938)
 - refactor(http): inline `serveFallback()` util (#5917)
 
 #### @std/io 0.224.8 (patch)
@@ -113,9 +113,13 @@
 - BREAKING(text/unstable): move `to-constant-case` module to
   `unstable-to-constant-case` (#5952)
 
+#### @std/url
+
+- BREAKING(url): remove @std/url (#5931)
+
 #### @std/uuid 1.0.4 (patch)
 
-- refactor(uuid): move UUID v7 APIs to `./unstable-v7` (#5937)
+- BREAKING(uuid/unstable): move UUID v7 APIs to `./unstable-v7` (#5937)
 
 ### 2024.09.04
 
