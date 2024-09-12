@@ -1,3 +1,126 @@
+### 2024.09.12
+
+#### @std/archive 0.225.3 (patch)
+
+- refactor(archive,io): use `Seeker[Sync]` from `@std/io/types` (#5943)
+
+#### @std/assert 1.0.5 (patch)
+
+- BREAKING(assert/unstable): move unstable `assertNever` under
+  `@std/assert/unstable-never` (#5928)
+- fix(assert): value-equal complex keys (#5914)
+- perf(assert): add fast path for primitive keyed collections in `equal()`
+  (#5913)
+- refactor(assert,expect): import internal APIs from more specific paths (#5923)
+- refactor(assert): remove unnecessary `getValFromKeyedCollection()` (#5921)
+
+#### @std/cli 1.0.6 (patch)
+
+- BREAKING(cli/unstable): move `spinner` module to `unstable-spinner` (#5946)
+
+#### @std/collections 1.0.6 (patch)
+
+- fix(collections): ensure `pick` doesn't generate missing properties as
+  `undefined` (#5926)
+
+#### @std/data-structures 1.0.3 (patch)
+
+- BREAKING(data-structures/unstable): move `bidirectional-map` module to
+  `unstable-bidirectional-map` (#5947)
+- feat(data-structures/unstable): `@std/data-structures/bidirectional-map`
+  (#5910)
+
+#### @std/encoding 1.0.5 (patch)
+
+- BREAKING(encoding/unstable): move `base64url-stream` module to
+  `unstable-base64url-stream` (#5959)
+- BREAKING(encoding/unstable): move `base32hex` module to `unstable-base32hex`
+  (#5961)
+- BREAKING(encoding/unstable): move `hex-stream` module to `unstable-hex-stream`
+  (#5960)
+- BREAKING(encoding/unstable): move `base64-stream` module to
+  `unstable-base64-stream` (#5958)
+- BREAKING(encoding/unstable): move `base32hex-stream` module to
+  `unstable-base32hex-stream` (#5956)
+- BREAKING(encoding/unstable): move `base32-stream` module to
+  `unstable-base32-stream` (#5955)
+
+#### @std/expect 1.0.3 (patch)
+
+- fix(expect): value-equal complex keys in `expect.equal()` (#5936)
+- perf(expect): add fast path for primitive keyed collections in `equal()`
+  (#5934)
+- refactor(assert,expect): import internal APIs from more specific paths (#5923)
+
+#### @std/front-matter 1.0.5 (patch)
+
+- BREAKING(front-matter/unstable): move unstable overload of yaml `extract` to
+  `unstable-yaml` (#5968)
+
+#### @std/html 1.0.3 (patch)
+
+- BREAKING(html/unstable): move `is-valid-custom-element-name` module to
+  `unstable-is-valid-custom-element-name` (#5948)
+
+#### @std/http 1.0.6 (patch)
+
+- BREAKING(http/unstable): move `route` to `./unstable-route` (#5939)
+- BREAKING(http/unstable): move unstable APIs (`header`, `method`,
+  `signed-cookie`) (#5938)
+- fix(http): invalid ipv6 hostname printed to console (#5924)
+- fix(http): show hostname as 'localhost' for 0.0.0.0 on windows (#5918)
+- refactor(http): inline `serveFallback()` util (#5917)
+
+#### @std/io 0.224.8 (patch)
+
+- feat(io): add `Seeker[Sync]` interfaces (#5930)
+- refactor(archive,io): use `Seeker[Sync]` from `@std/io/types` (#5943)
+
+#### @std/net 1.0.3 (patch)
+
+- BREAKING(net/unstable): move `get-network-address` module to
+  `unstable-get-network-address` (#5949)
+- fix(net): skip empty mac address for `getNetworkAddress()` (#5941)
+- test(net): add test of `getNetworkAddress()` (#5963)
+
+#### @std/path 1.0.5 (patch)
+
+- BREAKING(path/unstable): move unstable overload of `normalize` to
+  `unstable-normalize` (#5965)
+- BREAKING(path/unstable): move unstable overload of `join` to `unstable-join`
+  (#5964)
+- BREAKING(path/unstable): move unstable overload of `extname` to
+  `unstable-extname` (#5962)
+- BREAKING(path/unstable): move unstable overload of `basename` to
+  `unstable-basename` (#5957)
+- BREAKING(path/unstable): move unstable overload of `dirname` to
+  `unstable-dirname` (#5954)
+
+#### @std/random 0.1.0 (minor)
+
+- feat(random/unstable): basic randomization functions (#5626)
+
+#### @std/streams 1.0.5 (patch)
+
+- BREAKING(streams/unstable): move `fixed-chunk-stream` module to
+  `unstable-fixed-chunk-stream` (#5951)
+- BREAKING(streams/unstable): move `to-lines` module to `unstable-to-lines`
+  (#5950)
+
+#### @std/text 1.0.6 (patch)
+
+- BREAKING(text/unstable): move `slugify` module to `unstable-slugify` (#5953)
+- BREAKING(text/unstable): move `to-constant-case` module to
+  `unstable-to-constant-case` (#5952)
+
+#### @std/url
+
+- BREAKING(url): remove @std/url (#5931)
+
+#### @std/uuid 1.0.4 (patch)
+
+- BREAKING(uuid/unstable): move UUID v7 APIs to `./unstable-v7` (#5937)
+
 ### 2024.09.04
 
 #### @std/archive 0.225.2 (patch)
