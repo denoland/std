@@ -24,6 +24,9 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * assertEquals(basename("C:\\user\\Documents\\image.png", ".png"), "image");
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use `basename` from `@std/path/windows/unstable-basename`.
+ *
  * @param path The path to extract the name from.
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.

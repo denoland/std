@@ -23,6 +23,9 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use `basename` from `@std/path/posix/unstable-basename`.
+ *
  * @param path The path to extract the name from.
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
