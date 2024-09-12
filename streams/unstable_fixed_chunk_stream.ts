@@ -8,7 +8,7 @@
  *
  * @example Usage
  * ```ts
- * import { FixedChunkStream } from "@std/streams/fixed-chunk-stream";
+ * import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const readable = ReadableStream.from(function* () {
