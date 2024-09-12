@@ -26,7 +26,7 @@ import { fromFileUrl } from "./from_file_url.ts";
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string | URL, suffix?: string): string {
+export function basename(path: string | URL, suffix = ""): string {
   path = path instanceof URL ? fromFileUrl(path) : path;
   return stableBasename(path, suffix);
 }

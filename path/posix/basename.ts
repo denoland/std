@@ -30,8 +30,8 @@ import { isPosixPathSeparator } from "./_util.ts";
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string, suffix?: string): string {
-  assertArgs(path, suffix ?? "");
+export function basename(path: string, suffix = ""): string {
+  assertArgs(path, suffix);
 
   const lastSegment = lastPathSegment(path, isPosixPathSeparator);
   const strippedSegment = stripTrailingSeparators(

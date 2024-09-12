@@ -31,8 +31,8 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string, suffix?: string): string {
-  assertArgs(path, suffix ?? "");
+export function basename(path: string, suffix = ""): string {
+  assertArgs(path, suffix);
 
   // Check for a drive letter prefix so as not to mistake the following
   // path separator as an extra separator at the end of the path that can be

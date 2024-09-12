@@ -32,7 +32,7 @@ import { basename as windowsUnstableBasename } from "./windows/unstable_basename
  *
  * @returns The basename of the path.
  */
-export function basename(path: string | URL, suffix?: string): string {
+export function basename(path: string | URL, suffix = ""): string {
   return isWindows
     ? windowsUnstableBasename(path, suffix)
     : posixUnstableBasename(path, suffix);
