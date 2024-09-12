@@ -5,7 +5,7 @@ import { encodeBase32Hex } from "./base32hex.ts";
 import {
   Base32HexDecoderStream,
   Base32HexEncoderStream,
-} from "./base32hex_stream.ts";
+} from "./unstable_base32hex_stream.ts";
 import { RandomSliceStream } from "./_random_slice_stream.ts";
 import { toText } from "@std/streams/to-text";
 import { concat } from "@std/bytes/concat";
