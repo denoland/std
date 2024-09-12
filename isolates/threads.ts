@@ -1,4 +1,4 @@
-import { Functions, IA, print, ToApiType } from '@/constants.ts'
+import { Functions, print, ToApiType } from '@/constants.ts'
 import { log } from '@utils'
 import { z } from 'zod'
 

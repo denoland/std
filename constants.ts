@@ -6,7 +6,6 @@ import {
   Change,
   CommitObject,
   EngineInterface,
-  IsolateApiSchema,
   IsolateReturn,
   MetaPromise,
   Outcome,
