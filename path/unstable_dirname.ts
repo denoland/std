@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 import { isWindows } from "./_os.ts";
-import { dirname as posixDirname } from "./posix/unstable_dirname.ts";
-import { dirname as windowsDirname } from "./windows/unstable_dirname.ts";
+import { dirname as posixUnstableDirname } from "./posix/unstable_dirname.ts";
+import { dirname as windowsUnstableDirname } from "./windows/unstable_dirname.ts";
 
 /**
  * Return the directory path of a file URL.
@@ -28,5 +28,5 @@ import { dirname as windowsDirname } from "./windows/unstable_dirname.ts";
  * @returns The directory path.
  */
 export function dirname(path: string | URL): string {
-  return isWindows ? windowsDirname(path) : posixDirname(path);
+  return isWindows ? windowsUnstableDirname(path) : posixUnstableDirname(path);
 }
