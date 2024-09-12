@@ -10,7 +10,7 @@ import { splitToWords } from "./_util.ts";
  *
  * @example Usage
  * ```ts
- * import { toConstantCase } from "@std/text/to-constant-case";
+ * import { toConstantCase } from "@std/text/unstable-to-constant-case";
  * import { assertEquals } from "@std/assert/equals";
  *
  * assertEquals(toConstantCase("deno is awesome"), "DENO_IS_AWESOME");

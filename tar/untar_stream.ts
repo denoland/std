@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { FixedChunkStream } from "@std/streams";
+import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
 
 /**
  * The original tar	archive	header format.

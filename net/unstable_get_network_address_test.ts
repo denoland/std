@@ -8,11 +8,20 @@ const INTERFACES: Deno.NetworkInterfaceInfo[] = [
   {
     family: "IPv4",
     name: "lo0",
-    address: "127.0.0.1",
+    address: "127.0.0.1", // The interface with the addreess starting with 127 is skipped
     netmask: "255.0.0.0",
     scopeid: null,
     cidr: "127.0.0.1/8",
     mac: "00:00:00:00:00:00",
+  },
+  {
+    family: "IPv4",
+    name: "lo",
+    address: "10.255.255.254",
+    netmask: "255.255.255.255",
+    scopeid: null,
+    cidr: "10.255.255.254/32",
+    mac: "00:00:00:00:00:00", // The interface with MAC addreess 00:00:00:00:00:00 is skipped
   },
   {
     family: "IPv6",
@@ -69,7 +78,7 @@ Deno.test("getNetworkAddress() works with IPv4", () => {
     () => INTERFACES,
   );
   const hostname = getNetworkAddress();
-  assertEquals(hostname, INTERFACES[4]!.address);
+  assertEquals(hostname, INTERFACES[5]!.address);
 });
 
 Deno.test("getNetworkAddress() returns listenable IPv4 address", () => {
@@ -87,7 +96,7 @@ Deno.test("getNetworkAddress() works with IPv6", () => {
     () => INTERFACES,
   );
   const hostname = getNetworkAddress("IPv6");
-  assertEquals(hostname, INTERFACES[5]!.address);
+  assertEquals(hostname, INTERFACES[6]!.address);
 });
 
 Deno.test("getNetworkAddress() returns listenable IPv6 address", () => {
