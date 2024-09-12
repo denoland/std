@@ -14,7 +14,7 @@ import { TextLineStream } from "./text_line_stream.ts";
  *
  * @example Usage
  * ```ts
- * import { toLines } from "@std/streams/to-lines";
+ * import { toLines } from "@std/streams/unstable-to-lines";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const readable = ReadableStream.from([
