@@ -1,5 +1,16 @@
 ### 2024.09.12
 
+#### @std/net 1.0.4 (patch)
+
+- chore(net): add back `get-network-address` module to fix
+  `http@1.0.5/file-server` (#5970)
+
+#### @std/path 1.0.6 (patch)
+
+- docs(path): add note about `unstable-join` (#5967)
+
+### 2024.09.12
+
 #### @std/archive 0.225.3 (patch)
 
 - refactor(archive,io): use `Seeker[Sync]` from `@std/io/types` (#5943)
