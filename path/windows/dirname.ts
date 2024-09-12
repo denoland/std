@@ -23,7 +23,7 @@ import {
  * ```
  *
  * Note: If you are working with file URLs,
- * use `dirname` from `@std/path/windows/unstable-dirname`.
+ * use the new version of `dirname` from `@std/path/windows/unstable-dirname`.
  *
  * @param path The path to get the directory from.
  * @returns The directory path.
