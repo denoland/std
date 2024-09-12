@@ -20,6 +20,9 @@ import { join as windowsJoin } from "./windows/join.ts";
  * }
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use the new version of `join` from `@std/path/unstable-join`.
+ *
  * @param paths Paths to be joined and normalized.
  * @returns The joined and normalized path.
  */
