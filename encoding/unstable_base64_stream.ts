@@ -4,6 +4,18 @@
 /**
  * Utilities for encoding and decoding to and from base64 in a streaming manner.
  *
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
+ * import { toText } from "@std/streams/to-text";
+ *
+ * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
+ *   .pipeThrough(new Base64DecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await toText(stream), "Hello, world!");
+ * ```
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -22,7 +34,7 @@ import { decodeBase64, encodeBase64 } from "./base64.ts";
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64 } from "@std/encoding/base64";
- * import { Base64EncoderStream } from "@std/encoding/base64-stream";
+ * import { Base64EncoderStream } from "@std/encoding/unstable-base64-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
@@ -66,7 +78,7 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64DecoderStream } from "@std/encoding/base64-stream";
+ * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
