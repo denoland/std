@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { toConstantCase } from "./mod.ts";
+import { toConstantCase } from "./unstable_to_constant_case.ts";
 
 Deno.test("toConstantCase() converts a single word", () => {
   const input = "shruberry";
