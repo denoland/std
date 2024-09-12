@@ -7,7 +7,7 @@
  *
  * @example Usage
  * ```ts
- * import { slugify } from "@std/text/slugify";
+ * import { slugify } from "@std/text/unstable-slugify";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(slugify("hello world"), "hello-world");
