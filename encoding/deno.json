@@ -12,7 +12,7 @@
     "./base64": "./base64.ts",
     "./base64-stream": "./base64_stream.ts",
     "./base64url": "./base64url.ts",
-    "./base64url-stream": "./base64url_stream.ts",
+    "./unstable-base64url-stream": "./unstable_base64url_stream.ts",
     "./hex": "./hex.ts",
     "./hex-stream": "./hex_stream.ts",
     "./varint": "./varint.ts"

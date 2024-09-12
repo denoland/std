@@ -23,7 +23,6 @@ export * from "./base58.ts";
 export * from "./base64.ts";
 export * from "./base64_stream.ts";
 export * from "./base64url.ts";
-export * from "./base64url_stream.ts";
 export * from "./hex.ts";
 export * from "./hex_stream.ts";
 export * from "./varint.ts";

@@ -4,6 +4,19 @@
 /**
  * Utilities for encoding and decoding to and from base64url in a streaming manner.
  *
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { encodeBase64Url } from "@std/encoding/base64url";
+ * import { Base64UrlDecoderStream } from "@std/encoding/unstable-base64url-stream";
+ * import { toText } from "@std/streams/to-text";
+ *
+ * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ"])
+ *   .pipeThrough(new Base64UrlDecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await toText(stream), "Hello, world!");
+ * ```
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -22,7 +35,7 @@ import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64Url } from "@std/encoding/base64url";
- * import { Base64UrlEncoderStream } from "@std/encoding/base64url-stream";
+ * import { Base64UrlEncoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
@@ -68,7 +81,7 @@ export class Base64UrlEncoderStream
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64Url } from "@std/encoding/base64url";
- * import { Base64UrlDecoderStream } from "@std/encoding/base64url-stream";
+ * import { Base64UrlDecoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ"])
