@@ -4,6 +4,18 @@
 /**
  * Utilities for encoding and decoding to and from hex in a streaming manner.
  *
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { HexDecoderStream } from "@std/encoding/unstable-hex-stream";
+ * import { toText } from "@std/streams/to-text";
+ *
+ * const stream = ReadableStream.from(["48656c6c6f2c", "20776f726c6421"])
+ *   .pipeThrough(new HexDecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await toText(stream), "Hello, world!");
+ * ```
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -22,7 +34,7 @@ import { decodeHex, encodeHex } from "./hex.ts";
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { encodeHex } from "@std/encoding/hex";
- * import { HexEncoderStream } from "@std/encoding/hex-stream";
+ * import { HexEncoderStream } from "@std/encoding/unstable-hex-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
@@ -52,7 +64,7 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { HexDecoderStream } from "@std/encoding/hex-stream";
+ * import { HexDecoderStream } from "@std/encoding/unstable-hex-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["48656c6c6f2c", "20776f726c6421"])
