@@ -69,6 +69,7 @@ const ENTRY_POINTS = [
   "../net/mod.ts",
   "../net/unstable_get_network_address.ts",
   "../path/mod.ts",
+  "../path/unstable_dirname.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
   "../random/mod.ts",
