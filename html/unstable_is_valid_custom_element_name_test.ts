@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert/equals";
-import { isValidCustomElementName } from "./is_valid_custom_element_name.ts";
+import { isValidCustomElementName } from "./unstable_is_valid_custom_element_name.ts";
 
 const forbiddenCustomElementNames: string[] = [
   "annotation-xml",

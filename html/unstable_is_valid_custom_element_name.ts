@@ -37,7 +37,7 @@ const CUSTOM_ELEMENT_NAME_CHARS =
  * Using a valid custom element name
  *
  * ```ts
- * import { isValidCustomElementName } from "@std/html/is-valid-custom-element-name";
+ * import { isValidCustomElementName } from "@std/html/unstable-is-valid-custom-element-name";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(isValidCustomElementName("custom-element"), true);
