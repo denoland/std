@@ -75,6 +75,7 @@ const ENTRY_POINTS = [
   "../path/unstable_basename.ts",
   "../path/unstable_dirname.ts",
   "../path/unstable_extname.ts",
+  "../path/unstable_join.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
   "../random/mod.ts",

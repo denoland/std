@@ -3,10 +3,13 @@ import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { join } from "./join.ts";
+import { join as posixUnstableJoin } from "./posix/unstable_join.ts";
+import { join as windowsUnstableJoin } from "./windows/unstable_join.ts";
 
 const backslashRE = /\\/g;
 
-type TestCase = [string[] | [URL, ...string[]], string];
+type TestCase = [string[], string];
+type UrlTestCase = [[URL, ...string[]], string];
 
 const joinTests: TestCase[] =
   // arguments                     result
@@ -58,15 +61,17 @@ const joinTests: TestCase[] =
     [["/", "", "/foo"], "/foo"],
     [["", "/", "foo"], "/foo"],
     [["", "/", "/foo"], "/foo"],
-
-    // URLs
-    [[new URL("file:///"), "x/b", "..", "/b/c.js"], "/x/b/c.js"],
-    [[new URL("file:///foo"), "../../../bar"], "/bar"],
-    [
-      [new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."],
-      "/foo/bar/baz/asdf",
-    ],
   ];
+
+const joinUrlTests: UrlTestCase[] = [
+  // URLs
+  [[new URL("file:///"), "x/b", "..", "/b/c.js"], "/x/b/c.js"],
+  [[new URL("file:///foo"), "../../../bar"], "/bar"],
+  [
+    [new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."],
+    "/foo/bar/baz/asdf",
+  ],
+];
 
 // Windows-specific join tests
 const windowsJoinTests: TestCase[] = [
@@ -116,6 +121,8 @@ const windowsJoinTests: TestCase[] = [
   [["c:.", "file"], "c:file"],
   [["c:", "/"], "c:\\"],
   [["c:", "file"], "c:\\file"],
+];
+const windowsJoinUrlTests: UrlTestCase[] = [
   // URLs
   [[new URL("file:///c:")], "c:\\"],
   [[new URL("file:///c:"), "file"], "c:\\file"],
@@ -130,6 +137,14 @@ Deno.test("posix.join()", function () {
   });
 });
 
+Deno.test("posix.(unstable-)join()", function () {
+  joinUrlTests.forEach(function (p) {
+    const _p = p[0];
+    const actual = posixUnstableJoin.apply(null, _p);
+    assertEquals(actual, p[1]);
+  });
+});
+
 Deno.test("windows.join()", function () {
   joinTests.forEach(function (p) {
     const _p = p[0];
@@ -139,6 +154,22 @@ Deno.test("windows.join()", function () {
   windowsJoinTests.forEach(function (p) {
     const _p = p[0];
     const actual = windows.join.apply(null, _p);
+    assertEquals(actual, p[1]);
+  });
+});
+
+Deno.test("windows.(unstable-)join()", function () {
+  joinUrlTests.forEach(function (p) {
+    const _p = p[0];
+    const actual = windowsUnstableJoin.apply(null, _p).replace(
+      backslashRE,
+      "/",
+    );
+    assertEquals(actual, p[1]);
+  });
+  windowsJoinUrlTests.forEach(function (p) {
+    const _p = p[0];
+    const actual = windowsUnstableJoin.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });
