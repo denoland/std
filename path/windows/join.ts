@@ -17,6 +17,9 @@ import { normalize } from "./normalize.ts";
  * assertEquals(joined, "C:\\foo\\bar");
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use the new version of `join` from `@std/path/windows/unstable-join`.
+ *
  * @param paths The paths to join.
  * @returns The joined path.
  */

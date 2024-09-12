@@ -16,6 +16,9 @@ import { normalize } from "./normalize.ts";
  * assertEquals(path, "/foo/bar/baz/asdf");
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use the new version of `join` from `@std/path/posix/unstable-join`.
+ *
  * @param paths The paths to join.
  * @returns The joined path.
  */
