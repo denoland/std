@@ -1,4 +1,4 @@
-import { Spinner } from "../../spinner.ts";
+import { Spinner } from "../../unstable_spinner.ts";
 
 const spinner = new Spinner({ interval: 750 });
 
