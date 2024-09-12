@@ -4,6 +4,18 @@
 /**
  * Utilities for encoding and decoding to and from base32 in a streaming manner.
  *
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { Base32DecoderStream } from "@std/encoding/unstable-base32-stream";
+ * import { toText } from "@std/streams/to-text";
+ *
+ * const stream = ReadableStream.from(["JBSWY3DPEBLW64TMMQQQ===="])
+ *   .pipeThrough(new Base32DecoderStream())
+ *   .pipeThrough(new TextDecoderStream());
+ *
+ * assertEquals(await toText(stream), "Hello World!");
+ * ```
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -22,7 +34,7 @@ import { decodeBase32, encodeBase32 } from "./base32.ts";
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { encodeBase32 } from "@std/encoding/base32";
- * import { Base32EncoderStream } from "@std/encoding/base32-stream";
+ * import { Base32EncoderStream } from "@std/encoding/unstable-base32-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
@@ -66,7 +78,7 @@ export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base32DecoderStream } from "@std/encoding/base32-stream";
+ * import { Base32DecoderStream } from "@std/encoding/unstable-base32-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["JBSWY3DPEBLW64TMMQQQ===="])
