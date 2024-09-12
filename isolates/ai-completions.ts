@@ -103,15 +103,22 @@ export const getChatParams = (
     parallel_tool_calls,
     presence_penalty,
   } = config
+
+  messages = [...messages]
   const sysprompt: CompletionMessage = {
     role: 'system',
     content: agent.instructions + '\n\n' + additionInstructions(),
     name: agent.source.path,
   }
+  if (agent.instructions || agent.commands.length) {
+    messages.push(sysprompt)
+  }
+  messages = messages.map(safeAssistantName)
+
   const args: ChatParams = {
     model,
     temperature,
-    messages: [...messages, sysprompt].map(safeAssistantName),
+    messages,
     seed: 1337,
     tools: tools.length ? tools : undefined,
     tool_choice: tools.length ? tool_choice : undefined,
@@ -120,7 +127,7 @@ export const getChatParams = (
   }
   return args
 }
-const safeAssistantName = (message: CompletionMessage) => {
+export const safeAssistantName = (message: CompletionMessage) => {
   if (message.role !== 'assistant' && message.role !== 'system') {
     return message
   }

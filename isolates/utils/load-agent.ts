@@ -1,6 +1,6 @@
 import merge from 'lodash.merge'
 import { assert, posix } from '@utils'
-import { agent, AGENT_RUNNERS, IA, Triad } from '@/constants.ts'
+import { AGENT_RUNNERS, agentSchema, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 
@@ -24,8 +24,16 @@ export const loadString = async (path: string, string: string, api: IA) => {
 
   const { pid, commit } = api
   const source: Triad = { path, pid, commit }
-  const instructions = await expandLinks(content.trim(), api)
-  return agent.parse({ ...defaults, name, instructions, source })
+  const instructions = await expandLinks(content, api)
+  const o1Checker = agentSchema.refine((data) => {
+    if (data.instructions) {
+      if (['o1-preview', 'o1-mini'].includes(data.config.model)) {
+        return !data.instructions
+      }
+    }
+    return true
+  }, 'instructions are not allowed for this model')
+  return o1Checker.parse({ ...defaults, name, instructions, source })
 }
 
 export const load = async (path: string, api: IA) => {
@@ -52,7 +60,8 @@ const expandLinks = async (content: string, api: IA, path: string[] = []) => {
   content = content.trim()
   const links = extractLinks(content)
   const contents = await loadContent(links, api, path)
-  return replaceLinksWithContent(content, links, contents)
+  const result = replaceLinksWithContent(content, links, contents)
+  return result.trim()
 }
 const loadContent = async (links: string[], api: IA, path: string[]) => {
   const contents = new Map()

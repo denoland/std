@@ -1,11 +1,10 @@
 import { expect, log } from '@utils'
 import { getThreadPath, Thread } from '../constants.ts'
 import * as longthread from './longthread.ts'
-import DB from '@/db.ts'
-import { Engine } from '@/engine.ts'
-import { Crypto } from '../api/crypto.ts'
 import { Backchat } from '../api/client-backchat.ts'
 import { assert } from '@std/assert'
+import { cradleMaker } from '@/cradle-maker.ts'
+
 const agentMd = `
 ---
 commands:
@@ -23,11 +22,7 @@ commands:
 const path = 'agents/agent-fixture.md'
 
 Deno.test('longthread chat', async (t) => {
-  const superuserKey = Crypto.generatePrivateKey()
-  const aesKey = DB.generateAesKey()
-  const privateKey = Crypto.generatePrivateKey()
-  const engine = await Engine.provision(superuserKey, aesKey)
-  const backchat = await Backchat.upsert(engine, privateKey)
+  const { backchat, engine } = await cradleMaker()
 
   const threadPath = getThreadPath(backchat.pid)
   const actorId = 'longthread'
@@ -115,6 +110,36 @@ Deno.test('longthread chat', async (t) => {
       name: 'io-fixture_ping',
       arguments: '{"message": "2"}',
     })
+  })
+  await engine.stop()
+})
+
+Deno.test('test o1 agents', async (t) => {
+  const { backchat, engine } = await cradleMaker()
+  const actorId = 'agents_o1_family'
+
+  const longthread = await backchat.actions<longthread.Api>('longthread')
+  const o1Path = 'agents/o1.md'
+  const o1 = Deno.readTextFileSync('./HAL/' + o1Path)
+  const o1MiniPath = 'agents/o1-mini.md'
+  const o1Mini = Deno.readTextFileSync('./HAL/' + o1MiniPath)
+
+  await backchat.write(o1Path, o1)
+  await backchat.write(o1MiniPath, o1Mini)
+
+  await t.step('ask o1', async () => {
+    await longthread.start({})
+    const content = 'whats in a name ?'
+    const message = await longthread.run({ path: o1Path, content, actorId })
+    expect(message.content).toContain('Shakespeare')
+  })
+
+  await t.step('ask o1-mini', async () => {
+    await backchat.delete(getThreadPath(backchat.pid))
+    await longthread.start({})
+    const content = 'whats in a name ?'
+    const message = await longthread.run({ path: o1Path, content, actorId })
+    expect(message.content).toContain('Shakespeare')
   })
   await engine.stop()
 })

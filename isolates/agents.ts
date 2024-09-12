@@ -1,4 +1,11 @@
-import { agent, Functions, print, reasoning, ToApiType } from '@/constants.ts'
+import {
+  agentConfigSchema,
+  agentSchema,
+  Functions,
+  print,
+  reasoning,
+  ToApiType,
+} from '@/constants.ts'
 import { Debug } from '@utils'
 import { z } from 'zod'
 import * as files from './files.ts'
@@ -36,11 +43,13 @@ export const parameters = {
     reasoning,
     path: z.string().describe('path to the agent file you want to update'),
     description: z.string().optional().describe('description of the agent'),
-    config: agent.shape.config.optional().describe(
+    config: agentConfigSchema.optional().describe(
       'configuration of the agent',
     ),
-    runner: agent.shape.runner.optional().describe('runner of the agent'),
-    commands: agent.shape.commands.optional().describe('commands of the agent'),
+    runner: agentSchema.shape.runner.optional().describe('runner of the agent'),
+    commands: agentSchema.shape.commands.optional().describe(
+      'commands of the agent',
+    ),
   }).describe(
     'Update the configuration of the agent.  To remove an item, set it to "undefined"',
   ),

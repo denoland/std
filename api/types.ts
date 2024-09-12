@@ -687,28 +687,37 @@ export const getThreadPath = (pid: PID) => {
   return path
 }
 
-export const agent = z.object({
+export const agentConfigSchema = z.object({
+  model: z.enum([
+    'gpt-3.5-turbo',
+    'gpt-4-turbo',
+    'gpt-4o',
+    'gpt-4o-mini',
+    'o1-preview',
+    'o1-mini',
+  ]),
+  temperature: z.number().gte(0).lte(2).optional(),
+  presence_penalty: z.number().optional(),
+  tool_choice: z.enum(['auto', 'none', 'required']).optional().describe(
+    'control model behaviour to force it to call a tool or no tool',
+  ),
+  parallel_tool_calls: z.boolean().optional().describe(
+    'Is the model permitted to call more than one function at a time.  Must be false to use strict function calling',
+  ),
+})
+
+export const agentSchema = z.object({
   name: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   source: triad.describe('Where exactly did this agent come from'),
   description: z.string().optional(),
-  config: z.object({
-    model: z.enum(['gpt-3.5-turbo', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini']),
-    temperature: z.number().gte(0).lte(2).optional(),
-    presence_penalty: z.number().optional(),
-    tool_choice: z.enum(['auto', 'none', 'required']).optional().describe(
-      'control model behaviour to force it to call a tool or no tool',
-    ),
-    parallel_tool_calls: z.boolean().optional().describe(
-      'Is the model permitted to call more than one function at a time.  Must be false to use strict function calling',
-    ),
-  }),
+  config: agentConfigSchema,
   runner: z.enum(['ai-runner']),
   commands: z.array(z.string()),
   instructions: z.string().max(256000),
 })
-export type Agent = z.infer<typeof agent>
+export type Agent = z.infer<typeof agentSchema>
 
-export const chatParams = agent.shape.config.extend({
+export const chatParams = agentConfigSchema.extend({
   messages: z.array(completionMessage),
   seed: z.literal(1337),
   tools: z.array(z.object({
