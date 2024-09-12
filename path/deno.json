@@ -38,12 +38,14 @@
     "./posix/resolve": "./posix/resolve.ts",
     "./posix/to-file-url": "./posix/to_file_url.ts",
     "./posix/to-namespaced-path": "./posix/to_namespaced_path.ts",
+    "./posix/unstable-basename": "./posix/unstable_basename.ts",
     "./posix/unstable-dirname": "./posix/unstable_dirname.ts",
     "./relative": "./relative.ts",
     "./resolve": "./resolve.ts",
     "./to-file-url": "./to_file_url.ts",
     "./to-namespaced-path": "./to_namespaced_path.ts",
     "./types": "./types.ts",
+    "./unstable-basename": "./unstable_basename.ts",
     "./unstable-dirname": "./unstable_dirname.ts",
     "./windows": "./windows/mod.ts",
     "./windows/basename": "./windows/basename.ts",
@@ -65,6 +67,7 @@
     "./windows/resolve": "./windows/resolve.ts",
     "./windows/to-file-url": "./windows/to_file_url.ts",
     "./windows/to-namespaced-path": "./windows/to_namespaced_path.ts",
+    "./windows/unstable-basename": "./windows/unstable_basename.ts",
     "./windows/unstable-dirname": "./windows/unstable_dirname.ts"
   }
 }
