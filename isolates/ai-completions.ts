@@ -23,7 +23,7 @@ const apiKey = Deno.env.get('OPENAI_API_KEY')
 if (!apiKey) {
   throw new Error('missing openai api key: OPENAI_API_KEY')
 }
-const ai = new OpenAI({ apiKey, timeout: 20 * 1000, maxRetries: 5 })
+const ai = new OpenAI({ apiKey, maxRetries: 5 })
 
 export const transcribe = async (file: File) => {
   const transcription = await ai.audio.transcriptions
@@ -74,7 +74,9 @@ const complete = async (
   let errorMessage = ''
   while (retries++ < RETRY_LIMIT) {
     try {
-      const completion = await ai.chat.completions.create(args)
+      const { data: completion, response: raw } = await ai.chat.completions
+        .create(args).withResponse()
+      log('headers', raw)
       const result = completion.choices[0].message
       log('completion complete', agent.source.path, result)
       const assistant: AssistantMessage = {
