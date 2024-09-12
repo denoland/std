@@ -2,7 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { encodeHex } from "./hex.ts";
-import { HexDecoderStream, HexEncoderStream } from "./hex_stream.ts";
+import { HexDecoderStream, HexEncoderStream } from "./unstable_hex_stream.ts";
 import { toText } from "@std/streams/to-text";
 import { concat } from "@std/bytes/concat";
 import { RandomSliceStream } from "./_random_slice_stream.ts";
