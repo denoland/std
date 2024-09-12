@@ -2,7 +2,10 @@
 
 import { assertEquals } from "@std/assert";
 import { encodeBase32 } from "./base32.ts";
-import { Base32DecoderStream, Base32EncoderStream } from "./base32_stream.ts";
+import {
+  Base32DecoderStream,
+  Base32EncoderStream,
+} from "./unstable_base32_stream.ts";
 import { RandomSliceStream } from "./_random_slice_stream.ts";
 import { toText } from "../streams/to_text.ts";
 import { concat } from "@std/bytes/concat";
