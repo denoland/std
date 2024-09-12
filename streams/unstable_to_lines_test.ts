@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { toLines } from "./to_lines.ts";
+import { toLines } from "./unstable_to_lines.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test("toLines() parses simple input", async () => {
