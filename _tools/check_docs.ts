@@ -57,6 +57,7 @@ const ENTRY_POINTS = [
   "../fmt/duration.ts",
   "../fmt/printf.ts",
   "../front_matter/mod.ts",
+  "../front_matter/unstable_yaml.ts",
   "../fs/mod.ts",
   "../html/mod.ts",
   "../html/unstable_is_valid_custom_element_name.ts",

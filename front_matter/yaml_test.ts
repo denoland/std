@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { extract } from "./yaml.ts";
+import { extract as unstableExtract } from "./unstable_yaml.ts";
 import {
   runExtractTypeErrorTests,
   runExtractYamlTests1,
@@ -26,9 +27,9 @@ Deno.test("extractYaml() allows whitespaces after the header", () => {
   assertEquals(extract("= yaml =  \nfoo: 0\n---\n").attrs, { foo: 0 });
 });
 
-Deno.test("extractYaml() parses with schema options", () => {
+Deno.test("(unstable)extractYaml() parses with schema options", () => {
   assertEquals(
-    extract("---\ndate: 2024-08-20\n---\n", { schema: "json" }).attrs,
+    unstableExtract("---\ndate: 2024-08-20\n---\n", { schema: "json" }).attrs,
     {
       date: "2024-08-20",
     },
