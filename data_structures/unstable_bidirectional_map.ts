@@ -14,7 +14,7 @@
  *
  * @example Usage
  * ```ts
- * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+ * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
  * import { assertEquals } from "@std/assert";
  *
  * const map = new BidirectionalMap([["one", 1]]);
@@ -25,7 +25,7 @@
  *
  * @example Inserting a value that already exists
  * ```ts
- * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+ * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
  * import { assertEquals } from "@std/assert";
  *
  * const map = new BidirectionalMap();
@@ -60,7 +60,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -84,7 +84,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap();
@@ -118,7 +118,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -141,7 +141,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -166,7 +166,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -194,7 +194,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap([["one", 1]]);
@@ -212,7 +212,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @example Usage
    * ```ts
-   * import { BidirectionalMap } from "@std/data-structures/bidirectional-map";
+   * import { BidirectionalMap } from "@std/data-structures/unstable-bidirectional-map";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new BidirectionalMap();

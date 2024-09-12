@@ -40,6 +40,7 @@ const ENTRY_POINTS = [
   "../collections/mod.ts",
   "../csv/mod.ts",
   "../data_structures/mod.ts",
+  "../data_structures/unstable_bidirectional_map.ts",
   "../datetime/mod.ts",
   "../dotenv/mod.ts",
   "../encoding/mod.ts",

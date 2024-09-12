@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "@std/assert";
-import { BidirectionalMap } from "./bidirectional_map.ts";
+import { BidirectionalMap } from "./unstable_bidirectional_map.ts";
 
 Deno.test("BidirectionalMap is an instance of Map", () => {
   const biMap = new BidirectionalMap();
