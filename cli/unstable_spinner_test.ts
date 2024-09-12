@@ -8,7 +8,7 @@ import {
   assertStringIncludes,
 } from "@std/assert";
 import { delay } from "@std/async/delay";
-import { Spinner } from "./spinner.ts";
+import { Spinner } from "./unstable_spinner.ts";
 
 async function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
   const cmd = new Deno.Command(Deno.execPath(), {
