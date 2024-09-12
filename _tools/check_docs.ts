@@ -78,6 +78,7 @@ const ENTRY_POINTS = [
   "../streams/unstable_to_lines.ts",
   "../tar/mod.ts",
   "../text/mod.ts",
+  "../text/unstable_to_constant_case.ts",
   "../testing/bdd.ts",
   "../testing/mock.ts",
   "../testing/snapshot.ts",
