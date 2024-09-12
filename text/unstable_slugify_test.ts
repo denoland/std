@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert/equals";
-import { slugify } from "./slugify.ts";
+import { slugify } from "./unstable_slugify.ts";
 
 Deno.test("slugify() returns kebabcase", () => {
   assertEquals(slugify("hello world"), "hello-world");
