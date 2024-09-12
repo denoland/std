@@ -31,6 +31,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 const ENTRY_POINTS = [
   "../archive/mod.ts",
   "../assert/mod.ts",
+  "../assert/unstable_never.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../cache/mod.ts",
@@ -53,6 +54,9 @@ const ENTRY_POINTS = [
   "../fs/mod.ts",
   "../html/mod.ts",
   "../http/mod.ts",
+  "../http/unstable_header.ts",
+  "../http/unstable_method.ts",
+  "../http/unstable_signed_cookie.ts",
   "../ini/mod.ts",
   "../internal/mod.ts",
   "../io/mod.ts",
@@ -78,6 +82,7 @@ const ENTRY_POINTS = [
   "../toml/mod.ts",
   "../ulid/mod.ts",
   "../uuid/mod.ts",
+  "../uuid/unstable_v7.ts",
   "../webgpu/mod.ts",
   "../yaml/mod.ts",
 ] as const;
