@@ -66,6 +66,7 @@ const ENTRY_POINTS = [
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
+  "../net/unstable_get_network_address.ts",
   "../path/mod.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
