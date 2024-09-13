@@ -34,13 +34,11 @@ export default class Server {
     const base = new Hono()
     const server = new Server(engine, base)
 
-    const app = base.basePath('/api')
+    base.use(timing())
+    base.use(prettyJSON())
+    base.use('*', logger(), poweredBy(), cors())
 
-    app.use(timing())
-    app.use(prettyJSON())
-    app.use('*', logger(), poweredBy(), cors())
-
-    app.use(async (_, next) => {
+    base.use(async (_, next) => {
       if (!server.#provisioning) {
         // must be as part of a request, else deno deploy times out
         server.#provisioning = engine.ensureHomeAddress(init)
@@ -49,6 +47,7 @@ export default class Server {
       await next()
     })
 
+    const app = base.basePath('/api')
     app.post(`/ping`, async (c) => {
       const params = await c.req.json()
       return execute(c, engine.ping(params), 'ping')
