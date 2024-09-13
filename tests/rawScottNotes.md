@@ -167,16 +167,43 @@ N/A
 
 ---
 ## TOPIC
-### PROBLEM
-### RESOLUTION
-### EXAMPLE INCORRECT OUTPUT 
-​### EXAMPLE EXPECTED OUTPUT
+PWD equivalent
 
+### PROBLEM
+From the NL interface, it would be helpful not only to know which bot you're talking to, but which bots have been associated with the task you're carrying out.
+
+### RESOLUTION
+Be able to ask the context for what you're doing, and which threads you've created in that master session.
+
+### EXAMPLE INCORRECT OUTPUT
+
+#### Dave:
+Hal, I'm lost.  Bring up a list of all of these threads I've been working with today. 
+
+#### Hal:
+Dave, we've talked about this before.  This conversation serves no purpose.  Good bye.
+
+### EXAMPLE EXPECTED OUTPUT  
+
+#### Dave:
+Hal, I'm lost.  Bring up a list of all of these threads I've been working with today. 
+
+#### Hal:
+Sure.  You're currently trying to work on the testing system.  You've talked to me of course, but have also talked to the following bots:
+
+1. CreatorBot: You left that thread because it was trying to update it's own system prompt.
+2. Hal: You came back to me about how to stop CreatorBot doing that.  I suggested changing the sys prompt.  Then you talked about whether we can put in a hierarchy of tests which bots inherit to stop this happening.
+3. Test-runner: you talked to test runner about what it needed from you to create a test.
+
+Also, there were a number of drones used.  I haven't listed these, but can if you like.
+
+You can talk to any of these agents.  Which would you like to talk to and I'll put you back into that threat.
 
 ---
 ## TOPIC
 ### PROBLEM
 ### RESOLUTION
-### EXAMPLE INCORRECT OUTPUT 
-​### EXAMPLE EXPECTED OUTPUT
+### EXAMPLE INCORRECT OUTPUT
+### EXAMPLE EXPECTED OUTPUT  
+
 
