@@ -53,6 +53,7 @@ export class ConsoleHandler extends BaseHandler {
   }
 
   log(msg: string) {
+    // deno-lint-ignore no-console
     console.log(msg);
   }
 }

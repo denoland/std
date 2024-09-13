@@ -23,6 +23,7 @@ export function stringify(object: Record<string, string>): string {
 
     let escapedValue = value ?? "";
     if (key.startsWith("#")) {
+      // deno-lint-ignore no-console
       console.warn(
         `key starts with a '#' indicates a comment and is ignored: '${key}'`,
       );

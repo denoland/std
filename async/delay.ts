@@ -65,6 +65,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
         if (!(error instanceof ReferenceError)) {
           throw error;
         }
+        // deno-lint-ignore no-console
         console.error("`persistent` option is only available in Deno");
       }
     }
