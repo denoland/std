@@ -1,10 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { getAssertionState } from "@std/internal/assertion-state";
-import { AssertionError } from "@std/assert/assertion-error";
-
-const assertionState = getAssertionState();
-
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test suite */
@@ -388,12 +383,6 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       }
     } else {
       await fn.call(context, t);
-    }
-
-    if (assertionState.checkAssertionErrorStateAndReset()) {
-      throw new AssertionError(
-        "Expected at least one assertion to be called but received none",
-      );
     }
   }
 }
