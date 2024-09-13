@@ -40,6 +40,10 @@ export const parameters = {
   lsRepos: z.object({}).describe(
     'List all the repos that this Actor has created',
   ),
+  pull: z.object({
+    repo: z.string(),
+    target: pidSchema.optional(),
+  }),
 }
 
 export const returns = {
@@ -49,5 +53,6 @@ export const returns = {
   clone: repoResult,
   rm: z.object({ reposDeleted: z.number() }),
   lsRepos: z.array(z.string()),
+  pull: repoResult,
 }
 export type Api = ToApiType<typeof parameters, typeof returns>

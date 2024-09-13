@@ -126,6 +126,15 @@ export const functions: Functions<actor.Api> = {
     }, stateSchema)
     return { pid, head }
   },
+  pull: async ({ repo, target }, api) => {
+    assert(isActorBranch(api.pid), 'pull not actor: ' + print(api.pid))
+    log('pull', repo, print(target))
+    target = target || api.pid
+
+    const { pull } = await api.actions<system.Api>('system', { target })
+    const { head, elapsed } = await pull({ repo, target })
+    return { head, elapsed, pid: target }
+  },
 }
 const assertNoRepo = async (api: IA, repo: string) => {
   const state = await api.state(stateSchema)

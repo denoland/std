@@ -71,7 +71,7 @@ export class Engine implements EngineInterface {
     await engine.ensureHomeAddress(init)
     return engine
   }
-  get #su() {
+  get su() {
     if (!this.#suBackchat) {
       const crypto = Crypto.load(this.#superuserKey)
       this.#suBackchat = Backchat.superuser(this, crypto)
@@ -132,14 +132,14 @@ export class Engine implements EngineInterface {
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
-    const actions = await this.#su.actions<actors.Api>('actors', { target })
+    const actions = await this.su.actions<actors.Api>('actors', { target })
     await actions.createActor({ actorId, machineId, backchatId })
 
     return backchat
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
-    const { backchat } = await this.#su.actions<actor.Api>('actor', { target })
+    const { backchat } = await this.su.actions<actor.Api>('actor', { target })
     const backchatId = generateBackchatId(ulid())
     const pid = await backchat({ backchatId })
     return freezePid(pid)
@@ -213,7 +213,7 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('superuser is', print(this.#su.pid))
+    log('superuser is', print(this.su.pid))
 
     if (!init) {
       log('no init function - returning')
@@ -221,7 +221,7 @@ export class Engine implements EngineInterface {
     }
 
     log('provisioning')
-    await init(this.#su)
+    await init(this.su)
     log('provisioned')
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {

@@ -180,9 +180,10 @@ export class Backchat {
     const actor = await this.#getActor()
     return actor.clone({ repo, isolate, params })
   }
-  pull(params: { pid: PID }) {
-    const { pid } = params
-    return Promise.resolve({ pid, head: 'head' })
+  async pull(params: { repo: string; target: PID }) {
+    const { repo, target = this.pid } = params
+    const actor = await this.#getActor()
+    return actor.pull({ repo, target })
   }
   push(params: { pid: PID }) {
     return Promise.resolve(params)

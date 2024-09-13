@@ -32,10 +32,9 @@ export const parameters = {
   rm: z.object({ pid: pidSchema }).describe('remove a repository'),
   clone: init.describe('clone a repository'),
   init: init.describe('initialize a repository'),
-  pull: z.object({ repo: z.string(), branch: z.string().optional() })
-    .describe(
-      'pull a repository into the current branch, or optionally the given branch',
-    ),
+  pull: z.object({ repo: z.string(), target: pidSchema.optional() }).describe(
+    'pull a repository into the current branch, or optionally the given PID',
+  ),
   sideEffectClone: z.object({ repo: z.string() }).describe(
     'clone a repository as a side effect',
   ),
@@ -43,7 +42,7 @@ export const parameters = {
     'initialize a repository as a side effect',
   ),
   sideEffectFetch: z.object({
-    pid: pidSchema,
+    target: pidSchema,
     repo: z.string(),
   }).describe('fetch a repository as a side effect'),
 }
@@ -103,26 +102,24 @@ export const functions: Functions<Api> = {
     log('cloned %s in %ims', print(result.pid), result.elapsed)
     return result
   },
-  pull: async ({ repo, branch }, api: IA<C>) => {
-    const pid = !branch
-      ? api.pid
-      : freezePid({ ...api.pid, branches: [branch] })
-    log('pull', repo, print(pid))
+  pull: async ({ repo, target }, api: IA<C>) => {
+    target = target || api.pid
+    log('pull', repo, print(target))
     const actions = await api.actions<Api>('system')
     log('commit is', api.commit)
-    const fetchHead = await actions.sideEffectFetch({ pid, repo })
+    const fetchHead = await actions.sideEffectFetch({ target, repo })
     log('fetched', fetchHead)
 
     const { db } = api.context
     assert(db, 'db not found')
-    const fs = FS.open(pid, api.commit, db)
+    const fs = FS.open(target, api.commit, db)
     const oid = await fs.merge(fetchHead.head)
     if (api.commit === oid) {
       log('no changes')
       return fetchHead
     }
 
-    const atomic = await db.atomic().updateHead(pid, api.commit, oid)
+    const atomic = await db.atomic().updateHead(target, api.commit, oid)
     assert(atomic, 'update head failed')
     if (!await atomic.commit()) {
       throw new Error('failed to commit: ' + repo)
@@ -150,11 +147,11 @@ export const functions: Functions<Api> = {
     const { pid, oid } = await FS.init(partial, db)
     return { pid, head: oid, elapsed: Date.now() - start }
   },
-  sideEffectFetch: async ({ pid, repo }, api: IA<C>) => {
+  sideEffectFetch: async ({ target, repo }, api: IA<C>) => {
     const { db } = api.context
     assert(db, 'db not found')
     const start = Date.now()
-    const head = await FS.fetch(repo, pid, db)
+    const head = await FS.fetch(repo, target, db)
     return { head, elapsed: Date.now() - start }
   },
 }

@@ -130,6 +130,13 @@ export default class Server {
     hooks.post('/github', async (c) => {
       const body = await c.req.json()
       console.log('github hook', body)
+      if (body?.repository?.full_name !== 'dreamcatcher-tech/HAL') {
+        return c.json({ error: 'invalid repository' }, 400)
+      }
+      const { su } = engine
+      const target = { ...su.pid, branches: ['main'] }
+      const promise = su.pull({ repo: 'dreamcatcher-tech/HAL', target })
+      return execute(c, promise, 'hooks/github')
     })
 
     if (Deno.env.get('GITHUB_CLIENT_ID')) {
