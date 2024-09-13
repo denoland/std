@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { walk } from "../fs/walk.ts";
 import { globToRegExp } from "../path/glob_to_regexp.ts";
