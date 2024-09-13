@@ -49,9 +49,16 @@ export const functions: Functions<Api> = {
   async complete({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
-    const thread = await api.readThread(threadPath)
 
-    const assistant = await complete(path, thread.messages, api)
+    const agent = await load(path, api)
+    const thread = await api.readThread(threadPath)
+    const messages = [...thread.messages]
+    thread.messages.push({ role: 'assistant', name: agent.source.path })
+    api.writeJSON(threadPath, thread)
+
+    const assistant = await complete(agent, messages, api)
+
+    thread.messages.pop()
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
@@ -59,13 +66,11 @@ export const functions: Functions<Api> = {
 }
 
 const complete = async (
-  path: string,
+  agent: Agent,
   messages: Thread['messages'],
   api: IA,
 ) => {
-  const agent: Agent = await load(path, api)
   const tools = await loadTools(agent.commands, api)
-
   const args = getChatParams(agent, messages, tools)
 
   log('completion started with model: %o', args.model, print(api.pid))
