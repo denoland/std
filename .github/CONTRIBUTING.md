@@ -59,7 +59,7 @@ encoding
 └── unstable_base32hex_stream.ts   <--- unstable API
 ```
 
-### New features in unstable pacakges (version < 1.0.0)
+### New features in unstable packages (version < 1.0.0)
 
 There's no special rules to new features in unstable packages. Write new APIs
 and send a pull request.
