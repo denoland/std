@@ -10,8 +10,7 @@ export type { GenericFunction };
  * Log at the warning level.
  *
  * This function is a pass-through to the default logger's `warn` method. By
- * default, the default logger is configured to log to the console, meaning this
- * function emulates {@linkcode console.warn}.
+ * default, the default logger is configured to use {@linkcode console.log}.
  *
  * @template T The type of the message to log.
  * @param msg The message to log.
@@ -35,8 +34,7 @@ export function warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
  * Log at the warning level.
  *
  * This function is a pass-through to the default logger's `warn` method. By
- * default, the default logger is configured to log to the console, meaning this
- * function emulates {@linkcode console.warn}.
+ * default, the default logger is configured to use {@linkcode console.log}.
  *
  * @template T The type of the message to log.
  * @param msg The message to log.
