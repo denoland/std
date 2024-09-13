@@ -494,9 +494,7 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
 /**
  * `expect.hasAssertions` verifies that at least one assertion is called during a test.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * Notice: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
+ * Note: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
  *
  * @example
  * ```ts

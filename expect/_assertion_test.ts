@@ -5,7 +5,7 @@ import { expect } from "./expect.ts";
 
 Deno.test("expect.hasAssertions() API", () => {
   describe("describe suite", () => {
-    // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
+    // FIXME(eryue0220): This test should throw `toThrowErrorMatchingSnapshot`
     it("should throw an error", () => {
       expect.hasAssertions();
     });
@@ -21,7 +21,7 @@ Deno.test("expect.hasAssertions() API", () => {
     expect("a").toEqual("a");
   });
 
-  // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
+  // FIXME(eryue0220): This test should throw `toThrowErrorMatchingSnapshot`
   test("test suite should throw an error", () => {
     expect.hasAssertions();
   });

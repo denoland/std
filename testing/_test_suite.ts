@@ -1,5 +1,4 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test suite */
