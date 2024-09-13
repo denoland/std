@@ -127,6 +127,12 @@ export default class Server {
       return execute(c, engine.transcribe(audio), 'transcribe')
     })
 
+    const hooks = base.basePath('/hooks')
+    hooks.post('/github', async (c) => {
+      const body = await c.req.json()
+      console.log('github hook', body)
+    })
+
     if (Deno.env.get('GITHUB_CLIENT_ID')) {
       const {
         signIn,
