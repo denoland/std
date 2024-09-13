@@ -215,10 +215,10 @@ async function assertSnippetEvals(
     stderr: "piped",
   });
   const timeoutId = setTimeout(() => {
+    // deno-lint-ignore no-console
     console.warn(
-      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...`,
+      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...\n${snippet}`,
     );
-    console.warn(snippet);
   }, 10_000);
   try {
     const { success, stderr } = await command.output();
@@ -548,6 +548,7 @@ const lintStatus = await new Deno.Command(Deno.execPath(), {
   stderr: "inherit",
 }).output();
 if (!lintStatus.success) {
+  // deno-lint-ignore no-console
   console.error(
     `%c[error] %c'deno doc --lint' failed`,
     "color: red",
@@ -568,6 +569,7 @@ for await (const _ of iter) {
 }
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
+    // deno-lint-ignore no-console
     console.error(
       `%c[error] %c${error.message} %cat ${error.cause}`,
       "color: red",
@@ -576,6 +578,7 @@ if (diagnostics.length > 0) {
     );
   }
 
+  // deno-lint-ignore no-console
   console.log(`%c${diagnostics.length} errors found`, "color: red");
   Deno.exit(1);
 }

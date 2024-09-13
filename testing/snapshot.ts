@@ -358,6 +358,7 @@ class AssertSnapshotContext {
 
     const updated = this.getUpdatedCount();
     if (updated > 0) {
+      // deno-lint-ignore no-console
       console.log(
         `%c\n > ${updated} ${
           updated === 1 ? "snapshot" : "snapshots"
@@ -367,6 +368,7 @@ class AssertSnapshotContext {
     }
     const removed = removedSnapshotNames.length;
     if (removed > 0) {
+      // deno-lint-ignore no-console
       console.log(
         `%c\n > ${removed} ${
           removed === 1 ? "snapshot" : "snapshots"
@@ -374,6 +376,7 @@ class AssertSnapshotContext {
         "color: red; font-weight: bold;",
       );
       for (const snapshotName of removedSnapshotNames) {
+        // deno-lint-ignore no-console
         console.log(`%c   • ${snapshotName}`, "color: red;");
       }
     }

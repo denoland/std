@@ -396,6 +396,8 @@ export class DateTimeFormatter {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
+                // TODO(iuioiua): Replace with throwing an error
+                // deno-lint-ignore no-console
                 console.error(
                   `Trying to parse hour greater than 12, use 'H' instead of 'h'.`,
                 );
@@ -405,6 +407,8 @@ export class DateTimeFormatter {
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
               if (part.hour12 && parseInt(value) > 12) {
+                // TODO(iuioiua): Replace with throwing an error
+                // deno-lint-ignore no-console
                 console.error(
                   `Trying to parse hour greater than 12, use 'HH' instead of 'hh'.`,
                 );
@@ -412,6 +416,7 @@ export class DateTimeFormatter {
               break;
             }
             default:
+              // TODO(iuioiua): Correct error type and message
               throw new Error(
                 `ParserError: value "${part.value}" is not supported`,
               );
