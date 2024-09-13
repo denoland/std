@@ -4,4 +4,6 @@ commands:
 ---
 
 To update HAL to the latest version, call the `pull()` command with the repo
-parameter set to `dreamcatcher-tech/HAL`.
+parameter set to `dreamcatcher-tech/HAL`. By default, this will update the
+current branch you are on. To update the main branch, supply the branch
+parameter `main`.
