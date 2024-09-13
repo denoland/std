@@ -3,6 +3,7 @@ import { assert, Debug } from '@utils'
 import {
   C,
   ENTRY_BRANCH,
+  freezePid,
   Functions,
   IA,
   isPID,
@@ -31,7 +32,10 @@ export const parameters = {
   rm: z.object({ pid: pidSchema }).describe('remove a repository'),
   clone: init.describe('clone a repository'),
   init: init.describe('initialize a repository'),
-  pull: z.object({ repo: z.string() }).describe('pull a repository'),
+  pull: z.object({ repo: z.string(), branch: z.string().optional() })
+    .describe(
+      'pull a repository into the current branch, or optionally the given branch',
+    ),
   sideEffectClone: z.object({ repo: z.string() }).describe(
     'clone a repository as a side effect',
   ),
@@ -99,10 +103,12 @@ export const functions: Functions<Api> = {
     log('cloned %s in %ims', print(result.pid), result.elapsed)
     return result
   },
-  pull: async ({ repo }, api: IA<C>) => {
-    log('pull', repo, print(api.pid))
+  pull: async ({ repo, branch }, api: IA<C>) => {
+    const pid = !branch
+      ? api.pid
+      : freezePid({ ...api.pid, branches: [branch] })
+    log('pull', repo, print(pid))
     const actions = await api.actions<Api>('system')
-    const { pid } = api
     log('commit is', api.commit)
     const fetchHead = await actions.sideEffectFetch({ pid, repo })
     log('fetched', fetchHead)
