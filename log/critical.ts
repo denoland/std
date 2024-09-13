@@ -3,6 +3,7 @@
 
 import { getLogger } from "./get_logger.ts";
 import type { GenericFunction } from "./logger.ts";
+import "./setup.ts";
 
 /** Log with critical level, using default logger. */
 export function critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
