@@ -52,7 +52,7 @@ export function assertThrows(
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
-  ErrorClass: new (...args: any[]) => E,
+  ErrorClass: abstract new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): E;
@@ -60,14 +60,14 @@ export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   errorClassOrMsg?:
     // deno-lint-ignore no-explicit-any
-    | (new (...args: any[]) => E)
+    | (abstract new (...args: any[]) => E)
     | string,
   msgIncludesOrMsg?: string,
   msg?: string,
 ): E | Error | unknown {
   // deno-lint-ignore no-explicit-any
-  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
-  let msgIncludes: string | undefined = undefined;
+  let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
+  let msgIncludes: string | undefined;
   let err;
 
   if (typeof errorClassOrMsg !== "string") {
@@ -76,8 +76,7 @@ export function assertThrows<E extends Error = Error>(
       errorClassOrMsg?.prototype instanceof Error ||
       errorClassOrMsg?.prototype === Error.prototype
     ) {
-      // deno-lint-ignore no-explicit-any
-      ErrorClass = errorClassOrMsg as new (...args: any[]) => E;
+      ErrorClass = errorClassOrMsg;
       msgIncludes = msgIncludesOrMsg;
     } else {
       msg = msgIncludesOrMsg;

@@ -7,12 +7,15 @@ Deno.test({
     class TestClass1 {}
     class TestClass2 {}
     class TestClass3 {}
+    abstract class AbstractTestClass {}
+    class ConcreteTestClass extends AbstractTestClass {}
 
     // Regular types
     assertInstanceOf(new Date(), Date);
     assertInstanceOf(new Number(), Number);
     assertInstanceOf(Promise.resolve(), Promise);
     assertInstanceOf(new TestClass1(), TestClass1);
+    assertInstanceOf(new ConcreteTestClass(), AbstractTestClass);
 
     // Throwing cases
     assertThrows(
