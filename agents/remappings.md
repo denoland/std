@@ -69,3 +69,8 @@ If you think the user is in another timezone, use that, but otherwise the time
 now is: [asdfasdf](isolate://utils/now/{timezone:0})
 
 What is the weather: [asdfasdf](isolate://utils/now/{timezone:0})
+
+## Multiple agents
+
+Be able to specify a glob pattern for the agents, so that the test runs for
+multiple agents
