@@ -411,6 +411,7 @@ export interface EngineInterface {
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
   read(path: string, pid: PID, commit?: string): Promise<string>
+  readTree(path: string, pid: PID, commit?: string): Promise<TreeEntry[]>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>
   exists(path: string, pid: PID): Promise<boolean>
 }
@@ -801,3 +802,21 @@ export const ioStruct = z.object({
 export const reasoning = z.array(z.string()).describe(
   'the brief step by step reasoning why this function was called and what it is trying to achieve',
 )
+export type TreeEntry = {
+  /**
+   * - the 6 digit hexadecimal mode
+   */
+  mode: string
+  /**
+   * - the name of the file or directory
+   */
+  path: string
+  /**
+   * - the SHA-1 object id of the blob or tree
+   */
+  oid: string
+  /**
+   * - the type of object
+   */
+  type: 'blob' | 'tree' | 'commit'
+}

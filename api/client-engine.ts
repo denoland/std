@@ -10,6 +10,7 @@ import {
   PID,
   PierceRequest,
   Splice,
+  TreeEntry,
 } from './types.ts'
 import { assert } from '@sindresorhus/is'
 import { Crypto } from './crypto.ts'
@@ -169,6 +170,16 @@ export class WebClientEngine implements EngineInterface {
     }
     const result = await this.#request('read', params)
     return result as string
+  }
+  async readTree(path: string, pid: PID, commit?: string) {
+    const params: { path: string; pid: PID; commit?: string } = {
+      path,
+      pid,
+      commit,
+    }
+    const result = await this.#request('readTree', params)
+    assert.array(result)
+    return result as TreeEntry[]
   }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
     const params: { path: string; pid: PID; commit?: string } = {

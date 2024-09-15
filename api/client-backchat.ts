@@ -222,6 +222,18 @@ export class Backchat {
     const thread = await this.readJSON(getThreadPath(pid), pid)
     return threadSchema.parse(thread)
   }
+  readTree(path: string, pid: PID = this.pid, commit?: string) {
+    // TODO use the web cache for these calls, both in engine and clients
+    return this.#engine.readTree(path, pid, commit)
+  }
+  readMeta(path: string, pid: PID = this.pid, commit?: string) {
+    // this should read the commit for the file
+    // if commit is given, then it will find the commit PRIOR to the given one
+    // where he requested file changed
+    // TODO make this follow renames
+    // TODO ensure that the order of the tree helps with knowing what changed
+    console.log('readMeta', path, pid, commit)
+  }
   async state<T extends ZodObject<Record<string, ZodTypeAny>>>(
     pid: PID,
     schema: T,
@@ -244,8 +256,9 @@ export class Backchat {
     return actions.rm({ reasoning: [], path })
   }
   async ls({ path = '.', target = this.pid }: { path?: string; target?: PID }) {
-    const actions = await this.actions<files.Api>('files', { target })
-    return actions.ls({ path })
+    // TODO this should be a reading of the tree
+    const tree = await this.readTree(path, target)
+    return Object.keys(tree)
   }
   deleteAccountUnrecoverably(): Promise<void> {
     throw new Error('not implemented')

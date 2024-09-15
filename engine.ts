@@ -270,6 +270,21 @@ export class Engine implements EngineInterface {
     log('read', path, print(pid))
     return fs.read(path)
   }
+  async readTree(path: string, pid: PID, commit?: string) {
+    freezePid(pid)
+
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+    let fs
+    if (commit) {
+      fs = FS.open(pid, commit, db)
+    } else {
+      fs = await FS.openHead(pid, db)
+    }
+
+    log('readTree', path, print(pid))
+    return fs.readTree(path)
+  }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
     freezePid(pid)
 

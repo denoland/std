@@ -109,6 +109,11 @@ export default class Server {
       const { path, pid, commit } = params
       return execute(c, engine.read(path, pid, commit), 'read')
     })
+    app.post(`/readTree`, async (c) => {
+      const params = await c.req.json()
+      const { path, pid, commit } = params
+      return execute(c, engine.readTree(path, pid, commit), 'readTree')
+    })
     app.post(`/readJSON`, async (c) => {
       const params = await c.req.json()
       const { path, pid, commit } = params

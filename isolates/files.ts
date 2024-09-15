@@ -29,6 +29,7 @@ export const functions: Functions<Api> = {
     log('read result', result)
     return result
   },
+  // TODO migrate this to be linecount updates, not regex
   update: async ({ expectedMatches, path, regex, replacement }, api) => {
     log('update', expectedMatches, path, regex, replacement)
     const contents = await api.read(path)
@@ -41,6 +42,8 @@ export const functions: Functions<Api> = {
     api.write(path, result)
     return { matchesUpdated: matches.length }
   },
+  // TODO make a json update tool that specifies a path in the object to change
+  // by using a standard json path specification
   rm: ({ path }, api) => {
     log('rm', path)
     api.delete(path)

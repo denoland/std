@@ -65,4 +65,31 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await engine.stop()
   })
+  Deno.test(prefix + 'readTree', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const { pid } = backchat
+
+    await t.step('empty path', async () => {
+      const path = ''
+      const result = await backchat.readTree(path, pid)
+      expect(result.length).toBeGreaterThan(0)
+    })
+    await t.step('.', async () => {
+      const path = '.'
+      const result = await backchat.readTree(path, pid)
+      expect(result.length).toBeGreaterThan(0)
+    })
+    await t.step('tests', async () => {
+      const path = 'tests'
+      const result = await backchat.readTree(path, pid)
+      expect(result.length).toBeGreaterThan(0)
+    })
+    await t.step('non existent', async () => {
+      const path = 'tests/non-existent'
+      await expect(backchat.readTree(path, pid))
+        .rejects.toThrow('Could not find')
+    })
+
+    await engine.stop()
+  })
 }

@@ -11,6 +11,7 @@ import {
   PID,
   print,
   sha1,
+  type TreeEntry,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
@@ -245,16 +246,21 @@ export default class FS {
     }
 
     const dirname = posix.dirname(path)
-    const filepath = dirname === '.' ? undefined : dirname
     const basename = posix.basename(path)
-    const oid = this.#internalOid
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    const tree = await this.readTree(dirname)
     for (const entry of tree) {
       if (entry.path === basename) {
         return entry.oid
       }
     }
     throw new Errors.NotFoundError(path)
+  }
+  async readTree(path: string = '.') {
+    path = refine(path)
+    const oid = this.#internalOid
+    const filepath = path === '.' ? undefined : path
+    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    return tree
   }
   delete(path: string) {
     path = refine(path)
@@ -486,24 +492,7 @@ type Tree = {
   children: Map<string, Tree>
 }
 type TreeObject = TreeEntry[]
-type TreeEntry = {
-  /**
-   * - the 6 digit hexadecimal mode
-   */
-  mode: string
-  /**
-   * - the name of the file or directory
-   */
-  path: string
-  /**
-   * - the SHA-1 object id of the blob or tree
-   */
-  oid: string
-  /**
-   * - the type of object
-   */
-  type: 'blob' | 'tree' | 'commit'
-}
+
 const ensurePath = (tree: Tree, path: string) => {
   const parts = path.split('/')
   parts.pop()
