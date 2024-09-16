@@ -36,7 +36,8 @@ export interface ExistsOptions {
  * @see {@link https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use} for
  * more information on the time-of-check to time-of-use bug.
  *
- * Requires `--allow-read` and `--allow-sys` permissions.
+ * Requires `--allow-read` permissions, and in some cases, `--allow-sys`
+ * permissions if `options.isReadable` is `true`.
  *
  * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
  * for more information on Deno's permissions system.
@@ -166,7 +167,8 @@ export async function exists(
  * @see {@link https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use} for
  * more information on the time-of-check to time-of-use bug.
  *
- * Requires `--allow-read` and `--allow-sys` permissions.
+ * Requires `--allow-read` permissions, and in some cases, `--allow-sys`
+ * permissions if `options.isReadable` is `true`.
  *
  * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
  * for more information on Deno's permissions system.
