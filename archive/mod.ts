@@ -54,7 +54,7 @@
  *   filePath: "./filename_on_filesystem.txt",
  * });
  *
- * // Now let's write the tar (with it's two files) to the filesystem
+ * // Now let's write the tar (with its two files) to the filesystem
  * // use tar.getReader() to read the contents.
  *
  * const writer = await Deno.open("./out.tar", { write: true, create: true });
