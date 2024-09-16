@@ -24,7 +24,9 @@ import { concat } from "@std/bytes/concat";
  * @param decoderOpts The options
  * @returns The async iterator of strings
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/unstable-to-lines/~/toLines | toLines}
+ * instead. This will be removed in the future.
  */
 export async function* readLines(
   reader: Reader,
