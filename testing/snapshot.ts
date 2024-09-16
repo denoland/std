@@ -525,7 +525,7 @@ class AssertSnapshotContext {
 
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
@@ -549,7 +549,7 @@ export async function assertSnapshot<T>(
 ): Promise<void>;
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
