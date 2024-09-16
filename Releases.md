@@ -1,3 +1,19 @@
+### 2024.09.16
+
+#### @std/cache 0.1.3 (patch)
+
+- fix(cache,data-structures): add missing non-null assertion and `override`
+  keyword (#5981)
+
+#### @std/data-structures 1.0.4 (patch)
+
+- fix(cache,data-structures): add missing non-null assertion and `override`
+  keyword (#5981)
+
+#### @std/tar 0.1.1 (patch)
+
+- fix(tar): update to `0.1.1` (#5980)
+
 ### 2024.09.12a
 
 #### @std/net 1.0.4 (patch)
