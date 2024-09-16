@@ -11,6 +11,15 @@ Deno.test({
 });
 
 Deno.test({
+  name: "assertNotInstanceOf() accepts abstract class",
+  fn() {
+    abstract class AbstractClass {}
+
+    assertNotInstanceOf(AbstractClass, AbstractClass);
+  },
+});
+
+Deno.test({
   name: "assertNotInstanceOf() throws",
   fn() {
     assertThrows(
