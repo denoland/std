@@ -71,7 +71,7 @@ export class LruCache<K, V> extends Map<K, V>
 
   #pruneToMaxSize(): void {
     if (this.size > this.maxSize) {
-      this.delete(this.keys().next().value);
+      this.delete(this.keys().next().value!);
     }
   }
 
