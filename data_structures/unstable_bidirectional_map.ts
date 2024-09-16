@@ -219,5 +219,5 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    * assertEquals(map.toString(), "[object BidirectionalMap]");
    * ```
    */
-  readonly [Symbol.toStringTag] = "BidirectionalMap";
+  override readonly [Symbol.toStringTag] = "BidirectionalMap";
 }
