@@ -39,7 +39,7 @@
     "@std/random": "jsr:@std/random@^0.1.0",
     "@std/semver": "jsr:@std/semver@^1.0.3",
     "@std/streams": "jsr:@std/streams@^1.0.5",
-    "@std/tar": "jsr:@std/tar@^0.1.0",
+    "@std/tar": "jsr:@std/tar@^0.1.1",
     "@std/testing": "jsr:@std/testing@^1.0.2",
     "@std/text": "jsr:@std/text@^1.0.6",
     "@std/toml": "jsr:@std/toml@^1.0.1",
