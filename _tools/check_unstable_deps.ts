@@ -11,7 +11,7 @@
 
 // These 2 paths are known to include unstable module (net/unstable_get_network_address.ts)
 // and should be ignored.
-const EXCEPTOIONS = [
+const EXCEPTIONS = [
   "std/http/file_server.ts",
   "std/http/mod.ts",
 ];
@@ -51,7 +51,7 @@ function isUnstableModule(specifier: string) {
 
 let hasError = false;
 for (const path of stableEntrypoints) {
-  if (EXCEPTOIONS.some((exception) => path.endsWith(exception))) {
+  if (EXCEPTIONS.some((exception) => path.endsWith(exception))) {
     console.log(`Skip checking ${path}`);
     continue;
   }
