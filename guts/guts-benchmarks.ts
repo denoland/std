@@ -131,7 +131,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await t.step('ls', async () => {
       const { ls } = await backchat.actions<files.Api>('files', { target })
-      const result = await ls({ count: true })
+      const result = await ls({ count: true, reasoning: [] })
       log('result', result)
       expect(result).toBe(count + 1)
     })

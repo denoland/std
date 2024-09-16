@@ -3,7 +3,6 @@ import { assert, Debug } from '@utils'
 import {
   C,
   ENTRY_BRANCH,
-  freezePid,
   Functions,
   IA,
   isPID,
