@@ -73,6 +73,9 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is readable
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -97,6 +100,9 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a readable directory
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -105,6 +111,9 @@ export interface ExistsOptions {
  * ```
  *
  * @example Check if a path is a readable file
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { exists } from "@std/fs/exists";
  *
@@ -203,6 +212,9 @@ export async function exists(
  * ```
  *
  * @example Check if a path is readable
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -227,6 +239,9 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a readable directory
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
@@ -235,6 +250,9 @@ export async function exists(
  * ```
  *
  * @example Check if a path is a readable file
+ *
+ * Requires `--allow-sys` permissions in some cases.
+ *
  * ```ts no-eval
  * import { existsSync } from "@std/fs/exists";
  *
