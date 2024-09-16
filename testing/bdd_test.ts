@@ -1431,7 +1431,7 @@ Deno.test("describe()", async (t) => {
   await t.step("flat child only", async (t) => {
     /**
      * Asserts that when only is used on a child `describe` or `it` call, it will be the only test case or suite that runs within the top test suite.
-     * This demonstrates the issue where `Deno.test` is called without `only` even though one of it's child steps are focused.
+     * This demonstrates the issue where `Deno.test` is called without `only` even though one of its child steps are focused.
      * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
      */
     async function assertOnly(
