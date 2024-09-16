@@ -114,7 +114,11 @@ export interface PosixUstarFormat {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface TarStreamEntry {
+export interface TarStreamEntryFile {
+  /**
+   * The type of the entry.
+   */
+  type: "file";
   /**
    * The header information attributed to the entry, presented in one of two
    * valid forms.
@@ -127,8 +131,41 @@ export interface TarStreamEntry {
   /**
    * The content of the entry, if the entry is a file.
    */
-  readable?: ReadableStream<Uint8Array>;
+  readable: ReadableStream<Uint8Array>;
 }
+
+/**
+ * The structure of an entry extracted from a Tar archive.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TarStreamEntryDir {
+  /**
+   * The type of the entry.
+   */
+  type: "directory";
+  /**
+   * The header information attributed to the entry, presented in one of two
+   * valid forms.
+   */
+  header: OldStyleFormat | PosixUstarFormat;
+  /**
+   * The path of the entry as stated in the archive.
+   */
+  path: string;
+  /**
+   * The content of the entry. This is `undefined` for the directory type, as
+   * it does not have content.
+   */
+  readable: undefined;
+}
+
+/**
+ * The structure of an entry extracted from a Tar archive.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type TarStreamEntry = TarStreamEntryFile | TarStreamEntryDir;
 
 /**
  * ### Overview
@@ -271,16 +308,20 @@ export class UntarStream
         };
       }
 
-      const entry: TarStreamEntry = {
+      const entry = {
+        type: "directory",
         path: (
           "prefix" in header && header.prefix.length ? header.prefix + "/" : ""
         ) + header.name,
         header,
       };
       if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
-        entry.readable = this.#readableFile(header.size);
+        (entry as TarStreamEntryFile).type = "file";
+        (entry as TarStreamEntryFile).readable = this.#readableFile(
+          header.size,
+        );
       }
-      yield entry;
+      yield entry as TarStreamEntry;
     }
   }
 

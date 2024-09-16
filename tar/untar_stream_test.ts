@@ -98,7 +98,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
 
   let buffer = new Uint8Array();
   for await (const item of readable) {
-    if (item.readable) {
+    if (item.type === "file") {
       buffer = concat(await Array.fromAsync(item.readable));
     }
   }
@@ -125,7 +125,7 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
 
   let buffer = new Uint8Array();
   for await (const entry of readable) {
-    if (entry.readable) {
+    if (entry.type === "file") {
       buffer = concat(await Array.fromAsync(entry.readable));
     }
   }
@@ -154,7 +154,7 @@ Deno.test("UntarStream() with invalid size", async () => {
   await assertRejects(
     async () => {
       for await (const entry of readable) {
-        if (entry.readable) {
+        if (entry.type === "file") {
           // deno-lint-ignore no-empty
           for await (const _ of entry.readable) {}
         }
@@ -187,7 +187,7 @@ Deno.test("UntarStream() with invalid ending", async () => {
   await assertRejects(
     async () => {
       for await (const entry of readable) {
-        if (entry.readable) {
+        if (entry.type === "file") {
           // deno-lint-ignore no-empty
           for await (const _ of entry.readable) {}
         }
@@ -205,7 +205,7 @@ Deno.test("UntarStream() with too small size", async () => {
   await assertRejects(
     async () => {
       for await (const entry of readable) {
-        if (entry.readable) {
+        if (entry.type === "file") {
           // deno-lint-ignore no-empty
           for await (const _ of entry.readable) {}
         }
@@ -238,7 +238,7 @@ Deno.test("UntarStream() with invalid checksum", async () => {
   await assertRejects(
     async () => {
       for await (const entry of readable) {
-        if (entry.readable) {
+        if (entry.type === "file") {
           // deno-lint-ignore no-empty
           for await (const _ of entry.readable) {}
         }
