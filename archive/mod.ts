@@ -34,9 +34,6 @@
  * archive file, while untar is the inverse utility to extract the files from an
  * archive. Files are not compressed, only collected into the archive.
  *
- * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
- *
  * ```ts no-eval
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
@@ -64,6 +61,9 @@
  * await copy(tar.getReader(), writer);
  * writer.close();
  * ```
+ *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
