@@ -113,7 +113,7 @@
  * );
  *
  * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
- *   const a = "\x1b[32mThis green text has had it's colours stripped\x1b[39m";
+ *   const a = "\x1b[32mThis green text has had it's colors stripped\x1b[39m";
  *   await assertMonochromeSnapshot(t, a);
  * });
  * ```
@@ -122,7 +122,7 @@
  * // .snaps/example_test.ts.snap
  * export const snapshot = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
+ * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colors stripped`;
  * ```
  *
  * ## Version Control:
