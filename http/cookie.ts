@@ -251,10 +251,12 @@ function validateDomain(domain: string) {
  * @param headers The headers instance to get cookies from
  * @return Object with cookie names as keys
  */
-export function getCookies(headers: Headers): Record<string, string> {
+export function getCookies(
+  headers: Headers,
+): Record<string, string | undefined> {
   const cookie = headers.get("Cookie");
   if (cookie !== null) {
-    const out: Record<string, string> = {};
+    const out: Record<string, string | undefined> = {};
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
