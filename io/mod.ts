@@ -31,7 +31,6 @@ export * from "./read_lines.ts";
 export * from "./read_long.ts";
 export * from "./read_range.ts";
 export * from "./read_short.ts";
-export * from "./read_string_delim.ts";
 export * from "./reader_from_stream_reader.ts";
 export * from "./slice_long_to_bytes.ts";
 export * from "./string_reader.ts";

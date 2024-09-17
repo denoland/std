@@ -5,22 +5,9 @@
 import { assertEquals } from "@std/assert";
 import { Buffer } from "./buffer.ts";
 import { readLines } from "./read_lines.ts";
-import { readStringDelim } from "./read_string_delim.ts";
 
-/** @todo (iuioiua) Can these tests be separated? */
 Deno.test("readStringDelimAndLines", async function () {
   const enc = new TextEncoder();
-  const data = new Buffer(
-    enc.encode("Hello World\tHello World 2\tHello World 3"),
-  );
-  const chunks_ = [];
-
-  for await (const c of readStringDelim(data, "\t")) {
-    chunks_.push(c);
-  }
-
-  assertEquals(chunks_.length, 3);
-  assertEquals(chunks_, ["Hello World", "Hello World 2", "Hello World 3"]);
 
   const linesData = new Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
   const linesDataWithTrailingNewLine = new Buffer(enc.encode("1\n2\n3\n"));
