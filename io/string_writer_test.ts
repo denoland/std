@@ -2,14 +2,11 @@
 import { assertEquals } from "@std/assert";
 import { StringWriter } from "./string_writer.ts";
 import { StringReader } from "./string_reader.ts";
-import { copyN } from "./copy_n.ts";
 import { copy } from "./copy.ts";
 
 Deno.test("ioStringWriter", async function () {
   const w = new StringWriter("base");
   const r = new StringReader("0123456789");
-  await copyN(r, w, 4);
-  assertEquals(w.toString(), "base0123");
   await copy(r, w);
   assertEquals(w.toString(), "base0123456789");
 });
