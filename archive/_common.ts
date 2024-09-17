@@ -6,6 +6,9 @@ import type { Reader } from "@std/io/types";
 /**
  * Base interface for {@linkcode TarMeta}.
  *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarInfo {
@@ -43,6 +46,9 @@ export interface TarInfo {
 
 /**
  * Base interface for {@linkcode TarMetaWithLinkName}.
+ *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
