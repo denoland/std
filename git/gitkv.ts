@@ -126,8 +126,9 @@ export class GitKV {
       if (typeof data === 'string') {
         data = new TextEncoder().encode(data)
       }
-      await this.#cache.set(pathKey, data)
+      const promise = this.#cache.set(pathKey, data)
       await this.#db.blobSet(pathKey, data)
+      await promise
     }
     log('writeFile done:', pathKey)
   }
@@ -247,6 +248,7 @@ class Cache {
   #big: globalThis.Cache | undefined
   async #load() {
     if ('caches' in globalThis && !this.#big) {
+      // TODO name the caches per repo so they can be deleted granularly
       this.#big = await caches.open('hashbucket')
     }
   }

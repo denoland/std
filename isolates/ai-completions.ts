@@ -1,4 +1,4 @@
-import { Debug } from '@utils'
+import { assert, Debug } from '@utils'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
 import {
@@ -38,9 +38,12 @@ export const transcribe = async (file: File) => {
 
 export const parameters = {
   complete: z.object({ path: z.string() }),
+  /** Gives slightly quicker feedback to users when waiting for completions */
+  effect: z.object({ path: z.string() }),
 }
 export const returns = {
   complete: z.void(),
+  effect: z.void(),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -52,13 +55,26 @@ export const functions: Functions<Api> = {
 
     const agent = await load(path, api)
     const thread = await api.readThread(threadPath)
-    const messages = [...thread.messages]
     thread.messages.push({ role: 'assistant', name: agent.source.path })
     api.writeJSON(threadPath, thread)
 
-    const assistant = await complete(agent, messages, api)
+    const { effect } = await api.actions<Api>('ai-completions')
+    await effect({ path })
+  },
+  async effect({ path }, api) {
+    const threadPath = getThreadPath(api.pid)
+    log('completing thread %o', threadPath, print(api.pid))
 
-    thread.messages.pop()
+    const agent = await load(path, api)
+    const thread = await api.readThread(threadPath)
+    const last = thread.messages.pop()
+    assert(last, 'no messages in thread')
+    assert(last.role === 'assistant', 'last message must be assistant')
+    assert(last.name === agent.source.path, 'last message must be from agent')
+    assert(!last.content, 'last message must be empty')
+
+    const assistant = await complete(agent, thread.messages, api)
+
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
