@@ -24,7 +24,7 @@ import { readDelim } from "./read_delim.ts";
  * @param decoderOpts The options
  * @returns The async iterator of strings
  *
- * @deprecated Use
+ * @deprecated Pipe the readable stream through a
  * {@linkcode https://jsr.io/@std/streams/doc/~/TextDelimiterStream | TextDelimiterStream}
  * instead. This will be removed in the future.
  */
