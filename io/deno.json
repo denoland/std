@@ -20,7 +20,6 @@
     "./read-short": "./read_short.ts",
     "./read-string-delim": "./read_string_delim.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
-    "./slice-long-to-bytes": "./slice_long_to_bytes.ts",
     "./string-reader": "./string_reader.ts",
     "./string-writer": "./string_writer.ts",
     "./to-readable-stream": "./to_readable_stream.ts",
