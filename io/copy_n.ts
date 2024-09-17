@@ -24,7 +24,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param size Read size
  * @returns Number of bytes copied
  *
- * @deprecated Pipe through
+ * @deprecated Pipe the readable stream through a new
  * {@linkcode https://jsr.io/@std/streams/doc/~/ByteSliceStream | ByteSliceStream}
  * instead. This will be removed in the future.
  */
