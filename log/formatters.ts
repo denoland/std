@@ -2,6 +2,7 @@
 // This module is browser compatible.
 import type { LogRecord } from "./logger.ts";
 
+/** Formatter that formats log records as JSON. */
 export function jsonFormatter(logRecord: LogRecord): string {
   return JSON.stringify({
     level: logRecord.levelName,
@@ -19,6 +20,7 @@ function flattenArgs(args: unknown[]): unknown {
   }
 }
 
+/** The pre-defined formatters */
 export const formatters: {
   jsonFormatter(logRecord: LogRecord): string;
 } = {

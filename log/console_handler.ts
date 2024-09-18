@@ -5,7 +5,12 @@ import type { LogRecord } from "./logger.ts";
 import { blue, bold, red, yellow } from "@std/fmt/colors";
 import { BaseHandler, type BaseHandlerOptions } from "./base_handler.ts";
 
+/** The options for {@linkcode ConsoleHandler} */
 export interface ConsoleHandlerOptions extends BaseHandlerOptions {
+  /** Colors are used when true
+   *
+   * @default {true}
+   */
   useColors?: boolean;
 }
 
@@ -16,11 +21,13 @@ export interface ConsoleHandlerOptions extends BaseHandlerOptions {
 export class ConsoleHandler extends BaseHandler {
   #useColors?: boolean;
 
+  /** Construct a {@linkcode ConsoleHandler} */
   constructor(levelName: LevelName, options: ConsoleHandlerOptions = {}) {
     super(levelName, options);
     this.#useColors = options.useColors ?? true;
   }
 
+  /** Formats the log record */
   override format(logRecord: LogRecord): string {
     let msg = super.format(logRecord);
 
@@ -31,6 +38,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
+  /** Applies the color */
   applyColors(msg: string, level: number): string {
     switch (level) {
       case LogLevels.INFO:
@@ -52,6 +60,7 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
+  /** Logs the message */
   log(msg: string) {
     // deno-lint-ignore no-console
     console.log(msg);

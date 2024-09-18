@@ -6,6 +6,7 @@ import type { GenericFunction } from "./logger.ts";
 
 /** Log with critical level, using default logger. */
 export function critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
+/** Log with critical level, using default logger. */
 export function critical<T>(
   msg: T extends GenericFunction ? never : T,
   ...args: unknown[]

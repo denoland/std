@@ -58,12 +58,14 @@ export class RotatingFileHandler extends FileHandler {
   #maxBackupCount: number;
   #currentFileSize = 0;
 
+  /** Construct a {@linkcode RotatingFileHandler} */
   constructor(levelName: LevelName, options: RotatingFileHandlerOptions) {
     super(levelName, options);
     this.#maxBytes = options.maxBytes;
     this.#maxBackupCount = options.maxBackupCount;
   }
 
+  /** Sets up the log handler */
   override setup() {
     if (this.#maxBytes < 1) {
       this.destroy();
@@ -105,6 +107,7 @@ export class RotatingFileHandler extends FileHandler {
     }
   }
 
+  /** Logs the message to the file */
   override log(msg: string) {
     const msgByteLength = this[encoderSymbol].encode(msg).byteLength + 1;
 
@@ -118,6 +121,7 @@ export class RotatingFileHandler extends FileHandler {
     this.#currentFileSize += msgByteLength;
   }
 
+  /** Rotates the log files */
   rotateLogFiles() {
     this.flush();
     this[fileSymbol]!.close();

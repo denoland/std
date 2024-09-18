@@ -6,6 +6,7 @@ import type { GenericFunction } from "./logger.ts";
 
 /** Log with info level, using default logger. */
 export function info<T>(msg: () => T, ...args: unknown[]): T | undefined;
+/** Log with info level, using default logger. */
 export function info<T>(
   msg: T extends GenericFunction ? never : T,
   ...args: unknown[]

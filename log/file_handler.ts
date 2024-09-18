@@ -13,11 +13,15 @@ import {
   pointerSymbol,
 } from "./_file_handler_symbols.ts";
 
+/** The log mode */
 export type LogMode = "a" | "w" | "x";
 
+/** The option for {@linkcode FileHandler} */
 export interface FileHandlerOptions extends BaseHandlerOptions {
+  /** The filename */
   filename: string;
   /**
+   * The log mode
    * @default {"a"}
    */
   mode?: LogMode;
@@ -48,17 +52,46 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  */
 export class FileHandler extends BaseHandler {
+  /**
+   * A private field
+   * @private
+   */
   [fileSymbol]: Deno.FsFile | undefined;
+  /**
+   * A private field
+   * @private
+   */
   [bufSymbol]: Uint8Array;
+  /**
+   * A private field
+   * @private
+   */
   [pointerSymbol] = 0;
+  /**
+   * A private field
+   * @private
+   */
   [filenameSymbol]: string;
+  /**
+   * A private field
+   * @private
+   */
   [modeSymbol]: LogMode;
+  /**
+   * A private field
+   * @private
+   */
   [openOptionsSymbol]: Deno.OpenOptions;
+  /**
+   * A private field
+   * @private
+   */
   [encoderSymbol]: TextEncoder = new TextEncoder();
   #unloadCallback = (() => {
     this.destroy();
   }).bind(this);
 
+  /** Construct a {@linkcode FileHandler} */
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
     this[filenameSymbol] = options.filename;
@@ -74,6 +107,7 @@ export class FileHandler extends BaseHandler {
     this[bufSymbol] = new Uint8Array(options.bufferSize ?? 4096);
   }
 
+  /** Sets up the log handler */
   override setup() {
     this[fileSymbol] = Deno.openSync(
       this[filenameSymbol],
@@ -84,6 +118,7 @@ export class FileHandler extends BaseHandler {
     addEventListener("unload", this.#unloadCallback);
   }
 
+  /** Handles the log record */
   override handle(logRecord: LogRecord) {
     super.handle(logRecord);
 
@@ -93,6 +128,7 @@ export class FileHandler extends BaseHandler {
     }
   }
 
+  /** Logs the message */
   log(msg: string) {
     const bytes = this[encoderSymbol].encode(msg + "\n");
     if (bytes.byteLength > this[bufSymbol].byteLength - this[pointerSymbol]) {
@@ -106,6 +142,7 @@ export class FileHandler extends BaseHandler {
     }
   }
 
+  /** Flushes the buffered logs to the file */
   flush() {
     if (this[pointerSymbol] > 0 && this[fileSymbol]) {
       let written = 0;
@@ -122,6 +159,7 @@ export class FileHandler extends BaseHandler {
     this[pointerSymbol] = 0;
   }
 
+  /** Destroys the log handler */
   override destroy() {
     this.flush();
     this[fileSymbol]?.close();
