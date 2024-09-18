@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import { CborTag, encodeCbor } from "./mod.ts";
 
@@ -332,5 +332,65 @@ Deno.test("encodeCbor() encoding CborTag()", () => {
   assertEquals(
     encodeCbor(new CborTag(2, bytes)),
     new Uint8Array([0b110_00010, 0b010_00000 + bytes.length, ...bytes]),
+  );
+});
+
+Deno.test("encodeCbor() rejecting numbers as Uint", () => {
+  const num = 2 ** 65;
+  assertThrows(
+    () => {
+      encodeCbor(num);
+    },
+    RangeError,
+    `Cannot encode number: It (${num}) exceeds 2 ** 64 - 1`,
+  );
+});
+
+Deno.test("encodeCbor() rejecting numbers as Int", () => {
+  const num = -(2 ** 65);
+  assertThrows(
+    () => {
+      encodeCbor(num);
+    },
+    RangeError,
+    `Cannot encode number: It (${num}) exceeds -2 ** 64 - 1`,
+  );
+});
+
+Deno.test("encodeCbor() rejecting bigints as Uint", () => {
+  const num = 2n ** 65n;
+  assertThrows(
+    () => {
+      encodeCbor(num);
+    },
+    RangeError,
+    `Cannot encode bigint: It (${num}) exceeds 2 ** 64 - 1`,
+  );
+});
+
+Deno.test("encodeCbor() rejecting bigints as Int", () => {
+  const num = -(2n ** 65n);
+  assertThrows(
+    () => {
+      encodeCbor(num);
+    },
+    RangeError,
+    `Cannot encode bigint: It (${num}) exceeds -2 ** 64 - 1`,
+  );
+});
+
+Deno.test("encodeCbor() rejecting CborTag()", () => {
+  const num = 2 ** 65;
+  assertThrows(
+    () => {
+      encodeCbor(
+        new CborTag(
+          num,
+          new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
+        ),
+      );
+    },
+    RangeError,
+    `Cannot encode Tag Item: Tag Number (${num}) exceeds 2 ** 64 - 1`,
   );
 });

@@ -171,8 +171,9 @@ export function encodeCbor(value: CborType): Uint8Array {
 
 function encodeNumber(x: number): Uint8Array {
   if (x % 1 === 0) {
-    const majorType = x < 0 ? 0b001_00000 : 0b000_00000;
-    if (x < 0) x = -x - 1;
+    const isNegative = x < 0;
+    const majorType = isNegative ? 0b001_00000 : 0b000_00000;
+    if (isNegative) x = -x - 1;
 
     if (x < 24) return new Uint8Array([majorType + x]);
     if (x < 2 ** 8) return new Uint8Array([majorType + 24, x]);
@@ -186,20 +187,27 @@ function encodeNumber(x: number): Uint8Array {
       return concat([new Uint8Array([majorType + 27]), numberToArray(8, x)]);
     }
     throw new RangeError(
-      `Cannot encode number: It (${x}) exceeds 2 ** 64 - 1`,
+      `Cannot encode number: It (${isNegative ? -x - 1 : x}) exceeds ${
+        isNegative ? "-" : ""
+      }2 ** 64 - 1`,
     );
   }
   return concat([new Uint8Array([0b111_11011]), numberToArray(8, x)]);
 }
 
 function encodeBigInt(x: bigint): Uint8Array {
-  if ((x < 0n ? -x : x) < 2n ** 32n) return encodeNumber(Number(x));
+  const isNegative = x < 0n;
+  if ((isNegative ? -x : x) < 2n ** 32n) return encodeNumber(Number(x));
 
   const head = new Uint8Array([x < 0n ? 0b010_11011 : 0b000_11011]);
-  if (x < 0n) x = -x - 1n;
+  if (isNegative) x = -x - 1n;
 
   if (x < 2n ** 64n) return concat([head, numberToArray(8, x)]);
-  throw new RangeError(`Cannot encode bigint: It (${x}) exceeds 2 ** 64 - 1`);
+  throw new RangeError(
+    `Cannot encode bigint: It (${isNegative ? -x - 1n : x}) exceeds ${
+      isNegative ? "-" : ""
+    }2 ** 64 - 1`,
+  );
 }
 
 function encodeUint8Array(x: Uint8Array): Uint8Array {
