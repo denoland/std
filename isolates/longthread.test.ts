@@ -130,28 +130,40 @@ Deno.test('test o1 agents', async (t) => {
   await t.step('ask o1', async () => {
     await longthread.start({})
     const content = 'whats in a name ?'
-    const message = await longthread.run({ path: o1Path, content, actorId })
-    expect(message.content).toContain('Shakespeare')
+    await longthread.run({ path: o1Path, content, actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+    const assistant = thread.messages.pop()
+    assert(assistant)
+    expect(assistant.content).toContain('Shakespeare')
   })
 
   await t.step('ask o1-mini', async () => {
     await backchat.delete(getThreadPath(backchat.pid))
     await longthread.start({})
     const content = 'whats in a name ?'
-    const message = await longthread.run({ path: o1Path, content, actorId })
-    expect(message.content).toContain('Shakespeare')
+    await longthread.run({ path: o1Path, content, actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+    const assistant = thread.messages.pop()
+    assert(assistant)
+    expect(assistant.content).toContain('Shakespeare')
   })
   await t.step('o1-mini with prior tool calls', async () => {
     await backchat.delete(getThreadPath(backchat.pid))
     await longthread.start({})
     let path = 'agents/files.md'
     let content = 'read the file "agents/creatorBot.md"'
-    let message = await longthread.run({ path, content, actorId })
+    await longthread.run({ path, content, actorId })
 
     path = 'agents/o1-mini.md'
     content = 'how could this system prompt be improved ?'
-    message = await longthread.run({ path, content, actorId })
-    expect(message.content).toContain('creatorBot')
+    await longthread.run({ path, content, actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+    const assistant = thread.messages.pop()
+    assert(assistant)
+    expect(assistant.content).toContain('creatorBot')
   })
   await engine.stop()
 })

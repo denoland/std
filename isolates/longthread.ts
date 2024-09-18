@@ -8,7 +8,7 @@ import {
   Thread,
   ToApiType,
 } from '@/constants.ts'
-import { assistantMessage, ToolMessage } from '@/api/zod.ts'
+import { ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
 import { load } from './utils/load-agent.ts'
 import { executeTools } from './utils/ai-execute-tools.ts'
@@ -43,7 +43,7 @@ export const parameters = {
 }
 export const returns = {
   start: z.void(),
-  run: assistantMessage,
+  run: z.void(),
   /** If the tools reqeuested a new thread to be formed, or a change to the
    * backchat target thread */
   switchboard: z.object({
@@ -88,7 +88,6 @@ export const functions: Functions<Api> = {
     const last = thread.messages[thread.messages.length - 1]
     assert(last.role === 'assistant', 'not assistant: ' + last.role)
     assert(typeof last.content === 'string', 'expected string content')
-    return last
   },
   switchboard: async ({ content, actorId }, api) => {
     // TODO handle remote threadIds with symlinks in the threads dir
@@ -99,9 +98,9 @@ export const functions: Functions<Api> = {
     // TODO verify stopOnTool function returns null
 
     const { config, commands } = await load(path, api)
-    assert(!config.parallel_tool_calls, 'parallel_tool_calls must be false')
-    assert(config.tool_choice === 'required', 'tool_choice must be required')
-    assert(commands.includes('agents:switch'), 'missing agents_switch')
+    config.parallel_tool_calls = false
+    config.tool_choice = 'required'
+    commands.push('agents:switch')
 
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
@@ -131,6 +130,7 @@ export const functions: Functions<Api> = {
         result.changeThread = api.pid
       }
     }
+    // TODO verify the agent can actually end somehow
     return result
   },
   drone: async ({ path, content, actorId, stopOnTools }, api) => {

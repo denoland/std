@@ -1,4 +1,4 @@
-import { expect, log } from '@utils'
+import { assert, expect, log } from '@utils'
 import { CradleMaker } from '@/constants.ts'
 import * as longthread from '@/isolates/longthread.ts'
 
@@ -26,56 +26,66 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
     await t.step('ls', async () => {
       const content = 'ls'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
       log('result', result)
+      assert(result)
       expect(typeof result.content).toBe('string')
       expect(result.content).not.toContain('.io.json')
 
-      const thread = await backchat.readThread(target)
       log('thread', thread)
     })
     await t.step('ls .', async () => {
       const content = 'ls .'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
 
       expect(typeof result.content).toBe('string')
       expect(result.content).not.toContain('.io.json')
 
-      const thread = await backchat.readThread(target)
       log('thread', thread)
     })
     await t.step('ls /', async () => {
       const content = 'ls /'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
 
       expect(typeof result.content).toBe('string')
       expect(result.content).not.toContain('.io.json')
 
-      const thread = await backchat.readThread(target)
       log('thread', thread)
     })
     await t.step('ls --all', async () => {
       const content = 'ls --all'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
       log('result', result)
+      assert(result)
 
       expect(typeof result.content).toBe('string')
       expect(result.content).toContain('.io.json')
 
-      const thread = await backchat.readThread(target)
       log('thread', thread)
     })
     await t.step('ls error', async () => {
       const content = 'ls ./nonexistent'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
 
       expect(typeof result.content).toBe('string')
       expect(result.content).toContain('does not exist')
 
-      const thread = await backchat.readThread(target)
       log('thread', thread)
     })
 
@@ -102,7 +112,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await t.step('ls', async () => {
       const content = 'ls'
-      const result = await run({ path, actorId, content })
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
 
       expect(typeof result.content).toBe('string')
