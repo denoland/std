@@ -9,6 +9,9 @@ files:
   # could add paths within a file, and us pid addressing.
   # use this method to load time and browser fingerprint.
 
+stateboard: true # indicate that this sysprompt is stateboard aware ?
+# Or, allow using the isolate links function to read in the stateboard contents
+
 tools:
   search-for-files:
     isolate: files
