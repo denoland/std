@@ -346,7 +346,7 @@ async function decodeTwo(
         if (x instanceof Uint8Array) yield x;
         else if (x instanceof CborByteDecodedStream) {
           for await (const y of x) yield y;
-        } else throw new TypeError();
+        } else throw new TypeError('Unexpected type in CBOR byte string');
       }
     }());
   }
@@ -380,7 +380,7 @@ async function decodeThree(
         if (typeof x === "string") yield x;
         else if (x instanceof CborTextDecodedStream) {
           for await (const y of x) yield y;
-        } else throw new TypeError();
+        } else throw new TypeError('Unexpected type in CBOR text string');
       }
     }());
   }
@@ -403,7 +403,7 @@ async function decodeFour(
     );
   }
   if (aI === 31) return new CborArrayDecodedStream(readIndefinite(read, false));
-  throw new Error(`Unexpected value: 0b100_${aI.toString(2).padStart(5, "0")}`);
+  throw new RangeError(`Cannot decode value (0b100_${aI.toString(2).padStart(5, "0")})`);
 }
 
 async function decodeFive(
@@ -416,10 +416,10 @@ async function decodeFive(
     while (true) {
       const key = await gen.next();
       if (key.done) break;
-      if (typeof key.value !== "string") throw new TypeError();
+      if (typeof key.value !== "string") throw new TypeError('Cannot parse map key: Only text string map keys are supported');
 
       const value = await gen.next();
-      if (value.done) throw new RangeError();
+      if (value.done) throw new RangeError('Impossible State: readDefinite | readIndefinite should have thrown an error');
 
       yield [key.value, value.value];
     }
@@ -457,11 +457,11 @@ async function decodeSix(
   );
   switch (tagNumber) {
     case 0:
-      if (typeof tagContent !== "string") throw new TypeError();
+      if (typeof tagContent !== "string") throw new TypeError('Invalid DataItem: Expected text string to follow tag number 0');
       return new Date(tagContent);
     case 1:
       if (typeof tagContent !== "number" && typeof tagContent !== "bigint") {
-        throw new TypeError();
+        throw new TypeError('Invalid DataItem: Expected integer or float to follow tagNumber 1');
       }
       return new Date(Number(tagContent) * 1000);
   }
