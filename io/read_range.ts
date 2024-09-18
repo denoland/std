@@ -38,7 +38,9 @@ export interface ByteRange {
  * @param range The range of bytes to read
  * @returns The bytes read
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/byte-slice-stream/~/ByteSliceStream | ByteSliceStream}
+ * instead. This will be removed in 0.226.0.
  */
 export async function readRange(
   r: Reader & Seeker,
