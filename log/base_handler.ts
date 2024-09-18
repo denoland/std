@@ -26,7 +26,7 @@ export abstract class BaseHandler {
   /** The log formatters */
   formatter: FormatterFunction;
 
-  /** Construct a {@linkcode BaseHandler} */
+  /** Constructs a new instance. */
   constructor(
     levelName: LevelName,
     options?: BaseHandlerOptions,
