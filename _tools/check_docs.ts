@@ -70,6 +70,7 @@ const ENTRY_POINTS = [
   "../io/mod.ts",
   "../json/mod.ts",
   "../jsonc/mod.ts",
+  "../log/warn.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
