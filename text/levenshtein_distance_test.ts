@@ -26,3 +26,34 @@ Deno.test("levenshteinDistance() handles long strings", () => {
     30,
   );
 });
+
+Deno.test("levenshteinDistance() handles code points above U+FFFF", async (t) => {
+  await t.step("`myers32` fast path", () => {
+    assertEquals(levenshteinDistance("💩", "x"), 1);
+    assertEquals(levenshteinDistance("💩", ""), 1);
+    assertEquals(levenshteinDistance("x", "💩"), 1);
+    assertEquals(levenshteinDistance("", "💩"), 1);
+    // first surrogate same
+    assertEquals(levenshteinDistance("💩", "💫"), 1);
+    // both surrogates different
+    assertEquals(levenshteinDistance("💩", "🦄"), 1);
+    // max cp
+    assertEquals(levenshteinDistance("\u{10FFFE}", "\u{10FFFF}"), 1);
+  });
+
+  await t.step("`myersX` path", () => {
+    assertEquals(levenshteinDistance("💩".repeat(33), "x".repeat(33)), 33);
+    assertEquals(levenshteinDistance("💩".repeat(33), ""), 33);
+    assertEquals(levenshteinDistance("x".repeat(33), "💩".repeat(33)), 33);
+    assertEquals(levenshteinDistance("", "💩".repeat(33)), 33);
+    // first surrogate same
+    assertEquals(levenshteinDistance("💩".repeat(33), "💫".repeat(33)), 33);
+    // both surrogates different
+    assertEquals(levenshteinDistance("💩".repeat(33), "🦄".repeat(33)), 33);
+    // max cp
+    assertEquals(
+      levenshteinDistance("\u{10FFFE}".repeat(33), "\u{10FFFF}".repeat(33)),
+      33,
+    );
+  });
+});

@@ -4,20 +4,23 @@ const { ceil } = Math;
 
 // This implements Myers' bit-vector algorithm as described here:
 // https://dl.acm.org/doi/pdf/10.1145/316542.316550
-const peq = new Uint32Array(0x10000);
+const peq = new Uint32Array(0x10ffff);
 
 function myers32(t: string, p: string): number {
-  const n = t.length;
-  const m = p.length;
-  for (let i = 0; i < m; i++) {
-    peq[p.charCodeAt(i)]! |= 1 << i;
+  const n = unicodeStrLen(t);
+  const m = unicodeStrLen(p);
+  for (let i = 0; i < m;) {
+    const cp = p.codePointAt(i)!;
+    peq[cp]! |= 1 << i;
+    i += cp > 0xffff ? 2 : 1;
   }
   const last = m - 1;
   let pv = -1;
   let mv = 0;
   let score = m;
-  for (let j = 0; j < n; j++) {
-    const eq = peq[t.charCodeAt(j)]!;
+  for (let j = 0; j < n;) {
+    const cp = t.codePointAt(j)!;
+    const eq = peq[cp]!;
     const xv = eq | mv;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
     let ph = mv | ~(xh | pv);
@@ -29,16 +32,20 @@ function myers32(t: string, p: string): number {
     mh = mh << 1;
     pv = mh | ~(xv | ph);
     mv = ph & xv;
+
+    j += cp > 0xffff ? 2 : 1;
   }
-  for (let i = 0; i < m; i++) {
-    peq[p.charCodeAt(i)] = 0;
+  for (let i = 0; i < m;) {
+    const cp = p.codePointAt(i)!;
+    peq[cp] = 0;
+    i += cp > 0xffff ? 2 : 1;
   }
   return score;
 }
 
 function myersX(t: string, p: string): number {
-  const n = t.length;
-  const m = p.length;
+  const n = unicodeStrLen(t);
+  const m = unicodeStrLen(p);
   // Initialize the horizontal deltas to +1.
   const h = new Int8Array(n).fill(1);
   const bmax = ceil(m / 32) - 1;
@@ -46,14 +53,17 @@ function myersX(t: string, p: string): number {
   for (let b = 0; b < bmax; b++) {
     const start = b * 32;
     const end = (b + 1) * 32;
-    for (let i = start; i < end; i++) {
-      peq[p.charCodeAt(i)]! |= 1 << i;
+    for (let i = start; i < end;) {
+      const cp = p.codePointAt(i)!;
+      peq[cp]! |= 1 << i;
+      i += cp > 0xffff ? 2 : 1;
     }
     let pv = -1;
     let mv = 0;
-    for (let j = 0; j < n; j++) {
+    for (let j = 0; j < n;) {
       const hin = h[j]!;
-      let eq = peq[t.charCodeAt(j)]!;
+      const cp = t.codePointAt(j)!;
+      let eq = peq[cp]!;
       const xv = eq | mv;
       eq |= hin >>> 31;
       const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -64,22 +74,30 @@ function myersX(t: string, p: string): number {
       mh = (mh << 1) | (hin >>> 31);
       pv = mh | ~(xv | ph);
       mv = ph & xv;
+
+      j += cp > 0xffff ? 2 : 1;
     }
-    for (let i = start; i < end; i++) {
-      peq[p.charCodeAt(i)] = 0;
+    for (let i = start; i < end;) {
+      const cp = p.codePointAt(i)!;
+      peq[cp] = 0;
+
+      i += cp > 0xffff ? 2 : 1;
     }
   }
   const start = bmax * 32;
-  for (let i = start; i < m; i++) {
-    peq[p.charCodeAt(i)]! |= 1 << i;
+  for (let i = start; i < m;) {
+    const cp = p.codePointAt(i)!;
+    peq[cp]! |= 1 << i;
+    i += cp > 0xffff ? 2 : 1;
   }
   const last = m - 1;
   let pv = -1;
   let mv = 0;
   let score = m;
-  for (let j = 0; j < n; j++) {
+  for (let j = 0; j < n;) {
     const hin = h[j]!;
-    let eq = peq[t.charCodeAt(j)]!;
+    const cp = t.codePointAt(j)!;
+    let eq = peq[cp]!;
     const xv = eq | mv;
     eq |= hin >>> 31;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -90,9 +108,13 @@ function myersX(t: string, p: string): number {
     mh = (mh << 1) | (hin >>> 31);
     pv = mh | ~(xv | ph);
     mv = ph & xv;
+
+    j += cp > 0xffff ? 2 : 1;
   }
-  for (let i = start; i < m; i++) {
-    peq[p.charCodeAt(i)] = 0;
+  for (let i = start; i < m;) {
+    const cp = p.codePointAt(i)!;
+    peq[cp] = 0;
+    i += cp > 0xffff ? 2 : 1;
   }
   return score;
 }
@@ -119,13 +141,19 @@ function myersX(t: string, p: string): number {
  * @returns The Levenshtein distance between the two strings.
  */
 export function levenshteinDistance(str1: string, str2: string): number {
-  if (str1.length < str2.length) {
-    const tmp = str1;
-    str1 = str2;
-    str2 = tmp;
+  let strLen1 = unicodeStrLen(str1);
+  let strLen2 = unicodeStrLen(str2);
+
+  if (strLen1 < strLen2) {
+    [str1, str2] = [str2, str1];
+    [strLen1, strLen2] = [strLen2, strLen1];
   }
-  if (str2.length === 0) {
-    return str1.length;
+  if (str2 === "") {
+    return strLen1;
   }
-  return str2.length <= 32 ? myers32(str1, str2) : myersX(str1, str2);
+  return strLen2 <= 32 ? myers32(str1, str2) : myersX(str1, str2);
+}
+
+function unicodeStrLen(str: string) {
+  return str.replaceAll(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ".").length;
 }
