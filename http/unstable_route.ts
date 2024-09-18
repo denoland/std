@@ -28,11 +28,11 @@ export interface Route {
    */
   pattern: URLPattern;
   /**
-   * Request method.
+   * Request method. This can be a string or an array of strings.
    *
    * @default {"GET"}
    */
-  method?: string;
+  method?: string | string[];
   /**
    * Request handler.
    */
@@ -61,7 +61,12 @@ export interface Route {
  *   {
  *     pattern: new URLPattern({ pathname: "/static/*" }),
  *     handler: (req: Request) => serveDir(req)
- *   }
+ *   },
+ *   {
+ *     pattern: new URLPattern({ pathname: "/api" }),
+ *     method: ["GET", "HEAD"],
+ *     handler: (req: Request) => new Response(req.method === 'HEAD' ? null : 'ok'),
+ *   },
  * ];
  *
  * function defaultHandler(_req: Request) {
@@ -91,7 +96,12 @@ export function route(
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
-      if (match && request.method === (route.method ?? "GET")) {
+      if (
+        match &&
+        (Array.isArray(route.method)
+          ? route.method.includes(request.method)
+          : request.method === (route.method ?? "GET"))
+      ) {
         return route.handler(request, info, match);
       }
     }
