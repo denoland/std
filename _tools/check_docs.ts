@@ -89,6 +89,7 @@ const ENTRY_POINTS = [
   "../streams/mod.ts",
   "../streams/unstable_fixed_chunk_stream.ts",
   "../streams/unstable_to_lines.ts",
+  "../streams/unstable_to_bytes.ts",
   "../tar/mod.ts",
   "../text/mod.ts",
   "../text/unstable_slugify.ts",
