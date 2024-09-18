@@ -7,11 +7,11 @@ import {
   CborByteEncoderStream,
   CborMapEncoderStream,
   type CborMapInputStream,
+  CborSequenceEncoderStream,
   CborTextEncoderStream,
   type CborType,
   encodeCbor,
 } from "./mod.ts";
-import { CborSequenceEncoderStream } from "./encode_stream.ts";
 
 function random(start: number, end: number): number {
   return Math.floor(Math.random() * (end - start) + start);

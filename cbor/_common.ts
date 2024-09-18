@@ -50,8 +50,13 @@ export function upgradeStreamFromGen(
     async pull(controller) {
       const { done, value } = await gen.next();
       if (done) {
-        controller.byobRequest?.respond(0);
-        return controller.close();
+        try {
+          controller.byobRequest?.respond(0);
+          return controller.close();
+        } catch {
+          controller.close();
+          return controller.byobRequest?.respond(0);
+        }
       }
       if (controller.byobRequest?.view) {
         const buffer = new Uint8Array(controller.byobRequest.view.buffer);
