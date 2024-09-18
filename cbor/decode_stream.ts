@@ -188,6 +188,7 @@ export class CborSequenceDecoderStream
     bytes: number,
     expectMore: boolean,
   ): Promise<Uint8Array | undefined> {
+    if (bytes === 0) return new Uint8Array(0);
     const { done, value } = await this.#source.read(new Uint8Array(bytes), {
       min: bytes,
     });
