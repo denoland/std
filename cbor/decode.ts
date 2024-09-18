@@ -201,7 +201,7 @@ export function decodeCbor(value: Uint8Array): CborType {
       return array;
     }
     throw new RangeError(
-      `Cannot decode value (0b011_${aI.toString(2).padStart(5, "0")})`,
+      `Cannot decode value (0b100_${aI.toString(2).padStart(5, "0")})`,
     );
   }
 

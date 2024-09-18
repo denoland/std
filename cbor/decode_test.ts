@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { CborTag, decodeCbor, encodeCbor } from "./mod.ts";
 
 function random(start: number, end: number): number {
@@ -140,4 +140,311 @@ Deno.test("decodeCbor() decoding CborTag()", () => {
     new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
   );
   assertEquals(decodeCbor(encodeCbor(tag)), tag);
+});
+
+Deno.test("decodeCbor() rejecting empty encoded data", () => {
+  assertThrows(
+    () => {
+      decodeCbor(new Uint8Array(0));
+    },
+    RangeError,
+    "Cannot decode empty Uint8Array",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 0", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b000_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b000_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b000_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b000_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b000_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b000_11110)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b000_11111,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b000_11111)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 1", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b001_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b001_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b001_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b001_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b001_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b001_11110)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b001_11111,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b001_11111)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 2", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b010_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b010_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b010_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b010_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b010_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b010_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 3", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b011_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b011_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b011_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b011_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b011_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b011_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 4", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b100_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b100_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b100_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b100_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b100_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b100_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 5", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 7", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b111_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b111_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b111_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b111_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b111_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b111_11110)",
+  );
 });
