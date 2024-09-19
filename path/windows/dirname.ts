@@ -9,7 +9,6 @@ import {
   isPosixPathSeparator,
   isWindowsDeviceRoot,
 } from "./_util.ts";
-import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the directory path of a `path`.
@@ -23,32 +22,13 @@ import { fromFileUrl } from "./from_file_url.ts";
  * assertEquals(dir, "C:\\foo\\bar");
  * ```
  *
- * @param path The path to get the directory from.
- * @returns The directory path.
- */
-export function dirname(path: string): string;
-/**
- * Return the directory path of a file URL.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @example Usage
- * ```ts
- * import { dirname } from "@std/path/windows/dirname";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(dirname("C:\\foo\\bar\\baz.ext"), "C:\\foo\\bar");
- * assertEquals(dirname(new URL("file:///C:/foo/bar/baz.ext")), "C:\\foo\\bar");
- * ```
+ * Note: If you are working with file URLs,
+ * use the new version of `dirname` from `@std/path/windows/unstable-dirname`.
  *
  * @param path The path to get the directory from.
  * @returns The directory path.
  */
-export function dirname(path: string | URL): string;
-export function dirname(path: string | URL): string {
-  if (path instanceof URL) {
-    path = fromFileUrl(path);
-  }
+export function dirname(path: string): string {
   assertArg(path);
 
   const len = path.length;

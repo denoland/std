@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-console
 import { emptyDir } from "../empty_dir.ts";
 
 try {

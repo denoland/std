@@ -20,29 +20,12 @@ import { join as windowsJoin } from "./windows/join.ts";
  * }
  * ```
  *
+ * Note: If you are working with file URLs,
+ * use the new version of `join` from `@std/path/unstable-join`.
+ *
  * @param paths Paths to be joined and normalized.
  * @returns The joined and normalized path.
  */
-export function join(...paths: string[]): string;
-/**
- * Join all given a sequence of `paths`, then normalizes the resulting path.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @example Usage
- * ```ts
- * import { join } from "@std/path/posix/join";
- * import { assertEquals } from "@std/assert";
- *
- * const path = join(new URL("file:///foo"), "bar", "baz/asdf", "quux", "..");
- * assertEquals(path, "/foo/bar/baz/asdf");
- * ```
- *
- * @param path The path to join. This can be string or file URL.
- * @param paths The paths to join.
- * @returns The joined path.
- */
-export function join(path?: URL | string, ...paths: string[]): string;
-export function join(path?: URL | string, ...paths: string[]): string {
-  return isWindows ? windowsJoin(path, ...paths) : posixJoin(path, ...paths);
+export function join(...paths: string[]): string {
+  return isWindows ? windowsJoin(...paths) : posixJoin(...paths);
 }

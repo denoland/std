@@ -84,6 +84,7 @@ export function parse(text: string): Record<string, string> {
       ?.groups as LineParseResult;
 
     if (!RE_VALID_KEY.test(key)) {
+      // deno-lint-ignore no-console
       console.warn(
         `Ignored the key "${key}" as it is not a valid identifier: The key need to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.`,
       );

@@ -25,7 +25,7 @@
  * `log.formatters.jsonFormatter` or write your own function that takes a
  * {@linkcode LogRecord} and returns a JSON.stringify'd object.
  * If you want the log to go to stdout then use {@linkcode ConsoleHandler} with
- * the configuration `useColors: false` to turn off the ANSI terminal colours.
+ * the configuration `useColors: false` to turn off the ANSI terminal colors.
  *
  * ```ts
  * import * as log from "@std/log";

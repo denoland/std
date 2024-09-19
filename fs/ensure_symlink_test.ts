@@ -3,6 +3,7 @@
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
+import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -287,9 +288,16 @@ Deno.test(
     const testFile = path.join(testdataDir, "0.ts");
     const linkFile = path.join(testdataDir, "link.ts");
 
-    await assertRejects(async () => {
-      await ensureSymlink(testFile, linkFile);
-    }, Deno.errors.PermissionDenied);
+    await assertRejects(
+      async () => {
+        await ensureSymlink(testFile, linkFile);
+      },
+      IS_DENO_2
+        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+        // deno-lint-ignore no-explicit-any
+        ? (Deno as any).errors.NotCapable
+        : Deno.errors.PermissionDenied,
+    );
   },
 );
 
@@ -300,8 +308,15 @@ Deno.test(
     const testFile = path.join(testdataDir, "0.ts");
     const linkFile = path.join(testdataDir, "link.ts");
 
-    assertThrows(() => {
-      ensureSymlinkSync(testFile, linkFile);
-    }, Deno.errors.PermissionDenied);
+    assertThrows(
+      () => {
+        ensureSymlinkSync(testFile, linkFile);
+      },
+      IS_DENO_2
+        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
+        // deno-lint-ignore no-explicit-any
+        ? (Deno as any).errors.NotCapable
+        : Deno.errors.PermissionDenied,
+    );
   },
 );

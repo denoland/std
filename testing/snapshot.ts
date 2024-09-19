@@ -113,7 +113,7 @@
  * );
  *
  * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
- *   const a = "\x1b[32mThis green text has had it's colours stripped\x1b[39m";
+ *   const a = "\x1b[32mThis green text has had its colors stripped\x1b[39m";
  *   await assertMonochromeSnapshot(t, a);
  * });
  * ```
@@ -122,7 +122,7 @@
  * // .snaps/example_test.ts.snap
  * export const snapshot = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
+ * snapshot[`isSnapshotMatch 1`] = `This green text has had its colors stripped`;
  * ```
  *
  * ## Version Control:
@@ -358,6 +358,7 @@ class AssertSnapshotContext {
 
     const updated = this.getUpdatedCount();
     if (updated > 0) {
+      // deno-lint-ignore no-console
       console.log(
         `%c\n > ${updated} ${
           updated === 1 ? "snapshot" : "snapshots"
@@ -367,6 +368,7 @@ class AssertSnapshotContext {
     }
     const removed = removedSnapshotNames.length;
     if (removed > 0) {
+      // deno-lint-ignore no-console
       console.log(
         `%c\n > ${removed} ${
           removed === 1 ? "snapshot" : "snapshots"
@@ -374,6 +376,7 @@ class AssertSnapshotContext {
         "color: red; font-weight: bold;",
       );
       for (const snapshotName of removedSnapshotNames) {
+        // deno-lint-ignore no-console
         console.log(`%c   • ${snapshotName}`, "color: red;");
       }
     }
@@ -522,7 +525,7 @@ class AssertSnapshotContext {
 
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
@@ -546,7 +549,7 @@ export async function assertSnapshot<T>(
 ): Promise<void>;
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *

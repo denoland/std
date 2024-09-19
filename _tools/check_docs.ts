@@ -31,44 +31,70 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 const ENTRY_POINTS = [
   "../archive/mod.ts",
   "../assert/mod.ts",
+  "../assert/unstable_never.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../cache/mod.ts",
   "../cbor/mod.ts",
   "../cli/mod.ts",
+  "../cli/unstable_spinner.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",
   "../data_structures/mod.ts",
+  "../data_structures/unstable_bidirectional_map.ts",
   "../datetime/mod.ts",
   "../dotenv/mod.ts",
   "../encoding/mod.ts",
+  "../encoding/unstable_base64_stream.ts",
+  "../encoding/unstable_base32hex_stream.ts",
+  "../encoding/unstable_base32_stream.ts",
+  "../encoding/unstable_base64url_stream.ts",
+  "../encoding/unstable_base32hex_stream.ts",
+  "../encoding/unstable_hex_stream.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
   "../fmt/colors.ts",
   "../fmt/duration.ts",
   "../fmt/printf.ts",
   "../front_matter/mod.ts",
+  "../front_matter/unstable_yaml.ts",
   "../fs/mod.ts",
   "../html/mod.ts",
+  "../html/unstable_is_valid_custom_element_name.ts",
   "../http/mod.ts",
+  "../http/unstable_header.ts",
+  "../http/unstable_method.ts",
+  "../http/unstable_signed_cookie.ts",
   "../ini/mod.ts",
   "../internal/mod.ts",
   "../io/mod.ts",
   "../json/mod.ts",
   "../jsonc/mod.ts",
+  "../log/warn.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
+  "../net/unstable_get_network_address.ts",
   "../path/mod.ts",
+  "../path/unstable_basename.ts",
+  "../path/unstable_dirname.ts",
+  "../path/unstable_extname.ts",
+  "../path/unstable_join.ts",
+  "../path/unstable_normalize.ts",
   "../path/posix/mod.ts",
   "../path/windows/mod.ts",
   "../random/mod.ts",
   "../regexp/mod.ts",
   "../semver/mod.ts",
   "../streams/mod.ts",
+  "../streams/unstable_fixed_chunk_stream.ts",
+  "../streams/unstable_to_lines.ts",
+  "../streams/unstable_to_bytes.ts",
   "../tar/mod.ts",
   "../text/mod.ts",
+  "../text/unstable_slugify.ts",
+  "../text/unstable_to_constant_case.ts",
   "../testing/bdd.ts",
   "../testing/mock.ts",
   "../testing/snapshot.ts",
@@ -76,8 +102,8 @@ const ENTRY_POINTS = [
   "../testing/types.ts",
   "../toml/mod.ts",
   "../ulid/mod.ts",
-  "../url/mod.ts",
   "../uuid/mod.ts",
+  "../uuid/unstable_v7.ts",
   "../webgpu/mod.ts",
   "../yaml/mod.ts",
 ] as const;
@@ -192,10 +218,10 @@ async function assertSnippetEvals(
     stderr: "piped",
   });
   const timeoutId = setTimeout(() => {
+    // deno-lint-ignore no-console
     console.warn(
-      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...`,
+      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...\n${snippet}`,
     );
-    console.warn(snippet);
   }, 10_000);
   try {
     const { success, stderr } = await command.output();
@@ -525,6 +551,7 @@ const lintStatus = await new Deno.Command(Deno.execPath(), {
   stderr: "inherit",
 }).output();
 if (!lintStatus.success) {
+  // deno-lint-ignore no-console
   console.error(
     `%c[error] %c'deno doc --lint' failed`,
     "color: red",
@@ -545,6 +572,7 @@ for await (const _ of iter) {
 }
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
+    // deno-lint-ignore no-console
     console.error(
       `%c[error] %c${error.message} %cat ${error.cause}`,
       "color: red",
@@ -553,6 +581,7 @@ if (diagnostics.length > 0) {
     );
   }
 
+  // deno-lint-ignore no-console
   console.log(`%c${diagnostics.length} errors found`, "color: red");
   Deno.exit(1);
 }

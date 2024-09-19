@@ -365,6 +365,7 @@ function parseSetCookie(value: string): Cookie | null {
       case "max-age":
         cookie.maxAge = Number(value);
         if (cookie.maxAge < 0) {
+          // deno-lint-ignore no-console
           console.warn(
             "Max-Age must be an integer superior or equal to 0. Cookie ignored.",
           );
@@ -396,6 +397,7 @@ function parseSetCookie(value: string): Cookie | null {
   if (cookie.name.startsWith("__Secure-")) {
     /** This requirement is mentioned in https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie but not the RFC. */
     if (!cookie.secure) {
+      // deno-lint-ignore no-console
       console.warn(
         "Cookies with names starting with `__Secure-` must be set with the secure flag. Cookie ignored.",
       );
@@ -404,18 +406,21 @@ function parseSetCookie(value: string): Cookie | null {
   }
   if (cookie.name.startsWith("__Host-")) {
     if (!cookie.secure) {
+      // deno-lint-ignore no-console
       console.warn(
         "Cookies with names starting with `__Host-` must be set with the secure flag. Cookie ignored.",
       );
       return null;
     }
     if (cookie.domain !== undefined) {
+      // deno-lint-ignore no-console
       console.warn(
         "Cookies with names starting with `__Host-` must not have a domain specified. Cookie ignored.",
       );
       return null;
     }
     if (cookie.path !== "/") {
+      // deno-lint-ignore no-console
       console.warn(
         "Cookies with names starting with `__Host-` must have path be `/`. Cookie has been ignored.",
       );

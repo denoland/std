@@ -44,6 +44,9 @@ export type { TarInfo, TarMeta };
 /**
  * Options for {@linkcode Tar.append}.
  *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarOptions extends TarInfo {
@@ -122,6 +125,9 @@ function formatHeader(data: TarData): Uint8Array {
 /**
  * Base interface for {@linkcode TarDataWithSource}.
  *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarData {
@@ -173,6 +179,9 @@ export interface TarData {
 /**
  * Tar data interface for {@linkcode Tar.data}.
  *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface TarDataWithSource extends TarData {
@@ -191,6 +200,9 @@ export interface TarDataWithSource extends TarData {
  * A class to create a tar archive.  Tar archives allow for storing multiple files in a
  * single file (called an archive, or sometimes a tarball).  These archives typically
  * have the '.tar' extension.
+ *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
  *
  * ### Usage
  * The workflow is to create a Tar instance, append files to it, and then write the
@@ -233,7 +245,7 @@ export interface TarDataWithSource extends TarData {
  *   filePath: "./filename_on_filesystem.txt",
  * });
  *
- * // Now let's write the tar (with it's two files) to the filesystem
+ * // Now let's write the tar (with its two files) to the filesystem
  * // use tar.getReader() to read the contents.
  *
  * const writer = await Deno.open("./out.tar", { write: true, create: true });
@@ -285,7 +297,7 @@ export class Tar {
    *   filePath: "./filename_on_filesystem.txt",
    * });
    *
-   * // Now let's write the tar (with it's two files) to the filesystem
+   * // Now let's write the tar (with its two files) to the filesystem
    * // use tar.getReader() to read the contents.
    *
    * const writer = await Deno.open("./out.tar", { write: true, create: true });
@@ -437,7 +449,7 @@ export class Tar {
    *   filePath: "./filename_on_filesystem.txt",
    * });
    *
-   * // Now let's write the tar (with it's two files) to the filesystem
+   * // Now let's write the tar (with its two files) to the filesystem
    * // use tar.getReader() to read the contents.
    *
    * const writer = await Deno.open("./out.tar", { write: true, create: true });

@@ -20,6 +20,7 @@ const heapBytesFinal = memory.buffer.byteLength;
 
 const stateFinal = encodeHex(state);
 
+// deno-lint-ignore no-console
 console.log(JSON.stringify({
   heapBytesInitial,
   heapBytesFinal,

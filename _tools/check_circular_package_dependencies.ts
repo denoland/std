@@ -1,4 +1,4 @@
-// deno-lint-ignore-file camelcase
+// deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import {
   createGraph,
@@ -74,7 +74,6 @@ type Mod =
   | "text"
   | "toml"
   | "ulid"
-  | "url"
   | "uuid"
   | "webgpu"
   | "yaml";
@@ -90,13 +89,13 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   collections: ["mod.ts"],
   crypto: ["mod.ts"],
   csv: ["mod.ts"],
-  data_structures: ["mod.ts"],
+  "data_structures": ["mod.ts"],
   datetime: ["mod.ts"],
   dotenv: ["mod.ts"],
   encoding: ["mod.ts"],
   expect: ["mod.ts"],
   fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
-  front_matter: ["mod.ts"],
+  "front_matter": ["mod.ts"],
   fs: ["mod.ts"],
   html: ["mod.ts"],
   http: ["mod.ts"],
@@ -106,7 +105,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   json: ["mod.ts"],
   jsonc: ["mod.ts"],
   log: ["mod.ts"],
-  media_types: ["mod.ts"],
+  "media_types": ["mod.ts"],
   msgpack: ["mod.ts"],
   net: ["mod.ts"],
   path: ["mod.ts"],
@@ -119,7 +118,6 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   text: ["mod.ts"],
   toml: ["mod.ts"],
   ulid: ["mod.ts"],
-  url: ["mod.ts"],
   uuid: ["mod.ts"],
   webgpu: ["mod.ts"],
   yaml: ["mod.ts"],

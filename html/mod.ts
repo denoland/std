@@ -16,4 +16,3 @@
  */
 
 export * from "./entities.ts";
-export * from "./is_valid_custom_element_name.ts";

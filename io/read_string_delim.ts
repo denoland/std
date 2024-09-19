@@ -24,7 +24,9 @@ import { readDelim } from "./read_delim.ts";
  * @param decoderOpts The options
  * @returns The async iterator of strings
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Pipe the readable stream through a
+ * {@linkcode https://jsr.io/@std/streams/doc/~/TextDelimiterStream | TextDelimiterStream}
+ * instead. This will be removed in the future.
  */
 export async function* readStringDelim(
   reader: Reader,

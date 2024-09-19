@@ -16,6 +16,19 @@ Deno.test({
 
 Deno.test({
   name:
+    "pick() returns a new object without properties missing in the original object",
+  fn() {
+    // deno-lint-ignore no-explicit-any
+    const obj = { a: 5, b: 6, c: 7, d: 8 } as any;
+    const picked: { a: 5; x?: 5; y?: 5 } = pick(obj, ["a", "x", "y"]);
+
+    assertEquals(picked, { a: 5 });
+    assertNotStrictEquals(picked, obj);
+  },
+});
+
+Deno.test({
+  name:
     "pick() returns a new object from the provided object with the provided keys",
   fn() {
     const obj = { a: 5, b: 6, c: 7, d: 8 };

@@ -5,6 +5,8 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { dirname } from "./dirname.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
+import { dirname as windowsUnstableDirname } from "./windows/unstable_dirname.ts";
+import { dirname as posixUnstableDirname } from "./posix/unstable_dirname.ts";
 
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/dirname.pl
@@ -89,13 +91,13 @@ Deno.test("posix.dirname()", function () {
 
 Deno.test("posix.dirname() works with file URLs", () => {
   assertEquals(
-    posix.dirname(new URL("file:///home/user/Documents/image.png")),
+    posixUnstableDirname(new URL("file:///home/user/Documents/image.png")),
     "/home/user/Documents",
   );
 
   // throws with non-file URLs
   assertThrows(
-    () => posix.dirname(new URL("https://deno.land/")),
+    () => posixUnstableDirname(new URL("https://deno.land/")),
     TypeError,
     'URL must be a file URL: received "https:"',
   );
@@ -118,13 +120,13 @@ Deno.test("windows.dirname()", function () {
 
 Deno.test("windows.dirname() works with file URLs", () => {
   assertEquals(
-    windows.dirname(new URL("file:///C:/home/user/Documents/image.png")),
+    windowsUnstableDirname(new URL("file:///C:/home/user/Documents/image.png")),
     "C:\\home\\user\\Documents",
   );
 
   // throws with non-file URLs
   assertThrows(
-    () => windows.dirname(new URL("https://deno.land/")),
+    () => windowsUnstableDirname(new URL("https://deno.land/")),
     TypeError,
     'URL must be a file URL: received "https:"',
   );
