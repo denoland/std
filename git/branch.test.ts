@@ -7,7 +7,7 @@ import {
   MergeReply,
   PartialPID,
   PID,
-  PierceRequest,
+  Pierce,
   Proctype,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -30,7 +30,7 @@ Deno.test('pierce branch', async (t) => {
     params: {},
     proctype: Proctype.enum.SERIAL,
   }
-  const branchPierce = (ulid: string): PierceRequest => ({
+  const branchPierce = (ulid: string): Pierce => ({
     target,
     ulid,
     isolate: 'test-isolate',
@@ -83,13 +83,22 @@ Deno.test('pierce branch', async (t) => {
     expect(branchFs.oid).toEqual(head)
     const solids = await solidify(branchFs, [branchReply])
     const { poolables } = solids
-
     log('poolables', poolables[0])
     expect(poolables.length).toBe(1)
     assert(isMergeReply(poolables[0]))
     mergeReply = poolables[0]
     expect(mergeReply.outcome).toEqual(reply.outcome)
     expect(mergeReply.target).toEqual(target)
+
+    const { commit, sequence, source } = mergeReply
+    const isReply = true
+    const recovered = await db.readPoolable(mergeReply.target, {
+      commit,
+      sequence,
+      source,
+      isReply,
+    })
+    expect(recovered).toEqual(mergeReply)
   })
   await t.step('child merge to parent', async () => {
     const parentFs = FS.open(baseFs.pid, parentHead, db)

@@ -11,7 +11,7 @@ import {
   JsonValue,
   Params,
   PID,
-  PierceRequest,
+  Pierce,
   Proctype,
   RpcOpts,
   SU_ACTOR,
@@ -139,7 +139,7 @@ export class Backchat {
     return this.#backchatAction('relay', { request })
   }
   async #backchatAction(functionName: string, params: Params) {
-    const pierce: PierceRequest = {
+    const pierce: Pierce = {
       target: this.#pid,
       ulid: ulid(),
       isolate: 'backchat',

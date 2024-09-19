@@ -39,10 +39,12 @@ export default class IOChannel {
   readonly #fs: FS | undefined
   readonly #pid: PID
   #original: IoStruct
-  private constructor(io: IoStruct, pid: PID, fs?: FS) {
+  private constructor(io: IoStruct, pid: PID, fs?: FS, noPurge?: boolean) {
     this.#pid = pid
     this.#io = io
-    this.#blankSettledRequests()
+    if (!noPurge) {
+      this.#blankSettledRequests()
+    }
     if (fs) {
       // TODO remove the fs item completely - handle fs outside
       assert(equal(pid, fs.pid), 'pid mismatch')
@@ -63,7 +65,14 @@ export default class IOChannel {
       return new IOChannel(io, fs.pid)
     }
   }
-  static async load(fs: FS) {
+  static load(fs: FS) {
+    return IOChannel.#load(fs)
+  }
+  static loadWithoutPurge(fs: FS) {
+    const noPurge = true
+    return IOChannel.#load(fs, noPurge)
+  }
+  static async #load(fs: FS, noPurge?: boolean) {
     // TODO ensure this is cached
     let io = createBase()
 
@@ -71,7 +80,7 @@ export default class IOChannel {
       io = await fs.readJSON<IoStruct>('.io.json')
       check(io, fs.pid)
     }
-    const channel = new IOChannel(io, fs.pid, fs)
+    const channel = new IOChannel(io, fs.pid, fs, noPurge)
     return channel
   }
   static blank(fs: FS) {
@@ -182,8 +191,26 @@ export default class IOChannel {
     throw new Error('request not found')
   }
   getRequest(sequence: number) {
-    assert(sequence in this.#io.requests, 'sequence not found')
-    return this.#io.requests[sequence]
+    assert(sequence in this.#io.requests, 'sequence not found: ' + sequence)
+
+    return toRunnableRequest(this.#io.requests[sequence], sequence)
+  }
+  getOutcome(sequence: number) {
+    assert(sequence in this.#io.replies, 'sequence not found')
+    return this.#io.replies[sequence]
+  }
+  getOutcomeBySource(requestSource: PID, sequence: number) {
+    for (const key in this.#io.requests) {
+      const request = this.#io.requests[key]
+      if (isRemoteRequest(request)) {
+        if (
+          equal(request.source, requestSource) && request.sequence === sequence
+        ) {
+          return this.#io.replies[Number.parseInt(key)]
+        }
+      }
+    }
+    throw new Error('sequence not found: ' + sequence)
   }
   reply(reply: MergeReply | SolidReply) {
     const { sequence } = reply
@@ -400,7 +427,9 @@ const toRunnableRequest = (request: Request, sequence: number) => {
   if (cache.has(request)) {
     const sequences = cache.get(request)
     if (sequences?.has(sequence)) {
-      return sequences.get(sequence)
+      const request = sequences.get(sequence)
+      assert(request, 'request not found: ' + sequence)
+      return request
     }
   }
   if (!isPierceRequest(request)) {

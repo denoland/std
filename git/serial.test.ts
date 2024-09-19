@@ -5,7 +5,7 @@ import {
   MergeReply,
   PartialPID,
   PID,
-  PierceRequest,
+  Pierce,
   Proctype,
   UnsequencedRequest,
 } from '@/constants.ts'
@@ -29,7 +29,7 @@ Deno.test('pierce serial', async (t) => {
     proctype: Proctype.enum.SERIAL,
   }
   // TODO move away from using pierces to test these functions
-  const pierceFactory = (ulid: string): PierceRequest => ({
+  const pierceFactory = (ulid: string): Pierce => ({
     target,
     ulid,
     isolate: 'test-isolate',

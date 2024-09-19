@@ -60,7 +60,6 @@ Deno.test('git/init', async (t) => {
         await expect(Promise.resolve(fs.logs(path)), path).resolves.not
           .toThrow()
       } else {
-        console.log('path', path)
         expect(() => fs.delete(path), path).not.toThrow()
       }
       await expect(fs.read(path), path).rejects.toThrow()
@@ -135,7 +134,7 @@ Deno.test('git/init', async (t) => {
   })
   db.stop()
 })
-Deno.test.only('clone and pull', async (t) => {
+Deno.test('clone and pull', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('clone HAL', async () => {
@@ -174,7 +173,6 @@ Deno.test.only('clone and pull', async (t) => {
 
     const merged = FS.open(next.pid, oid, db)
     const readmeMerged = await merged.read('README.md')
-    console.log('readmeMerged', readmeMerged)
     expect(readmeMerged).toContain('conflict 1')
     expect(oid).not.toEqual(fs.oid)
   })

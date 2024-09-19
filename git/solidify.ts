@@ -8,7 +8,7 @@ import {
   MergeReply,
   Pending,
   PID,
-  PierceRequest,
+  Pierce,
   Poolable,
   Proctype,
   RemoteRequest,
@@ -34,16 +34,19 @@ const log = Debug('AI:git:solidify')
  */
 export const solidify = async (
   fs: FS,
-  pool: Poolable[],
+  pool: (Poolable | Pierce)[],
   reply?: SolidReply,
   pending?: Pending,
 ) => {
+  if (!Array.isArray(pool)) {
+    pool = [pool]
+  }
   assert(
     pool.length > 0 || reply || fs.isChanged || pending?.requests.length,
     'no-op',
   )
-  assert(!reply || !pending, 'cannot have both reply and pending')
   checkPool(pool)
+  assert(!reply || !pending, 'cannot have both reply and pending')
   const io = await IOChannel.load(fs)
 
   const branches: number[] = []
@@ -65,7 +68,7 @@ export const solidify = async (
       }
     })
   }
-  let poolPlusReply: (Poolable | SolidReply)[] = pool
+  let poolPlusReply: (Poolable | Pierce | SolidReply)[] = pool
   if (reply) {
     poolPlusReply = [reply, ...pool]
   }
@@ -137,7 +140,7 @@ export const solidify = async (
   return solids
 }
 
-const checkPool = (pool: Poolable[]) => {
+const checkPool = (pool: (Poolable | Pierce)[]) => {
   if (!pool.length) {
     return
   }
@@ -151,7 +154,7 @@ const checkPool = (pool: Poolable[]) => {
   return target
   // TODO a request and a reply with the same id cannot be in the same pool
 }
-const isBranch = (request: SolidRequest | PierceRequest, thisPid: PID) => {
+const isBranch = (request: SolidRequest | Pierce, thisPid: PID) => {
   if (!isPierceRequest(request)) {
     if (!equal(request.target, thisPid)) {
       return false

@@ -1,14 +1,13 @@
 import * as keys from './keys.ts'
 import { hasPoolables } from '@/db.ts'
 import {
+  isMergeReply,
   PID,
-  PierceRequest,
   Poolable,
-  print,
+  PooledRef,
   QueueMessage,
   QueueMessageType,
   sha1,
-  SolidRequest,
 } from '@/constants.ts'
 import { assert, Debug, isKvTestMode } from '@utils'
 
@@ -40,7 +39,11 @@ export class Atomic {
     log('pooling start %o', poolable)
     const key = keys.getPoolKey(poolable)
     const empty = { key, versionstamp: null }
-    this.#atomic = this.#atomic.check(empty).set(key, poolable)
+    const { commit, sequence, source } = poolable
+    const isReply = isMergeReply(poolable)
+
+    const ref: PooledRef = { commit, sequence, source, isReply }
+    this.#atomic = this.#atomic.check(empty).set(key, ref)
 
     const poolKey = JSON.stringify(keys.getPoolKeyPrefix(poolable.target))
     if (!this.#transmitted.has(poolKey)) {
@@ -105,37 +108,13 @@ export class Atomic {
    * @param commit the commit to provide to the execution environment when the
    * request is run
    */
-  enqueueExecution(request: SolidRequest, sequence: number, commit: string) {
+  enqueueExecution(pid: PID, sequence: number, commit: string) {
     const type = QueueMessageType.EXECUTION
-    return this.#enqueue({ type, request, sequence, commit })
+    return this.#enqueue({ type, pid, sequence, commit })
   }
   enqueueBranch(parentCommit: string, parentPid: PID, sequence: number) {
     const type = QueueMessageType.BRANCH
     return this.#enqueue({ type, parentCommit, parentPid, sequence })
-  }
-  async enqueuePierce(pierce: PierceRequest) {
-    assert(this.#atomic, 'Atomic not set')
-    const headKey = keys.getHeadKey(pierce.target)
-    const preHead = await this.#kv.get<string>(headKey)
-    if (!preHead.versionstamp) {
-      throw new Error('Head not found for pierce: ' + print(pierce.target))
-    }
-    const key = keys.getPoolKey(pierce)
-    const emptyPool = { key, versionstamp: null }
-    this.#atomic = this.#atomic.set(key, pierce).check(emptyPool)
-    this.#enqueuePool(pierce.target).#increasePool(
-      pierce.target,
-      BigInt(1),
-    )
-    const success = this.commit()
-    if (!success) {
-      throw new Error('Pierce enqueue failed')
-    }
-    const postHead = await this.#kv.get<string>(headKey)
-    if (!postHead.versionstamp) {
-      // TODO clean up the pool and counters nicely
-      throw new Error('Head not found for pierce: ' + print(pierce.target))
-    }
   }
   #enqueuePool(pid: PID) {
     const type = QueueMessageType.POOL

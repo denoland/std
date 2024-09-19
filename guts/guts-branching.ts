@@ -48,4 +48,22 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await engine.stop()
   })
+  Deno.test(prefix + 'larger than 65k messages', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const repo = 'process/session'
+
+    const { pid } = await backchat.init({ repo })
+    const ten = '0123456789'
+    const data = ten.repeat(100000)
+    expect(data.length).toBeGreaterThan(65535)
+
+    await t.step('big branch', async () => {
+      const opts = { target: pid }
+      const { branch } = await backchat.actions<IoApi>('io-fixture', opts)
+      const result = await branch({ data })
+      expect(result).toEqual(data)
+    })
+
+    await engine.stop()
+  })
 }

@@ -11,7 +11,7 @@ import {
   Outcome,
   Params,
   PID,
-  PierceRequest,
+  Pierce,
   RemoteRequest,
   Request,
   SolidRequest,
@@ -63,7 +63,7 @@ export type Isolate = {
   lifecycles?: IsolateLifecycle
 }
 
-export type Poolable = MergeReply | RemoteRequest | PierceRequest
+export type Poolable = MergeReply | RemoteRequest
 export type Reply = SolidReply | MergeReply
 export type EffectRequest = {
   target: PID
@@ -166,7 +166,9 @@ export const isMergeReply = (
 ): poolable is MergeReply => {
   return 'commit' in poolable && 'outcome' in poolable
 }
-export const isReply = (poolable: Poolable | SolidReply): poolable is Reply => {
+export const isReply = (
+  poolable: Poolable | Pierce | SolidReply,
+): poolable is Reply => {
   return 'outcome' in poolable
 }
 export const isRemoteRequest = (
@@ -193,7 +195,7 @@ export type QueuePool = {
 }
 export type QueueExe = {
   type: QueueMessageType.EXECUTION
-  request: SolidRequest
+  pid: PID
   commit: string
   sequence: number
 }

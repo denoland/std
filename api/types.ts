@@ -185,7 +185,7 @@ export type PathTriad = {
   commit?: CommitOid
 }
 
-export const isPierceRequest = (p: Request): p is PierceRequest => {
+export const isPierceRequest = (p: Request): p is Pierce => {
   return 'ulid' in p
 }
 export type Params = { [key: string]: JsonValue }
@@ -252,8 +252,8 @@ const solidRequest = invocation.extend({
 export type RemoteRequest = z.infer<typeof remoteRequest>
 export const remoteRequest = solidRequest.extend({ commit: md5 })
 
-export type PierceRequest = z.infer<typeof pierceRequest>
-export const pierceRequest = invocation.extend({
+export type Pierce = z.infer<typeof pierceSchema>
+export const pierceSchema = invocation.extend({
   target: pidSchema,
   ulid: z.string(),
 })
@@ -263,7 +263,7 @@ export const unsequencedRequest = invocation.extend({ target: pidSchema })
 
 export type Request = z.infer<typeof requestSchema>
 export const requestSchema = z.union([
-  pierceRequest,
+  pierceSchema,
   solidRequest,
   remoteRequest,
 ])
@@ -403,7 +403,7 @@ export interface EngineInterface {
   ping(data?: JsonValue): Promise<IsolateReturn>
   apiSchema(isolate: string): Promise<Record<string, object>>
   transcribe(audio: File): Promise<{ text: string }>
-  pierce(pierce: PierceRequest): Promise<void>
+  pierce(pierce: Pierce): Promise<void>
   watch(
     pid: PID,
     path?: string,
@@ -820,3 +820,10 @@ export type TreeEntry = {
    */
   type: 'blob' | 'tree' | 'commit'
 }
+export const pooledRef = z.object({
+  commit: md5,
+  sequence: sequenceInteger,
+  source: pidSchema,
+  isReply: z.boolean(),
+})
+export type PooledRef = z.infer<typeof pooledRef>

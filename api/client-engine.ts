@@ -8,7 +8,7 @@ import {
   JsonValue,
   Params,
   PID,
-  PierceRequest,
+  Pierce,
   Splice,
   TreeEntry,
 } from './types.ts'
@@ -71,7 +71,7 @@ export class WebClientEngine implements EngineInterface {
       return result.data
     }
   }
-  async pierce(pierce: PierceRequest) {
+  async pierce(pierce: Pierce) {
     // TODO lock to only allowing a backchat branch to pierce
     await this.#request('pierce', pierce)
   }

@@ -12,7 +12,7 @@ import {
   HAL,
   JsonValue,
   PID,
-  PierceRequest,
+  Pierce,
   print,
   Proctype,
   Provisioner,
@@ -197,7 +197,7 @@ export class Engine implements EngineInterface {
     const watcher = PierceWatcher.create(abort.signal, this, this.homeAddress)
     watcher.watchPierces()
     const { machineId: superuser } = Crypto.load(this.#superuserKey)
-    const pierce: PierceRequest = {
+    const pierce: Pierce = {
       target: this.homeAddress,
       ulid: ulid(),
       isolate: 'actors',
@@ -240,7 +240,7 @@ export class Engine implements EngineInterface {
     const text = await transcribe(audio)
     return { text }
   }
-  async pierce(pierce: PierceRequest) {
+  async pierce(pierce: Pierce) {
     await this.#pierce({ pierce })
   }
   watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
