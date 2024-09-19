@@ -4,7 +4,7 @@ const { ceil } = Math;
 
 // This implements Myers' bit-vector algorithm as described here:
 // https://dl.acm.org/doi/pdf/10.1145/316542.316550
-const peq = new Uint32Array(0x10ffff);
+const peq = new Uint32Array(0x110000);
 
 function myers32(t: string, p: string): number {
   const n = unicodeStrLen(t);
