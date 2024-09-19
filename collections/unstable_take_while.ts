@@ -5,13 +5,13 @@
  * Returns all elements in the given collection until the first element that
  * does not match the given predicate.
  *
- * @typeParam T The type of the array elements.
+ * @typeParam T The type of the elements in the iterable.
  *
- * @param array The array to take elements from.
+ * @param iterable The iterable to take elements from.
  * @param predicate The predicate function to determine if an element should be
  * included.
  *
- * @returns A new array containing all elements until the first element that
+ * @returns An array containing all elements until the first element that
  * does not match the predicate.
  *
  * @example Basic usage
@@ -27,15 +27,15 @@
  * ```
  */
 export function takeWhile<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T[] {
-  let offset = 0;
-  const length = array.length;
-
-  while (length > offset && predicate(array[offset] as T)) {
-    offset++;
+  const result: T[] = [];
+  for (const element of iterable) {
+    if (!predicate(element)) {
+      break;
+    }
+    result.push(element);
   }
-
-  return array.slice(0, offset);
+  return result;
 }
