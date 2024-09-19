@@ -13,7 +13,7 @@ function constructorsEqual(a: object, b: object) {
 }
 
 /**
- * Deep equality comparison used in assertions
+ * Deep equality comparison used in assertions.
  *
  * @param c The actual value
  * @param d The expected value
