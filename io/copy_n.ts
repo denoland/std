@@ -13,7 +13,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * import { copyN } from "@std/io/copy-n";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const source = await Deno.open("README.md");
+ * using source = await Deno.open("README.md");
  *
  * const res = await copyN(source, Deno.stdout, 10);
  * assertEquals(res, 10);

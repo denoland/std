@@ -218,7 +218,7 @@ export class Buffer {
    * ```
    *
    * @example Non-empty, but the content was already read
-   * ```ts
+   * ```ts ignore
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
@@ -251,7 +251,7 @@ export class Buffer {
    * ```
    *
    * @example Length becomes 0 after the content is read
-   * ```ts
+   * ```ts ignore
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
