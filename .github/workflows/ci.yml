@@ -41,8 +41,6 @@ jobs:
         run: |
           deno task test
           rm deno.lock # remove deno.lock (v4) as it's incompatible with v3
-        env:
-          DENO_FUTURE: 1
 
       - name: Run timezone-dependent tests
         run: |
@@ -54,15 +52,16 @@ jobs:
       - name: Type check browser compatible modules
         run: deno task test:browser
 
-      - name: Generate lcov
-        run: deno task cov:gen
+      # TODO(iuioiua): Enable this once https://github.com/denoland/deno/pull/25736 is merged
+      # - name: Generate lcov
+      #   run: deno task cov:gen
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          name: ${{ matrix.os }}-${{ matrix.deno }}
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v4
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      #   with:
+      #     name: ${{ matrix.os }}-${{ matrix.deno }}
 
   test-node:
     runs-on: ${{ matrix.os }}

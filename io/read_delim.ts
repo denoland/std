@@ -34,7 +34,8 @@ function createLPS(pat: Uint8Array): Uint8Array {
  * import { readDelim } from "@std/io/read-delim";
  * import { assert } from "@std/assert/assert"
  *
- * const fileReader = await Deno.open("README.md");
+ * using fileReader = await Deno.open("README.md");
+ *
  * for await (const chunk of readDelim(fileReader, new TextEncoder().encode("\n"))) {
  *   assert(chunk instanceof Uint8Array);
  * }

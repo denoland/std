@@ -32,7 +32,7 @@ export interface MoveOptions {
  * @returns A void promise that resolves once the operation completes.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar");
@@ -42,7 +42,7 @@ export interface MoveOptions {
  * overwriting.
  *
  * @example Overwriting
- * ```ts no-eval
+ * ```ts ignore
  * import { move } from "@std/fs/move";
  *
  * await move("./foo", "./bar", { overwrite: true });
@@ -108,7 +108,7 @@ export async function move(
  * @returns A void value that returns once the operation completes.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar");
@@ -118,7 +118,7 @@ export async function move(
  * overwriting.
  *
  * @example Overwriting
- * ```ts no-eval
+ * ```ts ignore
  * import { moveSync } from "@std/fs/move";
  *
  * moveSync("./foo", "./bar", { overwrite: true });
