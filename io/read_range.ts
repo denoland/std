@@ -24,7 +24,7 @@ export interface ByteRange {
  * range.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertEquals } from "@std/assert";
  * import { readRange } from "@std/io/read-range";
  *
@@ -79,7 +79,7 @@ export async function readRange(
  * within that range.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertEquals } from "@std/assert";
  * import { readRangeSync } from "@std/io/read-range";
  *

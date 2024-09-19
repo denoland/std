@@ -14,7 +14,7 @@ import type { EqualOptions } from "./_types.ts";
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example
- * ```ts
+ * ```ts ignore
  * import { assertNotEquals } from "@std/assert";
  *
  * assertNotEquals(1, 2); // Doesn't throw

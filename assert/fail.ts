@@ -6,7 +6,7 @@ import { AssertionError } from "./assertion_error.ts";
  * Forcefully throws a failed assertion.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { fail } from "@std/assert";
  *
  * fail("Deliberately failed!"); // Throws

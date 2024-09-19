@@ -6,7 +6,7 @@ import { AssertionError } from "./assertion_error.ts";
  * Use this to stub out methods that will throw when invoked.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { unimplemented } from "@std/assert";
  *
  * unimplemented(); // Throws

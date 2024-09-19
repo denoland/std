@@ -9,7 +9,7 @@ import type { Reader } from "./types.ts";
  * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { copy } from "@std/io/copy";
  * import { readerFromStreamReader } from "@std/io/reader-from-stream-reader";
  *

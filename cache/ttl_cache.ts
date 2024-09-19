@@ -61,11 +61,15 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```ts
    * import { TtlCache } from "@std/cache/ttl-cache";
    * import { assertEquals } from "@std/assert/equals";
+   * import { delay } from "@std/async/delay";
    *
-   * const cache = new TtlCache<string, number>(1000);
+   * const cache = new TtlCache<string, number>(100);
    *
    * cache.set("a", 1);
    * assertEquals(cache.get("a"), 1);
+   *
+   * await delay(200);
+   * assertEquals(cache.get("a"), undefined);
    * ```
    */
   override set(key: K, value: V, ttl: number = this.#defaultTtl): this {

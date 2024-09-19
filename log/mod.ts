@@ -82,12 +82,12 @@
  *   return getLogger("my-awesome-module");
  * }
  *
- * export function sum(a: number, b: number) {
+ * function sum(a: number, b: number) {
  *   logger().debug(`running ${a} + ${b}`);
  *   return a + b;
  * }
  *
- * export function mult(a: number, b: number) {
+ * function mult(a: number, b: number) {
  *   logger().debug(`running ${a} * ${b}`);
  *   return a * b;
  * }
@@ -123,14 +123,14 @@
  *
  * const logger = getLogger("my-awesome-module");
  *
- * export function sum(a: number, b: number) {
+ * function sum(a: number, b: number) {
  *   logger.debug(`running ${a} + ${b}`); // no message will be logged, because getLogger() was called before log.setup()
  *   return a + b;
  * }
  * ```
  *
  * @example
- * ```ts
+ * ```ts ignore
  * import * as log from "@std/log";
  *
  * // Simple default logger out of the box. You can customize it

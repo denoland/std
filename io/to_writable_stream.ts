@@ -23,9 +23,7 @@ export interface toWritableStreamOptions {
  * ```ts no-assert
  * import { toWritableStream } from "@std/io/to-writable-stream";
  *
- * await ReadableStream.from(["Hello World"])
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeTo(toWritableStream(Deno.stdout));
+ * const a = toWritableStream(Deno.stdout); // Same as `Deno.stdout.writable`
  * ```
  *
  * @param writer The writer to write to

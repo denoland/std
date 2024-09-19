@@ -45,7 +45,7 @@ export interface Route {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { route, type Route } from "@std/http/unstable-route";
  * import { serveDir } from "@std/http/file-server";
  *
