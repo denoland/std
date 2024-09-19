@@ -26,7 +26,7 @@ import { readDelim } from "./read_delim.ts";
  *
  * @deprecated Pipe the readable stream through a
  * {@linkcode https://jsr.io/@std/streams/doc/~/TextDelimiterStream | TextDelimiterStream}
- * instead. This will be removed in the future.
+ * instead. This will be removed in 0.226.0.
  */
 export async function* readStringDelim(
   reader: Reader,

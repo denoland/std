@@ -17,7 +17,7 @@
  * @param dest The array to store the sliced bytes
  * @returns The sliced bytes
  *
- * @deprecated This will be removed in the future.
+ * @deprecated This will be removed in 0.226.0.
  */
 export function sliceLongToBytes(
   d: number,
