@@ -203,6 +203,9 @@ export default class FS {
   }
   async merge(commit: string) {
     assert(!this.isChanged, 'cannot merge with changes')
+    if (this.oid === commit) {
+      return this.oid
+    }
     const result = await git.merge({
       ...this.#git,
       noUpdateBranch: true,
