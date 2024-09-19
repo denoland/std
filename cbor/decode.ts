@@ -256,7 +256,6 @@ export function decodeCbor(value: Uint8Array): CborType {
         }
 
         object[key] = decode();
-        console.log(source.length);
         if (!source.length) throw new RangeError("More bytes were expected");
       }
       source.pop();
