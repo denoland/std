@@ -6,21 +6,18 @@ const { ceil } = Math;
 // https://dl.acm.org/doi/pdf/10.1145/316542.316550
 const peq = new Uint32Array(0x110000);
 
-function myers32(t: string, p: string): number {
-  const n = unicodeStrLen(t);
-  const m = unicodeStrLen(p);
-  for (let i = 0; i < m;) {
-    const cp = p.codePointAt(i)!;
-    peq[cp]! |= 1 << i;
-    i += cp > 0xffff ? 2 : 1;
+function myers32(t: string[], p: string[]): number {
+  const n = t.length;
+  const m = p.length;
+  for (let i = 0; i < m; i++) {
+    peq[p[i]!.codePointAt(0)!]! |= 1 << i;
   }
   const last = m - 1;
   let pv = -1;
   let mv = 0;
   let score = m;
-  for (let j = 0; j < n;) {
-    const cp = t.codePointAt(j)!;
-    const eq = peq[cp]!;
+  for (let j = 0; j < n; j++) {
+    const eq = peq[t[j]!.codePointAt(0)!]!;
     const xv = eq | mv;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
     let ph = mv | ~(xh | pv);
@@ -32,20 +29,16 @@ function myers32(t: string, p: string): number {
     mh = mh << 1;
     pv = mh | ~(xv | ph);
     mv = ph & xv;
-
-    j += cp > 0xffff ? 2 : 1;
   }
-  for (let i = 0; i < m;) {
-    const cp = p.codePointAt(i)!;
-    peq[cp] = 0;
-    i += cp > 0xffff ? 2 : 1;
+  for (let i = 0; i < m; i++) {
+    peq[p[i]!.codePointAt(0)!] = 0;
   }
   return score;
 }
 
-function myersX(t: string, p: string): number {
-  const n = unicodeStrLen(t);
-  const m = unicodeStrLen(p);
+function myersX(t: string[], p: string[]): number {
+  const n = t.length;
+  const m = p.length;
   // Initialize the horizontal deltas to +1.
   const h = new Int8Array(n).fill(1);
   const bmax = ceil(m / 32) - 1;
@@ -53,17 +46,14 @@ function myersX(t: string, p: string): number {
   for (let b = 0; b < bmax; b++) {
     const start = b * 32;
     const end = (b + 1) * 32;
-    for (let i = start; i < end;) {
-      const cp = p.codePointAt(i)!;
-      peq[cp]! |= 1 << i;
-      i += cp > 0xffff ? 2 : 1;
+    for (let i = start; i < end; i++) {
+      peq[p[i]!.codePointAt(0)!]! |= 1 << i;
     }
     let pv = -1;
     let mv = 0;
-    for (let j = 0; j < n;) {
+    for (let j = 0; j < n; j++) {
       const hin = h[j]!;
-      const cp = t.codePointAt(j)!;
-      let eq = peq[cp]!;
+      let eq = peq[t[j]!.codePointAt(0)!]!;
       const xv = eq | mv;
       eq |= hin >>> 31;
       const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -74,30 +64,22 @@ function myersX(t: string, p: string): number {
       mh = (mh << 1) | (hin >>> 31);
       pv = mh | ~(xv | ph);
       mv = ph & xv;
-
-      j += cp > 0xffff ? 2 : 1;
     }
-    for (let i = start; i < end;) {
-      const cp = p.codePointAt(i)!;
-      peq[cp] = 0;
-
-      i += cp > 0xffff ? 2 : 1;
+    for (let i = start; i < end; i++) {
+      peq[p[i]!.codePointAt(0)!] = 0;
     }
   }
   const start = bmax * 32;
-  for (let i = start; i < m;) {
-    const cp = p.codePointAt(i)!;
-    peq[cp]! |= 1 << i;
-    i += cp > 0xffff ? 2 : 1;
+  for (let i = start; i < m; i++) {
+    peq[p[i]!.codePointAt(0)!]! |= 1 << i;
   }
   const last = m - 1;
   let pv = -1;
   let mv = 0;
   let score = m;
-  for (let j = 0; j < n;) {
+  for (let j = 0; j < n; j++) {
     const hin = h[j]!;
-    const cp = t.codePointAt(j)!;
-    let eq = peq[cp]!;
+    let eq = peq[t[j]!.codePointAt(0)!]!;
     const xv = eq | mv;
     eq |= hin >>> 31;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -108,13 +90,9 @@ function myersX(t: string, p: string): number {
     mh = (mh << 1) | (hin >>> 31);
     pv = mh | ~(xv | ph);
     mv = ph & xv;
-
-    j += cp > 0xffff ? 2 : 1;
   }
-  for (let i = start; i < m;) {
-    const cp = p.codePointAt(i)!;
-    peq[cp] = 0;
-    i += cp > 0xffff ? 2 : 1;
+  for (let i = start; i < m; i++) {
+    peq[p[i]!.codePointAt(0)!] = 0;
   }
   return score;
 }
@@ -141,19 +119,14 @@ function myersX(t: string, p: string): number {
  * @returns The Levenshtein distance between the two strings.
  */
 export function levenshteinDistance(str1: string, str2: string): number {
-  let strLen1 = unicodeStrLen(str1);
-  let strLen2 = unicodeStrLen(str2);
+  let t = [...str1];
+  let p = [...str2];
 
-  if (strLen1 < strLen2) {
-    [str1, str2] = [str2, str1];
-    [strLen1, strLen2] = [strLen2, strLen1];
+  if (t.length < p.length) {
+    [p, t] = [t, p];
   }
-  if (str2 === "") {
-    return strLen1;
+  if (p.length === 0) {
+    return t.length;
   }
-  return strLen2 <= 32 ? myers32(str1, str2) : myersX(str1, str2);
-}
-
-function unicodeStrLen(str: string) {
-  return str.replaceAll(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ".").length;
+  return p.length <= 32 ? myers32(t, p) : myersX(t, p);
 }

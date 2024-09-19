@@ -2,6 +2,11 @@
 import { assertEquals } from "@std/assert/equals";
 import { levenshteinDistance } from "./levenshtein_distance.ts";
 
+function assertLevenshteinBidi(a: string, b: string, distance: number) {
+  assertEquals(levenshteinDistance(a, b), distance);
+  assertEquals(levenshteinDistance(b, a), distance);
+}
+
 Deno.test("levenshteinDistance() handles basic cases", () => {
   assertEquals(levenshteinDistance("levenshtein", "levenshtein"), 0);
   assertEquals(levenshteinDistance("sitting", "kitten"), 3);
@@ -28,32 +33,34 @@ Deno.test("levenshteinDistance() handles long strings", () => {
 });
 
 Deno.test("levenshteinDistance() handles code points above U+FFFF", async (t) => {
+  await t.step("one of inputs is empty fast path", () => {
+    assertLevenshteinBidi("💩", "", 1);
+    assertLevenshteinBidi("\u{10FFFF}", "", 1);
+  });
+
   await t.step("`myers32` fast path", () => {
-    assertEquals(levenshteinDistance("💩", "x"), 1);
-    assertEquals(levenshteinDistance("💩", ""), 1);
-    assertEquals(levenshteinDistance("x", "💩"), 1);
-    assertEquals(levenshteinDistance("", "💩"), 1);
+    assertLevenshteinBidi("💩", "x", 1);
     // first surrogate same
-    assertEquals(levenshteinDistance("💩", "💫"), 1);
+    assertLevenshteinBidi("💩", "💫", 1);
     // both surrogates different
-    assertEquals(levenshteinDistance("💩", "🦄"), 1);
+    assertLevenshteinBidi("💩", "🦄", 1);
     // max cp
-    assertEquals(levenshteinDistance("\u{10FFFE}", "\u{10FFFF}"), 1);
+    assertLevenshteinBidi("\u{10FFFF}x", "y", 2);
+    assertLevenshteinBidi("x\u{10FFFF}", "y", 2);
+    assertLevenshteinBidi("\u{10FFFE}", "\u{10FFFF}", 1);
+    assertLevenshteinBidi("\u{10FFFF}", "\u{10FFFF}", 0);
   });
 
   await t.step("`myersX` path", () => {
-    assertEquals(levenshteinDistance("💩".repeat(33), "x".repeat(33)), 33);
-    assertEquals(levenshteinDistance("💩".repeat(33), ""), 33);
-    assertEquals(levenshteinDistance("x".repeat(33), "💩".repeat(33)), 33);
-    assertEquals(levenshteinDistance("", "💩".repeat(33)), 33);
+    const MYERS_32_MAX = 32;
+    const n = MYERS_32_MAX + 1;
+    assertLevenshteinBidi("💩".repeat(n), "x".repeat(n), n);
     // first surrogate same
-    assertEquals(levenshteinDistance("💩".repeat(33), "💫".repeat(33)), 33);
+    assertLevenshteinBidi("💩".repeat(n), "💫".repeat(n), n);
     // both surrogates different
-    assertEquals(levenshteinDistance("💩".repeat(33), "🦄".repeat(33)), 33);
+    assertLevenshteinBidi("💩".repeat(n), "🦄".repeat(n), n);
     // max cp
-    assertEquals(
-      levenshteinDistance("\u{10FFFE}".repeat(33), "\u{10FFFF}".repeat(33)),
-      33,
-    );
+    assertLevenshteinBidi("\u{10FFFE}".repeat(n), "\u{10FFFF}".repeat(n), n);
+    assertLevenshteinBidi("\u{10FFFE}".repeat(n), "\u{10FFFF}", n);
   });
 });
