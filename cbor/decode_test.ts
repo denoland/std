@@ -254,7 +254,7 @@ Deno.test("decodeCbor() rejecting majorType 1", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 2", () => {
+Deno.test("decodeCbor() rejecting majorType 2 | Reserved Additional Information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -293,7 +293,38 @@ Deno.test("decodeCbor() rejecting majorType 2", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 3", () => {
+Deno.test("decodeCbor() rejecting majorType 2 | Indefinite Byte String", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b010_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b010_11111, 0b000_00000]));
+    },
+    TypeError,
+    "Cannot decode value (0b000_00000) inside an indefinite length byte string",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b010_11111, 0b010_11111]));
+    },
+    TypeError,
+    "Indefinite length byte strings cannot contain indefinite length byte strings",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b010_11111, 0b010_00000]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 3 | Reserved Additional Information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -332,7 +363,38 @@ Deno.test("decodeCbor() rejecting majorType 3", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 4", () => {
+Deno.test("decodeCbor() rejecting majorType 3 | Indefinite Text String", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b011_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b011_11111, 0b000_00000]));
+    },
+    TypeError,
+    "Cannot decode value (0b000_00000) inside an indefinite length text string",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b011_11111, 0b011_11111]));
+    },
+    TypeError,
+    "Indefinite length text strings cannot contain indefinite length text strings",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b011_11111, 0b011_00000]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 4 | Reserved Additional Information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -371,7 +433,24 @@ Deno.test("decodeCbor() rejecting majorType 4", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 5", () => {
+Deno.test("decodeCbor() rejecting majorType 4 | Indefinite Arrays", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b100_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b100_11111, 0b000_00000]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 5 | Reserved Additional Information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -407,6 +486,113 @@ Deno.test("decodeCbor() rejecting majorType 5", () => {
     },
     RangeError,
     "Cannot decode value (0b101_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 5 | Invalid Keys", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b101_00001, 0b000_00000, 0b000_00000]));
+    },
+    TypeError,
+    'Cannot decode key of type (number): This implementation only supports "text string" keys',
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_00010,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 5 | Indefinite Maps", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b101_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([0b101_11111, 0b000_00000, 0b000_00000, 0b111_11111]),
+      );
+    },
+    TypeError,
+    'Cannot decode key of type (number): This implementation only supports "text string" keys',
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+          0b111_11111,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+        ]),
+      );
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+});
+
+Deno.test("decodeCbor() rejecting majorType 6", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          0b110_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b110_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b110_00000, 0b000_00000]));
+    },
+    TypeError,
+    'Invalid TagItem: Expected a "text string"',
+  );
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([0b110_00001, 0b010_00000]));
+    },
+    TypeError,
+    'Invalid TagItem: Expected a "integer" or "float"',
   );
 });
 

@@ -114,7 +114,7 @@ export function decodeCbor(value: Uint8Array): CborType {
       while (byte !== 0b111_11111) {
         if (byte >> 5 !== 2) {
           throw new TypeError(
-            `Cannot decode value (b${
+            `Cannot decode value (0b${
               (byte >> 5).toString(2).padStart(3, "0")
             }_${
               (byte & 0b11111).toString(2).padStart(5, "0")
@@ -150,7 +150,7 @@ export function decodeCbor(value: Uint8Array): CborType {
       while (byte !== 0b111_11111) {
         if (byte >> 5 !== 3) {
           throw new TypeError(
-            `Cannot decode value (b${
+            `Cannot decode value (0b${
               (byte >> 5).toString(2).padStart(3, "0")
             }_${
               (byte & 0b11111).toString(2).padStart(5, "0")
@@ -161,7 +161,7 @@ export function decodeCbor(value: Uint8Array): CborType {
         const aI = byte & 0b11111;
         if (aI === 31) {
           throw new TypeError(
-            "Indefinite length text strings cannot contain definite length text strings",
+            "Indefinite length text strings cannot contain indefinite length text strings",
           );
         }
 
@@ -194,8 +194,10 @@ export function decodeCbor(value: Uint8Array): CborType {
     }
     if (aI === 31) {
       const array: CborType[] = [];
+      if (!source.length) throw new RangeError("More bytes were expected");
       while (source[source.length - 1] !== 0b111_11111) {
         array.push(decode());
+        if (!source.length) throw new RangeError("More bytes were expected");
       }
       source.pop();
       return array;
@@ -222,7 +224,7 @@ export function decodeCbor(value: Uint8Array): CborType {
         const key = decode();
         if (typeof key !== "string") {
           throw new TypeError(
-            `Cannot decode key of type "${typeof key}": This implementation only support "text string" keys`,
+            `Cannot decode key of type (${typeof key}): This implementation only supports "text string" keys`,
           );
         }
 
@@ -238,11 +240,12 @@ export function decodeCbor(value: Uint8Array): CborType {
     }
     if (aI === 31) {
       const object: { [k: string]: CborType } = {};
+      if (!source.length) throw new RangeError("More bytes were expected");
       while (source[source.length - 1] !== 0b111_11111) {
         const key = decode();
         if (typeof key !== "string") {
           throw new TypeError(
-            `Cannot decode key of type "${typeof key}": This implementation only support "text string" keys`,
+            `Cannot decode key of type (${typeof key}): This implementation only supports "text string" keys`,
           );
         }
 
@@ -253,7 +256,10 @@ export function decodeCbor(value: Uint8Array): CborType {
         }
 
         object[key] = decode();
+        console.log(source.length);
+        if (!source.length) throw new RangeError("More bytes were expected");
       }
+      source.pop();
       return object;
     }
     throw new RangeError(
@@ -262,6 +268,11 @@ export function decodeCbor(value: Uint8Array): CborType {
   }
 
   function decodeSix(aI: number): Date | CborTag<CborType> {
+    if (aI > 27) {
+      throw new RangeError(
+        `Cannot decode value (0b110_${aI.toString(2).padStart(5, "0")})`,
+      );
+    }
     const tagNumber = decodeZero(aI);
     const tagContent = decode();
     switch (BigInt(tagNumber)) {
