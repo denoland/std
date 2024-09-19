@@ -5,6 +5,8 @@
  * Returns all elements in the given collection until the first element that
  * does not match the given predicate.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the elements in the iterable.
  *
  * @param iterable The iterable to take elements from.
