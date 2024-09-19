@@ -108,7 +108,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { TarEntry } from "@std/archive/untar";
  * import { Buffer } from "@std/io/buffer";
  *
@@ -139,7 +139,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { TarEntry } from "@std/archive/untar";
  * import { Buffer } from "@std/io/buffer";
  *
@@ -192,7 +192,7 @@ export class TarEntry implements Reader {
    * @returns Whether the entry has already been consumed.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { TarEntry } from "@std/archive/untar";
    * import { Buffer } from "@std/io/buffer";
    * import { assertEquals } from "@std/assert/equals";
@@ -232,7 +232,7 @@ export class TarEntry implements Reader {
    * there are no more bytes to read.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Tar, Untar } from "@std/archive";
    * import { assertEquals } from "@std/assert/equals";
    * import { Buffer } from "@std/io/buffer";
@@ -288,7 +288,7 @@ export class TarEntry implements Reader {
    * Discords the current entry.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Buffer } from "@std/io/buffer";
    * import { TarEntry } from "@std/archive/untar";
    * import { assertEquals } from "@std/assert/equals";
@@ -484,7 +484,7 @@ export class Untar {
    * or null if there are no more entries to extract.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Tar, Untar } from "@std/archive";
    * import { Buffer } from "@std/io/buffer";
    * import { readAll } from "@std/io/read-all";
