@@ -217,7 +217,7 @@ function assertSnippetsWork(
     const delim = snippet.split(NEWLINE)[0];
     // Trim the code block delimiters
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
-    if (!delim?.includes("no-assert")) {
+    if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
         "Snippet must contain assertion from '@std/assert'",

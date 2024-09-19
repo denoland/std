@@ -19,7 +19,7 @@
  * });
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * // __snapshots__/example_test.ts.snap
  * export const snapshot: Record<string, string> = {};
  *
@@ -118,7 +118,7 @@
  * });
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * // .snaps/example_test.ts.snap
  * export const snapshot: Record<string, string> = {};
  *
