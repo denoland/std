@@ -105,8 +105,9 @@ export const functions: Functions<Api> = {
     target = target || api.pid
     log('pull', repo, print(target))
     const actions = await api.actions<Api>('system')
-    log('commit is', api.commit)
+    log('commit before fetch', api.commit)
     const fetchHead = await actions.sideEffectFetch({ target, repo })
+    log('commit after fetch', api.commit)
     log('fetched', fetchHead)
 
     const { db } = api.context

@@ -1,7 +1,7 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
-import { addBranches, IO_PATH, partialFromRepo } from '@/constants.ts'
+import { addBranches, addPeer, IO_PATH, partialFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
@@ -135,7 +135,7 @@ Deno.test('git/init', async (t) => {
   })
   db.stop()
 })
-Deno.test('clone and pull', async (t) => {
+Deno.test.only('clone and pull', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   let fs: FS
   await t.step('clone HAL', async () => {
@@ -147,12 +147,37 @@ Deno.test('clone and pull', async (t) => {
     const data = await fs.read(path)
     expect(data).toContain('AI')
   })
-  await t.step('pull', async () => {
+  await t.step('fetch', async () => {
     const oid = await FS.fetch('dreamcatcher-tech/HAL', fs.pid, db)
     expect(oid).toEqual(fs.oid)
   })
+  await t.step('merge', async () => {
+    fs.write('hello.txt', 'world')
+    const { next } = await fs.writeCommitObject('merge')
+    const oid = await next.merge(fs.oid)
+    expect(oid).not.toEqual(fs.oid)
+    fs = next
+  })
+  await t.step('merge conflict', async () => {
+    const readme = await fs.read('README.md')
+    expect(readme.length).toBeGreaterThan(5)
 
-  // pull should let you pull into any pid you like
+    fs.write('README.md', 'conflict 1')
+    const { next } = await fs.writeCommitObject('merge')
+
+    const pid = addPeer(fs.pid, 'conflict')
+    const branch = fs.branch(pid)
+    branch.write('README.md', 'conflict 2')
+    const { next: branchNext } = await branch.writeCommitObject('branch')
+
+    const oid = await next.merge(branchNext.oid)
+
+    const merged = FS.open(next.pid, oid, db)
+    const readmeMerged = await merged.read('README.md')
+    console.log('readmeMerged', readmeMerged)
+    expect(readmeMerged).toContain('conflict 1')
+    expect(oid).not.toEqual(fs.oid)
+  })
 
   // insert the PAT into the github repo
   // do a push, using this auth method

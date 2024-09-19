@@ -3,6 +3,7 @@ import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
 import {
   Agent,
+  agentSchema,
   AssistantMessage,
   ChatParams,
   CompletionMessage,
@@ -37,9 +38,17 @@ export const transcribe = async (file: File) => {
 }
 
 export const parameters = {
-  complete: z.object({ path: z.string() }),
+  /** Complete the thread with the given agent, using the optional overrides on
+   * the agent */
+  complete: z.object({
+    path: z.string(),
+    overrides: agentSchema.partial().optional(),
+  }),
   /** Gives slightly quicker feedback to users when waiting for completions */
-  effect: z.object({ path: z.string() }),
+  effect: z.object({
+    path: z.string(),
+    overrides: agentSchema.partial().optional(),
+  }),
 }
 export const returns = {
   complete: z.void(),
@@ -49,7 +58,7 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  async complete({ path }, api) {
+  async complete({ path, overrides = {} }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
@@ -59,13 +68,14 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
 
     const { effect } = await api.actions<Api>('ai-completions')
-    await effect({ path })
+    await effect({ path, overrides })
   },
-  async effect({ path }, api) {
+  async effect({ path, overrides }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
-    const agent = await load(path, api)
+    const agent = await load(path, api, overrides)
+
     const thread = await api.readThread(threadPath)
     const last = thread.messages.pop()
     assert(last, 'no messages in thread')

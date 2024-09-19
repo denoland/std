@@ -1,5 +1,6 @@
 import { assert, Debug, equal } from '@utils'
 import {
+  Agent,
   CompletionMessage,
   getThreadPath,
   IA,
@@ -97,17 +98,17 @@ export const functions: Functions<Api> = {
     // verify the switchboard has the right tool loaded
     // TODO verify stopOnTool function returns null
 
-    const { config, commands } = await load(path, api)
-    config.parallel_tool_calls = false
-    config.tool_choice = 'required'
-    commands.push('agents:switch')
+    const overrides = await load(path, api)
+    overrides.config.parallel_tool_calls = false
+    overrides.config.tool_choice = 'required'
+    overrides.commands.push('agents:switch')
 
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
 
-    const switchResult = await loop(path, api, ['agents_switch'])
+    const switchResult = await loop(path, api, ['agents_switch'], overrides)
     assert(switchResult, 'expected switchboard result')
     assert(switchResult.functionName === 'agents_switch', 'not agents_switch')
     const { path: next } = agents.parameters.switch.parse(switchResult.args)
@@ -143,8 +144,7 @@ export const functions: Functions<Api> = {
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
-    const result = await loop(path, api, stopOnTools)
-    return result
+    return loop(path, api, stopOnTools)
   },
   changeRemote: async ({ remote }, api) => {
     const threadPath = getThreadPath(api.pid)
@@ -179,7 +179,12 @@ export const functions: Functions<Api> = {
   },
 }
 
-const loop = async (path: string, api: IA, stopOnTools: string[]) => {
+const loop = async (
+  path: string,
+  api: IA,
+  stopOnTools: string[],
+  overrides?: Partial<Agent>,
+) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
   const HARD_STOP = 20
@@ -187,15 +192,14 @@ const loop = async (path: string, api: IA, stopOnTools: string[]) => {
   stopOnTools = addDefaults(stopOnTools)
 
   while (!await isDone(threadPath, api, stopOnTools) && count++ < HARD_STOP) {
-    await complete({ path })
+    await complete({ path, overrides })
     if (await isDone(threadPath, api)) {
       break
     }
     // TODO check tool returns are checked against schema
-    await executeTools(threadPath, api, stopOnTools)
+    await executeTools(threadPath, api, stopOnTools, overrides)
   }
   if (count >= HARD_STOP) {
-    // TODO test this actually works
     throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
   }
 

@@ -36,10 +36,15 @@ export const loadString = async (path: string, string: string, api: IA) => {
   return o1Checker.parse({ ...defaults, name, instructions, source })
 }
 
-export const load = async (path: string, api: IA) => {
+export const load = async (
+  path: string,
+  api: IA,
+  overrides?: Partial<Agent>,
+) => {
   assert(path.endsWith('.md'), 'path must end with .md')
   const string = await api.read(path)
-  return loadString(path, string, api)
+  const agent = await loadString(path, string, api)
+  return merge(agent, overrides)
 }
 
 export const loadAll = async (dir: string, api: IA) => {
