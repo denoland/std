@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * Checks whether all deprecated tags have a message.

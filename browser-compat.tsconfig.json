@@ -36,6 +36,7 @@
     "./msgpack",
     "./net",
     "./path",
+    "./random",
     "./regexp",
     "./semver",
     "./streams",

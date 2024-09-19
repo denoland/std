@@ -226,13 +226,12 @@ for (const s of scenes) {
 
         const command = new Deno.Command(Deno.execPath(), {
           args,
+          stderr: "inherit",
         });
-        const { stdout, stderr } = await command.output();
+        const { stdout } = await command.output();
         assertStringIncludes(new TextDecoder().decode(stdout), s.output);
-        if (stderr.length > 0) {
-          console.log(new TextDecoder().decode(stderr));
-        }
       } catch (err) {
+        // deno-lint-ignore no-console
         console.log(err);
         await Deno.remove(testfolder, { recursive: true });
         throw err;

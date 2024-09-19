@@ -64,7 +64,7 @@
  * handlers based on the request path and method.
  *
  * ```ts no-eval
- * import { route, type Route } from "@std/http/route";
+ * import { route, type Route } from "@std/http/unstable-route";
  * import { serveDir } from "@std/http/file-server";
  *
  * const routes: Route[] = [
@@ -96,10 +96,9 @@ export * from "./cookie.ts";
 export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
-export * from "./signed_cookie.ts";
 export * from "./server_sent_event_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";
-export * from "./route.ts";
-export * from "./header.ts";
-export * from "./method.ts";
+// We keep this re-export as an exception for now as it's used in
+// `deno init --serve` output
+export * from "./unstable_route.ts";

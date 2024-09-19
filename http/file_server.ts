@@ -51,9 +51,9 @@ import { ByteSliceStream } from "@std/streams/byte-slice-stream";
 import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
-import { getNetworkAddress } from "@std/net/get-network-address";
-import { HEADER } from "./header.ts";
-import { METHOD } from "./method.ts";
+import { getNetworkAddress } from "@std/net/unstable-get-network-address";
+import { HEADER } from "./unstable_header.ts";
+import { METHOD } from "./unstable_method.ts";
 
 interface EntryInfo {
   mode: string;
@@ -402,24 +402,13 @@ async function serveDirIndex(
   });
 }
 
-function serveFallback(maybeError: unknown): Response {
-  if (maybeError instanceof URIError) {
-    return createStandardResponse(STATUS_CODE.BadRequest);
-  }
-
-  if (maybeError instanceof Deno.errors.NotFound) {
-    return createStandardResponse(STATUS_CODE.NotFound);
-  }
-
-  return createStandardResponse(STATUS_CODE.InternalServerError);
-}
-
 function serverLog(req: Request, status: number) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const url = new URL(req.url);
   const s = `${dateFmt} [${req.method}] ${url.pathname}${url.search} ${status}`;
   // using console.debug instead of console.log so chrome inspect users can hide request logs
+  // deno-lint-ignore no-console
   console.debug(s);
 }
 
@@ -650,7 +639,9 @@ export async function serveDir(
     response = await createServeDirResponse(req, opts);
   } catch (error) {
     if (!opts.quiet) logError(error as Error);
-    response = serveFallback(error);
+    response = error instanceof Deno.errors.NotFound
+      ? createStandardResponse(STATUS_CODE.NotFound)
+      : createStandardResponse(STATUS_CODE.InternalServerError);
   }
 
   // Do not update the header if the response is a 301 redirect.
@@ -770,6 +761,7 @@ async function createServeDirResponse(
 }
 
 function logError(error: Error) {
+  // deno-lint-ignore no-console
   console.error(`%c${error.message}`, "color: red");
 }
 
@@ -812,12 +804,14 @@ function main() {
   }
 
   if (serverArgs.version) {
+    // deno-lint-ignore no-console
     console.log(`Deno File Server ${denoConfig.version}`);
     Deno.exit();
   }
 
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
+      // deno-lint-ignore no-console
       console.log("--key and --cert are required for TLS");
       printUsage();
       Deno.exit(1);
@@ -849,10 +843,17 @@ function main() {
       networkAddress = getNetworkAddress();
     }
     const protocol = useTls ? "https" : "http";
-    let message = `Listening on:\n- Local: ${protocol}://${hostname}:${port}`;
+    const host = (Deno.build.os === "windows" && hostname === "0.0.0.0")
+      ? "localhost"
+      : hostname;
+
+    const formattedHost = hostname.includes(":") ? `[${host}]` : host;
+    let message =
+      `Listening on:\n- Local: ${protocol}://${formattedHost}:${port}`;
     if (networkAddress && !DENO_DEPLOYMENT_ID) {
       message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
+    // deno-lint-ignore no-console
     console.log(message);
   }
 
@@ -878,6 +879,7 @@ function main() {
 }
 
 function printUsage() {
+  // deno-lint-ignore no-console
   console.log(`Deno File Server ${denoConfig.version}
   Serves a local directory in HTTP.
 

@@ -40,6 +40,7 @@ jobs:
             async(/unstable)?
             bytes(/unstable)?
             cache(/unstable)?
+            cbor(/unstable)?
             cli(/unstable)?
             collections(/unstable)?
             crypto(/unstable)?
@@ -73,7 +74,6 @@ jobs:
             text(/unstable)?
             toml(/unstable)?
             ulid(/unstable)?
-            url(/unstable)?
             uuid(/unstable)?
             webgpu(/unstable)?
             yaml(/unstable)?

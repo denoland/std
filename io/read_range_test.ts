@@ -3,7 +3,13 @@
 import { copy } from "@std/bytes/copy";
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { readRange, readRangeSync } from "./read_range.ts";
-import type { Closer, Reader, ReaderSync } from "./types.ts";
+import type {
+  Closer,
+  Reader,
+  ReaderSync,
+  Seeker,
+  SeekerSync,
+} from "./types.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
@@ -18,8 +24,7 @@ export function init() {
   }
 }
 
-class MockFile
-  implements Deno.Seeker, Deno.SeekerSync, Reader, ReaderSync, Closer {
+class MockFile implements Seeker, SeekerSync, Reader, ReaderSync, Closer {
   #buf: Uint8Array;
   #closed = false;
   #offset = 0;

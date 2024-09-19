@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { walk } from "../fs/walk.ts";
@@ -39,6 +40,7 @@ for await (
       includeDirs: false,
       maxDepth: 1,
       skip: [
+        /unstable/,
         /dotenv(\/|\\)load\.ts$/,
         /front_matter(\/|\\)yaml\.ts$/,
         /front_matter(\/|\\)json\.ts$/,

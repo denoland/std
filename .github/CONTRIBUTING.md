@@ -38,6 +38,32 @@ When new features are accepted, they are initially accepted as 'unstable'
 features in the Standard Library. These features are later stabilized after
 receiving sufficient feedback from the community and the core team.
 
+### New features in stable packages (version >= 1.0.0)
+
+If you suggest new APIs in stable packages, which have the version above 1.0.0,
+you need to implment that API in the file paths of the pattern
+`./unstable_<api_name>`, and the API shouldn't exported from the root module
+(`mod.ts`). This is to make it clear which API is stable and which is not.
+
+Example:
+
+```
+encoding
+├── base32.ts                      <--- stable API
+├── base64.ts                      <--- stable API
+├── base64url.ts                   <--- stable API
+├── hex.ts                         <--- stable API
+├── mod.ts                         <--- stable API
+├── unstable_base32_stream.ts      <--- unstable API
+├── unstable_base32hex.ts          <--- unstable API
+└── unstable_base32hex_stream.ts   <--- unstable API
+```
+
+### New features in unstable packages (version < 1.0.0)
+
+There's no special rules to new features in unstable packages. Write new APIs
+and send a pull request.
+
 ## Deprecations
 
 1. See the [deprecation policy](/README.md#deprecation-policy) for how
