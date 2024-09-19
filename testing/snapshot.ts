@@ -19,11 +19,11 @@
  * });
  * ```
  *
- * ```js
+ * ```ts
  * // __snapshots__/example_test.ts.snap
- * export const snapshot = {};
+ * export const snapshot: Record<string, string> = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `
+ * snapshot["isSnapshotMatch 1"] = `
  * {
  *   example: 123,
  *   hello: "world!",
@@ -118,11 +118,11 @@
  * });
  * ```
  *
- * ```js
+ * ```ts
  * // .snaps/example_test.ts.snap
- * export const snapshot = {};
+ * export const snapshot: Record<string, string> = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `This green text has had its colors stripped`;
+ * snapshot["isSnapshotMatch 1"] = "This green text has had its colors stripped";
  * ```
  *
  * ## Version Control:

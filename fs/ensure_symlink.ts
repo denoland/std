@@ -41,7 +41,7 @@ function getSymlinkOption(
  * @returns A void promise that resolves once the link exists.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { ensureSymlink } from "@std/fs/ensure-symlink";
  *
  * await ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
@@ -100,7 +100,7 @@ export async function ensureSymlink(
  * @returns A void value that returns once the link exists.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { ensureSymlinkSync } from "@std/fs/ensure-symlink";
  *
  * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");

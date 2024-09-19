@@ -8,7 +8,7 @@ import { exponentialBackoffWithJitter } from "./_util.ts";
  * has been reached.
  *
  * @example Usage
- * ```ts no-assert no-eval
+ * ```ts no-assert ignore
  * import { RetryError } from "@std/async/retry";
  *
  * throw new RetryError({ foo: "bar" }, 3);

@@ -16,7 +16,7 @@ import { AssertionError } from "./assertion_error.ts";
  * same type.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals("world", "world"); // Doesn't throw

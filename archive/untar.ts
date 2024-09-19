@@ -356,7 +356,7 @@ export class TarEntry implements Reader {
  * the files.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { Untar } from "@std/archive/untar";
  * import { ensureFile } from "@std/fs/ensure-file";
  * import { ensureDir } from "@std/fs/ensure-dir";
@@ -534,7 +534,7 @@ export class Untar {
    * @returns An async iterator.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Untar } from "@std/archive/untar";
    * import { ensureFile } from "@std/fs/ensure-file";
    * import { ensureDir } from "@std/fs/ensure-dir";
