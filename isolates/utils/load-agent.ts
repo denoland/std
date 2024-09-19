@@ -33,7 +33,12 @@ export const loadString = async (path: string, string: string, api: IA) => {
     }
     return true
   }, 'instructions are not allowed for this model')
-  return o1Checker.parse({ ...defaults, name, instructions, source })
+
+  try {
+    return o1Checker.parse({ ...defaults, name, instructions, source })
+  } catch (error) {
+    throw new Error('Error parsing agent: ' + path + '\n' + error.message)
+  }
 }
 
 export const load = async (

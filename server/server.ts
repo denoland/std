@@ -141,12 +141,10 @@ export default class Server {
       const { su } = engine
       const target = { ...su.pid, branches: ['main'] }
       const promise = su.pull({ repo: 'dreamcatcher-tech/HAL', target })
+        .then(() => console.log('done pull'))
       console.log('starting pull')
 
-      promise.then(() => {
-        console.log('done pull')
-      })
-      return c.json({ status: 'ok' })
+      return execute(c, promise, 'hooks/github')
     })
 
     if (Deno.env.get('GITHUB_CLIENT_ID')) {

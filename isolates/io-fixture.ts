@@ -15,7 +15,7 @@ export const parameters = {
     delayMs: z.number().int().min(0),
   }).describe('write a file one character at a time'),
   error: z.object({ message: z.string() }).describe('throw an error'),
-  branch: z.object({}),
+  branch: z.object({ data: z.string().optional() }),
   compound: z.object({ target: pidSchema }).describe('call another function'),
   parallel: z.object({ count: z.number().int().min(1) }).describe(
     'call local in parallel',
@@ -34,7 +34,7 @@ export const parameters = {
     content: z.string(),
     count: z.number().int().min(1),
   }).describe('loop accumulating file writes'),
-  pong: z.object({}).describe('ping the AI'),
+  pong: z.object({ data: z.string().optional() }),
   local: z.object({}).describe('ping locally'),
   ping: z.object({ message: z.string().optional() }).describe(
     'ping with a message',
@@ -82,10 +82,10 @@ export const functions: Functions<Api> = {
     log('error', message)
     throw new Error(message)
   },
-  branch: async (_, api) => {
+  branch: async ({ data }, api) => {
     log('branch')
     const { pong } = await api.actions<Api>('io-fixture', { branch: true })
-    const result = await pong({})
+    const result = await pong({ data })
     return result
   },
   compound: async ({ target }, api) => {
@@ -159,9 +159,9 @@ export const functions: Functions<Api> = {
       log('post commit', api.commit)
     } while (loop--)
   },
-  pong: () => {
+  pong: ({ data = 'remote pong' }) => {
     log('pong')
-    return 'remote pong'
+    return data
   },
   local: () => {
     log('local')

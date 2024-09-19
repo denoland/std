@@ -21,7 +21,15 @@ Deno.test('format checking', async (t) => {
     const agent = await load(path, api)
     expect(agent.config).toBeDefined()
   })
-  // TODO test some erroneous config written
+  await t.step('erroneous config', async () => {
+    api.write(path, '---\nconfig: 123\n---')
+    await expect(load(path, api))
+      .rejects.toThrow('Error parsing agent: ' + path)
+  })
+  await t.step('missing agent', async () => {
+    await expect(load('agents/missing.md', api))
+      .rejects.toThrow('Could not find file or directory')
+  })
 
   stop()
 })

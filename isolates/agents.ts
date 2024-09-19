@@ -9,7 +9,7 @@ import {
 import { Debug } from '@utils'
 import { z } from 'zod'
 import * as files from './files.ts'
-import { loadString } from '@/isolates/utils/load-agent.ts'
+import { load, loadString } from '@/isolates/utils/load-agent.ts'
 const log = Debug('AI:agents')
 
 export const parameters = {
@@ -94,8 +94,9 @@ export const functions: Functions<Api> = {
       reason: 'no reason available',
     }))
   },
-  switch: ({ path }, api) => {
+  switch: async ({ path }, api) => {
     log('switch', path, print(api.pid))
+    await load(path, api)
     return null
   },
   write: async ({ path, content = '' }, api) => {

@@ -168,6 +168,23 @@ Deno.test('test o1 agents', async (t) => {
   await engine.stop()
 })
 
+Deno.test('switchboard errors', async (t) => {
+  const { backchat, engine } = await cradleMaker()
+  const actorId = 'switchboard_errors'
+
+  const longthread = await backchat.actions<longthread.Api>('longthread')
+  await backchat.write(
+    'agents/switchboard.md',
+    'call the "switchboard" function with the argument "agents/missing.md"',
+  )
+  await t.step('missing agent', async () => {
+    await longthread.start({})
+    await longthread.switchboard({ content: 'hello', actorId })
+  })
+
+  await engine.stop()
+})
+
 const resetInstructions = (backchat: Backchat, instructions: string) => {
   const split = agentMd.trim().split('\n')
   split.pop()
