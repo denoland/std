@@ -46,6 +46,7 @@
     "./take-last-while": "./take_last_while.ts",
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
+    "./unstable-sort-by": "./unstable_sort_by.ts",
     "./unstable-take-while": "./unstable_take_while.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
