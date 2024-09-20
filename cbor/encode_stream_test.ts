@@ -207,29 +207,23 @@ Deno.test("CborMapEncoderStream.from()", async () => {
 });
 
 Deno.test("CborSequenceEncoderStream() accepting the other streams", async () => {
-  const input = [
-    CborByteEncoderStream.from(
-      new Array(random(10, 20)).fill(0).map((_) =>
-        new Uint8Array(random(0, 10))
-      ),
-    ),
-    CborTextEncoderStream.from(
-      new Array(random(10, 20)).fill(0).map((_) => "a".repeat(random(0, 10))),
-    ),
-    CborArrayEncoderStream.from(
-      new Array(random(10, 20)).fill(0).map((_) => random(0, 10)),
-    ),
-    CborMapEncoderStream.from(
-      new Array(random(10, 20)).fill(0).map((
-        _,
-        i,
-      ) => [String.fromCharCode(97 + i), true]),
-    ),
-  ] as const;
+  // Inputs should be identical. We need two of them as the contents will be consumed when calculating expectedOutput and actualOutput.
+  const input1 = [
+    CborByteEncoderStream.from([new Uint8Array(10), new Uint8Array(20)]),
+    CborTextEncoderStream.from(["a".repeat(10), "b".repeat(20)]),
+    CborArrayEncoderStream.from([10, 20]),
+    CborMapEncoderStream.from([["a", 0], ["b", 1], ["c", 2], ["d", 3]]),
+  ];
+  const input2 = [
+    CborByteEncoderStream.from([new Uint8Array(10), new Uint8Array(20)]),
+    CborTextEncoderStream.from(["a".repeat(10), "b".repeat(20)]),
+    CborArrayEncoderStream.from([10, 20]),
+    CborMapEncoderStream.from([["a", 0], ["b", 1], ["c", 2], ["d", 3]]),
+  ];
 
   const expectedOutput = concat(
     await Promise.all(
-      input.map(async (stream) =>
+      input1.map(async (stream) =>
         concat(await Array.fromAsync(stream.readable))
       ),
     ),
@@ -237,7 +231,7 @@ Deno.test("CborSequenceEncoderStream() accepting the other streams", async () =>
 
   const actualOutput = concat(
     await Array.fromAsync(
-      CborSequenceEncoderStream.from(input).readable,
+      CborSequenceEncoderStream.from(input2).readable,
     ),
   );
 

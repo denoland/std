@@ -474,7 +474,7 @@ export class CborSequenceEncoderStream
     }
 
     const head = encodeCbor(tagNumber);
-    head[0]! = 0b110_00000;
+    head[0]! += 0b110_00000;
     yield head;
     for await (const y of this.#encode(x.tagContent)) {
       yield y;
