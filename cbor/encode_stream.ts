@@ -27,7 +27,7 @@ export type CborMapInputStream = [string, CborInputStream];
  * "indefinite byte string".
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -66,7 +66,7 @@ export class CborByteEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -85,7 +85,7 @@ export class CborByteEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -99,7 +99,7 @@ export class CborByteEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -115,7 +115,7 @@ export class CborByteEncoderStream
  * "indefinite text string".
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * ```
  */
 export class CborTextEncoderStream
@@ -150,7 +150,7 @@ export class CborTextEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -169,7 +169,7 @@ export class CborTextEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -183,7 +183,7 @@ export class CborTextEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -199,7 +199,7 @@ export class CborTextEncoderStream
  * "indefinite array".
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -231,7 +231,7 @@ export class CborArrayEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -250,7 +250,7 @@ export class CborArrayEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -264,7 +264,7 @@ export class CborArrayEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -280,7 +280,7 @@ export class CborArrayEncoderStream
  * "indefinite map".
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -313,7 +313,7 @@ export class CborMapEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -334,7 +334,7 @@ export class CborMapEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -348,7 +348,7 @@ export class CborMapEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -364,7 +364,7 @@ export class CborMapEncoderStream
  * a sequence of CBOR encoded values.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -485,7 +485,7 @@ export class CborSequenceEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -504,7 +504,7 @@ export class CborSequenceEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -518,7 +518,7 @@ export class CborSequenceEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *

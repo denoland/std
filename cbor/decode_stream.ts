@@ -25,7 +25,7 @@ export type CborMapOutputStream = [string, CborOutputStream];
  * is outputted from {@link CborSequenceDecoderStream}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -55,7 +55,7 @@ export class CborByteDecodedStream extends ReadableStream<Uint8Array> {
  * is outputted from {@link CborSequenceDecoderStream}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -86,7 +86,7 @@ export class CborTextDecodedStream extends ReadableStream<string> {
  * {@link CborSequenceDecoderStream}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -117,7 +117,7 @@ export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
  * {@link CborSequenceDecoderStream}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -147,7 +147,7 @@ export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
  * ReadableStream<Uint8Array> into a sequence of {@link CborOutputStream}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  *
  * ```
  */
@@ -457,7 +457,7 @@ export class CborSequenceDecoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
@@ -471,7 +471,7 @@ export class CborSequenceDecoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    *
    * ```
    *
