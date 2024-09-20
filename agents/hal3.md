@@ -2,7 +2,6 @@
 config:
   temperature: 0
 commands:
-  - backchat:thread
   - files:ls
   - files:write
   - files:read
