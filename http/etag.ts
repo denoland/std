@@ -135,9 +135,9 @@ export async function eTag(
  * const etag = await eTag(fileInfo);
  * assert(etag);
  *
- * const body = (await Deno.open("README.md")).readable;
+ * using file = await Deno.open("README.md");
  *
- * const res = new Response(body, { headers: { etag } });
+ * const res = new Response(file.readable, { headers: { etag } });
  * ```
  *
  * @param entity The entity to get the ETag for.
@@ -172,7 +172,7 @@ const COMMA_REGEXP = /\s*,\s*/;
  * article for more information on how to use this function.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import {
  *   eTag,
  *   ifMatch,
@@ -220,7 +220,7 @@ export function ifMatch(
  * article for more information on how to use this function.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import {
  *   eTag,
  *   ifNoneMatch,

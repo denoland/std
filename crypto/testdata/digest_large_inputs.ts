@@ -20,6 +20,7 @@ const largeDigest = encodeHex(
 );
 const heapBytesAfterLarge = memory.buffer.byteLength;
 
+// deno-lint-ignore no-console
 console.log(JSON.stringify({
   heapBytesInitial,
   smallDigest,

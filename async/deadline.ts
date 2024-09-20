@@ -29,7 +29,7 @@ export interface DeadlineOptions {
  * @returns A promise that will reject if the provided duration runs out before resolving.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { deadline } from "@std/async/deadline";
  * import { delay } from "@std/async/delay";
  *

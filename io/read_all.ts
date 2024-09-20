@@ -10,7 +10,7 @@ import type { Reader, ReaderSync } from "./types.ts";
  * {@linkcode Uint8Array}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { readAll } from "@std/io/read-all";
  *
  * // Example from stdin
@@ -45,7 +45,7 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
  * the content as {@linkcode Uint8Array}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { readAllSync } from "@std/io/read-all";
  *
  * // Example from stdin

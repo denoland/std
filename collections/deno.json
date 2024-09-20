@@ -1,6 +1,6 @@
 {
   "name": "@std/collections",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "exports": {
     ".": "./mod.ts",
     "./aggregate-groups": "./aggregate_groups.ts",
@@ -46,6 +46,7 @@
     "./take-last-while": "./take_last_while.ts",
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
+    "./unstable-take-while": "./unstable_take_while.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts"

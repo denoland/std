@@ -15,7 +15,7 @@ import type { EqualOptions } from "./_types.ts";
  * same type.
  *
  * @example
- * ```ts
+ * ```ts ignore
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals("world", "world"); // Doesn't throw

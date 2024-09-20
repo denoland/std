@@ -62,7 +62,7 @@ export interface StringifyStreamOptions {
  *
  * @example Stringify JSON lines from a server
  *
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * import { JsonStringifyStream } from "@std/json/stringify-stream";
  *
  * // A server that streams one line of JSON every second

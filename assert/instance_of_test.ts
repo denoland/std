@@ -114,3 +114,13 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "assertInstanceOf() accepts abstract class",
+  fn() {
+    abstract class AbstractClass {}
+    class ConcreteClass extends AbstractClass {}
+
+    assertInstanceOf(new ConcreteClass(), AbstractClass);
+  },
+});

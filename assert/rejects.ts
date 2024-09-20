@@ -9,7 +9,7 @@ import { assertIsError } from "./is_error.ts";
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertRejects } from "@std/assert";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
@@ -32,7 +32,7 @@ export function assertRejects(
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertRejects } from "@std/assert";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw
@@ -49,7 +49,7 @@ export function assertRejects(
 export function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
   // deno-lint-ignore no-explicit-any
-  ErrorClass: new (...args: any[]) => E,
+  ErrorClass: abstract new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
@@ -57,14 +57,14 @@ export async function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
   errorClassOrMsg?:
     // deno-lint-ignore no-explicit-any
-    | (new (...args: any[]) => E)
+    | (abstract new (...args: any[]) => E)
     | string,
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<E | Error | unknown> {
   // deno-lint-ignore no-explicit-any
-  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
-  let msgIncludes: string | undefined = undefined;
+  let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
+  let msgIncludes: string | undefined;
   let err;
 
   if (typeof errorClassOrMsg !== "string") {
@@ -73,8 +73,7 @@ export async function assertRejects<E extends Error = Error>(
       errorClassOrMsg.prototype instanceof Error ||
       errorClassOrMsg.prototype === Error.prototype
     ) {
-      // deno-lint-ignore no-explicit-any
-      ErrorClass = errorClassOrMsg as new (...args: any[]) => E;
+      ErrorClass = errorClassOrMsg;
       msgIncludes = msgIncludesOrMsg;
     }
   } else {

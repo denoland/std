@@ -1,6 +1,6 @@
 {
   "name": "@std/uuid",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "exports": {
     ".": "./mod.ts",
     "./common": "./common.ts",
@@ -9,6 +9,6 @@
     "./v3": "./v3.ts",
     "./v4": "./v4.ts",
     "./v5": "./v5.ts",
-    "./v7": "./v7.ts"
+    "./unstable-v7": "./unstable_v7.ts"
   }
 }

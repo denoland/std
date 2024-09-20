@@ -128,6 +128,19 @@ Deno.test("assertThrows() matches subclass of expected error", () => {
   );
 });
 
+Deno.test("assertThrows() accepts abstract class", () => {
+  abstract class AbstractError extends Error {}
+  class ConcreteError extends AbstractError {}
+
+  assertThrows(
+    () => {
+      throw new ConcreteError("failed");
+    },
+    AbstractError,
+    "fail",
+  );
+});
+
 Deno.test("assertThrows() throws when input function does not throw", () => {
   assertThrows(
     () => {

@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { FixedChunkStream } from "@std/streams";
+import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
 
 /**
  * The original tar	archive	header format.
@@ -156,7 +156,7 @@ export interface TarStreamEntry {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { UntarStream } from "@std/tar/untar-stream";
  * import { dirname, normalize } from "@std/path";
  *
@@ -340,7 +340,7 @@ export class UntarStream
    * @return ReadableStream<TarStreamChunk>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
@@ -366,7 +366,7 @@ export class UntarStream
    * @return WritableStream<Uint8Array>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *

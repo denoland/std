@@ -23,7 +23,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * aborted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { debounce } from "@std/async/debounce";
  *
  * const log = debounce(

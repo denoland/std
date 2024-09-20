@@ -13,7 +13,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * import { copyN } from "@std/io/copy-n";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const source = await Deno.open("README.md");
+ * using source = await Deno.open("README.md");
  *
  * const res = await copyN(source, Deno.stdout, 10);
  * assertEquals(res, 10);
@@ -24,7 +24,9 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * @param size Read size
  * @returns Number of bytes copied
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Pipe the readable stream through a new
+ * {@linkcode https://jsr.io/@std/streams/doc/~/ByteSliceStream | ByteSliceStream}
+ * instead. This will be removed in the future.
  */
 export async function copyN(
   r: Reader,

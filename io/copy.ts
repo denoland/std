@@ -11,7 +11,7 @@ import type { Reader, Writer } from "./types.ts";
  * the first error encountered while copying.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { copy } from "@std/io/copy";
  *
  * const source = await Deno.open("my_file.txt");

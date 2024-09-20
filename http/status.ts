@@ -26,6 +26,8 @@
  * if (isErrorStatus(res.status)) {
  *   // error handling here...
  * }
+ *
+ * await res.body?.cancel();
  * ```
  *
  * @module
