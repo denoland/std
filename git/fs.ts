@@ -584,6 +584,7 @@ const treeToLayers = (tree: Tree, layers: Tree[][] = [], level: number = 0) => {
   return layers
 }
 const refine = (path: string) => {
+  path = path.trim()
   while (path.startsWith('/')) {
     path = path.slice(1)
   }
