@@ -169,6 +169,25 @@ export function encodeCbor(value: CborType): Uint8Array {
   return encodeObject(value);
 }
 
+/**
+ * A function to encode JavaScript values into the CBOR sequence format based
+ * off the [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ * spec.
+ *
+ * @example Usage
+ * ```ts ignore
+ *
+ * ```
+ *
+ * @param values Values to encode to CBOR format.
+ * @returns Encoded CBOR data.
+ */
+export function encodeCborSequence(values: CborType[]): Uint8Array {
+  const output: Uint8Array[] = [];
+  for (const value of values) output.push(encodeCbor(value));
+  return concat(output);
+}
+
 function encodeNumber(x: number): Uint8Array {
   if (x % 1 === 0) {
     const isNegative = x < 0;
