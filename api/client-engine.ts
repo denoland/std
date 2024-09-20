@@ -16,6 +16,7 @@ import { assert } from '@sindresorhus/is'
 import { Crypto } from './crypto.ts'
 
 export class WebClientEngine implements EngineInterface {
+  readonly #url: string
   readonly #aborts = new Set<AbortController>()
   readonly #abort = new AbortController()
   readonly #fetcher: (
@@ -28,15 +29,16 @@ export class WebClientEngine implements EngineInterface {
     if (url.endsWith('/')) {
       throw new Error('url should not end with "/": ' + url)
     }
+    this.#url = url
     this.#fetcher = fetcher
     this.#homeAddress = homeAddress
   }
   static async start(url: string, fetcher?: typeof fetch) {
     if (!fetcher) {
-      fetcher = (path, opts) => fetch(`${url}${path}`, opts)
+      fetcher = (request, opts) => fetch(request, opts)
     }
 
-    const homeAddress = await request(fetcher, 'homeAddress', {})
+    const homeAddress = await request(fetcher, 'homeAddress', {}, { url })
     freezePid(homeAddress)
     return new WebClientEngine(url, fetcher, homeAddress)
   }
@@ -82,6 +84,7 @@ export class WebClientEngine implements EngineInterface {
     if (this.#schemas.has(isolate)) {
       return this.#schemas.get(isolate)
     }
+    // TODO rely on the webcache
     const result = await this.#request('apiSchema', { isolate })
     this.#schemas.set(isolate, result)
     return result
@@ -91,11 +94,12 @@ export class WebClientEngine implements EngineInterface {
     formData.append('audio', audio)
     const abort = new AbortController()
     this.#aborts.add(abort)
-    const response = await this.#fetcher(`/api/transcribe`, {
+    const request = new Request(`${this.#url}/api/transcribe`, {
       method: 'POST',
       body: formData,
       signal: abort.signal,
     })
+    const response = await this.#fetcher(request)
 
     const outcome = await response.json()
     if (outcome.error) {
@@ -120,7 +124,7 @@ export class WebClientEngine implements EngineInterface {
       let retryCount = 0
       while (!abort.signal.aborted) {
         try {
-          const response = await this.#fetcher(`/api/watch`, {
+          const request = new Request(`${this.#url}/api/watch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -131,6 +135,7 @@ export class WebClientEngine implements EngineInterface {
             signal: abort.signal,
             keepalive: true,
           })
+          const response = await this.#fetcher(request)
           if (!response.ok) {
             throw new Error('response not ok')
           }
@@ -168,7 +173,7 @@ export class WebClientEngine implements EngineInterface {
       pid,
       commit,
     }
-    const result = await this.#request('read', params)
+    const result = await this.#request('read', params, { cache: !!commit })
     return result as string
   }
   async readTree(path: string, pid: PID, commit?: string) {
@@ -177,7 +182,7 @@ export class WebClientEngine implements EngineInterface {
       pid,
       commit,
     }
-    const result = await this.#request('readTree', params)
+    const result = await this.#request('readTree', params, { cache: !!commit })
     assert.array(result)
     return result as TreeEntry[]
   }
@@ -187,18 +192,26 @@ export class WebClientEngine implements EngineInterface {
       pid,
       commit,
     }
-    const result = await this.#request('readJSON', params)
+    // TODO read the string from server then convert locally
+    const result = await this.#request('readJSON', params, { cache: !!commit })
     return result as T
   }
   async exists(path: string, pid: PID) {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
   }
-  async #request(path: string, params: Params) {
+  async #request(path: string, params: Params, opts: { cache?: boolean } = {}) {
     const abort = new AbortController()
     this.#aborts.add(abort)
+    const { signal } = abort
+    const cache = opts.cache
     try {
-      return await request(this.#fetcher, path, params, abort.signal)
+      const result = await request(this.#fetcher, path, params, {
+        url: this.#url,
+        signal,
+        cache,
+      })
+      return result
     } finally {
       this.#aborts.delete(abort)
     }
@@ -208,20 +221,38 @@ const request = async (
   fetcher: typeof fetch,
   path: string,
   params: Params,
-  signal?: AbortSignal,
+  opts: { url: string; signal?: AbortSignal; cache?: boolean },
 ) => {
-  const response = await fetcher(`/api/${path}?pretty`, {
+  const request = new Request(`${opts.url}/api/${path}?pretty`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
-    signal,
+    signal: opts.signal,
   })
-  if (!response.ok) {
-    await response.body?.cancel()
-    const { status, statusText } = response
-    const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
-    throw new Error(msg)
+  let response: Response | undefined
+  let cache: Cache | undefined
+  if (opts.cache) {
+    cache = await globalThis.caches.open('web-client-engine')
+    response = await cache.match(toGetRequest(request, params))
   }
+  if (!response) {
+    response = await fetcher(request)
+    if (!response.ok) {
+      await response.body?.cancel()
+      const { status, statusText } = response
+      const msg = `${path} ${JSON.stringify(params)} ${status} ${statusText}`
+      throw new Error(msg)
+    }
+    if (cache) {
+      const canCachePostOutsideOfDeno = 'matchAll' in cache
+      if (canCachePostOutsideOfDeno) {
+        cache.put(toGetRequest(request, params), response.clone())
+      }
+    }
+  } else {
+    console.log('cache hit', path, params)
+  }
+
   const outcome = await response.json()
   if (outcome.error) {
     throw deserializeError(outcome.error)
@@ -229,7 +260,8 @@ const request = async (
   return outcome.result
 }
 const toEvents = (stream: ReadableStream) =>
-  stream.pipeThrough(new TextDecoderStream())
+  stream
+    .pipeThrough(new TextDecoderStream())
     .pipeThrough(new EventSourceParserStream())
 
 async function* toIterable(stream: ReadableStream, signal: AbortSignal) {
@@ -246,4 +278,9 @@ async function* toIterable(stream: ReadableStream, signal: AbortSignal) {
   } finally {
     reader.releaseLock()
   }
+}
+
+const toGetRequest = (request: Request, params: Record<string, unknown>) => {
+  const url = request.url + '/' + JSON.stringify(params)
+  return new Request(url, { method: 'GET' })
 }

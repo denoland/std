@@ -23,7 +23,7 @@ const cradleMaker = async (init?: Provisioner) => {
   const server = await Server.create(superuserPrivateKey, aesKey, init, seed)
   const fetcher = server.request as typeof fetch
 
-  const engine = await WebClientEngine.start('mock', fetcher)
+  const engine = await WebClientEngine.start('https://mock', fetcher)
   const backchat = await Backchat.upsert(engine, privateKey, backchatId)
   if (!seedSet) {
     seeds.set(init, {
