@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { CborTag, decodeCbor, encodeCbor } from "./mod.ts";
+import { CborTag, decodeCbor, decodeCborSequence, encodeCbor } from "./mod.ts";
 
 function random(start: number, end: number): number {
   return Math.floor(Math.random() * (end - start) + start);
@@ -652,5 +652,12 @@ Deno.test("decodeCbor() rejecting majorType 7", () => {
     },
     RangeError,
     "Cannot decode value (0b111_11110)",
+  );
+});
+
+Deno.test("decodeCborSequence()", () => {
+  assertEquals(
+    decodeCborSequence(Uint8Array.from([0b000_00000, 0b000_00000])),
+    [0, 0],
   );
 });
