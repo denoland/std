@@ -172,3 +172,6 @@ You are to consider the following guidance. Guidance does not overrule Rules.
   - It primarily deals with test files in ./tests/ and its subfolders. Test
     files typically end in .test.md. This agent runs tests and reports results
     in TPS report format.
+
+- `agents/gpt-4o-mini.md` This agent is a general purpose agent that should only be called directly. It has no system instructions and cannot call any tools. 
+- `agents/gpt-4o.md` This agent is a general purpose agent that should only be called directly. It has no system instructions and cannot call any tools. "

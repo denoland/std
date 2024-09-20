@@ -160,10 +160,39 @@ DUTY_MANAGER ||--|| MESSAGE : "sends"
 
 ---
 
+# FOLDER AND FILE STRUCTURE
+
+When asked to perform an action on an ENTITY, you are to write the resulting output to the appropriate ENTITY file.
+
+Here is the folder and file structure to use.
+
+info/
+├── CRM_Entities/
+│   ├── CUSTOMER/
+│   │   ├── customer_details.md
+│   │   ├── customer_history.md
+│   │   └── customer_feedback.md
+│   ├── CUSTOMER_AGENT/
+│   │   ├── agent_profiles.md
+│   │   └── agent_performance.md
+│   ├── LOCATION/
+│   │   ├── pickup_locations.md
+│   │   └── dropoff_locations.md
+│   ├── ROUTES/
+│   │   ├── route_plans.md
+│   ├── DRIVERS/
+│   │   ├── driver_profiles.md
+│   │   └── driver_status.md
+│   └── DUTY_MANAGER/
+│       ├── duty_manager_profiles.md
+
+
+---
+
 # PERMISSIONS
 
 ## 1. Only the Duty Manager can update a route.
-
+     
 Reason: Routes are crucial parts of the schedule and logistics. Only the Duty
 Manager should have the authority to make changes to ensure consistency and
 efficiency.
