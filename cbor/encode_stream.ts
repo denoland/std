@@ -461,21 +461,21 @@ export class CborSequenceEncoderStream
   }
 
   async *#encodeTag(x: CborTag<CborInputStream>): AsyncGenerator<Uint8Array> {
-    if (x.tagNumber < 24) {
-      yield new Uint8Array([0b110_00000 + Number(x.tagNumber)]);
-    } else if (x.tagNumber < 2 ** 8) {
-      yield new Uint8Array([0b110_11000, Number(x.tagNumber)]);
-    } else if (x.tagNumber < 2 ** 16) {
-      yield new Uint8Array([0b110_11001, ...numberToArray(2, x.tagNumber)]);
-    } else if (x.tagNumber < 2 ** 32) {
-      yield new Uint8Array([0b110_11010, ...numberToArray(4, x.tagNumber)]);
-    } else if (x.tagNumber < 2 ** 64) {
-      yield new Uint8Array([0b110_11011, ...numberToArray(8, x.tagNumber)]);
-    } else {
+    const tagNumber = BigInt(x.tagNumber);
+    if (tagNumber < 0n) {
+      throw new RangeError(
+        `Cannot encode Tag Item: Tag Number (${x.tagNumber}) is less than zero`,
+      );
+    }
+    if (tagNumber > 2n ** 64n) {
       throw new RangeError(
         `Cannot encode Tag Item: Tag Number (${x.tagNumber}) exceeds 2 ** 64 - 1`,
       );
     }
+
+    const head = encodeCbor(tagNumber);
+    head[0]! = 0b110_00000;
+    yield head;
     for await (const y of this.#encode(x.tagContent)) {
       yield y;
     }
