@@ -13,7 +13,7 @@ import { concat } from "@std/bytes/concat";
  * import { readLines } from "@std/io/read-lines";
  * import { assert } from "@std/assert/assert"
  *
- * let fileReader = await Deno.open("README.md");
+ * using fileReader = await Deno.open("README.md");
  *
  * for await (let line of readLines(fileReader)) {
  *   assert(typeof line === "string");

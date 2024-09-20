@@ -7,7 +7,7 @@ import { assertFalse } from "./false.ts";
  * If so, then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertNotInstanceOf } from "@std/assert";
  *
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
