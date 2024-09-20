@@ -5,7 +5,7 @@
  *
  * Files are not compressed, only collected into the archive.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { UntarStream } from "@std/tar/untar-stream";
  * import { dirname, normalize } from "@std/path";
  *

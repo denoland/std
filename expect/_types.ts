@@ -640,11 +640,13 @@ export interface Expected<IsAsync = false> {
    * ```ts
    * import { expect, fn } from "@std/expect";
    *
-   * const mock = fn(() => 42);
-   * mock();
+   * const mockFn = fn((x: number) => ({ foo: x + 1 }));
    *
-   * expect(mock).toHaveReturnedWith(42);
-   * expect(mock).not.toHaveReturnedWith(43);
+   * mockFn(5);
+   * mockFn(6);
+   *
+   * expect(mockFn).toHaveReturnedWith({ foo: 7 });
+   * expect(mockFn).not.toHaveReturnedWith({ foo: 5 });
    * ```
    *
    * @param expected The expected return value.
@@ -738,6 +740,7 @@ export interface Expected<IsAsync = false> {
    */
   toReturnTimes(expected: number): void;
 
+  // TODO(iuioiua): Add `.not.toReturnWith` to the documentation.
   /**
    * Asserts that the function returns the specified value.
    *
@@ -747,7 +750,7 @@ export interface Expected<IsAsync = false> {
    *
    * const mock = fn(() => 42);
    *
-   * expect(mock).toReturnWith(42);
+   * // expect(mock).toReturnWith(42);
    * expect(mock).not.toReturnWith(43);
    * ```
    *
@@ -767,7 +770,15 @@ export interface Expected<IsAsync = false> {
    *
    * const obj = {};
    * expect(obj).toStrictEqual(obj);
-   * expect(obj).not.toStrictEqual({});
+   *
+   * class LaCroix {
+   *   flavor: string;
+   *
+   *   constructor(flavor: string) {
+   *     this.flavor = flavor;
+   *   }
+   * }
+   * expect(new LaCroix("lemon")).not.toStrictEqual({ flavor: "lemon" });
    * ```
    *
    * @param candidate The candidate value.

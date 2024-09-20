@@ -83,7 +83,7 @@ export interface SpinnerOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { Spinner } from "@std/cli/unstable-spinner";
  *
  * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
@@ -103,7 +103,7 @@ export class Spinner {
    * This can be changed while the spinner is active.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Working..." });
@@ -154,7 +154,7 @@ export class Spinner {
    * @param value Color to set.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Loading...", color: "yellow" });
@@ -191,7 +191,7 @@ export class Spinner {
    * Starts the spinner.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });
@@ -230,7 +230,7 @@ export class Spinner {
    * Stops the spinner.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });

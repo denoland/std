@@ -9,7 +9,7 @@ import { format } from "@std/internal/format";
  * equal then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertNotStrictEquals } from "@std/assert";
  *
  * assertNotStrictEquals(1, 1); // Throws

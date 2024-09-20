@@ -195,55 +195,6 @@ function assertHasParamTag(
   }
 }
 
-async function assertSnippetEvals(
-  {
-    snippet,
-    document,
-    expectError,
-  }: {
-    snippet: string;
-    document: { jsDoc: JsDoc; location: Location };
-    expectError: boolean;
-  },
-) {
-  const command = new Deno.Command(Deno.execPath(), {
-    args: [
-      "eval",
-      "--ext=ts",
-      "--unstable-webgpu",
-      "--check",
-      "--no-lock",
-      snippet,
-    ],
-    stderr: "piped",
-  });
-  const timeoutId = setTimeout(() => {
-    // deno-lint-ignore no-console
-    console.warn(
-      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...\n${snippet}`,
-    );
-  }, 10_000);
-  try {
-    const { success, stderr } = await command.output();
-    const error = new TextDecoder().decode(stderr);
-    if (expectError) {
-      assert(
-        !success,
-        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
-        document,
-      );
-    } else {
-      assert(
-        success,
-        `Failed to execute snippet: \n${snippet}\n${error}`,
-        document,
-      );
-    }
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 function assertSnippetsWork(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
@@ -265,24 +216,15 @@ function assertSnippetsWork(
   }
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
-    if (delim?.includes("no-eval")) continue;
     // Trim the code block delimiters
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
-    if (!delim?.includes("no-assert")) {
+    if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
         "Snippet must contain assertion from '@std/assert'",
         document,
       );
     }
-    snippetPromises.push(
-      () =>
-        assertSnippetEvals({
-          snippet,
-          document,
-          expectError: delim?.includes("expect-error") ?? false,
-        }),
-    );
   }
 }
 

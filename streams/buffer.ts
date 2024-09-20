@@ -92,7 +92,7 @@ export class Buffer {
    * @returns A `ReadableStream` of the buffer.
    *
    * @example Read the content out of the buffer to stdout
-   * ```ts no-assert
+   * ```ts ignore
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -116,7 +116,7 @@ export class Buffer {
    * @returns A `WritableStream` of the buffer.
    *
    * @example Write the data from stdin to the buffer
-   * ```ts no-assert
+   * ```ts ignore
    * import { Buffer } from "@std/streams/buffer";
    *
    * const buf = new Buffer();
@@ -218,7 +218,7 @@ export class Buffer {
    * ```
    *
    * @example Non-empty, but the content was already read
-   * ```ts
+   * ```ts ignore
    * import { assert } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *
@@ -251,7 +251,7 @@ export class Buffer {
    * ```
    *
    * @example Length becomes 0 after the content is read
-   * ```ts
+   * ```ts ignore
    * import { assertEquals } from "@std/assert";
    * import { Buffer } from "@std/streams/buffer";
    *

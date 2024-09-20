@@ -8,7 +8,7 @@ import { AssertionError } from "./assertion_error.ts";
  * If not then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertLessOrEqual } from "@std/assert";
  *
  * assertLessOrEqual(1, 2); // Doesn't throw
