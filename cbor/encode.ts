@@ -284,19 +284,18 @@ function encodeObject(x: { [k: string]: CborType }): Uint8Array {
 }
 
 function encodeTag(x: CborTag<CborType>) {
-  let head: number[];
-  if (x.tagNumber < 24) head = [0b110_00000 + Number(x.tagNumber)];
-  else if (x.tagNumber < 2 ** 8) head = [0b110_11000, Number(x.tagNumber)];
-  else if (x.tagNumber < 2 ** 16) {
-    head = [0b110_11001, ...numberToArray(2, x.tagNumber)];
-  } else if (x.tagNumber < 2 ** 32) {
-    head = [0b110_11010, ...numberToArray(4, x.tagNumber)];
-  } else if (x.tagNumber < 2 ** 64) {
-    head = [0b110_11011, ...numberToArray(8, x.tagNumber)];
-  } else {
+  const tagNumber = BigInt(x.tagNumber);
+  if (tagNumber < 0n) {
+    throw new RangeError(
+      `Cannot encode Tag Item: Tag Number (${x.tagNumber}) is less than zero`,
+    );
+  }
+  if (tagNumber > 2n ** 64n) {
     throw new RangeError(
       `Cannot encode Tag Item: Tag Number (${x.tagNumber}) exceeds 2 ** 64 - 1`,
     );
   }
-  return concat([Uint8Array.from(head), encodeCbor(x.tagContent)]);
+  const head = encodeBigInt(tagNumber);
+  head[0]! += 0b110_00000;
+  return concat([head, encodeCbor(x.tagContent)]);
 }

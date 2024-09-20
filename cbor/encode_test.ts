@@ -380,7 +380,20 @@ Deno.test("encodeCbor() rejecting bigints as Int", () => {
 });
 
 Deno.test("encodeCbor() rejecting CborTag()", () => {
-  const num = 2 ** 65;
+  let num = -5;
+  assertThrows(
+    () => {
+      encodeCbor(
+        new CborTag(
+          num,
+          new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
+        ),
+      );
+    },
+    RangeError,
+    `Cannot encode Tag Item: Tag Number (${num}) is less than zero`,
+  );
+  num = 2 ** 65;
   assertThrows(
     () => {
       encodeCbor(
