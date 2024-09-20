@@ -184,7 +184,8 @@ function encodeNumber(x: number): Uint8Array {
       return concat([new Uint8Array([majorType + 26]), numberToArray(4, x)]);
     }
     if (x < 2 ** 64) {
-      return concat([new Uint8Array([majorType + 27]), numberToArray(8, x)]);
+      // Due to possible precision loss with numbers this large, it's best to do conversion under BigInt or end up with 1n off.
+      return encodeBigInt(BigInt(isNegative ? -x - 1 : x));
     }
     throw new RangeError(
       `Cannot encode number: It (${isNegative ? -x - 1 : x}) exceeds ${
@@ -199,7 +200,7 @@ function encodeBigInt(x: bigint): Uint8Array {
   const isNegative = x < 0n;
   if ((isNegative ? -x : x) < 2n ** 32n) return encodeNumber(Number(x));
 
-  const head = new Uint8Array([x < 0n ? 0b010_11011 : 0b000_11011]);
+  const head = new Uint8Array([x < 0n ? 0b001_11011 : 0b000_11011]);
   if (isNegative) x = -x - 1n;
 
   if (x < 2n ** 64n) return concat([head, numberToArray(8, x)]);

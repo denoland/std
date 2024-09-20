@@ -43,6 +43,26 @@ Deno.test("decodeCbor() decoding integers", () => {
   num = random(2 ** 32, 2 ** 64);
   assertEquals(decodeCbor(encodeCbor(num)), BigInt(num));
   assertEquals(decodeCbor(encodeCbor(BigInt(num))), BigInt(num));
+
+  num = -random(0, 24);
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+  assertEquals(decodeCbor(encodeCbor(BigInt(num))), num);
+
+  num = -random(24, 2 ** 8);
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+  assertEquals(decodeCbor(encodeCbor(BigInt(num))), num);
+
+  num = -random(2 ** 8, 2 ** 16);
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+  assertEquals(decodeCbor(encodeCbor(BigInt(num))), num);
+
+  num = -random(2 ** 16, 2 ** 32);
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+  assertEquals(decodeCbor(encodeCbor(BigInt(num))), num);
+
+  num = -random(2 ** 32, 2 ** 64);
+  assertEquals(decodeCbor(encodeCbor(num)), BigInt(num));
+  assertEquals(decodeCbor(encodeCbor(BigInt(num))), BigInt(num));
 });
 
 Deno.test("decodeCbor() decoding strings", () => {
