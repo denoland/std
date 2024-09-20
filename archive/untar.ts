@@ -47,7 +47,7 @@ export type { Reader, Seeker };
  * symbolic link values without polluting the world of archive writers.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -60,7 +60,7 @@ export interface TarMetaWithLinkName extends TarMeta {
  * Tar header with raw, unprocessed bytes as values.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -103,7 +103,7 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  * Tar entry
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -134,7 +134,7 @@ export interface TarEntry extends TarMetaWithLinkName {}
  * Contains tar header metadata and a reader to the entry's body.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -338,7 +338,7 @@ export class TarEntry implements Reader {
  * archives typically have the '.tar' extension.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * ### Supported file formats
  * Only the ustar file format is supported.  This is the most common format. The
