@@ -21,11 +21,9 @@ import { Buffer } from "./buffer.ts";
  * assertEquals(new TextDecoder().decode(data), "abcdef");
  * ```
  *
- * @deprecated Pass an encoded string, using {@linkcode TextEncoder.encode}, to
- * a new {@linkcode Buffer} instance instead. Or more preferably, use a
- * {@linkcode ReadableStream} consisting of {@linkcode Uint8Array}s.
- *
- * This will be removed in 0.226.0.
+ * @deprecated Pass an encoded string to a new
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instance
+ * instead. This will be removed in 0.226.0.
  */
 export class StringReader extends Buffer {
   /**
