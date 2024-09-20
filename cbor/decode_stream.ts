@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { arrayToNumber } from "./_common.ts";
-import { upgradeStreamFromGen } from "./_common.ts";
+import { arrayToNumber, upgradeStreamFromGen } from "./_common.ts";
 import { type CborPrimitiveType, CborTag } from "./encode.ts";
 
 /**
