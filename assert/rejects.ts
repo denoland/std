@@ -9,7 +9,7 @@ import { assertIsError } from "./is_error.ts";
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertRejects } from "@std/assert";
  *
  * await assertRejects(async () => Promise.reject(new Error())); // Doesn't throw
@@ -32,7 +32,7 @@ export function assertRejects(
  * To assert that a synchronous function throws, use {@linkcode assertThrows}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertRejects } from "@std/assert";
  *
  * await assertRejects(async () => Promise.reject(new Error()), Error); // Doesn't throw

@@ -144,11 +144,6 @@ export const DEFAULT_SCHEMA = createSchema({
  *     simple: !!js/regexp foobar
  *     modifiers: !!js/regexp /foobar/mi
  *   undefined: !!js/undefined ~
- * # Disabled, see: https://github.com/denoland/deno_std/pull/1275
- * #  function: !!js/function >
- * #    function foobar() {
- * #      return 'hello world!';
- * #    }
  * `,
  *   { schema: "extended" },
  * );
