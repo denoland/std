@@ -26,6 +26,8 @@ export type Comparable = number | string | bigint | Date;
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the iterator elements.
  * @typeParam U The type of the selected values.
  *
