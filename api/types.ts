@@ -410,6 +410,10 @@ export interface EngineInterface {
     after?: string,
     signal?: AbortSignal,
   ): AsyncIterable<Splice>
+  splice(
+    target: PID,
+    opts?: { commit?: string; path?: string; count?: number },
+  ): Promise<Splice>
   read(path: string, pid: PID, commit?: string): Promise<string>
   readTree(path: string, pid: PID, commit?: string): Promise<TreeEntry[]>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>

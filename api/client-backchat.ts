@@ -232,7 +232,21 @@ export class Backchat {
     // where he requested file changed
     // TODO make this follow renames
     // TODO ensure that the order of the tree helps with knowing what changed
+    // this might be a read splice, where the filepath is provided
     console.log('readMeta', path, target, commit)
+  }
+  /** For a given target PID, read in the latest splice, or optionally the
+   * splice at the given commit.  If path is given, then the splice will be the
+   * splice where that file changed BEFORE the target splice, which can be
+   * either provided, or the latest splice.  To walk changes in a file, keep
+   * calling this method with the commit set to the parent of each returned
+   * splice.  If no such splice exists, the origin splice will be returned,
+   * which has no parents */
+  splice(
+    target: PID,
+    opts: { commit?: string; path?: string; count?: number } = {},
+  ) {
+    return this.#engine.splice(target, opts)
   }
   async state<T extends ZodObject<Record<string, ZodTypeAny>>>(
     pid: PID,

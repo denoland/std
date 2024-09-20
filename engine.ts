@@ -179,8 +179,8 @@ export class Engine implements EngineInterface {
     log('db unlocked - home address:', print(this.#homeAddress))
   }
   async stop() {
-    await this.#compartment.unmount(this.#api)
     this.#abort.abort()
+    await this.#compartment.unmount(this.#api)
   }
   async #initHome() {
     // queue processing cannot begin without a home repo
@@ -254,6 +254,24 @@ export class Engine implements EngineInterface {
     signal?.addEventListener('abort', () => abort.abort())
     this.#abort.signal.addEventListener('abort', () => abort.abort())
     return db.watchSplices(pid, path, after, abort.signal)
+  }
+  async splice(
+    target: PID,
+    opts: { commit?: string; path?: string; count?: number } = {},
+  ) {
+    let { commit, path, count = 1 } = opts
+    log('splice', print(target), commit, path, count)
+    const db = this.#api.context.db
+    assert(db, 'db not found')
+
+    if (!commit) {
+      commit = await db.readHead(target)
+    }
+    if (!commit) {
+      throw new Error('commit not found: ' + print(target))
+    }
+    const splice = await db.getSplice(target, commit, path)
+    return splice
   }
   async read(path: string, pid: PID, commit?: string) {
     freezePid(pid)

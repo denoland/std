@@ -21,9 +21,8 @@ export const load = async (commands: string[] = [], api: IA) => {
   const actions: Record<string, Action> = {}
 
   for (const cmd of commands) {
-    const isAgent = !cmd.includes(':')
-    if (isAgent) {
-      throw new Error('not implemented')
+    if (!cmd.includes(':')) {
+      throw new Error('Invalid command: ' + cmd)
     }
     log('loading command:', cmd)
     const [isolate, functionName] = cmd.split(':')

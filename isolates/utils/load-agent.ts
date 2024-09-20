@@ -3,6 +3,7 @@ import { assert, posix } from '@utils'
 import { AGENT_RUNNERS, agentSchema, IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
+import { loadTools } from '@/isolates/utils/ai-load-tools.ts'
 
 export const loadString = async (path: string, string: string, api: IA) => {
   const name = posix.basename(path, posix.extname(path))
@@ -21,6 +22,7 @@ export const loadString = async (path: string, string: string, api: IA) => {
   }
 
   merge(defaults, data)
+  const toolsPromise = loadTools(defaults.commands, api)
 
   const { pid, commit } = api
   const source: Triad = { path, pid, commit }
@@ -35,7 +37,9 @@ export const loadString = async (path: string, string: string, api: IA) => {
   }, 'instructions are not allowed for this model')
 
   try {
-    return o1Checker.parse({ ...defaults, name, instructions, source })
+    const agent = o1Checker.parse({ ...defaults, name, instructions, source })
+    await toolsPromise
+    return agent
   } catch (error) {
     throw new Error('Error parsing agent: ' + path + '\n' + error.message)
   }

@@ -255,7 +255,7 @@ export default class DB {
     const buffer = pushable<Promise<Splice>>({ objectMode: true })
     if (after) {
       assert(sha1.test(after), 'Invalid after: ' + after)
-      buffer.push(this.#getSplice(pid, after, path))
+      buffer.push(this.getSplice(pid, after, path))
     }
     abort.signal.addEventListener('abort', () => {
       this.#aborts.delete(abort)
@@ -273,7 +273,7 @@ export default class DB {
         if (commit === after) {
           continue
         }
-        buffer.push(this.#getSplice(pid, commit, path))
+        buffer.push(this.getSplice(pid, commit, path))
       }
     }
     pipe().catch(buffer.throw)
@@ -297,7 +297,7 @@ export default class DB {
           // catch up should be the responsibility of the client, not the server
           console.error('splice race', print(splice.pid), splices.length)
           const primeParent = splices[0].commit.parent[0]
-          const next = await this.#getSplice(pid, primeParent, path)
+          const next = await this.getSplice(pid, primeParent, path)
           splices.unshift(next)
         }
         last = splice
@@ -308,7 +308,7 @@ export default class DB {
     return sink as AsyncIterable<Splice>
   }
   // TODO add aborts here, or have a master promise that is awaited
-  async #getSplice(pid: PID, oid: string, path?: string) {
+  async getSplice(pid: PID, oid: string, path?: string) {
     const fs = FS.open(pid, oid, this)
     const commit = await fs.getCommit()
     const timestamp = commit.committer.timestamp * 1000

@@ -196,6 +196,16 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('readJSON', params, { cache: !!commit })
     return result as T
   }
+  async splice(
+    target: PID,
+    opts: { commit?: string; path?: string; count?: number } = {},
+  ) {
+    const params = { target, opts }
+    const cache = !!opts.commit
+    const result = await this.#request('splice', params, { cache })
+    // TODO run zod schema check
+    return result as Splice
+  }
   async exists(path: string, pid: PID) {
     const result = await this.#request('exists', { path, pid })
     return result as boolean

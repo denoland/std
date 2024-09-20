@@ -92,4 +92,20 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await engine.stop()
   })
+  Deno.test(prefix + 'splice', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const { pid } = backchat
+
+    await t.step('latest - 1', async () => {
+      const splice = await backchat.splice(pid)
+      const same = await backchat.splice(pid, { commit: splice.oid })
+      expect(splice).toEqual(same)
+
+      const commit = splice.commit.parent[0]
+      const parent = await backchat.splice(pid, { commit })
+      expect(parent.oid).toEqual(commit)
+    })
+
+    await engine.stop()
+  })
 }

@@ -119,6 +119,11 @@ export default class Server {
       const { path, pid, commit } = params
       return execute(c, engine.readJSON(path, pid, commit), 'readJSON')
     })
+    app.post(`/splice`, async (c) => {
+      // TODO add a zod schema for format
+      const { target, opts } = await c.req.json()
+      return execute(c, engine.splice(target, opts), 'splice')
+    })
     app.post(`/exists`, async (c) => {
       const params = await c.req.json()
       const { path, pid } = params
