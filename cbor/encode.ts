@@ -49,7 +49,9 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  *     encodeBase64Url(rawMessage),
  *   ),
  * );
+ *
  * const decodedMessage = decodeCbor(encodedMessage);
+ *
  * assert(decodedMessage instanceof CborTag);
  * assert(typeof decodedMessage.tagContent === "string");
  * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -75,7 +77,9 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
    *     encodeBase64Url(rawMessage),
    *   ),
    * );
+   *
    * const decodedMessage = decodeCbor(encodedMessage);
+   *
    * assert(decodedMessage instanceof CborTag);
    * assert(typeof decodedMessage.tagContent === "string");
    * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -100,7 +104,9 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
    *     encodeBase64Url(rawMessage),
    *   ),
    * );
+   *
    * const decodedMessage = decodeCbor(encodedMessage);
+   *
    * assert(decodedMessage instanceof CborTag);
    * assert(typeof decodedMessage.tagContent === "string");
    * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
@@ -175,8 +181,24 @@ export function encodeCbor(value: CborType): Uint8Array {
  * spec.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
  *
+ * const rawMessage = [
+ *   "Hello World",
+ *   35,
+ *   0.5,
+ *   false,
+ *   -1,
+ *   null,
+ *   Uint8Array.from([0, 1, 2, 3]),
+ * ];
+ *
+ * const encodedMessage = encodeCborSequence(rawMessage);
+ * const decodedMessage = decodeCborSequence(encodedMessage);
+ *
+ * assertEquals(decodedMessage, rawMessage);
  * ```
  *
  * @param values Values to encode to CBOR format.

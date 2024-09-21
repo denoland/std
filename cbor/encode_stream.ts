@@ -27,8 +27,27 @@ export type CborMapInputStream = [string, CborInputStream];
  * "indefinite byte string".
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import { concat } from "@std/bytes";
+ * import {
+ *   CborByteDecodedStream,
+ *   CborByteEncoderStream,
+ *   CborSequenceDecoderStream,
+ * } from "./mod.ts";
  *
+ * const rawMessage = new Uint8Array(100);
+ *
+ * for await (
+ *   const value of ReadableStream.from([rawMessage])
+ *     .pipeThrough(new CborByteEncoderStream())
+ *     .pipeThrough(new CborSequenceDecoderStream())
+ * ) {
+ *   assert(value instanceof Uint8Array || value instanceof CborByteDecodedStream);
+ *   if (value instanceof CborByteDecodedStream) {
+ *     assertEquals(concat(await Array.fromAsync(value)), new Uint8Array(100));
+ *   } else assertEquals(value, new Uint8Array(100));
+ * }
  * ```
  */
 export class CborByteEncoderStream
@@ -66,8 +85,27 @@ export class CborByteEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { concat } from "@std/bytes";
+   * import {
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = new Uint8Array(100);
+   *
+   * for await (
+   *   const value of CborByteEncoderStream.from([rawMessage])
+   *     .readable
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof Uint8Array || value instanceof CborByteDecodedStream);
+   *   if (value instanceof CborByteDecodedStream) {
+   *     assertEquals(concat(await Array.fromAsync(value)), new Uint8Array(100));
+   *   } else assertEquals(value, new Uint8Array(100));
+   * }
    * ```
    *
    * @param asyncIterable The iterable to convert to a {@link CborByteEncoderStream} instance.
@@ -85,8 +123,27 @@ export class CborByteEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { concat } from "@std/bytes";
+   * import {
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = new Uint8Array(100);
+   *
+   * for await (
+   *   const value of ReadableStream.from([rawMessage])
+   *     .pipeThrough(new CborByteEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof Uint8Array || value instanceof CborByteDecodedStream);
+   *   if (value instanceof CborByteDecodedStream) {
+   *     assertEquals(concat(await Array.fromAsync(value)), new Uint8Array(100));
+   *   } else assertEquals(value, new Uint8Array(100));
+   * }
    * ```
    *
    * @returns a ReadableStream.
@@ -99,8 +156,27 @@ export class CborByteEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { concat } from "@std/bytes";
+   * import {
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = new Uint8Array(100);
+   *
+   * for await (
+   *   const value of ReadableStream.from([rawMessage])
+   *     .pipeThrough(new CborByteEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof Uint8Array || value instanceof CborByteDecodedStream);
+   *   if (value instanceof CborByteDecodedStream) {
+   *     assertEquals(concat(await Array.fromAsync(value)), new Uint8Array(100));
+   *   } else assertEquals(value, new Uint8Array(100));
+   * }
    * ```
    *
    * @returns a WritableStream.
@@ -115,7 +191,26 @@ export class CborByteEncoderStream
  * "indefinite text string".
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import {
+ *   CborSequenceDecoderStream,
+ *   CborTextDecodedStream,
+ *   CborTextEncoderStream,
+ * } from "./mod.ts";
+ *
+ * const rawMessage = "a".repeat(100);
+ *
+ * for await (
+ *   const value of ReadableStream.from([rawMessage])
+ *     .pipeThrough(new CborTextEncoderStream())
+ *     .pipeThrough(new CborSequenceDecoderStream())
+ * ) {
+ *   assert(typeof value === "string" || value instanceof CborTextDecodedStream);
+ *   if (value instanceof CborTextDecodedStream) {
+ *     assertEquals((await Array.fromAsync(value)).join(""), rawMessage);
+ *   } else assertEquals(value, rawMessage);
+ * }
  * ```
  */
 export class CborTextEncoderStream
@@ -150,8 +245,26 @@ export class CborTextEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborSequenceDecoderStream,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = "a".repeat(100);
+   *
+   * for await (
+   *   const value of CborTextEncoderStream.from([rawMessage])
+   *     .readable
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(typeof value === "string" || value instanceof CborTextDecodedStream);
+   *   if (value instanceof CborTextDecodedStream) {
+   *     assertEquals((await Array.fromAsync(value)).join(""), rawMessage);
+   *   } else assertEquals(value, rawMessage);
+   * }
    * ```
    *
    * @param asyncIterable The iterable to convert to a {@link CborTextEncoderStream} instance.
@@ -169,8 +282,26 @@ export class CborTextEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborSequenceDecoderStream,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = "a".repeat(100);
+   *
+   * for await (
+   *   const value of ReadableStream.from([rawMessage])
+   *     .pipeThrough(new CborTextEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(typeof value === "string" || value instanceof CborTextDecodedStream);
+   *   if (value instanceof CborTextDecodedStream) {
+   *     assertEquals((await Array.fromAsync(value)).join(""), rawMessage);
+   *   } else assertEquals(value, rawMessage);
+   * }
    * ```
    *
    * @returns a ReadableStream.
@@ -183,8 +314,26 @@ export class CborTextEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborSequenceDecoderStream,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = "a".repeat(100);
+   *
+   * for await (
+   *   const value of ReadableStream.from([rawMessage])
+   *     .pipeThrough(new CborTextEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(typeof value === "string" || value instanceof CborTextDecodedStream);
+   *   if (value instanceof CborTextDecodedStream) {
+   *     assertEquals((await Array.fromAsync(value)).join(""), rawMessage);
+   *   } else assertEquals(value, rawMessage);
+   * }
    * ```
    *
    * @returns a WritableStream.
@@ -199,8 +348,28 @@ export class CborTextEncoderStream
  * "indefinite array".
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import {
+ *   CborArrayDecodedStream,
+ *   CborArrayEncoderStream,
+ *   CborSequenceDecoderStream,
+ * } from "./mod.ts";
  *
+ * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
+ *
+ * for await (
+ *   const value of ReadableStream.from(rawMessage)
+ *     .pipeThrough(new CborArrayEncoderStream())
+ *     .pipeThrough(new CborSequenceDecoderStream())
+ * ) {
+ *   assert(value instanceof CborArrayDecodedStream);
+ *   let i = 0;
+ *   for await (const text of value) {
+ *     assert(typeof text === "string");
+ *     assertEquals(text, rawMessage[i++]);
+ *   }
+ * }
  * ```
  */
 export class CborArrayEncoderStream
@@ -231,8 +400,28 @@ export class CborArrayEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
+   *
+   * for await (
+   *   const value of CborArrayEncoderStream.from(rawMessage)
+   *     .readable
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborArrayDecodedStream);
+   *   let i = 0;
+   *   for await (const text of value) {
+   *     assert(typeof text === "string");
+   *     assertEquals(text, rawMessage[i++]);
+   *   }
+   * }
    * ```
    *
    * @param asyncIterable The iterable to convert to a {@link CborArrayEncoderStream} instance.
@@ -250,8 +439,28 @@ export class CborArrayEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
+   *
+   * for await (
+   *   const value of ReadableStream.from(rawMessage)
+   *     .pipeThrough(new CborArrayEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborArrayDecodedStream);
+   *   let i = 0;
+   *   for await (const text of value) {
+   *     assert(typeof text === "string");
+   *     assertEquals(text, rawMessage[i++]);
+   *   }
+   * }
    * ```
    *
    * @returns a ReadableStream.
@@ -264,8 +473,28 @@ export class CborArrayEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
+   *
+   * for await (
+   *   const value of ReadableStream.from(rawMessage)
+   *     .pipeThrough(new CborArrayEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborArrayDecodedStream);
+   *   let i = 0;
+   *   for await (const text of value) {
+   *     assert(typeof text === "string");
+   *     assertEquals(text, rawMessage[i++]);
+   *   }
+   * }
    * ```
    *
    * @returns a WritableStream.
@@ -280,8 +509,31 @@ export class CborArrayEncoderStream
  * "indefinite map".
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import {
+ *   CborMapDecodedStream,
+ *   CborMapEncoderStream,
+ *   CborSequenceDecoderStream,
+ * } from "./mod.ts";
  *
+ * const rawMessage: Record<string, number> = {
+ *   a: 0,
+ *   b: 1,
+ *   c: 2,
+ *   d: 3,
+ * };
+ *
+ * for await (
+ *   const value of ReadableStream.from(Object.entries(rawMessage))
+ *     .pipeThrough(new CborMapEncoderStream)
+ *     .pipeThrough(new CborSequenceDecoderStream())
+ * ) {
+ *   assert(value instanceof CborMapDecodedStream);
+ *   for await (const [k, v] of value) {
+ *     assertEquals(rawMessage[k], v);
+ *   }
+ * }
  * ```
  */
 export class CborMapEncoderStream
@@ -313,8 +565,31 @@ export class CborMapEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage: Record<string, number> = {
+   *   a: 0,
+   *   b: 1,
+   *   c: 2,
+   *   d: 3,
+   * };
+   *
+   * for await (
+   *   const value of CborMapEncoderStream.from(Object.entries(rawMessage))
+   *     .readable
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborMapDecodedStream);
+   *   for await (const [k, v] of value) {
+   *     assertEquals(rawMessage[k], v);
+   *   }
+   * }
    * ```
    *
    * @param asyncIterable The iterable to convert to a {@link CborMapEncoderStream} instance.
@@ -334,8 +609,31 @@ export class CborMapEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage: Record<string, number> = {
+   *   a: 0,
+   *   b: 1,
+   *   c: 2,
+   *   d: 3,
+   * };
+   *
+   * for await (
+   *   const value of ReadableStream.from(Object.entries(rawMessage))
+   *     .pipeThrough(new CborMapEncoderStream)
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborMapDecodedStream);
+   *   for await (const [k, v] of value) {
+   *     assertEquals(rawMessage[k], v);
+   *   }
+   * }
    * ```
    *
    * @returns a ReadableStream.
@@ -348,8 +646,31 @@ export class CborMapEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import {
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   CborSequenceDecoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage: Record<string, number> = {
+   *   a: 0,
+   *   b: 1,
+   *   c: 2,
+   *   d: 3,
+   * };
+   *
+   * for await (
+   *   const value of ReadableStream.from(Object.entries(rawMessage))
+   *     .pipeThrough(new CborMapEncoderStream)
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   assert(value instanceof CborMapDecodedStream);
+   *   for await (const [k, v] of value) {
+   *     assertEquals(rawMessage[k], v);
+   *   }
+   * }
    * ```
    *
    * @returns a WritableStream.
@@ -364,8 +685,75 @@ export class CborMapEncoderStream
  * a sequence of CBOR encoded values.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts no-assert
+ * import { encodeBase64Url } from "@std/encoding";
+ * import {
+ *   CborArrayDecodedStream,
+ *   CborArrayEncoderStream,
+ *   CborByteDecodedStream,
+ *   CborByteEncoderStream,
+ *   CborMapDecodedStream,
+ *   CborMapEncoderStream,
+ *   type CborOutputStream,
+ *   CborSequenceDecoderStream,
+ *   CborSequenceEncoderStream,
+ *   CborTag,
+ *   CborTextDecodedStream,
+ *   CborTextEncoderStream,
+ * } from "./mod.ts";
  *
+ * const rawMessage = [
+ *   undefined,
+ *   null,
+ *   true,
+ *   false,
+ *   3.14,
+ *   5,
+ *   2n ** 32n,
+ *   "Hello World",
+ *   new Uint8Array(25),
+ *   new Date(),
+ *   new CborTag(33, encodeBase64Url(new Uint8Array(7))),
+ *   ["cake", "carrot"],
+ *   { a: 3, b: "d" },
+ *   CborByteEncoderStream.from([new Uint8Array(7)]),
+ *   CborTextEncoderStream.from(["Bye!"]),
+ *   CborArrayEncoderStream.from([
+ *     "Hey!",
+ *     CborByteEncoderStream.from([new Uint8Array(18)]),
+ *   ]),
+ *   CborMapEncoderStream.from([
+ *     ["a", 0],
+ *     ["b", "potato"],
+ *   ]),
+ * ];
+ *
+ * async function logValue(value: CborOutputStream) {
+ *   if (
+ *     value instanceof CborByteDecodedStream ||
+ *     value instanceof CborTextDecodedStream
+ *   ) {
+ *     for await (const x of value) console.log(x);
+ *   } else if (value instanceof CborArrayDecodedStream) {
+ *     for await (const x of value) logValue(x);
+ *   } else if (value instanceof CborMapDecodedStream) {
+ *     for await (const [k, v] of value) {
+ *       console.log(k);
+ *       logValue(v);
+ *     }
+ *   } else if (value instanceof CborTag) {
+ *     console.log(value);
+ *     logValue(value.tagContent);
+ *   } else console.log(value);
+ * }
+ *
+ * for await (
+ *   const value of ReadableStream.from(rawMessage)
+ *     .pipeThrough(new CborSequenceEncoderStream())
+ *     .pipeThrough(new CborSequenceDecoderStream())
+ * ) {
+ *   logValue(value);
+ * }
  * ```
  */
 export class CborSequenceEncoderStream
@@ -485,8 +873,75 @@ export class CborSequenceEncoderStream
    * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts no-assert
+   * import { encodeBase64Url } from "@std/encoding";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   type CborOutputStream,
+   *   CborSequenceDecoderStream,
+   *   CborSequenceEncoderStream,
+   *   CborTag,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = [
+   *   undefined,
+   *   null,
+   *   true,
+   *   false,
+   *   3.14,
+   *   5,
+   *   2n ** 32n,
+   *   "Hello World",
+   *   new Uint8Array(25),
+   *   new Date(),
+   *   new CborTag(33, encodeBase64Url(new Uint8Array(7))),
+   *   ["cake", "carrot"],
+   *   { a: 3, b: "d" },
+   *   CborByteEncoderStream.from([new Uint8Array(7)]),
+   *   CborTextEncoderStream.from(["Bye!"]),
+   *   CborArrayEncoderStream.from([
+   *     "Hey!",
+   *     CborByteEncoderStream.from([new Uint8Array(18)]),
+   *   ]),
+   *   CborMapEncoderStream.from([
+   *     ["a", 0],
+   *     ["b", "potato"],
+   *   ]),
+   * ];
+   *
+   * async function logValue(value: CborOutputStream) {
+   *   if (
+   *     value instanceof CborByteDecodedStream ||
+   *     value instanceof CborTextDecodedStream
+   *   ) {
+   *     for await (const x of value) console.log(x);
+   *   } else if (value instanceof CborArrayDecodedStream) {
+   *     for await (const x of value) logValue(x);
+   *   } else if (value instanceof CborMapDecodedStream) {
+   *     for await (const [k, v] of value) {
+   *       console.log(k);
+   *       logValue(v);
+   *     }
+   *   } else if (value instanceof CborTag) {
+   *     console.log(value);
+   *     logValue(value.tagContent);
+   *   } else console.log(value);
+   * }
+   *
+   * for await (
+   *   const value of CborSequenceEncoderStream.from(rawMessage)
+   *     .readable
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   logValue(value);
+   * }
    * ```
    *
    * @param asyncIterable The iterable to convert to a {@link CborSequenceEncoderStream} instance.
@@ -504,8 +959,75 @@ export class CborSequenceEncoderStream
    * The ReadableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts no-assert
+   * import { encodeBase64Url } from "@std/encoding";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   type CborOutputStream,
+   *   CborSequenceDecoderStream,
+   *   CborSequenceEncoderStream,
+   *   CborTag,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = [
+   *   undefined,
+   *   null,
+   *   true,
+   *   false,
+   *   3.14,
+   *   5,
+   *   2n ** 32n,
+   *   "Hello World",
+   *   new Uint8Array(25),
+   *   new Date(),
+   *   new CborTag(33, encodeBase64Url(new Uint8Array(7))),
+   *   ["cake", "carrot"],
+   *   { a: 3, b: "d" },
+   *   CborByteEncoderStream.from([new Uint8Array(7)]),
+   *   CborTextEncoderStream.from(["Bye!"]),
+   *   CborArrayEncoderStream.from([
+   *     "Hey!",
+   *     CborByteEncoderStream.from([new Uint8Array(18)]),
+   *   ]),
+   *   CborMapEncoderStream.from([
+   *     ["a", 0],
+   *     ["b", "potato"],
+   *   ]),
+   * ];
+   *
+   * async function logValue(value: CborOutputStream) {
+   *   if (
+   *     value instanceof CborByteDecodedStream ||
+   *     value instanceof CborTextDecodedStream
+   *   ) {
+   *     for await (const x of value) console.log(x);
+   *   } else if (value instanceof CborArrayDecodedStream) {
+   *     for await (const x of value) logValue(x);
+   *   } else if (value instanceof CborMapDecodedStream) {
+   *     for await (const [k, v] of value) {
+   *       console.log(k);
+   *       logValue(v);
+   *     }
+   *   } else if (value instanceof CborTag) {
+   *     console.log(value);
+   *     logValue(value.tagContent);
+   *   } else console.log(value);
+   * }
+   *
+   * for await (
+   *   const value of ReadableStream.from(rawMessage)
+   *     .pipeThrough(new CborSequenceEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   logValue(value);
+   * }
    * ```
    *
    * @returns a ReadableStream.
@@ -518,8 +1040,75 @@ export class CborSequenceEncoderStream
    * The WritableStream property.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts no-assert
+   * import { encodeBase64Url } from "@std/encoding";
+   * import {
+   *   CborArrayDecodedStream,
+   *   CborArrayEncoderStream,
+   *   CborByteDecodedStream,
+   *   CborByteEncoderStream,
+   *   CborMapDecodedStream,
+   *   CborMapEncoderStream,
+   *   type CborOutputStream,
+   *   CborSequenceDecoderStream,
+   *   CborSequenceEncoderStream,
+   *   CborTag,
+   *   CborTextDecodedStream,
+   *   CborTextEncoderStream,
+   * } from "./mod.ts";
    *
+   * const rawMessage = [
+   *   undefined,
+   *   null,
+   *   true,
+   *   false,
+   *   3.14,
+   *   5,
+   *   2n ** 32n,
+   *   "Hello World",
+   *   new Uint8Array(25),
+   *   new Date(),
+   *   new CborTag(33, encodeBase64Url(new Uint8Array(7))),
+   *   ["cake", "carrot"],
+   *   { a: 3, b: "d" },
+   *   CborByteEncoderStream.from([new Uint8Array(7)]),
+   *   CborTextEncoderStream.from(["Bye!"]),
+   *   CborArrayEncoderStream.from([
+   *     "Hey!",
+   *     CborByteEncoderStream.from([new Uint8Array(18)]),
+   *   ]),
+   *   CborMapEncoderStream.from([
+   *     ["a", 0],
+   *     ["b", "potato"],
+   *   ]),
+   * ];
+   *
+   * async function logValue(value: CborOutputStream) {
+   *   if (
+   *     value instanceof CborByteDecodedStream ||
+   *     value instanceof CborTextDecodedStream
+   *   ) {
+   *     for await (const x of value) console.log(x);
+   *   } else if (value instanceof CborArrayDecodedStream) {
+   *     for await (const x of value) logValue(x);
+   *   } else if (value instanceof CborMapDecodedStream) {
+   *     for await (const [k, v] of value) {
+   *       console.log(k);
+   *       logValue(v);
+   *     }
+   *   } else if (value instanceof CborTag) {
+   *     console.log(value);
+   *     logValue(value.tagContent);
+   *   } else console.log(value);
+   * }
+   *
+   * for await (
+   *   const value of ReadableStream.from(rawMessage)
+   *     .pipeThrough(new CborSequenceEncoderStream())
+   *     .pipeThrough(new CborSequenceDecoderStream())
+   * ) {
+   *   logValue(value);
+   * }
    * ```
    *
    * @returns a WritableStream.

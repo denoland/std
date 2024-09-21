@@ -48,8 +48,24 @@ export function decodeCbor(value: Uint8Array): CborType {
  * spec.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
  *
+ * const rawMessage = [
+ *   "Hello World",
+ *   35,
+ *   0.5,
+ *   false,
+ *   -1,
+ *   null,
+ *   Uint8Array.from([0, 1, 2, 3]),
+ * ];
+ *
+ * const encodedMessage = encodeCborSequence(rawMessage);
+ * const decodedMessage = decodeCborSequence(encodedMessage);
+ *
+ * assertEquals(decodedMessage, rawMessage);
  * ```
  *
  * @param value Value to decode from CBOR format.

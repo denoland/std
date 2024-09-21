@@ -7,10 +7,17 @@
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  * spec.
  *
- * ```ts no-assert
- * import { encodeCbor } from "@std/cbor";
+ * ```ts
+ * import { assert, assertEquals } from "@std/assert";
+ * import { decodeCbor, encodeCbor } from "./mod.ts";
  *
- * console.log(encodeCbor(5));
+ * const rawMessage = "I am a raw Message!";
+ *
+ * const encodedMessage = encodeCbor(rawMessage);
+ * const decodedMessage = decodeCbor(encodedMessage);
+ *
+ * assert(typeof decodedMessage === "string");
+ * assertEquals(decodedMessage, rawMessage);
  * ```
  *
  * @module
