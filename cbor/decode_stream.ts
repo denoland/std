@@ -35,6 +35,7 @@ export class CborByteDecodedStream extends ReadableStream<Uint8Array> {
    * Constructs a new instance.
    *
    * @param gen A generator that yields the decoded CBOR byte string.
+   * @param releaseLock A function to call when the stream is finished.
    */
   constructor(gen: AsyncGenerator<Uint8Array>, releaseLock: ReleaseLock) {
     super({
@@ -68,6 +69,7 @@ export class CborTextDecodedStream extends ReadableStream<string> {
    * Constructs a new instance.
    *
    * @param gen A generator that yields the decoded CBOR text string.
+   * @param releaseLock A function to call when the stream is finished.
    */
   constructor(gen: AsyncGenerator<string>, releaseLock: ReleaseLock) {
     super({
@@ -102,6 +104,7 @@ export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
    * Constructs a new instance.
    *
    * @param gen A generator that yields the decoded CBOR array.
+   * @param releaseLock A function to call when the stream is finished.
    */
   constructor(gen: AsyncGenerator<CborOutputStream>, releaseLock: ReleaseLock) {
     super({
@@ -136,6 +139,7 @@ export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
    * Constructs a new instance.
    *
    * @param gen A generator that yields the decoded CBOR map.
+   * @param releaseLock A function to call when the stream is finished.
    */
   constructor(
     gen: AsyncGenerator<CborMapOutputStream>,
