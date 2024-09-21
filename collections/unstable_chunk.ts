@@ -3,7 +3,6 @@
 
 /**
  * Splits the given array into an array of chunks of the given size and returns them.
- * .
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
