@@ -27,10 +27,6 @@ export class AssertionState {
     };
   }
 
-  get state() {
-    return this.#state;
-  }
-
   /**
    * Get the number that through `expect.assertions` api set.
    *
