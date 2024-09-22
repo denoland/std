@@ -20,7 +20,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { withoutAll } from "@std/collections/without-all";
+ * import { withoutAll } from "@std/collections/unstable-without-all";
  * import { assertEquals } from "@std/assert";
  *
  * const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
