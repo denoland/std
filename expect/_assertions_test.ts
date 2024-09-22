@@ -53,6 +53,5 @@ Deno.test("expect.assertions() API", () => {
   // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
   it("should throw an error", () => {
     expect.assertions(2);
-    expect.assertions(2);
   });
 });
