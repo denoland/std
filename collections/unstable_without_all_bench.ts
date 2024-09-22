@@ -1,3 +1,5 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
 import { withoutAll } from "./without_all.ts";
 import { withoutAll as unstableWithoutAll } from "./unstable_without_all.ts";
 
