@@ -4,8 +4,8 @@ import { numberToArray, upgradeStreamFromGen } from "./_common.ts";
 import { type CborPrimitiveType, CborTag, encodeCbor } from "./encode.ts";
 
 /**
- * This type specifies the encodable values for
- * {@link CborSequenceEncoderStream} and {@link CborArrayEncoderStream}.
+ * Specifies the encodable value types for the {@link CborSequenceEncoderStream}
+ * and {@link CborArrayEncoderStream}.
  */
 export type CborInputStream =
   | CborPrimitiveType
@@ -18,13 +18,18 @@ export type CborInputStream =
   | CborMapEncoderStream;
 
 /**
- * This type specifies the structure of input for {@link CborMapEncoderStream}.
+ * Specifies the structure of input for the {@link CborMapEncoderStream}.
  */
 export type CborMapInputStream = [string, CborInputStream];
 
 /**
- * The CborByteEncoderStream encodes a ReadableStream<Uint8Array> into a CBOR
- * "indefinite byte string".
+ * A {@link TransformStream} that encodes a {@link ReadableStream<Uint8Array>}
+ * into CBOR "Indefinite Length Byte String".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * **Notice:** Each chunk of the {@link ReadableStream<Uint8Array>} is encoded
+ * as its own "Definite Length Byte String" meaning space can be saved if large
+ * chunks are pipped through instead of small chunks.
  *
  * @example Usage
  * ```ts
@@ -82,7 +87,8 @@ export class CborByteEncoderStream
   }
 
   /**
-   * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
+   * Creates a {@link CborByteEncoderStream} instance from an iterable of
+   * {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts
@@ -108,8 +114,9 @@ export class CborByteEncoderStream
    * }
    * ```
    *
-   * @param asyncIterable The iterable to convert to a {@link CborByteEncoderStream} instance.
-   * @returns a {@link CborByteEncoderStream} instance.
+   * @param asyncIterable The value to encode of type
+   * {@link AsyncIterable<Uint8Array>} or {@link Iterable<Uint8Array>}.
+   * @returns A {@link CborByteEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable: AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
@@ -120,7 +127,8 @@ export class CborByteEncoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<Uint8Array>} associated with the instance, which
+   * provides the encoded CBOR data as {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts
@@ -146,14 +154,15 @@ export class CborByteEncoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<Uint8Array>}.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<Uint8Array>} associated with the instance, which
+   * accepts {@link Uint8Array} chunks to be encoded into CBOR format.
    *
    * @example Usage
    * ```ts
@@ -179,7 +188,7 @@ export class CborByteEncoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns a {@link WritableStream<Uint8Array>}.
    */
   get writable(): WritableStream<Uint8Array> {
     return this.#writable;
@@ -187,8 +196,13 @@ export class CborByteEncoderStream
 }
 
 /**
- * The CborTextEncoderStream encodes a ReadableStream<string> into a CBOR
- * "indefinite text string".
+ * A {@link TransformStream} that encodes a {@link ReadableStream<string>} into
+ * CBOR "Indefinite Length Text String".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * **Notice:** Each chunk of the {@link ReadableStream<string>} is encoded as
+ * its own "Definite Length Text String" meaning space can be saved if large
+ * chunks are pipped through instead of small chunks.
  *
  * @example Usage
  * ```ts
@@ -242,7 +256,8 @@ export class CborTextEncoderStream
   }
 
   /**
-   * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
+   * Creates a {@link CborTextEncoderStream} instance from an iterable of
+   * {@link string} chunks.
    *
    * @example Usage
    * ```ts
@@ -267,8 +282,9 @@ export class CborTextEncoderStream
    * }
    * ```
    *
-   * @param asyncIterable The iterable to convert to a {@link CborTextEncoderStream} instance.
-   * @returns a {@link CborTextEncoderStream} instance.
+   * @param asyncIterable The value to encode of type
+   * {@link AsyncIterable<string>} or {@link Iterable<string>}
+   * @returns A {@link CborTextEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable: AsyncIterable<string> | Iterable<string>,
@@ -279,7 +295,8 @@ export class CborTextEncoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<Uint8Array>} associated with the instance, which
+   * provides the encoded CBOR data as {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts
@@ -304,14 +321,15 @@ export class CborTextEncoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<Uint8Array>}.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<string>} associated with the instance, which
+   * accepts {@link string} chunks to be encoded into CBOR format.
    *
    * @example Usage
    * ```ts
@@ -336,7 +354,7 @@ export class CborTextEncoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns A {@link WritableStream<string>}.
    */
   get writable(): WritableStream<string> {
     return this.#writable;
@@ -344,8 +362,9 @@ export class CborTextEncoderStream
 }
 
 /**
- * The CborArrayEncoderStream encodes a ReadableStream<CborInputStream> into a CBOR
- * "indefinite array".
+ * A {@link TransformStream} that encodes a
+ * {@link ReadableStream<CborInputStream>} into CBOR "Indefinite Length Array".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
  * ```ts
@@ -397,7 +416,8 @@ export class CborArrayEncoderStream
   }
 
   /**
-   * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
+   * Creates a {@link CborArrayEncoderStream} instance from an iterable of
+   * {@link CborInputStream} chunks.
    *
    * @example Usage
    * ```ts
@@ -424,8 +444,10 @@ export class CborArrayEncoderStream
    * }
    * ```
    *
-   * @param asyncIterable The iterable to convert to a {@link CborArrayEncoderStream} instance.
-   * @returns a {@link CborArrayEncoderStream} instance.
+   * @param asyncIterable The value to encode of type
+   * {@link AsyncIterable<CborInputStream>} or
+   * {@link Iterable<CborInputStream>}.
+   * @returns A {@link CborArrayEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable: AsyncIterable<CborInputStream> | Iterable<CborInputStream>,
@@ -436,7 +458,8 @@ export class CborArrayEncoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<Uint8Array>} associated with the instance, which
+   * provides the encoded CBOR data as {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts
@@ -463,14 +486,16 @@ export class CborArrayEncoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<Uint8Array>}.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<CborInputStream>} associated with the instance,
+   * which accepts {@link CborInputStream} chunks to be encoded into CBOR
+   * format.
    *
    * @example Usage
    * ```ts
@@ -497,7 +522,7 @@ export class CborArrayEncoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns A {@link WritableStream<CborInputStream>}.
    */
   get writable(): WritableStream<CborInputStream> {
     return this.#writable;
@@ -505,8 +530,9 @@ export class CborArrayEncoderStream
 }
 
 /**
- * The CborByteEncoderStream encodes a ReadableStream<CborMapInputStream> into a CBOR
- * "indefinite map".
+ * A {@link TransformStream} that encodes a
+ * {@link ReadableStream<CborMapInputStream>} into CBOR "Indefinite Length Map".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
  * ```ts
@@ -562,7 +588,8 @@ export class CborMapEncoderStream
   }
 
   /**
-   * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
+   * Creates a {@link CborMapEncoderStream} instance from an iterable of
+   * {@link CborMapInputStream} chunks.
    *
    * @example Usage
    * ```ts
@@ -592,8 +619,10 @@ export class CborMapEncoderStream
    * }
    * ```
    *
-   * @param asyncIterable The iterable to convert to a {@link CborMapEncoderStream} instance.
-   * @returns a {@link CborMapEncoderStream} instance.
+   * @param asyncIterable The value to encode of type
+   * {@link AsyncIterable<CborMapInputStream>} or
+   * {@link Iterable<CborMapInputStream>}.
+   * @returns A {@link CborMapEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable:
@@ -606,7 +635,8 @@ export class CborMapEncoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<Uint8Array>} associated with the instance, which
+   * provides the encoded CBOR data as {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts
@@ -636,14 +666,16 @@ export class CborMapEncoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<Uint8Array>}.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<CborMapInputStream>} associated with the
+   * instance, which accepts {@link CborMapInputStream} chunks to be encoded
+   * into CBOR format.
    *
    * @example Usage
    * ```ts
@@ -673,7 +705,7 @@ export class CborMapEncoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns A {@link WritableStream<CborMapInputStream>}.
    */
   get writable(): WritableStream<CborMapInputStream> {
     return this.#writable;
@@ -681,8 +713,9 @@ export class CborMapEncoderStream
 }
 
 /**
- * The CborSequenceEncoderStream encodes a ReadableStream<CborInputStream> into
- * a sequence of CBOR encoded values.
+ * A {@link TransformStream} that encodes a
+ * {@link ReadableStream<CborInputStream>} into CBOR format sequence.
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
  * ```ts no-assert
@@ -870,7 +903,8 @@ export class CborSequenceEncoderStream
   }
 
   /**
-   * Derives a new instance from an {@link AsyncIterable} or {@link Iterable}.
+   * Creates a {@link CborSequenceEncoderStream} instance from an iterable of
+   * {@link CborInputStream} chunks.
    *
    * @example Usage
    * ```ts no-assert
@@ -944,8 +978,10 @@ export class CborSequenceEncoderStream
    * }
    * ```
    *
-   * @param asyncIterable The iterable to convert to a {@link CborSequenceEncoderStream} instance.
-   * @returns a {@link CborSequenceEncoderStream} instance.
+   * @param asyncIterable The value to encode of type
+   * {@link AsyncIterable<CborInputStream>} or
+   * {@link Iterable<CborInputStream>}.
+   * @returns A {@link CborSequenceEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable: AsyncIterable<CborInputStream> | Iterable<CborInputStream>,
@@ -956,7 +992,8 @@ export class CborSequenceEncoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<Uint8Array>} associated with the instance, which
+   * provides the encoded CBOR data as {@link Uint8Array} chunks.
    *
    * @example Usage
    * ```ts no-assert
@@ -1030,14 +1067,16 @@ export class CborSequenceEncoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<Uint8Array>}.
    */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<CborInputStream>} associated with the
+   * instance, which accepts {@link CborInputStream} chunks to be encoded
+   * into CBOR format.
    *
    * @example Usage
    * ```ts no-assert
@@ -1111,7 +1150,7 @@ export class CborSequenceEncoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns A {@link WritableStream<CborInputStream>}.
    */
   get writable(): WritableStream<CborInputStream> {
     return this.#writable;

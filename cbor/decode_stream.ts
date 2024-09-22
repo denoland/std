@@ -4,8 +4,8 @@ import { arrayToNumber, upgradeStreamFromGen } from "./_common.ts";
 import { type CborPrimitiveType, CborTag } from "./encode.ts";
 
 /**
- * This type specifies the decodable values for
- * {@link CborSequenceDecoderStream}.
+ * Specifies the decodable value types for the {@link CborSequenceDecoderStream}
+ * and {@link CborMapDecodedStream}.
  */
 export type CborOutputStream =
   | CborPrimitiveType
@@ -14,16 +14,21 @@ export type CborOutputStream =
   | CborTextDecodedStream
   | CborArrayDecodedStream
   | CborMapDecodedStream;
+
 /**
- * This type specifies the structure of output for {@link CborMapDecodedStream}.
+ * Specifies the structure of the output for the {@link CborMapDecodedStream}.
  */
 export type CborMapOutputStream = [string, CborOutputStream];
 
 type ReleaseLock = (value?: unknown) => void;
 
 /**
- * The CborByteDecodedStream is an extension of ReadableStream<Uint8Array> that
- * is outputted from {@link CborSequenceDecoderStream}.
+ * A {@link ReadableStream} that wraps the decoded CBOR "Byte String".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * Instances of this class is created from {@link CborSequenceDecoderStream}.
+ * This class is not designed for you to create instances of it yourself. It is
+ * merely a way for you to validate the type being returned.
  *
  * @example Usage
  * ```ts
@@ -53,8 +58,8 @@ export class CborByteDecodedStream extends ReadableStream<Uint8Array> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A generator that yields the decoded CBOR byte string.
-   * @param releaseLock A function to call when the stream is finished.
+   * @param gen A {@link AsyncGenerator<Uint8Array>}.
+   * @param releaseLock A Function that's called when the stream is finished.
    */
   constructor(gen: AsyncGenerator<Uint8Array>, releaseLock: ReleaseLock) {
     super({
@@ -75,8 +80,12 @@ export class CborByteDecodedStream extends ReadableStream<Uint8Array> {
 }
 
 /**
- * The CborTextDecodedStream is an extension of the ReadableStream<string> that
- * is outputted from {@link CborSequenceDecoderStream}.
+ * A {@link ReadableStream} that wraps the decoded CBOR "Text String".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * Instances of this class is created from {@link CborSequenceDecoderStream}.
+ * This class is not designed for you to create instances of it yourself. It is
+ * merely a way for you to validate the type being returned.
  *
  * @example Usage
  * ```ts
@@ -105,8 +114,8 @@ export class CborTextDecodedStream extends ReadableStream<string> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A generator that yields the decoded CBOR text string.
-   * @param releaseLock A function to call when the stream is finished.
+   * @param gen A {@link AsyncGenerator<string>}.
+   * @param releaseLock A Function that's called when the stream is finished.
    */
   constructor(gen: AsyncGenerator<string>, releaseLock: ReleaseLock) {
     super({
@@ -127,9 +136,12 @@ export class CborTextDecodedStream extends ReadableStream<string> {
 }
 
 /**
- * The CborArrayDecodedStream is an extension of the
- * ReadableStream<CborOutputStream> that is outputted from
- * {@link CborSequenceDecoderStream}.
+ * A {@link ReadableStream} that wraps the decoded CBOR "Array".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * Instances of this class is created from {@link CborSequenceDecoderStream}.
+ * This class is not designed for you to create instances of it yourself. It is
+ * merely a way for you to validate the type being returned.
  *
  * @example Usage
  * ```ts
@@ -160,8 +172,8 @@ export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A generator that yields the decoded CBOR array.
-   * @param releaseLock A function to call when the stream is finished.
+   * @param gen A {@link AsyncGenerator<CborOutputStream>}.
+   * @param releaseLock A Function that's called when the stream is finished.
    */
   constructor(gen: AsyncGenerator<CborOutputStream>, releaseLock: ReleaseLock) {
     super({
@@ -182,9 +194,12 @@ export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
 }
 
 /**
- * The CborMapDecodedStream is an extension of the
- * ReadableStream<CborMapOutputStream> that is outputted from
- * {@link CborSequenceDecoderStream}.
+ * A {@link ReadableStream} that wraps the decoded CBOR "Map".
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * Instances of this class is created from {@link CborSequenceDecoderStream}.
+ * This class is not designed for you to create instances of it yourself. It is
+ * merely a way for you to validate the type being returned.
  *
  * @example Usage
  * ```ts
@@ -218,8 +233,8 @@ export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A generator that yields the decoded CBOR map.
-   * @param releaseLock A function to call when the stream is finished.
+   * @param gen A {@link AsyncGenerator<CborMapOutputStream>}.
+   * @param releaseLock A Function that's called when the stream is finished.
    */
   constructor(
     gen: AsyncGenerator<CborMapOutputStream>,
@@ -243,8 +258,33 @@ export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
 }
 
 /**
- * The CborSequenceDecoderStream decodes a CBOR encoded
- * ReadableStream<Uint8Array> into a sequence of {@link CborOutputStream}.
+ * A {@link TransformStream} that decodes a CBOR-sequence-encoded
+ * {@link ReadableStream<Uint8Array>} into the JavaScript equivalent values
+ * represented as {@link ReadableStream<CborOutputStream>}.
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
+ *
+ * **Limitations:**
+ * - While CBOR does support map keys of any type, this implementation only
+ * supports map keys being of type {@link string}, and will throw if detected
+ * decoding otherwise.
+ * - This decoder does not validate that the encoded data is free of duplicate
+ * map keys, and will serve them all. This behaviour differentiates from
+ * {@link decodeCbor} and {@link decodeCborSequence}.
+ * - Arrays and Maps will always be decoded as a {@link CborArrayDecodedStream}
+ * and {@link CborMapDecodedStream}, respectively.
+ * - "Byte Strings" and "Text Strings" will be decoded as a
+ * {@link CborByteDecodedStream} and {@link CborTextDecodedStream},
+ * respectively, if they are encoded as an "Indefinite Length String" or their
+ * "Definite Length" is 2 ** 32 and 2 ** 16, respectively, or greater.
+ *
+ * **Notice:**
+ * - This decoder handles the tag numbers 0, and 1 automatically, all
+ * others returned are wrapped in a {@link CborTag<CborOutputStream>} instance.
+ * - If a parent stream yields {@link CborByteDecodedStream},
+ * {@link CborTextDecodedStream}, {@link CborArrayDecodedStream},
+ * {@link CborMapDecodedStream}, or {@link CborTag} (with any of these types as
+ * content), it will not resolve the next chunk until the yielded stream is
+ * fully consumed or canceled.
  *
  * @example Usage
  * ```ts no-assert
@@ -725,7 +765,8 @@ export class CborSequenceDecoderStream
   }
 
   /**
-   * The ReadableStream property.
+   * The {@link ReadableStream<CborOutputStream>} associated with the instance,
+   * which provides the decoded CBOR data as {@link CborOutputStream} chunks.
    *
    * @example Usage
    * ```ts no-assert
@@ -799,14 +840,15 @@ export class CborSequenceDecoderStream
    * }
    * ```
    *
-   * @returns a ReadableStream.
+   * @returns A {@link ReadableStream<CborOutputStream>}.
    */
   get readable(): ReadableStream<CborOutputStream> {
     return this.#readable;
   }
 
   /**
-   * The WritableStream property.
+   * The {@link WritableStream<Uint8Array>} associated with the instance,
+   * which accepts {@link Uint8Array} chunks to be decoded from CBOR format.
    *
    * @example Usage
    * ```ts no-assert
@@ -880,7 +922,7 @@ export class CborSequenceDecoderStream
    * }
    * ```
    *
-   * @returns a WritableStream.
+   * @returns A {@link WritableStream<Uint8Array>}.
    */
   get writable(): WritableStream<Uint8Array> {
     return this.#writable;

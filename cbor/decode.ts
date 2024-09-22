@@ -5,10 +5,19 @@ import { arrayToNumber } from "./_common.ts";
 import { CborTag, type CborType } from "./encode.ts";
 
 /**
- * A function to decode CBOR encoded {@link Uint8Array} into {@link CborType}
- * values, based off the
+ * Decodes a CBOR-encoded {@link Uint8Array} into the JavaScript equivalent
+ * values represented as a {@link CborType}.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- * spec.
+ *
+ * **Limitations:**
+ * - While CBOR does support map keys of any type, this
+ * implementation only supports map keys being of type {@link string}, and will
+ * throw if detected decoding otherwise.
+ * - This decoder will throw if duplicate map keys are detected. This behaviour
+ * differentiates from {@link CborSequenceDecoderStream}.
+ *
+ * **Notice:** This decoder handles the tag numbers 0, and 1 automatically, all
+ * others returned are wrapped in a {@link CborTag<CborType>} instance.
  *
  * @example Usage
  * ```ts
@@ -32,8 +41,8 @@ import { CborTag, type CborType } from "./encode.ts";
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value Value to decode from CBOR format.
- * @returns Decoded CBOR data.
+ * @param value The value to decode of type CBOR-encoded {@link Uint8Array}.
+ * @returns A {@link CborType} representing the decoded data.
  */
 export function decodeCbor(value: Uint8Array): CborType {
   if (!value.length) throw RangeError("Cannot decode empty Uint8Array");
@@ -42,10 +51,18 @@ export function decodeCbor(value: Uint8Array): CborType {
 }
 
 /**
- * A function to decode CBOR sequence encoded {@link Uint8Array} into
- * {@link CborType} values, based off the
+ * Decodes a CBOR-sequence-encoded {@link Uint8Array} into the JavaScript
+ * equivalent values represented as a {@link CBorType} array.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- * spec.
+ *
+ * **Limitations:**
+ * - While CBOR does support map keys of any type, this implementation only
+ * supports map keys being of type {@link string}, and will throw if detected
+ * decoding otherwise.
+ * - This decoder will throw an error if duplicate keys are detected.
+ *
+ * **Notice:** This decoder handles the tag numbers 0, and 1 automatically, all
+ * others returned are wrapped in a {@link CborTag<CborType>} instance.
  *
  * @example Usage
  * ```ts
@@ -68,8 +85,9 @@ export function decodeCbor(value: Uint8Array): CborType {
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value Value to decode from CBOR format.
- * @returns Decoded CBOR data.
+ * @param value The value to decode of type CBOR-sequence-encoded
+ * {@link Uint8Array}.
+ * @returns A {@link CborType} array representing the decoded data.
  */
 export function decodeCborSequence(value: Uint8Array): CborType[] {
   const output: CborType[] = [];

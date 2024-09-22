@@ -20,21 +20,19 @@ export type CborPrimitiveType =
   | Date;
 
 /**
- * This type specifies the encodable and decodable values for {@link encodeCbor}
- * and {@link decodeCbor}.
+ * This type specifies the encodable and decodable values for
+ * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
+ * {@link decodeCborSequence}.
  */
 export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
   [k: string]: CborType;
 };
 
 /**
- * A class that wraps {@link CborType}, {@link CborInputStream}, and {@link CborOutputStream} values,
- * assuming the `tagContent` is the appropriate type and format for encoding.
- * A list of the different types can be found
- * [here](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
+ * Represents a CBOR tag, which pairs a tag number with content, used to convey
+ * additional semantic information in CBOR-encoded data.
+ * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
  *
- * This class will be returned out of {@link decodeCbor} if it doesn't automatically
- * know how to handle the tag number.
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
@@ -57,12 +55,15 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  * assertEquals(decodeBase64Url(decodedMessage.tagContent), rawMessage);
  * ```
  *
- * @typeParam T extends {@link CborType} | {@link CborInputStream} | {@link CborOutputStream}
+ * @typeParam T The type of the tag's content, which can be a
+ * {@link CborType}, {@link CborInputStream}, or {@link CborOutputStream}.
  */
 export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
   /**
-   * The number indicating how the tagContent should be interpreted based off
+   * A {@link number} or {@link bigint} representing the CBOR tag number, used
+   * to identify the type of the tagged content.
    * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
+   *
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
@@ -87,9 +88,9 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
    */
   tagNumber: number | bigint;
   /**
-   * The content wrapped around the tagNumber indicating how it should be
-   * interpreted based off
+   * The content associated with the tag of type {@link T}.
    * [CBOR Tags](https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml).
+   *
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
@@ -115,8 +116,10 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
   tagContent: T;
   /**
    * Constructs a new instance.
-   * @param tagNumber The value to tag the {@link CborType} with.
-   * @param tagContent The {@link CborType} or {@link CborInputStream} formatted to the correct semantics.
+   *
+   * @param tagNumber A {@link number} or {@link bigint} representing the CBOR
+   * tag number, used to identify the type of the tagged content.
+   * @param tagContent The content associated with the tag of type {@link T}.
    */
   constructor(tagNumber: number | bigint, tagContent: T) {
     this.tagNumber = tagNumber;
@@ -125,9 +128,9 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
 }
 
 /**
- * A function to encode JavaScript values into the CBOR format based off the
+ * Encodes a {@link CborType} value into a CBOR format represented as a
+ * {@link Uint8Array}.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- * spec.
  *
  * @example Usage
  * ```ts
@@ -151,8 +154,8 @@ export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value Value to encode to CBOR format.
- * @returns Encoded CBOR data.
+ * @param value The value to encode of type {@link CborType}.
+ * @returns A {@link Uint8Array} representing the encoded data.
  */
 export function encodeCbor(value: CborType): Uint8Array {
   switch (typeof value) {
@@ -176,9 +179,9 @@ export function encodeCbor(value: CborType): Uint8Array {
 }
 
 /**
- * A function to encode JavaScript values into the CBOR sequence format based
- * off the [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- * spec.
+ * Encodes an array of {@link CborType} values into a CBOR format sequence
+ * represented as a {@link Uint8Array}.
+ * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
  * ```ts
@@ -201,8 +204,8 @@ export function encodeCbor(value: CborType): Uint8Array {
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param values Values to encode to CBOR format.
- * @returns Encoded CBOR data.
+ * @param values An array of values to encode of type {@link CborType}
+ * @returns A {@link Uint8Array} representing the encoded data.
  */
 export function encodeCborSequence(values: CborType[]): Uint8Array {
   const output: Uint8Array[] = [];
