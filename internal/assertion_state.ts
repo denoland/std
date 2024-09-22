@@ -27,6 +27,10 @@ export class AssertionState {
     };
   }
 
+  get state() {
+    return this.#state;
+  }
+
   /**
    * Get the number that through `expect.assertions` api set.
    *
@@ -148,8 +152,7 @@ export class AssertionState {
    * ```
    */
   checkAssertionErrorState(): boolean {
-    return this.#state.assertionCheck &&
-      !this.#state.assertionTriggered;
+    return this.#state.assertionCheck && !this.#state.assertionTriggered;
   }
 
   /**

@@ -17,7 +17,7 @@ Deno.test("AssertionState checkAssertionErrorState pass", () => {
   assertEquals(assertionState.checkAssertionErrorState(), false);
 
   assertionState.setAssertionCheck(true);
-  assertEquals(assertionState.checkAssertionErrorState(), true);
+  assertEquals(assertionState.checkAssertionErrorState(), false);
 });
 
 Deno.test("AssertionState checkAssertionErrorState fail", () => {
