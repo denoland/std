@@ -358,7 +358,7 @@ expect.extend = setExtendMatchers as (newExtendMatchers: Matchers) => void;
  * inside `toEqual` or `toHaveBeenCalledWith` instead of a literal value.
  *
  * @example
- * ```js
+ * ```ts
  * import { expect, fn } from "@std/expect";
  *
  * Deno.test("map calls its argument with a non-null argument", () => {

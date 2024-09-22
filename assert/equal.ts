@@ -13,7 +13,7 @@ function constructorsEqual(a: object, b: object) {
 }
 
 /**
- * Deep equality comparison used in assertions
+ * Deep equality comparison used in assertions.
  *
  * @param c The actual value
  * @param d The expected value
@@ -21,7 +21,7 @@ function constructorsEqual(a: object, b: object) {
  *
  * @example Usage
  * ```ts
- * import { equal } from "@std/assert";
+ * import { equal } from "@std/assert/equal";
  *
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false

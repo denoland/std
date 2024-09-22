@@ -47,7 +47,7 @@ export type { Reader, Seeker };
  * symbolic link values without polluting the world of archive writers.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -60,7 +60,7 @@ export interface TarMetaWithLinkName extends TarMeta {
  * Tar header with raw, unprocessed bytes as values.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -103,12 +103,12 @@ function parseHeader(buffer: Uint8Array): TarHeader {
  * Tar entry
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { TarEntry } from "@std/archive/untar";
  * import { Buffer } from "@std/io/buffer";
  *
@@ -134,12 +134,12 @@ export interface TarEntry extends TarMetaWithLinkName {}
  * Contains tar header metadata and a reader to the entry's body.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { TarEntry } from "@std/archive/untar";
  * import { Buffer } from "@std/io/buffer";
  *
@@ -192,7 +192,7 @@ export class TarEntry implements Reader {
    * @returns Whether the entry has already been consumed.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { TarEntry } from "@std/archive/untar";
    * import { Buffer } from "@std/io/buffer";
    * import { assertEquals } from "@std/assert/equals";
@@ -232,7 +232,7 @@ export class TarEntry implements Reader {
    * there are no more bytes to read.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Tar, Untar } from "@std/archive";
    * import { assertEquals } from "@std/assert/equals";
    * import { Buffer } from "@std/io/buffer";
@@ -288,7 +288,7 @@ export class TarEntry implements Reader {
    * Discords the current entry.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Buffer } from "@std/io/buffer";
    * import { TarEntry } from "@std/archive/untar";
    * import { assertEquals } from "@std/assert/equals";
@@ -338,7 +338,7 @@ export class TarEntry implements Reader {
  * archives typically have the '.tar' extension.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * ### Supported file formats
  * Only the ustar file format is supported.  This is the most common format. The
@@ -356,7 +356,7 @@ export class TarEntry implements Reader {
  * the files.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { Untar } from "@std/archive/untar";
  * import { ensureFile } from "@std/fs/ensure-file";
  * import { ensureDir } from "@std/fs/ensure-dir";
@@ -484,7 +484,7 @@ export class Untar {
    * or null if there are no more entries to extract.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { Tar, Untar } from "@std/archive";
    * import { Buffer } from "@std/io/buffer";
    * import { readAll } from "@std/io/read-all";
@@ -534,7 +534,7 @@ export class Untar {
    * @returns An async iterator.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Untar } from "@std/archive/untar";
    * import { ensureFile } from "@std/fs/ensure-file";
    * import { ensureDir } from "@std/fs/ensure-dir";

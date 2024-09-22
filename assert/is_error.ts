@@ -10,7 +10,7 @@ import { stripAnsiCode } from "@std/internal/styles";
  * error message can also be asserted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertIsError } from "@std/assert";
  *
  * assertIsError(null); // Throws

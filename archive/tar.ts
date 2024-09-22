@@ -45,7 +45,7 @@ export type { TarInfo, TarMeta };
  * Options for {@linkcode Tar.append}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -126,7 +126,7 @@ function formatHeader(data: TarData): Uint8Array {
  * Base interface for {@linkcode TarDataWithSource}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -180,7 +180,7 @@ export interface TarData {
  * Tar data interface for {@linkcode Tar.data}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -202,7 +202,7 @@ export interface TarDataWithSource extends TarData {
  * have the '.tar' extension.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * ### Usage
  * The workflow is to create a Tar instance, append files to it, and then write the
@@ -225,7 +225,7 @@ export interface TarDataWithSource extends TarData {
  * * Sparse files are not supported
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
  * import { copy } from "@std/io/copy";
@@ -277,7 +277,7 @@ export class Tar {
    * reference to the content itself and potentially any related metadata.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Tar } from "@std/archive/tar";
    * import { Buffer } from "@std/io/buffer";
    * import { copy } from "@std/io/copy";
@@ -429,7 +429,7 @@ export class Tar {
    * @returns A reader instance for the tar archive.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Tar } from "@std/archive/tar";
    * import { Buffer } from "@std/io/buffer";
    * import { copy } from "@std/io/copy";

@@ -4,20 +4,20 @@ const { ceil } = Math;
 
 // This implements Myers' bit-vector algorithm as described here:
 // https://dl.acm.org/doi/pdf/10.1145/316542.316550
-const peq = new Uint32Array(0x10000);
+const peq = new Uint32Array(0x110000);
 
-function myers32(t: string, p: string): number {
+function myers32(t: string[], p: string[]): number {
   const n = t.length;
   const m = p.length;
   for (let i = 0; i < m; i++) {
-    peq[p.charCodeAt(i)]! |= 1 << i;
+    peq[p[i]!.codePointAt(0)!]! |= 1 << i;
   }
   const last = m - 1;
   let pv = -1;
   let mv = 0;
   let score = m;
   for (let j = 0; j < n; j++) {
-    const eq = peq[t.charCodeAt(j)]!;
+    const eq = peq[t[j]!.codePointAt(0)!]!;
     const xv = eq | mv;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
     let ph = mv | ~(xh | pv);
@@ -31,12 +31,12 @@ function myers32(t: string, p: string): number {
     mv = ph & xv;
   }
   for (let i = 0; i < m; i++) {
-    peq[p.charCodeAt(i)] = 0;
+    peq[p[i]!.codePointAt(0)!] = 0;
   }
   return score;
 }
 
-function myersX(t: string, p: string): number {
+function myersX(t: string[], p: string[]): number {
   const n = t.length;
   const m = p.length;
   // Initialize the horizontal deltas to +1.
@@ -47,13 +47,13 @@ function myersX(t: string, p: string): number {
     const start = b * 32;
     const end = (b + 1) * 32;
     for (let i = start; i < end; i++) {
-      peq[p.charCodeAt(i)]! |= 1 << i;
+      peq[p[i]!.codePointAt(0)!]! |= 1 << i;
     }
     let pv = -1;
     let mv = 0;
     for (let j = 0; j < n; j++) {
       const hin = h[j]!;
-      let eq = peq[t.charCodeAt(j)]!;
+      let eq = peq[t[j]!.codePointAt(0)!]!;
       const xv = eq | mv;
       eq |= hin >>> 31;
       const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -66,12 +66,12 @@ function myersX(t: string, p: string): number {
       mv = ph & xv;
     }
     for (let i = start; i < end; i++) {
-      peq[p.charCodeAt(i)] = 0;
+      peq[p[i]!.codePointAt(0)!] = 0;
     }
   }
   const start = bmax * 32;
   for (let i = start; i < m; i++) {
-    peq[p.charCodeAt(i)]! |= 1 << i;
+    peq[p[i]!.codePointAt(0)!]! |= 1 << i;
   }
   const last = m - 1;
   let pv = -1;
@@ -79,7 +79,7 @@ function myersX(t: string, p: string): number {
   let score = m;
   for (let j = 0; j < n; j++) {
     const hin = h[j]!;
-    let eq = peq[t.charCodeAt(j)]!;
+    let eq = peq[t[j]!.codePointAt(0)!]!;
     const xv = eq | mv;
     eq |= hin >>> 31;
     const xh = (((eq & pv) + pv) ^ pv) | eq;
@@ -92,7 +92,7 @@ function myersX(t: string, p: string): number {
     mv = ph & xv;
   }
   for (let i = start; i < m; i++) {
-    peq[p.charCodeAt(i)] = 0;
+    peq[p[i]!.codePointAt(0)!] = 0;
   }
   return score;
 }
@@ -119,13 +119,14 @@ function myersX(t: string, p: string): number {
  * @returns The Levenshtein distance between the two strings.
  */
 export function levenshteinDistance(str1: string, str2: string): number {
-  if (str1.length < str2.length) {
-    const tmp = str1;
-    str1 = str2;
-    str2 = tmp;
+  let t = [...str1];
+  let p = [...str2];
+
+  if (t.length < p.length) {
+    [p, t] = [t, p];
   }
-  if (str2.length === 0) {
-    return str1.length;
+  if (p.length === 0) {
+    return t.length;
   }
-  return str2.length <= 32 ? myers32(str1, str2) : myersX(str1, str2);
+  return p.length <= 32 ? myers32(t, p) : myersX(t, p);
 }

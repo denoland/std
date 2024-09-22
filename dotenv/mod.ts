@@ -6,7 +6,7 @@
  *
  * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
  *
- * ```ts no-eval
+ * ```ts ignore
  * // Automatically load environment variables from a `.env` file
  * import "@std/dotenv/load";
  * ```
@@ -50,7 +50,7 @@ export interface LoadOptions {
  * Works identically to {@linkcode load}, but synchronously.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { loadSync } from "@std/dotenv";
  *
  * const conf = loadSync();
@@ -97,7 +97,7 @@ export function loadSync(
  * Then import the environment variables using the `load` function.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * // app.ts
  * import { load } from "@std/dotenv";
  *
@@ -115,7 +115,7 @@ export function loadSync(
  * the process environment.
  *
  * @example Auto-loading
- * ```ts no-eval
+ * ```ts ignore
  * // app.ts
  * import "@std/dotenv/load";
  *
@@ -145,7 +145,7 @@ export function loadSync(
  * ### Example configuration
  *
  * @example Using with options
- * ```ts no-eval
+ * ```ts ignore
  * import { load } from "@std/dotenv";
  *
  * const conf = await load({

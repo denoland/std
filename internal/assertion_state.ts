@@ -4,7 +4,7 @@
  * Check the test suite internal state
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { AssertionState } from "@std/internal";
  *
  * const assertionState = new AssertionState();
@@ -67,7 +67,7 @@ export class AssertionState {
    * @param val Set #state.assertionCheck's value
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -84,7 +84,7 @@ export class AssertionState {
    * @param val Set #state.assertionTriggered's value
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -138,7 +138,7 @@ export class AssertionState {
    * it should throw an AssertionError.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -203,7 +203,7 @@ const assertionState = new AssertionState();
  * @returns AssertionState
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { getAssertionState } from "@std/internal";
  *
  * const assertionState = getAssertionState();
