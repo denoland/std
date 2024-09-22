@@ -47,6 +47,7 @@
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
     "./unstable-take-while": "./unstable_take_while.ts",
+    "./unstable-without-all": "./unstable_without_all.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts"
