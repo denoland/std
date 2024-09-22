@@ -1,4 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { stub } from "@std/testing/mock";
 import {
   deleteCookie,
   getCookies,
@@ -613,5 +614,38 @@ Deno.test({
 
     headers = new Headers();
     assertEquals(getSetCookies(headers), []);
+  },
+});
+
+Deno.test({
+  name: "getSetCookies() is locale independent",
+  fn() {
+    const setCookie = "a=b; EXPIRES=Thu, 19 Sep 2024 07:47:28 GMT";
+    const headers = new Headers({ "set-cookie": setCookie });
+    const expected = [{
+      "name": "a",
+      "value": "b",
+      "expires": new Date("2024-09-19T07:47:28.000Z"),
+    }];
+
+    assertEquals(getSetCookies(headers), expected);
+
+    {
+      /**
+       * Use of locale-sensitive methods with undefined locale may cause
+       * environment-sensitive bugs -
+       * [issue](https://github.com/denoland/std/issues/6016)
+       */
+      const toLocaleLowerCase = String.prototype.toLocaleLowerCase;
+      using _ = stub(
+        String.prototype,
+        "toLocaleLowerCase",
+        function (locale) {
+          return toLocaleLowerCase.call(this, locale ?? "tr-TR");
+        },
+      );
+
+      assertEquals(getSetCookies(headers), expected);
+    }
   },
 });

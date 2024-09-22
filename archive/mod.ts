@@ -63,7 +63,7 @@
  * ```
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed in the future.
+ * `@std/archive` will be removed after 0.225.4.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
