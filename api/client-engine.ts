@@ -254,10 +254,7 @@ const request = async (
       throw new Error(msg)
     }
     if (cache) {
-      const canCachePostOutsideOfDeno = 'matchAll' in cache
-      if (canCachePostOutsideOfDeno) {
-        cache.put(toGetRequest(request, params), response.clone())
-      }
+      cache.put(toGetRequest(request, params), response.clone())
     }
   } else {
     console.log('cache hit', path, params)

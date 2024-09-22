@@ -64,7 +64,7 @@
   },
   "scopes": {},
   "fmt": {
-    "exclude": ["coverage", "cov", "node_modules"],
+    "exclude": ["coverage", "cov", "node_modules", "HAL", "tmp"],
     "semiColons": false,
     "singleQuote": true,
     "proseWrap": "always",
