@@ -837,8 +837,8 @@ function main() {
   function onListen({ port, hostname }: { port: number; hostname: string }) {
     let networkAddress: string | undefined = undefined;
     if (
-      Deno.permissions.querySync({ name: "sys", kind: "networkInterfaces" })
-        .state === "granted"
+      Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
+        .state ?? "granted" === "granted"
     ) {
       networkAddress = getNetworkAddress();
     }
