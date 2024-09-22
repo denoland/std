@@ -8,14 +8,11 @@ export function hasAssertions() {
   assertionState.setAssertionCheck(true);
 }
 
-export function emitAssertionTrigger() {
-  assertionState.setAssertionTriggered(true);
-}
-
 export function assertions(num: number) {
   assertionState.setAssertionCount(num);
 }
 
-export function emitAssertionCountUpdate() {
+export function emitAssertionTrigger() {
+  assertionState.setAssertionTriggered(true);
   assertionState.updateAssertionTriggerCount();
 }

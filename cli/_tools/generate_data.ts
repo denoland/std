@@ -298,6 +298,7 @@ function makeTables(
 }
 
 export async function tables(version: string) {
+  // deno-lint-ignore no-console
   console.info(`Generating tables for Unicode ${version}`);
 
   const eawMap = await loadEastAsianWidths(version);

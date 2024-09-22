@@ -463,13 +463,13 @@ snapshot[`assertSnapshot() - regression #2144 1`] = `
 
 snapshot[`assertSnapshot() - empty #2245 1`] = ``;
 
-snapshot[`createAssertSnapshot() > no options 1`] = `This green text has had it's colours stripped`;
+snapshot[`createAssertSnapshot() > no options 1`] = `This green text has had its colors stripped`;
 
-snapshot[`createAssertSnapshot() - options object - custom name 1`] = `This green text has had it's colours stripped`;
+snapshot[`createAssertSnapshot() - options object - custom name 1`] = `This green text has had its colors stripped`;
 
 snapshot[`createAssertSnapshot() > message 1`] = `"This snapshot has failed as expected"`;
 
-snapshot[`createAssertSnapshot() - composite - custom Name 1`] = `This green text has had it's colours stripped`;
+snapshot[`createAssertSnapshot() - composite - custom Name 1`] = `This green text has had its colors stripped`;
 
 snapshot[`assertSnapshot() - regression #5155 1`] = `
 "running 1 test from <tempDir>/test.ts

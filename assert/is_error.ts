@@ -29,14 +29,14 @@ import { stripAnsiCode } from "@std/internal/styles";
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass?: abstract new (...args: any[]) => E,
   msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
   const msgSuffix = msg ? `: ${msg}` : ".";
   if (!(error instanceof Error)) {
     throw new AssertionError(
-      `Expected "error" to be an Error object${msgSuffix}}`,
+      `Expected "error" to be an Error object${msgSuffix}`,
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {

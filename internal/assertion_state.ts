@@ -156,7 +156,7 @@ export class AssertionState {
    * Reset all assertion state when every test suite function ran completely.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-eval
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();

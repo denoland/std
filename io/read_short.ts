@@ -20,7 +20,7 @@ import type { BufReader } from "./buf_reader.ts";
  * @param buf The reader to read from
  * @returns The 16bit short
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 0.226.0.
  */
 export async function readShort(buf: BufReader): Promise<number | null> {
   const high = await buf.readByte();

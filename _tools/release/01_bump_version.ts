@@ -1,4 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run=git,deno --no-check
+// deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { getReleasesMdFile, loadRepo, VersionFile } from "./repo.ts";
 

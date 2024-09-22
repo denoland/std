@@ -6,9 +6,7 @@ import { AssertionError } from "./assertion_error.ts";
 // deno-lint-ignore no-explicit-any
 export type AnyConstructor = new (...args: any[]) => any;
 /** Gets constructor type */
-export type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
-new (...args: any) => infer C ? C
-  : never;
+export type GetConstructorType<T extends AnyConstructor> = InstanceType<T>;
 
 /**
  * Make an assertion that `obj` is an instance of `type`.
@@ -27,11 +25,14 @@ new (...args: any) => infer C ? C
  * @param expectedType The expected class constructor.
  * @param msg The optional message to display if the assertion fails.
  */
-export function assertInstanceOf<T extends AnyConstructor>(
+export function assertInstanceOf<
+  // deno-lint-ignore no-explicit-any
+  T extends abstract new (...args: any[]) => any,
+>(
   actual: unknown,
   expectedType: T,
   msg = "",
-): asserts actual is GetConstructorType<T> {
+): asserts actual is InstanceType<T> {
   if (actual instanceof expectedType) return;
 
   const msgSuffix = msg ? `: ${msg}` : ".";

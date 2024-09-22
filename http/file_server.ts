@@ -51,9 +51,9 @@ import { ByteSliceStream } from "@std/streams/byte-slice-stream";
 import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
-import { getNetworkAddress } from "@std/net/get-network-address";
-import { HEADER } from "./header.ts";
-import { METHOD } from "./method.ts";
+import { getNetworkAddress } from "@std/net/unstable-get-network-address";
+import { HEADER } from "./unstable_header.ts";
+import { METHOD } from "./unstable_method.ts";
 
 interface EntryInfo {
   mode: string;
@@ -408,6 +408,7 @@ function serverLog(req: Request, status: number) {
   const url = new URL(req.url);
   const s = `${dateFmt} [${req.method}] ${url.pathname}${url.search} ${status}`;
   // using console.debug instead of console.log so chrome inspect users can hide request logs
+  // deno-lint-ignore no-console
   console.debug(s);
 }
 
@@ -760,6 +761,7 @@ async function createServeDirResponse(
 }
 
 function logError(error: Error) {
+  // deno-lint-ignore no-console
   console.error(`%c${error.message}`, "color: red");
 }
 
@@ -802,12 +804,14 @@ function main() {
   }
 
   if (serverArgs.version) {
+    // deno-lint-ignore no-console
     console.log(`Deno File Server ${denoConfig.version}`);
     Deno.exit();
   }
 
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
+      // deno-lint-ignore no-console
       console.log("--key and --cert are required for TLS");
       printUsage();
       Deno.exit(1);
@@ -849,6 +853,7 @@ function main() {
     if (networkAddress && !DENO_DEPLOYMENT_ID) {
       message += `\n- Network: ${protocol}://${networkAddress}:${port}`;
     }
+    // deno-lint-ignore no-console
     console.log(message);
   }
 
@@ -874,6 +879,7 @@ function main() {
 }
 
 function printUsage() {
+  // deno-lint-ignore no-console
   console.log(`Deno File Server ${denoConfig.version}
   Serves a local directory in HTTP.
 

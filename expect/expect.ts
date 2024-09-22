@@ -16,7 +16,6 @@ import type {
 import { AssertionError } from "@std/assert/assertion-error";
 import {
   assertions,
-  emitAssertionCountUpdate,
   emitAssertionTrigger,
   hasAssertions,
 } from "./_assertions.ts";
@@ -224,7 +223,6 @@ export function expect<T extends Expected = Expected>(
           }
 
           emitAssertionTrigger();
-          emitAssertionCountUpdate();
         }
 
         return isPromised
@@ -497,14 +495,13 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
 expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
+
 /**
  * `expect.hasAssertions` verifies that at least one assertion is called during a test.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * Note: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
  *
- * Notice: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
- *
- * @example Usage
+ * @example
  * ```ts
  *
  * import { test } from "@std/testing/bdd";
@@ -517,14 +514,13 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * ```
  */
 expect.hasAssertions = hasAssertions as () => void;
+
 /**
  * `expect.assertions` verifies that a certain number of assertions are called during a test.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * Note: expect.assertions only can use in bdd function test suite, such as `test` or `it`.
  *
- * Notice: expect.assertions only can use in bdd function test suite, such as `test` or `it`.
- *
- * @example Usage
+ * @example
  * ```ts
  *
  * import { test } from "@std/testing/bdd";

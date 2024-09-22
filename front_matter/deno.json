@@ -1,6 +1,6 @@
 {
   "name": "@std/front-matter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "exports": {
     ".": "./mod.ts",
     "./any": "./any.ts",
@@ -8,6 +8,7 @@
     "./test": "./test.ts",
     "./toml": "./toml.ts",
     "./yaml": "./yaml.ts",
+    "./unstable-yaml": "./unstable_yaml.ts",
     "./types": "./types.ts"
   }
 }
