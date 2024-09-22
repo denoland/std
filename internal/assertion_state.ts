@@ -33,7 +33,7 @@ export class AssertionState {
    * @returns the number that through `expect.assertions` api set.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -50,7 +50,7 @@ export class AssertionState {
    * @returns return a certain number that assertions were called before.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -102,7 +102,7 @@ export class AssertionState {
    * you must have two assertion matchers call in your test suite.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -117,7 +117,7 @@ export class AssertionState {
    * If any matchers was called, `#state.assertionTriggeredCount` value will plus one internally.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -155,7 +155,7 @@ export class AssertionState {
    * Reset all assertion state when every test suite function ran completely.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -179,7 +179,7 @@ export class AssertionState {
    * it should throw an AssertionError.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
