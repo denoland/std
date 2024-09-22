@@ -39,7 +39,7 @@ export type CborMapInputStream = [string, CborInputStream];
  *   CborByteDecodedStream,
  *   CborByteEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = new Uint8Array(100);
  *
@@ -98,7 +98,7 @@ export class CborByteEncoderStream
    *   CborByteDecodedStream,
    *   CborByteEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = new Uint8Array(100);
    *
@@ -138,7 +138,7 @@ export class CborByteEncoderStream
    *   CborByteDecodedStream,
    *   CborByteEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = new Uint8Array(100);
    *
@@ -172,7 +172,7 @@ export class CborByteEncoderStream
    *   CborByteDecodedStream,
    *   CborByteEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = new Uint8Array(100);
    *
@@ -211,7 +211,7 @@ export class CborByteEncoderStream
  *   CborSequenceDecoderStream,
  *   CborTextDecodedStream,
  *   CborTextEncoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = "a".repeat(100);
  *
@@ -266,7 +266,7 @@ export class CborTextEncoderStream
    *   CborSequenceDecoderStream,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = "a".repeat(100);
    *
@@ -305,7 +305,7 @@ export class CborTextEncoderStream
    *   CborSequenceDecoderStream,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = "a".repeat(100);
    *
@@ -338,7 +338,7 @@ export class CborTextEncoderStream
    *   CborSequenceDecoderStream,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = "a".repeat(100);
    *
@@ -373,7 +373,7 @@ export class CborTextEncoderStream
  *   CborArrayDecodedStream,
  *   CborArrayEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
  *
@@ -426,7 +426,7 @@ export class CborArrayEncoderStream
    *   CborArrayDecodedStream,
    *   CborArrayEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
    *
@@ -468,7 +468,7 @@ export class CborArrayEncoderStream
    *   CborArrayDecodedStream,
    *   CborArrayEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
    *
@@ -504,7 +504,7 @@ export class CborArrayEncoderStream
    *   CborArrayDecodedStream,
    *   CborArrayEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
    *
@@ -541,7 +541,7 @@ export class CborArrayEncoderStream
  *   CborMapDecodedStream,
  *   CborMapEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage: Record<string, number> = {
  *   a: 0,
@@ -598,7 +598,7 @@ export class CborMapEncoderStream
    *   CborMapDecodedStream,
    *   CborMapEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage: Record<string, number> = {
    *   a: 0,
@@ -645,7 +645,7 @@ export class CborMapEncoderStream
    *   CborMapDecodedStream,
    *   CborMapEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage: Record<string, number> = {
    *   a: 0,
@@ -684,7 +684,7 @@ export class CborMapEncoderStream
    *   CborMapDecodedStream,
    *   CborMapEncoderStream,
    *   CborSequenceDecoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage: Record<string, number> = {
    *   a: 0,
@@ -733,7 +733,7 @@ export class CborMapEncoderStream
  *   CborTag,
  *   CborTextDecodedStream,
  *   CborTextEncoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = [
  *   undefined,
@@ -922,7 +922,7 @@ export class CborSequenceEncoderStream
    *   CborTag,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = [
    *   undefined,
@@ -1011,7 +1011,7 @@ export class CborSequenceEncoderStream
    *   CborTag,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = [
    *   undefined,
@@ -1094,7 +1094,7 @@ export class CborSequenceEncoderStream
    *   CborTag,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = [
    *   undefined,

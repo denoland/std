@@ -38,7 +38,7 @@ type ReleaseLock = (value?: unknown) => void;
  *   CborByteDecodedStream,
  *   CborByteEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = new Uint8Array(100);
  *
@@ -94,7 +94,7 @@ export class CborByteDecodedStream extends ReadableStream<Uint8Array> {
  *   CborSequenceDecoderStream,
  *   CborTextDecodedStream,
  *   CborTextEncoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = "a".repeat(100);
  *
@@ -150,7 +150,7 @@ export class CborTextDecodedStream extends ReadableStream<string> {
  *   CborArrayDecodedStream,
  *   CborArrayEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = ["a".repeat(100), "b".repeat(100), "c".repeat(100)];
  *
@@ -208,7 +208,7 @@ export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
  *   CborMapDecodedStream,
  *   CborMapEncoderStream,
  *   CborSequenceDecoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage: Record<string, number> = {
  *   a: 0,
@@ -302,7 +302,7 @@ export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
  *   CborTag,
  *   CborTextDecodedStream,
  *   CborTextEncoderStream,
- * } from "./mod.ts";
+ * } from "@std/cbor";
  *
  * const rawMessage = [
  *   undefined,
@@ -576,9 +576,11 @@ export class CborSequenceDecoderStream
           ),
           lock,
         ];
-      } else {return new TextDecoder().decode(
+      } else {
+        return new TextDecoder().decode(
           await this.#read(Number(bytes), true),
-        );}
+        );
+      }
     }
     if (aI === 31) {
       let releaseLock: ReleaseLock = () => {};
@@ -784,7 +786,7 @@ export class CborSequenceDecoderStream
    *   CborTag,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = [
    *   undefined,
@@ -866,7 +868,7 @@ export class CborSequenceDecoderStream
    *   CborTag,
    *   CborTextDecodedStream,
    *   CborTextEncoderStream,
-   * } from "./mod.ts";
+   * } from "@std/cbor";
    *
    * const rawMessage = [
    *   undefined,

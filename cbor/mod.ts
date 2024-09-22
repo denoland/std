@@ -21,7 +21,7 @@
  *
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { decodeCbor, encodeCbor } from "./mod.ts";
+ * import { decodeCbor, encodeCbor } from "@std/cbor";
  *
  * const rawMessage = "I am a raw Message!";
  *
