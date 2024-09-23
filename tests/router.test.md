@@ -3,6 +3,26 @@ target: agents/router.md
 assessor: agents/test-assessor.md
 ---
 
+## Switch alone
+
+**Prompts**
+ - /o1
+ - /o1-mini
+ - /hal2
+
+ **Expectations**
+  - a switch was made to the given agent
+  - swallowPrompt was true, indicating no further action
+
+## Switch nearby
+
+**Prompts**
+ - /01
+ - /o1mini
+
+**Expectations**
+ - a reasonably close agent is chosen
+
 ## switch with extra information
 
 Given a prompt that indicates the user wants to switch to another agent, as well
@@ -15,7 +35,7 @@ the extraneous content.
 
 **Expectations:**
 
-- the agent name immediately following `/` is switched to, regardless of what
+ - the agent name immediately following `/` is switched to, regardless of what
   information comes afterwards
 
 

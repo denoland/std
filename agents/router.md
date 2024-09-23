@@ -1,5 +1,6 @@
 ---
 config:
+  model: gpt-4o
   parallel_tool_calls: false
   tool_choice: required
 commands:
@@ -9,7 +10,8 @@ commands:
 
 If the message starts off with a "/" then what follows immediately will be a choice
 from the "The Index of Available Agents" as to what path to switch to.  If
-something seems close, use it.  
+something seems close, use it.  Eg: "/o1" would mean they want to switch to the
+o1 agent and wait.
 
 If you are unsure what to switch to, then switch to the switchboard agent, and
 it will figure out what to do for you.
@@ -19,7 +21,7 @@ then call "agents_switch" with the "swallowPrompt" parameter
 set to true, so that the switched to agent is not called.
 
 If the message contains any text beyond just switching information, then that
-must be passed on to the switched agent, so call the "agents_switch" with the
+should be passed on to the switched agent, so call the "agents_switch" with the
 parameter "rewrittenPrompt" to 
 pass on a rewritten version of the users prompt with all the switching
 information removed.
