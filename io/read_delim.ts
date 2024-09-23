@@ -47,7 +47,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/byte-slice-stream/~/ByteSliceStream | ByteSliceStream}
- * instead. This will be removed in 0.226.0.
+ * instead. This will be removed in 0.225.0.
  */
 export async function* readDelim(
   reader: Reader,
