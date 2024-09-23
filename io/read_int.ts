@@ -21,7 +21,7 @@ import { readShort } from "./read_short.ts";
  * @param buf The buffer reader to read from
  * @returns The 32bit integer
  *
- * @deprecated This will be removed in 0.226.0.
+ * @deprecated This will be removed in 0.225.0.
  */
 export async function readInt(buf: BufReader): Promise<number | null> {
   const high = await readShort(buf);
