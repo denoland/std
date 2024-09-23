@@ -21,7 +21,7 @@ Deno.test("intersect() handles empty arrays", () => {
   assertEquals(actual, []);
 });
 
-Deno.test(name: "intersect() handles one side empty", () => {
+Deno.test("intersect() handles one side empty", () => {
   const firstEmpty = intersect([], [1, 2, 3]);
   const secondEmpty = intersect([1, 2, 3], []);
   assertEquals(firstEmpty, []);
