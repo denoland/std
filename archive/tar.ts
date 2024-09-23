@@ -45,7 +45,7 @@ export type { TarInfo, TarMeta };
  * Options for {@linkcode Tar.append}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed, with 0.225.4 being the last published version.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -126,7 +126,7 @@ function formatHeader(data: TarData): Uint8Array {
  * Base interface for {@linkcode TarDataWithSource}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed, with 0.225.4 being the last published version.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -180,7 +180,7 @@ export interface TarData {
  * Tar data interface for {@linkcode Tar.data}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed, with 0.225.4 being the last published version.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -202,7 +202,7 @@ export interface TarDataWithSource extends TarData {
  * have the '.tar' extension.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed, with 0.225.4 being the last published version.
  *
  * ### Usage
  * The workflow is to create a Tar instance, append files to it, and then write the
