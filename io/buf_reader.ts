@@ -34,7 +34,7 @@ const LF = "\n".charCodeAt(0);
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
- * This will be removed in 0.226.0.
+ * This will be removed in 0.225.0.
  */
 export class BufferFullError extends Error {
   /**
