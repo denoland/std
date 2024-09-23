@@ -21,22 +21,16 @@ Deno.test("intersect() handles empty arrays", () => {
   assertEquals(actual, []);
 });
 
-Deno.test({
-  name: "intersect() handles one side empty",
-  fn() {
-    const firstEmpty = intersect([], [1, 2, 3]);
-    const secondEmpty = intersect([1, 2, 3], []);
-    assertEquals(firstEmpty, []);
-    assertEquals(secondEmpty, []);
-  },
+Deno.test(name: "intersect() handles one side empty", () => {
+  const firstEmpty = intersect([], [1, 2, 3]);
+  const secondEmpty = intersect([1, 2, 3], []);
+  assertEquals(firstEmpty, []);
+  assertEquals(secondEmpty, []);
 });
 
-Deno.test({
-  name: "intersect() handles empty result",
-  fn() {
-    const actual = intersect(["a", "b", "c"], ["d", "e", "f"]);
-    assertEquals(actual, []);
-  },
+Deno.test("intersect() handles empty result", () => {
+  const actual = intersect(["a", "b", "c"], ["d", "e", "f"]);
+  assertEquals(actual, []);
 });
 
 Deno.test("intersect() handles one or more items in intersection", () => {
