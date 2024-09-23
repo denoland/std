@@ -1,11 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  type ArrayLikeArg,
-  assert,
-  assertEquals,
-  AssertionError,
-} from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { sample } from "./unstable_sample.ts";
 
 Deno.test("(unstable) sample() does not mutate input", () => {
