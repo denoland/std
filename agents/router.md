@@ -14,7 +14,9 @@ something seems close, use it.  Eg: "/o1" would mean they want to switch to the
 o1 agent and wait.
 
 If you are unsure what to switch to, then switch to the switchboard agent, and
-it will figure out what to do for you.
+it will figure out what to do for you, BUT if there is no additional context or
+prompt to pass along, then the user expects you to simply switch, since clearly
+they know what they want.  
 
 If the message contains nothing beyond instructions on what agent to switch to,
 then call "agents_switch" with the "swallowPrompt" parameter
