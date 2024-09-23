@@ -30,7 +30,7 @@ const decoder = new TextDecoder();
  *
  * @deprecated Write to a
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer}'s
- * `writable` property instead. This will be removed in 0.226.0.
+ * `writable` property instead. This will be removed in 0.225.0.
  */
 export class StringWriter implements Writer, WriterSync {
   #chunks: Uint8Array[] = [];
