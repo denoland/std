@@ -358,7 +358,7 @@ function parseSetCookie(value: string): Cookie | null {
   };
 
   for (const [key, value] of attrs.slice(1)) {
-    switch (key.toLocaleLowerCase()) {
+    switch (key.toLowerCase()) {
       case "expires":
         cookie.expires = new Date(value);
         break;
