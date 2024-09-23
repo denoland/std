@@ -67,7 +67,7 @@ const ENV_PERM_STATUS =
     .state ?? "granted"; // for deno deploy
 const NET_PERM_STATUS =
   Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
-    .state ?? "granted" ; // for deno deploy
+    .state ?? "granted"; // for deno deploy
 const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
   ? Deno.env.get("DENO_DEPLOYMENT_ID")
   : undefined;
