@@ -20,6 +20,9 @@ export type SortByOptions = {
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
+ * Note: If you want to process any iterable, use the new version of
+ * `sortBy` from `@std/collections/unstable-sort-by`.
+ *
  * @typeParam T The type of the array elements.
  *
  * @param array The array to sort.
