@@ -18,6 +18,7 @@ tools:
     function: search
     description: Search for a file or directory.  Returns the relative path to the first match. This is some extra text to help the model make a choice better
     branch: true | daemon # run the function in a dedicated branch rather than in band, or keep it open after origin is replied to
+    stopOnTool: true  # should calling this tool stop agent execution ?
     parameters:
       query-thing:
         description: this is the overridden parameter name for query

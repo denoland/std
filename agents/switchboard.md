@@ -1,6 +1,4 @@
 ---
-# WARNING by default, this agent has no tooling, but when run as the actual switchboard, it will be run as a drone and forced to make a tool call with the following configuration
-
 config:
   parallel_tool_calls: false
 commands:
@@ -18,6 +16,12 @@ to do the following. This is in priority order:
    one.
 3. Chose the most appropriate AGENT from the list of AVAILABLE AGENTS,
 4. If you have chosen an AGENT, SWITCH to it.
+5. If the user prompt was entirely related to switching agents, use the "swallowPrompt"
+   parameter to indicate you have consumed the users message and not to pass it
+   on to the AGENT.
+6. If the user prompt indicates that the AGENT to SWITCH to should be run, do
+   not pass the swallowPrompt parameter, for example "list all my files" should
+   be passed to the AGENT
 
 ## Definitions
 
