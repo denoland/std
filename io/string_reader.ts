@@ -23,7 +23,7 @@ import { Buffer } from "./buffer.ts";
  *
  * @deprecated Pass an encoded string to a new
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instance
- * instead. This will be removed in 0.226.0.
+ * instead. This will be removed in 0.225.0.
  */
 export class StringReader extends Buffer {
   /**
