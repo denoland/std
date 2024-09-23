@@ -32,15 +32,15 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(next).toEqual(focus)
     })
 
-    await t.step('restart a thread', async () => {
-      const result = await backchat.prompt('switch me back to the first thread')
-      log('result', result)
-      // TODO enable after providing thread search ability
-      // const next = await backchat.readBaseThread()
-      // expect(next).not.toEqual(focus)
-      // expect(next).toEqual(initialFocus)
-      // focus = next
-    })
+    // TODO enable after providing thread search ability
+    // await t.step('restart a thread', async () => {
+    //   const result = await backchat.prompt('switch me back to the first thread')
+    //   log('result', result)
+    // const next = await backchat.readBaseThread()
+    // expect(next).not.toEqual(focus)
+    // expect(next).toEqual(initialFocus)
+    // focus = next
+    // })
 
     // test changing some files then have that show up on the other thread
 
