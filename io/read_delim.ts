@@ -45,7 +45,9 @@ function createLPS(pat: Uint8Array): Uint8Array {
  * @param delim The delimiter to read until
  * @returns The {@linkcode AsyncIterableIterator} of {@linkcode Uint8Array}s.
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/byte-slice-stream/~/ByteSliceStream | ByteSliceStream}
+ * instead. This will be removed in 0.225.0.
  */
 export async function* readDelim(
   reader: Reader,
