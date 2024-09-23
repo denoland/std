@@ -6,12 +6,12 @@ import {
   IA,
   pidSchema,
   print,
+  Returns,
   Thread,
   ToApiType,
 } from '@/constants.ts'
 import { ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
-import { load } from './utils/load-agent.ts'
 import { executeTools } from './utils/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
@@ -26,7 +26,7 @@ export const parameters = {
     content: z.string(),
     actorId: z.string(),
   }),
-  switchboard: z.object({
+  route: z.object({
     content: z.string(),
     actorId: z.string(),
   }),
@@ -42,12 +42,13 @@ export const parameters = {
     remote: pidSchema.optional(),
   }),
 }
-export const returns = {
+
+export const returns: Returns<typeof parameters> = {
   start: z.void(),
   run: z.void(),
   /** If the tools reqeuested a new thread to be formed, or a change to the
    * backchat target thread */
-  switchboard: z.object({
+  route: z.object({
     newThread: z.boolean().optional(),
     changeThread: pidSchema.optional(),
   }).refine((v) => !(v.newThread && v.changeThread), {
@@ -68,6 +69,7 @@ export const functions: Functions<Api> = {
     log('start', threadPath, print(api.pid))
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const thread: Thread = {
+      agent: 'agents/switchboard.md',
       messageOffset: 0,
       messages: [],
       toolCommits: {},
@@ -90,39 +92,48 @@ export const functions: Functions<Api> = {
     assert(last.role === 'assistant', 'not assistant: ' + last.role)
     assert(typeof last.content === 'string', 'expected string content')
   },
-  switchboard: async ({ content, actorId }, api) => {
+  route: async ({ content, actorId }, api) => {
     // TODO handle remote threadIds with symlinks in the threads dir
-
-    const path = `agents/switchboard.md`
-    // TODO change this to be a drone call
-    // verify the switchboard has the right tool loaded
-    // TODO verify stopOnTool function returns null
-
-    const overrides = await load(path, api)
-    overrides.config.parallel_tool_calls = false
-    overrides.config.tool_choice = 'required'
-    overrides.commands.push('agents:switch')
+    // TODO verify stopOnTool function returns null, or throw an error
 
     const threadPath = getThreadPath(api.pid)
-    const thread = await api.readJSON<Thread>(threadPath)
+    const thread = await api.readThread(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
+    const router = `agents/router.md`
 
-    const switchResult = await loop(path, api, ['agents_switch'], overrides)
-    assert(switchResult, 'expected switchboard result')
-    assert(switchResult.functionName === 'agents_switch', 'not agents_switch')
-    const { path: next } = agents.parameters.switch.parse(switchResult.args)
+    let path = thread.agent
+    let swallowPrompt = false
+    let rewrittenPrompt: string | undefined
+
+    if (content.trim().startsWith('/')) {
+      const result = await loop(router, api, ['agents_switch'])
+      assert(result, 'expected router result')
+      assert(result.functionName === 'agents_switch', 'no agents_switch')
+      const args = agents.parameters.switch.parse(result.args)
+      path = args.path
+      swallowPrompt = args.swallowPrompt || false
+      rewrittenPrompt = args.rewrittenPrompt
+    }
+
+    const result: z.infer<typeof returns.route> = {}
+    if (swallowPrompt) {
+      log('swallowing prompt:', content)
+      return result
+    }
+    if (rewrittenPrompt) {
+      log('rewritten prompt:', rewrittenPrompt)
+    }
 
     const stopOnTools = []
-    if (next === `agents/backchat.md`) {
+    if (path === `agents/backchat.md`) {
       stopOnTools.push(
         'backchat_newThreadSignal',
         'backchat_changeThreadSignal',
       )
     }
 
-    const agentResult = await loop(next, api, stopOnTools)
-    const result: z.infer<typeof returns.switchboard> = {}
+    const agentResult = await loop(path, api, stopOnTools)
     if (agentResult) {
       const { functionName } = agentResult
       if (functionName === 'backchat_newThreadSignal') {
@@ -187,7 +198,7 @@ const loop = async (
 ) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
-  const HARD_STOP = 20
+  const HARD_STOP = 50
   let count = 0
   stopOnTools = addDefaults(stopOnTools)
 
@@ -196,7 +207,7 @@ const loop = async (
     if (await isDone(threadPath, api)) {
       break
     }
-    // TODO check tool returns are checked against schema
+    // TODO check tool returns are checked against returns schema
     await executeTools(threadPath, api, stopOnTools, overrides)
   }
   if (count >= HARD_STOP) {

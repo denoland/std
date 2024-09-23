@@ -19,6 +19,13 @@ commands:
   - io-fixture:ping
 ---
 `
+const errorSwitchboard = `
+---
+commands:
+  - agents:switch
+---
+call the "agents_switch" function with the argument "agents/missing.md".  If this fails for any reason, stop immediately and reply with: "cincinatti".
+`
 const path = 'agents/agent-fixture.md'
 
 Deno.test('longthread chat', async (t) => {
@@ -171,15 +178,76 @@ Deno.test('test o1 agents', async (t) => {
 Deno.test('switchboard errors', async (t) => {
   const { backchat, engine } = await cradleMaker()
   const actorId = 'switchboard_errors'
+  const path = 'agents/switchboard.md'
+
+  log.enable('AI:longthread AI:execute-tools')
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
   await backchat.write(
-    'agents/switchboard.md',
-    'call the "switchboard" function with the argument "agents/missing.md"',
+    path,
+    errorSwitchboard,
   )
   await t.step('missing agent', async () => {
     await longthread.start({})
-    await longthread.switchboard({ content: 'hello', actorId })
+    await longthread.run({ path, content: 'hello', actorId })
+    const thread = await backchat.readThread(backchat.pid)
+    const assistant = thread.messages.pop()
+    expect(assistant?.content).toBe('cincinatti')
+  })
+
+  await engine.stop()
+})
+
+Deno.test('router', async (t) => {
+  const { backchat, engine } = await cradleMaker()
+  const actorId = 'test-router'
+
+  const router = Deno.readTextFileSync('./HAL/agents/router.md')
+  await backchat.write('agents/router.md', router)
+
+  log.enable('AI:longthread AI:execute-tools AI:agents')
+
+  const longthread = await backchat.actions<longthread.Api>('longthread')
+  await t.step('default agent', async () => {
+    await backchat.delete(getThreadPath(backchat.pid))
+    await longthread.start({})
+    await longthread.route({ content: 'hello', actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+    const assistant = thread.messages.pop()
+    assert(assistant?.role === 'assistant', 'no assistant')
+    expect(assistant?.name).toBe(thread.agent)
+  })
+  await t.step('swallow prompt', async () => {
+    await backchat.delete(getThreadPath(backchat.pid))
+    await longthread.start({})
+    await longthread.route({ content: '/o1', actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+
+    expect(thread.agent).toBe('agents/o1.md')
+
+    const tool = thread.messages.pop()
+    expect(tool?.role).toBe('tool')
+    expect(tool?.content).toBe('null')
+
+    const assistant = thread.messages.pop()
+    assert(assistant?.role === 'assistant', 'no assistant')
+    expect(assistant?.name).toBe('agents/router.md')
+
+    const toolCall = assistant?.tool_calls?.[0]
+    assert(toolCall, 'missing tool call')
+    const args = JSON.parse(toolCall.function.arguments)
+    expect(args.path).toBe('agents/o1.md')
+    expect(args.swallowPrompt).toBeTruthy()
+  })
+  await t.step('rewritten prompt', async () => {
+    await backchat.delete(getThreadPath(backchat.pid))
+    await longthread.start({})
+    await longthread.route({ content: '/o1-mini hello', actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+    expect(thread.agent).toBe('agents/o1-mini.md')
   })
 
   await engine.stop()

@@ -7,6 +7,7 @@ import {
   ApiFunctions,
   DispatchFunctions,
   freezePid,
+  getThreadPath,
   IoStruct,
   isChildOf,
   isSettledIsolatePromise,
@@ -220,7 +221,10 @@ export default class IA<T extends object = Default> {
     }
     return this.#fs.readJSON<T>(path)
   }
-  async readThread(threadPath: string, opts?: { target?: PID }) {
+  async readThread(threadPath?: string, opts?: { target?: PID }) {
+    if (!threadPath) {
+      threadPath = getThreadPath(opts?.target || this.pid)
+    }
     const thread = await this.readJSON(threadPath, opts)
     return threadSchema.parse(thread)
   }

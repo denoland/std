@@ -123,7 +123,9 @@ export const ENTRY_BRANCH = 'main'
 export type PartialPID = Omit<PID, 'repoId'>
 
 export const threadSchema = z.object({
-  /** If this thread is deferring to a remote, send messages to it, rather than taking on the the current messages directly */
+  /** The current agent the conversation is with */
+  agent: z.string(),
+  /** The remote thread the conversation is currently with */
   remote: pidSchema.optional(),
   /** If the messages were truncated, this is the offset count */
   messageOffset: z.number(),
@@ -740,6 +742,9 @@ export const backchatStateSchema = z.object({
   /** The base thread that this backchat session points to - the thread of last resort */
   target: pidSchema,
 })
+export type Returns<T extends Record<string, z.ZodTypeAny>> = {
+  [K in keyof T]: z.ZodTypeAny
+}
 export type ToApiType<
   P extends Record<string, ZodSchema>,
   R extends { [K in keyof P]: ZodSchema },

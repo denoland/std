@@ -115,13 +115,10 @@ export const functions: Functions<Api> = {
 
     const actorId = getActorId(api.pid)
 
-    const { switchboard } = await api.actions<longthread.Api>('longthread', {
+    const { route } = await api.actions<longthread.Api>('longthread', {
       target,
     })
-    const { newThread, changeThread } = await switchboard({
-      content,
-      actorId,
-    })
+    const { newThread, changeThread } = await route({ content, actorId })
     if (newThread) {
       await functions.newThread({}, api)
     }

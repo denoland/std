@@ -2,6 +2,7 @@ import {
   agentConfigSchema,
   agentSchema,
   Functions,
+  getThreadPath,
   print,
   reasoning,
   ToApiType,
@@ -17,16 +18,24 @@ export const parameters = {
     'The highly descriptive natural language search query saying what the agent you want should be capable of doing.  Will return a ranked array of results, where each result will have a path to the agent file, the name of the agent, and a reason why it was selected, and optionally an avatar representing the agent.',
   ),
   switch: z.object({
-    reasoning,
+    reasoning: reasoning.describe(
+      'reasoning for switching to the agent and why the parameters were chosen',
+    ),
     path: z.string().describe('The path to the agent file to switch to'),
+    rewrittenPrompt: z.string().optional().describe(
+      'The rewritten prompt to use, if rewriting the prompt would be beneficial to the clarity of the conversation',
+    ),
+    swallowPrompt: z.boolean().optional().describe(
+      'Whether to call the agent after switching, or to swallow the prompt that caused the switch and await the next prompt.  Use this if there is no meaningful message to send to the agent yet, for example if the user simply asked to switch to the agent - there would be no point executing the agent just with this method.',
+    ),
     alsoConsidered: z.array(
       z.object({
-        path: z.string(),
+        path: z.string().describe('path to the agent file that was considered'),
         reason: z.string().describe(
           'reason why this agent was considered but rejected',
         ),
       }),
-    ).max(3),
+    ).max(3).optional(),
   }).describe(
     'Called with step by step reasoning how the selected path was decided upon, and the path to the new agent to call',
   ),
@@ -94,9 +103,14 @@ export const functions: Functions<Api> = {
       reason: 'no reason available',
     }))
   },
-  switch: async ({ path }, api) => {
-    log('switch', path, print(api.pid))
+  switch: async ({ path, rewrittenPrompt, swallowPrompt }, api) => {
+    log('switch', path, rewrittenPrompt, swallowPrompt, print(api.pid))
     await load(path, api)
+
+    const thread = await api.readThread()
+    thread.agent = path
+    api.writeJSON(getThreadPath(api.pid), thread)
+
     return null
   },
   write: async ({ path, content = '' }, api) => {
