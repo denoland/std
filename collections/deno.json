@@ -48,6 +48,7 @@
     "./union": "./union.ts",
     "./unstable-sort-by": "./unstable_sort_by.ts",
     "./unstable-take-while": "./unstable_take_while.ts",
+    "./unstable-chunk": "./unstable_chunk.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts"
