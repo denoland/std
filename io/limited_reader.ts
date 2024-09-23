@@ -25,7 +25,7 @@ import type { Reader } from "./types.ts";
  *
  * @deprecated Pipe the readable through a
  * {@linkcode https://jsr.io/@std/streams/doc/limited-bytes-transform-stream/~/LimitedBytesTransformStream | LimitedBytesTransformStream}
- * instead. This will be removed in 0.226.0.
+ * instead. This will be removed in 0.225.0.
  */
 export class LimitedReader implements Reader {
   /**
