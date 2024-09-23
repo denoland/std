@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { getThreadPath, Thread } from '../constants.ts'
+import { getThreadPath } from '../constants.ts'
 import * as longthread from './longthread.ts'
 import { Backchat } from '../api/client-backchat.ts'
 import { assert } from '@std/assert'
@@ -24,14 +24,13 @@ const errorSwitchboard = `
 commands:
   - agents:switch
 ---
-call the "agents_switch" function with the argument "agents/missing.md".  If this fails for any reason, stop immediately and reply with: "cincinatti".
+call the "agents_switch" function with the argument "agents/missing.md".  If this fails for any reason, stop immediately and reply with: "cincinnati".
 `
 const path = 'agents/agent-fixture.md'
 
 Deno.test('longthread chat', async (t) => {
   const { backchat, engine } = await cradleMaker()
 
-  const threadPath = getThreadPath(backchat.pid)
   const actorId = 'longthread'
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
@@ -47,7 +46,7 @@ Deno.test('longthread chat', async (t) => {
   await t.step('hello world', async () => {
     const content = 'cheese emoji'
     await longthread.run({ path, content, actorId })
-    const result = await backchat.readJSON<Thread>(threadPath)
+    const result = await backchat.readThread(backchat.pid)
     log('result', result)
     expect(result.messages).toHaveLength(2)
     expect(result.messages[1].content).toBe('🧀')
@@ -59,7 +58,7 @@ Deno.test('longthread chat', async (t) => {
 
     await longthread.run({ path, content, actorId })
 
-    const result = await backchat.readJSON<Thread>(threadPath)
+    const result = await backchat.readThread(backchat.pid)
     expect(result).toHaveProperty('toolCommits')
     expect(Object.keys(result.toolCommits)).toHaveLength(1)
 
@@ -79,7 +78,7 @@ Deno.test('longthread chat', async (t) => {
 
     await longthread.run({ path, content, actorId })
 
-    const result = await backchat.readJSON<Thread>(threadPath)
+    const result = await backchat.readThread(backchat.pid)
 
     const [assistant, error] = result.messages.slice(-3)
     assert(assistant.role === 'assistant', 'tool calls missing')
@@ -100,7 +99,7 @@ Deno.test('longthread chat', async (t) => {
     backchat.write(path, doubleToolCall)
 
     await longthread.run({ path, content, actorId })
-    const result = await backchat.readJSON<Thread>(threadPath)
+    const result = await backchat.readThread(backchat.pid)
 
     const [assistant] = result.messages.slice(-4)
     assert(assistant.role === 'assistant', 'tool calls missing')
@@ -180,8 +179,6 @@ Deno.test('switchboard errors', async (t) => {
   const actorId = 'switchboard_errors'
   const path = 'agents/switchboard.md'
 
-  log.enable('AI:longthread AI:execute-tools')
-
   const longthread = await backchat.actions<longthread.Api>('longthread')
   await backchat.write(
     path,
@@ -192,7 +189,7 @@ Deno.test('switchboard errors', async (t) => {
     await longthread.run({ path, content: 'hello', actorId })
     const thread = await backchat.readThread(backchat.pid)
     const assistant = thread.messages.pop()
-    expect(assistant?.content).toBe('cincinatti')
+    expect(assistant?.content).toBe('cincinnati')
   })
 
   await engine.stop()
@@ -204,8 +201,6 @@ Deno.test('router', async (t) => {
 
   const router = Deno.readTextFileSync('./HAL/agents/router.md')
   await backchat.write('agents/router.md', router)
-
-  log.enable('AI:longthread AI:execute-tools AI:agents')
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
   await t.step('default agent', async () => {
@@ -248,6 +243,61 @@ Deno.test('router', async (t) => {
 
     const thread = await backchat.readThread(backchat.pid)
     expect(thread.agent).toBe('agents/o1-mini.md')
+  })
+
+  await engine.stop()
+})
+
+Deno.test('agents_switch function acts as router', async (t) => {
+  const { backchat, engine } = await cradleMaker()
+  const actorId = 'test-agents_switch'
+
+  const router = Deno.readTextFileSync('./HAL/agents/router.md')
+  await backchat.write('agents/router.md', router)
+  const switchboard = Deno.readTextFileSync('./HAL/agents/switchboard.md')
+  await backchat.write('agents/switchboard.md', switchboard)
+
+  const longthread = await backchat.actions<longthread.Api>('longthread')
+  const path = 'agents/switchboard.md'
+
+  await t.step('switchboard to files with no prompt', async () => {
+    await longthread.start({})
+    await longthread.run({ path, content: 'switch to files', actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+
+    expect(thread.agent).toBe('agents/files.md')
+
+    const tool = thread.messages.pop()
+    expect(tool?.role).toBe('tool')
+    expect(tool?.content).toBe('null')
+
+    const assistant = thread.messages.pop()
+    assert(assistant?.role === 'assistant', 'no assistant')
+    expect(assistant?.name).toBe(path)
+
+    const toolCall = assistant?.tool_calls?.[0]
+    assert(toolCall, 'missing tool call')
+    const args = JSON.parse(toolCall.function.arguments)
+    expect(args.path).toBe('agents/files.md')
+    expect(args.swallowPrompt).toBeTruthy()
+  })
+  await t.step('switchboard with prompt', async () => {
+    await backchat.delete(getThreadPath(backchat.pid))
+    await longthread.start({})
+
+    await longthread.run({ path, content: 'list all my files', actorId })
+
+    const thread = await backchat.readThread(backchat.pid)
+
+    expect(thread.agent).toBe('agents/files.md')
+
+    const assistant = thread.messages.pop()
+    assert(assistant, 'no assistant')
+    assert(assistant.role === 'assistant', 'no assistant')
+    expect(assistant.name).toBe('agents/files.md')
+    expect(assistant.content).toBeTruthy()
+    expect(assistant.tool_calls).toBeUndefined()
   })
 
   await engine.stop()

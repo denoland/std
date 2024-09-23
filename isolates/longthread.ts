@@ -82,15 +82,12 @@ export const functions: Functions<Api> = {
     // TODO sniff actorId from the action source
     log('run', { path, content, actorId })
     const threadPath = getThreadPath(api.pid)
-    let thread = await api.readThread(threadPath)
+    const thread = await api.readThread(threadPath)
 
+    thread.agent = path
     thread.messages.push({ name: actorId, role: 'user', content })
     api.writeJSON(threadPath, thread)
     await loop(path, api, [])
-    thread = await api.readThread(threadPath)
-    const last = thread.messages[thread.messages.length - 1]
-    assert(last.role === 'assistant', 'not assistant: ' + last.role)
-    assert(typeof last.content === 'string', 'expected string content')
   },
   route: async ({ content, actorId }, api) => {
     // TODO handle remote threadIds with symlinks in the threads dir
@@ -103,28 +100,10 @@ export const functions: Functions<Api> = {
     const router = `agents/router.md`
 
     let path = thread.agent
-    let swallowPrompt = false
-    let rewrittenPrompt: string | undefined
 
     if (content.trim().startsWith('/')) {
-      const result = await loop(router, api, ['agents_switch'])
-      assert(result, 'expected router result')
-      assert(result.functionName === 'agents_switch', 'no agents_switch')
-      const args = agents.parameters.switch.parse(result.args)
-      path = args.path
-      swallowPrompt = args.swallowPrompt || false
-      rewrittenPrompt = args.rewrittenPrompt
+      path = router
     }
-
-    const result: z.infer<typeof returns.route> = {}
-    if (swallowPrompt) {
-      log('swallowing prompt:', content)
-      return result
-    }
-    if (rewrittenPrompt) {
-      log('rewritten prompt:', rewrittenPrompt)
-    }
-
     const stopOnTools = []
     if (path === `agents/backchat.md`) {
       stopOnTools.push(
@@ -134,6 +113,7 @@ export const functions: Functions<Api> = {
     }
 
     const agentResult = await loop(path, api, stopOnTools)
+    const result: z.infer<typeof returns.route> = {}
     if (agentResult) {
       const { functionName } = agentResult
       if (functionName === 'backchat_newThreadSignal') {
@@ -209,6 +189,7 @@ const loop = async (
     }
     // TODO check tool returns are checked against returns schema
     await executeTools(threadPath, api, stopOnTools, overrides)
+    path = await readSwitchedPath(threadPath, api)
   }
   if (count >= HARD_STOP) {
     throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
@@ -238,11 +219,9 @@ const isDone = async (threadPath: string, api: IA, stopOnTools?: string[]) => {
     log(`${last.role}:${last.name}:`, last.content)
   }
   if (last.role === 'tool') {
-    if (stopOnTools) {
-      const prior = thread.messages[thread.messages.length - 2]
-      if (isStopOnTool(prior, last, stopOnTools)) {
-        return true
-      }
+    const prior = thread.messages[thread.messages.length - 2]
+    if (isStopOnTool(prior, last, stopOnTools)) {
+      return true
     }
   }
   if (last.role !== 'assistant') {
@@ -257,7 +236,7 @@ const isDone = async (threadPath: string, api: IA, stopOnTools?: string[]) => {
 const isStopOnTool = (
   prior: CompletionMessage,
   tool: ToolMessage,
-  stopOnTools: string[],
+  stopOnTools: string[] = [],
 ) => {
   if (prior.role !== 'assistant') {
     return false
@@ -268,14 +247,23 @@ const isStopOnTool = (
   if (prior.tool_calls.length !== 1) {
     return false
   }
-  if (!stopOnTools.includes(prior.tool_calls[0].function.name)) {
+  if (tool.content !== 'null') {
     return false
   }
-  if (tool.content !== 'null') {
+  if (prior.tool_calls[0].function.name === 'agents_switch') {
+    const call = prior.tool_calls[0].function
+    assert(call.name === 'agents_switch', 'not agents_switch')
+    const object = JSON.parse(call.arguments)
+    const args = agents.parameters.switch.parse(object)
+    log('agents_switch', args)
+    return !!args.swallowPrompt
+  }
+  if (!stopOnTools.includes(prior.tool_calls[0].function.name)) {
     return false
   }
   return true
 }
+
 const addDefaults = (stopOnTools: string[]) => {
   const result = [...stopOnTools]
   if (!result.includes('utils_resolve')) {
@@ -285,4 +273,8 @@ const addDefaults = (stopOnTools: string[]) => {
     result.push('utils_reject')
   }
   return result
+}
+const readSwitchedPath = async (threadPath: string, api: IA) => {
+  const thread = await api.readJSON<Thread>(threadPath)
+  return thread.agent
 }
