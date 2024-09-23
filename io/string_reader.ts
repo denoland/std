@@ -21,7 +21,9 @@ import { Buffer } from "./buffer.ts";
  * assertEquals(new TextDecoder().decode(data), "abcdef");
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Pass an encoded string to a new
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instance
+ * instead. This will be removed in 0.225.0.
  */
 export class StringReader extends Buffer {
   /**
