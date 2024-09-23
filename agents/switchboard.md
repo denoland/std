@@ -1,11 +1,10 @@
 ---
 # WARNING by default, this agent has no tooling, but when run as the actual switchboard, it will be run as a drone and forced to make a tool call with the following configuration
 
-# config:
-#   parallel_tool_calls: false
-#   tool_choice: required
-# commands:
-#   - agents:switch # switch in the chosen agent to the thread
+config:
+  parallel_tool_calls: false
+commands:
+  - agents:switch # switch in the chosen agent to the thread
 ---
 
 # switchboard
