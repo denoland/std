@@ -20,7 +20,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
 
     await t.step('second thread', async () => {
-      await backchat.prompt('start a new thread')
+      await backchat.prompt('/backchat start a new thread')
       const next = await backchat.readBaseThread()
       expect(next).not.toEqual(focus)
       focus = next

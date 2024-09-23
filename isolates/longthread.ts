@@ -104,15 +104,8 @@ export const functions: Functions<Api> = {
     if (content.trim().startsWith('/')) {
       path = router
     }
-    const stopOnTools = []
-    if (path === `agents/backchat.md`) {
-      stopOnTools.push(
-        'backchat_newThreadSignal',
-        'backchat_changeThreadSignal',
-      )
-    }
 
-    const agentResult = await loop(path, api, stopOnTools)
+    const agentResult = await loop(path, api, [])
     const result: z.infer<typeof returns.route> = {}
     if (agentResult) {
       const { functionName } = agentResult
@@ -182,14 +175,17 @@ const loop = async (
   let count = 0
   stopOnTools = addDefaults(stopOnTools)
 
-  while (!await isDone(threadPath, api, stopOnTools) && count++ < HARD_STOP) {
+  let workingStops = stopOnTools
+
+  while (!await isDone(threadPath, api, workingStops) && count++ < HARD_STOP) {
     await complete({ path, overrides })
     if (await isDone(threadPath, api)) {
       break
     }
     // TODO check tool returns are checked against returns schema
-    await executeTools(threadPath, api, stopOnTools, overrides)
+    await executeTools(threadPath, api, workingStops, overrides)
     path = await readSwitchedPath(threadPath, api)
+    workingStops = withConditions(stopOnTools, path)
   }
   if (count >= HARD_STOP) {
     throw new Error('LONGTHREAD hard stop after: ' + HARD_STOP + ' loops')
@@ -277,4 +273,14 @@ const addDefaults = (stopOnTools: string[]) => {
 const readSwitchedPath = async (threadPath: string, api: IA) => {
   const thread = await api.readJSON<Thread>(threadPath)
   return thread.agent
+}
+const withConditions = (stopOnTools: string[], path: string) => {
+  const stops = [...stopOnTools]
+  if (path === `agents/backchat.md`) {
+    stops.push(
+      'backchat_newThreadSignal',
+      'backchat_changeThreadSignal',
+    )
+  }
+  return stops
 }
