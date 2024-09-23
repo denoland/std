@@ -27,7 +27,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     })
 
     await t.step('list files in second thread', async () => {
-      await backchat.prompt('list the files I have')
+      await backchat.prompt('/files list the files I have')
       const next = await backchat.readBaseThread()
       expect(next).toEqual(focus)
     })
