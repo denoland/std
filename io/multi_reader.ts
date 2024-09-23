@@ -24,7 +24,7 @@ import type { Reader } from "./types.ts";
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/merge-readable-streams/~/mergeReadableStreams | mergeReadableStreams}
- * on readable streams instead. This will be removed in 0.226.0.
+ * on readable streams instead. This will be removed in 0.225.0.
  */
 export class MultiReader implements Reader {
   readonly #readers: Reader[];
