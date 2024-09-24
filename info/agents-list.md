@@ -71,3 +71,4 @@
   be called directly. It has no system instructions and cannot call any tools.
 - `agents/gpt-4o.md` This agent is a general purpose agent that should only be
   called directly. It has no system instructions and cannot call any tools. "
+- `agents/test_gen.md` A test generator for an ERD based system prompt.

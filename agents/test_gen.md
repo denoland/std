@@ -1,3 +1,12 @@
+---
+commands:
+  # the agents functions all check for valid file formats
+  - agents:read
+  - agents:write
+  - agents:update
+  - agents:config
+---
+
 # testGenerator
 
 ## Objective
