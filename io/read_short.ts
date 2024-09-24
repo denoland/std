@@ -20,7 +20,7 @@ import type { BufReader } from "./buf_reader.ts";
  * @param buf The reader to read from
  * @returns The 16bit short
  *
- * @deprecated This will be removed in 0.226.0.
+ * @deprecated This will be removed in 0.225.0.
  */
 export async function readShort(buf: BufReader): Promise<number | null> {
   const high = await buf.readByte();

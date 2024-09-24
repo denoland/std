@@ -32,7 +32,9 @@ const LF = "\n".charCodeAt(0);
  * }
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
+ * This will be removed in 0.225.0.
  */
 export class BufferFullError extends Error {
   /**
@@ -75,7 +77,9 @@ export class BufferFullError extends Error {
  *
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
+ * This will be removed in 0.226.0.
  */
 export class PartialReadError extends Error {
   /**
@@ -107,7 +111,9 @@ export class PartialReadError extends Error {
 /**
  * Result type returned by of {@linkcode BufReader.readLine}.
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
+ * This will be removed in 0.226.0.
  */
 export interface ReadLineResult {
   /** The line read */
@@ -133,7 +139,9 @@ export interface ReadLineResult {
  * assertEquals(decoder.decode(buf), "hello world");
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
+ * This will be removed in 0.226.0.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
