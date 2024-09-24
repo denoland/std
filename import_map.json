@@ -26,7 +26,7 @@
     "@std/html": "jsr:@std/html@^1.0.3",
     "@std/http": "jsr:@std/http@^1.0.6",
     "@std/ini": "jsr:@std/ini@^1.0.0-rc.4",
-    "@std/internal": "jsr:@std/internal@^1.0.3",
+    "@std/internal": "jsr:@std/internal@^1.0.4",
     "@std/io": "jsr:@std/io@^0.224.8",
     "@std/json": "jsr:@std/json@^1.0.0",
     "@std/jsonc": "jsr:@std/jsonc@^1.0.1",
