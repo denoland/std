@@ -140,6 +140,7 @@ export const functions: Functions<Api> = {
     const id = 'call_keVDORgd16XuNBh0PMk5leKP'
     thread.messages.push({
       role: 'assistant',
+      name: 'SYSTEM',
       tool_calls: [
         {
           type: 'function',
