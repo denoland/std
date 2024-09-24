@@ -415,7 +415,7 @@ export interface EngineInterface {
   splice(
     target: PID,
     opts?: { commit?: string; path?: string; count?: number },
-  ): Promise<Splice>
+  ): Promise<Splice[]>
   read(path: string, pid: PID, commit?: string): Promise<string>
   readTree(path: string, pid: PID, commit?: string): Promise<TreeEntry[]>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>

@@ -204,7 +204,7 @@ export class WebClientEngine implements EngineInterface {
     const cache = !!opts.commit
     const result = await this.#request('splice', params, { cache })
     // TODO run zod schema check
-    return result as Splice
+    return result as Splice[]
   }
   async exists(path: string, pid: PID) {
     const result = await this.#request('exists', { path, pid })

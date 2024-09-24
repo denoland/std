@@ -271,8 +271,19 @@ export class Engine implements EngineInterface {
     if (!commit) {
       throw new Error('commit not found: ' + print(target))
     }
-    const splice = await db.getSplice(target, commit, path)
-    return splice
+    const splices = []
+    const commits = [commit]
+    while (splices.length < count) {
+      const commit = commits.pop()
+      if (!commit) {
+        break
+      }
+      const splice = await db.getSplice(target, commit, path)
+      splices.push(splice)
+      commits.push(...splice.commit.parent)
+    }
+
+    return splices
   }
   async read(path: string, pid: PID, commit?: string) {
     freezePid(pid)

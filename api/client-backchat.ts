@@ -235,13 +235,24 @@ export class Backchat {
     // this might be a read splice, where the filepath is provided
     console.log('readMeta', path, target, commit)
   }
-  /** For a given target PID, read in the latest splice, or optionally the
-   * splice at the given commit.  If path is given, then the splice will be the
-   * splice where that file changed BEFORE the target splice, which can be
-   * either provided, or the latest splice.  To walk changes in a file, keep
-   * calling this method with the commit set to the parent of each returned
-   * splice.  If no such splice exists, the origin splice will be returned,
-   * which has no parents */
+  /**
+   * Retrieves up to `count` splices for a given target PID (`target`).
+   *
+   * Starting from the specified `commit`, or the latest commit if none is
+   * provided, this method traverses the commit history by following parent
+   * commits. It collects splices associated with each commit.
+   *
+   * - If a `path` is specified, only splices where the specified file path was
+   *   changed are included in the result.
+   * - The traversal continues until the specified number of splices (`count`)
+   *   have been collected or there are no more parent commits to traverse.
+   *
+   * @param {PID} target - The target PID for which to retrieve splices.
+   * @param {Object} [opts={}] - Optional parameters.
+   * @param {string} [opts.commit] - The commit hash to start from. Defaults to the latest commit.
+   * @param {string} [opts.path] - If provided, filters splices to those where this path changed.
+   * @param {number} [opts.count=1] - The maximum number of splices to retrieve.
+   */
   splice(
     target: PID,
     opts: { commit?: string; path?: string; count?: number } = {},
