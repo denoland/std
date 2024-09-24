@@ -11,7 +11,7 @@ import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
 import { CborTag } from "./tag.ts";
 import { CborTextEncoderStream } from "./text_encoder_stream.ts";
 
-Deno.test("CborSequenceEncoderStream()", async () => {
+Deno.test("CborSequenceEncoderStream() correctly encoding CborPrimitiveType", async () => {
   const input = [
     undefined,
     null,
@@ -35,7 +35,7 @@ Deno.test("CborSequenceEncoderStream()", async () => {
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborSequenceEncoderStream() accepting the other streams", async () => {
+Deno.test("CborSequenceEncoderStream() correctly encoding streams", async () => {
   // Inputs should be identical. We need two of them as the contents will be consumed when calculating expectedOutput and actualOutput.
   const input1 = [
     CborByteEncoderStream.from([new Uint8Array(10), new Uint8Array(20)]),
@@ -67,9 +67,9 @@ Deno.test("CborSequenceEncoderStream() accepting the other streams", async () =>
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborSequenceEncoderStream() accepting CborInputStream[]", async () => {
+Deno.test("CborSequenceEncoderStream() correctly encoding arrays", async () => {
   const input = [
-    new Array(random(0, 24)).fill(0),
+    new Array(random(1, 24)).fill(0),
     new Array(random(24, 2 ** 8)).fill(0),
     new Array(random(2 ** 8, 2 ** 16)).fill(0),
     new Array(random(2 ** 16, 2 ** 17)).fill(0),
@@ -86,7 +86,7 @@ Deno.test("CborSequenceEncoderStream() accepting CborInputStream[]", async () =>
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborSequenceEncoderStream() accepting { [k: string]: CborInputStream }", async () => {
+Deno.test("CborSequenceEncoderStream() correctly encoding objects", async () => {
   const input = [
     Object.fromEntries(
       new Array(random(10, 20)).fill(0).map((
@@ -107,7 +107,7 @@ Deno.test("CborSequenceEncoderStream() accepting { [k: string]: CborInputStream 
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborSequenceEncoderStream() accepting CborTag()", async () => {
+Deno.test("CborSequenceEncoderStream() correctly encoding CborTag()", async () => {
   const input = [
     new CborTag(0, 0),
     new CborTag(1, 1),

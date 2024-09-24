@@ -7,7 +7,7 @@ import { encodeCbor } from "./encode_cbor.ts";
 import { CborMapEncoderStream } from "./map_encoder_stream.ts";
 import type { CborMapInputStream, CborType } from "./types.ts";
 
-Deno.test("CborMapEncoderStream()", async () => {
+Deno.test("CborMapEncoderStream() correctly encoding", async () => {
   const maps: CborMapInputStream[] = [["a", random(0, 2 ** 32)]];
 
   const expectedOutput = concat([
@@ -25,7 +25,7 @@ Deno.test("CborMapEncoderStream()", async () => {
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborMapEncoderStream.from()", async () => {
+Deno.test("CborMapEncoderStream.from() correctly encoding", async () => {
   const maps: CborMapInputStream[] = [["a", random(0, 2 ** 32)]];
 
   const expectedOutput = concat([

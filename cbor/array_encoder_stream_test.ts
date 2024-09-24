@@ -6,7 +6,7 @@ import { random } from "./_common_test.ts";
 import { CborArrayEncoderStream } from "./array_encoder_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 
-Deno.test("CborArrayEncoderStream()", async () => {
+Deno.test("CborArrayEncoderStream() correctly encoding", async () => {
   const arrays = [random(0, 2 ** 32)];
 
   const expectedOutput = concat([
@@ -24,7 +24,7 @@ Deno.test("CborArrayEncoderStream()", async () => {
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborArrayEncoderStream.from()", async () => {
+Deno.test("CborArrayEncoderStream.from() correctly encoding", async () => {
   const arrays = [random(0, 2 ** 32)];
 
   const expectedOutput = concat([

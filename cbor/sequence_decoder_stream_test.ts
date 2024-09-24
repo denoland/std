@@ -8,7 +8,7 @@ import { encodeCborSequence } from "./encode_cbor_sequence.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
 import { CborTag } from "./tag.ts";
 
-Deno.test("CborSequenceDecoderStream() decoding CborPrimitiveType", async () => {
+Deno.test("CborSequenceDecoderStream() correctly decoding CborPrimitiveType", async () => {
   const input = [
     undefined,
     null,
@@ -32,7 +32,7 @@ Deno.test("CborSequenceDecoderStream() decoding CborPrimitiveType", async () => 
   );
 });
 
-Deno.test("CborSequenceDecoderStream() decoding CborTag()", async () => {
+Deno.test("CborSequenceDecoderStream() correctly decoding CborTag()", async () => {
   const tagNumber = 2; // Tag Number needs to be a value that will return a CborTag.
   const size = random(0, 24);
 

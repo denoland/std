@@ -6,7 +6,7 @@ import { random } from "./_common_test.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborTextEncoderStream } from "./text_encoder_stream.ts";
 
-Deno.test("CborTextEncoderStream()", async () => {
+Deno.test("CborTextEncoderStream() correctly encoding", async () => {
   const strings = [
     "a".repeat(random(0, 24)),
     "a".repeat(random(24, 2 ** 8)),
@@ -29,7 +29,7 @@ Deno.test("CborTextEncoderStream()", async () => {
   assertEquals(actualOutput, expectedOutput);
 });
 
-Deno.test("CborTextEncoderStream.from()", async () => {
+Deno.test("CborTextEncoderStream.from() correctly encoding", async () => {
   const strings = [
     "a".repeat(random(0, 24)),
     "a".repeat(random(24, 2 ** 8)),

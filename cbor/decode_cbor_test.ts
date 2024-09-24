@@ -171,7 +171,7 @@ Deno.test("decodeCbor() rejecting empty encoded data", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 0", () => {
+Deno.test("decodeCbor() rejecting majorType 0 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -222,7 +222,7 @@ Deno.test("decodeCbor() rejecting majorType 0", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 1", () => {
+Deno.test("decodeCbor() rejecting majorType 1 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -273,7 +273,7 @@ Deno.test("decodeCbor() rejecting majorType 1", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 2 | Reserved Additional Information", () => {
+Deno.test("decodeCbor() rejecting majorType 2 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -312,7 +312,7 @@ Deno.test("decodeCbor() rejecting majorType 2 | Reserved Additional Information"
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 2 | Indefinite Byte String", () => {
+Deno.test("decodeCbor() rejecting majorType 2 due to invalid indefinite length byte string", () => {
   assertThrows(
     () => {
       decodeCbor(Uint8Array.from([0b010_11111]));
@@ -343,7 +343,7 @@ Deno.test("decodeCbor() rejecting majorType 2 | Indefinite Byte String", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 3 | Reserved Additional Information", () => {
+Deno.test("decodeCbor() rejecting majorType 3 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -382,7 +382,7 @@ Deno.test("decodeCbor() rejecting majorType 3 | Reserved Additional Information"
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 3 | Indefinite Text String", () => {
+Deno.test("decodeCbor() rejecting majorType 3 due to invalid indefinite length text string", () => {
   assertThrows(
     () => {
       decodeCbor(Uint8Array.from([0b011_11111]));
@@ -413,7 +413,7 @@ Deno.test("decodeCbor() rejecting majorType 3 | Indefinite Text String", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 4 | Reserved Additional Information", () => {
+Deno.test("decodeCbor() rejecting majorType 4 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -452,7 +452,7 @@ Deno.test("decodeCbor() rejecting majorType 4 | Reserved Additional Information"
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 4 | Indefinite Arrays", () => {
+Deno.test("decodeCbor() rejecting majorType 4 due to invalid indefinite length arrays", () => {
   assertThrows(
     () => {
       decodeCbor(Uint8Array.from([0b100_11111]));
@@ -469,7 +469,7 @@ Deno.test("decodeCbor() rejecting majorType 4 | Indefinite Arrays", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 5 | Reserved Additional Information", () => {
+Deno.test("decodeCbor() rejecting majorType 5 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -508,7 +508,7 @@ Deno.test("decodeCbor() rejecting majorType 5 | Reserved Additional Information"
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 5 | Invalid Keys", () => {
+Deno.test("decodeCbor() rejecting majorType 5 due to maps having invalid keys", () => {
   assertThrows(
     () => {
       decodeCbor(Uint8Array.from([0b101_00001, 0b000_00000, 0b000_00000]));
@@ -535,7 +535,7 @@ Deno.test("decodeCbor() rejecting majorType 5 | Invalid Keys", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 5 | Indefinite Maps", () => {
+Deno.test("decodeCbor() rejecting majorType 5 due to invalid indefinite length maps", () => {
   assertThrows(
     () => {
       decodeCbor(Uint8Array.from([0b101_11111]));
@@ -586,7 +586,7 @@ Deno.test("decodeCbor() rejecting majorType 5 | Indefinite Maps", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 6", () => {
+Deno.test("decodeCbor() rejecting majorType 6 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(
@@ -615,7 +615,7 @@ Deno.test("decodeCbor() rejecting majorType 6", () => {
   );
 });
 
-Deno.test("decodeCbor() rejecting majorType 7", () => {
+Deno.test("decodeCbor() rejecting majorType 7 due to additional information", () => {
   assertThrows(
     () => {
       decodeCbor(

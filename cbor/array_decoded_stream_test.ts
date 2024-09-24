@@ -6,7 +6,7 @@ import { CborArrayDecodedStream } from "./array_decoded_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
 
-Deno.test("CborSequenceDecoderStream() decoding Arrays", async () => {
+Deno.test("CborArrayDecodedStream() being consumed", async () => {
   const size = random(0, 24);
 
   const reader = ReadableStream.from([encodeCbor(new Array(size).fill(0))])
@@ -16,6 +16,32 @@ Deno.test("CborSequenceDecoderStream() decoding Arrays", async () => {
   assert(done === false);
   assert(value instanceof CborArrayDecodedStream);
   assertEquals(await Array.fromAsync(value), new Array(size).fill(0));
+
+  assert((await reader.read()).done === true);
+  reader.releaseLock();
+});
+
+Deno.test("CborArrayDecodedStream() being cancelled", async () => {
+  const size = random(0, 24);
+  const reader = ReadableStream.from([
+    encodeCbor(new Array(size).fill(0)),
+    encodeCbor(0),
+  ])
+    .pipeThrough(new CborSequenceDecoderStream()).getReader();
+
+  {
+    const { done, value } = await reader.read();
+    assert(done === false);
+    assert(value instanceof CborArrayDecodedStream);
+    await value.cancel();
+  }
+
+  {
+    const { done, value } = await reader.read();
+    assert(done === false);
+    assert(typeof value === "number");
+    assertEquals(value, 0);
+  }
 
   assert((await reader.read()).done === true);
   reader.releaseLock();
