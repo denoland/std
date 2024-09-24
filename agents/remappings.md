@@ -78,3 +78,13 @@ What is the weather: [asdfasdf](isolate://utils/now/{timezone:0})
 
 Be able to specify a glob pattern for the agents, so that the test runs for
 multiple agents
+
+## Drone calls
+These would be a special isolate, the drones isolate.
+The function could be either with pure text and a prompted description, or
+freeform parameters that could be entirely prompted, so the input to the drone
+is json.  The output format could be constrained as well, which would influence
+the final function that gets called to signal stop.
+
+Could use structured output using an output jsonschema to avoid the dance around
+with tool calls.
