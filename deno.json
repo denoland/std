@@ -49,6 +49,12 @@
       ]
     }
   },
+  "fmt": {
+    "exclude": [
+      ".github",
+      "http/testdata"
+    ]
+  },
   "workspace": [
     "./archive",
     "./assert",
