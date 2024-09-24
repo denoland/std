@@ -1,11 +1,9 @@
 ---
 config:
-  model: gpt-4o
   parallel_tool_calls: false
   tool_choice: required
 commands:
   - agents:switch
-  - utils:resolve
 ---
 
 If the message starts off with a "/" then what follows immediately will be a choice
