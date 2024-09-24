@@ -26,7 +26,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  *
  * @deprecated Pipe the readable stream through a new
  * {@linkcode https://jsr.io/@std/streams/doc/~/ByteSliceStream | ByteSliceStream}
- * instead. This will be removed in the future.
+ * instead. This will be removed in 0.225.0.
  */
 export async function copyN(
   r: Reader,
