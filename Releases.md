@@ -1,3 +1,77 @@
+### 2024.09.24
+
+#### @std/archive 0.225.4 (patch)
+
+- deprecation(archive/unstable): deprecate `@std/archive` (#5988)
+- docs(archive): clarify deprecation notices (#6034)
+- docs(archive): update `@std/archive` deprecation notices (#6028)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/assert 1.0.6 (patch)
+
+- fix(assert): accept abstract classes (#5978)
+
+#### @std/collections 1.0.7 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `sample()` (#6035)
+- feat(collections/unstable): support Iterable argument in `withoutAll()`
+  (#6031)
+- feat(collections/unstable): `Iterable` argument in `chunk()` (#5925)
+- feat(collections/unstable): support iterators in `sortBy()` (#5919)
+- feat(collections/unstable): support `Iterable` argument in `takeWhile()`
+  (#5911)
+
+#### @std/expect 1.0.4 (patch)
+
+- fix(expect): support `expect.hasAssertions()` (#5901)
+
+#### @std/fs 1.0.4 (patch)
+
+- docs(fs): clarify permissions requirements for `exists[Sync]()` (#5983)
+
+#### @std/http 1.0.7 (patch)
+
+- feat(http/unstable): add support for multiple request methods on route (#6003)
+- fix(http): make `file-server` work on Deno Deploy (#6033)
+- fix(http): use non-locale-sensitive string methods for comparison (#6029)
+
+#### @std/io 0.224.9 (patch)
+
+- deprecation(io): deprecate `BufWriter` (#6041)
+- deprecation(io/unstable): deprecate `BufReader` (#6027)
+- deprecation(io/unstable): deprecate `StringWriter` (#6026)
+- deprecation(io/unstable): deprecate `StringReader` (#6025)
+- deprecation(io/unstable): deprecate `LimitedReader` (#6024)
+- deprecation(io/unstable): deprecate `MultiReader` (#6023)
+- deprecation(io/unstable): deprecate `readDelim()` (#6022)
+- deprecation(io/unstable): deprecate `readLong()` (#6007)
+- deprecation(io/unstable): deprecate `readRange()` (#6010)
+- deprecation(io/unstable): deprecate `readInt()` (#6009)
+- deprecation(io/unstable): deprecate `readShort()` (#6008)
+- deprecation(io/unstable): deprecate `sliceLongToBytes()` (#6002)
+- deprecation(io/unstable): deprecate `readStringDelim()` (#6000)
+- deprecation(io/unstable): deprecate `copyN()` (#5992)
+- deprecation(io/unstable): deprecate `readLines()` (#5990)
+- docs(io): update deprecation notices (#6021)
+
+#### @std/log 0.224.8 (patch)
+
+- docs(log): document `warn` module (#5973)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/streams 1.0.6 (patch)
+
+- feat(streams/unstable): `toBytes()` (#6011)
+
+#### @std/testing 1.0.3 (patch)
+
+- docs(archive,log,testing): correct typos (#5995)
+- docs(testing): fix typo in snapshot (#5994)
+
+#### @std/text 1.0.7 (patch)
+
+- fix(text): handle code points > U+FFFF in `levenshteinDistance` (#6014)
+
 ### 2024.09.16
 
 #### @std/cache 0.1.3 (patch)
