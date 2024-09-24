@@ -49,8 +49,9 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      - name: Type check browser compatible modules
-        run: deno task test:browser
+      # TODO(kt3k): Enable this test when `deno check` command supports workspace resolution
+      # - name: Type check browser compatible modules
+      #   run: deno task test:browser
 
       # TODO(iuioiua): Enable this once https://github.com/denoland/deno/pull/25736 is merged
       # - name: Generate lcov
