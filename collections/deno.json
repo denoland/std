@@ -50,6 +50,7 @@
     "./unstable-sample": "./unstable_sample.ts",
     "./unstable-sort-by": "./unstable_sort_by.ts",
     "./unstable-take-while": "./unstable_take_while.ts",
+    "./unstable-without-all": "./unstable_without_all.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts"
