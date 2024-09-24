@@ -35,6 +35,10 @@
 - fix(http): make `file-server` work on Deno Deploy (#6033)
 - fix(http): use non-locale-sensitive string methods for comparison (#6029)
 
+### @std/internal 1.0.4 (patch)
+
+- chore: bump to internal@1.0.4 (#6020)
+
 #### @std/io 0.224.9 (patch)
 
 - deprecation(io): deprecate `BufWriter` (#6041)
