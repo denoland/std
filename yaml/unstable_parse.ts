@@ -11,11 +11,20 @@ import {
   SCHEMA_MAP,
   type SchemaType,
 } from "./_schema.ts";
-import type { KindType, RepresentFn, Type } from "./_type.ts";
+import type { KindType } from "./_type.ts";
 
-export type { KindType, RepresentFn, Type };
+export type { KindType };
 
-export type { SchemaType };
+/** The custom type definition for parsing */
+export type Type = {
+  /** The tag of the type */
+  tag: string;
+  /** The kind of the type. */
+  kind: KindType;
+  /** The function to create a value of this type from the given YAML text. */
+  // deno-lint-ignore no-explicit-any
+  construct: (data: any) => unknown;
+};
 
 /** Options for {@linkcode parse}. */
 export interface ParseOptions {
@@ -38,7 +47,7 @@ export interface ParseOptions {
    */
   onWarning?(error: Error): void;
   /** The custom types to use */
-  types?: Type<"scalar">[];
+  types?: Type[];
 }
 
 function sanitizeInput(input: string) {
@@ -86,10 +95,10 @@ export function parse(
   options: ParseOptions = {},
 ): unknown {
   content = sanitizeInput(content);
-  const schema = SCHEMA_MAP.get(options.schema!)!;
+  const schema = SCHEMA_MAP.get(options.schema!) ?? SCHEMA_MAP.get("default")!;
   if (options.types) {
     for (const type of options.types) {
-      addExplicitTypeToSchema(schema, type);
+      addExplicitTypeToSchema(schema, { ...type, resolve: () => true });
     }
   }
   const state = new LoaderState(content, { ...options, schema });
@@ -132,10 +141,10 @@ export function parse(
  */
 export function parseAll(content: string, options: ParseOptions = {}): unknown {
   content = sanitizeInput(content);
-  const schema = SCHEMA_MAP.get(options.schema!)!;
+  const schema = SCHEMA_MAP.get(options.schema!) ?? SCHEMA_MAP.get("default")!;
   if (options.types) {
     for (const type of options.types) {
-      addExplicitTypeToSchema(schema, type);
+      addExplicitTypeToSchema(schema, { ...type, resolve: () => true });
     }
   }
   const state = new LoaderState(content, { ...options, schema });
