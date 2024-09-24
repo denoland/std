@@ -92,6 +92,16 @@ function createSchema({ explicitTypes = [], implicitTypes = [], include }: {
   return { implicitTypes, explicitTypes, typeMap };
 }
 
+/** Add an explicit type to the given schema */
+export function addExplicitTypeToSchema(
+  schema: Schema,
+  type: ExplicitType,
+): void {
+  schema.explicitTypes.push(type);
+  schema.typeMap[type.kind].set(type.tag, type);
+  schema.typeMap.fallback.set(type.tag, type);
+}
+
 /**
  * Standard YAML's failsafe schema.
  *
