@@ -3,9 +3,21 @@
   "version": "0.1.0",
   "exports": {
     ".": "./mod.ts",
-    "./decode": "./decode.ts",
-    "./encode": "./encode.ts",
-    "./decode-stream": "./decode_stream.ts",
-    "./encode-stream": "./encode_stream.ts"
+    "./array-decoded-stream": "./array_decoded_stream.ts",
+    "./array-encoder-stream": "./array_encoder_stream.ts",
+    "./byte-decoded-stream": "./byte_decoded_stream.ts",
+    "./byte-encoder-stream": "./byte_encoder_stream.ts",
+    "./decode-cbor-sequence": "./decode_cbor_sequence.ts",
+    "./decode-cbor": "./decode_cbor.ts",
+    "./encode-cbor-sequence": "./encode_cbor_sequence.ts",
+    "./encode-cbor": "./encode_cbor.ts",
+    "./map-decoded-stream": "./map_decoded_stream.ts",
+    "./map-encoder-stream": "./map_encoder_stream.ts",
+    "./sequence-decoder-stream": "./sequence_decoder_stream.ts",
+    "./sequence-encoder-stream": "./sequence_encoder_stream.ts",
+    "./tag": "./tag.ts",
+    "./text-decoded-stream": "./text_decoded_stream.ts",
+    "./text-encoder-stream": "./text_encoder_stream.ts",
+    "./types": "./types.ts"
   }
 }

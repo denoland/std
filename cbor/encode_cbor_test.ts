@@ -2,11 +2,9 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
-import { CborTag, encodeCbor, encodeCborSequence } from "./mod.ts";
-
-function random(start: number, end: number): number {
-  return Math.floor(Math.random() * (end - start) + start);
-}
+import { random } from "./_common_test.ts";
+import { encodeCbor } from "./encode_cbor.ts";
+import { CborTag } from "./tag.ts";
 
 Deno.test("encodeCbor() encoding undefined", () => {
   assertEquals(
@@ -405,12 +403,5 @@ Deno.test("encodeCbor() rejecting CborTag()", () => {
     },
     RangeError,
     `Cannot encode Tag Item: Tag Number (${num}) exceeds 2 ** 64 - 1`,
-  );
-});
-
-Deno.test("encodeCborSequence()", () => {
-  assertEquals(
-    encodeCborSequence([0, 0]),
-    Uint8Array.from([0b000_00000, 0b000_00000]),
   );
 });

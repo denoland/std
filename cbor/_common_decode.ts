@@ -2,101 +2,10 @@
 
 import { concat } from "@std/bytes";
 import { arrayToNumber } from "./_common.ts";
-import { CborTag, type CborType } from "./encode.ts";
+import { CborTag } from "./tag.ts";
+import type { CborType } from "./types.ts";
 
-/**
- * Decodes a CBOR-encoded {@link Uint8Array} into the JavaScript equivalent
- * values represented as a {@link CborType}.
- * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- *
- * **Limitations:**
- * - While CBOR does support map keys of any type, this
- * implementation only supports map keys being of type {@link string}, and will
- * throw if detected decoding otherwise.
- * - This decoder will throw if duplicate map keys are detected. This behaviour
- * differentiates from {@link CborSequenceDecoderStream}.
- *
- * **Notice:** This decoder handles the tag numbers 0, and 1 automatically, all
- * others returned are wrapped in a {@link CborTag<CborType>} instance.
- *
- * @example Usage
- * ```ts
- * import { assert, assertEquals } from "@std/assert";
- * import { decodeCbor, encodeCbor } from "@std/cbor";
- *
- * const rawMessage = [
- *   "Hello World",
- *   35,
- *   0.5,
- *   false,
- *   -1,
- *   null,
- *   Uint8Array.from([0, 1, 2, 3]),
- * ];
- *
- * const encodedMessage = encodeCbor(rawMessage);
- * const decodedMessage = decodeCbor(encodedMessage);
- *
- * assert(decodedMessage instanceof Array);
- * assertEquals(decodedMessage, rawMessage);
- * ```
- *
- * @param value The value to decode of type CBOR-encoded {@link Uint8Array}.
- * @returns A {@link CborType} representing the decoded data.
- */
-export function decodeCbor(value: Uint8Array): CborType {
-  if (!value.length) throw RangeError("Cannot decode empty Uint8Array");
-  const source = Array.from(value).reverse();
-  return decode(source);
-}
-
-/**
- * Decodes a CBOR-sequence-encoded {@link Uint8Array} into the JavaScript
- * equivalent values represented as a {@link CBorType} array.
- * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
- *
- * **Limitations:**
- * - While CBOR does support map keys of any type, this implementation only
- * supports map keys being of type {@link string}, and will throw if detected
- * decoding otherwise.
- * - This decoder will throw an error if duplicate keys are detected.
- *
- * **Notice:** This decoder handles the tag numbers 0, and 1 automatically, all
- * others returned are wrapped in a {@link CborTag<CborType>} instance.
- *
- * @example Usage
- * ```ts
- * import { assertEquals } from "@std/assert";
- * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
- *
- * const rawMessage = [
- *   "Hello World",
- *   35,
- *   0.5,
- *   false,
- *   -1,
- *   null,
- *   Uint8Array.from([0, 1, 2, 3]),
- * ];
- *
- * const encodedMessage = encodeCborSequence(rawMessage);
- * const decodedMessage = decodeCborSequence(encodedMessage);
- *
- * assertEquals(decodedMessage, rawMessage);
- * ```
- *
- * @param value The value to decode of type CBOR-sequence-encoded
- * {@link Uint8Array}.
- * @returns A {@link CborType} array representing the decoded data.
- */
-export function decodeCborSequence(value: Uint8Array): CborType[] {
-  const output: CborType[] = [];
-  const source = Array.from(value).reverse();
-  while (source.length) output.push(decode(source));
-  return output;
-}
-
-function decode(source: number[]): CborType {
+export function decode(source: number[]): CborType {
   const byte = source.pop();
   if (byte == undefined) throw new RangeError("More bytes were expected");
 
@@ -122,7 +31,7 @@ function decode(source: number[]): CborType {
   }
 }
 
-function decodeZero(source: number[], aI: number): number | bigint {
+export function decodeZero(source: number[], aI: number): number | bigint {
   if (aI < 24) return aI;
   if (aI <= 27) {
     return arrayToNumber(
@@ -137,7 +46,7 @@ function decodeZero(source: number[], aI: number): number | bigint {
   );
 }
 
-function decodeOne(source: number[], aI: number): number | bigint {
+export function decodeOne(source: number[], aI: number): number | bigint {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b001_${aI.toString(2).padStart(5, "0")})`,
@@ -148,7 +57,7 @@ function decodeOne(source: number[], aI: number): number | bigint {
   return -x - 1;
 }
 
-function decodeTwo(source: number[], aI: number): Uint8Array {
+export function decodeTwo(source: number[], aI: number): Uint8Array {
   if (aI < 24) return Uint8Array.from(source.splice(-aI, aI).reverse());
   if (aI <= 27) {
     // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
@@ -195,7 +104,7 @@ function decodeTwo(source: number[], aI: number): Uint8Array {
   );
 }
 
-function decodeThree(source: number[], aI: number): string {
+export function decodeThree(source: number[], aI: number): string {
   if (aI <= 27) return new TextDecoder().decode(decodeTwo(source, aI));
   if (aI === 31) {
     let byte = source.pop();
@@ -229,7 +138,7 @@ function decodeThree(source: number[], aI: number): string {
   );
 }
 
-function decodeFour(source: number[], aI: number): CborType[] {
+export function decodeFour(source: number[], aI: number): CborType[] {
   if (aI <= 27) {
     const array: CborType[] = [];
     // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
@@ -260,7 +169,10 @@ function decodeFour(source: number[], aI: number): CborType[] {
   );
 }
 
-function decodeFive(source: number[], aI: number): { [k: string]: CborType } {
+export function decodeFive(
+  source: number[],
+  aI: number,
+): { [k: string]: CborType } {
   if (aI <= 27) {
     const object: { [k: string]: CborType } = {};
     // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
@@ -319,7 +231,10 @@ function decodeFive(source: number[], aI: number): { [k: string]: CborType } {
   );
 }
 
-function decodeSix(source: number[], aI: number): Date | CborTag<CborType> {
+export function decodeSix(
+  source: number[],
+  aI: number,
+): Date | CborTag<CborType> {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b110_${aI.toString(2).padStart(5, "0")})`,
@@ -344,7 +259,7 @@ function decodeSix(source: number[], aI: number): Date | CborTag<CborType> {
   return new CborTag(tagNumber, tagContent);
 }
 
-function decodeSeven(
+export function decodeSeven(
   source: number[],
   aI: number,
 ): undefined | null | boolean | number {
