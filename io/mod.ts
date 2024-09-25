@@ -25,7 +25,6 @@ export * from "./limited_reader.ts";
 export * from "./multi_reader.ts";
 export * from "./read_all.ts";
 export * from "./read_delim.ts";
-export * from "./read_short.ts";
 export * from "./reader_from_stream_reader.ts";
 export * from "./string_reader.ts";
 export * from "./string_writer.ts";
