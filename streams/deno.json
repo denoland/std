@@ -21,6 +21,7 @@
     "./unstable-to-lines": "./unstable_to_lines.ts",
     "./to-text": "./to_text.ts",
     "./to-transform-stream": "./to_transform_stream.ts",
+    "./unstable-upgrade-readable-stream": "./unstable_upgrade_readable_stream.ts",
     "./zip-readable-streams": "./zip_readable_streams.ts"
   }
 }
