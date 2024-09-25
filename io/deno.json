@@ -13,7 +13,6 @@
     "./read-all": "./read_all.ts",
     "./read-delim": "./read_delim.ts",
     "./read-int": "./read_int.ts",
-    "./read-long": "./read_long.ts",
     "./read-short": "./read_short.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./string-reader": "./string_reader.ts",
