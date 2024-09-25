@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { upgradeReadable } from "./unstable_upgrade_readable_stream";
+import { upgradeReadable } from "./unstable_upgrade_readable_stream.ts";
 
 Deno.test("upgradeReadable()", async () => {
   const reader = upgradeReadable(ReadableStream.from([new Uint8Array(100)]))

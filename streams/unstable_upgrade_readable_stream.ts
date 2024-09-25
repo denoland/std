@@ -35,7 +35,7 @@ export function upgradeReadable(
     return new ReadableStream({
       type: "bytes",
       async pull(controller) {
-        const value = async function () {
+        const value = await async function () {
           while (true) {
             const { done, value } = await reader.read();
             if (done) return undefined;
@@ -61,7 +61,7 @@ export function upgradeReadable(
           }
         } else controller.enqueue(value);
       },
-      async cancel(reason: any): Promise<void> {
+      async cancel(reason): Promise<void> {
         await reader.cancel(reason);
       },
     });
