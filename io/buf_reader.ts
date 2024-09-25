@@ -79,7 +79,7 @@ export class BufferFullError extends Error {
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
- * This will be removed in 0.226.0.
+ * This will be removed in 0.225.0.
  */
 export class PartialReadError extends Error {
   /**
@@ -113,7 +113,7 @@ export class PartialReadError extends Error {
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
- * This will be removed in 0.226.0.
+ * This will be removed in 0.225.0.
  */
 export interface ReadLineResult {
   /** The line read */
@@ -141,7 +141,7 @@ export interface ReadLineResult {
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
- * This will be removed in 0.226.0.
+ * This will be removed in 0.225.0.
  */
 export class BufReader implements Reader {
   #buf!: Uint8Array;
