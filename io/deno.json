@@ -15,7 +15,6 @@
     "./read-int": "./read_int.ts",
     "./read-long": "./read_long.ts",
     "./read-short": "./read_short.ts",
-    "./read-string-delim": "./read_string_delim.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./string-reader": "./string_reader.ts",
     "./string-writer": "./string_writer.ts",
