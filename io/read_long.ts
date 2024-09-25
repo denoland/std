@@ -25,7 +25,7 @@ const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
  * @throws {Deno.errors.UnexpectedEof} If the reader returns unexpected EOF
  * @throws {RangeError} If the long value is too big to be represented as a JavaScript number
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 0.225.0.
  */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);

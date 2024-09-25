@@ -159,7 +159,7 @@ export class BinaryHeap<T> implements Iterable<T> {
    * sort the values in the heap after mapping the values.
    *
    * @example Creating a binary heap from an array like with a custom mapping function
-   * ```ts no-eval
+   * ```ts ignore
    * import { BinaryHeap } from "@std/data-structures";
    *
    * const heap = BinaryHeap.from([4, 1, 3, 5, 2], { map: (value) => value * 2 });

@@ -33,7 +33,7 @@ export type PromptSecretOptions = {
  * @returns The string that was entered or `null` if stdin is not a TTY.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { promptSecret } from "@std/cli/prompt-secret";
  *
  * const password = promptSecret("Please provide the password:");

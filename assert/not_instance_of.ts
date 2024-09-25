@@ -7,7 +7,7 @@ import { assertFalse } from "./false.ts";
  * If so, then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertNotInstanceOf } from "@std/assert";
  *
  * assertNotInstanceOf(new Date(), Number); // Doesn't throw
@@ -23,7 +23,7 @@ import { assertFalse } from "./false.ts";
 export function assertNotInstanceOf<A, T>(
   actual: A,
   // deno-lint-ignore no-explicit-any
-  unexpectedType: new (...args: any[]) => T,
+  unexpectedType: abstract new (...args: any[]) => T,
   msg?: string,
 ): asserts actual is Exclude<A, T> {
   const msgSuffix = msg ? `: ${msg}` : ".";
