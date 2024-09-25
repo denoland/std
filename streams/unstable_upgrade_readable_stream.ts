@@ -3,15 +3,15 @@
 /**
  * The function upgrades a `ReadableStream<Uint8Array>` to support BYOB mode
  * if the readable doesn't already support it.
- * 
+ *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import { upgradeReadable } from "@std/streams/unstable-upgrade-readable-stream";
- * 
+ *
  * const reader = upgradeReadable(ReadableStream.from([new Uint8Array(100)]))
  *   .getReader({ mode: "byob" });
- * 
+ *
  * while (true) {
  *   const { done, value } = await reader.read(new Uint8Array(10), { min: 10 });
  *   if (done) break;
@@ -19,11 +19,13 @@
  * }
  * reader.releaseLock();
  * ```
- * 
+ *
  * @param readable The ReadableStream to be upgraded if needed.
  * @returns A BYOB ReadableStream.
  */
-export function upgradeReadable(readable: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+export function upgradeReadable(
+  readable: ReadableStream<Uint8Array>,
+): ReadableStream<Uint8Array> {
   try {
     const reader = readable.getReader({ mode: "byob" });
     reader.releaseLock();
@@ -53,17 +55,15 @@ export function upgradeReadable(readable: ReadableStream<Uint8Array>): ReadableS
             buffer.set(value.slice(0, size));
             controller.byobRequest.respond(size);
             controller.enqueue(value.slice(size));
-          }
-          else {
+          } else {
             buffer.set(value);
             controller.byobRequest.respond(value.length);
           }
-        }
-        else controller.enqueue(value);
+        } else controller.enqueue(value);
       },
       async cancel(reason: any): Promise<void> {
         await reader.cancel(reason);
-      }
+      },
     });
   }
 }
