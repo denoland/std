@@ -29,7 +29,6 @@ export * from "./read_delim.ts";
 export * from "./read_int.ts";
 export * from "./read_lines.ts";
 export * from "./read_long.ts";
-export * from "./read_range.ts";
 export * from "./read_short.ts";
 export * from "./read_string_delim.ts";
 export * from "./reader_from_stream_reader.ts";
