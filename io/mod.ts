@@ -6,7 +6,7 @@
  * `Reader` and `Writer` interfaces are deprecated in Deno, and so many of these
  * utilities are also deprecated. Consider using web streams instead.
  *
- * ```ts no-assert
+ * ```ts ignore
  * import { toReadableStream, toWritableStream } from "@std/io";
  *
  * await toReadableStream(Deno.stdin)

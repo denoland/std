@@ -4,7 +4,7 @@
  * Utilities for interacting with the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API | WebGPU API}.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { createTextureWithData } from "@std/webgpu";
  *
  * const adapter = await navigator.gpu.requestAdapter();

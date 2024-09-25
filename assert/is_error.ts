@@ -10,7 +10,7 @@ import { stripAnsiCode } from "@std/internal/styles";
  * error message can also be asserted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertIsError } from "@std/assert";
  *
  * assertIsError(null); // Throws
@@ -29,7 +29,7 @@ import { stripAnsiCode } from "@std/internal/styles";
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass?: abstract new (...args: any[]) => E,
   msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {

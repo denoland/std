@@ -19,11 +19,11 @@
  * });
  * ```
  *
- * ```js
+ * ```ts no-assert
  * // __snapshots__/example_test.ts.snap
- * export const snapshot = {};
+ * export const snapshot: Record<string, string> = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `
+ * snapshot["isSnapshotMatch 1"] = `
  * {
  *   example: 123,
  *   hello: "world!",
@@ -113,16 +113,16 @@
  * );
  *
  * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
- *   const a = "\x1b[32mThis green text has had it's colours stripped\x1b[39m";
+ *   const a = "\x1b[32mThis green text has had its colors stripped\x1b[39m";
  *   await assertMonochromeSnapshot(t, a);
  * });
  * ```
  *
- * ```js
+ * ```ts no-assert
  * // .snaps/example_test.ts.snap
- * export const snapshot = {};
+ * export const snapshot: Record<string, string> = {};
  *
- * snapshot[`isSnapshotMatch 1`] = `This green text has had it's colours stripped`;
+ * snapshot["isSnapshotMatch 1"] = "This green text has had its colors stripped";
  * ```
  *
  * ## Version Control:
@@ -525,7 +525,7 @@ class AssertSnapshotContext {
 
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
@@ -549,7 +549,7 @@ export async function assertSnapshot<T>(
 ): Promise<void>;
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
- * not a match, then throw.
+ * not match, then throw.
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *

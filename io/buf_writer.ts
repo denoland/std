@@ -184,7 +184,8 @@ export abstract class AbstractBufBase {
  * assertEquals(bufWriter.buffered(), 0);
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 0.225.0. Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
   #writer: Writer;
@@ -403,7 +404,8 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * assertEquals(bufWriter.buffered(), 0);
  * ```
  *
- * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ * @deprecated This will be removed in 0.225.0. Use
+ * {@linkcode https://jsr.io/@std/streams/doc/buffer/~/Buffer | Buffer} instead.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
   #writer: WriterSync;
