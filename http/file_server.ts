@@ -65,6 +65,9 @@ interface EntryInfo {
 const ENV_PERM_STATUS =
   Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
     .state ?? "granted"; // for deno deploy
+const NET_PERM_STATUS =
+  Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
+    .state ?? "granted"; // for deno deploy
 const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
   ? Deno.env.get("DENO_DEPLOYMENT_ID")
   : undefined;
@@ -157,7 +160,7 @@ export interface ServeFileOptions {
  * Resolves a {@linkcode Response} with the requested file as the body.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { serveFile } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -594,7 +597,7 @@ export interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => {
@@ -613,7 +616,7 @@ export interface ServeDirOptions {
  *
  * Requests to `/static/path/to/file` will be served from `./public/path/to/file`.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { serveDir } from "@std/http/file-server";
  *
  * Deno.serve((req) => serveDir(req, {
@@ -836,10 +839,7 @@ function main() {
 
   function onListen({ port, hostname }: { port: number; hostname: string }) {
     let networkAddress: string | undefined = undefined;
-    if (
-      Deno.permissions.querySync({ name: "sys", kind: "networkInterfaces" })
-        .state === "granted"
-    ) {
+    if (NET_PERM_STATUS === "granted") {
       networkAddress = getNetworkAddress();
     }
     const protocol = useTls ? "https" : "http";

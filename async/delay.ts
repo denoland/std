@@ -35,7 +35,7 @@ export interface DelayOptions {
  * Setting `persistent` to `false` will allow the process to continue to run as
  * long as the timer exists.
  *
- * ```ts no-assert
+ * ```ts no-assert ignore
  * import { delay } from "@std/async/delay";
  *
  * // ...

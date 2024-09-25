@@ -163,12 +163,12 @@ Example code snippets must:
    [documentation checker tool](../_tools/check_docs.ts) and are flagged when
    they throw an error.
 
-Note: To skip running a specific code snippet, add `no-eval` to the starting
+Note: To skip running a specific code snippet, add `ignore` to the starting
 delimiter. E.g.
 
 ````ts
 /**
- * ```ts no-eval
+ * ```ts ignore
  * (code snippet will not be run)
  * ```
  */

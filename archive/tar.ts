@@ -225,7 +225,7 @@ export interface TarDataWithSource extends TarData {
  * * Sparse files are not supported
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
  * import { copy } from "@std/io/copy";
@@ -277,7 +277,7 @@ export class Tar {
    * reference to the content itself and potentially any related metadata.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Tar } from "@std/archive/tar";
    * import { Buffer } from "@std/io/buffer";
    * import { copy } from "@std/io/copy";
@@ -429,7 +429,7 @@ export class Tar {
    * @returns A reader instance for the tar archive.
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { Tar } from "@std/archive/tar";
    * import { Buffer } from "@std/io/buffer";
    * import { copy } from "@std/io/copy";

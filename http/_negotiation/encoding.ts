@@ -71,7 +71,7 @@ function specify(
     return;
   }
   let s = 0;
-  if (spec.encoding.toLocaleLowerCase() === encoding.toLocaleLowerCase()) {
+  if (spec.encoding.toLowerCase() === encoding.toLowerCase()) {
     s = 1;
   } else if (spec.encoding !== "*") {
     return;
