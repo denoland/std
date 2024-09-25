@@ -201,6 +201,37 @@ export default class FS {
     const next = new FS(this.#pid, nextCommit, this.#db)
     return { next, changes, commit }
   }
+  async theirsMerge(theirs: string) {
+    const parents = [theirs]
+    assert(parents.every((oid) => sha1.test(oid)), 'Parent not SHA-1')
+    assert(!this.isChanged, 'cannot merge with changes')
+    if (this.oid === theirs) {
+      throw new Error('Already merged')
+    }
+    const author = { name: 'git/theirsMerge' }
+
+    const theirTree = await git.readTree({ ...this.#git, oid: theirs })
+    const ourTree = await git.readTree({ ...this.#git, oid: this.oid })
+
+    const io = ourTree.tree.find((entry) => entry.path === IO_PATH)
+    const merged = theirTree.tree.filter((entry) => entry.path !== IO_PATH)
+    if (io) {
+      merged.push(io)
+    }
+    const tree = await git.writeTree({ ...this.#git, tree: merged })
+
+    const commit = await git.commit({
+      ...this.#git,
+      noUpdateBranch: true,
+      message: 'theirs merge',
+      author,
+      tree,
+      parent: [this.oid, ...parents],
+    })
+
+    const next = new FS(this.#pid, commit, this.#db)
+    return { next, changes: {}, commit }
+  }
   async merge(commit: string) {
     assert(!this.isChanged, 'cannot merge with changes')
     if (this.oid === commit) {

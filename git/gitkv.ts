@@ -29,6 +29,7 @@ export class GitKV {
     const isBlankDuringInitAndClone = true
     return new GitKV(db, pid, isBlankDuringInitAndClone)
   }
+
   isIgnored(path: string) {
     const sliced = path.slice('/.git/'.length)
     return this.#dropWrites.includes(sliced)

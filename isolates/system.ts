@@ -9,6 +9,7 @@ import {
   isPID,
   jsonSchema,
   md5,
+  PID,
   pidSchema,
   print,
   Proctype,
@@ -137,42 +138,18 @@ export const functions: Functions<Api> = {
     }
     return fetchHead
   },
-  mergeParent: async (_, api: IA<C>) => {
-    const { db } = api.context
-    assert(db, 'db not found')
-    const start = Date.now()
-
-    const parent = getParent(api.pid)
-    const fs = await FS.openHead(parent, db)
-    const oid = await fs.merge(api.commit)
-    if (fs.oid !== oid) {
-      const atomic = await db.atomic().updateHead(parent, fs.oid, oid)
-      assert(atomic, 'update head failed')
-      if (!await atomic.commit()) {
-        // TODO try a bit harder to commit
-        throw new Error('failed to commit: ' + print(parent))
-      }
-    }
-    return { head: oid, elapsed: Date.now() - start }
+  mergeParent: (_, api: IA<C>) => {
+    const ours = getParent(api.pid)
+    const theirs = api.commit
+    return oursMerge(ours, theirs, api)
   },
   mergeGrandParent: async (_, api: IA<C>) => {
     const { db } = api.context
     assert(db, 'db not found')
-    const start = Date.now()
 
-    const parent = getParent(api.pid)
-    const grandParent = getParent(parent)
-    const fs = await FS.openHead(grandParent, db)
-    const oid = await fs.merge(api.commit)
-    if (fs.oid !== oid) {
-      const atomic = await db.atomic().updateHead(grandParent, fs.oid, oid)
-      assert(atomic, 'update head failed')
-      if (!await atomic.commit()) {
-        // TODO try a bit harder to commit
-        throw new Error('failed to commit: ' + print(grandParent))
-      }
-    }
-    return { head: oid, elapsed: Date.now() - start }
+    const ours = getParent(getParent(api.pid))
+    const parentFs = await FS.openHead(getParent(api.pid), db)
+    return oursMerge(ours, parentFs.oid, api)
   },
   sideEffectClone: async ({ repo }, api: IA<C>) => {
     // TODO assert we got called by ourselves
@@ -202,4 +179,20 @@ export const functions: Functions<Api> = {
     const head = await FS.fetch(repo, target, db)
     return { head, elapsed: Date.now() - start }
   },
+}
+const oursMerge = async (ours: PID, theirs: string, api: IA<C>) => {
+  const { db } = api.context
+  assert(db, 'db not found')
+  const start = Date.now()
+
+  const fs = await FS.openHead(ours, db)
+  const { next } = await fs.theirsMerge(theirs)
+
+  const atomic = await db.atomic().updateHead(ours, fs.oid, next.oid)
+  assert(atomic, 'update head failed')
+  if (!await atomic.commit()) {
+    // TODO try a bit harder to commit
+    throw new Error('failed to commit: ' + print(ours))
+  }
+  return { head: next.oid, elapsed: Date.now() - start }
 }

@@ -128,6 +128,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'system:merge*', async (t) => {
     const { backchat, engine } = await cradleMaker()
     const target = await backchat.readBaseThread()
+    const parent = getParent(target)
+
     const actions = await backchat.actions<system.Api>('system', { target })
     const { mergeParent, mergeGrandParent } = actions
 
@@ -136,7 +138,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('result', result)
 
       expect(result).toBeDefined()
-      const parent = getParent(target)
       const [splice] = await backchat.splices(parent)
       expect(result.head).toBe(splice.oid)
     })
@@ -147,6 +148,18 @@ export default (name: string, cradleMaker: CradleMaker) => {
       expect(result).toBeDefined()
       const grandParent = getParent(getParent(target))
       const [splice] = await backchat.splices(grandParent)
+      expect(result.head).toBe(splice.oid)
+    })
+    await t.step('mergeParent with conflicts', async () => {
+      await backchat.write('test.txt', 'parent', parent)
+
+      await backchat.write('test.txt', 'target', target)
+
+      const result = await mergeParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const [splice] = await backchat.splices(parent)
       expect(result.head).toBe(splice.oid)
     })
 
