@@ -25,7 +25,6 @@ export * from "./iterate_reader.ts";
 export * from "./limited_reader.ts";
 export * from "./multi_reader.ts";
 export * from "./read_all.ts";
-export * from "./read_delim.ts";
 export * from "./read_int.ts";
 export * from "./read_lines.ts";
 export * from "./read_long.ts";

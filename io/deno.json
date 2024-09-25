@@ -12,7 +12,6 @@
     "./limited-reader": "./limited_reader.ts",
     "./multi-reader": "./multi_reader.ts",
     "./read-all": "./read_all.ts",
-    "./read-delim": "./read_delim.ts",
     "./read-int": "./read_int.ts",
     "./read-lines": "./read_lines.ts",
     "./read-long": "./read_long.ts",
