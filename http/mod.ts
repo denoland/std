@@ -79,7 +79,12 @@
  *   {
  *     pattern: new URLPattern({ pathname: "/static/*" }),
  *     handler: (req: Request) => serveDir(req)
- *   }
+ *   },
+ *   {
+ *     method: ["GET", "HEAD"],
+ *     pattern: new URLPattern({ pathname: "/api" }),
+ *     handler: (req: Request) => new Response(req.method === 'HEAD' ? null : 'ok'),
+ *   },
  * ];
  *
  * function defaultHandler(_req: Request) {
