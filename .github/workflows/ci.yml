@@ -61,7 +61,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-        name: ${{ matrix.os }}-${{ matrix.deno }}
+          name: ${{ matrix.os }}-${{ matrix.deno }}
 
   test-node:
     runs-on: ${{ matrix.os }}
