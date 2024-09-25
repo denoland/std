@@ -11,6 +11,7 @@ Deno.test("toByteStream() consumable as BYOB", async () => {
       new Uint8Array(size),
       new Uint8Array(size * 0),
       new Uint8Array(size * 2),
+      new Uint8Array(5),
       new Uint8Array(size * 3),
     ]),
   )
@@ -23,7 +24,7 @@ Deno.test("toByteStream() consumable as BYOB", async () => {
     count += value.length;
   }
 
-  assertEquals(count, size * 6);
+  assertEquals(count, size * 6 + 5);
 });
 
 Deno.test("toByteStream() consumable as default", async () => {
@@ -34,6 +35,7 @@ Deno.test("toByteStream() consumable as default", async () => {
       new Uint8Array(size),
       new Uint8Array(size * 0),
       new Uint8Array(size * 2),
+      new Uint8Array(5),
       new Uint8Array(size * 3),
     ]),
   )
@@ -46,7 +48,7 @@ Deno.test("toByteStream() consumable as default", async () => {
     count += value.length;
   }
 
-  assertEquals(count, size * 6);
+  assertEquals(count, size * 6 + 5);
 });
 
 Deno.test("toByteStream() cancellable", async () => {
