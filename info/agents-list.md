@@ -47,6 +47,7 @@
   automating test execution and generating TPS reports from the results,
   specifically for workflows that involve structured tests in a Markdown Test
   Format. It addresses several challenges:
+
   - Automating repetitive test processes: It efficiently handles running tests
     from a file, eliminating the need for manual intervention, ensuring
     consistent and accurate test execution.
@@ -72,3 +73,5 @@
 - `agents/gpt-4o.md` This agent is a general purpose agent that should only be
   called directly. It has no system instructions and cannot call any tools. "
 - `agents/test_gen.md` A test generator for an ERD based system prompt.
+- `agents/merger.md` Merges the current branch to the home branch, and merges
+  the home branch to the main branch
