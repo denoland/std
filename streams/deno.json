@@ -16,12 +16,12 @@
     "./text-line-stream": "./text_line_stream.ts",
     "./to-array-buffer": "./to_array_buffer.ts",
     "./to-blob": "./to_blob.ts",
+    "./unstable-to-byte-stream": "./unstable_to_byte_stream.ts",
     "./unstable-to-bytes": "./unstable_to_bytes.ts",
     "./to-json": "./to_json.ts",
     "./unstable-to-lines": "./unstable_to_lines.ts",
     "./to-text": "./to_text.ts",
     "./to-transform-stream": "./to_transform_stream.ts",
-    "./unstable-upgrade-readable-stream": "./unstable_upgrade_readable_stream.ts",
     "./zip-readable-streams": "./zip_readable_streams.ts"
   }
 }

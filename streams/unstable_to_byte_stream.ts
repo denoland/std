@@ -1,15 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 /**
- * The function upgrades a `ReadableStream<Uint8Array>` to support BYOB mode
- * if the readable doesn't already support it.
+ * The function takes a `ReadableStream<Uint8Array>` and wraps it in a BYOB
+ * stream if it doesn't already support it.
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { upgradeReadable } from "@std/streams/unstable-upgrade-readable-stream";
+ * import { toByteStream } from "@std/streams/unstable-to-byte-stream";
  *
- * const reader = upgradeReadable(ReadableStream.from([new Uint8Array(100)]))
+ * const reader = toByteStream(ReadableStream.from([new Uint8Array(100)]))
  *   .getReader({ mode: "byob" });
  *
  * while (true) {
@@ -17,13 +17,14 @@
  *   if (done) break;
  *   assertEquals(value.length, 10);
  * }
+ *
  * reader.releaseLock();
  * ```
  *
- * @param readable The ReadableStream to be upgraded if needed.
+ * @param readable The ReadableStream to be wrapped if needed.
  * @returns A BYOB ReadableStream.
  */
-export function upgradeReadable(
+export function toByteStream(
   readable: ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {
   try {
@@ -61,7 +62,7 @@ export function upgradeReadable(
           }
         } else controller.enqueue(value);
       },
-      async cancel(reason): Promise<void> {
+      async cancel(reason) {
         await reader.cancel(reason);
       },
     });
