@@ -35,6 +35,6 @@
   "coverage-gutters.showRulerCoverage": false,
   "coverage-gutters.showGutterCoverage": false,
   "[markdown]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

@@ -274,7 +274,7 @@ export class Engine implements EngineInterface {
     const splices = []
     const commits = [commit]
     while (splices.length < count) {
-      const commit = commits.pop()
+      const commit = commits.shift()
       if (!commit) {
         break
       }

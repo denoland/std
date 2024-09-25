@@ -97,13 +97,19 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { pid } = backchat
 
     await t.step('latest - 1', async () => {
-      const splice = await backchat.splice(pid)
-      const same = await backchat.splice(pid, { commit: splice.oid })
+      const [splice] = await backchat.splices(pid)
+      const [same] = await backchat.splices(pid, { commit: splice.oid })
       expect(splice).toEqual(same)
 
       const commit = splice.commit.parent[0]
-      const parent = await backchat.splice(pid, { commit })
+      const [parent] = await backchat.splices(pid, { commit })
       expect(parent.oid).toEqual(commit)
+    })
+
+    await t.step('latest N', async () => {
+      const count = 20
+      const splices = await backchat.splices(pid, { count })
+      expect(splices.length).toEqual(count)
     })
 
     await engine.stop()

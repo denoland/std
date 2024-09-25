@@ -253,7 +253,7 @@ export class Backchat {
    * @param {string} [opts.path] - If provided, filters splices to those where this path changed.
    * @param {number} [opts.count=1] - The maximum number of splices to retrieve.
    */
-  splice(
+  splices(
     target: PID,
     opts: { commit?: string; path?: string; count?: number } = {},
   ) {
