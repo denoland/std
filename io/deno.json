@@ -15,7 +15,6 @@
     "./read-delim": "./read_delim.ts",
     "./read-lines": "./read_lines.ts",
     "./read-range": "./read_range.ts",
-    "./read-short": "./read_short.ts",
     "./read-string-delim": "./read_string_delim.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./string-reader": "./string_reader.ts",
