@@ -13,7 +13,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * import { copyN } from "@std/io/copy-n";
  * import { assertEquals } from "@std/assert/equals";
  *
- * const source = await Deno.open("README.md");
+ * using source = await Deno.open("README.md");
  *
  * const res = await copyN(source, Deno.stdout, 10);
  * assertEquals(res, 10);
@@ -26,7 +26,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  *
  * @deprecated Pipe the readable stream through a new
  * {@linkcode https://jsr.io/@std/streams/doc/~/ByteSliceStream | ByteSliceStream}
- * instead. This will be removed in the future.
+ * instead. This will be removed in 0.225.0.
  */
 export async function copyN(
   r: Reader,

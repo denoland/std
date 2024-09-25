@@ -13,7 +13,7 @@ import { concat } from "@std/bytes/concat";
  * import { readLines } from "@std/io/read-lines";
  * import { assert } from "@std/assert/assert"
  *
- * let fileReader = await Deno.open("README.md");
+ * using fileReader = await Deno.open("README.md");
  *
  * for await (let line of readLines(fileReader)) {
  *   assert(typeof line === "string");
@@ -26,7 +26,7 @@ import { concat } from "@std/bytes/concat";
  *
  * @deprecated Use
  * {@linkcode https://jsr.io/@std/streams/doc/unstable-to-lines/~/toLines | toLines}
- * on the readable stream instead. This will be removed in the future.
+ * on the readable stream instead. This will be removed in 0.225.0.
  */
 export async function* readLines(
   reader: Reader,

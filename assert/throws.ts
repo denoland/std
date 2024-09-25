@@ -11,7 +11,7 @@ import { AssertionError } from "./assertion_error.ts";
  * {@linkcode assertRejects}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }); // Doesn't throw
@@ -35,7 +35,7 @@ export function assertThrows(
  * {@linkcode assertRejects}.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertThrows } from "@std/assert";
  *
  * assertThrows(() => { throw new TypeError("hello world!"); }, TypeError); // Doesn't throw

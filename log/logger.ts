@@ -4,6 +4,7 @@ import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
 import type { BaseHandler } from "./base_handler.ts";
 
+/** Any function that can be called with any arguments and return any value. */
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
 

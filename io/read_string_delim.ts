@@ -12,7 +12,7 @@ import { readDelim } from "./read_delim.ts";
  * import { readStringDelim } from "@std/io/read-string-delim";
  * import { assert } from "@std/assert/assert"
  *
- * let fileReader = await Deno.open("README.md");
+ * using fileReader = await Deno.open("README.md");
  *
  * for await (let line of readStringDelim(fileReader, "\n")) {
  *   assert(typeof line === "string");
@@ -26,7 +26,7 @@ import { readDelim } from "./read_delim.ts";
  *
  * @deprecated Pipe the readable stream through a
  * {@linkcode https://jsr.io/@std/streams/doc/~/TextDelimiterStream | TextDelimiterStream}
- * instead. This will be removed in the future.
+ * instead. This will be removed in 0.225.0.
  */
 export async function* readStringDelim(
   reader: Reader,

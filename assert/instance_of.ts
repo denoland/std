@@ -13,7 +13,7 @@ export type GetConstructorType<T extends AnyConstructor> = InstanceType<T>;
  * If not then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertInstanceOf } from "@std/assert";
  *
  * assertInstanceOf(new Date(), Date); // Doesn't throw

@@ -3,7 +3,7 @@
 /**
  * Network utilities.
  *
- * ```ts no-assert no-eval
+ * ```ts no-assert ignore
  * import { getAvailablePort } from "@std/net";
  *
  * const command = new Deno.Command(Deno.execPath(), {

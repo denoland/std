@@ -138,7 +138,7 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { TarStream, type TarStreamInput } from "@std/tar/tar-stream";
  *
  * await ReadableStream.from<TarStreamInput>([
@@ -301,7 +301,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    * @return ReadableStream<Uint8Array>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { TarStream } from "@std/tar/tar-stream";
    *
    * await ReadableStream.from([
@@ -337,7 +337,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    * @return WritableStream<TarStreamInput>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { TarStream } from "@std/tar/tar-stream";
    *
    * await ReadableStream.from([
@@ -426,7 +426,7 @@ function parsePath(
  * @param path The path as a string
  *
  * @example Usage
- * ```ts no-assert no-eval
+ * ```ts no-assert ignore
  * import { assertValidPath, TarStream, type TarStreamInput } from "@std/tar";
  *
  * const paths = (await Array.fromAsync(Deno.readDir("./")))
@@ -474,7 +474,7 @@ export function assertValidPath(path: string) {
  * @param options The TarStreamOptions
  *
  * @example Usage
- * ```ts no-assert no-eval
+ * ```ts no-assert ignore
  * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/tar";
  *
  *  const paths = (await Array.fromAsync(Deno.readDir('./')))
