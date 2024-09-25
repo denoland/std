@@ -1,6 +1,7 @@
 import { assert, expect, log } from '@utils'
-import { CradleMaker } from '@/constants.ts'
+import { CradleMaker, getParent } from '@/constants.ts'
 import * as longthread from '@/isolates/longthread.ts'
+import * as system from '@/isolates/system.ts'
 
 const agent = `
 ---
@@ -120,6 +121,33 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
       expect(typeof result.content).toBe('string')
       expect(result.content).toContain('test.txt')
+    })
+
+    await engine.stop()
+  })
+  Deno.test(prefix + 'system:merge*', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const target = await backchat.readBaseThread()
+    const actions = await backchat.actions<system.Api>('system', { target })
+    const { mergeParent, mergeGrandParent } = actions
+
+    await t.step('mergeParent', async () => {
+      const result = await mergeParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const parent = getParent(target)
+      const [splice] = await backchat.splices(parent)
+      expect(result.head).toBe(splice.oid)
+    })
+    await t.step('mergeGrandParent', async () => {
+      const result = await mergeGrandParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const grandParent = getParent(getParent(target))
+      const [splice] = await backchat.splices(grandParent)
+      expect(result.head).toBe(splice.oid)
     })
 
     await engine.stop()
