@@ -11,18 +11,14 @@ const decoder = new TextDecoder();
  * @example Usage
  * ```ts
  * import {
- *   copyN,
+ *   copy,
  *   StringReader,
  *   StringWriter,
  * } from "@std/io";
- * import { copy } from "@std/io/copy";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const w = new StringWriter("base");
  * const r = new StringReader("0123456789");
- * await copyN(r, w, 4); // copy 4 bytes
- *
- * assertEquals(w.toString(), "base0123");
  *
  * await copy(r, w); // copy all
  * assertEquals(w.toString(), "base0123456789");
