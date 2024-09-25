@@ -50,7 +50,7 @@ export function upgradeReadable(
 
         if (controller.byobRequest?.view) {
           const buffer = new Uint8Array(controller.byobRequest.view.buffer);
-          const size = buffer.size;
+          const size = buffer.length;
           if (value.length > size) {
             buffer.set(value.slice(0, size));
             controller.byobRequest.respond(size);
