@@ -20,7 +20,6 @@ export * from "./buf_reader.ts";
 export * from "./buf_writer.ts";
 export * from "./buffer.ts";
 export * from "./copy.ts";
-export * from "./copy_n.ts";
 export * from "./iterate_reader.ts";
 export * from "./limited_reader.ts";
 export * from "./multi_reader.ts";

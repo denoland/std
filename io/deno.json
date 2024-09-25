@@ -7,7 +7,6 @@
     "./buf-writer": "./buf_writer.ts",
     "./buffer": "./buffer.ts",
     "./copy": "./copy.ts",
-    "./copy-n": "./copy_n.ts",
     "./iterate-reader": "./iterate_reader.ts",
     "./limited-reader": "./limited_reader.ts",
     "./multi-reader": "./multi_reader.ts",
