@@ -3,7 +3,6 @@
   "version": "0.224.9",
   "exports": {
     ".": "./mod.ts",
-    "./buf-reader": "./buf_reader.ts",
     "./buf-writer": "./buf_writer.ts",
     "./buffer": "./buffer.ts",
     "./copy": "./copy.ts",

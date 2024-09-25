@@ -16,7 +16,6 @@
  * @module
  */
 
-export * from "./buf_reader.ts";
 export * from "./buf_writer.ts";
 export * from "./buffer.ts";
 export * from "./copy.ts";
