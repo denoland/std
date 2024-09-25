@@ -63,8 +63,8 @@ export interface Route {
  *     handler: (req: Request) => serveDir(req)
  *   },
  *   {
- *     pattern: new URLPattern({ pathname: "/api" }),
  *     method: ["GET", "HEAD"],
+ *     pattern: new URLPattern({ pathname: "/api" }),
  *     handler: (req: Request) => new Response(req.method === 'HEAD' ? null : 'ok'),
  *   },
  * ];
