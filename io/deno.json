@@ -9,7 +9,6 @@
     "./limited-reader": "./limited_reader.ts",
     "./multi-reader": "./multi_reader.ts",
     "./read-all": "./read_all.ts",
-    "./read-delim": "./read_delim.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./string-reader": "./string_reader.ts",
     "./string-writer": "./string_writer.ts",
