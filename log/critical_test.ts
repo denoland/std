@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { assertSpyCall, spy } from "@std/testing/mock";
+import { bold, red } from "@std/fmt/colors";
 import { critical } from "./critical.ts";
 
 Deno.test("critical()", () => {
@@ -10,9 +11,9 @@ Deno.test("critical()", () => {
   assertEquals(criticalData, "foo");
   assertEquals(criticalResolver, "bar");
   assertSpyCall(consoleInfoSpy, 0, {
-    args: ["CRITICAL foo"],
+    args: [bold(red("CRITICAL foo"))],
   });
   assertSpyCall(consoleInfoSpy, 1, {
-    args: ["CRITICAL bar"],
+    args: [bold(red("CRITICAL bar"))],
   });
 });

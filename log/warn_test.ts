@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { assertSpyCall, spy } from "@std/testing/mock";
+import { yellow } from "@std/fmt/colors";
 import { warn } from "./warn.ts";
 
 Deno.test("warn()", () => {
@@ -11,9 +12,9 @@ Deno.test("warn()", () => {
   assertEquals(warnData, sym);
   assertEquals(warnResolver, null);
   assertSpyCall(consoleInfoSpy, 0, {
-    args: ["WARN Symbol(a)"],
+    args: [yellow("WARN Symbol(a)")],
   });
   assertSpyCall(consoleInfoSpy, 1, {
-    args: ["WARN null"],
+    args: [yellow("WARN null")],
   });
 });

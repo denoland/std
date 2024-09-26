@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
 import { assertSpyCall, spy } from "@std/testing/mock";
+import { red } from "@std/fmt/colors";
 import { error } from "./error.ts";
 
 Deno.test("error()", () => {
@@ -10,9 +11,9 @@ Deno.test("error()", () => {
   assertEquals(errorData, undefined);
   assertEquals(errorResolver, 5n);
   assertSpyCall(consoleInfoSpy, 0, {
-    args: ["ERROR undefined"],
+    args: [red("ERROR undefined")],
   });
   assertSpyCall(consoleInfoSpy, 1, {
-    args: ["ERROR 5"],
+    args: [red("ERROR 5")],
   });
 });
