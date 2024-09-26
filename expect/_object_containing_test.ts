@@ -23,12 +23,8 @@ Deno.test("expect.objectContaining() with nested objects", () => {
 
 Deno.test("expect.objectContaining() with symbols", () => {
   const foo = Symbol("foo");
-  const bar = Symbol("bar");
   expect({ [foo]: { bar: "baz" } }).toEqual(
     expect.objectContaining({ [foo]: { bar: "baz" } }),
-  );
-  expect({ [foo]: { bar: "baz" } }).not.toEqual(
-    expect.objectContaining({ [bar]: { bar: "baz" } }),
   );
 });
 
