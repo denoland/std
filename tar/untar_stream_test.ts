@@ -133,35 +133,31 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
 });
 
 Deno.test("UntarStream() with invalid size", async () => {
-  const readable = ReadableStream.from<TarStreamInput>([
-    {
-      type: "file",
-      path: "newFile.txt",
-      size: 512,
-      readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
-    },
-  ])
-    .pipeThrough(new TarStream())
-    .pipeThrough(
-      new TransformStream<Uint8Array, Uint8Array>({
-        flush(controller) {
-          controller.enqueue(new Uint8Array(100));
+  const bytes = concat(
+    await Array.fromAsync(
+      ReadableStream.from<TarStreamInput>([
+        {
+          type: "file",
+          path: "newFile.txt",
+          size: 512,
+          readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
         },
-      }),
-    )
+      ])
+        .pipeThrough(new TarStream()),
+    ),
+  ).slice(0, -100);
+
+  const readable = ReadableStream.from([bytes])
     .pipeThrough(new UntarStream());
 
   await assertRejects(
     async () => {
       for await (const entry of readable) {
-        if (entry.readable) {
-          // deno-lint-ignore no-empty
-          for await (const _ of entry.readable) {}
-        }
+        await entry.readable?.cancel();
       }
     },
     RangeError,
-    "Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (100)",
+    "Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (412)",
   );
 });
 
@@ -247,4 +243,27 @@ Deno.test("UntarStream() with invalid checksum", async () => {
     Error,
     "Cannot extract the tar archive: An archive entry has invalid header checksum",
   );
+});
+
+Deno.test("UntarStream() with extra bytes", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "directory",
+      path: "a",
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(
+      new TransformStream({
+        flush(controller) {
+          controller.enqueue(new Uint8Array(512 * 2).fill(1));
+        },
+      }),
+    )
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.path, "a");
+    entry.readable?.cancel();
+  }
 });
