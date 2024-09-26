@@ -5,6 +5,9 @@
  * Returns all elements in the given collection until the first element that
  * does not match the given predicate.
  *
+ * Note: If you want to process any iterable, use the new version of
+ * `takeWhile` from `@std/collections/unstable-take-while`.
+ *
  * @typeParam T The type of the array elements.
  *
  * @param array The array to take elements from.

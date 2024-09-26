@@ -785,14 +785,14 @@ Deno.test("createAssertSnapshot()", async (t) => {
   await t.step("no options", async (t) => {
     await assertMonochromeSnapshot(
       t,
-      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+      "\x1b[32mThis green text has had its colors stripped\x1b[39m",
     );
   });
 
   await t.step("options object", async (t) => {
     await assertMonochromeSnapshot(
       t,
-      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+      "\x1b[32mThis green text has had its colors stripped\x1b[39m",
       {
         name: "createAssertSnapshot() - options object - custom name",
       },
@@ -823,7 +823,7 @@ Deno.test("createAssertSnapshot()", async (t) => {
 
     await assertMonochromeSnapshotComposite(
       t,
-      "\x1b[32mThis green text has had it's colours stripped\x1b[39m",
+      "\x1b[32mThis green text has had its colors stripped\x1b[39m",
     );
   });
 });

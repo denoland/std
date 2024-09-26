@@ -48,7 +48,7 @@
  * For example to integrate the user agent provided in the header `User-Agent`
  * in an http request would look like this:
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { UserAgent } from "@std/http/user-agent";
  *
  * Deno.serve((req) => {
@@ -63,7 +63,7 @@
  * {@linkcode route} provides an easy way to route requests to different
  * handlers based on the request path and method.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { route, type Route } from "@std/http/unstable-route";
  * import { serveDir } from "@std/http/file-server";
  *
@@ -79,7 +79,12 @@
  *   {
  *     pattern: new URLPattern({ pathname: "/static/*" }),
  *     handler: (req: Request) => serveDir(req)
- *   }
+ *   },
+ *   {
+ *     method: ["GET", "HEAD"],
+ *     pattern: new URLPattern({ pathname: "/api" }),
+ *     handler: (req: Request) => new Response(req.method === 'HEAD' ? null : 'ok'),
+ *   },
  * ];
  *
  * function defaultHandler(_req: Request) {

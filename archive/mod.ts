@@ -34,7 +34,7 @@
  * archive file, while untar is the inverse utility to extract the files from an
  * archive. Files are not compressed, only collected into the archive.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { Tar } from "@std/archive/tar";
  * import { Buffer } from "@std/io/buffer";
  * import { copy } from "@std/io/copy";
@@ -54,13 +54,16 @@
  *   filePath: "./filename_on_filesystem.txt",
  * });
  *
- * // Now let's write the tar (with it's two files) to the filesystem
+ * // Now let's write the tar (with its two files) to the filesystem
  * // use tar.getReader() to read the contents.
  *
  * const writer = await Deno.open("./out.tar", { write: true, create: true });
  * await copy(tar.getReader(), writer);
  * writer.close();
  * ```
+ *
+ * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *

@@ -15,6 +15,7 @@ export async function discoverPackages() {
   }
   packages.sort();
 
+  // deno-lint-ignore no-console
   console.log("Discovered", packages.length, "packages.");
   return packages;
 }
@@ -59,5 +60,6 @@ async function discoverExports(pkg: string) {
 
 if (import.meta.main) {
   const packages = await discoverPackages();
+  // deno-lint-ignore no-console
   console.log(packages);
 }

@@ -6,7 +6,7 @@ import { AssertionError } from "./assertion_error.ts";
  * Make an assertion, error will be thrown if `expr` does not have truthy value.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assert } from "@std/assert";
  *
  * assert("hello".includes("ello")); // Doesn't throw

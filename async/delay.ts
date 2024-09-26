@@ -35,7 +35,7 @@ export interface DelayOptions {
  * Setting `persistent` to `false` will allow the process to continue to run as
  * long as the timer exists.
  *
- * ```ts no-assert
+ * ```ts no-assert ignore
  * import { delay } from "@std/async/delay";
  *
  * // ...
@@ -65,6 +65,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
         if (!(error instanceof ReferenceError)) {
           throw error;
         }
+        // deno-lint-ignore no-console
         console.error("`persistent` option is only available in Deno");
       }
     }

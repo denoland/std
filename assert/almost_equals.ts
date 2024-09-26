@@ -12,7 +12,7 @@ import { AssertionError } from "./assertion_error.ts";
  * expected value.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertAlmostEquals } from "@std/assert";
  *
  * assertAlmostEquals(0.01, 0.02); // Throws

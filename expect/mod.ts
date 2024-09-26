@@ -60,19 +60,19 @@
  * - Utilities:
  *   - {@linkcode expect.addEqualityTester}
  *   - {@linkcode expect.extend}
+ *   - {@linkcode expect.hasAssertions}
  *
  * Only these functions are still not available:
  * - Matchers:
  *   - `toMatchSnapShot`
- *   - `toMatchInlineSnapShot`
- *   - `toThrowErrorMatchingSnapShot`
- *   - `toThrowErrorMatchingInlineSnapShot`
+ *   - `toMatchInlineSnapshot`
+ *   - `toThrowErrorMatchingSnapshot`
+ *   - `toThrowErrorMatchingInlineSnapshot`
  * - Asymmetric matchers:
  *   - `expect.objectContaining`
  *   - `expect.not.objectContaining`
  * - Utilities:
  *   - `expect.assertions`
- *   - `expect.hasAssertions`
  *   - `expect.addSnapshotSerializer`
  *
  * The tracking issue to add support for unsupported parts of the API is
