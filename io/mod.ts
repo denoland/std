@@ -21,7 +21,6 @@ export * from "./copy.ts";
 export * from "./iterate_reader.ts";
 export * from "./read_all.ts";
 export * from "./reader_from_stream_reader.ts";
-export * from "./string_reader.ts";
 export * from "./to_readable_stream.ts";
 export * from "./to_writable_stream.ts";
 export * from "./types.ts";
