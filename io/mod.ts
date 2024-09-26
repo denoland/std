@@ -19,7 +19,6 @@
 export * from "./buffer.ts";
 export * from "./copy.ts";
 export * from "./iterate_reader.ts";
-export * from "./multi_reader.ts";
 export * from "./read_all.ts";
 export * from "./reader_from_stream_reader.ts";
 export * from "./string_reader.ts";
