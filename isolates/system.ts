@@ -30,6 +30,11 @@ const pidResult = headResult.extend({
   pid: pidSchema,
 })
 
+const merge = z.object({
+  filepaths: z.array(z.string()).optional(),
+  overwrite: z.boolean().optional(),
+})
+
 export const parameters = {
   rm: z.object({ pid: pidSchema }).describe('remove a repository'),
   clone: init.describe('clone a repository'),
@@ -37,10 +42,10 @@ export const parameters = {
   pull: z.object({ repo: z.string(), target: pidSchema.optional() }).describe(
     'pull a repository into the current branch, or optionally the given PID',
   ),
-  mergeParent: z.object({}).describe(
-    'merge this branch into the parent branch',
+  mergeParent: merge.describe(
+    'merge this branch into the parent branch.  If filepaths are given, only those files will be merged.  If overwrite is true, no error will be thrown if any files in the destination are newer than the source.',
   ),
-  mergeGrandParent: z.object({}).describe(
+  mergeGrandParent: merge.describe(
     'merge the parent branch into the grandparent branch',
   ),
   sideEffectClone: z.object({ repo: z.string() }).describe(

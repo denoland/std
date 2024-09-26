@@ -276,6 +276,7 @@ class Cache {
     if (Cache.#local.has(url)) {
       const result = Cache.#local.get(url)
       assert(result, 'cache inconsistency')
+      console.log('cache hit', key.join('/'))
       return result
     }
     throw new Error('not found: ' + key.join('/'))
