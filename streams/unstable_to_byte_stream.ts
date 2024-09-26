@@ -4,6 +4,8 @@
  * The function takes a `ReadableStream<Uint8Array>` and wraps it in a BYOB
  * stream if it doesn't already support it.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
