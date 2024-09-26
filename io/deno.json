@@ -9,7 +9,6 @@
     "./read-all": "./read_all.ts",
     "./reader-from-stream-reader": "./reader_from_stream_reader.ts",
     "./string-reader": "./string_reader.ts",
-    "./string-writer": "./string_writer.ts",
     "./to-readable-stream": "./to_readable_stream.ts",
     "./to-writable-stream": "./to_writable_stream.ts",
     "./types": "./types.ts",
