@@ -16,14 +16,10 @@
  * @module
  */
 
-export * from "./buf_reader.ts";
-export * from "./buf_writer.ts";
 export * from "./buffer.ts";
 export * from "./copy.ts";
 export * from "./iterate_reader.ts";
-export * from "./limited_reader.ts";
 export * from "./read_all.ts";
-export * from "./read_delim.ts";
 export * from "./reader_from_stream_reader.ts";
 export * from "./string_reader.ts";
 export * from "./string_writer.ts";
