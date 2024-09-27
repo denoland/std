@@ -127,6 +127,7 @@ export const functions: Functions<Api> = {
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readJSON<Thread>(threadPath)
     thread.messages.push({ name: actorId, role: 'user', content })
+    thread.agent = path
     api.writeJSON(threadPath, thread)
     return loop(path, api, stopOnTools)
   },
