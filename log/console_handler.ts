@@ -77,26 +77,6 @@ export class ConsoleHandler extends BaseHandler {
     return msg;
   }
 
-  /**
-   * Applies colors to a message based on the log level.
-   *
-   * @example Usage
-   * ```ts
-   * import { ConsoleHandler } from "@std/log/console-handler";
-   * import { LogLevels } from "@std/log/levels";
-   * import { blue } from "@std/fmt/colors";
-   * import { assertEquals } from "@std/assert/equals";
-   *
-   * const handler = new ConsoleHandler("INFO");
-   * const coloredMsg = handler.applyColors("Hello, world!", LogLevels.INFO);
-   *
-   * assertEquals(coloredMsg, blue("Hello, world!"));
-   * ```
-   *
-   * @param msg The message to apply colors to.
-   * @param level The log level.
-   * @returns The message with colors applied.
-   */
   applyColors(msg: string, level: number): string {
     switch (level) {
       case LogLevels.INFO:
