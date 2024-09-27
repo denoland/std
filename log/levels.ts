@@ -4,6 +4,8 @@
 /**
  * Use this to retrieve the numeric log level by it's associated name.
  * Defaults to INFO.
+ *
+ * @internal
  */
 export const LogLevels = {
   NOTSET: 0,
