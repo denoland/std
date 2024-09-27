@@ -8,10 +8,17 @@ import type { BaseHandler } from "./base_handler.ts";
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
 
+/**
+ * Options for {@linkcode LogRecord}.
+ */
 export interface LogRecordOptions {
+  /** The message to log. */
   msg: string;
+  /** The arguments to log. */
   args: unknown[];
+  /** The log level of the message. */
   level: LogLevel;
+  /** The name of the logger that created the log record. */
   loggerName: string;
 }
 
@@ -32,15 +39,127 @@ export interface LogConfig {
 /**
  * An object that encapsulates provided message and arguments as well some
  * metadata that can be later used when formatting a message.
+ *
+ * @example Usage
+ * ```ts
+ * import { LogRecord } from "@std/log/logger";
+ * import { LogLevels } from "@std/log/levels";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const record = new LogRecord({
+ *   msg: "Hello, world!",
+ *   args: ["foo", "bar"],
+ *   level: LogLevels.INFO,
+ *   loggerName: "example",
+ * });
+ *
+ * assertEquals(record.msg, "Hello, world!");
+ * assertEquals(record.args, ["foo", "bar"]);
+ * assertEquals(record.level, LogLevels.INFO);
+ * assertEquals(record.loggerName, "example");
+ * ```
  */
 export class LogRecord {
+  /** The message to log.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.msg, "Hello, world!");
+   * ```
+   */
   readonly msg: string;
   #args: unknown[];
   #datetime: Date;
+  /**
+   * The numeric log level of the log record.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.level, LogLevels.INFO);
+   * ```
+   */
   readonly level: number;
+  /**
+   * The name of the log level of the log record.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.loggerName, "example");
+   * ```
+   */
   readonly levelName: string;
+  /**
+   * The name of the logger that created the log record.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.loggerName, "example");
+   * ```
+   */
   readonly loggerName: string;
 
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options to create a new log record.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   * ```
+   */
   constructor(options: LogRecordOptions) {
     this.msg = options.msg;
     this.#args = [...options.args];
@@ -49,9 +168,53 @@ export class LogRecord {
     this.#datetime = new Date();
     this.levelName = getLevelName(options.level);
   }
+
+  /**
+   * Getter for the arguments to log.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.args, ["foo", "bar"]);
+   * ```
+   *
+   * @returns A copy of the arguments to log.
+   */
   get args(): unknown[] {
     return [...this.#args];
   }
+
+  /**
+   * Getter for the date and time the log record was created.
+   *
+   * @example Usage
+   * ```ts
+   * import { LogRecord } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const record = new LogRecord({
+   *   msg: "Hello, world!",
+   *   args: ["foo", "bar"],
+   *   level: LogLevels.INFO,
+   *   loggerName: "example",
+   * });
+   *
+   * assertEquals(record.datetime, new Date());
+   * ```
+   *
+   * @returns The date and time the log record was created.
+   */
   get datetime(): Date {
     return new Date(this.#datetime.getTime());
   }
