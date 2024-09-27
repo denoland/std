@@ -210,7 +210,7 @@ export class LogRecord {
    *   loggerName: "example",
    * });
    *
-   * assertAlmostEquals(record.datetime.getTime(), Date.now(), 1e5);
+   * assertAlmostEquals(record.datetime.getTime(), Date.now(), 1);
    * ```
    *
    * @returns The date and time the log record was created.
