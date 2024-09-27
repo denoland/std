@@ -178,7 +178,6 @@ export class UntarStream
   #writable: WritableStream<Uint8Array>;
   #reader: ReadableStreamDefaultReader<Uint8Array>;
   #buffer: Uint8Array[] = [];
-  // #gen: AsyncGenerator<Uint8Array>;
   #lock = false;
   constructor() {
     const { readable, writable } = new TransformStream<
@@ -220,7 +219,7 @@ export class UntarStream
 
       // Check for premature ending
       if (this.#buffer.every((value) => value.every((x) => x === 0))) {
-        await this.#reader.cancel("Tar Stream Finished");
+        await this.#reader.cancel("Tar stream finished prematurely");
         return;
       }
 
