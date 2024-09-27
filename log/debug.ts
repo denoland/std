@@ -5,8 +5,107 @@ import { getLogger } from "./get_logger.ts";
 import type { GenericFunction } from "./logger.ts";
 import "./setup.ts";
 
-/** Log with debug level, using default logger. */
+/**
+ * Log at the debug level.
+ *
+ * This function is a pass-through to the default logger's `debug` method. By
+ * default, this function is a no-op. To enable debug logging, set call
+ * {@linkcode https://jsr.io/@std/log/doc/setup/~/setup | setup} and set the
+ * default level to `DEBUG`.
+ *
+ * @template T The type of the message to log.
+ * @param msg The message to log.
+ * @param args Arguments to be formatted into the message.
+ * @returns The message that was logged.
+ *
+ * @example Usage without setup
+ * ```ts
+ * import { debug } from "@std/log/debug";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(debug("This is a debug message."), "This is a debug message.");
+ * // Prints: ""
+ *
+ * assertEquals(debug(() => "This is a debug message."), "This is a debug message.");
+ * // Prints: ""
+ * ```
+ *
+ * @example Usage with setup
+ * ```ts
+ * import { ConsoleHandler, debug, setup } from "@std/log";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * setup({
+ *   handlers: {
+ *     default: new ConsoleHandler("DEBUG"),
+ *   },
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["default"],
+ *     },
+ *   },
+ * });
+ *
+ * assertEquals(debug("This is a debug message."), "This is a debug message.");
+ *
+ * assertEquals(
+ *   debug(() => "This is a debug message."),
+ *   "This is a debug message.",
+ * );
+ * ```
+ */
 export function debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
+/**
+ * Log at the debug level.
+ *
+ * This function is a pass-through to the default logger's `debug` method. By
+ * default, this function is a no-op. To enable debug logging, set call
+ * {@linkcode https://jsr.io/@std/log/doc/setup/~/setup | setup} and set the
+ * default level to `DEBUG`.
+ *
+ * @template T The type of the message to log.
+ * @param msg The message to log.
+ * @param args Arguments to be formatted into the message.
+ * @returns The message that was logged.
+ *
+ * @example Usage without setup
+ * ```ts
+ * import { debug } from "@std/log/debug";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(debug("This is a debug message."), "This is a debug message.");
+ * // Prints: ""
+ *
+ * assertEquals(debug(() => "This is a debug message."), "This is a debug message.");
+ * // Prints: ""
+ * ```
+ *
+ * @example Usage with setup
+ * ```ts
+ * import { ConsoleHandler, debug, setup } from "@std/log";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * setup({
+ *   handlers: {
+ *     default: new ConsoleHandler("DEBUG"),
+ *   },
+ *   loggers: {
+ *     default: {
+ *       level: "DEBUG",
+ *       handlers: ["default"],
+ *     },
+ *   },
+ * });
+ *
+ * assertEquals(debug("This is a debug message."), "This is a debug message.");
+ *
+ * assertEquals(
+ *   debug(() => "This is a debug message."),
+ *   "This is a debug message.",
+ * );
+ * ```
+ */
 export function debug<T>(
   msg: T extends GenericFunction ? never : T,
   ...args: unknown[]
