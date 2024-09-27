@@ -201,7 +201,7 @@ export class LogRecord {
    * ```ts
    * import { LogRecord } from "@std/log/logger";
    * import { LogLevels } from "@std/log/levels";
-   * import { assertEquals } from "@std/assert/equals";
+   * import { assertAlmostEquals } from "@std/assert/almost-equals";
    *
    * const record = new LogRecord({
    *   msg: "Hello, world!",
@@ -210,7 +210,7 @@ export class LogRecord {
    *   loggerName: "example",
    * });
    *
-   * assertEquals(record.datetime, new Date());
+   * assertAlmostEquals(record.datetime.getTime(), Date.now(), 1e5);
    * ```
    *
    * @returns The date and time the log record was created.
