@@ -34,9 +34,8 @@ more explicit to reduce the chances of deviation.
 
 There are only two steps you are allowed to do to complete your task:
 
-First, read in the file from the "Thread Path" using the function
-"test-case-runner_openai". Think carefully about the information you receive
+First, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive
 back.
 
-Second, call the "test-case-runner_assessment" function. Be brief - do not
+Second, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not
 repeat the expectation or the contents of the thread file verbatim - summarize.
