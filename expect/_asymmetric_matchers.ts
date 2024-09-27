@@ -159,7 +159,7 @@ export class ObjectContaining
 
     for (const key of keys) {
       if (
-        !Object.prototype.hasOwnProperty.call(other, key) ||
+        !Object.hasOwn(other, key) ||
         !equal(this.value[key], other[key])
       ) {
         return false;
