@@ -1,6 +1,6 @@
 import { assert } from '@utils'
 import { z } from 'zod'
-import { Functions, Returns, type ToApiType } from '@/constants.ts'
+import { Functions, reasoning, Returns, type ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as tps from '@/api/tps-report.ts'
 import { TestFile } from '@/api/tps-report.ts'
@@ -10,6 +10,7 @@ const log = Debug('AI:tps-report')
 
 export const parameters = {
   upsert: z.object({
+    reasoning,
     testPath: z.string(),
     agent: z.string().describe('the agent that is the target of the test'),
     assessor: z.string().describe('the agent that will assess the test'),
@@ -18,6 +19,7 @@ export const parameters = {
     'Create or update a test report for the given testPath and iterations',
   ),
   addCase: z.object({
+    reasoning,
     testPath: z.string().describe('the path to the .test.md file'),
     name: z.string().describe('the name of the test case'),
     promptChains: z.array(z.array(z.string())).describe(
@@ -30,10 +32,10 @@ export const parameters = {
     'Add a test case to the test report for the given testPath with the given number of expectations',
   ),
   confirmCaseCount: z.object({
-    testPath: z.string().describe('the path to the .test.md file'),
     reasoning: z.array(z.string()).describe(
       'the reasoning for the test case count',
     ),
+    testPath: z.string().describe('the path to the .test.md file'),
     count: z.number().int().gte(1).describe('the number of test cases'),
   }).describe('Confirm the number of test cases in the test report'),
 }

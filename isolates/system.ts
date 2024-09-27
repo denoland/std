@@ -186,6 +186,7 @@ export const functions: Functions<Api> = {
   },
 }
 const oursMerge = async (ours: PID, theirs: string, api: IA<C>) => {
+  // TODO add files and overwrite to the mergeParent function
   const { db } = api.context
   assert(db, 'db not found')
   const start = Date.now()
