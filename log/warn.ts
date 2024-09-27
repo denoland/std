@@ -3,6 +3,7 @@
 
 import { getLogger } from "./get_logger.ts";
 import type { GenericFunction } from "./logger.ts";
+import "./setup.ts";
 
 export type { GenericFunction };
 
