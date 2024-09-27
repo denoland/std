@@ -1,4 +1,5 @@
 import {
+  AssistantMessage,
   chatParams,
   Functions,
   getThreadPath,
@@ -142,9 +143,18 @@ export const functions: Functions<Api> = {
   openai: async ({ threadPath }, api) => {
     const thread = await api.readJSON<Thread>(threadPath)
     const messages = [...thread.messages]
-    const response = messages.pop()
-    assert(response, 'no messages in thread')
-    assert(response.role === 'assistant', 'last message must be assistant')
+
+    let response: AssistantMessage | undefined
+    while (messages.length) {
+      const message = messages.pop()
+      assert(message, 'message should be defined')
+      if (message.role === 'assistant') {
+        response = message
+        break
+      }
+    }
+    assert(response, 'response not found')
+
     const path = response.name
     assert(path, 'path missing from last message')
 
