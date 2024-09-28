@@ -181,8 +181,8 @@ export function expect<T extends Expected = Expected>(
 
       const extendMatchers: Matchers = getExtendMatchers();
       const allMatchers = {
-        ...extendMatchers,
         ...matchers,
+        ...extendMatchers,
       };
       const matcher = allMatchers[name as MatcherKey] as Matcher;
       if (!matcher) {
