@@ -1,6 +1,8 @@
 import { assert, Debug } from '@utils'
+import { base64 } from '@scure/base'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
+import sharp from 'sharp'
 import {
   Agent,
   agentSchema,
@@ -11,6 +13,7 @@ import {
   getThreadPath,
   IA,
   print,
+  Returns,
   Thread,
   ToApiType,
 } from '@/constants.ts'
@@ -45,14 +48,37 @@ export const parameters = {
     overrides: agentSchema.partial().optional(),
   }),
   /** Gives slightly quicker feedback to users when waiting for completions */
-  effect: z.object({
+  completionEffect: z.object({
     path: z.string(),
     overrides: agentSchema.partial().optional(),
   }),
+  image: z.object({
+    path: z.string().regex(/\.jpg$/, {
+      message: 'The path must end with .jpg',
+    }).describe(
+      'The path to the image to generate, which should be a meaningful name in the images/ directory, and should end in .jpg',
+    ),
+    prompt: z.string().max(4000),
+    lowQuality: z.boolean().optional().describe(
+      'Generate a low quality image as opposed to the default high quality image',
+    ),
+    size: z.enum(['1024x1024', '1792x1024', '1024x1792']).optional().describe(
+      'The size of the image to generate',
+    ),
+    style: z.enum(['vivid', 'natural']).optional().describe(
+      'The style of the image to generate, which defaults to vivid',
+    ),
+  }).describe('Generate an image using DALL-E-3 from the provided prompt'),
 }
-export const returns = {
+export const returns: Returns<typeof parameters> = {
   complete: z.void(),
-  effect: z.void(),
+  completionEffect: z.void(),
+  image: z.object({
+    /** The revised prompt that the image generation system used */
+    prompt: z.string(),
+    /** The size in bytes of the written image */
+    size: z.number().int().gte(0),
+  }),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -67,10 +93,10 @@ export const functions: Functions<Api> = {
     thread.messages.push({ role: 'assistant', name: agent.source.path })
     api.writeJSON(threadPath, thread)
 
-    const { effect } = await api.actions<Api>('ai-completions')
-    await effect({ path, overrides })
+    const { completionEffect } = await api.actions<Api>('ai-completions')
+    await completionEffect({ path, overrides })
   },
-  async effect({ path, overrides }, api) {
+  async completionEffect({ path, overrides }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
@@ -88,6 +114,34 @@ export const functions: Functions<Api> = {
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
+  },
+  async image({ path, prompt, lowQuality, size, style }, api) {
+    const { data, response } = await ai.images
+      .generate({
+        prompt,
+        model: 'dall-e-3',
+        quality: lowQuality ? 'standard' : 'hd',
+        response_format: 'b64_json',
+        size,
+        style,
+      }).withResponse()
+    log('headers', response)
+    const { b64_json, revised_prompt } = data.data[0]
+    if (!b64_json) {
+      throw new Error('no image data')
+    }
+    const image = base64.decode(b64_json)
+    log('length', image.length)
+
+    const jpegImage = await sharp(image)
+      .jpeg({ mozjpeg: true })
+      .toBuffer()
+    log('length', jpegImage.length)
+
+    api.write(path, jpegImage)
+
+    // image must store the file in the thread as a commit, so it is invariant
+    return { revisedPrompt: revised_prompt, size: jpegImage.length }
   },
 }
 
