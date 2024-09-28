@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { accepts, acceptsEncodings, acceptsLanguages } from "./negotiation.ts";
+import { stub } from "@std/testing/mock";
 
 Deno.test({
   name: "accepts() handles no args",
@@ -106,6 +107,36 @@ Deno.test({
   fn() {
     const req = new Request("https://example.com/");
     assertEquals(acceptsEncodings(req), ["*"]);
+  },
+});
+
+Deno.test({
+  name: "acceptsEncodings() is locale independent",
+  fn() {
+    const req = new Request("https://example.com/", {
+      headers: { "accept-encoding": "GZIP" },
+    });
+    const encoding = "gzip";
+
+    assertEquals(acceptsEncodings(req, encoding), encoding);
+
+    {
+      /**
+       * Use of locale-sensitive methods with undefined locale may cause
+       * environment-sensitive bugs -
+       * [issue](https://github.com/denoland/std/issues/6016)
+       */
+      const toLocaleLowerCase = String.prototype.toLocaleLowerCase;
+      using _ = stub(
+        String.prototype,
+        "toLocaleLowerCase",
+        function (locale) {
+          return toLocaleLowerCase.call(this, locale ?? "tr-TR");
+        },
+      );
+
+      assertEquals(acceptsEncodings(req, encoding), encoding);
+    }
   },
 });
 

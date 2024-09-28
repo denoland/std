@@ -37,6 +37,13 @@ Deno.test("assertIsError() allows custom error", () => {
   );
 });
 
+Deno.test("assertIsError() accepts abstract class", () => {
+  abstract class AbstractError extends Error {}
+  class ConcreteError extends AbstractError {}
+
+  assertIsError(new ConcreteError("failed"), AbstractError, "fail");
+});
+
 Deno.test("assertIsError() throws with message diff containing double quotes", () => {
   assertThrows(
     () =>

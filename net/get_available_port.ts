@@ -30,7 +30,7 @@ export interface GetAvailablePortOptions {
  * @example Recommended Usage
  *
  * Bad:
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const port = getAvailablePort();
@@ -38,12 +38,12 @@ export interface GetAvailablePortOptions {
  * ```
  *
  * Good:
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * const { port } = Deno.serve({ port: 0 }, () => new Response("Hello, world!")).addr;
  * ```
  *
  * Good:
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const command = new Deno.Command(Deno.execPath(), {

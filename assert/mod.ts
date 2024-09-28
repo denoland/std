@@ -8,7 +8,7 @@
  * This module is browser compatible, but do not rely on good formatting of
  * values for AssertionError messages in browsers.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { assert } from "@std/assert";
  *
  * assert("I am truthy"); // Doesn't throw
