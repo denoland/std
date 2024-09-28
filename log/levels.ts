@@ -6,7 +6,6 @@
  * Defaults to INFO.
  */
 export const LogLevels = {
-  NOTSET: 0,
   DEBUG: 10,
   INFO: 20,
   WARN: 30,
@@ -26,7 +25,6 @@ export const LogLevelNames: LevelName[] = Object.keys(LogLevels).filter((key) =>
 ) as LevelName[];
 
 const byLevel: Record<LogLevel, LevelName> = {
-  [LogLevels.NOTSET]: "NOTSET",
   [LogLevels.DEBUG]: "DEBUG",
   [LogLevels.INFO]: "INFO",
   [LogLevels.WARN]: "WARN",
