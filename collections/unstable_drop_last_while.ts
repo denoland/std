@@ -29,10 +29,10 @@ export function dropLastWhile<T>(
   iterable: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T[] {
-  const result = Array.isArray(iterable) ? iterable : Array.from(iterable);
-  let offset = result.length - 1;
-  while (offset >= 0 && predicate(result[offset]!)) {
+  const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
+  let offset = array.length - 1;
+  while (offset >= 0 && predicate(array[offset]!)) {
     offset--;
   }
-  return result.slice(0, offset + 1);
+  return array.slice(0, offset + 1);
 }
