@@ -1,3 +1,4 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { dropLastWhile } from "./drop_last_while.ts";
 import {
   dropLastWhile as unstableDropLastWhile,
