@@ -57,7 +57,7 @@ Deno.test("(unstable) dropLastWhile() handles a Map", () => {
     ["b", 33],
     ["c", 44],
   ]);
-  const actual = dropLastWhile(values, ([k, v]) => v > 30);
+  const actual = dropLastWhile(values, ([_k, v]) => v > 30);
   assertEquals(actual, [["a", 20]]);
 });
 
