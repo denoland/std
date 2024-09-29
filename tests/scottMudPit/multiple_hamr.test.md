@@ -23,6 +23,58 @@ create customer with the following details: John Doe, 124 Hope St, Auckland.  Mo
 
 ---
 
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001.1
+## Description
+Count the number of existing customers.
+
+**Prompts:**
+```
+How many customers do we have?
+```
+**Expections:**
+- The response must show that there are 3 customers
+
+---
+
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001.1
+## Description
+Ensure that the customer agent can create multiple new customer records.
+
+**Prompts:**
+```
+create 30 customers.  Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer.
+```
+**Expections:**
+- Customer record is created successfully.
+
+---
+
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001.2
+## Description
+Ensure that the customer agent can create multiple new customer records.
+
+**Prompts:**
+```
+create 30 customers.  Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer.
+```
+**Expections:**
+- Customer record is created successfully.
+
+---
+
+
 # Test: Update Customer Details
 ## ID
 TST-CUSTAG-002
