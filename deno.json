@@ -43,7 +43,7 @@
     "fast-deep-equal/es6": "npm:fast-deep-equal/es6/index.js",
     "gray-matter": "npm:gray-matter",
     "hono": "jsr:@hono/hono",
-    "imagescript": "npm:imagescript@^1.3.0",
+    "imagescript": "https://deno.land/x/imagescript@1.3.0/mod.ts",
     "it-pushable": "npm:it-pushable",
     "lodash.merge": "npm:lodash.merge",
     "micromatch": "npm:micromatch",
