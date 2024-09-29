@@ -286,36 +286,26 @@ export class Engine implements EngineInterface {
     return splices
   }
   async read(path: string, pid: PID, commit?: string) {
-    freezePid(pid)
-
-    const db = this.#api.context.db
-    assert(db, 'db not found')
-    let fs
-    if (commit) {
-      fs = FS.open(pid, commit, db)
-    } else {
-      fs = await FS.openHead(pid, db)
-    }
-
+    const fs = await this.#openFs(pid, commit)
     log('read', path, print(pid))
     return fs.read(path)
   }
   async readTree(path: string, pid: PID, commit?: string) {
-    freezePid(pid)
-
-    const db = this.#api.context.db
-    assert(db, 'db not found')
-    let fs
-    if (commit) {
-      fs = FS.open(pid, commit, db)
-    } else {
-      fs = await FS.openHead(pid, db)
-    }
-
+    const fs = await this.#openFs(pid, commit)
     log('readTree', path, print(pid))
     return fs.readTree(path)
   }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
+    log('readJSON', path, print(pid))
+    return fs.readJSON<T>(path)
+  }
+  async readBinary(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
+    log('readBinary', path, print(pid))
+    return fs.readBinary(path)
+  }
+  async #openFs(pid: PID, commit?: string) {
     freezePid(pid)
 
     const db = this.#api.context.db
@@ -326,9 +316,7 @@ export class Engine implements EngineInterface {
     } else {
       fs = await FS.openHead(pid, db)
     }
-
-    log('readJSON', path, print(pid))
-    return fs.readJSON<T>(path)
+    return fs
   }
   async exists(path: string, pid: PID): Promise<boolean> {
     // TODO convert to triad

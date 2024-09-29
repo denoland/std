@@ -196,6 +196,17 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('readJSON', params, { cache: !!commit })
     return result as T
   }
+  async readBinary(path: string, pid?: PID, commit?: string) {
+    const params: { path: string; pid?: PID; commit?: string } = {
+      path,
+      pid,
+      commit,
+    }
+    const result = await this.#request('readBinary', params, {
+      cache: !!commit,
+    })
+    return result as Uint8Array
+  }
   async splice(
     target: PID,
     opts: { commit?: string; path?: string; count?: number } = {},

@@ -419,6 +419,7 @@ export interface EngineInterface {
   read(path: string, pid: PID, commit?: string): Promise<string>
   readTree(path: string, pid: PID, commit?: string): Promise<TreeEntry[]>
   readJSON<T>(path: string, pid: PID, commit?: string): Promise<T>
+  readBinary(path: string, pid?: PID, commit?: string): Promise<Uint8Array>
   exists(path: string, pid: PID): Promise<boolean>
 }
 export const isPID = (value: unknown): value is PID => {
