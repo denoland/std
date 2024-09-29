@@ -314,6 +314,7 @@ export default class DB {
     const timestamp = commit.committer.timestamp * 1000
     const splice: Splice = { pid, oid, commit, timestamp, changes: {} }
     if (path) {
+      // TODO make paths be an array
       if (await fs.exists(path)) {
         const oid = await fs.readOid(path)
         const patch = await fs.read(path) // TODO check caching makes this fast

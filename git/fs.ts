@@ -223,7 +223,7 @@ export default class FS {
     const commit = await git.commit({
       ...this.#git,
       noUpdateBranch: true,
-      message: 'theirs merge',
+      message: 'Merge using "theirs" strategy',
       author,
       tree,
       parent: [this.oid, ...parents],
@@ -243,7 +243,8 @@ export default class FS {
       mergeDriver,
       ours: this.oid,
       theirs: commit,
-      author: { name: 'git/merge' },
+      author: { name: 'Artifact' },
+      message: 'Merge',
     })
     assert(result.oid, 'merge failed')
     return result.oid
