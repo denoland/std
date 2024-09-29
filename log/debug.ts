@@ -26,7 +26,7 @@ import "./setup.ts";
  * assertEquals(debug("This is a debug message."), "This is a debug message.");
  * // Prints: ""
  *
- * assertEquals(debug(() => "This is a debug message."), "This is a debug message.");
+ * assertEquals(debug(() => "This is a debug message."), undefined);
  * // Prints: ""
  * ```
  *
@@ -77,7 +77,7 @@ export function debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
  * assertEquals(debug("This is a debug message."), "This is a debug message.");
  * // Prints: ""
  *
- * assertEquals(debug(() => "This is a debug message."), "This is a debug message.");
+ * assertEquals(debug(() => "This is a debug message."), undefined);
  * // Prints: ""
  * ```
  *
