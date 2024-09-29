@@ -141,6 +141,7 @@ export const functions: Functions<Api> = {
       // TODO try a bit harder to commit
       throw new Error('failed to commit: ' + repo)
     }
+    log('pulled', repo, print(target))
     return fetchHead
   },
   mergeParent: (_, api: IA<C>) => {

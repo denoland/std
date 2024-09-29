@@ -131,7 +131,7 @@ export const functions: Functions<actor.Api> = {
     log('pull', repo, print(target))
     target = target || api.pid
 
-    const { pull } = await api.actions<system.Api>('system', { target })
+    const { pull } = await api.actions<system.Api>('system')
     const { head, elapsed } = await pull({ repo, target })
     return { head, elapsed, pid: target }
   },
