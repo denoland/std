@@ -75,7 +75,7 @@ export const returns: Returns<typeof parameters> = {
   completionEffect: z.void(),
   image: z.object({
     /** The revised prompt that the image generation system used */
-    prompt: z.string(),
+    revisedPrompt: z.string(),
     /** The size in bytes of the written image */
     size: z.number().int().gte(0),
   }),
