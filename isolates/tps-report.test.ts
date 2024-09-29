@@ -19,6 +19,7 @@ Deno.test('tps-report', async () => {
   const iterations = 0
 
   const ok = tpsReport.functions.upsert({
+    reasoning: [],
     testPath,
     agent,
     assessor,
@@ -27,6 +28,7 @@ Deno.test('tps-report', async () => {
   await expect(ok).resolves.not.toThrow()
 
   const falseTestPath = tpsReport.functions.upsert({
+    reasoning: [],
     testPath: 'tests/invalid.test.md',
     agent,
     assessor,
@@ -35,6 +37,7 @@ Deno.test('tps-report', async () => {
   await expect(falseTestPath).rejects.toThrow('file not found')
 
   const falseAgent = tpsReport.functions.upsert({
+    reasoning: [],
     testPath,
     agent: 'agents/invalid.md',
     assessor,
@@ -43,6 +46,7 @@ Deno.test('tps-report', async () => {
   await expect(falseAgent).rejects.toThrow('No such file or directory')
 
   const falseAssessor = tpsReport.functions.upsert({
+    reasoning: [],
     testPath,
     agent,
     assessor: 'agents/invalid.md',

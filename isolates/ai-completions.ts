@@ -2,7 +2,7 @@ import { assert, Debug } from '@utils'
 import { base64 } from '@scure/base'
 import '@std/dotenv/load' // load .env variables
 import OpenAI from 'openai'
-import sharp from 'sharp'
+import { decode, Image } from 'imagescript'
 import {
   Agent,
   agentSchema,
@@ -130,18 +130,16 @@ export const functions: Functions<Api> = {
     if (!b64_json) {
       throw new Error('no image data')
     }
-    const image = base64.decode(b64_json)
-    log('length', image.length)
+    const imageData = base64.decode(b64_json)
+    log('length', imageData.length)
 
-    const jpegImage = await sharp(image)
-      .jpeg({ mozjpeg: true })
-      .toBuffer()
-    log('length', jpegImage.length)
+    const png = await decode(imageData)
+    assert(png instanceof Image, 'image must be an instance of Image')
+    const jpg = await png.encodeJPEG()
+    log('length', jpg.length)
 
-    api.write(path, jpegImage)
-
-    // image must store the file in the thread as a commit, so it is invariant
-    return { revisedPrompt: revised_prompt, size: jpegImage.length }
+    api.write(path, jpg)
+    return { revisedPrompt: revised_prompt, size: jpg.length }
   },
 }
 

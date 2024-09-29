@@ -122,6 +122,10 @@ export const solidify = async (
   }
   // TODO pass in all the db checks to go with this write
   // TODO write blobs atomically
+
+  // const duplicateCheck = new Set(parents)
+  // assert(duplicateCheck.size === parents.length, 'duplicate parents')
+
   const { next, changes, commit } = await fs.writeCommitObject('pool', parents)
   log('head', commit)
   for (const poolable of poolables) {
