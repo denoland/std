@@ -15,6 +15,27 @@ export interface ConsoleHandlerOptions extends BaseHandlerOptions {
   useColors?: boolean;
 }
 
+function applyColors(msg: string, level: number): string {
+  switch (level) {
+    case LogLevels.INFO:
+      msg = blue(msg);
+      break;
+    case LogLevels.WARN:
+      msg = yellow(msg);
+      break;
+    case LogLevels.ERROR:
+      msg = red(msg);
+      break;
+    case LogLevels.CRITICAL:
+      msg = bold(red(msg));
+      break;
+    default:
+      break;
+  }
+
+  return msg;
+}
+
 /**
  * Default logger that outputs log messages to the console via
  * {@linkcode console.log}.
@@ -71,28 +92,7 @@ export class ConsoleHandler extends BaseHandler {
     let msg = super.format(logRecord);
 
     if (this.#useColors) {
-      msg = this.applyColors(msg, logRecord.level);
-    }
-
-    return msg;
-  }
-
-  applyColors(msg: string, level: number): string {
-    switch (level) {
-      case LogLevels.INFO:
-        msg = blue(msg);
-        break;
-      case LogLevels.WARN:
-        msg = yellow(msg);
-        break;
-      case LogLevels.ERROR:
-        msg = red(msg);
-        break;
-      case LogLevels.CRITICAL:
-        msg = bold(red(msg));
-        break;
-      default:
-        break;
+      msg = applyColors(msg, logRecord.level);
     }
 
     return msg;
