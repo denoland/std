@@ -130,13 +130,22 @@ export const functions: Functions<Api> = {
     assert(db, 'db not found')
     const fs = await FS.openHead(target, db)
 
-    const oid = await fs.merge(fetchHead.head)
-    if (fetchHead.head === oid) {
+    let commit
+    try {
+      commit = await fs.merge(fetchHead.head)
+    } catch (error) {
+      log('merger error', error)
+      // TODO try a merge that doesn't fully clobber but keeps whatever we have
+      // that isn't overwritten by the incoming merge
+      const result = await fs.theirsMerge(fetchHead.head)
+      commit = result.commit
+    }
+    if (fetchHead.head === commit) {
       log('no changes')
       return fetchHead
     }
 
-    const atomic = await db.atomic().updateHead(target, fs.oid, oid)
+    const atomic = await db.atomic().updateHead(target, fs.oid, commit)
     assert(atomic, 'update head failed')
     if (!await atomic.commit()) {
       // TODO try a bit harder to commit
