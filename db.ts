@@ -453,6 +453,9 @@ const watchUndelivered = async (kv: Deno.Kv) => {
   for await (const [undelivered] of kv.watch([keys.UNDELIVERED])) {
     if (undelivered.versionstamp) {
       console.error('undelivered', undelivered.key, undelivered.value)
+      const timestamp = new Date().toISOString()
+      await kv.set([...keys.UNDELIVERED, timestamp], undelivered.value)
+      await kv.delete(undelivered.key)
     }
   }
 }
