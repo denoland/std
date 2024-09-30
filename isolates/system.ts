@@ -130,6 +130,11 @@ export const functions: Functions<Api> = {
     assert(db, 'db not found')
     const fs = await FS.openHead(target, db)
 
+    if (fs.oid === fetchHead.head) {
+      log('no changes')
+      return fetchHead
+    }
+
     let commit
     try {
       commit = await fs.merge(fetchHead.head)
@@ -139,10 +144,6 @@ export const functions: Functions<Api> = {
       // that isn't overwritten by the incoming merge
       const result = await fs.theirsMerge(fetchHead.head)
       commit = result.commit
-    }
-    if (fetchHead.head === commit) {
-      log('no changes')
-      return fetchHead
     }
 
     const atomic = await db.atomic().updateHead(target, fs.oid, commit)

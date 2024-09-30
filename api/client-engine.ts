@@ -204,6 +204,7 @@ export class WebClientEngine implements EngineInterface {
     }
     const result = await this.#request('readBinary', params, {
       cache: !!commit,
+      binary: true,
     })
     return result as Uint8Array
   }
@@ -221,7 +222,11 @@ export class WebClientEngine implements EngineInterface {
     const result = await this.#request('exists', { path, pid })
     return result as boolean
   }
-  async #request(path: string, params: Params, opts: { cache?: boolean } = {}) {
+  async #request(
+    path: string,
+    params: Params,
+    opts: { cache?: boolean; binary?: boolean } = {},
+  ) {
     const abort = new AbortController()
     this.#aborts.add(abort)
     const { signal } = abort
@@ -231,6 +236,7 @@ export class WebClientEngine implements EngineInterface {
         url: this.#url,
         signal,
         cache,
+        binary: opts.binary,
       })
       return result
     } finally {
@@ -242,7 +248,12 @@ const request = async (
   fetcher: typeof fetch,
   path: string,
   params: Params,
-  opts: { url: string; signal?: AbortSignal; cache?: boolean },
+  opts: {
+    url: string
+    signal?: AbortSignal
+    cache?: boolean
+    binary?: boolean
+  },
 ) => {
   const request = new Request(`${opts.url}/api/${path}?pretty`, {
     method: 'POST',
@@ -271,6 +282,11 @@ const request = async (
     console.log('cache hit', path, params)
   }
 
+  if (opts.binary) {
+    const arrayBuffer = await response.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
+    return uint8Array
+  }
   const outcome = await response.json()
   if (outcome.error) {
     throw deserializeError(outcome.error)

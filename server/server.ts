@@ -245,6 +245,10 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   try {
     const result = await p
     endTime(c, name)
+    if (result instanceof Uint8Array) {
+      return c.body(result)
+      // TODO handle an error in readBinary
+    }
     return c.json({ result })
   } catch (error) {
     endTime(c, name)

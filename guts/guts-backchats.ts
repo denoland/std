@@ -114,4 +114,19 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
     await engine.stop()
   })
+  Deno.test(prefix + 'readBinary', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    await backchat.write('test.txt', 'binary test')
+
+    await t.step('latest', async () => {
+      const binary = await backchat.readBinary('test.txt')
+      expect(binary.length).toBeGreaterThan(0)
+      expect(binary).toBeInstanceOf(Uint8Array)
+
+      const text = new TextDecoder().decode(binary)
+      expect(text).toEqual('binary test')
+    })
+
+    await engine.stop()
+  })
 }
