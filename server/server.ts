@@ -152,6 +152,7 @@ export default class Server {
       const target = { ...su.pid, branches: ['main'] }
       const promise = su.pull({ repo: 'dreamcatcher-tech/HAL', target })
         .then(() => console.log('done pull'))
+        .catch((error) => console.error('pull error', error))
       console.log('starting pull')
 
       return execute(c, promise, 'hooks/github')

@@ -129,6 +129,7 @@ export const functions: Functions<Api> = {
     const { db } = api.context
     assert(db, 'db not found')
     const fs = await FS.openHead(target, db)
+
     const oid = await fs.merge(fetchHead.head)
     if (fetchHead.head === oid) {
       log('no changes')
