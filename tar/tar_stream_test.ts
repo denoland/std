@@ -1,12 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { concat } from "@std/bytes";
 import {
   assertValidTarStreamOptions,
   TarStream,
   type TarStreamInput,
 } from "./tar_stream.ts";
-import { assertEquals, assertRejects, assertThrows } from "../assert/mod.ts";
 import { UntarStream } from "./untar_stream.ts";
-import { concat } from "../bytes/mod.ts";
 
 Deno.test("TarStream() with default stream", async () => {
   const text = new TextEncoder().encode("Hello World!");
