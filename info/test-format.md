@@ -44,6 +44,15 @@ A test case will be run with one or more iterations, where each iteration is the
 same test case, but run with slightly different prompts. A test case is complete
 when all the iterations of it are completed.
 
+## Befores
+
+Any section with a heading like "**Before:**" and then a list of items
+underneath is listing a set of test cases that needs to be run before this test
+case. The order in the list is the order they will be run, with each one
+inheriting the system state of the one that came before it. In the TPS report,
+befores are referenced by case index, and can only refer to case indexes that
+come before. The items in the list refer to other test case names.
+
 ## Prompt Chains
 
 Prompt Chains start with something like **Prompts:** followed by a list of
@@ -74,9 +83,7 @@ variations on the prompt used each run. If the number of iterations is greater
 than the number of prompts that are supplied, then an AI will be used to
 generate further variations using the given prompts as the basis for a theme.
 
-# Example
-
-Consider the following file:
+# Example File
 
 ```md
 ---

@@ -27,7 +27,7 @@ assessor: agents/test-assessor.md
 
 - a reasonably close agent is chosen
 
-## switch with extra information
+## Switch with extra information
 
 Given a prompt that indicates the user wants to switch to another agent, as well
 as some extra info after the prompt, the `/[agent]` part should always override
@@ -43,7 +43,18 @@ the extraneous content.
 - the agent name immediately following `/` is switched to, regardless of what
   information comes afterwards
 
-## switchboard also switches
+## Extra / is stripped
+
+**Prompts:**
+
+- /o1 /switchboard
+
+**Expectations**
+
+- the switching is only done to the first specified agent, and no switching is
+  made to the second agent
+
+## Switchboard also switches
 
 **Prompts:**
 
