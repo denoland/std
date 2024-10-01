@@ -1,6 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { PartialReadError } from "@std/io/buf-reader";
 import type { Reader } from "@std/io/types";
 
 /**
@@ -172,6 +171,20 @@ export const USTAR_STRUCTURE = [
  * @internal
  */
 export type UstarFields = (typeof USTAR_STRUCTURE)[number]["field"];
+
+/**
+ * Thrown when a read from a stream fails to read the
+ * requested number of bytes.
+ */
+class PartialReadError extends Error {
+  partial: Uint8Array;
+
+  constructor(partial: Uint8Array) {
+    super("Encountered UnexpectedEof, data only partially read");
+    this.name = this.constructor.name;
+    this.partial = partial;
+  }
+}
 
 export async function readBlock(
   reader: Reader,
