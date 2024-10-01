@@ -220,15 +220,39 @@ export class LogRecord {
   }
 }
 
+/** Options for {@linkcode Logger}. */
 export interface LoggerOptions {
+  /** The handlers to use for the logger. */
   handlers?: BaseHandler[];
 }
 
+/**
+ * A logger that can log messages at different levels.
+ *
+ * @example Usage
+ * ```ts
+ * import { Logger } from "@std/log/logger";
+ * import { LogLevels } from "@std/log/levels";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const logger = new Logger("example", LogLevels.INFO);
+ * const result = logger.info("Hello, world!");
+ *
+ * assertEquals(result, "Hello, world!");
+ * ```
+ */
 export class Logger {
   #level: LogLevel;
   handlers: BaseHandler[];
   readonly #loggerName: string;
 
+  /**
+   * Constructs a new instance.
+   *
+   * @param loggerName The name of the logger.
+   * @param levelName The name of the log level.
+   * @param options The options to create a new logger.
+   */
   constructor(
     loggerName: string,
     levelName: LevelName,
@@ -239,12 +263,42 @@ export class Logger {
     this.handlers = options.handlers ?? [];
   }
 
-  /** Use this to retrieve the current numeric log level. */
+  /**
+   * Getter for the log level.
+   *
+   * @returns The log level.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", LogLevels.INFO);
+   * assertEquals(logger.level, LogLevels.INFO);
+   * ```
+   */
   get level(): LogLevel {
     return this.#level;
   }
 
-  /** Use this to set the numeric log level. */
+  /**
+   * Setter for the log level.
+   *
+   * @param level The log level to set.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", LogLevels.INFO);
+   * logger.level = LogLevels.DEBUG;
+   *
+   * assertEquals(logger.level, LogLevels.DEBUG);
+   * ```
+   */
   set level(level: LogLevel) {
     try {
       this.#level = getLevelByName(getLevelName(level));
@@ -253,13 +307,62 @@ export class Logger {
     }
   }
 
+  /**
+   * Getter for the name of the log level.
+   *
+   * @returns The name of the log level.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", LogLevels.INFO);
+   * assertEquals(logger.levelName, "INFO");
+   * ```
+   */
   get levelName(): LevelName {
     return getLevelName(this.#level);
   }
+
+  /**
+   * Setter for the name of the log level.
+   *
+   * @param levelName The name of the log level to set.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", LogLevels.INFO);
+   * logger.levelName = "DEBUG";
+   *
+   * assertEquals(logger.level, LogLevels.DEBUG);
+   * ```
+   */
   set levelName(levelName: LevelName) {
     this.#level = getLevelByName(levelName);
   }
 
+  /**
+   * Getter for the name of the logger.
+   *
+   * @returns The name of the logger.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", LogLevels.INFO);
+   *
+   * assertEquals(logger.loggerName, "example");
+   * ```
+   */
   get loggerName(): string {
     return this.#loggerName;
   }
