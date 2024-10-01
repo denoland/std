@@ -29,7 +29,10 @@ export const parameters = {
         .optional()
         .describe('the path to show - defaults to "."'),
       // TODO make an allowed list of widgets
-      widget: STATEBOARD_WIDGETS.describe('the widget to show'),
+      widgets: z.array(STATEBOARD_WIDGETS.describe('the widget to show'))
+        .describe(
+          'the stack of widgets to display, in the order of their display',
+        ),
     })
     .describe(
       'Show the given path with the given widget on the stateboard',
@@ -42,8 +45,8 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  show: async ({ pid, commit, path, widget }, api) => {
-    log('show', pid, commit, path, widget)
+  show: async ({ pid, commit, path, widgets }, api) => {
+    log('show', pid, commit, path, widgets)
     const threadPath = getThreadPath(api.pid)
     const thread = await api.readThread(threadPath)
     const setter = getLastAssistantMessageId(thread)
