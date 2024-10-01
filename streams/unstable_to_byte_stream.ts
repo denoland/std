@@ -53,13 +53,14 @@ export function toByteStream(
 
         if (controller.byobRequest?.view) {
           const buffer = new Uint8Array(controller.byobRequest.view.buffer);
-          const size = buffer.length;
+          const offset = controller.byobRequest.view.byteOffset;
+          const size = buffer.length - offset;
           if (value.length > size) {
-            buffer.set(value.slice(0, size));
+            buffer.set(value.slice(0, size), offset);
             controller.byobRequest.respond(size);
             controller.enqueue(value.slice(size));
           } else {
-            buffer.set(value);
+            buffer.set(value, offset);
             controller.byobRequest.respond(value.length);
           }
         } else controller.enqueue(value);
