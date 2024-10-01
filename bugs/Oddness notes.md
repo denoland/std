@@ -289,5 +289,21 @@ E.g. this was what I think was behind the "elapsed time: 0" issue on running tes
 
 ---
 
+Bot Request
+
+The ability to take a previous thread and extract the prompts only.  This, with a batch run, would speed up the recreation of an initial test.
+
+Example
+
+User: Here's the contents of a cut and paste thread.  Extract only what Dave has asked.  <Thread>
+Response:
+
+	1. /switchboard Give me a list of available available agents.
+	2. create a new files in agents/test-results-summary.md with the contents: <contents of file>
+	3. /test-file-runner
+	4. run tests/router.test.md
+	5. /test-results-summary
+	6. tests/router.tps.json
+
 
 
