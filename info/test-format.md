@@ -33,7 +33,7 @@ like "**Expectations:**" and a list of items underneath it, then it is
 definitely a test case.
 
 The name of the test case is the section heading. The number of the test case is
-its natural number starting from the top of the file.
+its zero based index starting from the top of the file.
 
 Prompts are used to exercise the target agent under test.
 
@@ -46,12 +46,13 @@ when all the iterations of it are completed.
 
 ## Befores
 
-Any section with a heading like "**Before:**" and then a list of items
-underneath is listing a set of test cases that needs to be run before this test
+Inside of a test case, any heading like "**Before**" and then a list of items
+underneath is an ordered list of test cases, by name, that needs to be run
+before this current test
 case. The order in the list is the order they will be run, with each one
 inheriting the system state of the one that came before it. In the TPS report,
 befores are referenced by case index, and can only refer to case indexes that
-come before. The items in the list refer to other test case names.
+come earlier than the declaring test file.
 
 ## Prompt Chains
 

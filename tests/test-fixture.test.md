@@ -34,7 +34,7 @@ assessor: agents/test-assessor.md
 
 - an error was thrown
 
-## Before
+## Before function
 
 **Before**
 
@@ -53,7 +53,7 @@ assessor: agents/test-assessor.md
 
 **Before**
 
-- Before
+- Before function
 - Call the local function
 
 **Prompts**
