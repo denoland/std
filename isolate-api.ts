@@ -309,4 +309,7 @@ export default class IA<T extends object = Default> {
   mv(from: string, to: string) {
     return this.#fs.mv(from, to)
   }
+  cp(from: string, to: string) {
+    return this.#fs.cp(from, to)
+  }
 }

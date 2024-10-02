@@ -118,7 +118,7 @@ export const functions: Functions<Api> = {
     const { start, run } = await api.functions<longthread.Api>('longthread')
     const parent = getParent(api.pid)
     if (await api.exists(getThreadPath(parent))) {
-      await api.mv(getThreadPath(parent), getThreadPath(api.pid))
+      await api.cp(getThreadPath(parent), getThreadPath(api.pid))
     } else {
       await start({})
     }
@@ -131,11 +131,10 @@ export const functions: Functions<Api> = {
 
     const threadPath = getThreadPath(api.pid)
     const stopOnTools = ['test-case-runner_assessment']
-    const { drone } = await api
-      .actions<longthread.Api>('longthread', { prefix: 'assess' })
 
-    const promises = expectations.map(async (expectation) => {
-      // TODO recreate the call to openai directly
+    const promises = expectations.map(async (expectation, index) => {
+      const opts = { branchName: 'assess_' + index }
+      const { drone } = await api.actions<longthread.Api>('longthread', opts)
       const content = `threadPath: ${threadPath}\n\nExpectation: ${expectation}`
       const path = assessor
       const result = await drone({ path, content, actorId, stopOnTools })

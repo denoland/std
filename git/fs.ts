@@ -418,6 +418,10 @@ export default class FS {
     return !!await this.#db.readHead(pid)
   }
   async mv(from: string, to: string) {
+    await this.cp(from, to)
+    this.delete(from)
+  }
+  async cp(from: string, to: string) {
     // TODO check using directories
     from = refine(from)
     to = refine(to)
@@ -426,7 +430,6 @@ export default class FS {
     assert(!await this.exists(to), 'destination already exists: ' + to)
     const oid = await this.readOid(from)
     this.#upserts.set(to, { oid })
-    this.delete(from)
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set

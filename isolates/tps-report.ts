@@ -47,13 +47,15 @@ export const parameters = {
     ),
     testPath: z.string().describe('the path to the .test.md file'),
     count: z.number().int().gte(1).describe('the number of test cases'),
-  }).describe('Confirm the number of test cases in the test report'),
+  }).describe(
+    'Confirm the number of test cases in the test report.  This function must be called alone and not in parallel.  If the case count is wrong, it will throw an error.  This function is a test to ensure the data in the tps report is so far consistent.',
+  ),
 }
 
 export const returns: Returns<typeof parameters> = {
   upsert: z.void(),
   addCase: z.void(),
-  confirmCaseCount: z.number().int().gte(0),
+  confirmCaseCount: z.object({ correct: z.boolean() }),
 }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
@@ -90,7 +92,7 @@ export const functions: Functions<Api> = {
     if (tpsReport.cases.length !== count) {
       throw new Error('Wrong case count - should be: ' + tpsReport.cases.length)
     }
-    return tpsReport.cases.length
+    return { correct: true }
   },
 }
 

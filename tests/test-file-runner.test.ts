@@ -48,11 +48,11 @@ Deno.test('test file runner', async (t) => {
   })
   await engine.stop()
 })
-Deno.test('router', async (t) => {
+Deno.test.only('router', async (t) => {
   const { backchat, engine } = await fixture()
-  // log.enable(
-  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions',
-  // )
+  log.enable(
+    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions',
+  )
 
   const opts = { branchName: 'runner', noClose: true }
   const { drone } = await backchat.actions<Api>('longthread', opts)
@@ -73,10 +73,10 @@ Deno.test('router', async (t) => {
 
     const tpsPath = routerTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
-    log('done', tps)
+    console.dir(tps, { depth: Infinity })
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)
-    expect(tps.cases).toHaveLength(4)
+    expect(tps.cases).toHaveLength(5)
     expect(tps.cases[0].iterations).toHaveLength(1)
   })
   await engine.stop()
@@ -143,7 +143,7 @@ Deno.test('test fixture', async (t) => {
   })
   await engine.stop()
 })
-Deno.test.only('test the tester', async (t) => {
+Deno.test('test the tester', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
     'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
