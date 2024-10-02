@@ -5,9 +5,9 @@ import { TestFile, testFile } from '@/api/tps-report.ts'
 
 Deno.test('test with befores', async (t) => {
   const { backchat, engine } = await fixture()
-  log.enable(
-    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
-  )
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  // )
   const tpsReport = testFile.parse(tpsFixture)
   const tpsPath = 'tests/test-fixture.tps.json'
   await backchat.writeJSON(tpsPath, tpsReport)
@@ -18,7 +18,6 @@ Deno.test('test with befores', async (t) => {
     const { path } = tpsReport.summary
     await test({ path, caseIndex: 1 })
     const endTps = await backchat.readJSON<TestFile>(tpsPath)
-    console.dir(endTps, { depth: Infinity })
 
     expect(endTps.cases[1].summary.completed).toBe(1)
     expect(endTps.cases[1].summary.successes).toEqual([1])
