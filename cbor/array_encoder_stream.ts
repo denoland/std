@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { upgradeStreamFromGen } from "./_common.ts";
+import { toByteStream } from "./_common.ts";
 import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
 import type { CborInputStream } from "./types.ts";
 
@@ -46,15 +46,20 @@ export class CborArrayEncoderStream
       CborInputStream,
       CborInputStream
     >();
-    this.#readable = upgradeStreamFromGen(async function* () {
-      yield new Uint8Array([0b100_11111]);
-      for await (
-        const x of readable.pipeThrough(new CborSequenceEncoderStream())
-      ) {
-        yield x;
-      }
-      yield new Uint8Array([0b111_11111]);
-    }());
+    this.#readable = toByteStream(
+      readable
+        .pipeThrough(new CborSequenceEncoderStream())
+        .pipeThrough(
+          new TransformStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([0b100_11111]));
+            },
+            flush(controller) {
+              controller.enqueue(new Uint8Array([0b111_11111]));
+            },
+          }),
+        ),
+    );
     this.#writable = writable;
   }
 

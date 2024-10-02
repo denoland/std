@@ -44,37 +44,49 @@ export function arrayToNumber(
   }
 }
 
-export function upgradeStreamFromGen(
-  gen: AsyncGenerator<Uint8Array>,
+// To be removed if https://github.com/denoland/std/pull/6046 merges.
+export function toByteStream(
+  readable: ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    type: "bytes",
-    async pull(controller) {
-      const value = await async function () {
-        while (true) {
-          const { done, value } = await gen.next();
-          if (done) return undefined;
-          if (value.length) return value;
-        }
-      }();
+  try {
+    const reader = readable.getReader({ mode: "byob" });
+    reader.releaseLock();
+    return readable;
+  } catch {
+    const reader = readable.getReader();
+    return new ReadableStream({
+      type: "bytes",
+      async pull(controller) {
+        const value = await async function () {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) return undefined;
+            if (value.length) return value;
+          }
+        }();
 
-      if (value == undefined) {
-        controller.close();
-        return controller.byobRequest?.respond(0);
-      }
-
-      if (controller.byobRequest?.view) {
-        const buffer = new Uint8Array(controller.byobRequest.view.buffer);
-        const size = buffer.length;
-        if (value.length > size) {
-          buffer.set(value.slice(0, size));
-          controller.byobRequest.respond(size);
-          controller.enqueue(value.slice(size));
-        } else {
-          buffer.set(value);
-          controller.byobRequest.respond(value.length);
+        if (value == undefined) {
+          controller.close();
+          return controller.byobRequest?.respond(0);
         }
-      } else controller.enqueue(value);
-    },
-  });
+
+        if (controller.byobRequest?.view) {
+          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
+          const offset = controller.byobRequest.view.byteOffset;
+          const size = buffer.length - offset;
+          if (value.length > size) {
+            buffer.set(value.slice(0, size), offset);
+            controller.byobRequest.respond(size);
+            controller.enqueue(value.slice(size));
+          } else {
+            buffer.set(value, offset);
+            controller.byobRequest.respond(value.length);
+          }
+        } else controller.enqueue(value);
+      },
+      async cancel(reason) {
+        await reader.cancel(reason);
+      },
+    });
+  }
 }

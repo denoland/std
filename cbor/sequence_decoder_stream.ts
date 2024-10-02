@@ -1,10 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import {
-  arrayToNumber,
-  type ReleaseLock,
-  upgradeStreamFromGen,
-} from "./_common.ts";
+import { arrayToNumber, type ReleaseLock, toByteStream } from "./_common.ts";
 import { CborArrayDecodedStream } from "./array_decoded_stream.ts";
 import { CborByteDecodedStream } from "./byte_decoded_stream.ts";
 import { CborMapDecodedStream } from "./map_decoded_stream.ts";
@@ -126,15 +122,7 @@ export class CborSequenceDecoderStream
       Uint8Array,
       Uint8Array
     >();
-    try {
-      this.#source = readable.getReader({ mode: "byob" });
-    } catch {
-      this.#source = upgradeStreamFromGen(async function* () {
-        for await (const chunk of readable) {
-          yield chunk;
-        }
-      }()).getReader({ mode: "byob" });
-    }
+    this.#source = toByteStream(readable).getReader({ mode: "byob" });
     this.#readable = ReadableStream.from<CborOutputStream>(
       this.#decodeSequence(),
     );

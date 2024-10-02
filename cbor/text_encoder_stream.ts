@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { numberToArray, upgradeStreamFromGen } from "./_common.ts";
+import { numberToArray, toByteStream } from "./_common.ts";
 
 /**
  * A {@link TransformStream} that encodes a {@link ReadableStream<string>} into
@@ -43,7 +43,7 @@ export class CborTextEncoderStream
    */
   constructor() {
     const { readable, writable } = new TransformStream<string, string>();
-    this.#readable = upgradeStreamFromGen(async function* () {
+    this.#readable = toByteStream(ReadableStream.from(async function* () {
       yield new Uint8Array([0b011_11111]);
       for await (const x of readable.pipeThrough(new TextEncoderStream())) {
         if (x.length < 24) yield new Uint8Array([0b011_00000 + x.length]);
@@ -58,7 +58,7 @@ export class CborTextEncoderStream
         yield x;
       }
       yield new Uint8Array([0b111_11111]);
-    }());
+    }()));
     this.#writable = writable;
   }
 

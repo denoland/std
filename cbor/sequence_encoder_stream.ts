@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { numberToArray, upgradeStreamFromGen } from "./_common.ts";
+import { numberToArray, toByteStream } from "./_common.ts";
 import { CborArrayEncoderStream } from "./array_encoder_stream.ts";
 import { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
@@ -98,7 +98,9 @@ export class CborSequenceEncoderStream
       CborInputStream,
       CborInputStream
     >();
-    this.#readable = upgradeStreamFromGen(this.#encodeFromReadable(readable));
+    this.#readable = toByteStream(
+      ReadableStream.from(this.#encodeFromReadable(readable)),
+    );
     this.#writable = writable;
   }
 
