@@ -2,6 +2,7 @@ import {
   AssistantMessage,
   chatParams,
   Functions,
+  getParent,
   getThreadPath,
   IA,
   print,
@@ -37,6 +38,8 @@ export const parameters = {
   ),
   iteration: testParams.extend({
     iterationIndex: z.number().int().gte(0),
+    /** If being run as part of a "before" step, do not update the tps report */
+    isBefore: z.boolean().optional(),
   }),
   openai: z.object({
     threadPath: z.string().describe(
@@ -75,6 +78,14 @@ export const functions: Functions<Api> = {
 
     const file = await readTpsReport(path, api)
     const { summary: { iterations } } = file
+    const testCase = file.cases[caseIndex]
+    if (testCase.summary.befores.length) {
+      for (const caseIndex of testCase.summary.befores) {
+        log('executing before:', caseIndex)
+        const { iteration } = await api.functions<Api>('test-case-runner')
+        await iteration({ path, caseIndex, iterationIndex: 0, isBefore: true })
+      }
+    }
 
     // TODO handle merging parallel runs back in by reading before and after
     // TODO batch the runs to get around artifact limitations in parallelisms
@@ -89,7 +100,7 @@ export const functions: Functions<Api> = {
       log('iteration done', i)
     }
   },
-  iteration: async ({ path, caseIndex, iterationIndex }, api) => {
+  iteration: async ({ path, caseIndex, iterationIndex, isBefore }, api) => {
     log('iteration', path, caseIndex, iterationIndex, print(api.pid))
 
     const tpsReport = await readTpsReport(path, api)
@@ -103,8 +114,15 @@ export const functions: Functions<Api> = {
       // then run this as a drone
     }
     const actorId = 'iteration_' + iterationIndex
+
     const { start, run } = await api.functions<longthread.Api>('longthread')
-    await start({})
+    const parent = getParent(api.pid)
+    if (await api.exists(getThreadPath(parent))) {
+      await api.mv(getThreadPath(parent), getThreadPath(api.pid))
+    } else {
+      await start({})
+    }
+
     for (const prompt of chain) {
       await run({ path: agent, content: prompt, actorId })
     }
@@ -125,8 +143,15 @@ export const functions: Functions<Api> = {
       assert(result.functionName === stopOnTools[0], 'unexpected tool call')
       return outcome.parse(result.args)
     })
-
     const outcomes = await Promise.all(promises)
+
+    if (isBefore) {
+      const failures = outcomes.filter(({ outcome }) => !outcome)
+      if (failures.length) {
+        throw new Error('"before" step failed: ' + JSON.stringify(failures))
+      }
+      return
+    }
     const iteration = { prompts: chain, outcomes, commit: api.commit }
     const updated = addIteration(
       tpsReport,
