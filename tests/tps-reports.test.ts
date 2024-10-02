@@ -1,6 +1,6 @@
 import {
+  addCase,
   addIteration,
-  addTest,
   create,
   type TestController,
   testController,
@@ -27,6 +27,7 @@ const raw: TestFile = {
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 3,
+        befores: [],
         prompts: [['prompt1'], ['multiple prompts', 'prompt2']],
         expectations: ['expectation 1', 'expectation 2'],
         completed: 1,
@@ -50,8 +51,8 @@ const raw: TestFile = {
 }
 
 Deno.test('tps report', async () => {
-  const suite = testFile.parse(raw)
-  expect(suite).toEqual(raw)
+  const tpsReport = testFile.parse(raw)
+  expect(tpsReport).toEqual(raw)
 
   const created = create(
     'tests/test-example.test.md',
@@ -62,7 +63,7 @@ Deno.test('tps report', async () => {
   )
   expect(created.cases).toHaveLength(0)
 
-  const added = addTest(created, 'test name', [['prompt']], ['e1', 'e2'])
+  const added = addCase(created, 'test name', [['prompt']], ['e1', 'e2'], [])
   expect(added.cases).toHaveLength(1)
   expect(added.cases[0].summary.expectations).toHaveLength(2)
 
@@ -84,6 +85,15 @@ Deno.test('tps report', async () => {
   expect(updated.cases[0].summary.completed).toEqual(1)
   expect(updated.cases[0].summary.elapsed).toBeGreaterThan(0)
 })
+
+Deno.test('befores', () => {
+  let tpsReport = testFile.parse(raw)
+  expect(tpsReport).toEqual(raw)
+
+  tpsReport = addCase(tpsReport, 'test name', [['prompt']], ['e1'], [0])
+  addCase(tpsReport, 'test name', [['prompt']], ['e1'], [0, 1])
+})
+
 const controller: TestController = {
   globs: ['tests/*.test.md'],
   files: [{ path: 'tests/test-example.test.md', status: 'pending' }],

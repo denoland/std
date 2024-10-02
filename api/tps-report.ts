@@ -58,8 +58,8 @@ const summary = z
     'A summary of the test results combining all individual results into a ratio',
   )
 
-type TestCase = z.infer<typeof testCase>
-const testCase = z
+export type TestCase = z.infer<typeof testCase>
+export const testCase = z
   .object({
     summary: summary
       .extend({
@@ -74,11 +74,17 @@ const testCase = z
             'for each expectation, the sum of the successful outcomes so far.  When divided by the number of completed iterations, the ratio of successful outcomes is calculated',
           ),
         name: z.string().describe('the name of the test case'),
+        befores: z.array(z.number().int().gte(0)).describe(
+          'Cases that must be run before this case, to set the starting state',
+        ),
       })
       .strict()
       .describe(
         'A summary of the test results combining all individual results into a ratio',
       )
+      .refine((v) => !!v.expectations.length, {
+        message: 'expectations must be non-empty',
+      })
       .refine((v) => v.completed <= v.iterations, {
         message: 'completed cannot be greater than iterations',
       })
@@ -140,6 +146,18 @@ export const testFile = z
     cases: z.array(testCase).describe('the results of each test case'),
   })
   .strict()
+  .refine((v) => {
+    let index = 0
+    for (const testCase of v.cases) {
+      for (const before of testCase.summary.befores || []) {
+        if (before >= index) {
+          return false
+        }
+      }
+      index++
+    }
+    return true
+  }, { message: '"befores" must refer to earlier cases' })
 
 export type TestController = z.infer<typeof testController>
 export const testController = z.object({
@@ -179,28 +197,30 @@ export const create = (
   return testFile.parse(blank)
 }
 
-export const addTest = (
+export const addCase = (
   base: TestFile,
   name: string,
   prompts: string[][],
   expectations: string[],
+  befores: number[],
 ) => {
-  const clean = testFile.parse(base)
+  const parsed = testFile.parse(base)
   const test: TestCase = {
     summary: {
       name,
       timestamp: Date.now(),
       elapsed: 0,
-      iterations: clean.summary.iterations,
+      iterations: parsed.summary.iterations,
       prompts,
       expectations,
       completed: 0,
       successes: Array(expectations.length).fill(0),
+      befores,
     },
     iterations: [],
   }
-  clean.cases.push(test)
-  return testFile.parse(clean)
+  parsed.cases.push(test)
+  return testFile.parse(parsed)
 }
 
 export const addIteration = (

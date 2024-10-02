@@ -118,13 +118,31 @@ export default (name: string, cradleMaker: CradleMaker) => {
     const { backchat, engine } = await cradleMaker()
     await backchat.write('test.txt', 'binary test')
 
-    await t.step('latest', async () => {
+    await t.step('text decoding', async () => {
       const binary = await backchat.readBinary('test.txt')
       expect(binary.length).toBeGreaterThan(0)
       expect(binary).toBeInstanceOf(Uint8Array)
 
       const text = new TextDecoder().decode(binary)
       expect(text).toEqual('binary test')
+    })
+    // TODO test error condition of file not found
+
+    await engine.stop()
+  })
+
+  Deno.test(prefix + 'readJSON', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const { pid } = backchat
+
+    await t.step('latest', async () => {
+      const json = await backchat.readJSON('.io.json', pid)
+      expect(json).toHaveProperty('sequence')
+    })
+
+    await t.step('non existent', async () => {
+      await expect(backchat.readJSON('non-existent.json', pid))
+        .rejects.toThrow('Could not find')
     })
 
     await engine.stop()

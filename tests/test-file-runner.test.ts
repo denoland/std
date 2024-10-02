@@ -7,6 +7,8 @@ import {
   fixture,
   meetingTestPath,
   routerTestPath,
+  testFixturePath,
+  testRunnterTestPath,
 } from '@/tests/fixtures/fixture.ts'
 import { TestFile } from '@/api/tps-report.ts'
 import { addBranches } from '@/constants.ts'
@@ -109,6 +111,64 @@ Deno.test('test meeting bot', async (t) => {
     expect(tps.cases).toHaveLength(1)
     expect(tps.cases[0].iterations).toHaveLength(1)
     expect(tps.cases[0].iterations[0].outcomes).toHaveLength(1)
+  })
+  await engine.stop()
+})
+Deno.test('test fixture', async (t) => {
+  const { backchat, engine } = await fixture()
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  // )
+
+  const opts = { branchName: 'runner', noClose: true }
+  const { drone } = await backchat.actions<Api>('longthread', opts)
+
+  await t.step('run', async () => {
+    const path = fileRunnerPath
+    const content = testFixturePath
+
+    const result = await drone({
+      path,
+      content,
+      actorId,
+      stopOnTools: ['utils_resolve', 'utils_reject'],
+    })
+    expect(result?.functionName).toBe('utils_resolve')
+    expect(result?.args).toEqual({})
+
+    const tpsPath = testFixturePath.replace('.test.md', '.tps.json')
+    const target = addBranches(backchat.pid, opts.branchName)
+    const tps = await backchat.readJSON<TestFile>(tpsPath, target)
+    log('done', tps)
+  })
+  await engine.stop()
+})
+Deno.test.only('test the tester', async (t) => {
+  const { backchat, engine } = await fixture()
+  log.enable(
+    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  )
+
+  const opts = { branchName: 'runner', noClose: true }
+  const { drone } = await backchat.actions<Api>('longthread', opts)
+
+  await t.step('run', async () => {
+    const path = fileRunnerPath
+    const content = testRunnterTestPath
+
+    const result = await drone({
+      path,
+      content,
+      actorId,
+      stopOnTools: ['utils_resolve', 'utils_reject'],
+    })
+    expect(result?.functionName).toBe('utils_resolve')
+    expect(result?.args).toEqual({})
+
+    const tpsPath = testRunnterTestPath.replace('.test.md', '.tps.json')
+    const target = addBranches(backchat.pid, opts.branchName)
+    const tps = await backchat.readJSON<TestFile>(tpsPath, target)
+    log('done', tps)
   })
   await engine.stop()
 })

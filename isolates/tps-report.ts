@@ -8,21 +8,31 @@ import { load } from '@/isolates/utils/load-agent.ts'
 
 const log = Debug('AI:tps-report')
 
+const testPath = z.string().regex(/\.test\.md$/).describe(
+  'the path to the .test.md file',
+)
+const agent = z.string().regex(/\.md$/).describe(
+  'the path to the agent file to use for this job, typically something in the agents/ directory',
+)
+
 export const parameters = {
   upsert: z.object({
     reasoning,
-    testPath: z.string(),
-    agent: z.string().describe('the agent that is the target of the test'),
-    assessor: z.string().describe('the agent that will assess the test'),
+    testPath,
+    agent,
+    assessor: agent,
     iterations: z.number().int().gte(1),
   }).describe(
     'Create or update a test report for the given testPath and iterations',
   ),
   addCase: z.object({
     reasoning,
-    testPath: z.string().describe('the path to the .test.md file'),
+    testPath,
     name: z.string().describe('the name of the test case'),
-    promptChains: z.array(z.array(z.string())).describe(
+    befores: z.array(z.number().int().gte(0)).describe(
+      'Test cases that must run before this one, which must all be indices less than this one',
+    ),
+    chains: z.array(z.array(z.string())).describe(
       'An array of prompt chains to be used in the test case.  A prompt chain contains one or more prompts that will be executed in sequence.  The array of prompt chains will be used to create variations for the required number of iterations of the test case',
     ),
     expectations: z.array(z.string()).describe(
@@ -65,11 +75,11 @@ export const functions: Functions<Api> = {
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, tpsReport)
   },
-  addCase: async ({ testPath, name, promptChains, expectations }, api) => {
+  addCase: async ({ testPath, name, chains, expectations, befores }, api) => {
     log('addTestCase', testPath, name, expectations)
     const tpsPath = getTpsPath(testPath)
     const tpsReport = await api.readJSON<TestFile>(tpsPath)
-    const updated = tps.addTest(tpsReport, name, promptChains, expectations)
+    const updated = tps.addCase(tpsReport, name, chains, expectations, befores)
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, updated)
   },

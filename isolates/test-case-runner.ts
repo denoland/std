@@ -70,7 +70,6 @@ export const functions: Functions<Api> = {
     await api.merge(parent)
     // TODO provide feature to read from the commit using the api
   },
-
   caseRunner: async ({ path, caseIndex }, api) => {
     log('caseRunner', path, caseIndex, print(api.pid))
 
