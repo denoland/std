@@ -52,7 +52,7 @@ before this current test
 case. The order in the list is the order they will be run, with each one
 inheriting the system state of the one that came before it. In the TPS report,
 befores are referenced by case index, and can only refer to case indexes that
-come earlier than the declaring test file.
+come earlier than the declaring test case.
 
 ## Prompt Chains
 

@@ -5,9 +5,9 @@ assessor: agents/test-assessor.md
 
 The features that we need to exercise are:
 
-- reading in a simple test file correctly
+- Reading in a simple test file into the tps report format
 - Getting the prompts out of the file
-- Getting the name of all the tests out
+- Getting the name of all the tests written to the tps file accurately
 
 ## Befores are handled
 
