@@ -7,22 +7,18 @@ assessor: agents/test-assessor.md
 
 **Prompts**
 
-```md
-Call the local function
-```
+- Call the local function
 
 **Expectations**
 
-- local function was called
+- local function was called once
 - result was "local reply"
 
 ## Fail a test
 
 **Prompts**
 
-```md
-Call the local function
-```
+- Call the local function
 
 **Expectations**
 
@@ -32,10 +28,40 @@ Call the local function
 
 **Prompts**
 
-```md
-Call the error function
-```
+- Call the error function
 
 **Expectations**
 
 - an error was thrown
+
+## Before
+
+**Before**
+
+- Call the local function
+
+**Prompts**
+
+- say hello
+
+**Expectations**
+
+- hello was responded to
+- local function was called once
+
+## Multiple Befores
+
+**Before**
+
+- Before
+- Call the local function
+
+**Prompts**
+
+- say goodbye
+
+**Expectations**
+
+- goodbye was responsed to
+- local function was called twice
+- in between the two function calls, a "hello" was issued by the user
