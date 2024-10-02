@@ -224,6 +224,31 @@ export interface LoggerOptions {
   handlers?: BaseHandler[];
 }
 
+function asString(data: unknown, isProperty = false): string {
+  if (typeof data === "string") {
+    if (isProperty) return `"${data}"`;
+    return data;
+  } else if (
+    data === null ||
+    typeof data === "number" ||
+    typeof data === "bigint" ||
+    typeof data === "boolean" ||
+    typeof data === "undefined" ||
+    typeof data === "symbol"
+  ) {
+    return String(data);
+  } else if (data instanceof Error) {
+    return data.stack!;
+  } else if (typeof data === "object") {
+    return `{${
+      Object.entries(data)
+        .map(([k, v]) => `"${k}":${asString(v, true)}`)
+        .join(",")
+    }}`;
+  }
+  return "undefined";
+}
+
 export class Logger {
   #level: LogLevel;
   handlers: BaseHandler[];
@@ -285,9 +310,9 @@ export class Logger {
     let logMessage: string;
     if (msg instanceof Function) {
       fnResult = msg();
-      logMessage = this.asString(fnResult);
+      logMessage = asString(fnResult);
     } else {
-      logMessage = this.asString(msg);
+      logMessage = asString(msg);
     }
     const record: LogRecord = new LogRecord({
       msg: logMessage,
@@ -301,31 +326,6 @@ export class Logger {
     });
 
     return msg instanceof Function ? fnResult : msg;
-  }
-
-  asString(data: unknown, isProperty = false): string {
-    if (typeof data === "string") {
-      if (isProperty) return `"${data}"`;
-      return data;
-    } else if (
-      data === null ||
-      typeof data === "number" ||
-      typeof data === "bigint" ||
-      typeof data === "boolean" ||
-      typeof data === "undefined" ||
-      typeof data === "symbol"
-    ) {
-      return String(data);
-    } else if (data instanceof Error) {
-      return data.stack!;
-    } else if (typeof data === "object") {
-      return `{${
-        Object.entries(data)
-          .map(([k, v]) => `"${k}":${this.asString(v, true)}`)
-          .join(",")
-      }}`;
-    }
-    return "undefined";
   }
 
   debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
