@@ -8,6 +8,7 @@ commands:
   - utils:resolve
   - utils:reject
   - files:read
+  - files:ls
   - test-case-runner:test
   - tps-report:upsert
   - tps-report:addCase
@@ -20,6 +21,8 @@ described below. The output of the run is recorded in a tps report.
 ## Overview
 
 You will be given a file name. Read this and then run the tests within it.
+
+Normally the test files will reside in the `/tests/` directory.
 
 If you encounter any system errors, call the reject function with the
 parameters: "message: [your error message]".
