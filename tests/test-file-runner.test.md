@@ -26,3 +26,18 @@ might be due to the test name being "Before" confusing the agent.
 - Test 0 has no Befores
 - Test 3 has a single before, which is test 0
 - Test 4 has two befores, which are test 0 and test 3, in that order
+
+## Upsert Test Case is called alone
+
+Sometimes the agent might try to run the upsert tool call in parallel with the
+add case tool calls. Sometimes the bot would have made a mistake in the path,
+and so all these other tool calls fail if this tool call fails.
+
+**Prompts**
+
+- run /tests/test-fixture.test.md
+
+**Expectations**
+
+- tps-report_upsert function was called on its own and not in parallel with any
+  other tool calls
