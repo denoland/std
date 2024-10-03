@@ -35,7 +35,7 @@ iterations: <number of iterations per test case (default is 1)>
 
 ### 2. Optional Context
 
-The creator of the test file may include additional context or descriptions under headings that are not specifically defined for interpretation (e.g., any heading other than `**Before:**`, `**Prompts:**`, or `**Expectations:**`). As the AI agent, you should ignore these sections when interpreting the test file.
+The creator of the test file may include additional context or descriptions under headings that are not specifically defined for interpretation (e.g., any heading other than `**Before**`, `**Prompts**`, or `**Expectations**`). As the AI agent, you should ignore these sections when interpreting the test file.
 
 ### 3. Test Cases
 
@@ -47,9 +47,9 @@ Identify test cases by their headings, which are level 2 or 3 Markdown headings 
 
 #### b. Befores (Optional)
 
-If a test case depends on the execution of other test cases to set up a specific system state, specify these dependencies under the `**Before:**` heading:
+If a test case depends on the execution of other test cases to set up a specific system state, specify these dependencies under the `**Before**` heading:
 
-- Start with a bolded heading: `**Before:**`.
+- Start with a bolded heading: `**Before**`.
 - Provide a list of test case names (from earlier in the file) that must be executed before the current test case.
 - The system state resulting from each "before" test case should be preserved and passed on to the next.
 
@@ -57,23 +57,23 @@ If a test case depends on the execution of other test cases to set up a specific
 
 Prompts are the inputs that you will send to the target agent:
 
-- Start with a bolded heading: `**Prompts:**`.
+- Start with a bolded heading: `**Prompts**`.
 - Include a list of one or more prompts.
 - Each listed prompt will be used in a separate iteration.
-- **Prompt Chains**: To send a sequence of prompts as a single test (within one iteration), use `**Chain:**` followed by an indented list of prompts.
+- **Prompt Chains**: To send a sequence of prompts as a single test (within one iteration), use `**Chain**` followed by an indented list of prompts.
 
 #### d. Expectations
 
 Expectations define the desired outcomes that the assessor agent will verify:
 
-- Start with a bolded heading: `**Expectations:**`.
+- Start with a bolded heading: `**Expectations**`.
 - List the expected conditions or effects after the prompts are processed.
 - For each iteration (prompt or prompt chain), all expectations will be assessed.
 
 ### 4. Iterations
 
 - The number of iterations is determined by the `iterations` value in the frontmatter.
-- **Single Iteration per Prompt**: Each listed prompt or prompt chain under `**Prompts:**` corresponds to a single iteration.
+- **Single Iteration per Prompt**: Each listed prompt or prompt chain under `**Prompts**` corresponds to a single iteration.
 - **Advancing Prompts with Iterations**: As iterations increase, prompts are used in the order they appear. If the number of iterations exceeds the number of provided prompts, additional iterations will cycle through the prompts again.
 - **Generating Additional Prompts**:
   - If the number of iterations is greater than the number of supplied prompts, additional prompt variations are required.
@@ -88,9 +88,9 @@ As an AI agent interpreting the test file:
 
 2. **Identify Test Cases**: Locate all test case headings and parse their contents.
 
-3. **Process Befores**: For each test case, determine if there are any dependencies specified under `**Before:**`, and prepare to execute those test cases first, in the specified order.
+3. **Process Befores**: For each test case, determine if there are any dependencies specified under `**Before**`, and prepare to execute those test cases first, in the specified order.
 
-4. **Extract Prompts**: Under `**Prompts:**`, collect all prompts and prompt chains.
+4. **Extract Prompts**: Under `**Prompts**`, collect all prompts and prompt chains.
 
 5. **Determine Iterations**:
 
@@ -98,7 +98,7 @@ As an AI agent interpreting the test file:
    - Recognize that each prompt or prompt chain corresponds to one iteration.
    - If the total number of iterations exceeds the number of prompts, understand that additional prompts will be provided externally.
 
-6. **Record Expectations**: Under `**Expectations:**`, note the conditions to verify after execution.
+6. **Record Expectations**: Under `**Expectations**`, note the conditions to verify after execution.
 
 7. **Execute Test Cases**: Run each test case for the specified number of iterations, respecting any dependencies and using the prompts in order.
 
@@ -121,32 +121,32 @@ This test file contains a series of test cases designed to validate the function
 
 ## Initialize CRM System
 
-**Prompts:**
+**Prompts**
 
 - Start CRM session.
 - Authenticate user credentials.
 
-**Expectations:**
+**Expectations**
 
 - User is successfully authenticated.
 - CRM session is initialized without errors.
 
 ## Lookup Existing Customer
 
-**Before:**
+**Before**
 
 - Initialize CRM System
 
-**Prompts:**
+**Prompts**
 
 - Retrieve customer details for John Doe.
 - Show contact information for customer ID 12345.
-- **Chain:**
+- **Chain**
   - Who is Jane Smith?
   - Provide account details for Jane Smith.
   - Display her recent transactions.
 
-**Expectations:**
+**Expectations**
 
 - Customer data for the specified individuals is retrieved.
 - Correct contact information is displayed.
@@ -154,20 +154,20 @@ This test file contains a series of test cases designed to validate the function
 
 ## Add New Customer
 
-**Before:**
+**Before**
 
 - Initialize CRM System
 
-**Prompts:**
+**Prompts**
 
 - Add new customer: Alice Johnson, contact number 555-1234.
-- **Chain:**
+- **Chain**
   - Start new customer entry.
   - Name: Bob Williams.
   - Contact: bob.williams@example.com.
   - Save customer record.
 
-**Expectations:**
+**Expectations**
 
 - New customer records are created successfully.
 - The system confirms the addition of new customers.
@@ -175,21 +175,21 @@ This test file contains a series of test cases designed to validate the function
 
 ## Update Customer Information
 
-**Before:**
+**Before**
 
 - Initialize CRM System
 - Add New Customer
 
-**Prompts:**
+**Prompts**
 
 - Update contact number for Alice Johnson to 555-5678.
 - Change email for Bob Williams to bob.w@example.com.
-- **Chain:**
+- **Chain**
   - Find customer ID 67890.
   - Update address to "123 Main Street".
   - Confirm changes.
 
-**Expectations:**
+**Expectations**
 
 - Customer information is updated correctly.
 - System provides confirmation of updates.
@@ -197,18 +197,18 @@ This test file contains a series of test cases designed to validate the function
 
 ## Delete Customer Record
 
-**Before:**
+**Before**
 
 - Initialize CRM System
 - Add New Customer
 - Update Customer Information
 
-**Prompts:**
+**Prompts**
 
 - Delete customer record for Bob Williams.
 - Remove Alice Johnson from the database.
 
-**Expectations:**
+**Expectations**
 
 - Customer records are deleted successfully.
 - System confirms the deletion.
