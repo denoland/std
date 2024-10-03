@@ -85,7 +85,7 @@ Ensure that a customer agent can update an existing customer's details.
 update John Doe's Address to 123 Hope St.
 ```
 **Expections:**
-- Customer details are updated in the system.
+- Customer details are updated in the system and and John Doe now has his address updated to 123 Hope St.
 
 ---
 
