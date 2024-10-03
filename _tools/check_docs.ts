@@ -78,6 +78,7 @@ const ENTRY_POINTS = [
   "../log/info.ts",
   "../log/console_handler.ts",
   "../log/formatters.ts",
+  "../log/get_logger.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
