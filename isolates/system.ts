@@ -18,6 +18,7 @@ import {
 } from '@/constants.ts'
 import { isBaseRepo } from '@/constants.ts'
 import { z } from 'zod'
+import type DB from '@/db.ts'
 const log = Debug('AI:system')
 
 const init = z.object({
@@ -48,6 +49,9 @@ export const parameters = {
   mergeGrandParent: merge.describe(
     'merge the parent branch into the grandparent branch',
   ),
+  mergeInternal: z.object({ from: pidSchema, to: pidSchema }).describe(
+    'merge one branch into another, within the same repo.  This is a forceful operation - it will attempt to be graceful, but if that fails, it will overwrite the destination branch with the source branch.',
+  ),
   sideEffectClone: z.object({ repo: z.string() }).describe(
     'clone a repository as a side effect',
   ),
@@ -67,6 +71,7 @@ export const returns: Returns<typeof parameters> = {
   pull: headResult,
   mergeParent: headResult,
   mergeGrandParent: headResult,
+  mergeInternal: headResult,
   sideEffectClone: pidResult,
   sideEffectInit: pidResult,
   sideEffectFetch: headResult,
@@ -135,25 +140,26 @@ export const functions: Functions<Api> = {
       return fetchHead
     }
 
-    let commit
-    try {
-      commit = await fs.merge(fetchHead.head)
-    } catch (error) {
-      log('merger error', error)
-      // TODO try a merge that doesn't fully clobber but keeps whatever we have
-      // that isn't overwritten by the incoming merge
-      const result = await fs.theirsMerge(fetchHead.head)
-      commit = result.commit
-    }
+    await forceMerge(db, fs, fetchHead.head)
 
-    const atomic = await db.atomic().updateHead(target, fs.oid, commit)
-    assert(atomic, 'update head failed')
-    if (!await atomic.commit()) {
-      // TODO try a bit harder to commit
-      throw new Error('failed to commit: ' + repo)
-    }
     log('pulled', repo, print(target))
     return fetchHead
+  },
+  mergeInternal: async ({ from, to }, api: IA<C>) => {
+    const { db } = api.context
+    assert(db, 'db not found')
+    const start = Date.now()
+    const fromFs = await FS.openHead(from, db)
+    const toFs = await FS.openHead(to, db)
+
+    let head = toFs.oid
+    if (toFs.oid === fromFs.oid) {
+      log('no changes')
+    } else {
+      head = await forceMerge(db, toFs, fromFs.oid)
+    }
+
+    return { head, elapsed: Date.now() - start }
   },
   mergeParent: (_, api: IA<C>) => {
     const ours = getParent(api.pid)
@@ -213,4 +219,33 @@ const oursMerge = async (ours: PID, theirs: string, api: IA<C>) => {
     throw new Error('failed to commit: ' + print(ours))
   }
   return { head: next.oid, elapsed: Date.now() - start }
+}
+
+const forceMerge = async (db: DB, mergeTarget: FS, incoming: string) => {
+  let head
+  try {
+    head = await mergeTarget.merge(incoming)
+  } catch (error) {
+    log('merge error', error)
+    // TODO try a merge that doesn't fully clobber but keeps whatever we
+    // have that isn't overwritten by the incoming merge
+    const result = await mergeTarget.theirsMerge(incoming)
+    head = result.commit
+  }
+  if (head === mergeTarget.oid) {
+    log('no changes')
+    return head
+  }
+
+  const atomic = await db.atomic().updateHead(
+    mergeTarget.pid,
+    mergeTarget.oid,
+    head,
+  )
+  assert(atomic, 'update head failed')
+  if (!await atomic.commit()) {
+    // TODO try a bit harder to commit
+    throw new Error('failed to commit: ' + print(mergeTarget.pid))
+  }
+  return head
 }

@@ -5,6 +5,7 @@ import * as system from './system.ts'
 import {
   addBranches,
   Functions,
+  getParent,
   IA,
   isActorBranch,
   machineIdRegex,
@@ -35,6 +36,12 @@ export const functions: Functions<actor.Api> = {
       noClose: true,
       branchName: backchatId,
     }
+
+    const { mergeInternal } = await api.actions<system.Api>('system')
+    const from = getParent(api.pid)
+    const { elapsed } = await mergeInternal({ from, to: api.pid })
+    log('mergeInternal lasted', elapsed)
+
     const { newThread } = await api.actions<backchat.Api>('backchat', opts)
     // TODO set permissions on .io.json
     await newThread({})
