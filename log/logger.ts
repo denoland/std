@@ -220,7 +220,9 @@ export class LogRecord {
   }
 }
 
+/** Options for {@linkcode Logger}. */
 export interface LoggerOptions {
+  /** The handlers to use for the logger. */
   handlers?: BaseHandler[];
 }
 
@@ -249,11 +251,49 @@ function asString(data: unknown, isProperty = false): string {
   return "undefined";
 }
 
+/**
+ * A logger that can log messages at different levels.
+ *
+ * @example Usage
+ * ```ts
+ * import { Logger } from "@std/log/logger";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const logger = new Logger("example", "INFO");
+ * const result = logger.info("Hello, world!");
+ *
+ * assertEquals(result, "Hello, world!");
+ * ```
+ */
 export class Logger {
   #level: LogLevel;
+  /**
+   * The handlers to use for the logger.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { ConsoleHandler } from "@std/log/console-handler";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const handler = new ConsoleHandler("INFO");
+   * const logger = new Logger("example", "INFO", {
+   *  handlers: [handler],
+   * });
+   *
+   * assertEquals(logger.handlers, [handler]);
+   * ```
+   */
   handlers: BaseHandler[];
   readonly #loggerName: string;
 
+  /**
+   * Constructs a new instance.
+   *
+   * @param loggerName The name of the logger.
+   * @param levelName The name of the log level.
+   * @param options The options to create a new logger.
+   */
   constructor(
     loggerName: string,
     levelName: LevelName,
@@ -264,12 +304,42 @@ export class Logger {
     this.handlers = options.handlers ?? [];
   }
 
-  /** Use this to retrieve the current numeric log level. */
+  /**
+   * Getter for the log level.
+   *
+   * @returns The log level.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   * assertEquals(logger.level, LogLevels.INFO);
+   * ```
+   */
   get level(): LogLevel {
     return this.#level;
   }
 
-  /** Use this to set the numeric log level. */
+  /**
+   * Setter for the log level.
+   *
+   * @param level The log level to set.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   * logger.level = LogLevels.DEBUG;
+   *
+   * assertEquals(logger.level, LogLevels.DEBUG);
+   * ```
+   */
   set level(level: LogLevel) {
     try {
       this.#level = getLevelByName(getLevelName(level));
@@ -278,13 +348,60 @@ export class Logger {
     }
   }
 
+  /**
+   * Getter for the name of the log level.
+   *
+   * @returns The name of the log level.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   * assertEquals(logger.levelName, "INFO");
+   * ```
+   */
   get levelName(): LevelName {
     return getLevelName(this.#level);
   }
+
+  /**
+   * Setter for the name of the log level.
+   *
+   * @param levelName The name of the log level to set.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { LogLevels } from "@std/log/levels";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   * logger.levelName = "DEBUG";
+   *
+   * assertEquals(logger.level, LogLevels.DEBUG);
+   * ```
+   */
   set levelName(levelName: LevelName) {
     this.#level = getLevelByName(levelName);
   }
 
+  /**
+   * Getter for the name of the logger.
+   *
+   * @returns The name of the logger.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.loggerName, "example");
+   * ```
+   */
   get loggerName(): string {
     return this.#loggerName;
   }
@@ -328,7 +445,47 @@ export class Logger {
     return msg instanceof Function ? fnResult : msg;
   }
 
+  /**
+   * Log at the debug level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.debug("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.debug(() => "Hello, world!"), undefined);
+   * ```
+   */
   debug<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /**
+   * Log at the debug level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.debug("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.debug(() => "Hello, world!"), undefined);
+   * ```
+   */
   debug<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   debug<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
@@ -337,7 +494,47 @@ export class Logger {
     return this.#log(LogLevels.DEBUG, msg, ...args);
   }
 
+  /**
+   * Log at the info level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.info("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.info(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   info<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /**
+   * Log at the info level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.info("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.info(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   info<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   info<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
@@ -346,7 +543,47 @@ export class Logger {
     return this.#log(LogLevels.INFO, msg, ...args);
   }
 
+  /**
+   * Log at the warning level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.warn("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.warn(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   warn<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /**
+   * Log at the warning level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.warn("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.warn(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   warn<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   warn<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
@@ -355,7 +592,47 @@ export class Logger {
     return this.#log(LogLevels.WARN, msg, ...args);
   }
 
+  /**
+   * Log at the error level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.error("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.error(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   error<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /**
+   * Log at the error level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.error("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.error(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   error<T>(msg: T extends GenericFunction ? never : T, ...args: unknown[]): T;
   error<T>(
     msg: (T extends GenericFunction ? never : T) | (() => T),
@@ -364,7 +641,47 @@ export class Logger {
     return this.#log(LogLevels.ERROR, msg, ...args);
   }
 
+  /**
+   * Log at the critical level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.critical("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.critical(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   critical<T>(msg: () => T, ...args: unknown[]): T | undefined;
+  /**
+   * Log at the critical level.
+   *
+   * @template T The type of the message to log.
+   * @param msg The message to log.
+   * @param args Arguments to be formatted into the message.
+   * @returns The message that was logged.
+   *
+   * @example Usage
+   * ```ts
+   * import { Logger } from "@std/log/logger";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const logger = new Logger("example", "INFO");
+   *
+   * assertEquals(logger.critical("Hello, world!"), "Hello, world!");
+   *
+   * assertEquals(logger.critical(() => "Hello, world!"), "Hello, world!");
+   * ```
+   */
   critical<T>(
     msg: T extends GenericFunction ? never : T,
     ...args: unknown[]
