@@ -41,6 +41,13 @@ Deno.test("MuxAsyncIterator() works with no iterables", async () => {
   assertEquals(results, new Set([]));
 });
 
+Deno.test("MuxAsyncIterator() works with constructor iterables", async () => {
+  const mux = new MuxAsyncIterator(gen123(), gen456());
+  const results = new Set(await Array.fromAsync(mux));
+  assertEquals(results.size, 6);
+  assertEquals(results, new Set([1, 4, 2, 5, 3, 6]));
+});
+
 Deno.test("MuxAsyncIterator() clears iterables after successful iteration", async () => {
   const mux = new MuxAsyncIterator<number>();
   mux.add(gen123());

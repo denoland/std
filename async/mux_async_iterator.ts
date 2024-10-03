@@ -29,9 +29,7 @@ interface TaggedYieldedValue<T> {
  *   yield 6;
  * }
  *
- * const mux = new MuxAsyncIterator<number>();
- * mux.add(gen123());
- * mux.add(gen456());
+ * const mux = new MuxAsyncIterator(gen123(), gen456());
  *
  * const result = await Array.fromAsync(mux);
  *
@@ -46,6 +44,17 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   // deno-lint-ignore no-explicit-any
   #throws: any[] = [];
   #signal = Promise.withResolvers<void>();
+
+  /**
+   * Constructs a new {@linkcode MuxAsyncIterator} instance.
+   *
+   * @param iterables The async iterables to multiplex.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   */
+  constructor(...iterables: AsyncIterable<T>[]) {
+    for (const iterable of iterables) this.add(iterable);
+  }
 
   /**
    * Add an async iterable to the stream.
@@ -107,8 +116,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    *   yield 3;
    * }
    *
-   * const mux = new MuxAsyncIterator<number>();
-   * mux.add(gen123());
+   * const mux = new MuxAsyncIterator(gen123());
    *
    * const result = await Array.fromAsync(mux.iterate());
    *
@@ -152,8 +160,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
    *   yield 3;
    * }
    *
-   * const mux = new MuxAsyncIterator<number>();
-   * mux.add(gen123());
+   * const mux = new MuxAsyncIterator(gen123());
    *
    * const result = await Array.fromAsync(mux);
    *
