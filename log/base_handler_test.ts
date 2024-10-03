@@ -1,12 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "@std/assert";
-import * as log from "./mod.ts";
+import {
+  getLevelByName,
+  getLevelName,
+  type LogLevel,
+  LogLevelNames,
+  LogLevels,
+} from "./levels.ts";
+import { LogRecord } from "./logger.ts";
 import { TestHandler } from "./_test_handler.ts";
 
 Deno.test("BaseHandler handles default setup", function () {
-  const cases = new Map<log.LogLevel, string[]>([
+  const cases = new Map<LogLevel, string[]>([
     [
-      log.LogLevels.DEBUG,
+      LogLevels.DEBUG,
       [
         "DEBUG debug-test",
         "INFO info-test",
@@ -16,7 +23,7 @@ Deno.test("BaseHandler handles default setup", function () {
       ],
     ],
     [
-      log.LogLevels.INFO,
+      LogLevels.INFO,
       [
         "INFO info-test",
         "WARN warn-test",
@@ -25,21 +32,21 @@ Deno.test("BaseHandler handles default setup", function () {
       ],
     ],
     [
-      log.LogLevels.WARN,
+      LogLevels.WARN,
       ["WARN warn-test", "ERROR error-test", "CRITICAL critical-test"],
     ],
-    [log.LogLevels.ERROR, ["ERROR error-test", "CRITICAL critical-test"]],
-    [log.LogLevels.CRITICAL, ["CRITICAL critical-test"]],
+    [LogLevels.ERROR, ["ERROR error-test", "CRITICAL critical-test"]],
+    [LogLevels.CRITICAL, ["CRITICAL critical-test"]],
   ]);
 
   for (const [testCase, messages] of cases.entries()) {
-    const testLevel = log.getLevelName(testCase);
+    const testLevel = getLevelName(testCase);
     const handler = new TestHandler(testLevel);
 
-    for (const levelName of log.LogLevelNames) {
-      const level = log.getLevelByName(levelName);
+    for (const levelName of LogLevelNames) {
+      const level = getLevelByName(levelName);
       handler.handle(
-        new log.LogRecord({
+        new LogRecord({
           msg: `${levelName.toLowerCase()}-test`,
           args: [],
           level: level,
@@ -60,10 +67,10 @@ Deno.test("BaseHandler handles formatter with empty msg", function () {
   });
 
   handler.handle(
-    new log.LogRecord({
+    new LogRecord({
       msg: "",
       args: [],
-      level: log.LogLevels.DEBUG,
+      level: LogLevels.DEBUG,
       loggerName: "default",
     }),
   );
@@ -78,10 +85,10 @@ Deno.test("BaseHandler handles formatter", function () {
   });
 
   handler.handle(
-    new log.LogRecord({
+    new LogRecord({
       msg: "Hello, world!",
       args: [],
-      level: log.LogLevels.ERROR,
+      level: LogLevels.ERROR,
       loggerName: "default",
     }),
   );
