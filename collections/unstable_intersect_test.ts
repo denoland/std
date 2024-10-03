@@ -3,7 +3,7 @@
 import { assert, assertEquals } from "@std/assert";
 import { intersect } from "./unstable_intersect.ts";
 
-Deno.test("intersect() handles no mutation", () => {
+Deno.test("(unstable) intersect() handles no mutation", () => {
   const arrayA = [1, 2, 3];
   const arrayB = [3, 4, 5];
   intersect(arrayA, arrayB);
@@ -11,43 +11,43 @@ Deno.test("intersect() handles no mutation", () => {
   assertEquals(arrayB, [3, 4, 5]);
 });
 
-Deno.test("intersect() handles empty input", () => {
+Deno.test("(unstable) intersect() handles empty input", () => {
   const actual = intersect();
   assertEquals(actual, []);
 });
 
-Deno.test("intersect() handles empty arrays", () => {
+Deno.test("(unstable) intersect() handles empty arrays", () => {
   const actual = intersect([], []);
   assertEquals(actual, []);
 });
 
-Deno.test("intersect() handles one side empty", () => {
+Deno.test("(unstable) intersect() handles one side empty", () => {
   const firstEmpty = intersect([], [1, 2, 3]);
   const secondEmpty = intersect([1, 2, 3], []);
   assertEquals(firstEmpty, []);
   assertEquals(secondEmpty, []);
 });
 
-Deno.test("intersect() handles empty result", () => {
+Deno.test("(unstable) intersect() handles empty result", () => {
   const actual = intersect(["a", "b", "c"], ["d", "e", "f"]);
   assertEquals(actual, []);
 });
 
-Deno.test("intersect() handles one or more items in intersection", () => {
+Deno.test("(unstable) intersect() handles one or more items in intersection", () => {
   const one = intersect(["a", "b"], ["b", "c"]);
   const orMore = intersect(["a", "b", "c", "d"], ["c", "d", "e", "f"]);
   assertEquals(one, ["b"]);
   assertEquals(orMore, ["c", "d"]);
 });
 
-Deno.test("intersect() handles duplicates", () => {
+Deno.test("(unstable) intersect() handles duplicates", () => {
   const duplicates = intersect(["a", "b", "c", "b"], ["b", "c"]);
   const moreDuplicates = intersect(["a", "b"], ["b", "b", "c", "c"]);
   assertEquals(duplicates, ["b", "c"]);
   assertEquals(moreDuplicates, ["b"]);
 });
 
-Deno.test("intersect() handles more than two inputs", () => {
+Deno.test("(unstable) intersect() handles more than two inputs", () => {
   assertEquals(
     intersect(
       ["a", "b"],
@@ -76,7 +76,7 @@ Deno.test("intersect() handles more than two inputs", () => {
   );
 });
 
-Deno.test("intersect() handles objects", () => {
+Deno.test("(unstable) intersect() handles objects", () => {
   assertEquals(
     intersect<Record<string, string>>(
       [{ foo: "bar" }, { bar: "baz" }],
@@ -103,7 +103,7 @@ Deno.test("intersect() handles objects", () => {
   );
 });
 
-Deno.test("intersect() handles functions", () => {
+Deno.test("(unstable) intersect() handles functions", () => {
   assertEquals(
     intersect(
       [() => {}, () => null],
