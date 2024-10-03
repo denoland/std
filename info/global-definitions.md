@@ -1,12 +1,11 @@
-# Gobal Definitions
+## Global Definitions
 
-The following are the definitions to use.  The supercede any other expectations you may have.
+The following are the definitions to use.  They supercede any other expectations you may have.
 
-AGENT: A system prompt for an AI.
-TEST FORMAT: The format detailed below.  All TESTS must follow this format.
-TARGET: the AGENT against which the TESTS are run.  TARGETS are to carry out the ACTIONS detailed in the TESTS.
-ASSESSOR: [test-file-runner](agents/test-assessor.md)
-FILE-RUNNER: [test-file-runner](agents/test-file-runner.md)
-EXPECTATIONS: A description of the required state of the TARGET and its data after the TEST has been run.  If the actual result is different from this description, it fails.  Otherwise, it passes.
-PROMT: A natural language interaction with the TARGET.  A PROMPT has an EXPECATION as to the result of running the PROMPT against the TARGET.
-PRONT CHAIN: A list of PROMPTS which are, in the sequence they're given, carried out one after the other against a TARGET.  PROMPT CHAINS are only ever compared to their EXPECTATION after the last PROMPT in the PROMPT CHAIN.
+- PROMPT: An input to an AGENT. A PROMPT may be plain text, or may be a fenced codeblock, often in md or markdown format, since the test file itself is markdown and a PROMPT that
+includes markdown features needs to be fenced to signal it is meant to be passed
+as a single block of text. 
+- AGENT: An AI that can be passed a PROMPT from a user or another AGENT and which gives a RESPONSE.
+- TEST-FILE-RUNNER: A TEST-FILE-RUNNER is and AGENT which is passed a TEST FILE, expands TESTS, runs them against the TARGET and passes the output to the ASSESSOR.  
+- ASSESSOR: The ASSESSOR is an AGENT which performs the assessments on the end system state after running the TEST-FILE-RUNNER runs a TEST-FILE against a TARGET. The path to the ASSESSOR that is to be used as in this RUN.  The path to an ASSESSOR must always be in the folder "/agents/". 
+- RESPONSE: The output from an AGENT given a PROMPT.

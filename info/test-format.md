@@ -1,306 +1,204 @@
-# Instructions for Interpreting Test Files
+# Test Format
 
-As an AI agent, your task is to interpret test files written in a specific Markdown format to execute test cases effectively. This guide provides detailed instructions on how to parse and decompose these test files. It is essential to understand the structure and components of the test files to perform your tasks accurately.
+## Description
 
-## Overview
+The TEST FORMAT is described below and is a markdown file that describes the details of a TEST FILE. That TEST FILE is run against a TARGET, using an ASSESSOR.  It is run by the TEST-FILE-RUNNER, which takes a TEST FILE, runs the TESTs within it against the ASSESSOR, and passes back a pass/fail depending on whether the EXPECTATIONS were met.  TESTS contain SINGLE PROMPTS or PROMPT CHAINS.
 
-A **test file** is a Markdown document ending with the `.test.md` suffix. It contains one or more **test cases** designed to exercise and validate specific functionalities of a target agent.
+The intention is to test the TARGET by running the TESTS with a TEST FILE.  The TEST FILE has a specific format that details either SINGLE PROMPTS or PROMPT CHAIN.  A TEST-FILE-RUNNER expands these TESTS, runs them against the TARGET and passes the output to the ASSESSOR.  
 
-### Key Definitions
 
-- **Test File**: A Markdown file (`.test.md`) containing a collection of test cases.
-- **Test Case**: An individual test scenario within a test file, comprising prompts, expectations, and optionally, dependencies (befores).
-- **Target Agent**: The agent under test—the agent that the test cases are designed to exercise.
-- **Assessor Agent**: An agent responsible for verifying the outcomes of test cases by assessing the system state after execution.
+## Priority Definitions
 
-## Test File Structure
+These definitions take priority over all other definitions used.
 
-A test file consists of several sections that you need to interpret:
+[gobal definitions](info/global-definitions.md)
 
-### 1. Frontmatter
+## Local Definitions
 
-At the beginning of the test file, you'll find YAML frontmatter enclosed within `---` markers. This section provides configuration parameters:
+The following words have specific definitions used within TEST FILEs.  The can be overridden by Priority Definitions.  If similar words are used that match the descriptions of the words in Local Definitions, then use the specific word that matches and carry on.
 
-```yaml
+- RUN: the event where the user indicates that the TEST-FILE-RUNNER must carry out it's actions on a TEST FILE.
+- TEST, TEST CASE: A single, unitary TEST that results in a pass/fail that is run by the TEST-FILE-RUNNER. 
+- TEST FILE: TESTS contained within a file. The name of the TEST FIlE is
+the name of the file without the .test.md suffix, or if present, the first
+header title that is not a test section.
+- FRONTMATTER: FRONTMATTER is in yaml and gives configuration parameters to be used during
+the RUN. 
+- ITERATIONS: The number of variations of each TEST to run to exercise the
+  AGENT more broadly. If the iterations value is missing, then assume it to be
+  one.
+- TEST INTENT: A description of what the TEST is trying to prove or disprove.
+- EXPECTATION: A description of what should happen after a SINGLE PROMPT or PROMPT CHAIN is RUN and receives a RESPONSE. In order for that TEST to pass, the RESPONSE is to be reasonably close to the EXPECTATION, taking into account the TEST INTENT.  
+- SINGLE PROMPT: One PROMPT used in a TEST.  A SINGLE PROMPT has an EXPECATION as to the result of running that SINGLE PROMPT against the TARGET.  
+- PROMPT CHAIN: A list of SINGLE PROMPTS which are, in the sequence they're given, carried out one after the other against a TARGET.  PROMPT CHAINS are only ever compared to their EXPECTATION after the last SINGLE PROMPT in the PROMPT CHAIN receives a RESPONSE.
+- TARGET: the AGENT against which the TESTS are run.  TARGETS are to carry out the ACTIONS detailed in the TESTS.  The path to a TARGET must always be in the folder "/agents/".
+
+
+
+## PRIORITY RULES
+
+These rules MUST ALWAYS be followed.
+
+1. TEST FILES always end in ".test.md".
+2. TEST FILES must be passed a specific TARGET 
+
+
+## TEST FILE Format
+
+The following is the format which a TEST FILE must follow:  
+
+- FRONT MATTER (must be before any TEST CASES, and is required)
+- TEST CASES (must be at least one; may be multiple)
+
+These are further defined below.
+
+### FRONTMATTER
+
+#### Overall Description of FRONTMATTER
+
+FRONTMATTER provides the details as to the TARGET and ASSESSOR for a TEST FILE.  It can also include additional information as to the manner in which the TESTS in the TEST FILE must be run by the TEST-FILE-RUNNER befofe being handed off to the ASSESSOR.
+
+#### Required Fields in FRONTMATTER
+The following are required in a TEST FILE's FRONTMATTER:
+
+- TARGET: <path to TARGET AGENT>
+- ASSESSOR:  <path to ASSESSOR AGENT>
+
+#### Optional Fields in FRONTMATTER
+
+The following are optional in the FRONTMATTER
+
+- ITERATIONS: <a positive number>
+- DESCRIPTION: <a natural langugage description of what this TEST FILE intends to test.>
+
+#### Overall Example format for FRONTMATTER
+
+The following is an example of FRONTMATTER.  It is not to be used verbatim - it is an example of the format only.
 ---
-target: <path to the target agent>
-assessor: <path to the assessor agent>
-iterations: <number of iterations per test case (default is 1)>
+target: agents/ocean.md
+assessor: agents/test-assessor.md
+iterations: 50
+description: <Nautral language description>
 ---
+
+### TEST CASES
+
+#### Overall Description of TEST CASES
+
+TEST CASES are intended to compare the results of RUNS on SINGLE PROMPTS and or PROMPT CHAINS to EXPECTATIONS.  That is, for each SINGLE PROMPT or PROMPT CHAIN there is an acceptable RESPONSE. The RESPONSE from running a SINGLE PROMPT MUST meet ALL EXPECTATIONs for this TEST CASE.  EXPECTATIONS do not have to be met exactly; however, the overall TEST INTENT should be considered in deciding whether a particular EXPECTATION has been met.  THere can be any number of TEST CASES in a TEST FILE.  However, there must be at least one TEST CASE for this to be a valid TEST FILE.
+
+#### Structure of a TEST CASE
+
+  - TEST INTENT
+
+##### Required Structure in a TEST CASE
+
+Each TEST CASE must have at least one SINGLE PROMPT or PROMPT CHAIN. 
+
+In the case of a SINGLE PROMPT, the structure is as follows:
+
+  - **Single Prompt:** - <The natural language input to use>
+
+In the case of a PROMPT CHAIN, the structure is as follows:
+
+  - **Prompt Prompt:** - 
+    - <The natural language input to use for the first PROMPT>
+    - <The natural language input to use for the second PROMPT>
+
+and so forth.  There must be more than 1 PROMPT in a PROMPT CHAIN.
+
+In either case, there must always be the following:
+
+  - **Expectations:** Each TEST CASE must have at least one EXPECTATION.  Each EXPECTATION results in either a pass or a fail.
+  
+
+
+
+
+
+
+
+
+
+
+
+In addition, the TEST CASE may include additional information.  Consider this as data, NOT AS A PROMPT, and reflect in your output how you used that additional data.  E.g. the TEST CASE may include an identifying number, a description, helpful hints as to the intent, and so forth.
+
+
+
+
+The name of the test case is the section heading. The number of the test case is
+its natural number starting from the top of the file.
+
+
+Prompts are used to exercise the target agent under test.
+
+
+
+A test case will be run with one or more iterations, where each iteration is the
+same test case, but run with slightly different prompts. A test case is complete
+when all the iterations of it are completed.
+
+
+
+## Expectations
+
+Expectation lists start with something like **Expectations:** and contain a list
+of expectations about the end system state after the agent has been run. Each
+item in this list is checked by the assessor agent against the output of running
+each prompt. The result of assessment is always a true or a false as to whether
+the expectation was met or not.
+
+## Iterations
+
+Each test case is run thru a number of iterations. These are ai generated
+variations on the prompt used each run. If the number of iterations is greater
+than the number of prompts that are supplied, then an AI will be used to
+generate further variations using the given prompts as the basis for a theme.
+
+#### Example format for TEST CASES
+
+The following is an example of TEST CASES.  THIS IS FOR EXAMPLE ONLY.  Do not use any of the data in the fields in actual RUNS.
+
+---
+
+# Warming the ocean
+
+**Prompts:**
+
+- warm the ocean
+- warm the ocean immediately
+- do the thing
+- **Chain:**
+  - good morning
+  - please warm the ocean by 2 degrees
+  - centigrade
+
+**Expectations:**
+
+- the warm_ocean function was called
+- responses were short and to the point
+- the ocean is no longer cold
+
+---
+
+
+
+# Example
+
+Consider the following file:
+
+```md
+---
+target: agents/some-agent.md
+assessor: agents/test-assessor.md
+iterations: 50
+---
+
+
 ```
 
-- **target**: The path to the target agent under test.
-- **assessor**: The path to the assessor agent.
-- **iterations**: (Optional) The number of times to run each test case with variations. Defaults to 1 if omitted.
+In this file, there is 1 test case("Warming the ocean") and there are 4
+variations of prompt chains provided, with one being a chain of 3 prompts and
+the rest being a chain of exactly 1 prompt. There are 3 expectations.
 
-### 2. Optional Context
-
-The creator of the test file may include additional context or descriptions under headings that are not specifically defined for interpretation (e.g., any heading other than `**Before**`, `**Prompts**`, or `**Expectations**`). As the AI agent, you should ignore these sections when interpreting the test file.
-
-### 3. Test Cases
-
-Each test case is defined in its own section and includes the following components:
-
-#### a. Test Case Heading
-
-Identify test cases by their headings, which are level 2 or 3 Markdown headings (`##` or `###`). The heading text is the name of the test case.
-
-#### b. Befores (Optional)
-
-If a test case depends on the execution of other test cases to set up a specific system state, specify these dependencies under the `**Before**` heading:
-
-- Start with a bolded heading: `**Before**`.
-- Provide a list of test case names (from earlier in the file) that must be executed before the current test case.
-- The system state resulting from each "before" test case should be preserved and passed on to the next.
-
-#### c. Prompts
-
-Prompts are the inputs that you will send to the target agent:
-
-- Start with a bolded heading: `**Prompts**`.
-- Include a list of one or more prompts.
-- Each listed prompt will be used in a separate iteration.
-- **Prompt Chains**: To send a sequence of prompts as a single test (within one iteration), use `**Chain**` followed by an indented list of prompts.
-
-#### d. Expectations
-
-Expectations define the desired outcomes that the assessor agent will verify:
-
-- Start with a bolded heading: `**Expectations**`.
-- List the expected conditions or effects after the prompts are processed.
-- For each iteration (prompt or prompt chain), all expectations will be assessed.
-
-### 4. Iterations
-
-- The number of iterations is determined by the `iterations` value in the frontmatter.
-- **Single Iteration per Prompt**: Each listed prompt or prompt chain under `**Prompts**` corresponds to a single iteration.
-- **Advancing Prompts with Iterations**: As iterations increase, prompts are used in the order they appear. If the number of iterations exceeds the number of provided prompts, additional iterations will cycle through the prompts again.
-- **Generating Additional Prompts**:
-  - If the number of iterations is greater than the number of supplied prompts, additional prompt variations are required.
-  - **External Generation**: The creation of these additional prompts is handled by an external system through a function call, not by you, the AI agent.
-  - Your role is to execute iterations with the prompts provided to you, including any externally generated ones.
-
-## Parsing Process
-
-As an AI agent interpreting the test file:
-
-1. **Read the Frontmatter**: Extract configuration parameters (`target`, `assessor`, `iterations`).
-
-2. **Identify Test Cases**: Locate all test case headings and parse their contents.
-
-3. **Process Befores**: For each test case, determine if there are any dependencies specified under `**Before**`, and prepare to execute those test cases first, in the specified order.
-
-4. **Extract Prompts**: Under `**Prompts**`, collect all prompts and prompt chains.
-
-5. **Determine Iterations**:
-
-   - Use the provided prompts and prompt chains for the initial iterations.
-   - Recognize that each prompt or prompt chain corresponds to one iteration.
-   - If the total number of iterations exceeds the number of prompts, understand that additional prompts will be provided externally.
-
-6. **Record Expectations**: Under `**Expectations**`, note the conditions to verify after execution.
-
-7. **Execute Test Cases**: Run each test case for the specified number of iterations, respecting any dependencies and using the prompts in order.
-
-8. **Assess Outcomes**: For each iteration, assess all expectations against the results.
-
-## Example Test File with Befores (CRM Agent)
-
-Here's an example of a test file that includes the "befores" concept, focused on testing a CRM agent responsible for looking up customer information:
-
-```markdown
----
-target: agents/crm-agent.md
-assessor: agents/crm-assessor.md
-iterations: 4
----
-
-# CRM Agent Test Cases
-
-This test file contains a series of test cases designed to validate the functionalities of the CRM agent, including customer lookup, addition, updating, and deletion.
-
-## Initialize CRM System
-
-**Prompts**
-
-- Start CRM session.
-- Authenticate user credentials.
-
-**Expectations**
-
-- User is successfully authenticated.
-- CRM session is initialized without errors.
-
-## Lookup Existing Customer
-
-**Before**
-
-- Initialize CRM System
-
-**Prompts**
-
-- Retrieve customer details for John Doe.
-- Show contact information for customer ID 12345.
-- **Chain**
-  - Who is Jane Smith?
-  - Provide account details for Jane Smith.
-  - Display her recent transactions.
-
-**Expectations**
-
-- Customer data for the specified individuals is retrieved.
-- Correct contact information is displayed.
-- Recent transactions are accurately listed.
-
-## Add New Customer
-
-**Before**
-
-- Initialize CRM System
-
-**Prompts**
-
-- Add new customer: Alice Johnson, contact number 555-1234.
-- **Chain**
-  - Start new customer entry.
-  - Name: Bob Williams.
-  - Contact: bob.williams@example.com.
-  - Save customer record.
-
-**Expectations**
-
-- New customer records are created successfully.
-- The system confirms the addition of new customers.
-- No errors occur during data entry.
-
-## Update Customer Information
-
-**Before**
-
-- Initialize CRM System
-- Add New Customer
-
-**Prompts**
-
-- Update contact number for Alice Johnson to 555-5678.
-- Change email for Bob Williams to bob.w@example.com.
-- **Chain**
-  - Find customer ID 67890.
-  - Update address to "123 Main Street".
-  - Confirm changes.
-
-**Expectations**
-
-- Customer information is updated correctly.
-- System provides confirmation of updates.
-- Changes reflect in subsequent retrievals.
-
-## Delete Customer Record
-
-**Before**
-
-- Initialize CRM System
-- Add New Customer
-- Update Customer Information
-
-**Prompts**
-
-- Delete customer record for Bob Williams.
-- Remove Alice Johnson from the database.
-
-**Expectations**
-
-- Customer records are deleted successfully.
-- System confirms the deletion.
-- Attempts to retrieve deleted records indicate they do not exist.
-```
-
-### Explanation of the Example
-
-- **Frontmatter**:
-
-  - `iterations` is set to 4, indicating that each test case should be run for a total of 4 iterations.
-  - Since there are fewer prompts than iterations, additional prompt variations will be generated externally.
-
-- **Test Cases**:
-
-  - **Initialize CRM System**:
-
-    - Serves as a setup test case.
-    - No `befores` needed.
-    - Prompts correspond to initial iterations.
-
-  - **Lookup Existing Customer**:
-
-    - Depends on `Initialize CRM System`.
-    - Contains individual prompts and a prompt chain.
-    - Each prompt or chain is an iteration; expectations are assessed after each.
-
-  - **Add New Customer**:
-
-    - Depends on `Initialize CRM System`.
-    - Demonstrates adding new customer entries.
-    - Includes prompts and a prompt chain.
-
-  - **Update Customer Information**:
-
-    - Depends on `Initialize CRM System` and `Add New Customer`.
-    - Tests updating existing customer data.
-
-  - **Delete Customer Record**:
-    - Depends on `Initialize CRM System`, `Add New Customer`, and `Update Customer Information`.
-    - Tests the deletion of customer records and validation of their removal.
-
-- **Optional Context**:
-
-  - Under the `# CRM Agent Test Cases` heading, additional context is provided.
-  - This section is for informational purposes and is not interpreted for execution.
-
-- **Prompts and Iterations**:
-
-  - Each listed prompt or prompt chain will be used in separate iterations.
-  - If `iterations` exceed the number of prompts, external prompts will be supplied.
-  - For each iteration, all expectations are assessed.
-
-- **Generating Additional Prompts**:
-
-  - As the number of iterations is greater than the number of supplied prompts, additional prompts are generated by an external system, not by you.
-
-## Important Notes for Interpretation
-
-- **Sequence Matters**: When processing test cases with `befores`, execute them in the specified order to maintain the correct system state.
-
-- **System State Preservation**: The system state after each test case execution should persist when moving to dependent test cases.
-
-- **Consistency in Identifiers**: Use test case names exactly as specified when referencing in `befores`.
-
-- **Handling Iterations**:
-
-  - Each prompt or prompt chain corresponds to one iteration.
-  - Use prompts in the order they appear; when the end of the list is reached, if more iterations are needed, external prompts will be provided.
-
-- **External Generation of Prompts**:
-
-  - Do not attempt to generate additional prompt variations yourself.
-  - Rely on the external system to supply any additional prompts required for the specified iterations.
-
-- **Error Handling**: If a test case specified in `befores` is not found or has errors, report the issue and halt processing of the dependent test case.
-
-## Summary
-
-By following this guide, you should be able to parse and decompose test files accurately. Your primary tasks are to:
-
-- **Extract and Interpret Structure**: Read the test file's frontmatter and identify each test case.
-
-- **Execute Test Cases in Order**: Respect the `befores` dependencies to ensure the system state is correctly maintained.
-
-- **Handle Prompts and Iterations**:
-
-  - Use each prompt or prompt chain as a single iteration.
-  - For each iteration, assess all expectations.
-
-- **Interact with the Target Agent**: Use the prompts to exercise the agent's functionalities.
-
-- **Verify Outcomes**: Check the agent's responses and system state against the expectations using the assessor agent.
-
-This ensures that test files are interpreted correctly, test cases are executed as intended, and the target agent's functionality is validated reliably.
