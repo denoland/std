@@ -3,6 +3,7 @@ export { delay } from '@std/async'
 export { expect } from '@std/expect'
 export { assert, AssertionError } from '@std/assert'
 export { default as merge } from 'lodash.merge'
+import { Buffer } from 'node:buffer'
 import 'supports-color'
 import Debug from 'debug'
 import { deserializeError, serializeError } from 'serialize-error'
@@ -16,6 +17,8 @@ log.enable = (...args: string[]) => {
   Debug.enable(...args)
 }
 export * as posix from '@std/path/posix'
+
+;(globalThis as any).Buffer = Buffer
 
 const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
 let _isTestMode = false
