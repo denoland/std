@@ -52,6 +52,10 @@ export const functions: Functions<Api> = {
     log('mv', from, to)
     return api.mv(from, to)
   },
+  cp: ({ from, to }, api) => {
+    log('cp', from, to)
+    return api.cp(from, to)
+  },
   search: async ({ query }, api) => {
     log('search', query, print(api.pid))
 

@@ -148,7 +148,7 @@ export default class Server {
       if (body?.repository?.full_name !== 'dreamcatcher-tech/HAL') {
         return c.json({ error: 'invalid repository' }, 400)
       }
-      const { su } = engine
+      const su = engine.superUser()
       const target = { ...su.pid, branches: ['main'] }
       const promise = su.pull({ repo: 'dreamcatcher-tech/HAL', target })
         .then(() => console.log('done pull'))

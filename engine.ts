@@ -39,7 +39,6 @@ export class Engine implements EngineInterface {
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
-  #suBackchat: Backchat | undefined
 
   private constructor(
     compartment: Compartment,
@@ -71,13 +70,9 @@ export class Engine implements EngineInterface {
     await engine.ensureHomeAddress(init)
     return engine
   }
-  get su() {
-    if (!this.#suBackchat) {
-      const crypto = Crypto.load(this.#superuserKey)
-      this.#suBackchat = Backchat.superuser(this, crypto)
-    }
-    assert(this.#suBackchat)
-    return this.#suBackchat
+  superUser() {
+    const crypto = Crypto.load(this.#superuserKey)
+    return Backchat.superuser(this, crypto)
   }
   get #isDropping() {
     const toDelete = Deno.env.get('DROP_HOME') || ''
@@ -132,14 +127,18 @@ export class Engine implements EngineInterface {
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
-    const actions = await this.su.actions<actors.Api>('actors', { target })
+    const su = this.superUser()
+    const actions = await su.actions<actors.Api>('actors', { target })
     await actions.createActor({ actorId, machineId, backchatId })
 
     return backchat
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
-    const { backchat } = await this.su.actions<actor.Api>('actor', { target })
+    const su = this.superUser()
+    const { backchat } = await su.actions<actor.Api>('actor', {
+      target,
+    })
     const backchatId = generateBackchatId(ulid())
     const pid = await backchat({ backchatId })
     return freezePid(pid)
@@ -214,7 +213,8 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('superuser is', print(this.su.pid))
+    const su = this.superUser()
+    log('superuser is', print(su.pid))
 
     if (!init) {
       log('no init function - returning')
@@ -222,7 +222,7 @@ export class Engine implements EngineInterface {
     }
 
     log('provisioning')
-    await init(this.su)
+    await init(su)
     log('provisioned')
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {

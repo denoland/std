@@ -81,8 +81,9 @@ export const functions: Functions<Api> = {
     const testCase = file.cases[caseIndex]
     if (testCase.summary.befores.length) {
       for (const caseIndex of testCase.summary.befores) {
+        // TODO handle nested befores
         log('executing before:', caseIndex)
-        const { iteration } = await api.functions<Api>('test-case-runner')
+        const { iteration } = await api.actions<Api>('test-case-runner')
         await iteration({ path, caseIndex, iterationIndex: 0, isBefore: true })
       }
     }

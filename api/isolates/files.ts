@@ -69,6 +69,15 @@ export const parameters = {
       'the relative path to the new location of the file',
     ),
   }).describe('Move a file efficiently. This is a rename operation.'),
+  cp: z.object({
+    reasoning,
+    from: z.string().describe(
+      'the relative path to the file you want to copy',
+    ),
+    to: z.string().describe(
+      'the relative path to the new location of the file',
+    ),
+  }).describe('Copy a file efficiently.'),
   search: z.object({
     reasoning,
     query: z.string().describe(
@@ -89,6 +98,7 @@ export const returns = {
   update: z.object({ matchesUpdated: z.number() }),
   rm: z.void(),
   mv: z.void(),
+  cp: z.void(),
   search: z.array(
     z.object({ path: z.string(), description: z.string() }),
   ),
