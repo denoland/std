@@ -45,17 +45,19 @@ export class CborTextEncoderStream
     const { readable, writable } = new TransformStream<string, string>();
     this.#readable = toByteStream(ReadableStream.from(async function* () {
       yield new Uint8Array([0b011_11111]);
-      for await (const x of readable.pipeThrough(new TextEncoderStream())) {
-        if (x.length < 24) yield new Uint8Array([0b011_00000 + x.length]);
-        else if (x.length < 2 ** 8) {
-          yield new Uint8Array([0b011_11000, x.length]);
-        } else if (x.length < 2 ** 16) {
-          yield new Uint8Array([0b011_11001, ...numberToArray(2, x.length)]);
-        } else if (x.length < 2 ** 32) {
-          yield new Uint8Array([0b011_11010, ...numberToArray(4, x.length)]);
+      const textEncoder = new TextEncoder();
+      for await (const x of readable) {
+        const y = textEncoder.encode(x);
+        if (y.length < 24) yield new Uint8Array([0b011_00000 + y.length]);
+        else if (y.length < 2 ** 8) {
+          yield new Uint8Array([0b011_11000, y.length]);
+        } else if (y.length < 2 ** 16) {
+          yield new Uint8Array([0b011_11001, ...numberToArray(2, y.length)]);
+        } else if (y.length < 2 ** 32) {
+          yield new Uint8Array([0b011_11010, ...numberToArray(4, y.length)]);
         } // Can safely assume `x.length < 2 ** 64` as JavaScript doesn't support a `Uint8Array` being that large.
-        else yield new Uint8Array([0b011_11011, ...numberToArray(8, x.length)]);
-        yield x;
+        else yield new Uint8Array([0b011_11011, ...numberToArray(8, y.length)]);
+        yield y;
       }
       yield new Uint8Array([0b111_11111]);
     }()));
