@@ -35,7 +35,7 @@ import {
   USTAR_STRUCTURE,
 } from "./_common.ts";
 import type { Reader } from "@std/io/types";
-import { MultiReader } from "@std/io/multi-reader";
+import { MultiReader } from "./_multi_reader.ts";
 import { Buffer } from "@std/io/buffer";
 import { HEADER_LENGTH } from "./_common.ts";
 

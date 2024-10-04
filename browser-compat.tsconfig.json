@@ -12,6 +12,7 @@
     "./assert",
     "./async",
     "./bytes",
+    "./cache",
     "./cbor",
     "./cli",
     "./collections",
@@ -46,7 +47,6 @@
     "./text",
     "./toml",
     "./ulid",
-    "./url",
     "./uuid",
     "./webgpu",
     "./yaml"
