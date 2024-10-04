@@ -5,6 +5,8 @@
  * Returns all elements in the given iterable after the last element that does not
  * match the given predicate.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the iterable elements.
  *
  * @param iterable The iterable to take elements from.
