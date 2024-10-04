@@ -4,6 +4,8 @@
 /**
  * Returns an array that drops all elements in the given iterable until the
  * first element that does not match the given predicate.
+ * 
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam T The type of the elements in the input array.
  *
