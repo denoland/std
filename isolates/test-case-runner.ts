@@ -1,8 +1,8 @@
 import {
+  addPeer,
   AssistantMessage,
   chatParams,
   Functions,
-  getParent,
   getThreadPath,
   IA,
   print,
@@ -80,10 +80,12 @@ export const functions: Functions<Api> = {
     const { summary: { iterations } } = file
     const testCase = file.cases[caseIndex]
     if (testCase.summary.befores.length) {
+      const opts = { branchName: 'before' }
+      const { iteration } = await api.actions<Api>('test-case-runner', opts)
       for (const caseIndex of testCase.summary.befores) {
         // TODO handle nested befores
         log('executing before:', caseIndex)
-        const { iteration } = await api.actions<Api>('test-case-runner')
+        // TODO test this is adding on to the same thread
         await iteration({ path, caseIndex, iterationIndex: 0, isBefore: true })
       }
     }
@@ -117,9 +119,10 @@ export const functions: Functions<Api> = {
     const actorId = 'iteration_' + iterationIndex
 
     const { start, run } = await api.functions<longthread.Api>('longthread')
-    const parent = getParent(api.pid)
-    if (await api.exists(getThreadPath(parent))) {
-      await api.cp(getThreadPath(parent), getThreadPath(api.pid))
+    const before = addPeer(api.pid, 'before')
+    if (await api.exists(getThreadPath(before))) {
+      // TODO check this reads in correctly
+      await api.cp(getThreadPath(before), getThreadPath(api.pid))
     } else {
       await start({})
     }
