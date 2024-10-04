@@ -47,6 +47,7 @@
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
     "./unstable-chunk": "./unstable_chunk.ts",
+    "./unstable-drop-while": "./unstable_drop_while.ts",
     "./unstable-drop-last-while": "./unstable_drop_last_while.ts",
     "./unstable-sample": "./unstable_sample.ts",
     "./unstable-sort-by": "./unstable_sort_by.ts",

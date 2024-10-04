@@ -15,7 +15,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { dropWhile } from "@std/collections/drop-while";
+ * import { dropWhile } from "@std/collections/unstable-drop-while";
  * import { assertEquals } from "@std/assert";
  *
  * const numbers = [3, 2, 5, 2, 5];
