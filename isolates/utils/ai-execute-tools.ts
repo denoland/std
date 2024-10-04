@@ -41,6 +41,7 @@ export const executeTools = async (
   log('execute tools:', threadPath, logNames)
 
   // TODO use the new openai runTools helper with a parser
+  let isErrored = false
   for (const call of tool_calls) {
     const { function: { name, arguments: args }, id: tool_call_id } = call
     debugToolCall(name, args)
@@ -55,29 +56,39 @@ export const executeTools = async (
     workingThread.messages.push(message)
     api.writeJSON(threadPath, workingThread)
 
-    try {
-      const parameters = JSON.parse(args)
-      const result = await actions[name](parameters)
-
-      if (result === undefined || typeof result === 'string') {
-        message.content = compressIfPrettyJson(result || '')
-      } else {
-        message.content = JSON.stringify(result)
-      }
-      log('tool call result:', name, 'size:', message.content.length)
-
-      if (stopOnTools.includes(name)) {
-        if (tool_calls.length !== 1) {
-          const msg =
-            `Tool ${name} cannot be called in parallel with other tools`
-          throw new Error(msg)
-        }
-      }
-    } catch (error) {
+    if (isErrored) {
+      const error = new Error('tool call skipped due to prior error')
+      // TODO validate the params to pass back extra info
       log('tool call error:', error)
       const serializable = serializeError(error)
       delete serializable.stack
       message.content = JSON.stringify(serializable)
+    } else {
+      try {
+        const parameters = JSON.parse(args)
+        const result = await actions[name](parameters)
+
+        if (result === undefined || typeof result === 'string') {
+          message.content = compressIfPrettyJson(result || '')
+        } else {
+          message.content = JSON.stringify(result)
+        }
+        log('tool call result:', name, 'size:', message.content.length)
+
+        if (stopOnTools.includes(name)) {
+          if (tool_calls.length !== 1) {
+            const msg =
+              `Tool ${name} cannot be called in parallel with other tools`
+            throw new Error(msg)
+          }
+        }
+      } catch (error) {
+        log('tool call error:', error)
+        isErrored = true
+        const serializable = serializeError(error)
+        delete serializable.stack
+        message.content = JSON.stringify(serializable)
+      }
     }
     debugToolResult(message.content)
 
