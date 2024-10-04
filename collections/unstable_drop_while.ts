@@ -45,16 +45,3 @@ export function dropWhile<T>(
   }
   return array;
 }
-
-export function dropWhileInPlace<T>(
-  array: T[],
-  predicate: (value: T) => boolean,
-): T[] {
-  const idx = array.findIndex((el) => !predicate(el));
-  if (idx > 0) {
-    array.splice(0, idx);
-  } else if (idx === -1) {
-    array.length = 0;
-  }
-  return array;
-}
