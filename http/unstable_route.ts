@@ -13,8 +13,8 @@
  */
 export type Handler = (
   request: Request,
+  params?: URLPatternResult,
   info?: Deno.ServeHandlerInfo,
-  params?: URLPatternResult | null,
 ) => Response | Promise<Response>;
 
 /**
@@ -56,7 +56,7 @@ export interface Route {
  *   },
  *   {
  *     pattern: new URLPattern({ pathname: "/users/:id" }),
- *     handler: (_req, _info, params) => new Response(params?.pathname.groups.id),
+ *     handler: (_req, params) => new Response(params?.pathname.groups.id),
  *   },
  *   {
  *     pattern: new URLPattern({ pathname: "/static/*" }),
@@ -102,7 +102,7 @@ export function route(
           ? route.method.includes(request.method)
           : request.method === (route.method ?? "GET"))
       ) {
-        return route.handler(request, info, match);
+        return route.handler(request, match, info);
       }
     }
     return defaultHandler(request, info);
