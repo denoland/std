@@ -11,16 +11,19 @@ const log = Debug('AI:tps-report')
 const testPath = z.string().regex(/\.test\.md$/).describe(
   'the path to the .test.md file',
 )
-const agent = z.string().regex(/\.md$/).describe(
-  'the path to the agent file to use for this job, typically something in the agents/ directory',
-)
+const agentPath = z.string().regex(/\.md$/)
 
 export const parameters = {
   upsert: z.object({
+    // TODO this should be a direct copy of the tps schema itself
     reasoning,
     testPath,
-    agent,
-    assessor: agent,
+    target: agentPath.describe(
+      'the path to the target agent file under test, typically something in the agents/ directory',
+    ),
+    assessor: agentPath.describe(
+      'the path to the agent file to use to do the assessment of the test outcomes, typically agents/test-assessor.md or something in the agents/ directory',
+    ),
     iterations: z.number().int().gte(1),
   }).describe(
     'Create or update a test report for the given testPath and iterations',
@@ -61,16 +64,16 @@ export const returns: Returns<typeof parameters> = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  upsert: async ({ testPath, agent, assessor, iterations }, api) => {
+  upsert: async ({ testPath, target, assessor, iterations }, api) => {
     log('upsertTpsReport', testPath, iterations)
-    await load(agent, api)
+    await load(target, api)
     await load(assessor, api)
     const tpsPath = getTpsPath(testPath)
     const hash = await api.readOid(testPath)
     const tpsReport = tps.create(
       testPath,
       hash,
-      agent,
+      target,
       assessor,
       iterations,
     )

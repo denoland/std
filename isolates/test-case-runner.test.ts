@@ -30,7 +30,7 @@ const tpsFixture: TestFile = {
     timestamp: Date.now(),
     path: 'tests/test-fixture.test.md',
     hash: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
-    agent: 'agents/agent-fixture.md',
+    target: 'agents/agent-fixture.md',
     assessor: 'agents/test-assessor.md',
     elapsed: 1000,
     iterations: 1,

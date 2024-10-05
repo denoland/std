@@ -107,7 +107,7 @@ export const functions: Functions<Api> = {
     log('iteration', path, caseIndex, iterationIndex, print(api.pid))
 
     const tpsReport = await readTpsReport(path, api)
-    const { agent, assessor } = tpsReport.summary
+    const { target, assessor } = tpsReport.summary
     const { prompts, expectations } = tpsReport.cases[caseIndex].summary
 
     const chain = prompts[iterationIndex % prompts.length]
@@ -128,7 +128,7 @@ export const functions: Functions<Api> = {
     }
 
     for (const prompt of chain) {
-      await run({ path: agent, content: prompt, actorId })
+      await run({ path: target, content: prompt, actorId })
     }
 
     log('starting assessment with:', assessor)

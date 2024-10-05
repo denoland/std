@@ -10,7 +10,7 @@ export const outcome = z
       'the outcome of the test iteration, true if the expectation was met, false if it was not',
     ),
     analysis: z.array(z.string()).optional().describe(
-      'the step by step analysis of WHY the system prompt of the agent under test did NOT perform as well in the outcome as it could have',
+      'the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have',
     ),
     improvements: z.array(z.string()).optional().describe(
       'the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome',
@@ -134,8 +134,8 @@ export const testFile = z
         .describe('the hash of the test file used to generate the test run'),
       path: z.string()
         .describe('the path to the test file'),
-      agent: z.string()
-        .describe('the path to the agent file under test'),
+      target: z.string()
+        .describe('the path to the target agent file under test'),
       assessor: z.string()
         .describe('path to the agent file that will assess the test results'),
     })
@@ -177,7 +177,7 @@ export const testController = z.object({
 export const create = (
   path: string,
   hash: string,
-  agent: string,
+  target: string,
   assessor: string,
   iterations: number,
 ) => {
@@ -186,7 +186,7 @@ export const create = (
       timestamp: Date.now(),
       path,
       hash,
-      agent,
+      target,
       assessor,
       elapsed: 0,
       iterations,

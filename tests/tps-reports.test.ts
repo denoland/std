@@ -14,7 +14,7 @@ const raw: TestFile = {
     timestamp: Date.now(),
     path: 'tests/test-example.test.md',
     hash: '29426920ac614d1672d6f2dfcdd22c0052c22e32',
-    agent: 'the/agent/to/test.md',
+    target: 'the/agent/to/test.md',
     assessor: 'agents/assessor.md',
     elapsed: 1000,
     iterations: 5,
