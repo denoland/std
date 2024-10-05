@@ -3,52 +3,40 @@ import { z } from 'zod'
 import { Functions, reasoning, Returns, type ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
 import * as tps from '@/api/tps-report.ts'
-import { TestFile } from '@/api/tps-report.ts'
+import { TestFile, testFileSummary } from '@/api/tps-report.ts'
 import { load } from '@/isolates/utils/load-agent.ts'
 
 const log = Debug('AI:tps-report')
 
-const testPath = z.string().regex(/\.test\.md$/).describe(
+const path = z.string().regex(/\.test\.md$/).describe(
   'the path to the .test.md file',
 )
-const agentPath = z.string().regex(/\.md$/)
+
+const upsert = testFileSummary.pick({
+  path: true,
+  target: true,
+  assessor: true,
+  iterations: true,
+}).extend({ reasoning }).describe(
+  'Create or update a test report for the given testPath and iterations',
+)
+const addCase = tps.testCaseSummary.pick({
+  name: true,
+  promptLists: true,
+  expectations: true,
+  befores: true,
+}).extend({ reasoning, path }).describe(
+  'Add a test case to the test report for the given testPath with the given number of expectations',
+)
 
 export const parameters = {
-  upsert: z.object({
-    // TODO this should be a direct copy of the tps schema itself
-    reasoning,
-    testPath,
-    target: agentPath.describe(
-      'the path to the target agent file under test, typically something in the agents/ directory',
-    ),
-    assessor: agentPath.describe(
-      'the path to the agent file to use to do the assessment of the test outcomes, typically agents/test-assessor.md or something in the agents/ directory',
-    ),
-    iterations: z.number().int().gte(1),
-  }).describe(
-    'Create or update a test report for the given testPath and iterations',
-  ),
-  addCase: z.object({
-    reasoning,
-    testPath,
-    name: z.string().describe('the name of the test case'),
-    befores: z.array(z.number().int().gte(0)).describe(
-      'Test cases that must run before this one, which must all be indices less than this one',
-    ),
-    chains: z.array(z.array(z.string())).describe(
-      'An array of prompt chains to be used in the test case.  A prompt chain contains one or more prompts that will be executed in sequence.  The array of prompt chains will be used to create variations for the required number of iterations of the test case',
-    ),
-    expectations: z.array(z.string()).describe(
-      'The expectations for the test case',
-    ),
-  }).describe(
-    'Add a test case to the test report for the given testPath with the given number of expectations',
-  ),
+  upsert,
+  addCase,
   confirmCaseCount: z.object({
     reasoning: z.array(z.string()).describe(
       'the reasoning for the test case count',
     ),
-    testPath: z.string().describe('the path to the .test.md file'),
+    path,
     count: z.number().int().gte(1).describe('the number of test cases'),
   }).describe(
     'Confirm the number of test cases in the test report.  This function must be called alone and not in parallel.  If the case count is wrong, it will throw an error.  This function is a test to ensure the data in the tps report is so far consistent.',
@@ -64,33 +52,33 @@ export const returns: Returns<typeof parameters> = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  upsert: async ({ testPath, target, assessor, iterations }, api) => {
-    log('upsertTpsReport', testPath, iterations)
+  upsert: async ({ path, target, assessor, iterations }, api) => {
+    log('upsertTpsReport', path, iterations)
     await load(target, api)
     await load(assessor, api)
-    const tpsPath = getTpsPath(testPath)
-    const hash = await api.readOid(testPath)
-    const tpsReport = tps.create(
-      testPath,
-      hash,
-      target,
-      assessor,
-      iterations,
-    )
+    const tpsPath = getTpsPath(path)
+    const hash = await api.readOid(path)
+    const tpsReport = tps.create(path, target, assessor, iterations, hash)
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, tpsReport)
   },
-  addCase: async ({ testPath, name, chains, expectations, befores }, api) => {
-    log('addTestCase', testPath, name, expectations)
-    const tpsPath = getTpsPath(testPath)
+  addCase: async ({ path, name, promptLists, expectations, befores }, api) => {
+    log('addTestCase', path, name, expectations)
+    const tpsPath = getTpsPath(path)
     const tpsReport = await api.readJSON<TestFile>(tpsPath)
-    const updated = tps.addCase(tpsReport, name, chains, expectations, befores)
+    const updated = tps.addCase(
+      tpsReport,
+      name,
+      promptLists,
+      expectations,
+      befores,
+    )
     log('writing tps report:', tpsPath)
     api.writeJSON(tpsPath, updated)
   },
-  confirmCaseCount: async ({ testPath, count, reasoning }, api) => {
-    log('confirmCaseCount', testPath, count, reasoning)
-    const tpsPath = getTpsPath(testPath)
+  confirmCaseCount: async ({ path, count, reasoning }, api) => {
+    log('confirmCaseCount', path, count, reasoning)
+    const tpsPath = getTpsPath(path)
     const tpsReport = await api.readJSON<TestFile>(tpsPath)
     if (tpsReport.cases.length !== count) {
       throw new Error('Wrong case count - should be: ' + tpsReport.cases.length)
@@ -99,7 +87,7 @@ export const functions: Functions<Api> = {
   },
 }
 
-const getTpsPath = (testPath: string) => {
-  assert(testPath.endsWith('.test.md'), 'testPath must end with .test.md')
-  return testPath.replace('.test.md', '.tps.json')
+const getTpsPath = (path: string) => {
+  assert(path.endsWith('.test.md'), 'testPath must end with .test.md')
+  return path.replace('.test.md', '.tps.json')
 }

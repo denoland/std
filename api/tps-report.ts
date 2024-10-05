@@ -58,30 +58,32 @@ const summary = z
     'A summary of the test results combining all individual results into a ratio',
   )
 
+export const testCaseSummary = summary
+  .extend({
+    name: z.string().describe('the name of the test case'),
+    promptLists: z.array(z.array(z.string()))
+      .describe('the array of prompt arrays used for each iteration'),
+    expectations: z
+      .array(z.string())
+      .describe('the expectations for this test case'),
+    befores: z.array(z.number().int().gte(0)).describe(
+      'Cases that must be run before this case, to set the starting state',
+    ),
+    successes: z
+      .array(z.number().int().gte(0))
+      .describe(
+        'for each expectation, the sum of the successful outcomes so far.  When divided by the number of completed iterations, the ratio of successful outcomes is calculated',
+      ),
+  })
+  .strict()
+  .describe(
+    'A summary of the test results combining all individual results into a ratio',
+  )
+
 export type TestCase = z.infer<typeof testCase>
 export const testCase = z
   .object({
-    summary: summary
-      .extend({
-        prompts: z.array(z.array(z.string()))
-          .describe('the array of prompt arrays used for each iteration'),
-        expectations: z
-          .array(z.string())
-          .describe('the expectations for this test case'),
-        successes: z
-          .array(z.number().int().gte(0))
-          .describe(
-            'for each expectation, the sum of the successful outcomes so far.  When divided by the number of completed iterations, the ratio of successful outcomes is calculated',
-          ),
-        name: z.string().describe('the name of the test case'),
-        befores: z.array(z.number().int().gte(0)).describe(
-          'Cases that must be run before this case, to set the starting state',
-        ),
-      })
-      .strict()
-      .describe(
-        'A summary of the test results combining all individual results into a ratio',
-      )
+    summary: testCaseSummary
       .refine((v) => !!v.expectations.length, {
         message: 'expectations must be non-empty',
       })
@@ -126,20 +128,26 @@ export const testCase = z
     )
   }, { message: 'runs outcomes must sum to successes' })
 
+export const testFileSummary = summary.extend({
+  hash: md5
+    .describe('the hash of the test file used to generate the test run'),
+  path: z.string().regex(/\.md$/)
+    .describe('the path to the test file'),
+  target: z.string()
+    .describe(
+      'the path to the target agent file under test, typically something in the agents/ directory',
+    ),
+  assessor: z.string()
+    .describe(
+      'the path to the agent file to use to do the assessment of the test outcomes, typically agents/test-assessor.md or something in the agents/ directory',
+    ),
+})
+  .strict()
+
 export type TestFile = z.infer<typeof testFile>
 export const testFile = z
   .object({
-    summary: summary.extend({
-      hash: md5
-        .describe('the hash of the test file used to generate the test run'),
-      path: z.string()
-        .describe('the path to the test file'),
-      target: z.string()
-        .describe('the path to the target agent file under test'),
-      assessor: z.string()
-        .describe('path to the agent file that will assess the test results'),
-    })
-      .strict()
+    summary: testFileSummary
       .refine((value) => value.completed <= value.iterations, {
         message: 'completed cannot be greater than iterations',
       }),
@@ -176,10 +184,10 @@ export const testController = z.object({
 
 export const create = (
   path: string,
-  hash: string,
   target: string,
   assessor: string,
   iterations: number,
+  hash: string,
 ) => {
   const blank: TestFile = {
     summary: {
@@ -198,20 +206,20 @@ export const create = (
 }
 
 export const addCase = (
-  base: TestFile,
+  tpsReport: TestFile,
   name: string,
-  prompts: string[][],
+  promptLists: string[][],
   expectations: string[],
   befores: number[],
 ) => {
-  const parsed = testFile.parse(base)
+  const parsed = testFile.parse(tpsReport)
   const test: TestCase = {
     summary: {
       name,
       timestamp: Date.now(),
       elapsed: 0,
       iterations: parsed.summary.iterations,
-      prompts,
+      promptLists,
       expectations,
       completed: 0,
       successes: Array(expectations.length).fill(0),

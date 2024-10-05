@@ -28,7 +28,7 @@ const raw: TestFile = {
         elapsed: 50,
         iterations: 3,
         befores: [],
-        prompts: [['prompt1'], ['multiple prompts', 'prompt2']],
+        promptLists: [['prompt1'], ['multiple prompts', 'prompt2']],
         expectations: ['expectation 1', 'expectation 2'],
         completed: 1,
         successes: [1, 0],

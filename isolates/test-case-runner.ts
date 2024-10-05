@@ -108,10 +108,10 @@ export const functions: Functions<Api> = {
 
     const tpsReport = await readTpsReport(path, api)
     const { target, assessor } = tpsReport.summary
-    const { prompts, expectations } = tpsReport.cases[caseIndex].summary
+    const { promptLists, expectations } = tpsReport.cases[caseIndex].summary
 
-    const chain = prompts[iterationIndex % prompts.length]
-    if (prompts.length <= iterationIndex) {
+    const chain = promptLists[iterationIndex % promptLists.length]
+    if (promptLists.length <= iterationIndex) {
       // if we do not have enough prompts to run the iteration, generate more
       // need to get the full test section to use the full context available
       // then run this as a drone
@@ -156,6 +156,7 @@ export const functions: Functions<Api> = {
       return
     }
     const iteration = { prompts: chain, outcomes, commit: api.commit }
+
     const updated = addIteration(
       tpsReport,
       caseIndex,
