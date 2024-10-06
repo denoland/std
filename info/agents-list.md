@@ -78,3 +78,4 @@
 - `agents/test-results-summary.md` Produces a concise analysis on a TPS test
   result file.
 - `agents/imogen.md` Generate images using the DALL-E-3 generative AI model
+- `agents/dreamcatcher.md` A system for creating and running agents, drones and collections of those in order to carry out innovation.
