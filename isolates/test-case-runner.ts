@@ -20,6 +20,7 @@ import {
   addCaseResult,
   addIteration,
   outcome,
+  testCase,
   testFile,
 } from '@/api/tps-report.ts'
 import { z } from 'zod'
@@ -73,6 +74,7 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
   test: async ({ path, cases }, api) => {
+    let ours = await readTpsReport(path, api)
     const promises = cases.map(async (caseIndex) => {
       const opts = { branchName: 'case_' + caseIndex }
       const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
@@ -81,12 +83,16 @@ export const functions: Functions<Api> = {
 
       const theirs = await readTpsReport(path, api, parent)
       const caseResult = theirs.cases[caseIndex]
-      let ours = await readTpsReport(path, api)
-      ours = addCaseResult(ours, caseIndex, caseResult)
-      api.writeJSON(getTpsPath(path), ours)
       log('case done', caseIndex)
+      return testCase.parse(caseResult)
     })
-    await Promise.all(promises)
+    const caseResults = await Promise.all(promises)
+    for (const caseIndex of cases) {
+      const caseResult = caseResults.shift()
+      assert(caseResult, 'missing case result: ' + caseIndex)
+      ours = addCaseResult(ours, caseIndex, caseResult)
+    }
+    api.writeJSON(getTpsPath(path), ours)
   },
   caseRunner: async ({ path, caseIndex }, api) => {
     log('caseRunner', path, caseIndex, print(api.pid))
