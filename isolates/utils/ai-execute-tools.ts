@@ -57,7 +57,9 @@ export const executeTools = async (
     api.writeJSON(threadPath, workingThread)
 
     if (isErrored) {
-      const error = new Error('tool call skipped due to prior error')
+      const error = new Error(
+        'tool call skipped due to prior error in this batch of parallel tool calls, which are always executed sequentially',
+      )
       // TODO validate the params to pass back extra info
       log('tool call error:', error)
       const serializable = serializeError(error)

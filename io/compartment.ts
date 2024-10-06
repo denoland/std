@@ -96,7 +96,7 @@ export default class Compartment {
         schema.parse(parameters)
       } catch (error) {
         throw new Error(
-          `Parameters Validation Error at: ${path}: ${error.message}`,
+          `Zod schema parameters validation error at path: ${path}\nError: ${error.message}`,
         )
       }
       return Promise.resolve(

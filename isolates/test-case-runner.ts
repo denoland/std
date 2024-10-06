@@ -11,6 +11,7 @@ import {
   withMeta,
 } from '@/constants.ts'
 import { assert, Debug } from '@utils'
+import * as session from '@/isolates/session.ts'
 import * as longthread from '@/isolates/longthread.ts'
 import { load } from '@/isolates/utils/load-agent.ts'
 import { getChatParams } from '@/isolates/ai-completions.ts'
@@ -36,11 +37,7 @@ export const parameters = {
   caseRunner: testParams.describe(
     'The actual implementation of the test runner.  The test function calls this function in a new branch, and then merges the results back in.',
   ),
-  iteration: testParams.extend({
-    iterationIndex: z.number().int().gte(0),
-    /** If being run as part of a "before" step, do not update the tps report */
-    isBefore: z.boolean().optional(),
-  }),
+  iteration: testParams.extend({ iterationIndex: z.number().int().gte(0) }),
   openai: z.object({
     threadPath: z.string().describe(
       'relative path to the thread to recreate the request response pair from',
@@ -70,6 +67,9 @@ export const functions: Functions<Api> = {
     const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
     const { parent } = await withMeta(caseRunner({ path, caseIndex }))
     assert(parent, 'missing parent')
+
+    // no, this should only merge in the summary info
+
     await api.merge(parent)
     // TODO provide feature to read from the commit using the api
   },
@@ -80,30 +80,28 @@ export const functions: Functions<Api> = {
     const { summary: { iterations } } = file
     const testCase = file.cases[caseIndex]
     if (testCase.summary.befores.length) {
-      const opts = { branchName: 'before' }
-      const { iteration } = await api.actions<Api>('test-case-runner', opts)
-      for (const caseIndex of testCase.summary.befores) {
-        // TODO handle nested befores
-        log('executing before:', caseIndex)
-        // TODO test this is adding on to the same thread
-        await iteration({ path, caseIndex, iterationIndex: 0, isBefore: true })
-      }
+      await runBefores(path, testCase.summary.befores, api)
     }
 
-    // TODO handle merging parallel runs back in by reading before and after
     // TODO batch the runs to get around artifact limitations in parallelisms
 
     for (let i = 0; i < iterations; i++) {
       const opts = { branchName: 'iteration_' + i }
       const { iteration } = await api.actions<Api>('test-case-runner', opts)
+      // TODO handle nested befores
       const promise = iteration({ path, caseIndex, iterationIndex: i })
       const { parent } = await withMeta(promise)
       assert(parent, 'missing parent')
-      await api.merge(parent)
+
+      const theirs = await readTpsReport(path, api, parent)
+      const tpsIteration = theirs.cases[caseIndex].iterations[i]
+      let ours = await readTpsReport(path, api)
+      ours = addIteration(ours, caseIndex, i, tpsIteration)
+      api.writeJSON(getTpsPath(path), ours)
       log('iteration done', i)
     }
   },
-  iteration: async ({ path, caseIndex, iterationIndex, isBefore }, api) => {
+  iteration: async ({ path, caseIndex, iterationIndex }, api) => {
     log('iteration', path, caseIndex, iterationIndex, print(api.pid))
 
     const tpsReport = await readTpsReport(path, api)
@@ -148,13 +146,6 @@ export const functions: Functions<Api> = {
     })
     const outcomes = await Promise.all(promises)
 
-    if (isBefore) {
-      const failures = outcomes.filter(({ outcome }) => !outcome)
-      if (failures.length) {
-        throw new Error('"before" step failed: ' + JSON.stringify(failures))
-      }
-      return
-    }
     const iteration = { prompts: chain, outcomes, commit: api.commit }
 
     const updated = addIteration(
@@ -197,7 +188,38 @@ const getTpsPath = (testPath: string) => {
   assert(testPath.endsWith('.test.md'), 'not .test.md: ' + testPath)
   return testPath.replace('.test.md', '.tps.json')
 }
-const readTpsReport = async (path: string, api: IA) => {
+const readTpsReport = async (path: string, api: IA, commit?: string) => {
   const tpsPath = getTpsPath(path)
-  return testFile.parse(await api.readJSON(tpsPath))
+  return testFile.parse(await api.readJSON(tpsPath, { commit }))
+}
+const runBefores = async (path: string, befores: number[], api: IA) => {
+  const noops = { branchName: 'before', noClose: true }
+  const { noop } = await api.actions<session.Api>('session', noops)
+  const target = await noop({})
+
+  const iters = { target }
+  const { iteration } = await api.actions<Api>('test-case-runner', iters)
+
+  let lastParent: string | undefined
+  for (const caseIndex of befores) {
+    // TODO handle nested befores
+    log('executing before:', caseIndex)
+    // TODO test this is adding on to the same thread
+    const promise = iteration({ path, caseIndex, iterationIndex: 0 })
+    const { parent } = await withMeta(promise)
+    assert(parent, 'missing parent')
+    lastParent = parent
+
+    const tps = await readTpsReport(path, api, parent)
+    assert(tps.cases[caseIndex], 'missing case')
+    assert(tps.cases[caseIndex].iterations[0], 'missing iteration')
+    const { outcomes } = tps.cases[caseIndex].iterations[0]
+
+    const failures = outcomes.filter(({ outcome }) => !outcome)
+    if (failures.length) {
+      throw new Error('"before" step failed: ' + JSON.stringify(failures))
+    }
+  }
+  assert(lastParent, 'missing last parent')
+  await api.merge(lastParent)
 }

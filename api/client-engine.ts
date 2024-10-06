@@ -149,7 +149,7 @@ export class WebClientEngine implements EngineInterface {
               const splice: Splice = JSON.parse(value.data)
               lastSplice = splice
               source.push(splice)
-            } else {
+            } else if (value.event !== 'keepalive') {
               console.error('unexpected event', value.event, value)
             }
           }

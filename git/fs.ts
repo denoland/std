@@ -322,18 +322,24 @@ export default class FS {
     this.#upserts.set(path, { data })
     this.#deletes.delete(path)
   }
-  async readJSON<T>(path: string): Promise<T> {
+  async readJSON<T>(path: string, commit?: string): Promise<T> {
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
-    const data = await this.read(path)
+    const data = await this.read(path, commit)
     return JSON.parse(data)
   }
-  async read(path: string) {
-    const blob = await this.readBinary(path)
+  async read(path: string, commit?: string) {
+    const blob = await this.readBinary(path, commit)
     return new TextDecoder().decode(blob)
   }
-  async readBinary(path: string): Promise<Uint8Array> {
+  async readBinary(path: string, commit?: string): Promise<Uint8Array> {
     path = refine(path)
-    log('readBinary', path)
+    log('readBinary', path, commit)
+
+    if (commit) {
+      const { blob } = await this.#readBlob(path, commit)
+      return blob
+    }
+
     if (this.#deletes.has(path)) {
       throw new Error('Could not find file or directory: ' + path)
     }
@@ -354,8 +360,8 @@ export default class FS {
     const { blob } = await this.#readBlob(path)
     return blob
   }
-  async #readBlob(path: string) {
-    const oid = this.#internalOid
+  async #readBlob(path: string, commit?: string) {
+    const oid = commit || this.#internalOid
     const { blob, oid: blobOid } = await git.readBlob({
       ...this.#git,
       oid,

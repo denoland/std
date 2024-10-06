@@ -86,7 +86,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       await expect(actions.error({ message })).rejects.toThrow(message)
     })
     await t.step('params fails validation', async () => {
-      const msg = 'Parameters Validation Error '
+      const msg = 'Zod schema parameters validation error '
       const invalid = { message: true } as unknown as { message: string }
       expect(() => parameters.ping.strict().parse(invalid)).toThrow()
       await expect(actions.ping(invalid))

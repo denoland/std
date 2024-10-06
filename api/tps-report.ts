@@ -246,6 +246,9 @@ export const addIteration = (
       test.summary.successes[index]++
     }
   })
+  if (test.iterations[iterationIndex]) {
+    throw new Error('iteration already exists: ' + iterationIndex)
+  }
   test.iterations[iterationIndex] = iteration
   let leastCompleted = Number.MAX_SAFE_INTEGER
   for (const _test of copy.cases) {

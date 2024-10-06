@@ -6,7 +6,7 @@ import { endTime, setMetric, startTime, timing } from 'hono/timing'
 import { logger } from 'hono/logger'
 import { poweredBy } from 'hono/powered-by'
 import { prettyJSON } from 'hono/pretty-json'
-import { streamSSE } from 'hono/streaming'
+import { SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { Engine } from '../engine.ts'
 import { assert, Debug, delay, serializeError } from '@/utils.ts'
 import { EventSourceMessage, machineIdRegex, Provisioner } from '@/constants.ts'
@@ -79,9 +79,10 @@ export default class Server {
       return streamSSE(c, async (stream) => {
         const params = await c.req.json()
         const abort = new AbortController()
-        stream.onAbort(() => abort.abort())
+        stream.onAbort(() => abort.abort('stream aborted'))
         engine.abortSignal.addEventListener('abort', () => abort.abort())
         const { pid, path, after } = params
+        keepalive(stream, abort.signal)
         try {
           const iterable = engine.watch(pid, path, after, abort.signal)
           for await (const splice of iterable) {
@@ -253,5 +254,22 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   } catch (error) {
     endTime(c, name)
     return c.json({ error: serializeError(error) })
+  }
+}
+const keepalive = async (stream: SSEStreamingApi, signal: AbortSignal) => {
+  while (!signal.aborted) {
+    try {
+      await delay(30000, { signal, persistent: false })
+    } catch (_) {
+      return
+    }
+    if (!signal.aborted) {
+      const event: EventSourceMessage = {
+        data: '',
+        event: 'keepalive',
+        id: String(sseId++),
+      }
+      await stream.writeSSE(event)
+    }
   }
 }

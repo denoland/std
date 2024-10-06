@@ -216,10 +216,11 @@ export default class IA<T extends object = Default> {
     if (opts && opts.target) {
       // TODO move to something native
       const { read } = await this.actions<files.Api>('files', opts)
-      const string = await read({ path, reasoning: [] })
+      const params = { path, reasoning: [], commit: opts.commit }
+      const string = await read(params)
       return JSON.parse(string) as T
     }
-    return this.#fs.readJSON<T>(path)
+    return this.#fs.readJSON<T>(path, opts?.commit)
   }
   async readThread(threadPath?: string, opts?: { target?: PID }) {
     if (!threadPath) {
@@ -230,12 +231,13 @@ export default class IA<T extends object = Default> {
   }
   async read(path: string, opts?: { target?: PID; commit?: string }) {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    if (opts && opts.target) {
+    if (opts?.target) {
       // TODO move to something native
       const { read } = await this.actions<files.Api>('files', opts)
-      return read({ path, reasoning: [] })
+      const params = { path, reasoning: [], commit: opts.commit }
+      return read(params)
     }
-    return this.#fs.read(path)
+    return this.#fs.read(path, opts?.commit)
   }
   readOid(path: string) {
     assert(this.#accumulator.isActive, 'Activity is denied')
