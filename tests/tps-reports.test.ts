@@ -56,10 +56,10 @@ Deno.test('tps report', async () => {
 
   const created = create(
     'tests/test-example.test.md',
-    '29426920ac614d1672d6f2dfcdd22c0052c22e32',
     'the/agent/to/test.md',
     'agents/assessor.md',
     5,
+    '29426920ac614d1672d6f2dfcdd22c0052c22e32',
   )
   expect(created.cases).toHaveLength(0)
 

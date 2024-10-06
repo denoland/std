@@ -1,4 +1,4 @@
-import { expect, log } from '@utils'
+import { expect } from '@utils'
 import { type Api } from '@/isolates/test-case-runner.ts'
 import { fixture } from '@/tests/fixtures/fixture.ts'
 import { TestFile, testFile } from '@/api/tps-report.ts'

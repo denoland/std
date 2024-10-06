@@ -125,7 +125,7 @@ export const functions: Functions<Api> = {
         size,
         style,
       }).withResponse()
-    // log('headers', response)
+    log('headers', response.statusText)
     const { b64_json, revised_prompt } = data.data[0]
     if (!b64_json) {
       throw new Error('no image data')
