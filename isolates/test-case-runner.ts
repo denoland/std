@@ -84,7 +84,7 @@ export const functions: Functions<Api> = {
       const theirs = await readTpsReport(path, api, parent)
       const caseResult = theirs.cases[caseIndex]
       log('case done', caseIndex)
-      return testCase.parse(caseResult)
+      return caseResult
     })
     const caseResults = await Promise.all(promises)
     for (const caseIndex of cases) {

@@ -33,8 +33,7 @@ export const executeTools = async (
   overrides?: Partial<Agent>,
 ) => {
   const calls = await loadToolCalls(threadPath, api, overrides)
-  const { tool_calls, agent, thread } = calls
-  let workingThread = thread
+  const { tool_calls, agent } = calls
 
   const actions = await loadActions(agent.commands, api)
   const logNames = tool_calls.map((call) => call.function.name)
@@ -52,9 +51,6 @@ export const executeTools = async (
       tool_call_id,
       content: '',
     }
-    const messageIndex = workingThread.messages.length
-    workingThread.messages.push(message)
-    api.writeJSON(threadPath, workingThread)
 
     if (isErrored) {
       const error = new Error(
@@ -94,10 +90,10 @@ export const executeTools = async (
     }
     debugToolResult(message.content)
 
-    workingThread = await api.readJSON<Thread>(threadPath)
-    workingThread.messages[messageIndex] = message
-    workingThread.toolCommits[tool_call_id] = api.commit
-    api.writeJSON(threadPath, workingThread)
+    const thread = await api.readJSON<Thread>(threadPath)
+    thread.messages.push(message)
+    thread.toolCommits[tool_call_id] = api.commit
+    api.writeJSON(threadPath, thread)
   }
   log('done')
 }
