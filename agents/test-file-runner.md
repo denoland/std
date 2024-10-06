@@ -37,7 +37,8 @@ the test file down, where the first case is indexed as 0, and considering only
 the text within the test section, add a new test case to the tps report by
 calling the function "tps-report_addCase". IMPORTANT: the number of test cases
 must match the number of test sections and are UNRELATED to the number of
-iterations requested.
+iterations requested. The path you must provide when calling
+"tps-report_addCase" is the path to the test file you read in previously.
 
 Second, call tps-report_confirmCaseCount to make sure you have counted the cases
 correctly. Describe your reasoning step by step.
