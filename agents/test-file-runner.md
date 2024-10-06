@@ -42,11 +42,12 @@ iterations requested.
 Second, call tps-report_confirmCaseCount to make sure you have counted the cases
 correctly. Describe your reasoning step by step.
 
-Lastly, for each test case, call the test-case-runner function with the path to
-the test file, and the test case index. The test case runner will run the test
-case and will generate as many iterations as were set when you upserted the tps
+Lastly, call the test-case-runner function with the path to
+the test file, and all the test case indexes that you want to run, which will
+most likely be all of them unless specifically asked to narrow the scope. The test case runner will run the test
+cases and will generate as many iterations as were set when you upserted the tps
 report. The test case runner will update the tps report automatically. ONLY CALL
-THE TEST CASE RUNNER ONCE FOR EACH TEST CASE INDEX.
+THE TEST CASE RUNNER ONCE.
 
 Once you have finished, call the resolve function with empty parameters. The
 resolve function must be called alone, never in parallel with other function
