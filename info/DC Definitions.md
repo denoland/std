@@ -7,6 +7,7 @@
     3. NOUN DEFINITIONS
     4. SYSTEM FRAMEWORK
     5. TEMPLATES
+    6. ENTITY RELATIONSHIP DIAGRAM
 
 
 ## ENTITIES
@@ -189,3 +190,173 @@ The following are additional definitions used within a BOT_DEFINITION.
     - EXAMPLES: <Optional>
 
 
+## ENTITY RELATIONSHIP DIAGRAM
+
+flowchart TD
+
+%% Entities
+
+DAVE["**DAVE**<br/>
+**Actions Available:**<br/>
+• PROMPT<br/>
+• TASK HAL<br/>
+• Receive RESPONSE from HAL<br/>
+• Take a STATEBOARD_ACTION<br/>
+"]
+
+HAL["**HAL**<br/>
+A privileged AGENT that directly interacts with DAVE.<br/>
+**Actions Available:**<br/>
+• PROMPT AGENTS or DRONES<br/>
+• Send RESPONSES directly to DAVE and STATEBOARD<br/>
+• SEND RESPONSES to AGENTS and DRONES<br/>
+• Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION<br/>
+"]
+
+AGENT["**AGENT**<br/>
+An INSTANTIATION of a BOT_DEFINITION, uniquely identified.<br/>
+**Actions Available:**<br/>
+• PROMPT AGENTS or DRONES<br/>
+• Complete TASKS<br/>
+• TASK AGENTS and DRONES (within system prompt limits)<br/>
+• SEND RESPONSES to other AGENTS and DRONES<br/>
+• Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION<br/>
+"]
+
+DRONE["**DRONE**<br/>
+An INSTANTIATION of a BOT_DEFINITION, uniquely identified.<br/>
+**Actions Available:**<br/>
+• SEND RESPONSES to AGENTS and DRONES that have TASKed them<br/>
+• Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION<br/>
+"]
+
+ISOLATE["**ISOLATE**<br/>
+Traditional code executed by HAL, AGENT, or DRONE.<br/>
+COMMANDS are sent to ISOLATES for execution.<br/>
+**Actions Available:**<br/>
+• Run COMMANDS<br/>
+"]
+
+AI_MODEL["**AI_MODEL**<br/>
+External service used to INSTANTIATE and RUN HAL, AGENTS, and DRONES<br/>
+Runs TASKS<br/>
+**Actions Available:**<br/>
+• INSTANTIATE HAL, an AGENT, or a DRONE using a BOT_DEFINITION<br/>
+"]
+
+ARTIFACT["**ARTIFACT**<br/>
+The operating system<br/>
+**Actions Available:**<br/>
+• Grant or deny PERMISSION for an ACTION AVAILABLE to an ENTITY<br/>
+• RUN COMMAND_EXECUTIONS<br/>
+"]
+
+STATEBOARD["**STATEBOARD**<br/>
+Visual interface that helps DAVE understand HAL's RESPONSES<br/>
+Enables STATEBOARD_ACTIONS or facilitates PROMPTS<br/>
+"]
+
+THREAD["**THREAD**<br/>
+The PROMPT/RESPONSE record of interaction between DAVE and HAL<br/>
+"]
+
+COMMAND["**COMMAND**<br/>
+Link to executable software within a BOT_TEMPLATE or BOT_DEFINITION<br/>
+Available to HAL, AGENT, or DRONE<br/>
+Carries out a COMMAND_EXECUTION when called<br/>
+"]
+
+TASK["**TASK**<br/>
+A request for INFO, an ACTION, or a TRANSMISSION<br/>
+"]
+
+PERMISSION["**PERMISSION**<br/>
+Yes/No returned by ARTIFACT when HAL, AGENT, or DRONE requests a TASK<br/>
+"]
+
+STATEBOARD_ACTION["**STATEBOARD_ACTION**<br/>
+Action initiated by DAVE interacting with the STATEBOARD<br/>
+Can call COMMAND_EXECUTION or TASKS<br/>
+"]
+
+%% Relationships
+
+%% DAVE Interactions
+DAVE -->|PROMPT| HAL
+DAVE -->|TASKs| HAL
+DAVE -->|Receives RESPONSE from| HAL
+DAVE -->|Takes| STATEBOARD_ACTION
+DAVE -->|Interacts with| STATEBOARD
+DAVE -->|Has| PREFERENCES
+DAVE -->|Engages in| THREAD
+
+%% HAL Interactions
+HAL -->|Sends RESPONSE to| DAVE
+HAL -->|Updates| STATEBOARD
+HAL -->|PROMPTs| AGENT
+HAL -->|PROMPTs| DRONE
+HAL -->|Sends RESPONSES to| AGENT
+HAL -->|Sends RESPONSES to| DRONE
+HAL -->|Can trigger| COMMAND_EXECUTION
+HAL -->|Requests PERMISSION from| ARTIFACT
+HAL -->|Uses| AI_MODEL
+HAL -->|Uses| BOT_DEFINITION
+HAL -->|Uses| COMMANDS
+
+%% AGENT Interactions
+AGENT -->|PROMPTs| AGENT
+AGENT -->|PROMPTs| DRONE
+AGENT -->|TASKs| AGENT
+AGENT -->|TASKs| DRONE
+AGENT -->|Sends RESPONSES to| AGENT
+AGENT -->|Sends RESPONSES to| DRONE
+AGENT -->|Completes| TASKS
+AGENT -->|Can trigger| COMMAND_EXECUTION
+AGENT -->|Requests PERMISSION from| ARTIFACT
+AGENT -->|Uses| AI_MODEL
+AGENT -->|Uses| BOT_DEFINITION
+AGENT -->|Uses| COMMANDS
+
+%% DRONE Interactions
+DRONE -->|Sends RESPONSES to| AGENT
+DRONE -->|Sends RESPONSES to| DRONE
+DRONE -->|Can trigger| COMMAND_EXECUTION
+DRONE -->|Requests PERMISSION from| ARTIFACT
+DRONE -->|Uses| AI_MODEL
+DRONE -->|Uses| BOT_DEFINITION
+DRONE -->|Uses| COMMANDS
+
+%% ISOLATE Interactions
+COMMAND -->|Is sent to| ISOLATE
+ISOLATE -->|Executes| COMMANDS
+
+%% AI_MODEL Interactions
+AI_MODEL -->|INSTANTIATES| HAL
+AI_MODEL -->|INSTANTIATES| AGENT
+AI_MODEL -->|INSTANTIATES| DRONE
+
+%% ARTIFACT Interactions
+ARTIFACT -->|Grants or Denies| PERMISSION
+ARTIFACT -->|Runs| COMMAND_EXECUTION
+
+%% THREAD Interactions
+THREAD -->|Records| PROMPT
+THREAD -->|Records| RESPONSE
+
+%% STATEBOARD_ACTION Interactions
+STATEBOARD_ACTION -->|Registered by| ARTIFACT
+STATEBOARD_ACTION -->|Can call| COMMAND_EXECUTION
+STATEBOARD_ACTION -->|Can call| TASK
+
+%% PROMPT and RESPONSE
+HAL -->|Processes| PROMPT
+HAL -->|Generates| RESPONSE
+AGENT -->|Processes| PROMPT
+AGENT -->|Generates| RESPONSE
+DRONE -->|Generates| RESPONSE
+
+%% TASK Interactions
+DAVE -->|Requests| TASK
+HAL -->|Handles| TASK
+AGENT -->|Handles| TASK
+DRONE -->|Handles| TASK
