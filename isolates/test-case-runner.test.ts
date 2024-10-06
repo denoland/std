@@ -16,7 +16,7 @@ Deno.test('test with befores', async (t) => {
 
   await t.step('run', async () => {
     const { path } = tpsReport.summary
-    await test({ path, caseIndex: 1 })
+    await test({ path, cases: [1] })
     const endTps = await backchat.readJSON<TestFile>(tpsPath)
 
     expect(endTps.cases[1].summary.completed).toBe(1)

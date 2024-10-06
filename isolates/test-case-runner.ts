@@ -16,7 +16,12 @@ import * as longthread from '@/isolates/longthread.ts'
 import { load } from '@/isolates/utils/load-agent.ts'
 import { getChatParams } from '@/isolates/ai-completions.ts'
 import { loadTools } from './utils/ai-load-tools.ts'
-import { addIteration, outcome, testFile } from '@/api/tps-report.ts'
+import {
+  addCaseResult,
+  addIteration,
+  outcome,
+  testFile,
+} from '@/api/tps-report.ts'
 import { z } from 'zod'
 import { assistantMessage } from '@/api/zod.ts'
 
@@ -31,8 +36,13 @@ const testParams = z.object({
 })
 
 export const parameters = {
-  test: testParams.describe(
-    'Runs the test case at the given index from the given test file.  Returns a list of outcomes from assessing the end system state against the expectations.',
+  test: z.object({
+    path: testParams.shape.path,
+    cases: z.array(z.number().int().gte(0)).describe(
+      'the indices of the test cases to run from the test file',
+    ),
+  }).describe(
+    'Runs the test cases at the given indices from the given test file.  Execution results are stored in the tps file.',
   ),
   caseRunner: testParams.describe(
     'The actual implementation of the test runner.  The test function calls this function in a new branch, and then merges the results back in.',
@@ -62,16 +72,21 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  test: async ({ path, caseIndex }, api) => {
-    const opts = { branchName: 'case_' + caseIndex }
-    const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
-    const { parent } = await withMeta(caseRunner({ path, caseIndex }))
-    assert(parent, 'missing parent')
+  test: async ({ path, cases }, api) => {
+    const promises = cases.map(async (caseIndex) => {
+      const opts = { branchName: 'case_' + caseIndex }
+      const { caseRunner } = await api.actions<Api>('test-case-runner', opts)
+      const { parent } = await withMeta(caseRunner({ path, caseIndex }))
+      assert(parent, 'missing parent')
 
-    // no, this should only merge in the summary info
-
-    await api.merge(parent)
-    // TODO provide feature to read from the commit using the api
+      const theirs = await readTpsReport(path, api, parent)
+      const caseResult = theirs.cases[caseIndex]
+      let ours = await readTpsReport(path, api)
+      ours = addCaseResult(ours, caseIndex, caseResult)
+      api.writeJSON(getTpsPath(path), ours)
+      log('case done', caseIndex)
+    })
+    await Promise.all(promises)
   },
   caseRunner: async ({ path, caseIndex }, api) => {
     log('caseRunner', path, caseIndex, print(api.pid))
@@ -84,6 +99,8 @@ export const functions: Functions<Api> = {
     }
 
     // TODO batch the runs to get around artifact limitations in parallelisms
+
+    // TODO make the iterations all run in parallel
 
     for (let i = 0; i < iterations; i++) {
       const opts = { branchName: 'iteration_' + i }
