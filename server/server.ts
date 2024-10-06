@@ -259,7 +259,8 @@ const execute = async (c: Context, p: Promise<unknown>, name: string) => {
 const keepalive = async (stream: SSEStreamingApi, signal: AbortSignal) => {
   while (!signal.aborted) {
     try {
-      await delay(30000, { signal, persistent: false })
+      // persistent attempts to stop the event loop from exiting while waiting
+      await delay(30000, { signal, persistent: true })
     } catch (_) {
       return
     }

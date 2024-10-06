@@ -26,7 +26,7 @@ const addCase = tps.testCaseSummary.pick({
   expectations: true,
   befores: true,
 }).extend({ reasoning, path }).describe(
-  'Add a test case to the test report for the test file located at the given path, with the given number of expectations',
+  'Add a test case for the test file located at the given path, with the given number of expectations',
 )
 
 export const parameters = {
