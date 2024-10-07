@@ -23,6 +23,8 @@ export interface SlidingWindowsOptions {
  * Generates sliding views of the given iterable of the given size and returns an
  * array containing all of them.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * If step is set, each window will start that many elements after the last
  * window's start. (Default: 1)
  *
@@ -72,15 +74,12 @@ export function slidingWindows<T>(
   options: SlidingWindowsOptions = {},
 ): T[][] {
   const { step = 1, partial = false } = options;
-  if (
-    !Number.isInteger(size) ||
-    !Number.isInteger(step) ||
-    size <= 0 ||
-    step <= 0
-  ) {
-    throw new RangeError("Both size and step must be positive integer.");
+  if(!Number.isInteger(size) || size <= 0) {
+    throw new RangeError(`Cannot create sliding windows: size must be a positive integer, current value is ${size}`)
   }
-
+  if(!Number.isInteger(step) || step <= 0) {
+    throw new RangeError(`Cannot create sliding windows: step must be a positive integer, current value is ${step}`)
+  }
   const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
   const len = array.length;
   const result: T[][] = [];
