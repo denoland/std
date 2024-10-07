@@ -72,6 +72,7 @@ export const functions: Functions<Api> = {
       agent: 'agents/switchboard.md',
       messageOffset: 0,
       messages: [],
+      messageStats: {},
       toolCommits: {},
       stateboards: [],
       focusedFiles: [],

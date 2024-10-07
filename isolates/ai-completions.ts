@@ -12,6 +12,7 @@ import {
   Functions,
   getThreadPath,
   IA,
+  messageStatsSchema,
   print,
   Returns,
   Thread,
@@ -109,8 +110,10 @@ export const functions: Functions<Api> = {
     assert(last.name === agent.source.path, 'last message must be from agent')
     assert(!last.content, 'last message must be empty')
 
-    const assistant = await complete(agent, thread.messages, api)
+    const { assistant, stats } = await complete(agent, thread.messages, api)
 
+    const id = thread.messages.length + thread.messageOffset
+    thread.messageStats[id] = stats
     thread.messages.push(assistant)
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
@@ -157,16 +160,30 @@ const complete = async (
   let errorMessage = ''
   while (retries++ < RETRY_LIMIT) {
     try {
+      const start = Date.now()
       const { data: completion, response: raw } = await ai.chat.completions
         .create(args).withResponse()
-      log('headers', raw)
+      const duration = Date.now() - start
+      const openAiProcessingMs = raw.headers.get('openai-processing-ms')
+      const { created, model, system_fingerprint, usage } = completion
+
       const result = completion.choices[0].message
       log('completion complete', agent.source.path, result)
       const assistant: AssistantMessage = {
         ...result,
         name: agent.source.path,
       }
-      return assistant
+      return {
+        assistant,
+        stats: messageStatsSchema.parse({
+          created,
+          model,
+          system_fingerprint,
+          usage,
+          duration,
+          openAiProcessingMs: openAiProcessingMs ? +openAiProcessingMs : 0,
+        }),
+      }
     } catch (error) {
       console.error('ai completion error', error)
       errorMessage = error.message

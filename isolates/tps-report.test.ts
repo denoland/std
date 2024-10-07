@@ -24,6 +24,7 @@ Deno.test('tps-report', async () => {
     target,
     assessor,
     iterations,
+    cases: [],
   }, api)
   await expect(ok).resolves.not.toThrow()
 
@@ -33,6 +34,7 @@ Deno.test('tps-report', async () => {
     target,
     assessor,
     iterations,
+    cases: [],
   }, api)
   await expect(falseTestPath).rejects.toThrow('file not found')
 
@@ -42,6 +44,7 @@ Deno.test('tps-report', async () => {
     target: 'agents/invalid.md',
     assessor,
     iterations,
+    cases: [],
   }, api)
   await expect(falseAgent).rejects.toThrow('No such file or directory')
 
@@ -51,6 +54,7 @@ Deno.test('tps-report', async () => {
     target,
     assessor: 'agents/invalid.md',
     iterations,
+    cases: [],
   }, api)
   await expect(falseAssessor).rejects.toThrow('No such file or directory')
   stop()
