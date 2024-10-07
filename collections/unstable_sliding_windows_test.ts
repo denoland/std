@@ -4,11 +4,7 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { slidingWindows } from "./unstable_sliding_windows.ts";
 
 function slidingWindowsTest<T>(
-  input: [
-    collection: T[],
-    size: number,
-    config?: { step?: number; partial?: boolean },
-  ],
+  input: Parameters<typeof slidingWindows>,
   expected: T[][],
   message?: string,
 ) {
@@ -252,14 +248,50 @@ Deno.test({
   },
 });
 
-// Deno.test({
-//   name: "slidingWindows() handles empty Array",
-//   fn() {
-//     slidingWindowsTest([Array(5), 5], [Array(5)]);
-//     slidingWindowsTest([Array(5), 3], [Array(3), Array(3), Array(3)]);
-//     slidingWindowsTest(
-//       [Array(5), 1],
-//       [Array(1), Array(1), Array(1), Array(1), Array(1)],
-//     );
-//   },
-// });
+Deno.test({
+  name: "slidingWindows() handles empty Array",
+  fn() {
+    slidingWindowsTest([Array(5), 5], [[
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]]);
+    slidingWindowsTest([Array(5), 3], [[undefined, undefined, undefined], [
+      undefined,
+      undefined,
+      undefined,
+    ], [undefined, undefined, undefined]]);
+
+    slidingWindowsTest(
+      [Array(5), 1],
+      [[undefined], [undefined], [undefined], [undefined], [undefined]],
+    );
+  },
+});
+
+Deno.test("slidingWindows() handles a generator", () => {
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+  function* emptyGen() {}
+  slidingWindowsTest([gen(), 5], [[1, 2, 3, 4, 5]]);
+  slidingWindowsTest([gen(), 3], [[1, 2, 3], [2, 3, 4], [3, 4, 5]]);
+  slidingWindowsTest([gen(), 1], [[1], [2], [3], [4], [5]]);
+  slidingWindowsTest([gen(), 3, { partial: true }], [
+    [1, 2, 3],
+    [2, 3, 4],
+    [3, 4, 5],
+    [4, 5],
+    [5],
+  ]);
+  slidingWindowsTest([gen(), 3, { step: 2 }], [[1, 2, 3], [3, 4, 5]]);
+  slidingWindowsTest([gen(), 1, { step: 2, partial: true }], [[1], [3], [5]]);
+
+  slidingWindowsTest([emptyGen(), 3], []);
+});
