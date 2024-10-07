@@ -74,11 +74,15 @@ export function slidingWindows<T>(
   options: SlidingWindowsOptions = {},
 ): T[][] {
   const { step = 1, partial = false } = options;
-  if(!Number.isInteger(size) || size <= 0) {
-    throw new RangeError(`Cannot create sliding windows: size must be a positive integer, current value is ${size}`)
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new RangeError(
+      `Cannot create sliding windows: size must be a positive integer, current value is ${size}`,
+    );
   }
-  if(!Number.isInteger(step) || step <= 0) {
-    throw new RangeError(`Cannot create sliding windows: step must be a positive integer, current value is ${step}`)
+  if (!Number.isInteger(step) || step <= 0) {
+    throw new RangeError(
+      `Cannot create sliding windows: step must be a positive integer, current value is ${step}`,
+    );
   }
   const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
   const len = array.length;
