@@ -1,5 +1,6 @@
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
+import { zodFunction } from 'openai/helpers/zod'
 import { IA, Params } from '@/constants.ts'
 import { isIsolate } from '../index.ts'
 const log = Debug('AI:tools:load-tools')

@@ -131,8 +131,8 @@ export const testCase = z
 export const testFileSummary = summary.extend({
   hash: md5
     .describe('the hash of the test file used to generate the test run'),
-  path: z.string().regex(/\.md$/)
-    .describe('the path to the test file'),
+  path: z.string().regex(/\.test\.md$/)
+    .describe('the path to the test file, which must end in .test.md'),
   target: z.string()
     .describe(
       'the path to the target agent file under test, typically something in the agents/ directory',
