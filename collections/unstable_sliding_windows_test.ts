@@ -251,23 +251,21 @@ Deno.test({
 Deno.test({
   name: "slidingWindows() handles empty Array",
   fn() {
-    slidingWindowsTest([Array(5), 5], [[
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-    ]]);
-    slidingWindowsTest([Array(5), 3], [[undefined, undefined, undefined], [
-      undefined,
-      undefined,
-      undefined,
-    ], [undefined, undefined, undefined]]);
-
-    slidingWindowsTest(
-      [Array(5), 1],
-      [[undefined], [undefined], [undefined], [undefined], [undefined]],
-    );
+    slidingWindowsTest([Array(5), 5], [
+      Array(5),
+    ]);
+    slidingWindowsTest([Array(5), 3], [
+      Array(3),
+      Array(3),
+      Array(3),
+    ]);
+    slidingWindowsTest([Array(5), 1], [
+      Array(1),
+      Array(1),
+      Array(1),
+      Array(1),
+      Array(1),
+    ]);
   },
 });
 
