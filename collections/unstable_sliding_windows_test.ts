@@ -296,21 +296,23 @@ Deno.test("slidingWindows() handles a generator", () => {
   slidingWindowsTest([emptyGen(), 3], []);
 });
 
-
 Deno.test("slidingWindows() handles a string", () => {
   const str = "12345";
   slidingWindowsTest([str, 5], [["1", "2", "3", "4", "5"]]);
-  slidingWindowsTest([str, 3], [["1", "2", "3"], ["2", "3", "4"], ["3", "4", "5"]]);
+  slidingWindowsTest([str, 3], [["1", "2", "3"], ["2", "3", "4"], [
+    "3",
+    "4",
+    "5",
+  ]]);
   slidingWindowsTest([str, 1], [["1"], ["2"], ["3"], ["4"], ["5"]]);
-})
+});
 
 Deno.test("slidingWindows() handles a Set", () => {
   const set = new Set([1, 2, 3, 4, 5]);
   slidingWindowsTest([set, 5], [[1, 2, 3, 4, 5]]);
   slidingWindowsTest([set, 3], [[1, 2, 3], [2, 3, 4], [3, 4, 5]]);
   slidingWindowsTest([set, 1], [[1], [2], [3], [4], [5]]);
-}
-)
+});
 
 Deno.test("slidingWindows() handles a Map", () => {
   const map = new Map([
@@ -330,6 +332,6 @@ Deno.test("slidingWindows() handles a Map", () => {
     [["b", 2]],
     [["c", 3]],
     [["d", 4]],
-    [["e", 5]]
+    [["e", 5]],
   ]);
-})
+});
