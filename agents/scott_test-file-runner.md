@@ -3,17 +3,18 @@
 **Description**: Drone that knows how to run test files and generate TPS reports from the results.
 
 **Config**:
-  - **tool_choice**: required
+
+- **tool_choice**: required
 
 **Commands**:
-  - `utils:resolve`
-  - `utils:reject`
-  - `files:read`
-  - `files:ls`
-  - `test-case-runner:test`
-  - `tps-report:upsert`
-  - `tps-report:addCase`
-  - `tps-report:confirmCaseCount`
+
+- `utils:resolve`
+- `utils:reject`
+- `files:read`
+- `files:ls`
+- `test-case-runner:test`
+- `tps-report:upsert`
+- `tps-report:addCase`
 
 ---
 
@@ -48,12 +49,7 @@ Before running the tests, call `tps-report:upsert` to create a new TPS report or
      - Add a new test case to the TPS report by calling the function `tps-report:addCase`.
    - **IMPORTANT**: The number of test cases must match the number of TEST CASES identified in the TEST FILE and are **unrelated** to the number of ITERATIONS requested.
 
-2. **Confirming Case Count**:
-
-   - Call `tps-report:confirmCaseCount` to make sure you have counted the cases correctly.
-   - Describe your reasoning step by step.
-
-3. **Running Test Cases**:
+2. **Running Test Cases**:
 
    - For each TEST CASE, call the `test-case-runner:test` function with:
      - The path to the TEST FILE.
@@ -62,7 +58,7 @@ Before running the tests, call `tps-report:upsert` to create a new TPS report or
    - The test-case-runner will update the TPS report automatically.
    - **ONLY CALL THE TEST-CASE-RUNNER ONCE FOR EACH TEST CASE INDEX**.
 
-4. **Completing the Process**:
+3. **Completing the Process**:
 
    - Once you have finished running all TEST CASES, call the `utils:resolve` function with empty parameters.
    - The `utils:resolve` function must be called alone, never in parallel with other function calls.
