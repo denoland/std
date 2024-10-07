@@ -67,20 +67,93 @@ export interface SlidingWindowsOptions {
  * ```
  */
 export function slidingWindows<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
+  size: number,
+  options: SlidingWindowsOptions = {},
+): T[][] {
+  const { step = 1, partial = false } = options;
+  if (
+    !Number.isInteger(size) ||
+    !Number.isInteger(step) ||
+    size <= 0 ||
+    step <= 0
+  ) {
+    throw new RangeError("Both size and step must be positive integer.");
+  }
+
+  const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
+  const len = array.length;
+  const result: T[][] = [];
+  for (let i = 0; i <= len; i += step) {
+    let last = i + size;
+    if (last > len) {
+      last = len;
+    }
+    const window: T[] = [];
+    for (let j = i; j < last; j++) {
+      window.push(array[j]!);
+    }
+    if ((partial && window.length) || window.length === size) {
+      result.push(window);
+    }
+  }
+  return result;
+}
+
+export function slidingWindowsIter<T>(
+  iterable: Iterable<T>,
   size: number,
   options: SlidingWindowsOptions = {},
 ): T[][] {
   const { step = 1, partial = false } = options;
 
   if (
-    !Number.isInteger(size) || !Number.isInteger(step) || size <= 0 || step <= 0
+    !Number.isInteger(size) ||
+    !Number.isInteger(step) ||
+    size <= 0 ||
+    step <= 0
   ) {
     throw new RangeError("Both size and step must be positive integer.");
   }
+  const result: T[][] = [];
+  const window: T[] = [];
 
-  return Array.from(
-    { length: Math.floor((array.length - (partial ? 1 : size)) / step + 1) },
-    (_, i) => array.slice(i * step, i * step + size),
-  );
+  const iterator = iterable[Symbol.iterator]();
+
+  while (true) {
+    while (window.length < size) {
+      const next = iterator.next();
+      if (next.done) {
+        if (partial) {
+          while (window.length > 0) {
+            result.push(window.slice());
+            window.splice(0, step);
+          }
+        }
+        break;
+      }
+      window.push(next.value);
+    }
+    if (window.length < size) {
+      break;
+    }
+    result.push(window.slice());
+    while (window.length < step) {
+      const next = iterator.next();
+      if (next.done) {
+        break;
+      }
+      window.push(next.value);
+    }
+    window.splice(0, step);
+  }
+
+  if (partial) {
+    while (window.length > 0) {
+      result.push(window.slice());
+      window.splice(0, step);
+    }
+  }
+
+  return result;
 }
