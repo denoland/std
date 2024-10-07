@@ -2,35 +2,50 @@ import { assert } from '@utils'
 import { z } from 'zod'
 import { Functions, reasoning, Returns, type ToApiType } from '@/constants.ts'
 import { Debug } from '@utils'
-import * as tps from '@/api/tps-report.ts'
-import { testFileSummary } from '@/api/tps-report.ts'
+import {
+  addCase,
+  create,
+  testCaseSummary,
+  testFileSummary,
+} from '@/api/tps-report.ts'
 import { load } from '@/isolates/utils/load-agent.ts'
 
 const log = Debug('AI:tps-report')
 
-const caseItem = tps.testCaseSummary.pick({
-  name: true,
-  promptLists: true,
-  expectations: true,
-  befores: true,
-}).extend({ reasoning })
+const caseItem = z.object({ reasoning }).merge(
+  testCaseSummary.pick({
+    name: true,
+    promptLists: true,
+    expectations: true,
+    befores: true,
+  }),
+).extend({
+  befores: z.array(z.number().int()).describe(
+    testCaseSummary.shape.befores.description || '',
+  ),
+})
 
-const upsert = testFileSummary.pick({
-  path: true,
-  target: true,
-  assessor: true,
-  iterations: true,
-}).extend({ reasoning, cases: z.array(caseItem) }).describe(
+// remove restricted schema keywords for structured outputs
+const path = z.string().describe(testFileSummary.shape.path.description || '')
+const iterations = z
+  .number()
+  .int()
+  .describe(testFileSummary.shape.iterations.description || '')
+
+const upsert = z.object({
+  reasoning,
+  path,
+  target: testFileSummary.shape.target,
+  assessor: testFileSummary.shape.assessor,
+  iterations,
+  cases: z.array(caseItem),
+}).describe(
   'Create or update a test report for the given testPath and iterations',
 )
 
-export const parameters = {
-  upsert,
-}
+export const parameters = { upsert }
 
-export const returns: Returns<typeof parameters> = {
-  upsert: z.void(),
-}
+export const returns: Returns<typeof parameters> = { upsert: z.void() }
 
 export type Api = ToApiType<typeof parameters, typeof returns>
 
@@ -41,10 +56,10 @@ export const functions: Functions<Api> = {
     await load(assessor, api)
     const tpsPath = getTpsPath(path)
     const hash = await api.readOid(path)
-    let tpsReport = tps.create(path, target, assessor, iterations, hash)
+    let tpsReport = create(path, target, assessor, iterations, hash)
 
     for (const { name, promptLists, expectations, befores } of cases) {
-      tpsReport = tps.addCase(
+      tpsReport = addCase(
         tpsReport,
         name,
         promptLists,

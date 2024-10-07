@@ -3,6 +3,7 @@ import type OpenAI from 'openai'
 import { zodFunction } from 'openai/helpers/zod'
 import { IA, Params } from '@/constants.ts'
 import { isIsolate } from '../index.ts'
+import * as tps from '@/isolates/tps-report.ts'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (commands: string[] = [], api: IA) => {
@@ -58,13 +59,23 @@ const isolateToGptApi = (name: string, schema: object) => {
   const parameters: Record<string, unknown> = { ...schema }
   delete parameters.title
   delete parameters.description
+  const strict = name === 'tps-report_upsert' ? true : false
+
+  if (name === 'tps-report_upsert') {
+    const result = zodFunction({
+      name: 'tps-report_upsert',
+      parameters: tps.parameters.upsert,
+    })
+    return result
+  }
+
   const tool: OpenAI.ChatCompletionTool = {
     type: 'function',
     function: {
       name,
       description: schema.description,
       // slower, but guarantees correct params
-      // strict: true,
+      strict,
       parameters,
     },
   }
