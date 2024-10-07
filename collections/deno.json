@@ -49,6 +49,7 @@
     "./unstable-chunk": "./unstable_chunk.ts",
     "./unstable-drop-last-while": "./unstable_drop_last_while.ts",
     "./unstable-sample": "./unstable_sample.ts",
+    "./unstable-sliding-windows": "./unstable_sliding_windows.ts",
     "./unstable-sort-by": "./unstable_sort_by.ts",
     "./unstable-take-while": "./unstable_take_while.ts",
     "./unstable-without-all": "./unstable_without_all.ts",

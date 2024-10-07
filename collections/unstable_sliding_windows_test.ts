@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import {  slidingWindowsIter as slidingWindows } from "./unstable_sliding_windows.ts";
+import { slidingWindows } from "./unstable_sliding_windows.ts";
 
 function slidingWindowsTest<T>(
   input: [
