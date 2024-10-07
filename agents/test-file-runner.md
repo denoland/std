@@ -3,6 +3,7 @@ description: Agent specialized in running test files and generating TPS reports 
 
 config:
   tool_choice: required
+  parallel_tool_calls: false # required for structured outputs feature
 
 commands:
   - utils:resolve
