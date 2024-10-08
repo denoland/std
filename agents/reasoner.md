@@ -11,6 +11,7 @@ commands:
   - stateboard:show
   - youtube:fetch
   - utils:time
+  - ai-completions:image
 napps:
   - o1
   - o1-mini
