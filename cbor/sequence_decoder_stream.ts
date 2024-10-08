@@ -8,6 +8,13 @@ import { CborTag } from "./tag.ts";
 import { CborTextDecodedStream } from "./_text_decoded_stream.ts";
 import type { CborMapStreamOutput, CborStreamOutput } from "./types.ts";
 
+export {
+  CborArrayDecodedStream,
+  CborByteDecodedStream,
+  CborMapDecodedStream,
+  CborTextDecodedStream,
+};
+
 /**
  * A {@link TransformStream} that decodes a CBOR-sequence-encoded
  * {@link ReadableStream<Uint8Array>} into the JavaScript equivalent values

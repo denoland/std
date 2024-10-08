@@ -34,19 +34,15 @@
  *
  * @module
  */
-export * from "./_array_decoded_stream.ts";
 export * from "./array_encoder_stream.ts";
-export * from "./_byte_decoded_stream.ts";
 export * from "./byte_encoder_stream.ts";
 export * from "./decode_cbor_sequence.ts";
 export * from "./decode_cbor.ts";
 export * from "./encode_cbor_sequence.ts";
 export * from "./encode_cbor.ts";
-export * from "./_map_decoded_stream.ts";
 export * from "./map_encoder_stream.ts";
 export * from "./sequence_decoder_stream.ts";
 export * from "./sequence_encoder_stream.ts";
 export * from "./tag.ts";
-export * from "./_text_decoded_stream.ts";
 export * from "./text_encoder_stream.ts";
 export * from "./types.ts";
