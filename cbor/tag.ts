@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import type { CborInputStream, CborOutputStream, CborType } from "./types.ts";
+import type { CborStreamInput, CborStreamOutput, CborType } from "./types.ts";
 
 /**
  * Represents a CBOR tag, which pairs a tag number with content, used to convey
@@ -30,9 +30,9 @@ import type { CborInputStream, CborOutputStream, CborType } from "./types.ts";
  * ```
  *
  * @typeParam T The type of the tag's content, which can be a
- * {@link CborType}, {@link CborInputStream}, or {@link CborOutputStream}.
+ * {@link CborType}, {@link CborStreamInput}, or {@link CborStreamOutput}.
  */
-export class CborTag<T extends CborType | CborInputStream | CborOutputStream> {
+export class CborTag<T extends CborType | CborStreamInput | CborStreamOutput> {
   /**
    * A {@link number} or {@link bigint} representing the CBOR tag number, used
    * to identify the type of the tagged content.

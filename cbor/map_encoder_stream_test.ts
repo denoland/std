@@ -5,10 +5,10 @@ import { concat } from "@std/bytes";
 import { random } from "./_common_test.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborMapEncoderStream } from "./map_encoder_stream.ts";
-import type { CborMapInputStream, CborType } from "./types.ts";
+import type { CborMapStreamInput, CborType } from "./types.ts";
 
 Deno.test("CborMapEncoderStream() correctly encoding", async () => {
-  const maps: CborMapInputStream[] = [["a", random(0, 2 ** 32)]];
+  const maps: CborMapStreamInput[] = [["a", random(0, 2 ** 32)]];
 
   const expectedOutput = concat([
     new Uint8Array([0b101_11111]),
@@ -26,7 +26,7 @@ Deno.test("CborMapEncoderStream() correctly encoding", async () => {
 });
 
 Deno.test("CborMapEncoderStream.from() correctly encoding", async () => {
-  const maps: CborMapInputStream[] = [["a", random(0, 2 ** 32)]];
+  const maps: CborMapStreamInput[] = [["a", random(0, 2 ** 32)]];
 
   const expectedOutput = concat([
     new Uint8Array([0b101_11111]),

@@ -2,11 +2,11 @@
 
 import { toByteStream } from "./_common.ts";
 import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
-import type { CborInputStream } from "./types.ts";
+import type { CborStreamInput } from "./types.ts";
 
 /**
  * A {@link TransformStream} that encodes a
- * {@link ReadableStream<CborInputStream>} into CBOR "Indefinite Length Array".
+ * {@link ReadableStream<CborStreamInput>} into CBOR "Indefinite Length Array".
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
@@ -35,16 +35,16 @@ import type { CborInputStream } from "./types.ts";
  * ```
  */
 export class CborArrayEncoderStream
-  implements TransformStream<CborInputStream, Uint8Array> {
+  implements TransformStream<CborStreamInput, Uint8Array> {
   #readable: ReadableStream<Uint8Array>;
-  #writable: WritableStream<CborInputStream>;
+  #writable: WritableStream<CborStreamInput>;
   /**
    * Constructs a new instance.
    */
   constructor() {
     const { readable, writable } = new TransformStream<
-      CborInputStream,
-      CborInputStream
+      CborStreamInput,
+      CborStreamInput
     >();
     this.#readable = toByteStream(
       readable
@@ -65,7 +65,7 @@ export class CborArrayEncoderStream
 
   /**
    * Creates a {@link CborArrayEncoderStream} instance from an iterable of
-   * {@link CborInputStream} chunks.
+   * {@link CborStreamInput} chunks.
    *
    * @example Usage
    * ```ts
@@ -93,12 +93,12 @@ export class CborArrayEncoderStream
    * ```
    *
    * @param asyncIterable The value to encode of type
-   * {@link AsyncIterable<CborInputStream>} or
-   * {@link Iterable<CborInputStream>}.
+   * {@link AsyncIterable<CborStreamInput>} or
+   * {@link Iterable<CborStreamInput>}.
    * @returns A {@link CborArrayEncoderStream} instance of the encoded data.
    */
   static from(
-    asyncIterable: AsyncIterable<CborInputStream> | Iterable<CborInputStream>,
+    asyncIterable: AsyncIterable<CborStreamInput> | Iterable<CborStreamInput>,
   ): CborArrayEncoderStream {
     const encoder = new CborArrayEncoderStream();
     ReadableStream.from(asyncIterable).pipeTo(encoder.writable);
@@ -141,8 +141,8 @@ export class CborArrayEncoderStream
   }
 
   /**
-   * The {@link WritableStream<CborInputStream>} associated with the instance,
-   * which accepts {@link CborInputStream} chunks to be encoded into CBOR
+   * The {@link WritableStream<CborStreamInput>} associated with the instance,
+   * which accepts {@link CborStreamInput} chunks to be encoded into CBOR
    * format.
    *
    * @example Usage
@@ -170,9 +170,9 @@ export class CborArrayEncoderStream
    * }
    * ```
    *
-   * @returns A {@link WritableStream<CborInputStream>}.
+   * @returns A {@link WritableStream<CborStreamInput>}.
    */
-  get writable(): WritableStream<CborInputStream> {
+  get writable(): WritableStream<CborStreamInput> {
     return this.#writable;
   }
 }

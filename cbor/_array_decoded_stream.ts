@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { ReleaseLock } from "./_common.ts";
-import type { CborOutputStream } from "./types.ts";
+import type { CborStreamOutput } from "./types.ts";
 
 /**
  * A {@link ReadableStream} that wraps the decoded CBOR "Array".
@@ -36,14 +36,14 @@ import type { CborOutputStream } from "./types.ts";
  * }
  * ```
  */
-export class CborArrayDecodedStream extends ReadableStream<CborOutputStream> {
+export class CborArrayDecodedStream extends ReadableStream<CborStreamOutput> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A {@link AsyncGenerator<CborOutputStream>}.
+   * @param gen A {@link AsyncGenerator<CborStreamOutput>}.
    * @param releaseLock A Function that's called when the stream is finished.
    */
-  constructor(gen: AsyncGenerator<CborOutputStream>, releaseLock: ReleaseLock) {
+  constructor(gen: AsyncGenerator<CborStreamOutput>, releaseLock: ReleaseLock) {
     super({
       async pull(controller) {
         const { done, value } = await gen.next();

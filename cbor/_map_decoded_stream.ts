@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { ReleaseLock } from "./_common.ts";
-import type { CborMapOutputStream } from "./types.ts";
+import type { CborMapStreamOutput } from "./types.ts";
 
 /**
  * A {@link ReadableStream} that wraps the decoded CBOR "Map".
@@ -39,15 +39,15 @@ import type { CborMapOutputStream } from "./types.ts";
  * }
  * ```
  */
-export class CborMapDecodedStream extends ReadableStream<CborMapOutputStream> {
+export class CborMapDecodedStream extends ReadableStream<CborMapStreamOutput> {
   /**
    * Constructs a new instance.
    *
-   * @param gen A {@link AsyncGenerator<CborMapOutputStream>}.
+   * @param gen A {@link AsyncGenerator<CborMapStreamOutput>}.
    * @param releaseLock A Function that's called when the stream is finished.
    */
   constructor(
-    gen: AsyncGenerator<CborMapOutputStream>,
+    gen: AsyncGenerator<CborMapStreamOutput>,
     releaseLock: ReleaseLock,
   ) {
     super({

@@ -3,11 +3,11 @@
 import { toByteStream } from "./_common.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
-import type { CborMapInputStream } from "./types.ts";
+import type { CborMapStreamInput } from "./types.ts";
 
 /**
  * A {@link TransformStream} that encodes a
- * {@link ReadableStream<CborMapInputStream>} into CBOR "Indefinite Length Map".
+ * {@link ReadableStream<CborMapStreamInput>} into CBOR "Indefinite Length Map".
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
@@ -39,16 +39,16 @@ import type { CborMapInputStream } from "./types.ts";
  * ```
  */
 export class CborMapEncoderStream
-  implements TransformStream<CborMapInputStream, Uint8Array> {
+  implements TransformStream<CborMapStreamInput, Uint8Array> {
   #readable: ReadableStream<Uint8Array>;
-  #writable: WritableStream<CborMapInputStream>;
+  #writable: WritableStream<CborMapStreamInput>;
   /**
    * Constructs a new instance.
    */
   constructor() {
     const { readable, writable } = new TransformStream<
-      CborMapInputStream,
-      CborMapInputStream
+      CborMapStreamInput,
+      CborMapStreamInput
     >();
     this.#readable = toByteStream(ReadableStream.from(async function* () {
       yield new Uint8Array([0b101_11111]);
@@ -65,7 +65,7 @@ export class CborMapEncoderStream
 
   /**
    * Creates a {@link CborMapEncoderStream} instance from an iterable of
-   * {@link CborMapInputStream} chunks.
+   * {@link CborMapStreamInput} chunks.
    *
    * @example Usage
    * ```ts
@@ -96,14 +96,14 @@ export class CborMapEncoderStream
    * ```
    *
    * @param asyncIterable The value to encode of type
-   * {@link AsyncIterable<CborMapInputStream>} or
-   * {@link Iterable<CborMapInputStream>}.
+   * {@link AsyncIterable<CborMapStreamInput>} or
+   * {@link Iterable<CborMapStreamInput>}.
    * @returns A {@link CborMapEncoderStream} instance of the encoded data.
    */
   static from(
     asyncIterable:
-      | AsyncIterable<CborMapInputStream>
-      | Iterable<CborMapInputStream>,
+      | AsyncIterable<CborMapStreamInput>
+      | Iterable<CborMapStreamInput>,
   ): CborMapEncoderStream {
     const encoder = new CborMapEncoderStream();
     ReadableStream.from(asyncIterable).pipeTo(encoder.writable);
@@ -149,8 +149,8 @@ export class CborMapEncoderStream
   }
 
   /**
-   * The {@link WritableStream<CborMapInputStream>} associated with the
-   * instance, which accepts {@link CborMapInputStream} chunks to be encoded
+   * The {@link WritableStream<CborMapStreamInput>} associated with the
+   * instance, which accepts {@link CborMapStreamInput} chunks to be encoded
    * into CBOR format.
    *
    * @example Usage
@@ -181,9 +181,9 @@ export class CborMapEncoderStream
    * }
    * ```
    *
-   * @returns A {@link WritableStream<CborMapInputStream>}.
+   * @returns A {@link WritableStream<CborMapStreamInput>}.
    */
-  get writable(): WritableStream<CborMapInputStream> {
+  get writable(): WritableStream<CborMapStreamInput> {
     return this.#writable;
   }
 }

@@ -37,11 +37,11 @@ export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
  * Specifies the encodable value types for the {@link CborSequenceEncoderStream}
  * and {@link CborArrayEncoderStream}.
  */
-export type CborInputStream =
+export type CborStreamInput =
   | CborPrimitiveType
-  | CborTag<CborInputStream>
-  | CborInputStream[]
-  | { [k: string]: CborInputStream }
+  | CborTag<CborStreamInput>
+  | CborStreamInput[]
+  | { [k: string]: CborStreamInput }
   | CborByteEncoderStream
   | CborTextEncoderStream
   | CborArrayEncoderStream
@@ -50,15 +50,15 @@ export type CborInputStream =
 /**
  * Specifies the structure of input for the {@link CborMapEncoderStream}.
  */
-export type CborMapInputStream = [string, CborInputStream];
+export type CborMapStreamInput = [string, CborStreamInput];
 
 /**
  * Specifies the decodable value types for the {@link CborSequenceDecoderStream}
  * and {@link CborMapDecodedStream}.
  */
-export type CborOutputStream =
+export type CborStreamOutput =
   | CborPrimitiveType
-  | CborTag<CborOutputStream>
+  | CborTag<CborStreamOutput>
   | CborByteDecodedStream
   | CborTextDecodedStream
   | CborArrayDecodedStream
@@ -67,4 +67,4 @@ export type CborOutputStream =
 /**
  * Specifies the structure of the output for the {@link CborMapDecodedStream}.
  */
-export type CborMapOutputStream = [string, CborOutputStream];
+export type CborMapStreamOutput = [string, CborStreamOutput];

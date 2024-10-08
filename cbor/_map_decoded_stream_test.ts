@@ -5,12 +5,12 @@ import { random } from "./_common_test.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborMapDecodedStream } from "./_map_decoded_stream.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
-import type { CborMapOutputStream } from "./types.ts";
+import type { CborMapStreamOutput } from "./types.ts";
 
 Deno.test("CborMapDecodedStream() being consumed", async () => {
   const size = random(0, 24);
   const entries = new Array(size).fill(0).map((_, i) =>
-    [String.fromCharCode(97 + i), i] satisfies CborMapOutputStream
+    [String.fromCharCode(97 + i), i] satisfies CborMapStreamOutput
   );
 
   const reader = ReadableStream.from([encodeCbor(Object.fromEntries(entries))])
@@ -28,7 +28,7 @@ Deno.test("CborMapDecodedStream() being consumed", async () => {
 Deno.test("CborMapDecodedStream() being cancelled", async () => {
   const size = random(0, 24);
   const entries = new Array(size).fill(0).map((_, i) =>
-    [String.fromCharCode(97 + i), i] satisfies CborMapOutputStream
+    [String.fromCharCode(97 + i), i] satisfies CborMapStreamOutput
   );
 
   const reader = ReadableStream.from([

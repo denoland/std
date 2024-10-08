@@ -6,12 +6,12 @@ import { CborByteDecodedStream } from "./_byte_decoded_stream.ts";
 import { CborMapDecodedStream } from "./_map_decoded_stream.ts";
 import { CborTag } from "./tag.ts";
 import { CborTextDecodedStream } from "./_text_decoded_stream.ts";
-import type { CborMapOutputStream, CborOutputStream } from "./types.ts";
+import type { CborMapStreamOutput, CborStreamOutput } from "./types.ts";
 
 /**
  * A {@link TransformStream} that decodes a CBOR-sequence-encoded
  * {@link ReadableStream<Uint8Array>} into the JavaScript equivalent values
- * represented as {@link ReadableStream<CborOutputStream>}.
+ * represented as {@link ReadableStream<CborStreamOutput>}.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * **Limitations:**
@@ -30,7 +30,7 @@ import type { CborMapOutputStream, CborOutputStream } from "./types.ts";
  *
  * **Notice:**
  * - This decoder handles the tag numbers 0, and 1 automatically, all
- * others returned are wrapped in a {@link CborTag<CborOutputStream>} instance.
+ * others returned are wrapped in a {@link CborTag<CborStreamOutput>} instance.
  * - If a parent stream yields {@link CborByteDecodedStream},
  * {@link CborTextDecodedStream}, {@link CborArrayDecodedStream},
  * {@link CborMapDecodedStream}, or {@link CborTag} (with any of these types as
@@ -47,7 +47,7 @@ import type { CborMapOutputStream, CborOutputStream } from "./types.ts";
  *   CborByteEncoderStream,
  *   CborMapDecodedStream,
  *   CborMapEncoderStream,
- *   type CborOutputStream,
+ *   type CborStreamOutput,
  *   CborSequenceDecoderStream,
  *   CborSequenceEncoderStream,
  *   CborTag,
@@ -81,7 +81,7 @@ import type { CborMapOutputStream, CborOutputStream } from "./types.ts";
  *   ]),
  * ];
  *
- * async function logValue(value: CborOutputStream) {
+ * async function logValue(value: CborStreamOutput) {
  *   if (
  *     value instanceof CborByteDecodedStream ||
  *     value instanceof CborTextDecodedStream
@@ -110,9 +110,9 @@ import type { CborMapOutputStream, CborOutputStream } from "./types.ts";
  * ```
  */
 export class CborSequenceDecoderStream
-  implements TransformStream<Uint8Array, CborOutputStream> {
+  implements TransformStream<Uint8Array, CborStreamOutput> {
   #source: ReadableStreamBYOBReader;
-  #readable: ReadableStream<CborOutputStream>;
+  #readable: ReadableStream<CborStreamOutput>;
   #writable: WritableStream<Uint8Array>;
   /**
    * Constructs a new instance.
@@ -123,7 +123,7 @@ export class CborSequenceDecoderStream
       Uint8Array
     >();
     this.#source = toByteStream(readable).getReader({ mode: "byob" });
-    this.#readable = ReadableStream.from<CborOutputStream>(
+    this.#readable = ReadableStream.from<CborStreamOutput>(
       this.#decodeSequence(),
     );
     this.#writable = writable;
@@ -158,7 +158,7 @@ export class CborSequenceDecoderStream
 
   async *#readDefinite(
     items: number | bigint,
-  ): AsyncGenerator<CborOutputStream> {
+  ): AsyncGenerator<CborStreamOutput> {
     items = BigInt(items);
     for (let i = 0n; i < items; ++i) {
       const x = await this.#decode(
@@ -174,7 +174,7 @@ export class CborSequenceDecoderStream
   async *#readIndefinite(
     denyInnerIndefinite: boolean,
     message?: string,
-  ): AsyncGenerator<CborOutputStream> {
+  ): AsyncGenerator<CborStreamOutput> {
     while (true) {
       const byte = arrayToNumber(
         (await this.#read(1, true)).buffer,
@@ -192,7 +192,7 @@ export class CborSequenceDecoderStream
     }
   }
 
-  async *#decodeSequence(): AsyncGenerator<CborOutputStream> {
+  async *#decodeSequence(): AsyncGenerator<CborStreamOutput> {
     while (true) {
       const value = await this.#read(1, false);
       if (value == undefined) return;
@@ -207,7 +207,7 @@ export class CborSequenceDecoderStream
 
   #decode(
     byte: number,
-  ): Promise<CborOutputStream | [CborOutputStream, lock: Promise<unknown>]> {
+  ): Promise<CborStreamOutput | [CborStreamOutput, lock: Promise<unknown>]> {
     const majorType = byte >> 5;
     const aI = byte & 0b000_11111;
     switch (majorType) {
@@ -389,8 +389,8 @@ export class CborSequenceDecoderStream
     aI: number,
   ): Promise<[CborMapDecodedStream, lock: Promise<unknown>]> {
     async function* convert(
-      gen: AsyncGenerator<CborOutputStream>,
-    ): AsyncGenerator<CborMapOutputStream> {
+      gen: AsyncGenerator<CborStreamOutput>,
+    ): AsyncGenerator<CborMapStreamOutput> {
       while (true) {
         const key = await gen.next();
         if (key.done) break;
@@ -456,8 +456,8 @@ export class CborSequenceDecoderStream
   async #decodeSix(
     aI: number,
   ): Promise<
-    Date | CborTag<CborOutputStream> | [
-      CborTag<CborOutputStream>,
+    Date | CborTag<CborStreamOutput> | [
+      CborTag<CborStreamOutput>,
       lock: Promise<unknown>,
     ]
   > {
@@ -510,8 +510,8 @@ export class CborSequenceDecoderStream
   }
 
   /**
-   * The {@link ReadableStream<CborOutputStream>} associated with the instance,
-   * which provides the decoded CBOR data as {@link CborOutputStream} chunks.
+   * The {@link ReadableStream<CborStreamOutput>} associated with the instance,
+   * which provides the decoded CBOR data as {@link CborStreamOutput} chunks.
    *
    * @example Usage
    * ```ts no-assert
@@ -523,7 +523,7 @@ export class CborSequenceDecoderStream
    *   CborByteEncoderStream,
    *   CborMapDecodedStream,
    *   CborMapEncoderStream,
-   *   type CborOutputStream,
+   *   type CborStreamOutput,
    *   CborSequenceDecoderStream,
    *   CborSequenceEncoderStream,
    *   CborTag,
@@ -557,7 +557,7 @@ export class CborSequenceDecoderStream
    *   ]),
    * ];
    *
-   * async function logValue(value: CborOutputStream) {
+   * async function logValue(value: CborStreamOutput) {
    *   if (
    *     value instanceof CborByteDecodedStream ||
    *     value instanceof CborTextDecodedStream
@@ -585,9 +585,9 @@ export class CborSequenceDecoderStream
    * }
    * ```
    *
-   * @returns A {@link ReadableStream<CborOutputStream>}.
+   * @returns A {@link ReadableStream<CborStreamOutput>}.
    */
-  get readable(): ReadableStream<CborOutputStream> {
+  get readable(): ReadableStream<CborStreamOutput> {
     return this.#readable;
   }
 
@@ -605,7 +605,7 @@ export class CborSequenceDecoderStream
    *   CborByteEncoderStream,
    *   CborMapDecodedStream,
    *   CborMapEncoderStream,
-   *   type CborOutputStream,
+   *   type CborStreamOutput,
    *   CborSequenceDecoderStream,
    *   CborSequenceEncoderStream,
    *   CborTag,
@@ -639,7 +639,7 @@ export class CborSequenceDecoderStream
    *   ]),
    * ];
    *
-   * async function logValue(value: CborOutputStream) {
+   * async function logValue(value: CborStreamOutput) {
    *   if (
    *     value instanceof CborByteDecodedStream ||
    *     value instanceof CborTextDecodedStream
