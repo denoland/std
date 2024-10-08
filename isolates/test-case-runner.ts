@@ -200,7 +200,7 @@ export const functions: Functions<Api> = {
     assert(path, 'path missing from last message')
 
     const agent = await load(path, api)
-    const tools = await loadTools(agent.commands, api)
+    const tools = await loadTools(agent, api)
     const request = getChatParams(agent, messages, tools)
     return { request, response }
   },

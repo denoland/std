@@ -1,5 +1,5 @@
 import { cradleMaker } from '@/cradle-maker.ts'
-import { Provisioner } from '@/constants.ts'
+import { getRoot, Provisioner } from '@/constants.ts'
 
 export const actorId = 'testerActorId'
 
@@ -43,22 +43,23 @@ const init: Provisioner = async (backchat) => {
   // or by allowing an array of writes as in writeMany
 
   const promises = []
+  const target = getRoot(backchat.pid)
 
-  promises.push(backchat.write(infoPath, info))
-  promises.push(backchat.write(requesterPath, requester))
-  promises.push(backchat.write(assessorPath, assessor))
-  promises.push(backchat.write(fileRunnerPath, fileRunner))
-  promises.push(backchat.write(meetingsPath, meetings))
-  promises.push(backchat.write(routerPath, router))
-  promises.push(backchat.write(reasonerPath, reasoner))
+  promises.push(backchat.write(infoPath, info, target))
+  promises.push(backchat.write(requesterPath, requester, target))
+  promises.push(backchat.write(assessorPath, assessor, target))
+  promises.push(backchat.write(fileRunnerPath, fileRunner, target))
+  promises.push(backchat.write(meetingsPath, meetings, target))
+  promises.push(backchat.write(routerPath, router, target))
+  promises.push(backchat.write(reasonerPath, reasoner, target), target)
 
-  promises.push(backchat.write(firstTestPath, firstTest))
-  promises.push(backchat.write(secondTestPath, secondTest))
-  promises.push(backchat.write(meetingTestPath, meetingTest))
-  promises.push(backchat.write(routerTestPath, routerTest))
-  promises.push(backchat.write(testFixturePath, testFixture))
-  promises.push(backchat.write(testRunnterTestPath, testRunnerTest))
-  promises.push(backchat.write(reasonerTestPath, reasonerTest))
+  promises.push(backchat.write(firstTestPath, firstTest, target))
+  promises.push(backchat.write(secondTestPath, secondTest, target))
+  promises.push(backchat.write(meetingTestPath, meetingTest, target))
+  promises.push(backchat.write(routerTestPath, routerTest, target))
+  promises.push(backchat.write(testFixturePath, testFixture, target))
+  promises.push(backchat.write(testRunnterTestPath, testRunnerTest, target))
+  promises.push(backchat.write(reasonerTestPath, reasonerTest, target))
 
   await Promise.all(promises)
 }

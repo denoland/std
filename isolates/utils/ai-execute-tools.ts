@@ -35,7 +35,7 @@ export const executeTools = async (
   const calls = await loadToolCalls(threadPath, api, overrides)
   const { tool_calls, agent } = calls
 
-  const actions = await loadActions(agent.commands, api)
+  const actions = await loadActions(agent, api)
   const logNames = tool_calls.map((call) => call.function.name)
   log('execute tools:', threadPath, logNames)
 

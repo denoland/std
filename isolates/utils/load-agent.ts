@@ -57,7 +57,8 @@ export const load = async (
   assert(path.endsWith('.md'), 'path must end with .md')
   const string = await api.read(path)
   const agent = await loadString(path, string, api)
-  return merge(agent, overrides)
+  const withOverrides = merge(agent, overrides)
+  return agentSchema.parse(withOverrides)
 }
 
 export const loadAll = async (dir: string, api: IA) => {

@@ -212,7 +212,7 @@ export const getChatParams = (
     content: agent.instructions + '\n\n' + additionInstructions(),
     name: agent.source.path,
   }
-  if (agent.instructions || agent.commands.length) {
+  if (agent.instructions || agent.commands.length || agent.napps.length) {
     messages.push(sysprompt)
   }
   messages = messages.map(safeAssistantName)

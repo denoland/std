@@ -15,10 +15,17 @@ export const loadActions = async (agent: Agent, api: IA) => {
   const result = await load(agent, api)
   return result.actions
 }
+
+type SummonParams = Parameters<napps.Api['summon']>
+type SummonParamsWithoutNapp = Omit<SummonParams[0], 'napp'>
+type SummonFunctionWithoutNapp = (
+  params: SummonParamsWithoutNapp,
+) => ReturnType<napps.Api['summon']>
+
 type PlainAction = (
   params: Params,
 ) => Promise<unknown>
-type Action = PlainAction | napps.Api['summon']
+type Action = PlainAction | SummonFunctionWithoutNapp
 
 export const load = async (agent: Agent, api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
@@ -49,13 +56,16 @@ export const load = async (agent: Agent, api: IA) => {
     tools.push(tool)
   }
 
-  const opts: RpcOpts = { prefix: 'napp-' + agent.name }
-  const { summon } = await api.actions<napps.Api>('napps', opts)
   for (const name of agent.napps) {
     assert(!actions[name], `duplicate action: ${name}`)
+    assert(await api.exists('agents/' + name + '.md'), `missing agent: ${name}`)
 
-    const fn: napps.Api['summon'] = (params) => {
-      return summon(params)
+    const opts: RpcOpts = { prefix: 'napp-' + name }
+    const { summon } = await api.actions<napps.Api>('napps', opts)
+
+    const fn: SummonFunctionWithoutNapp = (params) => {
+      // TODO get the output from reading from the parent commit, not actions
+      return summon({ ...params, name })
     }
     actions[name] = fn
     const tool = zodFunction({ name, parameters: napps.parameters.summon })
