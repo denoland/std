@@ -22,7 +22,7 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { assert, equal } from '@utils'
 import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
-import { z, ZodObject, ZodSchema, ZodUnknown } from 'zod'
+import { ZodObject, ZodSchema, ZodUnknown } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -235,10 +235,6 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
     api[key] = schema
   }
   return api
-}
-
-export type Returns<T> = {
-  [K in keyof T]: z.ZodSchema
 }
 
 export * from './api/types.ts'

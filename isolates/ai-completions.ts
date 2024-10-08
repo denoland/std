@@ -151,7 +151,7 @@ const complete = async (
   messages: Thread['messages'],
   api: IA,
 ) => {
-  const tools = await loadTools(agent.commands, api)
+  const tools = await loadTools(agent, api)
   const args = getChatParams(agent, messages, tools)
 
   log('completion started with model: %o', args.model, print(api.pid))

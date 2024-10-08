@@ -48,7 +48,7 @@ Deno.test('test file runner', async (t) => {
   })
   await engine.stop()
 })
-Deno.test.only('router', async (t) => {
+Deno.test('router', async (t) => {
   const { backchat, engine } = await fixture()
   log.enable(
     'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions',

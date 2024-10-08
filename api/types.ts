@@ -785,6 +785,7 @@ export const agentSchema = z.object({
   config: agentConfigSchema,
   runner: z.enum(['ai-runner']),
   commands: z.array(z.string()),
+  napps: z.array(z.string()),
   instructions: z.string().max(256000),
 })
 export type Agent = z.infer<typeof agentSchema>
@@ -803,10 +804,12 @@ export const chatParams = agentConfigSchema.extend({
   })).optional(),
 })
 export type ChatParams = z.infer<typeof chatParams>
+
 export const backchatStateSchema = z.object({
   /** The base thread that this backchat session points to - the thread of last resort */
   target: pidSchema,
 })
+
 export type Returns<T extends Record<string, ZodSchema>> = {
   [K in keyof T]: ZodSchema
 }

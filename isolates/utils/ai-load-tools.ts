@@ -1,28 +1,30 @@
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
 import { zodFunction } from 'openai/helpers/zod'
-import { IA, Params } from '@/constants.ts'
+import { Agent, IA, Params, RpcOpts } from '@/constants.ts'
 import { isIsolate } from '../index.ts'
 import * as tps from '@/isolates/tps-report.ts'
+import * as napps from '@/isolates/napps.ts'
 const log = Debug('AI:tools:load-tools')
 
-export const loadTools = async (commands: string[] = [], api: IA) => {
-  const result = await load(commands, api)
+export const loadTools = async (agent: Agent, api: IA) => {
+  const result = await load(agent, api)
   return result.tools
 }
-export const loadActions = async (commands: string[] = [], api: IA) => {
-  const result = await load(commands, api)
+export const loadActions = async (agent: Agent, api: IA) => {
+  const result = await load(agent, api)
   return result.actions
 }
-type Action = (
+type PlainAction = (
   params: Params,
 ) => Promise<unknown>
+type Action = PlainAction | napps.Api['summon']
 
-export const load = async (commands: string[] = [], api: IA) => {
+export const load = async (agent: Agent, api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
 
-  for (const cmd of commands) {
+  for (const cmd of agent.commands) {
     if (!cmd.includes(':')) {
       throw new Error('Invalid command: ' + cmd)
     }
@@ -44,6 +46,19 @@ export const load = async (commands: string[] = [], api: IA) => {
     assert(!actions[name], `duplicate action: ${cmd}`)
     actions[name] = action
     assert(typeof tool === 'object', `invalid tool: ${tool}`)
+    tools.push(tool)
+  }
+
+  const opts: RpcOpts = { prefix: 'napp-' + agent.name }
+  const { summon } = await api.actions<napps.Api>('napps', opts)
+  for (const name of agent.napps) {
+    assert(!actions[name], `duplicate action: ${name}`)
+
+    const fn: napps.Api['summon'] = (params) => {
+      return summon(params)
+    }
+    actions[name] = fn
+    const tool = zodFunction({ name, parameters: napps.parameters.summon })
     tools.push(tool)
   }
 

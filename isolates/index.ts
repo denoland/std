@@ -29,6 +29,8 @@ import * as testController from './test-controller.ts'
 import * as testRegistry from './test-registry.ts'
 import * as tpsReport from './tps-report.ts'
 
+import * as napps from './napps.ts'
+
 const isolatesExport = {
   system,
 
@@ -60,6 +62,8 @@ const isolatesExport = {
   'test-controller': testController,
   'test-registry': testRegistry,
   'tps-report': tpsReport,
+
+  napps,
 }
 
 export default isolatesExport

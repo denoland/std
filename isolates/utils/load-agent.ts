@@ -7,37 +7,41 @@ import { loadTools } from '@/isolates/utils/ai-load-tools.ts'
 
 export const loadString = async (path: string, string: string, api: IA) => {
   const name = posix.basename(path, posix.extname(path))
-  const { data, content } = matter(string.trim())
-  assert(typeof content === 'string', 'content missing')
-  const config: Agent['config'] = {
-    model: 'gpt-4o-mini',
-    tool_choice: 'auto',
-    parallel_tool_calls: true,
-  }
-  const defaults = {
-    runner: AGENT_RUNNERS.CHAT,
-    instructions: '',
-    config,
-    commands: [],
-  }
-
-  merge(defaults, data)
-  const toolsPromise = loadTools(defaults.commands, api)
-
   const { pid, commit } = api
   const source: Triad = { path, pid, commit }
-  const instructions = await expandLinks(content, api)
-  const o1Checker = agentSchema.refine((data) => {
-    if (data.instructions) {
-      if (['o1-preview', 'o1-mini'].includes(data.config.model)) {
-        return !data.instructions
-      }
-    }
-    return true
-  }, 'instructions are not allowed for this model')
+
+  const { data, content } = matter(string.trim())
+  assert(typeof content === 'string', 'content missing')
+  let instructions
+  try {
+    instructions = await expandLinks(content, api)
+  } catch (error) {
+    throw new Error('Error expanding links: ' + path + '\n' + error.message)
+  }
+
+  const base: Agent = {
+    name,
+    source,
+    runner: AGENT_RUNNERS.CHAT,
+    instructions,
+    config: {
+      model: 'gpt-4o-mini',
+      tool_choice: 'auto',
+      parallel_tool_calls: true,
+    },
+    commands: [],
+    napps: [],
+  }
+
+  merge(base, data)
+  const { success, data: agent, error } = o1Checker.safeParse(base)
+  if (!success) {
+    throw new Error('Error parsing agent: ' + path + '\n' + error.message)
+  }
+
+  const toolsPromise = loadTools(agent, api)
 
   try {
-    const agent = o1Checker.parse({ ...defaults, name, instructions, source })
     await toolsPromise
     return agent
   } catch (error) {
@@ -123,3 +127,12 @@ const replaceLinksWithContent = (
 
   return parts.join('')
 }
+
+const o1Checker = agentSchema.refine((data) => {
+  if (data.instructions) {
+    if (['o1-preview', 'o1-mini'].includes(data.config.model)) {
+      return !data.instructions
+    }
+  }
+  return true
+}, 'instructions are not allowed for o1 models')
