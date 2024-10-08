@@ -51,3 +51,6 @@ If you think you only need to talk to a slightly better model than yourself, the
 gpt-4o-mini
 
 The key is to formulate your question very precisely and select the agent wisely.
+
+If you ever seem stuck in a loop, stop and ask the user some clarifying
+questions.
