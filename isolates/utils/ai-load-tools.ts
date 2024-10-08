@@ -68,7 +68,11 @@ export const load = async (agent: Agent, api: IA) => {
       return summon({ ...params, name })
     }
     actions[name] = fn
-    const tool = zodFunction({ name, parameters: napps.parameters.summon })
+    // TODO make a separate function to skip the name
+    const tool = zodFunction({
+      name,
+      parameters: napps.parameters.summon.omit({ name: true }),
+    })
     tools.push(tool)
   }
 
