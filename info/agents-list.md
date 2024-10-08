@@ -79,7 +79,7 @@
   result file.
 - `agents/imogen.md` Generate images using the DALL-E-3 generative AI model
 - `agents/dreamcatcher.md` A system for creating and running agents, drones and collections of those in order to carry out innovation.
-- `agents/reason.md` This agent wraps the wise and deep (but slow)
+- `agents/reasoner.md` This agent wraps the wise and deep (but slow)
   o1-preview reasoning model with a quick and responsive gpt-4o-mini model to do all its
   admin work. This is the best choice for reasoning tasks that also need some
   tools, and should be the default for general purpose reasoning.
