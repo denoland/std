@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { MuxAsyncIterator as MaxAsyncIterator_ } from "./mux_async_iterator.ts";
+import { MuxAsyncIterator as MuxAsyncIterator_ } from "./mux_async_iterator.ts";
 
 /**
  * Multiplexes multiple async iterators into a single stream. It currently
@@ -37,7 +37,7 @@ import { MuxAsyncIterator as MaxAsyncIterator_ } from "./mux_async_iterator.ts";
  *
  * @typeParam T The type of the provided async iterables and generated async iterable.
  */
-export class MuxAsyncIterator<T> extends MaxAsyncIterator_<T> {
+export class MuxAsyncIterator<T> extends MuxAsyncIterator_<T> {
   /**
    * Constructs a new {@linkcode MuxAsyncIterator} instance.
    *
