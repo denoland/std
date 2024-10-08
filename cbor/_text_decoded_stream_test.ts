@@ -1,60 +1,63 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals } from "@std/assert";
-import { concat } from "@std/bytes";
 import { random } from "./_common_test.ts";
-import { CborByteDecodedStream } from "./byte_decoded_stream.ts";
-import { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
+import { CborTextDecodedStream } from "./_text_decoded_stream.ts";
+import { CborTextEncoderStream } from "./text_encoder_stream.ts";
 import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
 
-Deno.test("CborByteDecodedStream() consuming indefinite length byte string", async () => {
+Deno.test("CborTextDecodedStream() consuming indefinite length text string", async () => {
   const size = random(0, 24);
 
-  const reader = CborByteEncoderStream.from([
-    new Uint8Array(size),
-    new Uint8Array(size * 2),
-    new Uint8Array(size * 3),
+  const reader = CborTextEncoderStream.from([
+    "a".repeat(size),
+    "b".repeat(size * 2),
+    "c".repeat(size * 3),
   ]).readable.pipeThrough(new CborSequenceDecoderStream()).getReader();
 
   const { done, value } = await reader.read();
   assert(done === false);
-  assert(value instanceof CborByteDecodedStream);
+  assert(value instanceof CborTextDecodedStream);
   assertEquals(await Array.fromAsync(value), [
-    new Uint8Array(size),
-    new Uint8Array(size * 2),
-    new Uint8Array(size * 3),
+    "a".repeat(size),
+    "b".repeat(size * 2),
+    "c".repeat(size * 3),
   ]);
 
   assert((await reader.read()).done === true);
   reader.releaseLock();
 });
 
-Deno.test("CborByteDecodedStream() consuming large definite length byte string", async () => {
-  // Uint8Array needs to be 2 ** 32 bytes+ to be decoded via a CborByteDecodedStream.
-  const size = random(2 ** 32, 2 ** 33);
+Deno.test("CborTextDecodedStream() consuming large definite length text string", async () => {
+  // Strings need to be 2 ** 16 bytes+ to be decoded via a CborTextDecodedStream.
+  const size = random(2 ** 16, 2 ** 17);
 
-  const reader = ReadableStream.from([encodeCbor(new Uint8Array(size))])
+  const reader = ReadableStream.from([
+    encodeCbor(
+      new TextDecoder().decode(new Uint8Array(size).fill("a".charCodeAt(0))),
+    ),
+  ])
     .pipeThrough(new CborSequenceDecoderStream()).getReader();
 
   const { done, value } = await reader.read();
   assert(done === false);
-  assert(value instanceof CborByteDecodedStream);
-  assertEquals(concat(await Array.fromAsync(value)).length, size);
+  assert(value instanceof CborTextDecodedStream);
+  assertEquals((await Array.fromAsync(value)).join(""), "a".repeat(size));
 
   assert((await reader.read()).done === true);
   reader.releaseLock();
 });
 
-Deno.test("CborByteDecodedStream() being cancelled", async () => {
+Deno.test("CborTextDecodedStream() being cancelled", async () => {
   const size = random(0, 24);
 
   const reader = ReadableStream.from([
-    CborByteEncoderStream.from([
-      new Uint8Array(size),
-      new Uint8Array(size * 2),
-      new Uint8Array(size * 3),
+    CborTextEncoderStream.from([
+      "a".repeat(size),
+      "b".repeat(size * 2),
+      "c".repeat(size * 3),
     ]),
     0,
   ])
@@ -64,7 +67,7 @@ Deno.test("CborByteDecodedStream() being cancelled", async () => {
   {
     const { done, value } = await reader.read();
     assert(done === false);
-    assert(value instanceof CborByteDecodedStream);
+    assert(value instanceof CborTextDecodedStream);
     await value.cancel();
   }
 

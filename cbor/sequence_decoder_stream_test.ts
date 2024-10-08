@@ -2,7 +2,7 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { random } from "./_common_test.ts";
-import { CborArrayDecodedStream } from "./array_decoded_stream.ts";
+import { CborArrayDecodedStream } from "./_array_decoded_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { encodeCborSequence } from "./encode_cbor_sequence.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
