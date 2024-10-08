@@ -69,7 +69,9 @@ export const parameters = {
     style: z.enum(['vivid', 'natural']).optional().describe(
       'The style of the image to generate, which defaults to vivid',
     ),
-  }).describe('Generate an image using DALL-E-3 from the provided prompt'),
+  }).describe(
+    'Generate an image using DALL-E-3 from the provided prompt.  The image will be saved to the provided path.  The revised prompt that the image generator used will be returned, as well as the size of the image in bytes.',
+  ),
 }
 export const returns: Returns<typeof parameters> = {
   complete: z.void(),
