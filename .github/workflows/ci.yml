@@ -18,6 +18,7 @@ jobs:
       matrix:
         deno:
           - v1.x
+          - v2.x
           - canary
         os:
           - ubuntu-latest
