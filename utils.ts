@@ -55,6 +55,4 @@ const getDebug = () => {
 Debug.enable(getDebug())
 
 // shim to make isomorphic-git work in deno deploy
-import { Buffer } from 'node:buffer'
-const patched = globalThis as typeof globalThis & { Buffer: typeof Buffer }
-patched.Buffer = Buffer
+// import { Buffer } from "jsr:@std/io/buffer";
