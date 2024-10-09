@@ -29,6 +29,6 @@ Simply outputs the contents of a TPS. so as it's valid. - TPS Format
 If the user wants to generate
 TPS writer
 Runs a bunch of stuff, then writes out a TPS Format
-Otherwise, fuck off
+Otherwise, go away
 
 You will pass over the context of the TPS or Tests to run to the most appropriate bot.
