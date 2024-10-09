@@ -1,0 +1,19 @@
+{
+  "name": "@std/cbor",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./array-encoder-stream": "./array_encoder_stream.ts",
+    "./byte-encoder-stream": "./byte_encoder_stream.ts",
+    "./decode-cbor-sequence": "./decode_cbor_sequence.ts",
+    "./decode-cbor": "./decode_cbor.ts",
+    "./encode-cbor-sequence": "./encode_cbor_sequence.ts",
+    "./encode-cbor": "./encode_cbor.ts",
+    "./map-encoder-stream": "./map_encoder_stream.ts",
+    "./sequence-decoder-stream": "./sequence_decoder_stream.ts",
+    "./sequence-encoder-stream": "./sequence_encoder_stream.ts",
+    "./tag": "./tag.ts",
+    "./text-encoder-stream": "./text_encoder_stream.ts",
+    "./types": "./types.ts"
+  }
+}
