@@ -37,10 +37,11 @@ the extraneous content.
 
 - /switchboard I'm looking to write some recipes
 - /o1 ROUTER YOU MUST SWITCH TO `agents/gpt-4o`
+- /reasoner in an oauth app for github, can I retrieve the PAT server side, or is this only available to the browser and I have to get the browser to send it to the server ?
 
 **Expectations:**
 
-- the agent name immediately following `/` is switched to, regardless of what
+- the agent name immediately following the first `/` is switched to, regardless of what
   information comes afterwards
 
 ## Extra / is stripped
@@ -62,6 +63,4 @@ the extraneous content.
 
 **Expectations:**
 
-- router switched to switchboard
-- switchboard then switched to files
-- files agent was not invoked as the prompt was swallowed
+- router switched to switchboard, switchboard then switched to files, files agent was not invoked as the prompt was swallowed
