@@ -1,10 +1,20 @@
 import { assert, Debug } from '@utils'
+import { loadAgent } from '@/isolates/utils/load-agent.ts'
 import type OpenAI from 'openai'
 import { zodFunction } from 'openai/helpers/zod'
-import { Agent, type IA, Params, RpcOpts } from '@/constants.ts'
+import {
+  Agent,
+  getThreadPath,
+  type IA,
+  Params,
+  RpcOpts,
+  type Thread,
+  withMeta,
+} from '@/constants.ts'
 import { isIsolate } from '../index.ts'
 import * as tps from '@/isolates/tps-report.ts'
 import * as napps from '@/isolates/napps.ts'
+import type { z } from 'zod'
 const log = Debug('AI:tools:load-tools')
 
 export const loadTools = async (agent: Agent, api: IA) => {
@@ -16,18 +26,15 @@ export const loadActions = async (agent: Agent, api: IA) => {
   return result.actions
 }
 
-type SummonParams = Parameters<napps.Api['summon']>
-type SummonParamsWithoutNapp = Omit<SummonParams[0], 'napp'>
-type SummonFunctionWithoutNapp = (
-  params: SummonParamsWithoutNapp,
-) => ReturnType<napps.Api['summon']>
-
 type PlainAction = (
   params: Params,
 ) => Promise<unknown>
-type Action = PlainAction | SummonFunctionWithoutNapp
+type SummonAction = (
+  params: z.infer<typeof napps.parameters.summon>,
+) => Promise<string>
+type Action = PlainAction | SummonAction
 
-export const load = async (agent: Agent, api: IA) => {
+const load = async (agent: Agent, api: IA) => {
   const tools: OpenAI.ChatCompletionTool[] = []
   const actions: Record<string, Action> = {}
 
@@ -60,21 +67,25 @@ export const load = async (agent: Agent, api: IA) => {
     assert(!actions[name], `duplicate action: ${name}`)
     assert(await api.exists('agents/' + name + '.md'), `missing agent: ${name}`)
 
-    const opts: RpcOpts = { prefix: 'napp-' + name }
-    const { summon } = await api.actions<napps.Api>('napps', opts)
+    const fn: SummonAction = async ({ content, reasoning }) => {
+      const opts: RpcOpts = { prefix: 'napp-' + name }
+      const { summonByName } = await api.actions<napps.Api>('napps', opts)
+      log('summoning napp:', name, content, reasoning)
 
-    // TODO add some prompting that details what the agent is about
-    // so read in the agent description, and add that to the prompt
+      const promise = summonByName({ content, reasoning, name })
+      const { result, parent } = await withMeta(promise)
 
-    const fn: SummonFunctionWithoutNapp = (params) => {
-      // TODO get the output from reading from the parent commit, not actions
-      return summon({ ...params, name })
+      const threadPath = getThreadPath(result)
+      const thread = await api.readThread(threadPath, { commit: parent })
+      return getLastContent(thread)
     }
     actions[name] = fn
-    // TODO make a separate function to skip the name
+
+    const agent = await loadAgent('agents/' + name + '.md', api)
     const tool = zodFunction({
       name,
-      parameters: napps.parameters.summon.omit({ name: true }),
+      parameters: napps.parameters.summon,
+      description: agent.description,
     })
     tools.push(tool)
   }
@@ -106,10 +117,22 @@ const isolateToGptApi = (name: string, schema: object) => {
     function: {
       name,
       description: schema.description,
-      // slower, but guarantees correct params
       strict,
       parameters,
     },
   }
   return tool
+}
+
+const getLastContent = (thread: Thread): string => {
+  const messages = [...thread.messages]
+  while (messages.length > 0) {
+    const message = messages.pop()
+    assert(message, 'message should be defined')
+    if (message.role === 'assistant' || message.role === 'tool') {
+      assert(typeof message.content === 'string', 'content not string')
+      return message.content
+    }
+  }
+  throw new Error('No assistant message found in thread')
 }

@@ -51,7 +51,7 @@ export const loadString = async (path: string, string: string, api: IA) => {
   }
 }
 
-export const load = async (
+export const loadAgent = async (
   path: string,
   api: IA,
   overrides?: Partial<Agent>,
@@ -70,7 +70,7 @@ export const loadAll = async (dir: string, api: IA) => {
   for (const file of files) {
     if (file.endsWith('.md')) {
       const path = posix.basename(file, posix.extname(file))
-      const agent = await load(path, api)
+      const agent = await loadAgent(path, api)
       agents.push({ path, agent })
     }
   }

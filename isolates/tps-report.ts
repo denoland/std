@@ -8,7 +8,7 @@ import {
   testCaseSummary,
   testFileSummary,
 } from '@/api/tps-report.ts'
-import { load } from '@/isolates/utils/load-agent.ts'
+import { loadAgent } from '@/isolates/utils/load-agent.ts'
 
 const log = Debug('AI:tps-report')
 
@@ -52,8 +52,8 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 export const functions: Functions<Api> = {
   upsert: async ({ path, target, assessor, iterations, cases }, api) => {
     log('upsertTpsReport', path, iterations)
-    await load(target, api)
-    await load(assessor, api)
+    await loadAgent(target, api)
+    await loadAgent(assessor, api)
     const tpsPath = getTpsPath(path)
     const hash = await api.readOid(path)
     let tpsReport = create(path, target, assessor, iterations, hash)

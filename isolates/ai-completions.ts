@@ -19,7 +19,7 @@ import {
   ToApiType,
 } from '@/constants.ts'
 import { loadTools } from './utils/ai-load-tools.ts'
-import { load } from './utils/load-agent.ts'
+import { loadAgent } from './utils/load-agent.ts'
 import { z } from 'zod'
 
 const log = Debug('AI:completions')
@@ -92,7 +92,7 @@ export const functions: Functions<Api> = {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
-    const agent = await load(path, api)
+    const agent = await loadAgent(path, api)
     const thread = await api.readThread(threadPath)
     thread.messages.push({ role: 'assistant', name: agent.source.path })
     api.writeJSON(threadPath, thread)
@@ -104,7 +104,7 @@ export const functions: Functions<Api> = {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
-    const agent = await load(path, api, overrides)
+    const agent = await loadAgent(path, api, overrides)
 
     const thread = await api.readThread(threadPath)
     const last = thread.messages.pop()

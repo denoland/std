@@ -4,6 +4,7 @@ import {
   Functions,
   getActorId,
   outcomeSchema,
+  pidSchema,
   reasoning,
   ToApiType,
 } from '@/constants.ts'
@@ -28,14 +29,19 @@ export const asyncConfig = z.object({
 })
 // TODO merge in the async config
 
+const summon = z.object({
+  reasoning,
+  content: z.string(),
+  /** Identifying name of the napp to call */
+  name: z.string(),
+})
+
 export const parameters = {
-  /** Call a nApp using  */
-  summon: z.object({
-    reasoning,
-    content: z.string(),
-    /** Identifying name of the napp to call */
-    name: z.string(),
-  }),
+  /** Call an nApp from inside an llm toolcall where the name of the function
+   * call is the name of the isolate  */
+  summon: summon.omit({ name: true }),
+  /** Call an nApp from inside the executeTools function */
+  summonByName: summon,
   /** Call a tool that is exported by a nApp */
   tool: z.object({
     /** Identifying name of the tool exported from the napp to call */
@@ -50,13 +56,14 @@ export const parameters = {
   retrieve: z.object({ id: z.string() }),
 }
 
-// the method of insertion is that when the napp call finishes, a new synthetic
-// tool call is made to retrieve, which pulls in the results
-// If foreground is set,
+// the method of async insertion is that when the napp call finishes, a new
+// synthetic tool call is made to retrieve, which pulls in the results if
+// foreground is set to true
 
 export const returns = {
   /** the id of the running summon */
-  summon: z.string(),
+  summon: z.void(),
+  summonByName: pidSchema,
   /** the id of the running tool */
   tool: z.string(),
   /** retrieve the outcome of a given run */
@@ -66,8 +73,14 @@ export const returns = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  async summon({ content, name }, api) {
-    log('nAppCommand', content, name)
+  summon() {
+    throw new Error('llm tool stub must never be executed')
+  },
+  async summonByName({ content, name, reasoning }, api) {
+    log('nAppCommand', content, name, reasoning)
+
+    // TODO test adding the reasoning to the thread
+    // perhaps modify the prompt in a structured way
 
     const { start, run } = await api.actions<longthread.Api>('longthread')
     await start({})
@@ -81,7 +94,7 @@ export const functions: Functions<Api> = {
     assert(last.role === 'assistant', 'last message must be assistant')
     assert(last.content, 'last message must have content')
     assert(typeof last.content === 'string', 'content must be string')
-    return last.content
+    return api.pid
   },
   async tool({ function: tool, parameters, config }, api) {
     log('nAppTool', tool, parameters, config)

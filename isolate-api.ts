@@ -222,7 +222,10 @@ export default class IA<T extends object = Default> {
     }
     return this.#fs.readJSON<T>(path, opts?.commit)
   }
-  async readThread(threadPath?: string, opts?: { target?: PID }) {
+  async readThread(
+    threadPath?: string,
+    opts?: { target?: PID; commit?: string },
+  ) {
     if (!threadPath) {
       threadPath = getThreadPath(opts?.target || this.pid)
     }

@@ -13,7 +13,7 @@ import {
 import { assert, Debug } from '@utils'
 import * as session from '@/isolates/session.ts'
 import * as longthread from '@/isolates/longthread.ts'
-import { load } from '@/isolates/utils/load-agent.ts'
+import { loadAgent } from '@/isolates/utils/load-agent.ts'
 import { getChatParams } from '@/isolates/ai-completions.ts'
 import { loadTools } from './utils/ai-load-tools.ts'
 import {
@@ -199,7 +199,7 @@ export const functions: Functions<Api> = {
     const path = response.name
     assert(path, 'path missing from last message')
 
-    const agent = await load(path, api)
+    const agent = await loadAgent(path, api)
     const tools = await loadTools(agent, api)
     const request = getChatParams(agent, messages, tools)
     return { request, response }

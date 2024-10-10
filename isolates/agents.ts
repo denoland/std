@@ -10,7 +10,7 @@ import {
 import { Debug } from '@utils'
 import { z } from 'zod'
 import * as files from './files.ts'
-import { load, loadString } from '@/isolates/utils/load-agent.ts'
+import { loadAgent, loadString } from '@/isolates/utils/load-agent.ts'
 const log = Debug('AI:agents')
 
 export const parameters = {
@@ -105,7 +105,7 @@ export const functions: Functions<Api> = {
   },
   switch: async ({ path, rewrittenPrompt, swallowPrompt }, api) => {
     log('switch', path, rewrittenPrompt, swallowPrompt, print(api.pid))
-    await load(path, api)
+    await loadAgent(path, api)
 
     const thread = await api.readThread()
     thread.agent = path

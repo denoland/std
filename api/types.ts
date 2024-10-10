@@ -700,6 +700,7 @@ export const isPidEqual = (pid1: PID, pid2: PID) => {
 export const META_SYMBOL = Symbol.for('settling commit')
 export type Meta = {
   parent?: CommitOid
+  // TODO add the PID so we know what the id of the branch that returned was
 }
 export const withMeta = async <T>(promise: MetaPromise<T>) => {
   const result = await promise
