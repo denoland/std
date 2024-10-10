@@ -263,9 +263,9 @@ class Cache {
     if (this.#big) {
       const cached = await this.#big.match(url)
       if (cached) {
-        const buffer = await cached.arrayBuffer()
-        const value = new Uint8Array(buffer)
-        Cache.#local.set(url, value)
+        const cloned = cached.clone()
+        const bytes = await cloned.bytes()
+        Cache.#local.set(url, bytes)
         return true
       }
     }

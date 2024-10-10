@@ -69,7 +69,7 @@ export const functions: Functions<Api> = {
     log('start', threadPath, print(api.pid))
     assert(!await api.exists(threadPath), `thread exists: ${threadPath}`)
     const thread: Thread = {
-      agent: 'agents/switchboard.md',
+      agent: 'agents/reasoner.md',
       messageOffset: 0,
       messages: [],
       messageStats: {},
