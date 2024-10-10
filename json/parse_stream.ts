@@ -4,9 +4,9 @@
 import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
-const branks = /^[ \t\r\n]*$/;
-function isBrankString(str: string) {
-  return branks.test(str);
+const blanks = /^[ \t\r\n]*$/;
+function isBlankSpace(str: string) {
+  return blanks.test(str);
 }
 
 /**
@@ -62,7 +62,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
     super(
       {
         transform(chunk, controller) {
-          if (!isBrankString(chunk)) {
+          if (!isBlankSpace(chunk)) {
             controller.enqueue(parse(chunk));
           }
         },
