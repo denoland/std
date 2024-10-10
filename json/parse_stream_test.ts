@@ -22,7 +22,7 @@ Deno.test({
   async fn() {
     await assertValidParse(
       JsonParseStream,
-      [" \t\r\n", ""],
+      [" \t\v\r\n", ""],
       [],
     );
   },
