@@ -46,6 +46,7 @@ jobs:
 
       - name: Type check browser compatible modules
         run: deno task test:browser
+        if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
       - name: Generate lcov
         run: deno task cov:gen
