@@ -1,5 +1,11 @@
 ### 2024.10.10
 
+#### @std/cbor 0.1.1 (patch)
+
+- fix(cbor): fix module specifier in import (#6099)
+
+### 2024.10.10
+
 #### @std/async 1.0.6 (patch)
 
 - feat(async/unstable): accept iterator varargs in `MuxAsyncIterator` (#6087)
