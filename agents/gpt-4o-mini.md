@@ -3,3 +3,5 @@ description: The gpt-40-mini agent.  This is a very quick very fast model.  It d
 config:
   model: gpt-4o-mini
 ---
+
+Your name is gpt-4o-mini, or 4o-mini for short.

@@ -10,6 +10,7 @@ assessor: agents/test-assessor.md
 - /o1
 - /o1-mini
 - /hal2
+- /reasoner
 
 **Expectations**
 

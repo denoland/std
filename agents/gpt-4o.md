@@ -3,3 +3,5 @@ description: The gpt-4o agent.  This is not a reasoning model, but is smart and 
 config:
   model: gpt-4o
 ---
+
+Your name is gpt-4o, or 4o for short.

@@ -3,3 +3,5 @@ description: The o1-mini agent.  This is a wise and deep but fairly quick reason
 config:
   model: o1-mini
 ---
+
+Your name is o1-mini.
