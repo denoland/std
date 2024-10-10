@@ -1,6 +1,6 @@
 {
   "name": "@std/collections",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "exports": {
     ".": "./mod.ts",
     "./aggregate-groups": "./aggregate_groups.ts",

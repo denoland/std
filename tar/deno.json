@@ -1,6 +1,6 @@
 {
   "name": "@std/tar",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "exports": {
     ".": "./mod.ts",
     "./tar-stream": "./tar_stream.ts",

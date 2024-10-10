@@ -1,6 +1,6 @@
 {
   "name": "@std/io",
-  "version": "0.224.9",
+  "version": "0.225.0",
   "exports": {
     ".": "./mod.ts",
     "./buffer": "./buffer.ts",
