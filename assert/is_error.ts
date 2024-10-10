@@ -36,7 +36,7 @@ export function assertIsError<E extends Error = Error>(
   const msgSuffix = msg ? `: ${msg}` : ".";
   if (!(error instanceof Error)) {
     throw new AssertionError(
-      `Expected "error" to be an Error object${msgSuffix}}`,
+      `Expected "error" to be an Error object${msgSuffix}`,
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
