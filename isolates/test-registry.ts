@@ -3,7 +3,7 @@ import {
   Functions,
   getActorPid,
   getBaseName,
-  IA,
+  type IA,
   print,
   ToApiType,
 } from '@/constants.ts'

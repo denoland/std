@@ -20,7 +20,7 @@ const sequenceKey = z.string().refine((data) => {
   }
 }, 'sequence key must be an integer')
 
-export { Backchat }
+export { type Backchat }
 export const Proctype = z.enum(['SERIAL', 'BRANCH', 'DAEMON', 'EFFECT'])
 // TODO FORGET = 'FORGET', // allow fire and forget actions
 // BUT forget needs to be a separate option as we need DAEMON and FORGET

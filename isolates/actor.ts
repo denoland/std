@@ -6,7 +6,7 @@ import {
   addBranches,
   Functions,
   getParent,
-  IA,
+  type IA,
   isActorBranch,
   machineIdRegex,
   pidSchema,

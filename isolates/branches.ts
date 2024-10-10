@@ -1,4 +1,4 @@
-import { IA, PID, pidSchema } from '@/constants.ts'
+import { type IA, PID, pidSchema } from '@/constants.ts'
 
 export const api = {
   ls: {

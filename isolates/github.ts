@@ -3,9 +3,7 @@ import {
   addBranches,
   colorize,
   Functions,
-  IA,
   isBaseRepo,
-  PID,
   pidSchema,
   print,
   ToApiType,
@@ -64,16 +62,13 @@ export const returns = {
 }
 
 export const functions: Functions<Api> = {
-  '@@install': (params: { homeAddress: PID }, api: IA) => {
-    log('install with homeAddress:', print(params.homeAddress))
+  '@@install': ({ homeAddress }, api) => {
+    log('install with homeAddress:', print(homeAddress))
     assert(isBaseRepo(api.pid), '@@install not base: ' + print(api.pid))
-    api.writeJSON('config.json', { homeAddress: params.homeAddress })
+    api.writeJSON('config.json', { homeAddress: homeAddress })
   },
-  registerAttempt: (
-    params: { actorId: string; authSessionId: string },
-    api: IA,
-  ) => {
-    log('registerAttempt', colorize(params.actorId), params.authSessionId)
+  registerAttempt: ({ actorId, authSessionId }, api) => {
+    log('registerAttempt', colorize(actorId), authSessionId)
     assert(isBaseRepo(api.pid), 'registerAttempt not base: ' + print(api.pid))
 
     // TODO use a branch to store the authsession info
@@ -83,15 +78,11 @@ export const functions: Functions<Api> = {
     // api should be the same inside isolate, as outside artifact, as in a
     // remote chain
 
-    const filename = 'auth-' + params.authSessionId + '.json'
-    api.writeJSON(filename, params.actorId)
+    const filename = 'auth-' + authSessionId + '.json'
+    api.writeJSON(filename, actorId)
   },
-  authorize: async (
-    params: { authSessionId: string; tokens: Tokens; githubUserId: string },
-    api: IA,
-  ) => {
+  authorize: async ({ authSessionId, tokens, githubUserId }, api) => {
     assert(isBaseRepo(api.pid), 'authorize not base: ' + print(api.pid))
-    const { authSessionId, tokens, githubUserId } = params
     log('authorize', authSessionId, githubUserId)
 
     const authFilename = 'auth-' + authSessionId + '.json'

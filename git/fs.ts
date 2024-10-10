@@ -266,7 +266,10 @@ export default class FS {
       return true
     } catch (error) {
       // TODO move all errors to be FileNotFoundError
-      if (error.code === 'NotFoundError') {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
         return false
       }
       throw error

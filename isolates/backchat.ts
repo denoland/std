@@ -6,7 +6,7 @@ import {
   getActorId,
   getActorPid,
   getThreadPath,
-  IA,
+  type IA,
   pidSchema,
   print,
   threadIdRegex,

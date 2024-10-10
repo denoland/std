@@ -5,7 +5,7 @@ import {
   ENTRY_BRANCH,
   Functions,
   getParent,
-  IA,
+  type IA,
   isPID,
   jsonSchema,
   md5,

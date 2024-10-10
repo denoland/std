@@ -1,6 +1,6 @@
 import { ToApiType } from '@/constants.ts'
 import { pidSchema } from '@/constants.ts'
-import { Functions, IA, print, ProcessOptions } from '@/constants.ts'
+import { Functions, print, ProcessOptions } from '@/constants.ts'
 import { assert, Debug } from '@utils'
 import { z } from 'zod'
 const log = Debug('AI:session')
@@ -25,7 +25,7 @@ export type Api = ToApiType<typeof parameters, typeof returns>
 // TODO try kill this whole file
 
 export const functions: Functions<Api> = {
-  async create({ name, prefix }, api: IA) {
+  async create({ name, prefix }, api) {
     log('create %o', { name, prefix })
 
     const options: ProcessOptions = { noClose: true }
@@ -41,7 +41,7 @@ export const functions: Functions<Api> = {
     log('noop pid returned', print(pid))
     return pid
   },
-  noop(_: object, api: IA) {
+  noop(_: object, api) {
     log('noop', print(api.pid))
     return api.pid
   },

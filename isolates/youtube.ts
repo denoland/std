@@ -9,7 +9,7 @@ import { z } from 'zod'
 
 const log = Debug('AI:youtube')
 
-export { VideoDetails }
+export { type VideoDetails }
 
 export const parameters = {
   fetch: z.object({

@@ -1,7 +1,7 @@
 import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import { serializeError } from 'serialize-error'
-import { Agent, IA, Thread } from '@/constants.ts'
+import { Agent, type IA, Thread } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
 import { load } from './load-agent.ts'
 const base = 'AI:execute-tools'

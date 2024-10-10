@@ -1,5 +1,5 @@
 import { Debug, delay, expect } from '@utils'
-import { Functions, IA, pidSchema, ToApiType } from '@/constants.ts'
+import { Functions, pidSchema, ToApiType } from '@/constants.ts'
 import { withMeta } from '@/api/types.ts'
 import { z } from 'zod'
 const log = Debug('AI:io-fixture')
@@ -110,23 +110,19 @@ export const functions: Functions<Api> = {
     }
     return Promise.all(promises)
   },
-  fileAccumulation: async (
-    params: { path: string; content: string; count: number },
-    api: IA,
-  ) => {
-    log('fileAccumulation', params)
-    const { path, content, count } = params
+  fileAccumulation: async ({ path, content, count }, api) => {
+    log('fileAccumulation', path, content, count)
     const { fileAccumulation } = await api.actions<Api>('io-fixture')
     const nextCount = count - 1
     let file = ''
-    if (await api.exists(params.path)) {
-      file = await api.read(params.path)
+    if (await api.exists(path)) {
+      file = await api.read(path)
     }
     file += `down: ${count} ${content}\n`
     api.write(path, file)
     if (nextCount) {
       const { parent } = await withMeta(
-        fileAccumulation({ ...params, count: nextCount }),
+        fileAccumulation({ path, content, count: nextCount }),
       )
       expect(parent).not.toEqual(api.commit)
     } else {
@@ -138,13 +134,9 @@ export const functions: Functions<Api> = {
     api.write(path, file)
     log('wrote:', '\n' + file)
   },
-  loopAccumulation: async (
-    params: { path: string; content: string; count: number },
-    api: IA,
-  ) => {
-    log('loopAccumulation', params)
+  loopAccumulation: async ({ path, content: baseContent, count }, api) => {
+    log('loopAccumulation', path, baseContent, count)
     log('commit', api.commit)
-    const { path, content: baseContent, count } = params
     api.write(path)
 
     const { write } = await api.actions<Api>('io-fixture')

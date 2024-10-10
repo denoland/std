@@ -4,7 +4,7 @@ import {
   chatParams,
   Functions,
   getThreadPath,
-  IA,
+  type IA,
   print,
   Thread,
   type ToApiType,

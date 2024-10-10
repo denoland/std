@@ -3,7 +3,7 @@ import {
   Agent,
   CompletionMessage,
   getThreadPath,
-  IA,
+  type IA,
   pidSchema,
   print,
   Returns,

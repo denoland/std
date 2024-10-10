@@ -1,5 +1,5 @@
 import { createGitHubOAuthConfig, createHelpers } from '@deno/kv-oauth'
-import { Context, Hono } from 'hono'
+import { type Context, Hono } from 'hono'
 // TODO try out the fast router to improve load times
 import { cors } from 'hono/cors'
 import { endTime, setMetric, startTime, timing } from 'hono/timing'

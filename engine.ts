@@ -70,7 +70,7 @@ export class Engine implements EngineInterface {
     await engine.ensureHomeAddress(init)
     return engine
   }
-  superUser() {
+  superUser(): Backchat {
     const crypto = Crypto.load(this.#superuserKey)
     return Backchat.superuser(this, crypto)
   }

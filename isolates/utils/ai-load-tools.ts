@@ -1,7 +1,7 @@
 import { assert, Debug } from '@utils'
 import type OpenAI from 'openai'
 import { zodFunction } from 'openai/helpers/zod'
-import { Agent, IA, Params, RpcOpts } from '@/constants.ts'
+import { Agent, type IA, Params, RpcOpts } from '@/constants.ts'
 import { isIsolate } from '../index.ts'
 import * as tps from '@/isolates/tps-report.ts'
 import * as napps from '@/isolates/napps.ts'
@@ -62,6 +62,9 @@ export const load = async (agent: Agent, api: IA) => {
 
     const opts: RpcOpts = { prefix: 'napp-' + name }
     const { summon } = await api.actions<napps.Api>('napps', opts)
+
+    // TODO add some prompting that details what the agent is about
+    // so read in the agent description, and add that to the prompt
 
     const fn: SummonFunctionWithoutNapp = (params) => {
       // TODO get the output from reading from the parent commit, not actions

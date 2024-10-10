@@ -1,6 +1,6 @@
 import merge from 'lodash.merge'
 import { assert, posix } from '@utils'
-import { AGENT_RUNNERS, agentSchema, IA, Triad } from '@/constants.ts'
+import { AGENT_RUNNERS, agentSchema, type IA, Triad } from '@/constants.ts'
 import { type Agent } from '@/constants.ts'
 import matter from 'gray-matter'
 import { loadTools } from '@/isolates/utils/ai-load-tools.ts'
@@ -16,7 +16,8 @@ export const loadString = async (path: string, string: string, api: IA) => {
   try {
     instructions = await expandLinks(content, api)
   } catch (error) {
-    throw new Error('Error expanding links: ' + path + '\n' + error.message)
+    const message = error instanceof Error ? error.message : 'unknown error'
+    throw new Error('Error expanding links: ' + path + '\n' + message)
   }
 
   const base: Agent = {
@@ -45,7 +46,8 @@ export const loadString = async (path: string, string: string, api: IA) => {
     await toolsPromise
     return agent
   } catch (error) {
-    throw new Error('Error parsing agent: ' + path + '\n' + error.message)
+    const message = error instanceof Error ? error.message : 'unknown error'
+    throw new Error('Error parsing agent: ' + path + '\n' + message)
   }
 }
 

@@ -11,7 +11,7 @@ import {
   CompletionMessage,
   Functions,
   getThreadPath,
-  IA,
+  type IA,
   messageStatsSchema,
   print,
   Returns,
@@ -71,6 +71,7 @@ export const parameters = {
     ),
   }).describe(
     'Generate an image using DALL-E-3 from the provided prompt.  The image will be saved to the provided path.  The revised prompt that the image generator used will be returned, as well as the size of the image in bytes.',
+    // TODO add how to show in stateboard
   ),
 }
 export const returns: Returns<typeof parameters> = {
@@ -188,7 +189,9 @@ const complete = async (
       }
     } catch (error) {
       console.error('ai completion error', error)
-      errorMessage = error.message
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
     }
   }
   throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
