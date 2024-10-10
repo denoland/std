@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { concat } from "../bytes/concat.ts";
+import { concat } from "@std/bytes/concat";
 import { encodeCbor } from "./encode_cbor.ts";
 import type { CborType } from "./types.ts";
 
