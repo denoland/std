@@ -15,10 +15,6 @@ Deno.test("setup() handles default handlers", async function () {
   };
 
   for (const levelName of log.LogLevelNames) {
-    if (levelName === "NOTSET") {
-      continue;
-    }
-
     const logger = loggers[levelName]!;
     const handler = new TestHandler(levelName);
 
