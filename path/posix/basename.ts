@@ -23,6 +23,23 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
  * ```
  *
+ * @example Working with URLs
+ *
+ * Note: This function doesn't automatically strip hash and query parts from
+ * URLs. If your URL contains a hash or query, remove them before passing the
+ * URL to the function. This can be done by passing the URL to `new URL(url)`,
+ * and setting the `hash` and `search` properties to empty strings.
+ *
+ * ```ts
+ * import { basename } from "@std/path/posix/basename";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(basename("https://deno.land/std/path/mod.ts"), "mod.ts");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts", ".ts"), "mod");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts?a=b"), "mod.ts?a=b");
+ * assertEquals(basename("https://deno.land/std/path/mod.ts#header"), "mod.ts#header");
+ * ```
+ *
  * Note: If you are working with file URLs,
  * use the new version of `basename` from `@std/path/posix/unstable-basename`.
  *
