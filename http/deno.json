@@ -1,6 +1,6 @@
 {
   "name": "@std/http",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "exports": {
     ".": "./mod.ts",
     "./cookie": "./cookie.ts",
