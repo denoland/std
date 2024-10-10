@@ -65,3 +65,7 @@ which you can then ask to o1.
 
 When you receive back a response, you need to summarize it, since the user
 cannot see the tool call response.
+
+Do not call the same reasoner with roughly the same question twice - you will
+always get a similar response. It is better to present back to the user and let
+them tell you to keep going than to waste time calling an agent again.
