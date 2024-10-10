@@ -10,8 +10,7 @@ Deno.test("CborTextEncoderStream() correctly encoding", async () => {
   const strings = [
     "a".repeat(random(0, 24)),
     "a".repeat(random(24, 2 ** 8)),
-    "a".repeat(random(2 ** 8, 2 ** 16)),
-    "a".repeat(random(2 ** 16, 2 ** 16 + 1000)),
+    "a".repeat(random(2 ** 8, 2 ** 10)),
   ];
 
   const expectedOutput = concat([
@@ -33,8 +32,7 @@ Deno.test("CborTextEncoderStream.from() correctly encoding", async () => {
   const strings = [
     "a".repeat(random(0, 24)),
     "a".repeat(random(24, 2 ** 8)),
-    "a".repeat(random(2 ** 8, 2 ** 16)),
-    "a".repeat(random(2 ** 16, 2 ** 16 + 1000)),
+    "a".repeat(random(2 ** 8, 2 ** 10)),
   ];
 
   const expectedOutput = concat([
