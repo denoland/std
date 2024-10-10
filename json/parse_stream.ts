@@ -4,18 +4,14 @@
 import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";
 
-const blanks = /^[ \t\r\n]*$/;
-function isBlankSpace(str: string) {
-  return blanks.test(str);
-}
-
 /**
  * Parse each chunk as JSON.
  *
  * This can be used to parse {@link https://jsonlines.org/ | JSON lines},
  * {@link http://ndjson.org/ | NDJSON} and
  * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
- * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
+ * Chunks consisting of only {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#white_space | white space} and
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#line_terminators | line terminator} characters, will be ignored.
  *
  * @example Basic usage
  *
@@ -62,7 +58,7 @@ export class JsonParseStream extends TransformStream<string, JsonValue> {
     super(
       {
         transform(chunk, controller) {
-          if (!isBlankSpace(chunk)) {
+          if (chunk.trim().length > 0) {
             controller.enqueue(parse(chunk));
           }
         },
