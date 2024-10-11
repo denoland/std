@@ -12,6 +12,6 @@
     "./pool": "./pool.ts",
     "./retry": "./retry.ts",
     "./tee": "./tee.ts",
-    "./unstable-throttle": "./unstable_throttle.ts" 
+    "./unstable-throttle": "./unstable_throttle.ts"
   }
 }
