@@ -35,16 +35,24 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts ignore
- * import { throttle } from "@std/async/throttle";
+ * ```ts
+ * import { throttle } from "./unstable_throttle.ts"
+ * import { retry } from "@std/async/retry"
+ * import { assert } from "@std/assert"
  *
- * const apiCall = throttle<[string, unknown]>((url, body) => fetch(url, { method: "POST", body: JSON.stringify(body) }), 100);
+ * let called = 0;
+ * await using server = Deno.serve({ port: 0, onListen:() => null }, () => new Response(`${called++}`));
  *
+ * // A throttled function will be executed at most once during a specified ms timeframe
+ * const timeframe = 100
+ * const func = throttle<[string]>((url) => fetch(url).then(r => r.body?.cancel()), timeframe);
  * for (let i = 0; i < 10; i++) {
- *   apiCall("https://example.com/api", { foo: "bar" });
+ *   func(`http://${server.addr.hostname}:${server.addr.port}/api`);
  * }
  *
- * // output: Function is only executed once during these 100ms
+ * await retry(() => assert(!func.throttling))
+ * assert(called === 1)
+ * assert(!Number.isNaN(func.lastExecution))
  * ```
  *
  * @typeParam T The arguments of the provided function.
