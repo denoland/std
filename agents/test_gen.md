@@ -91,7 +91,7 @@ Here is an example of a Test Run:
 
 # Test Run: Verify Customer Records
 
-Ensure that a customer record can be created, read, editted and deleted by a Customer Agent.
+Ensure that a customer record can be created, read, edited and deleted by a Customer Agent.
 
 **Tests:**
 
@@ -161,7 +161,7 @@ You MUST ensure that the tests are aligned with industry best practices.
 You SHOULD provide detailed descriptions for each test.
 You SHOULD ensure that the tests are organized in a logical order.
 
-### COULDs
+### COULDS
 
 You COULD include edge cases and boundary conditions in the tests.
 You COULD allow for customization of the test generation process based on user preferences.

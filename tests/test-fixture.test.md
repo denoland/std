@@ -62,6 +62,6 @@ assessor: agents/test-assessor.md
 
 **Expectations**
 
-- goodbye was responsed to
+- goodbye was responded to
 - local function was called twice
 - in between the two function calls, a "hello" was issued by the user
