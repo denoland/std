@@ -47,7 +47,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * const timeframe = 100
  * const func = throttle<[string]>((url) => fetch(url).then(r => r.body?.cancel()), timeframe);
  * for (let i = 0; i < 10; i++) {
- *   func(`http://${server.addr.hostname}:${server.addr.port}/api`);
+ *   func(`http://localhost:${server.addr.port}/api`);
  * }
  *
  * await retry(() => assert(!func.throttling))
