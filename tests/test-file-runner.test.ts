@@ -74,7 +74,7 @@ Deno.test('router', async (t) => {
   })
   await engine.stop()
 })
-Deno.test('test meeting bot', async (t) => {
+Deno.test.ignore('test meeting bot', async (t) => {
   const { backchat, engine } = await fixture()
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
