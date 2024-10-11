@@ -276,7 +276,7 @@ const request = async (
       throw new Error(msg)
     }
     if (cache) {
-      cache.put(toGetRequest(request, params), response.clone())
+      await cache.put(toGetRequest(request, params), response.clone())
     }
   }
 
