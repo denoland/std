@@ -30,8 +30,6 @@ Deno.test('reasoner', async (t) => {
     const tpsPath = reasonerTestPath.replace('.test.md', '.tps.json')
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
 
-    console.dir(tps, { depth: Infinity })
-
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)
   })

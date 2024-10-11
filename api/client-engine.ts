@@ -276,13 +276,9 @@ const request = async (
       throw new Error(msg)
     }
     if (cache) {
-      cache.put(toGetRequest(request, params), response)
+      cache.put(toGetRequest(request, params), response.clone())
     }
-  } else {
-    console.log('cache hit', path, params)
   }
-
-  response = response.clone()
 
   if (opts.binary) {
     const bytes = await response.bytes()

@@ -229,7 +229,7 @@ const runDependencies = async (
   let lastParent: string | undefined
   for (const caseIndex of dependencies) {
     // TODO handle nested dependencies
-    log('executing before:', caseIndex)
+    log('executing dependency:', caseIndex)
     // TODO test this is adding on to the same thread
     const promise = iteration({ path, caseIndex, iterationIndex: 0 })
     const { parent } = await withMeta(promise)
@@ -243,7 +243,7 @@ const runDependencies = async (
 
     const failures = outcomes.filter(({ outcome }) => !outcome)
     if (failures.length) {
-      throw new Error('"before" step failed: ' + JSON.stringify(failures))
+      throw new Error('dependencies step failed: ' + JSON.stringify(failures))
     }
   }
   assert(lastParent, 'missing last parent')

@@ -45,7 +45,9 @@ const tpsFixture: TestFile = {
         iterations: 1,
         dependencies: [],
         promptLists: [['call the local function']],
-        expectations: ['function was called once'],
+        expectations: [
+          'the local function was called',
+        ],
         completed: 0,
         successes: [0],
       },
