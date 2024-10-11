@@ -11,6 +11,7 @@
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
     "./pool": "./pool.ts",
     "./retry": "./retry.ts",
-    "./tee": "./tee.ts"
+    "./tee": "./tee.ts",
+    "./unstable-throttle": "./unstable_throttle.ts" 
   }
 }
