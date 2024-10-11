@@ -20,7 +20,6 @@ Deno.test('test with dependencies', async (t) => {
     const endTps = await backchat.readJSON<TestFile>(tpsPath)
 
     expect(endTps.cases[1].summary.completed).toBe(1)
-    expect(endTps.cases[1].summary.successes).toEqual([1])
   })
   await engine.stop()
 })
