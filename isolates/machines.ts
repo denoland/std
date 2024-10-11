@@ -1,40 +1,53 @@
-import { actorIdRegex, IA } from '@/constants.ts'
+import {
+  actorIdRegex,
+  addBranches,
+  Functions,
+  getRoot,
+  PID,
+  ToApiType,
+} from '@/constants.ts'
 import FS from '@/git/fs.ts'
 import { assert } from '@utils'
+import { z } from 'zod'
 
-export type Api = {
-  upsert: (params: { machineId: string; actorId: string }) => Promise<void>
+export const parameters = {
+  upsert: z.object({
+    machineId: z.string(),
+    actorId: z.string(),
+  }),
 }
-export const api = {
-  upsert: {
-    type: 'object',
-    required: ['machineId', 'actorId'],
-    properties: {
-      machineId: { type: 'string' },
-      actorId: { type: 'string' },
-    },
-    additionalProperties: false,
-  },
+export const returns = {
+  upsert: z.void(),
 }
-export const functions = {
-  upsert(p: { machineId: string; actorId: string }, api: IA) {
-    const { machineId, actorId } = p
-    const path = shardedPath(machineId)
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const functions: Functions<Api> = {
+  upsert({ machineId, actorId }, api) {
+    const path = shardedPath(MACHINES, 'mac_', machineId)
     api.writeJSON(path, actorId)
   },
 }
+const MACHINES = '.machines/'
 
-const shardedPath = (machineId: string) => {
-  const prefix = machineId.slice(0, 2)
-  const suffix = machineId.slice(2)
-  return prefix + '/' + suffix + '.json'
+const shardedPath = (folder: string, prefix: string, id: string) => {
+  assert(folder.endsWith('/'), 'folder must end with /: ' + folder)
+  const shard = folder + id.slice(0, prefix.length + 2)
+  const suffix = id.slice(prefix.length + 2)
+  const path = shard + '/' + suffix + '.json'
+  return path
 }
 
 export const tryActorId = async (machineId: string, fs: FS) => {
-  const machinePath = shardedPath(machineId)
+  const machinePath = shardedPath(MACHINES, 'mac_', machineId)
   if (await fs.exists(machinePath)) {
     const actorId = await fs.readJSON<string>(machinePath)
     assert(actorIdRegex.test(actorId), 'invalid actor: ' + actorId)
     return actorId
   }
+}
+
+export const getMachineTarget = (pid: PID) => {
+  const base = getRoot(pid)
+  return addBranches(base, 'machines')
 }

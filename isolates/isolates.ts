@@ -37,3 +37,24 @@ export type Api = {
 
 // can make this run only in the current repo, rather than being a cross repo
 // thing ?
+
+// TODO make it read the code from inside the isolates directory directly.
+
+// What if we made a file browser that could browse the source code directly ?
+
+// provide a files:readSystemFiles function that can read from the deployment
+// for isolates it would be scoped to the isolates/ directory.
+
+// then pull in the deploy logs into artifact too, so we can actually read them
+// inside the browser, and parse them with AI watchers.
+// Batch them up into manageable chunks.
+
+// to make changes to the prompting of an isolate, it should be able to edit the
+// repo source, then do a PR to get it deployed ?
+
+// then the isolate call can be used to read in the json-schema directly, which
+// the bot can then interpret as parameters for function calling, and can help
+// with the prompting of the description.
+
+// when reading the source, it can also check the relevance of the schema
+// against the actual code.

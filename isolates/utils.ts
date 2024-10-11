@@ -1,40 +1,40 @@
-export const api = {
-  delay: {
-    description:
-      `Delays the execution of the next command by the specified number of milliseconds and then returns the current date and time in the format used by the system locale.  For example the following function input parameters:
-    
-      const milliseconds = 1000
-
-      would result in the call:
-
-      await new Promise(resolve => setTimeout(resolve, milliseconds))
-
-      which would delay the execution of the next command by 1 second, and then would return the result of calling:
-
-      new Date().toLocaleString()
-      `,
-    type: 'object',
-    additionalProperties: false,
-    required: ['milliseconds'],
-    properties: {
-      milliseconds: { type: 'integer', minimum: 1 },
-    },
-  },
-  relay: {
-    description:
-      `Returns the last tool call results and ends the AI conversation.  Useful where one AI is calling another AI and you want to relay the results back to the original caller without consuming any extra tokens or effect from the executing AI.`,
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
+import { Functions, ToApiType } from '@/constants.ts'
+import { z } from 'zod'
+export const parameters = {
+  delay: z.object({
+    milliseconds: z.number().int().gte(1).describe(
+      'The number of milliseconds to delay the execution of the next command',
+    ),
+  }).describe(
+    'Delays the execution of the next command by the specified number of milliseconds and then returns the current date and time in the format used by the system locale.',
+  ),
+  resolve: z.object({}).passthrough().describe(
+    'Used by drones to signal the successful completion of a task.  Can be called with any properties at all. MUST BE CALLED AS A SINGLE TOOL CALL and NEVER in a parallel tool call.',
+  ),
+  reject: z.object({ message: z.string() }).passthrough().describe(
+    'Used by drones to signal the unsuccessful completion of a task.  Can be called with any properties at all. MUST BE CALLED AS A SINGLE TOOL CALL and NEVER in a parallel tool call.',
+  ),
+  time: z.object({}).describe(
+    'Returns the current date and time in ISO 8601 format with zero timezone offset',
+  ),
 }
-export const functions = {
-  delay: async (params: { milliseconds: number }) => {
-    const { milliseconds } = params
+export const returns = {
+  delay: z.string().describe(
+    'The current date and time in the format used by the system locale',
+  ),
+  resolve: z.null(),
+  reject: z.null(),
+  time: z.string().datetime(),
+}
+
+export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const functions: Functions<Api> = {
+  delay: async ({ milliseconds }) => {
     await new Promise((resolve) => setTimeout(resolve, milliseconds))
     return new Date().toLocaleString()
   },
-  relay: () => {
-    return '@@ARTIFACT_RELAY@@'
-  },
+  resolve: () => null,
+  reject: () => null,
+  time: () => new Date().toISOString(),
 }

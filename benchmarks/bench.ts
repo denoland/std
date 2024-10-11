@@ -1,12 +1,11 @@
-// @deno-types="npm:@types/benchmark"
 import Benchmark from 'benchmark'
 import { Debug } from '@utils'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { assert } from '@std/assert'
 import DB from '@/db.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks AI:qbr')
@@ -32,15 +31,14 @@ const engineFactory = async () => {
 }
 const machineEngine = await engineFactory()
 const machineEnginePrivateKey = Crypto.generatePrivateKey()
-Crypto.load(machineEnginePrivateKey) // do premul crypto
+Crypto.load(machineEnginePrivateKey) // do premul crypto so run is not skewed
 
-const sessionStartSession = await factory()
-const sessionReloadSession = await factory()
+const backchatStartThread = await factory()
+const backchatReload = await factory()
 
-const coldPingSession = await factory()
-const hotPingSession = await factory()
-const hotPingActions = await hotPingSession.actions<Api>('io-fixture')
-const installSession = await factory()
+const hotPing = await factory()
+const hotPingActions = await hotPing.actions<Api>('io-fixture')
+const install = await factory()
 let installCounter = 0
 
 log('setup complete')
@@ -56,49 +54,46 @@ suite
     },
   })
   // MACHINE
-  .add('machine root session', {
-    // generate a new machine key and await the root session
+  .add('machine root session', { // RENAME to: backchat create
+    // generate a new machine key and await backchat to upsert
     defer: true,
     async fn(deferred: Benchmark.Deferred) {
       const privateKey = Crypto.generatePrivateKey()
-      const machine = Machine.load(machineEngine, privateKey)
-      await machine.rootTerminalPromise
+      await Backchat.upsert(machineEngine, privateKey)
       deferred.resolve()
     },
   })
-  .add('machine reload', {
+  .add('machine reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const machine = Machine.load(machineEngine, machineEnginePrivateKey)
-      await machine.rootTerminalPromise
+      await Backchat.upsert(machineEngine, machineEnginePrivateKey)
       deferred.resolve()
     },
   })
   // SESSION
-  .add('boot', {
-    // start an engine and await the first non root session
+  .add('boot', { // RENAME to: full boot from cold
+    // start an engine and await backchat to upsert
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = await factory()
-      await session.initializationPromise
+      await factory()
       deferred.resolve()
     },
   })
-  .add('session start', {
+  .add('session start', { // RENAME to: new thread
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = sessionStartSession.newTerminal()
-      await session.initializationPromise
+      await backchatStartThread.newThread()
       deferred.resolve()
-      session.stop()
     },
   })
-  .add('session reload', {
+  .add('session reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const { pid } = sessionReloadSession
-      const session = sessionReloadSession.resumeTerminal(pid)
-      await session.initializationPromise
+      await Backchat.upsert(
+        machineEngine,
+        machineEnginePrivateKey,
+        backchatReload.id,
+      )
       deferred.resolve()
     },
   })
@@ -118,22 +113,25 @@ suite
   // run a benchmark from inside an isolate, skipping pierce
   // ? how can we map how long a branch takes to make ?
 
-  .add('cold ping', {
+  .add('cold ping', { // RENAME to: create backchat then ping
     // make a new session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const session = coldPingSession.newTerminal()
-      const fixture = await session.actions<Api>('io-fixture')
-      const result = await fixture.local()
+      const backchat = await Backchat.upsert(
+        machineEngine,
+        machineEnginePrivateKey,
+      )
+      const fixture = await backchat.actions<Api>('io-fixture')
+      const result = await fixture.local({})
       assert(result === 'local reply')
       deferred.resolve()
     },
   })
-  .add('hot ping', {
+  .add('hot ping', { // RENAME to: ping local
     // use an existing session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const result = await hotPingActions.local()
+      const result = await hotPingActions.local({})
       assert(result === 'local reply')
       deferred.resolve()
     },
@@ -147,12 +145,12 @@ suite
   //       deferred.resolve()
   //     },
   //   })
-  .add('install', {
+  .add('install', { // RENAME to: init repo
     // time how long to install a new multi user app
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       const repo = 'install/' + installCounter++
-      await installSession.init({ repo })
+      await install.init({ repo })
       deferred.resolve()
     },
   })
@@ -199,3 +197,10 @@ suite
 // time to restart an existing session
 
 // ? can a GUTS framework be made to run benchmarks in different environments
+
+// bulk copy files speed test, as well as single binary file test
+// bulk file read without cache.
+
+// multiple stage ping test
+// branch and some multiple requests test
+// also test the branch task going sequentially

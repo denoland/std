@@ -1,5 +1,5 @@
 import { assert, Debug } from '@utils'
-import { Branched, PROCTYPE } from '@/constants.ts'
+import { Branched, Proctype } from '@/constants.ts'
 import { RemoteRequest } from '@/constants.ts'
 import IOChannel from '../io/io-channel.ts'
 import { solidify } from './solidify.ts'
@@ -30,7 +30,7 @@ export const branch = async (fs: FS, sequence: number) => {
     target: pid,
     source: fs.pid,
     sequence,
-    proctype: PROCTYPE.SERIAL,
+    proctype: Proctype.enum.SERIAL,
     commit: fs.oid,
   }
   log('origin', origin)

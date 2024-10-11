@@ -1,7 +1,7 @@
 import * as utils from '@utils'
 import DB from '@/db.ts'
 import FS from './fs.ts'
-import { addBranches, IO_PATH, partialFromRepo } from '@/constants.ts'
+import { addBranches, addPeer, IO_PATH, partialFromRepo } from '@/constants.ts'
 const { expect } = utils
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
@@ -15,45 +15,60 @@ Deno.test('git/init', async (t) => {
     )
     expect(await db.readHead(fs.pid)).toBe(fs.oid)
   })
-  await t.step('paths', async () => {
+  await t.step('git paths', async () => {
     const git = 'git paths are forbidden: '
-    const relative = 'path must be relative: '
+    const json = 'path must be *.json'
     const paths = [
-      '',
-      '/',
       '.git',
       '.git/something',
       '.git/objects/something',
       '.git/refs',
       '.git/refs/heads',
       '.git/refs/heads/main',
-      '/something',
     ]
     const trailing = [...paths, ...paths.map((path) => path + '/')]
     const forwards = [
       ...trailing,
-      '/something',
-      '/something/deep',
-      '//something',
       ...trailing.map((path) => '/' + path),
     ]
     for (const path of forwards) {
-      const message = path.startsWith('/') || !path ? relative + path : git
-      expect(() => fs.write(path, ''), path).toThrow(message)
-      expect(() => fs.write(path, 'data'), path).toThrow(message)
-      expect(() => fs.writeJSON(path, ''), path).toThrow(message)
-      expect(() => fs.writeJSON(path, 'data'), path).toThrow(message)
-      expect(() => fs.delete(path), path).toThrow(message)
-      await expect(fs.read(path), path).rejects.toThrow(message)
-      await expect(fs.readBinary(path), path).rejects.toThrow(message)
-      await expect(fs.readJSON(path), path).rejects.toThrow(message)
-      await expect(fs.ls(path), path).rejects.toThrow(message)
-      await expect(fs.exists(path), path).rejects.toThrow(message)
+      expect(() => fs.write(path, ''), path).toThrow(git)
+      expect(() => fs.write(path, 'data'), path).toThrow(git)
+      expect(() => fs.writeJSON(path, ''), path).toThrow(json)
+      expect(() => fs.writeJSON(path, 'data'), path).toThrow(json)
+      expect(() => fs.delete(path), path).toThrow(git)
+      await expect(fs.read(path), path).rejects.toThrow(git)
+      await expect(fs.readBinary(path), path).rejects.toThrow(git)
+      await expect(fs.readJSON(path), path).rejects.toThrow(json)
+      await expect(fs.ls(path), path).rejects.toThrow(git)
+      await expect(fs.exists(path), path).rejects.toThrow(git)
       if (path) {
-        expect(() => fs.logs(path), path).toThrow(message)
+        expect(() => fs.logs(path), path).toThrow(git)
       }
     }
   })
+  await t.step('complicated paths', async () => {
+    const paths = ['', '.', '/', '/something', '/something/deep', '//something']
+    for (const path of paths) {
+      if (['', '.', '/'].includes(path)) {
+        expect(() => fs.write(path, ''), path).toThrow()
+        expect(() => fs.write(path, 'data'), path).toThrow()
+        expect(() => fs.writeJSON(path, ''), path).toThrow()
+        expect(() => fs.writeJSON(path, 'data'), path).toThrow()
+        expect(() => fs.delete(path), path).toThrow()
+        await expect(fs.ls(path), path).resolves.not.toThrow()
+        await expect(Promise.resolve(fs.logs(path)), path).resolves.not
+          .toThrow()
+      } else {
+        expect(() => fs.delete(path), path).not.toThrow()
+      }
+      await expect(fs.read(path), path).rejects.toThrow()
+      await expect(fs.readBinary(path), path).rejects.toThrow()
+      await expect(fs.readJSON(path), path).rejects.toThrow()
+      await expect(fs.exists(path), path).resolves.not.toThrow()
+    }
+  })
+
   await t.step('write', async () => {
     const path = 'hello.txt'
     const data = 'world'
@@ -131,18 +146,49 @@ Deno.test('clone and pull', async (t) => {
     const data = await fs.read(path)
     expect(data).toContain('AI')
   })
-  await t.step('pull', async () => {
+  await t.step('fetch', async () => {
     const oid = await FS.fetch('dreamcatcher-tech/HAL', fs.pid, db)
     expect(oid).toEqual(fs.oid)
   })
-
-  // pull should let you pull into any pid you like
 
   // insert the PAT into the github repo
   // do a push, using this auth method
 
   // make a new branch
   // push this up to the git repo for testing
+
+  db.stop()
+})
+Deno.test('merge', async (t) => {
+  const db = await DB.create(DB.generateAesKey())
+  let fs = await FS.init(partialFromRepo('test/merge'), db)
+
+  await t.step('merge', async () => {
+    fs.write('hello.txt', 'world')
+    const { next } = await fs.writeCommitObject('merge')
+    const oid = await next.merge(fs.oid)
+    expect(oid).not.toEqual(fs.oid)
+    fs = next
+  })
+  await t.step('merge conflict', async () => {
+    const readme = await fs.read('hello.txt')
+    expect(readme).toBe('world')
+
+    fs.write('hello.txt', 'conflict 1')
+    const { next } = await fs.writeCommitObject('merge')
+
+    const pid = addPeer(fs.pid, 'conflict')
+    const branch = fs.branch(pid)
+    branch.write('hello.txt', 'conflict 2')
+    const { next: branchNext } = await branch.writeCommitObject('branch')
+
+    const oid = await next.merge(branchNext.oid)
+
+    const merged = FS.open(next.pid, oid, db)
+    const readmeMerged = await merged.read('hello.txt')
+    expect(readmeMerged).toContain('conflict 1')
+    expect(oid).not.toEqual(fs.oid)
+  })
 
   db.stop()
 })

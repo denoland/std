@@ -5,12 +5,13 @@
 import { assert, equal } from '@utils'
 import {
   IoStruct,
+  ioStruct,
   isMergeReply,
   isPierceRequest,
   isRemoteRequest,
   MergeReply,
   PID,
-  PROCTYPE,
+  Proctype,
   RemoteRequest,
   Request,
   SolidReply,
@@ -21,25 +22,29 @@ import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { IsolatePromise } from '@/constants.ts'
 
-const createBase = (): IoStruct => ({
-  sequence: 0,
-  requests: {},
-  executed: {},
-  replies: {},
-  parents: {},
-  pendings: {},
-  branches: {},
-})
+const createBase = () =>
+  ioStruct.parse({
+    sequence: 0,
+    requests: {},
+    executed: {},
+    replies: {},
+    parents: {},
+    pendings: {},
+    branches: {},
+    state: {},
+  })
 
 export default class IOChannel {
   readonly #io: IoStruct
   readonly #fs: FS | undefined
   readonly #pid: PID
   #original: IoStruct
-  private constructor(io: IoStruct, pid: PID, fs?: FS) {
+  private constructor(io: IoStruct, pid: PID, fs?: FS, noPurge?: boolean) {
     this.#pid = pid
     this.#io = io
-    this.#blankSettledRequests()
+    if (!noPurge) {
+      this.#blankSettledRequests()
+    }
     if (fs) {
       // TODO remove the fs item completely - handle fs outside
       assert(equal(pid, fs.pid), 'pid mismatch')
@@ -52,6 +57,7 @@ export default class IOChannel {
     check(io, pid)
     return new IOChannel(io, pid)
   }
+
   static async read(fs: FS) {
     if (await fs.exists('.io.json')) {
       const io = await fs.readJSON<IoStruct>('.io.json')
@@ -59,20 +65,33 @@ export default class IOChannel {
       return new IOChannel(io, fs.pid)
     }
   }
-  static async load(fs: FS) {
+  static load(fs: FS) {
+    return IOChannel.#load(fs)
+  }
+  static loadWithoutPurge(fs: FS) {
+    const noPurge = true
+    return IOChannel.#load(fs, noPurge)
+  }
+  static async #load(fs: FS, noPurge?: boolean) {
     // TODO ensure this is cached
     let io = createBase()
 
     if (await fs.exists('.io.json')) {
-      io = await fs.readJSON('.io.json') as IoStruct
+      io = await fs.readJSON<IoStruct>('.io.json')
       check(io, fs.pid)
     }
-    const channel = new IOChannel(io, fs.pid, fs)
+    const channel = new IOChannel(io, fs.pid, fs, noPurge)
     return channel
   }
   static blank(fs: FS) {
     const io = new IOChannel(createBase(), fs.pid, fs)
     io.#save()
+  }
+  get state() {
+    return this.#io.state
+  }
+  set state(value: IoStruct['state']) {
+    this.#io.state = value
   }
   #save() {
     if (!this.#fs) {
@@ -89,7 +108,7 @@ export default class IOChannel {
     return this.#save()
   }
   isExecution(attempt: SolidRequest) {
-    const next = this.getExecution()
+    const next = this.getRunnableExecution()
     return equal(next, attempt)
   }
   isExecutionAvailable() {
@@ -110,7 +129,7 @@ export default class IOChannel {
 
     for (const sequence of unreplied) {
       const rawRequest = this.#io.requests[sequence]
-      if (rawRequest.proctype !== PROCTYPE.SERIAL) {
+      if (rawRequest.proctype !== Proctype.enum.SERIAL) {
         continue
       }
       if (!equal(rawRequest.target, this.#pid)) {
@@ -138,14 +157,27 @@ export default class IOChannel {
     this.#io.executed[sequence] = true
     return { request, sequence }
   }
+  getRunnableExecution() {
+    const { request, sequence } = this.#getExecution()
+    return toRunnableRequest(request, sequence)
+  }
   getExecution() {
+    const { request, sequence } = this.#getExecution()
+    let commit = undefined
+    const runnable = toRunnableRequest(request, sequence)
+    if (isRemoteRequest(request)) {
+      commit = request.commit
+    }
+    return { runnable, commit }
+  }
+  #getExecution() {
     if (this.#io.executing === undefined) {
       throw new Error('no execution action set')
     }
     const sequence = this.#io.executing
     assert(sequence in this.#io.requests, 'execution sequence not found')
     const request = this.#io.requests[sequence]
-    return toRunnableRequest(request, sequence)
+    return { request, sequence }
   }
   getSequence(request: SolidRequest) {
     for (const [key, value] of Object.entries(this.#io.requests)) {
@@ -159,8 +191,26 @@ export default class IOChannel {
     throw new Error('request not found')
   }
   getRequest(sequence: number) {
-    assert(sequence in this.#io.requests, 'sequence not found')
-    return this.#io.requests[sequence]
+    assert(sequence in this.#io.requests, 'sequence not found: ' + sequence)
+
+    return toRunnableRequest(this.#io.requests[sequence], sequence)
+  }
+  getOutcome(sequence: number) {
+    assert(sequence in this.#io.replies, 'sequence not found')
+    return this.#io.replies[sequence]
+  }
+  getOutcomeBySource(requestSource: PID, sequence: number) {
+    for (const key in this.#io.requests) {
+      const request = this.#io.requests[key]
+      if (isRemoteRequest(request)) {
+        if (
+          equal(request.source, requestSource) && request.sequence === sequence
+        ) {
+          return this.#io.replies[Number.parseInt(key)]
+        }
+      }
+    }
+    throw new Error('sequence not found: ' + sequence)
   }
   reply(reply: MergeReply | SolidReply) {
     const { sequence } = reply
@@ -187,13 +237,13 @@ export default class IOChannel {
         }
       }
       delete this.#io.pendings[sequence]
-      if (request.proctype !== PROCTYPE.DAEMON) {
+      if (request.proctype !== Proctype.enum.DAEMON) {
         delete this.#io.branches[sequence]
       }
     }
     for (const key of pendingsToBlank) {
       const request = this.#io.requests[key]
-      if (request.proctype !== PROCTYPE.DAEMON) {
+      if (request.proctype !== Proctype.enum.DAEMON) {
         delete this.#io.branches[key]
       }
       delete this.#io.requests[key]
@@ -213,7 +263,7 @@ export default class IOChannel {
     const indices: number[] = []
     const commits: string[] = []
 
-    const origin = this.getExecution()
+    const origin = this.getRunnableExecution()
     assert(origin, 'no serial request found')
     const sequence = this.getSequence(origin)
     const pendings = this.#io.pendings[sequence]
@@ -258,8 +308,9 @@ export default class IOChannel {
   }
   getBranchPid(sequence: number) {
     const request = this.getRequest(sequence)
-    const branchTypes = [PROCTYPE.BRANCH, PROCTYPE.DAEMON]
-    assert(branchTypes.includes(request.proctype), 'not a branch request')
+    const isBranch = request.proctype === Proctype.enum.BRANCH ||
+      request.proctype === Proctype.enum.DAEMON
+    assert(isBranch, 'not a branch request')
 
     let branchName = sequence + ''
     if (request.branchName) {
@@ -317,8 +368,10 @@ export default class IOChannel {
   }
   #addRequest(request: Request, sequence: number) {
     this.#io.requests[sequence] = request
-    const { proctype } = request
-    if (proctype === PROCTYPE.DAEMON || proctype === PROCTYPE.BRANCH) {
+    if (
+      request.proctype === Proctype.enum.DAEMON ||
+      request.proctype === Proctype.enum.BRANCH
+    ) {
       if (equal(request.target, this.#pid)) {
         const pid = this.getBranchPid(sequence)
         this.#io.branches[sequence] = pid.branches[pid.branches.length - 1]
@@ -350,10 +403,19 @@ export default class IOChannel {
   }
 }
 
+// const parsedMap = new WeakMap()
+
 const check = (io: IoStruct, thisPid: PID) => {
-  // TODO check format
+  // TODO move this to zod schema with refine
   // TODO check key sequences are sane
   // TODO do the same for reply values
+  // if (!parsedMap.has(io)) {
+  // can use weakmap since at runtime, the object is typesafe, so can mutate
+  ioStruct.parse(io)
+  // const isParsed = true
+  // parsedMap.set(io, isParsed)
+  // }
+
   for (const replyKey of Object.keys(io.replies)) {
     assert(replyKey in io.requests, 'no reply key in requests')
   }
@@ -371,7 +433,9 @@ const toRunnableRequest = (request: Request, sequence: number) => {
   if (cache.has(request)) {
     const sequences = cache.get(request)
     if (sequences?.has(sequence)) {
-      return sequences.get(sequence)
+      const request = sequences.get(sequence)
+      assert(request, 'request not found: ' + sequence)
+      return request
     }
   }
   if (!isPierceRequest(request)) {

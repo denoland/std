@@ -5,7 +5,7 @@ import {
   C,
   isPierceRequest,
   PartialPID,
-  PROCTYPE,
+  Proctype,
   SolidRequest,
 } from '@/constants.ts'
 import { assert, expect, log } from '@utils'
@@ -13,23 +13,24 @@ import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
-import { randomId } from '@/constants.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
+import { hash } from '@/constants.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
+const repoId = `rep_${hash('test')}`
 const partialPid: PartialPID = {
   account: 'exe',
   repository: 'test',
   branches: ['main'],
 }
-const source = { ...partialPid, repoId: 'other', account: 'higher' }
+const source = { ...partialPid, repoId, account: 'higher' }
 const partialRequest: PartialRequest = {
   isolate: 'io-fixture',
   functionName: 'local',
   params: {},
-  proctype: PROCTYPE.SERIAL,
+  proctype: Proctype.enum.SERIAL,
   source,
   sequence: 0,
 }
@@ -41,7 +42,7 @@ const mocks = async (initialRequest: PartialRequest) => {
   io.addRequest(request)
   io.setExecution()
   io.save()
-  const { next } = await fs.writeCommitObject()
+  const { next } = await fs.writeCommitObject('mock exe')
   fs = next
   io = await IOChannel.load(fs)
   const stop = () => db.stop()
@@ -90,7 +91,11 @@ Deno.test('writes', async (t) => {
 })
 
 Deno.test('loopback', async () => {
-  const compound = { ...partialRequest, functionName: 'compound' }
+  const compound = {
+    ...partialRequest,
+    functionName: 'compound',
+    params: { target: source },
+  }
   const { request, context, exe, fs, stop } = await mocks(compound)
   const result = await exe.execute(request, fs.oid, context)
   expect('pending' in result).toBeTruthy()
@@ -99,14 +104,14 @@ Deno.test('loopback', async () => {
 
 Deno.test('compound', async (t) => {
   const target = {
-    repoId: `rep_${randomId('compound')}`,
+    repoId: `rep_${hash('compound')}`,
     account: 'exe',
     repository: 'other',
     branches: ['other'],
   }
   const compound = {
     isolate: 'io-fixture',
-    proctype: PROCTYPE.SERIAL,
+    proctype: Proctype.enum.SERIAL,
     source,
     sequence: 0,
     functionName: 'compound',
@@ -133,14 +138,15 @@ Deno.test('compound', async (t) => {
       source: target,
       outcome: { result: 'compound reply' },
       sequence: sequenced[0].sequence,
-      commit: 'fakeCommit',
+      commit: '9e77f98333897ce63bf993280994d5e96c1679ff',
     }
+
     const savedRequest = io.reply(reply)
     assert(!isPierceRequest(savedRequest))
     expect(savedRequest).toEqual(sequenced[0])
     io.setExecution()
     io.save()
-    const { next } = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject('function cache')
 
     const result = await exe.execute(request, next.oid, context)
     expect('reply' in result).toBeTruthy()
@@ -154,14 +160,14 @@ Deno.test('compound', async (t) => {
     const reply = {
       target,
       source: target,
-      commit: 'fakeCommit',
+      commit: '0088107ee2fe3d8350d64b8b0098081a3db08adc',
       outcome: { result: 'compound reply' },
       sequence: sequenced[0].sequence,
     }
     io.reply(reply)
     io.setExecution()
     io.save()
-    const { next } = await fs.writeCommitObject()
+    const { next } = await fs.writeCommitObject('function replay')
 
     const c = { ...context, exe: Executor.createCacheContext() }
     const result = await c.exe.execute(request, next.oid, c)

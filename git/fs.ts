@@ -4,13 +4,14 @@ import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
+  hash,
   IO_PATH,
   isBaseRepo,
   PartialPID,
   PID,
   print,
-  randomId,
   sha1,
+  type TreeEntry,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
@@ -171,7 +172,10 @@ export default class FS {
   }
   logs(filepath?: string, depth?: number) {
     if (filepath) {
-      assertPath(filepath)
+      filepath = refine(filepath)
+    }
+    if (filepath === '.') {
+      filepath = undefined
     }
     return git.log({ ...this.#git, filepath, depth, ref: this.oid })
   }
@@ -197,28 +201,63 @@ export default class FS {
     const next = new FS(this.#pid, nextCommit, this.#db)
     return { next, changes, commit }
   }
+  async theirsMerge(theirs: string) {
+    const parents = [theirs]
+    assert(parents.every((oid) => sha1.test(oid)), 'Parent not SHA-1')
+    assert(!this.isChanged, 'cannot merge with changes')
+    if (this.oid === theirs) {
+      throw new Error('Already merged')
+    }
+    const author = { name: 'git/theirsMerge' }
+
+    const theirTree = await git.readTree({ ...this.#git, oid: theirs })
+    const ourTree = await git.readTree({ ...this.#git, oid: this.oid })
+
+    const io = ourTree.tree.find((entry) => entry.path === IO_PATH)
+    const merged = theirTree.tree.filter((entry) => entry.path !== IO_PATH)
+    if (io) {
+      merged.push(io)
+    }
+    const tree = await git.writeTree({ ...this.#git, tree: merged })
+
+    const commit = await git.commit({
+      ...this.#git,
+      noUpdateBranch: true,
+      message: 'Merge using "theirs" strategy',
+      author,
+      tree,
+      parent: [this.oid, ...parents],
+    })
+
+    const next = new FS(this.#pid, commit, this.#db)
+    return { next, changes: {}, commit }
+  }
   async merge(commit: string) {
     assert(!this.isChanged, 'cannot merge with changes')
+    if (this.oid === commit) {
+      return this.oid
+    }
     const result = await git.merge({
       ...this.#git,
       noUpdateBranch: true,
       mergeDriver,
       ours: this.oid,
       theirs: commit,
-      author: { name: 'git/merge' },
+      author: { name: 'Artifact' },
+      message: 'Merge',
     })
     assert(result.oid, 'merge failed')
     return result.oid
   }
   async exists(path: string) {
-    assertPath(path)
+    path = refine(path)
+    if (path === '.') {
+      return true
+    }
     if (this.#deletes.has(path)) {
       return false
     }
     if (this.#upserts.has(path)) {
-      return true
-    }
-    if (path === '.') {
       return true
     }
 
@@ -226,7 +265,11 @@ export default class FS {
       await this.readOid(path)
       return true
     } catch (error) {
-      if (error.code === 'NotFoundError') {
+      // TODO move all errors to be FileNotFoundError
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
         return false
       }
       throw error
@@ -235,15 +278,14 @@ export default class FS {
 
   async readOid(path: string): Promise<string> {
     // TODO test how this works for "."
+    path = refine(path)
     if (this.#deletes.has(path)) {
       throw new Errors.NotFoundError(path)
     }
-    assertPath(path)
+
     const dirname = posix.dirname(path)
-    const filepath = dirname === '.' ? undefined : dirname
     const basename = posix.basename(path)
-    const oid = this.#internalOid
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    const tree = await this.readTree(dirname)
     for (const entry of tree) {
       if (entry.path === basename) {
         return entry.oid
@@ -251,8 +293,16 @@ export default class FS {
     }
     throw new Errors.NotFoundError(path)
   }
+  async readTree(path: string = '.') {
+    path = refine(path)
+    const oid = this.#internalOid
+    const filepath = path === '.' ? undefined : path
+    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    return tree
+  }
   delete(path: string) {
-    assertPath(path)
+    path = refine(path)
+    assert(path !== '.', 'cannot delete root')
     // TODO delete a whole directory
     log('delete', path)
     this.#deletes.add(path)
@@ -261,42 +311,38 @@ export default class FS {
   writeJSON(path: string, json: unknown) {
     // TODO store json objects specially, only strinify on commit
     // then broadcast changes as json object purely
-    assertPath(path)
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
+    path = refine(path)
     const string = JSON.stringify(json, null, 2)
     assert(typeof string === 'string', 'stringify failed')
     return this.write(path, string)
   }
   write(path: string, data: string | Uint8Array) {
-    assertPath(path)
+    path = refine(path)
+    assert(path !== '.', 'cannot write to root')
+    // TODO ensure cannot write to a directory
     log('write', path, data)
     this.#upserts.set(path, { data })
     this.#deletes.delete(path)
   }
-  async readJSON<T>(path: string): Promise<T> {
-    assertPath(path)
+  async readJSON<T>(path: string, commit?: string): Promise<T> {
     assert(posix.extname(path) === '.json', `path must be *.json: ${path}`)
-    const data = await this.read(path)
+    const data = await this.read(path, commit)
     return JSON.parse(data)
   }
-  async read(path: string) {
-    assertPath(path)
-    if (this.#upserts.has(path)) {
-      const upsert = this.#upserts.get(path)
-      assert(upsert, 'upsert not found')
-      if ('data' in upsert) {
-        if (typeof upsert.data === 'string') {
-          return upsert.data
-        }
-        throw new Error('found binary data, not string')
-      }
-    }
-    const blob = await this.readBinary(path)
+  async read(path: string, commit?: string) {
+    const blob = await this.readBinary(path, commit)
     return new TextDecoder().decode(blob)
   }
-  async readBinary(path: string): Promise<Uint8Array> {
-    assertPath(path)
-    log('read', path)
+  async readBinary(path: string, commit?: string): Promise<Uint8Array> {
+    path = refine(path)
+    log('readBinary', path, commit)
+
+    if (commit) {
+      const { blob } = await this.#readBlob(path, commit)
+      return blob
+    }
+
     if (this.#deletes.has(path)) {
       throw new Error('Could not find file or directory: ' + path)
     }
@@ -317,8 +363,8 @@ export default class FS {
     const { blob } = await this.#readBlob(path)
     return blob
   }
-  async #readBlob(path: string) {
-    const oid = this.#internalOid
+  async #readBlob(path: string, commit?: string) {
+    const oid = commit || this.#internalOid
     const { blob, oid: blobOid } = await git.readBlob({
       ...this.#git,
       oid,
@@ -328,7 +374,7 @@ export default class FS {
     return { blob, oid: blobOid }
   }
   async ls(path: string = '.') {
-    assertPath(path)
+    path = refine(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts
     log('ls', path)
@@ -381,13 +427,18 @@ export default class FS {
     return !!await this.#db.readHead(pid)
   }
   async mv(from: string, to: string) {
+    await this.cp(from, to)
+    this.delete(from)
+  }
+  async cp(from: string, to: string) {
     // TODO check using directories
+    from = refine(from)
+    to = refine(to)
     assert(from !== to, 'source and destination are the same')
     assert(await this.exists(from), 'source does not exist: ' + from)
     assert(!await this.exists(to), 'destination already exists: ' + to)
     const oid = await this.readOid(from)
     this.#upserts.set(to, { oid })
-    this.delete(from)
   }
   async overwrite(commit: string, ...ignores: string[]) {
     // TODO allow changes so long as they are in the ignored set
@@ -396,7 +447,7 @@ export default class FS {
     assert(this.oid !== commit, 'cannot overwrite with same commit')
     assert(this.#overwrite !== commit, 'cannot overwrite the same commit twice')
     ignores.push(IO_PATH)
-    ignores.forEach(assertPath)
+    ignores.forEach(refine)
 
     const result = await git.readCommit({ ...this.#git, oid: commit })
     assert(result, 'commit not found: ' + commit)
@@ -488,24 +539,7 @@ type Tree = {
   children: Map<string, Tree>
 }
 type TreeObject = TreeEntry[]
-type TreeEntry = {
-  /**
-   * - the 6 digit hexadecimal mode
-   */
-  mode: string
-  /**
-   * - the name of the file or directory
-   */
-  path: string
-  /**
-   * - the SHA-1 object id of the blob or tree
-   */
-  oid: string
-  /**
-   * - the type of object
-   */
-  type: 'blob' | 'tree' | 'commit'
-}
+
 const ensurePath = (tree: Tree, path: string) => {
   const parts = path.split('/')
   parts.pop()
@@ -593,18 +627,33 @@ const treeToLayers = (tree: Tree, layers: Tree[][] = [], level: number = 0) => {
   }
   return layers
 }
-const assertPath = (path: string) => {
+const refine = (path: string) => {
+  path = path.trim()
+  while (path.startsWith('/')) {
+    path = path.slice(1)
+  }
+  while (path.endsWith('/')) {
+    path = path.slice(0, -1)
+  }
+  while (path.startsWith('./')) {
+    path = path.slice(2)
+  }
+  if (!path) {
+    path = '.'
+  }
+  path = posix.normalize(path)
   assert(path, `path must be relative: ${path}`)
   assert(!posix.isAbsolute(path), `path must be relative: ${path}`)
   assert(path !== '.git', '.git paths are forbidden: ' + path)
   assert(!path.startsWith('.git/'), '.git paths are forbidden: ' + path)
   assert(!path.endsWith('/'), 'path must not end with /: ' + path)
   assert(!path.startsWith('..'), 'path must not start with ..: ' + path)
+  return path
 }
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
-  return `rep_${randomId(ulid())}`
+  return `rep_${hash(ulid())}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {

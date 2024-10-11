@@ -1,67 +1,32 @@
-import { IA, PID, print, ProcessOptions } from '@/constants.ts'
+import { ToApiType } from '@/constants.ts'
+import { pidSchema } from '@/constants.ts'
+import { Functions, print, ProcessOptions } from '@/constants.ts'
 import { assert, Debug } from '@utils'
+import { z } from 'zod'
 const log = Debug('AI:session')
 
-export const api = {
-  create: {
-    description: 'Creat a new session branch',
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      retry: {
-        type: 'object',
-        description:
-          'If we have a stored session id, attempt to validate it and resume the existing session, else create a new one',
-        // TODO use the PID json schema here
-      },
-      name: {
-        type: 'string',
-        description: 'The name of the session to create',
-      },
-      prefix: {
-        type: 'string',
-        description: 'The prefix to use for the session branch',
-      },
-    },
-  },
-  noop: {
-    description: 'a noop that is used to start a long running branch',
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
-  close: {
-    description: 'End a session branch',
-    type: 'object',
-    additionalProperties: false,
-    properties: {},
-  },
+export const parameters = {
+  create: z.object({
+    name: z.string().optional(),
+    prefix: z.string().optional(),
+  }).refine((v) => Object.keys(v).length <= 1)
+    .describe('Creat a new session branch'),
+  noop: z.object({}).describe(
+    'a noop that is used to start a long running branch',
+  ),
+}
+export const returns = {
+  create: pidSchema,
+  noop: pidSchema,
 }
 
-export type Api = {
-  create: (
-    params?: { retry?: PID; name?: string; prefix?: string },
-  ) => Promise<PID>
-  close: () => void
-  noop: () => Promise<PID>
-}
+export type Api = ToApiType<typeof parameters, typeof returns>
 
 // TODO try kill this whole file
 
-export const functions = {
-  async create(
-    { retry, name, prefix }: { retry?: PID; name?: string; prefix?: string } =
-      {},
-    api: IA,
-  ) {
-    assert(isMaxOneOf(retry, name, prefix), 'max one arg is possible')
-    log('create %o', { retry, name, prefix })
-    if (retry) {
-      if (await api.isActiveChild(retry)) {
-        // TODO check signing keys for validity too
-        return retry
-      }
-    }
+export const functions: Functions<Api> = {
+  async create({ name, prefix }, api) {
+    log('create %o', { name, prefix })
 
     const options: ProcessOptions = { noClose: true }
     if (prefix) {
@@ -70,31 +35,14 @@ export const functions = {
     if (name) {
       options.branchName = name
     }
-    if (!retry && !prefix && !name) {
-      options.prefix = 'session'
-    }
     const { noop } = await api.actions<Api>('session', options)
-    const pid = await noop()
+    const pid = await noop({})
     assert(pid, 'no pid returned')
     log('noop pid returned', print(pid))
     return pid
   },
-  noop(_: object, api: IA) {
+  noop(_: object, api) {
     log('noop', print(api.pid))
     return api.pid
   },
-  close: (_: object, api: IA) => {
-    log(api)
-    // message the parent and tell it to close this child
-  },
-}
-
-const isMaxOneOf = (...args: unknown[]) => {
-  let count = 0
-  for (const arg of args) {
-    if (arg !== undefined) {
-      count++
-    }
-  }
-  return count <= 1
 }

@@ -1,6 +1,7 @@
-import * as engageHelp from '../isolates/thread.ts'
-import { expect, log } from '@utils'
+import { assert, expect, log } from '@utils'
 import { CradleMaker, getParent } from '@/constants.ts'
+import * as longthread from '@/isolates/longthread.ts'
+import * as system from '@/isolates/system.ts'
 
 const agent = `
 ---
@@ -12,91 +13,156 @@ commands:
 
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':isolates: '
-  Deno.test.only(prefix + 'files:ls', async (t) => {
+  const actorId = 'test'
+  const path = 'agents/files.md'
+
+  Deno.test(prefix + 'files:ls', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const actor = getParent(backchat.pid)
-    await backchat.write('agents/files.md', agent, actor)
-    await backchat.write('tmp', '', actor)
+    const target = await backchat.threadPID()
+    await backchat.write(path, agent, target)
+    await backchat.write('tmp', '', target)
 
-    const { engage } = await backchat.actions<engageHelp.Api>('thread', pid)
+    const { run } = await backchat.actions<longthread.Api>('longthread', {
+      target,
+    })
     await t.step('ls', async () => {
-      const text = 'ls'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
       log('result', result)
-      expect(result).not.toContain('.io.json')
+      assert(result)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      log('thread', thread)
     })
     await t.step('ls .', async () => {
-      const text = 'ls .'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls .'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
-      expect(result).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
+
+      log('thread', thread)
     })
     await t.step('ls /', async () => {
-      const text = 'ls /'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls /'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
-      expect(result).not.toContain('.io.json')
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).not.toContain('.io.json')
+
+      log('thread', thread)
     })
     await t.step('ls --all', async () => {
-      const text = 'ls --all'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls --all'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
       log('result', result)
-      expect(result).toContain('.io.json')
+      assert(result)
 
-      const session = await backchat.readJSON<Messages[]>(
-        SESSION_PATH,
-        pid,
-      )
-      log('session', session)
-      await backchat.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).toContain('.io.json')
+
+      log('thread', thread)
+    })
+    await t.step('ls error', async () => {
+      const content = 'ls ./nonexistent'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
+      log('result', result)
+
+      expect(typeof result.content).toBe('string')
+      expect(result.content).toContain('does not exist')
+
+      log('thread', thread)
     })
 
     await engine.stop()
   })
   Deno.test(prefix + 'files:write', async (t) => {
-    const terminal = await cradleMaker()
-    const { pid } = await terminal.init({ repo: 'test/write' })
-    await terminal.write('helps/files.md', agent, pid)
-    const isolate = 'engage-help'
-    const { engage } = await terminal.actions<engageHelp.Api>(isolate, pid)
+    const { backchat, engine } = await cradleMaker()
+
+    const target = await backchat.threadPID()
+    await backchat.write(path, agent, target)
+
+    const { run } = await backchat.actions<longthread.Api>('longthread', {
+      target,
+    })
 
     await t.step('write', async () => {
-      const text = 'write "c" to the file test.txt'
-      const result = await engage({ help: 'files', text })
+      const content = 'write "c" to the file test.txt'
+      const result = await run({ path, actorId, content })
       log('result', result)
-      await terminal.delete(SESSION_PATH, pid)
+
+      const read = await backchat.read('test.txt', target)
+      expect(read).toBe('c')
     })
 
     await t.step('ls', async () => {
-      const text = 'ls'
-      const result = await engage({ help: 'files', text })
+      const content = 'ls'
+      await run({ path, actorId, content })
+      const thread = await backchat.readThread(target)
+      const result = thread.messages.pop()
+      assert(result)
       log('result', result)
-      expect(result).toContain('test.txt')
 
-      await terminal.delete(SESSION_PATH, pid)
+      expect(typeof result.content).toBe('string')
+      expect(result.content).toContain('test.txt')
     })
 
-    await terminal.engineStop()
+    await engine.stop()
+  })
+  Deno.test(prefix + 'system:merge*', async (t) => {
+    const { backchat, engine } = await cradleMaker()
+    const target = await backchat.threadPID()
+    const parent = getParent(target)
+
+    const actions = await backchat.actions<system.Api>('system', { target })
+    const { mergeParent, mergeGrandParent } = actions
+
+    await t.step('mergeParent', async () => {
+      const result = await mergeParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const [splice] = await backchat.splices(parent)
+      expect(result.head).toBe(splice.oid)
+    })
+    await t.step('mergeGrandParent', async () => {
+      const result = await mergeGrandParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const grandParent = getParent(getParent(target))
+      const [splice] = await backchat.splices(grandParent)
+      expect(result.head).toBe(splice.oid)
+    })
+    await t.step('mergeParent with conflicts', async () => {
+      await backchat.write('test.txt', 'parent', parent)
+
+      await backchat.write('test.txt', 'target', target)
+
+      const result = await mergeParent({})
+      log('result', result)
+
+      expect(result).toBeDefined()
+      const [splice] = await backchat.splices(parent)
+      expect(result.head).toBe(splice.oid)
+    })
+
+    await engine.stop()
   })
 }

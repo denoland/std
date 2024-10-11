@@ -8,3 +8,4 @@ backup.json
 html_cov/
 coverage/
 node_modules/
+tmp/

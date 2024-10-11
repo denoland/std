@@ -1,11 +1,11 @@
-import validator from './validator.ts'
 import { assert, Debug } from '@utils'
-import { Isolate, Params } from '@/constants.ts'
+import { Isolate, Params, toApi } from '@/constants.ts'
 import IA from '../isolate-api.ts'
 
 // deno has no dynamic runtime imports, so this is a workaround
 import isolates from '../isolates/index.ts'
 import { DispatchFunctions } from '@/constants.ts'
+import { ZodSchema } from 'zod'
 
 const log = Debug('AI:compartment')
 const cache = new Map<string, Compartment>()
@@ -23,11 +23,13 @@ export default class Compartment {
     this.#module =
       isolates[isolate as keyof typeof isolates] as unknown as Isolate
     this.#isolate = isolate
-    const { api, functions } = this.#module
+    const { parameters, returns, functions } = this.#module
+    assert(typeof parameters === 'object', 'no parameters exported: ' + isolate)
+    assert(typeof returns === 'object', 'no returns exported: ' + isolate)
+
+    zodCheck(parameters, returns, isolate)
     assert(typeof functions === 'object', 'functions not exported: ' + isolate)
-    assert(typeof api === 'object', 'api not exported: ' + isolate)
-    assert(Object.keys(this.#module.api).length, 'api not exported: ' + isolate)
-    const missing = Object.keys(api).filter((key) => !functions[key])
+    const missing = Object.keys(parameters).filter((key) => !functions[key])
     assert(!missing.length, `${isolate} Missing: ${missing.join(', ')}`)
   }
   static async create(isolate: string) {
@@ -42,7 +44,7 @@ export default class Compartment {
   }
   get api() {
     this.#check()
-    return this.#module.api
+    return toApi(this.#module.parameters)
   }
   /**
    * Mount the isolate as a side effect, and give it the chance to initialize
@@ -75,7 +77,7 @@ export default class Compartment {
   functions<T = DispatchFunctions>(api: IA) {
     this.#check()
     const actions: DispatchFunctions = {}
-    for (const functionName in this.#module.api) {
+    for (const functionName in this.#module.parameters) {
       actions[functionName] = this.#toFunction(functionName, api)
     }
     return actions as T
@@ -88,11 +90,45 @@ export default class Compartment {
       if (parameters === undefined) {
         parameters = {}
       }
-      // TODO re-enable after perf testing
-      const schema = this.#module.api[functionName]
+      const schema = this.#module.parameters[functionName]
       const path = this.#isolate + '/' + functionName
-      validator(schema, path)(parameters)
-      return this.#module.functions[functionName](parameters, api)
+      try {
+        schema.parse(parameters)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : ''
+        throw new Error(
+          `Zod schema parameters validation error at path: ${path}\nError: ${message}`,
+        )
+      }
+      return Promise.resolve(
+        this.#module.functions[functionName](parameters, api),
+      )
+        .then((result) => {
+          const schema = this.#module.returns[functionName]
+          const parsed = schema.safeParse(result)
+          if (!parsed.success) {
+            throw new Error(
+              `Unrecoverable system error in ${path}. ${parsed.error.message}`,
+            )
+          }
+          return result
+        })
     }
+  }
+}
+const zodCheck = (
+  parameters: Record<string, ZodSchema>,
+  returns: Record<string, ZodSchema>,
+  isolate: string,
+) => {
+  assert(Object.keys(parameters).length, 'no api exported: ' + isolate)
+  assert(
+    Object.keys(returns).length === Object.keys(parameters).length,
+    'parameters do not match returns: ' + isolate,
+  )
+
+  for (const key in parameters) {
+    assert(parameters[key] instanceof ZodSchema, 'invalid schema: ' + key)
+    assert(returns[key] instanceof ZodSchema, 'invalid schema: ' + key)
   }
 }

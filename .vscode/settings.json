@@ -1,21 +1,8 @@
 {
   "deno.enable": true,
   "deno.lint": true,
-  "deno.disablePaths": ["coverage"],
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "denoland.vscode-deno",
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
   "deno.cacheOnSave": true,
   "deno.codeLens.references": false,
   "deno.codeLens.implementations": false,
@@ -33,5 +20,8 @@
   ],
   "coverage-gutters.showLineCoverage": true,
   "coverage-gutters.showRulerCoverage": false,
-  "coverage-gutters.showGutterCoverage": false
+  "coverage-gutters.showGutterCoverage": false,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

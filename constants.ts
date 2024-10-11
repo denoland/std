@@ -6,22 +6,23 @@ import {
   Change,
   CommitObject,
   EngineInterface,
-  IsolateApiSchema,
   IsolateReturn,
   MetaPromise,
   Outcome,
   Params,
   PID,
-  PierceRequest,
+  Pierce,
   RemoteRequest,
   Request,
   SolidRequest,
   UnsequencedRequest,
-} from './api/web-client.types.ts'
+} from './api/types.ts'
 import FS from '@/git/fs.ts'
 import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
-import { equal } from '@utils'
+import { assert, equal } from '@utils'
+import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
+import { ZodObject, ZodSchema, ZodUnknown } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -32,6 +33,15 @@ export type C = {
   aesKey?: string
   seed?: Deno.KvEntry<unknown>[]
 }
+
+/** Extends the actions api to be the isolate api */
+export type Functions<Api> = {
+  [K in keyof Api]: Function<Api[K]>
+}
+
+type Function<T> = T extends (...args: infer Args) => infer R
+  ? (...args: [...Args, IA]) => R
+  : never
 
 export type IsolateFunction = {
   (): unknown | Promise<unknown>
@@ -47,12 +57,13 @@ export type IsolateLifecycle = {
   '@@unmount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
 }
 export type Isolate = {
-  api: IsolateApiSchema
+  parameters: Record<string, ZodObject<Record<string, ZodUnknown>>>
+  returns: Record<string, ZodSchema>
   functions: IsolateFunctions
   lifecycles?: IsolateLifecycle
 }
 
-export type Poolable = MergeReply | RemoteRequest | PierceRequest
+export type Poolable = MergeReply | RemoteRequest
 export type Reply = SolidReply | MergeReply
 export type EffectRequest = {
   target: PID
@@ -86,13 +97,13 @@ export type IsolatePromise =
 type BareIsolatePromise = {
   request: UnsequencedRequest
 }
-export type PromisedIsolatePromise = BareIsolatePromise & {
-  promise: MetaPromise
-  resolve: (value: unknown) => void
+export type PromisedIsolatePromise<T = unknown> = BareIsolatePromise & {
+  promise: MetaPromise<T>
+  resolve: (value: T) => void
   reject: (error: Error) => void
 }
-export type SettledIsolatePromise =
-  & (BareIsolatePromise | PromisedIsolatePromise)
+export type SettledIsolatePromise<T = unknown> =
+  & (BareIsolatePromise | PromisedIsolatePromise<T>)
   & {
     outcome: Outcome
     /** if an outcome is given, there must be a commit associated with it, so
@@ -155,7 +166,9 @@ export const isMergeReply = (
 ): poolable is MergeReply => {
   return 'commit' in poolable && 'outcome' in poolable
 }
-export const isReply = (poolable: Poolable | SolidReply): poolable is Reply => {
+export const isReply = (
+  poolable: Poolable | Pierce | SolidReply,
+): poolable is Reply => {
   return 'outcome' in poolable
 }
 export const isRemoteRequest = (
@@ -182,7 +195,7 @@ export type QueuePool = {
 }
 export type QueueExe = {
   type: QueueMessageType.EXECUTION
-  request: SolidRequest
+  pid: PID
   commit: string
   sequence: number
 }
@@ -207,34 +220,21 @@ export const isChildOf = (child: PID, parent: PID) => {
 }
 export const isBaseRepo = (pid: PID) => pid.branches.length === 1
 
-export const pidSchema = {
-  type: 'object',
-  required: ['repoId', 'account', 'repository', 'branches'],
-  additionalProperties: false,
-  properties: {
-    repoId: {
-      type: 'string',
-    },
-    account: {
-      type: 'string',
-    },
-    repository: {
-      type: 'string',
-    },
-    branches: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-      minItems: 1,
-    },
-  },
-}
-
 export type Provisioner = (superBackchat: Backchat) => Promise<void>
 
 export type CradleMaker = (
   init?: Provisioner,
 ) => Promise<{ backchat: Backchat; engine: EngineInterface }>
 
-export * from './api/web-client.types.ts'
+export const toApi = (parameters: Record<string, ZodSchema>) => {
+  const api: Record<keyof typeof parameters, JsonSchema7ObjectType> = {}
+  for (const key of Object.keys(parameters)) {
+    const schema = zodToJsonSchema(parameters[key])
+    delete schema.$schema
+    assert('properties' in schema, 'schema must have properties')
+    api[key] = schema
+  }
+  return api
+}
+
+export * from './api/types.ts'

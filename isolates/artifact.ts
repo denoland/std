@@ -5,85 +5,55 @@ import {
   C,
   ExeResult,
   freezePid,
+  Functions,
   IsolateLifecycle,
   isPierceRequest,
   isQueueBranch,
   isQueueExe,
   isQueuePool,
   PID,
-  pidSchema,
-  PierceRequest,
+  pierceSchema,
   print,
   QueueMessage,
-  SolidRequest,
+  ToApiType,
 } from '@/constants.ts'
 import IA from '../isolate-api.ts'
-import { doAtomicBranch, doAtomicCommit } from '@io/io.ts'
+import { doAtomicBranch, doAtomicCommit, doAtomicPierce } from '@io/io.ts'
 import DB from '../db.ts'
 import FS from '../git/fs.ts'
+import { z } from 'zod'
 const log = Debug('AI:artifact')
 
-const request = {
-  type: 'object',
-  required: ['isolate', 'functionName', 'params', 'proctype', 'target', 'ulid'],
-  properties: {
-    isolate: { type: 'string' },
-    functionName: { type: 'string' },
-    params: { type: 'object' },
-    proctype: { enum: ['SERIAL', 'DAEMON', 'BRANCH'] },
-    target: pidSchema,
-    ulid: { type: 'string' },
-    branch: { type: 'string' },
-    branchPrefix: { type: 'string' },
-    effect: {
-      oneOf: [
-        { type: 'boolean' },
-        {
-          type: 'object',
-          properties: {
-            net: { type: 'boolean' },
-            files: { type: 'boolean' },
-            artifact: { type: 'boolean' },
-            timeout: { type: 'number' },
-          },
-        },
-      ],
-    },
-  },
-  additionalProperties: false,
-}
+export const parameters = { pierce: z.object({ pierce: pierceSchema }) }
+export const returns = { pierce: z.void() }
 
-export const api = {
-  pierce: {
-    type: 'object',
-    required: ['pierce'],
-    properties: { pierce: request },
-  },
-}
+export type Api = ToApiType<typeof parameters, typeof returns>
 
-export interface Api {
-  pierce: (params: Pierce) => Promise<void>
-}
-interface Pierce {
-  pierce: PierceRequest
-}
 /**
  * Reason to keep artifact with an Isolate interface, is so we can control it
  * from within an isolate.
  */
-export const functions = {
-  async pierce({ pierce }: Pierce, api: IA<C>) {
+export const functions: Functions<Api> = {
+  async pierce({ pierce }, api: IA<C>) {
     assert(isPierceRequest(pierce), 'invalid pierce request')
     log('pierce %o %o', pierce.isolate, pierce.functionName)
     log('target', print(pierce.target))
     freezePid(pierce.target)
     const { db } = sanitizeContext(api)
-    // TODO do the pool commit here to save a queue round trip
     // TODO add ulid in here, but make it be repeatable
     // TODO check signatures and permissions here
-    await db.atomic().enqueuePierce(pierce)
-    // TODO test if head is deleted between pooling and commit
-    // TODO test caller can handle head not present
+
+    let isPierced = false
+    let count = 0
+    while (!isPierced && count < 100) {
+      count++
+      const tip = await FS.openHead(pierce.target, db)
+
+      isPierced = await doAtomicPierce(db, tip, pierce)
+    }
+    if (!isPierced) {
+      throw new Error(`pierce failed after ${count} attempts`)
+    }
   },
 }
 
@@ -129,21 +99,21 @@ export const lifecycles: IsolateLifecycle = {
         }
       }
       if (isQueueExe(message)) {
-        const { request, commit, sequence } = message
-        logger('qex', request.target)(commit, sequence, request.functionName)
-        if (await isSettled(request, sequence, db)) {
+        const { pid, commit, sequence } = message
+        logger('qex', pid)(commit, sequence)
+        if (await isSettled(pid, sequence, db)) {
           return
         }
-        const exeResult = await execute(request, commit, context)
+        const exeResult = await execute(pid, commit, sequence, context)
         if (!exeResult) { // side effect superseded, so abort
           return
         }
-        let tip = await FS.openHead(request.target, db)
+        let tip = await FS.openHead(pid, db)
         while (await isExeable(sequence, tip, exeResult)) {
           if (await doAtomicCommit(db, tip, exeResult)) {
             return
           }
-          tip = await FS.openHead(request.target, db)
+          tip = await FS.openHead(pid, db)
         }
       }
     })
@@ -153,12 +123,17 @@ export const lifecycles: IsolateLifecycle = {
     return db.stop()
   },
 }
-const execute = async (request: SolidRequest, commit: string, c: C) => {
+const execute = async (pid: PID, commit: string, sequence: number, c: C) => {
   const { db, exe } = c
   let effectsLock: Deno.KvEntry<string> | undefined
+
+  const io = await IOChannel.read(FS.open(pid, commit, db))
+  assert(io, 'io not found')
+  const request = io.getRequest(sequence)
+
   if (request.effect) {
     const abort = new AbortController()
-    effectsLock = await db.watchSideEffectsLock(request.target, abort)
+    effectsLock = await db.watchSideEffectsLock(pid, abort)
   }
   const exeResult = await exe.execute(request, commit, c)
   // last instance always owns the lock
@@ -178,13 +153,14 @@ const isExeable = async (sequence: number, tip: FS, exe: ExeResult) => {
   }
   return true
 }
-const isSettled = async (request: SolidRequest, sequence: number, db: DB) => {
-  const tip = await FS.openHead(request.target, db)
+const isSettled = async (pid: PID, sequence: number, db: DB) => {
+  const tip = await FS.openHead(pid, db)
   log('isSettled', print(tip.pid), sequence, tip.oid)
   const io = await IOChannel.read(tip)
   if (!io) {
     return false
   }
+  // TODO might be able to merge this with the execution retrieval ?
   if (io.isSettled(sequence)) {
     return true
   }

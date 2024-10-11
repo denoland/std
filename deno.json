@@ -3,19 +3,19 @@
   "version": "0.0.1",
   "lock": false,
   "tasks": {
-    "test": "DENO_KV_PATH=:memory: deno test -A --unstable-kv --unstable-broadcast-channel --coverage --clean --parallel --trace-leaks",
-    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --unstable-kv --unstable-broadcast-channel --watch",
-    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv --unstable-broadcast-channel -A --watch --inspect-wait main.ts",
+    "test": "DENO_KV_PATH=:memory: deno test -A --coverage --clean --parallel --trace-leaks",
+    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --watch",
+    "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A --watch --inspect-wait main.ts",
     "check:types": "deno check **/*.ts",
     "check": "deno fmt --check && deno lint && deno task check:types",
     "ok": "deno task check && deno task test",
     "cov:gen": "deno coverage coverage --lcov --exclude='.tsx' --output=cov.lcov",
-    "tc": "DEBUG_COLORS=1 deno test -A --unsafely-ignore-certificate-errors --trace-leaks ./api/cloud.ts",
-    "db:drop": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-drop.ts",
-    "db:tools": "DEBUG_COLORS=1 deno run --unstable-kv -A ./api/db-tools.ts",
-    "keygen": "DEBUG_COLORS=1 deno run ./api/keygen.ts",
-    "bw": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A --watch benchmarks/bench.ts",
-    "bench": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run --unstable-kv -A benchmarks/bench.ts"
+    "tc": "DEBUG_COLORS=1 deno test -A --unsafely-ignore-certificate-errors --trace-leaks ./server/cloud.ts",
+    "db:drop": "DEBUG_COLORS=1 deno run -A ./server/db-drop.ts",
+    "db:tools": "DEBUG_COLORS=1 deno run -A ./server/db-tools.ts",
+    "keygen": "DEBUG_COLORS=1 deno run ./server/keygen.ts",
+    "bw": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A --check --watch benchmarks/bench.ts",
+    "bench": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A benchmarks/bench.ts"
   },
   "imports": {
     "$git": "npm:isomorphic-git",
@@ -25,7 +25,7 @@
     "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox",
     "@noble/hashes": "npm:@noble/hashes",
     "@noble/secp256k1": "npm:@noble/secp256k1",
-    "@scure/base": "npm:@scure/base@^1.1.7",
+    "@scure/base": "npm:@scure/base",
     "@sindresorhus/is": "npm:@sindresorhus/is",
     "@std/assert": "jsr:@std/assert",
     "@std/async": "jsr:@std/async",
@@ -34,7 +34,6 @@
     "@std/path": "jsr:@std/path",
     "@types/benchmark": "npm:@types/benchmark",
     "@utils": "./utils.ts",
-    "ajv": "npm:ajv",
     "benchmark": "npm:benchmark",
     "chalk": "npm:chalk",
     "debug": "npm:debug",
@@ -44,6 +43,7 @@
     "fast-deep-equal/es6": "npm:fast-deep-equal/es6/index.js",
     "gray-matter": "npm:gray-matter",
     "hono": "jsr:@hono/hono",
+    "imagescript": "https://deno.land/x/imagescript@1.3.0/mod.ts",
     "it-pushable": "npm:it-pushable",
     "lodash.merge": "npm:lodash.merge",
     "micromatch": "npm:micromatch",
@@ -52,7 +52,9 @@
     "serialize-error": "npm:serialize-error",
     "supports-color": "npm:supports-color",
     "ulid": "npm:ulid",
-    "youtube-caption-extractor": "npm:youtube-caption-extractor"
+    "youtube-caption-extractor": "npm:youtube-caption-extractor",
+    "zod": "npm:zod",
+    "zod-to-json-schema": "npm:zod-to-json-schema"
   },
   "exclude": ["cov/"],
   "lint": {
@@ -63,10 +65,14 @@
   },
   "scopes": {},
   "fmt": {
-    "exclude": ["coverage", "cov", "node_modules"],
+    "include": ["**/*.ts", "**/*.tsx"],
+    "exclude": ["coverage", "cov", "node_modules", "HAL", "tmp"],
     "semiColons": false,
     "singleQuote": true,
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "indentWidth": 2,
+    "useTabs": false
   },
+  "unstable": ["kv" ],
   "exports": "./main.ts"
 }

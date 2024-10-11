@@ -51,9 +51,9 @@ export default class Executor {
       log('creating execution %o', exeId)
       const opts = { isEffect: true, isEffectRecovered: false }
       // TODO read side effect config from io.json
-      const origin = io.getExecution()
-      assert(origin, 'origin not found')
-      const isolateApi = IA.create(accumulator, origin, opts)
+      const { runnable, commit } = io.getExecution()
+      assert(runnable, 'origin not found')
+      const isolateApi = IA.create(accumulator, runnable, commit, opts)
       if (req.isolate === 'system') {
         log('system isolate')
         isolateApi.context = c

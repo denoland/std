@@ -28,15 +28,17 @@ jobs:
     steps:
       - name: Setup repo
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: vx.x.x
+          deno-version: v2.x
 
       - name: Cache dependencies
         uses: actions/cache@v4
-        with: 
+        with:
           path: |
             ~/.cache
             ~/.cache/deno
@@ -53,6 +55,20 @@ jobs:
         run: deno task test
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+
+      - name: Create lcov file
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
+        run: deno task cov:gen
+
+      - name: Upload coverage
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          name: ${{ matrix.os }}
+          files: cov.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: dreamcatcher-tech/artifact
 
       - name: Run benchmark
         if: matrix.os == 'ubuntu-latest'
@@ -74,15 +90,3 @@ jobs:
           comment-on-alert: true
           fail-on-alert: true
 
-      - name: Create lcov file  
-        if: github.ref == 'refs/heads/main'
-        run: deno task cov:gen
-  
-      - name: Upload coverage
-        if: github.ref == 'refs/heads/main'
-        uses: codecov/codecov-action@v4
-        with:
-          name: ${{ matrix.os }}
-          files: cov.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: dreamcatcher-tech/artifact

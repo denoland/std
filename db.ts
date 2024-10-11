@@ -1,12 +1,16 @@
 import { pushable } from 'it-pushable'
 import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
 import { CryptoKv, generateKey } from '@kitsonk/kv-toolbox/crypto'
-import * as keys from './keys.ts'
+import * as keys from '@/keys.ts'
 import {
   freezePid,
+  MergeReply,
   PID,
   Poolable,
+  PooledRef,
+  pooledRef,
   print,
+  RemoteRequest,
   REPO_LOCK_TIMEOUT_MS,
   sha1,
   Splice,
@@ -16,6 +20,7 @@ import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { decodeTime, ulid } from 'ulid'
 import FS from '@/git/fs.ts'
+import IOChannel from '@io/io-channel.ts'
 
 const log = Debug('AI:db')
 export default class DB {
@@ -57,17 +62,18 @@ export default class DB {
     }
     return kv.close()
   }
-  async hasPoolables(pid: PID) {
-    const counterKey = keys.getPoolCounterKey(pid)
-    const markerKey = keys.getPoolMarkerKey(pid)
+  async hasPoolables(target: PID) {
+    const counterKey = keys.getPoolCounterKey(target)
+    const markerKey = keys.getPoolMarkerKey(target)
     const many = [counterKey, markerKey]
     const [counter, marker] = await this.#kv.getMany<bigint[]>(many)
     return hasPoolables(counter, marker)
   }
-  async getPooledActions(pid: PID) {
-    const prefix = keys.getPoolKeyPrefix(pid)
+  async getPooledActions(target: PID) {
+    // TODO should pooled actions be an FS level action ?
+    const prefix = keys.getPoolKeyPrefix(target)
     log('getPooledActions %o', prefix)
-    const entries = this.#kv.list<Poolable>({ prefix }, { batchSize: 1000 })
+    const entries = this.#kv.list({ prefix }, { batchSize: 1000 })
     const poolKeys = []
     const pool: Poolable[] = []
     for await (const entry of entries) {
@@ -80,7 +86,10 @@ export default class DB {
         continue
       }
       poolKeys.push(entry.key)
-      pool.push(entry.value)
+      const ref = pooledRef.parse(entry.value)
+      const poolable = await this.readPoolable(target, ref)
+      assert(poolable, 'Invalid poolable: ' + entry.key)
+      pool.push(poolable)
     }
     log('getPooledActions done %o', poolKeys.length)
     return { poolKeys, pool }
@@ -246,7 +255,7 @@ export default class DB {
     const buffer = pushable<Promise<Splice>>({ objectMode: true })
     if (after) {
       assert(sha1.test(after), 'Invalid after: ' + after)
-      buffer.push(this.#getSplice(pid, after, path))
+      buffer.push(this.getSplice(pid, after, path))
     }
     abort.signal.addEventListener('abort', () => {
       this.#aborts.delete(abort)
@@ -264,7 +273,7 @@ export default class DB {
         if (commit === after) {
           continue
         }
-        buffer.push(this.#getSplice(pid, commit, path))
+        buffer.push(this.getSplice(pid, commit, path))
       }
     }
     pipe().catch(buffer.throw)
@@ -288,7 +297,7 @@ export default class DB {
           // catch up should be the responsibility of the client, not the server
           console.error('splice race', print(splice.pid), splices.length)
           const primeParent = splices[0].commit.parent[0]
-          const next = await this.#getSplice(pid, primeParent, path)
+          const next = await this.getSplice(pid, primeParent, path)
           splices.unshift(next)
         }
         last = splice
@@ -299,12 +308,13 @@ export default class DB {
     return sink as AsyncIterable<Splice>
   }
   // TODO add aborts here, or have a master promise that is awaited
-  async #getSplice(pid: PID, oid: string, path?: string) {
+  async getSplice(pid: PID, oid: string, path?: string) {
     const fs = FS.open(pid, oid, this)
     const commit = await fs.getCommit()
     const timestamp = commit.committer.timestamp * 1000
     const splice: Splice = { pid, oid, commit, timestamp, changes: {} }
     if (path) {
+      // TODO make paths be an array
       if (await fs.exists(path)) {
         const oid = await fs.readOid(path)
         const patch = await fs.read(path) // TODO check caching makes this fast
@@ -418,12 +428,34 @@ export default class DB {
     }
     await atomic.commit()
   }
+  async readPoolable(target: PID, ref: PooledRef) {
+    const { commit, sequence, source, isReply } = ref
+    const fs = FS.open(source, commit, this)
+    const io = await IOChannel.loadWithoutPurge(fs)
+    if (isReply) {
+      const requestSource = target
+      const outcome = io.getOutcomeBySource(requestSource, sequence)
+      const reply: MergeReply = { target, sequence, outcome, source, commit }
+      return reply
+    } else {
+      const request = io.getRequest(sequence)
+      const remoteRequest: RemoteRequest = {
+        ...request,
+        source,
+        commit,
+      }
+      return remoteRequest
+    }
+  }
 }
 
 const watchUndelivered = async (kv: Deno.Kv) => {
   for await (const [undelivered] of kv.watch([keys.UNDELIVERED])) {
     if (undelivered.versionstamp) {
       console.error('undelivered', undelivered.key, undelivered.value)
+      const timestamp = new Date().toISOString()
+      await kv.set([...keys.UNDELIVERED, timestamp], undelivered.value)
+      await kv.delete(undelivered.key)
     }
   }
 }

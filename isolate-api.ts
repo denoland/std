@@ -1,12 +1,13 @@
 import { deserializeError } from 'serialize-error'
 import Accumulator from './exe/accumulator.ts'
 import Compartment from './io/compartment.ts'
-import { assert, Debug } from '@utils'
+import { assert, Debug, equal } from '@utils'
 import micromatch from 'micromatch'
 import {
   ApiFunctions,
   DispatchFunctions,
   freezePid,
+  getThreadPath,
   IoStruct,
   isChildOf,
   isSettledIsolatePromise,
@@ -17,9 +18,14 @@ import {
   PromisedIsolatePromise,
   RpcOpts,
   SolidRequest,
+  threadSchema,
   toActions,
   UnsequencedRequest,
 } from '@/constants.ts'
+import { type Isolate } from '@/isolates/index.ts'
+import * as files from '@/isolates/files.ts'
+import IOChannel from '@io/io-channel.ts'
+import { z, ZodTypeAny } from 'zod'
 const log = Debug('AI:isolateApi')
 interface Default {
   [key: string]: unknown
@@ -28,24 +34,32 @@ type EffectOptions = {
   isEffect: boolean
   isEffectRecovered: boolean
 }
+
 export default class IA<T extends object = Default> {
   #accumulator: Accumulator
-  #origin: SolidRequest | undefined
+  #origin: SolidRequest
+  #originCommit: string | undefined
   // TODO assign a mount id for each side effect execution context ?
   #context: Partial<T> = {}
   #isEffect = false
   #isEffectRecovered = false
   #abort = new AbortController()
-  private constructor(accumulator: Accumulator, origin?: SolidRequest) {
+  private constructor(
+    accumulator: Accumulator,
+    origin: SolidRequest,
+    originCommit?: string,
+  ) {
     this.#accumulator = accumulator
     this.#origin = origin
+    this.#originCommit = originCommit
   }
   static create(
     accumulator: Accumulator,
-    origin?: SolidRequest,
+    origin: SolidRequest,
+    originCommit?: string,
     opts?: EffectOptions,
   ) {
-    const api = new IA(accumulator, origin)
+    const api = new IA(accumulator, origin, originCommit)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
@@ -56,6 +70,7 @@ export default class IA<T extends object = Default> {
     // TODO find a more graceful way to do this for cradle setup
     return new IA<T>(
       null as unknown as Accumulator,
+      null as unknown as SolidRequest,
     )
   }
   get #fs() {
@@ -65,10 +80,11 @@ export default class IA<T extends object = Default> {
     return this.#fs.pid
   }
   get origin() {
-    if (!this.#origin) {
-      throw new Error('origin not set')
-    }
     return this.#origin
+  }
+  /** The commit from the origin action */
+  get originCommit() {
+    return this.#originCommit
   }
   get commit() {
     return this.#fs.oid
@@ -90,15 +106,38 @@ export default class IA<T extends object = Default> {
     assert(this.isEffect, 'signal only available for side effects')
     return this.#abort.signal
   }
+  // TODO make get and set config be synchronous
+  async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(schema: T) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    const io = await IOChannel.read(this.#fs)
+    assert(io, 'io not found')
+    return schema.parse(io.state) as z.infer<T>
+  }
+  async updateState<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
+    updater: (state: z.infer<T>) => z.infer<T>,
+    schema: T,
+  ) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    const io = await IOChannel.load(this.#fs)
+    assert(io, 'io not found')
+    const state = io.state as z.infer<T>
+    const result = updater(state)
+    if (!equal(state, result)) {
+      const next = schema.parse(result) as z.infer<T>
+      assert(io, 'io not found')
+      io.state = next
+      io.save()
+    }
+  }
 
-  async actions<T = DispatchFunctions>(isolate: string, opts: RpcOpts = {}) {
+  async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
     const { target = this.pid, ...procOpts } = opts
     freezePid(target)
     const schema = await this.apiSchema(isolate)
     const execute = (request: UnsequencedRequest) => this.action(request)
     return toActions<T>(target, isolate, schema, procOpts, execute)
   }
-  async requests<T extends ApiFunctions>(isolate: string, opts: RpcOpts = {}) {
+  async requests<T extends ApiFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
     const { target = this.pid, ...procOpts } = opts
     freezePid(target)
 
@@ -115,7 +154,7 @@ export default class IA<T extends object = Default> {
     if (recovered) {
       assert(isSettledIsolatePromise(recovered), 'recovered is not settled')
       const { outcome } = recovered
-      let promise: MetaPromise
+      let promise: MetaPromise<typeof outcome.result>
       if (outcome.error) {
         promise = Promise.reject(deserializeError(outcome.error))
       } else {
@@ -125,7 +164,7 @@ export default class IA<T extends object = Default> {
       return promise
     }
     let resolve, reject
-    const promise: MetaPromise = new Promise((_resolve, _reject) => {
+    const promise: MetaPromise<unknown> = new Promise((_resolve, _reject) => {
       resolve = _resolve
       reject = _reject
     })
@@ -147,13 +186,13 @@ export default class IA<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  async functions<T = DispatchFunctions>(isolate: string): Promise<T> {
+  async functions<T = DispatchFunctions>(isolate: Isolate): Promise<T> {
     // TODO these need some kind of PID attached ?
     const compartment = await Compartment.create(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions<T>(this)
   }
-  async apiSchema(isolate: string) {
+  async apiSchema(isolate: Isolate) {
     const compartment = await Compartment.create(isolate)
     return compartment.api
   }
@@ -167,19 +206,45 @@ export default class IA<T extends object = Default> {
     log('write', path)
     this.#fs.write(path, content)
   }
-  async readJSON<T>(path: string, fallback?: T): Promise<T> {
+  async readJSON<T>(
+    path: string,
+    opts?: { target?: PID; commit?: string },
+  ): Promise<T> {
+    // TODO implement readJSON<type> for remote reads, and take a schema
     assert(this.#accumulator.isActive, 'Activity is denied')
-    log('readJSON', path, fallback)
-    if (fallback !== undefined) {
-      if (!await this.#fs.exists(path)) {
-        return fallback
-      }
+    log('readJSON', path)
+    if (opts && opts.target) {
+      // TODO move to something native
+      const { read } = await this.actions<files.Api>('files', opts)
+      const params = { path, reasoning: [], commit: opts.commit }
+      const string = await read(params)
+      return JSON.parse(string) as T
     }
-    return this.#fs.readJSON<T>(path)
+    return this.#fs.readJSON<T>(path, opts?.commit)
   }
-  read(path: string) {
+  async readThread(
+    threadPath?: string,
+    opts?: { target?: PID; commit?: string },
+  ) {
+    if (!threadPath) {
+      threadPath = getThreadPath(opts?.target || this.pid)
+    }
+    const thread = await this.readJSON(threadPath, opts)
+    return threadSchema.parse(thread)
+  }
+  async read(path: string, opts?: { target?: PID; commit?: string }) {
     assert(this.#accumulator.isActive, 'Activity is denied')
-    return this.#fs.read(path)
+    if (opts?.target) {
+      // TODO move to something native
+      const { read } = await this.actions<files.Api>('files', opts)
+      const params = { path, reasoning: [], commit: opts.commit }
+      return read(params)
+    }
+    return this.#fs.read(path, opts?.commit)
+  }
+  readOid(path: string) {
+    assert(this.#accumulator.isActive, 'Activity is denied')
+    return this.#fs.readOid(path)
   }
   readBinary(path: string) {
     assert(this.#accumulator.isActive, 'Activity is denied')
@@ -201,6 +266,7 @@ export default class IA<T extends object = Default> {
     log('delete', filepath)
     return this.#fs.delete(filepath)
   }
+
   async isActiveChild(pid: PID) {
     if (!isChildOf(pid, this.pid)) {
       throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))
@@ -239,11 +305,16 @@ export default class IA<T extends object = Default> {
     return this.#fs.isPidExists(pid)
   }
   merge(commit: string, ...excludes: string[]) {
-    assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
+    if (commit !== this.originCommit) {
+      assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
+    }
     log('overwrite', commit, excludes)
     return this.#fs.overwrite(commit, ...excludes)
   }
   mv(from: string, to: string) {
     return this.#fs.mv(from, to)
+  }
+  cp(from: string, to: string) {
+    return this.#fs.cp(from, to)
   }
 }

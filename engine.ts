@@ -12,20 +12,21 @@ import {
   HAL,
   JsonValue,
   PID,
-  PierceRequest,
+  Pierce,
   print,
-  PROCTYPE,
+  Proctype,
   Provisioner,
 } from './constants.ts'
+import * as actor from './api/isolates/actor.ts'
 import IA from './isolate-api.ts'
-import { assert, Debug, posix } from '@utils'
+import { assert, Debug, delay, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
-import { Crypto } from '@/api/web-client-crypto.ts'
-import { PierceWatcher } from '@/api/web-client-watcher.ts'
-import { ActorAdmin, ActorApi } from '@/isolates/actors.ts'
-import { Backchat } from '@/api/web-client-backchat.ts'
+import { Crypto } from './api/crypto.ts'
+import { PierceWatcher } from './api/watcher.ts'
+import * as actors from './isolates/actors.ts'
+import { Backchat } from './api/client-backchat.ts'
 import { tryActorId } from '@/isolates/machines.ts'
 const log = Debug('AI:engine')
 type Seed = Deno.KvEntry<unknown>[]
@@ -38,7 +39,6 @@ export class Engine implements EngineInterface {
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
   #abort = new AbortController()
-  #suBackchat: Backchat | undefined
 
   private constructor(
     compartment: Compartment,
@@ -70,13 +70,9 @@ export class Engine implements EngineInterface {
     await engine.ensureHomeAddress(init)
     return engine
   }
-  get #su() {
-    if (!this.#suBackchat) {
-      const crypto = Crypto.load(this.#superuserKey)
-      this.#suBackchat = Backchat.superuser(this, crypto)
-    }
-    assert(this.#suBackchat)
-    return this.#suBackchat
+  superUser(): Backchat {
+    const crypto = Crypto.load(this.#superuserKey)
+    return Backchat.superuser(this, crypto)
   }
   get #isDropping() {
     const toDelete = Deno.env.get('DROP_HOME') || ''
@@ -131,16 +127,20 @@ export class Engine implements EngineInterface {
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
-    const actions = await this.#su.actions<ActorAdmin>('actors', { target })
+    const su = this.superUser()
+    const actions = await su.actions<actors.Api>('actors', { target })
     await actions.createActor({ actorId, machineId, backchatId })
 
     return backchat
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
-    const actions = await this.#su.actions<ActorApi>('actors', { target })
+    const su = this.superUser()
+    const { backchat } = await su.actions<actor.Api>('actor', {
+      target,
+    })
     const backchatId = generateBackchatId(ulid())
-    const pid = await actions.backchat({ backchatId })
+    const pid = await backchat({ backchatId })
     return freezePid(pid)
   }
   async ensureHomeAddress(init?: Provisioner) {
@@ -178,8 +178,9 @@ export class Engine implements EngineInterface {
     log('db unlocked - home address:', print(this.#homeAddress))
   }
   async stop() {
-    await this.#compartment.unmount(this.#api)
     this.#abort.abort()
+    await this.#compartment.unmount(this.#api)
+    await delay(0) // attempt to let the subtle digest call clean up
   }
   async #initHome() {
     // queue processing cannot begin without a home repo
@@ -196,13 +197,13 @@ export class Engine implements EngineInterface {
     const watcher = PierceWatcher.create(abort.signal, this, this.homeAddress)
     watcher.watchPierces()
     const { machineId: superuser } = Crypto.load(this.#superuserKey)
-    const pierce: PierceRequest = {
+    const pierce: Pierce = {
       target: this.homeAddress,
       ulid: ulid(),
       isolate: 'actors',
       functionName: '@@install',
       params: { superuser },
-      proctype: PROCTYPE.SERIAL,
+      proctype: Proctype.enum.SERIAL,
     }
     const promise = watcher.watch(pierce.ulid)
 
@@ -212,7 +213,8 @@ export class Engine implements EngineInterface {
     log('pierced', print(this.homeAddress))
     await promise
     abort.abort() // TODO make this a method on the watcher
-    log('superuser is', print(this.#su.pid))
+    const su = this.superUser()
+    log('superuser is', print(su.pid))
 
     if (!init) {
       log('no init function - returning')
@@ -220,7 +222,7 @@ export class Engine implements EngineInterface {
     }
 
     log('provisioning')
-    await init(this.#su)
+    await init(su)
     log('provisioned')
   }
   ping(data?: JsonValue): Promise<JsonValue | undefined> {
@@ -239,7 +241,7 @@ export class Engine implements EngineInterface {
     const text = await transcribe(audio)
     return { text }
   }
-  async pierce(pierce: PierceRequest) {
+  async pierce(pierce: Pierce) {
     await this.#pierce({ pierce })
   }
   watch(pid: PID, path?: string, after?: string, signal?: AbortSignal) {
@@ -254,22 +256,56 @@ export class Engine implements EngineInterface {
     this.#abort.signal.addEventListener('abort', () => abort.abort())
     return db.watchSplices(pid, path, after, abort.signal)
   }
-  async read(path: string, pid: PID, commit?: string) {
-    freezePid(pid)
-
+  async splice(
+    target: PID,
+    opts: { commit?: string; path?: string; count?: number } = {},
+  ) {
+    let { commit, path, count = 1 } = opts
+    log('splice', print(target), commit, path, count)
     const db = this.#api.context.db
     assert(db, 'db not found')
-    let fs
-    if (commit) {
-      fs = FS.open(pid, commit, db)
-    } else {
-      fs = await FS.openHead(pid, db)
+
+    if (!commit) {
+      commit = await db.readHead(target)
+    }
+    if (!commit) {
+      throw new Error('commit not found: ' + print(target))
+    }
+    const splices = []
+    const commits = [commit]
+    while (splices.length < count) {
+      const commit = commits.shift()
+      if (!commit) {
+        break
+      }
+      const splice = await db.getSplice(target, commit, path)
+      splices.push(splice)
+      commits.push(...splice.commit.parent)
     }
 
+    return splices
+  }
+  async read(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
     log('read', path, print(pid))
     return fs.read(path)
   }
+  async readTree(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
+    log('readTree', path, print(pid))
+    return fs.readTree(path)
+  }
   async readJSON<T>(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
+    log('readJSON', path, print(pid))
+    return fs.readJSON<T>(path)
+  }
+  async readBinary(path: string, pid: PID, commit?: string) {
+    const fs = await this.#openFs(pid, commit)
+    log('readBinary', path, print(pid))
+    return fs.readBinary(path)
+  }
+  async #openFs(pid: PID, commit?: string) {
     freezePid(pid)
 
     const db = this.#api.context.db
@@ -280,9 +316,7 @@ export class Engine implements EngineInterface {
     } else {
       fs = await FS.openHead(pid, db)
     }
-
-    log('readJSON', path, print(pid))
-    return fs.readJSON<T>(path)
+    return fs
   }
   async exists(path: string, pid: PID): Promise<boolean> {
     // TODO convert to triad

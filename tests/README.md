@@ -2,8 +2,6 @@
 
 do 10k customer records then sync it down from a server
 
-generate an image and store it
-
 generate a task list of things to do reprioritize it provide all the features of
 the todolist in redux
 
