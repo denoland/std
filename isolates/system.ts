@@ -26,7 +26,7 @@ const init = z.object({
   isolate: z.string().optional(),
   params: z.record(jsonSchema).optional(),
 })
-const headResult = z.object({ head: md5, elapsed: z.number().int().gt(0) })
+const headResult = z.object({ head: md5, elapsed: z.number().int().gte(0) })
 const pidResult = headResult.extend({
   pid: pidSchema,
 })

@@ -31,7 +31,7 @@ const engineFactory = async () => {
 }
 const machineEngine = await engineFactory()
 const machineEnginePrivateKey = Crypto.generatePrivateKey()
-Crypto.load(machineEnginePrivateKey) // do premul crypto
+Crypto.load(machineEnginePrivateKey) // do premul crypto so run is not skewed
 
 const backchatStartThread = await factory()
 const backchatReload = await factory()
@@ -54,7 +54,7 @@ suite
     },
   })
   // MACHINE
-  .add('machine root session', {
+  .add('machine root session', { // RENAME to: backchat create
     // generate a new machine key and await backchat to upsert
     defer: true,
     async fn(deferred: Benchmark.Deferred) {
@@ -63,7 +63,7 @@ suite
       deferred.resolve()
     },
   })
-  .add('machine reload', {
+  .add('machine reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       await Backchat.upsert(machineEngine, machineEnginePrivateKey)
@@ -71,7 +71,7 @@ suite
     },
   })
   // SESSION
-  .add('boot', {
+  .add('boot', { // RENAME to: full boot from cold
     // start an engine and await backchat to upsert
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
@@ -79,14 +79,14 @@ suite
       deferred.resolve()
     },
   })
-  .add('session start', {
+  .add('session start', { // RENAME to: new thread
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       await backchatStartThread.newThread()
       deferred.resolve()
     },
   })
-  .add('session reload', {
+  .add('session reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       await Backchat.upsert(
@@ -113,7 +113,7 @@ suite
   // run a benchmark from inside an isolate, skipping pierce
   // ? how can we map how long a branch takes to make ?
 
-  .add('cold ping', {
+  .add('cold ping', { // RENAME to: create backchat then ping
     // make a new session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
@@ -127,7 +127,7 @@ suite
       deferred.resolve()
     },
   })
-  .add('hot ping', {
+  .add('hot ping', { // RENAME to: ping local
     // use an existing session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
@@ -145,7 +145,7 @@ suite
   //       deferred.resolve()
   //     },
   //   })
-  .add('install', {
+  .add('install', { // RENAME to: init repo
     // time how long to install a new multi user app
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {

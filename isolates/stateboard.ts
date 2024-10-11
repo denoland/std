@@ -16,9 +16,7 @@ const log = Debug('AI:stateboard')
 export const parameters = {
   show: z
     .object({
-      reasoning: reasoning.describe(
-        'the reasoning for showing the stateboard with the chosen parameters',
-      ),
+      reasoning,
       pid: pidSchema.optional().describe('defaults to the current pid'),
       commit: z
         .string()

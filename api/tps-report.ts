@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const outcome = z
   .object({
     reasoning: z.array(z.string()).describe(
-      'the chain of thought reasoning for how the outcome was reached',
+      'the chain of thought reasoning for how the outcome was decided upon',
     ),
     outcome: z.boolean().describe(
       'the outcome of the test iteration, true if the expectation was met, false if it was not',

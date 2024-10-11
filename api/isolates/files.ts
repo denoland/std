@@ -32,9 +32,7 @@ export const parameters = {
     ),
   }).describe('Read a file.  The contents will be returned as a string.'),
   update: z.object({
-    reasoning: reasoning.describe(
-      'the brief step by step reasoning why this regex was chosen and what it is trying to achieve',
-    ),
+    reasoning,
     expectedMatches: z.number().int().gt(0).describe(
       'the expected number of matches for the regex',
     ),
