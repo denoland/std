@@ -17,7 +17,7 @@ export const asyncConfig = z.object({
   inline: z.boolean(),
   /** Wait for the napp to finish rather than immediately returning */
   synchronous: z.boolean(),
-  /** Interupt the calling thread on return, which will trigger a
+  /** Interrupt the calling thread on return, which will trigger a
    * generation of the current agent.  Without this, it will wait until
    * the agent runs again to make it aware of the tool call return */
   interrupt: z.boolean(),
@@ -52,7 +52,7 @@ export const parameters = {
     config: z.object({}),
   }),
 
-  /** Retreive the result of a summon or a tool call */
+  /** Retrieve the result of a summon or a tool call */
   retrieve: z.object({ id: z.string() }),
 }
 
