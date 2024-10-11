@@ -13,12 +13,13 @@ Deno.test(
     const strings = [
       "a".repeat(random(0, 24)),
       "a".repeat(random(24, 2 ** 8)),
-      "a".repeat(random(2 ** 8, 2 ** 10)),
+      "a".repeat(random(2 ** 8, 2 ** 16)),
+      "a".repeat(random(2 ** 16, 2 ** 17)),
     ];
 
     const expectedOutput = concat([
       new Uint8Array([0b011_11111]),
-      ...strings.filter((x) => x).map((x) => encodeCbor(x)),
+      ...strings.map((x) => encodeCbor(x)),
       new Uint8Array([0b111_11111]),
     ]);
 
@@ -39,12 +40,13 @@ Deno.test(
     const strings = [
       "a".repeat(random(0, 24)),
       "a".repeat(random(24, 2 ** 8)),
-      "a".repeat(random(2 ** 8, 2 ** 10)),
+      "a".repeat(random(2 ** 8, 2 ** 16)),
+      "a".repeat(random(2 ** 16, 2 ** 17)),
     ];
 
     const expectedOutput = concat([
       new Uint8Array([0b011_11111]),
-      ...strings.filter((x) => x).map((x) => encodeCbor(x)),
+      ...strings.map((x) => encodeCbor(x)),
       new Uint8Array([0b111_11111]),
     ]);
 
