@@ -236,6 +236,8 @@ export default class Server {
 
 const execute = async (c: Context, p: Promise<unknown>, name: string) => {
   startTime(c, name)
+  const denoVersion = navigator.userAgent.toLowerCase()
+  setMetric(c, 'deno', 'Deno Version: ' + denoVersion)
   const region = Deno.env.get('DENO_REGION') || '(unknown)'
   setMetric(c, 'region', 'Region: ' + region)
   const deployment = Deno.env.get('DENO_DEPLOYMENT_ID') || '(unknown)'
