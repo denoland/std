@@ -1,11 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { arrayToNumber, type ReleaseLock, toByteStream } from "./_common.ts";
+import { toByteStream } from "@std/streams/unstable-to-byte-stream";
+import { arrayToNumber, type ReleaseLock } from "./_common.ts";
 import { CborArrayDecodedStream } from "./_array_decoded_stream.ts";
 import { CborByteDecodedStream } from "./_byte_decoded_stream.ts";
 import { CborMapDecodedStream } from "./_map_decoded_stream.ts";
-import { CborTag } from "./tag.ts";
 import { CborTextDecodedStream } from "./_text_decoded_stream.ts";
+import { CborTag } from "./tag.ts";
 import type { CborMapStreamOutput, CborStreamOutput } from "./types.ts";
 
 export {

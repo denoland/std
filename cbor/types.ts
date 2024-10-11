@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { CborArrayDecodedStream } from "./_array_decoded_stream.ts";
-import type { CborArrayEncoderStream } from "./array_encoder_stream.ts";
 import type { CborByteDecodedStream } from "./_byte_decoded_stream.ts";
-import type { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import type { CborMapDecodedStream } from "./_map_decoded_stream.ts";
+import type { CborTextDecodedStream } from "./_text_decoded_stream.ts";
+import type { CborArrayEncoderStream } from "./array_encoder_stream.ts";
+import type { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import type { CborMapEncoderStream } from "./map_encoder_stream.ts";
 import type { CborTag } from "./tag.ts";
-import type { CborTextDecodedStream } from "./_text_decoded_stream.ts";
 import type { CborTextEncoderStream } from "./text_encoder_stream.ts";
 
 /**
