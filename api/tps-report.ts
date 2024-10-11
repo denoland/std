@@ -66,7 +66,7 @@ export const testCaseSummary = summary
     expectations: z
       .array(z.string())
       .describe('the expectations for this test case'),
-    befores: z.array(z.number().int().gte(0)).describe(
+    dependencies: z.array(z.number().int().gte(0)).describe(
       'Cases that must be run before this case, to set the starting state',
     ),
     successes: z
@@ -157,15 +157,15 @@ export const testFile = z
   .refine((v) => {
     let index = 0
     for (const testCase of v.cases) {
-      for (const before of testCase.summary.befores || []) {
-        if (before >= index) {
+      for (const dependency of testCase.summary.dependencies || []) {
+        if (dependency >= index) {
           return false
         }
       }
       index++
     }
     return true
-  }, { message: '"befores" must refer to earlier cases' })
+  }, { message: '"dependencies" must refer to earlier cases' })
 
 export type TestController = z.infer<typeof testController>
 export const testController = z.object({
@@ -210,7 +210,7 @@ export const addCase = (
   name: string,
   promptLists: string[][],
   expectations: string[],
-  befores: number[],
+  dependencies: number[],
 ) => {
   const parsed = testFile.parse(tpsReport)
   const test: TestCase = {
@@ -223,7 +223,7 @@ export const addCase = (
       expectations,
       completed: 0,
       successes: Array(expectations.length).fill(0),
-      befores,
+      dependencies,
     },
     iterations: [],
   }

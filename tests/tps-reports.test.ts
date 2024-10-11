@@ -27,7 +27,7 @@ const raw: TestFile = {
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 3,
-        befores: [],
+        dependencies: [],
         promptLists: [['prompt1'], ['multiple prompts', 'prompt2']],
         expectations: ['expectation 1', 'expectation 2'],
         completed: 1,
@@ -86,7 +86,7 @@ Deno.test('tps report', async () => {
   expect(updated.cases[0].summary.elapsed).toBeGreaterThan(0)
 })
 
-Deno.test('befores', () => {
+Deno.test('dependencies', () => {
   let tpsReport = testFile.parse(raw)
   expect(tpsReport).toEqual(raw)
 

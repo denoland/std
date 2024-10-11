@@ -17,11 +17,11 @@ const caseItem = z.object({ reasoning }).merge(
     name: true,
     promptLists: true,
     expectations: true,
-    befores: true,
+    dependencies: true,
   }),
 ).extend({
-  befores: z.array(z.number().int()).describe(
-    testCaseSummary.shape.befores.description || '',
+  dependencies: z.array(z.number().int()).describe(
+    testCaseSummary.shape.dependencies.description || '',
   ),
 })
 
@@ -58,13 +58,13 @@ export const functions: Functions<Api> = {
     const hash = await api.readOid(path)
     let tpsReport = create(path, target, assessor, iterations, hash)
 
-    for (const { name, promptLists, expectations, befores } of cases) {
+    for (const { name, promptLists, expectations, dependencies } of cases) {
       tpsReport = addCase(
         tpsReport,
         name,
         promptLists,
         expectations,
-        befores,
+        dependencies,
       )
     }
     log('writing tps report:', tpsPath)

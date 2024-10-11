@@ -99,8 +99,8 @@ export const functions: Functions<Api> = {
     const file = await readTpsReport(path, api)
     const { summary: { iterations } } = file
     const testCase = file.cases[caseIndex]
-    if (testCase.summary.befores.length) {
-      await runBefores(path, testCase.summary.befores, api)
+    if (testCase.summary.dependencies.length) {
+      await runDependencies(path, testCase.summary.dependencies, api)
     }
 
     // TODO batch the runs to get around artifact limitations in parallelisms
@@ -110,7 +110,7 @@ export const functions: Functions<Api> = {
     for (let i = 0; i < iterations; i++) {
       const opts = { branchName: 'iteration_' + i }
       const { iteration } = await api.actions<Api>('test-case-runner', opts)
-      // TODO handle nested befores
+      // TODO handle nested dependencies
       const promise = iteration({ path, caseIndex, iterationIndex: i })
       const { parent } = await withMeta(promise)
       assert(parent, 'missing parent')
@@ -214,7 +214,11 @@ const readTpsReport = async (path: string, api: IA, commit?: string) => {
   const tpsPath = getTpsPath(path)
   return testFile.parse(await api.readJSON(tpsPath, { commit }))
 }
-const runBefores = async (path: string, befores: number[], api: IA) => {
+const runDependencies = async (
+  path: string,
+  dependencies: number[],
+  api: IA,
+) => {
   const noops = { branchName: 'before', noClose: true }
   const { noop } = await api.actions<session.Api>('session', noops)
   const target = await noop({})
@@ -223,8 +227,8 @@ const runBefores = async (path: string, befores: number[], api: IA) => {
   const { iteration } = await api.actions<Api>('test-case-runner', iters)
 
   let lastParent: string | undefined
-  for (const caseIndex of befores) {
-    // TODO handle nested befores
+  for (const caseIndex of dependencies) {
+    // TODO handle nested dependencies
     log('executing before:', caseIndex)
     // TODO test this is adding on to the same thread
     const promise = iteration({ path, caseIndex, iterationIndex: 0 })

@@ -3,7 +3,7 @@ import { type Api } from '@/isolates/test-case-runner.ts'
 import { fixture } from '@/tests/fixtures/fixture.ts'
 import { TestFile, testFile } from '@/api/tps-report.ts'
 
-Deno.test('test with befores', async (t) => {
+Deno.test('test with dependencies', async (t) => {
   const { backchat, engine } = await fixture()
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
@@ -43,7 +43,7 @@ const tpsFixture: TestFile = {
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 1,
-        befores: [],
+        dependencies: [],
         promptLists: [['call the local function']],
         expectations: ['function was called once'],
         completed: 0,
@@ -57,7 +57,7 @@ const tpsFixture: TestFile = {
         timestamp: Date.now(),
         elapsed: 50,
         iterations: 1,
-        befores: [0],
+        dependencies: [0],
         promptLists: [['call the local function']],
         expectations: ['function was called twice'],
         completed: 0,
