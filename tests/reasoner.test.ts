@@ -11,9 +11,9 @@ import { addBranches } from '@/constants.ts'
 
 Deno.test('reasoner', async (t) => {
   const { backchat, engine } = await fixture()
-  log.enable(
-    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions AI:napps',
-  )
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions AI:napps',
+  // )
 
   const opts = { branchName: 'runner', noClose: true }
   const { start } = await backchat.actions<Api>('longthread', opts)

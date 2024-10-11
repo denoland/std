@@ -22,9 +22,9 @@ Deno.test.ignore('test-requester', async (t) => {
   const target = await backchat.threadPID()
   const { run } = await backchat.actions<Api>('longthread', { target })
 
-  log.enable(
-    'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller',
-  )
+  // log.enable(
+  //   'AI:tests AI:longthread AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller',
+  // )
   await t.step('test count', async () => {
     const content = `how many test cases in ./${firstTestPath} ?`
     await run({ content, path: requesterPath, actorId })
