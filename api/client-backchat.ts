@@ -87,7 +87,7 @@ export class Backchat {
   get homeAddress() {
     return this.#engine.homeAddress
   }
-  async readBaseThread() {
+  async threadPID() {
     const io = await this.readJSON<IoStruct>('.io.json')
     const state = backchatStateSchema.parse(io.state)
     return state.target
@@ -220,7 +220,7 @@ export class Backchat {
   }
   async readThread(pid?: PID) {
     if (!pid) {
-      pid = await this.readBaseThread()
+      pid = await this.threadPID()
     }
     const thread = await this.readJSON(getThreadPath(pid), pid)
     return threadSchema.parse(thread)

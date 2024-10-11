@@ -105,14 +105,17 @@ export const functions: Functions<Api> = {
     if (content.trim().startsWith('/')) {
       path = router
     }
-
-    const agentResult = await loop(path, api, [])
+    const stopOnTools = [
+      'backchat_newThreadSignal',
+      'backchat_changeThreadSignal',
+    ]
+    const agentResult = await loop(path, api, stopOnTools)
     const result: z.infer<typeof returns.route> = {}
     if (agentResult) {
       const { functionName } = agentResult
-      if (functionName === 'backchat_newThreadSignal') {
+      if (functionName === stopOnTools[0]) {
         result.newThread = true
-      } else if (functionName === 'backchat_changeThreadSignal') {
+      } else if (functionName === stopOnTools[1]) {
         result.changeThread = api.pid
       }
     }

@@ -18,7 +18,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   Deno.test(prefix + 'files:ls', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const target = await backchat.readBaseThread()
+    const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
     await backchat.write('tmp', '', target)
 
@@ -95,7 +95,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test(prefix + 'files:write', async (t) => {
     const { backchat, engine } = await cradleMaker()
 
-    const target = await backchat.readBaseThread()
+    const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
 
     const { run } = await backchat.actions<longthread.Api>('longthread', {
@@ -127,7 +127,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
   Deno.test(prefix + 'system:merge*', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    const target = await backchat.readBaseThread()
+    const target = await backchat.threadPID()
     const parent = getParent(target)
 
     const actions = await backchat.actions<system.Api>('system', { target })

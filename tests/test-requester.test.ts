@@ -19,7 +19,7 @@ Deno.test.ignore('test-requester', async (t) => {
 
   // OR we need to ensure that the controller receives the files from our branch
   const { backchat, engine } = await fixture()
-  const target = await backchat.readBaseThread()
+  const target = await backchat.threadPID()
   const { run } = await backchat.actions<Api>('longthread', { target })
 
   log.enable(

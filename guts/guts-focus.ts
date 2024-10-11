@@ -6,29 +6,35 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   // TODO make a remote thread, and then test summoner
 
+  // make a mock tool so we can force back the results, no matter what openai is
+  // doing, such as sending a random prompt and assuring the right one was
+  // intercepted and then we send back whatever we want
+  // this could be returned with the cradlemaker
+
   Deno.test(prefix + 'thread management', async (t) => {
     const { backchat, engine } = await cradleMaker()
-    let focus = await backchat.readBaseThread()
+    let focus = await backchat.threadPID()
     log('initial focus', focus)
+    const thread = await backchat.readThread()
+    expect(thread.agent).toBe('agents/reasoner.md')
 
     await t.step('first thread, files agent', async () => {
       expect(focus).toBeDefined()
-      await backchat.prompt('hey what files have I got ?')
-      const next = await backchat.readBaseThread()
+      await backchat.prompt('hello')
+      const next = await backchat.threadPID()
       expect(next).toEqual(focus)
-      focus = next
     })
 
     await t.step('second thread', async () => {
-      await backchat.prompt('/backchat start a new thread')
-      const next = await backchat.readBaseThread()
+      await backchat.prompt('start a new thread')
+      const next = await backchat.threadPID()
       expect(next).not.toEqual(focus)
       focus = next
     })
 
     await t.step('list files in second thread', async () => {
-      await backchat.prompt('/files list the files I have')
-      const next = await backchat.readBaseThread()
+      await backchat.prompt('list the files I have')
+      const next = await backchat.threadPID()
       expect(next).toEqual(focus)
     })
 
@@ -68,7 +74,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
       await backchat.prompt(prompt)
 
-      const target = await backchat.readBaseThread()
+      const target = await backchat.threadPID()
 
       const listing = await backchat.ls({ target })
       expect(listing).toContain('Edinburgh.txt')

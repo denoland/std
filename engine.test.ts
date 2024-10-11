@@ -26,13 +26,13 @@ Deno.test('cradle', async (t) => {
     expect(next.id).not.toEqual(backchat.id)
   })
   await t.step('new thread', async () => {
-    const firstBase = await backchat.readBaseThread()
-    const secondBase = await next.readBaseThread()
+    const firstBase = await backchat.threadPID()
+    const secondBase = await next.threadPID()
     expect(firstBase).not.toEqual(secondBase)
 
     const { newThread } = await next.actions<backchat.Api>('backchat')
     const threadId = await newThread({})
-    const thirdBase = await next.readBaseThread()
+    const thirdBase = await next.threadPID()
     expect(getBaseName(thirdBase)).toEqual(threadId)
     expect(secondBase).not.toEqual(thirdBase)
   })
