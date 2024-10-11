@@ -197,3 +197,10 @@ suite
 // time to restart an existing session
 
 // ? can a GUTS framework be made to run benchmarks in different environments
+
+// bulk copy files speed test, as well as single binary file test
+// bulk file read without cache.
+
+// multiple stage ping test
+// branch and some multiple requests test
+// also test the branch task going sequentially

@@ -8,6 +8,7 @@ import {
 } from '@/tests/fixtures/fixture.ts'
 
 Deno.test.ignore('test-requester', async (t) => {
+  log('test-requester')
   // test interrogating the test suites
   // run multiple test files
   // interrupt a running test
