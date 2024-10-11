@@ -96,11 +96,11 @@ export const functions: Functions<Api> = {
     assert(typeof last.content === 'string', 'content must be string')
     return api.pid
   },
-  async tool({ function: tool, parameters, config }, api) {
+  tool({ function: tool, parameters, config }) {
     log('nAppTool', tool, parameters, config)
     return ''
   },
-  async retrieve({ id }, api) {
+  retrieve({ id }) {
     log('nAppRetrieve', id)
     return {}
   },
