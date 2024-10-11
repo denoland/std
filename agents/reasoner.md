@@ -12,6 +12,8 @@ commands:
   - youtube:fetch
   - utils:time
   - ai-completions:image
+  - backchat:newThreadSignal # create a new target thread
+  - backchat:changeThreadSignal # change to another target thread
 napps:
   - o1
   - o1-mini

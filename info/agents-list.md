@@ -27,9 +27,6 @@
 - `agents/hal3.md` The general purpose bot to go to when the requests appear to
   be self-contradictory, lack sufficient information, or contain fallacies.
 
-- `agents/backchat.md` this bot knows about threads and switching between them.
-  It can create new threads.
-
 - `agents/creatorBot.md` This agent generates accurate and comprehensive system
   prompts (other agents) for a business process. It does this by generating
   structured system prompts that include all necessary components, such as an
