@@ -34,9 +34,9 @@ assessor: agents/test-assessor.md
 
 - an error was thrown
 
-## Before function
+## Dependencies function
 
-**Before**
+**Dependencies**
 
 - Call the local function
 
@@ -49,11 +49,11 @@ assessor: agents/test-assessor.md
 - hello was responded to
 - local function was called once
 
-## Multiple Befores
+## Multiple Dependencies
 
-**Before**
+**Dependencies**
 
-- Before function
+- Dependencies function
 - Call the local function
 
 **Prompts**

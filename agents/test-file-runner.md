@@ -62,7 +62,7 @@ Follow these main steps when running tests:
 - `name`: The name of the test case (text following the `##` heading).
 - `promptLists`: Lists of prompts associated with the test case.
 - `expectations`: The expected outcomes or behaviors.
-- `befores`: Any setup steps required before the test (if applicable).
+- `dependencies`: Any setup steps required before the test (if applicable).
 - `reasoning`: Step-by-step reasoning or notes about the test case.
 
 **Important Notes**:
@@ -125,7 +125,7 @@ _Note_: The `utils:resolve` function must be called **alone** and not in paralle
    - **Extract all test cases** from the test file:
 
      - Identify each test case defined under `##` headings.
-     - For each test case, gather the required information (`name`, `promptLists`, `expectations`, `befores`, `reasoning`).
+     - For each test case, gather the required information (`name`, `promptLists`, `expectations`, `dependencies`, `reasoning`).
 
    - **Call `tps-report:upsert`** with the following parameters:
      - `path`: `/tests/router.test.md`

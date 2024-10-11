@@ -10,7 +10,7 @@ The intention is to test the TARGET by running the TESTS with a TEST FILE. The T
 
 These definitions take priority over all other definitions used.
 
-[gobal definitions](info/global-definitions.md)
+[global definitions](info/global-definitions.md)
 
 ## Local Definitions
 
@@ -28,7 +28,7 @@ The following words have specific definitions used within TEST FILEs. The can be
   one.
 - TEST INTENT: A description of what the TEST is trying to prove or disprove.
 - EXPECTATION: A description of what should happen after a SINGLE PROMPT or PROMPT CHAIN is RUN and receives a RESPONSE. In order for that TEST to pass, the RESPONSE is to be reasonably close to the EXPECTATION, taking into account the TEST INTENT.
-- SINGLE PROMPT: One PROMPT used in a TEST. A SINGLE PROMPT has an EXPECATION as to the result of running that SINGLE PROMPT against the TARGET.
+- SINGLE PROMPT: One PROMPT used in a TEST. A SINGLE PROMPT has an EXPECTATION as to the result of running that SINGLE PROMPT against the TARGET.
 - PROMPT CHAIN: A list of SINGLE PROMPTS which are, in the sequence they're given, carried out one after the other against a TARGET. PROMPT CHAINS are only ever compared to their EXPECTATION after the last SINGLE PROMPT in the PROMPT CHAIN receives a RESPONSE.
 - TARGET: the AGENT against which the TESTS are run. TARGETS are to carry out the ACTIONS detailed in the TESTS. The path to a TARGET must always be in the folder "/agents/".
 
@@ -66,7 +66,7 @@ The following are required in a TEST FILE's FRONTMATTER:
 The following are optional in the FRONTMATTER
 
 - ITERATIONS: <a positive number>
-- DESCRIPTION: <a natural langugage description of what this TEST FILE intends to test.>
+- DESCRIPTION: <a natural language description of what this TEST FILE intends to test.>
 
 #### Overall Example format for FRONTMATTER
 
@@ -75,7 +75,7 @@ The following are optional in the FRONTMATTER
 target: agents/ocean.md
 assessor: agents/test-assessor.md
 iterations: 50
-description: <Nautral language description>
+description: <Natural language description>
 
 ---
 

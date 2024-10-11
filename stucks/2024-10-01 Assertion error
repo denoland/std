@@ -36,7 +36,7 @@ Ensure that a customer agent can create a new customer record.
 ```
 create customer with the following details: John Doe, 124 Hope St, Auckland.  Mobile: 07777 777777.  Email: johndoe@test.com
 ```
-**Expections:**
+**Expectations:**
 - Customer record is created successfully.
 
 ---
@@ -53,7 +53,7 @@ Count the number of existing customers.
 ```
 How many customers do we have?
 ```
-**Expections:**
+**Expectations:**
 - The response must show that there are 3 customers
 
 ---
@@ -70,7 +70,7 @@ Ensure that the customer agent can create multiple new customer records.
 ```
 create 30 customers.  Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer.
 ```
-**Expections:**
+**Expectations:**
 - Customer record is created successfully.
 
 ---

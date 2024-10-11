@@ -9,7 +9,7 @@ The features that we need to exercise are:
 - Getting the prompts out of the file
 - Getting the name of all the tests written to the tps file accurately
 
-## Befores are handled
+## Dependencies are handled
 
 There is an issue that the Before test cases are not identified correctly. This
 might be due to the test name being "Before" confusing the agent.
@@ -23,9 +23,9 @@ might be due to the test name being "Before" confusing the agent.
 - No tests were executed
 - There is a tps report generated
 - There are exactly 5 tests loaded
-- Test 0 has no Befores
+- Test 0 has no Dependencies
 - Test 3 has a single before, which is test 0
-- Test 4 has two befores, which are test 0 and test 3, in that order
+- Test 4 has two Dependencies, which are test 0 and test 3, in that order
 
 ## Upsert Test Case is called alone
 
