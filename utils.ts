@@ -3,7 +3,6 @@ export { delay } from '@std/async'
 export { expect } from '@std/expect'
 export { assert, AssertionError } from '@std/assert'
 export { default as merge } from 'lodash.merge'
-import 'supports-color'
 import Debug from 'debug'
 import { deserializeError, serializeError } from 'serialize-error'
 export { deserializeError, serializeError }
