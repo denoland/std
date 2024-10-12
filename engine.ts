@@ -19,7 +19,7 @@ import {
 } from './constants.ts'
 import * as actor from './api/isolates/actor.ts'
 import IA from './isolate-api.ts'
-import { assert, Debug, delay, posix } from '@utils'
+import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
