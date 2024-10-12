@@ -18,6 +18,7 @@ jobs:
       matrix:
         deno:
           - v1.x
+          - v2.x
           - canary
         os:
           - ubuntu-latest
@@ -29,7 +30,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
 
@@ -43,9 +44,9 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      # TODO(kt3k): Enable this test when `deno check` command supports workspace resolution
-      # - name: Type check browser compatible modules
-      #   run: deno task test:browser
+      - name: Type check browser compatible modules
+        run: deno task test:browser
+        if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
       - name: Generate lcov
         run: deno task cov:gen
@@ -73,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -102,7 +103,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: canary
 
@@ -144,7 +145,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
@@ -172,7 +173,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: canary
 

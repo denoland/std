@@ -55,6 +55,7 @@
     "./async",
     "./bytes",
     "./cache",
+    "./cbor",
     "./cli",
     "./collections",
     "./crypto",
