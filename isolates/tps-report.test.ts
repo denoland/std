@@ -56,6 +56,6 @@ Deno.test('tps-report', async () => {
     iterations,
     cases: [],
   }, api)
-  await expect(falseAssessor).rejects.toThrow('No such file or directory')
+  await expect(falseAssessor).rejects.toThrow('agents/invalid.md')
   stop()
 })
