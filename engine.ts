@@ -180,7 +180,8 @@ export class Engine implements EngineInterface {
   async stop() {
     this.#abort.abort()
     await this.#compartment.unmount(this.#api)
-    await delay(0) // attempt to let the subtle digest call clean up
+    // attempt to let the subtle digest call clean up
+    await new Promise<void>((resolve) => setTimeout(() => resolve()))
   }
   async #initHome() {
     // queue processing cannot begin without a home repo
