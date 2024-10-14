@@ -2,7 +2,7 @@ import IA from './isolate-api.ts'
 export type { IA }
 export const IO_PATH = '.io.json'
 import {
-  Backchat,
+  type Backchat,
   Change,
   CommitObject,
   EngineInterface,
@@ -22,7 +22,9 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { assert, equal } from '@utils'
 import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
-import { ZodObject, ZodSchema, ZodUnknown } from 'zod'
+import { z, ZodObject, ZodSchema, ZodUnknown } from 'zod'
+import { assistantMessage } from '@/api/zod.ts'
+import { chatParams } from '@/api/types.ts'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -236,5 +238,18 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
   }
   return api
 }
+
+const filename = z.string().regex(/^file:\/\/\//)
+const testname = z.string().regex(/^test: /)
+const actorId = z.string().regex(/^actorId: /)
+const reqestReplyPair = z.object({
+  request: chatParams,
+  reply: assistantMessage,
+})
+/** The on disk format for snapshots of openai completion calls */
+export const openaiRecordings = z.record(
+  filename,
+  z.record(testname, z.record(actorId, z.array(reqestReplyPair))),
+)
 
 export * from './api/types.ts'

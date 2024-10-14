@@ -5,7 +5,6 @@ import OpenAI from 'openai'
 import { decode, Image } from 'imagescript'
 import {
   Agent,
-  agentSchema,
   AssistantMessage,
   ChatParams,
   CompletionMessage,
@@ -42,16 +41,13 @@ export const transcribe = async (file: File) => {
 }
 
 export const parameters = {
-  /** Complete the thread with the given agent, using the optional overrides on
-   * the agent */
+  /** Complete the thread with the given agent */
   complete: z.object({
     path: z.string(),
-    overrides: agentSchema.partial().optional(),
   }),
   /** Gives slightly quicker feedback to users when waiting for completions */
   completionEffect: z.object({
     path: z.string(),
-    overrides: agentSchema.partial().optional(),
   }),
   image: z.object({
     path: z.string().regex(/\.jpg$/, {
@@ -88,7 +84,7 @@ export const returns: Returns<typeof parameters> = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  async complete({ path, overrides = {} }, api) {
+  async complete({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
@@ -98,13 +94,13 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
 
     const { completionEffect } = await api.actions<Api>('ai-completions')
-    await completionEffect({ path, overrides })
+    await completionEffect({ path })
   },
-  async completionEffect({ path, overrides }, api) {
+  async completionEffect({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
-    const agent = await loadAgent(path, api, overrides)
+    const agent = await loadAgent(path, api)
 
     const thread = await api.readThread(threadPath)
     const last = thread.messages.pop()
@@ -156,6 +152,8 @@ const complete = async (
 ) => {
   const tools = await loadTools(agent, api)
   const args = getChatParams(agent, messages, tools)
+
+  // lift out the last actorId so we know when we are mocking
 
   log('completion started with model: %o', args.model, print(api.pid))
   let retries = 0
@@ -249,4 +247,24 @@ export const safeAssistantName = (message: CompletionMessage) => {
 
 const additionInstructions = () => {
   return 'The time is: ' + new Date().toISOString()
+}
+
+type Recording = {
+  filename: string
+  testName: string
+}
+
+const recordings = new Map<string, Recording>()
+
+export const record = (actorId: string, t: Deno.TestContext) => {
+  // try retrieve previous calls.  If not present, capture the next call.
+}
+
+const injections = new Map<string, AssistantMessage[]>()
+
+export const inject = (actorId: string, message: AssistantMessage) => {
+  // insert the next message into the thread
+  const messages = injections.get(actorId) || []
+  messages.push(message)
+  injections.set(actorId, messages)
 }

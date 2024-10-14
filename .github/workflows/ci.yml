@@ -51,24 +51,24 @@ jobs:
       - name: Check formatting, linting, and types
         run: deno task check
 
-      # - name: Test
-      #   run: deno task test
-      #   env:
-      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Test
+        run: deno task test
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 
-      # - name: Create lcov file
-      #   if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
-      #   run: deno task cov:gen
+      - name: Create lcov file
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
+        run: deno task cov:gen
 
-      # - name: Upload coverage
-      #   if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
-      #   uses: codecov/codecov-action@v4
-      #   with:
-      #     name: ${{ matrix.os }}
-      #     files: cov.lcov
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     slug: dreamcatcher-tech/artifact
+      - name: Upload coverage
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          name: ${{ matrix.os }}
+          files: cov.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: dreamcatcher-tech/artifact
 
       - name: Run benchmark
         if: matrix.os == 'ubuntu-latest'

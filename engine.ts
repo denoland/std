@@ -135,6 +135,9 @@ export class Engine implements EngineInterface {
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
+    // TODO this should really be done by the actor
+    // so the request should include a pierce to create a new one in case the
+    // resume doesn't work, since SU takes time
     const su = this.superUser()
     const { backchat } = await su.actions<actor.Api>('actor', {
       target,

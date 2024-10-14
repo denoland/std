@@ -1,7 +1,7 @@
 import { assert } from '@std/assert'
 import { Debug } from '@utils'
 import { serializeError } from 'serialize-error'
-import { Agent, type IA, Thread } from '@/constants.ts'
+import { type IA, Thread } from '@/constants.ts'
 import { loadActions } from './ai-load-tools.ts'
 import { loadAgent } from './load-agent.ts'
 const base = 'AI:execute-tools'
@@ -9,11 +9,7 @@ const log = Debug(base)
 const debugToolCall = Debug(base + ':ai-result-tool')
 const debugToolResult = Debug(base + ':ai-tool-result')
 
-const loadToolCalls = async (
-  threadPath: string,
-  api: IA,
-  overrides?: Partial<Agent>,
-) => {
+const loadToolCalls = async (threadPath: string, api: IA) => {
   const thread = await api.readJSON<Thread>(threadPath)
 
   const assistant = thread.messages[thread.messages.length - 1]
@@ -22,7 +18,7 @@ const loadToolCalls = async (
   assert(assistant.name, 'missing assistant name')
   const { tool_calls } = assistant
 
-  const agent = await loadAgent(assistant.name, api, overrides)
+  const agent = await loadAgent(assistant.name, api)
   return { tool_calls, agent, thread }
 }
 
@@ -30,9 +26,8 @@ export const executeTools = async (
   threadPath: string,
   api: IA,
   stopOnTools: string[],
-  overrides?: Partial<Agent>,
 ) => {
-  const calls = await loadToolCalls(threadPath, api, overrides)
+  const calls = await loadToolCalls(threadPath, api)
   const { tool_calls, agent } = calls
 
   const actions = await loadActions(agent, api)

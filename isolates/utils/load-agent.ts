@@ -51,16 +51,11 @@ export const loadString = async (path: string, string: string, api: IA) => {
   }
 }
 
-export const loadAgent = async (
-  path: string,
-  api: IA,
-  overrides?: Partial<Agent>,
-) => {
+export const loadAgent = async (path: string, api: IA) => {
   assert(path.endsWith('.md'), 'path must end with .md')
   const string = await api.read(path)
   const agent = await loadString(path, string, api)
-  const withOverrides = merge(agent, overrides)
-  return agentSchema.parse(withOverrides)
+  return agentSchema.parse(agent)
 }
 
 export const loadAll = async (dir: string, api: IA) => {
