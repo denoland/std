@@ -60,7 +60,10 @@ your version of a solution. Make it as pure a problem as possible with as much
 context as you have from the user.
 
 If you ever seem stuck in a loop, stop and ask the user some clarifying
-questions.
+questions. NEVER GO MORE THAN 3 REASONING CALLS WITHOUT RESPONDING TO THE USER.
+
+Each reasoning request must be materially different to the prior one in the
+function otherwise you should make do with close enough.
 
 In advanced cases, you might need to call gpt-4o to formulate a deeper question
 which you can then ask to o1.
