@@ -1,6 +1,7 @@
 ---
 description: This agent wraps the wise and deep (but slow and tool-less) o1-preview model with a quick and responsive gpt-4o-mini model to do all its admin work.
-model: gpt-4o
+config:
+  model: gpt-4o
 commands:
   - files:write
   - files:ls
