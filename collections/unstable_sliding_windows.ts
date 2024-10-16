@@ -93,9 +93,6 @@ export function slidingWindows<T>(
       last = len;
     }
     const window: T[] = array.slice(i, last);
-    // for (let j = i; j < last; j++) {
-    //   window.push(array[j]!);
-    // }
     if ((partial && window.length) || window.length === size) {
       result.push(window);
     }
