@@ -66,7 +66,7 @@ Deno.test("getLogger() habndles unknown", async function () {
 
   const logger = log.getLogger("nonexistent");
 
-  assertEquals(logger.levelName, "NOTSET");
+  assertEquals(logger.levelName, "INFO");
   assertEquals(logger.handlers, []);
 });
 

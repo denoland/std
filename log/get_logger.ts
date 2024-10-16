@@ -3,6 +3,7 @@
 
 import { Logger } from "./logger.ts";
 import { state } from "./_state.ts";
+import { DEFAULT_LEVEL } from "./_config.ts";
 
 export type { Logger };
 
@@ -73,7 +74,7 @@ export function getLogger(name?: string): Logger {
   }
   const result = state.loggers.get(name);
   if (!result) {
-    const logger = new Logger(name, "NOTSET", { handlers: [] });
+    const logger = new Logger(name, DEFAULT_LEVEL, { handlers: [] });
     state.loggers.set(name, logger);
     return logger;
   }
