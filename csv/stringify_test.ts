@@ -568,7 +568,7 @@ Deno.test({
       {
         name: "Object array with no columns, should infer columns",
         fn() {
-          const data = [{ a: 1 }, { a: 2 }, {b: 3}];
+          const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
           const output = `a${CRLF}1${CRLF}2${CRLF}${CRLF}`;
           assertEquals(stringify(data), output);
         },

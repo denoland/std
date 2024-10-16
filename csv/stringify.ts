@@ -167,7 +167,7 @@ function normalizeColumn(column: Column): NormalizedColumn {
     prop = [column];
   }
 
-  return {header, prop};
+  return { header, prop };
 }
 
 /**
@@ -429,8 +429,8 @@ export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions,
 ): string {
-  const {headers = true, separator: sep = ",", columns, bom = false} =
-  options ?? {};
+  const { headers = true, separator: sep = ",", columns, bom = false } =
+    options ?? {};
 
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
