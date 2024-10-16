@@ -99,7 +99,7 @@ export class CsvStringifyStream<TOptions extends CsvStringifyStreamOptions>
    * @param options Options for the stream.
    */
   constructor(options?: TOptions) {
-    const { separator, columns = [] } = options ?? {};
+    const { separator, columns } = options ?? {};
 
     super(
       {

@@ -108,9 +108,9 @@ export type StringifyOptions = {
    * column of output. This is also where you can provide an explicit header
    * name for the column.
    *
-   * @default {[]}
+   * @default {undefined}
    */
-  columns?: readonly Column[];
+  columns?: readonly Column[] | undefined;
   /**
    * Whether to add a
    * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
@@ -167,7 +167,7 @@ function normalizeColumn(column: Column): NormalizedColumn {
     prop = [column];
   }
 
-  return { header, prop };
+  return {header, prop};
 }
 
 /**
@@ -429,8 +429,8 @@ export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions,
 ): string {
-  const { headers = true, separator: sep = ",", columns = [], bom = false } =
-    options ?? {};
+  const {headers = true, separator: sep = ",", columns, bom = false} =
+  options ?? {};
 
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
     const message = [
@@ -441,7 +441,12 @@ export function stringify(
     throw new TypeError(message);
   }
 
-  const normalizedColumns = columns.map(normalizeColumn);
+  if (columns && !Array.isArray(columns)) {
+    throw new TypeError("Invalid type: columns can only be an array.");
+  }
+
+  const definedColumns = columns ?? inferColumns(data);
+  const normalizedColumns = definedColumns.map(normalizeColumn);
   let output = "";
 
   if (bom) {
@@ -464,4 +469,20 @@ export function stringify(
   }
 
   return output;
+}
+
+/**
+ * Infers the columns from the first object element of the given array.
+ */
+function inferColumns(data: readonly DataItem[]) {
+  const firstElement = data.at(0);
+  if (
+    firstElement &&
+    typeof firstElement === "object" &&
+    !Array.isArray(firstElement)
+  ) {
+    return Object.keys(firstElement);
+  }
+
+  return [];
 }
