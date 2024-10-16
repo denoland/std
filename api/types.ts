@@ -502,12 +502,19 @@ const { black, red, green, blue, magenta, cyan, bold } = new Chalk({ level: 1 })
 const colors = [red, green, blue, magenta, cyan, black]
 let colorIndex = 0
 const colorMap = new Map<string, number>()
-export const colorize = (string: string, noSubstring = false) => {
+export const colorize = (
+  string: string,
+  noSubstring = false,
+  noColor = false,
+) => {
   let sub = string
   if (!noSubstring) {
     sub = string.substring(0, 7)
   }
   let index
+  if (noColor) {
+    return sub
+  }
   if (colorMap.has(sub)) {
     index = colorMap.get(sub)!
   } else {
@@ -520,7 +527,7 @@ export const colorize = (string: string, noSubstring = false) => {
 
   return colors[index](bold(sub))
 }
-export const print = (pid?: PID) => {
+export const print = (pid?: PID, noColor = false) => {
   if (!pid) {
     return '(no pid)'
   }
@@ -530,11 +537,15 @@ export const print = (pid?: PID) => {
       !segment.startsWith('act_') &&
       !segment.startsWith('rep_') &&
       !segment.startsWith('the_')
-    return colorize(segment, noSubstring)
+    return colorize(segment, noSubstring, noColor)
   })
-  return `${colorize(pid.repoId)}/${pid.account}/${pid.repository}:${
-    branches.join('/')
-  }`
+  const noSubstring = false
+  const repoId = colorize(pid.repoId, noSubstring, noColor)
+  return `${repoId}/${pid.account}/${pid.repository}:${branches.join('/')}`
+}
+export const printPlain = (pid?: PID) => {
+  const noColor = true
+  return print(pid, noColor)
 }
 export const freezePid = (pid: PID) => {
   if (!pid.repoId) {

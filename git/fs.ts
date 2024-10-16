@@ -17,6 +17,7 @@ import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
 import { ulid } from 'ulid'
+import { isMockingRunning } from '@/isolates/utils/mocker.ts'
 const log = Debug('git:fs')
 const dir = '/'
 
@@ -651,7 +652,12 @@ const refine = (path: string) => {
   return path
 }
 
+let fakeRepoId = 0
 const generateFakeRepoId = () => {
+  if (isMockingRunning()) {
+    return `rep_${hash('' + fakeRepoId++)}`
+  }
+
   // TODO make this genuine based on the genesis commit
   return `rep_${hash(ulid())}`
 }

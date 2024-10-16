@@ -15,6 +15,7 @@ import {
   type IA,
   messageStatsSchema,
   print,
+  printPlain,
   Returns,
   Thread,
   ToApiType,
@@ -121,23 +122,16 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
   },
-  async image({ path, prompt, lowQuality, size, style }, api) {
-    const { data, response } = await ai.images
-      .generate({
-        prompt,
-        model: 'dall-e-3',
-        quality: lowQuality ? 'standard' : 'hd',
-        response_format: 'b64_json',
-        size,
-        style,
-      }).withResponse()
+  async image(params, api) {
+    const { path } = params
+    const { data, response } = await image(params, api)
     log('headers', response.statusText)
     const { b64_json, revised_prompt } = data.data[0]
     if (!b64_json) {
       throw new Error('no image data')
     }
     const imageData = base64.decode(b64_json)
-    log('length', imageData.length)
+    log('image length', imageData.length)
 
     const png = await decode(imageData)
     assert(png instanceof Image, 'image must be an instance of Image')
@@ -149,17 +143,57 @@ export const functions: Functions<Api> = {
   },
 }
 
-const replySchema = z.object({
+export const image = async (
+  params: z.infer<typeof parameters['image']>,
+  api: IA,
+) => {
+  const { prompt, lowQuality, size, style } = params
+  const id = printPlain(api.pid)
+  const recording = imageMock.next(id)
+  if (recording) {
+    expect(recording.request).toEqual(params)
+    return recording.reply as {
+      data: OpenAI.Images.ImagesResponse
+      response: Response
+    }
+  }
+
+  const { data, response } = await ai.images
+    .generate({
+      prompt,
+      model: 'dall-e-3',
+      quality: lowQuality ? 'standard' : 'hd',
+      response_format: 'b64_json',
+      size,
+      style,
+    }).withResponse()
+
+  const squeezed = squeezeMockData(data)
+  imageMock.store(id, { request: params, reply: { data: squeezed, response } })
+  return { data, response }
+}
+
+const imageReplySchema = z.object({
+  data: z.unknown(),
+  response: z.unknown(),
+})
+const imagePairSchema = z.object({
+  request: parameters['image'],
+  reply: imageReplySchema,
+})
+
+const imageMock = mockCreator(imagePairSchema)
+image.mock = imageMock
+
+const completionsReplySchema = z.object({
   assistant: assistantMessage,
   stats: messageStatsSchema,
 })
 
-const reqestReplyPair = z.object({
+const completionsPairSchema = z.object({
   request: chatParams,
-  reply: replySchema,
+  reply: completionsReplySchema,
 })
-
-const mock = mockCreator(reqestReplyPair)
 
 export const complete = async (
   agent: Agent,
@@ -169,10 +203,8 @@ export const complete = async (
   const tools = await loadTools(agent, api)
   const args = getChatParams(agent, messages, tools)
 
-  // lift out the last actorId so we know when we are mocking
-  const actorId = elideActorId(messages)
-  console.log('actorId', actorId)
-  const recording = mock.next(actorId)
+  const id = printPlain(api.pid)
+  const recording = completionsMock.next(id)
   if (recording) {
     expect(recording.request).toEqual(args)
     return recording.reply
@@ -208,7 +240,7 @@ export const complete = async (
           openAiProcessingMs: openAiProcessingMs ? +openAiProcessingMs : 0,
         }),
       }
-      mock.store(actorId, { request: args, reply })
+      completionsMock.store(id, { request: args, reply })
 
       return reply
     } catch (error) {
@@ -220,7 +252,8 @@ export const complete = async (
   }
   throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
 }
-complete.mock = mock
+const completionsMock = mockCreator(completionsPairSchema)
+complete.mock = completionsMock
 
 export const getChatParams = (
   agent: Agent,
@@ -275,13 +308,14 @@ export const safeAssistantName = (message: CompletionMessage) => {
 const additionInstructions = () => {
   return 'The time is: ' + new Date().toISOString()
 }
+const squeezeMockData = (result: OpenAI.Images.ImagesResponse) => {
+  const fake =
+    'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAABQUlEQVR4nAE2Acn+AFWFasx5BD3kQfuYK9zNJJXzR81JXGsdYwxOP/ggyAQC+dlbzrmdUZ+Xgo9sBhbNytzXE2IPfxblFuNZ9vYCD9Qw+7UUN/xCErc8I0gk21S+uCU4EX33VN1CFz5pAHaODSC/a8ZsheMYxX37BIOoMcfnpS8k6KwY7zE9VgKU4CsTmvjyE8lur1yLUAo7SKUu07rY8zYwmNASNh0CvvWpIaH1bs1V01RZE2se73fmxRfts48N4bf03otfBDHQ3j52DzyUBguaBfEcXnDOsBuN6HeYeMbrXRzVtADOYHNpl5tMMNBP2PSqx3YI7MFiBfb2wXFXAxH0JSsA1ZsAv2N5fzoy1PrKBJ8201yyqOsPZKnyqJ10ME7oAfSuLGJaACH+38rm67hvIcxsB99FWZb3Ah6CMO1CEnIBlb6tLzIdAAAAAElFTkSuQmCC'
 
-const elideActorId = (messages: Thread['messages']) => {
-  if (messages.length) {
-    const last = messages[messages.length - 1]
-    if (last.role === 'user' && last.name) {
-      return last.name
-    }
+  assert(result.data.length, 'data length must be 1')
+  const { b64_json: _, ...rest } = result.data[0]
+  return {
+    ...result,
+    data: [{ b64_json: fake, ...rest }],
   }
-  return ''
 }

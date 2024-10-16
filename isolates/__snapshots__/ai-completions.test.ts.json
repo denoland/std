@@ -1,15 +1,14 @@
 {
   "inject empty": {
     "recordings": {
-      "test-actor-id": [
+      "rep_H2R/test/inject-single:main": [
         {
           "request": {
             "model": "gpt-4o-mini",
             "messages": [
               {
                 "content": "say cheese in emoji",
-                "role": "user",
-                "name": "test-actor-id"
+                "role": "system"
               }
             ],
             "seed": 1337
@@ -17,20 +16,20 @@
           "reply": {
             "assistant": {
               "role": "assistant",
-              "content": "Say cheese! 🧀😄",
+              "content": "📸🧀",
               "name": "fake/agent.md",
               "refusal": null
             },
             "stats": {
-              "created": 1729038718,
+              "created": 1729111645,
               "model": "gpt-4o-mini-2024-07-18",
               "system_fingerprint": "fp_e2bde53e6e",
-              "duration": 1270,
-              "openAiProcessingMs": 950,
+              "duration": 2279,
+              "openAiProcessingMs": 444,
               "usage": {
-                "completion_tokens": 8,
-                "prompt_tokens": 15,
-                "total_tokens": 23,
+                "completion_tokens": 5,
+                "prompt_tokens": 11,
+                "total_tokens": 16,
                 "completion_tokens_details": {
                   "reasoning_tokens": 0
                 },
@@ -39,6 +38,33 @@
                 }
               }
             }
+          }
+        }
+      ]
+    }
+  },
+  "generate images": {
+    "recordings": {
+      "rep_E8R/test/images:main": [
+        {
+          "request": {
+            "path": "images/test.jpg",
+            "prompt": "a dystopian robot overlord mecha",
+            "lowQuality": true,
+            "size": "1024x1024",
+            "style": "natural"
+          },
+          "reply": {
+            "data": {
+              "created": 1729115138,
+              "data": [
+                {
+                  "b64_json": "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAABQUlEQVR4nAE2Acn+AFWFasx5BD3kQfuYK9zNJJXzR81JXGsdYwxOP/ggyAQC+dlbzrmdUZ+Xgo9sBhbNytzXE2IPfxblFuNZ9vYCD9Qw+7UUN/xCErc8I0gk21S+uCU4EX33VN1CFz5pAHaODSC/a8ZsheMYxX37BIOoMcfnpS8k6KwY7zE9VgKU4CsTmvjyE8lur1yLUAo7SKUu07rY8zYwmNASNh0CvvWpIaH1bs1V01RZE2se73fmxRfts48N4bf03otfBDHQ3j52DzyUBguaBfEcXnDOsBuN6HeYeMbrXRzVtADOYHNpl5tMMNBP2PSqx3YI7MFiBfb2wXFXAxH0JSsA1ZsAv2N5fzoy1PrKBJ8201yyqOsPZKnyqJ10ME7oAfSuLGJaACH+38rm67hvIcxsB99FWZb3Ah6CMO1CEnIBlb6tLzIdAAAAAElFTkSuQmCC",
+                  "revised_prompt": "Imagine a dystopian world where robots rule over humans. In this world, there is a robotic overlord known as the Mecha. This robot embodies the height of advanced machinery and artificial intelligence. The overlord Mecha is massive in size, towering over skyscrapers and made of rustic iron exhibiting signs of wear. Equipped with gears, piston-driven limbs, and glowing red LED eyes, the robot has an eerie, intimidating presence. Its metallic body is angular, constructed to evoke an imposing silhouette against the bleak future skyline. The surroundings are filled with remnants of a bygone era, where humans once dominated, now turned into rubble. Beams of broken infrastructures protrude and metal scraps are littered around, setting the stage for this dystopian robot overlord scene."
+                }
+              ]
+            },
+            "response": {}
           }
         }
       ]

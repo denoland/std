@@ -1,108 +1,101 @@
 import { basename, dirname, fromFileUrl } from '@std/path'
-import { z, type ZodSchema } from 'zod'
+import { z, ZodError } from 'zod'
 import get from 'lodash.get'
 import set from 'lodash.set'
 import { Debug } from '@utils'
 const log = Debug('AI:mocker')
 type TestContext = Deno.TestContext
 
+let testContext: TestContext | undefined
+export const isMockingRunning = () => !!testContext
+
 const id = z.string()
 
-const baseTestRecord = z.object({
-  recordings: z.record(id, z.array(z.unknown())),
-})
-
-type TestRecord = z.infer<typeof baseTestRecord> & {
-  children?: Record<string, TestRecord>
-}
-
-/** The on disk format for recordings during testing */
-const testRecordSchema: z.ZodType<TestRecord> = baseTestRecord.extend({
-  children: z.lazy(() => z.record(testRecordSchema)).optional(),
-})
-const fileSchema = z.record(testRecordSchema)
-
 export const mockCreator = <T extends z.ZodTypeAny>(messageSchema: T) => {
-  type Subscriber = (message: z.infer<typeof messageSchema> | undefined) => void
+  type Subscriber = (
+    message: z.infer<typeof messageSchema> | undefined,
+    id: string,
+  ) => void
   type Mock = {
     inject: (id: string, message: z.infer<typeof messageSchema>) => void
     next: (id: string) => z.infer<typeof messageSchema> | undefined
-    useRecorder: (id: string, t: TestContext) => void
+    useRecorder: (t: TestContext) => void
     store: (id: string, message: z.infer<typeof messageSchema>) => void
-    teardown: (id: string) => void
+    teardown: () => void
     /** Trigger a callback when the mock is called */
-    subscribe: (id: string, callback: Subscriber) => void
+    subscribe: (callback: Subscriber) => void
   }
 
-  const subscribers = new Map<string, Set<Subscriber>>()
+  const subscribers = new Set<Subscriber>()
   const injections = new Map<string, z.infer<typeof messageSchema>[]>()
-  const recordings = new Map<string, TestContext>()
 
   const mock: Mock = {
     next: (id) => {
       const messages = injections.get(id) || []
-      const payload = messages.shift()
-      const callbacks = subscribers.get(id) || new Set()
+      const raw = messages.shift()
+      const message = raw === undefined ? raw : messageSchema.parse(raw)
       // TODO allow callbacks to return an override payload
-      callbacks.forEach((callback) => callback(payload))
-      return payload
+      subscribers.forEach((callback) => callback(message, id))
+      return message as z.infer<typeof messageSchema>
     },
     inject: (id, payload) => {
-      if (recordings.has(id)) {
-        throw new Error('Cannot inject while recording')
+      if (!testContext) {
+        throw new Error('no test context to inject into')
       }
       const messages = injections.get(id) || []
       messages.push(payload)
       injections.set(id, messages)
-      // TODO throw an error if used with the recording feature
     },
-    useRecorder: (id, t) => {
-      if (injections.has(id) || recordings.has(id)) {
+    useRecorder: (t) => {
+      if (testContext) {
         throw new Error('recorder already active')
       }
-      const saved = readMessages(id, t, messageSchema)
-      for (const recording of saved) {
-        mock.inject(id, recording)
+      testContext = t
+
+      const saved = readRecordings(t)
+      for (const [id, recording] of Object.entries(saved)) {
+        for (const message of recording) {
+          mock.inject(id, message)
+        }
       }
-      recordings.set(id, t)
     },
     store: (id, message) => {
-      const context = recordings.get(id)
-      if (!context) {
+      // TODO require a store key, so multiple functions can store with
+      // different schemas but using the same id
+      if (!testContext) {
         log('no recording context for id: %s', id)
         return
       }
-
-      const saved = readMessages(id, context, messageSchema)
-      saved.push(message)
-      log('storing', saved)
-      writeRecordingFile(id, context, saved, messageSchema)
+      const parsed = messageSchema.parse(message)
+      const saved = readRecordings(testContext)
+      const messages = saved[id] || []
+      messages.push(parsed)
+      log('storing', messages)
+      writeRecordingFile(id, testContext, messages)
     },
-    teardown: (id) => {
-      injections.delete(id)
-      subscribers.delete(id)
-      recordings.delete(id)
+    teardown: () => {
+      injections.clear()
+      subscribers.clear()
+      testContext = undefined
     },
-    subscribe: (id, callback) => {
-      const callbacks = subscribers.get(id) || new Set()
-      callbacks.add(callback)
-      subscribers.set(id, callbacks)
+    subscribe: (callback) => {
+      subscribers.add(callback)
     },
   }
   Object.freeze(mock)
   return mock
 }
 
-const readMessages = <T extends ZodSchema>(
-  id: string,
-  t: TestContext,
-  schema: T,
-) => {
-  const records = readRecordFile(t)
-  const path = getPath(id, t)
-  log('path', path)
+const readRecordings = (t: TestContext) => {
+  const allRecords = readRecordFile(t)
+  const path = getRecordingsPath(t)
 
-  return schema.array().parse(get(records, path, []))
+  log('path', path)
+  const recordings = get(allRecords, path, {})
+  log('recordings', recordings)
+
+  const recordingsSchema = z.record(id, z.unknown().array())
+  return recordingsSchema.parse(recordings)
 }
 
 export const getFilename = (t: TestContext, withDirCreation?: boolean) => {
@@ -125,25 +118,35 @@ export const getFilename = (t: TestContext, withDirCreation?: boolean) => {
   return snapPath
 }
 
-const writeRecordingFile = <T extends ZodSchema>(
+const writeRecordingFile = (
   id: string,
   t: TestContext,
-  messages: z.infer<T>[],
-  schema: T,
+  messages: unknown[],
 ) => {
   const withDirCreation = true
   const filename = getFilename(t, withDirCreation)
-  const path = getPath(id, t)
+  const path = getRecordsPathById(id, t)
   log('writing to path', path)
 
   const records = readRecordFile(t)
-  set(records, path, schema.array().parse(messages))
+  set(records, path, messages)
 
   const pretty = JSON.stringify(records, null, 2)
   Deno.writeTextFileSync(filename, pretty)
 }
 
 const readRecordFile = (t: TestContext) => {
+  const baseTestRecord = z.object({
+    recordings: z.record(id, z.unknown().array()).optional(),
+  })
+  type TestRecord = z.infer<typeof baseTestRecord> & {
+    children?: Record<string, TestRecord>
+  }
+  const testRecordSchema: z.ZodType<TestRecord> = baseTestRecord.extend({
+    children: z.lazy(() => z.record(testRecordSchema)).optional(),
+  })
+  const fileSchema = z.record(testRecordSchema)
+
   const filename = getFilename(t)
   let contents = fileSchema.parse({})
   try {
@@ -151,6 +154,9 @@ const readRecordFile = (t: TestContext) => {
     contents = fileSchema.parse(JSON.parse(data))
   } catch (error) {
     if (error instanceof Error) {
+      if (error instanceof ZodError) {
+        throw error
+      }
       log('error reading recording file', error.message)
     }
   }
@@ -165,13 +171,16 @@ export const removeSnapshotsFile = (t: TestContext) => {
     log('error removing file')
   }
 }
-
-const getPath = (id: string, t: TestContext) => {
-  const path = [t.name, 'recordings', id]
+const getRecordsPathById = (id: string, t: TestContext) => {
+  const path = getRecordingsPath(t)
+  return [...path, id]
+}
+const getRecordingsPath = (t: TestContext) => {
+  const path = [t.name, 'recordings']
   while (t.parent) {
     path.unshift(t.parent.name, 'children')
     t = t.parent
   }
-  log('path', path)
+  log('getRecordingsPath', path)
   return path
 }
