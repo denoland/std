@@ -302,7 +302,13 @@ export class IniMap<T = any> {
     }
     const reviverFunc: ReviverFunction = typeof reviver === "function"
       ? reviver
-      : (_key, value, _section) => value;
+      : (_key, value, _section) => {
+        if (value === "undefined") return undefined;
+        if (!isNaN(+value) && !value.includes('"')) return parseInt(value);
+        if (value === "null") return null;
+        if (value === "true" || value === "false") return value === "true";
+        return trimQuotes(value);
+      };
     let lineNumber = 1;
     let currentSection: LineSection | undefined;
 
@@ -355,7 +361,7 @@ export class IniMap<T = any> {
         }
 
         const key = leftHand.trim();
-        const value = trimQuotes(rightHand.trim());
+        const value = rightHand.trim();
 
         if (currentSection) {
           const lineValue: LineValue = {

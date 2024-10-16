@@ -38,7 +38,7 @@ Deno.test({
     });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
     assertValidParse('value="value"', { value: "value" });
-    assertValidParse("#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100", {
+    assertValidParse('#comment\nkeyA=1977-05-25\n[section1]\nkeyA="100"', {
       keyA: "1977-05-25",
       section1: { keyA: "100" },
     });
@@ -169,5 +169,47 @@ Deno.test({
     });
     const { success } = await command.output();
     assert(success);
+  },
+});
+
+Deno.test({
+  name: "parse() return value as undefined",
+  fn() {
+    assertEquals(parse("value=undefined"), { value: undefined });
+  },
+});
+
+Deno.test({
+  name: "parse() return value as number",
+  fn() {
+    assertEquals(parse("value=123"), { value: 123 });
+  },
+});
+
+Deno.test({
+  name: "parse() correctly parse number with special characters ",
+  fn() {
+    assertEquals(parse("value=123foo"), { value: "123foo" });
+  },
+});
+
+Deno.test({
+  name: "parse() return value as null",
+  fn() {
+    assertEquals(parse("value=null"), { value: null });
+  },
+});
+
+Deno.test({
+  name: "parse() return value as true",
+  fn() {
+    assertEquals(parse("value=true"), { value: true });
+  },
+});
+
+Deno.test({
+  name: "parse() return value as false",
+  fn() {
+    assertEquals(parse("value=false"), { value: false });
   },
 });

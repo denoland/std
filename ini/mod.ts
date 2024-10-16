@@ -20,7 +20,7 @@
  * assertEquals(parse(text), {
  *   "Global Key": "Some data here",
  *   "Section #1": {
- *     "Section Value": "42",
+ *     "Section Value": 42,
  *     "Section Date": "1977-05-25",
  *   },
  * });
