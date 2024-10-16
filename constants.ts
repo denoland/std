@@ -239,17 +239,4 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
   return api
 }
 
-const filename = z.string().regex(/^file:\/\/\//)
-const testname = z.string().regex(/^test: /)
-const actorId = z.string().regex(/^actorId: /)
-const reqestReplyPair = z.object({
-  request: chatParams,
-  reply: assistantMessage,
-})
-/** The on disk format for snapshots of openai completion calls */
-export const openaiRecordings = z.record(
-  filename,
-  z.record(testname, z.record(actorId, z.array(reqestReplyPair))),
-)
-
 export * from './api/types.ts'

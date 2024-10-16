@@ -31,7 +31,7 @@
     "@std/async": "jsr:@std/async",
     "@std/dotenv": "jsr:@std/dotenv",
     "@std/expect": "jsr:@std/expect",
-    "@std/path": "jsr:@std/path",
+    "@std/path": "jsr:@std/path@^1.0.6",
     "@types/benchmark": "npm:@types/benchmark",
     "@utils": "./utils.ts",
     "benchmark": "npm:benchmark",
@@ -45,7 +45,9 @@
     "hono": "jsr:@hono/hono",
     "imagescript": "https://deno.land/x/imagescript@1.3.0/mod.ts",
     "it-pushable": "npm:it-pushable",
+    "lodash.get": "npm:lodash.get@^4.4.2",
     "lodash.merge": "npm:lodash.merge",
+    "lodash.set": "npm:lodash.set@^4.3.2",
     "micromatch": "npm:micromatch",
     "multiformats": "npm:multiformats",
     "openai": "npm:openai",
@@ -72,6 +74,6 @@
     "indentWidth": 2,
     "useTabs": false
   },
-  "unstable": ["kv" ],
+  "unstable": ["kv"],
   "exports": "./main.ts"
 }

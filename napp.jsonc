@@ -1,0 +1,63 @@
+{
+  "name": "napp-name",
+  "description": "This is a description of the napp",
+  // what species of runtime needs to be used to execute this napp
+  "runtime": "deno",
+  // folder containing the branding assets of the napp
+  "branding": "path/to/branding/",
+  // ? what about passing a dependency napp straight thru ?
+  
+  // list of the api gateway targets that this thing needs to do its job
+    "gateways":[],
+
+    // ? does the inference endpoint need to be separate ?
+    // should the entry agent for nl be here too ?
+    // nl could just a tool name with a specific format
+    "chat": "some-function",
+
+  "tools": {
+    "some-function": {
+      "description": "This function does something",
+      "parameters": {
+        "param1": {
+          "description": "This is the first parameter",
+          "type": "string",
+          "required": true
+        },
+        "param2": {
+          "description": "This is the second parameter",
+          "type": "number",
+          "required": false
+        },
+        "permissions": [
+          // list of permissions required to run this function
+        ],
+        "gateways": [
+            // list of gateways required to run this function
+        ]
+
+      },
+      "returns": {
+        "description": "This is what the function returns",
+        "type": "string"
+      }
+    },
+    "some-other-function": "dependent-napp-name",
+    "modified-passthru": {
+        // passes thru to a tool of the same name
+        "parameters": {},
+        "napp": "dependent-napp-name"
+    }
+
+  },
+  "help": [
+    // list of files that can be read to learn how to interface with this napp
+    // intended to be read by an AI
+  ], 
+  "tests": [
+    // list of test files that can be run to verify the napp is working correctly
+  ],
+  "dependencies": [
+    // list of napps that this napp depends on
+  ]
+}

@@ -1,3 +1,4 @@
+import { mockCreator } from './utils/mocker.ts'
 import { assert, Debug } from '@utils'
 import { base64 } from '@scure/base'
 import '@std/dotenv/load' // load .env variables
@@ -7,6 +8,7 @@ import {
   Agent,
   AssistantMessage,
   ChatParams,
+  chatParams,
   CompletionMessage,
   Functions,
   getThreadPath,
@@ -20,6 +22,8 @@ import {
 import { loadTools } from './utils/ai-load-tools.ts'
 import { loadAgent } from './utils/load-agent.ts'
 import { z } from 'zod'
+import { assistantMessage } from '@/api/zod.ts'
+import { expect } from '@std/expect/expect'
 
 const log = Debug('AI:completions')
 
@@ -145,7 +149,19 @@ export const functions: Functions<Api> = {
   },
 }
 
-const complete = async (
+const replySchema = z.object({
+  assistant: assistantMessage,
+  stats: messageStatsSchema,
+})
+
+const reqestReplyPair = z.object({
+  request: chatParams,
+  reply: replySchema,
+})
+
+const mock = mockCreator(reqestReplyPair)
+
+export const complete = async (
   agent: Agent,
   messages: Thread['messages'],
   api: IA,
@@ -154,6 +170,13 @@ const complete = async (
   const args = getChatParams(agent, messages, tools)
 
   // lift out the last actorId so we know when we are mocking
+  const actorId = elideActorId(messages)
+  console.log('actorId', actorId)
+  const recording = mock.next(actorId)
+  if (recording) {
+    expect(recording.request).toEqual(args)
+    return recording.reply
+  }
 
   log('completion started with model: %o', args.model, print(api.pid))
   let retries = 0
@@ -168,13 +191,13 @@ const complete = async (
       const openAiProcessingMs = raw.headers.get('openai-processing-ms')
       const { created, model, system_fingerprint, usage } = completion
 
-      const result = completion.choices[0].message
-      log('completion complete', agent.source.path, result)
+      const { message } = completion.choices[0]
+      log('completion complete', agent.source.path, message)
       const assistant: AssistantMessage = {
-        ...result,
+        ...message,
         name: agent.source.path,
       }
-      return {
+      const reply = {
         assistant,
         stats: messageStatsSchema.parse({
           created,
@@ -185,6 +208,9 @@ const complete = async (
           openAiProcessingMs: openAiProcessingMs ? +openAiProcessingMs : 0,
         }),
       }
+      mock.store(actorId, { request: args, reply })
+
+      return reply
     } catch (error) {
       console.error('ai completion error', error)
       if (error instanceof Error) {
@@ -194,6 +220,7 @@ const complete = async (
   }
   throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
 }
+complete.mock = mock
 
 export const getChatParams = (
   agent: Agent,
@@ -249,22 +276,12 @@ const additionInstructions = () => {
   return 'The time is: ' + new Date().toISOString()
 }
 
-type Recording = {
-  filename: string
-  testName: string
-}
-
-const recordings = new Map<string, Recording>()
-
-export const record = (actorId: string, t: Deno.TestContext) => {
-  // try retrieve previous calls.  If not present, capture the next call.
-}
-
-const injections = new Map<string, AssistantMessage[]>()
-
-export const inject = (actorId: string, message: AssistantMessage) => {
-  // insert the next message into the thread
-  const messages = injections.get(actorId) || []
-  messages.push(message)
-  injections.set(actorId, messages)
+const elideActorId = (messages: Thread['messages']) => {
+  if (messages.length) {
+    const last = messages[messages.length - 1]
+    if (last.role === 'user' && last.name) {
+      return last.name
+    }
+  }
+  return ''
 }
