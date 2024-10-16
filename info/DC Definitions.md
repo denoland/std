@@ -11,32 +11,67 @@
 
 ## ENTITIES
 
-- DAVE: The human user.
-  **Actions Available** - PROMPT - TASK HAL - Receive RESPONSE from HAL - Take a STATEBOARD_ACTION
+- DAVE:  
+    **Description**
+    The human user.  DAVE may rename himself and, if so, retains the same Actions Available.  DAVE cannot rename himself if the new name is the same or close to any other definition provided.
+    **Actions Available**
+        - PROMPT
+        - TASK HAL 
+        - Receive RESPONSE from HAL
+        - Take a STATEBOARD_ACTION
 
-- HAL: A privileged AGENT that directly interacts with DAVE.
-  **Actions Available** - PROMPT AGENTS or DRONES - Send RESPONSES directly to DAVE and STATEBOARD. - SEND RESPONSES to AGENTS and DRONES - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
+- HAL: 
+    **Description**
+    An AGENT that can ORCHESTRATE other AGENTS to carry out a TASK requested by DAVE.
+    **Actions Available**
+        - ORCHESTRATE
+        - PROMPT AGENTS or DRONES
+        - Send RESPONSES directly to DAVE and STATEBOARD.
+        - SEND RESPONSES to AGENTS and DRONES
+        - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
 
-- AGENT: An INSTANTIATION of a BOT_DEFINITION that, having been INSTANTIATED, can be uniquely identified.  
-   **Actions Available** - PROMPT AGENTS or DRONES - Complete TASKS - TASK AGENTS and DRONES (within the limits of their system prompt) - SEND RESPONSES to other AGENTS and DRONES - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
+- AGENT: 
+    **Description**
+    An INSTANTIATION that can be uniquely identified.  
+    **Actions Available**
+        - PROMPT AGENTS or DRONES
+        - Complete TASKS
+        - TASK AGENTS and DRONES (within the limits of their system prompt)
+        - SEND RESPONSES to other AGENTS and DRONES
+        - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
 
-- DRONE: A INSTANTIATION of a BOT_DEFINITION that, having been INSTANTIATED, can be uniquely identified.  
-   **Actions Available** - SEND RESPONSES to other AGENTS and DRONES that have TASKed them. - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
+ - TOOL: 
+     **Description**
+     An executable software component that performs COMMAND_EXECUTION when called upon by HAL or an AGENT.
+    **Actions Available**
+        - Execute COMMANDS 
+        - Return RESPONSES 
 
-- ISOLATE: Traditional code executed by HAL, an AGENT, or a DRONE. COMMANDS are sent to ISOLATES for execution.
-  **Actions Available**
+- DRONE:  
+    **Description**
+    A INSTANTIATION of a BOT_DEFINITION that, having been INSTANTIATED, can be uniquely identified. 
+    **Actions Available**
+        - SEND RESPONSES to other AGENTS and DRONES that have TASKed them.
+        - Can trigger COMMAND_EXECUTION available from their BOT_DEFINITION
 
-  - Run COMMANDS.
+- ISOLATE: 
+    **Description**
+    Traditional code executed by HAL, an AGENT, or a DRONE. COMMANDS are sent to ISOLATES for execution. 
+    **Actions Available**
+    - Run COMMANDS.
 
-- AI_MODEL: An external service used to INSTANTIATE and RUN HAL, AGENTS and DRONES, and RUN TASKS.
-  **Actions Available**
+- AI_MODEL: 
+    **Description**
+    An external service used to INSTANTIATE and RUN HAL, AGENTS and DRONES, and RUN TASKS.
+    **Actions Available**
+    - INSTANTIATE HAL, an AGENT, or a DRONE using a BOT_DEFINITION.
 
-  - INSTANTIATE HAL, an AGENT, or a DRONE using a BOT_DEFINITION.
-
-- ARTIFACT: The operating system.
-  **Actions Available**
-  - Grant or deny PERMISSION for an ACTION AVAILABLE to an ENTITY.
-  - RUN COMMAND_EXECUTIONS.
+- ARTIFACT: 
+    **Description**
+    The operating system.
+    **Actions Available**
+    - Grant or deny PERMISSION for an ACTION AVAILABLE to an ENTITY.
+    - RUN COMMAND_EXECUTIONS.
 
 ## DEFINITIONS OF ACTIONS AVAILABLE
 
@@ -54,6 +89,10 @@
 
 - TASK: A request for INFO, an ACTION or an TRANSMISSION.
 
+- ORCHESTRATE: Considering the THREAD, INTENT, CAPABILITIES and AGENTS available, the act of planning and executing steps necessary to acheive the appropriate output for DAVE's last PROMPT
+
+
+
 ## NOUN DEFINITIONS:
 
 - PERMISSION: On HAL, AGENTS and DRONES requesting a TASK, PERMISSION is a yes/no returned by ARTIFACT.
@@ -68,7 +107,10 @@
 
 - STATE_CHANGE: A file operation (create, read, update, delete) on files within the SYSTEM FRAMEWORK that DAVE has PERMISSION to access.
 
-- COMMAND: Within a BOT_TEMPLATE or BOT_DEFINITION, a COMMAND is a link to a piece of executable software available to HAL, and AGENT or DRONE that carries out a COMMAND_EXECUTION when called on. COMMANDS carry out a single purpose, typically a STATE_CHANGE.
+- COMMAND: Within a BOT_TEMPLATE or BOT_DEFINITION, a COMMAND is a link to a piece of executable software available to HAL, and AGENT or DRONE that carries out a COMMAND_EXECUTION when called on.  COMMANDS carry out a single purpose, typically a STATE_CHANGE.
+
+- INSTANTIATION: A running AGENT derived from a BOT_TEMPLATE and, optionally, CAPABILITIES.
+
 
 ## SYSTEM FRAMEWORK:
 
@@ -165,6 +207,52 @@ When HAL, an AGENT or a BOT is INSTANTIATED, a BOT_DEFINITION is compiled and st
     - PROCESS: <Required>
     - RESULT: <Required>
     - EXAMPLES: <Optional>
+
+
+napp weather
+    napp weather manifest
+    agent weather
+
+
+
+###  NAPP Manifest
+
+###  NAPP Manifest
+Defined as package that bridges NL to code using the following:
+
+    - TOOLS: <Required>    Source code.      
+    Description of what you can do.
+    Knowledge base (topic knowledge)  Some base knowledge and one Agent file.
+    - TESTS
+        Test files
+        TPS
+    - Advertisment of SOA type thing.
+
+    - Agent file
+        ---
+            - TOOLS INTERFACE e.g. JSON - classical
+            - NAPP INTERFACE NL PROMPT/RESPONSES
+                weather napp
+                sandwich napp
+                golf napp
+            - Model choice
+            - Model config
+        ---
+
+        - Instructions 
+            How to carry b ook a business day that not raining, has sandwiches and we play golf.
+
+
+
+###  BOT file
+
+    
+
+Agent file instructions layer
+
+    
+
+
 
 ## ENTITY RELATIONSHIP DIAGRAM
 

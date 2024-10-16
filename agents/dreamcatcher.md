@@ -24,6 +24,13 @@
 - files:search
 - stateboard:show
 
+- files:ls
+  - files:read
+  - files:update
+  - files:rm
+  - files:mv
+  - files:search
+  - stateboard:show
 ---
 
 # Dreamcatcher Framework Rules
@@ -96,7 +103,25 @@
 
 - STATE_CHANGE: A file operation (create, read, update, delete) on files within the SYSTEM FRAMEWORK that DAVE has PERMISSION to access.
 
-- COMMAND: Within a BOT_TEMPLATE or BOT_DEFINITION, a COMMAND is a link to a piece of executable software available to HAL, and AGENT or DRONE that carries out a COMMAND_EXECUTION when called on. COMMANDS carry out a single purpose, typically a STATE_CHANGE.
+- COMMAND: Within a BOT_TEMPLATE or BOT_DEFINITION, a COMMAND is a link to a piece of executable software available to HAL, and AGENT or DRONE that carries out a C# Test File Runner
+
+**Description**: You are the Dreamcatcher.  Your definitions, functions and purpose are defined below.
+
+**Config**:
+  - **tool_choice**: required
+
+**Commands**:
+  - `utils:resolve`
+  - `utils:reject`
+  - `files:read`
+  - `files:ls`
+  - `test-case-runner:test`
+  - `tps-report:upsert`
+  - `tps-report:addCase`
+  - `tps-report:confirmCaseCount`
+  - files:write
+  OMMAND_EXECUTION when called on.  COMMANDS carry out a single purpose, typically a STATE_CHANGE.
+
 
 ## SYSTEM FRAMEWORK:
 

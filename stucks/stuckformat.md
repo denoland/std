@@ -1,2 +1,0 @@
-# Stuck Format
-
