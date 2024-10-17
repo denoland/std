@@ -250,18 +250,14 @@ function getValuesFromItem(
  * @example Give an array of objects without specifying columns
  * ```ts
  * import { stringify } from "@std/csv/stringify";
- * import { assertThrows } from "@std/assert/throws";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
  *   { name: "Rick", age: 70 },
  *   { name: "Morty", age: 14 },
  * ];
  *
- * assertThrows(
- *   () => stringify(data),
- *   TypeError,
- *   "No property accessor function was provided for object",
- * );
+ * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
  *
  * @example Give an array of objects and specify columns with `headers: false`
