@@ -72,33 +72,6 @@ Deno.test({
         },
       },
     );
-
-    await t.step(
-      {
-        name: "Invalid data, no columns",
-        fn() {
-          const data = [{ a: 1 }, { a: 2 }];
-          assertThrows(
-            () => stringify(data),
-            TypeError,
-            "No property accessor function was provided for object",
-          );
-        },
-      },
-    );
-    await t.step(
-      {
-        name: "Invalid data, no columns",
-        fn() {
-          const data = [{ a: 1 }, { a: 2 }];
-          assertThrows(
-            () => stringify(data),
-            TypeError,
-            "No property accessor function was provided for object",
-          );
-        },
-      },
-    );
     await t.step(
       {
         name: "No data, no columns",
@@ -591,5 +564,26 @@ Deno.test({
         });
       },
     });
+    await t.step(
+      {
+        name: "Object array with no columns, should infer columns",
+        fn() {
+          const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
+          const output = `a${CRLF}1${CRLF}2${CRLF}${CRLF}`;
+          assertEquals(stringify(data), output);
+        },
+      },
+    );
+    await t.step(
+      {
+        name: "Object array with columns, shouldn't infer columns",
+        fn() {
+          const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
+          const columns = ["a"];
+          const output = `a${CRLF}1${CRLF}2${CRLF}${CRLF}`;
+          assertEquals(stringify(data, { columns }), output);
+        },
+      },
+    );
   },
 });

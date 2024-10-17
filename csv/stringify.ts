@@ -108,9 +108,9 @@ export type StringifyOptions = {
    * column of output. This is also where you can provide an explicit header
    * name for the column.
    *
-   * @default {[]}
+   * @default {undefined}
    */
-  columns?: readonly Column[];
+  columns?: readonly Column[] | undefined;
   /**
    * Whether to add a
    * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
@@ -250,18 +250,14 @@ function getValuesFromItem(
  * @example Give an array of objects without specifying columns
  * ```ts
  * import { stringify } from "@std/csv/stringify";
- * import { assertThrows } from "@std/assert/throws";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
  *   { name: "Rick", age: 70 },
  *   { name: "Morty", age: 14 },
  * ];
  *
- * assertThrows(
- *   () => stringify(data),
- *   TypeError,
- *   "No property accessor function was provided for object",
- * );
+ * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
  *
  * @example Give an array of objects and specify columns with `headers: false`
@@ -429,7 +425,7 @@ export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions,
 ): string {
-  const { headers = true, separator: sep = ",", columns = [], bom = false } =
+  const { headers = true, separator: sep = ",", columns, bom = false } =
     options ?? {};
 
   if (sep.includes(QUOTE) || sep.includes(CRLF)) {
@@ -441,7 +437,12 @@ export function stringify(
     throw new TypeError(message);
   }
 
-  const normalizedColumns = columns.map(normalizeColumn);
+  if (columns && !Array.isArray(columns)) {
+    throw new TypeError("Invalid type: columns can only be an array.");
+  }
+
+  const definedColumns = columns ?? inferColumns(data);
+  const normalizedColumns = definedColumns.map(normalizeColumn);
   let output = "";
 
   if (bom) {
@@ -464,4 +465,20 @@ export function stringify(
   }
 
   return output;
+}
+
+/**
+ * Infers the columns from the first object element of the given array.
+ */
+function inferColumns(data: readonly DataItem[]) {
+  const firstElement = data.at(0);
+  if (
+    firstElement &&
+    typeof firstElement === "object" &&
+    !Array.isArray(firstElement)
+  ) {
+    return Object.keys(firstElement);
+  }
+
+  return [];
 }
