@@ -366,23 +366,36 @@ export default class FS {
         return upsert.data
       } else {
         const { oid } = upsert
-        const { blob } = await git.readBlob({ ...this.#git, oid })
+        const { blob } = await this.#safeReadBlob({ oid })
         return blob
       }
     }
     const { blob } = await this.#readBlob(path)
     return blob
   }
-  async #readBlob(path: string, commit?: string) {
-    const oid = commit || this.#internalOid
-    const { blob, oid: blobOid } = await git.readBlob({
-      ...this.#git,
-      oid,
-      filepath: path,
+  async #readBlob(filepath: string, commit?: string) {
+    const { blob, oid } = await this.#safeReadBlob({
+      oid: commit || this.#internalOid,
+      filepath,
     })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
-    return { blob, oid: blobOid }
+    return { blob, oid }
   }
+  async #safeReadBlob(params: { oid: string; filepath?: string }) {
+    try {
+      const { oid, filepath } = params
+      return await git.readBlob({ ...this.#git, oid, filepath })
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        throw new Errors.NotFoundError(params.filepath || '.')
+      }
+      throw error
+    }
+  }
+
   async ls(path: string = '.') {
     path = refine(path)
     // TODO make a streaming version of this for very large dirs
