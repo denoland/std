@@ -89,7 +89,7 @@
 
 - TASK: A request for INFO, an ACTION or an TRANSMISSION.
 
-- ORCHESTRATE: Considering the THREAD, INTENT, CAPABILITIES and AGENTS available, the act of planning and executing steps necessary to acheive the appropriate output for DAVE's last PROMPT
+- ORCHESTRATE: Considering the THREAD, INTENT, CAPABILITIES and AGENTS available, the act of planning and executing steps necessary to achieve the appropriate output for DAVE's last PROMPT
 
 
 
@@ -226,7 +226,7 @@ Defined as package that bridges NL to code using the following:
     - TESTS
         Test files
         TPS
-    - Advertisment of SOA type thing.
+    - Advertisement of SOA type thing.
 
     - Agent file
         ---
