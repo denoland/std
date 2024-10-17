@@ -304,6 +304,7 @@ export default class FS {
         error instanceof Error && 'code' in error &&
         error.code === 'NotFoundError'
       ) {
+        // remove the git commit hash from the error so it is repeatable
         throw new Errors.NotFoundError(path)
       }
       throw error
@@ -387,9 +388,8 @@ export default class FS {
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts
     log('ls', path)
-    const oid = this.#internalOid
     const filepath = path === '.' ? undefined : path
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    const tree = await this.readTree(filepath)
 
     tree.sort((a, b) => {
       if (a.type === 'tree' && b.type === 'blob') {
