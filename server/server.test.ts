@@ -7,9 +7,9 @@ import { Backchat } from '../api/client-backchat.ts'
 import { cradleMaker } from '@/cradle-maker.ts'
 import { Engine } from '@/engine.ts'
 
-const webCradleMaker: CradleMaker = async (t, update, init) => {
+const webCradleMaker: CradleMaker = async (t, url, update, init) => {
   const { engine: core, privateKey, backchat: { id: backchatId } } =
-    await cradleMaker(t, update, init)
+    await cradleMaker(t, url, update, init)
   assert(core instanceof Engine, 'not an engine')
 
   const server = Server.create(core)
@@ -30,7 +30,7 @@ const webCradleMaker: CradleMaker = async (t, update, init) => {
 }
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
-    const { engine } = await cradleMaker(t)
+    const { engine } = await cradleMaker(t, import.meta.url)
     assert(engine instanceof Engine, 'not an engine')
     const server = Server.create(engine)
     const payload = { data: { ping: 'test', extra: 'line' } }
@@ -44,4 +44,4 @@ Deno.test('hono basic', async (t) => {
   })
 })
 
-guts('Web', webCradleMaker)
+guts(webCradleMaker)

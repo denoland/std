@@ -18,8 +18,9 @@ type SeedSet = {
 }
 const seeds = new Map<Provisioner | undefined, SeedSet>()
 
-export const cradleMaker: CradleMaker = async (t, update, init) => {
+export const cradleMaker: CradleMaker = async (t, url, update, init) => {
   const mock = mockCreator(z.unknown())
+  t.origin = url
   mock.useRecorder(t, update)
 
   const seedSet = seeds.get(init)

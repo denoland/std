@@ -224,6 +224,8 @@ export type Provisioner = (superBackchat: Backchat) => Promise<void>
 
 export type CradleMaker = (
   t: Deno.TestContext,
+  /** The file url that the snapshots are assosciated with */
+  snapshotsFor: string,
   updateSnapshots?: 'updateSnapshots',
   init?: Provisioner,
 ) => Promise<

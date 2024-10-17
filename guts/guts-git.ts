@@ -5,11 +5,11 @@ import { Api, parameters } from '@/isolates/io-fixture.ts'
 import { CradleMaker } from '@/constants.ts'
 import { assert } from '@std/assert'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':git: '
+export default (cradleMaker: CradleMaker) => {
+  const prefix = 'git: '
 
   Deno.test(prefix + 'io', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     log('start')
     log('session created')
     await t.step('ping empty', async () => {
@@ -27,7 +27,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     log('stop done')
   })
   Deno.test(prefix + 'init', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     log('session complete')
     const result = await backchat.init({ repo: 'test/init' })
     log('init result', result)
@@ -39,7 +39,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'rm', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     const first = await backchat.rm({ repo: 'dreamcatcher-tech/HAL' })
     expect(first.reposDeleted).toBeFalsy()
 
@@ -50,7 +50,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'clone', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
 
     await t.step('clone', async () => {
       await backchat.rm({ repo: 'dreamcatcher-tech/HAL' })
@@ -67,7 +67,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   Deno.test.ignore(prefix + 'child to child', async () => {})
   Deno.test.ignore(prefix + 'child to parent', async () => {})
   Deno.test(prefix + 'pierce', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     await backchat.rm({ repo: 'cradle/pierce' })
     const { pid: target } = await backchat.init({ repo: 'cradle/pierce' })
     const actions = await backchat.actions<Api>('io-fixture', { target })

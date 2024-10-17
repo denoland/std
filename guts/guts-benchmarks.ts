@@ -5,11 +5,11 @@ import 'benchmark' // load these modules into cache for ghactions
 import { Api } from '@/isolates/io-fixture.ts'
 import * as files from '@/isolates/files.ts'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':benchmarks: '
+export default (cradleMaker: CradleMaker) => {
+  const prefix = 'benchmarks: '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     const repo = 'benchmark/serial'
     const { pid: target } = await backchat.init({ repo })
     const { local } = await backchat.actions<Api>('io-fixture', { target })
@@ -33,7 +33,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     const repo = 'benchmark/parallel'
 
     const { pid: target } = await backchat.init({ repo })
@@ -73,7 +73,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     const repo = 'benchmark/flare'
     await backchat.rm({ repo })
     const target = {
@@ -116,7 +116,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test.ignore(prefix + 'records', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     const repo = 'benchmark/records'
     await backchat.rm({ repo })
     const { pid: target } = await backchat.init({ repo })

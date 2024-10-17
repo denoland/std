@@ -2,10 +2,10 @@ import { assert, expect, log } from '@utils'
 import { CradleMaker, print } from '@/constants.ts'
 import { Api } from '../isolates/longthread.ts'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':longthread: '
+export default (cradleMaker: CradleMaker) => {
+  const prefix = 'longthread: '
   Deno.test(prefix + 'basic', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
     log('pid', print(backchat.pid))
 
     await t.step('prompt', async () => {
@@ -27,7 +27,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
 
   Deno.test(prefix + 'chat', async (t) => {
-    const { backchat, engine } = await cradleMaker(t)
+    const { backchat, engine } = await cradleMaker(t, import.meta.url)
 
     const { start, run } = await backchat.actions<Api>('longthread')
     await start({})

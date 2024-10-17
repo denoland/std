@@ -8,7 +8,7 @@ Deno.test('auto update on backchat', async (t) => {
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
 
-  const { backchat, engine, privateKey } = await cradleMaker(t)
+  const { backchat, engine, privateKey } = await cradleMaker(t, import.meta.url)
   const path = 'new-file.md'
 
   expect(await backchat.exists(path)).toBeFalsy()
