@@ -107,11 +107,11 @@ Deno.test.ignore('test meeting bot', async (t) => {
   })
   await engine.stop()
 })
-Deno.test.ignore('test fixture', async (t) => {
+Deno.test('test fixture', async (t) => {
   const { backchat, engine } = await fixture(t, import.meta.url)
-  log.enable(
-    'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
-  )
+  // log.enable(
+  //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
+  // )
 
   const opts = { branchName: 'runner', noClose: true }
   const { drone } = await backchat.actions<Api>('longthread', opts)

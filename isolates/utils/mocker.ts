@@ -82,6 +82,7 @@ export const mockCreator = <T extends z.ZodSchema>(messageSchema: T) => {
       writeRecordingFile(id, testContext, messages)
     },
     teardown: () => {
+      // TODO only write to file if teardown is called so no errors in snaps
       injections.clear()
       subscribers.clear()
       testContext = undefined
