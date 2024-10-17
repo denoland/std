@@ -6,7 +6,7 @@ import { completionMessage } from './zod.ts'
 import type { Backchat } from './client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 import type OpenAI from 'openai'
-import { randomness } from './randomness.ts'
+import { fixedRandomness, randomness } from './randomness.ts'
 export { randomness }
 type CommitOid = string
 
@@ -655,8 +655,8 @@ export const generateActorId = () => {
 export const generateBackchatId = () => {
   return 'bac_' + randomness()
 }
-export const generateThreadId = () => {
-  return 'the_' + randomness()
+export const generateThreadId = (seed: string) => {
+  return 'the_' + fixedRandomness(seed)
 }
 
 export const getActorId = (source: PID) => {

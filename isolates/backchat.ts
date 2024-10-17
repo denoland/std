@@ -65,7 +65,8 @@ export const functions: Functions<Api> = {
   newThreadSignal: () => null,
   newThread: async (_, api) => {
     log('newThread', print(api.pid))
-    const threadId = generateThreadId()
+    // TODO generate randomness each execution with incrementation
+    const threadId = generateThreadId(api.commit)
 
     const target = getActorPid(api.pid)
     const { thread } = await api.actions<actor.Api>('actor', { target })
