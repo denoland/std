@@ -28,7 +28,7 @@ Deno.test('format checking', async (t) => {
   })
   await t.step('missing agent', async () => {
     await expect(loadAgent('agents/missing.md', api))
-      .rejects.toThrow('Could not find file or directory')
+      .rejects.toThrow('Could not find agents/missing.md')
   })
 
   stop()

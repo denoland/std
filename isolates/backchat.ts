@@ -2,13 +2,13 @@ import {
   backchatIdRegex,
   backchatStateSchema,
   Functions,
-  generateThreadId,
   getActorId,
   getActorPid,
   getThreadPath,
   type IA,
   pidSchema,
   print,
+  randomness,
   threadIdRegex,
   threadSchema,
   ToApiType,
@@ -66,7 +66,7 @@ export const functions: Functions<Api> = {
   newThread: async (_, api) => {
     log('newThread', print(api.pid))
     // TODO generate randomness each execution with incrementation
-    const threadId = generateThreadId(api.commit)
+    const threadId = generateThreadId()
 
     const target = getActorPid(api.pid)
     const { thread } = await api.actions<actor.Api>('actor', { target })
@@ -140,4 +140,8 @@ const getBackchatId = (api: IA) => {
   const backchatId = api.pid.branches[2]
   assert(backchatIdRegex.test(backchatId), 'Invalid backchat id')
   return backchatId
+}
+
+const generateThreadId = () => {
+  return 'the_' + randomness()
 }

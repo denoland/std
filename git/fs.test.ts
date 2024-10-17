@@ -11,7 +11,7 @@ Deno.test('git/init', async (t) => {
     const pid = partialFromRepo(repo)
     fs = await FS.init(pid, db)
     await expect(fs.read('hello.txt')).rejects.toThrow(
-      'Could not find file or',
+      'Could not find hello.txt',
     )
     expect(await db.readHead(fs.pid)).toBe(fs.oid)
   })
@@ -128,7 +128,7 @@ Deno.test('git/init', async (t) => {
     await expect(fs.read(path)).rejects.toThrow('Could not find file or')
     const { next } = await fs.writeCommitObject('delete')
     await expect(next.exists(path)).resolves.toBeFalsy()
-    await expect(next.read(path)).rejects.toThrow('Could not find file or')
+    await expect(next.read(path)).rejects.toThrow('Could not find hello.txt')
 
     fs = next
   })

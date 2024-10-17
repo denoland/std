@@ -655,9 +655,6 @@ export const generateActorId = () => {
 export const generateBackchatId = () => {
   return 'bac_' + randomness()
 }
-export const generateThreadId = (seed: string) => {
-  return 'the_' + fixedRandomness(seed)
-}
 
 export const getActorId = (source: PID) => {
   const [base, actorId] = source.branches

@@ -23,7 +23,7 @@ export const peekRandomnessCount = () => {
   return count
 }
 
-const seed = () => {
+const getSeed = () => {
   if (deterministicMode) {
     return '' + count++
   }
@@ -31,7 +31,7 @@ const seed = () => {
 }
 
 export const randomness = () => {
-  return fixedRandomness(seed())
+  return fixedRandomness(getSeed())
 }
 
 export const fixedRandomness = (seed: string) => {
