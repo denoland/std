@@ -53,6 +53,10 @@ const init: Provisioner = async (backchat) => {
   promises.push(backchat.write(routerPath, router, target))
   promises.push(backchat.write(reasonerPath, reasoner, target), target)
 
+  // seems to overload the atomic mutations limit if all at once
+  await Promise.all(promises)
+  promises.length = 0
+
   promises.push(backchat.write(firstTestPath, firstTest, target))
   promises.push(backchat.write(secondTestPath, secondTest, target))
   promises.push(backchat.write(meetingTestPath, meetingTest, target))
@@ -73,3 +77,5 @@ export const fixture = async (
 
   return { backchat, engine }
 }
+
+// Ideally we would get rid of HAL and just have napps.

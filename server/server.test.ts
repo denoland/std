@@ -18,6 +18,9 @@ const webCradleMaker: CradleMaker = async (t, url, update, init) => {
   const engine = await WebClientEngine.start('https://mock', fetcher)
   const backchat = await Backchat.upsert(engine, privateKey, backchatId)
 
+  // think the watcher is causing resource leaks
+  await delay(10)
+
   const clientStop = engine.stop.bind(engine)
   engine.stop = async () => {
     // must stop the client first, else will retry
