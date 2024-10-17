@@ -3,12 +3,12 @@ import { expect } from '@std/expect/expect'
 import { getRoot } from '@/constants.ts'
 import { Backchat } from '@/api/client-backchat.ts'
 
-Deno.test('auto update on backchat', async () => {
+Deno.test('auto update on backchat', async (t) => {
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
 
-  const { backchat, engine, privateKey } = await cradleMaker()
+  const { backchat, engine, privateKey } = await cradleMaker(t)
   const path = 'new-file.md'
 
   expect(await backchat.exists(path)).toBeFalsy()

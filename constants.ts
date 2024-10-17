@@ -22,9 +22,7 @@ import type DB from '@/db.ts'
 import type Executor from '@/exe/exe.ts'
 import { assert, equal } from '@utils'
 import { JsonSchema7ObjectType, zodToJsonSchema } from 'zod-to-json-schema'
-import { z, ZodObject, ZodSchema, ZodUnknown } from 'zod'
-import { assistantMessage } from '@/api/zod.ts'
-import { chatParams } from '@/api/types.ts'
+import { ZodObject, ZodSchema, ZodUnknown } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
@@ -225,8 +223,12 @@ export const isBaseRepo = (pid: PID) => pid.branches.length === 1
 export type Provisioner = (superBackchat: Backchat) => Promise<void>
 
 export type CradleMaker = (
+  t: Deno.TestContext,
+  updateSnapshots?: 'updateSnapshots',
   init?: Provisioner,
-) => Promise<{ backchat: Backchat; engine: EngineInterface }>
+) => Promise<
+  { backchat: Backchat; engine: EngineInterface; privateKey: string }
+>
 
 export const toApi = (parameters: Record<string, ZodSchema>) => {
   const api: Record<keyof typeof parameters, JsonSchema7ObjectType> = {}

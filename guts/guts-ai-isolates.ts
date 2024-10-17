@@ -17,7 +17,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   const path = 'agents/files.md'
 
   Deno.test(prefix + 'files:ls', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
     await backchat.write('tmp', '', target)
@@ -93,7 +93,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'files:write', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
 
     const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
@@ -126,7 +126,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'system:merge*', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const target = await backchat.threadPID()
     const parent = getParent(target)
 

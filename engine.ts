@@ -121,9 +121,9 @@ export class Engine implements EngineInterface {
   }
   async #createActor(machineId: string) {
     Crypto.assert(machineId)
-    const actorId = generateActorId(ulid())
+    const actorId = generateActorId()
     const actor = addBranches(this.homeAddress, actorId)
-    const backchatId = generateBackchatId(ulid())
+    const backchatId = generateBackchatId()
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
@@ -142,7 +142,7 @@ export class Engine implements EngineInterface {
     const { backchat } = await su.actions<actor.Api>('actor', {
       target,
     })
-    const backchatId = generateBackchatId(ulid())
+    const backchatId = generateBackchatId()
     const pid = await backchat({ backchatId })
     return freezePid(pid)
   }

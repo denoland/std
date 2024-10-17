@@ -65,7 +65,7 @@ export const functions: Functions<Api> = {
   newThreadSignal: () => null,
   newThread: async (_, api) => {
     log('newThread', print(api.pid))
-    const threadId = generateThreadId(api.commit + 'backchat:newThread')
+    const threadId = generateThreadId()
 
     const target = getActorPid(api.pid)
     const { thread } = await api.actions<actor.Api>('actor', { target })

@@ -29,7 +29,7 @@ call the "agents_switch" function with the argument "agents/missing.md".  If thi
 const path = 'agents/agent-fixture.md'
 
 Deno.test('longthread chat', async (t) => {
-  const { backchat, engine } = await cradleMaker()
+  const { backchat, engine } = await cradleMaker(t)
 
   const actorId = 'longthread'
 
@@ -121,7 +121,7 @@ Deno.test('longthread chat', async (t) => {
 })
 
 Deno.test('test o1 agents', async (t) => {
-  const { backchat, engine } = await cradleMaker()
+  const { backchat, engine } = await cradleMaker(t)
   const actorId = 'agents_o1_family'
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
@@ -175,7 +175,7 @@ Deno.test('test o1 agents', async (t) => {
 })
 
 Deno.test('switchboard errors', async (t) => {
-  const { backchat, engine } = await cradleMaker()
+  const { backchat, engine } = await cradleMaker(t)
   const actorId = 'switchboard_errors'
   const path = 'agents/switchboard.md'
 
@@ -196,7 +196,7 @@ Deno.test('switchboard errors', async (t) => {
 })
 
 Deno.test('router', async (t) => {
-  const { backchat, engine } = await cradleMaker()
+  const { backchat, engine } = await cradleMaker(t)
   const actorId = 'test-router'
 
   const router = Deno.readTextFileSync('./HAL/agents/router.md')
@@ -249,7 +249,7 @@ Deno.test('router', async (t) => {
 })
 
 Deno.test('agents_switch function acts as router', async (t) => {
-  const { backchat, engine } = await cradleMaker()
+  const { backchat, engine } = await cradleMaker(t)
   const actorId = 'test-agents_switch'
 
   const router = Deno.readTextFileSync('./HAL/agents/router.md')

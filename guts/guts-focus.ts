@@ -6,13 +6,8 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   // TODO make a remote thread, and then test summoner
 
-  // make a mock tool so we can force back the results, no matter what openai is
-  // doing, such as sending a random prompt and assuring the right one was
-  // intercepted and then we send back whatever we want
-  // this could be returned with the cradlemaker
-
   Deno.test(prefix + 'thread management', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     let focus = await backchat.threadPID()
     log('initial focus', focus)
     const thread = await backchat.readThread()
@@ -55,7 +50,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
 
   Deno.test(prefix + 'update from github', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
 
     await t.step('update', async () => {
       await backchat.prompt(
@@ -68,7 +63,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
 
   // TODO move this to be an md test
   Deno.test(prefix + 'infinite loop regression', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     await t.step('infinite loop', async () => {
       const prompt =
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'

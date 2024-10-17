@@ -1,5 +1,5 @@
 import { expect, log } from '@utils'
-import { CradleMaker, hash, print } from '@/constants.ts'
+import { CradleMaker, generateBackchatId, print } from '@/constants.ts'
 import { Crypto } from '../api/crypto.ts'
 import { Backchat } from '../api/client-backchat.ts'
 import { Api } from '@/isolates/io-fixture.ts'
@@ -7,7 +7,7 @@ import { Api } from '@/isolates/io-fixture.ts'
 export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':backchats: '
   Deno.test(prefix + 'multi backchat', async (t) => {
-    const { engine } = await cradleMaker()
+    const { engine } = await cradleMaker(t)
     const key = Crypto.generatePrivateKey()
     const backchat = await Backchat.upsert(engine, key)
     log('pid', print(backchat.pid))
@@ -43,7 +43,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
       await expect(Backchat.upsert(engine, key, 'invalid'))
         .rejects.toThrow('Invalid resume backchat id: invalid')
 
-      const almost = `bac_${hash('almost')}`
+      const almost = generateBackchatId()
       const next = await Backchat.upsert(engine, key, almost)
       expect(next.id).not.toEqual(almost)
     })
@@ -51,7 +51,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
 
   Deno.test(prefix + 'internal requests', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const repo = 'backchats/relay'
     const { pid } = await backchat.init({ repo })
 
@@ -66,7 +66,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'readTree', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const { pid } = backchat
 
     await t.step('empty path', async () => {
@@ -93,7 +93,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'splice', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const { pid } = backchat
 
     await t.step('latest - 1', async () => {
@@ -115,7 +115,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'readBinary', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     await backchat.write('test.txt', 'binary test')
 
     await t.step('text decoding', async () => {
@@ -132,7 +132,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   })
 
   Deno.test(prefix + 'readJSON', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const { pid } = backchat
 
     await t.step('latest', async () => {

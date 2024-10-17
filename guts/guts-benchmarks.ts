@@ -9,7 +9,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':benchmarks: '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const repo = 'benchmark/serial'
     const { pid: target } = await backchat.init({ repo })
     const { local } = await backchat.actions<Api>('io-fixture', { target })
@@ -33,7 +33,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const repo = 'benchmark/parallel'
 
     const { pid: target } = await backchat.init({ repo })
@@ -73,7 +73,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const repo = 'benchmark/flare'
     await backchat.rm({ repo })
     const target = {
@@ -116,7 +116,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
     await engine.stop()
   })
   Deno.test.ignore(prefix + 'records', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     const repo = 'benchmark/records'
     await backchat.rm({ repo })
     const { pid: target } = await backchat.init({ repo })

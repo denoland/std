@@ -3,34 +3,37 @@ import { z, ZodError } from 'zod'
 import get from 'lodash.get'
 import set from 'lodash.set'
 import { Debug } from '@utils'
+import {
+  _disableDeterministicMockMode,
+  _enableDeterministicMockMode,
+} from '@/api/randomness.ts'
 const log = Debug('AI:mocker')
 type TestContext = Deno.TestContext
 
 let testContext: TestContext | undefined
-export const isMockingRunning = () => !!testContext
+const subscribers = new Set<Subscriber>()
+const injections = new Map<string, unknown[]>()
 
 const id = z.string()
+type Subscriber = (
+  message: unknown | undefined,
+  id: string,
+) => void
 
-export const mockCreator = <T extends z.ZodTypeAny>(messageSchema: T) => {
-  type Subscriber = (
-    message: z.infer<typeof messageSchema> | undefined,
-    id: string,
-  ) => void
+export const mockCreator = <T extends z.ZodSchema>(messageSchema: T) => {
   type Mock = {
     inject: (id: string, message: z.infer<typeof messageSchema>) => void
     next: (id: string) => z.infer<typeof messageSchema> | undefined
-    useRecorder: (t: TestContext) => void
+    useRecorder: (t: TestContext, update?: 'updateSnapshots') => void
     store: (id: string, message: z.infer<typeof messageSchema>) => void
     teardown: () => void
     /** Trigger a callback when the mock is called */
     subscribe: (callback: Subscriber) => void
   }
 
-  const subscribers = new Set<Subscriber>()
-  const injections = new Map<string, z.infer<typeof messageSchema>[]>()
-
   const mock: Mock = {
     next: (id) => {
+      log('next', id)
       const messages = injections.get(id) || []
       const raw = messages.shift()
       const message = raw === undefined ? raw : messageSchema.parse(raw)
@@ -46,11 +49,16 @@ export const mockCreator = <T extends z.ZodTypeAny>(messageSchema: T) => {
       messages.push(payload)
       injections.set(id, messages)
     },
-    useRecorder: (t) => {
+    useRecorder: (t, update) => {
       if (testContext) {
         throw new Error('recorder already active')
       }
       testContext = t
+      _enableDeterministicMockMode()
+
+      if (update) {
+        blankRecordingsForTest(t)
+      }
 
       const saved = readRecordings(t)
       for (const [id, recording] of Object.entries(saved)) {
@@ -70,13 +78,14 @@ export const mockCreator = <T extends z.ZodTypeAny>(messageSchema: T) => {
       const saved = readRecordings(testContext)
       const messages = saved[id] || []
       messages.push(parsed)
-      log('storing', messages)
+      log('storing %s', id, messages)
       writeRecordingFile(id, testContext, messages)
     },
     teardown: () => {
       injections.clear()
       subscribers.clear()
       testContext = undefined
+      _disableDeterministicMockMode()
     },
     subscribe: (callback) => {
       subscribers.add(callback)
@@ -84,6 +93,18 @@ export const mockCreator = <T extends z.ZodTypeAny>(messageSchema: T) => {
   }
   Object.freeze(mock)
   return mock
+}
+
+const blankRecordingsForTest = (t: TestContext) => {
+  const filename = getFilename(t)
+  const allRecords = readRecordFile(t)
+  const path = getRecordingsPath(t)
+  log('blanking recordings for path', path)
+
+  set(allRecords, path, {})
+
+  const pretty = JSON.stringify(allRecords, null, 2)
+  Deno.writeTextFileSync(filename, pretty)
 }
 
 const readRecordings = (t: TestContext) => {

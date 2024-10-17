@@ -272,7 +272,7 @@ export const getChatParams = (
   messages = [...messages]
   const sysprompt: CompletionMessage = {
     role: 'system',
-    content: agent.instructions + '\n\n' + additionInstructions(),
+    content: agent.instructions,
     name: agent.source.path,
   }
   if (agent.instructions || agent.commands.length || agent.napps.length) {
@@ -305,9 +305,6 @@ export const safeAssistantName = (message: CompletionMessage) => {
   return message
 }
 
-const additionInstructions = () => {
-  return 'The time is: ' + new Date().toISOString()
-}
 const squeezeMockData = (result: OpenAI.Images.ImagesResponse) => {
   const fake =
     'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAABQUlEQVR4nAE2Acn+AFWFasx5BD3kQfuYK9zNJJXzR81JXGsdYwxOP/ggyAQC+dlbzrmdUZ+Xgo9sBhbNytzXE2IPfxblFuNZ9vYCD9Qw+7UUN/xCErc8I0gk21S+uCU4EX33VN1CFz5pAHaODSC/a8ZsheMYxX37BIOoMcfnpS8k6KwY7zE9VgKU4CsTmvjyE8lur1yLUAo7SKUu07rY8zYwmNASNh0CvvWpIaH1bs1V01RZE2se73fmxRfts48N4bf03otfBDHQ3j52DzyUBguaBfEcXnDOsBuN6HeYeMbrXRzVtADOYHNpl5tMMNBP2PSqx3YI7MFiBfb2wXFXAxH0JSsA1ZsAv2N5fzoy1PrKBJ8201yyqOsPZKnyqJ10ME7oAfSuLGJaACH+38rm67hvIcxsB99FWZb3Ah6CMO1CEnIBlb6tLzIdAAAAAElFTkSuQmCC'

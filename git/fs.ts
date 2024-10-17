@@ -4,20 +4,18 @@ import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
-  hash,
   IO_PATH,
   isBaseRepo,
   PartialPID,
   PID,
   print,
+  randomness,
   sha1,
   type TreeEntry,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
-import { ulid } from 'ulid'
-import { isMockingRunning } from '@/isolates/utils/mocker.ts'
 const log = Debug('git:fs')
 const dir = '/'
 
@@ -652,14 +650,9 @@ const refine = (path: string) => {
   return path
 }
 
-let fakeRepoId = 0
 const generateFakeRepoId = () => {
-  if (isMockingRunning()) {
-    return `rep_${hash('' + fakeRepoId++)}`
-  }
-
   // TODO make this genuine based on the genesis commit
-  return `rep_${hash(ulid())}`
+  return `rep_${randomness()}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {

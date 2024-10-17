@@ -5,7 +5,7 @@ export default (name: string, cradleMaker: CradleMaker) => {
   const prefix = name + ':tps: '
 
   Deno.test(prefix + 'run fixture test', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    const { backchat, engine } = await cradleMaker(t)
     log('start')
 
     await t.step('run fixture', async () => {

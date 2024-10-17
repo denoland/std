@@ -3,12 +3,11 @@ import { Chalk } from 'chalk'
 import { z, ZodSchema } from 'zod'
 export type { AssistantMessage, CompletionMessage } from './zod.ts'
 import { completionMessage } from './zod.ts'
-import { ripemd160 } from '@noble/hashes/ripemd160'
-import { base32crockford } from '@scure/base'
 import type { Backchat } from './client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 import type OpenAI from 'openai'
-
+import { randomness } from './randomness.ts'
+export { randomness }
 type CommitOid = string
 
 const sequenceInteger = z.number().int().gte(0)
@@ -650,17 +649,14 @@ const checkUndefined = (params: Params) => {
   }
 }
 
-export const generateActorId = (seed: string) => {
-  return 'act_' + hash(seed)
+export const generateActorId = () => {
+  return 'act_' + randomness()
 }
-export const generateBackchatId = (seed: string) => {
-  return 'bac_' + hash(seed)
+export const generateBackchatId = () => {
+  return 'bac_' + randomness()
 }
-export const generateThreadId = (seed: string) => {
-  return 'the_' + hash(seed)
-}
-export const generateAgentHash = (creationString: string) => {
-  return 'age_' + hash(creationString)
+export const generateThreadId = () => {
+  return 'the_' + randomness()
 }
 
 export const getActorId = (source: PID) => {
@@ -749,12 +745,6 @@ export const getRoot = (pid: PID) => {
 }
 export const getBaseName = (pid: PID) => {
   return pid.branches[pid.branches.length - 1]
-}
-
-export const hash = (seed: string) => {
-  const hash = ripemd160(seed)
-  const encoded = base32crockford.encode(hash)
-  return encoded.slice(-16)
 }
 
 export const getContent = (message: AssistantsThread['messages'][number]) => {
