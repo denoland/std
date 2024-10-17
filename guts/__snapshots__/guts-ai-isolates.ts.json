@@ -1,0 +1,2573 @@
+{
+  "isolates: files:ls": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_VWV/the_9NG": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137786,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2227,
+              "openAiProcessingMs": 1798,
+              "usage": {
+                "completion_tokens": 38,
+                "prompt_tokens": 307,
+                "total_tokens": 345,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137789,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1840,
+              "openAiProcessingMs": 1618,
+              "usage": {
+                "completion_tokens": 73,
+                "prompt_tokens": 397,
+                "total_tokens": 470,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137792,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2050,
+              "openAiProcessingMs": 1829,
+              "usage": {
+                "completion_tokens": 44,
+                "prompt_tokens": 484,
+                "total_tokens": 528,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137794,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2621,
+              "openAiProcessingMs": 2397,
+              "usage": {
+                "completion_tokens": 73,
+                "prompt_tokens": 580,
+                "total_tokens": 653,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137797,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1896,
+              "openAiProcessingMs": 1668,
+              "usage": {
+                "completion_tokens": 38,
+                "prompt_tokens": 667,
+                "total_tokens": 705,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_laZCGEsXVb6yno9GZ0AVtDxh"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Here are the files and directories in the root directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137801,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2875,
+              "openAiProcessingMs": 1665,
+              "usage": {
+                "completion_tokens": 73,
+                "prompt_tokens": 757,
+                "total_tokens": 830,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_laZCGEsXVb6yno9GZ0AVtDxh"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the root directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls --all",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_HzG9SRsHQ6jwvihOTYjqyZEX",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"The user requested to list all files and directories, including hidden ones.\"],\"path\":\".\",\"count\":false,\"all\":true}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137803,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1979,
+              "openAiProcessingMs": 1753,
+              "usage": {
+                "completion_tokens": 40,
+                "prompt_tokens": 845,
+                "total_tokens": 885,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_laZCGEsXVb6yno9GZ0AVtDxh"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the root directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls --all",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_HzG9SRsHQ6jwvihOTYjqyZEX",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list all files and directories, including hidden ones.\"],\"path\":\".\",\"count\":false,\"all\":true}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\".gitattributes\",\".gitignore\",\".io.json\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_HzG9SRsHQ6jwvihOTYjqyZEX"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Here are all the files and directories in the current directory, including hidden files:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - .gitattributes\n  - .gitignore\n  - .io.json\n  - LICENSE\n  - README.md",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137806,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 3375,
+              "openAiProcessingMs": 3150,
+              "usage": {
+                "completion_tokens": 97,
+                "prompt_tokens": 947,
+                "total_tokens": 1044,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_laZCGEsXVb6yno9GZ0AVtDxh"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the root directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls --all",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_HzG9SRsHQ6jwvihOTYjqyZEX",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list all files and directories, including hidden ones.\"],\"path\":\".\",\"count\":false,\"all\":true}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\".gitattributes\",\".gitignore\",\".io.json\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_HzG9SRsHQ6jwvihOTYjqyZEX"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are all the files and directories in the current directory, including hidden files:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - .gitattributes\n  - .gitignore\n  - .io.json\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls ./nonexistent",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_icYCk1eBNBKlb8vWLonpnuYD",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"The user requested to list the contents of a directory that does not exist.\"],\"path\":\"./nonexistent\",\"count\":false,\"all\":false}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137810,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2217,
+              "openAiProcessingMs": 1987,
+              "usage": {
+                "completion_tokens": 43,
+                "prompt_tokens": 1060,
+                "total_tokens": 1103,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_Mk9C5mfAC04tEioAdhG7k5bQ",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory.\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_Mk9C5mfAC04tEioAdhG7k5bQ"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls .",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_ZcLv4cZyOPkjgF823RWPJT6t",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the current directory (the same as before).\"],\"path\":\".\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_ZcLv4cZyOPkjgF823RWPJT6t"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the current directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls /",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_laZCGEsXVb6yno9GZ0AVtDxh",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the files in the root directory.\"],\"path\":\"/\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_laZCGEsXVb6yno9GZ0AVtDxh"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are the files and directories in the root directory:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls --all",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_HzG9SRsHQ6jwvihOTYjqyZEX",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list all files and directories, including hidden ones.\"],\"path\":\".\",\"count\":false,\"all\":true}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\".gitattributes\",\".gitignore\",\".io.json\",\"LICENSE\",\"README.md\",\"tmp\"]",
+                "tool_call_id": "call_HzG9SRsHQ6jwvihOTYjqyZEX"
+              },
+              {
+                "role": "assistant",
+                "content": "Here are all the files and directories in the current directory, including hidden files:\n\n- **Directories:**\n  - agents/\n  - curtains/\n  - Definitiions/\n  - images/\n  - info/\n  - stucks/\n  - templates/\n  - tests/\n  - threads/\n  - tmp/\n\n- **Files:**\n  - .gitattributes\n  - .gitignore\n  - .io.json\n  - LICENSE\n  - README.md",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls ./nonexistent",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_icYCk1eBNBKlb8vWLonpnuYD",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"The user requested to list the contents of a directory that does not exist.\"],\"path\":\"./nonexistent\",\"count\":false,\"all\":false}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"code\":\"NotFoundError\",\"data\":{\"what\":\"file or directory found at \\\"dec4af3db98b230489e2985374d0146e4629520f:nonexistent\\\"\"},\"caller\":\"git.readTree\",\"name\":\"Error\",\"message\":\"Could not find file or directory found at \\\"dec4af3db98b230489e2985374d0146e4629520f:nonexistent\\\".\"}",
+                "tool_call_id": "call_icYCk1eBNBKlb8vWLonpnuYD"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "The directory `./nonexistent` does not exist, and I could not find any file or directory at that path.",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137812,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1445,
+              "openAiProcessingMs": 1200,
+              "usage": {
+                "completion_tokens": 25,
+                "prompt_tokens": 1207,
+                "total_tokens": 1232,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "isolates: files:write": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_VWV/the_9NG": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "write \"c\" to the file test.txt",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_mv3ESExz6kjhlupVTjYqwx6f",
+                  "type": "function",
+                  "function": {
+                    "name": "files_write",
+                    "arguments": "{\"reasoning\":[\"Writing the character 'c' to the file test.txt.\"],\"path\":\"test.txt\",\"content\":\"c\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137815,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1900,
+              "openAiProcessingMs": 1668,
+              "usage": {
+                "completion_tokens": 35,
+                "prompt_tokens": 315,
+                "total_tokens": 350,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "write \"c\" to the file test.txt",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_mv3ESExz6kjhlupVTjYqwx6f",
+                    "type": "function",
+                    "function": {
+                      "name": "files_write",
+                      "arguments": "{\"reasoning\":[\"Writing the character 'c' to the file test.txt.\"],\"path\":\"test.txt\",\"content\":\"c\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"charactersWritten\":1}",
+                "tool_call_id": "call_mv3ESExz6kjhlupVTjYqwx6f"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "The character \"c\" has been successfully written to the file `test.txt`.",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137817,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1429,
+              "openAiProcessingMs": 1198,
+              "usage": {
+                "completion_tokens": 17,
+                "prompt_tokens": 368,
+                "total_tokens": 385,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "write \"c\" to the file test.txt",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_mv3ESExz6kjhlupVTjYqwx6f",
+                    "type": "function",
+                    "function": {
+                      "name": "files_write",
+                      "arguments": "{\"reasoning\":[\"Writing the character 'c' to the file test.txt.\"],\"path\":\"test.txt\",\"content\":\"c\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"charactersWritten\":1}",
+                "tool_call_id": "call_mv3ESExz6kjhlupVTjYqwx6f"
+              },
+              {
+                "role": "assistant",
+                "content": "The character \"c\" has been successfully written to the file `test.txt`.",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/files.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_GHVWAUgwtoDPTTrFXYuFn2HN",
+                  "type": "function",
+                  "function": {
+                    "name": "files_ls",
+                    "arguments": "{\"reasoning\":[\"Listing the files in the current directory to see the contents.\"],\"path\":\"\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729137819,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 1734,
+              "openAiProcessingMs": 1496,
+              "usage": {
+                "completion_tokens": 30,
+                "prompt_tokens": 398,
+                "total_tokens": 428,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "write \"c\" to the file test.txt",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_mv3ESExz6kjhlupVTjYqwx6f",
+                    "type": "function",
+                    "function": {
+                      "name": "files_write",
+                      "arguments": "{\"reasoning\":[\"Writing the character 'c' to the file test.txt.\"],\"path\":\"test.txt\",\"content\":\"c\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"charactersWritten\":1}",
+                "tool_call_id": "call_mv3ESExz6kjhlupVTjYqwx6f"
+              },
+              {
+                "role": "assistant",
+                "content": "The character \"c\" has been successfully written to the file `test.txt`.",
+                "name": "agents_files_md",
+                "refusal": null
+              },
+              {
+                "content": "ls",
+                "role": "user",
+                "name": "test"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_files_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_GHVWAUgwtoDPTTrFXYuFn2HN",
+                    "type": "function",
+                    "function": {
+                      "name": "files_ls",
+                      "arguments": "{\"reasoning\":[\"Listing the files in the current directory to see the contents.\"],\"path\":\"\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "[\"agents/\",\"curtains/\",\"Definitiions/\",\"images/\",\"info/\",\"stucks/\",\"templates/\",\"tests/\",\"threads/\",\"LICENSE\",\"README.md\",\"test.txt\"]",
+                "tool_call_id": "call_GHVWAUgwtoDPTTrFXYuFn2HN"
+              },
+              {
+                "content": "",
+                "role": "system",
+                "name": "agents_files_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "The files in the current directory are as follows:\n\n- agents/\n- curtains/\n- Definitiions/\n- images/\n- info/\n- stucks/\n- templates/\n- tests/\n- threads/\n- LICENSE\n- README.md\n- test.txt\n\nThe file `test.txt` is present in this directory.",
+              "name": "agents/files.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729137821,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_e2bde53e6e",
+              "duration": 2503,
+              "openAiProcessingMs": 2269,
+              "usage": {
+                "completion_tokens": 64,
+                "prompt_tokens": 481,
+                "total_tokens": 545,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
