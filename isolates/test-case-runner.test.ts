@@ -4,7 +4,7 @@ import { fixture } from '@/tests/fixtures/fixture.ts'
 import { TestFile, testFile } from '@/api/tps-report.ts'
 
 Deno.test('test with dependencies', async (t) => {
-  const { backchat, engine } = await fixture(t)
+  const { backchat, engine } = await fixture(t, import.meta.url)
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )

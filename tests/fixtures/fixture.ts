@@ -64,8 +64,8 @@ const init: Provisioner = async (backchat) => {
   await Promise.all(promises)
 }
 
-export const fixture = async (t: Deno.TestContext) => {
-  const { backchat, engine } = await cradleMaker(t, undefined, init)
+export const fixture = async (t: Deno.TestContext, url: string) => {
+  const { backchat, engine } = await cradleMaker(t, url, undefined, init)
 
   return { backchat, engine }
 }

@@ -19,7 +19,7 @@ Deno.test.ignore('test-requester', async (t) => {
   // but now we need to merge back up to parent
 
   // OR we need to ensure that the controller receives the files from our branch
-  const { backchat, engine } = await fixture(t)
+  const { backchat, engine } = await fixture(t, import.meta.url)
   const target = await backchat.threadPID()
   const { run } = await backchat.actions<Api>('longthread', { target })
 

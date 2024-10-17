@@ -8,7 +8,12 @@ import { Backchat } from '../api/client-backchat.ts'
 import { cradleMaker } from '@/cradle-maker.ts'
 
 Deno.test('login with github', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, undefined, github.init)
+  const { backchat, engine } = await cradleMaker(
+    t,
+    import.meta.url,
+    undefined,
+    github.init,
+  )
   const home = backchat.homeAddress
 
   const state = await backchat.state(home, actors.stateSchema)
