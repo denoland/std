@@ -24,13 +24,7 @@ export default class Server {
     this.#engine = engine
     this.#app = app
   }
-  static async create(
-    privateKey: string,
-    aesKey: string,
-    init?: Provisioner,
-    seed?: Seed,
-  ) {
-    const engine = await Engine.boot(privateKey, aesKey, seed)
+  static create(engine: Engine, init?: Provisioner) {
     const base = new Hono()
     const server = new Server(engine, base)
 

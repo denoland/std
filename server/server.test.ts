@@ -1,36 +1,22 @@
-import { Outcome, Provisioner } from '@/constants.ts'
+import { type CradleMaker, Outcome } from '@/constants.ts'
 import Server from './server.ts'
-import { expect } from '@utils'
+import { assert, delay, expect } from '@utils'
 import { WebClientEngine } from '../api/client-engine.ts'
 import guts from '../guts/guts.ts'
-import DB from '@/db.ts'
-import { Crypto } from '../api/crypto.ts'
 import { Backchat } from '../api/client-backchat.ts'
-import { delay } from '@std/async'
+import { cradleMaker } from '@/cradle-maker.ts'
+import { Engine } from '@/engine.ts'
 
-const superuserPrivateKey = Crypto.generatePrivateKey()
-const aesKey = DB.generateAesKey()
-const privateKey = Crypto.generatePrivateKey()
+const webCradleMaker: CradleMaker = async (t, update, init) => {
+  const { engine: core, privateKey, backchat: { id: backchatId } } =
+    await cradleMaker(t, update, init)
+  assert(core instanceof Engine, 'not an engine')
 
-type SeedSet = { seed: Deno.KvEntry<unknown>[]; backchatId: string }
-const seeds = new Map<Provisioner | undefined, SeedSet>()
-
-const cradleMaker = async (init?: Provisioner) => {
-  const seedSet = seeds.get(init)
-  const seed = seedSet?.seed
-  const backchatId = seedSet?.backchatId
-
-  const server = await Server.create(superuserPrivateKey, aesKey, init, seed)
+  const server = Server.create(core)
   const fetcher = server.request as typeof fetch
 
   const engine = await WebClientEngine.start('https://mock', fetcher)
   const backchat = await Backchat.upsert(engine, privateKey, backchatId)
-  if (!seedSet) {
-    seeds.set(init, {
-      seed: await server.dump(),
-      backchatId: backchat.id,
-    })
-  }
 
   const clientStop = engine.stop.bind(engine)
   engine.stop = async () => {
@@ -40,11 +26,13 @@ const cradleMaker = async (init?: Provisioner) => {
     // oddly needs another loop to avoid resource leaks in fast tests
     await delay(10)
   }
-  return { backchat, engine }
+  return { backchat, engine, privateKey }
 }
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
-    const server = await Server.create(superuserPrivateKey, aesKey)
+    const { engine } = await cradleMaker(t)
+    assert(engine instanceof Engine, 'not an engine')
+    const server = Server.create(engine)
     const payload = { data: { ping: 'test', extra: 'line' } }
     const res = await server.request('/api/ping', {
       method: 'POST',
@@ -56,4 +44,4 @@ Deno.test('hono basic', async (t) => {
   })
 })
 
-guts('Web', cradleMaker)
+guts('Web', webCradleMaker)

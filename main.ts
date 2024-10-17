@@ -1,6 +1,7 @@
 import { Debug, isKvTestMode } from '@/utils.ts'
 import Server from '@/server/server.ts'
 import { init } from '@/isolates/github.ts'
+import { Engine } from '@/engine.ts'
 
 const getPrivateKey = () => {
   const privateKey = Deno.env.get('SUPERUSER_PRIVATE_KEY')
@@ -20,7 +21,8 @@ const getAesKey = () => {
 Debug.enable(
   'AI:completions* AI:qbr AI:qex AI:server AI:engine AI:actors AI:hal AI:github AI:system',
 )
-const server = await Server.create(getPrivateKey(), getAesKey(), init)
+const engine = await Engine.boot(getPrivateKey(), getAesKey())
+const server = Server.create(engine, init)
 
 const opts: { cert?: string; key?: string; hostname?: string; port?: number } =
   {}

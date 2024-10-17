@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "lock": false,
   "tasks": {
-    "test": "DENO_KV_PATH=:memory: deno test -A --coverage --clean --trace-leaks",
-    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --watch",
+    "test": "DENO_KV_PATH=:memory: deno test -A --coverage --clean --parallel",
+    "watch": "clear && DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno test -A --parallel --watch",
     "api": "DENO_KV_PATH=:memory: DEBUG_COLORS=1 deno run -A --watch --inspect-wait main.ts",
     "check:types": "deno check **/*.ts",
     "check": "deno fmt --check && deno lint && deno task check:types",

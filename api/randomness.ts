@@ -31,7 +31,11 @@ const seed = () => {
 }
 
 export const randomness = () => {
-  const hash = ripemd160(seed())
+  return fixedRandomness(seed())
+}
+
+export const fixedRandomness = (seed: string) => {
+  const hash = ripemd160(seed)
   const encoded = base32crockford.encode(hash)
   const result = encoded.slice(-16)
 

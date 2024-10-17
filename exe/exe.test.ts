@@ -15,11 +15,11 @@ import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
 import { Crypto } from '../api/crypto.ts'
 import { Backchat } from '../api/client-backchat.ts'
-import { hash } from '@/constants.ts'
+import { fixedRandomness } from '@/api/randomness.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
-const repoId = `rep_${hash('test')}`
+const repoId = `rep_${fixedRandomness('exe-test')}`
 const partialPid: PartialPID = {
   account: 'exe',
   repository: 'test',
@@ -104,7 +104,7 @@ Deno.test('loopback', async () => {
 
 Deno.test('compound', async (t) => {
   const target = {
-    repoId: `rep_${hash('compound')}`,
+    repoId: `rep_${fixedRandomness('compound')}`,
     account: 'exe',
     repository: 'other',
     branches: ['other'],

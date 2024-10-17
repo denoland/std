@@ -59,8 +59,8 @@ export const mockCreator = <T extends z.ZodSchema>(messageSchema: T) => {
       if (update) {
         blankRecordingsForTest(t)
       }
-
       const saved = readRecordings(t)
+
       for (const [id, recording] of Object.entries(saved)) {
         for (const message of recording) {
           mock.inject(id, message)
