@@ -280,7 +280,7 @@ export const getChatParams = (
   }
   messages = messages.map(safeAssistantName)
 
-  const args: ChatParams = {
+  let args: ChatParams = {
     model,
     temperature,
     messages,
@@ -290,6 +290,9 @@ export const getChatParams = (
     presence_penalty,
     parallel_tool_calls: tools.length ? parallel_tool_calls : undefined,
   }
+  args = Object.fromEntries(
+    Object.entries(args).filter(([_, value]) => value !== undefined),
+  ) as ChatParams
   return args
 }
 export const safeAssistantName = (message: CompletionMessage) => {

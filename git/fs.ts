@@ -296,8 +296,18 @@ export default class FS {
     path = refine(path)
     const oid = this.#internalOid
     const filepath = path === '.' ? undefined : path
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
-    return tree
+    try {
+      const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+      return tree
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        throw new Errors.NotFoundError(path)
+      }
+      throw error
+    }
   }
   delete(path: string) {
     path = refine(path)
