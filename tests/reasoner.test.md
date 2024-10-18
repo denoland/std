@@ -15,6 +15,10 @@ Advanced features to implement:
   several messages back
 - Think of itself as the user when talking to the reasoners
 
+## Faults list:
+1. Reasoner does not summarize the results of the tool calls, and talks about
+   the tool call results as tho the user can see them when they cannot
+
 ## Calls o1-mini agent
 
 **Prompts**
