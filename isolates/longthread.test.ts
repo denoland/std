@@ -29,7 +29,8 @@ call the "agents_switch" function with the argument "agents/missing.md".  If thi
 const path = 'agents/agent-fixture.md'
 
 Deno.test('longthread chat', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat } = cradle
 
   const actorId = 'longthread'
 
@@ -117,11 +118,11 @@ Deno.test('longthread chat', async (t) => {
       arguments: '{"message": "2"}',
     })
   })
-  await engine.stop()
 })
 
 Deno.test('test o1 agents', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat } = cradle
   const actorId = 'agents_o1_family'
 
   const longthread = await backchat.actions<longthread.Api>('longthread')
@@ -171,11 +172,11 @@ Deno.test('test o1 agents', async (t) => {
     assert(assistant)
     expect(assistant.content).toContain('creatorBot')
   })
-  await engine.stop()
 })
 
 Deno.test('switchboard errors', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat } = cradle
   const actorId = 'switchboard_errors'
   const path = 'agents/switchboard.md'
 
@@ -191,12 +192,11 @@ Deno.test('switchboard errors', async (t) => {
     const assistant = thread.messages.pop()
     expect(assistant?.content).toBe('cincinnati')
   })
-
-  await engine.stop()
 })
 
 Deno.test('router', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat } = cradle
   const actorId = 'test-router'
 
   const router = Deno.readTextFileSync('./HAL/agents/router.md')
@@ -244,12 +244,11 @@ Deno.test('router', async (t) => {
     const thread = await backchat.readThread(backchat.pid)
     expect(thread.agent).toBe('agents/o1-mini.md')
   })
-
-  await engine.stop()
 })
 
 Deno.test('agents_switch function acts as router', async (t) => {
-  const { backchat, engine } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat } = cradle
   const actorId = 'test-agents_switch'
 
   const router = Deno.readTextFileSync('./HAL/agents/router.md')
@@ -299,8 +298,6 @@ Deno.test('agents_switch function acts as router', async (t) => {
     expect(assistant.content).toBeTruthy()
     expect(assistant.tool_calls).toBeUndefined()
   })
-
-  await engine.stop()
 })
 
 const resetInstructions = (backchat: Backchat, instructions: string) => {

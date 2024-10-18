@@ -29,11 +29,17 @@ const webCradleMaker: CradleMaker = async (t, url, update, init) => {
     // oddly needs another loop to avoid resource leaks in fast tests
     await delay(10)
   }
-  return { backchat, engine, privateKey }
+  return {
+    backchat,
+    engine,
+    privateKey,
+    [Symbol.asyncDispose]: () => Promise.resolve(engine.stop()),
+  }
 }
 Deno.test('hono basic', async (t) => {
   await t.step('ping', async () => {
-    const { engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { engine } = cradle
     assert(engine instanceof Engine, 'not an engine')
     const server = Server.create(engine)
     const payload = { data: { ping: 'test', extra: 'line' } }
@@ -43,7 +49,6 @@ Deno.test('hono basic', async (t) => {
     })
     const reply: Outcome = await res.json()
     expect(reply.result).toEqual(payload)
-    await server.stop()
   })
 })
 

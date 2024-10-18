@@ -14,7 +14,8 @@ import { TestFile } from '@/api/tps-report.ts'
 import { addBranches } from '@/constants.ts'
 
 Deno.test('test file runner', async (t) => {
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
@@ -46,10 +47,10 @@ Deno.test('test file runner', async (t) => {
     expect(tps.cases[0].iterations[0].outcomes).toHaveLength(4)
     expect(tps.cases[0].iterations[1].outcomes).toHaveLength(4)
   })
-  await engine.stop()
 })
 Deno.test('router', async (t) => {
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions',
   // )
@@ -72,10 +73,10 @@ Deno.test('router', async (t) => {
     expect(tps.cases).toHaveLength(5)
     expect(tps.cases[0].iterations).toHaveLength(1)
   })
-  await engine.stop()
 })
 Deno.test.ignore('test meeting bot', async (t) => {
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
@@ -105,10 +106,10 @@ Deno.test.ignore('test meeting bot', async (t) => {
     expect(tps.cases[0].iterations).toHaveLength(1)
     expect(tps.cases[0].iterations[0].outcomes).toHaveLength(1)
   })
-  await engine.stop()
 })
 Deno.test('test fixture', async (t) => {
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
@@ -134,10 +135,10 @@ Deno.test('test fixture', async (t) => {
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
     log('done', tps)
   })
-  await engine.stop()
 })
 Deno.test.ignore('test the tester', async (t) => {
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
@@ -163,5 +164,4 @@ Deno.test.ignore('test the tester', async (t) => {
     const tps = await backchat.readJSON<TestFile>(tpsPath, target)
     log('done', tps)
   })
-  await engine.stop()
 })

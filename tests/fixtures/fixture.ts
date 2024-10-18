@@ -1,5 +1,5 @@
 import { cradleMaker } from '@/cradle-maker.ts'
-import { getRoot, Provisioner } from '@/constants.ts'
+import { type CradleMaker, getRoot, Provisioner } from '@/constants.ts'
 
 export const actorId = 'testerActorId'
 
@@ -68,14 +68,12 @@ const init: Provisioner = async (backchat) => {
   await Promise.all(promises)
 }
 
-export const fixture = async (
+export const fixture: CradleMaker = async (
   t: Deno.TestContext,
   url: string,
   update?: 'updateSnapshots',
 ) => {
-  const { backchat, engine } = await cradleMaker(t, url, update, init)
-
-  return { backchat, engine }
+  return await cradleMaker(t, url, update, init)
 }
 
 // Ideally we would get rid of HAL and just have napps.

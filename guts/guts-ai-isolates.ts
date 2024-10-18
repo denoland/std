@@ -17,7 +17,8 @@ export default (cradleMaker: CradleMaker) => {
   const path = 'agents/files.md'
 
   Deno.test(prefix + 'files:ls', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
     await backchat.write('tmp', '', target)
@@ -89,11 +90,10 @@ export default (cradleMaker: CradleMaker) => {
 
       log('thread', thread)
     })
-
-    await engine.stop()
   })
   Deno.test(prefix + 'files:write', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
 
     const target = await backchat.threadPID()
     await backchat.write(path, agent, target)
@@ -122,11 +122,10 @@ export default (cradleMaker: CradleMaker) => {
       expect(typeof result.content).toBe('string')
       expect(result.content).toContain('test.txt')
     })
-
-    await engine.stop()
   })
   Deno.test(prefix + 'system:merge*', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const target = await backchat.threadPID()
     const parent = getParent(target)
 
@@ -162,7 +161,5 @@ export default (cradleMaker: CradleMaker) => {
       const [splice] = await backchat.splices(parent)
       expect(result.head).toBe(splice.oid)
     })
-
-    await engine.stop()
   })
 }

@@ -5,13 +5,12 @@ export default (cradleMaker: CradleMaker) => {
   const prefix = 'tps: '
 
   Deno.test(prefix + 'run fixture test', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     log('start')
 
     await t.step('run fixture', async () => {
       await backchat.prompt('run test ./tests/test-fixture.test.md')
     })
-
-    await engine.stop()
   })
 }

@@ -8,7 +8,8 @@ Deno.test('auto update on backchat', async (t) => {
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
 
-  const { backchat, engine, privateKey } = await cradleMaker(t, import.meta.url)
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { backchat, engine, privateKey } = cradle
   const path = 'new-file.md'
 
   expect(await backchat.exists(path)).toBeFalsy()
@@ -21,5 +22,4 @@ Deno.test('auto update on backchat', async (t) => {
   const next = await Backchat.upsert(engine, privateKey)
 
   expect(await next.exists(path)).toBeTruthy()
-  await engine.stop()
 })

@@ -8,12 +8,13 @@ import { Backchat } from '../api/client-backchat.ts'
 import { cradleMaker } from '@/cradle-maker.ts'
 
 Deno.test('login with github', async (t) => {
-  const { backchat, engine } = await cradleMaker(
+  await using cradle = await cradleMaker(
     t,
     import.meta.url,
     undefined,
     github.init,
   )
+  const { engine, backchat } = cradle
   const home = backchat.homeAddress
 
   const state = await backchat.state(home, actors.stateSchema)
@@ -76,7 +77,6 @@ Deno.test('login with github', async (t) => {
   //   // it should then become an unauthorized machine and reauthenticate as its
   //   // original pure machine name
   // })
-  await engine.stop()
 })
 // do a push to a github repo using the authed token
 

@@ -7,7 +7,8 @@ export default (cradleMaker: CradleMaker) => {
   // TODO make a remote thread, and then test summoner
 
   Deno.test(prefix + 'thread management', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     let focus = await backchat.threadPID()
     log('initial focus', focus)
     const thread = await backchat.readThread()
@@ -46,24 +47,24 @@ export default (cradleMaker: CradleMaker) => {
     // test changing some files then have that show up on the other thread
 
     // TODO test deleted / nonexistent thread
-    await engine.stop()
   })
 
   Deno.test(prefix + 'update from github', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
 
     await t.step('update', async () => {
       await backchat.prompt(
         'Update the HAL repo to the latest version by using the system agent as an administrative action',
       )
     })
-
-    await engine.stop()
   })
 
   // TODO move this to be an md test
   Deno.test(prefix + 'infinite loop regression', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
+
     await t.step('infinite loop', async () => {
       const prompt =
         'Write a file with the following text "I love to be in Paris in the Spring". Then save it as paris.txt. Then replace all text in that file where "Paris" occurs with "Edinburgh". Then rename the file Edinburgh.txt'
@@ -77,7 +78,6 @@ export default (cradleMaker: CradleMaker) => {
       const edinburgh = await backchat.read('Edinburgh.txt', target)
       expect(edinburgh).toContain('I love to be in Edinburgh in the Spring')
     })
-    await engine.stop()
   })
 
   //   Deno.test(prefix + 'double tool call with responses', async () => {

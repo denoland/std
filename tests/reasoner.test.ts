@@ -11,7 +11,8 @@ import { addBranches } from '@/constants.ts'
 
 Deno.test('reasoner', async (t) => {
   log('reasoner')
-  const { backchat, engine } = await fixture(t, import.meta.url)
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner AI:completions AI:napps',
   // )
@@ -33,5 +34,4 @@ Deno.test('reasoner', async (t) => {
     expect(tps).toBeTruthy()
     expect(tps.summary.completed).toBe(1)
   })
-  await engine.stop()
 })

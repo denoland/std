@@ -5,7 +5,8 @@ import { Api } from '@/isolates/io-fixture.ts'
 export default (cradleMaker: CradleMaker) => {
   const prefix = 'splices: '
   Deno.test(prefix + 'files', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'splices/files'
     const { pid } = await backchat.init({ repo })
     const { write } = await backchat.actions<Api>('io-fixture', { target: pid })
@@ -26,13 +27,12 @@ export default (cradleMaker: CradleMaker) => {
       expect(Object.keys(first.changes)).toHaveLength(1)
       await p
     })
-
-    await engine.stop()
   })
   Deno.test(prefix + '.io.json diffs', async (t) => {
     // send in a bunch of actions and view the diffs as splices
 
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'splices/diffs'
     await backchat.rm({ repo })
     const { pid } = await backchat.init({ repo })
@@ -62,10 +62,10 @@ export default (cradleMaker: CradleMaker) => {
       expect(Object.keys(first.changes)).toHaveLength(1)
       await p
     })
-    await engine.stop()
   })
   Deno.test(prefix + 'file changes', async (t) => {
-    const { backchat, engine } = await cradleMaker(t, import.meta.url)
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'splices/changes'
     const { pid } = await backchat.init({ repo })
 
@@ -102,7 +102,6 @@ export default (cradleMaker: CradleMaker) => {
     })
     log('spliceCount', spliceCount)
     log('fileSpliceCount', fileSpliceCount)
-    await engine.stop()
   })
 
   // do broadcast channel for partial writes occurring
