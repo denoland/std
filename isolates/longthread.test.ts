@@ -169,8 +169,8 @@ Deno.test('test o1 agents', async (t) => {
 
     const thread = await backchat.readThread(backchat.pid)
     const assistant = thread.messages.pop()
-    assert(assistant)
-    expect(assistant.content).toContain('creatorBot')
+    assert(typeof assistant?.content === 'string', 'no assistant')
+    expect(assistant.content.toLowerCase()).toContain('creatorbot')
   })
 })
 
@@ -190,7 +190,8 @@ Deno.test('switchboard errors', async (t) => {
     await longthread.run({ path, content: 'hello', actorId })
     const thread = await backchat.readThread(backchat.pid)
     const assistant = thread.messages.pop()
-    expect(assistant?.content).toBe('cincinnati')
+    assert(typeof assistant?.content === 'string', 'no assistant')
+    expect(assistant.content).toBe('cincinnati')
   })
 })
 

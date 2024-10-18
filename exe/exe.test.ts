@@ -13,9 +13,8 @@ import DB from '@/db.ts'
 import { UnsequencedRequest } from '@/constants.ts'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { Crypto } from '../api/crypto.ts'
-import { Backchat } from '../api/client-backchat.ts'
 import { fixedRandomness } from '@/api/randomness.ts'
+import { cradleMaker } from '@/cradle-maker.ts'
 
 type PartialRequest = Omit<SolidRequest, 'target'>
 
@@ -184,30 +183,23 @@ Deno.test('compound', async (t) => {
   // test making different request between two invocations
 })
 
-let seed: Deno.KvEntry<unknown>[] = []
-let superKey: string | undefined
-let aesKey: string | undefined
+// TODO convert this to use the cradle maker
 
-const provision = async (withExeCache: boolean) => {
-  if (!superKey || !aesKey) {
-    superKey = Crypto.generatePrivateKey()
-    aesKey = DB.generateAesKey()
-  }
-  const engine = await Engine.provision(superKey, aesKey, undefined, seed)
+const provision = async (t: Deno.TestContext, withExeCache: boolean) => {
+  const cradle = await cradleMaker(t, import.meta.url)
   if (!withExeCache) {
-    engine.context.exe?.disableFunctionCache()
+    assert(cradle.engine instanceof Engine)
+    assert(cradle.engine.context.exe, 'exe should be defined')
+    cradle.engine.context.exe.disableFunctionCache()
   }
-  const backchat = await Backchat.upsert(engine, superKey)
-  if (!seed.length) {
-    seed = await engine.dump()
-  }
-  return { engine, backchat }
+  return cradle
 }
 
 for (const withExeCache of [true, false]) {
   Deno.test(`commit spanning (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache`, async () => {
-      const { backchat, engine } = await provision(withExeCache)
+      await using cradle = await provision(t, withExeCache)
+      const { backchat } = cradle
 
       const { fileAccumulation } = await backchat.actions<Api>('io-fixture')
       await fileAccumulation({ path: 'test.txt', content: 'hello', count: 3 })
@@ -222,13 +214,14 @@ for (const withExeCache of [true, false]) {
       assert(file)
       log(file)
       expect(file.split('\n')).toHaveLength(7)
-      await engine.stop()
     })
   })
 
   Deno.test(`looping accumulation (cache: ${withExeCache}`, async (t) => {
     await t.step(`function cache ${withExeCache}`, async () => {
-      const { backchat, engine } = await provision(withExeCache)
+      await using cradle = await provision(t, withExeCache)
+      const { backchat } = cradle
+
       const { pid } = backchat
       const { loopAccumulation } = await backchat.actions<Api>(
         'io-fixture',
@@ -246,8 +239,6 @@ for (const withExeCache of [true, false]) {
       assert(file)
       log(file)
       expect(file.split('\n')).toHaveLength(9)
-
-      await engine.stop()
     })
   })
 }
