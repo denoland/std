@@ -34,7 +34,7 @@ export default (cradleMaker: CradleMaker) => {
       expect(result).toEqual('local reply')
     })
   })
-  Deno.test(prefix + 'internal requests', async (t) => {
+  Deno.test(prefix + 'branch with ping', async (t) => {
     await using cradle = await cradleMaker(t, import.meta.url)
     const { backchat } = cradle
     const repo = 'process/session'
