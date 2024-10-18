@@ -6,7 +6,7 @@ import { completionMessage } from './zod.ts'
 import type { Backchat } from './client-backchat.ts'
 import { assert } from '@sindresorhus/is'
 import type OpenAI from 'openai'
-import { fixedRandomness, randomness } from './randomness.ts'
+import { randomness } from './randomness.ts'
 export { randomness }
 type CommitOid = string
 
@@ -807,6 +807,7 @@ export type ChatParams = z.infer<typeof chatParams>
 export const backchatStateSchema = z.object({
   /** The base thread that this backchat session points to - the thread of last resort */
   target: pidSchema,
+  threadCount: z.number().int().gte(0),
 })
 
 export type Returns<T extends Record<string, ZodSchema>> = {

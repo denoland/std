@@ -229,7 +229,12 @@ export type CradleMaker = (
   updateSnapshots?: 'updateSnapshots',
   init?: Provisioner,
 ) => Promise<
-  { backchat: Backchat; engine: EngineInterface; privateKey: string }
+  {
+    backchat: Backchat
+    engine: EngineInterface
+    privateKey: string
+    [Symbol.asyncDispose](): Promise<void>
+  }
 >
 
 export const toApi = (parameters: Record<string, ZodSchema>) => {

@@ -43,13 +43,13 @@ export const cradleMaker: CradleMaker = async (t, url, update, init) => {
     }
   }
 
-  const original = engine.stop.bind(engine)
-  engine.stop = async () => {
-    if (t) {
+  return {
+    backchat,
+    engine,
+    privateKey,
+    [Symbol.asyncDispose]: () => {
       mock.teardown()
-    }
-    await original()
+      return engine.stop()
+    },
   }
-
-  return { backchat, engine, privateKey }
 }
