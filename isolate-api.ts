@@ -107,10 +107,16 @@ export default class IA<T extends object = Default> {
     return this.#abort.signal
   }
   // TODO make get and set config be synchronous
-  async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(schema: T) {
+  async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
+    schema: T,
+    fallback: z.infer<T>,
+  ) {
     assert(this.#accumulator.isActive, 'Activity is denied')
     const io = await IOChannel.read(this.#fs)
     assert(io, 'io not found')
+    if (equal(io.state, {})) {
+      return schema.parse(fallback) as z.infer<T>
+    }
     return schema.parse(io.state) as z.infer<T>
   }
   async updateState<T extends z.ZodObject<Record<string, ZodTypeAny>>>(

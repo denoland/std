@@ -5,7 +5,7 @@ import { cradleMaker } from '@/cradle-maker.ts'
 import * as backchat from './isolates/backchat.ts'
 import { getBaseName } from '@/constants.ts'
 
-Deno.test.only('cradle', async (t) => {
+Deno.test('cradle', async (t) => {
   await using cradle = await cradleMaker(t, import.meta.url)
   const { engine, privateKey, backchat } = cradle
   await t.step('basic', async () => {
