@@ -1098,12 +1098,12 @@ export function stub<
  *
  * const getterStub = stub(obj, "prop", {
  *  get: function () {
- *    return "boo";
+ *    return "bar";
  *  },
  * });
  *
- * assertEquals(obj.prop, "boo");
- * assertSpyCalls(obj.get, 1);
+ * assertEquals(obj.prop, "bar");
+ * assertSpyCalls(getterStub.get, 1);
  * ```
  *
  * @typeParam Self The self type of the instance to replace a method of.
