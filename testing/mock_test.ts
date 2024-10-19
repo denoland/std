@@ -645,7 +645,130 @@ Deno.test("stub() works on function", () => {
   );
   assertEquals(func.restored, true);
 });
+Deno.test("stub() works on getter", () => {
+  const point = new Point(5, 6);
+  const returns = [1, 2, 3, 4];
+  const func = stub(point, "x", {
+    get: function () {
+      return returns.shift();
+    },
+  });
 
+  assertSpyCalls(func.get, 0);
+
+  assertEquals(point.x, 1);
+  assertSpyCall(func.get, 0, {
+    self: point,
+    args: [],
+    returned: 1,
+  });
+  assertSpyCalls(func.get, 1);
+
+  assertEquals(point.x, 2);
+  assertSpyCall(func.get, 1, {
+    self: point,
+    args: [],
+    returned: 2,
+  });
+  assertSpyCalls(func.get, 2);
+
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertEquals(point.x, 5);
+  assertThrows(
+    () => func.restore(),
+    MockError,
+    "Cannot restore: instance method already restored",
+  );
+  assertEquals(func.restored, true);
+});
+Deno.test("stub() works on setter", () => {
+  const point = new Point(5, 6);
+  const func = stub(point, "x", {
+    set: function (value: number) {
+      point.y = value;
+    },
+  });
+
+  assertSpyCalls(func.set, 0);
+  assertEquals(point.y, 6);
+
+  point.x = 10;
+
+  assertEquals(point.y, 10);
+  assertSpyCalls(func.set, 1);
+  assertSpyCallArg(func.set, 0, 0, 10);
+
+  point.x = 15;
+
+  assertEquals(point.y, 15);
+  assertSpyCalls(func.set, 2);
+  assertSpyCallArg(func.set, 1, 0, 15);
+
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertThrows(
+    () => func.restore(),
+    MockError,
+    "Cannot restore: instance method already restored",
+  );
+  assertEquals(func.restored, true);
+});
+Deno.test("stub() works on getter and setter", () => {
+  const point = new Point(5, 6);
+  const returns = [1, 2, 3, 4];
+  const func = stub(point, "x", {
+    get: function () {
+      return returns.shift();
+    },
+    set: function (value: number) {
+      point.y = value;
+    },
+  });
+
+  assertSpyCalls(func.set, 0);
+  assertSpyCalls(func.get, 0);
+  assertEquals(point.y, 6);
+  assertEquals(point.x, 1);
+
+  point.x = 10;
+
+  assertEquals(point.y, 10);
+  assertSpyCalls(func.set, 1);
+  assertSpyCalls(func.get, 1);
+  assertSpyCallArg(func.set, 0, 0, 10);
+  assertSpyCall(func.get, 0, {
+    self: point,
+    args: [],
+    returned: 1,
+  });
+
+  point.x = 15;
+
+  assertEquals(point.x, 2);
+  assertEquals(point.y, 15);
+  assertSpyCalls(func.set, 2);
+  assertSpyCalls(func.get, 2);
+  assertSpyCallArg(func.set, 1, 0, 15);
+  assertSpyCall(func.get, 1, {
+    self: point,
+    args: [],
+    returned: 2,
+  });
+
+  assertEquals(func.restored, false);
+  func.restore();
+  assertEquals(func.restored, true);
+  assertThrows(
+    () => func.restore(),
+    MockError,
+    "Cannot restore: instance method already restored",
+  );
+  assertEquals(point.x, 5);
+  assertEquals(func.restored, true);
+});
 Deno.test("stub() supports explicit resource management", () => {
   const point = new Point(2, 3);
   const returns = [1, "b", 2, "d"];
@@ -690,7 +813,6 @@ Deno.test("stub() supports explicit resource management", () => {
     assertEquals(funcRef.restored, true);
   }
 });
-
 Deno.test("stub() handles non existent function", () => {
   const point = new Point(2, 3);
   const castPoint = point as PointWithExtra;
@@ -809,6 +931,16 @@ Deno.test("stub() throws when try stubbing already stubbed method", () => {
     () => stub(obj, "fn"),
     MockError,
     "Cannot stub: already spying on instance method",
+  );
+});
+
+Deno.test("stub() throws when neither setter not getter is defined", () => {
+  const obj = { prop: "foo" };
+
+  assertThrows(
+    () => stub(obj, "prop", {}),
+    MockError,
+    "Cannot stub: neither setter nor getter is defined",
   );
 });
 
