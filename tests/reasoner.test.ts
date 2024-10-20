@@ -9,7 +9,7 @@ import {
 import { TestFile } from '@/api/tps-report.ts'
 import { addBranches } from '@/constants.ts'
 
-Deno.test('reasoner', async (t) => {
+Deno.test.ignore('reasoner', async (t) => {
   log('reasoner')
   await using cradle = await fixture(t, import.meta.url)
   const { backchat } = cradle

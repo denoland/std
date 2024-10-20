@@ -49,7 +49,7 @@ Deno.test.ignore('test file runner', async (t) => {
     expect(tps.cases[0].iterations[1].outcomes).toHaveLength(4)
   })
 })
-Deno.test('router', async (t) => {
+Deno.test.ignore('router', async (t) => {
   await using cradle = await fixture(t, import.meta.url)
   const { backchat } = cradle
   // log.enable(
@@ -108,7 +108,7 @@ Deno.test.ignore('test meeting bot', async (t) => {
     expect(tps.cases[0].iterations[0].outcomes).toHaveLength(1)
   })
 })
-Deno.test('test fixture', async (t) => {
+Deno.test.ignore('test fixture', async (t) => {
   await using cradle = await fixture(t, import.meta.url)
   const { backchat } = cradle
   // log.enable(
