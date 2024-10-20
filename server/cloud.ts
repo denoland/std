@@ -32,7 +32,12 @@ const cradleMaker: CradleMaker = async () => {
       console.log('postRepos:', postRepos)
     }
   }
-  return { backchat, engine, privateKey }
+  return {
+    backchat,
+    engine,
+    privateKey,
+    [Symbol.asyncDispose]: () => Promise.resolve(engine.stop()),
+  }
 }
 guts(cradleMaker)
 
