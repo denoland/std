@@ -1,0 +1,90 @@
+{
+  "name": "napp-name",
+  "version": "0.0.1",
+  "napp-format": "v1",
+  "description": "This is a description of the napp",
+  // what species of runtime needs to be used to execute this napp
+  "runtime": "deno",
+  // folder containing the branding assets of the napp
+  "branding": "path/to/branding/",
+  // list of the api gateway targets that this thing needs to do its job
+  "gateways": [],
+  // ? does the inference endpoint need to be separate ?
+  // should the entry agent for nl be here too ?
+  // nl could just a tool name with a specific format
+  "agent": {
+    // Chat is a special entry point that takes plain text in
+    "runner": "napp-runner-name",
+    "config": {
+      // config for the chat runner, based on what the runner is
+      "model": "gpt-4o",
+      "parallel_tool_calls": false,
+      "stop_on_tools": ["tool1", "tool3"]
+    }
+  },
+  "main": "some-function",
+  "tools": {
+    "some-function": {
+      "description": "This function does something",
+      "parameters": {
+        "param1": {
+          "description": "This is the first parameter",
+          "type": "string",
+          "required": true
+        },
+        "param2": {
+          "description": "This is the second parameter",
+          "type": "number",
+          "required": false
+        },
+        "permissions": [
+          // list of permissions required to run this function
+        ],
+        "gateways": [
+          // list of gateways required to run this function
+        ]
+      },
+      "returns": {
+        "description": "This is what the function returns",
+        "type": "string"
+      }
+    },
+    // if the function name is the same, as what is in a napp, 
+    "some-other-function": "dependent-napp-name",
+    "modified-passthru": {
+      // passes thru to a tool of the same name
+      "parameters": {},
+      "napp": {
+        "name": "dependent-napp-name",
+        "tool": "some-exported-function"
+      }
+    }
+  },
+  "help": [
+    // list of files that can be read to learn how to interface with this napp
+    // intended to be read by an AI
+  ],
+  "tests": {
+    "runner": "napp-test-runner-name",
+    "config": {
+      // config for the test runner, based on what the runner is
+    },
+    "files": [
+      // list of test files that can be run to verify the napp is working correctly
+    ]
+  },
+  "dependencies": {
+    // list of napps that this napp depends on, including version numbers and
+    // commits so that every reference to the napp can be by name.
+  }
+}
+// gateways can be just a fetch function with some urls
+// can make a moneyworks connector, which could be a napp, running as a gateway
+// host 
+// upstream dependencies ?
+// tools being the same exported as what is in the agent
+// need an agent config that is a generic way
+
+// gateways need to have backups and retry policies
+// gateways need environments, like mock, test, prod
+
