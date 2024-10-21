@@ -19,7 +19,8 @@ Deno.test.ignore('test-requester', async (t) => {
   // but now we need to merge back up to parent
 
   // OR we need to ensure that the controller receives the files from our branch
-  const { backchat, engine } = await fixture()
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   const target = await backchat.threadPID()
   const { run } = await backchat.actions<Api>('longthread', { target })
 
@@ -45,8 +46,6 @@ Deno.test.ignore('test-requester', async (t) => {
 
   // test running multiple files
   // test summarizing multiple tps reports
-
-  await engine.stop()
 })
 
 // first thing to do is generate a full tps report

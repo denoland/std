@@ -281,7 +281,8 @@ const request = async (
   }
 
   if (opts.binary) {
-    const bytes = await response.bytes()
+    const arrayBuffer = await response.arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
     return bytes
   }
   const outcome = await response.json()

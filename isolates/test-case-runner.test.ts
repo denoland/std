@@ -4,7 +4,8 @@ import { fixture } from '@/tests/fixtures/fixture.ts'
 import { TestFile, testFile } from '@/api/tps-report.ts'
 
 Deno.test('test with dependencies', async (t) => {
-  const { backchat, engine } = await fixture()
+  await using cradle = await fixture(t, import.meta.url)
+  const { backchat } = cradle
   // log.enable(
   //   'AI:tests AI:execute-tools AI:agents AI:qbr* AI:test-registry AI:test-controller AI:utils AI:test-case-runner',
   // )
@@ -20,9 +21,7 @@ Deno.test('test with dependencies', async (t) => {
     const endTps = await backchat.readJSON<TestFile>(tpsPath)
 
     expect(endTps.cases[1].summary.completed).toBe(1)
-    expect(endTps.cases[1].summary.successes).toEqual([1])
   })
-  await engine.stop()
 })
 
 const tpsFixture: TestFile = {

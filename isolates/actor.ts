@@ -61,7 +61,7 @@ export const functions: Functions<actor.Api> = {
     log('rm', repo, all)
 
     const { rm } = await api.actions<system.Api>('system')
-    const state = await api.state(stateSchema)
+    const state = await api.state(stateSchema, bare)
     if (all) {
       const promises = []
       for (const repo in state.repos) {
@@ -94,7 +94,7 @@ export const functions: Functions<actor.Api> = {
   },
   lsRepos: async (_, api) => {
     assert(isActorBranch(api.pid), 'lsRepos not actor: ' + print(api.pid))
-    const { repos } = await api.state(stateSchema)
+    const { repos } = await api.state(stateSchema, bare)
     return Object.keys(repos)
   },
   clone: async ({ repo, isolate, params }, api) => {
@@ -107,14 +107,14 @@ export const functions: Functions<actor.Api> = {
     const result = await clone({ repo, isolate, params })
     log('clone result', print(result.pid))
 
-    log('state', await api.state(stateSchema))
+    log('state', await api.state(stateSchema, bare))
 
     await api.updateState(({ machines, repos }) => {
       assert(!repos[repo], 'repos changed: ' + repo)
       repos[repo] = result.pid
       return { machines, repos }
     }, stateSchema)
-    log('state', await api.state(stateSchema))
+    log('state', await api.state(stateSchema, bare))
     return result
   },
   init: async ({ repo, isolate, params }, api) => {
@@ -144,7 +144,7 @@ export const functions: Functions<actor.Api> = {
   },
 }
 const assertNoRepo = async (api: IA, repo: string) => {
-  const state = await api.state(stateSchema)
+  const state = await api.state(stateSchema, bare)
   if (repo in state.repos) {
     throw new Error('Repo already exists: ' + repo)
   }
@@ -160,3 +160,5 @@ const stateSchema = z.object({
     }),
   ),
 })
+
+const bare = { repos: {}, machines: {} }

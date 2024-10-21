@@ -11,7 +11,7 @@
 // const controllerPath = 'agents/test-controller.md'
 
 // Deno.test.ignore('test file runner', async (t) => {
-//   const { backchat, engine } = await fixture()
+//   await using cradle = await fixture()
 
 //   const actions = await backchat.actions<Api>('longthread')
 //   await t.step('test count', async () => {
@@ -24,10 +24,9 @@
 //     await actions.run({ content, path: synthPath, actorId })
 //   })
 
-//   await engine.stop()
 // })
 // Deno.test.ignore('test controller', async (t) => {
-//   const { backchat, engine } = await cradleMaker()
+//   await using cradle = await cradleMaker()
 
 //   await backchat.write(synthPath, synth)
 //   await backchat.write(assessorPath, assessor)
@@ -44,7 +43,6 @@
 //     await actions.run({ content, path: synthPath, actorId })
 //   })
 
-//   await engine.stop()
 // })
 
 // export const cradleMaker = async () => {

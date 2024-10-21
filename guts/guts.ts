@@ -11,14 +11,14 @@ import benchmarks from './guts-benchmarks.ts'
 import isolates from './guts-ai-isolates.ts'
 import { CradleMaker } from '@/constants.ts'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  branching(name, cradleMaker)
-  backchats(name, cradleMaker)
-  longthread(name, cradleMaker)
-  splices(name, cradleMaker)
-  focus(name, cradleMaker)
-  git(name, cradleMaker)
-  tpsReports(name, cradleMaker)
-  isolates(name, cradleMaker)
-  benchmarks(name, cradleMaker)
+export default (cradleMaker: CradleMaker) => {
+  branching(cradleMaker)
+  backchats(cradleMaker)
+  longthread(cradleMaker)
+  splices(cradleMaker)
+  focus(cradleMaker)
+  git(cradleMaker)
+  tpsReports(cradleMaker)
+  isolates(cradleMaker)
+  benchmarks(cradleMaker)
 }

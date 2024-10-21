@@ -1,6 +1,5 @@
 import { assert, Debug, equal } from '@utils'
 import {
-  Agent,
   CompletionMessage,
   getThreadPath,
   type IA,
@@ -173,7 +172,6 @@ const loop = async (
   path: string,
   api: IA,
   stopOnTools: string[],
-  overrides?: Partial<Agent>,
 ) => {
   const threadPath = getThreadPath(api.pid)
   const { complete } = await api.actions<completions.Api>('ai-completions')
@@ -184,12 +182,12 @@ const loop = async (
   let workingStops = stopOnTools
 
   while (!await isDone(threadPath, api, workingStops) && count++ < HARD_STOP) {
-    await complete({ path, overrides })
+    await complete({ path })
     if (await isDone(threadPath, api)) {
       break
     }
     // TODO check tool returns are checked against returns schema
-    await executeTools(threadPath, api, workingStops, overrides)
+    await executeTools(threadPath, api, workingStops)
     path = await readSwitchedPath(threadPath, api)
     workingStops = withConditions(stopOnTools, path)
   }

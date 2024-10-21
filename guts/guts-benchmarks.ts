@@ -5,11 +5,12 @@ import 'benchmark' // load these modules into cache for ghactions
 import { Api } from '@/isolates/io-fixture.ts'
 import * as files from '@/isolates/files.ts'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':benchmarks: '
+export default (cradleMaker: CradleMaker) => {
+  const prefix = 'benchmarks: '
 
   Deno.test(prefix + 'resource hogging', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'benchmark/serial'
     const { pid: target } = await backchat.init({ repo })
     const { local } = await backchat.actions<Api>('io-fixture', { target })
@@ -30,10 +31,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
       // TODO get historical splices and confirm depth of actions
     })
     await backchat.rm({ repo })
-    await engine.stop()
   })
   Deno.test(prefix + 'resource hogging parallel', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'benchmark/parallel'
 
     const { pid: target } = await backchat.init({ repo })
@@ -70,10 +71,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
       // TODO verify there are no child branches of target remaining
     })
     await backchat.rm({ repo })
-    await engine.stop()
   })
   Deno.test.ignore(prefix + 'flare', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'benchmark/flare'
     await backchat.rm({ repo })
     const target = {
@@ -113,10 +114,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
         }
       }
     })
-    await engine.stop()
   })
   Deno.test.ignore(prefix + 'records', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'benchmark/records'
     await backchat.rm({ repo })
     const { pid: target } = await backchat.init({ repo })
@@ -146,8 +147,6 @@ export default (name: string, cradleMaker: CradleMaker) => {
       log('contents', result)
       expect(result).toEqual(content)
     })
-
-    await engine.stop()
 
     // then time how long it takes to write text to those files both at
     // creation, and also afterwards.

@@ -6,7 +6,8 @@ import * as backchat from './isolates/backchat.ts'
 import { getBaseName } from '@/constants.ts'
 
 Deno.test('cradle', async (t) => {
-  const { backchat, engine, privateKey } = await cradleMaker()
+  await using cradle = await cradleMaker(t, import.meta.url)
+  const { engine, privateKey, backchat } = cradle
   await t.step('basic', async () => {
     const result = await backchat.ping({ data: 'hello' })
     expect(result).toBe('hello')
@@ -36,11 +37,10 @@ Deno.test('cradle', async (t) => {
     expect(getBaseName(thirdBase)).toEqual(threadId)
     expect(secondBase).not.toEqual(thirdBase)
   })
-  await engine.stop()
 
   // test intercepting backchat text
 })
 
-guts('Direct', cradleMaker)
+guts(cradleMaker)
 
-// confirm cannot delete the system chain
+// TODO confirm cannot delete the system chain

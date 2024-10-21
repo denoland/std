@@ -32,7 +32,7 @@ jobs:
           submodules: true
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
@@ -47,6 +47,8 @@ jobs:
       - name: Check typos
         if: matrix.os == 'ubuntu-latest'
         uses: crate-ci/typos@master
+        with: 
+          config: ./.github/typos.toml
 
       - name: Check formatting, linting, and types
         run: deno task check

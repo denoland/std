@@ -4,19 +4,18 @@ import { assert, Debug, equal, posix } from '@utils'
 import {
   Change,
   ENTRY_BRANCH,
-  hash,
   IO_PATH,
   isBaseRepo,
   PartialPID,
   PID,
   print,
+  randomness,
   sha1,
   type TreeEntry,
 } from '@/constants.ts'
 import git, { Errors, type MergeDriverCallback } from '$git'
 import type DB from '@/db.ts'
 import { GitKV } from './gitkv.ts'
-import { ulid } from 'ulid'
 const log = Debug('git:fs')
 const dir = '/'
 
@@ -297,8 +296,19 @@ export default class FS {
     path = refine(path)
     const oid = this.#internalOid
     const filepath = path === '.' ? undefined : path
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
-    return tree
+    try {
+      const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+      return tree
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        // remove the git commit hash from the error so it is repeatable
+        throw new Errors.NotFoundError(path)
+      }
+      throw error
+    }
   }
   delete(path: string) {
     path = refine(path)
@@ -356,31 +366,43 @@ export default class FS {
         return upsert.data
       } else {
         const { oid } = upsert
-        const { blob } = await git.readBlob({ ...this.#git, oid })
+        const { blob } = await this.#safeReadBlob({ oid })
         return blob
       }
     }
     const { blob } = await this.#readBlob(path)
     return blob
   }
-  async #readBlob(path: string, commit?: string) {
-    const oid = commit || this.#internalOid
-    const { blob, oid: blobOid } = await git.readBlob({
-      ...this.#git,
-      oid,
-      filepath: path,
+  async #readBlob(filepath: string, commit?: string) {
+    const { blob, oid } = await this.#safeReadBlob({
+      oid: commit || this.#internalOid,
+      filepath,
     })
     assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
-    return { blob, oid: blobOid }
+    return { blob, oid }
   }
+  async #safeReadBlob(params: { oid: string; filepath?: string }) {
+    try {
+      const { oid, filepath } = params
+      return await git.readBlob({ ...this.#git, oid, filepath })
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        throw new Errors.NotFoundError(params.filepath || '.')
+      }
+      throw error
+    }
+  }
+
   async ls(path: string = '.') {
     path = refine(path)
     // TODO make a streaming version of this for very large dirs
     // TODO handle changes in the directory like deletes and upserts
     log('ls', path)
-    const oid = this.#internalOid
     const filepath = path === '.' ? undefined : path
-    const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+    const tree = await this.readTree(filepath)
 
     tree.sort((a, b) => {
       if (a.type === 'tree' && b.type === 'blob') {
@@ -653,7 +675,7 @@ const refine = (path: string) => {
 
 const generateFakeRepoId = () => {
   // TODO make this genuine based on the genesis commit
-  return `rep_${hash(ulid())}`
+  return `rep_${randomness()}`
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {

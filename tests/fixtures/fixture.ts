@@ -1,5 +1,5 @@
 import { cradleMaker } from '@/cradle-maker.ts'
-import { getRoot, Provisioner } from '@/constants.ts'
+import { type CradleMaker, getRoot, Provisioner } from '@/constants.ts'
 
 export const actorId = 'testerActorId'
 
@@ -53,6 +53,10 @@ const init: Provisioner = async (backchat) => {
   promises.push(backchat.write(routerPath, router, target))
   promises.push(backchat.write(reasonerPath, reasoner, target), target)
 
+  // seems to overload the atomic mutations limit if all at once
+  await Promise.all(promises)
+  promises.length = 0
+
   promises.push(backchat.write(firstTestPath, firstTest, target))
   promises.push(backchat.write(secondTestPath, secondTest, target))
   promises.push(backchat.write(meetingTestPath, meetingTest, target))
@@ -64,8 +68,12 @@ const init: Provisioner = async (backchat) => {
   await Promise.all(promises)
 }
 
-export const fixture = async () => {
-  const { backchat, engine } = await cradleMaker(init)
-
-  return { backchat, engine }
+export const fixture: CradleMaker = async (
+  t: Deno.TestContext,
+  url: string,
+  update?: 'updateSnapshots',
+) => {
+  return await cradleMaker(t, url, update, init)
 }
+
+// Ideally we would get rid of HAL and just have napps.

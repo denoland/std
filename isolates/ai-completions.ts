@@ -1,3 +1,4 @@
+import { mockCreator } from './utils/mocker.ts'
 import { assert, Debug } from '@utils'
 import { base64 } from '@scure/base'
 import '@std/dotenv/load' // load .env variables
@@ -5,15 +6,16 @@ import OpenAI from 'openai'
 import { decode, Image } from 'imagescript'
 import {
   Agent,
-  agentSchema,
   AssistantMessage,
   ChatParams,
+  chatParams,
   CompletionMessage,
   Functions,
   getThreadPath,
   type IA,
   messageStatsSchema,
   print,
+  printPlain,
   Returns,
   Thread,
   ToApiType,
@@ -21,6 +23,8 @@ import {
 import { loadTools } from './utils/ai-load-tools.ts'
 import { loadAgent } from './utils/load-agent.ts'
 import { z } from 'zod'
+import { assistantMessage } from '@/api/zod.ts'
+import { expect } from '@std/expect/expect'
 
 const log = Debug('AI:completions')
 
@@ -42,16 +46,13 @@ export const transcribe = async (file: File) => {
 }
 
 export const parameters = {
-  /** Complete the thread with the given agent, using the optional overrides on
-   * the agent */
+  /** Complete the thread with the given agent */
   complete: z.object({
     path: z.string(),
-    overrides: agentSchema.partial().optional(),
   }),
   /** Gives slightly quicker feedback to users when waiting for completions */
   completionEffect: z.object({
     path: z.string(),
-    overrides: agentSchema.partial().optional(),
   }),
   image: z.object({
     path: z.string().regex(/\.jpg$/, {
@@ -88,7 +89,7 @@ export const returns: Returns<typeof parameters> = {
 export type Api = ToApiType<typeof parameters, typeof returns>
 
 export const functions: Functions<Api> = {
-  async complete({ path, overrides = {} }, api) {
+  async complete({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
@@ -98,13 +99,13 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
 
     const { completionEffect } = await api.actions<Api>('ai-completions')
-    await completionEffect({ path, overrides })
+    await completionEffect({ path })
   },
-  async completionEffect({ path, overrides }, api) {
+  async completionEffect({ path }, api) {
     const threadPath = getThreadPath(api.pid)
     log('completing thread %o', threadPath, print(api.pid))
 
-    const agent = await loadAgent(path, api, overrides)
+    const agent = await loadAgent(path, api)
 
     const thread = await api.readThread(threadPath)
     const last = thread.messages.pop()
@@ -121,23 +122,16 @@ export const functions: Functions<Api> = {
     api.writeJSON(threadPath, thread)
     log('completion complete', assistant.tool_calls?.[0], assistant.content)
   },
-  async image({ path, prompt, lowQuality, size, style }, api) {
-    const { data, response } = await ai.images
-      .generate({
-        prompt,
-        model: 'dall-e-3',
-        quality: lowQuality ? 'standard' : 'hd',
-        response_format: 'b64_json',
-        size,
-        style,
-      }).withResponse()
+  async image(params, api) {
+    const { path } = params
+    const { data, response } = await image(params, api)
     log('headers', response.statusText)
     const { b64_json, revised_prompt } = data.data[0]
     if (!b64_json) {
       throw new Error('no image data')
     }
     const imageData = base64.decode(b64_json)
-    log('length', imageData.length)
+    log('image length', imageData.length)
 
     const png = await decode(imageData)
     assert(png instanceof Image, 'image must be an instance of Image')
@@ -149,13 +143,72 @@ export const functions: Functions<Api> = {
   },
 }
 
-const complete = async (
+export const image = async (
+  params: z.infer<typeof parameters['image']>,
+  api: IA,
+) => {
+  const { prompt, lowQuality, size, style } = params
+  const id = printPlain(api.pid)
+  const recording = imageMock.next(id)
+  if (recording) {
+    expect(recording.request).toEqual(params)
+    return recording.reply as {
+      data: OpenAI.Images.ImagesResponse
+      response: Response
+    }
+  }
+
+  const { data, response } = await ai.images
+    .generate({
+      prompt,
+      model: 'dall-e-3',
+      quality: lowQuality ? 'standard' : 'hd',
+      response_format: 'b64_json',
+      size,
+      style,
+    }).withResponse()
+
+  const squeezed = squeezeMockData(data)
+  imageMock.store(id, { request: params, reply: { data: squeezed, response } })
+  return { data, response }
+}
+
+const imageReplySchema = z.object({
+  data: z.unknown(),
+  response: z.unknown(),
+})
+const imagePairSchema = z.object({
+  request: parameters['image'],
+  reply: imageReplySchema,
+})
+
+const imageMock = mockCreator(imagePairSchema)
+image.mock = imageMock
+
+const completionsReplySchema = z.object({
+  assistant: assistantMessage,
+  stats: messageStatsSchema,
+})
+
+const completionsPairSchema = z.object({
+  request: chatParams,
+  reply: completionsReplySchema,
+})
+
+export const complete = async (
   agent: Agent,
   messages: Thread['messages'],
   api: IA,
 ) => {
   const tools = await loadTools(agent, api)
   const args = getChatParams(agent, messages, tools)
+
+  const id = printPlain(api.pid)
+  const recording = completionsMock.next(id)
+  if (recording) {
+    expect(recording.request).toEqual(args)
+    return recording.reply
+  }
 
   log('completion started with model: %o', args.model, print(api.pid))
   let retries = 0
@@ -170,13 +223,13 @@ const complete = async (
       const openAiProcessingMs = raw.headers.get('openai-processing-ms')
       const { created, model, system_fingerprint, usage } = completion
 
-      const result = completion.choices[0].message
-      log('completion complete', agent.source.path, result)
+      const { message } = completion.choices[0]
+      log('completion complete', agent.source.path, message)
       const assistant: AssistantMessage = {
-        ...result,
+        ...message,
         name: agent.source.path,
       }
-      return {
+      const reply = {
         assistant,
         stats: messageStatsSchema.parse({
           created,
@@ -187,6 +240,9 @@ const complete = async (
           openAiProcessingMs: openAiProcessingMs ? +openAiProcessingMs : 0,
         }),
       }
+      completionsMock.store(id, { request: args, reply })
+
+      return reply
     } catch (error) {
       console.error('ai completion error', error)
       if (error instanceof Error) {
@@ -196,6 +252,8 @@ const complete = async (
   }
   throw new Error(`Failed after ${retries} attempts: ${errorMessage}`)
 }
+const completionsMock = mockCreator(completionsPairSchema)
+complete.mock = completionsMock
 
 export const getChatParams = (
   agent: Agent,
@@ -214,7 +272,7 @@ export const getChatParams = (
   messages = [...messages]
   const sysprompt: CompletionMessage = {
     role: 'system',
-    content: agent.instructions + '\n\n' + additionInstructions(),
+    content: agent.instructions,
     name: agent.source.path,
   }
   if (agent.instructions || agent.commands.length || agent.napps.length) {
@@ -222,7 +280,7 @@ export const getChatParams = (
   }
   messages = messages.map(safeAssistantName)
 
-  const args: ChatParams = {
+  let args: ChatParams = {
     model,
     temperature,
     messages,
@@ -232,6 +290,9 @@ export const getChatParams = (
     presence_penalty,
     parallel_tool_calls: tools.length ? parallel_tool_calls : undefined,
   }
+  args = Object.fromEntries(
+    Object.entries(args).filter(([_, value]) => value !== undefined),
+  ) as ChatParams
   return args
 }
 export const safeAssistantName = (message: CompletionMessage) => {
@@ -247,6 +308,14 @@ export const safeAssistantName = (message: CompletionMessage) => {
   return message
 }
 
-const additionInstructions = () => {
-  return 'The time is: ' + new Date().toISOString()
+const squeezeMockData = (result: OpenAI.Images.ImagesResponse) => {
+  const fake =
+    'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAABQUlEQVR4nAE2Acn+AFWFasx5BD3kQfuYK9zNJJXzR81JXGsdYwxOP/ggyAQC+dlbzrmdUZ+Xgo9sBhbNytzXE2IPfxblFuNZ9vYCD9Qw+7UUN/xCErc8I0gk21S+uCU4EX33VN1CFz5pAHaODSC/a8ZsheMYxX37BIOoMcfnpS8k6KwY7zE9VgKU4CsTmvjyE8lur1yLUAo7SKUu07rY8zYwmNASNh0CvvWpIaH1bs1V01RZE2se73fmxRfts48N4bf03otfBDHQ3j52DzyUBguaBfEcXnDOsBuN6HeYeMbrXRzVtADOYHNpl5tMMNBP2PSqx3YI7MFiBfb2wXFXAxH0JSsA1ZsAv2N5fzoy1PrKBJ8201yyqOsPZKnyqJ10ME7oAfSuLGJaACH+38rm67hvIcxsB99FWZb3Ah6CMO1CEnIBlb6tLzIdAAAAAElFTkSuQmCC'
+
+  assert(result.data.length, 'data length must be 1')
+  const { b64_json: _, ...rest } = result.data[0]
+  return {
+    ...result,
+    data: [{ b64_json: fake, ...rest }],
+  }
 }

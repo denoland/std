@@ -403,24 +403,25 @@ export default class IOChannel {
   }
 }
 
-// const parsedMap = new WeakMap()
+const parsedMap = new WeakMap()
 
 const check = (io: IoStruct, thisPid: PID) => {
   // TODO move this to zod schema with refine
   // TODO check key sequences are sane
   // TODO do the same for reply values
-  // if (!parsedMap.has(io)) {
-  // can use weakmap since at runtime, the object is typesafe, so can mutate
-  ioStruct.parse(io)
-  // const isParsed = true
-  // parsedMap.set(io, isParsed)
-  // }
+  if (!parsedMap.has(io)) {
+    // can use weakmap since at runtime, the object is typesafe, so can mutate
+    ioStruct.parse(io)
+    const isParsed = true
+    parsedMap.set(io, isParsed)
+  }
 
   for (const replyKey of Object.keys(io.replies)) {
     assert(replyKey in io.requests, 'no reply key in requests')
   }
   for (const request of Object.values(io.requests)) {
     if (!equal(request.target, thisPid)) {
+      // TODO if move PID to be internal, then can cache better
       assert(!isPierceRequest(request), 'target pid mismatch - pierce')
       assert(equal(request.source, thisPid), 'target pid mismatch - acc')
     }

@@ -2,7 +2,6 @@ import {
   backchatIdRegex,
   backchatStateSchema,
   Functions,
-  generateThreadId,
   getActorId,
   getActorPid,
   getThreadPath,
@@ -18,6 +17,7 @@ import * as actor from '@/api/isolates/actor.ts'
 import { assert, Debug, equal } from '@utils'
 import * as longthread from './longthread.ts'
 import { z } from 'zod'
+import { fixedRandomness } from '@/api/randomness.ts'
 const log = Debug('AI:backchat')
 
 export const parameters = {
@@ -65,14 +65,21 @@ export const functions: Functions<Api> = {
   newThreadSignal: () => null,
   newThread: async (_, api) => {
     log('newThread', print(api.pid))
-    const threadId = generateThreadId(api.commit + 'backchat:newThread')
+    // TODO generate randomness each execution with incrementation
+    const { threadCount } = await api.state(backchatStateSchema, {
+      threadCount: 0,
+      target: api.pid,
+    })
+
+    const backchatId = getBackchatId(api)
+    const threadId = generateThreadId(threadCount, backchatId)
 
     const target = getActorPid(api.pid)
     const { thread } = await api.actions<actor.Api>('actor', { target })
     const pid = await thread({ threadId })
     log('thread started:', print(pid))
-    await api.updateState((state) => {
-      return { ...state, target: pid }
+    await api.updateState(() => {
+      return { target: pid, threadCount: threadCount + 1 }
     }, backchatStateSchema)
     return threadId
   },
@@ -91,7 +98,10 @@ export const functions: Functions<Api> = {
     assertBackchatThread(api)
     log('changeRemote', print(remote))
 
-    const { target } = await api.state(backchatStateSchema)
+    const { target } = await api.state(backchatStateSchema, {
+      threadCount: 0,
+      target: api.pid,
+    })
     if (equal(target, remote)) {
       throw new Error('Remote is same as current target')
     }
@@ -109,7 +119,10 @@ export const functions: Functions<Api> = {
     assertBackchatThread(api)
 
     if (!target) {
-      const state = await api.state(backchatStateSchema)
+      const state = await api.state(backchatStateSchema, {
+        threadCount: 0,
+        target: api.pid,
+      })
       target = state.target
     }
 
@@ -140,3 +153,27 @@ const getBackchatId = (api: IA) => {
   assert(backchatIdRegex.test(backchatId), 'Invalid backchat id')
   return backchatId
 }
+
+const generateThreadId = (count: number, backchatId: string) => {
+  return 'the_' + fixedRandomness(backchatId + '_' + count)
+}
+
+// setting the ID from the state is the only way to generate a deterministic id
+
+// unless we require the caller to supply it, otherwise it will come out
+// different each time.
+
+// or we could use the branch prefix method to just count updwards, however this
+// makes the numbers look noisy, since the gap.
+
+// RNG is actually in the state / io for any given execution, and has the same
+// problem as the state, to make sure it is always current for the given
+// snapshot in the fs
+
+// this can be the same kind of storage as what commits were observed by the
+// system when running reads for remote systems, and listing branches.
+
+// sampling the date would be the same, as we would set the start time of the
+// commit at commencement of the execution, and then increment it units of 10ms
+// as we go along, so that upon replay, we should get the same results ?
+// or, at the start, just make it return the same result every time.

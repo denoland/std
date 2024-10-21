@@ -2,7 +2,7 @@ import IA from './isolate-api.ts'
 export type { IA }
 export const IO_PATH = '.io.json'
 import {
-  Backchat,
+  type Backchat,
   Change,
   CommitObject,
   EngineInterface,
@@ -223,8 +223,19 @@ export const isBaseRepo = (pid: PID) => pid.branches.length === 1
 export type Provisioner = (superBackchat: Backchat) => Promise<void>
 
 export type CradleMaker = (
+  t: Deno.TestContext,
+  /** The file url that the snapshots are associated with */
+  snapshotsFor: string,
+  updateSnapshots?: 'updateSnapshots',
   init?: Provisioner,
-) => Promise<{ backchat: Backchat; engine: EngineInterface }>
+) => Promise<
+  {
+    backchat: Backchat
+    engine: EngineInterface
+    privateKey: string
+    [Symbol.asyncDispose](): Promise<void>
+  }
+>
 
 export const toApi = (parameters: Record<string, ZodSchema>) => {
   const api: Record<keyof typeof parameters, JsonSchema7ObjectType> = {}

@@ -3,10 +3,12 @@ import { addBranches, CradleMaker } from '@/constants.ts'
 import { Api } from '@/isolates/session.ts'
 import { Api as IoApi } from '@/isolates/io-fixture.ts'
 
-export default (name: string, cradleMaker: CradleMaker) => {
-  const prefix = name + ':branching: '
+export default (cradleMaker: CradleMaker) => {
+  const prefix = 'branching: '
   Deno.test(prefix + 'session', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
+
     const repo = 'process/session'
 
     const { pid } = await backchat.init({ repo })
@@ -31,10 +33,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const result = await local({})
       expect(result).toEqual('local reply')
     })
-    await engine.stop()
   })
-  Deno.test(prefix + 'internal requests', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+  Deno.test(prefix + 'branch with ping', async (t) => {
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'process/session'
 
     const { pid } = await backchat.init({ repo })
@@ -45,11 +47,10 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const result = await branch({})
       expect(result).toEqual('remote pong')
     })
-
-    await engine.stop()
   })
   Deno.test(prefix + 'larger than 65k messages', async (t) => {
-    const { backchat, engine } = await cradleMaker()
+    await using cradle = await cradleMaker(t, import.meta.url)
+    const { backchat } = cradle
     const repo = 'process/session'
 
     const { pid } = await backchat.init({ repo })
@@ -63,7 +64,5 @@ export default (name: string, cradleMaker: CradleMaker) => {
       const result = await branch({ data })
       expect(result).toEqual(data)
     })
-
-    await engine.stop()
   })
 }

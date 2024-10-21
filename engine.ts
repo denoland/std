@@ -19,7 +19,7 @@ import {
 } from './constants.ts'
 import * as actor from './api/isolates/actor.ts'
 import IA from './isolate-api.ts'
-import { assert, Debug, delay, posix } from '@utils'
+import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
 import { ulid } from 'ulid'
@@ -121,9 +121,9 @@ export class Engine implements EngineInterface {
   }
   async #createActor(machineId: string) {
     Crypto.assert(machineId)
-    const actorId = generateActorId(ulid())
+    const actorId = generateActorId()
     const actor = addBranches(this.homeAddress, actorId)
-    const backchatId = generateBackchatId(ulid())
+    const backchatId = generateBackchatId()
     const backchat = addBranches(actor, backchatId)
 
     const target = this.homeAddress
@@ -135,11 +135,14 @@ export class Engine implements EngineInterface {
   }
   async #createBackchat(target: PID) {
     // TODO assert is actor PID
+    // TODO this should really be done by the actor
+    // so the request should include a pierce to create a new one in case the
+    // resume doesn't work, since SU takes time
     const su = this.superUser()
     const { backchat } = await su.actions<actor.Api>('actor', {
       target,
     })
-    const backchatId = generateBackchatId(ulid())
+    const backchatId = generateBackchatId()
     const pid = await backchat({ backchatId })
     return freezePid(pid)
   }
@@ -180,7 +183,8 @@ export class Engine implements EngineInterface {
   async stop() {
     this.#abort.abort()
     await this.#compartment.unmount(this.#api)
-    await delay(0) // attempt to let the subtle digest call clean up
+    // attempt to let the subtle digest call clean up
+    await new Promise<void>((resolve) => setTimeout(() => resolve()))
   }
   async #initHome() {
     // queue processing cannot begin without a home repo
