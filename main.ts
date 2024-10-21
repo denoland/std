@@ -29,9 +29,10 @@ const opts: { cert?: string; key?: string; hostname?: string; port?: number } =
 if (isKvTestMode()) {
   opts.cert = Deno.readTextFileSync('tests/ssl/cert.pem')
   opts.key = Deno.readTextFileSync('tests/ssl/key.pem')
-  opts.hostname = 'localhost'
-  opts.port = 8000
+  opts.hostname = '127.0.0.1'
+  opts.port = 9000
   console.log('loading test ssl certs')
 }
 
 Deno.serve(opts, server.fetch)
+
