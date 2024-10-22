@@ -8,7 +8,8 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
 
-const isWindows = Deno.build.os === "windows";
+// deno-lint-ignore no-explicit-any
+const isWindows = (globalThis as any).Deno?.build.os === "windows";
 
 /** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
