@@ -39,6 +39,13 @@ Deno.test("expect.assertions() API", () => {
     expect("a").toBe("a");
   });
 
+  // FIXME(eryue0220): This test should through `toThrowErrorMatchingSnapshot`
+  test("should throw error", () => {
+    expect.assertions(1);
+    expect("a").not.toBe("b");
+    expect("a").toBe("a");
+  });
+
   it("redeclare different assertion count", () => {
     expect.assertions(3);
     expect("a").not.toBe("b");

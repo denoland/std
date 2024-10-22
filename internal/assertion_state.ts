@@ -190,7 +190,7 @@ export class AssertionState {
    */
   checkAssertionCountSatisfied(): boolean {
     return this.#state.assertionCount !== undefined &&
-      this.#state.assertionCount > this.#state.assertionTriggeredCount;
+      this.#state.assertionCount !== this.#state.assertionTriggeredCount;
   }
 }
 
