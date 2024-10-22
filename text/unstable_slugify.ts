@@ -86,7 +86,7 @@ export const NON_ASCII = /[^0-9a-zA-Z\-]/g;
  * ```
  *
  * @example With transliteration using a third-party library
- * ```ts no-eval
+ * ```ts no-eval no-assert
  * import { NON_ASCII, slugify } from "@std/text/unstable-slugify";
  * // example third-party transliteration library
  * import transliterate from "npm:any-ascii";
