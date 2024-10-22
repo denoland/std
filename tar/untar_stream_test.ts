@@ -1,12 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { concat } from "../bytes/mod.ts";
+
+import { assertEquals, assertRejects } from "@std/assert";
+import { toBytes } from "@std/streams/unstable-to-bytes";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
 import {
   type OldStyleFormat,
   type PosixUstarFormat,
   UntarStream,
 } from "./untar_stream.ts";
-import { assertEquals, assertRejects } from "../assert/mod.ts";
 
 Deno.test("expandTarArchiveCheckingHeaders", async () => {
   const text = new TextEncoder().encode("Hello World!");
@@ -39,9 +40,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
     .pipeThrough(new UntarStream());
 
   const headers: (OldStyleFormat | PosixUstarFormat)[] = [];
-  for await (const item of readable) {
-    headers.push(item.header);
-    await item.readable?.cancel();
+  for await (const entry of readable) {
+    headers.push(entry.header);
+    await entry.readable?.cancel();
   }
   assertEquals(headers, [{
     name: "./potato",
@@ -98,9 +99,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
 
   let buffer = new Uint8Array();
   for await (const item of readable) {
-    if (item.readable) {
-      buffer = concat(await Array.fromAsync(item.readable));
-    }
+    if (item.readable) buffer = await toBytes(item.readable);
   }
   assertEquals(buffer, text);
 });
@@ -125,59 +124,47 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
 
   let buffer = new Uint8Array();
   for await (const entry of readable) {
-    if (entry.readable) {
-      buffer = concat(await Array.fromAsync(entry.readable));
-    }
+    if (entry.readable) buffer = await toBytes(entry.readable);
   }
   assertEquals(buffer, data);
 });
 
 Deno.test("UntarStream() with invalid size", async () => {
-  const readable = ReadableStream.from<TarStreamInput>([
-    {
-      type: "file",
-      path: "newFile.txt",
-      size: 512,
-      readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
-    },
-  ])
-    .pipeThrough(new TarStream())
-    .pipeThrough(
-      new TransformStream<Uint8Array, Uint8Array>({
-        flush(controller) {
-          controller.enqueue(new Uint8Array(100));
-        },
-      }),
-    )
+  const bytes = (await toBytes(
+    ReadableStream.from<TarStreamInput>([
+      {
+        type: "file",
+        path: "newFile.txt",
+        size: 512,
+        readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
+      },
+    ])
+      .pipeThrough(new TarStream()),
+  )).slice(0, -100);
+
+  const readable = ReadableStream.from([bytes])
     .pipeThrough(new UntarStream());
 
   await assertRejects(
     async () => {
-      for await (const entry of readable) {
-        if (entry.readable) {
-          // deno-lint-ignore no-empty
-          for await (const _ of entry.readable) {}
-        }
-      }
+      for await (const entry of readable) await entry.readable?.cancel();
     },
     RangeError,
-    "Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (100)",
+    "Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (412)",
   );
 });
 
 Deno.test("UntarStream() with invalid ending", async () => {
-  const tarBytes = concat(
-    await Array.fromAsync(
-      ReadableStream.from<TarStreamInput>([
-        {
-          type: "file",
-          path: "newFile.txt",
-          size: 512,
-          readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
-        },
-      ])
-        .pipeThrough(new TarStream()),
-    ),
+  const tarBytes = await toBytes(
+    ReadableStream.from<TarStreamInput>([
+      {
+        type: "file",
+        path: "newFile.txt",
+        size: 512,
+        readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
+      },
+    ])
+      .pipeThrough(new TarStream()),
   );
   tarBytes[tarBytes.length - 1] = 1;
 
@@ -186,12 +173,7 @@ Deno.test("UntarStream() with invalid ending", async () => {
 
   await assertRejects(
     async () => {
-      for await (const entry of readable) {
-        if (entry.readable) {
-          // deno-lint-ignore no-empty
-          for await (const _ of entry.readable) {}
-        }
-      }
+      for await (const entry of readable) await entry.readable?.cancel();
     },
     TypeError,
     "Cannot extract the tar archive: The tarball has invalid ending",
@@ -204,12 +186,7 @@ Deno.test("UntarStream() with too small size", async () => {
 
   await assertRejects(
     async () => {
-      for await (const entry of readable) {
-        if (entry.readable) {
-          // deno-lint-ignore no-empty
-          for await (const _ of entry.readable) {}
-        }
-      }
+      for await (const entry of readable) await entry.readable?.cancel();
     },
     RangeError,
     "Cannot extract the tar archive: The tarball is too small to be valid",
@@ -217,18 +194,16 @@ Deno.test("UntarStream() with too small size", async () => {
 });
 
 Deno.test("UntarStream() with invalid checksum", async () => {
-  const tarBytes = concat(
-    await Array.fromAsync(
-      ReadableStream.from<TarStreamInput>([
-        {
-          type: "file",
-          path: "newFile.txt",
-          size: 512,
-          readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
-        },
-      ])
-        .pipeThrough(new TarStream()),
-    ),
+  const tarBytes = await toBytes(
+    ReadableStream.from<TarStreamInput>([
+      {
+        type: "file",
+        path: "newFile.txt",
+        size: 512,
+        readable: ReadableStream.from([new Uint8Array(512).fill(97)]),
+      },
+    ])
+      .pipeThrough(new TarStream()),
   );
   tarBytes[148] = 97;
 
@@ -237,14 +212,32 @@ Deno.test("UntarStream() with invalid checksum", async () => {
 
   await assertRejects(
     async () => {
-      for await (const entry of readable) {
-        if (entry.readable) {
-          // deno-lint-ignore no-empty
-          for await (const _ of entry.readable) {}
-        }
-      }
+      for await (const entry of readable) await entry.readable?.cancel();
     },
     Error,
     "Cannot extract the tar archive: An archive entry has invalid header checksum",
   );
+});
+
+Deno.test("UntarStream() with extra bytes", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "directory",
+      path: "a",
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(
+      new TransformStream({
+        flush(controller) {
+          controller.enqueue(new Uint8Array(512 * 2).fill(1));
+        },
+      }),
+    )
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.path, "a");
+    entry.readable?.cancel();
+  }
 });

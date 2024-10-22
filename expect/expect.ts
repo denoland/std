@@ -185,8 +185,8 @@ export function expect<T extends Expected = Expected>(
 
       const extendMatchers: Matchers = getExtendMatchers();
       const allMatchers = {
-        ...extendMatchers,
         ...matchers,
+        ...extendMatchers,
       };
       const matcher = allMatchers[name as MatcherKey] as Matcher;
       if (!matcher) {
@@ -533,3 +533,22 @@ expect.hasAssertions = hasAssertions as () => void;
  * ```
  */
 expect.assertions = assertions as (num: number) => void;
+
+/**
+ * `expect.objectContaining(object)` matches any received object that recursively matches the expected properties.
+ * That is, the expected object is not a subset of the received object. Therefore, it matches a received object
+ * which contains properties that are not in the expected object.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   expect({ bar: 'baz' }).toEqual(expect.objectContaining({ bar: 'bar'}));
+ *   expect({ bar: 'baz' }).not.toEqual(expect.objectContaining({ foo: 'bar'}));
+ * });
+ * ```
+ */
+expect.objectContaining = asymmetricMatchers.objectContaining as (
+  obj: Record<string, unknown>,
+) => ReturnType<typeof asymmetricMatchers.objectContaining>;

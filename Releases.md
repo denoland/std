@@ -1,3 +1,156 @@
+### 2024.10.10a
+
+#### @std/cbor 0.1.1 (patch)
+
+- fix(cbor): fix module specifier in import (#6099)
+
+### 2024.10.10
+
+#### @std/async 1.0.6 (patch)
+
+- feat(async/unstable): accept iterator varargs in `MuxAsyncIterator` (#6087)
+- chore(async/unstable): fix typo (#6096)
+
+#### @std/cbor 0.1.0 (minor)
+
+- feat(cbor/unstable): introduce `@std/cbor` (#5909)
+
+#### @std/collections 1.0.8 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `takeLastWhile()`
+  (#6090)
+- feat(collections/unstable): support `Iterable` argument in `dropWhile()`
+  (#6088)
+- feat(collections/unstable): support `Iterable` argument in `intersect()`
+  (#6036)
+- feat(collections/unstable): support `Iterable` argument in `dropLastWhile()`
+  (#6076)
+- test(collections): add tests for `filterInPlace()` util (#6089)
+
+#### @std/expect 1.0.5 (patch)
+
+- fix(expect): register extended matchers after native matchers (#6075)
+
+#### @std/http 1.0.8 (patch)
+
+- docs(http/unstable): add example for multiple request methods on route (#6045)
+
+#### @std/io 0.225.0 (minor)
+
+- BREAKING(io): remove `StringReader` (#6062)
+- BREAKING(io): remove `StringWriter` (#6061)
+- BREAKING(io): remove `MultiReader` (#6059)
+- BREAKING(io): remove `LimitedReader` (#6058)
+- BREAKING(io): remove `readDelim()` (#6052)
+- BREAKING(io): remove `BufWriter` (#6057)
+- BREAKING(io): remove `BufReader` (#6056)
+- BREAKING(io): remove `readShort()` (#6050)
+- BREAKING(io): remove `readInt()` (#6048)
+- BREAKING(io): remove `readLong()` (#6047)
+- BREAKING(io/unstable): remove `readStringDelim()` (#6001)
+- BREAKING(io): remove `readRange[Sync]()` (#6049)
+- BREAKING(io/unstable): remove `sliceLongToBytes()` (#6005)
+- BREAKING(io/unstable): remove `copyN()` (#5999)
+- BREAKING(io): remove `readLines()` (#5991)
+
+#### @std/log 0.224.9 (patch)
+
+- fix(log): remove leaky `Logger.prototype.asString()` method (#6082)
+- fix(log): remove leaky `ConsoleHandler.prototype.applyColors()` (#6072)
+- fix(log): ensure consistent behavior with `@std/log` (#5974)
+- docs(log): document `getLogger()` and `Logger` (#6084)
+- docs(log): document `ConsoleHandler` (#6071)
+- docs(log): document `formatters` module (#6073)
+- docs(log): correct the examples of `debug()` (#6077)
+- docs(log): document `BaseHandler` (#6067)
+- docs(log): document pass-through functions (#6066)
+
+#### @std/streams 1.0.7 (patch)
+
+- feat(streams/unstable): `toByteStream()` (#6046)
+
+#### @std/tar 0.1.2 (patch)
+
+- fix(tar): ignore non-tar file portion of a stream in `UntarStream` (#6064)
+
+### 2024.09.24
+
+#### @std/archive 0.225.4 (patch)
+
+- deprecation(archive/unstable): deprecate `@std/archive` (#5988)
+- docs(archive): clarify deprecation notices (#6034)
+- docs(archive): update `@std/archive` deprecation notices (#6028)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/assert 1.0.6 (patch)
+
+- fix(assert): accept abstract classes (#5978)
+
+#### @std/collections 1.0.7 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `sample()` (#6035)
+- feat(collections/unstable): support Iterable argument in `withoutAll()`
+  (#6031)
+- feat(collections/unstable): `Iterable` argument in `chunk()` (#5925)
+- feat(collections/unstable): support iterators in `sortBy()` (#5919)
+- feat(collections/unstable): support `Iterable` argument in `takeWhile()`
+  (#5911)
+
+#### @std/expect 1.0.4 (patch)
+
+- fix(expect): support `expect.hasAssertions()` (#5901)
+
+#### @std/fs 1.0.4 (patch)
+
+- docs(fs): clarify permissions requirements for `exists[Sync]()` (#5983)
+
+#### @std/http 1.0.7 (patch)
+
+- feat(http/unstable): add support for multiple request methods on route (#6003)
+- fix(http): make `file-server` work on Deno Deploy (#6033)
+- fix(http): use non-locale-sensitive string methods for comparison (#6029)
+
+#### @std/internal 1.0.4 (patch)
+
+- chore: bump to internal@1.0.4 (#6020)
+
+#### @std/io 0.224.9 (patch)
+
+- deprecation(io): deprecate `BufWriter` (#6041)
+- deprecation(io/unstable): deprecate `BufReader` (#6027)
+- deprecation(io/unstable): deprecate `StringWriter` (#6026)
+- deprecation(io/unstable): deprecate `StringReader` (#6025)
+- deprecation(io/unstable): deprecate `LimitedReader` (#6024)
+- deprecation(io/unstable): deprecate `MultiReader` (#6023)
+- deprecation(io/unstable): deprecate `readDelim()` (#6022)
+- deprecation(io/unstable): deprecate `readLong()` (#6007)
+- deprecation(io/unstable): deprecate `readRange()` (#6010)
+- deprecation(io/unstable): deprecate `readInt()` (#6009)
+- deprecation(io/unstable): deprecate `readShort()` (#6008)
+- deprecation(io/unstable): deprecate `sliceLongToBytes()` (#6002)
+- deprecation(io/unstable): deprecate `readStringDelim()` (#6000)
+- deprecation(io/unstable): deprecate `copyN()` (#5992)
+- deprecation(io/unstable): deprecate `readLines()` (#5990)
+- docs(io): update deprecation notices (#6021)
+
+#### @std/log 0.224.8 (patch)
+
+- docs(log): document `warn` module (#5973)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/streams 1.0.6 (patch)
+
+- feat(streams/unstable): `toBytes()` (#6011)
+
+#### @std/testing 1.0.3 (patch)
+
+- docs(archive,log,testing): correct typos (#5995)
+- docs(testing): fix typo in snapshot (#5994)
+
+#### @std/text 1.0.7 (patch)
+
+- fix(text): handle code points > U+FFFF in `levenshteinDistance` (#6014)
+
 ### 2024.09.16
 
 #### @std/cache 0.1.3 (patch)

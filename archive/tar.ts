@@ -35,7 +35,7 @@ import {
   USTAR_STRUCTURE,
 } from "./_common.ts";
 import type { Reader } from "@std/io/types";
-import { MultiReader } from "@std/io/multi-reader";
+import { MultiReader } from "./_multi_reader.ts";
 import { Buffer } from "@std/io/buffer";
 import { HEADER_LENGTH } from "./_common.ts";
 
@@ -45,7 +45,7 @@ export type { TarInfo, TarMeta };
  * Options for {@linkcode Tar.append}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -126,7 +126,7 @@ function formatHeader(data: TarData): Uint8Array {
  * Base interface for {@linkcode TarDataWithSource}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -180,7 +180,7 @@ export interface TarData {
  * Tar data interface for {@linkcode Tar.data}.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed in the future.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -202,7 +202,7 @@ export interface TarDataWithSource extends TarData {
  * have the '.tar' extension.
  *
  * @deprecated Use {@linkcode https://jsr.io/@std/tar | @std/tar} instead.
- * `@std/archive` will be removed after 0.225.4.
+ * `@std/archive` will be removed in the future.
  *
  * ### Usage
  * The workflow is to create a Tar instance, append files to it, and then write the

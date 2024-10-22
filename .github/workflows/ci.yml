@@ -18,6 +18,7 @@ jobs:
       matrix:
         deno:
           - v1.x
+          - v2.x
           - canary
         os:
           - ubuntu-latest
@@ -29,18 +30,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
         run: deno task test
-
-      - name: Run tests (simulate Deno 2)
-        if: matrix.deno == 'canary'
-        run: |
-          deno task test
-          rm deno.lock # remove deno.lock (v4) as it's incompatible with v3
 
       - name: Run timezone-dependent tests
         run: |
@@ -49,20 +44,19 @@ jobs:
           TZ=America/Toronto deno test datetime
         if: matrix.os == 'ubuntu-latest'
 
-      # TODO(kt3k): Enable this test when `deno check` command supports workspace resolution
-      # - name: Type check browser compatible modules
-      #   run: deno task test:browser
+      - name: Type check browser compatible modules
+        run: deno task test:browser
+        if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
-      # TODO(iuioiua): Enable this once https://github.com/denoland/deno/pull/25736 is merged
-      # - name: Generate lcov
-      #   run: deno task cov:gen
+      - name: Generate lcov
+        run: deno task cov:gen
 
-      # - name: Upload coverage
-      #   uses: codecov/codecov-action@v4
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      #   with:
-      #     name: ${{ matrix.os }}-${{ matrix.deno }}
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          name: ${{ matrix.os }}-${{ matrix.deno }}
 
   test-node:
     runs-on: ${{ matrix.os }}
@@ -80,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -109,7 +103,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: canary
 
@@ -151,7 +145,7 @@ jobs:
           echo "$modifications"
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
@@ -179,7 +173,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: canary
 
