@@ -54,6 +54,7 @@
  *   - {@linkcode expect.anything}
  *   - {@linkcode expect.any}
  *   - {@linkcode expect.arrayContaining}
+ *   - {@linkcode expect.objectContaining}
  *   - {@linkcode expect.closeTo}
  *   - {@linkcode expect.stringContaining}
  *   - {@linkcode expect.stringMatching}
@@ -69,7 +70,6 @@
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`
  * - Asymmetric matchers:
- *   - `expect.objectContaining`
  *   - `expect.not.objectContaining`
  * - Utilities:
  *   - `expect.assertions`

@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
+import { equal } from "./_equal.ts";
+
 export abstract class AsymmetricMatcher<T> {
   constructor(
     protected value: T,
@@ -144,4 +146,32 @@ export class StringMatching extends AsymmetricMatcher<RegExp> {
 
 export function stringMatching(pattern: string | RegExp): StringMatching {
   return new StringMatching(pattern);
+}
+
+export class ObjectContaining
+  extends AsymmetricMatcher<Record<string, unknown>> {
+  constructor(obj: Record<string, unknown>) {
+    super(obj);
+  }
+
+  equals(other: Record<string, unknown>): boolean {
+    const keys = Object.keys(this.value);
+
+    for (const key of keys) {
+      if (
+        !Object.hasOwn(other, key) ||
+        !equal(this.value[key], other[key])
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+export function objectContaining(
+  obj: Record<string, unknown>,
+): ObjectContaining {
+  return new ObjectContaining(obj);
 }
