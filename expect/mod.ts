@@ -59,6 +59,7 @@
  *   - {@linkcode expect.stringContaining}
  *   - {@linkcode expect.stringMatching}
  * - Utilities:
+ *   - {@linkcode expect.assertions}
  *   - {@linkcode expect.addEqualityTester}
  *   - {@linkcode expect.extend}
  *   - {@linkcode expect.hasAssertions}
@@ -72,7 +73,6 @@
  * - Asymmetric matchers:
  *   - `expect.not.objectContaining`
  * - Utilities:
- *   - `expect.assertions`
  *   - `expect.addSnapshotSerializer`
  *
  * The tracking issue to add support for unsupported parts of the API is
