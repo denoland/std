@@ -1,5 +1,7 @@
-import { reasoning, ToApiType } from "../types.ts";
 import { z } from "zod";
+const reasoning = z.string().array().optional().describe(
+  "reasoning for the operation",
+);
 
 export const parameters = {
   write: z.object({
@@ -101,5 +103,3 @@ export const returns = {
     z.object({ path: z.string(), description: z.string() }),
   ),
 };
-
-export type Api = ToApiType<typeof parameters, typeof returns>;
