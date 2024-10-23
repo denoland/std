@@ -527,3 +527,31 @@ expect.hasAssertions = hasAssertions as () => void;
 expect.objectContaining = asymmetricMatchers.objectContaining as (
   obj: Record<string, unknown>,
 ) => ReturnType<typeof asymmetricMatchers.objectContaining>;
+/**
+ * `expect.not.arrayContaining` matches any received array that does not contain all of the elements in the expected array.
+ *
+ * `expect.not.objectContaining` matches any received object that does not recursively match the expected properties.
+ *
+ * `expect.not.stringContaining`
+ *
+ * `expect.not.stringMatching`
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("expect.not.arrayContaining", () => {});
+ *
+ * Deno.test("expect.not.objectContaining", () => {});
+ *
+ * Deno.test("expect.not.stringContaining", () => {});
+ *
+ * Deno.test("expect.not.stringMatching", () => {});
+ * ```
+ */
+expect.not = {
+  arrayContaining: asymmetricMatchers.arrayNotContaining,
+  objectContaining: asymmetricMatchers.objectNotContaining,
+  stringContaining: asymmetricMatchers.stringNotContaining,
+  stringMatching: asymmetricMatchers.stringNotMatching,
+};
