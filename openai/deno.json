@@ -1,0 +1,7 @@
+{
+  "name": "@artifact/openai",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./completions.ts"
+  }
+}

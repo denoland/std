@@ -1,0 +1,107 @@
+{
+  "name": "@artifact/openai",
+  "version": "0.0.1",
+  "napp-format": "v1",
+  "description": "OpenAI API integration in napp format",
+  "runtime": "deno",
+  "branding": "./avatar.jpg",
+  "agent": {
+    // an agent that can explain about the openai api and suggest how to use it
+    "parameters": {
+      "instructions": "./openai-instructions.md",
+      "model": "gpt-4o",
+      "tools": []
+      // ? how would the tools of the nap package be passed on to this agent ?
+    }
+  },
+  "main": "completions",
+  "tools": {
+    "completions": {
+      "description": "Creates a model response for the given chat conversation",
+      "parameters": {
+        "param1": {
+          "description": "This is the first parameter",
+          "type": "string",
+          "required": true
+        },
+        "param2": {
+          "description": "This is the second parameter",
+          "type": "number",
+          "required": false
+        },
+        "permissions": [
+          // list of permissions required to run this function
+        ],
+        "gateways": [
+          // list of gateways required to run this function
+        ]
+      },
+      "returns": {
+        "description": "This is what the function returns",
+        "type": "string"
+      },
+      "throws": {
+        "FileNotFoundError": {
+          // list of expected error types and what to do about it
+        }
+      }
+    },
+    "transcribe": {
+      "description": "Transcribes an audio file to text, returning the filepath of the transcription",
+      "parameters": {
+        "filepath": {
+          "description": "The path to the audio file to transcribe",
+          "type": "string",
+          "required": true
+        }
+      },
+      "returns": {
+        "description": "The path to the transcription file",
+        "type": "string"
+      }
+    }
+  },
+  // list of the api gateway targets that this thing needs to do its job
+  "sideEffects": {
+    // default configurations for the production running of side effects
+  },
+  "testSideEffects": {
+    // special services that can be used for testing - these are still live but
+    // are somehow test grade, as in might be cheaper, or no credentials
+  },
+  "mockSideEffects": {
+    // when running in the mock environment, these side effects are supplied
+  },
+  "graphics": {
+    // a list of exported widgets that can be displayed on the stateboard
+    "googleMapsViewer": {
+      "type": "react",
+      "component": "./path/to/component",
+      "parameters": {
+        // mock react props that can be configured by the LLM
+      }
+    }
+  }
+}
+
+// gateways can be just a fetch function with some urls
+// can make a moneyworks connector, which could be a napp, running as a gateway
+// host
+// upstream dependencies ?
+// tools being the same exported as what is in the agent
+// need an agent config that is a generic way
+
+// gateways need to have backups and retry policies
+// gateways need environments, like mock, test, prod
+
+//   ---
+// commands:
+//   - files:write
+//   - files:ls
+//   - files:read
+//   - files:update
+//   - files:rm
+//   - files:mv
+//   - files:search
+//   - stateboard:show
+// ---

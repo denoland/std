@@ -47,6 +47,8 @@
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@std/uuid": "jsr:@std/uuid@^1.0.4",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.7",
-    "@std/yaml": "jsr:@std/yaml@^1.0.5"
+    "@std/yaml": "jsr:@std/yaml@^1.0.5",
+
+    "zod": "npm:zod"
   }
 }
