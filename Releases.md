@@ -1,3 +1,9 @@
+### 2024.10.23
+
+#### @artifact/files 0.0.1 (patch)
+
+- fix(files): increment the solution
+
 ### 2024.10.10a
 
 #### @std/cbor 0.1.1 (patch)
