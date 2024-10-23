@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-console
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { walk } from "../fs/walk.ts";
-import { relative } from "../path/relative.ts";
-import { dirname } from "../path/dirname.ts";
-import * as colors from "../fmt/colors.ts";
+import { walk } from "@std/fs/walk";
+import { relative } from "@std/path/relative";
+import { dirname } from "@std/path/dirname";
+import * as colors from "@std/fmt/colors";
 import ts from "npm:typescript";
 
 const ROOT = new URL("../", import.meta.url);

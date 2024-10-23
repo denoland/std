@@ -78,4 +78,7 @@
 //   return { matches, result }
 // }
 
+/**
+ * This is a comment
+ */
 export const m = 42;
