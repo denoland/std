@@ -8,7 +8,7 @@ for (const workspace of workspaces) {
   const { default: config } = await import("../" + workspace + "/deno.json", {
     with: { type: "json" },
   });
-  denoConfig[config.name.replace("@std/", "")] = config;
+  denoConfig[config.name.replace("@artifact/", "")] = config;
 }
 
 export function resolveWorkspaceSpecifiers(
@@ -17,7 +17,7 @@ export function resolveWorkspaceSpecifiers(
 ) {
   if (specifier.startsWith("../") || specifier.startsWith("./")) {
     return new URL(specifier, referrer).href;
-  } else if (specifier.startsWith("@std/")) {
+  } else if (specifier.startsWith("@artifact/")) {
     let [_std, pkg, exp] = specifier.split("/");
     if (exp === undefined) {
       exp = ".";

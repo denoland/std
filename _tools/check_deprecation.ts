@@ -10,8 +10,8 @@
  */
 
 import { doc } from "@deno/doc";
-import { walk } from "../fs/walk.ts";
-import { toFileUrl } from "../path/to_file_url.ts";
+import { walk } from "@std/fs/walk";
+import { toFileUrl } from "@std/path/to-file-url";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
 
 const ROOT = new URL("../", import.meta.url);

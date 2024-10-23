@@ -8,7 +8,7 @@
  * Run using: deno run --allow-read --allow-run _tools/check_browser_compat.ts
  */
 
-import { walk } from "../fs/walk.ts";
+import { walk } from "@std/fs/walk";
 import { COPYRIGHT } from "./check_licence.ts";
 
 const ROOT = new URL("../", import.meta.url);

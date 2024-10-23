@@ -7,7 +7,7 @@ import {
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
 import graphviz from "graphviz";
-import { parse } from "../semver/parse.ts";
+import { parse } from "@std/semver/parse";
 
 /**
  * Checks for circular dependencies in the std packages.
@@ -35,92 +35,12 @@ type Dep = {
   state: DepState;
 };
 type Mod =
-  | "archive"
-  | "assert"
-  | "async"
-  | "bytes"
-  | "cache"
-  | "cbor"
-  | "cli"
-  | "collections"
-  | "crypto"
-  | "csv"
-  | "data_structures"
-  | "datetime"
-  | "dotenv"
-  | "encoding"
-  | "expect"
-  | "fmt"
-  | "front_matter"
-  | "fs"
-  | "html"
-  | "http"
-  | "ini"
-  | "internal"
-  | "io"
-  | "json"
-  | "jsonc"
-  | "log"
-  | "media_types"
-  | "msgpack"
-  | "net"
-  | "path"
-  | "random"
-  | "regexp"
-  | "semver"
-  | "streams"
-  | "tar"
-  | "testing"
-  | "text"
-  | "toml"
-  | "ulid"
-  | "uuid"
-  | "webgpu"
-  | "yaml";
+  | "files"
+  | "openai";
 
 const ENTRYPOINTS: Record<Mod, string[]> = {
-  archive: ["mod.ts"],
-  assert: ["mod.ts"],
-  async: ["mod.ts"],
-  bytes: ["mod.ts"],
-  cache: ["mod.ts"],
-  cbor: ["mod.ts"],
-  cli: ["mod.ts"],
-  collections: ["mod.ts"],
-  crypto: ["mod.ts"],
-  csv: ["mod.ts"],
-  "data_structures": ["mod.ts"],
-  datetime: ["mod.ts"],
-  dotenv: ["mod.ts"],
-  encoding: ["mod.ts"],
-  expect: ["mod.ts"],
-  fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
-  "front_matter": ["mod.ts"],
-  fs: ["mod.ts"],
-  html: ["mod.ts"],
-  http: ["mod.ts"],
-  ini: ["mod.ts"],
-  internal: ["mod.ts"],
-  io: ["mod.ts"],
-  json: ["mod.ts"],
-  jsonc: ["mod.ts"],
-  log: ["mod.ts"],
-  "media_types": ["mod.ts"],
-  msgpack: ["mod.ts"],
-  net: ["mod.ts"],
-  path: ["mod.ts"],
-  random: ["mod.ts"],
-  regexp: ["mod.ts"],
-  semver: ["mod.ts"],
-  streams: ["mod.ts"],
-  tar: ["mod.ts"],
-  testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
-  text: ["mod.ts"],
-  toml: ["mod.ts"],
-  ulid: ["mod.ts"],
-  uuid: ["mod.ts"],
-  webgpu: ["mod.ts"],
-  yaml: ["mod.ts"],
+  files: ["mod.ts"],
+  openai: ["mod.ts"],
 };
 
 const root = new URL("../", import.meta.url).href;
