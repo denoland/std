@@ -12,3 +12,4 @@ http/testdata/file#2.txt
 http/testdata/test file.txt
 coverage/
 docs/
+.env

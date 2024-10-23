@@ -1,9 +1,0 @@
-{
-  "name": "@std/toml",
-  "version": "1.0.1",
-  "exports": {
-    ".": "./mod.ts",
-    "./parse": "./parse.ts",
-    "./stringify": "./stringify.ts"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "name": "@std/msgpack",
-  "version": "1.0.2",
-  "exports": {
-    ".": "./mod.ts",
-    "./decode": "./decode.ts",
-    "./encode": "./encode.ts"
-  }
-}
