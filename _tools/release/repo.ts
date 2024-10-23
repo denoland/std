@@ -35,7 +35,7 @@ export class VersionFile {
 
 export function loadRepo() {
   return Repo.load({
-    name: "deno_std",
+    name: "napps",
     path: rootDirPath,
   });
 }
