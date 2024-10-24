@@ -1,0 +1,380 @@
+# Test-file-runner Assertion error
+
+## Bug 001
+
+## Thread
+
+THREAD:  https://longthreat-ui--next.deno.dev/#branches=main/act_KYMCGH7GVJGNV40Z/the_8JA3SH9B1VB4B9Z2
+
+## Issue
+
+A simple test run on /tests/scottMudPit/multiple_hamr.test.md results in the following error, but nevertheless completes it's task.
+
+## Initial State
+
+    Current Agent: test-file-runner
+    Prompt: run tests/scottMudPit/multiple_hamr.test.md
+    Input file:
+
+    ---
+target: agents/hamr.md
+assessor: agents/test-assessor.md
+iterations: 1
+---
+
+### Tests for CUSTOMER_AGENT Actions
+
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001
+## Description
+Ensure that a customer agent can create a new customer record.
+
+**Prompts:**
+```
+create customer with the following details: John Doe, 124 Hope St, Auckland.  Mobile: 07777 777777.  Email: johndoe@test.com
+```
+**Expectations:**
+- Customer record is created successfully.
+
+---
+
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001.1
+## Description
+Count the number of existing customers.
+
+**Prompts:**
+```
+How many customers do we have?
+```
+**Expectations:**
+- The response must show that there are 3 customers
+
+---
+
+---
+
+# Test: Create Customer
+## ID
+TST-CUSTAG-001.1
+## Description
+Ensure that the customer agent can create multiple new customer records.
+
+**Prompts:**
+```
+create 30 customers.  Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer.
+```
+**Expectations:**
+- Customer record is created successfully.
+
+---
+
+
+## Output
+
+agents/test-file-runner.md
+tps-report_confirmCaseCount
+{3 items
+reasoning:[2 items
+0:"There are 3 test cases defined in the file, each one relating to customer agent actions for creating customers."
+1:"The cases include creating a customer, counting existing customers, and creating multiple customers."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+count:3
+}
+Output:
+3
+
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:0
+}
+Output:
+(empty)
+
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:1
+}
+Output:
+(empty)
+
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:2
+}
+Output:
+(empty)
+
+agents/test-file-runner.md
+utils_resolve
+{}0 items
+Output:
+null
+
+tps-report_addCase
+{5 items
+reasoning:[2 items
+0:"Adding fourth test case: Count existing customers."
+1:"This tests the ability to count the number of existing customers."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Count Existing Customers"
+promptChains:[1 item
+0:[1 item
+0:"How many customers do we have?"
+]
+]
+expectations:[1 item
+0:"The response must show that there are 3 customers"
+]
+}
+Output:
+(empty)
+
+agents/test-file-runner.md
+tps-report_confirmCaseCount
+{1 item
+reasoning:[2 items
+0:"There are 3 test cases defined in the file related to customer agent actions: creating a customer, counting existing customers, and creating multiple customers."
+1:"The total number of test cases has been counted as 3."
+]
+}
+Output:
+{2 items
+name:"Error"
+message:"Parameters Validation Error at: tps-report/confirmCaseCount: [ { "code": "invalid_type", "expected": "string", "received": "undefined", "path": [ "testPath" ], "message": "Required" }, { "code": "invalid_type", "expected": "number", "received": "undefined", "path": [ "count" ], "message": "Required" } ]"
+}
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:0
+}
+Output:
+{2 items
+name:"AssertionError"
+message:"thread exists: threads/the_8JA3SH9B1VB4B9Z2/case_0/iteration_0.json"
+}
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:1
+}
+Output:
+{2 items
+name:"AssertionError"
+message:"thread exists: threads/the_8JA3SH9B1VB4B9Z2/case_1/iteration_0.json"
+}
+test-case-runner_test
+{2 items
+path:"tests/scottMudPit/multiple_hamr.test.md"
+caseIndex:2
+}
+Output:
+{2 items
+name:"AssertionError"
+message:"thread exists: threads/the_8JA3SH9B1VB4B9Z2/case_2/iteration_0.json"
+}
+agents/test-file-runner.md
+tps-report_upsert
+{5 items
+reasoning:[2 items
+0:"To create a new TPS report to run the test cases defined in multiple_hamr.test.md."
+1:"The tests target CUSTOMER_AGENT actions, assessed by the test-assessor agent."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+agent:"agents/hamr.md"
+assessor:"agents/test-assessor.md"
+iterations:1
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[2 items
+0:"Adding first test case: Create Customer."
+1:"This test ensures that a customer agent can create a new customer record."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Create Customer"
+promptChains:[1 item
+0:[1 item
+0:"create customer with the following details: John Doe, 124 Hope St, Auckland. Mobile: 07777 777777. Email: johndoe@test.com"
+]
+]
+expectations:[1 item
+0:"Customer record is created successfully."
+]
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[2 items
+0:"Adding second test case: Count existing customers."
+1:"This tests the ability to count the number of existing customers."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Count Existing Customers"
+promptChains:[1 item
+0:[1 item
+0:"How many customers do we have?"
+]
+]
+expectations:[1 item
+0:"The response must show that there are 3 customers"
+]
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[2 items
+0:"Adding third test case: Creation of multiple customers."
+1:"This tests the capability of the customer agent to create multiple customer records."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Create Multiple Customers"
+promptChains:[1 item
+0:[1 item
+0:"create 30 customers. Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer."
+]
+]
+expectations:[1 item
+0:"Customer record is created successfully."
+]
+}
+Output:
+(empty)
+
+agents/test-file-runner.md
+utils_resolve
+{}0 items
+Output:
+{2 items
+name:"Error"
+message:"Tool utils_resolve cannot be called in parallel with other tools"
+}
+utils_resolve
+{}0 items
+Output:
+{2 items
+name:"Error"
+message:"Tool utils_resolve cannot be called in parallel with other tools"
+}
+utils_resolve
+{}0 items
+Output:
+{2 items
+name:"Error"
+message:"Tool utils_resolve cannot be called in parallel with other tools"
+}
+utils_resolve
+{}0 items
+Output:
+{2 items
+name:"Error"
+message:"Tool utils_resolve cannot be called in parallel with other tools"
+}
+agents/test-file-runner.md
+tps-report_upsert
+{5 items
+reasoning:[2 items
+0:"To initiate a TPS report for running test cases from multiple_hamr.test.md."
+1:"The tests are targeting CUSTOMER_AGENT actions and will be assessed by an appropriate agent."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+agent:"agents/hamr.md"
+assessor:"agents/test-assessor.md"
+iterations:1
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[1 item
+0:"Setting up the first test case: Create Customer."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Create Customer"
+promptChains:[1 item
+0:[1 item
+0:"create customer with the following details: John Doe, 124 Hope St, Auckland. Mobile: 07777 777777. Email: johndoe@test.com"
+]
+]
+expectations:[1 item
+0:"Customer record is created successfully."
+]
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[1 item
+0:"Setting up the second test case: Count existing customers."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Count Existing Customers"
+promptChains:[1 item
+0:[1 item
+0:"How many customers do we have?"
+]
+]
+expectations:[1 item
+0:"The response must show that there are 3 customers"
+]
+}
+Output:
+(empty)
+
+tps-report_addCase
+{5 items
+reasoning:[1 item
+0:"Setting up the third test case: Create multiple customers."
+]
+testPath:"tests/scottMudPit/multiple_hamr.test.md"
+name:"Create Multiple Customers"
+promptChains:[1 item
+0:[1 item
+0:"create 30 customers. Populate those customers with appropriate test data that is none repeating (ie every customer is unique), and include synthetic data for all of the fields for each customer."
+]
+]
+expectations:[1 item
+0:"Customer record is created successfully."
+]
+}
+Output:
+(empty)
+
+agents/test-file-runner.md
+utils_reject
+{1 item
+message:"The test file "tests/scottMudPit/multiple_hamr.test.md" appears to be missing or cannot be accessed."
+}
+Output:
+null
+
+## Oddness
+
+1. Why is it giving the message:"The test file "tests/scottMudPit/multiple_hamr.test.md" appears to be missing or cannot be accessed." when it's already accessed?
+
+2. The first test to create a single customer failed.  
+
+
+## Supporting Evidence
+
+1.  Running with router.test.md gets the same error
