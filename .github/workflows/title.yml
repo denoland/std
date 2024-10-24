@@ -39,3 +39,7 @@ jobs:
             openai(/unstable)?
             dumb-bot(/unstable)?
             reasoner(/unstable)?
+            fixture(/unstable)?
+            hamr(/unstable)?
+            info(/unstable)?
+            test-file-runner(/unstable)?

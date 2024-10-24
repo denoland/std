@@ -1,0 +1,371 @@
+{
+  "longthread: basic": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "say \"Hello\"",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Hello!",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382538,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 577,
+              "openAiProcessingMs": 339,
+              "usage": {
+                "completion_tokens": 3,
+                "prompt_tokens": 85,
+                "total_tokens": 88,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "longthread: chat": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "say the word: \"hello\" verbatim without calling any functions",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "hello",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382540,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 401,
+              "openAiProcessingMs": 187,
+              "usage": {
+                "completion_tokens": 2,
+                "prompt_tokens": 94,
+                "total_tokens": 96,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "say the word: \"hello\" verbatim without calling any functions",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "role": "assistant",
+                "content": "hello",
+                "name": "agents_agent-fixture_md",
+                "refusal": null
+              },
+              {
+                "content": "what is your name ?",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Assistant.",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382541,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 391,
+              "openAiProcessingMs": 183,
+              "usage": {
+                "completion_tokens": 3,
+                "prompt_tokens": 116,
+                "total_tokens": 119,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "say the word: \"hello\" verbatim without calling any functions",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "role": "assistant",
+                "content": "hello",
+                "name": "agents_agent-fixture_md",
+                "refusal": null
+              },
+              {
+                "content": "what is your name ?",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "role": "assistant",
+                "content": "Assistant.",
+                "name": "agents_agent-fixture_md",
+                "refusal": null
+              },
+              {
+                "content": "repeat your last, without calling any functions",
+                "role": "user",
+                "name": "ai"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Assistant.",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382542,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 467,
+              "openAiProcessingMs": 257,
+              "usage": {
+                "completion_tokens": 3,
+                "prompt_tokens": 142,
+                "total_tokens": 145,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

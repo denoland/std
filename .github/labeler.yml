@@ -10,3 +10,15 @@ dumb-bot:
 reasoner:
   - changed-files:
       - any-glob-to-any-file: reasoner/**
+fixture:
+  - changed-files:
+      - any-glob-to-any-file: fixture/**
+hamr:
+  - changed-files:
+      - any-glob-to-any-file: hamr/**
+info:
+  - changed-files:
+      - any-glob-to-any-file: info/**
+test-file-runner:
+  - changed-files:
+      - any-glob-to-any-file: test-file-runner/**

@@ -52,6 +52,10 @@
     "./files",
     "./openai",
     "./dumb-bot",
-    "./reasoner"
+    "./reasoner",
+    "./fixture",
+    "./hamr",
+    "./info",
+    "./test-file-runner"
   ]
 }

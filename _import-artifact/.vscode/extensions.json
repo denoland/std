@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "denoland.vscode-deno",
+    "ryanluker.vscode-coverage-gutters",
+    "dotenv.dotenv-vscode"
+  ]
+}

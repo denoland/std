@@ -38,13 +38,21 @@ type Mod =
   | "files"
   | "openai"
   | "dumb-bot"
-  | "reasoner";
+  | "reasoner"
+  | "fixture"
+  | "hamr"
+  | "info"
+  | "test-file-runner";
 
 const ENTRYPOINTS: Record<Mod, string[]> = {
   files: ["mod.ts"],
   openai: ["mod.ts"],
   "dumb-bot": ["mod.ts"],
   reasoner: ["mod.ts"],
+  fixture: ["mod.ts"],
+  hamr: ["mod.ts"],
+  info: ["mod.ts"],
+  "test-file-runner": ["mod.ts"],
 };
 
 const root = new URL("../", import.meta.url).href;
