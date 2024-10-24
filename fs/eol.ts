@@ -17,7 +17,8 @@ export const CRLF = "\r\n" as const;
  * ```
  */
 // deno-lint-ignore no-explicit-any
-export const EOL: "\n" | "\r\n" = (globalThis as any).Deno?.build.os === "windows" ? CRLF : LF;
+export const EOL: "\n" | "\r\n" =
+  (globalThis as any).Deno?.build.os === "windows" ? CRLF : LF;
 
 const regDetect = /(?:\r?\n)/g;
 
