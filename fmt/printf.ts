@@ -68,7 +68,7 @@
  *     %9f    width 9, default precision
  *     %.9f   default width, precision 9
  *     %8.9f  width 8, precision 9
- *     %8.f   width 9, precision 0
+ *     %8.f   width 8, precision 0
  *
  * In general, 'width' describes the minimum length of the output, while
  * 'precision' limits the output.
