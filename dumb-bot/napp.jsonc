@@ -1,0 +1,21 @@
+{
+  "name": "@artifact/dumb-bot",
+  "version": "0.0.1",
+  "napp-format": "v1",
+  "description": "The bot that will one day end all the other bots",
+  "runtime": "deno",
+  "branding": "./avatar.jpg",
+  "agent": {
+    "napp": "@artifact/openai"
+  },
+  "tools": {
+    "read": {
+      "napp": "@artifact/files",
+      "tool": "read"
+    },
+    "write": {
+      "napp": "@artifact/files",
+      "tool": "write"
+    }
+  }
+}

@@ -29,8 +29,10 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  "../files/files.ts",
-  "../openai/completions.ts",
+  "../files/mod.ts",
+  "../openai/mod.ts",
+  "../dumb-bot/mod.ts",
+  "../reasoner/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;

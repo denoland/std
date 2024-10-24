@@ -36,11 +36,15 @@ type Dep = {
 };
 type Mod =
   | "files"
-  | "openai";
+  | "openai"
+  | "dumb-bot"
+  | "reasoner";
 
 const ENTRYPOINTS: Record<Mod, string[]> = {
   files: ["mod.ts"],
   openai: ["mod.ts"],
+  "dumb-bot": ["mod.ts"],
+  reasoner: ["mod.ts"],
 };
 
 const root = new URL("../", import.meta.url).href;

@@ -14,10 +14,12 @@ for Artifact, the infrastructure of the
 The following list contains links to the Artifact Standard Library's packages
 and documentation:
 
-| Package                                   | Latest version                                                                    |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| [files](https://jsr.io/@artifact/files)   | [![JSR](https://jsr.io/badges/@artifact/files)](https://jsr.io/@artifact/files)   |
-| [openai](https://jsr.io/@artifact/openai) | [![JSR](https://jsr.io/badges/@artifact/openai)](https://jsr.io/@artifact/openai) |
+| Package                                       | Latest version                                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [files](https://jsr.io/@artifact/files)       | [![JSR](https://jsr.io/badges/@artifact/files)](https://jsr.io/@artifact/files)       |
+| [openai](https://jsr.io/@artifact/openai)     | [![JSR](https://jsr.io/badges/@artifact/openai)](https://jsr.io/@artifact/openai)     |
+| [dumb-bot](https://jsr.io/@artifact/dumb-bot) | [![JSR](https://jsr.io/badges/@artifact/dumb-bot)](https://jsr.io/@artifact/dumb-bot) |
+| [reasoner](https://jsr.io/@artifact/reasoner) | [![JSR](https://jsr.io/badges/@artifact/reasoner)](https://jsr.io/@artifact/reasoner) |
 
 ## Architecture
 

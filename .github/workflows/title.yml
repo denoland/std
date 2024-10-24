@@ -35,5 +35,7 @@ jobs:
             revert
           # This should be kept up-to-date with the current packages list
           scopes: |
-            openai(/unstable)?
             files(/unstable)?
+            openai(/unstable)?
+            dumb-bot(/unstable)?
+            reasoner(/unstable)?

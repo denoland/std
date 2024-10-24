@@ -2,6 +2,6 @@
   "name": "@artifact/files",
   "version": "0.0.1",
   "exports": {
-    ".": "./files.ts"
+    ".": "./mod.ts"
   }
 }
