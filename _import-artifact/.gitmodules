@@ -1,3 +1,0 @@
-[submodule "HAL"]
-	path = _import-artifact/HAL
-	url = git@github.com:dreamcatcher-tech/HAL.git
