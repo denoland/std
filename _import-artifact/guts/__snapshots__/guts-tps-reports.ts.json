@@ -1,0 +1,1890 @@
+{
+  "tps: run fixture test": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/the_F6Q": [
+        {
+          "request": {
+            "model": "gpt-4o",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "run test ./tests/test-fixture.test.md",
+                "role": "user",
+                "name": "act_H2R5R3HR4MCFYEB0"
+              },
+              {
+                "content": "You are a helpful assistant that brokers conversations with much wiser, deeper agents than\nyourself, and the human user. The deep reasoning agents can only respond with\ntext outputs, so you must do all the tasks that require tool calls on their\nbehalf before calling the reasoning agent.\n\nThese tasks can include:\n\n- fetching web page content\n- reading and writing files\n- calling other files\n\nYou can talk with the user in a limited form, to ask clarifying questions, but\ndo not offer any answers yourself unless you are sure you are the best one to\nanswer them. Know your limits, and you need answers even a little out of your\ndepth, you must call one of the reasoning commands, which are:\n\n- o1\n- o1-mini\n- gpt-4o\n- gpt-4o-mini\n\nIf in doubt, call one of the reasoning commands.\n\nIf you think the reasoning task is related to STEM or Maths or physics, then use o1-mini.\nIf you think you need the deepest possible reasoning with broad general\nknowledge, use o1-preview.\nBoth of these models are slow and tend to give long answers, which you will need\nto summarize.\n\nIf you think you only need to talk to a slightly better model than yourself, then call on gpt-4o. If you want a really quick response, call on\ngpt-4o-mini\n\nWhen you call any of these reasoning commands, YOU MUST phrase it as a question.\nRemember, you are the user and the reasoner is an advanced AI. Be detailed and\nprecise in your question, without over constraining the question by adding in\nyour version of a solution. Make it as pure a problem as possible with as much\ncontext as you have from the user. Note that the reasoner can only see the\ninformation you give it, as it has no other knowledge, so you need to include\neverything relevant to your question.\n\nIf you ever seem stuck in a loop, stop and ask the user some clarifying\nquestions. NEVER GO MORE THAN 3 REASONING CALLS WITHOUT RESPONDING TO THE USER.\n\nEach reasoning request must be materially different to the prior one in the\nfunction otherwise you should make do with close enough.\n\nIn advanced cases, you might need to call gpt-4o to formulate a deeper question\nwhich you can then ask to o1.\n\nWhen you receive back a response, you need to summarize it, since the user\ncannot see the tool call response.\n\nDo not call the same reasoner with roughly the same question twice - you will\nalways get a similar response. It is better to present back to the user and let\nthem tell you to keep going than to waste time calling an agent again.",
+                "role": "system",
+                "name": "agents_reasoner_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_read",
+                  "description": "Read a file.  The contents will be returned as a string.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to read"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_rm",
+                  "description": "Remove a file.  This is recursive.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to remove"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_mv",
+                  "description": "Move a file efficiently. This is a rename operation.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to move"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_cp",
+                  "description": "Copy a file efficiently.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to copy"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "stateboard_show",
+                  "description": "Show the given path with the given widget on the stateboard",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "pid": {
+                        "type": "object",
+                        "properties": {
+                          "repoId": {
+                            "type": "string",
+                            "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                          },
+                          "account": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "repository": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "branches": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1
+                          }
+                        },
+                        "required": [
+                          "repoId",
+                          "account",
+                          "repository",
+                          "branches"
+                        ],
+                        "additionalProperties": false,
+                        "description": "defaults to the current pid"
+                      },
+                      "commit": {
+                        "type": "string",
+                        "description": "the commit to show - defaults to the latest commit"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the path to show - defaults to \".\""
+                      },
+                      "widgets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "TPS_REPORT",
+                            "FILE_EXPLORER",
+                            "MARKDOWN_EDITOR",
+                            "BRANCH_EXPLORER",
+                            "COMMIT_GRAPH",
+                            "COMMIT_INFO",
+                            "THREADS",
+                            "REPOS"
+                          ],
+                          "description": "the widget to show"
+                        },
+                        "description": "the stack of widgets to display, in the order of their display"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "widgets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "youtube_fetch",
+                  "description": "Fetch video details and subtitles (subs).  This will write the transcription json object to the given path, and return that path if everything was ok",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": ".*\\.json$",
+                        "description": "Relative path to save the fetched transcription result.  Must end in \".json\" and must start with \"./\""
+                      },
+                      "videoID": {
+                        "type": "string",
+                        "description": "The last part of a YouTube URL. For example, in the URL https://www.youtube.com/watch?v=zIB7YsC34Tc, the videoID is \"zIB7YsC34Tc\""
+                      },
+                      "lang": {
+                        "type": "string",
+                        "description": "Language code for the subtitles - defaults to \"en\""
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "videoID"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "utils_time",
+                  "description": "Returns the current date and time in ISO 8601 format with zero timezone offset",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "ai-completions_image",
+                  "description": "Generate an image using DALL-E-3 from the provided prompt.  The image will be saved to the provided path.  The revised prompt that the image generator used will be returned, as well as the size of the image in bytes.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": "\\.jpg$",
+                        "description": "The path to the image to generate, which should be a meaningful name in the images/ directory, and should end in .jpg"
+                      },
+                      "prompt": {
+                        "type": "string",
+                        "maxLength": 4000
+                      },
+                      "lowQuality": {
+                        "type": "boolean",
+                        "description": "Generate a low quality image as opposed to the default high quality image"
+                      },
+                      "size": {
+                        "type": "string",
+                        "enum": [
+                          "1024x1024",
+                          "1792x1024",
+                          "1024x1792"
+                        ],
+                        "description": "The size of the image to generate"
+                      },
+                      "style": {
+                        "type": "string",
+                        "enum": [
+                          "vivid",
+                          "natural"
+                        ],
+                        "description": "The style of the image to generate, which defaults to vivid"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "prompt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_newThreadSignal",
+                  "description": "Signal to create a new thread and set it as the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_changeThreadSignal",
+                  "description": "Signal to change the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "repoId": {
+                        "type": "string",
+                        "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                      },
+                      "account": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "repository": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "branches": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "repoId",
+                      "account",
+                      "repository",
+                      "branches"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1",
+                  "description": "The o1 agent.  This is a wise and deep reasoning agent, but it is slow and has no tools that it can use, so it only returns text based responses.  It is the wisest of all the agents, but its responses are always very long winded.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1-mini",
+                  "description": "The o1-mini agent.  This is a wise and deep but fairly quick reasoner.  It is faster than o1 but it is not as good at general knowledge.  It excels at STEM, physics, and maths reasoning.  It is good at planning.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o",
+                  "description": "The gpt-4o agent, or 4o for short.  This is not a reasoning model, but is smart and can think well.  It has good tone of response, very good at summarizing, and has good general knowledge.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o-mini",
+                  "description": "The gpt-4o-mini agent, or 40-mini for short.  This is a very quick very fast model.  It does not reason deeply, and its strengths are reptitive or simple tasks.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/reasoner.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_KGMa7arG8TQIqqv1fqTDqdqB",
+                  "type": "function",
+                  "function": {
+                    "name": "files_read",
+                    "arguments": "{\"reasoning\":[\"I need to read the content of the specified test file to understand what tests are described in it.\",\"Running a test typically involves reading the test file, understanding the setup and assertions, and then executing the test logic.\",\"Before proceeding to execute or simulate the tests, I should gather the required details from the file itself.\"],\"path\":\"./tests/test-fixture.test.md\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729382600,
+              "model": "gpt-4o-2024-08-06",
+              "system_fingerprint": "fp_45c6de4934",
+              "duration": 1680,
+              "openAiProcessingMs": 1170,
+              "usage": {
+                "completion_tokens": 87,
+                "prompt_tokens": 2474,
+                "total_tokens": 2561,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "run test ./tests/test-fixture.test.md",
+                "role": "user",
+                "name": "act_H2R5R3HR4MCFYEB0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_reasoner_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_KGMa7arG8TQIqqv1fqTDqdqB",
+                    "type": "function",
+                    "function": {
+                      "name": "files_read",
+                      "arguments": "{\"reasoning\":[\"I need to read the content of the specified test file to understand what tests are described in it.\",\"Running a test typically involves reading the test file, understanding the setup and assertions, and then executing the test logic.\",\"Before proceeding to execute or simulate the tests, I should gather the required details from the file itself.\"],\"path\":\"./tests/test-fixture.test.md\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "---\ntarget: agents/agent-fixture.md\nassessor: agents/test-assessor.md\n---\n\n## Call the local function\n\n**Prompts**\n\n- Call the local function\n\n**Expectations**\n\n- local function was called once\n- result was \"local reply\"\n\n## Fail a test\n\n**Prompts**\n\n- Call the local function\n\n**Expectations**\n\n- result was \"this expectation should fail\"\n\n## Throw an error\n\n**Prompts**\n\n- Call the error function\n\n**Expectations**\n\n- an error was thrown\n\n## Dependencies function\n\n**Dependencies**\n\n- Call the local function\n\n**Prompts**\n\n- say hello\n\n**Expectations**\n\n- hello was responded to\n- local function was called once\n\n## Multiple Dependencies\n\n**Dependencies**\n\n- Dependencies function\n- Call the local function\n\n**Prompts**\n\n- say goodbye\n\n**Expectations**\n\n- goodbye was responded to\n- local function was called twice\n- in between the two function calls, a \"hello\" was issued by the user\n",
+                "tool_call_id": "call_KGMa7arG8TQIqqv1fqTDqdqB"
+              },
+              {
+                "content": "You are a helpful assistant that brokers conversations with much wiser, deeper agents than\nyourself, and the human user. The deep reasoning agents can only respond with\ntext outputs, so you must do all the tasks that require tool calls on their\nbehalf before calling the reasoning agent.\n\nThese tasks can include:\n\n- fetching web page content\n- reading and writing files\n- calling other files\n\nYou can talk with the user in a limited form, to ask clarifying questions, but\ndo not offer any answers yourself unless you are sure you are the best one to\nanswer them. Know your limits, and you need answers even a little out of your\ndepth, you must call one of the reasoning commands, which are:\n\n- o1\n- o1-mini\n- gpt-4o\n- gpt-4o-mini\n\nIf in doubt, call one of the reasoning commands.\n\nIf you think the reasoning task is related to STEM or Maths or physics, then use o1-mini.\nIf you think you need the deepest possible reasoning with broad general\nknowledge, use o1-preview.\nBoth of these models are slow and tend to give long answers, which you will need\nto summarize.\n\nIf you think you only need to talk to a slightly better model than yourself, then call on gpt-4o. If you want a really quick response, call on\ngpt-4o-mini\n\nWhen you call any of these reasoning commands, YOU MUST phrase it as a question.\nRemember, you are the user and the reasoner is an advanced AI. Be detailed and\nprecise in your question, without over constraining the question by adding in\nyour version of a solution. Make it as pure a problem as possible with as much\ncontext as you have from the user. Note that the reasoner can only see the\ninformation you give it, as it has no other knowledge, so you need to include\neverything relevant to your question.\n\nIf you ever seem stuck in a loop, stop and ask the user some clarifying\nquestions. NEVER GO MORE THAN 3 REASONING CALLS WITHOUT RESPONDING TO THE USER.\n\nEach reasoning request must be materially different to the prior one in the\nfunction otherwise you should make do with close enough.\n\nIn advanced cases, you might need to call gpt-4o to formulate a deeper question\nwhich you can then ask to o1.\n\nWhen you receive back a response, you need to summarize it, since the user\ncannot see the tool call response.\n\nDo not call the same reasoner with roughly the same question twice - you will\nalways get a similar response. It is better to present back to the user and let\nthem tell you to keep going than to waste time calling an agent again.",
+                "role": "system",
+                "name": "agents_reasoner_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_read",
+                  "description": "Read a file.  The contents will be returned as a string.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to read"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_rm",
+                  "description": "Remove a file.  This is recursive.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to remove"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_mv",
+                  "description": "Move a file efficiently. This is a rename operation.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to move"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_cp",
+                  "description": "Copy a file efficiently.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to copy"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "stateboard_show",
+                  "description": "Show the given path with the given widget on the stateboard",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "pid": {
+                        "type": "object",
+                        "properties": {
+                          "repoId": {
+                            "type": "string",
+                            "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                          },
+                          "account": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "repository": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "branches": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1
+                          }
+                        },
+                        "required": [
+                          "repoId",
+                          "account",
+                          "repository",
+                          "branches"
+                        ],
+                        "additionalProperties": false,
+                        "description": "defaults to the current pid"
+                      },
+                      "commit": {
+                        "type": "string",
+                        "description": "the commit to show - defaults to the latest commit"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the path to show - defaults to \".\""
+                      },
+                      "widgets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "TPS_REPORT",
+                            "FILE_EXPLORER",
+                            "MARKDOWN_EDITOR",
+                            "BRANCH_EXPLORER",
+                            "COMMIT_GRAPH",
+                            "COMMIT_INFO",
+                            "THREADS",
+                            "REPOS"
+                          ],
+                          "description": "the widget to show"
+                        },
+                        "description": "the stack of widgets to display, in the order of their display"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "widgets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "youtube_fetch",
+                  "description": "Fetch video details and subtitles (subs).  This will write the transcription json object to the given path, and return that path if everything was ok",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": ".*\\.json$",
+                        "description": "Relative path to save the fetched transcription result.  Must end in \".json\" and must start with \"./\""
+                      },
+                      "videoID": {
+                        "type": "string",
+                        "description": "The last part of a YouTube URL. For example, in the URL https://www.youtube.com/watch?v=zIB7YsC34Tc, the videoID is \"zIB7YsC34Tc\""
+                      },
+                      "lang": {
+                        "type": "string",
+                        "description": "Language code for the subtitles - defaults to \"en\""
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "videoID"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "utils_time",
+                  "description": "Returns the current date and time in ISO 8601 format with zero timezone offset",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "ai-completions_image",
+                  "description": "Generate an image using DALL-E-3 from the provided prompt.  The image will be saved to the provided path.  The revised prompt that the image generator used will be returned, as well as the size of the image in bytes.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": "\\.jpg$",
+                        "description": "The path to the image to generate, which should be a meaningful name in the images/ directory, and should end in .jpg"
+                      },
+                      "prompt": {
+                        "type": "string",
+                        "maxLength": 4000
+                      },
+                      "lowQuality": {
+                        "type": "boolean",
+                        "description": "Generate a low quality image as opposed to the default high quality image"
+                      },
+                      "size": {
+                        "type": "string",
+                        "enum": [
+                          "1024x1024",
+                          "1792x1024",
+                          "1024x1792"
+                        ],
+                        "description": "The size of the image to generate"
+                      },
+                      "style": {
+                        "type": "string",
+                        "enum": [
+                          "vivid",
+                          "natural"
+                        ],
+                        "description": "The style of the image to generate, which defaults to vivid"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "prompt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_newThreadSignal",
+                  "description": "Signal to create a new thread and set it as the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_changeThreadSignal",
+                  "description": "Signal to change the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "repoId": {
+                        "type": "string",
+                        "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                      },
+                      "account": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "repository": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "branches": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "repoId",
+                      "account",
+                      "repository",
+                      "branches"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1",
+                  "description": "The o1 agent.  This is a wise and deep reasoning agent, but it is slow and has no tools that it can use, so it only returns text based responses.  It is the wisest of all the agents, but its responses are always very long winded.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1-mini",
+                  "description": "The o1-mini agent.  This is a wise and deep but fairly quick reasoner.  It is faster than o1 but it is not as good at general knowledge.  It excels at STEM, physics, and maths reasoning.  It is good at planning.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o",
+                  "description": "The gpt-4o agent, or 4o for short.  This is not a reasoning model, but is smart and can think well.  It has good tone of response, very good at summarizing, and has good general knowledge.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o-mini",
+                  "description": "The gpt-4o-mini agent, or 40-mini for short.  This is a very quick very fast model.  It does not reason deeply, and its strengths are reptitive or simple tasks.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/reasoner.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_rcXdAKhP2tt3r5UvqwxOM0X3",
+                  "type": "function",
+                  "function": {
+                    "name": "o1-mini",
+                    "arguments": "{\"reasoning\":[\"The file content indicates that there are multiple tests described, each with specific prompts and expectations.\",\"Understanding the logic behind these tests is crucial, particularly from a coding and test running standpoint.\",\"Analyzing the content to determine how these tests interrelate and should be executed will inform the steps needed to run the test suite effectively.\"],\"content\":\"We have a test file with several test cases defined. The tests include calling a local function, failing a test, throwing an error, testing dependencies, and handling multiple dependencies. \\n\\nThe tests are structured with prompts and expectations:\\n\\n1. **Call the local function**\\n   - Expectations: The local function is called once and returns \\\"local reply\\\".\\n\\n2. **Fail a test**\\n   - Expectations: The result should be \\\"this expectation should fail\\\".\\n\\n3. **Throw an error**\\n   - Expectations: An error is thrown when the error function is invoked.\\n\\n4. **Dependencies function**\\n   - Dependencies: This involves calling the local function.\\n   - Expectations: A \\\"hello\\\" response should be given after a local function call.\\n\\n5. **Multiple Dependencies**\\n   - Dependencies include: the Dependencies function and calling the local function.\\n   - Expectations: A \\\"goodbye\\\" response should be given after two calls to the local function, with a \\\"hello\\\" in between.\\n\\nGiven this data, how should we best approach running these tests? What considerations should we have in terms of order of execution and dependencies, and how to ensure all expectations are met accurately?\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729382602,
+              "model": "gpt-4o-2024-08-06",
+              "system_fingerprint": "fp_45c6de4934",
+              "duration": 4655,
+              "openAiProcessingMs": 4419,
+              "usage": {
+                "completion_tokens": 343,
+                "prompt_tokens": 2779,
+                "total_tokens": 3122,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 1792
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "run test ./tests/test-fixture.test.md",
+                "role": "user",
+                "name": "act_H2R5R3HR4MCFYEB0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_reasoner_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_KGMa7arG8TQIqqv1fqTDqdqB",
+                    "type": "function",
+                    "function": {
+                      "name": "files_read",
+                      "arguments": "{\"reasoning\":[\"I need to read the content of the specified test file to understand what tests are described in it.\",\"Running a test typically involves reading the test file, understanding the setup and assertions, and then executing the test logic.\",\"Before proceeding to execute or simulate the tests, I should gather the required details from the file itself.\"],\"path\":\"./tests/test-fixture.test.md\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "---\ntarget: agents/agent-fixture.md\nassessor: agents/test-assessor.md\n---\n\n## Call the local function\n\n**Prompts**\n\n- Call the local function\n\n**Expectations**\n\n- local function was called once\n- result was \"local reply\"\n\n## Fail a test\n\n**Prompts**\n\n- Call the local function\n\n**Expectations**\n\n- result was \"this expectation should fail\"\n\n## Throw an error\n\n**Prompts**\n\n- Call the error function\n\n**Expectations**\n\n- an error was thrown\n\n## Dependencies function\n\n**Dependencies**\n\n- Call the local function\n\n**Prompts**\n\n- say hello\n\n**Expectations**\n\n- hello was responded to\n- local function was called once\n\n## Multiple Dependencies\n\n**Dependencies**\n\n- Dependencies function\n- Call the local function\n\n**Prompts**\n\n- say goodbye\n\n**Expectations**\n\n- goodbye was responded to\n- local function was called twice\n- in between the two function calls, a \"hello\" was issued by the user\n",
+                "tool_call_id": "call_KGMa7arG8TQIqqv1fqTDqdqB"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_reasoner_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_rcXdAKhP2tt3r5UvqwxOM0X3",
+                    "type": "function",
+                    "function": {
+                      "name": "o1-mini",
+                      "arguments": "{\"reasoning\":[\"The file content indicates that there are multiple tests described, each with specific prompts and expectations.\",\"Understanding the logic behind these tests is crucial, particularly from a coding and test running standpoint.\",\"Analyzing the content to determine how these tests interrelate and should be executed will inform the steps needed to run the test suite effectively.\"],\"content\":\"We have a test file with several test cases defined. The tests include calling a local function, failing a test, throwing an error, testing dependencies, and handling multiple dependencies. \\n\\nThe tests are structured with prompts and expectations:\\n\\n1. **Call the local function**\\n   - Expectations: The local function is called once and returns \\\"local reply\\\".\\n\\n2. **Fail a test**\\n   - Expectations: The result should be \\\"this expectation should fail\\\".\\n\\n3. **Throw an error**\\n   - Expectations: An error is thrown when the error function is invoked.\\n\\n4. **Dependencies function**\\n   - Dependencies: This involves calling the local function.\\n   - Expectations: A \\\"hello\\\" response should be given after a local function call.\\n\\n5. **Multiple Dependencies**\\n   - Dependencies include: the Dependencies function and calling the local function.\\n   - Expectations: A \\\"goodbye\\\" response should be given after two calls to the local function, with a \\\"hello\\\" in between.\\n\\nGiven this data, how should we best approach running these tests? What considerations should we have in terms of order of execution and dependencies, and how to ensure all expectations are met accurately?\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "To effectively run your test suite and ensure that all expectations are met accurately, it's essential to consider the structure, dependencies, and order of execution of each test case. Below is a comprehensive approach to handling your tests:\n\n### 1. **Understand the Test Structure and Dependencies**\n\nFirst, let's summarize the tests and their dependencies:\n\n1. **Call the Local Function**\n   - **Expectation:** The local function is called once and returns `\"local reply\"`.\n   - **Dependencies:** None.\n\n2. **Fail a Test**\n   - **Expectation:** The result should be `\"this expectation should fail\"`.\n   - **Dependencies:** None.\n\n3. **Throw an Error**\n   - **Expectation:** An error is thrown when the error function is invoked.\n   - **Dependencies:** None.\n\n4. **Dependencies Function**\n   - **Dependencies:** Calls the **Call the Local Function**.\n   - **Expectation:** A `\"hello\"` response should be given after a local function call.\n\n5. **Multiple Dependencies**\n   - **Dependencies:** \n     - **Dependencies Function** (which in turn depends on **Call the Local Function**)\n     - Calls the **Call the Local Function** again.\n   - **Expectation:** A `\"goodbye\"` response should be given after two calls to the local function, with a `\"hello\"` in between.\n\n### 2. **Determine the Order of Execution**\n\nGiven the dependencies, it's crucial to execute the tests in an order that respects these relationships to avoid failures due to unmet dependencies. Here's a recommended order:\n\n1. **Call the Local Function**\n2. **Dependencies Function**\n3. **Multiple Dependencies**\n4. **Throw an Error**\n5. **Fail a Test**\n\n**Rationale:**\n\n- **Call the Local Function** should run first as it serves as a foundational test that other tests depend on.\n- **Dependencies Function** relies on the local function, so it should execute after the local function test.\n- **Multiple Dependencies** depends on both the Dependencies Function and another call to the local function, so it naturally follows.\n- **Throw an Error** and **Fail a Test** are independent of the others and can run afterward. Running them last ensures that their failure or exception handling doesn't interfere with the dependent tests.\n\n### 3. **Isolate Tests to Prevent Side Effects**\n\nTo ensure that each test runs in a controlled environment without unintended interactions:\n\n- **Use Setup and Teardown Methods:**\n  - **Setup:** Initialize the necessary environment before each test. For example, mock functions or reset states.\n  - **Teardown:** Clean up after each test to ensure that no residual data affects subsequent tests.\n\n- **Mock Dependencies:**\n  - For tests that depend on functions like the local function, use mocking frameworks (e.g., Jest mocks) to simulate their behavior. This ensures that tests remain isolated and predictable.\n\n### 4. **Handle Assertions Accurately**\n\nEnsure that each test accurately verifies its expectations:\n\n1. **Call the Local Function**\n   - **Assertion:** Verify that the local function is called exactly once.\n   - **Return Value Assertion:** Confirm that it returns `\"local reply\"`.\n\n2. **Fail a Test**\n   - **Assertion:** Intentionally set the expected result to `\"this expectation should fail\"`, which contradicts the actual outcome to simulate a failure scenario.\n\n3. **Throw an Error**\n   - **Assertion:** Use assertion methods that expect an error to be thrown (e.g., `toThrow` in Jest).\n\n4. **Dependencies Function**\n   - **Assertion:** After the local function call, verify that the response is `\"hello\"`.\n\n5. **Multiple Dependencies**\n   - **Assertion:** Ensure that after two calls to the local function, with a `\"hello\"` in between, the final response is `\"goodbye\"`.\n\n### 5. **Leverage Testing Framework Features**\n\nUtilize features provided by modern testing frameworks to enhance your test suite:\n\n- **Test Suites and Grouping:**\n  - Organize related tests into suites or groups to improve readability and maintainability.\n\n- **BeforeAll and AfterAll Hooks:**\n  - For setup and teardown processes that are common across multiple tests.\n\n- **Parameterized Tests:**\n  - If applicable, use parameterized tests to run the same test logic with different inputs.\n\n### 6. **Continuous Integration and Automated Testing**\n\nIntegrate your test suite into a CI/CD pipeline to ensure that tests run automatically with each code change, maintaining code quality and catching issues early.\n\n### 7. **Example Implementation Using Jest**\n\nHere's a conceptual example using Jest, a popular JavaScript testing framework:\n\n```javascript\n// localModule.js\nexport const localFunction = () => \"local reply\";\n\nexport const dependenciesFunction = () => {\n  const reply = localFunction();\n  return \"hello\";\n};\n\nexport const multipleDependenciesFunction = () => {\n  const firstReply = localFunction();\n  const secondReply = dependenciesFunction();\n  const finalReply = localFunction();\n  return \"goodbye\";\n};\n\nexport const errorFunction = () => {\n  throw new Error(\"Intentional Error\");\n};\n```\n\n```javascript\n// localModule.test.js\nimport {\n  localFunction,\n  dependenciesFunction,\n  multipleDependenciesFunction,\n  errorFunction\n} from './localModule';\n\ndescribe('Local Module Tests', () => {\n\n  beforeEach(() => {\n    // Reset mocks or any state if necessary\n  });\n\n  test('Call the local function', () => {\n    const reply = localFunction();\n    expect(reply).toBe(\"local reply\");\n    // If using spies to check call count:\n    // const spy = jest.spyOn(module, 'localFunction');\n    // expect(spy).toHaveBeenCalledTimes(1);\n  });\n\n  test('Dependencies function', () => {\n    const reply = dependenciesFunction();\n    expect(reply).toBe(\"hello\");\n  });\n\n  test('Multiple Dependencies', () => {\n    const reply = multipleDependenciesFunction();\n    expect(reply).toBe(\"goodbye\");\n  });\n\n  test('Throw an error', () => {\n    expect(() => errorFunction()).toThrow(\"Intentional Error\");\n  });\n\n  test('Fail a test', () => {\n    const result = \"some actual result\";\n    expect(result).toBe(\"this expectation should fail\");\n  });\n\n});\n```\n\n**Notes:**\n\n- **Spies and Mocks:** To assert that `localFunction` is called a specific number of times, you can use Jest's `jest.spyOn` or `jest.mock` features.\n  \n  ```javascript\n  test('Call the local function once', () => {\n    const spy = jest.spyOn(localModule, 'localFunction');\n    const reply = localFunction();\n    expect(spy).toHaveBeenCalledTimes(1);\n    expect(reply).toBe(\"local reply\");\n    spy.mockRestore();\n  });\n  ```\n\n- **Test Order:** Jest runs tests in the order they are defined within a `describe` block. Ensure that dependent tests are placed after their dependencies.\n\n- **Failing Tests:** Intentionally failing a test can be useful to ensure your test suite correctly identifies failures, but remember to update or remove such tests once they've served their purpose to avoid false negatives in your CI pipeline.\n\n### 8. **Best Practices Summary**\n\n- **Respect Dependencies:** Structure your tests to run dependent tests after their dependencies have been validated.\n- **Isolate Tests:** Ensure that tests do not interfere with each other by sharing state or side effects.\n- **Use Mocks and Spies:** Leverage mocking to simulate dependencies and verify interactions.\n- **Clear Assertions:** Make sure each test clearly and accurately asserts its expected outcome.\n- **Maintain Order:** While tests should ideally be independent, when dependencies exist, carefully manage the order of execution.\n- **Automate and Integrate:** Use CI/CD pipelines to run tests automatically and maintain code quality.\n\nBy following this structured approach, you can ensure that your test suite is robust, reliable, and maintains high code quality standards.",
+                "tool_call_id": "call_rcXdAKhP2tt3r5UvqwxOM0X3"
+              },
+              {
+                "content": "You are a helpful assistant that brokers conversations with much wiser, deeper agents than\nyourself, and the human user. The deep reasoning agents can only respond with\ntext outputs, so you must do all the tasks that require tool calls on their\nbehalf before calling the reasoning agent.\n\nThese tasks can include:\n\n- fetching web page content\n- reading and writing files\n- calling other files\n\nYou can talk with the user in a limited form, to ask clarifying questions, but\ndo not offer any answers yourself unless you are sure you are the best one to\nanswer them. Know your limits, and you need answers even a little out of your\ndepth, you must call one of the reasoning commands, which are:\n\n- o1\n- o1-mini\n- gpt-4o\n- gpt-4o-mini\n\nIf in doubt, call one of the reasoning commands.\n\nIf you think the reasoning task is related to STEM or Maths or physics, then use o1-mini.\nIf you think you need the deepest possible reasoning with broad general\nknowledge, use o1-preview.\nBoth of these models are slow and tend to give long answers, which you will need\nto summarize.\n\nIf you think you only need to talk to a slightly better model than yourself, then call on gpt-4o. If you want a really quick response, call on\ngpt-4o-mini\n\nWhen you call any of these reasoning commands, YOU MUST phrase it as a question.\nRemember, you are the user and the reasoner is an advanced AI. Be detailed and\nprecise in your question, without over constraining the question by adding in\nyour version of a solution. Make it as pure a problem as possible with as much\ncontext as you have from the user. Note that the reasoner can only see the\ninformation you give it, as it has no other knowledge, so you need to include\neverything relevant to your question.\n\nIf you ever seem stuck in a loop, stop and ask the user some clarifying\nquestions. NEVER GO MORE THAN 3 REASONING CALLS WITHOUT RESPONDING TO THE USER.\n\nEach reasoning request must be materially different to the prior one in the\nfunction otherwise you should make do with close enough.\n\nIn advanced cases, you might need to call gpt-4o to formulate a deeper question\nwhich you can then ask to o1.\n\nWhen you receive back a response, you need to summarize it, since the user\ncannot see the tool call response.\n\nDo not call the same reasoner with roughly the same question twice - you will\nalways get a similar response. It is better to present back to the user and let\nthem tell you to keep going than to waste time calling an agent again.",
+                "role": "system",
+                "name": "agents_reasoner_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_write",
+                  "description": "Write to a file with optional contents.  Will overwrite existing files.  Will create all required parent directories. Returns the number of characters written in the operation",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file"
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "the contents of the file to be written"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_ls",
+                  "description": "List files for a given path. Returns file names with directory names ending in \"/\".  The root (\"/\") is actually just \".\".  To count the number of files instead of list them, set \"count\" to true.  To include hidden files in the list or count, set \"all\" to true.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the directory you want to list"
+                      },
+                      "count": {
+                        "type": "boolean",
+                        "description": "count the number of files and return this instead of the names of the files"
+                      },
+                      "all": {
+                        "type": "boolean",
+                        "description": "include all files including hidden files in the operation"
+                      }
+                    },
+                    "required": [
+                      "reasoning"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_read",
+                  "description": "Read a file.  The contents will be returned as a string.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to read"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_rm",
+                  "description": "Remove a file.  This is recursive.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to remove"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "path"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_mv",
+                  "description": "Move a file efficiently. This is a rename operation.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to move"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "files_cp",
+                  "description": "Copy a file efficiently.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "from": {
+                        "type": "string",
+                        "description": "the relative path to the file you want to copy"
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "the relative path to the new location of the file"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "from",
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "stateboard_show",
+                  "description": "Show the given path with the given widget on the stateboard",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "pid": {
+                        "type": "object",
+                        "properties": {
+                          "repoId": {
+                            "type": "string",
+                            "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                          },
+                          "account": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "repository": {
+                            "type": "string",
+                            "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                          },
+                          "branches": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1
+                          }
+                        },
+                        "required": [
+                          "repoId",
+                          "account",
+                          "repository",
+                          "branches"
+                        ],
+                        "additionalProperties": false,
+                        "description": "defaults to the current pid"
+                      },
+                      "commit": {
+                        "type": "string",
+                        "description": "the commit to show - defaults to the latest commit"
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "the path to show - defaults to \".\""
+                      },
+                      "widgets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "TPS_REPORT",
+                            "FILE_EXPLORER",
+                            "MARKDOWN_EDITOR",
+                            "BRANCH_EXPLORER",
+                            "COMMIT_GRAPH",
+                            "COMMIT_INFO",
+                            "THREADS",
+                            "REPOS"
+                          ],
+                          "description": "the widget to show"
+                        },
+                        "description": "the stack of widgets to display, in the order of their display"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "widgets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "youtube_fetch",
+                  "description": "Fetch video details and subtitles (subs).  This will write the transcription json object to the given path, and return that path if everything was ok",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": ".*\\.json$",
+                        "description": "Relative path to save the fetched transcription result.  Must end in \".json\" and must start with \"./\""
+                      },
+                      "videoID": {
+                        "type": "string",
+                        "description": "The last part of a YouTube URL. For example, in the URL https://www.youtube.com/watch?v=zIB7YsC34Tc, the videoID is \"zIB7YsC34Tc\""
+                      },
+                      "lang": {
+                        "type": "string",
+                        "description": "Language code for the subtitles - defaults to \"en\""
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "videoID"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "utils_time",
+                  "description": "Returns the current date and time in ISO 8601 format with zero timezone offset",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "ai-completions_image",
+                  "description": "Generate an image using DALL-E-3 from the provided prompt.  The image will be saved to the provided path.  The revised prompt that the image generator used will be returned, as well as the size of the image in bytes.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": "\\.jpg$",
+                        "description": "The path to the image to generate, which should be a meaningful name in the images/ directory, and should end in .jpg"
+                      },
+                      "prompt": {
+                        "type": "string",
+                        "maxLength": 4000
+                      },
+                      "lowQuality": {
+                        "type": "boolean",
+                        "description": "Generate a low quality image as opposed to the default high quality image"
+                      },
+                      "size": {
+                        "type": "string",
+                        "enum": [
+                          "1024x1024",
+                          "1792x1024",
+                          "1024x1792"
+                        ],
+                        "description": "The size of the image to generate"
+                      },
+                      "style": {
+                        "type": "string",
+                        "enum": [
+                          "vivid",
+                          "natural"
+                        ],
+                        "description": "The style of the image to generate, which defaults to vivid"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "prompt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_newThreadSignal",
+                  "description": "Signal to create a new thread and set it as the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "backchat_changeThreadSignal",
+                  "description": "Signal to change the current target thread",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "repoId": {
+                        "type": "string",
+                        "pattern": "^rep_[0-9A-HJKMNP-TV-Z]{16}$"
+                      },
+                      "account": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "repository": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|[-.](?=[a-zA-Z\\d])){0,38}$"
+                      },
+                      "branches": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": [
+                      "repoId",
+                      "account",
+                      "repository",
+                      "branches"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1",
+                  "description": "The o1 agent.  This is a wise and deep reasoning agent, but it is slow and has no tools that it can use, so it only returns text based responses.  It is the wisest of all the agents, but its responses are always very long winded.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "o1-mini",
+                  "description": "The o1-mini agent.  This is a wise and deep but fairly quick reasoner.  It is faster than o1 but it is not as good at general knowledge.  It excels at STEM, physics, and maths reasoning.  It is good at planning.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o",
+                  "description": "The gpt-4o agent, or 4o for short.  This is not a reasoning model, but is smart and can think well.  It has good tone of response, very good at summarizing, and has good general knowledge.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "gpt-4o-mini",
+                  "description": "The gpt-4o-mini agent, or 40-mini for short.  This is a very quick very fast model.  It does not reason deeply, and its strengths are reptitive or simple tasks.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function"
+                      },
+                      "content": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "content"
+                    ],
+                    "additionalProperties": false,
+                    "$schema": "http://json-schema.org/draft-07/schema#"
+                  },
+                  "strict": true
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "To execute the test cases, you will need a suitable environment to simulate running these tests, such as using a JavaScript testing framework like Jest. Here’s a conceptual breakdown of how you can implement this with Jest:\n\n1. **Setup Your Test Environment**: Ensure you have Jest installed, and you're familiar with basic test case writing in it.\n\n2. **Implement the Functions for Testing**: Based on the descriptions provided, you will need functions that can be tested according to the specifications. Make sure to implement functions that match the names and behaviors expected by the test descriptions.\n\n3. **Write the Test Suite**: Within your Jest test file, you should write test cases for each described scenario. Here’s a basic setup:\n\n    ```javascript\n    // functions.js\n    export function localFunction() {\n        return \"local reply\";\n    }\n\n    export function functionThatThrows() {\n        throw new Error(\"Error was thrown\");\n    }\n\n    // tests/functions.test.js\n    import { localFunction, functionThatThrows } from './functions';\n\n    describe('Local Function Tests', () => {\n        test('Call the local function', () => {\n            const result = localFunction();\n            expect(result).toBe(\"local reply\");\n        });\n\n        test('Fail a test', () => {\n            const result = localFunction();\n            expect(result).toBe(\"this expectation should fail\");\n        });\n\n        test('Throw an error', () => {\n            expect(() => functionThatThrows()).toThrow(\"Error was thrown\");\n        });\n\n        test('Dependencies function', () => {\n            // Assuming dependencies function exists and calls localFunction\n            const response = dependenciesFunction();\n            // Mock the function call and check behaviors\n        });\n\n        test('Multiple Dependencies', () => {\n            // Simulate calling multiple dependencies and checking return values\n        });\n    });\n    ```\n\n4. **Run Your Tests**: Use the Jest command line interface to run your tests and check the output to ensure that each test behaves as expected. The failed test should fail intentionally, and the exception-throwing test should handle the exception as expected.\n\nWould you like detailed guidance on setting up these functions or executing them in a specific environment?",
+              "name": "agents/reasoner.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382620,
+              "model": "gpt-4o-2024-08-06",
+              "system_fingerprint": "fp_45c6de4934",
+              "duration": 6231,
+              "openAiProcessingMs": 5981,
+              "usage": {
+                "completion_tokens": 446,
+                "prompt_tokens": 4767,
+                "total_tokens": 5213,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 2048
+                }
+              }
+            }
+          }
+        }
+      ],
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/the_F6Q/napp-o1-mini-7": [
+        {
+          "request": {
+            "model": "o1-mini",
+            "messages": [
+              {
+                "content": "We have a test file with several test cases defined. The tests include calling a local function, failing a test, throwing an error, testing dependencies, and handling multiple dependencies. \n\nThe tests are structured with prompts and expectations:\n\n1. **Call the local function**\n   - Expectations: The local function is called once and returns \"local reply\".\n\n2. **Fail a test**\n   - Expectations: The result should be \"this expectation should fail\".\n\n3. **Throw an error**\n   - Expectations: An error is thrown when the error function is invoked.\n\n4. **Dependencies function**\n   - Dependencies: This involves calling the local function.\n   - Expectations: A \"hello\" response should be given after a local function call.\n\n5. **Multiple Dependencies**\n   - Dependencies include: the Dependencies function and calling the local function.\n   - Expectations: A \"goodbye\" response should be given after two calls to the local function, with a \"hello\" in between.\n\nGiven this data, how should we best approach running these tests? What considerations should we have in terms of order of execution and dependencies, and how to ensure all expectations are met accurately?",
+                "role": "user",
+                "name": "act_H2R5R3HR4MCFYEB0"
+              }
+            ],
+            "seed": 1337
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "To effectively run your test suite and ensure that all expectations are met accurately, it's essential to consider the structure, dependencies, and order of execution of each test case. Below is a comprehensive approach to handling your tests:\n\n### 1. **Understand the Test Structure and Dependencies**\n\nFirst, let's summarize the tests and their dependencies:\n\n1. **Call the Local Function**\n   - **Expectation:** The local function is called once and returns `\"local reply\"`.\n   - **Dependencies:** None.\n\n2. **Fail a Test**\n   - **Expectation:** The result should be `\"this expectation should fail\"`.\n   - **Dependencies:** None.\n\n3. **Throw an Error**\n   - **Expectation:** An error is thrown when the error function is invoked.\n   - **Dependencies:** None.\n\n4. **Dependencies Function**\n   - **Dependencies:** Calls the **Call the Local Function**.\n   - **Expectation:** A `\"hello\"` response should be given after a local function call.\n\n5. **Multiple Dependencies**\n   - **Dependencies:** \n     - **Dependencies Function** (which in turn depends on **Call the Local Function**)\n     - Calls the **Call the Local Function** again.\n   - **Expectation:** A `\"goodbye\"` response should be given after two calls to the local function, with a `\"hello\"` in between.\n\n### 2. **Determine the Order of Execution**\n\nGiven the dependencies, it's crucial to execute the tests in an order that respects these relationships to avoid failures due to unmet dependencies. Here's a recommended order:\n\n1. **Call the Local Function**\n2. **Dependencies Function**\n3. **Multiple Dependencies**\n4. **Throw an Error**\n5. **Fail a Test**\n\n**Rationale:**\n\n- **Call the Local Function** should run first as it serves as a foundational test that other tests depend on.\n- **Dependencies Function** relies on the local function, so it should execute after the local function test.\n- **Multiple Dependencies** depends on both the Dependencies Function and another call to the local function, so it naturally follows.\n- **Throw an Error** and **Fail a Test** are independent of the others and can run afterward. Running them last ensures that their failure or exception handling doesn't interfere with the dependent tests.\n\n### 3. **Isolate Tests to Prevent Side Effects**\n\nTo ensure that each test runs in a controlled environment without unintended interactions:\n\n- **Use Setup and Teardown Methods:**\n  - **Setup:** Initialize the necessary environment before each test. For example, mock functions or reset states.\n  - **Teardown:** Clean up after each test to ensure that no residual data affects subsequent tests.\n\n- **Mock Dependencies:**\n  - For tests that depend on functions like the local function, use mocking frameworks (e.g., Jest mocks) to simulate their behavior. This ensures that tests remain isolated and predictable.\n\n### 4. **Handle Assertions Accurately**\n\nEnsure that each test accurately verifies its expectations:\n\n1. **Call the Local Function**\n   - **Assertion:** Verify that the local function is called exactly once.\n   - **Return Value Assertion:** Confirm that it returns `\"local reply\"`.\n\n2. **Fail a Test**\n   - **Assertion:** Intentionally set the expected result to `\"this expectation should fail\"`, which contradicts the actual outcome to simulate a failure scenario.\n\n3. **Throw an Error**\n   - **Assertion:** Use assertion methods that expect an error to be thrown (e.g., `toThrow` in Jest).\n\n4. **Dependencies Function**\n   - **Assertion:** After the local function call, verify that the response is `\"hello\"`.\n\n5. **Multiple Dependencies**\n   - **Assertion:** Ensure that after two calls to the local function, with a `\"hello\"` in between, the final response is `\"goodbye\"`.\n\n### 5. **Leverage Testing Framework Features**\n\nUtilize features provided by modern testing frameworks to enhance your test suite:\n\n- **Test Suites and Grouping:**\n  - Organize related tests into suites or groups to improve readability and maintainability.\n\n- **BeforeAll and AfterAll Hooks:**\n  - For setup and teardown processes that are common across multiple tests.\n\n- **Parameterized Tests:**\n  - If applicable, use parameterized tests to run the same test logic with different inputs.\n\n### 6. **Continuous Integration and Automated Testing**\n\nIntegrate your test suite into a CI/CD pipeline to ensure that tests run automatically with each code change, maintaining code quality and catching issues early.\n\n### 7. **Example Implementation Using Jest**\n\nHere's a conceptual example using Jest, a popular JavaScript testing framework:\n\n```javascript\n// localModule.js\nexport const localFunction = () => \"local reply\";\n\nexport const dependenciesFunction = () => {\n  const reply = localFunction();\n  return \"hello\";\n};\n\nexport const multipleDependenciesFunction = () => {\n  const firstReply = localFunction();\n  const secondReply = dependenciesFunction();\n  const finalReply = localFunction();\n  return \"goodbye\";\n};\n\nexport const errorFunction = () => {\n  throw new Error(\"Intentional Error\");\n};\n```\n\n```javascript\n// localModule.test.js\nimport {\n  localFunction,\n  dependenciesFunction,\n  multipleDependenciesFunction,\n  errorFunction\n} from './localModule';\n\ndescribe('Local Module Tests', () => {\n\n  beforeEach(() => {\n    // Reset mocks or any state if necessary\n  });\n\n  test('Call the local function', () => {\n    const reply = localFunction();\n    expect(reply).toBe(\"local reply\");\n    // If using spies to check call count:\n    // const spy = jest.spyOn(module, 'localFunction');\n    // expect(spy).toHaveBeenCalledTimes(1);\n  });\n\n  test('Dependencies function', () => {\n    const reply = dependenciesFunction();\n    expect(reply).toBe(\"hello\");\n  });\n\n  test('Multiple Dependencies', () => {\n    const reply = multipleDependenciesFunction();\n    expect(reply).toBe(\"goodbye\");\n  });\n\n  test('Throw an error', () => {\n    expect(() => errorFunction()).toThrow(\"Intentional Error\");\n  });\n\n  test('Fail a test', () => {\n    const result = \"some actual result\";\n    expect(result).toBe(\"this expectation should fail\");\n  });\n\n});\n```\n\n**Notes:**\n\n- **Spies and Mocks:** To assert that `localFunction` is called a specific number of times, you can use Jest's `jest.spyOn` or `jest.mock` features.\n  \n  ```javascript\n  test('Call the local function once', () => {\n    const spy = jest.spyOn(localModule, 'localFunction');\n    const reply = localFunction();\n    expect(spy).toHaveBeenCalledTimes(1);\n    expect(reply).toBe(\"local reply\");\n    spy.mockRestore();\n  });\n  ```\n\n- **Test Order:** Jest runs tests in the order they are defined within a `describe` block. Ensure that dependent tests are placed after their dependencies.\n\n- **Failing Tests:** Intentionally failing a test can be useful to ensure your test suite correctly identifies failures, but remember to update or remove such tests once they've served their purpose to avoid false negatives in your CI pipeline.\n\n### 8. **Best Practices Summary**\n\n- **Respect Dependencies:** Structure your tests to run dependent tests after their dependencies have been validated.\n- **Isolate Tests:** Ensure that tests do not interfere with each other by sharing state or side effects.\n- **Use Mocks and Spies:** Leverage mocking to simulate dependencies and verify interactions.\n- **Clear Assertions:** Make sure each test clearly and accurately asserts its expected outcome.\n- **Maintain Order:** While tests should ideally be independent, when dependencies exist, carefully manage the order of execution.\n- **Automate and Integrate:** Use CI/CD pipelines to run tests automatically and maintain code quality.\n\nBy following this structured approach, you can ensure that your test suite is robust, reliable, and maintains high code quality standards.",
+              "name": "agents/o1-mini.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729382608,
+              "model": "o1-mini-2024-09-12",
+              "system_fingerprint": "fp_c70ad03337",
+              "duration": 11689,
+              "openAiProcessingMs": 11475,
+              "usage": {
+                "completion_tokens": 1962,
+                "prompt_tokens": 275,
+                "total_tokens": 2237,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 320
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

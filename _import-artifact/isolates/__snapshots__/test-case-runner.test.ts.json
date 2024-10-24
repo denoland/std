@@ -1,0 +1,1158 @@
+{
+  "test with dependencies": {
+    "recordings": {
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV/case_1/before": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/agent-fixture.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                  "type": "function",
+                  "function": {
+                    "name": "io-fixture_local",
+                    "arguments": "{}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384561,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 873,
+              "openAiProcessingMs": 324,
+              "usage": {
+                "completion_tokens": 12,
+                "prompt_tokens": 87,
+                "total_tokens": 99,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_agent-fixture_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                    "type": "function",
+                    "function": {
+                      "name": "io-fixture_local",
+                      "arguments": "{}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "local reply",
+                "tool_call_id": "call_TrqXpjurgn77TXzAtjLUw3lF"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Local reply.",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729384563,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 379,
+              "openAiProcessingMs": 169,
+              "usage": {
+                "completion_tokens": 4,
+                "prompt_tokens": 117,
+                "total_tokens": 121,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ],
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV/case_1/before/assess_0": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "required",
+            "parallel_tool_calls": false,
+            "messages": [
+              {
+                "content": "threadPath: threads/bac_VWVY702R0N37T6HC/case_1/before.json\n\nExpectation: the local function was called",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "content": "You are an expert assessor of test results.\n\nAI agents will have been run previously under test conditions. Your job is to\nassess the resulting system state against the expectation, analyze why the\nsystem prompt used for the AI agent did not perform as well as it could have,\nand list improvements that could be made to the system prompt.\n\nYou will be given two inputs:\n\n1. \"threadPath\" which is a parameter to call the openai function which will read\n   in the system state for assessment against the expectation\n2. An \"Expectation\" to assess the system state against\n\nThe result from the openai function will be a json object with two keys: request\nand response. The request is the api call that was sent to the openai chat\ncompletion endpoint, and the response is what was received back from that api\ncall. Included in this api call will be the system prompt message.\n\nWhen considering the system prompt, look for factual inconsistencies,\nconflicting instructions, overly verbose or redundant sections. Also look for\nways to compress the prompt down to be more direct, or ways to make the prompt\nmore explicit to reduce the chances of deviation.\n\n## The process\n\nThere are only two steps you are allowed to do to complete your task:\n\nFirst, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive\nback.\n\nSecond, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not\nrepeat the expectation or the contents of the thread file verbatim - summarize.",
+                "role": "system",
+                "name": "agents_test-assessor_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_openai",
+                  "description": "recreates the exact request that was sent to openai for the last request, as well as the response back from openai.  Returns the last request exactly as it was sent to the OpenAI api, and the response from the OpenAI api.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "threadPath": {
+                        "type": "string",
+                        "description": "relative path to the thread to recreate the request response pair from"
+                      }
+                    },
+                    "required": [
+                      "threadPath"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_assessment",
+                  "description": "The assessment outcome of a single test iteration, including reasoning, analysis, and improvements",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the chain of thought reasoning for how the outcome was decided upon"
+                      },
+                      "outcome": {
+                        "type": "boolean",
+                        "description": "the outcome of the test iteration, true if the expectation was met, false if it was not"
+                      },
+                      "analysis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have"
+                      },
+                      "improvements": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "outcome"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/test-assessor.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                  "type": "function",
+                  "function": {
+                    "name": "test-case-runner_openai",
+                    "arguments": "{\"threadPath\":\"threads/bac_VWVY702R0N37T6HC/case_1/before.json\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384564,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 697,
+              "openAiProcessingMs": 481,
+              "usage": {
+                "completion_tokens": 39,
+                "prompt_tokens": 617,
+                "total_tokens": 656,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "required",
+            "parallel_tool_calls": false,
+            "messages": [
+              {
+                "content": "threadPath: threads/bac_VWVY702R0N37T6HC/case_1/before.json\n\nExpectation: the local function was called",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_test-assessor_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                    "type": "function",
+                    "function": {
+                      "name": "test-case-runner_openai",
+                      "arguments": "{\"threadPath\":\"threads/bac_VWVY702R0N37T6HC/case_1/before.json\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"request\":{\"model\":\"gpt-4o-mini\",\"messages\":[{\"content\":\"call the local function\",\"role\":\"user\",\"name\":\"iteration_0\"},{\"role\":\"assistant\",\"content\":null,\"name\":\"agents_agent-fixture_md\",\"refusal\":null,\"tool_calls\":[{\"id\":\"call_TrqXpjurgn77TXzAtjLUw3lF\",\"type\":\"function\",\"function\":{\"name\":\"io-fixture_local\",\"arguments\":\"{}\"}}]},{\"role\":\"tool\",\"content\":\"local reply\",\"tool_call_id\":\"call_TrqXpjurgn77TXzAtjLUw3lF\"},{\"role\":\"system\",\"content\":\"Your name is 'Assistant'\\n\\nALWAYS be as brief as possible\",\"name\":\"agents_agent-fixture_md\"}],\"seed\":1337,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"io-fixture_local\",\"description\":\"ping locally\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"io-fixture_error\",\"description\":\"throw an error\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"}},\"required\":[\"message\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true},\"response\":{\"role\":\"assistant\",\"content\":\"Local reply.\",\"name\":\"agents/agent-fixture.md\",\"refusal\":null}}",
+                "tool_call_id": "call_TrqXpjurgn77TXzAtjLUw3lF"
+              },
+              {
+                "content": "You are an expert assessor of test results.\n\nAI agents will have been run previously under test conditions. Your job is to\nassess the resulting system state against the expectation, analyze why the\nsystem prompt used for the AI agent did not perform as well as it could have,\nand list improvements that could be made to the system prompt.\n\nYou will be given two inputs:\n\n1. \"threadPath\" which is a parameter to call the openai function which will read\n   in the system state for assessment against the expectation\n2. An \"Expectation\" to assess the system state against\n\nThe result from the openai function will be a json object with two keys: request\nand response. The request is the api call that was sent to the openai chat\ncompletion endpoint, and the response is what was received back from that api\ncall. Included in this api call will be the system prompt message.\n\nWhen considering the system prompt, look for factual inconsistencies,\nconflicting instructions, overly verbose or redundant sections. Also look for\nways to compress the prompt down to be more direct, or ways to make the prompt\nmore explicit to reduce the chances of deviation.\n\n## The process\n\nThere are only two steps you are allowed to do to complete your task:\n\nFirst, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive\nback.\n\nSecond, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not\nrepeat the expectation or the contents of the thread file verbatim - summarize.",
+                "role": "system",
+                "name": "agents_test-assessor_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_openai",
+                  "description": "recreates the exact request that was sent to openai for the last request, as well as the response back from openai.  Returns the last request exactly as it was sent to the OpenAI api, and the response from the OpenAI api.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "threadPath": {
+                        "type": "string",
+                        "description": "relative path to the thread to recreate the request response pair from"
+                      }
+                    },
+                    "required": [
+                      "threadPath"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_assessment",
+                  "description": "The assessment outcome of a single test iteration, including reasoning, analysis, and improvements",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the chain of thought reasoning for how the outcome was decided upon"
+                      },
+                      "outcome": {
+                        "type": "boolean",
+                        "description": "the outcome of the test iteration, true if the expectation was met, false if it was not"
+                      },
+                      "analysis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have"
+                      },
+                      "improvements": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "outcome"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/test-assessor.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_KxjltrPqXKyk1fcK1OhhCMxi",
+                  "type": "function",
+                  "function": {
+                    "name": "test-case-runner_assessment",
+                    "arguments": "{\"reasoning\":[\"The local function was indeed called as indicated by the tool call in the response, which successfully executed and returned 'Local reply.'\",\"There were no errors or refusals, meaning the assistant functioned as intended in executing the call,\"],\"outcome\":true,\"analysis\":[],\"improvements\":[]}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384566,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 1033,
+              "openAiProcessingMs": 822,
+              "usage": {
+                "completion_tokens": 76,
+                "prompt_tokens": 964,
+                "total_tokens": 1040,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ],
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV/case_1/iteration_0": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_agent-fixture_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                    "type": "function",
+                    "function": {
+                      "name": "io-fixture_local",
+                      "arguments": "{}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "local reply",
+                "tool_call_id": "call_TrqXpjurgn77TXzAtjLUw3lF"
+              },
+              {
+                "role": "assistant",
+                "content": "Local reply.",
+                "name": "agents_agent-fixture_md",
+                "refusal": null
+              },
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/agent-fixture.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_bmk6SePr9Zb7gPQDboQKMt2I",
+                  "type": "function",
+                  "function": {
+                    "name": "io-fixture_local",
+                    "arguments": "{}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384569,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 479,
+              "openAiProcessingMs": 276,
+              "usage": {
+                "completion_tokens": 12,
+                "prompt_tokens": 142,
+                "total_tokens": 154,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "auto",
+            "parallel_tool_calls": true,
+            "messages": [
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_agent-fixture_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_TrqXpjurgn77TXzAtjLUw3lF",
+                    "type": "function",
+                    "function": {
+                      "name": "io-fixture_local",
+                      "arguments": "{}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "local reply",
+                "tool_call_id": "call_TrqXpjurgn77TXzAtjLUw3lF"
+              },
+              {
+                "role": "assistant",
+                "content": "Local reply.",
+                "name": "agents_agent-fixture_md",
+                "refusal": null
+              },
+              {
+                "content": "call the local function",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_agent-fixture_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_bmk6SePr9Zb7gPQDboQKMt2I",
+                    "type": "function",
+                    "function": {
+                      "name": "io-fixture_local",
+                      "arguments": "{}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "local reply",
+                "tool_call_id": "call_bmk6SePr9Zb7gPQDboQKMt2I"
+              },
+              {
+                "content": "Your name is 'Assistant'\n\nALWAYS be as brief as possible",
+                "role": "system",
+                "name": "agents_agent-fixture_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_local",
+                  "description": "ping locally",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "io-fixture_error",
+                  "description": "throw an error",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": "Local reply.",
+              "name": "agents/agent-fixture.md",
+              "refusal": null
+            },
+            "stats": {
+              "created": 1729384570,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 391,
+              "openAiProcessingMs": 185,
+              "usage": {
+                "completion_tokens": 4,
+                "prompt_tokens": 172,
+                "total_tokens": 176,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ],
+      "rep_E8R/dreamcatcher-tech/HAL:main/act_H2R/bac_VWV/case_1/iteration_0/assess_0": [
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "required",
+            "parallel_tool_calls": false,
+            "messages": [
+              {
+                "content": "threadPath: threads/bac_VWVY702R0N37T6HC/case_1/iteration_0.json\n\nExpectation: function was called twice",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "content": "You are an expert assessor of test results.\n\nAI agents will have been run previously under test conditions. Your job is to\nassess the resulting system state against the expectation, analyze why the\nsystem prompt used for the AI agent did not perform as well as it could have,\nand list improvements that could be made to the system prompt.\n\nYou will be given two inputs:\n\n1. \"threadPath\" which is a parameter to call the openai function which will read\n   in the system state for assessment against the expectation\n2. An \"Expectation\" to assess the system state against\n\nThe result from the openai function will be a json object with two keys: request\nand response. The request is the api call that was sent to the openai chat\ncompletion endpoint, and the response is what was received back from that api\ncall. Included in this api call will be the system prompt message.\n\nWhen considering the system prompt, look for factual inconsistencies,\nconflicting instructions, overly verbose or redundant sections. Also look for\nways to compress the prompt down to be more direct, or ways to make the prompt\nmore explicit to reduce the chances of deviation.\n\n## The process\n\nThere are only two steps you are allowed to do to complete your task:\n\nFirst, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive\nback.\n\nSecond, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not\nrepeat the expectation or the contents of the thread file verbatim - summarize.",
+                "role": "system",
+                "name": "agents_test-assessor_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_openai",
+                  "description": "recreates the exact request that was sent to openai for the last request, as well as the response back from openai.  Returns the last request exactly as it was sent to the OpenAI api, and the response from the OpenAI api.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "threadPath": {
+                        "type": "string",
+                        "description": "relative path to the thread to recreate the request response pair from"
+                      }
+                    },
+                    "required": [
+                      "threadPath"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_assessment",
+                  "description": "The assessment outcome of a single test iteration, including reasoning, analysis, and improvements",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the chain of thought reasoning for how the outcome was decided upon"
+                      },
+                      "outcome": {
+                        "type": "boolean",
+                        "description": "the outcome of the test iteration, true if the expectation was met, false if it was not"
+                      },
+                      "analysis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have"
+                      },
+                      "improvements": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "outcome"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/test-assessor.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_RNUwMprBlEPjxJ1BbrSMYv8J",
+                  "type": "function",
+                  "function": {
+                    "name": "test-case-runner_openai",
+                    "arguments": "{\"threadPath\":\"threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384572,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 759,
+              "openAiProcessingMs": 557,
+              "usage": {
+                "completion_tokens": 41,
+                "prompt_tokens": 618,
+                "total_tokens": 659,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "required",
+            "parallel_tool_calls": false,
+            "messages": [
+              {
+                "content": "threadPath: threads/bac_VWVY702R0N37T6HC/case_1/iteration_0.json\n\nExpectation: function was called twice",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_test-assessor_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_RNUwMprBlEPjxJ1BbrSMYv8J",
+                    "type": "function",
+                    "function": {
+                      "name": "test-case-runner_openai",
+                      "arguments": "{\"threadPath\":\"threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"code\":\"NotFoundError\",\"data\":{\"what\":\"threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json\"},\"caller\":\"\",\"name\":\"Error\",\"message\":\"Could not find threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json.\"}",
+                "tool_call_id": "call_RNUwMprBlEPjxJ1BbrSMYv8J"
+              },
+              {
+                "content": "You are an expert assessor of test results.\n\nAI agents will have been run previously under test conditions. Your job is to\nassess the resulting system state against the expectation, analyze why the\nsystem prompt used for the AI agent did not perform as well as it could have,\nand list improvements that could be made to the system prompt.\n\nYou will be given two inputs:\n\n1. \"threadPath\" which is a parameter to call the openai function which will read\n   in the system state for assessment against the expectation\n2. An \"Expectation\" to assess the system state against\n\nThe result from the openai function will be a json object with two keys: request\nand response. The request is the api call that was sent to the openai chat\ncompletion endpoint, and the response is what was received back from that api\ncall. Included in this api call will be the system prompt message.\n\nWhen considering the system prompt, look for factual inconsistencies,\nconflicting instructions, overly verbose or redundant sections. Also look for\nways to compress the prompt down to be more direct, or ways to make the prompt\nmore explicit to reduce the chances of deviation.\n\n## The process\n\nThere are only two steps you are allowed to do to complete your task:\n\nFirst, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive\nback.\n\nSecond, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not\nrepeat the expectation or the contents of the thread file verbatim - summarize.",
+                "role": "system",
+                "name": "agents_test-assessor_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_openai",
+                  "description": "recreates the exact request that was sent to openai for the last request, as well as the response back from openai.  Returns the last request exactly as it was sent to the OpenAI api, and the response from the OpenAI api.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "threadPath": {
+                        "type": "string",
+                        "description": "relative path to the thread to recreate the request response pair from"
+                      }
+                    },
+                    "required": [
+                      "threadPath"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_assessment",
+                  "description": "The assessment outcome of a single test iteration, including reasoning, analysis, and improvements",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the chain of thought reasoning for how the outcome was decided upon"
+                      },
+                      "outcome": {
+                        "type": "boolean",
+                        "description": "the outcome of the test iteration, true if the expectation was met, false if it was not"
+                      },
+                      "analysis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have"
+                      },
+                      "improvements": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "outcome"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/test-assessor.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_u9ztosQXfAk2PtX0U5Qm90N0",
+                  "type": "function",
+                  "function": {
+                    "name": "test-case-runner_openai",
+                    "arguments": "{\"threadPath\":\"threads/bac_VWVY702R0N37T6HC/case_1/iteration_0.json\"}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384574,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 832,
+              "openAiProcessingMs": 619,
+              "usage": {
+                "completion_tokens": 41,
+                "prompt_tokens": 749,
+                "total_tokens": 790,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "model": "gpt-4o-mini",
+            "tool_choice": "required",
+            "parallel_tool_calls": false,
+            "messages": [
+              {
+                "content": "threadPath: threads/bac_VWVY702R0N37T6HC/case_1/iteration_0.json\n\nExpectation: function was called twice",
+                "role": "user",
+                "name": "iteration_0"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_test-assessor_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_RNUwMprBlEPjxJ1BbrSMYv8J",
+                    "type": "function",
+                    "function": {
+                      "name": "test-case-runner_openai",
+                      "arguments": "{\"threadPath\":\"threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"code\":\"NotFoundError\",\"data\":{\"what\":\"threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json\"},\"caller\":\"\",\"name\":\"Error\",\"message\":\"Could not find threads/bac_VVWY702R0N37T6HC/case_1/iteration_0.json.\"}",
+                "tool_call_id": "call_RNUwMprBlEPjxJ1BbrSMYv8J"
+              },
+              {
+                "role": "assistant",
+                "content": null,
+                "name": "agents_test-assessor_md",
+                "refusal": null,
+                "tool_calls": [
+                  {
+                    "id": "call_u9ztosQXfAk2PtX0U5Qm90N0",
+                    "type": "function",
+                    "function": {
+                      "name": "test-case-runner_openai",
+                      "arguments": "{\"threadPath\":\"threads/bac_VWVY702R0N37T6HC/case_1/iteration_0.json\"}"
+                    }
+                  }
+                ]
+              },
+              {
+                "role": "tool",
+                "content": "{\"request\":{\"model\":\"gpt-4o-mini\",\"messages\":[{\"content\":\"call the local function\",\"role\":\"user\",\"name\":\"iteration_0\"},{\"role\":\"assistant\",\"content\":null,\"name\":\"agents_agent-fixture_md\",\"refusal\":null,\"tool_calls\":[{\"id\":\"call_TrqXpjurgn77TXzAtjLUw3lF\",\"type\":\"function\",\"function\":{\"name\":\"io-fixture_local\",\"arguments\":\"{}\"}}]},{\"role\":\"tool\",\"content\":\"local reply\",\"tool_call_id\":\"call_TrqXpjurgn77TXzAtjLUw3lF\"},{\"role\":\"assistant\",\"content\":\"Local reply.\",\"name\":\"agents_agent-fixture_md\",\"refusal\":null},{\"content\":\"call the local function\",\"role\":\"user\",\"name\":\"iteration_0\"},{\"role\":\"assistant\",\"content\":null,\"name\":\"agents_agent-fixture_md\",\"refusal\":null,\"tool_calls\":[{\"id\":\"call_bmk6SePr9Zb7gPQDboQKMt2I\",\"type\":\"function\",\"function\":{\"name\":\"io-fixture_local\",\"arguments\":\"{}\"}}]},{\"role\":\"tool\",\"content\":\"local reply\",\"tool_call_id\":\"call_bmk6SePr9Zb7gPQDboQKMt2I\"},{\"role\":\"system\",\"content\":\"Your name is 'Assistant'\\n\\nALWAYS be as brief as possible\",\"name\":\"agents_agent-fixture_md\"}],\"seed\":1337,\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"io-fixture_local\",\"description\":\"ping locally\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{},\"additionalProperties\":false}}},{\"type\":\"function\",\"function\":{\"name\":\"io-fixture_error\",\"description\":\"throw an error\",\"strict\":false,\"parameters\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"}},\"required\":[\"message\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\",\"parallel_tool_calls\":true},\"response\":{\"role\":\"assistant\",\"content\":\"Local reply.\",\"name\":\"agents/agent-fixture.md\",\"refusal\":null}}",
+                "tool_call_id": "call_u9ztosQXfAk2PtX0U5Qm90N0"
+              },
+              {
+                "content": "You are an expert assessor of test results.\n\nAI agents will have been run previously under test conditions. Your job is to\nassess the resulting system state against the expectation, analyze why the\nsystem prompt used for the AI agent did not perform as well as it could have,\nand list improvements that could be made to the system prompt.\n\nYou will be given two inputs:\n\n1. \"threadPath\" which is a parameter to call the openai function which will read\n   in the system state for assessment against the expectation\n2. An \"Expectation\" to assess the system state against\n\nThe result from the openai function will be a json object with two keys: request\nand response. The request is the api call that was sent to the openai chat\ncompletion endpoint, and the response is what was received back from that api\ncall. Included in this api call will be the system prompt message.\n\nWhen considering the system prompt, look for factual inconsistencies,\nconflicting instructions, overly verbose or redundant sections. Also look for\nways to compress the prompt down to be more direct, or ways to make the prompt\nmore explicit to reduce the chances of deviation.\n\n## The process\n\nThere are only two steps you are allowed to do to complete your task:\n\nFirst, use the test-case-runner:openai function to read the thread file specified by threadPath. Think carefully about the information you receive\nback.\n\nSecond, analyze the information and then call the test-case-runner:assessment function with your assessment. Be brief - do not\nrepeat the expectation or the contents of the thread file verbatim - summarize.",
+                "role": "system",
+                "name": "agents_test-assessor_md"
+              }
+            ],
+            "seed": 1337,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_openai",
+                  "description": "recreates the exact request that was sent to openai for the last request, as well as the response back from openai.  Returns the last request exactly as it was sent to the OpenAI api, and the response from the OpenAI api.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "threadPath": {
+                        "type": "string",
+                        "description": "relative path to the thread to recreate the request response pair from"
+                      }
+                    },
+                    "required": [
+                      "threadPath"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              },
+              {
+                "type": "function",
+                "function": {
+                  "name": "test-case-runner_assessment",
+                  "description": "The assessment outcome of a single test iteration, including reasoning, analysis, and improvements",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "reasoning": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the chain of thought reasoning for how the outcome was decided upon"
+                      },
+                      "outcome": {
+                        "type": "boolean",
+                        "description": "the outcome of the test iteration, true if the expectation was met, false if it was not"
+                      },
+                      "analysis": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the step by step analysis of WHY the system prompt of the target agent under test did NOT perform as well in the outcome as it could have"
+                      },
+                      "improvements": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "the improvement(s) to the agent prompt that would have resulted in better performance to reach the outcome"
+                      }
+                    },
+                    "required": [
+                      "reasoning",
+                      "outcome"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          },
+          "reply": {
+            "assistant": {
+              "role": "assistant",
+              "content": null,
+              "name": "agents/test-assessor.md",
+              "refusal": null,
+              "tool_calls": [
+                {
+                  "id": "call_93wgP7ueuMuCSc90esYfpqup",
+                  "type": "function",
+                  "function": {
+                    "name": "test-case-runner_assessment",
+                    "arguments": "{\"reasoning\":[\"The function was called twice as per the expectation.\",\"The response from the system indicates that it successfully executed the local function on both calls.\"],\"outcome\":true}"
+                  }
+                }
+              ]
+            },
+            "stats": {
+              "created": 1729384575,
+              "model": "gpt-4o-mini-2024-07-18",
+              "system_fingerprint": "fp_482c22a7bc",
+              "duration": 875,
+              "openAiProcessingMs": 654,
+              "usage": {
+                "completion_tokens": 50,
+                "prompt_tokens": 1236,
+                "total_tokens": 1286,
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                },
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
