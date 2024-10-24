@@ -8,9 +8,6 @@
   // folder containing the branding assets of the napp
   "branding": "path/to/branding/",
   
-  // ? does the inference endpoint need to be separate ?
-  // should the entry agent for nl be here too ?
-  // nl could just a tool name with a specific format
   "agent": {
     // entry point that takes plain text in and returns text plus files
     "napp": "napp-runner-name",
@@ -19,8 +16,17 @@
       // parameters for the chat runner, based on what the runner is
       "model": "gpt-4o",
       "parallel_tool_calls": false,
-      "stop_on_tools": ["tool1", "tool3"]
+      "stop_on_tools": ["tool1", "tool3"],
+      // tools are reverse called back to the calling napp file
+      // if the tool list is not given, pass all the tools
+      // if the tool lists some things, use those
+      // can only be strings, else gets too complicated ?
+      // or allow a full json function definition here ?
+      "tools": []
       // content is the reserved name for the input text
+
+      // if instructions was not named instructions, then can pass it in here
+      // instructions.md is preferred, or README.md, else error
     }
   },
   "main": "some-function",
