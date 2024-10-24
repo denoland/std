@@ -1,3 +1,6 @@
 
 [files]
-extend-exclude = []
+extend-exclude = [
+  "_import-HAL",
+  "_import-artifact"
+]

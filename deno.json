@@ -33,7 +33,9 @@
     "cov",
     "_tools/node_test_runner",
     "coverage",
-    "docs"
+    "docs",
+    "_import-HAL",
+    "_import-artifact"
   ],
   "lint": {
     "rules": {
