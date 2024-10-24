@@ -2,7 +2,7 @@
   "name": "@artifact/dumb-bot",
   "version": "0.0.1",
   "napp-format": "v1",
-  "description": "The bot that will one day eat all the other bots",
+  "description": "The bot that will one day end all the other bots",
   "runtime": "deno",
   "branding": "./avatar.jpg",
   "agent": {
