@@ -52,6 +52,3 @@ const getDebug = () => {
 }
 
 Debug.enable(getDebug())
-
-// shim to make isomorphic-git work in deno deploy
-// import { Buffer } from "jsr:@std/io/buffer";

@@ -83,9 +83,7 @@ export default class Compartment {
     return actions as T
   }
   #toFunction(functionName: string, api: IA) {
-    return (
-      parameters?: Params,
-    ) => {
+    return (parameters?: Params) => {
       log('dispatch: %o', functionName)
       if (parameters === undefined) {
         parameters = {}
