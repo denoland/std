@@ -47,11 +47,6 @@
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@std/uuid": "jsr:@std/uuid@^1.0.4",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.7",
-    "@std/yaml": "jsr:@std/yaml@^1.0.5",
-
-    "@artifact/files": "jsr:@artifact/files@^0.0.1",
-    "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
-
-    "zod": "npm:zod"
+    "@std/yaml": "jsr:@std/yaml@^1.0.5"
   }
 }

@@ -4,3 +4,9 @@ files:
 openai:
   - changed-files:
       - any-glob-to-any-file: openai/**
+dumb-bot:
+  - changed-files:
+      - any-glob-to-any-file: dumb-bot/**
+reasoner:
+  - changed-files:
+      - any-glob-to-any-file: reasoner/**
