@@ -1,3 +1,54 @@
+### 2024.10.24
+
+#### @std/async 1.0.7 (patch)
+
+- feat(async/unstable): add `throttle()` function (#6110)
+
+#### @std/cbor 0.1.2 (patch)
+
+- refactor(cbor): replace `toByteStream` function in common with import from
+  `@std/streams` (#6107)
+- test(cbor): number precision error in decoding test (#6115)
+- test(cbor): empty string being excluded from expected result (#6106)
+
+#### @std/collections 1.0.9 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `slidingWindows`
+  (#6095)
+
+#### @std/expect 1.0.6 (patch)
+
+- fix(expect): support `expect.objectContaining` (#6065)
+
+#### @std/fmt 1.0.3 (patch)
+
+- docs(fmt): fix %f width typo in printf docs (#6139)
+- test(fmt): handle missing group separator for 1000.1 in some locales (#6117)
+
+#### @std/fs 1.0.5 (patch)
+
+- refactor(fs): fix uncaught errors in browsers (#6135)
+
+#### @std/http 1.0.9 (patch)
+
+- fix(http): fix tablet and smarttv in Device.type literal types (#6129)
+
+#### @std/json 1.0.1 (patch)
+
+- refactor(json): fix typo (#6103)
+
+#### @std/path 1.0.7 (patch)
+
+- docs(path): re-add URL examples to `@std/path/posix` examples (#6105)
+
+#### @std/tar 0.1.3 (patch)
+
+- docs(tar): fix example in creating directories (#6113)
+
+#### @std/text 1.0.8 (patch)
+
+- feat(text/unstable): handle non-Latin-script text in `slugify` (#6012)
+
 ### 2024.10.10a
 
 #### @std/cbor 0.1.1 (patch)
