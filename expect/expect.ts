@@ -528,25 +528,44 @@ expect.objectContaining = asymmetricMatchers.objectContaining as (
   obj: Record<string, unknown>,
 ) => ReturnType<typeof asymmetricMatchers.objectContaining>;
 /**
- * `expect.not.arrayContaining` matches any received array that does not contain all of the elements in the expected array.
+ * `expect.not.arrayContaining` matches a received array which does not contain
+ * all of the elements in the expected array. That is, the expected array is not
+ * a subset of the received array.
  *
- * `expect.not.objectContaining` matches any received object that does not recursively match the expected properties.
+ * `expect.not.objectContaining` matches any received object that does not recursively
+ * match the expected properties. That is, the expected object is not a subset of the
+ * received object. Therefore, it matches a received object which contains properties
+ * that are not in the expected object.
  *
- * `expect.not.stringContaining`
+ * `expect.not.stringContaining` matches the received value if it is not a string
+ * or if it is a string that does not contain the exact expected string.
  *
- * `expect.not.stringMatching`
+ * `expect.not.stringMatching` matches the received value if it is not a string
+ * or if it is a string that does not match the expected string or regular expression.
  *
  * @example
  * ```ts
  * import { expect } from "@std/expect";
  *
- * Deno.test("expect.not.arrayContaining", () => {});
+ * Deno.test("expect.not.arrayContaining", () => {
+ *   const expected = ["Samantha"];
+ *   expect(["Alice", "Bob", "Eve"]).toEqual(expect.not.arrayContaining(expected));
+ * });
  *
- * Deno.test("expect.not.objectContaining", () => {});
+ * Deno.test("expect.not.objectContaining", () => {
+ *   const expected = { foo: "bar" };
+ *   expect({ bar: "baz" }).toEqual(expect.not.objectContaining(expected));
+ * });
  *
- * Deno.test("expect.not.stringContaining", () => {});
+ * Deno.test("expect.not.stringContaining", () => {
+ *   const expected = "Hello world!";
+ *   expect("How are you?").toEqual(expect.not.stringContaining(expected));
+ * });
  *
- * Deno.test("expect.not.stringMatching", () => {});
+ * Deno.test("expect.not.stringMatching", () => {
+ *   const expected = /Hello world!/;
+ *   expect("How are you?").toEqual(expect.not.stringMatching(expected));
+ * });
  * ```
  */
 expect.not = {

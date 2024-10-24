@@ -17,3 +17,11 @@ Deno.test("expect.stringMatching() with RegExp", () => {
   expect("\e").not.toEqual(expect.stringMatching(/\s/));
   expect("queue").not.toEqual(expect.stringMatching(/en/));
 });
+
+Deno.test("expect.not.stringMatching()", () => {
+  expect("Hello, World").toEqual(expect.not.stringMatching("hello"));
+  expect("foobar").toEqual(expect.not.stringMatching("bazz"));
+  expect("How are you?").toEqual(expect.not.stringMatching(/Hello world!/));
+  expect("queue").toEqual(expect.not.stringMatching(/en/));
+  expect("\e").toEqual(expect.not.stringMatching(/\s/));
+});
