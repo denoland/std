@@ -1,7 +1,5 @@
 {
   "name": "@artifact/fixture",
   "version": "0.0.1",
-  "exports": {
-    ".": "./mod.ts"
-  }
+  "exports": "./mod.ts"
 }

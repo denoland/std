@@ -15,7 +15,7 @@
 
     "@artifact/files": "jsr:@artifact/files@^0.0.1",
     "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
-    "@artifact/dumb-bot": "jsr:@artifact/dumb-bot@^0.0.8",
+    "@artifact/dumb-bot": "jsr:@artifact/dumb-bot@^0.0.16",
     "@artifact/reasoner": "jsr:@artifact/reasoner@^0.0.2",
     "@artifact/fixture": "jsr:@artifact/fixture@^0.0.1",
     "@artifact/hamr": "jsr:@artifact/hamr@^0.0.1",

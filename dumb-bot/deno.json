@@ -1,7 +1,5 @@
 {
   "name": "@artifact/dumb-bot",
-  "version": "0.0.8",
-  "exports": {
-    ".": "./mod.ts"
-  }
+  "version": "0.0.16",
+  "exports": "./mod.ts"
 }
