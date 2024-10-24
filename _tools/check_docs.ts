@@ -33,6 +33,10 @@ const ENTRY_POINTS = [
   "../openai/mod.ts",
   "../dumb-bot/mod.ts",
   "../reasoner/mod.ts",
+  "../fixture/mod.ts",
+  "../hamr/mod.ts",
+  "../info/mod.ts",
+  "../test-file-runner/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
