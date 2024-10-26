@@ -566,17 +566,18 @@ Deno.test({
     });
     await t.step(
       {
-        name: "Object array with no columns, should infer columns",
+        name:
+          "Object array without explicitly defined columns, should infer columns",
         fn() {
-          const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
-          const output = `a${CRLF}1${CRLF}2${CRLF}${CRLF}`;
+          const data = [{ a: 1, b: 1 }, { b: 2, c: 2 }, { d: 3 }];
+          const output = `a,b,c,d${CRLF}1,1,,${CRLF},2,2,${CRLF},,,3${CRLF}`;
           assertEquals(stringify(data), output);
         },
       },
     );
     await t.step(
       {
-        name: "Object array with columns, shouldn't infer columns",
+        name: "Object array with explicitly defined columns, shouldn't infer columns",
         fn() {
           const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
           const columns = ["a"];
