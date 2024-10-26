@@ -577,7 +577,8 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Object array with explicitly defined columns, shouldn't infer columns",
+        name:
+          "Object array with explicitly defined columns, shouldn't infer columns",
         fn() {
           const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
           const columns = ["a"];
