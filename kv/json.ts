@@ -1073,11 +1073,11 @@ export function valueToJSON(value: unknown): KvValueJSON {
         return errorToJSON(value);
       }
       if (value instanceof Map) {
-        const value: [KvValueJSON, KvValueJSON][] = [];
+        const mapped: [KvValueJSON, KvValueJSON][] = [];
         for (const [key, val] of value.entries()) {
-          value.push([valueToJSON(key), valueToJSON(val)]);
+          mapped.push([valueToJSON(key), valueToJSON(val)]);
         }
-        return { type: "Map", value };
+        return { type: "Map", value: mapped };
       }
       if (value === null) {
         return { type: "null", value };
