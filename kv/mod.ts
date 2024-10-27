@@ -6,7 +6,7 @@
  * ## Working with JSON
  *
  * {@linkcode Deno.Kv} stores are able to store values that are serializable
- * using the structured clone alogrithm. The challenge is that supports a lot
+ * using the structured clone algorithm. The challenge is that supports a lot
  * of types that are not serializable using JSON. To work around this, you can
  * use the the utilities to convert values which can be safely serialized to
  * JSON as well as deserialize them back. This makes it possible to fully
