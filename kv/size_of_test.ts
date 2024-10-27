@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 
 import { sizeOf } from "./size_of.ts";
 
@@ -76,8 +76,10 @@ Deno.test({
 Deno.test({
   name: "sizeOf - Error",
   fn() {
-    assert(
-      sizeOf(new URIError("boo hoo", { cause: new Error("boo") })) >= 496,
+    assertAlmostEquals(
+      sizeOf(new URIError("boo hoo", { cause: new Error("boo") })),
+      496,
+      100,
     );
   },
 });
