@@ -1,1 +1,1 @@
-export * from "./completions.ts";
+export * from './completions.ts'

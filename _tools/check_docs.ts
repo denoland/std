@@ -36,7 +36,7 @@ const ENTRY_POINTS = [
   "../fixture/mod.ts",
   "../hamr/mod.ts",
   "../info/mod.ts",
-  "../test-file-runner/mod.ts",
+  "../eval-file-runner/mod.ts",
 ] as const;
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;

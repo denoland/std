@@ -1,0 +1,5 @@
+{
+  "name": "@artifact/eval-file-runner",
+  "version": "0.0.1",
+  "exports": "./mod.ts"
+}

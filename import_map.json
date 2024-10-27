@@ -12,6 +12,7 @@
     "@std/fmt": "jsr:@std/fmt",
     "@std/collections": "jsr:@std/collections",
     "@std/expect": "jsr:@std/expect",
+    "@std/assert": "jsr:@std/assert",
 
     "@artifact/files": "jsr:@artifact/files@^0.0.1",
     "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
@@ -20,8 +21,14 @@
     "@artifact/fixture": "jsr:@artifact/fixture@^0.0.1",
     "@artifact/hamr": "jsr:@artifact/hamr@^0.0.1",
     "@artifact/info": "jsr:@artifact/info@^0.0.1",
-    "@artifact/test-file-runner": "jsr:@artifact/test-file-runner@^0.0.1",
+    "@artifact/eval-file-runner": "jsr:@artifact/eval-file-runner@^0.0.1",
+    "@artifact/napp-tools": "jsr:@artifact/napp-tools@^0.0.1",
 
-    "zod": "npm:zod"
+    "zod": "npm:zod",
+    "zod-to-json-schema": "npm:zod-to-json-schema",
+    "debug": "npm:debug",
+    "serialize-error": "npm:serialize-error",
+    "openai": "npm:openai",
+    "fast-deep-equal": "npm:fast-deep-equal/es6/index.js"
   }
 }

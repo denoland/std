@@ -1,2 +1,1 @@
-export * from "./files.ts";
-export * from "./napp.ts";
+export * from './files.ts'

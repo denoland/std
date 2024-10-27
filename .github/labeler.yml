@@ -19,6 +19,6 @@ hamr:
 info:
   - changed-files:
       - any-glob-to-any-file: info/**
-test-file-runner:
+eval-file-runner:
   - changed-files:
-      - any-glob-to-any-file: test-file-runner/**
+      - any-glob-to-any-file: eval-file-runner/**

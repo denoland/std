@@ -48,6 +48,14 @@
       ]
     }
   },
+  "fmt": {
+    "semiColons": false,
+    "singleQuote": true,
+    "exclude": [
+      "_tools",
+      ".github"
+    ]
+  },
   "workspace": [
     "./files",
     "./openai",
@@ -56,6 +64,7 @@
     "./fixture",
     "./hamr",
     "./info",
-    "./test-file-runner"
+    "./eval-file-runner",
+    "./napp-tools"
   ]
 }

@@ -1,14 +1,14 @@
 {
-  "name": "@artifact/openai",
+  "name": "@artifact/napps",
   "version": "0.0.1",
   "napp-format": "v1",
-  "description": "OpenAI API integration in napp format",
+  "description": "tooling for working with napps",
   "runtime": "deno",
   "branding": "./avatar.jpg",
   "agent": {
     // an agent that can explain about the openai api and suggest how to use it
     "parameters": {
-      "instructions": "./instructions.md",
+      "instructions": "./openai-instructions.md",
       "model": "gpt-4o",
       "tools": []
       // ? how would the tools of the nap package be passed on to this agent ?

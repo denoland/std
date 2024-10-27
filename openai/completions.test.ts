@@ -48,9 +48,9 @@
 //   stop()
 // })
 
-import * as m from "./completions.ts";
-import { expect } from "@std/expect";
+import * as m from './completions.ts'
+import { expect } from '@std/expect'
 
-Deno.test("publish", () => {
-  expect(m.n).toBe(84);
-});
+Deno.test('publish', () => {
+  expect(m.n).toBe(84)
+})

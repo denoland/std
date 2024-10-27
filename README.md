@@ -23,7 +23,8 @@ and documentation:
 | [fixture](https://jsr.io/@artifact/fixture)                   | [![JSR](https://jsr.io/badges/@artifact/fixture)](https://jsr.io/@artifact/fixture)                   |
 | [hamr](https://jsr.io/@artifact/hamr)                         | [![JSR](https://jsr.io/badges/@artifact/hamr)](https://jsr.io/@artifact/hamr)                         |
 | [info](https://jsr.io/@artifact/info)                         | [![JSR](https://jsr.io/badges/@artifact/info)](https://jsr.io/@artifact/info)                         |
-| [test-file-runner](https://jsr.io/@artifact/test-file-runner) | [![JSR](https://jsr.io/badges/@artifact/test-file-runner)](https://jsr.io/@artifact/test-file-runner) |
+| [eval-file-runner](https://jsr.io/@artifact/eval-file-runner) | [![JSR](https://jsr.io/badges/@artifact/eval-file-runner)](https://jsr.io/@artifact/eval-file-runner) |
+| [napp-tools](https://jsr.io/@artifact/napp-tools)             | [![JSR](https://jsr.io/badges/@artifact/napp-tools)](https://jsr.io/@artifact/napp-tools)             |
 
 ## Architecture
 

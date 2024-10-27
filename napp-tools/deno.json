@@ -1,0 +1,5 @@
+{
+  "name": "@artifact/napp-tools",
+  "version": "0.0.1",
+  "exports": "./mod.ts"
+}

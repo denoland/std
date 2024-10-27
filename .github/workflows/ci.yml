@@ -34,14 +34,34 @@ jobs:
         run: deno task test
 
       - name: Generate lcov
+        if: matrix.os == 'ubuntu-latest'
         run: deno task cov:gen
-
+        
       - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: ${{ matrix.os }}
+
+      - name: Run benchmark
+        if: matrix.os == 'ubuntu-latest'
+        run: deno task bench | tee output.txt
+
+      - name: Store benchmark result
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Artifact Benchmarks
+          tool: 'benchmarkjs'
+          output-file-path: output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '200%'
+          comment-on-alert: true
+          fail-on-alert: true
 
   lint:
     runs-on: ${{ matrix.os }}
