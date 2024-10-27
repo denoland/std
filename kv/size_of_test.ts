@@ -135,6 +135,13 @@ Deno.test({
 });
 
 Deno.test({
+  name: "sizeOf - Deno.KvU64",
+  fn() {
+    assertEquals(sizeOf(new Deno.KvU64(100n)), 12);
+  },
+});
+
+Deno.test({
   name: "sizeOf - object with circular reference",
   fn() {
     // deno-lint-ignore no-explicit-any
