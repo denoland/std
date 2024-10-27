@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
+import { assertAlmostEquals, assertEquals } from "@std/assert";
 
 import { sizeOf } from "./size_of.ts";
 
