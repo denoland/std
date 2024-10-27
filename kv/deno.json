@@ -1,0 +1,9 @@
+{
+  "name": "@std/kv",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./json": "./json.ts",
+    "./size-of": "./size_of.ts"
+  }
+}

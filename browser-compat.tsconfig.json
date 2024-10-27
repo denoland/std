@@ -33,6 +33,7 @@
     "./io",
     "./json",
     "./jsonc",
+    "./kv",
     "./log",
     "./media_types",
     "./msgpack",

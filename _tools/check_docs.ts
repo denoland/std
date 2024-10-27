@@ -71,6 +71,7 @@ const ENTRY_POINTS = [
   "../io/mod.ts",
   "../json/mod.ts",
   "../jsonc/mod.ts",
+  "../kv/mod.ts",
   "../log/base_handler.ts",
   "../log/warn.ts",
   "../log/critical.ts",
