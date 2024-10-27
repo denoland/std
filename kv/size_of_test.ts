@@ -133,3 +133,21 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "sizeOf - object with circular reference",
+  fn() {
+    // deno-lint-ignore no-explicit-any
+    const a = { b: 1 as any };
+    const b = { a };
+    a.b = b;
+    assertEquals(sizeOf(a), 11);
+  },
+});
+
+Deno.test({
+  name: "sizeOf - symbol",
+  fn() {
+    assertEquals(sizeOf(Symbol.for("@std/kv")), 0);
+  },
+});

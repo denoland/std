@@ -7,6 +7,7 @@
  */
 
 const encoder = new TextEncoder();
+const hasKvU64 = "Deno" in globalThis && typeof Deno.KvU64 === "function";
 
 /**
  * Estimates the size of a string in bytes.
@@ -164,7 +165,7 @@ function getCalc(seen: WeakSet<object>): (value: unknown) => number {
         if (value instanceof Map) {
           return sizeOfMap(seen, value);
         }
-        if (value instanceof Deno.KvU64) {
+        if (hasKvU64 && value instanceof Deno.KvU64) {
           return 12;
         }
         return sizeOfObject(seen, value as Record<string | symbol, unknown>);

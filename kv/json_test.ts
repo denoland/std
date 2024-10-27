@@ -1,6 +1,11 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals, assertStrictEquals } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertStrictEquals,
+  assertThrows,
+} from "@std/assert";
 import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
 
 import {
@@ -382,6 +387,18 @@ Deno.test({
   name: "toValue - undefined",
   fn() {
     assertStrictEquals(toValue({ type: "undefined" }), undefined);
+  },
+});
+
+Deno.test({
+  name: "toValue - throws TypeError on unknown type",
+  fn() {
+    assertThrows(
+      // deno-lint-ignore no-explicit-any
+      () => toValue({ type: "unknown" } as any),
+      TypeError,
+      'Unexpected value type: "unknown"',
+    );
   },
 });
 

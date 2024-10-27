@@ -1231,9 +1231,6 @@ function toTypedArray(json: KvTypedArrayJSON): ArrayBufferView {
       return u8;
     case "Uint8ClampedArray":
       return new Uint8ClampedArray(u8.buffer);
-    default:
-      // deno-lint-ignore no-explicit-any
-      throw new TypeError(`Unexpected value type: "${(json as any).type}".`);
   }
 }
 
