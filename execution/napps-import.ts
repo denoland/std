@@ -6,5 +6,5 @@
 import * as files from '@artifact/files'
 
 export default {
-    '@artifact/files': files,
+  '@artifact/files': files,
 }

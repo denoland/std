@@ -7,7 +7,7 @@
   "runtime": "deno",
   // folder containing the branding assets of the napp
   "branding": "path/to/branding/",
-  
+
   "agent": {
     // entry point that takes plain text in and returns text plus files
     "napp": "napp-runner-name",
@@ -61,7 +61,7 @@
         }
       }
     },
-    // if the function name is the same, as what is in a napp, 
+    // if the function name is the same, as what is in a napp,
     "some-other-function": "dependent-napp-name",
     "modified-passthru": {
       // passes thru to a tool of the same name
@@ -100,7 +100,6 @@
   "testSideEffects": {
     // special services that can be used for testing - these are still live but
     // are somehow test grade, as in might be cheaper, or no credentials
-
   },
   "mockSideEffects": {
     // when running in the mock environment, these side effects are supplied
@@ -119,11 +118,10 @@
 
 // gateways can be just a fetch function with some urls
 // can make a moneyworks connector, which could be a napp, running as a gateway
-// host 
+// host
 // upstream dependencies ?
 // tools being the same exported as what is in the agent
 // need an agent config that is a generic way
 
 // gateways need to have backups and retry policies
 // gateways need environments, like mock, test, prod
-

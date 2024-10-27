@@ -35,4 +35,3 @@ if (isKvTestMode()) {
 }
 
 Deno.serve(opts, server.fetch)
-

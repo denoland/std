@@ -1,100 +1,100 @@
-import Benchmark from "benchmark";
-import { Debug } from "@utils";
-import { Engine } from "@/engine.ts";
-import { Api } from "@/isolates/io-fixture.ts";
-import { assert } from "@std/assert";
-import DB from "@/db.ts";
-import { Crypto } from "../../api/crypto.ts";
-import { Backchat } from "../../api/client-backchat.ts";
+import Benchmark from 'benchmark'
+import { Debug } from '@utils'
+import { Engine } from '@/engine.ts'
+import { Api } from '@/isolates/io-fixture.ts'
+import { assert } from '@std/assert'
+import DB from '@/db.ts'
+import { Crypto } from '../../api/crypto.ts'
+import { Backchat } from '../../api/client-backchat.ts'
 
-const log = Debug("AI:benchmarks");
-Debug.enable("AI:benchmarks AI:qbr");
-log("starting benchmarks");
+const log = Debug('AI:benchmarks')
+Debug.enable('AI:benchmarks AI:qbr')
+log('starting benchmarks')
 
-const suite = new Benchmark.Suite();
+const suite = new Benchmark.Suite()
 
 const superuserKey =
-  "ed7a15e43c8ca247b61b61af438392b31b71fe2e9eb500b58e0773fc5eb99b8b";
-const aesKey = DB.generateAesKey();
+  'ed7a15e43c8ca247b61b61af438392b31b71fe2e9eb500b58e0773fc5eb99b8b'
+const aesKey = DB.generateAesKey()
 
-const engines: Engine[] = [];
+const engines: Engine[] = []
 const factory = async () => {
-  const engine = await engineFactory();
-  const privateKey = Crypto.generatePrivateKey();
-  const backchat = await Backchat.upsert(engine, privateKey);
-  return backchat;
-};
+  const engine = await engineFactory()
+  const privateKey = Crypto.generatePrivateKey()
+  const backchat = await Backchat.upsert(engine, privateKey)
+  return backchat
+}
 const engineFactory = async () => {
-  const engine = await Engine.provision(superuserKey, aesKey);
-  engines.push(engine);
-  return engine;
-};
-const machineEngine = await engineFactory();
-const machineEnginePrivateKey = Crypto.generatePrivateKey();
-Crypto.load(machineEnginePrivateKey); // do premul crypto so run is not skewed
+  const engine = await Engine.provision(superuserKey, aesKey)
+  engines.push(engine)
+  return engine
+}
+const machineEngine = await engineFactory()
+const machineEnginePrivateKey = Crypto.generatePrivateKey()
+Crypto.load(machineEnginePrivateKey) // do premul crypto so run is not skewed
 
-const backchatStartThread = await factory();
-const backchatReload = await factory();
+const backchatStartThread = await factory()
+const backchatReload = await factory()
 
-const hotPing = await factory();
-const hotPingActions = await hotPing.actions<Api>("io-fixture");
-const install = await factory();
-let installCounter = 0;
+const hotPing = await factory()
+const hotPingActions = await hotPing.actions<Api>('io-fixture')
+const install = await factory()
+let installCounter = 0
 
-log("setup complete");
+log('setup complete')
 
 suite
   // ENGINE
-  .add("engine cold start", {
+  .add('engine cold start', {
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const engine = await Engine.provision(superuserKey, aesKey);
-      deferred.resolve();
-      await engine.stop();
+      const engine = await Engine.provision(superuserKey, aesKey)
+      deferred.resolve()
+      await engine.stop()
     },
   })
   // MACHINE
-  .add("machine root session", { // RENAME to: backchat create
+  .add('machine root session', { // RENAME to: backchat create
     // generate a new machine key and await backchat to upsert
     defer: true,
     async fn(deferred: Benchmark.Deferred) {
-      const privateKey = Crypto.generatePrivateKey();
-      await Backchat.upsert(machineEngine, privateKey);
-      deferred.resolve();
+      const privateKey = Crypto.generatePrivateKey()
+      await Backchat.upsert(machineEngine, privateKey)
+      deferred.resolve()
     },
   })
-  .add("machine reload", { // RENAME to: backchat reload
+  .add('machine reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      await Backchat.upsert(machineEngine, machineEnginePrivateKey);
-      deferred.resolve();
+      await Backchat.upsert(machineEngine, machineEnginePrivateKey)
+      deferred.resolve()
     },
   })
   // SESSION
-  .add("boot", { // RENAME to: full boot from cold
+  .add('boot', { // RENAME to: full boot from cold
     // start an engine and await backchat to upsert
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      await factory();
-      deferred.resolve();
+      await factory()
+      deferred.resolve()
     },
   })
-  .add("session start", { // RENAME to: new thread
+  .add('session start', { // RENAME to: new thread
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      await backchatStartThread.newThread();
-      deferred.resolve();
+      await backchatStartThread.newThread()
+      deferred.resolve()
     },
   })
-  .add("session reload", { // RENAME to: backchat reload
+  .add('session reload', { // RENAME to: backchat reload
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       await Backchat.upsert(
         machineEngine,
         machineEnginePrivateKey,
         backchatReload.id,
-      );
-      deferred.resolve();
+      )
+      deferred.resolve()
     },
   })
   // given an engine that is provisioned, how long to recover the super user ?
@@ -113,27 +113,27 @@ suite
   // run a benchmark from inside an isolate, skipping pierce
   // ? how can we map how long a branch takes to make ?
 
-  .add("cold ping", { // RENAME to: create backchat then ping
+  .add('cold ping', { // RENAME to: create backchat then ping
     // make a new session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
       const backchat = await Backchat.upsert(
         machineEngine,
         machineEnginePrivateKey,
-      );
-      const fixture = await backchat.actions<Api>("io-fixture");
-      const result = await fixture.local({});
-      assert(result === "local reply");
-      deferred.resolve();
+      )
+      const fixture = await backchat.actions<Api>('io-fixture')
+      const result = await fixture.local({})
+      assert(result === 'local reply')
+      deferred.resolve()
     },
   })
-  .add("hot ping", { // RENAME to: ping local
+  .add('hot ping', { // RENAME to: ping local
     // use an existing session
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const result = await hotPingActions.local({});
-      assert(result === "local reply");
-      deferred.resolve();
+      const result = await hotPingActions.local({})
+      assert(result === 'local reply')
+      deferred.resolve()
     },
   })
   // try get max thruput by not waiting for things to complete ?
@@ -145,13 +145,13 @@ suite
   //       deferred.resolve()
   //     },
   //   })
-  .add("install", { // RENAME to: init repo
+  .add('install', { // RENAME to: init repo
     // time how long to install a new multi user app
     defer: true,
     fn: async (deferred: Benchmark.Deferred) => {
-      const repo = "install/" + installCounter++;
-      await install.init({ repo });
-      deferred.resolve();
+      const repo = 'install/' + installCounter++
+      await install.init({ repo })
+      deferred.resolve()
     },
   })
   //   .add('add customer', {
@@ -178,18 +178,18 @@ suite
   //       deferred.resolve()
   //     },
   //   })
-  .on("cycle", (event: Benchmark.Event) => {
-    console.log(String(event.target));
+  .on('cycle', (event: Benchmark.Event) => {
+    console.log(String(event.target))
   })
-  .on("complete", async function () {
-    log("cleaning up");
-    let count = 0;
+  .on('complete', async function () {
+    log('cleaning up')
+    let count = 0
     for (const engine of engines) {
-      log("stopping engine", ++count);
-      await engine.stop();
+      log('stopping engine', ++count)
+      await engine.stop()
     }
   })
-  .run({ async: false });
+  .run({ async: false })
 
 // then do a cloud version running on a sacrificial deployment
 // hundred pings outside

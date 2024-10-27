@@ -13,6 +13,7 @@
     "@std/collections": "jsr:@std/collections",
     "@std/expect": "jsr:@std/expect",
     "@std/assert": "jsr:@std/assert",
+    "@std/dotenv": "jsr:@std/dotenv",
 
     "@artifact/files": "jsr:@artifact/files@^0.0.1",
     "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
@@ -29,6 +30,8 @@
     "debug": "npm:debug",
     "serialize-error": "npm:serialize-error",
     "openai": "npm:openai",
-    "fast-deep-equal": "npm:fast-deep-equal/es6/index.js"
+    "fast-deep-equal": "npm:fast-deep-equal/es6/index.js",
+    "@scure/base": "npm:@scure/base",
+    "imagescript": "npm:imagescript"
   }
 }
