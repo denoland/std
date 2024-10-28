@@ -48,3 +48,17 @@ Deno.test("expect.objectContaining() with Deno Buffer", () => {
     expect.objectContaining({ foo: new DenoBuffer([1, 2, 3]) }),
   );
 });
+
+Deno.test("expect.not.objectContaining()", () => {
+  expect({ bar: "baz" }).toEqual(expect.not.objectContaining({ foo: "bar" }));
+  expect({ foo: ["bar", "baz"] }).toEqual(
+    expect.not.objectContaining({ foo: ["bar", "bar"] }),
+  );
+});
+
+Deno.test("expect.not.objectContaining() with symbols", () => {
+  const foo = Symbol("foo");
+  expect({ [foo]: { bar: "baz" } }).toEqual(
+    expect.objectContaining({ [foo]: { bar: "bazzzz" } }),
+  );
+});
