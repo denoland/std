@@ -31,5 +31,14 @@ Deno.test({
       keyA: "1977-05-25",
       section1: { keyA: 100 },
     }, `keyA=1977-05-25\n[section1]\nkeyA=100`);
+
+    assertValidStringify({ a: 100 }, `a=100`);
+    assertValidStringify({ a: 100 }, `a = 100`, { pretty: true });
+    assertValidStringify({ a: "123foo" }, `a=123foo`);
+    assertValidStringify({ a: "foo" }, `a=foo`);
+    assertValidStringify({ a: true }, `a=true`);
+    assertValidStringify({ a: false }, `a=false`);
+    assertValidStringify({ a: null }, `a=null`);
+    assertValidStringify({ a: undefined }, `a=undefined`);
   },
 });
