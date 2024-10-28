@@ -16,3 +16,17 @@ Deno.test("expect.stringContaining() with other types", () => {
   expect(["foo", "bar"]).not.toEqual(expect.stringContaining("foo"));
   expect({ foo: "bar" }).not.toEqual(expect.stringContaining(`{ foo: "bar" }`));
 });
+
+Deno.test("expect.not.stringContaining() with strings", () => {
+  expect("https://deno.com/").toEqual(expect.not.stringContaining("node"));
+  expect("deno").toEqual(expect.not.stringContaining("Deno"));
+  expect("foobar").toEqual(expect.not.stringContaining("bazz"));
+  expect("How are you?").toEqual(expect.not.stringContaining("Hello world!"));
+});
+
+Deno.test("expect.not.stringContaining() with other types", () => {
+  expect(123).toEqual(expect.not.stringContaining("1"));
+  expect(true).toEqual(expect.not.stringContaining("true"));
+  expect(["foo", "bar"]).toEqual(expect.not.stringContaining("foo"));
+  expect({ foo: "bar" }).toEqual(expect.not.stringContaining(`{ foo: "bar" }`));
+});
