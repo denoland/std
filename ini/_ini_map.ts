@@ -304,7 +304,7 @@ export class IniMap<T = any> {
       ? reviver
       : (_key, value, _section) => {
         if (value === "undefined") return undefined;
-        if (!isNaN(+value) && !value.includes('"')) return parseInt(value);
+        if (!isNaN(+value) && !value.includes('"')) return +value;
         if (value === "null") return null;
         if (value === "true" || value === "false") return value === "true";
         return trimQuotes(value);

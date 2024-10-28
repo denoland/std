@@ -183,6 +183,7 @@ Deno.test({
   name: "parse() return value as number",
   fn() {
     assertEquals(parse("value=123"), { value: 123 });
+    assertEquals(parse("value=1e3"), { value: 1000 });
   },
 });
 
@@ -190,6 +191,7 @@ Deno.test({
   name: "parse() correctly parse number with special characters ",
   fn() {
     assertEquals(parse("value=123foo"), { value: "123foo" });
+    assertEquals(parse('value="1e3"'), { value: "1e3" });
   },
 });
 
@@ -201,15 +203,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() return value as true",
+  name: "parse() correctly parse booleans",
   fn() {
     assertEquals(parse("value=true"), { value: true });
-  },
-});
-
-Deno.test({
-  name: "parse() return value as false",
-  fn() {
     assertEquals(parse("value=false"), { value: false });
   },
 });
