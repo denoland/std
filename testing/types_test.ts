@@ -212,6 +212,7 @@ import {
 {
   // matching
   assertType<IsMutuallyAssignable<string | (string & Date), string>>(true);
+  assertType<IsMutuallyAssignable<string & (string | Date), string>>(true);
   assertType<
     IsMutuallyAssignable<string, string | (string & RegExpMatchArray)>
   >(true);
