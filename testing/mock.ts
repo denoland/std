@@ -453,7 +453,7 @@ function functionSpy<
  * @param func The function to check
  * @return `true` if the function is a spy, `false` otherwise.
  */
-function isSpy<Self, Args extends unknown[], Return>(
+export function isSpy<Self, Args extends unknown[], Return>(
   func: ((this: Self, ...args: Args) => Return) | unknown,
 ): func is Spy<Self, Args, Return> {
   const spy = func as Spy<Self, Args, Return>;
@@ -472,12 +472,12 @@ function getSession(): Set<Spy<any, any[], any>> {
   return sessions.at(-1)!;
 }
 // deno-lint-ignore no-explicit-any
-function registerMock(spy: Spy<any, any[], any>) {
+export function registerMock(spy: Spy<any, any[], any>) {
   const session = getSession();
   session.add(spy);
 }
 // deno-lint-ignore no-explicit-any
-function unregisterMock(spy: Spy<any, any[], any>) {
+export function unregisterMock(spy: Spy<any, any[], any>) {
   const session = getSession();
   session.delete(spy);
 }
@@ -1084,88 +1084,32 @@ export function stub<
     ...args: GetParametersFromProp<Self, Prop>
   ) => GetReturnFromProp<Self, Prop>,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
-/**
- * Replaces an instance property setter or getter with a Stub with the given implementation.
- *
- * @example Usage
- * ```ts
- * import { stub, assertSpyCalls } from "@std/testing/mock";
- * import { assertEquals } from "@std/assert";
- *
- * const obj = {
- *  prop: "foo",
- * };
- *
- * const getterStub = stub(obj, "prop", {
- *  get: function () {
- *    return "bar";
- *  },
- * });
- *
- * assertEquals(obj.prop, "bar");
- * assertSpyCalls(getterStub.get, 1);
- * ```
- *
- * @typeParam Self The self type of the instance to replace a method of.
- * @typeParam Prop The property of the instance to replace.
- * @param self The instance to replace a method of.
- * @param property The property of the instance to replace.
- * @param descriptor The javascript property descriptor with fake implementation of the getter and setter.
- * @returns The stub with get and set properties which are spys of the setter and getter.
- */
-export function stub<Self, Prop extends keyof Self>(
-  self: Self,
-  property: Prop,
-  descriptor: Omit<PropertyDescriptor, "configurable">,
-):
-  & Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>
-  & {
-    get: Spy<
-      Self,
-      GetParametersFromProp<Self, Prop>,
-      GetReturnFromProp<Self, Prop>
-    >;
-    set: Spy<
-      Self,
-      GetParametersFromProp<Self, Prop>,
-      GetReturnFromProp<Self, Prop>
-    >;
-  };
-export function stub<Self, Args extends unknown[], Return>(
+export function stub<
+  Self,
+  Args extends unknown[],
+  Return,
+>(
   self: Self,
   property: keyof Self,
-  descriptorOrFunction?:
-    | ((this: Self, ...args: Args) => Return)
-    | Omit<PropertyDescriptor, "configurable">,
+  func?: (this: Self, ...args: Args) => Return,
 ): Stub<Self, Args, Return> {
-  if (
-    self[property] !== undefined &&
-    typeof self[property] !== "function" &&
-    (descriptorOrFunction === undefined ||
-      typeof descriptorOrFunction === "function")
-  ) {
-    throw new MockError("Cannot stub: property is not an instance method");
+  if (self[property] !== undefined && typeof self[property] !== "function") {
+    throw new MockError(
+      "Cannot stub: property is not an instance method",
+    );
   }
   if (isSpy(self[property])) {
-    throw new MockError("Cannot stub: already spying on instance method");
-  }
-  if (
-    descriptorOrFunction !== undefined &&
-    typeof descriptorOrFunction !== "function" &&
-    descriptorOrFunction.get === undefined &&
-    descriptorOrFunction.set === undefined
-  ) {
-    throw new MockError("Cannot stub: neither setter nor getter is defined");
+    throw new MockError(
+      "Cannot stub: already spying on instance method",
+    );
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
   if (propertyDescriptor && !propertyDescriptor.configurable) {
     throw new MockError("Cannot stub: non-configurable instance method");
   }
-  const fake =
-    descriptorOrFunction && typeof descriptorOrFunction === "function"
-      ? descriptorOrFunction
-      : ((() => {}) as (this: Self, ...args: Args) => Return);
+
+  const fake = func ?? (() => {}) as (this: Self, ...args: Args) => Return;
 
   const original = self[property] as unknown as (
     this: Self,
@@ -1227,30 +1171,12 @@ export function stub<Self, Args extends unknown[], Return>(
     },
   });
 
-  if (descriptorOrFunction && typeof descriptorOrFunction !== "function") {
-    const getterSpy = descriptorOrFunction.get
-      ? spy(descriptorOrFunction.get)
-      : undefined;
-    const setterSpy = descriptorOrFunction.set
-      ? spy(descriptorOrFunction.set)
-      : undefined;
-
-    Object.defineProperty(self, property, {
-      configurable: true,
-      enumerable: propertyDescriptor?.enumerable ?? false,
-      get: getterSpy!,
-      set: setterSpy!,
-    });
-    Object.defineProperty(stub, "get", { value: getterSpy, enumerable: true });
-    Object.defineProperty(stub, "set", { value: setterSpy, enumerable: true });
-  } else {
-    Object.defineProperty(self, property, {
-      configurable: true,
-      enumerable: propertyDescriptor?.enumerable ?? false,
-      writable: propertyDescriptor?.writable ?? false,
-      value: stub,
-    });
-  }
+  Object.defineProperty(self, property, {
+    configurable: true,
+    enumerable: propertyDescriptor?.enumerable ?? false,
+    writable: propertyDescriptor?.writable ?? false,
+    value: stub,
+  });
 
   registerMock(stub);
   return stub;
