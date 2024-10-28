@@ -29,7 +29,8 @@ export interface Stub<
  *
  * @example Usage
  * ```ts
- * import { stub, assertSpyCalls } from "@std/testing/mock";
+ * import { assertSpyCalls } from "@std/testing/mock";
+ * import { stub } from "@std/testing/unstable_stub";
  *
  * const obj = {
  *   method() {
@@ -65,7 +66,7 @@ export function stub<
  *
  * @example Usage
  * ```ts
- * import { stub } from "@std/testing/mock";
+ * import { stub } from "@std/testing/unstable_stub";
  * import { assertEquals } from "@std/assert";
  *
  * const obj = {
@@ -102,7 +103,8 @@ export function stub<
  *
  * @example Usage
  * ```ts
- * import { stub, assertSpyCalls } from "@std/testing/mock";
+ * import { assertSpyCalls } from "@std/testing/mock";
+ * import { stub } from "@std/testing/unstable_stub";
  * import { assertEquals } from "@std/assert";
  *
  * const obj = {
