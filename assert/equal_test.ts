@@ -344,3 +344,70 @@ Deno.test("equal() keyed collection edge cases", () => {
     new Map([[1, { a: 1 }], [2, { b: 3 }]]),
   ));
 });
+
+Deno.test("equal() with dynamic properties defined on the prototype", async (t) => {
+  await t.step("built-in web APIs", async (t) => {
+    await t.step("URLPattern", () => {
+      assert(equal(
+        new URLPattern("*://*.*"),
+        new URLPattern("*://*.*"),
+      ));
+
+      assertFalse(equal(
+        new URLPattern("*://*.*"),
+        new URLPattern("*://*.com"),
+      ));
+    });
+
+    await t.step("URLSearchParams", () => {
+      assert(equal(
+        new URLSearchParams("a=1&b=2"),
+        new URLSearchParams("a=1&b=2"),
+      ));
+
+      assertFalse(equal(
+        new URLSearchParams("a=1&b=2"),
+        new URLSearchParams("a=1&b=99999"),
+      ));
+    });
+
+    await t.step("Intl.Locale", () => {
+      assert(equal(
+        new Intl.Locale("es-MX"),
+        new Intl.Locale("es-MX"),
+      ));
+
+      assertFalse(equal(
+        new Intl.Locale("es-MX"),
+        new Intl.Locale("pt-BR"),
+      ));
+    });
+  });
+
+  await t.step("custom prototype", () => {
+    type Obj = {
+      prop: number;
+    };
+    const wm = new WeakMap<Obj, number>();
+    const proto: Obj = {
+      get prop() {
+        return wm.get(this)!;
+      },
+    };
+    const makeObj = (val: number): Obj => {
+      const x = Object.create(proto);
+      wm.set(x, val);
+      return x;
+    };
+
+    assert(equal(
+      makeObj(1),
+      makeObj(1),
+    ));
+
+    assertFalse(equal(
+      makeObj(1),
+      makeObj(99999),
+    ));
+  });
+});

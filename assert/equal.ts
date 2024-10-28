@@ -12,6 +12,79 @@ function constructorsEqual(a: object, b: object) {
     !a.constructor && b.constructor === Object;
 }
 
+function isBasicObject(obj: object) {
+  const proto = Object.getPrototypeOf(obj);
+  return proto == null || proto === Object.prototype ||
+    proto === Array.prototype;
+}
+
+// Slightly faster than Reflect.ownKeys in V8 as of 12.9.202.13-rusty (2024-10-28)
+function ownKeys(obj: object) {
+  return [
+    ...Object.getOwnPropertyNames(obj),
+    ...Object.getOwnPropertySymbols(obj),
+  ];
+}
+
+function getKeysDeep(obj: object) {
+  const keys = new Set<string | symbol>();
+
+  while (obj !== Object.prototype && obj !== Array.prototype && obj != null) {
+    for (const key of ownKeys(obj)) {
+      keys.add(key);
+    }
+    obj = Object.getPrototypeOf(obj);
+  }
+
+  keys.delete("constructor");
+
+  return keys;
+}
+
+// Stub the `Temporal` classes in case we don't have access to the Temporal API in current env
+class NeverInstanceOf {
+  constructor() {
+    throw new Error("cannot be instantiated");
+  }
+}
+const Temporal = globalThis.Temporal ?? new Proxy({}, {
+  get(_) {
+    return NeverInstanceOf;
+  },
+});
+
+/** A non-exhaustive list of classes that can be accurately fast-path compared with `String(instance)` */
+const stringComparables = [
+  ...new Set([
+    Intl.Locale,
+    RegExp,
+    Temporal.Duration,
+    Temporal.Instant,
+    Temporal.PlainDate,
+    Temporal.PlainDateTime,
+    Temporal.PlainTime,
+    Temporal.PlainYearMonth,
+    Temporal.PlainMonthDay,
+    Temporal.ZonedDateTime,
+    URL,
+    URLSearchParams,
+  ]),
+];
+
+function isPrimitive(x: unknown) {
+  return typeof x === "string" ||
+    typeof x === "number" ||
+    typeof x === "boolean" ||
+    typeof x === "bigint" ||
+    typeof x === "symbol" ||
+    x == null;
+}
+
+/** Check both strict equality (`0 == -0`) and `Object.is` (`NaN == NaN`) */
+function sameValueZero(a: unknown, b: unknown) {
+  return a === b || Object.is(a, b);
+}
+
 /**
  * Deep equality comparison used in assertions.
  *
@@ -24,40 +97,20 @@ function constructorsEqual(a: object, b: object) {
  * import { equal } from "@std/assert/equal";
  *
  * equal({ foo: "bar" }, { foo: "bar" }); // Returns `true`
- * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false
+ * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false`
  * ```
  */
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();
   return (function compare(a: unknown, b: unknown): boolean {
-    // Have to render RegExp & Date for string comparison
-    // unless it's mistreated as object
-    if (
-      a &&
-      b &&
-      ((a instanceof RegExp && b instanceof RegExp) ||
-        (a instanceof URL && b instanceof URL))
-    ) {
-      return String(a) === String(b);
-    }
+    if (sameValueZero(a, b)) return true;
+    if (isPrimitive(a) || isPrimitive(b)) return false;
+
     if (a instanceof Date && b instanceof Date) {
-      const aTime = a.getTime();
-      const bTime = b.getTime();
-      // Check for NaN equality manually since NaN is not
-      // equal to itself.
-      if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
-        return true;
-      }
-      return aTime === bTime;
-    }
-    if (typeof a === "number" && typeof b === "number") {
-      return Number.isNaN(a) && Number.isNaN(b) || a === b;
-    }
-    if (Object.is(a, b)) {
-      return true;
+      return sameValueZero(a.getTime(), b.getTime());
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && !constructorsEqual(a, b)) {
+      if (!constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
@@ -85,14 +138,7 @@ export function equal(c: unknown, d: unknown): boolean {
         }
 
         const aKeys = [...a.keys()];
-        const primitiveKeysFastPath = aKeys.every((k) => {
-          return typeof k === "string" ||
-            typeof k === "number" ||
-            typeof k === "boolean" ||
-            typeof k === "bigint" ||
-            typeof k === "symbol" ||
-            k == null;
-        });
+        const primitiveKeysFastPath = aKeys.every(isPrimitive);
         if (primitiveKeysFastPath) {
           if (a instanceof Set) {
             return a.symmetricDifference(b).size === 0;
@@ -130,15 +176,20 @@ export function equal(c: unknown, d: unknown): boolean {
 
         return unmatchedEntries === 0;
       }
-      const merged = { ...a, ...b };
-      for (
-        const key of [
-          ...Object.getOwnPropertyNames(merged),
-          ...Object.getOwnPropertySymbols(merged),
-        ]
-      ) {
-        type Key = keyof typeof merged;
-        if (!compare(a && a[key as Key], b && b[key as Key])) {
+
+      let keys: Iterable<string | symbol>;
+
+      if (isBasicObject(a)) {
+        keys = ownKeys({ ...a, ...b });
+      } else if (stringComparables.some((Ctor) => a instanceof Ctor)) {
+        return String(a) === String(b);
+      } else {
+        keys = getKeysDeep(a).union(getKeysDeep(b));
+      }
+
+      for (const key of keys) {
+        type Key = keyof typeof a;
+        if (!compare(a[key as Key], b[key as Key])) {
           return false;
         }
         if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
