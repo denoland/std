@@ -1,12 +1,10 @@
 {
-  "name": "@artifact/napps",
+  "name": "@artifact/napp-tools",
   "version": "0.0.1",
   "napp-format": "v1",
   "description": "tooling for working with napps",
   "runtime": "deno",
-  "branding": "./avatar.jpg",
   "agent": {
-    // an agent that can explain about the openai api and suggest how to use it
     "parameters": {
       "instructions": "./openai-instructions.md",
       "model": "gpt-4o",

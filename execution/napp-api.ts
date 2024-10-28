@@ -194,12 +194,12 @@ export default class IA<T extends object = Default> {
    */
   async functions<T = DispatchFunctions>(isolate: Isolate): Promise<T> {
     // TODO these need some kind of PID attached ?
-    const compartment = await Compartment.create(isolate)
+    const compartment = await Compartment.load(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions<T>(this)
   }
   async apiSchema(isolate: Isolate) {
-    const compartment = await Compartment.create(isolate)
+    const compartment = await Compartment.load(isolate)
     return compartment.api
   }
   writeJSON(path: string, json: unknown) {

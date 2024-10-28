@@ -4,7 +4,7 @@ import { z, ZodSchema } from 'zod'
 export type { AssistantMessage, CompletionMessage } from '../openai/zod.ts'
 import { completionMessage } from '../openai/zod.ts'
 import type { Backchat } from './client-backchat.ts'
-import { assert } from '@sindresorhus/is'
+import { assert } from '@std/assert'
 import type OpenAI from 'openai'
 import { randomness } from './randomness.ts'
 export { randomness }
@@ -523,8 +523,9 @@ export const colorize = (
     }
     colorMap.set(sub, index)
   }
-
-  return colors[index](bold(sub))
+  const color = colors[index]
+  assert(typeof color === 'function', 'color not a function')
+  return color(bold(sub))
 }
 export const print = (pid?: PID, noColor = false) => {
   if (!pid) {
@@ -572,6 +573,8 @@ export const freezePid = (pid: PID) => {
 }
 export const partialFromRepo = (repo: string) => {
   const [account, repository] = repo.split('/')
+  assert(account, 'missing account')
+  assert(repository, 'missing repository')
   const pid: PartialPID = {
     account,
     repository,

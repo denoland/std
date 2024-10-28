@@ -14,6 +14,7 @@
     "@std/expect": "jsr:@std/expect",
     "@std/assert": "jsr:@std/assert",
     "@std/dotenv": "jsr:@std/dotenv",
+    "@std/jsonc": "jsr:@std/jsonc",
 
     "@artifact/files": "jsr:@artifact/files@^0.0.1",
     "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
@@ -32,6 +33,9 @@
     "openai": "npm:openai",
     "fast-deep-equal": "npm:fast-deep-equal/es6/index.js",
     "@scure/base": "npm:@scure/base",
-    "imagescript": "npm:imagescript"
+    "imagescript": "npm:imagescript",
+    "ajv": "npm:ajv",
+    "@apideck/better-ajv-errors": "npm:@apideck/better-ajv-errors",
+    "chalk": "npm:chalk"
   }
 }

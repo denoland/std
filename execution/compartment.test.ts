@@ -1,10 +1,8 @@
 import Compartment from './compartment.ts'
 import { expect } from '@std/expect'
 
-Deno.test('compartment', async (t) => {
-  // test that the compartment can load a napp
-
-  const compartment = await Compartment.create('@artifact/files')
+Deno.test('compartment loads a napp', async (t) => {
+  const compartment = await Compartment.load('@artifact/files')
 
   const functions = compartment.functions()
   expect(functions).toHaveProperty('write')

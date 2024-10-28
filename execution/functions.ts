@@ -1,60 +1,132 @@
 // purpose is to turn a napp api into an object with functions
 // types correct on the functions and return types
 
-import type { Napp } from '@artifact/napp-tools/mod.ts'
+import { assert } from '@std/assert'
+import { parse } from '@std/jsonc'
+import { nappSchema } from '@artifact/napp-tools'
+// deno has no dynamic runtime imports, so this is a workaround
+import napps from './napps-import.ts'
+import { fromFileUrl, toFileUrl } from '@std/path'
 
-// depending on whatever api is dropped in, this can generate functions
-// externally or internally.  Internally, the comparment would generate these
-// functions 
+import { Ajv } from 'ajv'
+import { betterAjvErrors } from '@apideck/better-ajv-errors'
+const ajv = new Ajv({ allErrors: true })
 
+type Action = {
+  napp: string
+  tool: string
+  parameters: Record<string, unknown>
+}
 
+/**
+ * Given a napp name, generate
+ * @param name the name of the napp to generate functions for
+ * @example
+ * const functions = await functions('@artifact/files')
+ */
+const functions = async (name: keyof typeof napps) => {
+  const napp = napps[name]
 
-const functions = (napp: Napp, api: NappApi ) => {
+  const config = await readNappConfig(name)
 
-    // the napp should have its code module loaded too ?
-    // So this is how we get the types of the functions we are going to call ?
-    // this is a way to turn a js function into a json object
+  // now we need to resolve all the imported tools
 
-    // should the addressing be done in the api ?
-
-    // where is the code import ?  Might not be able to be typed ?
-    // types could be a convention and be exported by all types of packages.
-    // like a header file that is 
-
-    const actions: DispatchFunctions = {}
-    for (const functionName in this.#napp.parameters) {
-      actions[functionName] = this.#toFunction(functionName, api)
-    }
-    return actions as T
+  const actionCreators = {} as Record<
+    string,
+    (params?: Record<string, unknown>) => Action
+  >
+  if (!config.tools) {
+    return actionCreators
   }
-  #toFunction(functionName: string, api: IA) {
-    return (parameters?: Params) => {
-      log('dispatch: %o', functionName)
-      if (parameters === undefined) {
-        parameters = {}
-      }
-      const schema = this.#napp.parameters[functionName]
-      const path = this.#isolate + '/' + functionName
-      try {
-        schema.parse(parameters)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : ''
-        throw new Error(
-          `Zod schema parameters validation error at path: ${path}\nError: ${message}`,
-        )
-      }
-      return Promise.resolve(
-        this.#napp.functions[functionName](parameters, api),
-      )
-        .then((result) => {
-          const schema = this.#napp.returns[functionName]
-          const parsed = schema.safeParse(result)
-          if (!parsed.success) {
-            throw new Error(
-              `Unrecoverable system error in ${path}. ${parsed.error.message}`,
-            )
+  for (const [tool, schema] of Object.entries(config.tools)) {
+    if (typeof schema === 'string') {
+      console.log('string tool', tool)
+      // const toolConfig = await readNappConfig(tool)
+    } else {
+      const { parameters, returns } = schema
+      if (parameters) {
+        assert(returns, 'tool must have returns: ' + tool)
+        actionCreators[tool] = (params: Record<string, unknown> = {}) => {
+          if (typeof params !== 'object') {
+            throw new Error('parameters must be an object')
           }
-          return result
-        })
+          if (params === null) {
+            throw new Error('parameters must not be null')
+          }
+
+          const valid = ajv.validate(parameters, params)
+
+          if (!valid) {
+            const betterErrors = betterAjvErrors({
+              basePath: 'parameters',
+              schema: parameters,
+              data: params,
+              errors: ajv.errors,
+            })
+            const message = betterErrors.map((e) => JSON.stringify(e, null, 2))
+              .join('\n')
+            throw new Error('Invalid parameters: ' + message)
+          }
+          return {
+            napp: name,
+            tool,
+            parameters: params,
+          }
+        }
+      }
     }
   }
+  console.log(config.tools)
+
+  return actionCreators
+
+  // should the schema be resolved as part of the publication step ?
+  // what about rewiring the imports ?
+
+  // read in the direct schema
+  // read in the resolved schema
+  console.log('napp', napp)
+
+  // turn the zod object into action creators
+
+  // the napp might actually not be importable, but the schemas should be
+  // whether it is zod or jsonschema, we should be able to get the types from
+  // them
+
+  // then from the schemas, product action creators
+
+  // should the addressing be done in the api ?
+
+  // where is the code import ?  Might not be able to be typed ?
+  // types could be a convention and be exported by all types of packages.
+  // like a header file that is
+}
+
+export default functions
+
+const readNappConfig = async (name: string) => {
+  const url = import.meta.resolve(name)
+  assert(url.endsWith('mod.ts'), 'napp must end in mod.ts')
+  const configUrl = url.substring(0, url.length - 'mod.ts'.length) +
+    'napp.jsonc'
+  const file = await readUrl(configUrl)
+  const config = parse(file)
+
+  return nappSchema.parse(config)
+}
+
+const readUrl = async (urlString: string) => {
+  const url = new URL(urlString)
+  if (url.protocol === 'file:') {
+    return await Deno.readTextFile(url.pathname)
+  } else if (url.protocol === 'http:' || url.protocol === 'https:') {
+    // TODO use jsr registry tools to pull in the whole module for reading
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.statusText}`)
+    }
+    return await response.text()
+  } else {
+    throw new Error(`Unsupported protocol: ${url.protocol}`)
+  }
+}

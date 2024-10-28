@@ -14,14 +14,16 @@
       // content is the reserved name for the input text
     }
   },
-  // the rule is that the default export must at least cover the declared tools
   "tools": {
-    // use the main function from the stateboard napp
     "show": "@artifact/stateboard",
     "write": {
       "parameters": {
-        "path": { "type": "string" },
-        "content": { "type": "string" }
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "content": { "type": "string" }
+        },
+        "required": ["path", "content"]
       },
       "returns": {
         "type": "object",

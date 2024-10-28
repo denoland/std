@@ -52,7 +52,7 @@ export class Engine implements EngineInterface {
     this.#superuserKey = superuserKey
   }
   static async boot(superuserKey: string, aesKey: string, seed?: Seed) {
-    const compartment = await Compartment.create('artifact')
+    const compartment = await Compartment.load('@artifact/engine')
     const api = IA.createContext<C>()
     api.context = { aesKey, seed }
     await compartment.mount(api)
@@ -237,7 +237,7 @@ export class Engine implements EngineInterface {
     // if you want to ping in a chain, use an isolate
   }
   async apiSchema(isolate: string) {
-    const compartment = await Compartment.create(isolate)
+    const compartment = await Compartment.load(isolate)
     return compartment.api
   }
   async transcribe(audio: File) {

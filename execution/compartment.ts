@@ -30,7 +30,7 @@ export default class Compartment {
     const missing = Object.keys(parameters).filter((key) => !functions[key])
     assert(!missing.length, `${napp} Missing: ${missing.join(', ')}`)
   }
-  static async create(napp: keyof typeof napps) {
+  static async load(napp: keyof typeof napps) {
     if (!cache.has(napp)) {
       const compartment = new Compartment(napp)
       cache.set(napp, compartment)
@@ -39,10 +39,6 @@ export default class Compartment {
     const compartment = cache.get(napp)
     assert(compartment instanceof Compartment, 'napp not found: ' + napp)
     return compartment
-  }
-  get api() {
-    this.#check()
-    return toApi(this.#napp.parameters)
   }
   /**
    * Mount the isolate as a side effect, and give it the chance to initialize
