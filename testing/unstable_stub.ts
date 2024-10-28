@@ -1,14 +1,13 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { isSpy, registerMock, unregisterMock } from "./_mock_utils.ts";
 import {
   type GetParametersFromProp,
   type GetReturnFromProp,
-  isSpy,
   type MethodSpy,
   MockError,
-  registerMock,
   type Spy,
   spy,
   type SpyCall,
-  unregisterMock,
 } from "./mock.ts";
 
 /** An instance method replacement that records all calls made to it. */
