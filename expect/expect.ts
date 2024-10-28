@@ -14,7 +14,11 @@ import type {
   Matchers,
 } from "./_types.ts";
 import { AssertionError } from "@std/assert/assertion-error";
-import { emitAssertionTrigger, hasAssertions } from "./_assertion.ts";
+import {
+  assertions,
+  emitAssertionTrigger,
+  hasAssertions,
+} from "./_assertions.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -491,6 +495,7 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
 expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
+
 /**
  * `expect.hasAssertions` verifies that at least one assertion is called during a test.
  *
@@ -509,6 +514,26 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * ```
  */
 expect.hasAssertions = hasAssertions as () => void;
+
+/**
+ * `expect.assertions` verifies that a certain number of assertions are called during a test.
+ *
+ * Note: expect.assertions only can use in bdd function test suite, such as `test` or `it`.
+ *
+ * @example
+ * ```ts
+ *
+ * import { test } from "@std/testing/bdd";
+ * import { expect } from "@std/expect";
+ *
+ * test("it works", () => {
+ *   expect.assertions(1);
+ *   expect("a").not.toBe("b");
+ * });
+ * ```
+ */
+expect.assertions = assertions as (num: number) => void;
+
 /**
  * `expect.objectContaining(object)` matches any received object that recursively matches the expected properties.
  * That is, the expected object is not a subset of the received object. Therefore, it matches a received object
