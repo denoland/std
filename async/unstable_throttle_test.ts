@@ -47,7 +47,7 @@ Deno.test("throttle() handles cancelled", () => {
   assertEquals(t.lastExecution, NaN);
 });
 
-Deno.test("debounce() handles flush", () => {
+Deno.test("throttle() handles flush", () => {
   let called = 0;
   let arg = "";
   const t = throttle((_arg) => {
