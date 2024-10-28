@@ -54,10 +54,14 @@
  *   - {@linkcode expect.anything}
  *   - {@linkcode expect.any}
  *   - {@linkcode expect.arrayContaining}
+ *   - {@linkcode expect.not.arrayContaining}
  *   - {@linkcode expect.objectContaining}
+ *   - {@linkcode expect.not.objectContaining}
  *   - {@linkcode expect.closeTo}
  *   - {@linkcode expect.stringContaining}
+ *   - {@linkcode expect.not.stringContaining}
  *   - {@linkcode expect.stringMatching}
+ *   - {@linkcode expect.not.stringMatching}
  * - Utilities:
  *   - {@linkcode expect.assertions}
  *   - {@linkcode expect.addEqualityTester}
@@ -70,8 +74,6 @@
  *   - `toMatchInlineSnapshot`
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`
- * - Asymmetric matchers:
- *   - `expect.not.objectContaining`
  * - Utilities:
  *   - `expect.addSnapshotSerializer`
  *
