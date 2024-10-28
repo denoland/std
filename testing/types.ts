@@ -168,6 +168,8 @@ export type IsNullable<T> = Extract<T, null | undefined> extends never ? false
  *
  * @example Usage
  * ```ts
+ * import { assertType, IsMutuallyAssignable } from "@std/testing/types";
+ *
  * // false because E is not assignable to A
  * assertType<IsMutuallyAssignable<string & RegExpMatchArray, string>>(false);
  * // false because A is not assignable to E
