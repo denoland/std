@@ -10,6 +10,7 @@ import {
   type Has,
   type IsAny,
   type IsExact,
+  type IsMutuallyAssignable,
   type IsNever,
   type IsNullable,
   type IsUnknown,
@@ -205,6 +206,28 @@ import {
       { [x: string]: unknown; prop: any } & { prop: unknown }
     >
   >(false);
+}
+
+// IsMutuallyAssignable
+{
+  // matching
+  assertType<IsMutuallyAssignable<string | (string & Date), string>>(true);
+  assertType<
+    IsMutuallyAssignable<string, string | (string & RegExpMatchArray)>
+  >(true);
+  assertType<
+    IsMutuallyAssignable<(Date & string) | (string & Date), Date & string>
+  >(
+    true,
+  );
+  assertType<IsMutuallyAssignable<never, 0 & 1>>(true);
+
+  // not matching
+  assertType<IsMutuallyAssignable<string & RegExpMatchArray, string>>(false);
+  assertType<IsMutuallyAssignable<string | RegExpMatchArray, string>>(false);
+  assertType<IsMutuallyAssignable<string | number, Date>>(false);
+  assertType<IsMutuallyAssignable<string, number>>(false);
+  assertType<IsMutuallyAssignable<never, any>>(false);
 }
 
 // Has
