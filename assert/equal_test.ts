@@ -411,3 +411,21 @@ Deno.test("equal() with dynamic properties defined on the prototype", async (t) 
     ));
   });
 });
+
+Deno.test("equal() with bytes", async (t) => {
+  await t.step("Uint8Array", async (t) => {
+    await t.step("equal", () => {
+      assert(equal(
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([1, 2, 3]),
+      ));
+    });
+
+    await t.step("unequal", () => {
+      assertFalse(equal(
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([1, 2, 4]),
+      ));
+    });
+  });
+});

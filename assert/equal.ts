@@ -6,15 +6,17 @@ function isKeyedCollection(x: unknown): x is KeyedCollection {
   return x instanceof Set || x instanceof Map;
 }
 
-function constructorsEqual(a: object, b: object) {
-  return a.constructor === b.constructor ||
-    a.constructor === Object && !b.constructor ||
-    !a.constructor && b.constructor === Object;
+function prototypesEqual(a: object, b: object) {
+  const pa = Object.getPrototypeOf(a);
+  const pb = Object.getPrototypeOf(b);
+  return pa === pb ||
+    pa === Object.prototype && pb === null ||
+    pa === null && pb === Object.prototype;
 }
 
-function isBasicObject(obj: object) {
+function isBasicObjectOrArray(obj: object) {
   const proto = Object.getPrototypeOf(obj);
-  return proto == null || proto === Object.prototype ||
+  return proto === null || proto === Object.prototype ||
     proto === Array.prototype;
 }
 
@@ -36,8 +38,6 @@ function getKeysDeep(obj: object) {
     obj = Object.getPrototypeOf(obj);
   }
 
-  keys.delete("constructor");
-
   return keys;
 }
 
@@ -54,22 +54,20 @@ const Temporal = globalThis.Temporal ?? new Proxy({}, {
 });
 
 /** A non-exhaustive list of classes that can be accurately fast-path compared with `String(instance)` */
-const stringComparables = [
-  ...new Set([
-    Intl.Locale,
-    RegExp,
-    Temporal.Duration,
-    Temporal.Instant,
-    Temporal.PlainDate,
-    Temporal.PlainDateTime,
-    Temporal.PlainTime,
-    Temporal.PlainYearMonth,
-    Temporal.PlainMonthDay,
-    Temporal.ZonedDateTime,
-    URL,
-    URLSearchParams,
-  ]),
-];
+const stringComparables = new Set<unknown>([
+  Intl.Locale,
+  RegExp,
+  Temporal.Duration,
+  Temporal.Instant,
+  Temporal.PlainDate,
+  Temporal.PlainDateTime,
+  Temporal.PlainTime,
+  Temporal.PlainYearMonth,
+  Temporal.PlainMonthDay,
+  Temporal.ZonedDateTime,
+  URL,
+  URLSearchParams,
+]);
 
 function isPrimitive(x: unknown) {
   return typeof x === "string" ||
@@ -80,6 +78,16 @@ function isPrimitive(x: unknown) {
     x == null;
 }
 
+type TypedArray = Pick<Uint8Array | BigUint64Array, "length" | number>;
+const TypedArray = Object.getPrototypeOf(Uint8Array);
+function compareTypedArrays(a: TypedArray, b: TypedArray) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < b.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 /** Check both strict equality (`0 == -0`) and `Object.is` (`NaN == NaN`) */
 function sameValueZero(a: unknown, b: unknown) {
   return a === b || Object.is(a, b);
@@ -88,8 +96,8 @@ function sameValueZero(a: unknown, b: unknown) {
 /**
  * Deep equality comparison used in assertions.
  *
- * @param c The actual value
- * @param d The expected value
+ * @param a The actual value
+ * @param b The expected value
  * @returns `true` if the values are deeply equal, `false` otherwise
  *
  * @example Usage
@@ -100,30 +108,31 @@ function sameValueZero(a: unknown, b: unknown) {
  * equal({ foo: "bar" }, { foo: "baz" }); // Returns `false`
  * ```
  */
-export function equal(c: unknown, d: unknown): boolean {
-  const seen = new Map();
-  return (function compare(a: unknown, b: unknown): boolean {
+export function equal(a: unknown, b: unknown): boolean {
+  const seen = new Map<unknown, unknown>();
+
+  function compare(a: unknown, b: unknown): boolean {
     if (sameValueZero(a, b)) return true;
     if (isPrimitive(a) || isPrimitive(b)) return false;
 
     if (a instanceof Date && b instanceof Date) {
-      return sameValueZero(a.getTime(), b.getTime());
+      return Object.is(a.getTime(), b.getTime());
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (!constructorsEqual(a, b)) {
+      if (!prototypesEqual(a, b)) {
         return false;
       }
-      if (a instanceof WeakMap || b instanceof WeakMap) {
-        if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
+      if (a instanceof TypedArray) {
+        return compareTypedArrays(a as TypedArray, b as TypedArray);
+      }
+      if (a instanceof WeakMap) {
         throw new TypeError("cannot compare WeakMap instances");
       }
-      if (a instanceof WeakSet || b instanceof WeakSet) {
-        if (!(a instanceof WeakSet && b instanceof WeakSet)) return false;
+      if (a instanceof WeakSet) {
         throw new TypeError("cannot compare WeakSet instances");
       }
-      if (a instanceof WeakRef || b instanceof WeakRef) {
-        if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
-        return compare(a.deref(), b.deref());
+      if (a instanceof WeakRef) {
+        return compare(a.deref(), (b as WeakRef<WeakKey>).deref());
       }
       if (seen.get(a) === b) {
         return true;
@@ -179,11 +188,14 @@ export function equal(c: unknown, d: unknown): boolean {
 
       let keys: Iterable<string | symbol>;
 
-      if (isBasicObject(a)) {
+      if (isBasicObjectOrArray(a)) {
+        // fast path
         keys = ownKeys({ ...a, ...b });
-      } else if (stringComparables.some((Ctor) => a instanceof Ctor)) {
+      } else if (stringComparables.has(a.constructor)) {
+        // medium path
         return String(a) === String(b);
       } else {
+        // slow path
         keys = getKeysDeep(a).union(getKeysDeep(b));
       }
 
@@ -199,5 +211,9 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     return false;
-  })(c, d);
+  }
+
+  const result = compare(a, b);
+
+  return result;
 }
