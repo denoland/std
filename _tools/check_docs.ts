@@ -183,6 +183,9 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   }
 }
 
+/**
+ * Asserts that a @param tag has a corresponding function definition.
+ */
 function assertHasParamDefinition(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
   param: JsDocTagParam,
@@ -322,6 +325,7 @@ function assertHasTypeParamTags(
  * Asserts that a function document has:
  * - A `@typeParam` tag for each type parameter.
  * - A {@linkcode https://jsdoc.app/tags-param | @param} tag for each parameter.
+ * - A parameter definition inside the function for each @param tag.
  * - A {@linkcode https://jsdoc.app/tags-returns | @returns} tag.
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
