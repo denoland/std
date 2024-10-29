@@ -427,5 +427,12 @@ Deno.test("equal() with bytes", async (t) => {
         new Uint8Array([1, 2, 4]),
       ));
     });
+
+    await t.step("length unequal", () => {
+      assertFalse(equal(
+        new Uint8Array([0]),
+        new Uint8Array([0, 0]),
+      ));
+    });
   });
 });
