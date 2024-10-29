@@ -307,6 +307,9 @@ function assertFunctionDocs(
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
     }
+    if (param.kind === "rest" && param.arg.kind === "identifier") {
+      assertHasParamTag(document, param.arg.name);
+    }
     if (param.kind === "assign" && param.left.kind === "identifier") {
       assertHasParamTag(document, param.left.name);
     }
