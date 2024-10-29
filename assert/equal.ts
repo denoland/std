@@ -41,34 +41,27 @@ function getKeysDeep(obj: object) {
   return keys;
 }
 
-// Stub the `Temporal` classes in case we don't have access to the Temporal API in current env
-class NeverInstanceOf {
-  constructor() {
-    throw new Error("cannot be instantiated");
-  }
-}
 // deno-lint-ignore no-explicit-any
-const Temporal: any = (globalThis as any).Temporal ?? new Proxy({}, {
-  get(_) {
-    return NeverInstanceOf;
-  },
-});
+const Temporal: any = (globalThis as any).Temporal ??
+  new Proxy({}, { get: () => {} });
 
-/** A non-exhaustive list of classes that can be accurately fast-path compared with `String(instance)` */
-const stringComparables = new Set<unknown>([
-  Intl.Locale,
-  RegExp,
-  Temporal.Duration,
-  Temporal.Instant,
-  Temporal.PlainDate,
-  Temporal.PlainDateTime,
-  Temporal.PlainTime,
-  Temporal.PlainYearMonth,
-  Temporal.PlainMonthDay,
-  Temporal.ZonedDateTime,
-  URL,
-  URLSearchParams,
-]);
+/** A non-exhaustive list of prototypes that can be accurately fast-path compared with `String(instance)` */
+const stringComparablePrototypes = new Set<unknown>(
+  [
+    Intl.Locale,
+    RegExp,
+    Temporal.Duration,
+    Temporal.Instant,
+    Temporal.PlainDate,
+    Temporal.PlainDateTime,
+    Temporal.PlainTime,
+    Temporal.PlainYearMonth,
+    Temporal.PlainMonthDay,
+    Temporal.ZonedDateTime,
+    URL,
+    URLSearchParams,
+  ].filter((x) => x != null).map((x) => x.prototype),
+);
 
 function isPrimitive(x: unknown) {
   return typeof x === "string" ||
@@ -111,8 +104,7 @@ function sameValueZero(a: unknown, b: unknown) {
  */
 export function equal(a: unknown, b: unknown): boolean {
   const seen = new Map<unknown, unknown>();
-
-  function compare(a: unknown, b: unknown): boolean {
+  return (function compare(a: unknown, b: unknown): boolean {
     if (sameValueZero(a, b)) return true;
     if (isPrimitive(a) || isPrimitive(b)) return false;
 
@@ -192,7 +184,7 @@ export function equal(a: unknown, b: unknown): boolean {
       if (isBasicObjectOrArray(a)) {
         // fast path
         keys = ownKeys({ ...a, ...b });
-      } else if (stringComparables.has(a.constructor)) {
+      } else if (stringComparablePrototypes.has(Object.getPrototypeOf(a))) {
         // medium path
         return String(a) === String(b);
       } else {
@@ -212,9 +204,5 @@ export function equal(a: unknown, b: unknown): boolean {
       return true;
     }
     return false;
-  }
-
-  const result = compare(a, b);
-
-  return result;
+  })(a, b);
 }
