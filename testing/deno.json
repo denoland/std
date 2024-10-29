@@ -8,6 +8,6 @@
     "./time": "./time.ts",
     "./types": "./types.ts",
     "./unstable-types": "./unstable_types.ts",
-    "./unstable_stub": "./unstable_stub.ts"
+    "./unstable-stub": "./unstable_stub.ts"
   }
 }
