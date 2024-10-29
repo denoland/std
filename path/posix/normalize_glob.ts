@@ -25,8 +25,9 @@ export type { GlobOptions };
  */
 export function normalizeGlob(
   glob: string,
-  { globstar = false }: GlobOptions = {},
+  options: Pick<GlobOptions, "globstar"> = {},
 ): string {
+  const { globstar = false }: GlobOptions = options;
   if (glob.match(/\0/g)) {
     throw new Error(`Glob contains invalid characters: "${glob}"`);
   }
