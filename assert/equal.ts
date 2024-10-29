@@ -47,7 +47,8 @@ class NeverInstanceOf {
     throw new Error("cannot be instantiated");
   }
 }
-const Temporal = globalThis.Temporal ?? new Proxy({}, {
+// deno-lint-ignore no-explicit-any
+const Temporal: any = (globalThis as any).Temporal ?? new Proxy({}, {
   get(_) {
     return NeverInstanceOf;
   },
