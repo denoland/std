@@ -41,7 +41,11 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * import { assert } from "@std/assert"
  *
  * let called = 0;
- * await using server = Deno.serve({ port: 0, onListen:() => null }, () => new Response(`${called++}`));
+ * const requestReceived = Promise.withResolvers<void>();
+ * await using server = Deno.serve({ port: 0 }, () => {
+ *   requestReceived.resolve();
+ *   return new Response(`${called++}`)
+ * });
  *
  * // A throttled function will be executed at most once during a specified ms timeframe
  * const timeframe = 100
@@ -51,6 +55,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * }
  *
  * await retry(() => assert(!func.throttling))
+ * await requestReceived.promise;
  * assert(called === 1)
  * assert(!Number.isNaN(func.lastExecution))
  * ```
