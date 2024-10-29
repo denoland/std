@@ -200,6 +200,7 @@ function assertHasParamDefinition(
     ) {
       return paramDoc.left.name === param.name;
     }
+    return false;
   });
 
   if (!paramDoc) {
