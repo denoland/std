@@ -19,6 +19,7 @@ import {
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
+  type JsDocTagParam,
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
@@ -182,6 +183,32 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   }
 }
 
+function assertHasParamDefinition(
+  document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
+  param: JsDocTagParam,
+) {
+  const paramDoc = document.functionDef.params.find((paramDoc) => {
+    if (paramDoc.kind === "identifier") {
+      return paramDoc.name === param.name;
+    } else if (paramDoc.kind === "rest" && paramDoc.arg.kind === "identifier") {
+      return paramDoc.arg.name === param.name;
+    } else if (
+      paramDoc.kind === "assign" && paramDoc.left.kind === "identifier"
+    ) {
+      return paramDoc.left.name === param.name;
+    }
+  });
+
+  if (!paramDoc) {
+    diagnostics.push(
+      new DocumentError(
+        `@param ${param.name} must have a corresponding named function parameter definition.`,
+        document,
+      ),
+    );
+  }
+}
+
 function assertHasParamTag(
   document: { jsDoc: JsDoc; location: Location },
   param: string,
@@ -314,6 +341,17 @@ function assertFunctionDocs(
       assertHasParamTag(document, param.left.name);
     }
   }
+
+  const documentedParams = document.jsDoc.tags?.filter((
+    tag,
+  ): tag is JsDocTagParam =>
+    // Filter nested definitions like options.root as it is still documenting options parameter
+    tag.kind === "param" && !tag.name.includes(".")
+  ) ?? [];
+  for (const param of documentedParams) {
+    assertHasParamDefinition(document, param);
+  }
+
   for (const typeParam of document.functionDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
