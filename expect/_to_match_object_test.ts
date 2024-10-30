@@ -50,3 +50,21 @@ Deno.test("expect().toMatchObject()", () => {
     expect([house0]).not.toMatchObject([desiredHouse]);
   }, AssertionError);
 });
+
+Deno.test("expect().toMatchObject() with array", () => {
+  const fixedPriorityQueue = Array.from({ length: 5 });
+  fixedPriorityQueue[0] = { data: 1, priority: 0 };
+
+  expect(fixedPriorityQueue).toMatchObject([
+    { data: 1, priority: 0 },
+  ]);
+});
+
+Deno.test("expect(),toMatchObject() with asyAsymmetric matcher", () => {
+  expect({ position: { x: 0, y: 0 } }).toMatchObject({
+    position: {
+      x: expect.any(Number),
+      y: expect.any(Number),
+    },
+  });
+});
