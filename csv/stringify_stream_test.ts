@@ -64,7 +64,7 @@ Deno.test({
       await assertRejects(
         async () => await Array.fromAsync(readable),
         TypeError,
-        "Invalid type: columns can only be an array.",
+        "Invalid type: columns can only be an array",
       );
     });
 
