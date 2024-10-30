@@ -6,6 +6,7 @@
     "./mock": "./mock.ts",
     "./snapshot": "./snapshot.ts",
     "./time": "./time.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./unstable-types": "./unstable_types.ts"
   }
 }
