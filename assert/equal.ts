@@ -77,7 +77,7 @@ const TypedArray = Object.getPrototypeOf(Uint8Array);
 function compareTypedArrays(a: TypedArray, b: TypedArray) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < b.length; i++) {
-    if (a[i] !== b[i]) return false;
+    if (!sameValueZero(a[i], b[i])) return false;
   }
   return true;
 }

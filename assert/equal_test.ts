@@ -412,7 +412,7 @@ Deno.test("equal() with dynamic properties defined on the prototype", async (t) 
   });
 });
 
-Deno.test("equal() with bytes", async (t) => {
+Deno.test("equal() with typed arrays", async (t) => {
   await t.step("Uint8Array", async (t) => {
     await t.step("equal", () => {
       assert(equal(
@@ -432,6 +432,22 @@ Deno.test("equal() with bytes", async (t) => {
       assertFalse(equal(
         new Uint8Array([0]),
         new Uint8Array([0, 0]),
+      ));
+    });
+  });
+
+  await t.step("Float64Array", async (t) => {
+    await t.step("NaN == NaN", () => {
+      assert(equal(
+        new Float64Array([NaN]),
+        new Float64Array([NaN]),
+      ));
+    });
+
+    await t.step("0 == -0", () => {
+      assert(equal(
+        new Float64Array([0]),
+        new Float64Array([-0]),
       ));
     });
   });
