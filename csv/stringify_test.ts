@@ -566,7 +566,8 @@ Deno.test({
     });
     await t.step(
       {
-        name: "Object array with no columns, should infer columns from the first array element",
+        name:
+          "Object array with no columns, should infer columns from the first array element",
         fn() {
           const data = [{ a: 1 }, { a: 2 }, { b: 3 }];
           const output = `a${CRLF}1${CRLF}2${CRLF}${CRLF}`;
