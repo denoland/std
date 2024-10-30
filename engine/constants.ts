@@ -26,23 +26,6 @@ import { ZodObject, ZodSchema, ZodUnknown } from 'zod'
 
 export const REPO_LOCK_TIMEOUT_MS = 5000
 
-/** Artifact Context, including the db and executor */
-export type C = {
-  db: DB
-  exe: Executor
-  aesKey?: string
-  seed?: Deno.KvEntry<unknown>[]
-}
-
-/** Extends the actions api to be the isolate api */
-export type Functions<Api> = {
-  [K in keyof Api]: Function<Api[K]>
-}
-
-type Function<T> = T extends (...args: infer Args) => infer R
-  ? (...args: [...Args, IA]) => R
-  : never
-
 export type IsolateFunction = {
   (): unknown | Promise<unknown>
   (...args: [Params]): unknown | Promise<unknown>
@@ -63,61 +46,6 @@ export type Isolate = {
   lifecycles?: IsolateLifecycle
 }
 
-export type Poolable = MergeReply | RemoteRequest
-export type Reply = SolidReply | MergeReply
-export type EffectRequest = {
-  target: PID
-  /**
-   * The hash of the function that was called, to ensure repeatability
-   */
-  fingerprint: string
-  sequence: number
-}
-export type SolidReply = {
-  target: PID
-  sequence: number
-  outcome: Outcome
-}
-export type MergeReply = SolidReply & {
-  /**
-   * Where did this merge reply come from?
-   */
-  source: PID
-  /**
-   * The commit that solidified this merge reply, which is used as a merge
-   * parent in the recipient branch, so that any changes to the fs can be
-   * accessed and so the provenance of the action is included.
-   */
-  commit: string
-}
-export type IsolatePromise =
-  | BareIsolatePromise
-  | PromisedIsolatePromise
-  | SettledIsolatePromise
-type BareIsolatePromise = {
-  request: UnsequencedRequest
-}
-export type PromisedIsolatePromise<T = unknown> = BareIsolatePromise & {
-  promise: MetaPromise<T>
-  resolve: (value: T) => void
-  reject: (error: Error) => void
-}
-export type SettledIsolatePromise<T = unknown> =
-  & (BareIsolatePromise | PromisedIsolatePromise<T>)
-  & {
-    outcome: Outcome
-    /** if an outcome is given, there must be a commit associated with it, so
-     * that the execution filesystem can be ticked forwards */
-    commit: string
-    /** If the outcome was the result of a branch returning, then the parent
-     * commit of that branch is given here */
-    parent?: string
-  }
-export const isSettledIsolatePromise = (
-  p: IsolatePromise,
-): p is SettledIsolatePromise => {
-  return 'outcome' in p
-}
 export type Solids = {
   oid: string
   commit: CommitObject
@@ -161,21 +89,6 @@ export type Pending = {
   sequence: number
 }
 
-export const isMergeReply = (
-  poolable: Poolable | SolidReply,
-): poolable is MergeReply => {
-  return 'commit' in poolable && 'outcome' in poolable
-}
-export const isReply = (
-  poolable: Poolable | Pierce | SolidReply,
-): poolable is Reply => {
-  return 'outcome' in poolable
-}
-export const isRemoteRequest = (
-  poolable: Request,
-): poolable is RemoteRequest => {
-  return 'commit' in poolable && 'proctype' in poolable
-}
 /**
  * Messages that go on the queue are one of three types.  Each one is an
  * operation that will result in a new commit, atomically.  Each operation is
@@ -247,5 +160,3 @@ export const toApi = (parameters: Record<string, ZodSchema>) => {
   }
   return api
 }
-
-export * from './api/types.ts'

@@ -1,4 +1,4 @@
-import functionCreator from './functions.ts'
+import functionCreator from './actions.ts'
 import { expect } from '@std/expect'
 import { assert } from '@std/assert'
 
@@ -9,5 +9,10 @@ Deno.test('functions', async (t) => {
   assert(functions.write, 'write function not found')
   expect(functions.write).toThrow('Invalid parameters')
   const result = functions.write({ path: 'test.txt', content: 'hello world' })
-  console.log(result)
+  expect(result).toEqual({
+    napp: '@artifact/files',
+    tool: 'write',
+    parameters: { path: 'test.txt', content: 'hello world' },
+    files: [],
+  })
 })

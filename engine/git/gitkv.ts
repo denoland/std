@@ -1,9 +1,11 @@
-import { Debug } from '@utils'
-import { getRepoBase, headKeyToPid } from '@/keys.ts'
-import type DB from '@/db.ts'
-import { assert, AssertionError, equal } from '@utils'
-import { PID } from '@/constants.ts'
-import { Atomic } from '@/atomic.ts'
+import Debug from 'debug'
+import { getRepoBase, headKeyToPid } from '../keys.ts'
+import type DB from '../db.ts'
+import { assert, AssertionError } from '@std/assert'
+import equal from 'fast-deep-equal'
+
+import type { PID } from '@artifact/api/addressing'
+import type { Atomic } from '../atomic.ts'
 
 const log = Debug('git:KV')
 
@@ -224,6 +226,7 @@ export class GitKV {
     assert(rest, 'path must not be bare')
     const prefix = getRepoBase(this.#pid)
     const pathKey = rest.split('/')
+    assert(pathKey[0], 'path must have a first key')
     assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
 
     return [...prefix, ...pathKey]

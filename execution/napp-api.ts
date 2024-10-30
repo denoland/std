@@ -35,7 +35,7 @@ type EffectOptions = {
   isEffectRecovered: boolean
 }
 
-export default class IA<T extends object = Default> {
+export default class NappApi<T extends Record<string, unknown> = Default> {
   #accumulator: Accumulator
   #origin: SolidRequest
   #originCommit: string | undefined
@@ -59,16 +59,16 @@ export default class IA<T extends object = Default> {
     originCommit?: string,
     opts?: EffectOptions,
   ) {
-    const api = new IA(accumulator, origin, originCommit)
+    const api = new NappApi(accumulator, origin, originCommit)
     if (opts) {
       api.#isEffect = opts.isEffect || false
       api.#isEffectRecovered = opts.isEffectRecovered || false
     }
     return api
   }
-  static createContext<T extends object = Default>() {
+  static createContext<T extends Record<string, unknown> = Default>() {
     // TODO find a more graceful way to do this for cradle setup
-    return new IA<T>(
+    return new NappApi<T>(
       null as unknown as Accumulator,
       null as unknown as SolidRequest,
     )
@@ -106,7 +106,7 @@ export default class IA<T extends object = Default> {
     assert(this.isEffect, 'signal only available for side effects')
     return this.#abort.signal
   }
-  // TODO make get and set config be synchronous
+  // TODO make get and set state be synchronous
   async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
     schema: T,
     fallback: z.infer<T>,
@@ -192,15 +192,11 @@ export default class IA<T extends object = Default> {
    * @returns An object keyed by API function name, with values being the
    * function itself.
    */
-  async functions<T = DispatchFunctions>(isolate: Isolate): Promise<T> {
+  async functions(napp: keyof napps) {
     // TODO these need some kind of PID attached ?
     const compartment = await Compartment.load(isolate)
     // TODO but these need to be wrapped in a dispatch call somewhere
     return compartment.functions<T>(this)
-  }
-  async apiSchema(isolate: Isolate) {
-    const compartment = await Compartment.load(isolate)
-    return compartment.api
   }
   writeJSON(path: string, json: unknown) {
     assert(this.#accumulator.isActive, 'Activity is denied')

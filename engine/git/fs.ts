@@ -1,6 +1,10 @@
+import git, { Errors, type MergeDriverCallback } from 'isomorphic-git'
+import http from 'isomorphic-git/http/web/index.js'
 import diff3Merge from 'diff3'
-import http from '$git/http/web/index.js'
-import { assert, Debug, equal, posix } from '@utils'
+import Debug from 'debug'
+import { assert } from '@std/assert/assert'
+import equal from 'fast-deep-equal'
+import * as posix from '@std/path/posix'
 import {
   Change,
   ENTRY_BRANCH,
@@ -13,8 +17,7 @@ import {
   sha1,
   type TreeEntry,
 } from '@/constants.ts'
-import git, { Errors, type MergeDriverCallback } from '$git'
-import type DB from '@/db.ts'
+import type DB from '../db.ts'
 import { GitKV } from './gitkv.ts'
 const log = Debug('git:fs')
 const dir = '/'
@@ -679,9 +682,10 @@ const generateFakeRepoId = () => {
 }
 
 const mergeDriver: MergeDriverCallback = ({ contents, path }) => {
-  const baseContent = contents[0]
-  const ourContent = contents[1]
-  const theirContent = contents[2]
+  const [baseContent, ourContent, theirContent] = contents
+  assert(typeof baseContent === 'string', 'base content not found')
+  assert(typeof ourContent === 'string', 'our content not found')
+  assert(typeof theirContent === 'string', 'their content not found')
 
   if (path === IO_PATH) {
     return { cleanMerge: true, mergedText: ourContent }

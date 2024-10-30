@@ -5,7 +5,7 @@ import {
   Poolable,
   SolidRequest,
 } from '@/constants.ts'
-import { assert } from '@utils'
+import { assert } from '@std/assert/assert'
 /** The current count of everything that has been atomically pooled */
 export const POOL_COUNTER = 'counter'
 /** What value the pool has been processed up to */

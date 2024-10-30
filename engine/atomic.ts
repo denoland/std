@@ -1,5 +1,5 @@
-import * as keys from '../_import-artifact./engine/keys.ts'
-import { hasPoolables } from '@/db.ts'
+import * as keys from './keys.ts'
+import { hasPoolables } from './db.ts'
 import {
   isMergeReply,
   PID,
@@ -9,7 +9,9 @@ import {
   QueueMessageType,
   sha1,
 } from '@/constants.ts'
-import { assert, Debug, isKvTestMode } from '@utils'
+import { assert } from '@std/assert'
+import Debug from 'debug'
+import { isKvTestMode } from './utils.ts'
 
 const log = Debug('AI:db:atomic')
 
@@ -125,11 +127,14 @@ export class Atomic {
   }
   #enqueue(message: QueueMessage) {
     assert(this.#atomic, 'Atomic not set')
-    const backoffSchedule = isKvTestMode() ? [] : undefined
-    this.#atomic = this.#atomic.enqueue(message, {
-      keysIfUndelivered: [keys.UNDELIVERED],
-      backoffSchedule,
-    })
+    const options: {
+      keysIfUndelivered: Deno.KvKey[]
+      backoffSchedule?: number[]
+    } = { keysIfUndelivered: [keys.UNDELIVERED] }
+    if (isKvTestMode()) {
+      options.backoffSchedule = []
+    }
+    this.#atomic = this.#atomic.enqueue(message, options)
     return this
   }
   #increasePool(pid: PID, amount: bigint) {

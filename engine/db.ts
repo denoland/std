@@ -1,21 +1,12 @@
 import { pushable } from 'it-pushable'
 import { BLOB_META_KEY } from '@kitsonk/kv-toolbox/blob'
 import { CryptoKv, generateKey } from '@kitsonk/kv-toolbox/crypto'
-import * as keys from '@/keys.ts'
-import {
-  freezePid,
-  MergeReply,
-  PID,
-  Poolable,
-  PooledRef,
-  pooledRef,
-  print,
-  RemoteRequest,
-  REPO_LOCK_TIMEOUT_MS,
-  sha1,
-  Splice,
-} from '@/constants.ts'
-import { assert, Debug, equal, openKv, posix } from '@utils'
+import * as keys from './keys.ts'
+import { freezePid } from '@artifact/api/addressing'
+import { assert } from '@std/assert/assert'
+import Debug from 'debug'
+import equal from 'fast-deep-equal'
+import * as posix from '@std/path/posix'
 import { Atomic } from './atomic.ts'
 import { QueueMessage } from '@/constants.ts'
 import { decodeTime, ulid } from 'ulid'
@@ -506,4 +497,30 @@ export const hasPoolables = (
     throw new Error('invalid marker: ' + marker.key.join('/'))
   }
   return counter.value > marker.value
+}
+
+const isDenoDeploy = Deno.env.get('DENO_DEPLOYMENT_ID') !== undefined
+let _isTestMode = false
+export const isKvTestMode = () => {
+  return _isTestMode
+}
+export const openKv = async () => {
+  if (isDenoDeploy) {
+    return Deno.openKv()
+  }
+  const KEY = 'DENO_KV_PATH'
+  let path = ':memory:'
+  const permission = await Deno.permissions.query({
+    name: 'env',
+    variable: KEY,
+  })
+  if (permission.state === 'granted') {
+    const env = Deno.env.get(KEY)
+    if (env) {
+      path = env
+    }
+  }
+  log('open kv', path)
+  _isTestMode = path === ':memory:'
+  return Deno.openKv(path)
 }

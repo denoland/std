@@ -1,6 +1,5 @@
 // copied from the artifact project
-import { Chalk } from 'chalk'
-import { z, ZodSchema } from 'zod'
+import { z, type ZodSchema } from 'zod'
 export type { AssistantMessage, CompletionMessage } from '../openai/zod.ts'
 import { completionMessage } from '../openai/zod.ts'
 import type { Backchat } from './client-backchat.ts'
@@ -38,8 +37,7 @@ export const STATEBOARD_WIDGETS = z.enum([
   'REPOS',
 ])
 export const md5 = z.string().regex(/^[a-f0-9]{40}$/, 'Invalid MD5 hash')
-export const githubRegex = /^[a-zA-Z\d](?:[a-zA-Z\d]|[-.](?=[a-zA-Z\d])){0,38}$/
-export const repoIdRegex = /^rep_[0-9A-HJKMNP-TV-Z]{16}$/
+
 export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
@@ -48,18 +46,7 @@ export const agentHashRegex = /^age_[0-9A-HJKMNP-TV-Z]{16}$/
 
 export const SU_ACTOR = 'act_0000000000000000'
 export const SU_BACKCHAT = 'bac_0000000000000000'
-export const pidSchema = z.object({
-  /**
-   * The hash of the genesis commit is used to identify this repo in a
-   * cryptographically secure way.  This repoId is used to reference this repo
-   * unique with strong guarantees that this is the correct repo that
-   * communication was intended with.
-   */
-  repoId: z.string().regex(repoIdRegex),
-  account: z.string().regex(githubRegex),
-  repository: z.string().regex(githubRegex),
-  branches: z.array(z.string()).min(1),
-})
+
 export const triad = z.object({
   path: z.string(),
   pid: pidSchema,
@@ -116,10 +103,6 @@ export type DispatchFunctions = {
 export type IsolateApiSchema = {
   [key: string]: object
 }
-
-export const ENTRY_BRANCH = 'main'
-
-export type PartialPID = Omit<PID, 'repoId'>
 
 const int = z.number().int().gte(0)
 
@@ -250,18 +233,6 @@ export type PathTriad = {
   commit?: CommitOid
 }
 
-export const isPierceRequest = (p: Request): p is Pierce => {
-  return 'ulid' in p
-}
-export type Params = { [key: string]: JsonValue }
-
-const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
-type Literal = z.infer<typeof literalSchema>
-export type JsonValue = Literal | { [key: string]: JsonValue } | JsonValue[]
-export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
-  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
-)
-
 const invocation = z.object({
   isolate: z.string(),
   functionName: z.string(),
@@ -299,10 +270,7 @@ const invocation = z.object({
   ]).optional(),
 })
 export type Invocation = z.infer<typeof invocation>
-/**
- * The Process Identifier used to address a specific process branch.
- */
-export type PID = z.infer<typeof pidSchema>
+
 /**
  * A request that has been included in a commit, therefore has a sequence number
  */
@@ -311,16 +279,6 @@ const solidRequest = invocation.extend({
   target: pidSchema,
   source: pidSchema,
   sequence: sequenceInteger,
-})
-
-/** A request that travels between branches */
-export type RemoteRequest = z.infer<typeof remoteRequest>
-export const remoteRequest = solidRequest.extend({ commit: md5 })
-
-export type Pierce = z.infer<typeof pierceSchema>
-export const pierceSchema = invocation.extend({
-  target: pidSchema,
-  ulid: z.string(),
 })
 
 export type UnsequencedRequest = z.infer<typeof unsequencedRequest>
@@ -485,103 +443,6 @@ export interface EngineInterface {
   readBinary(path: string, pid?: PID, commit?: string): Promise<Uint8Array>
   exists(path: string, pid: PID): Promise<boolean>
 }
-export const isPID = (value: unknown): value is PID => {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-  const pid = value as PID
-  return (
-    typeof pid.account === 'string' &&
-    typeof pid.repository === 'string' &&
-    Array.isArray(pid.branches) &&
-    pid.branches.every((branch) => typeof branch === 'string')
-  )
-}
-const { black, red, green, blue, magenta, cyan, bold } = new Chalk({ level: 1 })
-const colors = [red, green, blue, magenta, cyan, black]
-let colorIndex = 0
-const colorMap = new Map<string, number>()
-export const colorize = (
-  string: string,
-  noSubstring = false,
-  noColor = false,
-) => {
-  let sub = string
-  if (!noSubstring) {
-    sub = string.substring(0, 7)
-  }
-  let index
-  if (noColor) {
-    return sub
-  }
-  if (colorMap.has(sub)) {
-    index = colorMap.get(sub)!
-  } else {
-    index = colorIndex++
-    if (colorIndex === colors.length) {
-      colorIndex = 0
-    }
-    colorMap.set(sub, index)
-  }
-  const color = colors[index]
-  assert(typeof color === 'function', 'color not a function')
-  return color(bold(sub))
-}
-export const print = (pid?: PID, noColor = false) => {
-  if (!pid) {
-    return '(no pid)'
-  }
-  const branches = pid.branches.map((segment) => {
-    const noSubstring = !segment.startsWith('mac_') &&
-      !segment.startsWith('bac_') &&
-      !segment.startsWith('act_') &&
-      !segment.startsWith('rep_') &&
-      !segment.startsWith('the_')
-    return colorize(segment, noSubstring, noColor)
-  })
-  const noSubstring = false
-  const repoId = colorize(pid.repoId, noSubstring, noColor)
-  return `${repoId}/${pid.account}/${pid.repository}:${branches.join('/')}`
-}
-export const printPlain = (pid?: PID) => {
-  const noColor = true
-  return print(pid, noColor)
-}
-export const freezePid = (pid: PID) => {
-  if (!pid.repoId) {
-    throw new Error('repoId is required')
-  }
-  if (!repoIdRegex.test(pid.repoId)) {
-    throw new Error('Invalid repoId: ' + pid.repoId)
-  }
-  if (!pid.account) {
-    throw new Error('account is required')
-  }
-  if (!pid.repository) {
-    throw new Error('repository is required')
-  }
-  if (!pid.branches[0]) {
-    throw new Error('branch is required')
-  }
-  if (!githubRegex.test(pid.account) || !githubRegex.test(pid.repository)) {
-    const repo = `${pid.account}/${pid.repository}`
-    throw new Error('Invalid GitHub account or repository name: ' + repo)
-  }
-  Object.freeze(pid)
-  Object.freeze(pid.branches)
-  return pid
-}
-export const partialFromRepo = (repo: string) => {
-  const [account, repository] = repo.split('/')
-  assert(account, 'missing account')
-  assert(repository, 'missing repository')
-  const pid: PartialPID = {
-    account,
-    repository,
-    branches: [ENTRY_BRANCH],
-  }
-  return pid
-}
 
 export const HAL: Omit<PID, 'repoId'> = {
   account: 'dreamcatcher-tech',
@@ -704,25 +565,8 @@ export const isPidEqual = (pid1: PID, pid2: PID) => {
   }
   return true
 }
-export const META_SYMBOL = Symbol.for('settling commit')
-export type Meta = {
-  parent?: CommitOid
-  // TODO add the PID so we know what the id of the branch that returned was
-}
-export const withMeta = async <T>(promise: MetaPromise<T>) => {
-  const result = await promise
-  assert.truthy(META_SYMBOL in promise, 'missing commit symbol')
-  const meta = promise[META_SYMBOL]
-  assert.object(meta, 'missing meta on promise')
-  const { parent } = meta
-  if (parent) {
-    assert.string(parent, 'missing parent commit')
-    assert.truthy(sha1.test(parent), 'commit not sha1: ' + parent)
-  }
-  return { result, parent }
-}
+
 export const sha1 = /^[0-9a-f]{40}$/i
-export type MetaPromise<T> = Promise<T> & { [META_SYMBOL]?: Meta }
 
 export const addBranches = (pid: PID, ...children: string[]) => {
   const next = { ...pid, branches: [...pid.branches, ...children] }
@@ -813,38 +657,6 @@ export const backchatStateSchema = z.object({
   threadCount: z.number().int().gte(0),
 })
 
-export type Returns<T extends Record<string, ZodSchema>> = {
-  [K in keyof T]: ZodSchema
-}
-// TODO ensure that function return types are inferred from returns object
-export type ToApiType<
-  P extends Record<string, ZodSchema>,
-  R extends Returns<P>,
-> = {
-  [K in keyof P]: (
-    params: z.infer<P[K]>,
-  ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
-}
-
-export const serializableError = z.object({
-  name: z.string().optional(),
-  message: z.string(),
-  stack: z.string().optional(),
-})
-export type SerializableError = z.infer<typeof serializableError>
-
-export const outcomeSchema = z.object({
-  result: jsonSchema.optional(),
-  error: serializableError.optional(),
-}).refine((data) => {
-  if (data.error !== undefined) {
-    return data.result === undefined
-  }
-  return true
-}, 'result and error are mutually exclusive')
-
-export type Outcome = { result?: JsonValue; error?: SerializableError }
-
 export type IoStruct = z.infer<typeof ioStruct>
 export const ioStruct = z.object({
   sequence: sequenceInteger,
@@ -852,7 +664,6 @@ export const ioStruct = z.object({
   executing: sequenceInteger.optional(),
   /** The sequences of requests that have been executed serially */
   executed: z.record(sequenceKey, z.boolean()),
-  // TODO make the requests be a zod schema
   requests: z.record(sequenceKey, requestSchema),
   replies: z.record(sequenceKey, outcomeSchema),
   /** If a reply is a merge reply, the commit that carried it is stored here */
@@ -880,9 +691,7 @@ export const ioStruct = z.object({
    */
   state: z.record(jsonSchema),
 })
-export const reasoning = z.array(z.string()).describe(
-  'Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function',
-)
+
 export type TreeEntry = {
   /**
    * - the 6 digit hexadecimal mode

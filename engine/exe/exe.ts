@@ -8,10 +8,10 @@ import {
   SolidReply,
   SolidRequest,
 } from '@/constants.ts'
-import IA from '../../execution/napp-api.ts'
+import NappApi from '../../execution/napp-api.ts'
 import Compartment from '../../execution/compartment.ts'
 import { assert, Debug, equal, serializeError } from '@utils'
-import Accumulator from '@/exe/accumulator.ts'
+import type Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 const log = Debug('AI:exe')
 
@@ -53,7 +53,7 @@ export default class Executor {
       // TODO read side effect config from io.json
       const { runnable, commit } = io.getExecution()
       assert(runnable, 'origin not found')
-      const isolateApi = IA.create(accumulator, runnable, commit, opts)
+      const isolateApi = NappApi.create(accumulator, runnable, commit, opts)
       if (req.isolate === 'system') {
         log('system isolate')
         isolateApi.context = c
@@ -136,6 +136,6 @@ export default class Executor {
 type Execution = {
   function: Promise<Outcome>
   accumulator: Accumulator
-  api: IA
+  api: NappApi
   commits: string[]
 }

@@ -1,8 +1,7 @@
-import * as utils from '@utils'
-import DB from '@/db.ts'
+import { expect } from '@std/expect/expect'
+import DB from '../db.ts'
 import FS from './fs.ts'
-import { addBranches, addPeer, IO_PATH, partialFromRepo } from '@/constants.ts'
-const { expect } = utils
+
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())
   let fs: FS

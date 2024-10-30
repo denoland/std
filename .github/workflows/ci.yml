@@ -36,7 +36,7 @@ jobs:
       - name: Generate lcov
         if: matrix.os == 'ubuntu-latest'
         run: deno task cov:gen
-        
+
       - name: Upload coverage
         if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4

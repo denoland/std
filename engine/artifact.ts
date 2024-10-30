@@ -2,7 +2,6 @@ import { assert, Debug } from '@utils'
 import Executor from '../../engine/exe/exe.ts'
 import IOChannel from '../../engine/io/io-channel.ts'
 import {
-  C,
   ExeResult,
   freezePid,
   Functions,
@@ -23,6 +22,14 @@ import DB from '../db.ts'
 import FS from '../../engine/git/fs.ts'
 import { z } from 'zod'
 const log = Debug('AI:artifact')
+
+/** Artifact Context, including the db and executor */
+export type C = {
+  db: DB
+  exe: Executor
+  aesKey?: string
+  seed?: Deno.KvEntry<unknown>[]
+}
 
 export const parameters = { pierce: z.object({ pierce: pierceSchema }) }
 export const returns = { pierce: z.void() }

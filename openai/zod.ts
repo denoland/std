@@ -90,3 +90,7 @@ export const completionMessage = z.union([
   assistantMessage,
   toolMessage,
 ])
+
+export const reasoning = z.array(z.string()).describe(
+  'Step by step reasoning why this function was called and what it is trying to achieve.  This is working space for clarifying thought and is not passed through to the function',
+)

@@ -36,6 +36,11 @@
     "imagescript": "npm:imagescript",
     "ajv": "npm:ajv",
     "@apideck/better-ajv-errors": "npm:@apideck/better-ajv-errors",
-    "chalk": "npm:chalk"
+    "chalk": "npm:chalk",
+    "isomorphic-git": "npm:isomorphic-git",
+    "diff3": "npm:diff3",
+    "lodash.merge": "npm:lodash.merge",
+    "it-pushable": "npm:it-pushable",
+    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox"
   }
 }

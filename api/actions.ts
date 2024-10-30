@@ -4,10 +4,8 @@
 import { assert } from '@std/assert'
 import { parse } from '@std/jsonc'
 import { nappSchema } from '@artifact/napp-tools'
-// deno has no dynamic runtime imports, so this is a workaround
-import napps from './napps-import.ts'
-import { fromFileUrl, toFileUrl } from '@std/path'
-
+import type { NappTypes } from './napps-list.ts'
+import { z } from 'zod'
 import { Ajv } from 'ajv'
 import { betterAjvErrors } from '@apideck/better-ajv-errors'
 const ajv = new Ajv({ allErrors: true })
@@ -16,37 +14,40 @@ type Action = {
   napp: string
   tool: string
   parameters: Record<string, unknown>
+  /** An array of filepaths to files and directories that are attached to this
+   * action */
+  files: string[]
 }
 
 /**
- * Given a napp name, generate
+ * Given a napp name, generate a set of action creators.
  * @param name the name of the napp to generate functions for
  * @example
  * const functions = await functions('@artifact/files')
  */
-const functions = async (name: keyof typeof napps) => {
-  const napp = napps[name]
-
+const functions = async <T extends keyof NappTypes>(name: T) => {
   const config = await readNappConfig(name)
+  type Tools = NappTypes[T]
 
-  // now we need to resolve all the imported tools
+  const actionCreators = {} as {
+    [K in keyof Tools]: (
+      params: Parameters<Tools[K]>[0],
+    ) => Action
+  }
 
-  const actionCreators = {} as Record<
-    string,
-    (params?: Record<string, unknown>) => Action
-  >
   if (!config.tools) {
     return actionCreators
   }
   for (const [tool, schema] of Object.entries(config.tools)) {
     if (typeof schema === 'string') {
-      console.log('string tool', tool)
+      console.log('string tool', tool, schema)
       // const toolConfig = await readNappConfig(tool)
     } else {
       const { parameters, returns } = schema
       if (parameters) {
         assert(returns, 'tool must have returns: ' + tool)
-        actionCreators[tool] = (params: Record<string, unknown> = {}) => {
+        type Params = Parameters<Tools[typeof tool]>[0]
+        actionCreators[tool as keyof Tools] = (params: Params = {}): Action => {
           if (typeof params !== 'object') {
             throw new Error('parameters must be an object')
           }
@@ -71,35 +72,16 @@ const functions = async (name: keyof typeof napps) => {
             napp: name,
             tool,
             parameters: params,
+            files: [],
           }
         }
       }
     }
   }
-  console.log(config.tools)
 
   return actionCreators
 
-  // should the schema be resolved as part of the publication step ?
-  // what about rewiring the imports ?
-
-  // read in the direct schema
-  // read in the resolved schema
-  console.log('napp', napp)
-
-  // turn the zod object into action creators
-
-  // the napp might actually not be importable, but the schemas should be
-  // whether it is zod or jsonschema, we should be able to get the types from
-  // them
-
-  // then from the schemas, product action creators
-
-  // should the addressing be done in the api ?
-
-  // where is the code import ?  Might not be able to be typed ?
-  // types could be a convention and be exported by all types of packages.
-  // like a header file that is
+  // need to include the types in the package, and sniff for them
 }
 
 export default functions
@@ -130,3 +112,48 @@ const readUrl = async (urlString: string) => {
     throw new Error(`Unsupported protocol: ${url.protocol}`)
   }
 }
+
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
+type Literal = z.infer<typeof literalSchema>
+export type JsonValue = Literal | { [key: string]: JsonValue } | JsonValue[]
+export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
+  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
+)
+
+export const serializableError = z.object({
+  name: z.string().optional(),
+  message: z.string(),
+  stack: z.string().optional(),
+})
+export type SerializableError = z.infer<typeof serializableError>
+
+export const outcomeSchema = z.object({
+  result: jsonSchema.optional(),
+  error: serializableError.optional(),
+}).refine((data) => {
+  if (data.error !== undefined) {
+    return data.result === undefined
+  }
+  return true
+}, 'result and error are mutually exclusive')
+
+export type Outcome = { result?: JsonValue; error?: SerializableError }
+
+export const META_SYMBOL = Symbol.for('settling commit')
+export type Meta = {
+  parent?: CommitOid
+  // TODO add the PID so we know what the id of the branch that returned was
+}
+export const withMeta = async <T>(promise: MetaPromise<T>) => {
+  const result = await promise
+  assert(META_SYMBOL in promise, 'missing commit symbol')
+  const meta = promise[META_SYMBOL]
+  assert(typeof meta === 'object', 'missing meta on promise')
+  const { parent } = meta
+  if (parent) {
+    assert(typeof parent === 'string', 'missing parent commit')
+    assert(sha1.test(parent), 'commit not sha1: ' + parent)
+  }
+  return { result, parent }
+}
+export type MetaPromise<T> = Promise<T> & { [META_SYMBOL]?: Meta }

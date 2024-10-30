@@ -57,14 +57,19 @@
     ]
   },
   "workspace": [
-    "./files",
-    "./openai",
+    "./actors",
+    "./api",
     "./dumb-bot",
-    "./reasoner",
+    "./engine",
+    "./eval-file-runner",
+    "./execution",
+    "./files",
     "./fixture",
     "./hamr",
     "./info",
-    "./eval-file-runner",
-    "./napp-tools"
+    "./napp-tools",
+    "./openai",
+    "./reasoner",
+    "./server"
   ]
 }

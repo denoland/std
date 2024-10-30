@@ -18,7 +18,7 @@ import {
   Provisioner,
 } from './constants.ts'
 import * as actor from './api/isolates/actor.ts'
-import IA from '../execution/napp-api.ts'
+import NappApi from '../execution/napp-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'
@@ -34,7 +34,7 @@ type Seed = Deno.KvEntry<unknown>[]
 export class Engine implements EngineInterface {
   #superuserKey: string
   #compartment: Compartment
-  #api: IA<C>
+  #api: NappApi<C>
   #pierce: artifact.Api['pierce']
   #homeAddress: PID | undefined
   #githubAddress: PID | undefined
@@ -42,7 +42,7 @@ export class Engine implements EngineInterface {
 
   private constructor(
     compartment: Compartment,
-    api: IA<C>,
+    api: NappApi<C>,
     superuserKey: string,
   ) {
     this.#compartment = compartment
@@ -53,7 +53,7 @@ export class Engine implements EngineInterface {
   }
   static async boot(superuserKey: string, aesKey: string, seed?: Seed) {
     const compartment = await Compartment.load('@artifact/engine')
-    const api = IA.createContext<C>()
+    const api = NappApi.createContext<C>()
     api.context = { aesKey, seed }
     await compartment.mount(api)
     const engine = new Engine(compartment, api, superuserKey)
@@ -235,10 +235,6 @@ export class Engine implements EngineInterface {
     // TODO return some info about the deployment
     // version, deployment location, etc
     // if you want to ping in a chain, use an isolate
-  }
-  async apiSchema(isolate: string) {
-    const compartment = await Compartment.load(isolate)
-    return compartment.api
   }
   async transcribe(audio: File) {
     assert(audio instanceof File, 'audio must be a File')

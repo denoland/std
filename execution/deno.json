@@ -1,0 +1,5 @@
+{
+  "name": "@artifact/execution",
+  "version": "0.0.1",
+  "exports": "./mod.ts"
+}

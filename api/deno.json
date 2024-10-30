@@ -1,0 +1,10 @@
+{
+  "name": "@artifact/api",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./types": "./types.ts",
+    "./actions": "./actions.ts",
+    "./addressing": "./addressing.ts"
+  }
+}
