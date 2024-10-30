@@ -438,7 +438,7 @@ export function stringify(
   }
 
   if (columns && !Array.isArray(columns)) {
-    throw new TypeError("Invalid type: columns can only be an array.");
+    throw new TypeError("Invalid type: columns can only be an array");
   }
 
   const definedColumns = columns ?? inferColumns(data);
