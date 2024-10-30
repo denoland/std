@@ -468,24 +468,17 @@ export function stringify(
 }
 
 /**
- * Infers the columns from the elements of the given array.
+ * Infers the columns from the first object element of the given array.
  */
-function inferColumns(dataItems: readonly DataItem[]): string[] {
-  if (dataItems.length === 0) {
-    return [];
+function inferColumns(data: readonly DataItem[]): string[] {
+  const firstElement = data.at(0);
+  if (
+    firstElement &&
+    typeof firstElement === "object" &&
+    !Array.isArray(firstElement)
+  ) {
+    return Object.keys(firstElement);
   }
 
-  const columns = new Set<string>();
-
-  dataItems.forEach((dataItem) => {
-    if (
-      dataItem !== null &&
-      typeof dataItem === "object" &&
-      !Array.isArray(dataItem)
-    ) {
-      Object.keys(dataItem).forEach((column) => columns.add(column));
-    }
-  });
-
-  return Array.from(columns);
+  return [];
 }
