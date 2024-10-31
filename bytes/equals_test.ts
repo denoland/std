@@ -2,13 +2,37 @@
 import { equals } from "./equals.ts";
 import { assert, assertEquals, assertNotEquals } from "@std/assert";
 
-Deno.test("equals()", () => {
-  const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));
-  const v2 = equals(new Uint8Array([0, 1, 2, 2]), new Uint8Array([0, 1, 2, 3]));
-  const v3 = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2]));
-  assert(v);
-  assert(!v2);
-  assert(!v3);
+Deno.test("equals()", async (t) => {
+  await t.step("`true` where `a` and `b` are identical", () => {
+    assert(equals(
+      new Uint8Array([0, 1, 2, 3]),
+      new Uint8Array([0, 1, 2, 3]),
+    ));
+  });
+  await t.step("`false` where last byte differs", () => {
+    assert(
+      !equals(
+        new Uint8Array([0, 1, 2, 3]),
+        new Uint8Array([0, 1, 2, 255]),
+      ),
+    );
+  });
+  await t.step("`false` where `b` is a truncated version of `a`", () => {
+    assert(
+      !equals(
+        new Uint8Array([0, 1, 2, 0]),
+        new Uint8Array([0, 1, 2]),
+      ),
+    );
+  });
+  await t.step("`false` where `a` is a truncated version of `b`", () => {
+    assert(
+      !equals(
+        new Uint8Array([0, 1, 2]),
+        new Uint8Array([0, 1, 2, 0]),
+      ),
+    );
+  });
 });
 
 const THRESHOLD_32_BIT = 160;
