@@ -18,11 +18,14 @@ import {
   type TreeEntry,
 } from '@/constants.ts'
 import type DB from '../db.ts'
-import { GitKV } from './gitkv.ts'
+import { GitKV } from '../git/gitkv.ts'
 const log = Debug('git:fs')
 const dir = '/'
 
 type Upsert = { oid: string } | { data: string | Uint8Array }
+
+// needs to change to be a thin layer that does the caching atop a thicker
+// persistence layer
 
 export default class FS {
   readonly #pid: PID

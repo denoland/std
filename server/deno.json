@@ -1,5 +1,5 @@
 {
-    "name": "@artifact/server",
-    "version": "0.0.1",
-    "exports": "./mod.ts"
+  "name": "@artifact/server",
+  "version": "0.0.1",
+  "exports": "./mod.ts"
 }

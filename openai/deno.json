@@ -1,5 +1,8 @@
 {
   "name": "@artifact/openai",
   "version": "0.0.1",
-  "exports": "./mod.ts"
+  "exports": {
+    ".": "./mod.ts",
+    "./napp.json": "./napp.json"
+  }
 }

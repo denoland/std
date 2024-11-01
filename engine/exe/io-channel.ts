@@ -1,11 +1,10 @@
 /**
  * Manages the .io.json file
  */
-
-import { assert, equal } from '@utils'
+import { actionSchema } from '@artifact/api/actions'
+import equal from 'fast-deep-equal'
+import { assert } from '@std/assert/assert'
 import {
-  IoStruct,
-  ioStruct,
   isMergeReply,
   isPierceRequest,
   isRemoteRequest,
@@ -21,6 +20,8 @@ import {
 import Accumulator from '@/exe/accumulator.ts'
 import FS from '@/git/fs.ts'
 import { IsolatePromise } from '@/constants.ts'
+import { z } from 'zod'
+import { outcomeSchema } from '../../api/actions.ts'
 
 const createBase = () =>
   ioStruct.parse({
@@ -468,3 +469,89 @@ export const toUnsequenced = (
   const { sequence: _, source: __, ...unsequenced } = request
   return unsequenced
 }
+
+const sequenceInteger = z.number().int().gte(0)
+const sequenceKey = z.string().refine((data) => {
+  try {
+    return sequenceInteger.safeParse(Number.parseInt(data)).success
+  } catch (error) {
+    return !error
+  }
+}, 'sequence key must be an integer')
+
+export const ioStruct = z.object({
+  sequence: sequenceInteger,
+  /** The current sequence of the request being executed serially */
+  executing: sequenceInteger.optional(),
+  /** The sequences of requests that have been executed serially */
+  executed: z.record(sequenceKey, z.boolean()),
+  requests: z.record(sequenceKey, requestSchema),
+  replies: z.record(sequenceKey, outcomeSchema),
+  /** If a reply is a merge reply, the commit that carried it is stored here */
+  parents: z.record(sequenceKey, md5),
+  /**
+   * If a request generates child requests, they are tracked here.  The commit
+   * in each entry is the commit that caused the child requests to be generated.
+   * This is used to replay by resetting the fs to that commit and doing a
+   * replay.
+   */
+  pendings: z.record(
+    sequenceKey,
+    z.array(z.object({
+      commit: md5,
+      sequences: z.array(sequenceInteger),
+    })),
+  ),
+  /** Active branches are stored here.  A branch is a daemon if it is listed
+   * here but its request has been replied to or it is gone from the requests
+   * list */
+  branches: z.record(sequenceKey, z.string()),
+  /**
+   * Isolates can store values here and know they will not leak into other
+   * branches, and will be quick to access since the io file is always loaded.
+   */
+  state: z.record(jsonSchema),
+})
+export type IoStruct = z.infer<typeof ioStruct>
+
+// the accumulator should be a zod schema data structure, which is persisted.
+// when filesystem ops occur, these are recovered at runtime during the replay,
+// and not stored with these actions, which are meant for control, not for data
+// transmission.
+// BUT when replies come in and we want to merge, need to know what commit it
+// was that it came in on
+
+// split io to have an outbox, where all the replies coming in
+
+// if pendings was a dedicated thing, then when the replies come back in, they
+// can easily be assigned to the accumulator directly
+
+// here's an action, and here's the response, also if you want it, here's the
+// changed filesystem snapshot that came back.
+// the app should treat the reply as tho it was a remote filesystem call
+
+// what comes back should be a standard api call, that always returns the result
+// as well as access to the filesystem of the returner.
+
+// the accumulator is just a channel, and each comms with a remote thing should
+// be one of these.  This might be the thing that gets merged in a comms branch.
+
+const spawn = z.object({
+  proctype: Proctype,
+  /**
+   * Allow a custom name for the new branch, if this is a branching request
+   */
+  branch: z.string().optional(),
+  /**
+   * If the custom branch name might not be unique, a prefix can be given and
+   * the sequence number will be appended to the branch name, ensuring
+   * uniqueness.
+   */
+  branchPrefix: z.string().optional(),
+  /**
+   * If the request is a branching request, this will be the name of the new
+   * branch.  If the branch already exists, the request will fail.
+   */
+  branchName: z.string().optional(),
+})
+export type Invocation = z.infer<typeof invocation>

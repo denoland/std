@@ -26,7 +26,8 @@
     "cov": "deno coverage --ignore=\"**/*.generated.mjs,**/_test_utils.ts,.github\"",
     "cov:gen": "deno task cov --lcov --output=cov.lcov",
     "cov:view": "deno task cov --html",
-    "ok": "deno task lint && deno fmt --check && deno task test"
+    "ok": "deno task lint && deno fmt --check && deno task test",
+    "watch": "clear && DENO_KV_PATH=:memory: deno test --watch --trace-leaks"
   },
   "exclude": [
     ".git",
@@ -70,6 +71,7 @@
     "./napp-tools",
     "./openai",
     "./reasoner",
-    "./server"
+    "./server",
+    "./stateboard"
   ]
 }

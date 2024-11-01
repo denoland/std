@@ -1,5 +1,5 @@
 import { assert, Debug, equal } from '@utils'
-import FS from './fs.ts'
+import FS from '../fs/fs.ts'
 import {
   isMergeReply,
   isPierceRequest,

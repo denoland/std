@@ -1,6 +1,6 @@
 import { deserializeError } from 'serialize-error'
-import Accumulator from '../engine/exe/accumulator.ts'
-import Compartment from './compartment.ts'
+import Accumulator from '../engine/exe/trail.ts'
+import Compartment from '../execution/compartment.ts'
 import { assert, Debug, equal } from '@utils'
 import micromatch from 'micromatch'
 import {
@@ -34,6 +34,12 @@ type EffectOptions = {
   isEffect: boolean
   isEffectRecovered: boolean
 }
+
+// This should be an accumulator with an interpreter
+// this means it is the same piece of code in all 3 modes.
+
+// The job of this object is turn function calls in to actions that are
+// repeatable and sometimes have reponses available
 
 export default class NappApi<T extends Record<string, unknown> = Default> {
   #accumulator: Accumulator

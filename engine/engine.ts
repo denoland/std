@@ -18,7 +18,7 @@ import {
   Provisioner,
 } from './constants.ts'
 import * as actor from './api/isolates/actor.ts'
-import NappApi from '../execution/napp-api.ts'
+import NappApi from '../api/napp-api.ts'
 import { assert, Debug, posix } from '@utils'
 import FS from '@/git/fs.ts'
 import * as artifact from '@/isolates/artifact.ts'

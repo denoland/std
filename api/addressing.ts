@@ -124,3 +124,58 @@ export const freezePid = (pid: PID) => {
   Object.freeze(pid.branches)
   return pid
 }
+
+export const addBranches = (pid: PID, ...children: string[]) => {
+  const next = { ...pid, branches: [...pid.branches, ...children] }
+  return freezePid(next)
+}
+export const addPeer = (pid: PID, peer: string) => {
+  const branches = [...pid.branches]
+  branches.pop()
+  const next = { ...pid, branches: [...branches, peer] }
+  return freezePid(next)
+}
+export const getParent = (pid: PID) => {
+  const branches = [...pid.branches]
+  branches.pop()
+  return freezePid({ ...pid, branches })
+}
+export const getRoot = (pid: PID) => {
+  const root = pid.branches[0]
+  assert(root, 'root branch is missing')
+  return freezePid({ ...pid, branches: [root] })
+}
+export const getBaseName = (pid: PID) => {
+  return pid.branches[pid.branches.length - 1]
+}
+export const sha1 = /^[0-9a-f]{40}$/i
+
+export const META_SYMBOL = Symbol.for('settling commit')
+export type Meta = {
+  parent?: CommitOid
+  // TODO add the PID so we know what the id of the branch that returned was
+}
+export const withMeta = async <T>(promise: MetaPromise<T>) => {
+  const result = await promise
+  assert(META_SYMBOL in promise, 'missing commit symbol')
+  const meta = promise[META_SYMBOL]
+  assert(typeof meta === 'object', 'missing meta on promise')
+  const { parent } = meta
+  if (parent) {
+    assert(typeof parent === 'string', 'missing parent commit')
+    assert(sha1.test(parent), 'commit not sha1: ' + parent)
+  }
+  return { result, parent }
+}
+export type MetaPromise<T> = Promise<T> & { [META_SYMBOL]?: Meta }
+
+import { actionSchema } from './actions.ts'
+
+export const addressedSchema = z.object({
+  // what is the addressing ?
+  // should this be threading, rather than absolute hash space addressing ?
+  // should all network comes go thru a dedicated branch and get re-addressed
+  // there ?
+  action: actionSchema,
+})
+export type Addressed = z.infer<typeof addressedSchema>

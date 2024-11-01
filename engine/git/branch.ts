@@ -1,9 +1,9 @@
 import { assert, Debug } from '@utils'
 import { Branched, Proctype } from '@/constants.ts'
 import { RemoteRequest } from '@/constants.ts'
-import IOChannel from '../io/io-channel.ts'
+import IOChannel from '../exe/io-channel.ts'
 import { solidify } from './solidify.ts'
-import FS from './fs.ts'
+import FS from '../fs/fs.ts'
 
 const log = Debug('AI:git:branch')
 

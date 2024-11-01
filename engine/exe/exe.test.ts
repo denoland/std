@@ -1,4 +1,4 @@
-import IOChannel from '../io/io-channel.ts'
+import IOChannel from './io-channel.ts'
 import FS from '../git/fs.ts'
 import Executor from './exe.ts'
 import {

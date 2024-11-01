@@ -1,13 +1,4 @@
 import { z } from 'zod'
-import {
-  backchatIdRegex,
-  jsonSchema,
-  machineIdRegex,
-  md5,
-  pidSchema,
-  threadIdRegex,
-  ToApiType,
-} from '../api/types.ts'
 
 const repoParams = z.object({
   repo: z.string(),
@@ -56,3 +47,39 @@ export const returns = {
   pull: repoResult,
 }
 export type Api = ToApiType<typeof parameters, typeof returns>
+
+export const generateActorId = () => {
+  return 'act_' + randomness()
+}
+
+export const getActorId = (source: PID) => {
+  const [base, actorId] = source.branches
+  const parent = { ...source, branches: [base] }
+  const fullHAL = { ...HAL, repoId: source.repoId }
+  if (!isPidEqual(parent, fullHAL)) {
+    throw new Error('source is not a child of HAL')
+  }
+  if (!actorIdRegex.test(actorId)) {
+    throw new Error('Invalid actor id: ' + actorId)
+  }
+  return actorId
+}
+export const getActorPid = (source: PID) => {
+  const actorId = getActorId(source)
+  const branches = [source.branches[0], actorId]
+  return { ...source, branches }
+}
+export const isActorBranch = (pid: PID) => {
+  if (pid.branches.length !== 2) {
+    return false
+  }
+  return !!getActorId(pid)
+}
+
+export const machineIdRegex = /^mac_[2-7a-z]{33}$/
+export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
+export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
+export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/
+
+export const SU_ACTOR = 'act_0000000000000000'
+export const SU_BACKCHAT = 'bac_0000000000000000'
