@@ -345,6 +345,44 @@ Deno.test("equal() keyed collection edge cases", () => {
   ));
 });
 
+Deno.test("equal() with constructor and prototype", async (t) => {
+  await t.step(
+    "value-equal but reference-unequal property named `constructor`",
+    () => {
+      assert(equal(
+        { constructor: { x: 1 } },
+        { constructor: { x: 1 } },
+      ));
+    },
+  );
+  await t.step(
+    "instance vs plain object with property named `constructor`",
+    () => {
+      class X {}
+      const a = new X();
+      const b = { constructor: X };
+      assert(equal(a.constructor, b.constructor));
+      assertFalse(equal(a, b));
+    },
+  );
+  await t.step("manually set prototype", () => {
+    class X {
+      prop = 1;
+    }
+    const a = new X();
+    const b = {} as X;
+
+    // false as prototype differs
+    assertFalse(equal(a, b));
+    Object.setPrototypeOf(b, X.prototype);
+    // still false as `prop` is not set
+    assertFalse(equal(a, b));
+    b.prop = 1;
+    // now true
+    assert(equal(a, b));
+  });
+});
+
 Deno.test("equal() with dynamic properties defined on the prototype", async (t) => {
   await t.step("built-in web APIs", async (t) => {
     await t.step("URLPattern", () => {
