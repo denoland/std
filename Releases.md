@@ -1,3 +1,47 @@
+### 2024.11.01
+
+#### @std/assert 1.0.7 (patch)
+
+- fix(assert): fix assertion error message of isError (#6147)
+- test(assert): change inert comments to @ts-expect-error directives (#6162)
+
+#### @std/async 1.0.8 (patch)
+
+- test(async): fix flakiness of throttle example (#6156)
+- test(async/unstable): fix typo (#6149)
+
+#### @std/bytes 1.0.3 (patch)
+
+- test(bytes): document the cases being tested for equals/startsWith/endsWith
+  (#6163)
+
+#### @std/expect 1.0.7 (patch)
+
+- fix(expect): re-align `expect.toMatchObject` api (#6160)
+- fix(expect): support
+  expect.not.{arrayContaining,objectContaning,stringContaining,stringMatching}
+  (#6138)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/internal 1.0.5 (patch)
+
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/path 1.0.8 (patch)
+
+- refactor(path): always name the parameters (add param definition check in doc
+  linter) (#6158)
+
+#### @std/streams 1.0.8 (patch)
+
+- docs(streams): rest arguments not being asserted in docs (#6155)
+
+#### @std/testing 1.0.4 (patch)
+
+- feat(testing/unstable): support for stubbing properties (#6128)
+- feat(testing/unstable): add type test for mutual assignability (#6154)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
 ### 2024.10.24
 
 #### @std/async 1.0.7 (patch)
