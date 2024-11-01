@@ -44,6 +44,11 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
   const seen = new Map();
 
   return (function compare(a: unknown, b: unknown): boolean {
+    const asymmetric = asymmetricEqual(a, b);
+    if (asymmetric !== undefined) {
+      return asymmetric;
+    }
+
     if (customTesters?.length) {
       for (const customTester of customTesters) {
         const testContext = {
@@ -65,11 +70,6 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
         (a instanceof URL && b instanceof URL))
     ) {
       return String(a) === String(b);
-    }
-
-    const asymmetric = asymmetricEqual(a, b);
-    if (asymmetric !== undefined) {
-      return asymmetric;
     }
 
     if (a instanceof Date && b instanceof Date) {
@@ -119,6 +119,10 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       let aLen = aKeys.length;
       let bLen = bKeys.length;
 
+      if (strictCheck && aLen !== bLen) {
+        return false;
+      }
+
       if (!strictCheck) {
         if (aLen > 0) {
           for (let i = 0; i < aKeys.length; i += 1) {
@@ -145,9 +149,6 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
         }
       }
 
-      if (aLen !== bLen) {
-        return false;
-      }
       seen.set(a, b);
       if (isKeyedCollection(a) && isKeyedCollection(b)) {
         if (a.size !== b.size) {
