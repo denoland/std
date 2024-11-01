@@ -22,10 +22,5 @@
 // if the runtime is a string, use the defaults, else can override and see what
 // the defaults are.
 
-const m = import.meta.resolve('@artifact/openai')
-// import file from "@artifact/openai/README.md" with { type: "text" };
-
-console.log(m)
-
 // do we need to make a tooling function that can retrieve an md file from a
 // package but importing the package, then reading from the url ?

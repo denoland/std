@@ -6,12 +6,10 @@
   "runtime": "deno",
   "branding": "./avatar.jpg",
   "agent": {
-    // entry point that takes plain text in and returns text plus files
     "napp": "@artifact/openai",
     "parameters": {
       "model": "gpt-4o",
       "parallel_tool_calls": false
-      // content is the reserved name for the input text
     }
   },
   "tools": {
@@ -50,25 +48,11 @@
     }
   },
   "graphics": {
-    // the file explorer and the file viewer widgets should be shown here
     "googleMapsViewer": {
       "type": "react",
       "component": "./path/to/component",
       "parameters": {
-        // mock react props that can be configured by the LLM
       }
     }
   }
 }
-
-//   ---
-// commands:
-//   - files:write
-//   - files:ls
-//   - files:read
-//   - files:update
-//   - files:rm
-//   - files:mv
-//   - files:search
-//   - stateboard:show
-// ---

@@ -51,4 +51,3 @@ Deno.test('trail', async () => {
   retrail.activate(Symbol(), rejected)
   await expect(repush).rejects.toThrow('test error')
 })
-
