@@ -19,7 +19,7 @@
 
 - fix(expect): re-align `expect.toMatchObject` api (#6160)
 - fix(expect): support
-  expect.not.{arrayContaining,objectContaning,stringContaining,stringMatching}
+  expect.not.{arrayContaining,objectContaining,stringContaining,stringMatching}
   (#6138)
 - fix(expect,internal,testing): support `expect.assertions` (#6032)
 
