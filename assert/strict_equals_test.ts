@@ -27,16 +27,14 @@ Deno.test({
     const y = x as Record<never, never>;
     const z = x as unknown;
 
-    // y.number;
-    //   ~~~~~~
-    // Property 'number' does not exist on type 'Record<never, never>'.deno-ts(2339)
+    // @ts-expect-error Property 'number' does not exist on type 'Record<never, never>'.deno-ts(2339)
+    y.number;
 
     assertStrictEquals(y, x);
     y.number; // ok
 
-    // z.number;
-    // ~
-    // Object is of type 'unknown'.deno-ts(2571)
+    // @ts-expect-error 'z' is of type 'unknown'.deno-ts(18046)
+    z.number;
 
     assertStrictEquals(z, x);
     z.number; // ok
