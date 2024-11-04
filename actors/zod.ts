@@ -76,7 +76,6 @@ export const isActorBranch = (pid: PID) => {
   return !!getActorId(pid)
 }
 
-export const machineIdRegex = /^mac_[2-7a-z]{33}$/
 export const actorIdRegex = /^act_[0-9A-HJKMNP-TV-Z]{16}$/
 export const backchatIdRegex = /^bac_[0-9A-HJKMNP-TV-Z]{16}$/
 export const threadIdRegex = /^the_[0-9A-HJKMNP-TV-Z]{16}$/

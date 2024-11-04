@@ -41,6 +41,10 @@
     "diff3": "npm:diff3",
     "lodash.merge": "npm:lodash.merge",
     "it-pushable": "npm:it-pushable",
-    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox"
+    "@kitsonk/kv-toolbox": "jsr:@kitsonk/kv-toolbox",
+    "@noble/secp256k1": "npm:@noble/secp256k1",
+    "@noble/hashes": "npm:@noble/hashes",
+    "multiformats": "npm:multiformats",
+    "youtube-caption-extractor": "npm:youtube-caption-extractor"
   }
 }

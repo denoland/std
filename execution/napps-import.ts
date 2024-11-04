@@ -6,7 +6,11 @@
 import type { NappTypes } from '@artifact/api'
 
 import * as files from '@artifact/files'
+import * as fixture from '@artifact/fixture'
 
-const napps: { [K in keyof NappTypes]: unknown } = { '@artifact/files': files }
+const napps: { [K in keyof NappTypes]: unknown } = {
+  '@artifact/files': files,
+  '@artifact/fixture': fixture,
+}
 
 export default napps

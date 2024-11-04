@@ -6,64 +6,74 @@
   "runtime": "deno",
   "agent": {
     "parameters": {
-      "instructions": "./openai-instructions.md",
-      "model": "gpt-4o",
-      "tools": []
+      "model": "gpt-4o"
     }
   },
-  "main": "completions",
   "tools": {
-    "completions": {
-      "description": "Creates a model response for the given chat conversation",
+    "versions": {
+      "description": "Lists prior versions of a given napp",
       "parameters": {
-        "param1": {
-          "description": "This is the first parameter",
-          "type": "string",
-          "required": true
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the napp"
+          }
         },
-        "param2": {
-          "description": "This is the second parameter",
-          "type": "number",
-          "required": false
-        },
-        "permissions": [],
-        "gateways": []
+        "required": ["name"]
       },
       "returns": {
-        "description": "This is what the function returns",
-        "type": "string"
-      },
-      "throws": {
-        "FileNotFoundError": {
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       }
     },
-    "transcribe": {
-      "description": "Transcribes an audio file to text, returning the filepath of the transcription",
+    "manifest": {
+      "description": "Returns the manifest of a given napp, which is an array of all paths of all the files in the napp",
       "parameters": {
-        "filepath": {
-          "description": "The path to the audio file to transcribe",
-          "type": "string",
-          "required": true
-        }
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the napp"
+          },
+          "version": {
+            "type": "string",
+            "description": "version of the napp.  If not given, the latest version will be used by default.  This must be a string that came from the 'versions' tool."
+          }
+        },
+        "required": ["name"]
       },
       "returns": {
-        "description": "The path to the transcription file",
-        "type": "string"
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
-    }
-  },
-  "sideEffects": {
-  },
-  "testSideEffects": {
-  },
-  "mockSideEffects": {
-  },
-  "graphics": {
-    "googleMapsViewer": {
-      "type": "react",
-      "component": "./path/to/component",
+    },
+    "read": {
+      "description": "Reads the contents of a file in a given napp",
       "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the napp"
+          },
+          "path": {
+            "type": "string",
+            "description": "path of the file to read.  This must be a valid path that came from the 'manifest' tool."
+          },
+          "version": {
+            "type": "string",
+            "description": "version of the napp.  If not given, the latest version will be used by default.  This must be a string that came from the 'versions' tool."
+          }
+        },
+        "required": ["name", "path"]
+      },
+      "returns": {
+        "type": "string"
       }
     }
   }

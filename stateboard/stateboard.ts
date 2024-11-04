@@ -53,6 +53,8 @@ export const functions: Functions<Api> = {
   },
 }
 
+// ERROR too dependent on openai message structure
+
 function getLastAssistantMessageId(thread: Thread) {
   const messages = [...thread.messages]
   while (messages.length > 0) {

@@ -55,7 +55,11 @@
         "FileNotFoundError": {
           // list of expected error types and what to do about it
         }
-      }
+      },
+      // if path is not given, then the default export must include a function
+      // that satisfies this signature and that matches the name of the tool.
+      // if path is given, the default export must be a tool function
+      "path": "./path/to/function.ts"
     },
     // by referring to a napp directly, it will be called as an agent
     "some-other-function": "dependent-napp-name",
@@ -70,7 +74,11 @@
         "tool": "some-exported-function"
         // this key could be "agent", which would allow rewriting of the agent parameters
       }
-    }
+    },
+    // if no parameters object is given, an empty object is assumed
+    // if no returns object is given, the function must return undefined
+    // if no description is given, an empty string is assumed
+    "empty-function": {}
   },
   "evals": {
     "napp": "napp-test-runner-name",
@@ -96,12 +104,24 @@
   "graphics": {
     // a list of exported widgets that can be displayed on the stateboard
     "googleMapsViewer": {
+      // for now, only react is supported, but we can support other frameworks
       "type": "react",
-      "component": "./path/to/component",
+      // if path is not given, then check the module default export
+      "path": "./path/to/component.tsx",
       "parameters": {
         // react props that can be configured by the LLM
         // same format as the tool call parameters
       }
+    },
+    // same naming conventions as tools apply.  This shows passing thru to a
+    // napp named "@artifact/truck-routes" and using the graphics element named
+    // "truckRoutes" from that napp
+    "truckRoutes": "@artifact/truck-routes",
+    // allows renaming the graphics component during passthru
+    "weatherDisplay": {
+      "napp": "@artifact/weather",
+      "graphics": "weatherDisplayInCelsius"
+      // could modify the react props here as well
     }
   }
 }

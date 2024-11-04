@@ -1,6 +1,11 @@
 {
+  "name": "@artifact/fixture",
+  "version": "0.0.1",
+  "description": "fixture for testing napp features",
+  "runtime": "deno",
   "tools": {
-    "local": {},
-    "error": {}
+    "ping": {
+      "description": "ping this fixture"
+    }
   }
 }

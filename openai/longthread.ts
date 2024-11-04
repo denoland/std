@@ -11,7 +11,7 @@ import {
 } from '@/constants.ts'
 import { ToolMessage } from '@/api/zod.ts'
 import { Functions } from '@/constants.ts'
-import { executeTools } from './utils/ai-execute-tools.ts'
+import { executeTools } from '../_import-artifact/isolates/utils/ai-execute-tools.ts'
 import { z } from 'zod'
 import * as completions from '@/isolates/ai-completions.ts'
 import * as agents from '@/isolates/agents.ts'

@@ -1,6 +1,6 @@
 import { assert, expect, log } from '@utils'
 import { CradleMaker, print } from '@/constants.ts'
-import { Api } from '../_import-artifact/isolates/longthread.ts'
+import { Api } from '../openai/longthread.ts'
 
 export default (cradleMaker: CradleMaker) => {
   const prefix = 'longthread: '

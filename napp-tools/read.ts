@@ -6,7 +6,12 @@ export const readNappConfig = async (name: string) => {
       with: { type: 'json' },
     })
     return nappSchema.parse(imported.default)
-  } catch (_) {
-    throw new Error('napp.json not exported from package: ' + name)
+  } catch (error) {
+    if (error instanceof Error) {
+      const msg = 'napp.json not imported from package: ' + name + ':\n' +
+        error.message
+      throw new Error(msg)
+    }
+    throw error
   }
 }

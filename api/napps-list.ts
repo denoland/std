@@ -1,9 +1,12 @@
-import type { NappTypes as FilesApi } from '@artifact/files'
+import type { NappTypes as Files } from '@artifact/files'
+import type { NappTypes as Fixture } from '@artifact/fixture'
 import type { JsonValue } from './actions.ts'
 
-type BaseFunction = (parameters: Record<string, JsonValue>) => unknown
-type BaseRecord = Record<string, BaseFunction>
+type NappType = {
+  [key: string]: (params: Record<string, JsonValue>) => unknown
+}
 
-export type NappTypes = Record<string, BaseRecord> & {
-  '@artifact/files': FilesApi
+export type NappTypes = Record<string, NappType> & {
+  '@artifact/files': Files
+  '@artifact/fixture': Fixture
 }

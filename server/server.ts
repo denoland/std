@@ -154,60 +154,9 @@ export default class Server {
     })
 
     if (Deno.env.get('GITHUB_CLIENT_ID')) {
-      const {
-        signIn,
-        handleCallback,
-        signOut,
-      } = createHelpers(createGitHubOAuthConfig())
-      const auth = base.basePath('/auth')
-      auth.get('/signin', async (c) => {
-        const { machineId } = c.req.query()
-        if (!machineIdRegex.test(machineId)) {
-          // TODO check key is valid using signatures
-          throw new Error('machineId querystring is required')
-        }
-
-        const response = await signIn(c.req.raw)
-        const cookie = response.headers.get('set-cookie')
-        console.log('cookie', cookie)
-        // acting as the github actor, pierce the github chain to store this info
-
-        return response
-        // c.header('set-cookie', response.headers.get('set-cookie')!)
-        // return c.redirect(response.headers.get('location')!, response.status)
-      })
-
-      auth.get('/callback', async (c) => {
-        const { response, tokens, sessionId } = await handleCallback(c.req.raw)
-        console.log('tokens', tokens, sessionId) // lol
-        // acting as the github actor, pierce the github chain to store this info
-        // as well as storing the token from github
-        // there should be one PAT per machine id
-
-        // get the userId from github
-        // move the machine branch to be inside the user branch
-        // send the new pid down to the browser
-
-        // make a fetch request to get the userId from github
-
-        // pass back an id so the browser knows which pats it has
-
-        return response
-        // c.header('set-cookie', response.headers.get('set-cookie')!)
-        // return c.redirect(response.headers.get('location')!, response.status)
-      })
-
-      auth.get('/signout', async (c) => {
-        const response = await signOut(c.req.raw)
-        return response
-        // c.header('set-cookie', response.headers.get('set-cookie')!)
-        // return c.redirect(response.headers.get('location')!, response.status)
-      })
+      // TODO use https://www.npmjs.com/package/@hono/oauth-providers
+      // used to get repo access, whereas privy is used for sign in
     }
-
-    // TODO set a cookie for the machineId so it doesn't have to prove again
-    // or get a sig on all pierce actions, and only allow correctly signed ones
-    // to enter
 
     return server
   }
