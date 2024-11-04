@@ -608,11 +608,11 @@ expect.not = {
  * The last module added is the first module tested.
  *
  * @example
- * ```ts
+ * ```ts no-eval
  * import { expect } from "@std/expect";
- * import serializer from "my-serializer-module";
+ * import serializerAnsi from "npm:jest-snapshot-serializer-ansi";
  *
- * expect.addSnapshotSerializer(serializer);
+ * expect.addSnapshotSerializer(serializerAnsi);
  * ```
  */
 expect.addSnapshotSerializer = addSerializer as (
