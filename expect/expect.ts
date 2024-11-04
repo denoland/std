@@ -59,10 +59,10 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
-import { addSnapshotSerializer } from "./_serializer.ts";
+import { addSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
-import type { Tester } from "./_types.ts";
+import type { SnapshotPlugin, Tester } from "./_types.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -615,4 +615,6 @@ expect.not = {
  * expect.addSnapshotSerializer(serializer);
  * ```
  */
-expect.addSnapshotSerializer = addSnapshotSerializer;
+expect.addSnapshotSerializer = addSerializer as (
+  plugin: SnapshotPlugin,
+) => void;
