@@ -66,13 +66,16 @@
     "./execution",
     "./files",
     "./fixture",
+    "./git-kv",
     "./hamr",
     "./info",
     "./napp-tools",
     "./openai",
+    "./processes",
     "./reasoner",
     "./server",
     "./shockwave",
+    "./snapshots",
     "./stateboard"
   ]
 }

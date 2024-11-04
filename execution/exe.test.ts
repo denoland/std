@@ -1,6 +1,6 @@
-import IOChannel from './io-channel.ts'
+import IOChannel from '../engine/exe./../execution/io-channel.ts'
 import FS from '../git/fs.ts'
-import Executor from './exe.ts'
+import Executor from '../engine/exe./../execution/exe.ts'
 import {
   C,
   isPierceRequest,

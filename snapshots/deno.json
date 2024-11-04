@@ -1,0 +1,5 @@
+{
+  "name": "@artifact/snapshots",
+  "version": "0.0.1",
+  "exports": { ".": "./mod.ts", "./napp.json": "./napp.json" }
+}
