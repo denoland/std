@@ -915,3 +915,5 @@ export interface OldSnapshotPlugin {
   ) => string;
   test: Test;
 }
+
+export type SnapshotPlugin = NewSnapshotPlugin | OldSnapshotPlugin;

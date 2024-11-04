@@ -59,6 +59,7 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
+import { addSnapshotSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { Tester } from "./_types.ts";
@@ -599,3 +600,19 @@ expect.not = {
   stringContaining: asymmetricMatchers.stringNotContaining,
   stringMatching: asymmetricMatchers.stringNotMatching,
 };
+/**
+ * `expect.addSnapshotSerializer` adds a module that formats application-specific data structures.
+ *
+ * For an individual test file, an added module precedes any modules from snapshotSerializers configuration,
+ * which precede the default snapshot serializers for built-in JavaScript types and for React elements.
+ * The last module added is the first module tested.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ * import serializer from "my-serializer-module";
+ *
+ * expect.addSnapshotSerializer(serializer);
+ * ```
+ */
+expect.addSnapshotSerializer = addSnapshotSerializer;
