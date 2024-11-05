@@ -303,7 +303,6 @@ export class IniMap<T = any> {
     const reviverFunc: ReviverFunction = typeof reviver === "function"
       ? reviver
       : (_key, value, _section) => {
-        if (value === "undefined") return undefined;
         if (!isNaN(+value) && !value.includes('"')) return +value;
         if (value === "null") return null;
         if (value === "true" || value === "false") return value === "true";

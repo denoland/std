@@ -173,13 +173,6 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() return value as undefined",
-  fn() {
-    assertEquals(parse("value=undefined"), { value: undefined });
-  },
-});
-
-Deno.test({
   name: "parse() return value as number",
   fn() {
     assertEquals(parse("value=123"), { value: 123 });
