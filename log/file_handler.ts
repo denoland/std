@@ -185,8 +185,10 @@ export class FileHandler extends BaseHandler {
    * @example Usage
    * ```ts no-assert
    * import { FileHandler } from "@std/log/file-handler";
+   *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup(); // Opens the file and prepares the handler for logging.
+   * handler.destroy();
    * ```
    */
   override setup() {
@@ -223,6 +225,7 @@ export class FileHandler extends BaseHandler {
    *     loggerName: "INFO",
    *   }),
    * );
+   * handler.destroy();
    *
    * assertInstanceOf(handler, FileHandler);
    * ```
@@ -250,6 +253,7 @@ export class FileHandler extends BaseHandler {
    * handler.setup();
    * handler.log('Hello, world!');
    * handler.flush();
+   * handler.destroy();
    *
    * assertInstanceOf(handler, FileHandler);
    * ```
@@ -279,7 +283,8 @@ export class FileHandler extends BaseHandler {
    * handler.setup();
    * handler.log('Hello, world!');
    * handler.flush(); // Writes buffered log messages to the file immediately.
-   *
+   * handler.destroy();
+   * 
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
