@@ -284,7 +284,7 @@ export class FileHandler extends BaseHandler {
    * handler.log('Hello, world!');
    * handler.flush(); // Writes buffered log messages to the file immediately.
    * handler.destroy();
-   * 
+   *
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
