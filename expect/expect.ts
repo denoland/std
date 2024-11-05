@@ -604,7 +604,7 @@ expect.not = {
  * `expect.addSnapshotSerializer` adds a module that formats application-specific data structures.
  *
  * For an individual test file, an added module precedes any modules from snapshotSerializers configuration,
- * which precede the default snapshot serializers for built-in JavaScript types and for React elements.
+ * which precede the default snapshot serializers for built-in JavaScript types.
  * The last module added is the first module tested.
  *
  * @example
