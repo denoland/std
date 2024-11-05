@@ -44,11 +44,10 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
 }
 
 /**
- * This handler will output to a file using an optional mod.
- * The file will grow indefinitely. It uses a buffer for writing
- * to file. Logs can be manually flushed with `fileHandler.flush()`. Log
- * messages with a log level greater than error are immediately flushed. Logs
- * are also flushed on process completion.
+ * A file-based log handler that writes log messages to a specified file with buffering and optional modes.
+ * The logs are buffered for optimized performance, writing to the file only
+ * when the buffer is full, on manual .flush() call, during logging of a critical message or when process ends.
+ * It is important to note that the file can grow indefinitely.
  *
  * This handler requires `--allow-write` permission on the log file.
  *
@@ -58,7 +57,9 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  *
  * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
  * handler.setup();
- * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+ * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+ * handler.flush(); // Manually flushes the buffer
+ * handler.destroy(); // Closes the file and removes listeners
  * ```
  */
 export class FileHandler extends BaseHandler {
@@ -69,7 +70,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [fileSymbol]: Deno.FsFile | undefined;
@@ -80,7 +83,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [bufSymbol]: Uint8Array;
@@ -91,7 +96,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [pointerSymbol] = 0;
@@ -102,7 +109,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [filenameSymbol]: string;
@@ -113,7 +122,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [modeSymbol]: LogMode;
@@ -124,7 +135,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [openOptionsSymbol]: Deno.OpenOptions;
@@ -135,7 +148,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
+   * handler.flush(); // Manually flushes the buffer
+   * handler.destroy(); // Closes the file and removes listeners
    * ```
    * **/
   [encoderSymbol]: TextEncoder = new TextEncoder();
@@ -207,6 +222,7 @@ export class FileHandler extends BaseHandler {
    *     loggerName: "INFO",
    *   }),
    * );
+   * 
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
@@ -231,7 +247,9 @@ export class FileHandler extends BaseHandler {
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
-   * handler.log('Hello, world!'); // Appends Hello, world! to logs.txt
+   * handler.log('Hello, world!');
+   * handler.flush();
+   *
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
@@ -260,6 +278,7 @@ export class FileHandler extends BaseHandler {
    * handler.setup();
    * handler.log('Hello, world!');
    * handler.flush(); // Writes buffered log messages to the file immediately.
+   *
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
@@ -290,6 +309,7 @@ export class FileHandler extends BaseHandler {
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
    * handler.setup();
    * handler.destroy();
+   *
    * assertInstanceOf(handler, FileHandler);
    * ```
    */
