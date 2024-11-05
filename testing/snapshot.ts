@@ -565,7 +565,7 @@ export async function assertSnapshot<T>(
  * @typeParam T The type of the snapshot
  * @param context The test context
  * @param actual The actual value to compare
- * @param message The optional assertion messagge
+ * @param message The optional assertion message
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
