@@ -73,6 +73,7 @@ const ENTRY_POINTS = [
   "../json/mod.ts",
   "../jsonc/mod.ts",
   "../log/base_handler.ts",
+  "../log/file_handler.ts",
   "../log/warn.ts",
   "../log/critical.ts",
   "../log/debug.ts",
