@@ -22,15 +22,98 @@ export interface LogRecordOptions {
   loggerName: string;
 }
 
+/**
+ * Configuration options for a logger instance.
+ *
+ * @example Usage
+ *
+ * ```ts
+ * import { ConsoleHandler, getLogger, setup, type LogConfig} from "@std/log";
+ * import { assert } from "@std/assert";
+ *
+ * const handler = new ConsoleHandler("INFO");
+ * const logConfig: LogConfig = {
+ *     handlers: {
+ *         default: handler,
+ *     },
+ *     loggers: {
+ *         default: {
+ *             level: "INFO",
+ *             handlers: ["default"],
+ *         },
+ *     },
+ * }
+ * setup(logConfig);
+ * const logger = getLogger();
+ *
+ * assert(logger.handlers.at(0) instanceof ConsoleHandler);
+ * ```
+ */
 export class LoggerConfig {
+  /** The minimum log level for the logger.
+   *
+   * @example Usage
+   *
+   * ```ts
+   * import { ConsoleHandler, getLogger, setup, type LogConfig} from "@std/log";
+   * import { assert } from "@std/assert";
+   *
+   * const handler = new ConsoleHandler("INFO");
+   * const logConfig: LogConfig = {
+   *     handlers: {
+   *         default: handler,
+   *     },
+   *     loggers: {
+   *         default: {
+   *             level: "INFO",
+   *             handlers: ["default"],
+   *         },
+   *     },
+   * }
+   * setup(logConfig);
+   * const logger = getLogger();
+   *
+   * assert(logger.handlers.at(0) instanceof ConsoleHandler);
+   * ```
+   */
   level?: LevelName;
+  /** A list of handler names attached to this logger.
+   *
+   * @example Usage
+   *
+   * ```ts
+   * import { ConsoleHandler, getLogger, setup, type LogConfig} from "@std/log";
+   * import { assert } from "@std/assert";
+   *
+   * const handler = new ConsoleHandler("INFO");
+   * const logConfig: LogConfig = {
+   *     handlers: {
+   *         default: handler,
+   *     },
+   *     loggers: {
+   *         default: {
+   *             level: "INFO",
+   *             handlers: ["default"],
+   *         },
+   *     },
+   * }
+   * setup(logConfig);
+   * const logger = getLogger();
+   *
+   * assert(logger.handlers.at(0) instanceof ConsoleHandler);
+   * ``` */
   handlers?: string[];
 }
 
+/**
+ * Configuration for logger setup.
+ */
 export interface LogConfig {
+  /** A dictionary of named handlers for logging. */
   handlers?: {
     [name: string]: BaseHandler;
   };
+  /** A dictionary of named loggers and their configurations. */
   loggers?: {
     [name: string]: LoggerConfig;
   };
