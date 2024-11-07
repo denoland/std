@@ -1,5 +1,5 @@
 import { expect } from '@std/expect/expect'
-import Trail from './trail.ts'
+import { Trail } from './trail.ts'
 import { assert } from '@std/assert/assert'
 
 Deno.test('trail', async () => {

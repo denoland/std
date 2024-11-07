@@ -1,12 +1,29 @@
 import Compartment from './compartment.ts'
 import { expect } from '@std/expect'
 import actionCreators from '@artifact/api/actions'
+import { Trail } from './trail.ts'
 
 Deno.test('compartment loads a napp', async (t) => {
   const actions = await actionCreators('@artifact/files')
   const action = actions.write({ path: 'test.txt', content: 'hello world' })
 
   const compartment = await Compartment.load('@artifact/files')
+
+  const next = await compartment.execute(action)
+  expect(next).toBeInstanceOf(Trail)
+
+  // next should be a trail
+
+  // execute an action
+  // receive back some filesystem reading
+
+  // fullfill the filesystem action
+
+  // filesystem ingoing actions should get fulfilled too, since they require
+  // reading.
+  // rule is that anything with a reply should be in the local object store, and
+  // any request that is within the local object store should be fulfilled
+  // during runtime.
 
   // api needs a filesystem abstraction so we can test it.
 

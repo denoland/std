@@ -95,3 +95,18 @@ What was the longest the queue was observed to be
 IDs for gathering statistics on shockwaves that were created from within this
 shockwave. The shockwave task is not counted as a task itself, but all its
 individual components are used in statistics.
+
+## TODO
+
+Reducer / clean up functions, which trigger when the job has completed, and are
+streamed in the results of the execution
+
+Implement map reduce using the amplifier actions as group boundaries
+
+Set multiple types of functions and reducers that we want to run as a shockwave
+
+reduce( result[] ) that processes all the results of the shockwave. This should
+stream in the results, so that it can begin processing as soon as the first
+result is available
+
+reduceInOrder( orderedResults[] ) stream in the results in the invocation order

@@ -1,6 +1,8 @@
 import napps from './napps-import.ts'
 import type { Action } from '@artifact/api/actions'
 import Debug from 'debug'
+import { Trail } from './trail.ts'
+import { assert } from '@std/assert/assert'
 const log = Debug('AI:compartment')
 
 // so it would only take in some actions and a filesystem, and it would
@@ -15,16 +17,26 @@ export default class Compartment {
     return compartment
   }
   #napp: typeof napps[keyof typeof napps]
+  #trail: Trail | undefined
+
   private constructor(napp: keyof typeof napps) {
     log('load napp:', napp)
     this.#napp = napps[napp]
   }
-  execute(action: Action) {
+  start(origin: Action) {
+    assert(!this.#trail, 'Already running')
+    this.#trail = Trail.create(origin)
+    return this.#execute()
+  }
+  #execute() {
     // reject if it doesn't match this napp
     // execute the action
-    // return the trail ?
+    // return the new trail?
   }
-  step(accumulator) {
+  increment(trail: Trail) {
+    // error if we are not already running
+    assert(this.#trail, 'Not running')
+    // absorb the new trail
   }
   tearDown() {
   }

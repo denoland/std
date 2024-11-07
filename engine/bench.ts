@@ -2,10 +2,10 @@ import Benchmark from 'benchmark'
 import { Debug } from '@utils'
 import { Engine } from '@/engine.ts'
 import { Api } from '@/isolates/io-fixture.ts'
-import { assert } from '@std/assert'
+import { assert } from '@std/assert/assert'
 import DB from '@/db.ts'
-import { Crypto } from '../../api/crypto.ts'
-import { Backchat } from '../../api/client-backchat.ts'
+import { Crypto } from '../api/crypto.ts'
+import { Backchat } from '../api/client-backchat.ts'
 
 const log = Debug('AI:benchmarks')
 Debug.enable('AI:benchmarks AI:qbr')
@@ -179,6 +179,8 @@ suite
   //     },
   //   })
   .on('cycle', (event: Benchmark.Event) => {
+    // console output is how the results to the benchmark are captured
+    // deno-lint-ignore no-console
     console.log(String(event.target))
   })
   .on('complete', async function () {

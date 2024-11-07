@@ -56,6 +56,7 @@ export const functions: Functions<Api> = {
     await loadAgent(assessor, api)
     const tpsPath = getTpsPath(path)
     const hash = await api.readOid(path)
+    // TODO use the snapshot it / commit id and filepath.
     let tpsReport = create(path, target, assessor, iterations, hash)
 
     for (const { name, promptLists, expectations, dependencies } of cases) {

@@ -123,5 +123,15 @@
       "graphics": "weatherDisplayInCelsius"
       // could modify the react props here as well
     }
+  },
+  "effects": {
+    "mount": {
+      // path to a tool that takes no parameters and returns nothing but might
+      // throw. Used to set up a side effect.
+    },
+    "unmount": {
+      // path to a tool that takes no parameters and returns nothing but might
+      // throw. Used to clean up a side effect.
+    }
   }
 }

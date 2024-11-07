@@ -1,0 +1,296 @@
+import Debug from 'debug'
+import { getRepoBase, headKeyToPid } from '../engine/keys.ts'
+import type DB from '../engine/db.ts'
+import { assert, AssertionError } from '@std/assert'
+import equal from 'fast-deep-equal'
+
+import type { PID } from '../processes/processes.ts'
+import type { Atomic } from '../engine/atomic.ts'
+
+const log = Debug('git:KV')
+
+export class GitKV {
+  #allowed = ['config', 'objects', 'refs']
+  #dropWrites = ['HEAD']
+  #db: DB
+  #pid: PID
+  #exists: Set<string> | undefined
+  #cache = Cache.create()
+
+  private constructor(db: DB, pid: PID, isBlank: boolean = false) {
+    this.#db = db
+    this.#pid = pid
+    if (isBlank) {
+      this.#exists = new Set()
+    }
+  }
+  static recreate(db: DB, pid: PID) {
+    return new GitKV(db, pid)
+  }
+  static createBlank(db: DB, pid: PID) {
+    const isBlankDuringInitAndClone = true
+    return new GitKV(db, pid, isBlankDuringInitAndClone)
+  }
+
+  isIgnored(path: string) {
+    const sliced = path.slice('/.git/'.length)
+    return this.#dropWrites.includes(sliced)
+  }
+  async readFile(path: string, opts: EncodingOpts) {
+    log('readFile', path, opts)
+    if (!path && !opts) {
+      throw new Error('path and opts are required')
+    }
+    if (path === '/.git/index') {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    if (path === '/.git/HEAD') {
+      let ref = `ref: refs/heads`
+      for (const branch of this.#pid.branches) {
+        ref += `/${branch}`
+      }
+      log('readFile HEAD ref', ref)
+      return ref
+    }
+    if (this.#exists && !this.#exists.has(path)) {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    if (path.startsWith('/.git/refs/heads/')) {
+      // only allow reading heads from the current branch, else what doing ?
+      const rest = path.slice('/.git/refs/heads/'.length)
+      const branches = rest.split('/')
+      log('readFile refs/heads:', branches)
+      assert(equal(branches, this.#pid.branches), 'branches do not match')
+      const head = await this.#db.readHead(this.#pid)
+      if (!head) {
+        throw new FileNotFoundError('file not found: ' + path)
+      }
+      return head
+    }
+
+    if (opts && opts.encoding && opts.encoding !== 'utf8') {
+      throw new Error('only utf8 encoding is supported')
+    }
+
+    const pathKey = this.#getAllowedPathKey(path)
+    let result: Uint8Array
+    if (await this.#cache.has(pathKey)) {
+      result = this.#cache.get(pathKey)
+    } else {
+      const dbResult = await this.#db.blobGet(pathKey)
+
+      if (!dbResult.versionstamp) {
+        log('readFile not found', path, opts)
+        throw new FileNotFoundError('file not found: ' + path)
+      }
+      result = dbResult.value
+      await this.#cache.set(pathKey, result)
+    }
+    if (opts && opts.encoding === 'utf8') {
+      const string = new TextDecoder().decode(result)
+      log('readFile', path, opts, string)
+      return string
+    }
+    log('readFile', path, opts, typeof result)
+    return result
+  }
+  async writeFile(
+    path: string,
+    data: Uint8Array | string,
+    opts: EncodingOpts,
+  ) {
+    log('writeFile', path, data, opts)
+    if (opts && opts.encoding && opts.encoding !== 'utf8') {
+      throw new Error('only utf8 encoding is supported')
+    }
+    if (this.isIgnored(path)) {
+      log('writeFile ignored', path)
+      return
+    }
+    if (path === '/.git/index') {
+      throw new Error('will not write to index')
+    }
+    if (this.#exists) {
+      this.#exists.add(path)
+    }
+    const pathKey = this.#getAllowedPathKey(path)
+
+    // TODO skip the remote HEAD writes too ?
+    if (path.startsWith('/.git/refs/heads/')) {
+      // TODO use the head tool on this.#db to ensure consistency
+      assert(typeof data === 'string', 'data must be a string')
+      const pid = headKeyToPid(pathKey)
+      // TODO ensure have maintenance while this is being changed
+      assert(this.#oneAtomicWrite, 'no atomic write provided')
+      const atomic = this.#oneAtomicWrite
+      this.#oneAtomicWrite = undefined
+      await atomic.createBranch(pid, data.trim()).commit()
+    } else {
+      if (typeof data === 'string') {
+        data = new TextEncoder().encode(data)
+      }
+      const promise = this.#cache.set(pathKey, data)
+      await this.#db.blobSet(pathKey, data)
+      await promise
+    }
+    log('writeFile done:', pathKey)
+  }
+  #oneAtomicWrite: Atomic | undefined
+  set oneAtomicWrite(atomic: Atomic) {
+    this.#oneAtomicWrite = atomic
+  }
+  async unlink(path: string) {
+    log('unlink', path)
+    if (path === '/.git/shallow') {
+      return
+    }
+    return await Promise.reject(new Error('not implemented'))
+  }
+  async readdir(path: string, options?: object) {
+    log('readdir', path)
+    assert(!options, 'options not supported')
+    let pathKey = getRepoBase(this.#pid)
+    if (path !== '/.git') {
+      pathKey = this.#getAllowedPathKey(path)
+    }
+    const results = await this.#db.listImmediateChildren(pathKey)
+    log('readdir', path, results)
+
+    return results
+  }
+  mkdir(path: string) {
+    log('mkdir', path)
+    return Promise.resolve()
+  }
+  async rmdir(path: string) {
+    log('rmdir', path)
+    return await Promise.reject(new Error('not implemented'))
+  }
+  async stat(path: string) {
+    log('stat', path)
+    // generate the key for the path
+    let pathKey
+    try {
+      pathKey = this.#getAllowedPathKey(path)
+    } catch (error) {
+      if (error instanceof AssertionError) {
+        throw new FileNotFoundError('file not found: ' + path)
+      }
+      throw error
+    }
+    if (this.#exists && !this.#exists.has(path)) {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    log('stat pathKey', pathKey)
+    let exists = false
+    if (path.startsWith('/.git/refs/heads/')) {
+      const pid = headKeyToPid(pathKey)
+      const head = await this.#db.readHead(pid)
+      exists = !!head
+    } else {
+      if (await this.#cache.has(pathKey)) {
+        exists = true
+      } else {
+        if (path.startsWith('/.git/objects/')) {
+          // wastes a round trip to the db otherwise
+          throw new FileNotFoundError('file not found: ' + path)
+        }
+        exists = await this.#db.blobExists(pathKey)
+      }
+    }
+    if (!exists) {
+      throw new FileNotFoundError('file not found: ' + path)
+    }
+    return {}
+  }
+  async lstat(path: string) {
+    log('lstat', path)
+    const message = 'not implemented: ' + path
+    return await Promise.reject(new FileNotFoundError(message))
+  }
+  async readlink(path: string) {
+    log('readlink', path)
+    return await Promise.reject(new Error('not implemented'))
+  }
+  async symlink(target: string, path: string, type: string) {
+    log('symlink', target, path, type)
+    return await Promise.reject(new Error('not implemented'))
+  }
+  async chmod(path: string, mode: number) {
+    log('chmod', path, mode)
+    return await Promise.reject(new Error('not implemented'))
+  }
+  #getAllowedPathKey(path: string) {
+    assert(path.startsWith('/.git/'), 'path must start with /.git/')
+    const rest = path.slice('/.git/'.length)
+    assert(rest, 'path must not be bare')
+    const prefix = getRepoBase(this.#pid)
+    const pathKey = rest.split('/')
+    assert(pathKey[0], 'path must have a first key')
+    assert(this.#allowed.includes(pathKey[0]), 'path not allowed: ' + pathKey)
+
+    return [...prefix, ...pathKey]
+  }
+}
+
+type EncodingOpts = {
+  encoding?: 'utf8'
+}
+
+export class FileNotFoundError extends Error {
+  code = 'ENOENT'
+  constructor(message: string) {
+    super(message)
+    this.name = 'FileNotFoundError'
+  }
+}
+class Cache {
+  static create() {
+    return new Cache()
+  }
+  static #local = new Map<string, Uint8Array>()
+  #big: globalThis.Cache | undefined
+  async #load() {
+    if ('caches' in globalThis && !this.#big) {
+      // TODO name the caches per repo so they can be deleted granularly
+      this.#big = await caches.open('hashbucket')
+    }
+  }
+  async has(key: Deno.KvKey) {
+    const url = toUrl(key)
+    if (Cache.#local.has(url)) {
+      return true
+    }
+
+    await this.#load()
+    if (this.#big) {
+      const cached = await this.#big.match(url)
+      if (cached) {
+        const cloned = cached.clone()
+        const bytes = await cloned.bytes()
+        Cache.#local.set(url, bytes)
+        return true
+      }
+    }
+    return false
+  }
+  get(key: Deno.KvKey) {
+    const url = toUrl(key)
+    if (Cache.#local.has(url)) {
+      const result = Cache.#local.get(url)
+      assert(result, 'cache inconsistency')
+      return result
+    }
+    throw new Error('not found: ' + key.join('/'))
+  }
+  async set(key: Deno.KvKey, value: Uint8Array) {
+    await this.#load()
+    const url = toUrl(key)
+    Cache.#local.set(url, value)
+    if (this.#big) {
+      const request = new Request(url)
+      await this.#big.put(request, new Response(value))
+    }
+  }
+}
+const toUrl = (pathKey: Deno.KvKey) => 'http://' + pathKey.join('/')

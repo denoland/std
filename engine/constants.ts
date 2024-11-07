@@ -30,12 +30,6 @@ export type IsolateLifecycle = {
   '@@mount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
   '@@unmount'?: (api: IA) => Promise<IsolateReturn> | IsolateReturn
 }
-export type Isolate = {
-  parameters: Record<string, ZodObject<Record<string, ZodUnknown>>>
-  returns: Record<string, ZodSchema>
-  functions: IsolateFunctions
-  lifecycles?: IsolateLifecycle
-}
 
 export type Solids = {
   oid: string
@@ -99,20 +93,3 @@ export const isChildOf = (child: PID, parent: PID) => {
   return equal(childParent, parent)
 }
 export const isBaseRepo = (pid: PID) => pid.branches.length === 1
-
-export type Provisioner = (superBackchat: Backchat) => Promise<void>
-
-export type CradleMaker = (
-  t: Deno.TestContext,
-  /** The file url that the snapshots are associated with */
-  snapshotsFor: string,
-  updateSnapshots?: 'updateSnapshots',
-  init?: Provisioner,
-) => Promise<
-  {
-    backchat: Backchat
-    engine: EngineInterface
-    privateKey: string
-    [Symbol.asyncDispose](): Promise<void>
-  }
->

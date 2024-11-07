@@ -1,1 +1,70 @@
-{}
+{
+    "name": "@artifact/snapshots",
+    "version": "1.0.0",
+    "description": "A snapshot is a point-in-time representation of a set of files.  It can also be statefully changed before being committed.",
+    "tools": {
+        "snapshotId": {
+            "description": "The snapshot ID that allows this snapshot to be retrieved.  In git, this is the commit hash.",
+            "returns": { "type": "string" }
+        },
+        "parents": {
+            "description": "The parent snapshot IDs that this snapshot is based on, ordered by most important first. In git, these is the parent commit hashes, with incoming merges being less important than the merge target.",
+            "returns": { "type": "array", "items": { "type": "string" } }
+        },
+        "log": {
+            "description": "The log of changes that have been made to this snapshot, ordered by time",
+            "parameters": {
+                "since": {
+                    "type": "string",
+                    "description": "The snapshot ID to start the log from.  If not provided, the log will start from the beginning."
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "The number of log entries to return.  If not provided, all log entries will be returned."
+                }
+            },
+            "returns": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "snapshotId": { "type": "string" },
+                        "parents": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                        }
+                    }
+                }
+            }
+        },
+        "exists": {
+            "description": "Given a file path, determines if the file exists in this snapshot.",
+            "parameters": {
+                "path": {
+                    "type": "string",
+                    "description": "The path to the file to check."
+                }
+            }
+        },
+        "ls": {},
+        "upsert": {},
+        "rm": {},
+        "mv": {},
+        "cp": {},
+        "upserts": {
+        },
+        "deletes": {
+        },
+        "isChanged": {
+            "description": "Determines if the snapshot has been changed since the last commit.",
+            "returns": { "type": "boolean" }
+        },
+        "commit": {
+            "description": "Commits the snapshot to the underlying snapshot store.",
+            "returns": {
+                "type": "string",
+                "description": "The snapshot ID of the committed snapshot."
+            }
+        }
+    }
+}

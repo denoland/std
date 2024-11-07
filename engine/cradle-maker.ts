@@ -1,7 +1,6 @@
 import { Engine } from './engine.ts'
 import { Crypto } from './api/crypto.ts'
 import DB from '@/db.ts'
-import { type CradleMaker, Provisioner } from '@/constants.ts'
 import { Backchat } from './api/client-backchat.ts'
 import { mockCreator } from '@/isolates/utils/mocker.ts'
 import z from 'zod'
@@ -17,6 +16,23 @@ type SeedSet = {
   backchatId: string
 }
 const seeds = new Map<Provisioner | undefined, SeedSet>()
+
+export type Provisioner = (superBackchat: Backchat) => Promise<void>
+
+export type CradleMaker = (
+  t: Deno.TestContext,
+  /** The file url that the snapshots are associated with */
+  snapshotsFor: string,
+  updateSnapshots?: 'updateSnapshots',
+  init?: Provisioner,
+) => Promise<
+  {
+    backchat: Backchat
+    engine: unknown
+    privateKey: string
+    [Symbol.asyncDispose](): Promise<void>
+  }
+>
 
 export const cradleMaker: CradleMaker = async (t, url, update, init) => {
   const mock = mockCreator(z.unknown())

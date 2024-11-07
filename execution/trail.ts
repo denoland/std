@@ -32,7 +32,7 @@ const trailSchema: z.ZodType<TrailStruct> = baseTrailSchema.extend({
   return true
 }, { message: 'Request index must be less than sequence' })
 
-export default class Trail {
+export class Trail {
   static create(origin: Action) {
     return new Trail({ origin, sequence: 0, requests: {} })
   }

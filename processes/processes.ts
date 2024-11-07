@@ -150,26 +150,7 @@ export const getBaseName = (pid: PID) => {
 }
 export const sha1 = /^[0-9a-f]{40}$/i
 
-export const META_SYMBOL = Symbol.for('settling commit')
-export type Meta = {
-  parent?: CommitOid
-  // TODO add the PID so we know what the id of the branch that returned was
-}
-export const withMeta = async <T>(promise: MetaPromise<T>) => {
-  const result = await promise
-  assert(META_SYMBOL in promise, 'missing commit symbol')
-  const meta = promise[META_SYMBOL]
-  assert(typeof meta === 'object', 'missing meta on promise')
-  const { parent } = meta
-  if (parent) {
-    assert(typeof parent === 'string', 'missing parent commit')
-    assert(sha1.test(parent), 'commit not sha1: ' + parent)
-  }
-  return { result, parent }
-}
-export type MetaPromise<T> = Promise<T> & { [META_SYMBOL]?: Meta }
-
-import { actionSchema } from './actions.ts'
+import { actionSchema } from '../api/actions.ts'
 
 export const addressedSchema = z.object({
   // what is the addressing ?

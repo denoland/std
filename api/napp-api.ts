@@ -1,328 +1,178 @@
+import type { ZodRecord, ZodTypeAny } from 'zod'
+import { z } from 'zod'
+import type { NappTypes } from './napps-list.ts'
+import { type Action, jsonSchema, type JsonValue } from './actions.ts'
+import Debug from 'debug'
+import type { Outcome } from './actions.ts'
 import { deserializeError } from 'serialize-error'
-import Accumulator from '../engine/exe/trail.ts'
-import Compartment from '../execution/compartment.ts'
-import { assert, Debug, equal } from '@utils'
-import micromatch from 'micromatch'
-import {
-  ApiFunctions,
-  DispatchFunctions,
-  freezePid,
-  getThreadPath,
-  IoStruct,
-  isChildOf,
-  isSettledIsolatePromise,
-  META_SYMBOL,
-  MetaPromise,
-  PID,
-  print,
-  PromisedIsolatePromise,
-  RpcOpts,
-  SolidRequest,
-  threadSchema,
-  toActions,
-  UnsequencedRequest,
-} from '@/constants.ts'
-import { type Isolate } from '@/isolates/index.ts'
-import * as files from '@/isolates/files.ts'
-import IOChannel from '@io/io-channel.ts'
-import { z, ZodTypeAny } from 'zod'
-const log = Debug('AI:isolateApi')
-interface Default {
-  [key: string]: unknown
-}
-type EffectOptions = {
-  isEffect: boolean
-  isEffectRecovered: boolean
+const log = Debug('@artifact/api')
+
+type TreeEntry = {
+  /** the 6 digit hexadecimal mode */
+  mode: string
+  /** the name of the file or directory */
+  path: string
+  /** the SHA-1 object id of the blob or tree */
+  oid: string
+  /** the type of object */
+  type: 'blob' | 'tree' | 'commit'
 }
 
-// This should be an accumulator with an interpreter
-// this means it is the same piece of code in all 3 modes.
+/** WriteOptions always refer to the latest snapshot of a branch */
+type WriteOptions = {
+  /** Posix style path that locates what process thread we want to communicate
+   * with.  In git, this would be branch names, for example: `exe/proc-1/child-2` */
+  process?: string
 
-// The job of this object is turn function calls in to actions that are
-// repeatable and sometimes have reponses available
+  /** The cryptographic identifier of the whole repository.  This would be the
+   * chainId in conventional blockchains, but could be a group of public keys,
+   * or some other root of trust */
+  crypto?: string
 
-export default class NappApi<T extends Record<string, unknown> = Default> {
-  #accumulator: Accumulator
-  #origin: SolidRequest
-  #originCommit: string | undefined
-  // TODO assign a mount id for each side effect execution context ?
-  #context: Partial<T> = {}
-  #isEffect = false
-  #isEffectRecovered = false
-  #abort = new AbortController()
-  private constructor(
-    accumulator: Accumulator,
-    origin: SolidRequest,
-    originCommit?: string,
-  ) {
-    this.#accumulator = accumulator
-    this.#origin = origin
-    this.#originCommit = originCommit
+  /** Whatever snapshot model is used, the branch concept represents an isolated
+   * line of changes.  In git, this would be a branch */
+  branch?: string
+}
+type ReadOptions = WriteOptions & {
+  /** Depending on the snapshot format being used, represents the state at a
+   * specific point in the history */
+  snapshot?: string
+}
+
+type PlainTreeEntry = TreeEntry & { type: 'blob' | 'tree' }
+
+interface NappRead {
+  readMeta(path: string, options?: ReadOptions): Promise<PlainTreeEntry>
+  readText(path: string, options?: ReadOptions): Promise<string>
+  readJSON<T extends ZodTypeAny = typeof jsonSchema>(
+    path: string,
+    options?: ReadOptions & { schema?: T },
+  ): Promise<z.infer<T>>
+  readBinary(path: string, options?: ReadOptions): Promise<Uint8Array>
+  exists(path: string, options?: ReadOptions): Promise<boolean>
+  ls(path?: string, options?: ReadOptions): Promise<PlainTreeEntry[]>
+}
+
+type PairOptions = WriteOptions & { path: string }
+
+interface NappWrite {
+  writeText(
+    path: string,
+    content: string,
+    options?: WriteOptions,
+  ): Promise<void>
+  writeJSON(
+    path: string,
+    json: JsonValue,
+    options?: WriteOptions,
+  ): Promise<void>
+  writeBinary(
+    path: string,
+    content: Uint8Array,
+    options?: WriteOptions,
+  ): Promise<void>
+  rm(path: string, options?: WriteOptions): Promise<void>
+  mv(from: PairOptions, to: PairOptions): Promise<void>
+  cp(from: PairOptions, to: PairOptions): Promise<void>
+}
+
+type SpawnOptions =
+  & WriteOptions
+  & (
+    | { name: string; prefix?: never }
+    | { name?: never; prefix: string }
+  )
+  & {
+    files?: string[]
+    /** If process exists, exit gracefully */
+    upsert?: boolean
+    /** Priority of the process */
+    nice?: number
   }
-  static create(
-    accumulator: Accumulator,
-    origin: SolidRequest,
-    originCommit?: string,
-    opts?: EffectOptions,
-  ) {
-    const api = new NappApi(accumulator, origin, originCommit)
-    if (opts) {
-      api.#isEffect = opts.isEffect || false
-      api.#isEffectRecovered = opts.isEffectRecovered || false
-    }
-    return api
-  }
-  static createContext<T extends Record<string, unknown> = Default>() {
-    // TODO find a more graceful way to do this for cradle setup
-    return new NappApi<T>(
-      null as unknown as Accumulator,
-      null as unknown as SolidRequest,
-    )
-  }
-  get #fs() {
-    return this.#accumulator.fs
-  }
-  get pid() {
-    return this.#fs.pid
-  }
-  get origin() {
-    return this.#origin
-  }
-  /** The commit from the origin action */
-  get originCommit() {
-    return this.#originCommit
-  }
-  get commit() {
-    return this.#fs.oid
-  }
-  /** If this execution is side effect capable.  May extend to get permissions
-   * information  */
-  get isEffect() {
-    return this.#isEffect
-  }
+
+type MetaResult = { meta: Required<ReadOptions>; outcome: Outcome }
+
+interface NappProcesses {
+  /** start a new process and install the given napp. */
+  spawn(napp: keyof NappTypes, options: SpawnOptions): Promise<void>
+  /** tear down the specified process, and resturn the result of teardown */
+  kill(options: WriteOptions): Promise<JsonValue | undefined>
+  /** spawns a new process, installs the napp specified in the action, awaits
+   * the execution, and then returns, killing the process */
+  async(action: Action, options: SpawnOptions): Promise<JsonValue | undefined>
+  /** move a process to another parent.  Can be used to daemonize a running
+   * process by moving it to be a child of init */
+  mv(to: WriteOptions, from?: WriteOptions): Promise<void>
+  /** change the priority of a process */
+  nice(level: number, options: WriteOptions): void
+
+  dispatch(
+    action: Action,
+    options: WriteOptions,
+  ): Promise<JsonValue | undefined>
+  dispatchWithMeta(action: Action, options: WriteOptions): Promise<MetaResult>
+}
+
+const stateSchema = z.record(jsonSchema)
+
+interface NappState {
+  getState<T extends ZodRecord = typeof stateSchema>(
+    options: ReadOptions & { schema?: T; fallback?: z.infer<T> },
+  ): Promise<z.infer<T>>
+  // TODO return metadata of the state so we know if it remains unchanged
+  // TODO allow fetching paths within the state
+  updateState<T extends ZodRecord = typeof stateSchema>(
+    updater: (state: z.infer<T>) => z.infer<T>,
+    options: ReadOptions & { schema?: T },
+  ): Promise<z.infer<T>>
+  setState<T extends ZodRecord = typeof stateSchema>(
+    state: z.infer<T>,
+    options: ReadOptions & { schema?: T },
+  ): Promise<void>
+}
+
+interface NappEffects {
+  /** Side effects can listen to this signal to abort their activities */
+  get signal(): AbortSignal
+
   /** If the side effect lock was broken in order to start this instance.
    * Implies the previous executing instance was aborted */
-  get isEffectRecovered() {
-    return this.#isEffectRecovered
-  }
-  /** Side effects can listen to this signal to abort their activities */
-  get signal() {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    // return an abort signal
-    assert(this.isEffect, 'signal only available for side effects')
-    return this.#abort.signal
-  }
-  // TODO make get and set state be synchronous
-  async state<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
-    schema: T,
-    fallback: z.infer<T>,
-  ) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    const io = await IOChannel.read(this.#fs)
-    assert(io, 'io not found')
-    if (equal(io.state, {})) {
-      return schema.parse(fallback) as z.infer<T>
-    }
-    return schema.parse(io.state) as z.infer<T>
-  }
-  async updateState<T extends z.ZodObject<Record<string, ZodTypeAny>>>(
-    updater: (state: z.infer<T>) => z.infer<T>,
-    schema: T,
-  ) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    const io = await IOChannel.load(this.#fs)
-    assert(io, 'io not found')
-    const state = io.state as z.infer<T>
-    const result = updater(state)
-    if (!equal(state, result)) {
-      const next = schema.parse(result) as z.infer<T>
-      assert(io, 'io not found')
-      io.state = next
-      io.save()
-    }
-  }
+  get isEffectRecovered(): boolean
 
-  async actions<T = DispatchFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
-    const { target = this.pid, ...procOpts } = opts
-    freezePid(target)
-    const schema = await this.apiSchema(isolate)
-    const execute = (request: UnsequencedRequest) => this.action(request)
-    return toActions<T>(target, isolate, schema, procOpts, execute)
-  }
-  async requests<T extends ApiFunctions>(isolate: Isolate, opts: RpcOpts = {}) {
-    const { target = this.pid, ...procOpts } = opts
-    freezePid(target)
+  /** The context of the current side effect, which acts like a React ref, and
+   * is a mutable store of any value at all */
+  set context(value: unknown)
 
-    type Unseq = {
-      [K in keyof T]: (...args: Parameters<T[K]>) => UnsequencedRequest
-    }
+  get context(): unknown
+}
 
-    const schema = await this.apiSchema(isolate)
-    const execute = (request: UnsequencedRequest) => request
-    return toActions<Unseq>(target, isolate, schema, procOpts, execute)
-  }
-  action(request: UnsequencedRequest) {
-    const recovered = this.#accumulator.recover(request)
-    if (recovered) {
-      assert(isSettledIsolatePromise(recovered), 'recovered is not settled')
-      const { outcome } = recovered
-      let promise: MetaPromise<typeof outcome.result>
-      if (outcome.error) {
-        promise = Promise.reject(deserializeError(outcome.error))
-      } else {
-        promise = Promise.resolve(outcome.result)
-      }
-      promise[META_SYMBOL] = { parent: recovered.parent }
-      return promise
-    }
-    let resolve, reject
-    const promise: MetaPromise<unknown> = new Promise((_resolve, _reject) => {
-      resolve = _resolve
-      reject = _reject
-    })
-    assert(resolve)
-    assert(reject)
-    const promised: PromisedIsolatePromise = {
-      promise,
-      request,
-      resolve,
-      reject,
-    }
-    this.#accumulator.push(promised)
-    return promise
-  }
-  /**
-   * Used to call the functions of an isolate purely, without going thru the IO
-   * subsystem which would otherwise cost a commit to the chain.
-   * @param isolate The name of the isolate to load the functions for
-   * @returns An object keyed by API function name, with values being the
-   * function itself.
-   */
-  async functions(napp: keyof napps) {
-    // TODO these need some kind of PID attached ?
-    const compartment = await Compartment.load(isolate)
-    // TODO but these need to be wrapped in a dispatch call somewhere
-    return compartment.functions<T>(this)
-  }
-  writeJSON(path: string, json: unknown) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('writeJSON', path)
-    this.#fs.writeJSON(path, json)
-  }
-  write(path: string, content: string | Uint8Array = '') {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('write', path)
-    this.#fs.write(path, content)
-  }
-  async readJSON<T>(
-    path: string,
-    opts?: { target?: PID; commit?: string },
-  ): Promise<T> {
-    // TODO implement readJSON<type> for remote reads, and take a schema
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('readJSON', path)
-    if (opts && opts.target) {
-      // TODO move to something native
-      const { read } = await this.actions<files.Api>('files', opts)
-      const params = { path, reasoning: [], commit: opts.commit }
-      const string = await read(params)
-      return JSON.parse(string) as T
-    }
-    return this.#fs.readJSON<T>(path, opts?.commit)
-  }
-  async readThread(
-    threadPath?: string,
-    opts?: { target?: PID; commit?: string },
-  ) {
-    if (!threadPath) {
-      threadPath = getThreadPath(opts?.target || this.pid)
-    }
-    const thread = await this.readJSON(threadPath, opts)
-    return threadSchema.parse(thread)
-  }
-  async read(path: string, opts?: { target?: PID; commit?: string }) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    if (opts?.target) {
-      // TODO move to something native
-      const { read } = await this.actions<files.Api>('files', opts)
-      const params = { path, reasoning: [], commit: opts.commit }
-      return read(params)
-    }
-    return this.#fs.read(path, opts?.commit)
-  }
-  readOid(path: string) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    return this.#fs.readOid(path)
-  }
-  readBinary(path: string) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('readBinary', path)
-    return this.#fs.readBinary(path)
-  }
-  exists(path: string) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('exists', path)
-    return this.#fs.exists(path)
-  }
-  ls(path: string = '.') {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('ls', path)
-    return this.#fs.ls(path)
-  }
-  delete(filepath: string) {
-    assert(this.#accumulator.isActive, 'Activity is denied')
-    log('delete', filepath)
-    return this.#fs.delete(filepath)
-  }
+export interface NappApi {
+  readonly state: NappState
+  readonly read: NappRead
+  readonly write: NappWrite
+  readonly processes: NappProcesses
+  readonly effects: NappEffects
+}
 
-  async isActiveChild(pid: PID) {
-    if (!isChildOf(pid, this.pid)) {
-      throw new Error('not child: ' + print(pid) + ' of ' + print(this.pid))
-      // TODO allow recursive PID walking
-      // TODO allow walking parents and remote repos
-    }
-    // TODO use a direct db lookup, relying on the atomic guarantees
+export class NappApi implements NappApi {
+  // all this thing does is create actions
+  // these are then interpreted by whatever is running them
+  // so it can be used for client side, inside a napp, or for handling different
+  // processes, branches, and remote repositories
+}
 
-    const obj = await this.readJSON<IoStruct>('.io.json')
-    const child = pid.branches[pid.branches.length - 1]
-    log('readTip', child)
-    for (const branchName of Object.values(obj.branches)) {
-      if (branchName === child) {
-        return true
-      }
-    }
-    return false
-  }
-  async lsChildren(patterns: string[] = []) {
-    const obj = await this.readJSON<IoStruct>('.io.json')
-    const branches = Object.values(obj.branches)
-    return micromatch(branches, patterns)
-  }
-  get context() {
-    // TODO at creation, this should flag context capable and reject if not
-    return this.#context as T
-  }
-  set context(context: Partial<T>) {
-    // TODO reject if any fs operations or actions are attempted
-    assert(typeof context === 'object', 'context must be an object')
-    assert(context !== null, 'context must not be null')
-    this.#context = context
-  }
-  isPidExists(pid: PID) {
-    // TODO push a self responding action to the accumulator for repeatability
-    return this.#fs.isPidExists(pid)
-  }
-  merge(commit: string, ...excludes: string[]) {
-    if (commit !== this.originCommit) {
-      assert(this.#accumulator.isParent(commit), 'Parent is not in scope')
-    }
-    log('overwrite', commit, excludes)
-    return this.#fs.overwrite(commit, ...excludes)
-  }
-  mv(from: string, to: string) {
-    return this.#fs.mv(from, to)
-  }
-  cp(from: string, to: string) {
-    return this.#fs.cp(from, to)
+/**
+ * Use this to unwrap the results of a dispatch that came back with metadata as
+ * well as an outcome.  Calling this function makes it behave the same as
+ * calling `dispatch` directly.
+ * @param meta the result of calling `dispatchWithMeta`
+ * @returns a promise that resolves or rejects to the result of the action
+ */
+export const settle = (meta: MetaResult) => {
+  const { outcome } = meta
+  if (outcome.error) {
+    return Promise.reject(deserializeError(outcome.error))
+  } else {
+    return Promise.resolve(outcome.result)
   }
 }
