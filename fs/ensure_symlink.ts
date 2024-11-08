@@ -5,7 +5,8 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, type PathType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 
-const isWindows = Deno.build.os === "windows";
+// deno-lint-ignore no-explicit-any
+const isWindows = (globalThis as any).Deno?.build.os === "windows";
 
 function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
   if (typeof target !== "string") return target; // URL is always absolute path

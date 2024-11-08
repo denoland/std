@@ -14,7 +14,11 @@ import type {
   Matchers,
 } from "./_types.ts";
 import { AssertionError } from "@std/assert/assertion-error";
-import { emitAssertionTrigger, hasAssertions } from "./_assertion.ts";
+import {
+  assertions,
+  emitAssertionTrigger,
+  hasAssertions,
+} from "./_assertions.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
@@ -55,9 +59,10 @@ import {
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
+import { addSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
-import type { Tester } from "./_types.ts";
+import type { SnapshotPlugin, Tester } from "./_types.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -491,6 +496,7 @@ expect.stringContaining = asymmetricMatchers.stringContaining as (
 expect.stringMatching = asymmetricMatchers.stringMatching as (
   pattern: string | RegExp,
 ) => ReturnType<typeof asymmetricMatchers.stringMatching>;
+
 /**
  * `expect.hasAssertions` verifies that at least one assertion is called during a test.
  *
@@ -509,3 +515,106 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * ```
  */
 expect.hasAssertions = hasAssertions as () => void;
+
+/**
+ * `expect.assertions` verifies that a certain number of assertions are called during a test.
+ *
+ * Note: expect.assertions only can use in bdd function test suite, such as `test` or `it`.
+ *
+ * @example
+ * ```ts
+ *
+ * import { test } from "@std/testing/bdd";
+ * import { expect } from "@std/expect";
+ *
+ * test("it works", () => {
+ *   expect.assertions(1);
+ *   expect("a").not.toBe("b");
+ * });
+ * ```
+ */
+expect.assertions = assertions as (num: number) => void;
+
+/**
+ * `expect.objectContaining(object)` matches any received object that recursively matches the expected properties.
+ * That is, the expected object is not a subset of the received object. Therefore, it matches a received object
+ * which contains properties that are not in the expected object.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   expect({ bar: 'baz' }).toEqual(expect.objectContaining({ bar: 'bar'}));
+ *   expect({ bar: 'baz' }).not.toEqual(expect.objectContaining({ foo: 'bar'}));
+ * });
+ * ```
+ */
+expect.objectContaining = asymmetricMatchers.objectContaining as (
+  obj: Record<string, unknown>,
+) => ReturnType<typeof asymmetricMatchers.objectContaining>;
+/**
+ * `expect.not.arrayContaining` matches a received array which does not contain
+ * all of the elements in the expected array. That is, the expected array is not
+ * a subset of the received array.
+ *
+ * `expect.not.objectContaining` matches any received object that does not recursively
+ * match the expected properties. That is, the expected object is not a subset of the
+ * received object. Therefore, it matches a received object which contains properties
+ * that are not in the expected object.
+ *
+ * `expect.not.stringContaining` matches the received value if it is not a string
+ * or if it is a string that does not contain the exact expected string.
+ *
+ * `expect.not.stringMatching` matches the received value if it is not a string
+ * or if it is a string that does not match the expected string or regular expression.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("expect.not.arrayContaining", () => {
+ *   const expected = ["Samantha"];
+ *   expect(["Alice", "Bob", "Eve"]).toEqual(expect.not.arrayContaining(expected));
+ * });
+ *
+ * Deno.test("expect.not.objectContaining", () => {
+ *   const expected = { foo: "bar" };
+ *   expect({ bar: "baz" }).toEqual(expect.not.objectContaining(expected));
+ * });
+ *
+ * Deno.test("expect.not.stringContaining", () => {
+ *   const expected = "Hello world!";
+ *   expect("How are you?").toEqual(expect.not.stringContaining(expected));
+ * });
+ *
+ * Deno.test("expect.not.stringMatching", () => {
+ *   const expected = /Hello world!/;
+ *   expect("How are you?").toEqual(expect.not.stringMatching(expected));
+ * });
+ * ```
+ */
+expect.not = {
+  arrayContaining: asymmetricMatchers.arrayNotContaining,
+  objectContaining: asymmetricMatchers.objectNotContaining,
+  stringContaining: asymmetricMatchers.stringNotContaining,
+  stringMatching: asymmetricMatchers.stringNotMatching,
+};
+/**
+ * `expect.addSnapshotSerializer` adds a module that formats application-specific data structures.
+ *
+ * For an individual test file, an added module precedes any modules from snapshotSerializers configuration,
+ * which precede the default snapshot serializers for built-in JavaScript types.
+ * The last module added is the first module tested.
+ *
+ * @example
+ * ```ts no-eval
+ * import { expect } from "@std/expect";
+ * import serializerAnsi from "npm:jest-snapshot-serializer-ansi";
+ *
+ * expect.addSnapshotSerializer(serializerAnsi);
+ * ```
+ */
+expect.addSnapshotSerializer = addSerializer as (
+  plugin: SnapshotPlugin,
+) => void;

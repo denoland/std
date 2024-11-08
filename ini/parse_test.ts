@@ -38,7 +38,7 @@ Deno.test({
     });
     assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
     assertValidParse('value="value"', { value: "value" });
-    assertValidParse("#comment\nkeyA=1977-05-25\n[section1]\nkeyA=100", {
+    assertValidParse('#comment\nkeyA=1977-05-25\n[section1]\nkeyA="100"', {
       keyA: "1977-05-25",
       section1: { keyA: "100" },
     });
@@ -169,5 +169,36 @@ Deno.test({
     });
     const { success } = await command.output();
     assert(success);
+  },
+});
+
+Deno.test({
+  name: "parse() return value as number",
+  fn() {
+    assertEquals(parse("value=123"), { value: 123 });
+    assertEquals(parse("value=1e3"), { value: 1000 });
+  },
+});
+
+Deno.test({
+  name: "parse() correctly parse number with special characters ",
+  fn() {
+    assertEquals(parse("value=123foo"), { value: "123foo" });
+    assertEquals(parse('value="1e3"'), { value: "1e3" });
+  },
+});
+
+Deno.test({
+  name: "parse() return value as null",
+  fn() {
+    assertEquals(parse("value=null"), { value: null });
+  },
+});
+
+Deno.test({
+  name: "parse() correctly parse booleans",
+  fn() {
+    assertEquals(parse("value=true"), { value: true });
+    assertEquals(parse("value=false"), { value: false });
   },
 });

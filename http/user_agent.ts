@@ -85,11 +85,11 @@ export interface Device {
   /** The type of device. */
   readonly type:
     | "console"
-    | "mobile"
-    | "table"
-    | "smartv"
-    | "wearable"
     | "embedded"
+    | "mobile"
+    | "tablet"
+    | "smarttv"
+    | "wearable"
     | undefined;
   /** The vendor of the device. */
   readonly vendor: string | undefined;

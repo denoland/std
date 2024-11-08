@@ -1,3 +1,98 @@
+### 2024.11.01
+
+#### @std/assert 1.0.7 (patch)
+
+- fix(assert): fix assertion error message of isError (#6147)
+- test(assert): change inert comments to @ts-expect-error directives (#6162)
+
+#### @std/async 1.0.8 (patch)
+
+- test(async): fix flakiness of throttle example (#6156)
+- test(async/unstable): fix typo (#6149)
+
+#### @std/bytes 1.0.3 (patch)
+
+- test(bytes): document the cases being tested for equals/startsWith/endsWith
+  (#6163)
+
+#### @std/expect 1.0.7 (patch)
+
+- fix(expect): re-align `expect.toMatchObject` api (#6160)
+- fix(expect): support
+  expect.not.{arrayContaining,objectContaining,stringContaining,stringMatching}
+  (#6138)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/internal 1.0.5 (patch)
+
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/path 1.0.8 (patch)
+
+- refactor(path): always name the parameters (add param definition check in doc
+  linter) (#6158)
+
+#### @std/streams 1.0.8 (patch)
+
+- docs(streams): rest arguments not being asserted in docs (#6155)
+
+#### @std/testing 1.0.4 (patch)
+
+- feat(testing/unstable): support for stubbing properties (#6128)
+- feat(testing/unstable): add type test for mutual assignability (#6154)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+### 2024.10.24
+
+#### @std/async 1.0.7 (patch)
+
+- feat(async/unstable): add `throttle()` function (#6110)
+
+#### @std/cbor 0.1.2 (patch)
+
+- refactor(cbor): replace `toByteStream` function in common with import from
+  `@std/streams` (#6107)
+- test(cbor): number precision error in decoding test (#6115)
+- test(cbor): empty string being excluded from expected result (#6106)
+
+#### @std/collections 1.0.9 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `slidingWindows`
+  (#6095)
+
+#### @std/expect 1.0.6 (patch)
+
+- fix(expect): support `expect.objectContaining` (#6065)
+
+#### @std/fmt 1.0.3 (patch)
+
+- docs(fmt): fix %f width typo in printf docs (#6139)
+- test(fmt): handle missing group separator for 1000.1 in some locales (#6117)
+
+#### @std/fs 1.0.5 (patch)
+
+- refactor(fs): fix uncaught errors in browsers (#6135)
+
+#### @std/http 1.0.9 (patch)
+
+- fix(http): fix tablet and smarttv in Device.type literal types (#6129)
+
+#### @std/json 1.0.1 (patch)
+
+- refactor(json): fix typo (#6103)
+
+#### @std/path 1.0.7 (patch)
+
+- docs(path): re-add URL examples to `@std/path/posix` examples (#6105)
+
+#### @std/tar 0.1.3 (patch)
+
+- docs(tar): fix example in creating directories (#6113)
+
+#### @std/text 1.0.8 (patch)
+
+- feat(text/unstable): handle non-Latin-script text in `slugify` (#6012)
+
 ### 2024.10.10a
 
 #### @std/cbor 0.1.1 (patch)

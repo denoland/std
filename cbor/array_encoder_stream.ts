@@ -1,6 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { toByteStream } from "./_common.ts";
+import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 import { CborSequenceEncoderStream } from "./sequence_encoder_stream.ts";
 import type { CborStreamInput } from "./types.ts";
 

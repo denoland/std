@@ -16,7 +16,7 @@
  *     .pipeThrough(new UntarStream())
  * ) {
  *   const path = normalize(entry.path);
- *   await Deno.mkdir(dirname(path));
+ *   await Deno.mkdir(dirname(path), { recursive: true });
  *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
  * }
  * ```

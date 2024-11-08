@@ -26,8 +26,9 @@ export type { GlobOptions };
  */
 export function joinGlobs(
   globs: string[],
-  { extended = true, globstar = false }: GlobOptions = {},
+  options: Pick<GlobOptions, "globstar"> = {},
 ): string {
+  const { globstar = false } = options;
   if (!globstar || globs.length === 0) {
     return join(...globs);
   }
@@ -40,5 +41,5 @@ export function joinGlobs(
     }
   }
   if (!joined) return ".";
-  return normalizeGlob(joined, { extended, globstar });
+  return normalizeGlob(joined, { globstar });
 }

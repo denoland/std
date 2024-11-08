@@ -1,6 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { numberToArray, toByteStream } from "./_common.ts";
+import { toByteStream } from "@std/streams/unstable-to-byte-stream";
+import { numberToArray } from "./_common.ts";
 import { CborArrayEncoderStream } from "./array_encoder_stream.ts";
 import { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";

@@ -2,8 +2,8 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { concat } from "@std/bytes";
-import { random } from "./_common_test.ts";
 import { CborByteDecodedStream } from "./_byte_decoded_stream.ts";
+import { random } from "./_common_test.ts";
 import { CborByteEncoderStream } from "./byte_encoder_stream.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborSequenceDecoderStream } from "./sequence_decoder_stream.ts";
