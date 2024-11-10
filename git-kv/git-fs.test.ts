@@ -1,6 +1,6 @@
 import { expect } from '@std/expect/expect'
 import DB from '../engine/db.ts'
-import FS from '../snapshots/snapshot.ts'
+import FS from '../snapshots/tip.ts'
 
 Deno.test('git/init', async (t) => {
   const db = await DB.create(DB.generateAesKey())

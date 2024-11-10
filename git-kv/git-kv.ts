@@ -237,13 +237,6 @@ type EncodingOpts = {
   encoding?: 'utf8'
 }
 
-export class FileNotFoundError extends Error {
-  code = 'ENOENT'
-  constructor(message: string) {
-    super(message)
-    this.name = 'FileNotFoundError'
-  }
-}
 class Cache {
   static create() {
     return new Cache()

@@ -17,9 +17,16 @@ type TreeEntry = {
   /** the type of object */
   type: 'blob' | 'tree' | 'commit'
 }
+export type PlainTreeEntry = TreeEntry & { type: 'blob' | 'tree' }
+
+export type Upsert =
+  | { meta: { snapshot: string; path: string } }
+  | { object: JsonValue } // TODO implement object cache using structured clone
+  | { text: string }
+  | { data: Uint8Array }
 
 /** WriteOptions always refer to the latest snapshot of a branch */
-type WriteOptions = {
+type AddressedWriteOptions = {
   /** Posix style path that locates what process thread we want to communicate
    * with.  In git, this would be branch names, for example: `exe/proc-1/child-2` */
   process?: string
@@ -33,51 +40,66 @@ type WriteOptions = {
    * line of changes.  In git, this would be a branch */
   branch?: string
 }
-type ReadOptions = WriteOptions & {
+export type AddressedReadOptions = AddressedWriteOptions & {
   /** Depending on the snapshot format being used, represents the state at a
    * specific point in the history */
   snapshot?: string
+  // TODO add snapshot to write options, to ensure the current matches expected
 }
 
-type PlainTreeEntry = TreeEntry & { type: 'blob' | 'tree' }
+export interface NappSnapshots<ReadOptions = AddressedReadOptions> {
+  latest(options?: Omit<ReadOptions, 'snapshot'>): Promise<string | undefined>
+  parents(options?: ReadOptions): Promise<string[]>
+  history(options?: ReadOptions & { count?: number }): Promise<string[]>
+}
 
-interface NappRead {
-  readMeta(path: string, options?: ReadOptions): Promise<PlainTreeEntry>
-  readText(path: string, options?: ReadOptions): Promise<string>
-  readJSON<T extends ZodTypeAny = typeof jsonSchema>(
+export interface NappRead<ReadOptions = AddressedReadOptions> {
+  meta(path: string, options?: ReadOptions): Promise<PlainTreeEntry>
+  json<T extends ZodTypeAny = typeof jsonSchema>(
     path: string,
     options?: ReadOptions & { schema?: T },
   ): Promise<z.infer<T>>
-  readBinary(path: string, options?: ReadOptions): Promise<Uint8Array>
+  text(path: string, options?: ReadOptions): Promise<string>
+  binary(path: string, options?: ReadOptions): Promise<Uint8Array>
   exists(path: string, options?: ReadOptions): Promise<boolean>
   ls(path?: string, options?: ReadOptions): Promise<PlainTreeEntry[]>
 }
 
-type PairOptions = WriteOptions & { path: string }
+export interface SnapshotsProvider<ReadOptions = AddressedReadOptions> {
+  readonly snapshots: NappSnapshots<ReadOptions>
+  readonly read: NappRead<ReadOptions>
+  commit(upserts: Map<string, Upsert>, deletes: Set<string>): Promise<void>
+}
 
-interface NappWrite {
-  writeText(
+export interface NappWrite<WriteOptions = AddressedWriteOptions> {
+  text(
     path: string,
     content: string,
     options?: WriteOptions,
   ): Promise<void>
-  writeJSON(
+  json(
     path: string,
-    json: JsonValue,
+    content: JsonValue,
     options?: WriteOptions,
   ): Promise<void>
-  writeBinary(
+  binary(
     path: string,
     content: Uint8Array,
     options?: WriteOptions,
   ): Promise<void>
   rm(path: string, options?: WriteOptions): Promise<void>
-  mv(from: PairOptions, to: PairOptions): Promise<void>
-  cp(from: PairOptions, to: PairOptions): Promise<void>
+  mv(
+    from: WriteOptions & { path: string },
+    to: WriteOptions & { path: string },
+  ): Promise<void>
+  cp(
+    from: WriteOptions & { path: string },
+    to: WriteOptions & { path: string },
+  ): Promise<void>
 }
 
 type SpawnOptions =
-  & WriteOptions
+  & AddressedWriteOptions
   & (
     | { name: string; prefix?: never }
     | { name?: never; prefix: string }
@@ -90,42 +112,46 @@ type SpawnOptions =
     nice?: number
   }
 
-type MetaResult = { meta: Required<ReadOptions>; outcome: Outcome }
+type MetaResult = { meta: Required<AddressedReadOptions>; outcome: Outcome }
 
 interface NappProcesses {
   /** start a new process and install the given napp. */
   spawn(napp: keyof NappTypes, options: SpawnOptions): Promise<void>
   /** tear down the specified process, and resturn the result of teardown */
-  kill(options: WriteOptions): Promise<JsonValue | undefined>
+  kill(options: AddressedWriteOptions): Promise<JsonValue | undefined>
   /** spawns a new process, installs the napp specified in the action, awaits
    * the execution, and then returns, killing the process */
   async(action: Action, options: SpawnOptions): Promise<JsonValue | undefined>
   /** move a process to another parent.  Can be used to daemonize a running
    * process by moving it to be a child of init */
-  mv(to: WriteOptions, from?: WriteOptions): Promise<void>
+  mv(to: AddressedWriteOptions, from?: AddressedWriteOptions): Promise<void>
   /** change the priority of a process */
-  nice(level: number, options: WriteOptions): void
+  nice(level: number, options: AddressedWriteOptions): void
 
   dispatch(
     action: Action,
-    options: WriteOptions,
+    options: AddressedWriteOptions,
   ): Promise<JsonValue | undefined>
-  dispatchWithMeta(action: Action, options: WriteOptions): Promise<MetaResult>
+  dispatchWithMeta(
+    action: Action,
+    options: AddressedWriteOptions,
+  ): Promise<MetaResult>
 }
 
 const stateSchema = z.record(jsonSchema)
 
-interface NappState {
-  getState<T extends ZodRecord = typeof stateSchema>(
+/** State is stored in the process json files */
+interface NappState<ReadOptions = AddressedReadOptions> {
+  get<T extends ZodRecord = typeof stateSchema>(
     options: ReadOptions & { schema?: T; fallback?: z.infer<T> },
   ): Promise<z.infer<T>>
   // TODO return metadata of the state so we know if it remains unchanged
   // TODO allow fetching paths within the state
-  updateState<T extends ZodRecord = typeof stateSchema>(
+  update<T extends ZodRecord = typeof stateSchema>(
     updater: (state: z.infer<T>) => z.infer<T>,
     options: ReadOptions & { schema?: T },
   ): Promise<z.infer<T>>
-  setState<T extends ZodRecord = typeof stateSchema>(
+  set<T extends ZodRecord = typeof stateSchema>(
     state: z.infer<T>,
     options: ReadOptions & { schema?: T },
   ): Promise<void>
@@ -174,5 +200,20 @@ export const settle = (meta: MetaResult) => {
     return Promise.reject(deserializeError(outcome.error))
   } else {
     return Promise.resolve(outcome.result)
+  }
+}
+
+export class FileNotFoundError extends Error {
+  code = 'ENOENT'
+  constructor(path: string) {
+    super('Could not find file or directory: ' + path)
+    this.name = 'FileNotFoundError'
+  }
+}
+export class LineageError extends Error {
+  code = 'EINVALID'
+  constructor(id: string) {
+    super('Lineage fault for: ' + id)
+    this.name = 'LineageError'
   }
 }

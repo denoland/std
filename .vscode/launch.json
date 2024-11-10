@@ -15,6 +15,18 @@
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
+      "name": "Run Current",
+      "type": "node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": ["test", "--inspect-wait", "--watch", "-A", "${file}"],
+
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
     }
   ]
 }

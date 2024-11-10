@@ -23,9 +23,9 @@ import { GitKV } from './git-kv.ts'
 const log = Debug('@artifact/git-kv')
 const dir = '/'
 
-import type { SnapshotStore } from '@artifact/snapshots/snapshot'
+import type { SnapshotsProvider } from '../snapshots/tip.ts'
 
-export class GitFS implements SnapshotStore {
+export class GitFS implements SnapshotsProvider {
   readonly #oid: string
   readonly #gitkv: GitKV
   readonly #db: DB
@@ -211,6 +211,134 @@ export class GitFS implements SnapshotStore {
     assert(result.oid, 'merge failed')
     return result.oid
   }
+  async readOid(path: string): Promise<string> {
+    // TODO test how this works for "."
+    path = refine(path)
+    if (this.#deletes.has(path)) {
+      throw new Errors.NotFoundError(path)
+    }
+
+    const dirname = posix.dirname(path)
+    const basename = posix.basename(path)
+    const tree = await this.readTree(dirname)
+    for (const entry of tree) {
+      if (entry.path === basename) {
+        return entry.oid
+      }
+    }
+    throw new Errors.NotFoundError(path)
+  }
+  async readTree(path: string = '.') {
+    path = refine(path)
+    const oid = this.#internalOid
+    const filepath = path === '.' ? undefined : path
+    try {
+      const { tree } = await git.readTree({ ...this.#git, oid, filepath })
+      return tree
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        // remove the git commit hash from the error so it is repeatable
+        throw new Errors.NotFoundError(path)
+      }
+      throw error
+    }
+  }
+  async #readBlob(filepath: string, commit?: string) {
+    const { blob, oid } = await this.#safeReadBlob({
+      oid: commit || this.#internalOid,
+      filepath,
+    })
+    assert(blob instanceof Uint8Array, 'blob not Uint8Array: ' + typeof blob)
+    return { blob, oid }
+  }
+  async #safeReadBlob(params: { oid: string; filepath?: string }) {
+    try {
+      const { oid, filepath } = params
+      return await git.readBlob({ ...this.#git, oid, filepath })
+    } catch (error) {
+      if (
+        error instanceof Error && 'code' in error &&
+        error.code === 'NotFoundError'
+      ) {
+        throw new Errors.NotFoundError(params.filepath || '.')
+      }
+      throw error
+    }
+  }
+  copyChanges(from: FS) {
+    assert(!this.isChanged, 'cannot copy changes to a changed FS')
+    assert(equal(this.#pid, from.#pid), 'changes are from different pids')
+    for (const path of from.#deletes) {
+      this.#deletes.add(path)
+    }
+    for (const [path, upsert] of from.#upserts) {
+      this.#upserts.set(path, upsert)
+    }
+    this.#overwrite = from.#overwrite
+  }
+
+  async #flush() {
+    const changes: { [key: string]: Change } = {}
+    const oid = this.#internalOid
+    const { tree: base } = await git.readTree({ ...this.#git, oid })
+    log('flush tree', base)
+    const tree: Tree = {
+      oid,
+      tree: base,
+      upserts: new Map(),
+      deletes: new Set(),
+      children: new Map(),
+    }
+    for (const [path, upsert] of this.#upserts) {
+      let patch: string | undefined
+      let blob: Uint8Array
+      let oid: string
+      if ('data' in upsert) {
+        if (typeof upsert.data === 'string') {
+          patch = upsert.data
+          blob = new TextEncoder().encode(upsert.data)
+        } else {
+          blob = upsert.data
+        }
+        oid = await git.writeBlob({ ...this.#git, blob })
+      } else {
+        oid = upsert.oid
+      }
+      // TODO parallelize
+      log('hash', oid)
+      const parent = ensurePath(tree, path)
+      const filename = path.split('/').pop()
+      assert(filename, 'filename not found: ' + path)
+      // TODO ignore if already exists
+      parent.upserts.set(filename, {
+        // https://isomorphic-git.org/docs/en/walk#walkerentry-mode
+        mode: '100644',
+        path: filename,
+        oid,
+        type: 'blob',
+      })
+      changes[path] = { oid, patch }
+    }
+
+    for (const path of this.#deletes) {
+      log('delete', path)
+      const parent = ensurePath(tree, path)
+      const filename = path.split('/').pop()
+      assert(filename, 'filename not found: ' + path)
+      parent.deletes.add(filename)
+      changes[path] = {}
+      // TODO should be able to wipe a whole dir with no effort here
+    }
+
+    await retrieveAffectedTrees(tree, this.#git)
+
+    await bubbleChanges(tree, this.#git)
+
+    return { oid: tree.oid, changes }
+  }
 }
 
 const generateFakeRepoId = () => {
@@ -243,4 +371,101 @@ const mergeDriver: MergeDriverCallback = ({ contents, path }) => {
     }
   }
   return { cleanMerge: true, mergedText }
+}
+
+type Tree = {
+  oid?: string
+  tree?: TreeObject
+  upserts: Map<string, TreeEntry>
+  deletes: Set<string>
+  children: Map<string, Tree>
+}
+type TreeObject = TreeEntry[]
+
+const ensurePath = (tree: Tree, path: string) => {
+  const parts = path.split('/')
+  parts.pop()
+  let parent = tree
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i]
+    let child = parent.children.get(part)
+    if (!child) {
+      child = {
+        upserts: new Map(),
+        deletes: new Set(),
+        children: new Map(),
+      }
+      parent.children.set(part, child)
+    }
+    parent = child
+  }
+  return parent
+}
+type Opts = { fs: { promises: GitKV }; cache: object; dir: string }
+const retrieveAffectedTrees = async (tree: Tree, opts: Opts) => {
+  const promises = []
+  if (!tree.tree) {
+    assert(tree.oid, 'tree oid not found')
+    const result = await git.readTree({ ...opts, oid: tree.oid })
+    tree.tree = result.tree
+  }
+  for (const entry of tree.tree) {
+    if (entry.type === 'tree') {
+      if (tree.children.has(entry.path)) {
+        const child = tree.children.get(entry.path)
+        assert(child, 'child not found: ' + entry.path)
+        child.oid = entry.oid
+        promises.push(retrieveAffectedTrees(child, opts))
+      }
+    }
+  }
+  await Promise.all(promises)
+}
+const bubbleChanges = async (tree: Tree, opts: Opts) => {
+  const layers = treeToLayers(tree)
+  log('layers', layers)
+  while (layers.length) {
+    const layer = layers.pop()
+    for (const item of layer!) {
+      let tree = item.tree || []
+      tree = tree.filter((entry) => {
+        if (item.upserts.has(entry.path)) {
+          return false
+        }
+        if (item.deletes.has(entry.path)) {
+          return false
+        }
+        if (item.children.has(entry.path)) {
+          return false
+        }
+        return true
+      })
+      for (const [, entry] of item.upserts) {
+        tree.push(entry)
+      }
+      for (const [path, child] of item.children) {
+        assert(child.oid, 'child oid not found: ' + path)
+        const entry: TreeEntry = {
+          mode: '040000',
+          path,
+          oid: child.oid,
+          type: 'tree',
+        }
+        tree.push(entry)
+      }
+      item.oid = await git.writeTree({ ...opts, tree })
+      log('write tree', item.oid)
+    }
+  }
+}
+
+const treeToLayers = (tree: Tree, layers: Tree[][] = [], level: number = 0) => {
+  if (!layers[level]) {
+    layers[level] = []
+  }
+  layers[level].push(tree)
+  for (const child of tree.children.values()) {
+    treeToLayers(child, layers, level + 1)
+  }
+  return layers
 }

@@ -7,3 +7,7 @@ creators, and backchat interactions. Developers can use this API to build
 applications that communicate with NAPPS services, manage processes and threads,
 perform cryptographic tasks, and integrate with backchat systems within the
 NAPPS environment.
+
+## Addressability
+
+dimenions of addressability are history, branch, process, repo

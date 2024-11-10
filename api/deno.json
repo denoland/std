@@ -5,6 +5,7 @@
     ".": "./mod.ts",
     "./napp.json": "./napp.json",
     "./actions": "./actions.ts",
-    "./addressing": "./addressing.ts"
+    "./addressing": "./addressing.ts",
+    "./napp-api": "./napp-api.ts"
   }
 }
