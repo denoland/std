@@ -5,8 +5,8 @@ import type {
   NappRead,
   NappSnapshots,
   NappWrite,
-  PlainTreeEntry,
   SnapshotsProvider,
+  TreeEntry,
   Upsert,
 } from '@artifact/api/napp-api'
 import { FileNotFoundError } from '@artifact/api/napp-api'
@@ -140,7 +140,7 @@ export class Tip implements NappLocal {
         return this.#snapshotsProvider.read.ls(path, options)
       }
 
-      let entries: PlainTreeEntry[] = []
+      let entries: TreeEntry[] = []
       if (this.#deletes.has(path)) {
         if (path === '.') {
           return entries
@@ -162,7 +162,13 @@ export class Tip implements NappLocal {
         if (posix.dirname(path) === dir) {
           if (!has.has(path)) {
             // TODO handle directories
-            entries.push({ path, type: 'blob', oid: '', mode: '00644' })
+            entries.push({
+              path,
+              type: 'blob',
+              oid: '',
+              mode: '00644',
+              snapshot: '',
+            })
           }
         }
       }
@@ -309,7 +315,7 @@ const refine = (path: string) => {
   return path
 }
 
-export const sortTreeEntries = (tree: PlainTreeEntry[]) => {
+export const sortTreeEntries = (tree: TreeEntry[]) => {
   tree.sort((a, b) => {
     if (a.type === 'tree' && b.type === 'blob') {
       return -1

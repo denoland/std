@@ -3,12 +3,10 @@
  * deno deploy has no dynamic runtime imports
  */
 
-import type { NappTypes } from '@artifact/api'
-
 import * as files from '@artifact/files'
 import * as fixture from '@artifact/fixture'
 
-const napps: { [K in keyof NappTypes]: unknown } = {
+const napps = {
   '@artifact/files': files,
   '@artifact/fixture': fixture,
 }

@@ -2,71 +2,49 @@ import Compartment from './compartment.ts'
 import { expect } from '@std/expect'
 import actionCreators from '@artifact/api/actions'
 import { Trail } from './trail.ts'
+import type { Tip } from '@artifact/snapshots/tip'
+import { assert } from '@std/assert/assert'
+import Debug from 'debug'
+
+const resolveLocalFiles = async (trail: Trail, tip: Tip) => {
+  assert(!tip.isChanged, 'Cannot resolve local files on a changed tip')
+
+  // walk the trail
+  // anything that is an unresolved action for the trail, resolve it with an
+  // action and the inflated contents
+  // every other action that is a local file request, if this trail doesn't have
+  // any inflation for it, retrieve the results
+
+  // do this all in parallel
+}
 
 Deno.test('compartment loads a napp', async (t) => {
+  Debug.enable('@artifact/execution, @artifact/files')
   const actions = await actionCreators('@artifact/files')
   const action = actions.write({ path: 'test.txt', content: 'hello world' })
+  const trail = Trail.create(action)
 
-  const compartment = await Compartment.load('@artifact/files')
+  await Compartment.load('@artifact/files', trail)
 
-  const next = await compartment.execute(action)
-  expect(next).toBeInstanceOf(Trail)
+  // loop around activating the trail, then resolving local files and inflating
+  // if no inflation, then returns just a promise as tho the action never
+  // resolved
 
-  // next should be a trail
+  await trail.activate()
 
-  // execute an action
-  // receive back some filesystem reading
+  console.dir(trail.export())
 
-  // fullfill the filesystem action
-
-  // filesystem ingoing actions should get fulfilled too, since they require
-  // reading.
-  // rule is that anything with a reply should be in the local object store, and
-  // any request that is within the local object store should be fulfilled
-  // during runtime.
-
-  // api needs a filesystem abstraction so we can test it.
-
-  // test is that we can execute an action against it
-
-  // pass in the action we want to execute ?
-  // pass in the accumulator, which has results of the execution previously ?
-
-  // compartment used to take the api in,
-
-  const functions = compartment.functions()
-  expect(functions).toHaveProperty('write')
-
-  functions.write({ path: 'test.txt', content: 'hello world' })
-
-  // test calling a function with some files attached to it
+  trail.abort()
 })
+
+// test throwing something that is not an error object
+
+// test returning but having some triggered actions outstanding
 
 Deno.test('napp api', async (t) => {
   // test generating a typed based function call, using a separate library from
   // compartment, since compartment is an executor, but actions could be
   // generated anywhere.
-
-  // compartment first loads an image, and then it gets instanced each function
-  // call
 })
-
-// purpose is to load a napp and then
-
-// the compartment has properties that are the api of the napp
-// it takes as params the json part of the function call
-// schema checking is done by the compartment, using ajv
-// returns checking is done by the compartment too
-// errors are returned and remapped, or turned into the standard test format
-// may adorn the errors with napp based information, so it can help the LLM file
-// a bug
-
-// call flow is:
-// 1. send in a function
-
-// inner actions, outer actions ?
-
-// is the fs all that is needed to recover prior accumulations ?
-// so load it up from the supplied fs ?
-
-// the fs abstraction helps as it could be anything ?
+// schema checking needs to be done by the trail ?
+// returns checking needs to be done as well

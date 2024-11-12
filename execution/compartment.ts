@@ -1,44 +1,62 @@
 import napps from './napps-import.ts'
 import type { Action } from '@artifact/api/actions'
+import { delay } from '@std/async/delay'
+import type { NappApi } from '@artifact/api/napp-api'
 import Debug from 'debug'
-import { Trail } from './trail.ts'
+import { Trail, TrailStruct } from './trail.ts'
 import { assert } from '@std/assert/assert'
-const log = Debug('AI:compartment')
-
-// so it would only take in some actions and a filesystem, and it would
-// return back the changed filesystem, replies to actions, and any new
-// actions that need transmission, as well as indicating that it is time to
-// end the execution.
+const log = Debug('@artifact/execution')
 
 export default class Compartment {
-  static async load(napp: keyof typeof napps) {
+  static async load(napp: keyof typeof napps, trail: Trail) {
     await Promise.resolve() // simulates loading from the network
-    const compartment = new Compartment(napp)
+    const compartment = new Compartment(napp, trail)
+    // TODO reject if it doesn't match this napp
+    compartment.#execute()
     return compartment
   }
-  #napp: typeof napps[keyof typeof napps]
-  #trail: Trail | undefined
+  #napp: Record<string, Function>
 
-  private constructor(napp: keyof typeof napps) {
-    log('load napp:', napp)
+  readonly #trail: Trail
+
+  private constructor(napp: keyof typeof napps, trail: Trail) {
+    log('load napp:', napp, trail)
+    if (napp !== trail.origin.napp) {
+      throw new Error('Napp mismatch: ' + napp + ' !== ' + trail.origin.napp)
+    }
     this.#napp = napps[napp]
+    this.#trail = trail
+    trail.signal.onabort = () => this.#tearDown()
   }
-  start(origin: Action) {
-    assert(!this.#trail, 'Already running')
-    this.#trail = Trail.create(origin)
-    return this.#execute()
+  async #execute() {
+    await this.#trail.waitForActivation()
+    try {
+      const { tool } = this.#trail.origin
+      log('execute', tool)
+      if (!(tool in this.#napp)) {
+        throw new Error('Tool not found: ' + tool)
+      }
+      if (typeof this.#napp[tool] !== 'function') {
+        throw new Error('Tool is not a function: ' + tool)
+      }
+
+      const result = await this.#napp[tool](this.#trail.origin.parameters)
+      this.#trail.resolve(result)
+    } catch (error) {
+      this.#trail.reject(error as Error)
+    }
   }
-  #execute() {
-    // reject if it doesn't match this napp
-    // execute the action
-    // return the new trail?
-  }
-  increment(trail: Trail) {
-    // error if we are not already running
-    assert(this.#trail, 'Not running')
-    // absorb the new trail
-  }
-  tearDown() {
+  // what about holding off on the outcome until all the actions were
+  // transmitted ?
+  // how to send of actions that have no reply ?
+  // what if the function completes AFTER the trail trigger ?
+
+  // test firing off some promises then returning, and it should skip those
+  // promises as well as ignoring their return values
+
+  #tearDown() {
+    log('tear down')
+    return Promise.resolve()
   }
   /**
    * Mount the isolate as a side effect, and give it the chance to initialize
@@ -47,25 +65,21 @@ export default class Compartment {
    * @param api : IsolateApi
    * @returns Promise<void> | void
    */
-  mount(api: IA) {
+  mount(api: NappApi) {
     // TODO use exe to ensure that mount stops working arfter invocation
-    this.#check()
-    if (this.#napp.lifecycles) {
-      if (typeof this.#napp.lifecycles['@@mount'] === 'function') {
-        return this.#napp.lifecycles['@@mount'](api)
-      }
+    if ('@@mount' in this.#napp) {
+      assert(typeof this.#napp['@@mount'] === 'function', 'Invalid mount')
+      return this.#napp['@@mount'](api)
     }
   }
   /**
    * Unmount the isolate as a side effect, and give it the chance to clean up
    * @param api : IsolateApi
    */
-  unmount(api: IA) {
-    this.#check()
-    if (this.#napp.lifecycles) {
-      if (typeof this.#napp.lifecycles['@@unmount'] === 'function') {
-        return this.#napp.lifecycles['@@unmount'](api)
-      }
+  unmount(api: NappApi) {
+    if ('@@unmount' in this.#napp) {
+      assert(typeof this.#napp['@@unmount'] === 'function', 'Invalid unmount')
+      return this.#napp['@@unmount'](api)
     }
   }
 }

@@ -1,8 +1,20 @@
-import { type Action, actionSchema, outcomeSchema } from '@artifact/api/actions'
+import {
+  type Action,
+  actionSchema,
+  JsonValue,
+  Outcome,
+  outcomeSchema,
+  SerializableError,
+} from '@artifact/api/actions'
 import equal from 'fast-deep-equal'
 import { assert } from '@std/assert/assert'
 import { z } from 'zod'
-import { deserializeError } from 'serialize-error'
+import { deserializeError, serializeError } from 'serialize-error'
+import { delay } from '@std/async/delay'
+import Debug from 'debug'
+const log = Debug('@artifact/execution')
+
+export const DEFAULT_TIMEOUT = 200
 
 type HookedPromise<T = unknown> = {
   promise: Promise<T>
@@ -16,8 +28,13 @@ const baseTrailSchema = z.object({
   sequence,
   origin: actionSchema,
   outcome: outcomeSchema.optional(),
+  activeMs: z.number().int().gte(0),
+  options: z.object({
+    /** Maximum execution time between async operations that we will wait */
+    timeout: z.number().int().gte(0),
+  }),
 })
-type TrailStruct = z.infer<typeof baseTrailSchema> & {
+export type TrailStruct = z.infer<typeof baseTrailSchema> & {
   requests: Record<number, TrailStruct>
 }
 
@@ -34,7 +51,13 @@ const trailSchema: z.ZodType<TrailStruct> = baseTrailSchema.extend({
 
 export class Trail {
   static create(origin: Action) {
-    return new Trail({ origin, sequence: 0, requests: {} })
+    return new Trail({
+      origin,
+      sequence: 0,
+      requests: {},
+      activeMs: 0,
+      options: { timeout: DEFAULT_TIMEOUT },
+    })
   }
   static recreate(data: TrailStruct) {
     return new Trail(data)
@@ -48,22 +71,115 @@ export class Trail {
   #trigger: (() => void) | undefined
   #hooks: Record<number, HookedPromise> = {}
 
-  activate(symbol: symbol, data?: TrailStruct) {
+  #subscribers: Set<() => void> = new Set()
+
+  #abort = new AbortController()
+  #settled = hookPromise<void>()
+
+  get origin() {
+    return this.#data.origin
+  }
+
+  get signal() {
+    return this.#abort.signal
+  }
+
+  abort() {
     assert(!this.#trigger, 'Trail is active')
+    this.#abort.abort()
+  }
+
+  waitForOutcome() {
+    return this.#settled.promise
+  }
+
+  waitForActivation() {
+    assert(!this.#trigger, 'Trail is active')
+    return new Promise<void>((resolve) => {
+      this.#subscribers.add(resolve)
+    })
+  }
+
+  resolve(result: JsonValue | undefined) {
+    assert(!this.#data.outcome, 'Trail is already settled')
+    log('resolving')
+    this.#settled.resolve()
+    const outcome: Outcome = {}
+    if (result !== undefined) {
+      outcome.result = result
+    }
+    this.#data.outcome = outcome
+  }
+  reject(error: Error) {
+    assert(!this.#data.outcome, 'Trail is already settled')
+    log('rejecting')
+    this.#settled.resolve()
+    const outcome: Outcome = { error: serializeError(error) }
+    this.#data.outcome = outcome
+  }
+
+  async activate(data?: TrailStruct) {
+    assert(!this.signal.aborted, 'Trail is aborted')
+    assert(!this.#trigger, 'Trail is active')
+
     if (data) {
       this.#absorb(data)
     }
-    const triggered = new Promise<symbol>((resolve) => {
-      this.#trigger = () => resolve(symbol)
+
+    if (this.#data.outcome) {
+      return
+    }
+
+    const triggered = Symbol('🔫')
+    const triggeredPromise = new Promise<symbol>((resolve) => {
+      this.#trigger = () => resolve(triggered)
     })
-    return triggered
+    const timeout = Symbol('⏰')
+    let timeoutId: number | undefined
+    const timeoutPromise = new Promise<symbol>((resolve) => {
+      const remainingMs = this.#data.options.timeout - this.#data.activeMs
+      timeoutId = setTimeout(() => resolve(timeout), remainingMs)
+    })
+    const settled = Symbol('🏁')
+    const settledPromise = this.#settled.promise.then(() => settled)
+
+    for (const resolve of this.#subscribers) {
+      resolve()
+    }
+    this.#subscribers.clear()
+
+    const start = Date.now()
+
+    const result = await Promise.race([
+      settledPromise,
+      triggeredPromise,
+      timeoutPromise,
+    ])
+    const end = Date.now()
+    this.#data.activeMs += end - start
+    this.deactivate()
+    clearTimeout(timeoutId)
+
+    // if timeout, then we should end with an error ?
+
+    if (result === timeout) {
+      return { timeout: true }
+    }
+    if (result === triggered) {
+      return { triggered: true }
+    }
+    if (result === settled) {
+      return { settled: true }
+    }
+    throw new Error('Unknown race result: ' + result.toString())
   }
   deactivate() {
     assert(this.#trigger, 'Trail is not active')
     this.#trigger = undefined
   }
-  #checkTrigger() {
+  #fireTrigger() {
     if (this.#trigger) {
+      log('firing trigger')
       this.#trigger()
       return
     }
@@ -71,7 +187,6 @@ export class Trail {
   }
   /** If there is a stored response, will be returned here */
   push(action: Action) {
-    this.#checkTrigger()
     const index = this.#index++
     const existing = this.#data.requests[index]
     if (existing) {
@@ -79,27 +194,30 @@ export class Trail {
         throw new Error('Action mismatch at sequence ' + index)
       }
       if (existing.outcome) {
-        if (existing.outcome?.error) {
+        if (existing.outcome.error) {
           const error = deserializeError(existing.outcome.error)
           return Promise.reject(error)
         }
         return Promise.resolve(existing.outcome.result)
       }
     } else {
-      this.#data.requests[index] = { sequence: 0, origin: action, requests: {} }
+      this.#data.requests[index] = {
+        sequence: 0,
+        origin: action,
+        requests: {},
+        activeMs: 0,
+        options: { timeout: DEFAULT_TIMEOUT },
+      }
     }
     return this.#hookPromise(index)
   }
   #hookPromise(index: number) {
     assert(index >= 0, 'Index must be >= 0')
     assert(!(index in this.#hooks), 'Promise already exists: ' + index)
-    const hook = {} as HookedPromise
-    hook.promise = new Promise((resolve, reject) => {
-      hook.resolve = resolve
-      hook.reject = reject
-    })
-    this.#hooks[index] = hook
-    return hook.promise
+    this.#fireTrigger()
+
+    this.#hooks[index] = hookPromise()
+    return this.#hooks[index].promise
   }
   /**
    * Used so that an execution can be paused, then receive replies for
@@ -109,11 +227,11 @@ export class Trail {
    * again, if we find ourselves replaying the operation with no existing cache.
    */
   #absorb(data: TrailStruct) {
-    assert(!this.#trigger, 'Trail is active')
     // roll thru and extend out the requests, satisfy the replies, and update
     // any promises that were stored.
     assert(equal(data.origin, this.#data.origin), 'Trail origin mismatch')
     assert(data.sequence >= this.#data.sequence, 'Sequence must be >= this')
+    assert(equal(data.activeMs, this.#data.activeMs), 'Active time mismatch')
 
     for (const [string, request] of Object.entries(data.requests)) {
       const index = Number(string)
@@ -155,4 +273,14 @@ export class Trail {
  * back to the executing function efficiently.
  */
 export class FilesProxy {
+}
+
+const hookPromise = <T = unknown>() => {
+  let resolve: (value: T) => void
+  let reject: (error: Error) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve: resolve!, reject: reject! }
 }

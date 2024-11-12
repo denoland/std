@@ -1,15 +1,16 @@
-import { monotonicUlid } from '@std/ulid'
+import { ripemd160 } from '@noble/hashes/ripemd160'
+import { base32 } from 'multiformats/bases/base32'
 import { jsonSchema, JsonValue } from '../api/actions.ts'
 import { Tip } from './tip.ts'
 import {
   AddressedReadOptions,
   FileNotFoundError,
   LineageError,
-  PlainTreeEntry,
   SnapshotsProvider,
+  TreeEntry,
 } from '../api/napp-api.ts'
 import { ulid } from '@std/ulid/ulid'
-import { z } from 'zod'
+import type { z } from 'zod'
 
 type LocalReadOptions = Pick<AddressedReadOptions, 'snapshot'>
 type LocalSnapshotsProvider = SnapshotsProvider<LocalReadOptions>
@@ -31,7 +32,6 @@ export class MockProvider implements LocalSnapshotsProvider {
     if (!upserts.size && !deletes.size) {
       throw new Error('No changes to commit')
     }
-    // make a new tip with a new snapshots provider with the current changes
     const parents = []
     if (this.#latest) {
       parents.push(this.#latest)
@@ -42,16 +42,29 @@ export class MockProvider implements LocalSnapshotsProvider {
     this.#snapshots.set(id, { tip, parents })
   }
   read: LocalSnapshotsProvider['read'] = {
-    meta: async (path) => {
+    meta: async (path, options = {}) => {
+      await Promise.resolve()
       if (!this.#latest) {
         throw new FileNotFoundError(path)
       }
+      const { snapshot = this.#latest } = options
+      if (!snapshot) {
+        throw new FileNotFoundError(path)
+      }
+      const lineage = this.#snapshots.get(snapshot)
+      if (!lineage) {
+        throw new LineageError(path)
+      }
+      // TODO handle directories
+      const binary = await lineage.tip.read.binary(path)
+      const hash = ripemd160(binary)
       return {
+        snapshot,
         mode: '100644',
         path,
-        oid: monotonicUlid(),
+        oid: base32.encode(hash),
         type: 'blob',
-      } as PlainTreeEntry
+      }
     },
     json: async (path, options) => {
       const text = await this.read.text(path, options)
@@ -87,13 +100,9 @@ export class MockProvider implements LocalSnapshotsProvider {
       }
       return lineage.tip.read.exists(path)
     },
-    ls: async (path) => {
-      return [{
-        mode: '100644',
-        path,
-        oid: monotonicUlid(),
-        type: 'blob',
-      } as PlainTreeEntry]
+    ls: async (path, options = {}) => {
+      await Promise.resolve()
+      return []
     },
   }
   snapshots: LocalSnapshotsProvider['snapshots'] = {

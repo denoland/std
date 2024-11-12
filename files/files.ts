@@ -1,53 +1,30 @@
-import Debug from 'debug'
-import type * as schemas from './zod.ts'
+import type { NappApi } from '@artifact/api/napp-api'
 import type { z, ZodSchema } from 'zod'
+import type * as schemas from './zod.ts'
+import Debug from 'debug'
+const log = Debug('@artifact/files')
 
-// export const functions: Functions<Api> = {
-type ToApi<P extends ZodSchema, R extends ZodSchema> = (
+type ToExternalApi<P extends ZodSchema, R extends ZodSchema> = (
   params: z.infer<P>,
 ) => z.infer<R> | Promise<z.infer<R>>
 
-// this is the api we export to the world
-type Write = ToApi<
+type ToInternalApi<T> = T extends (...args: infer Args) => infer R
+  ? (...args: [...Args, NappApi]) => R
+  : never
+
+type Write = ToExternalApi<
   typeof schemas.write.parameters,
   typeof schemas.write.returns
 >
-type WriteApi = Function<Write>
+
+type WriteApi = ToInternalApi<Write>
 
 export const write: WriteApi = ({ path, content = '' }, api) => {
   log('add', path, content)
-  // api.write(path, content)
+  api.write.text(path, content)
   return { charactersWritten: content.length }
 }
 
-export type Functions<Api> = {
-  [K in keyof Api]: Function<Api[K]>
-}
-
-type Function<T> = T extends (...args: infer Args) => infer R
-  ? (...args: [...Args, string]) => R
-  : never
-
-export type Returns<T extends Record<string, ZodSchema>> = {
-  [K in keyof T]: ZodSchema
-}
-// TODO ensure that function return types are inferred from returns object
-export type ToApiType<
-  P extends Record<string, ZodSchema>,
-  R extends Returns<P>,
-> = {
-  [K in keyof P]: (
-    params: z.infer<P[K]>,
-  ) => z.infer<R[K]> | Promise<z.infer<R[K]>>
-}
-
-const log = Debug('AI:files')
-// export const functions: Functions<Api> = {
-//   write: ({ path, content = '' }, api) => {
-//     log('add', path, content)
-//     api.write(path, content)
-//     return { charactersWritten: content.length }
-//   },
 //   ls: async ({ path = '.', count, all }, api) => {
 //     log('ls', path)
 //     let result = await api.ls(path)

@@ -7,17 +7,19 @@ import type { Outcome } from './actions.ts'
 import { deserializeError } from 'serialize-error'
 const log = Debug('@artifact/api')
 
-type TreeEntry = {
+export type TreeEntry = {
   /** the 6 digit hexadecimal mode */
   mode: string
   /** the name of the file or directory */
   path: string
-  /** the SHA-1 object id of the blob or tree */
+  /** the hash identifier of the blob or tree */
   oid: string
   /** the type of object */
-  type: 'blob' | 'tree' | 'commit'
+  type: 'blob' | 'tree'
+  /** the snapshot identifier, since lookup by oid is not permitted as there is
+   * no way to lookup permissions cheaply */
+  snapshot: string
 }
-export type PlainTreeEntry = TreeEntry & { type: 'blob' | 'tree' }
 
 export type Upsert =
   | { meta: { snapshot: string; path: string } }
@@ -54,7 +56,7 @@ export interface NappSnapshots<ReadOptions = AddressedReadOptions> {
 }
 
 export interface NappRead<ReadOptions = AddressedReadOptions> {
-  meta(path: string, options?: ReadOptions): Promise<PlainTreeEntry>
+  meta(path: string, options?: ReadOptions): Promise<TreeEntry>
   json<T extends ZodTypeAny = typeof jsonSchema>(
     path: string,
     options?: ReadOptions & { schema?: T },
@@ -62,7 +64,7 @@ export interface NappRead<ReadOptions = AddressedReadOptions> {
   text(path: string, options?: ReadOptions): Promise<string>
   binary(path: string, options?: ReadOptions): Promise<Uint8Array>
   exists(path: string, options?: ReadOptions): Promise<boolean>
-  ls(path?: string, options?: ReadOptions): Promise<PlainTreeEntry[]>
+  ls(path?: string, options?: ReadOptions): Promise<TreeEntry[]>
 }
 
 export interface SnapshotsProvider<ReadOptions = AddressedReadOptions> {

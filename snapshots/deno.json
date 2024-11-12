@@ -4,6 +4,6 @@
   "exports": {
     ".": "./mod.ts",
     "./napp.json": "./napp.json",
-    "./snapshot": "./snapshot.ts"
+    "./tip": "./tip.ts"
   }
 }

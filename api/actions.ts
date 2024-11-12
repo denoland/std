@@ -94,7 +94,7 @@ export default actionCreators
 
 export const serializableError = z.object({
   name: z.string().optional(),
-  message: z.string(),
+  message: z.string().optional(),
   stack: z.string().optional(),
 })
 export type SerializableError = z.infer<typeof serializableError>
