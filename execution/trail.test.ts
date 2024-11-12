@@ -9,20 +9,18 @@ Deno.test('trail', async () => {
     parameters: {},
   }
   const trail = Trail.create(action)
+  const fake = trail.export()
   expect(() => trail.push(action)).toThrow('not active')
 
-  const symbol = Symbol()
-  const triggerPromise = trail.activate(symbol)
+  const triggerPromise = trail.activate()
 
   const pushPromise = trail.push(action)
 
   expect(pushPromise.then).toBeInstanceOf(Function)
   expect(() => trail.export()).toThrow('is active')
-  const fake = { sequence: 0, requests: {}, origin: action }
-  expect(() => trail.activate(Symbol(), fake)).toThrow('is active')
-  expect(await triggerPromise).toBe(symbol)
+  await expect(trail.activate(fake)).rejects.toThrow('is active')
+  expect(await triggerPromise).toEqual({ triggered: true })
 
-  trail.deactivate()
   const data = trail.export()
 
   const resolved = trail.export()
@@ -33,21 +31,23 @@ Deno.test('trail', async () => {
   assert(rejected.requests[0])
   rejected.requests[0].outcome = { error: { message: 'test error' } }
 
-  trail.activate(Symbol(), resolved)
+  trail.activate(resolved)
   await expect(pushPromise).resolves.toBe('test result')
-  trail.deactivate()
 
-  expect(() => trail.activate(Symbol(), rejected)).toThrow('Trail mismatch')
-  expect(() => trail.activate(Symbol(), data)).toThrow('Trail mismatch')
+  await expect(trail.activate(rejected)).rejects.toThrow('Trail is active')
+  await expect(trail.activate(data)).rejects.toThrow('Trail is active')
+
+  trail.resolve('stop')
 
   const retrail = Trail.recreate(data)
   expect(retrail.export()).toEqual(data)
 
-  retrail.activate(Symbol())
+  const retrailPromise = retrail.activate()
   const repush = retrail.push(action)
   expect(repush).toBeInstanceOf(Promise)
-  retrail.deactivate()
+  await expect(retrailPromise).resolves.toEqual({ triggered: true })
 
-  retrail.activate(Symbol(), rejected)
+  retrail.activate(rejected)
+  retrail.resolve(undefined)
   await expect(repush).rejects.toThrow('test error')
 })

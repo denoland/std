@@ -157,7 +157,8 @@ export class Trail {
     ])
     const end = Date.now()
     this.#data.activeMs += end - start
-    this.deactivate()
+    this.#deactivate()
+    log('clearing timeout')
     clearTimeout(timeoutId)
 
     // if timeout, then we should end with an error ?
@@ -173,7 +174,7 @@ export class Trail {
     }
     throw new Error('Unknown race result: ' + result.toString())
   }
-  deactivate() {
+  #deactivate() {
     assert(this.#trigger, 'Trail is not active')
     this.#trigger = undefined
   }
@@ -187,6 +188,8 @@ export class Trail {
   }
   /** If there is a stored response, will be returned here */
   push(action: Action) {
+    assert(!this.signal.aborted, 'Trail is aborted')
+    assert(this.#trigger, 'Trail is not active')
     const index = this.#index++
     const existing = this.#data.requests[index]
     if (existing) {
@@ -243,7 +246,7 @@ export class Trail {
         if (existing.outcome) {
           assert(equal(request, existing), 'Trail mismatch')
         } else {
-          if (request.outcome) {
+          if (request.outcome && index < this.#index) {
             const hook = this.#hooks[index]
             assert(hook, 'Promise not found: ' + index)
             if (request.outcome.error) {

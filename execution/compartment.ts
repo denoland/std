@@ -1,9 +1,7 @@
 import napps from './napps-import.ts'
-import type { Action } from '@artifact/api/actions'
-import { delay } from '@std/async/delay'
 import type { NappApi } from '@artifact/api/napp-api'
 import Debug from 'debug'
-import { Trail, TrailStruct } from './trail.ts'
+import type { Trail } from './trail.ts'
 import { assert } from '@std/assert/assert'
 const log = Debug('@artifact/execution')
 
@@ -11,10 +9,12 @@ export default class Compartment {
   static async load(napp: keyof typeof napps, trail: Trail) {
     await Promise.resolve() // simulates loading from the network
     const compartment = new Compartment(napp, trail)
-    // TODO reject if it doesn't match this napp
     compartment.#execute()
     return compartment
   }
+
+  // TODO figure out how to do types cleanly
+  // deno-lint-ignore ban-types
   #napp: Record<string, Function>
 
   readonly #trail: Trail
