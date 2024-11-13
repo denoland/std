@@ -1,6 +1,8 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import { stringify as stableStringify } from "./stringify.ts";
+
 /** Array index or record key corresponding to a value for a data object. */
 export type PropertyAccessor = number | string;
 
@@ -108,9 +110,9 @@ export type StringifyOptions = {
    * column of output. This is also where you can provide an explicit header
    * name for the column.
    *
-   * @default {[]}
+   * @default {undefined}
    */
-  columns?: readonly Column[];
+  columns?: readonly Column[] | undefined;
   /**
    * Whether to add a
    * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
@@ -122,106 +124,12 @@ export type StringifyOptions = {
   bom?: boolean;
 };
 
-const QUOTE = '"';
-const LF = "\n";
-const CRLF = "\r\n";
-const BYTE_ORDER_MARK = "\ufeff";
-
-function getEscapedString(value: unknown, sep: string): string {
-  if (value === undefined || value === null) return "";
-  let str = "";
-
-  if (typeof value === "object") str = JSON.stringify(value);
-  else str = String(value);
-
-  // Is regex.test more performant here? If so, how to dynamically create?
-  // https://stackoverflow.com/questions/3561493/
-  if (str.includes(sep) || str.includes(LF) || str.includes(QUOTE)) {
-    return `${QUOTE}${str.replaceAll(QUOTE, `${QUOTE}${QUOTE}`)}${QUOTE}`;
-  }
-
-  return str;
-}
-
-type NormalizedColumn = Omit<ColumnDetails, "header" | "prop"> & {
-  header: string;
-  prop: readonly PropertyAccessor[];
-};
-
-function normalizeColumn(column: Column): NormalizedColumn {
-  let header: NormalizedColumn["header"];
-  let prop: NormalizedColumn["prop"];
-
-  if (typeof column === "object") {
-    if (Array.isArray(column)) {
-      header = String(column[column.length - 1]);
-      prop = column;
-    } else {
-      prop = Array.isArray(column.prop) ? column.prop : [column.prop];
-      header = typeof column.header === "string"
-        ? column.header
-        : String(prop[prop.length - 1]);
-    }
-  } else {
-    header = String(column);
-    prop = [column];
-  }
-
-  return { header, prop };
-}
-
-/**
- * Returns an array of values from an object using the property accessors
- * (and optional transform function) in each column
- */
-function getValuesFromItem(
-  item: DataItem,
-  normalizedColumns: readonly NormalizedColumn[],
-): unknown[] {
-  const values: unknown[] = [];
-
-  if (normalizedColumns.length) {
-    for (const column of normalizedColumns) {
-      let value: unknown = item;
-
-      for (const prop of column.prop) {
-        if (typeof value !== "object" || value === null) {
-          continue;
-        }
-        if (Array.isArray(value)) {
-          if (typeof prop === "number") value = value[prop];
-          else {
-            throw new TypeError(
-              'Property accessor is not of type "number"',
-            );
-          }
-        } // I think this assertion is safe. Confirm?
-        else value = (value as Record<string, unknown>)[prop];
-      }
-
-      values.push(value);
-    }
-  } else {
-    if (Array.isArray(item)) {
-      values.push(...item);
-    } else if (typeof item === "object") {
-      throw new TypeError(
-        "No property accessor function was provided for object",
-      );
-    } else {
-      values.push(item);
-    }
-  }
-
-  return values;
-}
-
 /**
  * Converts an array of objects into a CSV string.
  *
  * @example Default options
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -234,7 +142,7 @@ function getValuesFromItem(
  *
  * @example Give an array of objects and specify columns
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -249,24 +157,20 @@ function getValuesFromItem(
  *
  * @example Give an array of objects without specifying columns
  * ```ts
- * import { stringify } from "@std/csv/stringify";
- * import { assertThrows } from "@std/assert/throws";
+ * import { stringify } from "@std/csv/unstable-stringify";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
  *   { name: "Rick", age: 70 },
  *   { name: "Morty", age: 14 },
  * ];
  *
- * assertThrows(
- *   () => stringify(data),
- *   TypeError,
- *   "No property accessor function was provided for object",
- * );
+ * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
  *
  * @example Give an array of objects and specify columns with `headers: false`
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -284,7 +188,7 @@ function getValuesFromItem(
  *
  * @example Give an array of objects and specify columns with renaming
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -308,7 +212,7 @@ function getValuesFromItem(
  * import {
  *   Column,
  *   stringify,
- * } from "@std/csv/stringify";
+ * } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -345,7 +249,7 @@ function getValuesFromItem(
  * import {
  *   Column,
  *   stringify,
- * } from "@std/csv/stringify";
+ * } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -378,7 +282,7 @@ function getValuesFromItem(
  *
  * @example Give an array of string arrays and specify columns with renaming
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -399,7 +303,7 @@ function getValuesFromItem(
  *
  * @example Emit TSV (tab-separated values) with `separator: "\t"`
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [
@@ -412,7 +316,7 @@ function getValuesFromItem(
  *
  * @example Prepend a byte-order mark with `bom: true`
  * ```ts
- * import { stringify } from "@std/csv/stringify";
+ * import { stringify } from "@std/csv/unstable-stringify";
  * import { assertEquals } from "@std/assert/equals";
  *
  * const data = [["Rick", 70]];
@@ -429,39 +333,31 @@ export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions,
 ): string {
-  const { headers = true, separator: sep = ",", columns = [], bom = false } =
-    options ?? {};
+  let { columns } = options ?? {};
 
-  if (sep.includes(QUOTE) || sep.includes(CRLF)) {
-    const message = [
-      "Separator cannot include the following strings:",
-      '  - U+0022: Quotation mark (")',
-      "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
-    ].join("\n");
-    throw new TypeError(message);
+  if (columns && !Array.isArray(columns)) {
+    throw new TypeError(
+      "Cannot stringify data as the columns option is invalid: colunns must be an array or undefined",
+    );
   }
 
-  const normalizedColumns = columns.map(normalizeColumn);
-  let output = "";
+  columns ??= inferColumns(data);
 
-  if (bom) {
-    output += BYTE_ORDER_MARK;
+  return stableStringify(data, { ...options, columns });
+}
+
+/**
+ * Infers the columns from the first object element of the given array.
+ */
+function inferColumns(data: readonly DataItem[]): string[] {
+  const firstElement = data.at(0);
+  if (
+    firstElement &&
+    typeof firstElement === "object" &&
+    !Array.isArray(firstElement)
+  ) {
+    return Object.keys(firstElement);
   }
 
-  if (headers && normalizedColumns.length > 0) {
-    output += normalizedColumns
-      .map((column) => getEscapedString(column.header, sep))
-      .join(sep);
-    output += CRLF;
-  }
-
-  for (const item of data) {
-    const values = getValuesFromItem(item, normalizedColumns);
-    output += values
-      .map((value) => getEscapedString(value, sep))
-      .join(sep);
-    output += CRLF;
-  }
-
-  return output;
+  return [];
 }

@@ -64,7 +64,7 @@ Deno.test({
       await assertRejects(
         async () => await Array.fromAsync(readable),
         TypeError,
-        "Invalid type: columns can only be an array",
+        "No property accessor function was provided for object",
       );
     });
 
@@ -90,12 +90,10 @@ Deno.test({
         { id: 3, name: "baz" },
         // @ts-expect-error `columns` option is required
       ]).pipeThrough(new CsvStringifyStream());
-      const output = await Array.fromAsync(readable);
-      assertEquals(output, [
-        "1,foo\r\n",
-        "2,bar\r\n",
-        "3,baz\r\n",
-      ]);
+      await assertRejects(
+        async () => await Array.fromAsync(readable),
+        TypeError,
+      );
     });
   },
 });
