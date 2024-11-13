@@ -1,6 +1,3 @@
-archive:
-  - changed-files:
-      - any-glob-to-any-file: archive/**
 assert:
   - changed-files:
       - any-glob-to-any-file: assert/**
