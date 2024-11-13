@@ -445,7 +445,21 @@ Deno.test("serveDir() doesn't show directory listings", async () => {
   assertEquals(res.status, 404);
 });
 
-Deno.test("serveDir() doesn't show dotfiles", async () => {
+Deno.test("serveDir() shows dotfiles when showDotfiles=true", async () => {
+  const req1 = new Request("http://localhost/");
+  const res1 = await serveDir(req1, serveDirOptions);
+  const page1 = await res1.text();
+
+  assert(page1.includes(".dotfile"));
+
+  const req2 = new Request("http://localhost/.dotfile");
+  const res2 = await serveDir(req2, serveDirOptions);
+  const body = await res2.text();
+
+  assertEquals(body, "dotfile");
+});
+
+Deno.test("serveDir() doesn't show dotfiles when showDotfiles=false", async () => {
   const req1 = new Request("http://localhost/");
   const res1 = await serveDir(req1, {
     ...serveDirOptions,
@@ -462,7 +476,8 @@ Deno.test("serveDir() doesn't show dotfiles", async () => {
   });
   const body = await res2.text();
 
-  assertEquals(body, "dotfile");
+  assertEquals(res2.status, 404);
+  assertEquals(body, "Not Found");
 });
 
 Deno.test("serveDir() shows .. if it makes sense", async () => {

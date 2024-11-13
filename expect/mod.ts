@@ -63,6 +63,7 @@
  *   - {@linkcode expect.stringMatching}
  *   - {@linkcode expect.not.stringMatching}
  * - Utilities:
+ *   - {@linkcode expect.addSnapshotSerializer}
  *   - {@linkcode expect.assertions}
  *   - {@linkcode expect.addEqualityTester}
  *   - {@linkcode expect.extend}
@@ -74,8 +75,6 @@
  *   - `toMatchInlineSnapshot`
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`
- * - Utilities:
- *   - `expect.addSnapshotSerializer`
  *
  * The tracking issue to add support for unsupported parts of the API is
  * {@link https://github.com/denoland/std/issues/3964}.
