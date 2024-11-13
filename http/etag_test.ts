@@ -42,13 +42,14 @@ Deno.test({
 Deno.test({
   name: "eTag() handles Deno.FileInfo",
   async fn() {
-    const fixture: Deno.FileInfo = {
+    const fixture = {
       isFile: true,
       isDirectory: false,
       isSymlink: false,
       size: 1024,
       mtime: new Date(Date.UTC(96, 1, 2, 3, 4, 5, 6)),
       atime: null,
+      ctime: null,
       birthtime: null,
       dev: 0,
       ino: null,
