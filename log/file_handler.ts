@@ -52,7 +52,7 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts no-assert ignore
  * import { FileHandler } from "@std/log/file-handler";
  *
  * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -65,7 +65,7 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
 export class FileHandler extends BaseHandler {
   /** Opened file to append logs to.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -78,7 +78,7 @@ export class FileHandler extends BaseHandler {
   [fileSymbol]: Deno.FsFile | undefined;
   /** Buffer used to write to file.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -91,7 +91,7 @@ export class FileHandler extends BaseHandler {
   [bufSymbol]: Uint8Array;
   /** Current position for pointer.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -104,7 +104,7 @@ export class FileHandler extends BaseHandler {
   [pointerSymbol] = 0;
   /** Filename associated with the file being logged.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -117,7 +117,7 @@ export class FileHandler extends BaseHandler {
   [filenameSymbol]: string;
   /** Current log mode.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -130,7 +130,7 @@ export class FileHandler extends BaseHandler {
   [modeSymbol]: LogMode;
   /** File open options.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -143,7 +143,7 @@ export class FileHandler extends BaseHandler {
   [openOptionsSymbol]: Deno.OpenOptions;
   /** Text encoder.
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -183,7 +183,7 @@ export class FileHandler extends BaseHandler {
    * Sets up the file handler by opening the specified file and initializing resources.
    *
    * @example Usage
-   * ```ts no-assert
+   * ```ts no-assert ignore
    * import { FileHandler } from "@std/log/file-handler";
    *
    * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
@@ -207,7 +207,7 @@ export class FileHandler extends BaseHandler {
    * @param logRecord Log record to handle.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    * import { LogLevels } from "./levels.ts";
@@ -245,7 +245,7 @@ export class FileHandler extends BaseHandler {
    * @param msg The message to log.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
@@ -275,7 +275,7 @@ export class FileHandler extends BaseHandler {
    * Immediately writes the contents of the buffer to the previously opened file.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
@@ -308,7 +308,7 @@ export class FileHandler extends BaseHandler {
    * Destroys the handler, performing any cleanup that is required and closes the file handler.
    *
    * @example Usage
-   * ```ts
+   * ```ts ignore
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
