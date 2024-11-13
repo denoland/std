@@ -188,14 +188,7 @@ Deno.test("serveDir() serves directory index", async () => {
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
-  // `Deno.FileInfo` is not completely compatible with Windows yet
-  // TODO(bartlomieju): `mode` should work correctly in the future.
-  // Correct this test case accordingly.
-  if (Deno.build.os === "windows") {
-    assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
-  } else {
-    assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
-  }
+  assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
 
   await Deno.remove(filePath);
 });
@@ -212,14 +205,7 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "test%20file.txt");
-  // `Deno.FileInfo` is not completely compatible with Windows yet
-  // TODO(bartlomieju): `mode` should work correctly in the future.
-  // Correct this test case accordingly.
-  if (Deno.build.os === "windows") {
-    assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
-  } else {
-    assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
-  }
+  assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
 
   await Deno.remove(filePath);
 });
