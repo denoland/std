@@ -1,3 +1,38 @@
+### 2024.11.13
+
+#### @std/assert 1.0.8 (patch)
+
+- fix(assert): check property equality up the prototype chain (#6153)
+
+#### @std/bytes 1.0.4 (patch)
+
+- test(bytes): fix typo in test description (#6179)
+
+#### @std/expect 1.0.8 (patch)
+
+- fix(expect): support `expect.addSnapshotSerializer` (#6173)
+
+#### @std/http 1.0.10 (patch)
+
+- fix(http): do not serve dot files when `showDotfiles=false` (#6180)
+
+#### @std/ini 1.0.0-rc.5 (prerelease)
+
+- BREAKING(ini): parse understands booleans, undefined, null and numbers (#6121)
+
+#### @std/log 0.224.10 (patch)
+
+- docs(log): improve logger.ts docs (#6176)
+- docs(log): document FileHandler (#6175)
+
+#### @std/media-types 1.1.0 (minor)
+
+- feat(media-types): update media-types from latest mime-db (#6169)
+
+#### @std/testing 1.0.5 (patch)
+
+- docs(testing): fix typo in snapshot.ts (#6171)
+
 ### 2024.11.01
 
 #### @std/assert 1.0.7 (patch)
