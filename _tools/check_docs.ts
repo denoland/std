@@ -42,6 +42,7 @@ const ENTRY_POINTS = [
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",
+  "../csv/unstable_stringify.ts",
   "../data_structures/mod.ts",
   "../data_structures/unstable_bidirectional_map.ts",
   "../datetime/mod.ts",

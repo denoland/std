@@ -6,6 +6,7 @@
     "./parse": "./parse.ts",
     "./parse-stream": "./parse_stream.ts",
     "./stringify": "./stringify.ts",
-    "./stringify-stream": "./stringify_stream.ts"
+    "./stringify-stream": "./stringify_stream.ts",
+    "./unstable-stringify": "./unstable_stringify.ts"
   }
 }
