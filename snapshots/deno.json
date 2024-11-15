@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./napp.json": "./napp.json",
-    "./tip": "./tip.ts"
+    "./tip": "./tip.ts",
+    "./mock-provider": "./mock-provider.ts"
   }
 }

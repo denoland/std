@@ -1,7 +1,7 @@
 import * as posix from '@std/path/posix'
 import { assert } from '@std/assert/assert'
 import type {
-  AddressedReadOptions,
+  AddressedOptions,
   NappRead,
   NappSnapshots,
   NappWrite,
@@ -17,9 +17,9 @@ type NoAddressingOptions = Record<string, never>
 
 const log = Debug('@artifact/snapshots')
 
-type LocalReadOptions = Pick<AddressedReadOptions, 'snapshot'>
+type LocalReadOptions = Pick<AddressedOptions, 'snapshot'>
 
-interface NappLocal {
+export interface NappLocal {
   readonly read: NappRead<LocalReadOptions>
   readonly write: NappWrite<NoAddressingOptions>
   readonly snapshots: NappSnapshots<LocalReadOptions>
@@ -62,8 +62,8 @@ export class Tip implements NappLocal {
 
       const upsert = this.#upserts.get(path)
       if (!options?.snapshot && upsert !== undefined) {
-        if ('object' in upsert) {
-          return structuredClone(upsert.object)
+        if ('json' in upsert) {
+          return structuredClone(upsert.json)
         }
       }
 
@@ -96,8 +96,8 @@ export class Tip implements NappLocal {
       const upsert = this.#upserts.get(path)
       if (upsert !== undefined) {
         let text: string | undefined
-        if ('object' in upsert) {
-          text = JSON.stringify(upsert.object)
+        if ('json' in upsert) {
+          text = JSON.stringify(upsert.json)
         }
         if ('text' in upsert) {
           text = upsert.text
@@ -174,7 +174,7 @@ export class Tip implements NappLocal {
       }
       return entries
     },
-  }
+  } as const
   #write: NappLocal['write'] = {
     json: (path, json) => {
       // TODO store json objects specially, only stringify on commit
@@ -250,7 +250,7 @@ export class Tip implements NappLocal {
         meta: { snapshot: meta.oid, path: fromPath },
       })
     },
-  }
+  } as const
   #snapshots: NappLocal['snapshots'] = {
     latest: async (options) => {
       return await this.#snapshotsProvider.snapshots.latest(options)
@@ -261,7 +261,7 @@ export class Tip implements NappLocal {
     history: async (options) => {
       return await this.#snapshotsProvider.snapshots.history(options)
     },
-  }
+  } as const
 
   private constructor(snapshotsProvider: SnapshotsProvider) {
     this.#snapshotsProvider = snapshotsProvider

@@ -9,9 +9,23 @@
   // folder containing the branding assets of the napp
   "branding": "path/to/branding/",
 
+  "stucks": {
+    "napp": "@artifact/stucks",
+    "tool": "create",
+    "parameters": {
+      "title": "This is the title of the stuck",
+      "description": "This is the description of the stuck",
+      "snapshotId": "snapshot-id",
+      "crypto": "crypto-id", // universally and securely id the repo
+      "branch": "main",
+      "expections": [
+        "Mrs Miggins should have two pies, not one"
+      ]
+    }
+  },
   "agent": {
     // entry point that takes plain text in and returns text plus files
-    "napp": "napp-runner-name",
+    "napp": "@artifact/openai",
     "tool": "some-exported-function", // if use a function other than main
     "parameters": {
       // parameters for the chat runner, based on what the runner is.  This is

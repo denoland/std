@@ -23,39 +23,40 @@ export type TreeEntry = {
 
 export type Upsert =
   | { meta: { snapshot: string; path: string } }
-  | { object: JsonValue } // TODO implement object cache using structured clone
+  | { json: JsonValue } // TODO implement object cache using structured clone
   | { text: string }
   | { data: Uint8Array }
 
-/** WriteOptions always refer to the latest snapshot of a branch */
-type AddressedWriteOptions = {
+export const optionsSchema = z.object({
+  process: z.string().optional(),
+  crypto: z.string().optional(),
+  branch: z.string().optional(),
+  snapshot: z.string().optional(),
+})
+export type AddressedOptions = {
   /** Posix style path that locates what process thread we want to communicate
    * with.  In git, this would be branch names, for example: `exe/proc-1/child-2` */
   process?: string
-
   /** The cryptographic identifier of the whole repository.  This would be the
    * chainId in conventional blockchains, but could be a group of public keys,
    * or some other root of trust */
   crypto?: string
-
   /** Whatever snapshot model is used, the branch concept represents an isolated
    * line of changes.  In git, this would be a branch */
   branch?: string
-}
-export type AddressedReadOptions = AddressedWriteOptions & {
   /** Depending on the snapshot format being used, represents the state at a
-   * specific point in the history */
+   * specific point in the history.  For write commands, snapshot is used to
+   * guarantee the state being changed has not been altered since it was read */
   snapshot?: string
-  // TODO add snapshot to write options, to ensure the current matches expected
 }
 
-export interface NappSnapshots<ReadOptions = AddressedReadOptions> {
+export interface NappSnapshots<ReadOptions = AddressedOptions> {
   latest(options?: Omit<ReadOptions, 'snapshot'>): Promise<string | undefined>
   parents(options?: ReadOptions): Promise<string[]>
   history(options?: ReadOptions & { count?: number }): Promise<string[]>
 }
 
-export interface NappRead<ReadOptions = AddressedReadOptions> {
+export interface NappRead<ReadOptions = AddressedOptions> {
   meta(path: string, options?: ReadOptions): Promise<TreeEntry>
   json<T extends ZodTypeAny = typeof jsonSchema>(
     path: string,
@@ -67,21 +68,21 @@ export interface NappRead<ReadOptions = AddressedReadOptions> {
   ls(path?: string, options?: ReadOptions): Promise<TreeEntry[]>
 }
 
-export interface SnapshotsProvider<ReadOptions = AddressedReadOptions> {
+export interface SnapshotsProvider<ReadOptions = AddressedOptions> {
   readonly snapshots: NappSnapshots<ReadOptions>
   readonly read: NappRead<ReadOptions>
   commit(upserts: Map<string, Upsert>, deletes: Set<string>): Promise<void>
 }
 
-export interface NappWrite<WriteOptions = AddressedWriteOptions> {
-  text(
-    path: string,
-    content: string,
-    options?: WriteOptions,
-  ): Promise<void>
+export interface NappWrite<WriteOptions = AddressedOptions> {
   json(
     path: string,
     content: JsonValue,
+    options?: WriteOptions,
+  ): Promise<void>
+  text(
+    path: string,
+    content: string,
     options?: WriteOptions,
   ): Promise<void>
   binary(
@@ -101,7 +102,7 @@ export interface NappWrite<WriteOptions = AddressedWriteOptions> {
 }
 
 type SpawnOptions =
-  & AddressedWriteOptions
+  & AddressedOptions
   & (
     | { name: string; prefix?: never }
     | { name?: never; prefix: string }
@@ -114,45 +115,41 @@ type SpawnOptions =
     nice?: number
   }
 
-type MetaResult = { meta: Required<AddressedReadOptions>; outcome: Outcome }
+type MetaResult = { meta: Required<AddressedOptions>; outcome: Outcome }
 
 interface NappProcesses {
   /** start a new process and install the given napp. */
   spawn(napp: keyof NappTypes, options: SpawnOptions): Promise<void>
   /** tear down the specified process, and resturn the result of teardown */
-  kill(options: AddressedWriteOptions): Promise<JsonValue | undefined>
+  kill(options: AddressedOptions): Promise<JsonValue | undefined>
   /** spawns a new process, installs the napp specified in the action, awaits
    * the execution, and then returns, killing the process */
   async(action: Action, options: SpawnOptions): Promise<JsonValue | undefined>
   /** move a process to another parent.  Can be used to daemonize a running
    * process by moving it to be a child of init */
-  mv(to: AddressedWriteOptions, from?: AddressedWriteOptions): Promise<void>
+  mv(to: AddressedOptions, from?: AddressedOptions): Promise<void>
   /** change the priority of a process */
-  nice(level: number, options: AddressedWriteOptions): void
+  nice(level: number, options: AddressedOptions): void
 
   dispatch(
     action: Action,
-    options: AddressedWriteOptions,
-  ): Promise<JsonValue | undefined>
+    options: AddressedOptions,
+  ): Promise<JsonValue | undefined | void>
   dispatchWithMeta(
     action: Action,
-    options: AddressedWriteOptions,
+    options: AddressedOptions,
   ): Promise<MetaResult>
 }
 
-const stateSchema = z.record(jsonSchema)
+export const stateSchema = z.record(jsonSchema)
 
 /** State is stored in the process json files */
-interface NappState<ReadOptions = AddressedReadOptions> {
+interface NappState<ReadOptions = AddressedOptions> {
   get<T extends ZodRecord = typeof stateSchema>(
     options: ReadOptions & { schema?: T; fallback?: z.infer<T> },
   ): Promise<z.infer<T>>
-  // TODO return metadata of the state so we know if it remains unchanged
+  // TODO return metadata of the state so we know if a part remains unchanged
   // TODO allow fetching paths within the state
-  update<T extends ZodRecord = typeof stateSchema>(
-    updater: (state: z.infer<T>) => z.infer<T>,
-    options: ReadOptions & { schema?: T },
-  ): Promise<z.infer<T>>
   set<T extends ZodRecord = typeof stateSchema>(
     state: z.infer<T>,
     options: ReadOptions & { schema?: T },
@@ -180,13 +177,6 @@ export interface NappApi {
   readonly write: NappWrite
   readonly processes: NappProcesses
   readonly effects: NappEffects
-}
-
-export class NappApi implements NappApi {
-  // all this thing does is create actions
-  // these are then interpreted by whatever is running them
-  // so it can be used for client side, inside a napp, or for handling different
-  // processes, branches, and remote repositories
 }
 
 /**

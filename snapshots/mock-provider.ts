@@ -1,18 +1,17 @@
 import { ripemd160 } from '@noble/hashes/ripemd160'
 import { base32 } from 'multiformats/bases/base32'
-import { jsonSchema, JsonValue } from '../api/actions.ts'
+import { jsonSchema } from '../api/actions.ts'
 import { Tip } from './tip.ts'
 import {
-  AddressedReadOptions,
+  type AddressedOptions,
   FileNotFoundError,
   LineageError,
-  SnapshotsProvider,
-  TreeEntry,
+  type SnapshotsProvider,
 } from '../api/napp-api.ts'
 import { ulid } from '@std/ulid/ulid'
 import type { z } from 'zod'
 
-type LocalReadOptions = Pick<AddressedReadOptions, 'snapshot'>
+type LocalReadOptions = Pick<AddressedOptions, 'snapshot'>
 type LocalSnapshotsProvider = SnapshotsProvider<LocalReadOptions>
 
 type Lineage = { tip: Tip; parents: string[] }

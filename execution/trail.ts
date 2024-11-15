@@ -1,25 +1,23 @@
 import {
   type Action,
   actionSchema,
-  JsonValue,
-  Outcome,
+  type JsonValue,
+  type Outcome,
   outcomeSchema,
-  SerializableError,
 } from '@artifact/api/actions'
+import type { Upsert } from '@artifact/api/napp-api'
 import equal from 'fast-deep-equal'
 import { assert } from '@std/assert/assert'
 import { z } from 'zod'
 import { deserializeError, serializeError } from 'serialize-error'
-import { delay } from '@std/async/delay'
 import Debug from 'debug'
+import { expect } from '@std/expect/expect'
 const log = Debug('@artifact/execution')
 
 export const DEFAULT_TIMEOUT = 200
-
-type HookedPromise<T = unknown> = {
-  promise: Promise<T>
-  resolve: (value: T) => void
-  reject: (error: Error) => void
+export enum TrailStopReason {
+  Triggered,
+  Settled,
 }
 
 const sequence = z.number().int().gte(0)
@@ -69,19 +67,45 @@ export class Trail {
   #index = 0
   #data: TrailStruct
   #trigger: (() => void) | undefined
-  #hooks: Record<number, HookedPromise> = {}
+  #hooks: Record<number, ReturnType<typeof hookPromise>> = {}
 
   #subscribers: Set<() => void> = new Set()
 
   #abort = new AbortController()
   #settled = hookPromise<void>()
 
+  #context: unknown
+
+  #payloads: Record<number, Upsert> = {}
+
+  hasPayload(index: number) {
+    return index in this.#payloads
+  }
+  injectPayload(index: number, upsert: Upsert) {
+    assert(!this.#payloads[index], 'Payload already exists: ' + index)
+    Object.freeze(upsert)
+    this.#payloads[index] = upsert
+  }
+  extractPayload(index: number) {
+    const payload = this.#payloads[index]
+    if (!payload) {
+      throw new Error('Payload not found: ' + index)
+    }
+    delete this.#payloads[index]
+    return payload
+  }
   get origin() {
     return this.#data.origin
   }
-
   get signal() {
     return this.#abort.signal
+  }
+  get context() {
+    // TODO check if this is a valid side effect
+    return this.#context
+  }
+  set context(value: unknown) {
+    this.#context = value
   }
 
   abort() {
@@ -121,13 +145,12 @@ export class Trail {
   async activate(data?: TrailStruct) {
     assert(!this.signal.aborted, 'Trail is aborted')
     assert(!this.#trigger, 'Trail is active')
+    if (this.#data.outcome || data?.outcome) {
+      throw new Error('Trail is already settled')
+    }
 
     if (data) {
       this.#absorb(data)
-    }
-
-    if (this.#data.outcome) {
-      return
     }
 
     const triggered = Symbol('🔫')
@@ -164,13 +187,14 @@ export class Trail {
     // if timeout, then we should end with an error ?
 
     if (result === timeout) {
-      return { timeout: true }
+      this.reject(new Error(`Timeout of ${this.#data.options.timeout} ms`))
+      return TrailStopReason.Settled
     }
     if (result === triggered) {
-      return { triggered: true }
+      return TrailStopReason.Triggered
     }
     if (result === settled) {
-      return { settled: true }
+      return TrailStopReason.Settled
     }
     throw new Error('Unknown race result: ' + result.toString())
   }
@@ -187,7 +211,7 @@ export class Trail {
     throw new Error('Trail is not active')
   }
   /** If there is a stored response, will be returned here */
-  push(action: Action) {
+  push<T>(action: Action, upsert?: Upsert) {
     assert(!this.signal.aborted, 'Trail is aborted')
     assert(this.#trigger, 'Trail is not active')
     const index = this.#index++
@@ -196,12 +220,17 @@ export class Trail {
       if (!equal(existing.origin, action)) {
         throw new Error('Action mismatch at sequence ' + index)
       }
+      // TODO check if the upsert is the same too
+
       if (existing.outcome) {
         if (existing.outcome.error) {
           const error = deserializeError(existing.outcome.error)
-          return Promise.reject(error)
+          throw error
         }
-        return Promise.resolve(existing.outcome.result)
+        if (this.hasPayload(index)) {
+          // if the result includes a payload, then return the payload contents
+        }
+        return Promise.resolve(existing.outcome.result as T)
       }
     } else {
       this.#data.requests[index] = {
@@ -211,16 +240,21 @@ export class Trail {
         activeMs: 0,
         options: { timeout: DEFAULT_TIMEOUT },
       }
+      if (upsert) {
+        this.#payloads[index] = upsert
+      }
     }
-    return this.#hookPromise(index)
+    const hook = this.#hookPromise<T>(index)
+    return hook
   }
-  #hookPromise(index: number) {
+  #hookPromise<T>(index: number) {
     assert(index >= 0, 'Index must be >= 0')
     assert(!(index in this.#hooks), 'Promise already exists: ' + index)
     this.#fireTrigger()
 
-    this.#hooks[index] = hookPromise()
-    return this.#hooks[index].promise
+    const hook = hookPromise<T>()
+    this.#hooks[index] = hook as ReturnType<typeof hookPromise>
+    return hook.promise
   }
   /**
    * Used so that an execution can be paused, then receive replies for
@@ -244,7 +278,9 @@ export class Trail {
         // TODO test that the incoming change is at least as big
         assert(equal(request.origin, existing.origin), 'Action mismatch')
         if (existing.outcome) {
-          assert(equal(request, existing), 'Trail mismatch')
+          if (!equal(request, existing)) {
+            expect(request, 'Trail mismatch').toEqual(existing)
+          }
         } else {
           if (request.outcome && index < this.#index) {
             const hook = this.#hooks[index]
@@ -278,7 +314,7 @@ export class Trail {
 export class FilesProxy {
 }
 
-const hookPromise = <T = unknown>() => {
+const hookPromise = <T>() => {
   let resolve: (value: T) => void
   let reject: (error: Error) => void
   const promise = new Promise<T>((res, rej) => {

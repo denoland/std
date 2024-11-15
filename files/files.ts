@@ -19,9 +19,9 @@ type Write = ToExternalApi<
 
 type WriteApi = ToInternalApi<Write>
 
-export const write: WriteApi = ({ path, content = '' }, api) => {
-  log('add', path, content)
-  api.write.text(path, content)
+export const write: WriteApi = async ({ path, content = '' }, api) => {
+  log('write', path, content)
+  await api.write.text(path, content)
   return { charactersWritten: content.length }
 }
 
