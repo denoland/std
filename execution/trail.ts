@@ -218,17 +218,23 @@ export class Trail {
     const existing = this.#data.requests[index]
     if (existing) {
       if (!equal(existing.origin, action)) {
-        throw new Error('Action mismatch at sequence ' + index)
+        expect(action, 'Action mismatch').toEqual(existing.origin)
       }
-      // TODO check if the upsert is the same too
-
       if (existing.outcome) {
         if (existing.outcome.error) {
           const error = deserializeError(existing.outcome.error)
           throw error
         }
         if (this.hasPayload(index)) {
-          // if the result includes a payload, then return the payload contents
+          // TODO check if the upsert is the same using a hash / oid
+          const { result } = existing.outcome
+          const isSnapshot = typeof result !== 'object' || result === null ||
+            !('snapshot' in result)
+          if (isSnapshot) {
+            throw new Error('Snapshot not found in result')
+          }
+          const upsert = this.extractPayload(index)
+          return Promise.resolve(unwrapUpsert(upsert) as T)
         }
         return Promise.resolve(existing.outcome.result as T)
       }
@@ -264,19 +270,18 @@ export class Trail {
    * again, if we find ourselves replaying the operation with no existing cache.
    */
   #absorb(data: TrailStruct) {
-    // roll thru and extend out the requests, satisfy the replies, and update
-    // any promises that were stored.
     assert(equal(data.origin, this.#data.origin), 'Trail origin mismatch')
     assert(data.sequence >= this.#data.sequence, 'Sequence must be >= this')
     assert(equal(data.activeMs, this.#data.activeMs), 'Active time mismatch')
 
-    for (const [string, request] of Object.entries(data.requests)) {
-      const index = Number(string)
+    for (const [index, request] of entries(data)) {
       const existing = this.#data.requests[index]
 
       if (existing) {
         // TODO test that the incoming change is at least as big
-        assert(equal(request.origin, existing.origin), 'Action mismatch')
+        if (!equal(request.origin, existing.origin)) {
+          expect(request.origin, 'Origin mismatch').toEqual(existing.origin)
+        }
         if (existing.outcome) {
           if (!equal(request, existing)) {
             expect(request, 'Trail mismatch').toEqual(existing)
@@ -289,7 +294,12 @@ export class Trail {
               const error = deserializeError(request.outcome.error)
               hook.reject(error)
             } else {
-              hook.resolve(request.outcome.result)
+              if (this.hasPayload(index)) {
+                const upsert = this.extractPayload(index)
+                hook.resolve(unwrapUpsert(upsert))
+              } else {
+                hook.resolve(request.outcome.result)
+              }
             }
             delete this.#hooks[index]
           }
@@ -303,6 +313,12 @@ export class Trail {
     assert(!this.#trigger, 'Trail is active')
     return structuredClone(this.#data)
   }
+}
+
+export const entries = (data: TrailStruct) => {
+  return Object.entries(data.requests).map(([index, request]) =>
+    [Number(index), request] as const
+  )
 }
 
 /**
@@ -322,4 +338,20 @@ const hookPromise = <T>() => {
     reject = rej
   })
   return { promise, resolve: resolve!, reject: reject! }
+}
+
+const unwrapUpsert = (upsert: Upsert) => {
+  if ('meta' in upsert) {
+    return upsert.meta
+  }
+  if ('json' in upsert) {
+    return upsert.json
+  }
+  if ('text' in upsert) {
+    return upsert.text
+  }
+  if ('data' in upsert) {
+    return upsert.data
+  }
+  throw new Error('Invalid upsert')
 }

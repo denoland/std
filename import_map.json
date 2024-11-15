@@ -43,7 +43,7 @@
     "it-pushable": "npm:it-pushable",
     "lodash.merge": "npm:lodash.merge",
     "multiformats": "npm:multiformats",
-    "openai": "npm:openai",
+    "openai": "jsr:@openai/openai",
     "serialize-error": "npm:serialize-error",
     "youtube-caption-extractor": "npm:youtube-caption-extractor",
     "zod": "npm:zod",

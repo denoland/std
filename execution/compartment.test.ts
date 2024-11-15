@@ -1,7 +1,7 @@
 import Compartment from './compartment.ts'
 import { expect } from '@std/expect'
 import actionCreators from '@artifact/api/actions'
-import { Trail, TrailStopReason, type TrailStruct } from './trail.ts'
+import { entries, Trail, TrailStopReason, type TrailStruct } from './trail.ts'
 import { type NappLocal, Tip } from '@artifact/snapshots/tip'
 import { assert } from '@std/assert/assert'
 import { MockProvider } from '@artifact/snapshots/mock-provider'
@@ -129,10 +129,4 @@ const isApiRequest = (request: TrailStruct) => {
     return true
   }
   return false
-}
-
-const entries = (data: TrailStruct) => {
-  return Object.entries(data.requests).map(([index, request]) =>
-    [Number(index), request] as const
-  )
 }
