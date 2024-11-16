@@ -24,16 +24,16 @@ class PromptSelect {
     this.#options = options;
   }
   #render() {
-    const indicatorLength = INDICATOR.length;
+    const padding = " ".repeat(INDICATOR.length);
     for (const [index, value] of this.#values.entries()) {
       const data = index === this.#selectedIndex
         ? `${INDICATOR} ${value}`
-        : `${" ".repeat(indicatorLength)} ${value}`;
+        : `${padding} ${value}`;
       Deno.stdout.writeSync(encoder.encode(data + "\r\n"));
     }
   }
-  #clear(lines: number) {
-    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(lines)));
+  #clear(lineCount: number) {
+    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(lineCount)));
   }
   prompt(message: string): string | null {
     Deno.stdout.writeSync(encoder.encode(message + "\r\n"));
@@ -42,8 +42,9 @@ class PromptSelect {
 
     Deno.stdin.setRaw(true);
 
-    const c = new Uint8Array(4);
+    const length = this.#values.length;
 
+    const c = new Uint8Array(4);
     loop:
     while (true) {
       const n = Deno.stdin.readSync(c);
@@ -56,20 +57,17 @@ class PromptSelect {
           this.#selectedIndex = Math.max(0, this.#selectedIndex - 1);
           break;
         case ARROW_DOWN_KEY:
-          this.#selectedIndex = Math.min(
-            this.#values.length - 1,
-            this.#selectedIndex + 1,
-          );
+          this.#selectedIndex = Math.min(length - 1, this.#selectedIndex + 1);
           break;
         case "\r":
           break loop;
       }
-      this.#clear(this.#values.length);
+      this.#clear(length);
       this.#render();
     }
     if (this.#options.clear) {
-      // clear all including message
-      this.#clear(this.#values.length + 1);
+      // clear lines and message
+      this.#clear(length + 1);
     }
     Deno.stdin.setRaw(false);
     return this.#values[this.#selectedIndex] ?? null;
