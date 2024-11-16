@@ -1,8 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
 /** Options for {@linkcode promptSelect}. */
 export interface PromptSelectOptions {
   /** Clear the lines after the user's input. */
@@ -14,6 +11,9 @@ const ARROW_UP_KEY = "\u001B[A";
 const ARROW_DOWN_KEY = "\u001B[B";
 
 const INDICATOR = "❯";
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 class PromptSelect {
   #selectedIndex = 0;
