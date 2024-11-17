@@ -35,6 +35,7 @@ export function promptSelect(
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const length = values.length;
+  const padding = " ".repeat(INDICATOR.length);
   let selectedIndex = 0;
 
   Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
@@ -43,7 +44,6 @@ export function promptSelect(
   const buffer = new Uint8Array(4);
   loop:
   while (true) {
-    const padding = " ".repeat(INDICATOR.length);
     for (const [index, value] of values.entries()) {
       const start = index === selectedIndex ? INDICATOR : padding;
       Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
