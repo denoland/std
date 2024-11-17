@@ -9,70 +9,8 @@ export interface PromptSelectOptions {
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
-
+const CR = "\r";
 const INDICATOR = "❯";
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-class PromptSelect {
-  #selectedIndex = 0;
-  #values: string[];
-  #options: PromptSelectOptions;
-  constructor(values: string[], options: PromptSelectOptions = {}) {
-    this.#values = values;
-    this.#options = options;
-  }
-  #render() {
-    const padding = " ".repeat(INDICATOR.length);
-    for (const [index, value] of this.#values.entries()) {
-      const start = index === this.#selectedIndex ? INDICATOR : padding;
-      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
-    }
-  }
-  #clear(lineCount: number) {
-    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(lineCount)));
-  }
-  prompt(message: string): string | null {
-    Deno.stdout.writeSync(encoder.encode(message + "\r\n"));
-
-    this.#render();
-
-    Deno.stdin.setRaw(true);
-
-    const length = this.#values.length;
-    const buffer = new Uint8Array(4);
-
-    loop:
-    while (true) {
-      const n = Deno.stdin.readSync(buffer);
-      if (n === null || n === 0) break;
-      const input = decoder.decode(buffer.slice(0, n));
-
-      switch (input) {
-        case ETX:
-          return Deno.exit(0);
-        case ARROW_UP:
-          this.#selectedIndex = Math.max(0, this.#selectedIndex - 1);
-          break;
-        case ARROW_DOWN:
-          this.#selectedIndex = Math.min(length - 1, this.#selectedIndex + 1);
-          break;
-        case "\r":
-          break loop;
-      }
-
-      this.#clear(length);
-      this.#render();
-    }
-    if (this.#options.clear) {
-      // clear lines and message
-      this.#clear(length + 1);
-    }
-    Deno.stdin.setRaw(false);
-    return this.#values[this.#selectedIndex] ?? null;
-  }
-}
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
@@ -94,5 +32,45 @@ export function promptSelect(
   values: string[],
   options: PromptSelectOptions = {},
 ): string | null {
-  return new PromptSelect(values, options).prompt(message);
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const length = values.length;
+  let selectedIndex = 0;
+
+  Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
+  Deno.stdin.setRaw(true);
+
+  const buffer = new Uint8Array(4);
+  loop:
+  while (true) {
+    const padding = " ".repeat(INDICATOR.length);
+    for (const [index, value] of values.entries()) {
+      const start = index === selectedIndex ? INDICATOR : padding;
+      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
+    }
+
+    const n = Deno.stdin.readSync(buffer);
+    if (n === null || n === 0) break;
+    const input = decoder.decode(buffer.slice(0, n));
+
+    switch (input) {
+      case ETX:
+        return Deno.exit(0);
+      case ARROW_UP:
+        selectedIndex = Math.max(0, selectedIndex - 1);
+        break;
+      case ARROW_DOWN:
+        selectedIndex = Math.min(length - 1, selectedIndex + 1);
+        break;
+      case CR:
+        break loop;
+    }
+    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(length)));
+  }
+  if (options.clear) {
+    // clear lines and message
+    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(length + 1)));
+  }
+  Deno.stdin.setRaw(false);
+  return values[selectedIndex] ?? null;
 }
