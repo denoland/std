@@ -6,9 +6,9 @@ export interface PromptSelectOptions {
   clear?: boolean;
 }
 
-const ESC_KEY = "\x03";
-const ARROW_UP_KEY = "\u001B[A";
-const ARROW_DOWN_KEY = "\u001B[B";
+const ETX = "\x03";
+const ARROW_UP = "\u001B[A";
+const ARROW_DOWN = "\u001B[B";
 
 const INDICATOR = "❯";
 
@@ -26,10 +26,8 @@ class PromptSelect {
   #render() {
     const padding = " ".repeat(INDICATOR.length);
     for (const [index, value] of this.#values.entries()) {
-      const data = index === this.#selectedIndex
-        ? `${INDICATOR} ${value}`
-        : `${padding} ${value}`;
-      Deno.stdout.writeSync(encoder.encode(data + "\r\n"));
+      const start = index === this.#selectedIndex ? INDICATOR : padding;
+      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
   }
   #clear(lineCount: number) {
@@ -43,25 +41,27 @@ class PromptSelect {
     Deno.stdin.setRaw(true);
 
     const length = this.#values.length;
+    const buffer = new Uint8Array(4);
 
-    const c = new Uint8Array(4);
     loop:
     while (true) {
-      const n = Deno.stdin.readSync(c);
+      const n = Deno.stdin.readSync(buffer);
       if (n === null || n === 0) break;
-      const input = decoder.decode(c.slice(0, n));
+      const input = decoder.decode(buffer.slice(0, n));
+
       switch (input) {
-        case ESC_KEY:
+        case ETX:
           return Deno.exit(0);
-        case ARROW_UP_KEY:
+        case ARROW_UP:
           this.#selectedIndex = Math.max(0, this.#selectedIndex - 1);
           break;
-        case ARROW_DOWN_KEY:
+        case ARROW_DOWN:
           this.#selectedIndex = Math.min(length - 1, this.#selectedIndex + 1);
           break;
         case "\r":
           break loop;
       }
+
       this.#clear(length);
       this.#render();
     }
