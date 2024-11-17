@@ -11,6 +11,12 @@ const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 const INDICATOR = "❯";
+const PADDING = " ".repeat(INDICATOR.length);
+
+const CLR = "\r\u001b[K"; // Clear the current line
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
@@ -32,10 +38,7 @@ export function promptSelect(
   values: string[],
   options: PromptSelectOptions = {},
 ): string | null {
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
   const length = values.length;
-  const padding = " ".repeat(INDICATOR.length);
   let selectedIndex = 0;
 
   Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
@@ -45,14 +48,12 @@ export function promptSelect(
   loop:
   while (true) {
     for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : padding;
+      const start = index === selectedIndex ? INDICATOR : PADDING;
       Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
-
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
     const input = decoder.decode(buffer.slice(0, n));
-
     switch (input) {
       case ETX:
         return Deno.exit(0);
@@ -65,11 +66,10 @@ export function promptSelect(
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(length)));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length}A${CLR}`));
   }
   if (options.clear) {
-    // clear lines and message
-    Deno.stdout.writeSync(encoder.encode("\x1b[1A\x1b[2K".repeat(length + 1)));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A${CLR}`)); // clear values and message
   }
   Deno.stdin.setRaw(false);
   return values[selectedIndex] ?? null;
