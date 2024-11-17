@@ -66,10 +66,10 @@ export function promptSelect(
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length}A${CLR}`));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[1A${CLR}`.repeat(length)));
   }
   if (options.clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A${CLR}`)); // clear values and message
+    Deno.stdout.writeSync(encoder.encode(`\x1b[1A${CLR}`.repeat(length + 1))); // clear values and message
   }
   Deno.stdin.setRaw(false);
   return values[selectedIndex] ?? null;
