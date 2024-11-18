@@ -17,5 +17,4 @@
 
 export * from "./parse_args.ts";
 export * from "./prompt_secret.ts";
-export * from "./prompt_select.ts";
 export * from "./unicode_width.ts";
