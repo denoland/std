@@ -47,12 +47,10 @@ export function promptSelect(
   const buffer = new Uint8Array(4);
   loop:
   while (true) {
-    let output = "";
     for (const [index, value] of values.entries()) {
       const start = index === selectedIndex ? INDICATOR : PADDING;
-      output += `${start} ${value}\r\n`;
+      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
-    Deno.stdout.writeSync(encoder.encode(output));
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
     const input = decoder.decode(buffer.slice(0, n));

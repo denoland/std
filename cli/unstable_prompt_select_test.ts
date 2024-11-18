@@ -12,14 +12,17 @@ function spyFn<T, K extends keyof T>(
   fn: T[K],
 ) {
   const originalFn = target[key];
-  target[key] = fn;
+  if (typeof fn !== "function") throw new Error(`fn is not a target method`);
+  target[key] = fn.bind(target);
   return () => target[key] = originalFn;
 }
 
 Deno.test("promptSelect() handles enter", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
   ];
 
   let writeIndex = 0;
@@ -67,11 +70,17 @@ Deno.test("promptSelect() handles enter", () => {
 Deno.test("promptSelect() handles arrow down", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n❯ chrome\r\n  firefox\r\n",
+    "  safari\r\n",
+    "❯ chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n  chrome\r\n❯ firefox\r\n",
+    "  safari\r\n",
+    "  chrome\r\n",
+    "❯ firefox\r\n",
   ];
 
   let writeIndex = 0;
@@ -121,11 +130,17 @@ Deno.test("promptSelect() handles arrow down", () => {
 Deno.test("promptSelect() handles arrow up", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n❯ chrome\r\n  firefox\r\n",
+    "  safari\r\n",
+    "❯ chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
   ];
 
   let writeIndex = 0;
@@ -175,9 +190,13 @@ Deno.test("promptSelect() handles arrow up", () => {
 Deno.test("promptSelect() handles up index overflow", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n  chrome\r\n❯ firefox\r\n",
+    "  safari\r\n",
+    "  chrome\r\n",
+    "❯ firefox\r\n",
   ];
 
   let writeIndex = 0;
@@ -226,13 +245,21 @@ Deno.test("promptSelect() handles up index overflow", () => {
 Deno.test("promptSelect() handles down index overflow", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n❯ chrome\r\n  firefox\r\n",
+    "  safari\r\n",
+    "❯ chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "  safari\r\n  chrome\r\n❯ firefox\r\n",
+    "  safari\r\n",
+    "  chrome\r\n",
+    "❯ firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
   ];
 
   let writeIndex = 0;
@@ -283,7 +310,9 @@ Deno.test("promptSelect() handles down index overflow", () => {
 Deno.test("promptSelect() handles clear option", () => {
   const expectedOutput = [
     "Please select a browser:\r\n",
-    "❯ safari\r\n  chrome\r\n  firefox\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
     "\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K\x1b[1A\r\x1b[K",
   ];
 
