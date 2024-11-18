@@ -1,5 +1,5 @@
 import { expect } from '@std/expect/expect'
-import { Trail } from './trail.ts'
+import { Trail, TrailStopReason } from './trail.ts'
 import { assert } from '@std/assert/assert'
 
 Deno.test('trail', async () => {
@@ -19,7 +19,7 @@ Deno.test('trail', async () => {
   expect(pushPromise.then).toBeInstanceOf(Function)
   expect(() => trail.export()).toThrow('is active')
   await expect(trail.activate(fake)).rejects.toThrow('is active')
-  expect(await triggerPromise).toEqual({ triggered: true })
+  expect(await triggerPromise).toEqual(TrailStopReason.Triggered)
 
   const data = trail.export()
 
@@ -45,7 +45,7 @@ Deno.test('trail', async () => {
   const retrailPromise = retrail.activate()
   const repush = retrail.push(action)
   expect(repush).toBeInstanceOf(Promise)
-  await expect(retrailPromise).resolves.toEqual({ triggered: true })
+  await expect(retrailPromise).resolves.toEqual(TrailStopReason.Triggered)
 
   retrail.activate(rejected)
   retrail.resolve(undefined)

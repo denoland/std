@@ -28,7 +28,8 @@ const baseTrailSchema = z.object({
   outcome: outcomeSchema.optional(),
   activeMs: z.number().int().gte(0),
   options: z.object({
-    /** Maximum execution time between async operations that we will wait */
+    /** Maximum execution time between async operations that the compartment
+     * will wait before terminating the execution */
     timeout: z.number().int().gte(0),
   }),
 })
@@ -319,15 +320,6 @@ export const entries = (data: TrailStruct) => {
   return Object.entries(data.requests).map(([index, request]) =>
     [Number(index), request] as const
   )
-}
-
-/**
- * Wraps the Trail, and on the way in, it will intercept any filesystem items,
- * so that it can fulfill the contents from the fs.  This means the data
- * structure never carries file data, but that file contents are always passed
- * back to the executing function efficiently.
- */
-export class FilesProxy {
 }
 
 const hookPromise = <T>() => {
