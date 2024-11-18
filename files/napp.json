@@ -30,11 +30,11 @@
     }
   },
   "evals": {
-    "napp": "@artifact/eval-file-runner",
+    "napp": "@artifact/evals",
     "parameters": { "files": ["./files.eval.md"] }
   },
   "imports": {
-    "@artifact/eval-file-runner": {
+    "@artifact/evals": {
       "version": "0.0.1",
       "commit": "some-commit-hash"
     },

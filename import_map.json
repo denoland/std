@@ -24,7 +24,7 @@
     "@artifact/fixture": "jsr:@artifact/fixture@^0.0.1",
     "@artifact/hamr": "jsr:@artifact/hamr@^0.0.1",
     "@artifact/info": "jsr:@artifact/info@^0.0.1",
-    "@artifact/eval-file-runner": "jsr:@artifact/eval-file-runner@^0.0.1",
+    "@artifact/evals": "jsr:@artifact/evals@^0.0.1",
     "@artifact/napp-tools": "jsr:@artifact/napp-tools@^0.0.1",
 
     "@apideck/better-ajv-errors": "npm:@apideck/better-ajv-errors",

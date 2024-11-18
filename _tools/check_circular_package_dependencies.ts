@@ -42,7 +42,7 @@ type Mod =
   | "fixture"
   | "hamr"
   | "info"
-  | "eval-file-runner";
+  | "evals";
 
 const ENTRYPOINTS: Record<Mod, string[]> = {
   files: ["mod.ts"],
@@ -52,7 +52,7 @@ const ENTRYPOINTS: Record<Mod, string[]> = {
   fixture: ["mod.ts"],
   hamr: ["mod.ts"],
   info: ["mod.ts"],
-  "eval-file-runner": ["mod.ts"],
+  "evals": ["mod.ts"],
 };
 
 const root = new URL("../", import.meta.url).href;

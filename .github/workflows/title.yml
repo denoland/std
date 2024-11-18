@@ -42,4 +42,4 @@ jobs:
             fixture(/unstable)?
             hamr(/unstable)?
             info(/unstable)?
-            eval-file-runner(/unstable)?
+            evals(/unstable)?

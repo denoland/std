@@ -1,5 +1,5 @@
 ---
-target: agents/eval-file-runner.md
+target: agents/evals.md
 assessor: agents/test-assessor.md
 ---
 

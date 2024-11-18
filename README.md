@@ -14,17 +14,17 @@ for Artifact, the infrastructure of the
 The following list contains links to the Artifact Standard Library's packages
 and documentation:
 
-| Package                                                       | Latest version                                                                                        |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| [files](https://jsr.io/@artifact/files)                       | [![JSR](https://jsr.io/badges/@artifact/files)](https://jsr.io/@artifact/files)                       |
-| [openai](https://jsr.io/@artifact/openai)                     | [![JSR](https://jsr.io/badges/@artifact/openai)](https://jsr.io/@artifact/openai)                     |
-| [dumb-bot](https://jsr.io/@artifact/dumb-bot)                 | [![JSR](https://jsr.io/badges/@artifact/dumb-bot)](https://jsr.io/@artifact/dumb-bot)                 |
-| [reasoner](https://jsr.io/@artifact/reasoner)                 | [![JSR](https://jsr.io/badges/@artifact/reasoner)](https://jsr.io/@artifact/reasoner)                 |
-| [fixture](https://jsr.io/@artifact/fixture)                   | [![JSR](https://jsr.io/badges/@artifact/fixture)](https://jsr.io/@artifact/fixture)                   |
-| [hamr](https://jsr.io/@artifact/hamr)                         | [![JSR](https://jsr.io/badges/@artifact/hamr)](https://jsr.io/@artifact/hamr)                         |
-| [info](https://jsr.io/@artifact/info)                         | [![JSR](https://jsr.io/badges/@artifact/info)](https://jsr.io/@artifact/info)                         |
-| [eval-file-runner](https://jsr.io/@artifact/eval-file-runner) | [![JSR](https://jsr.io/badges/@artifact/eval-file-runner)](https://jsr.io/@artifact/eval-file-runner) |
-| [napp-tools](https://jsr.io/@artifact/napp-tools)             | [![JSR](https://jsr.io/badges/@artifact/napp-tools)](https://jsr.io/@artifact/napp-tools)             |
+| Package                                           | Latest version                                                                            |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [files](https://jsr.io/@artifact/files)           | [![JSR](https://jsr.io/badges/@artifact/files)](https://jsr.io/@artifact/files)           |
+| [openai](https://jsr.io/@artifact/openai)         | [![JSR](https://jsr.io/badges/@artifact/openai)](https://jsr.io/@artifact/openai)         |
+| [dumb-bot](https://jsr.io/@artifact/dumb-bot)     | [![JSR](https://jsr.io/badges/@artifact/dumb-bot)](https://jsr.io/@artifact/dumb-bot)     |
+| [reasoner](https://jsr.io/@artifact/reasoner)     | [![JSR](https://jsr.io/badges/@artifact/reasoner)](https://jsr.io/@artifact/reasoner)     |
+| [fixture](https://jsr.io/@artifact/fixture)       | [![JSR](https://jsr.io/badges/@artifact/fixture)](https://jsr.io/@artifact/fixture)       |
+| [hamr](https://jsr.io/@artifact/hamr)             | [![JSR](https://jsr.io/badges/@artifact/hamr)](https://jsr.io/@artifact/hamr)             |
+| [info](https://jsr.io/@artifact/info)             | [![JSR](https://jsr.io/badges/@artifact/info)](https://jsr.io/@artifact/info)             |
+| [evals](https://jsr.io/@artifact/evals)           | [![JSR](https://jsr.io/badges/@artifact/evals)](https://jsr.io/@artifact/evals)           |
+| [napp-tools](https://jsr.io/@artifact/napp-tools) | [![JSR](https://jsr.io/badges/@artifact/napp-tools)](https://jsr.io/@artifact/napp-tools) |
 
 ## Architecture
 

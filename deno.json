@@ -62,7 +62,7 @@
     "./api",
     "./dumb-bot",
     "./engine",
-    "./eval-file-runner",
+    "./evals",
     "./execution",
     "./files",
     "./fixture",
