@@ -60,7 +60,6 @@ Deno.test("promptSelect() handles enter", () => {
 
   assertEquals(browser, "safari");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
@@ -115,7 +114,6 @@ Deno.test("promptSelect() handles arrow down", () => {
 
   assertEquals(browser, "firefox");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
@@ -170,7 +168,6 @@ Deno.test("promptSelect() handles arrow up", () => {
 
   assertEquals(browser, "safari");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
@@ -222,7 +219,6 @@ Deno.test("promptSelect() handles up index overflow", () => {
 
   assertEquals(browser, "firefox");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
@@ -280,7 +276,6 @@ Deno.test("promptSelect() handles down index overflow", () => {
 
   assertEquals(browser, "safari");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
@@ -330,7 +325,6 @@ Deno.test("promptSelect() handles clear option", () => {
 
   assertEquals(browser, "safari");
 
-  // Restore mocks
   restoreWriteSync();
   restoreReadSync();
 });
