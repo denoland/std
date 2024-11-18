@@ -1,11 +1,16 @@
 import type { JsonValue } from '@artifact/api/actions'
 
+type Outcome = {
+  ok: boolean
+  value: JsonValue
+}
+
 type Task = {
   type: 'task'
-  /** What task id needs to be fetched from the db */
   id: number
   options: Options
 }
+
 type Amplifer = {
   type: 'amplifier'
   start: number
@@ -13,23 +18,33 @@ type Amplifer = {
   options: Options
 }
 
-// make a listener to attach to the db, and make an action creator to send in
-// actions
-
-// ? would we automatically add an amplification action wrapper
-
 type Options = {
+  /** Controls task batch size and queue load. When reached, amplification
+   * actions will delay themselves */
   batchSize?: number
-  peakQueueSize?: number
-  /** can choose to use the web cache to retrieve task data from, which can be
-   * faster in some cases  */
+
+  /** Use web cache to retrieve task data when available */
   useCache?: boolean
-  /** If a jobid is supplied, then intermediate results can be watched for,
-   * using this jobId.  */
+
+  /** Optional ID for tracking job progress and statistics. Required for
+   * watching intermediate results */
   jobId?: string
-  /** If configured, task results will be set to expire after this time, which
-   * avoids needing to clean the database by deleting them. */
+
+  /** Time in ms after which results expire from storage */
   expireResults?: number
+
+  /** Optional reducer to process results */
+  reducer?: {
+    /** Process an array of results into a single value */
+    fn: (results: Outcome[]) => Promise<JsonValue>
+    /** Process results in original task order */
+    ordered?: boolean
+    /** How to handle errors: 'skip' = ignore failed tasks, 'stop' = halt on error */
+    handleErrors?: 'skip' | 'stop'
+  }
+
+  /** Trigger reduction at amplification boundaries for memory efficiency */
+  reduceOnAmplify?: boolean
 }
 
 export const createQueueListener = <T>(processor: (params: T) => {}) => {

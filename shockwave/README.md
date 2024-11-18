@@ -2,7 +2,7 @@
 
 Rapid idempotent fan out of tasks using deno KV Queues.
 
-Features:
+## Features
 
 1. Exactly once task invocation
 1. KV Queue overload recovery
@@ -16,13 +16,13 @@ Features:
 1. Billing aware
 1. Peak queue size limits
 
-## Exactly once invocation
+### Exactly once invocation
 
 By using atomic commits in Deno KV, the results of execution will be returned
 exactly once. At worst, the execution may have run twice, but only one result
 will be returned.
 
-## Queue overload recovery
+### Queue overload recovery
 
 Deno kv queues have a maximum queue length of 100,000 items. If shockwave tries
 to add more items than this and receives an error, it will retry with
@@ -30,7 +30,7 @@ exponential backoff. It will watch its own queue length statistics to try to
 insert the exact amount of load each time, but will still tolerate competing
 queue usage from other applications.
 
-## Amplification actions
+### Amplification actions
 
 Technique is that it will create amplification actions for any batches it needs
 to send off, then in the last batch it will execute direct task items, then it
@@ -40,73 +40,100 @@ This means that amplifications take place quickly and rapidly, as well as task
 executions, but there is also an initial task that is started, resulting in a
 good time to first task metric.
 
-## Deterministic execution
+### Deterministic execution
 
 Invoking shockwave with the exact same parameters will always give the exact
 same results.
 
-## Oversize job batches
-
-Due to the maximum atomic data write that deno kv can handle, sometimes the task
-definitions need to be written out in several steps before the jobs begin. This
-is supported by way of a loader function that takes in the jobs in batches.
-
-Very large job batches are supported for retrieving results from too, since the
-read needs to happen in stages.
-
-## Billing aware
-
-Can be configured to be aware of the cost of each job, and to check if there is
-enough remaining balance before commencing to run potentially expensive
-operations.
-
-## Peak queue size limits
+### Peak queue size limits
 
 By setting amplification actions to redispatch themselves with a delay if the
 queue high water mark is reached, the processing rate can be delayed without
 compromising reliability of execution.
 
-## Realtime statistics
+### Realtime statistics
 
-During running, the ongoing statistics can be watched to get live feedback.
-These stats are returned back with the job in their final form with some basic
-statistic analysis on mean times, ramp times, invocation counts, etc.
+When a jobId is provided, ongoing statistics can be watched to get live
+feedback. These stats are returned back with the job in their final form with
+some basic statistic analysis on mean times, ramp times, invocation counts, etc.
 
 Tracked statistics are:
 
-### Time to first task
+- **Time to first task** How many ms since the job arrived until the first task
+  was started
 
-How many ms since the job arrived until the first task was started
+- **Time to last task** How many ms since the job arrived until the LAST task
+  was started
 
-### Time to last task
+- **Peak task rate** What was the highest observed concurrent task execution
+  rate
 
-How many ms since the job arrived until the LAST task was started
+- **Peak queue length**
 
-### Peak task rate
+  What was the longest the queue was observed to be
 
-What was the highest observed concurrent task execution rate
+- **Child shockwaves**
 
-### Peak queue length
+  IDs for gathering statistics on shockwaves that were created from within this
+  shockwave. The shockwave task is not counted as a task itself, but all its
+  individual components are used in statistics.
 
-What was the longest the queue was observed to be
+### Result Reduction
 
-### Child shockwaves
+Shockwave supports processing task results through reducer functions that
+operate on results as they become available, or processing all results at the
+end. The reducer configuration allows for:
 
-IDs for gathering statistics on shockwaves that were created from within this
-shockwave. The shockwave task is not counted as a task itself, but all its
-individual components are used in statistics.
+1. **Ordered Processing**
+   - Optionally process results in the exact order tasks were dispatched
+   - Uses KV store for buffering out-of-order results
+   - Configurable error handling: skip errors or stop on first error
 
-## TODO
+2. **Amplification Boundary Processing**
+   - Optionally trigger reduction at amplification boundaries
+   - Natural batching based on the fan-out structure
+   - Helps maintain memory efficiency during large fan-outs
 
-Reducer / clean up functions, which trigger when the job has completed, and are
-streamed in the results of the execution
+Example configuration:
 
-Implement map reduce using the amplifier actions as group boundaries
+```typescript
+const options = {
+  // Controls batch size for task processing
+  batchSize?: number,
+  
+  // Use web cache for task data when available
+  useCache?: boolean,
+  
+  // Optional ID for tracking progress and statistics
+  jobId?: string,
+  
+  // Time in ms after which results expire
+  expireResults?: number,
+  
+  // Optional reducer configuration
+  reducer?: {
+    // Function that processes an array of task results
+    fn: async (results: Outcome[]) => {
+      return results.reduce((acc, curr) => {
+        if (curr.ok) return acc + curr.value
+        return acc
+      }, 0)
+    },
+    // Whether to maintain task dispatch order
+    ordered?: boolean,
+    // How to handle failed tasks: 'skip' or 'stop'
+    handleErrors?: 'skip' | 'stop'
+  },
+  
+  // Whether to trigger reduction at amplification boundaries
+  reduceOnAmplify?: boolean
+}
+```
 
-Set multiple types of functions and reducers that we want to run as a shockwave
+The reducer function is automatically invoked when:
 
-reduce( result[] ) that processes all the results of the shockwave. This should
-stream in the results, so that it can begin processing as soon as the first
-result is available
+- An amplification boundary is hit (if reduceOnAmplify is true)
+- All tasks have completed
 
-reduceInOrder( orderedResults[] ) stream in the results in the invocation order
+Results are stored in Deno KV to maintain scalability and handle any potential
+memory constraints during processing.
