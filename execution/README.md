@@ -2,7 +2,7 @@
 
 ## Overview
 
-The execution system provides a deterministic way to handle asynchronous
+The execution system provides a repeatable way to handle asynchronous
 operations, file system interactions, and remote procedure calls in a
 distributed environment. It ensures consistency through a trail-based execution
 model with filesystem snapshots.

@@ -27,28 +27,26 @@ export type Upsert =
   | { text: string }
   | { data: Uint8Array }
 
-export const optionsSchema = z.object({
-  process: z.string().optional(),
-  crypto: z.string().optional(),
-  branch: z.string().optional(),
-  snapshot: z.string().optional(),
-})
-export type AddressedOptions = {
-  /** Posix style path that locates what process thread we want to communicate
-   * with.  In git, this would be branch names, for example: `exe/proc-1/child-2` */
-  process?: string
-  /** The cryptographic identifier of the whole repository.  This would be the
-   * chainId in conventional blockchains, but could be a group of public keys,
-   * or some other root of trust */
-  crypto?: string
-  /** Whatever snapshot model is used, the branch concept represents an isolated
-   * line of changes.  In git, this would be a branch */
-  branch?: string
-  /** Depending on the snapshot format being used, represents the state at a
-   * specific point in the history.  For write commands, snapshot is used to
-   * guarantee the state being changed has not been altered since it was read */
-  snapshot?: string
-}
+export const optionsSchema = z
+  .object({
+    /** Posix style path that locates what process thread we want to communicate
+     * with. In git, this would be branch names, for example: `exe/proc-1/child-2` */
+    process: z.string(),
+    /** The cryptographic identifier of the whole repository. This would be the
+     * chainId in conventional blockchains, but could be a group of public keys,
+     * or some other root of trust */
+    crypto: z.string(),
+    /** Whatever snapshot model is used, the branch concept represents an isolated
+     * line of changes. In git, this would be a branch */
+    branch: z.string(),
+    /** Depending on the snapshot format being used, represents the state at a
+     * specific point in the history. For write commands, snapshot is used to
+     * guarantee the state being changed has not been altered since it was read */
+    snapshot: z.string(),
+  })
+  .partial()
+
+export type AddressedOptions = z.infer<typeof optionsSchema>
 
 export interface NappSnapshots<ReadOptions = AddressedOptions> {
   latest(options?: Omit<ReadOptions, 'snapshot'>): Promise<string | undefined>

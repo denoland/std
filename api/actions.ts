@@ -8,9 +8,12 @@ const ajv = new Ajv({ allErrors: true })
 
 const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
 type Literal = z.infer<typeof literalSchema>
-export type JsonValue = Literal | { [key: string]: JsonValue } | JsonValue[]
+export type JsonValue =
+  | Literal
+  | { [key: string]: JsonValue | undefined }
+  | JsonValue[]
 export const jsonSchema: z.ZodType<JsonValue> = z.lazy(() =>
-  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema)])
+  z.union([literalSchema, z.array(jsonSchema), z.record(jsonSchema.optional())])
 )
 
 const nappName = z.string()
