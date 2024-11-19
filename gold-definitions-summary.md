@@ -1,9 +1,9 @@
-# Dream Catcher Platform Definitions Summary
+# Dreamcatcher Platform Definitions Summary
 
 ## Core Concepts
-- [Dream Catcher Platform](gold-definitions/dream-catcher-platform.md) - Open-source, decentralized platform for creating and running NApps
-- [Platform](gold-definitions/platform.md) - Any instance running Dream Catcher software
-- [Platform Instance](gold-definitions/platform-instance.md) - Specific deployment of Dream Catcher software
+- [Dreamcatcher Platform](gold-definitions/dreamcatcher-platform.md) - Open-source, decentralized platform for creating and running NApps
+- [Platform](gold-definitions/platform.md) - Any instance running Dreamcatcher software
+- [Platform Instance](gold-definitions/platform-instance.md) - Specific deployment of Dreamcatcher software
 - [Protocol](gold-definitions/protocol.md) - Standardized rules governing platform interactions
 - [Consensus Mode](gold-definitions/consensus-mode.md) - Synchronization state between platform instances
 
