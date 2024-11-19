@@ -50,7 +50,6 @@
     }
   },
   "workspace": [
-    "./archive",
     "./assert",
     "./async",
     "./bytes",
