@@ -36,7 +36,7 @@
 
 ## Transactions and Payments
 11. **Executing Complex Transactions with Trust**  
-    As an [Asset Trader][actor], I want to engage in activities such as arbitrage in a trusted way, possibly setting up legal entities if required, so that I can execute complex transactions.
+    As an [Asset Trader][asset-trader], I want to engage in activities such as arbitrage in a trusted way, possibly setting up legal entities if required, so that I can execute complex transactions.
 
 12. **Facilitating Flexible Payment Options**  
     As an [Actor][actor], I want the platform to facilitate payments in various forms (e.g., cryptocurrency, fiat), so that I can transact in the way that suits me best.
@@ -86,11 +86,36 @@
 26. **Raising Funds Through Decentralized Income**  
     As an entrepreneur, I want to raise funds through decentralized income streams that don't trigger SEC securities regulations, so that I can fund my venture while providing transparency and automated controls to funders about how their money is used.
 
-[actor]: gold-definitions/actor.md
-[talent]: gold-definitions/actor.md#talent
-[developer]: gold-definitions/actor.md#developer
+
+# Service Provider Category
+[service-provider]: gold-definitions/actor.md#service-provider
+[issuer]: gold-definitions/actor.md#issuer
+[legal-gateway-operator]: gold-definitions/actor.md#legal-gateway-operator
 [infrastructure-provider]: gold-definitions/actor.md#infrastructure-provider
 [platform-operator]: gold-definitions/actor.md#platform-operator
-[service-user]: gold-definitions/actor.md#service-user
+
+# Talent Category
+[talent]: gold-definitions/actor.md#talent
+[developer]: gold-definitions/actor.md#developer
+[content-creator]: gold-definitions/actor.md#content-creator
+[expert]: gold-definitions/actor.md#expert
+
+# Consumer Category
+[consumer]: gold-definitions/actor.md#consumer
 [napp-user]: gold-definitions/actor.md#napp-user
+[service-user]: gold-definitions/actor.md#service-user
+
+# Demander Category
+[demander]: gold-definitions/actor.md#demander
 [project-initiator]: gold-definitions/actor.md#project-initiator
+[resource-requester]: gold-definitions/actor.md#resource-requester
+
+# Trader Category
+[trader]: gold-definitions/actor.md#trader
+[asset-trader]: gold-definitions/actor.md#asset-trader
+[market-maker]: gold-definitions/actor.md#market-maker
+
+# Funder Category
+[funder]: gold-definitions/actor.md#funder
+[project-backer]: gold-definitions/actor.md#project-backer
+[infrastructure-investor]: gold-definitions/actor.md#infrastructure-investor
