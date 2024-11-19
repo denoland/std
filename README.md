@@ -13,7 +13,7 @@ The system processes information from multiple sources including:
 
 ## Core Functionality
 
-### Definition Extraction
+### Knowledge Extraction
 
 For each piece of source material, the system:
 
