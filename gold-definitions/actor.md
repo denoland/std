@@ -1,6 +1,6 @@
 # Actor
 
-**Definition**: A participant within the [Dream Catcher Platform](#dream-catcher-platform) that engages with the platform's services and resources.
+**Definition**: A participant within the [Dreamcatcher Platform](#dreamcatcher-platform) that engages with the platform's services and resources.
 
 **Hierarchy**:
 1. Service Provider
