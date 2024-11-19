@@ -18,7 +18,6 @@ documentation:
 
 | Package                                                | Latest version                                                                            |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| [archive](https://jsr.io/@std/archive)                 | [![JSR](https://jsr.io/badges/@std/archive)](https://jsr.io/@std/archive)                 |
 | [assert](https://jsr.io/@std/assert)                   | [![JSR](https://jsr.io/badges/@std/assert)](https://jsr.io/@std/assert)                   |
 | [async](https://jsr.io/@std/async)                     | [![JSR](https://jsr.io/badges/@std/async)](https://jsr.io/@std/async)                     |
 | [bytes](https://jsr.io/@std/bytes)                     | [![JSR](https://jsr.io/badges/@std/bytes)](https://jsr.io/@std/bytes)                     |
