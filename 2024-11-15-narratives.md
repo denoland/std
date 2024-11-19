@@ -19,37 +19,37 @@
 
 ## Data and Platform Independence
 6. **Migrating Data Between Platform Instances**  
-   As a user, I want to be able to migrate my data and services between different platform instances or hosts, so that I have control over my data and can ensure continuity.
+   As an [Actor][actor], I want to be able to migrate my data and services between different platform instances or hosts, so that I have control over my data and can ensure continuity.
 
 7. **Running the Platform on Personal Hardware**  
-   As a user, I want to be able to run the dream catcher platform on my own servers or devices, so that I can have sovereignty over my participation.
+   As an [Infrastructure Provider][infrastructure-provider], I want to be able to run the dream catcher platform on my own servers or devices, so that I can have sovereignty over my participation.
 
 8. **Interacting Across Different Platforms**  
-   As an actor, I want to be able to interact with other users across different instances or hosts of the platform, so that we can collaborate even if we are on different platforms.
+   As an [Actor][actor], I want to be able to interact with other actors across different instances or hosts of the platform, so that we can collaborate even if we are on different platforms.
 
 ## Attribution and Development
 9. **Receiving Fair Attribution for Contributions**  
-   As a user, I want to be able to contribute and receive attribution/rewards via an ambient attribution model, so that my contributions are fairly recognized.
+   As a [Talent][talent], I want to be able to contribute and receive attribution/rewards via an ambient attribution model, so that my contributions are fairly recognized.
 
 10. **Deploying Naps Accessible Across Platforms**  
-    As a developer or provider, I want to deploy naps (applications/services) that can be discovered and used across multiple platforms, so that users can access my services regardless of the host platform.
+    As a [Developer][developer], I want to deploy naps that can be discovered and used across multiple platforms, so that [NApp Users][napp-user] can access my services regardless of the host platform.
 
 ## Transactions and Payments
 11. **Executing Complex Transactions with Trust**  
-    As a user, I want to engage in activities such as arbitrage in a trusted way, possibly setting up legal entities if required, so that I can execute complex transactions.
+    As an [Asset Trader][actor], I want to engage in activities such as arbitrage in a trusted way, possibly setting up legal entities if required, so that I can execute complex transactions.
 
 12. **Facilitating Flexible Payment Options**  
-    As a user, I want the platform to facilitate payments in various forms (e.g., cryptocurrency, fiat), so that I can transact in the way that suits me best.
+    As an [Actor][actor], I want the platform to facilitate payments in various forms (e.g., cryptocurrency, fiat), so that I can transact in the way that suits me best.
 
 13. **Quickly Setting Up Joint Ventures**  
-    As a group of users, we want to set up a joint venture or company quickly using the platform, so that we can formalize our collaboration for a specific project.
+    As a group of [Project Initiators][project-initiator], we want to set up a joint venture or company quickly using the platform, so that we can formalize our collaboration for a specific project.
 
 ## Platform Security and Freedom
 14. **Ensuring Decentralization and Censorship Resistance**  
-    As a user, I want the platform to be decentralized and resistant to censorship, so that I can participate even in the face of hostile entities or jurisdictions.
+    As an [Actor][actor], I want the platform to be decentralized and resistant to censorship, so that I can participate even in the face of hostile entities or jurisdictions.
 
 15. **Choosing Preferred Hosts and Services**  
-    As a user, I want to have choices over the services I use and have the ability to select hosts or platforms according to my preferences (e.g., jurisdiction, moderation policies), so that I can have a tailored experience.
+    As a [Service User][service-user], I want to have choices over the services I use and have the ability to select hosts or platforms according to my preferences (e.g., jurisdiction, moderation policies), so that I can have a tailored experience.
 
 ## Platform Operations
 16. **Adhering to Legal Obligations**  
@@ -62,7 +62,7 @@
     As a platform operator, I want to be able to moderate content and enforce acceptable use policies, so that we can prevent misuse and comply with legal requirements.
 
 19. **Minimizing Administrative Overhead**  
-    As a user, I want to participate in the platform with minimal administrative overhead, so that I can focus on contributing and collaborating.
+    As an [Actor][actor], I want to participate in the platform with minimal administrative overhead, so that I can focus on contributing and collaborating.
 
 20. **Investing in Naps Developed by Others**  
     As a trader, I want to reward or invest in naps developed by others, potentially across different platforms, so that I can support and profit from valuable services.
@@ -72,16 +72,25 @@
     As a user, I want to receive my income in a decentralized manner from the platform, so that I am not reliant on a central authority and can trust the system.
 
 22. **Maintaining Control Over Data**  
-    As a user, I want to move my data or services to another platform instance if the current one violates acceptable policies or is compromised, so that I can maintain trust and control over my participation.
+    As an [Actor][actor], I want to move my data or services to another platform instance if the current one violates acceptable policies or is compromised, so that I can maintain trust and control over my participation.
 
 23. **Achieving Consensus Across Platforms**  
-    As a platform operator, I want to coordinate with other platform operators to achieve consensus on shared data (e.g., contribution records), so that we can provide a consistent and reliable experience to our users.
+    As a [Platform Operator][platform-operator], I want to coordinate with other platform operators to achieve consensus on shared data (e.g., contribution records), so that we can provide a consistent and reliable experience to our actors.
 
 24. **Verifying Contributions and Attribution**  
-    As a user, I want to be able to verify that my contributions are being accurately recorded and attributed, so that I can trust the system and receive fair compensation.
+    As a [Talent][talent], I want to be able to verify that my contributions are being accurately recorded and attributed, so that I can trust the system and receive fair compensation.
 
 25. **Preventing Misuse of the Platform**  
-    As a platform operator, I want to prevent bad actors from misusing the platform (e.g., hosting illegal content), so that we can maintain the integrity of the platform and comply with legal obligations.
+    As a [Platform Operator][platform-operator], I want to prevent bad actors from misusing the platform (e.g., hosting illegal content), so that we can maintain the integrity of the platform and comply with legal obligations.
 
 26. **Raising Funds Through Decentralized Income**  
     As an entrepreneur, I want to raise funds through decentralized income streams that don't trigger SEC securities regulations, so that I can fund my venture while providing transparency and automated controls to funders about how their money is used.
+
+[actor]: gold-definitions/actor.md
+[talent]: gold-definitions/actor.md#talent
+[developer]: gold-definitions/actor.md#developer
+[infrastructure-provider]: gold-definitions/actor.md#infrastructure-provider
+[platform-operator]: gold-definitions/actor.md#platform-operator
+[service-user]: gold-definitions/actor.md#service-user
+[napp-user]: gold-definitions/actor.md#napp-user
+[project-initiator]: gold-definitions/actor.md#project-initiator
