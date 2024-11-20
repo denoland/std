@@ -2,33 +2,13 @@
 // This module is browser compatible.
 
 import { exponentialBackoffWithJitter } from "./_util.ts";
+import { RetryError } from "./retry.ts";
 
 /**
- * Error thrown in {@linkcode retry} once the maximum number of failed attempts
- * has been reached.
+ * Options for {@linkcode retry}.
  *
- * @example Usage
- * ```ts no-assert ignore
- * import { RetryError } from "@std/async/retry";
- *
- * throw new RetryError({ foo: "bar" }, 3);
- * ```
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export class RetryError extends Error {
-  /**
-   * Constructs a new {@linkcode RetryError} instance.
-   *
-   * @param cause the cause for this error.
-   * @param attempts the number of retry attempts made.
-   */
-  constructor(cause: unknown, attempts: number) {
-    super(`Retrying exceeded the maxAttempts (${attempts}).`);
-    this.name = "RetryError";
-    this.cause = cause;
-  }
-}
-
-/** Options for {@linkcode retry}. */
 export interface RetryOptions {
   /**
    * How much to backoff after each retry.
@@ -61,12 +41,24 @@ export interface RetryOptions {
    * @default {1}
    */
   jitter?: number;
+
+  /**
+   * Callback to determine if an error or other thrown value is retriable.
+   *
+   * @default {() => true}
+   *
+   * @param err The thrown error or other value.
+   * @returns `true` if the error is retriable, `false` otherwise.
+   */
+  isRetriable?: (err: unknown) => boolean;
 }
 
 /**
  * Calls the given (possibly asynchronous) function up to `maxAttempts` times.
  * Retries as long as the given function throws. If the attempts are exhausted,
  * throws a {@linkcode RetryError} with `cause` set to the inner exception.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * The backoff is calculated by multiplying `minTimeout` with `multiplier` to the power of the current attempt counter (starting at 0 up to `maxAttempts - 1`). It is capped at `maxTimeout` however.
  * How long the actual delay is, depends on `jitter`.
@@ -127,6 +119,7 @@ export async function retry<T>(
     maxAttempts = 5,
     minTimeout = 1000,
     jitter = 1,
+    isRetriable = () => true,
   } = options ?? {};
 
   if (maxTimeout <= 0) {
@@ -150,6 +143,10 @@ export async function retry<T>(
     try {
       return await fn();
     } catch (error) {
+      if (!isRetriable(error)) {
+        throw error;
+      }
+
       if (attempt + 1 >= maxAttempts) {
         throw new RetryError(error, maxAttempts);
       }
