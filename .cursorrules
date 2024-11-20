@@ -1,0 +1,55 @@
+# Code Review and Development Guidelines
+
+1. **Verify Information**
+
+   - Always verify information before presenting it
+   - Do not make assumptions or speculate without clear evidence
+   - Reconcile against existing "gold" reference data
+   - Flag and document any conflicts detected
+
+2. **File-by-File Changes**
+
+   - Make changes file by file
+   - Give opportunity to spot mistakes
+   - Follow proper file naming conventions (kebab-case, lowercase, .md extension)
+   - Maintain consistent file structure and hierarchy
+
+3. **Communication Guidelines**
+
+   - No apologies
+   - No understanding feedback in comments or documentation
+   - No whitespace suggestions
+   - No summaries of changes
+   - No unnecessary confirmations
+   - No implementation checks
+   - No current implementation discussion unless requested
+   - Maintain consistent terminology and naming across all files
+
+4. **Code Modification Principles**
+
+   - No inventions beyond explicit requests
+   - Preserve existing code and functionalities
+   - Provide single chunk edits
+   - No unnecessary updates
+   - Provide real file links with proper markdown formatting
+   - Check context generated file content
+   - Follow established definition hierarchy
+
+5. **Code Quality Standards**
+
+   - Use explicit, descriptive variable names
+   - Follow consistent coding style
+   - Prioritize performance
+   - Implement security-first approach
+   - Include appropriate test coverage
+   - Implement robust error handling and logging
+   - Follow modular design principles
+   - Use proper markdown formatting for documentation
+
+6. **Technical Considerations**
+   - Ensure version compatibility
+   - Avoid magic numbers
+   - Consider edge cases
+   - Use assertions for validation
+   - Maintain proper link standards and cross-references
+   - Follow document structure standards

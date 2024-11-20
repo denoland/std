@@ -1,43 +1,51 @@
 # Dreamcatcher Platform Definitions Summary
 
-## Core Concepts
-- [Dreamcatcher Platform](gold-definitions/dreamcatcher-platform.md) - Open-source, decentralized platform for creating and running NApps
-- [Platform](gold-definitions/platform.md) - Any instance running Dreamcatcher software
-- [Platform Instance](gold-definitions/platform-instance.md) - Specific deployment of Dreamcatcher software
-- [Protocol](gold-definitions/protocol.md) - Standardized rules governing platform interactions
-- [Consensus Mode](gold-definitions/consensus-mode.md) - Synchronization state between platform instances
+## Core Platform Concepts
+- [Definition](gold-definitions/definition.md) - Formal description of core platform concepts in DAG structure
+- [Dreamcatcher Platform](gold-definitions/dreamcatcher.md) - Open-source, decentralized platform for NApps
+- [Platform](gold-definitions/platform.md) - Any Dreamcatcher software instance
+- [Platform Instance](gold-definitions/platform-instance.md) - Specific deployment of platform
+- [Protocol](gold-definitions/protocol.md) - Standards for platform communication
+- [Consensus Mode](gold-definitions/consensus-mode.md) - Multi-instance synchronization state
 
-## Actors and Identity
-- [Actor](gold-definitions/actor.md) - Platform participant (Service Providers, Talent, Consumers, etc.)
-- [Identity](gold-definitions/identity.md) - Actor representation with varying verification levels
-- [Identity Verification](gold-definitions/identity-verification.md) - Process of confirming actor identities
-- [KYC](gold-definitions/kyc.md) - Know Your Customer verification process
+## Applications and Composition
+- [NApp](gold-definitions/napp.md) - Natural language Applications
+- [JITA](gold-definitions/jita.md) - Just-in-Time Applications composed dynamically
+- [NApp Discovery](gold-definitions/napp-discovery.md) - Process for finding/accessing NApps
 
-## Applications and Services
-- [NApp](gold-definitions/napp.md) - Natural language Applications that run on the platform
-- [NApp Discovery](gold-definitions/napp-discovery.md) - Process for finding and accessing NApps
-- [Hosting](gold-definitions/hosting.md) - Infrastructure provision for platform operation
-- [Service Provider](gold-definitions/service-provider.md) - Actors offering platform services
+## Actors and Roles
+- [Actor](gold-definitions/actor.md) - Platform participant (hierarchical classification)
+- [Service Provider](gold-definitions/service-provider.md) - Service/resource providers
+- [Contributor](gold-definitions/contributor.md) - Value creators on platform
+- [Trader](gold-definitions/trader.md) - Post-market value exchange facilitators
+- [Issuer](gold-definitions/issuer.md) - Asset creators and managers
 
-## Economic System
-- [Asset](gold-definitions/asset.md) - Transferable items of value on the platform
-- [Issuer](gold-definitions/issuer.md) - Service Provider creating and managing assets
-- [Value Exchange](gold-definitions/value-exchange.md) - Asset transfer between actors
-- [Payment Path](gold-definitions/payment-path.md) - Routes for asset transfer
-- [Decentralized Income](gold-definitions/decentralized-income.md) - Platform-based income distribution
+## Value and Attribution
+- [Asset](gold-definitions/asset.md) - Transferable value items
+- [Value Exchange](gold-definitions/value-exchange.md) - Asset transfers between actors
+- [Payment Path](gold-definitions/payment-path.md) - Asset transfer mechanisms
+- [Contribution](gold-definitions/contribution.md) - Valuable platform inputs
+- [Attribution Algorithm](gold-definitions/attribution-algorithm.md) - Contribution calculation systems
+- [Ambient Attribution](gold-definitions/ambient-attribution.md) - Automated attribution tracking
+- [Decentralized Income](gold-definitions/decentralized-income.md) - Decentralized reward distribution
+- [Estimation Tool](gold-definitions/estimation-tool.md) - Trade value estimation utility
 
-## Attribution and Contributions
-- [Contribution](gold-definitions/contribution.md) - Valuable input to the platform ecosystem
-- [Attribution Algorithm](gold-definitions/attribution-algorithm.md) - Systems for calculating contributions
-- [Ambient Attribution](gold-definitions/ambient-attribution.md) - Automated contribution tracking
+## Identity and Compliance
+- [Identity](gold-definitions/identity.md) - Actor platform representation
+- [Identity Verification](gold-definitions/identity-verification.md) - Identity confirmation process
+- [KYC](gold-definitions/kyc.md) - Know Your Customer verification
+- [Regulatory Compliance](gold-definitions/regulatory-compliance.md) - Legal requirement adherence
 
 ## Legal Framework
-- [Legal Entity](gold-definitions/legal-entity.md) - Real-world organizations interacting with platform
-- [Legal Gateway](gold-definitions/legal-gateway.md) - Bridge between platform and traditional institutions
-- [Legal Gateway Relationships](gold-definitions/legal-gateway-relationships.md) - Connections between gateways and entities
-- [Regulatory Compliance](gold-definitions/regulatory-compliance.md) - Platform adherence to legal requirements
+- [Legal Entity](gold-definitions/legal-entity.md) - Real-world organizations
+- [Legal Gateway](gold-definitions/legal-gateway.md) - Platform-traditional system bridge
+- [Legal Gateway Relationships](gold-definitions/legal-gateway-relationships.md) - Gateway interaction patterns
 
-## Example Networks
-- [Alpha Network](gold-definitions/alpha-network.md) - Example of cross-jurisdictional operation
-- [Beta Network](gold-definitions/beta-network.md) - Example of large-scale platform deployment
-- [Homebrew Platform](gold-definitions/homebrew-platform.md) - Individual-operated platform instances
+## Documentation Patterns
+- [User Story](gold-definitions/user-story.md) - Narrative descriptions of actor interactions
+- [Interaction Story](gold-definitions/interaction-story.md) - Paired user stories showing bilateral interactions
+
+## Example Implementations
+- [Alpha Network](gold-definitions/alpha-network.md) - Cross-jurisdictional example
+- [Beta Network](gold-definitions/beta-network.md) - Large-scale deployment example
+- [Homebrew Platform](gold-definitions/homebrew-platform.md) - Individual platform instances

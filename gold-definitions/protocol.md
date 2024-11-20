@@ -1,5 +1,13 @@
 # Protocol
 
-**Definition**: A set of standardized rules and procedures that govern data formatting, transmission, and processing within the Dreamcatcher ecosystem.
+**Definition**: The foundational communication and interaction standards that define how components and instances within the Dreamcatcher ecosystem interact over the network. Protocols encompass the rules, data formats, and procedures that enable decentralized interoperability.
 
-**Description**: Protocols ensure interoperability between different platform instances and [Actors](#actor). They define standards for API interactions, data exchange formats, and communication methods. Adherence to these protocols enables seamless interaction across the decentralized network while maintaining security and consistency. Protocols are fundamental to the platform's ability to function as a unified ecosystem despite its decentralized nature. 
+**Description**: Protocols ensure that multiple [Platform Instances](platform-instance.md) can communicate and function cohesively without centralized control or direct legal agreements. They:
+- Define standards for API interactions and data exchange formats
+- Enable seamless interaction across the decentralized network
+- Maintain security and consistency across instances
+- Support [Consensus Mode](consensus-mode.md) operations
+- Facilitate [Actor](actor.md) interactions across different instances
+- Ensure platform sovereignty and interoperability
+
+Protocols are fundamental to the platform's ability to function as a unified ecosystem despite its decentralized nature. 

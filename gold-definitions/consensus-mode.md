@@ -7,5 +7,5 @@
 - Reliable data consistency
 - Fault tolerance
 - Enhanced security
-- Seamless interaction between [Actors](#actor) across different platform instances
+- Seamless interaction between [Actors](actor.md) across different platform instances
 The consensus mechanisms support the platform's decentralized nature while maintaining operational integrity. 

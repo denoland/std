@@ -1,6 +1,6 @@
 # Value Exchange
 
-**Definition**: The transfer of [Assets](#asset) between [Actors](#actor) through established [Payment Paths](#payment-path).
+**Definition**: The transfer of [Assets](asset.md) between [Actors](actor.md) through established [Payment Paths](payment-path.md).
 
 **Description**: Value exchange within the platform encompasses:
 - Direct Asset transfers between Actors

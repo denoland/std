@@ -1,6 +1,6 @@
 # Legal Gateway Relationships
 
-**Definition**: The interconnected system of relationships between [Legal Gateways](#legal-gateway), real-world [Legal Entities](#legal-entity), and platform [Actors](#actor).
+**Definition**: The interconnected system of relationships between [Legal Gateways](legal-gateway.md), real-world [Legal Entities](legal-entity.md), and platform [Actors](actor.md).
 
 **Description**: Legal Gateways maintain several key relationships:
 1. With Legal Entities:

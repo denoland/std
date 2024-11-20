@@ -45,6 +45,56 @@ Where TYPE can be:
 - narratives
 - tasks
 
+### Documentation Standards
+
+#### File Naming
+
+- All files must have the `.md` extension
+- Use kebab-case for file names (e.g., `legal-gateway.md`)
+- Avoid spaces or special characters in filenames
+- Keep filenames lowercase
+
+#### Link Standards
+
+1. **Internal Links**
+
+   - Always include the `.md` extension: `[Legal Gateway](legal-gateway.md)`
+   - For section references, use `#` with lowercase: `[Funder](actor.md#funder)`
+   - Links should be relative to the current folder
+   - Verify links point to existing files
+
+2. **Cross-References**
+
+   - All terms defined in other files should link to their definitions
+   - Use exact file names when linking (case-sensitive)
+   - Avoid "./" prefix in links
+
+3. **Formatting**
+   - Use square brackets for link text: `[Text]`
+   - Use regular parentheses for link target: `(file.md)`
+   - Maintain consistent capitalization in link text
+
+#### Content Standards
+
+1. **Naming Consistency**
+
+   - Use consistent product names (e.g., "Dreamcatcher" not "Dream Catcher")
+   - Maintain consistent terminology across all files
+   - Capitalize proper nouns consistently
+
+2. **Document Structure**
+
+   - Each file should have a title as first-level heading
+   - Include Definition and Description sections
+   - Use consistent heading levels
+   - Use bullet points for lists
+
+3. **Markdown Formatting**
+   - Use bold (`**text**`) for emphasis in definitions
+   - Use bullet points (`-`) for lists
+   - Use numbered lists (`1.`) for sequential items
+   - Use code blocks for technical content
+
 ### Definition Hierarchy
 
 Definitions are organized in a tree structure using:
@@ -53,7 +103,7 @@ Definitions are organized in a tree structure using:
 - Underscores to represent folder hierarchy
 - This format ensures AI-system compatibility
 
-### Definition and Task Files 
+### Definition and Task Files
 
 Each definition and task is stored in a separate file. This approach serves two main purposes:
 
