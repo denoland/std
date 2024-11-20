@@ -258,7 +258,7 @@ Deno.test("ensureSymlink() rejects when the target path doesn't exist", async ()
   );
 });
 
-Deno.test("ensureSymlinkSync() throws when the target path doesn't exist", async () => {
+Deno.test("ensureSymlinkSync() throws when the target path doesn't exist", () => {
   const e = assertThrows(() => {
     ensureSymlinkSync("non-existent-target", "non-existent-link");
   }, Deno.errors.NotFound);
