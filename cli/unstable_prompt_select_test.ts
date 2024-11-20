@@ -1,23 +1,15 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../assert/equals.ts";
+import { assertEquals } from "@std/assert/equals";
 import { promptSelect } from "./unstable_prompt_select.ts";
+import { restore, stub } from "@std/testing/mock";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function spyFn<T, K extends keyof T>(
-  target: T,
-  key: K,
-  fn: T[K],
-) {
-  const originalFn = target[key];
-  if (typeof fn !== "function") throw new Error(`fn is not a target method`);
-  target[key] = fn.bind(target);
-  return () => target[key] = originalFn;
-}
-
 Deno.test("promptSelect() handles enter", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -27,7 +19,7 @@ Deno.test("promptSelect() handles enter", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -44,7 +36,7 @@ Deno.test("promptSelect() handles enter", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -62,12 +54,12 @@ Deno.test("promptSelect() handles enter", () => {
   ]);
 
   assertEquals(browser, "safari");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
 
 Deno.test("promptSelect() handles arrow down", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -85,7 +77,7 @@ Deno.test("promptSelect() handles arrow down", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -104,7 +96,7 @@ Deno.test("promptSelect() handles arrow down", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -122,12 +114,12 @@ Deno.test("promptSelect() handles arrow down", () => {
   ]);
 
   assertEquals(browser, "firefox");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
 
 Deno.test("promptSelect() handles arrow up", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -145,7 +137,7 @@ Deno.test("promptSelect() handles arrow up", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -164,7 +156,7 @@ Deno.test("promptSelect() handles arrow up", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -182,12 +174,12 @@ Deno.test("promptSelect() handles arrow up", () => {
   ]);
 
   assertEquals(browser, "safari");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
 
 Deno.test("promptSelect() handles up index overflow", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -201,7 +193,7 @@ Deno.test("promptSelect() handles up index overflow", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -219,7 +211,7 @@ Deno.test("promptSelect() handles up index overflow", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -237,12 +229,12 @@ Deno.test("promptSelect() handles up index overflow", () => {
   ]);
 
   assertEquals(browser, "firefox");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
 
 Deno.test("promptSelect() handles down index overflow", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -264,7 +256,7 @@ Deno.test("promptSelect() handles down index overflow", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -284,7 +276,7 @@ Deno.test("promptSelect() handles down index overflow", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -302,12 +294,12 @@ Deno.test("promptSelect() handles down index overflow", () => {
   ]);
 
   assertEquals(browser, "safari");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
 
 Deno.test("promptSelect() handles clear option", () => {
+  stub(Deno.stdin, "setRaw");
+
   const expectedOutput = [
     "Please select a browser:\r\n",
     "❯ safari\r\n",
@@ -318,7 +310,7 @@ Deno.test("promptSelect() handles clear option", () => {
 
   let writeIndex = 0;
 
-  const restoreWriteSync = spyFn(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -335,7 +327,7 @@ Deno.test("promptSelect() handles clear option", () => {
     "\r",
   ];
 
-  const restoreReadSync = spyFn(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -353,7 +345,5 @@ Deno.test("promptSelect() handles clear option", () => {
   ], { clear: true });
 
   assertEquals(browser, "safari");
-
-  restoreWriteSync();
-  restoreReadSync();
+  restore();
 });
