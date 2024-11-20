@@ -53,7 +53,17 @@ export async function ensureSymlink(
   linkName: string | URL,
 ) {
   const targetRealPath = resolveSymlinkTarget(target, linkName);
-  const srcStatInfo = await Deno.lstat(targetRealPath);
+  let srcStatInfo;
+  try {
+    srcStatInfo = await Deno.lstat(targetRealPath);
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      throw new Deno.errors.NotFound(
+        `Cannot ensure symlink as the target path does not exist: ${targetRealPath}`,
+      );
+    }
+    throw error;
+  }
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
   await ensureDir(dirname(toPathString(linkName)));
@@ -112,7 +122,17 @@ export function ensureSymlinkSync(
   linkName: string | URL,
 ) {
   const targetRealPath = resolveSymlinkTarget(target, linkName);
-  const srcStatInfo = Deno.lstatSync(targetRealPath);
+  let srcStatInfo;
+  try {
+    srcStatInfo = Deno.lstatSync(targetRealPath);
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      throw new Deno.errors.NotFound(
+        `Cannot ensure symlink as the target path does not exist: ${targetRealPath}`,
+      );
+    }
+    throw error;
+  }
   const srcFilePathType = getFileInfoType(srcStatInfo);
 
   ensureDirSync(dirname(toPathString(linkName)));
