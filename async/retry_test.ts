@@ -18,7 +18,7 @@ function generateErroringFunction(errorsBeforeSucceeds: number) {
 Deno.test("retry()", async () => {
   const threeErrors = generateErroringFunction(3);
   const result = await retry(threeErrors, {
-    minTimeout: 100,
+    minTimeout: 1,
   });
   assertEquals(result, 3);
 });
@@ -27,7 +27,7 @@ Deno.test("retry() fails after five errors by default", async () => {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
     retry(fiveErrors, {
-      minTimeout: 100,
+      minTimeout: 1,
     })
   );
 });
@@ -38,7 +38,7 @@ Deno.test("retry() fails after five errors when undefined is passed", async () =
     // @ts-expect-error: explicitly giving undefined
     retry(fiveErrors, {
       maxAttempts: undefined,
-      minTimeout: 100,
+      minTimeout: 1,
     })
   );
 });
@@ -150,4 +150,47 @@ Deno.test("retry() checks backoff function timings", async (t) => {
   });
 
   Math.random = originalMathRandom;
+});
+
+Deno.test("retry() only retries errors that are retriable with `isRetriable` option", async () => {
+  class HttpError extends Error {
+    status: number;
+    constructor(status: number) {
+      super();
+      this.status = status;
+    }
+  }
+
+  const isRetriable = (err: unknown) =>
+    err instanceof HttpError && (err.status === 429 || err.status >= 500);
+
+  const options = {
+    minTimeout: 1,
+    isRetriable,
+  };
+
+  let numCalls: number;
+
+  numCalls = 0;
+  await assertRejects(() =>
+    retry(() => {
+      numCalls++;
+      throw new HttpError(400);
+    }, options), HttpError);
+  assertEquals(numCalls, 1);
+
+  numCalls = 0;
+  await assertRejects(() =>
+    retry(() => {
+      numCalls++;
+      throw new HttpError(500);
+    }, options), RetryError);
+  assertEquals(numCalls, 5);
+
+  numCalls = 0;
+  await assertRejects(() =>
+    retry(() => {
+      throw new HttpError(++numCalls === 3 ? 400 : 500);
+    }, options), HttpError);
+  assertEquals(numCalls, 3);
 });

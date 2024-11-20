@@ -61,6 +61,16 @@ export interface RetryOptions {
    * @default {1}
    */
   jitter?: number;
+
+  /**
+   * Callback to determine if a thrown error or other value is retriable.
+   *
+   * @default {() => true}
+   *
+   * @param err The thrown error or other value.
+   * @returns `true` if the error is retriable, `false` otherwise.
+   */
+  isRetriable?: (err: unknown) => boolean;
 }
 
 /**
@@ -127,6 +137,7 @@ export async function retry<T>(
     maxAttempts = 5,
     minTimeout = 1000,
     jitter = 1,
+    isRetriable = () => true,
   } = options ?? {};
 
   if (maxTimeout <= 0) {
@@ -150,6 +161,10 @@ export async function retry<T>(
     try {
       return await fn();
     } catch (error) {
+      if (!isRetriable(error)) {
+        throw error;
+      }
+
       if (attempt + 1 >= maxAttempts) {
         throw new RetryError(error, maxAttempts);
       }
