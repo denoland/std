@@ -118,7 +118,7 @@ async function main() {
     lines.push('}')
     const graph = lines.join('\n')
     console.log(graph)
-    const svg = await graphviz.graphviz.dot(graph, 'svg')
+    const svg = await graphviz.graphviz.fdp(graph, 'svg')
     console.log(
         'Writing dependency graph image to .github/markdown_dependency_graph.svg',
     )
