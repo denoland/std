@@ -96,13 +96,22 @@ async function main() {
     lines.push('digraph markdown_deps {')
     for (const file of Object.keys(deps)) {
         const info = deps[file]!
+        const label = stripLabel(file)
+        if (!label) {
+            console.log(`No label found for ${file}`)
+            Deno.exit(1)
+        }
+        console.log(`Label: ${label}`)
         lines.push(
-            `  "${
-                stripLabel(file)
-            }" "[shape=circle fixedsize=1 height=1 style=filled fillcolor=lightgreen]";`,
+            `  "${label}" [shape=circle fixedsize=1 height=1];`,
         )
         for (const dep of info.set) {
-            lines.push(`  "${stripLabel(file)}" -> "${stripLabel(dep)}";`)
+            const depLabel = stripLabel(dep)
+            if (!depLabel) {
+                console.log(`No label found for ${dep}`)
+                Deno.exit(1)
+            }
+            lines.push(`  "${label}" -> "${depLabel}";`)
         }
     }
 
