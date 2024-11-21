@@ -2,7 +2,8 @@
 
 **Definition**: A participant within the
 [Dreamcatcher Platform](dreamcatcher-platform.md) that engages with the
-platform's services and resources.
+platform's services and resources. The platform enshrines Actor sovereignty by
+enabling portability and interoperability across multiple hosts and platforms.
 
 **Description**: Actors can simultaneously fulfill multiple roles within the
 ecosystem. Their activities and contributions are tracked through various

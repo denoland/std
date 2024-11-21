@@ -1,16 +1,16 @@
 # Service Provider
 
-A type of [Actor](actor.md) that provides essential services to the platform.
+**Definition**: A type of [Actor](actor.md) that offers services or resources to
+other Actors on the platform, including but not limited to computational
+resources, specialized functionalities, or Asset issuance.
 
-## Types:
-### Issuer
-Creates and manages [Assets](asset.md)
+**Description**: Service Providers can operate in various capacities:
 
-### Legal Gateway Operator
-Bridges platform and real-world systems
+- As Issuers creating and distributing [Assets](asset.md)
+- As operators of [Legal Gateways](legal-gateway.md)
+- As providers of specialized services or [NApps](napp.md)
+- As Platform Operators managing platform instances and providing
+  [Hosting](hosting.md) services
 
-### Infrastructure Provider
-Offers computational resources
-
-### Platform Operator
-Manages platform instances 
+They play a crucial role in expanding the platform's capabilities and services
+while maintaining its decentralized nature.
