@@ -41,11 +41,20 @@ function getSymlinkOption(
  *
  * @returns A void promise that resolves once the link exists.
  *
- * @example Usage
+ * @example Basic usage
  * ```ts ignore
  * import { ensureSymlink } from "@std/fs/ensure-symlink";
  *
- * await ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * // Ensures the link `./targetFile.link.dat` exists and points to `./targetFile.dat`
+ * await ensureSymlink("./targetFile.dat", "./targetFile.link.dat");
+ * ```
+ *
+ * @example Ensuring a link in a folder
+ * ```ts ignore
+ * import { ensureSymlink } from "@std/fs/ensure-symlink";
+ *
+ * // Ensures the link `./folder/targetFile.link.dat` exists and points to `./folder/targetFile.dat`
+ * await ensureSymlink("./targetFile.dat", "./folder/targetFile.link.dat");
  * ```
  */
 export async function ensureSymlink(
@@ -110,11 +119,20 @@ export async function ensureSymlink(
  * @param linkName The destination link path as a string or URL.
  * @returns A void value that returns once the link exists.
  *
- * @example Usage
+ * @example Basic usage
  * ```ts ignore
  * import { ensureSymlinkSync } from "@std/fs/ensure-symlink";
  *
- * ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat");
+ * // Ensures the link `./targetFile.link.dat` exists and points to `./targetFile.dat`
+ * ensureSymlinkSync("./targetFile.dat", "./targetFile.link.dat");
+ * ```
+ *
+ * @example Ensuring a link in a folder
+ * ```ts ignore
+ * import { ensureSymlinkSync } from "@std/fs/ensure-symlink";
+ *
+ * // Ensures the link `./folder/targetFile.link.dat` exists and points to `./folder/targetFile.dat`
+ * ensureSymlinkSync("./targetFile.dat", "./folder/targetFile.link.dat");
  * ```
  */
 export function ensureSymlinkSync(
