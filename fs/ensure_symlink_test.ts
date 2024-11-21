@@ -1,6 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertMatch,
+  assertRejects,
+  assertThrows,
+} from "@std/assert";
 import * as path from "@std/path";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
@@ -237,6 +243,29 @@ Deno.test("ensureSymlinkSync() creates symlink with relative target", function (
   assertEquals(linkDirStat.isSymlink, true);
 
   Deno.removeSync(testDir, { recursive: true });
+});
+
+Deno.test("ensureSymlink() rejects when the target path doesn't exist", async () => {
+  const e = await assertRejects(
+    async () => {
+      await ensureSymlink("non-existent-target", "non-existent-link");
+    },
+    Deno.errors.NotFound,
+  );
+  assertMatch(
+    e.message,
+    /^Cannot ensure symlink as the target path does not exist: .*non-existent-target$/,
+  );
+});
+
+Deno.test("ensureSymlinkSync() throws when the target path doesn't exist", () => {
+  const e = assertThrows(() => {
+    ensureSymlinkSync("non-existent-target", "non-existent-link");
+  }, Deno.errors.NotFound);
+  assertMatch(
+    e.message,
+    /^Cannot ensure symlink as the target path does not exist: .*non-existent-target$/,
+  );
 });
 
 Deno.test("ensureSymlink() works with URLs", {
