@@ -9,25 +9,25 @@ const log = Debug('@artifact/api')
 
 export type TreeEntry = {
   /** the 6 digit hexadecimal mode */
-  mode: string
+  readonly mode: string
   /** the name of the file or directory */
-  path: string
+  readonly path: string
   /** the hash identifier of the blob or tree */
-  oid: string
+  readonly oid: string
   /** the type of object */
-  type: 'blob' | 'tree'
+  readonly type: 'blob' | 'tree'
   /** the snapshot identifier, since lookup by oid is not permitted as there is
    * no way to lookup permissions cheaply */
-  snapshot: string
+  readonly snapshot: string
 }
 
 export type Upsert =
-  | { meta: { snapshot: string; path: string } }
-  | { json: JsonValue } // TODO implement object cache using structured clone
-  | { text: string }
-  | { data: Uint8Array }
+  | { readonly meta: { readonly snapshot: string; readonly path: string } }
+  | { readonly json: JsonValue } // TODO implement object cache using structured clone
+  | { readonly text: string }
+  | { readonly data: Uint8Array }
 
-export const optionsSchema = z
+export const addressSchema = z
   .object({
     /** Posix style path that locates what process thread we want to communicate
      * with. In git, this would be branch names, for example: `exe/proc-1/child-2` */
@@ -46,121 +46,136 @@ export const optionsSchema = z
   })
   .partial()
 
-export type AddressedOptions = z.infer<typeof optionsSchema>
+export type Address = z.infer<typeof addressSchema>
 
-export interface NappSnapshots<ReadOptions = AddressedOptions> {
-  latest(options?: Omit<ReadOptions, 'snapshot'>): Promise<string | undefined>
-  parents(options?: ReadOptions): Promise<string[]>
-  history(options?: ReadOptions & { count?: number }): Promise<string[]>
+export interface NappSnapshots<ReadOptions = Address> {
+  /** Posix style path that locates what process thread we want to communicate
+   * with. In git, this would be branch names, for example: `exe/proc-1/child-2` */
+  readonly latest: (
+    options?: Omit<ReadOptions, 'snapshot'>,
+  ) => Promise<string | undefined>
+  readonly parents: (options?: ReadOptions) => Promise<string[]>
+  readonly history: (
+    options?: ReadOptions & { count?: number },
+  ) => Promise<string[]>
 }
 
-export interface NappRead<ReadOptions = AddressedOptions> {
-  meta(path: string, options?: ReadOptions): Promise<TreeEntry>
-  json<T extends ZodTypeAny = typeof jsonSchema>(
+export interface NappRead<ReadOptions = Address> {
+  readonly meta: (path: string, options?: ReadOptions) => Promise<TreeEntry>
+  readonly json: <T extends ZodTypeAny = typeof jsonSchema>(
     path: string,
     options?: ReadOptions & { schema?: T },
-  ): Promise<z.infer<T>>
-  text(path: string, options?: ReadOptions): Promise<string>
-  binary(path: string, options?: ReadOptions): Promise<Uint8Array>
-  exists(path: string, options?: ReadOptions): Promise<boolean>
-  ls(path?: string, options?: ReadOptions): Promise<TreeEntry[]>
+  ) => Promise<z.infer<T>>
+  readonly text: (path: string, options?: ReadOptions) => Promise<string>
+  readonly binary: (path: string, options?: ReadOptions) => Promise<Uint8Array>
+  readonly exists: (path: string, options?: ReadOptions) => Promise<boolean>
+  readonly ls: (path?: string, options?: ReadOptions) => Promise<TreeEntry[]>
 }
 
-export interface SnapshotsProvider<ReadOptions = AddressedOptions> {
+export interface SnapshotsProvider<ReadOptions = Address> {
   readonly snapshots: NappSnapshots<ReadOptions>
   readonly read: NappRead<ReadOptions>
-  commit(upserts: Map<string, Upsert>, deletes: Set<string>): Promise<void>
+  readonly commit: (
+    upserts: Map<string, Upsert>,
+    deletes: Set<string>,
+  ) => Promise<void>
 }
 
-export interface NappWrite<WriteOptions = AddressedOptions> {
-  json(
+export interface NappWrite<WriteOptions = Address> {
+  readonly json: (
     path: string,
     content: JsonValue,
     options?: WriteOptions,
-  ): Promise<void>
-  text(
+  ) => Promise<void>
+  readonly text: (
     path: string,
     content: string,
     options?: WriteOptions,
-  ): Promise<void>
-  binary(
+  ) => Promise<void>
+  readonly binary: (
     path: string,
     content: Uint8Array,
     options?: WriteOptions,
-  ): Promise<void>
-  rm(path: string, options?: WriteOptions): Promise<void>
-  mv(
+  ) => Promise<void>
+  readonly rm: (path: string, options?: WriteOptions) => Promise<void>
+  readonly mv: (
     from: WriteOptions & { path: string },
     to: WriteOptions & { path: string },
-  ): Promise<void>
-  cp(
+  ) => Promise<void>
+  readonly cp: (
     from: WriteOptions & { path: string },
     to: WriteOptions & { path: string },
-  ): Promise<void>
+  ) => Promise<void>
 }
 
 type SpawnOptions =
-  & AddressedOptions
+  & Address
   & (
-    | { name: string; prefix?: never }
-    | { name?: never; prefix: string }
+    | { readonly name: string; prefix?: never }
+    | { name?: never; readonly prefix: string }
   )
   & {
-    files?: string[]
+    readonly files?: string[]
     /** If process exists, exit gracefully */
-    upsert?: boolean
+    readonly upsert?: boolean
     /** Priority of the process */
-    nice?: number
+    readonly nice?: number
   }
 
-type MetaResult = { meta: Required<AddressedOptions>; outcome: Outcome }
+type MetaResult = {
+  readonly meta: Required<Address>
+  readonly outcome: Outcome
+}
 
 interface NappProcesses {
   /** start a new process and install the given napp. */
-  spawn(napp: keyof NappTypes, options: SpawnOptions): Promise<void>
+  readonly spawn: (
+    napp: keyof NappTypes,
+    options: SpawnOptions,
+  ) => Promise<void>
   /** tear down the specified process, and resturn the result of teardown */
-  kill(options: AddressedOptions): Promise<JsonValue | undefined>
+  readonly kill: (options: Address) => Promise<JsonValue>
   /** spawns a new process, installs the napp specified in the action, awaits
    * the execution, and then returns, killing the process */
-  async(action: Action, options: SpawnOptions): Promise<JsonValue | undefined>
+  readonly async: (action: Action, options: SpawnOptions) => Promise<JsonValue>
   /** move a process to another parent.  Can be used to daemonize a running
    * process by moving it to be a child of init */
-  mv(to: AddressedOptions, from?: AddressedOptions): Promise<void>
+  readonly mv: (to: Address, from?: Address) => Promise<void>
   /** change the priority of a process */
-  nice(level: number, options: AddressedOptions): void
+  readonly nice: (level: number, options: Address) => void
 
-  dispatch(
+  readonly dispatch: (
     action: Action,
-    options: AddressedOptions,
-  ): Promise<JsonValue | undefined | void>
-  dispatchWithMeta(
+    options: Address,
+  ) => Promise<JsonValue | void>
+  readonly dispatchWithMeta: (
     action: Action,
-    options: AddressedOptions,
-  ): Promise<MetaResult>
+    options: Address,
+  ) => Promise<MetaResult>
 }
 
 export const stateSchema = z.record(jsonSchema)
 
 /** State is stored in the process json files */
-interface NappState<ReadOptions = AddressedOptions> {
-  get<T extends ZodRecord = typeof stateSchema>(
+interface NappState<ReadOptions = Address> {
+  readonly get: <T extends ZodRecord = typeof stateSchema>(
     options: ReadOptions & { schema?: T; fallback?: z.infer<T> },
-  ): Promise<z.infer<T>>
+  ) => Promise<z.infer<T>>
   // TODO return metadata of the state so we know if a part remains unchanged
   // TODO allow fetching paths within the state
-  set<T extends ZodRecord = typeof stateSchema>(
+  readonly set: <T extends ZodRecord = typeof stateSchema>(
     state: z.infer<T>,
     options: ReadOptions & { schema?: T },
-  ): Promise<void>
+  ) => Promise<void>
 }
 
 interface NappEffects {
   /** Side effects can listen to this signal to abort their activities */
-  get signal(): AbortSignal
+  readonly signal: AbortSignal
 
   /** If the side effect lock was broken in order to start this instance.
    * Implies the previous executing instance was aborted */
-  get isEffectRecovered(): boolean
+  readonly isEffectRecovered: boolean
 
   /** The context of the current side effect, which acts like a React ref, and
    * is a mutable store of any value at all */
