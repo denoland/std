@@ -1,0 +1,17 @@
+{
+  "imports": {
+    "@deno/graph": "jsr:@deno/graph@^0.85.0",
+    "node-graphviz": "npm:node-graphviz@^0.1.1"
+  },
+  "fmt": {
+    "useTabs": false,
+    "indentWidth": 2,
+    "singleQuote": true,
+    "semiColons": false 
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-console"]
+    }
+  }
+}

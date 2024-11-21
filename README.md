@@ -1,6 +1,8 @@
 # The Reasoner Knowledge Management System
 
-This repository contains a workflow system designed to analyze and process multi-channel communications to extract and maintain consistent project definitions, user stories, and tasks.
+This repository contains a workflow system designed to analyze and process
+multi-channel communications to extract and maintain consistent project
+definitions, user stories, and tasks.
 
 ## Purpose
 
@@ -25,7 +27,8 @@ For each piece of source material, the system:
 
 ### Conflict Management
 
-When conflicts are detected between extracted and gold definitions, stories, or tasks:
+When conflicts are detected between extracted and gold definitions, stories, or
+tasks:
 
 - Conflicts are automatically flagged
 - Reasons for conflicts are documented
@@ -35,8 +38,7 @@ When conflicts are detected between extracted and gold definitions, stories, or 
 
 ### Naming Convention
 
-Files follow this pattern:
-`[DATE]_[TYPE].md`
+Files follow this pattern: `[DATE]_[TYPE].md`
 
 Where TYPE can be:
 
@@ -105,9 +107,13 @@ Definitions are organized in a tree structure using:
 
 ### Definition and Task Files
 
-Each definition and task is stored in a separate file. This approach serves two main purposes:
+Each definition and task is stored in a separate file. This approach serves two
+main purposes:
 
-1. **Knowledge Tree Relationships**: Storing each item individually allows for a clear representation of the relationships within the knowledge tree. Each file corresponds to a specific node, making the structure intuitive and easier to navigate.
+1. **Knowledge Tree Relationships**: Storing each item individually allows for a
+   clear representation of the relationships within the knowledge tree. Each
+   file corresponds to a specific node, making the structure intuitive and
+   easier to navigate.
 
 2. **Change Tracking**: Keeping items in separate files enhances version
    control. Changes are isolated to specific files, reducing noise in diffs and
@@ -134,3 +140,5 @@ J --> K3[Gold Tasks]
 J --> L[Conflict Detection]
 L --> O[Update Gold Conflicts]
 ```
+
+![Dependency Graph](.github/markdown_dependency_graph.svg)

@@ -1,0 +1,23 @@
+{
+  "version": "4",
+  "specifiers": {
+    "jsr:@deno/graph@0.85": "0.85.0",
+    "npm:node-graphviz@~0.1.1": "0.1.1"
+  },
+  "jsr": {
+    "@deno/graph@0.85.0": {
+      "integrity": "b44f6955188f5ce44bf33b1939369ceb87f54032c9747d1a58cb92d2cffb8583"
+    }
+  },
+  "npm": {
+    "node-graphviz@0.1.1": {
+      "integrity": "sha512-riY8/pFGSD1ipmyzqCwuN2M6W02ELfuLDjhJvTrQCUS/15tyU8ExkC96mlQrNLBK8Ws0z8PdH+ChBT6DuPFWWA=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@deno/graph@0.85",
+      "npm:node-graphviz@~0.1.1"
+    ]
+  }
+}
