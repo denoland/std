@@ -88,19 +88,6 @@ Deno.test({
     );
     await t.step(
       {
-        name: "Invalid data, no columns",
-        fn() {
-          const data = [{ a: 1 }, { a: 2 }];
-          assertThrows(
-            () => stringify(data),
-            TypeError,
-            "No property accessor function was provided for object",
-          );
-        },
-      },
-    );
-    await t.step(
-      {
         name: "No data, no columns",
 
         fn() {

@@ -1,14 +1,21 @@
-.DS_Store
-.idea
-.vim
-**/cov/
-crypto/_wasm/target
 deno.lock
-cli/testdata/unicode_width_crate/target
-html_cov/
-cov.lcov
 http/testdata/%25A.txt
 http/testdata/file#2.txt
 http/testdata/test file.txt
-coverage/
 docs/
+
+# rust build output
+crypto/_wasm/target
+cli/testdata/unicode_width_crate/target
+
+# coverage
+coverage/
+cov.lcov
+codecov
+codecov.SHA256SUM
+codecov.SHA256SUM.sig
+
+# misc files
+.DS_Store
+.idea
+.vim
