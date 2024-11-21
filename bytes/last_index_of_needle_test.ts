@@ -2,7 +2,7 @@
 import { assertEquals } from "@std/assert";
 import { lastIndexOfNeedle } from "./last_index_of_needle.ts";
 
-Deno.test("lastIndexOfNeedle1() handles repeating occurence", () => {
+Deno.test("lastIndexOfNeedle() handles repeating occurrence", () => {
   const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 3]),
     new Uint8Array([0, 1, 2]),
@@ -10,7 +10,7 @@ Deno.test("lastIndexOfNeedle1() handles repeating occurence", () => {
   assertEquals(i, 3);
 });
 
-Deno.test("lastIndexOfNeedle() handles single occurence", () => {
+Deno.test("lastIndexOfNeedle() handles single occurrence", () => {
   const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 1]),
     new Uint8Array([0, 1]),
@@ -18,12 +18,12 @@ Deno.test("lastIndexOfNeedle() handles single occurence", () => {
   assertEquals(i, 0);
 });
 
-Deno.test("lastIndexOfNeedle() handles missing occurence", () => {
+Deno.test("lastIndexOfNeedle() handles missing occurrence", () => {
   const i = lastIndexOfNeedle(new Uint8Array(), new Uint8Array([0, 1]));
   assertEquals(i, -1);
 });
 
-Deno.test("lastIndexOfNeedle() returns index of occurence after start", () => {
+Deno.test("lastIndexOfNeedle() returns index of occurrence after start", () => {
   const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),

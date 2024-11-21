@@ -344,3 +344,149 @@ Deno.test("equal() keyed collection edge cases", () => {
     new Map([[1, { a: 1 }], [2, { b: 3 }]]),
   ));
 });
+
+Deno.test("equal() with constructor and prototype", async (t) => {
+  await t.step(
+    "value-equal but reference-unequal property named `constructor`",
+    () => {
+      assert(equal(
+        { constructor: { x: 1 } },
+        { constructor: { x: 1 } },
+      ));
+    },
+  );
+  await t.step(
+    "instance vs plain object with property named `constructor`",
+    () => {
+      class X {}
+      const a = new X();
+      const b = { constructor: X };
+      assert(equal(a.constructor, b.constructor));
+      assertFalse(equal(a, b));
+    },
+  );
+  await t.step("manually set prototype", () => {
+    class X {
+      prop = 1;
+    }
+    const a = new X();
+    const b = {} as X;
+
+    // false as prototype differs
+    assertFalse(equal(a, b));
+    Object.setPrototypeOf(b, X.prototype);
+    // still false as `prop` is not set
+    assertFalse(equal(a, b));
+    b.prop = 1;
+    // now true
+    assert(equal(a, b));
+  });
+});
+
+Deno.test("equal() with dynamic properties defined on the prototype", async (t) => {
+  await t.step("built-in web APIs", async (t) => {
+    await t.step("URLPattern", () => {
+      assert(equal(
+        new URLPattern("*://*.*"),
+        new URLPattern("*://*.*"),
+      ));
+
+      assertFalse(equal(
+        new URLPattern("*://*.*"),
+        new URLPattern("*://*.com"),
+      ));
+    });
+
+    await t.step("URLSearchParams", () => {
+      assert(equal(
+        new URLSearchParams("a=1&b=2"),
+        new URLSearchParams("a=1&b=2"),
+      ));
+
+      assertFalse(equal(
+        new URLSearchParams("a=1&b=2"),
+        new URLSearchParams("a=1&b=99999"),
+      ));
+    });
+
+    await t.step("Intl.Locale", () => {
+      assert(equal(
+        new Intl.Locale("es-MX"),
+        new Intl.Locale("es-MX"),
+      ));
+
+      assertFalse(equal(
+        new Intl.Locale("es-MX"),
+        new Intl.Locale("pt-BR"),
+      ));
+    });
+  });
+
+  await t.step("custom prototype", () => {
+    type Obj = {
+      prop: number;
+    };
+    const wm = new WeakMap<Obj, number>();
+    const proto: Obj = {
+      get prop() {
+        return wm.get(this)!;
+      },
+    };
+    const makeObj = (val: number): Obj => {
+      const x = Object.create(proto);
+      wm.set(x, val);
+      return x;
+    };
+
+    assert(equal(
+      makeObj(1),
+      makeObj(1),
+    ));
+
+    assertFalse(equal(
+      makeObj(1),
+      makeObj(99999),
+    ));
+  });
+});
+
+Deno.test("equal() with typed arrays", async (t) => {
+  await t.step("Uint8Array", async (t) => {
+    await t.step("equal", () => {
+      assert(equal(
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([1, 2, 3]),
+      ));
+    });
+
+    await t.step("unequal", () => {
+      assertFalse(equal(
+        new Uint8Array([1, 2, 3]),
+        new Uint8Array([1, 2, 4]),
+      ));
+    });
+
+    await t.step("length unequal", () => {
+      assertFalse(equal(
+        new Uint8Array([0]),
+        new Uint8Array([0, 0]),
+      ));
+    });
+  });
+
+  await t.step("Float64Array", async (t) => {
+    await t.step("NaN == NaN", () => {
+      assert(equal(
+        new Float64Array([NaN]),
+        new Float64Array([NaN]),
+      ));
+    });
+
+    await t.step("0 == -0", () => {
+      assert(equal(
+        new Float64Array([0]),
+        new Float64Array([-0]),
+      ));
+    });
+  });
+});

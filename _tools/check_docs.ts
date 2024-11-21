@@ -30,7 +30,6 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  "../archive/mod.ts",
   "../assert/mod.ts",
   "../assert/unstable_never.ts",
   "../async/mod.ts",
@@ -42,6 +41,7 @@ const ENTRY_POINTS = [
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",
+  "../csv/unstable_stringify.ts",
   "../data_structures/mod.ts",
   "../data_structures/unstable_bidirectional_map.ts",
   "../datetime/mod.ts",
@@ -73,6 +73,7 @@ const ENTRY_POINTS = [
   "../json/mod.ts",
   "../jsonc/mod.ts",
   "../log/base_handler.ts",
+  "../log/file_handler.ts",
   "../log/warn.ts",
   "../log/critical.ts",
   "../log/debug.ts",
@@ -81,6 +82,7 @@ const ENTRY_POINTS = [
   "../log/console_handler.ts",
   "../log/formatters.ts",
   "../log/get_logger.ts",
+  "../log/logger.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
