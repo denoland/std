@@ -36,7 +36,7 @@ function getSymlinkOption(
  * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
  * for more information on Deno's permissions system.
  *
- * @param target The source file path as a string or URL.
+ * @param target The source file path as a string or URL. If it is a relative path string, it have to be relative to the link path.
  * @param linkName The destination link path as a string or URL.
  *
  * @returns A void promise that resolves once the link exists.
@@ -115,7 +115,7 @@ export async function ensureSymlink(
  * @see {@link https://docs.deno.com/runtime/manual/basics/permissions#file-system-access}
  * for more information on Deno's permissions system.
  *
- * @param target The source file path as a string or URL.
+ * @param target The source file path as a string or URL. If it is a relative path string, it have to be relative to the link path.
  * @param linkName The destination link path as a string or URL.
  * @returns A void value that returns once the link exists.
  *
