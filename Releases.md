@@ -1,5 +1,9 @@
 ### 2024.11.22
 
+### @std/archive
+
+- BREAKING(archive): remove std/archive package (#6185)
+
 #### @std/async 1.0.9 (patch)
 
 - feat(async/unstable): add `isRetriable` option to `retry` (#6197)
@@ -12,6 +16,11 @@
 #### @std/fs 1.0.6 (patch)
 
 - fix(fs): improve the docs and error message of `ensureSymlink(Sync)` (#6198)
+
+#### @std/http 1.0.11 (patch)
+
+- fix(http): disable XSS in directory index page of file-server
+  https://github.com/denoland/std/security/advisories/GHSA-32fx-h446-h8pf
 
 #### @std/log 0.224.11 (patch)
 
