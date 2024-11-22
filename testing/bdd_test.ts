@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertExists,
+  assertMatch,
   assertObjectMatch,
   assertRejects,
   assertStrictEquals,
@@ -2063,46 +2064,26 @@ Deno.test("describe()", async (t) => {
 
   await t.step("context for beforeEach and afterEach", async (t) => {
     await t.step(
-      "minimum options",
+      "test context names",
       async () =>
-        await assertMinimumOptions((fns) => {
-          const suite = describe({}, function example() {
+        await assertOptions({}, (fns) => {
+          const suite = describe({
+            // deno-lint-ignore no-explicit-any
+            afterEach(this: any, ctx: Deno.TestContext) {
+              assertExists(ctx);
+              assertMatch(ctx.name, /^(a|b)/);
+            },
+            // deno-lint-ignore no-explicit-any
+            beforeEach(this: any, ctx: Deno.TestContext) {
+              assertExists(ctx);
+              assertMatch(ctx.name, /^(a|b)/);
+            },
+          }, function example() {
             assertEquals(it({ name: "a", fn: fns[0] }), undefined);
           });
           assert(suite && typeof suite.symbol === "symbol");
           assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
         }),
     );
-
-    await t.step("all options", async () =>
-      await assertAllOptions((fns) => {
-        const suite = describe({
-          ...baseOptions,
-          // deno-lint-ignore no-explicit-any
-          afterEach(this: any, ctx: Deno.TestContext) {
-            assertExists(ctx);
-            assertEquals(ctx.name, "a");
-          },
-          // deno-lint-ignore no-explicit-any
-          beforeEach(this: any, ctx: Deno.TestContext) {
-            assertExists(ctx);
-            assertEquals(ctx.name, "a");
-          },
-        }, function example() {
-          assertEquals(
-            it({
-              name: "a",
-              // deno-lint-ignore no-explicit-any
-              fn(this: any, ctx: Deno.TestContext) {
-                assertExists(ctx);
-                fns[0]();
-              },
-            }),
-            undefined,
-          );
-        });
-        assert(suite && typeof suite.symbol === "symbol");
-        assertEquals(it({ suite, name: "b", fn: fns[1] }), undefined);
-      }));
   });
 });
