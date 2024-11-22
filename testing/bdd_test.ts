@@ -2060,7 +2060,7 @@ Deno.test("describe()", async (t) => {
       );
     },
   );
-  
+
   await t.step("context for beforeEach and afterEach", async (t) => {
     await t.step(
       "minimum options",
