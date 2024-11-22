@@ -17,6 +17,8 @@ enabling:
   - Massive parallel computation via a high number of concurrent git branches
   - Repeatable computation for both classical and AI operations
   - Standardized seed parameters for probabilistic AI computations
+  - Verifiable usage tracking for
+    [Decentralized Income](decentralized-income.md)
 
 - Cross-instance coordination through:
 
@@ -25,6 +27,7 @@ enabling:
   - Blockchain-based [Consensus Mode](consensus-mode.md) implementation
   - Network-wide state synchronization
   - Edge computing with offline operation and mesh resynchronization
+  - Auditable computation verification across instances
 
 - Platform capabilities including:
 
@@ -34,8 +37,17 @@ enabling:
   - Git-compatible version control and state management
   - Autonomous operation during network disconnection
   - Seamless mesh network reintegration after offline periods
+  - Trusted usage metrics for [Ambient Attribution](ambient-attribution.md)
 
-Artifact enables the decentralized nature of the Dreamcatcher Platform while
-ensuring computational consistency, massive scalability, and verifiability
-across all instances, forming the technical foundation for the Dreamcatcher
-ecosystem.
+Artifact's repeatable execution environment is fundamental to the platform's
+economic model by ensuring that:
+
+- Usage metrics are verifiable and trustworthy
+- Attribution calculations can be independently validated
+- Income distribution is based on auditable data
+- Cross-instance computations remain consistent
+- Platform participants can verify fairness
+
+This creates the foundation of trust necessary for
+[Decentralized Income](decentralized-income.md) by providing cryptographic proof
+of computation and usage patterns.

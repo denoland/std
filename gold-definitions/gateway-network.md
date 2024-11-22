@@ -19,6 +19,8 @@ Gateway Networks operate through:
 - Shared compliance and verification standards
 - Coordinated [Payment Paths](payment-path.md) for international transactions
 - Unified [Identity Verification](identity-verification.md) recognition
+- Automated [Decentralized Income](decentralized-income.md) distribution
+  channels
 - Automatic service provider selection and switching
 
 Market dynamics are enabled by:

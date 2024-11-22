@@ -61,3 +61,20 @@ A stuck's value can be realized in two ways:
 The [Estimation Tool](estimation-tool.md) helps predict potential value across
 all impact dimensions, informing both funding decisions and expected future
 attribution returns.
+
+## Role in Decentralized Value Creation
+
+- Enables independent problem discovery without central planning
+- Aggregates similar needs across multiple Demanders
+- Creates objective validation through demander reinforcement
+- Separates problem identification from solution funding
+- Maintains problem context independent of specific solutions
+- Supports organic discovery of related problems and solutions
+
+The relationship between Stucks, Demanders, and eventual Consumers provides a
+key measure of the network's ability to:
+
+- Identify genuine market needs
+- Create effective solutions
+- Generate sustainable value
+- Enable decentralized innovation
