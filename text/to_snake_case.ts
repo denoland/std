@@ -19,5 +19,5 @@ import { splitToWords } from "./_util.ts";
  */
 export function toSnakeCase(input: string): string {
   input = input.trim();
-  return splitToWords(input).join("_").toLocaleLowerCase();
+  return splitToWords(input).join("_").toLowerCase();
 }
