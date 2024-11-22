@@ -19,7 +19,7 @@
 
 #### @std/http 1.0.11 (patch)
 
-- fix(http): disable XSS in directory index page of file-server
+- fix(http): disable XSS in directory index page of file-server (CVE-2024-52793)
   https://github.com/denoland/std/security/advisories/GHSA-32fx-h446-h8pf
 
 #### @std/log 0.224.11 (patch)
