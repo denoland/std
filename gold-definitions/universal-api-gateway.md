@@ -21,7 +21,8 @@ that:
 
    - API marketplace for [Service Providers](actor-service-provider.md)
    - Attribution-tracked API wrapper contributions
-   - [Payment Paths](payment-path.md) for API usage compensation
+   - [Decentralized Income](decentralized-income.md) for API usage and
+     improvements
    - Community-driven integration development
    - [Ambient Attribution](ambient-attribution.md) for API improvements
 

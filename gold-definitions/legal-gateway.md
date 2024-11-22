@@ -13,6 +13,14 @@ systems and regulated services. For example, a Legal Gateway might operate as
 both a registered company in the real world and a Service Provider within the
 platform, enabling fiat currency transactions through services like Stripe.
 
+Legal Gateways are essential to [Decentralized Income](decentralized-income.md)
+by:
+
+- Converting platform attribution into traditional currency
+- Enabling compliant income distribution
+- Supporting international payment flows
+- Maintaining regulatory compliance for income handling
+
 ## Gateway Network Effects
 
 **Definition**: The interconnected system of relationships between

@@ -25,6 +25,30 @@ For each piece of source material, the system:
 4. Applies corrections for common transcription errors
 5. Reconciles new information against existing "gold" reference data
 
+### Definition Standards
+
+Definitions must be:
+
+1. **Implementation Agnostic**
+
+   - Focus on core properties and characteristics
+   - Describe capabilities without specifying technology
+   - Use abstract concepts rather than specific implementations
+   - Can include examples but must clarify they are just possibilities
+
+2. **Property-Focused**
+
+   - Describe fundamental attributes
+   - Explain behavioral characteristics
+   - Define relationships and interactions
+   - Specify constraints and requirements
+
+3. **Technology Neutral**
+   - Avoid referencing specific platforms or technologies
+   - Use general terms for technical concepts
+   - Focus on what something does, not how it does it
+   - Allow for multiple possible implementations
+
 ### Conflict Management
 
 When conflicts are detected between extracted and gold definitions, stories, or

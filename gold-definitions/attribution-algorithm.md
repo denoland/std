@@ -26,3 +26,11 @@ The algorithm's calculations are particularly important for
 - Determine final value distribution during each calculation cycle
 - Consider both direct contributions and trading relationships
 - Enable market dynamics while maintaining fair value distribution
+
+Attribution Algorithms are fundamental to
+[Decentralized Income](decentralized-income.md) generation, as they:
+
+- Calculate each contributor's share of generated value
+- Enable automatic income distribution
+- Support various forms of value recognition
+- Integrate with market mechanisms for optimization

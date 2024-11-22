@@ -14,6 +14,8 @@ Value Assessment:
 - Historical attribution data analysis
 - Expected value modeling based on similar solutions
 - Multi-dimensional impact analysis via Impact Crystals
+- Predictive calculations for potential
+  [Decentralized Income](decentralized-income.md) streams
 
 Demander Analysis:
 

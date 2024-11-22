@@ -9,14 +9,16 @@ talent contributors once solutions are approved.
 - Prepaying for solutions based on expected value (not labor rates)
 - Retaining ability to withdraw funds until QA approval
 - Becoming attributed contributors after solution acceptance
-- Sharing in future consumer revenue through attribution
+- Sharing in future consumer revenue through
+  [Decentralized Income](decentralized-income.md)
 
 Key characteristics:
 
 - Multiple funders can support a single solution
 - Funds are held but withdrawable until QA approval
 - Payment levels reflect expected solution value
-- Attribution is shared with talent contributors
+- Attribution is shared with talent contributors and traders through
+  decentralized income flows
 - Reputation builds based on withdrawal history
 
 Funders play a crucial role in platform market dynamics by setting value

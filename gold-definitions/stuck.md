@@ -49,7 +49,8 @@ A stuck's value can be realized in two ways:
    - Transforms [Demander](actor-demander.md) into Funder
    - Provides immediate incentive for solution development
 
-2. **Ambient Attribution**
+2. **[Decentralized Income](decentralized-income.md) through Ambient
+   Attribution**
    - Applies automatically to all solutions
    - Continuously shares value based on actual usage and impact
    - Distributes rewards to all contributors (talent, funders, etc.)

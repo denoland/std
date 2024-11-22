@@ -40,6 +40,9 @@ contribution effects by:
   - [Value Exchange](value-exchange.md) facilitation
   - Risk assessment support
   - [Estimation Tool](estimation-tool.md) integration
+  - Informing [Decentralized Income](decentralized-income.md) calculations
+  - Enabling multi-dimensional value recognition
+  - Supporting fair compensation distribution
 
 Impact Crystals enhance the platform's ability to understand and value
 contributions beyond simple monetary measures, while maintaining compatibility

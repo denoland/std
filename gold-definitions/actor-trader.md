@@ -32,3 +32,11 @@ assets:
 - Final rewards depend on current contribution snapshots
 - Trading activities help balance market inefficiencies
 - Traders can compensate for funding gaps from withdrawn prepayments
+
+Traders play a key role in optimizing
+[Decentralized Income](decentralized-income.md) by:
+
+- Providing liquidity for income streams
+- Enabling early value realization
+- Balancing income timing mismatches
+- Supporting efficient market price discovery
