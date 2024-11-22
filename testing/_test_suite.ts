@@ -25,12 +25,12 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
     | ((this: T) => void | Promise<void>)[];
   /** Run some shared setup before each test in the suite. */
   beforeEach?:
-    | ((this: T) => void | Promise<void>)
-    | ((this: T) => void | Promise<void>)[];
+    | ((this: T, context: Deno.TestContext) => void | Promise<void>)
+    | ((this: T, context: Deno.TestContext) => void | Promise<void>)[];
   /** Run some shared teardown after each test in the suite. */
   afterEach?:
-    | ((this: T) => void | Promise<void>)
-    | ((this: T) => void | Promise<void>)[];
+    | ((this: T, context: Deno.TestContext) => void | Promise<void>)
+    | ((this: T, context: Deno.TestContext) => void | Promise<void>)[];
 }
 
 /** The options for creating an individual test case with the it function. */
@@ -368,10 +368,10 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       if (activeIndex === 0) context = { ...context };
       const { beforeEach } = testSuite.describe;
       if (typeof beforeEach === "function") {
-        await beforeEach.call(context);
+        await beforeEach.call(context, t);
       } else if (beforeEach) {
         for (const hook of beforeEach) {
-          await hook.call(context);
+          await hook.call(context, t);
         }
       }
       try {
@@ -379,10 +379,10 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       } finally {
         const { afterEach } = testSuite.describe;
         if (typeof afterEach === "function") {
-          await afterEach.call(context);
+          await afterEach.call(context, t);
         } else if (afterEach) {
           for (const hook of afterEach) {
-            await hook.call(context);
+            await hook.call(context, t);
           }
         }
       }
