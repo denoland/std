@@ -1,3 +1,26 @@
+### 2024.11.22
+
+#### @std/async 1.0.9 (patch)
+
+- feat(async/unstable): add `isRetriable` option to `retry` (#6197)
+
+#### @std/csv 1.0.4 (patch)
+
+- feat(csv/unstable): infer column names from object arrays for stringify()
+  (#6122)
+
+#### @std/fs 1.0.6 (patch)
+
+- fix(fs): improve the docs and error message of `ensureSymlink(Sync)` (#6198)
+
+#### @std/log 0.224.11 (patch)
+
+- chore(log): do not exec file handler examples in CI (#6183)
+
+#### @std/toml 1.0.2 (patch)
+
+- fix(toml): parsing positive time zone offset (#6188)
+
 ### 2024.11.13
 
 #### @std/assert 1.0.8 (patch)
