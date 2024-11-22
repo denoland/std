@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { splitToWords } from "./_util.ts";
+import { capitalizeWord, splitToWords } from "./_util.ts";
 
 Deno.test({
   name: "split() returns an empty array for an empty string",
@@ -153,5 +153,47 @@ Deno.test({
     const result = splitToWords("I Love HTMLDivElement");
     const expected = ["I", "Love", "HTML", "Div", "Element"];
     assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles empty string",
+  fn() {
+    assertEquals(capitalizeWord(""), "");
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles single char",
+  fn() {
+    assertEquals(capitalizeWord("a"), "A");
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles multiple chars",
+  fn() {
+    assertEquals(capitalizeWord("aa"), "Aa");
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles non-Latin text with letter case",
+  fn() {
+    assertEquals(capitalizeWord("γράφω"), "Γράφω");
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles non-Latin text without letter case (no-op)",
+  fn() {
+    assertEquals(capitalizeWord("文字"), "文字");
+  },
+});
+
+Deno.test({
+  name: "capitalizeWord() handles non-BMP text (no-op)",
+  fn() {
+    assertEquals(capitalizeWord("💩"), "💩");
   },
 });
