@@ -142,3 +142,11 @@ L --> O[Update Gold Conflicts]
 ```
 
 ![Dependency Graph](.github/markdown_dependency_graph.svg)
+
+## Token Count
+
+```shell
+deno task tokens
+```
+
+Total number of tokens: **8,844** (o1-preview)

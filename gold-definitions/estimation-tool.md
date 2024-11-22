@@ -2,7 +2,7 @@
 
 **Definition**: A platform utility that helps [Actors](actor.md) estimate
 potential attribution values, assess risks, and evaluate market conditions for
-trades and contributions.
+trades and contributions through [Impact Crystal](impact-crystal.md) analysis.
 
 **Description**: The Estimation Tool provides comprehensive analysis through:
 
@@ -13,6 +13,16 @@ Value Assessment:
 - Aggregate demand signal analysis
 - Historical attribution data analysis
 - Expected value modeling based on similar solutions
+- Multi-dimensional impact analysis via Impact Crystals
+
+Demander Analysis:
+
+- Historical consumer behavior tracking
+- Usage pattern reliability metrics
+- Payment history evaluation
+- Feature adoption rates
+- Conversion rates from Demander to Consumer
+- Cross-correlation with similar user segments
 
 Risk Analysis:
 
@@ -21,6 +31,7 @@ Risk Analysis:
 - Likelihood of collective funder withdrawal
 - Market timing risk evaluation
 - Trading opportunity forecasting
+- Impact Crystal dependency mapping
 
 Market Intelligence:
 
@@ -29,6 +40,7 @@ Market Intelligence:
 - Future value trend analysis
 - Trading volume predictions
 - Attribution distribution patterns
+- Impact Crystal future state modeling
 
 The tool helps participants make informed decisions by:
 
@@ -37,6 +49,7 @@ The tool helps participants make informed decisions by:
 - Identifying potential trading opportunities
 - Predicting attribution outcomes
 - Analyzing market timing factors
+- Interpreting multi-dimensional impacts
 
 While actual results may vary based on market conditions and contribution
 states, the tool provides critical insights for:
@@ -44,4 +57,4 @@ states, the tool provides critical insights for:
 - Contributors evaluating funding offers
 - Funders assessing expected value
 - Traders identifying market inefficiencies
-- All parties understanding risk factors
+- All parties understanding risk factors and impact dimensions

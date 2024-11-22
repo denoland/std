@@ -2,6 +2,7 @@
   "version": "4",
   "specifiers": {
     "jsr:@deno/graph@0.85": "0.85.0",
+    "npm:gpt-tokenizer@^2.6.2": "2.6.2",
     "npm:node-graphviz@~0.1.1": "0.1.1"
   },
   "jsr": {
@@ -10,6 +11,9 @@
     }
   },
   "npm": {
+    "gpt-tokenizer@2.6.2": {
+      "integrity": "sha512-OznIET3z069FiwbLtLFXJ9pVESYAa8EnX0BMogs6YJ4Fn2FIcyeZYEbxsp2grPiK0DVaqP1f+0JR/8t9R7/jlg=="
+    },
     "node-graphviz@0.1.1": {
       "integrity": "sha512-riY8/pFGSD1ipmyzqCwuN2M6W02ELfuLDjhJvTrQCUS/15tyU8ExkC96mlQrNLBK8Ws0z8PdH+ChBT6DuPFWWA=="
     }
@@ -17,6 +21,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@deno/graph@0.85",
+      "npm:gpt-tokenizer@^2.6.2",
       "npm:node-graphviz@~0.1.1"
     ]
   }

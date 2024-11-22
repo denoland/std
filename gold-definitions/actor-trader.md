@@ -8,6 +8,7 @@ late [Funder](actor.md#funder).
 compensation by:
 
 - Assessing the realized value of existing [Contributions](contribution.md)
+  through [Impact Crystal](impact-crystal.md) analysis
 - Offering [Assets](asset.md) to Contributors through
   [Payment Paths](payment-path.md)
 - Being attributed to as a contributor because of their payments
