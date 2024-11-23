@@ -90,3 +90,12 @@ Deno.test("escape() works with all ASCII", async (t) => {
     });
   });
 });
+
+Deno.test("escape() escapes the leading digit", () => {
+  const escaped = escape("1");
+  assertEquals(escaped, "\\x31");
+
+  const re = new RegExp(`^${escaped}$`);
+  assertMatch("1", re);
+  assertNotMatch("a", re);
+});
