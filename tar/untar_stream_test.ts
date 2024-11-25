@@ -241,3 +241,30 @@ Deno.test("UntarStream() with extra bytes", async () => {
     entry.readable?.cancel();
   }
 });
+
+Deno.test("UntarStream() with extra checksum digits", async () => {
+  const bytes = await toBytes(
+    ReadableStream.from<TarStreamInput>([
+      { type: "directory", path: "a" },
+    ]).pipeThrough(new TarStream()),
+  );
+
+  for await (
+    const entry of ReadableStream
+      .from([bytes.slice()])
+      .pipeThrough(new UntarStream())
+  ) {
+    assertEquals(entry.path, "a");
+    entry.readable?.cancel();
+  }
+
+  bytes.set(bytes.subarray(148, 156 - 2), 148 + 1); // Copy 6 octal digits of checksum and make it seven sigits. Assuming first digit is zero
+  for await (
+    const entry of ReadableStream
+      .from([bytes.slice()])
+      .pipeThrough(new UntarStream())
+  ) {
+    assertEquals(entry.path, "a");
+    entry.readable?.cancel();
+  }
+});

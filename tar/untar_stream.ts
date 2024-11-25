@@ -233,7 +233,7 @@ export class UntarStream
 
       // Validate Checksum
       const checksum = parseInt(
-        decoder.decode(value.subarray(148, 156 - 2)),
+        decoder.decode(value.subarray(148, 156)),
         8,
       );
       value.fill(32, 148, 156);
