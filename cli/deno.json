@@ -1,6 +1,6 @@
 {
   "name": "@std/cli",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "exports": {
     ".": "./mod.ts",
     "./parse-args": "./parse_args.ts",
