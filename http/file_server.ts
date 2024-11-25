@@ -52,6 +52,7 @@ import { parseArgs } from "@std/cli/parse-args";
 import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/unstable-get-network-address";
+import { escape } from "@std/html/entities";
 import { HEADER } from "./unstable_header.ts";
 import { METHOD } from "./unstable_method.ts";
 
@@ -504,7 +505,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       .map((path, index, array) => {
         if (path === "") return "";
         const link = array.slice(0, index + 1).join("/");
-        return `<a href="${link}">${path}</a>`;
+        return `<a href="${escape(link)}">${escape(path)}</a>`;
       })
       .join("/")
   }
@@ -529,7 +530,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                       ${entry.size}
                     </td>
                     <td>
-                      <a href="${entry.url}">${entry.name}</a>
+                      <a href="${escape(entry.url)}">${escape(entry.name)}</a>
                     </td>
                   </tr>
                 `,
