@@ -1,3 +1,13 @@
+### 2024.11.25
+
+#### @std/cli 1.0.7 (patch)
+
+- feat(cli/unstable): add `promptSelect()` (#6190)
+
+#### @std/tar 0.1.4 (patch)
+
+- fix(tar): untar checksum calculation for the pax format (#6199)
+
 ### 2024.11.22
 
 ### @std/archive
