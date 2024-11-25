@@ -16,7 +16,7 @@ import { AssertionError } from "./assertion_error.ts";
  * same type.
  *
  * Note: When comparing `Blob` objects, you should first convert them to
- * `Uint8Array` using the `Blob.arrayBuffer()` method and then compare their
+ * `Uint8Array` using the `Blob.bytes()` method and then compare their
  * contents.
  *
  * @example Usage
