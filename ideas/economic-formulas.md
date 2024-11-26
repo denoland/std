@@ -7,9 +7,9 @@ This document proposes a mathematical framework for comparing different economic
 ## Core Mathematical Components
 
 ### 1. Income Distribution Function
-$$
+```math
 I_i = f(C_i, S)
-$$
+```
 
 Where:
 - $I_i$ = Income received by actor $i$
@@ -19,9 +19,9 @@ Where:
 Reference: [Decentralized Income](decentralized-income.md)
 
 ### 2. Value Attribution Mechanism
-$$
+```math
 V = \sum_{i} a_i C_i
-$$
+```
 
 Where:
 - $V$ = Total value created
@@ -31,9 +31,9 @@ Where:
 Reference: [Attribution Algorithm](attribution-algorithm.md)
 
 ### 3. Impact Assessment Function
-$$
+```math
 \text{Impact}_i = \sum_{d=1}^{D} w_d \cdot v_{id}
-$$
+```
 
 Where:
 - $w_d$ = Weight of dimension $d$
@@ -43,9 +43,9 @@ Where:
 Reference: [Impact Crystal](impact-crystal.md)
 
 ### 4. Market Dynamics Function
-$$
+```math
 M(t) = \sum_{i} \text{Stuck}_i(t) \cdot \text{Conversion}_i(t)
-$$
+```
 
 Where:
 - $\text{Stuck}_i(t)$ = Identified need at time $t$
@@ -84,19 +84,22 @@ Reference: [Dreamcatcher Platform](dreamcatcher-platform.md)
 ## Unique Features of Dreamcatcher Model
 
 1. **Continuous Value Flow**
-$$
+
+```math
 \text{Value Flow}(t) = \int_{0}^{t} \sum_{i} \text{Attribution}_i(\tau) d\tau
-$$
+```
 
 2. **Multi-dimensional Impact**
-$$
+
+```math
 \text{Total Impact} = \sum_{d=1}^{D} \sum_{i=1}^{N} \text{Impact}_{id}
-$$
+```
 
 3. **Decentralized Discovery**
-$$
+
+```math
 \text{Market Need} = \sum_{d} \text{Demander}_d \cdot \text{Reinforcement}_d
-$$
+```
 
 ## Key Differentiators
 
