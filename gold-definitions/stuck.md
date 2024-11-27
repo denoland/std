@@ -1,6 +1,3 @@
-Here is the updated `stuck.md` definition that incorporates the new classifications and aligns with the `@gold-definitions`:
-
-```markdown:gold-definitions/stuck.md
 # Stuck
 
 **Definition**: A detected inefficiency, obstruction, or opportunity within the platform that prevents an [Actor](actor.md) from achieving a desired outcome, signaling areas for potential improvement through [Contributions](contribution.md).
@@ -163,4 +160,3 @@ By integrating these classifications and processes, the concept of a "Stuck" ali
 - [Decentralized Income](decentralized-income.md)
 - [Impact Crystal](impact-crystal.md)
 - [Ambient Attribution](ambient-attribution.md)
-```
