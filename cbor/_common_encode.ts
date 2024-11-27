@@ -7,22 +7,37 @@ import type { CborTag } from "./tag.ts";
 import type { CborType } from "./types.ts";
 
 export function encodeNumber(x: number): Uint8Array {
+  const output = new Uint8Array(9);
+  const view = new DataView(output.buffer);
   if (x % 1 === 0) {
     const isNegative = x < 0;
     const majorType = isNegative ? 0b001_00000 : 0b000_00000;
     if (isNegative) x = -x - 1;
 
-    if (x < 24) return new Uint8Array([majorType + x]);
-    if (x < 2 ** 8) return new Uint8Array([majorType + 24, x]);
+    if (x < 24) {
+      output[0] = majorType + x;
+      return output.subarray(0, 1);
+    }
+    if (x < 2 ** 8) {
+      output[0] = majorType + 24;
+      output[1] = x;
+      return output.subarray(0, 2);
+    }
     if (x < 2 ** 16) {
-      return concat([new Uint8Array([majorType + 25]), numberToArray(2, x)]);
+      output[0] = majorType + 25;
+      view.setUint16(1, x);
+      return output.subarray(0, 3);
     }
     if (x < 2 ** 32) {
-      return concat([new Uint8Array([majorType + 26]), numberToArray(4, x)]);
+      output[0] = majorType + 26;
+      view.setUint32(1, x);
+      return output.subarray(0, 5);
     }
     if (x < 2 ** 64) {
+      output[0] = majorType + 27;
       // Due to possible precision loss with numbers this large, it's best to do conversion under BigInt or end up with 1n off.
-      return encodeBigInt(BigInt(isNegative ? -x - 1 : x));
+      view.setBigUint64(1, BigInt(x));
+      return output;
     }
     throw new RangeError(
       `Cannot encode number: It (${isNegative ? -x - 1 : x}) exceeds ${
@@ -30,17 +45,23 @@ export function encodeNumber(x: number): Uint8Array {
       }2 ** 64 - 1`,
     );
   }
-  return concat([new Uint8Array([0b111_11011]), numberToArray(8, x)]);
+  output[0] = 0b111_11011;
+  view.setFloat64(1, x);
+  return output;
 }
 
 export function encodeBigInt(x: bigint): Uint8Array {
   const isNegative = x < 0n;
   if ((isNegative ? -x : x) < 2n ** 32n) return encodeNumber(Number(x));
 
-  const head = new Uint8Array([x < 0n ? 0b001_11011 : 0b000_11011]);
+  const output = new Uint8Array(9);
+  const view = new DataView(output.buffer);
   if (isNegative) x = -x - 1n;
-
-  if (x < 2n ** 64n) return concat([head, numberToArray(8, x)]);
+  if (x < 2n ** 64n) {
+    output[0] = isNegative ? 0b001_11011 : 0b000_11011;
+    view.setBigUint64(1, x);
+    return output;
+  }
   throw new RangeError(
     `Cannot encode bigint: It (${isNegative ? -x - 1n : x}) exceeds ${
       isNegative ? "-" : ""
@@ -84,10 +105,13 @@ export function encodeString(x: string): Uint8Array {
 }
 
 export function encodeDate(x: Date): Uint8Array {
-  return concat([
-    new Uint8Array([0b110_00001]),
-    encodeNumber(x.getTime() / 1000),
-  ]);
+  const input = encodeNumber(x.getTime() / 1000);
+  // deno-lint-ignore no-explicit-any
+  const output = new Uint8Array((input.buffer as any)
+    .transfer(input.length + 1));
+  output.set(output.subarray(0, -1), 1);
+  output[0] = 0b110_00001;
+  return output;
 }
 
 export function encodeArray(x: CborType[]): Uint8Array {
