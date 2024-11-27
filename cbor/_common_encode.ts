@@ -7,22 +7,15 @@ import type { CborTag } from "./tag.ts";
 import type { CborType } from "./types.ts";
 
 export function encodeNumber(x: number): Uint8Array {
-  const output = new Uint8Array(9);
-  const view = new DataView(output.buffer);
   if (x % 1 === 0) {
     const isNegative = x < 0;
     const majorType = isNegative ? 0b001_00000 : 0b000_00000;
     if (isNegative) x = -x - 1;
 
-    if (x < 24) {
-      output[0] = majorType + x;
-      return output.subarray(0, 1);
-    }
-    if (x < 2 ** 8) {
-      output[0] = majorType + 24;
-      output[1] = x;
-      return output.subarray(0, 2);
-    }
+    if (x < 24) return Uint8Array.from([majorType + x]);
+    if (x < 2 ** 8) return Uint8Array.from([majorType + 24, x]);
+    const output = new Uint8Array(9);
+    const view = new DataView(output.buffer);
     if (x < 2 ** 16) {
       output[0] = majorType + 25;
       view.setUint16(1, x);
@@ -45,6 +38,8 @@ export function encodeNumber(x: number): Uint8Array {
       }2 ** 64 - 1`,
     );
   }
+  const output = new Uint8Array(9);
+  const view = new DataView(output.buffer);
   output[0] = 0b111_11011;
   view.setFloat64(1, x);
   return output;
