@@ -1,6 +1,6 @@
 # Dreamcatcher Unit (DU)
 
-**Definition**: The platform's intrinsic currency that automatically appreciates with network growth, efficiently handles micropayments, and supports deferred attribution resolution through symbolic value representation.
+**Definition**: The platform's intrinsic currency that automatically appreciates with network growth, efficiently handles micropayments, and supports deferred attribution resolution through symbolic value representation. Functions as legal tender within the platform ecosystem with guaranteed acceptance and provenance tracking.
 
 **Description**: Dreamcatcher Units serve as the platform's native medium of exchange by:
 
@@ -11,6 +11,20 @@ Core Properties:
   - Value increases with total network utility
   - Natural hedge against external currency inflation
   - Incentivizes long-term value holding
+
+- Legal Tender Status:
+  - Mandatory acceptance by all platform services
+  - Guaranteed value through network growth correlation
+  - Reduced external currency volatility exposure
+  - Simplified market operations through single currency
+
+- Provenance Characteristics:
+  - Full [KYC](kyc.md) tracking of unit generation and transfers
+  - Environmental impact labeling (e.g., carbon footprint)
+  - Energy source certification
+  - Computation method tracking
+  - Enables premium markets for "clean" or "green" units
+  - Maintains complete attribution lineage
 
 - Micropayment Optimization:
   - Automatic aggregation of small value streams
@@ -50,6 +64,16 @@ Trading Properties:
 - Supports partial attribution resolution when needed
 - Enables efficient [Payment Path](payment-path.md) operations
 - Reduces [Attribution Algorithm](attribution-algorithm.md) computation load
+- Allows premium trading of units based on provenance
+- Enables markets for environmentally certified units
+
+Risk Reduction:
+
+- Guaranteed acceptance within platform ecosystem
+- Reduced exposure to external currency volatility
+- Network growth correlation provides natural value stability
+- Complete provenance tracking reduces regulatory risk
+- Environmental impact transparency enables compliance
 
 The currency's ability to remain unresolved until needed creates significant efficiency gains by:
 
@@ -58,4 +82,4 @@ The currency's ability to remain unresolved until needed creates significant eff
 - Supporting batched resolution when required
 - Maintaining attribution accuracy while deferring computation
 
-This approach fundamentally changes how platform value flows by making attribution native to the currency itself while optimizing for computational efficiency through deferred resolution.
+This approach fundamentally changes how platform value flows by making attribution native to the currency itself while optimizing for computational efficiency through deferred resolution. The addition of provenance tracking and guaranteed acceptance creates a stable, environmentally conscious currency that serves as the platform's primary medium of exchange.
