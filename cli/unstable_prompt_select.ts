@@ -13,7 +13,7 @@ const CR = "\r";
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
 
-const CLR = "\r\u001b[K"; // Clear the current line
+const CLR_ALL = "\x1b[J"; // Clear all lines after cursor
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -66,10 +66,12 @@ export function promptSelect(
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[1A${CLR}`.repeat(length)));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length}A`)); // move cursor after message
+    Deno.stdout.writeSync(encoder.encode(CLR_ALL));
   }
   if (clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[1A${CLR}`.repeat(length + 1))); // clear values and message
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`)); // move cursor before message
+    Deno.stdout.writeSync(encoder.encode(CLR_ALL));
   }
   Deno.stdin.setRaw(false);
   return values[selectedIndex] ?? null;
