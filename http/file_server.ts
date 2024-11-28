@@ -179,7 +179,7 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
-  if (req.method !== METHOD.Get) {
+  if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -220,6 +220,25 @@ export async function serveFile(
     headers.set(HEADER.ETag, etag);
   }
 
+  // Set mime-type using the file extension in filePath
+  const contentTypeValue = contentType(extname(filePath));
+  if (contentTypeValue) {
+    headers.set(HEADER.ContentType, contentTypeValue);
+  }
+  const fileSize = fileInfo.size;
+
+  if (req.method === METHOD.Head) {
+    // Set content length
+    headers.set(HEADER.ContentLength, `${fileSize}`);
+
+    const status = STATUS_CODE.OK;
+    return new Response(null, {
+      status,
+      statusText: STATUS_TEXT[status],
+      headers,
+    });
+  }
+
   if (etag || fileInfo.mtime) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
@@ -242,14 +261,6 @@ export async function serveFile(
       });
     }
   }
-
-  // Set mime-type using the file extension in filePath
-  const contentTypeValue = contentType(extname(filePath));
-  if (contentTypeValue) {
-    headers.set(HEADER.ContentType, contentTypeValue);
-  }
-
-  const fileSize = fileInfo.size;
 
   const rangeValue = req.headers.get(HEADER.Range);
 
