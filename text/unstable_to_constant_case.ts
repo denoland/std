@@ -21,5 +21,5 @@ import { splitToWords } from "./_util.ts";
  */
 export function toConstantCase(input: string): string {
   input = input.trim();
-  return splitToWords(input).join("_").toLocaleUpperCase();
+  return splitToWords(input).join("_").toUpperCase();
 }
