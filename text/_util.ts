@@ -16,7 +16,5 @@ export function splitToWords(input: string) {
 }
 
 export function capitalizeWord(word: string): string {
-  return word
-    ? word?.[0]?.toLocaleUpperCase() + word.slice(1).toLocaleLowerCase()
-    : word;
+  return word ? word[0]!.toUpperCase() + word.slice(1).toLowerCase() : word;
 }
