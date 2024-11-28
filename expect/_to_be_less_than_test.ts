@@ -20,3 +20,23 @@ Deno.test("expect().toBeLessThan()", () => {
     expect(9).not.toBeLessThan(10);
   }, AssertionError);
 });
+
+Deno.test("expect().toBeLessThan() with custom error message", () => {
+  const msg = "toBeLessThan Custom Error";
+
+  assertThrows(
+    () => {
+      expect(10, msg).toBeLessThan(10);
+    },
+    AssertionError,
+    msg,
+  );
+
+  assertThrows(
+    () => {
+      expect(9, msg).not.toBeLessThan(10);
+    },
+    AssertionError,
+    msg,
+  );
+});

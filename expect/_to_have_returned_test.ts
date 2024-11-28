@@ -29,3 +29,34 @@ Deno.test("expect().toHaveReturned()", () => {
     expect(mockFn0).not.toHaveReturned();
   }, AssertionError);
 });
+
+Deno.test("expect().toHaveReturned() with custom error message", () => {
+  const msg = "toHaveReturned custom error message";
+  const mockFn0 = fn();
+  const mockFn1 = fn(() => {
+    throw new Error("foo");
+  });
+
+  mockFn0();
+  try {
+    mockFn1();
+  } catch {
+    // ignore
+  }
+
+  assertThrows(
+    () => {
+      expect(mockFn1, msg).toHaveReturned();
+    },
+    AssertionError,
+    msg,
+  );
+
+  assertThrows(
+    () => {
+      expect(mockFn0, msg).not.toHaveReturned();
+    },
+    AssertionError,
+    msg,
+  );
+});

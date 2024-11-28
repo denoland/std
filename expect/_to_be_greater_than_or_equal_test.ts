@@ -17,3 +17,23 @@ Deno.test("expect().toBeGreaterThanOrEqual()", () => {
     expect(11).not.toBeGreaterThanOrEqual(10);
   }, AssertionError);
 });
+
+Deno.test("expect().toBeGreaterThanOrEqual() with custom error message", () => {
+  const msg = "toBeGreaterThanOrEqual Custom Error";
+
+  assertThrows(
+    () => {
+      expect(10, msg).toBeGreaterThan(10);
+    },
+    AssertionError,
+    msg,
+  );
+
+  assertThrows(
+    () => {
+      expect(11, msg).not.toBeGreaterThanOrEqual(10);
+    },
+    AssertionError,
+    msg,
+  );
+});

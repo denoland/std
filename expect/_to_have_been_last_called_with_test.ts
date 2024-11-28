@@ -33,3 +33,27 @@ Deno.test("expect().toHaveBeenLastCalledWith() handles the case when the mock is
     "Expected mock function to be last called with 1, 2, 3, but it was not",
   );
 });
+
+Deno.test("expect().toHaveBeenLastCalledWith() with custom error message", () => {
+  const msg = "toHaveBeenLastCalledWith custom error message";
+  const mockFn = fn();
+
+  mockFn(1, 2, 3);
+  mockFn(4, 5, 6);
+
+  assertThrows(
+    () => {
+      expect(mockFn, msg).toHaveBeenLastCalledWith(1, 2, 3);
+    },
+    AssertionError,
+    msg,
+  );
+
+  assertThrows(
+    () => {
+      expect(mockFn, msg).not.toHaveBeenLastCalledWith(4, 5, 6);
+    },
+    AssertionError,
+    msg,
+  );
+});

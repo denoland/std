@@ -89,13 +89,15 @@ export function toBeCloseTo(
   if (context.isNot) {
     if (pass) {
       throw new AssertionError(
-        `Expected the value not to be close to ${expected} (using ${numDigits} digits), but it is`,
+        context.customMessage ??
+          `Expected the value not to be close to ${expected} (using ${numDigits} digits), but it is`,
       );
     }
   } else {
     if (!pass) {
       throw new AssertionError(
-        `Expected the value (${value} to be close to ${expected} (using ${numDigits} digits), but it is not`,
+        context.customMessage ??
+          `Expected the value (${value} to be close to ${expected} (using ${numDigits} digits), but it is not`,
       );
     }
   }
@@ -128,13 +130,15 @@ export function toBeFalsy(
   if (context.isNot) {
     if (isFalsy) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be falsy`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be falsy`,
       );
     }
   } else {
     if (!isFalsy) {
       throw new AssertionError(
-        `Expected ${context.value} to be falsy`,
+        context.customMessage ??
+          `Expected ${context.value} to be falsy`,
       );
     }
   }
@@ -147,13 +151,15 @@ export function toBeTruthy(
   if (context.isNot) {
     if (isTruthy) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be truthy`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be truthy`,
       );
     }
   } else {
     if (!isTruthy) {
       throw new AssertionError(
-        `Expected ${context.value} to be truthy`,
+        context.customMessage ??
+          `Expected ${context.value} to be truthy`,
       );
     }
   }
@@ -167,13 +173,15 @@ export function toBeGreaterThanOrEqual(
   if (context.isNot) {
     if (isGreaterOrEqual) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be greater than or equal ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be greater than or equal ${expected}`,
       );
     }
   } else {
     if (!isGreaterOrEqual) {
       throw new AssertionError(
-        `Expected ${context.value} to be greater than or equal ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to be greater than or equal ${expected}`,
       );
     }
   }
@@ -187,13 +195,15 @@ export function toBeGreaterThan(
   if (context.isNot) {
     if (isGreater) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be greater than ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be greater than ${expected}`,
       );
     }
   } else {
     if (!isGreater) {
       throw new AssertionError(
-        `Expected ${context.value} to be greater than ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to be greater than ${expected}`,
       );
     }
   }
@@ -217,13 +227,15 @@ export function toBeLessThanOrEqual(
   if (context.isNot) {
     if (isLower) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be lower than or equal ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be lower than or equal ${expected}`,
       );
     }
   } else {
     if (!isLower) {
       throw new AssertionError(
-        `Expected ${context.value} to be lower than or equal ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to be lower than or equal ${expected}`,
       );
     }
   }
@@ -236,13 +248,15 @@ export function toBeLessThan(
   if (context.isNot) {
     if (isLower) {
       throw new AssertionError(
-        `Expected ${context.value} to NOT be lower than ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to NOT be lower than ${expected}`,
       );
     }
   } else {
     if (!isLower) {
       throw new AssertionError(
-        `Expected ${context.value} to be lower than ${expected}`,
+        context.customMessage ??
+          `Expected ${context.value} to be lower than ${expected}`,
       );
     }
   }
@@ -298,13 +312,15 @@ export function toHaveLength(
   if (context.isNot) {
     if (hasLength) {
       throw new AssertionError(
-        `Expected value not to have length ${expected}, but it does`,
+        context.customMessage ??
+          `Expected value not to have length ${expected}, but it does`,
       );
     }
   } else {
     if (!hasLength) {
       throw new AssertionError(
-        `Expected value to have length ${expected}, but it does not: the value has length ${maybeLength}`,
+        context.customMessage ??
+          `Expected value to have length ${expected}, but it does not: the value has length ${maybeLength}`,
       );
     }
   }
@@ -353,17 +369,19 @@ export function toHaveProperty(
   if (context.isNot) {
     if (hasProperty) {
       throw new AssertionError(
-        `Expected the value not to have the property ${
-          propPath.join(".")
-        }${ofValue}, but it does`,
+        context.customMessage ??
+          `Expected the value not to have the property ${
+            propPath.join(".")
+          }${ofValue}, but it does`,
       );
     }
   } else {
     if (!hasProperty) {
       throw new AssertionError(
-        `Expected the value to have the property ${
-          propPath.join(".")
-        }${ofValue}, but it does not`,
+        context.customMessage ??
+          `Expected the value to have the property ${
+            propPath.join(".")
+          }${ofValue}, but it does not`,
       );
     }
   }
@@ -382,13 +400,15 @@ export function toContain(
   if (context.isNot) {
     if (doesContain) {
       throw new AssertionError(
-        `The value ${fmtValue} contains the expected item ${fmtExpected}`,
+        context.customMessage ??
+          `The value ${fmtValue} contains the expected item ${fmtExpected}`,
       );
     }
   } else {
     if (!doesContain) {
       throw new AssertionError(
-        `The value ${fmtValue} doesn't contain the expected item ${fmtExpected}`,
+        context.customMessage ??
+          `The value ${fmtValue} doesn't contain the expected item ${fmtExpected}`,
       );
     }
   }
@@ -420,7 +440,8 @@ export function toContainEqual(
   if (context.isNot) {
     if (doesContain) {
       throw new AssertionError(
-        `The value contains the expected item:
+        context.customMessage ??
+          `The value contains the expected item:
 Value: ${fmtValue}
 Expected: ${fmtExpected}`,
       );
@@ -428,7 +449,8 @@ Expected: ${fmtExpected}`,
   } else {
     if (!doesContain) {
       throw new AssertionError(
-        `The value doesn't contain the expected item:
+        context.customMessage ??
+          `The value doesn't contain the expected item:
 Value: ${fmtValue}
 Expected: ${fmtExpected}`,
       );
@@ -468,11 +490,15 @@ export function toMatchObject(
   const received = context.value;
 
   if (typeof received !== "object" || received === null) {
-    throw new AssertionError("Received value must be an object");
+    throw new AssertionError(
+      context.customMessage ?? "Received value must be an object",
+    );
   }
 
   if (typeof expected !== "object" || expected === null) {
-    throw new AssertionError("Received value must be an object");
+    throw new AssertionError(
+      context.customMessage ?? "Received value must be an object",
+    );
   }
 
   const pass = equal(context.value, expected, {
@@ -488,7 +514,8 @@ export function toMatchObject(
     const actualString = format(context.value);
     const expectedString = format(expected);
     throw new AssertionError(
-      `Expected ${actualString} to NOT match ${expectedString}`,
+      context.customMessage ??
+        `Expected ${actualString} to NOT match ${expectedString}`,
     );
   };
 
@@ -504,13 +531,15 @@ export function toHaveBeenCalled(context: MatcherContext): MatchResult {
   if (context.isNot) {
     if (hasBeenCalled) {
       throw new AssertionError(
-        `Expected mock function not to be called, but it was called ${calls.length} time(s)`,
+        context.customMessage ??
+          `Expected mock function not to be called, but it was called ${calls.length} time(s)`,
       );
     }
   } else {
     if (!hasBeenCalled) {
       throw new AssertionError(
-        `Expected mock function to be called, but it was not called`,
+        context.customMessage ??
+          `Expected mock function to be called, but it was not called`,
       );
     }
   }
@@ -525,13 +554,15 @@ export function toHaveBeenCalledTimes(
   if (context.isNot) {
     if (calls.length === expected) {
       throw new AssertionError(
-        `Expected mock function not to be called ${expected} time(s), but it was`,
+        context.customMessage ??
+          `Expected mock function not to be called ${expected} time(s), but it was`,
       );
     }
   } else {
     if (calls.length !== expected) {
       throw new AssertionError(
-        `Expected mock function to be called ${expected} time(s), but it was called ${calls.length} time(s)`,
+        context.customMessage ??
+          `Expected mock function to be called ${expected} time(s), but it was called ${calls.length} time(s)`,
       );
     }
   }
@@ -547,9 +578,10 @@ export function toHaveBeenCalledWith(
   if (context.isNot) {
     if (hasBeenCalled) {
       throw new AssertionError(
-        `Expected mock function not to be called with ${
-          inspectArgs(expected)
-        }, but it was`,
+        context.customMessage ??
+          `Expected mock function not to be called with ${
+            inspectArgs(expected)
+          }, but it was`,
       );
     }
   } else {
@@ -561,9 +593,10 @@ export function toHaveBeenCalledWith(
         }`;
       }
       throw new AssertionError(
-        `Expected mock function to be called with ${
-          inspectArgs(expected)
-        }, but it was not.${otherCalls}`,
+        context.customMessage ??
+          `Expected mock function to be called with ${
+            inspectArgs(expected)
+          }, but it was not.${otherCalls}`,
       );
     }
   }
@@ -579,9 +612,10 @@ export function toHaveBeenLastCalledWith(
   if (context.isNot) {
     if (hasBeenCalled) {
       throw new AssertionError(
-        `Expected mock function not to be last called with ${
-          inspectArgs(expected)
-        }, but it was`,
+        context.customMessage ??
+          `Expected mock function not to be last called with ${
+            inspectArgs(expected)
+          }, but it was`,
       );
     }
   } else {
@@ -589,15 +623,17 @@ export function toHaveBeenLastCalledWith(
       const lastCall = calls.at(-1);
       if (!lastCall) {
         throw new AssertionError(
-          `Expected mock function to be last called with ${
-            inspectArgs(expected)
-          }, but it was not`,
+          context.customMessage ??
+            `Expected mock function to be last called with ${
+              inspectArgs(expected)
+            }, but it was not`,
         );
       } else {
         throw new AssertionError(
-          `Expected mock function to be last called with ${
-            inspectArgs(expected)
-          }, but it was last called with ${inspectArgs(lastCall.args)}`,
+          context.customMessage ??
+            `Expected mock function to be last called with ${
+              inspectArgs(expected)
+            }, but it was last called with ${inspectArgs(lastCall.args)}`,
         );
       }
     }
@@ -620,9 +656,10 @@ export function toHaveBeenNthCalledWith(
   if (context.isNot) {
     if (hasBeenCalled) {
       throw new AssertionError(
-        `Expected the n-th call (n=${nth}) of mock function is not with ${
-          inspectArgs(expected)
-        }, but it was`,
+        context.customMessage ??
+          `Expected the n-th call (n=${nth}) of mock function is not with ${
+            inspectArgs(expected)
+          }, but it was`,
       );
     }
   } else {
@@ -630,15 +667,17 @@ export function toHaveBeenNthCalledWith(
       const nthCall = calls[callIndex];
       if (!nthCall) {
         throw new AssertionError(
-          `Expected the n-th call (n=${nth}) of mock function is with ${
-            inspectArgs(expected)
-          }, but the n-th call does not exist`,
+          context.customMessage ??
+            `Expected the n-th call (n=${nth}) of mock function is with ${
+              inspectArgs(expected)
+            }, but the n-th call does not exist`,
         );
       } else {
         throw new AssertionError(
-          `Expected the n-th call (n=${nth}) of mock function is with ${
-            inspectArgs(expected)
-          }, but it was with ${inspectArgs(nthCall.args)}`,
+          context.customMessage ??
+            `Expected the n-th call (n=${nth}) of mock function is with ${
+              inspectArgs(expected)
+            }, but it was with ${inspectArgs(nthCall.args)}`,
         );
       }
     }
@@ -652,13 +691,15 @@ export function toHaveReturned(context: MatcherContext): MatchResult {
   if (context.isNot) {
     if (returned.length > 0) {
       throw new AssertionError(
-        `Expected the mock function to not have returned, but it returned ${returned.length} times`,
+        context.customMessage ??
+          `Expected the mock function to not have returned, but it returned ${returned.length} times`,
       );
     }
   } else {
     if (returned.length === 0) {
       throw new AssertionError(
-        `Expected the mock function to have returned, but it did not return`,
+        context.customMessage ??
+          `Expected the mock function to have returned, but it did not return`,
       );
     }
   }
@@ -674,13 +715,15 @@ export function toHaveReturnedTimes(
   if (context.isNot) {
     if (returned.length === expected) {
       throw new AssertionError(
-        `Expected the mock function to not have returned ${expected} times, but it returned ${returned.length} times`,
+        context.customMessage ??
+          `Expected the mock function to not have returned ${expected} times, but it returned ${returned.length} times`,
       );
     }
   } else {
     if (returned.length !== expected) {
       throw new AssertionError(
-        `Expected the mock function to have returned ${expected} times, but it returned ${returned.length} times`,
+        context.customMessage ??
+          `Expected the mock function to have returned ${expected} times, but it returned ${returned.length} times`,
       );
     }
   }
@@ -698,17 +741,19 @@ export function toHaveReturnedWith(
   if (context.isNot) {
     if (returnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to not have returned with ${
-          inspectArg(expected)
-        }, but it did`,
+        context.customMessage ??
+          `Expected the mock function to not have returned with ${
+            inspectArg(expected)
+          }, but it did`,
       );
     }
   } else {
     if (!returnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to have returned with ${
-          inspectArg(expected)
-        }, but it did not`,
+        context.customMessage ??
+          `Expected the mock function to have returned with ${
+            inspectArg(expected)
+          }, but it did not`,
       );
     }
   }
@@ -726,17 +771,19 @@ export function toHaveLastReturnedWith(
   if (context.isNot) {
     if (lastReturnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to not have last returned with ${
-          inspectArg(expected)
-        }, but it did`,
+        context.customMessage ??
+          `Expected the mock function to not have last returned with ${
+            inspectArg(expected)
+          }, but it did`,
       );
     }
   } else {
     if (!lastReturnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to have last returned with ${
-          inspectArg(expected)
-        }, but it did not`,
+        context.customMessage ??
+          `Expected the mock function to have last returned with ${
+            inspectArg(expected)
+          }, but it did not`,
       );
     }
   }
@@ -761,17 +808,19 @@ export function toHaveNthReturnedWith(
   if (context.isNot) {
     if (nthReturnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to not have n-th (n=${nth}) returned with ${
-          inspectArg(expected)
-        }, but it did`,
+        context.customMessage ??
+          `Expected the mock function to not have n-th (n=${nth}) returned with ${
+            inspectArg(expected)
+          }, but it did`,
       );
     }
   } else {
     if (!nthReturnedWithExpected) {
       throw new AssertionError(
-        `Expected the mock function to have n-th (n=${nth}) returned with ${
-          inspectArg(expected)
-        }, but it did not`,
+        context.customMessage ??
+          `Expected the mock function to have n-th (n=${nth}) returned with ${
+            inspectArg(expected)
+          }, but it did not`,
       );
     }
   }
@@ -815,7 +864,9 @@ export function toThrow<E extends Error = Error>(
         context.customMessage,
       );
       isError = true;
-      throw new AssertionError(`Expected to NOT throw ${expected}`);
+      throw new AssertionError(
+        context.customMessage ?? `Expected to NOT throw ${expected}`,
+      );
     } catch (e) {
       if (isError) {
         throw e;
