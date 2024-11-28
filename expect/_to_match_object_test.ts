@@ -112,4 +112,12 @@ Deno.test("expect().toMatchObject() with custom error message", () => {
     AssertionError,
     msg,
   );
+
+  assertThrows(
+    () => {
+      expect(null, msg).toMatchObject([desiredHouse]);
+    },
+    AssertionError,
+    msg,
+  );
 });
