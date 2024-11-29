@@ -42,9 +42,10 @@ Recent updates have been made to the Stuck Loop Process to ensure that all [Stuc
 #### **Purpose**
 
 - The Stuck Loop Process was previously implied in stucks.md.  The process is now explicitly defined in `stuck-loop-process.md`.
-- It aims to capture the process of transforming a Stuck into a NAPP or improving an existing NAPP.
-- Now involves Quality Assurance (QA) through evaluation and testing.
-- Incorporates iterative improvement via feedback and data to ensure changes do not result in a failed evaluation.
+- [stucks.md](stucks.md) now includes a link to `stuck-loop-process.md` and refers to the two sub-types of Stuck, [direct-stuck.md](direct-stuck.md) and [implied-stuck.md](implied-stuck.md).
+- The other previous Stuck sub-types have been removed.
+- Now specifies Quality Assurance (QA) through evaluation and testing.
+- Incorporates iterative improvement via feedback loops.
 
 #### **Additions**
 
@@ -68,31 +69,28 @@ Recent updates have been made to the Stuck Loop Process to ensure that all [Stuc
 - **Implement Folder Structure Changes**
 
   - Review and agree upon the proposed folder structures.
-  - Establish separate areas for gold definitions, personal exploration, and work reports.
-  - Set up a staging area for definitions to facilitate collaborative editing.
-
-- **Update Definitions**
-
-  - Incorporate the refined Stuck Loop Process and NAPP definitions into the gold definitions.
-  - Ensure consistency across all related definitions and documents.
-
-- **Enhance Work Processes**
-
-  - Begin summarizing threads at the end of each day.
-  - Utilize AI tools for diff analysis, summarization, and structuring thoughts.
-  - Store threads and transcripts systematically for future reference.
 
 - **Quality Assurance Integration**
 
-  - Emphasize QA's role in evaluating and testing NAPPs within the Stuck Loop Process.
-  - Update QA methodologies to reflect new processes.
+  - Update QA and evalsmethodologies to reflect stuck loop process.
 
 ---
 
 
 ## Gold Definitions
 
+the following changes were made to the gold definitions through iterative cycles of refining the definitions and then asking o1 to check for internal consistency.  
+
+MANUAL NOTE: 
+
+These need checked for accuracy.  I'm not sure that the changes I've made are the best possible, but without evals, no way to check where in the domain space this version is against the last other by eye and renders.  Did both, still looks good, and looks tighter  
+
+BTW, this AI autocomplete is definitely useful, but it is getting on my tits a bit here...
+
+AI NOTES CONTINUE HERE:
+
 Changes Made to Folders and Files
+
 1. Legal Gateway (legal-gateway.md)
 Changes Made:
 Consolidated Content: Integrated information from related files such as legal-gateway-relationships.md and gateway-network.md into legal-gateway.md.
@@ -205,7 +203,7 @@ Note: In adherence to your instructions, any code or markdown snippets provided 
 
 ## Progress reports 
 
-HAND WRITTEN REPORT:
+MANUAL NOTE: 
 
 My thoughts:
 
