@@ -1,21 +1,34 @@
 # Payment Path
 
-**Definition**: The mechanisms and routes through which [Assets](asset.md) are
-transferred between [Actors](actor.md) on the platform.
+**Definition**: The mechanisms and routes through which [Assets](asset.md) are transferred between [Actors](actor.md) within the platform.
 
-**Description**: Payment Paths determine how Assets move through the platform,
-including transfers through [Legal Gateways](legal-gateway.md) for fiat currency
-transactions. They may involve multiple steps or conversions, especially when
-different Asset types are used between parties. Payment Paths are essential for
-facilitating [Decentralized Income](decentralized-income.md) and other economic
-activities within the ecosystem.
+**Description**:
 
-Payment Paths are critical infrastructure for
-[Decentralized Income](decentralized-income.md), determining how value flows
-through the platform. They:
+- **Functionality**:
 
-- Enable automated income distribution
-- Support multiple asset types and conversions
-- Interface with Legal Gateways for traditional currency handling
-- Maintain transaction integrity and transparency
-- Allow efficient value routing between parties
+  - Determines how assets move through the platform.
+  - Facilitates [Decentralized Income](decentralized-income.md) distributions.
+  - Supports various types of [Value Exchange](value-exchange.md).
+
+- **Features**:
+
+  - **Transaction Routing**: Optimizes the path for asset transfers based on efficiency and cost.
+  
+  - **Asset Conversion Handling**: Manages conversions between different asset types when necessary.
+  
+  - **Gateway Integration**: Interfaces with [Legal Gateways](legal-gateway.md) for external transactions.
+  
+  - **Settlement Verification**: Ensures transactions are completed accurately and securely.
+
+- **Importance**:
+
+  - Provides the infrastructure for economic activities on the platform.
+  - Enhances scalability and efficiency of transactions.
+  - Supports automated and transparent value flows.
+
+**Related Concepts**:
+
+- [Value Exchange](value-exchange.md)
+- [Asset](asset.md)
+- [Actor](actor.md)
+- [Legal Gateway](legal-gateway.md)

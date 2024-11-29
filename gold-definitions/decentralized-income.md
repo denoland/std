@@ -1,20 +1,12 @@
 # Decentralized Income
 
-**Definition**: The core economic mechanism of the platform that automatically
-generates and distributes income through decentralized attribution of value,
-enabling fair compensation for all forms of [Contributions](contribution.md)
-without requiring central coordination or traditional corporate structures.
+**Definition**: A system that enables fair compensation for all forms of contributions within the platform by distributing value based on utility and impact rather than traditional employment relationships.
 
-**Description**: Decentralized Income represents the platform's fundamental
-innovation in value distribution by:
+**Description**: Decentralized Income represents the platform's fundamental innovation in value distribution by:
 
-Core Mechanisms:
-
-- Utilizing [Attribution Algorithms](attribution-algorithm.md) to calculate
-  value shares
+- Utilizing [Attribution Algorithms](attribution-algorithm.md) to calculate value shares
 - Measuring impact through [Impact Crystal](impact-crystal.md) analysis
 - Distributing value through automated [Payment Paths](payment-path.md)
-- Operating without central intermediaries or manual accounting
 
 Key Characteristics:
 
@@ -29,9 +21,9 @@ Value Sources:
 - Direct consumer payments for platform services
 - Funder prepayments for specific solutions
 - Trading activity that enables value discovery
-- Legal Gateway services that bridge traditional systems
+- [Legal Gateway](legal-gateway.md) services that bridge traditional systems
 
-Distribution Methods:
+**Distribution Methods**:
 
 - [Ambient Attribution](ambient-attribution.md) for ongoing value sharing
 - Direct payments through established Payment Paths

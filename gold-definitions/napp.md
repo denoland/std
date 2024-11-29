@@ -1,6 +1,6 @@
 # NApp (Natural language Application)
 
-**Definition**: A modular, language-agnostic package that provides JSON-based
+**Definition**: A NAPP, otherwise known as a Natural language Application, is A modular, language-agnostic package that provides JSON-based
 function interfaces for both deterministic (classical code) and probabilistic
 (AI) computing, designed to be discovered, shared, and executed within the
 Dreamcatcher ecosystem with guaranteed repeatability.

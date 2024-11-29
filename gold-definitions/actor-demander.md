@@ -17,9 +17,10 @@ they remain potential future consumers whose usage would generate
 [Decentralized Income](decentralized-income.md) through
 [Ambient Attribution](ambient-attribution.md).
 
-Key characteristics:
+**Key characteristics**:
 
-- Can create declared stucks or reinforce implied ones
+- Can create [Direct Stucks](direct-stuck.md) or reinforce [Implied Stucks](implied-stuck.md)
+
 - Indicates potential future usage at market rates
 - Represents demand for features not yet built
 - Does not specify fixed payment amounts (differs from Funders)

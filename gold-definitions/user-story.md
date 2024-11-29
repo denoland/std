@@ -16,4 +16,9 @@ Unlike [Definitions](definition.md) which form a knowledge DAG of _what_ things 
 - May include implementation details and practical examples
 - Often follow the format "As [Actor type], I want to [action] so that [benefit]"
 
-For example, a user story might describe how a [Trader](trader.md) interacts with [Legal Gateways](legal-gateway.md) and [Payment Paths](payment-path.md) to complete a specific type of [Value Exchange](value-exchange.md), while the individual definitions only establish what each of these components is.
+For example
+
+- a user story might describe how a [Trader](trader.md) interacts with [Legal Gateways](legal-gateway.md) and [Payment Paths](payment-path.md) to complete a specific type of [Value Exchange](value-exchange.md), while the individual definitions only establish what each of these components is.
+
+- an additional example, a user story might describe an [Actor Demander](actor-demander.md) creating a [Direct Stuck](direct-stuck.md) to initiate the [Stuck Loop Process](stuck-loop-process.md).
+

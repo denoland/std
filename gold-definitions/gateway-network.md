@@ -33,4 +33,4 @@ Market dynamics are enabled by:
 
 This network structure ensures that platform services remain accessible,
 competitive, and compliant across different jurisdictions while maintaining
-operational efficiency and market-driven pricing.
+operational efficiency.

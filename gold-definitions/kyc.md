@@ -1,5 +1,25 @@
 # KYC (Know Your Customer)
 
-**Definition**: A verification process conducted through [Legal Gateways](legal-gateway.md) to confirm the real-world identity of [Actors](actor.md).
+**Definition**: A comprehensive identity verification process conducted through [Legal Gateways](legal-gateway.md) to confirm the real-world identity of [Actors](actor.md) using reliable and independent source documents, data, or information.
 
-**Description**: KYC processes are required when Actors need to interact with regulated services or traditional institutions, such as handling fiat currency transactions. This verification adds a layer of legal identity confirmation beyond the platform's basic [Identity](identity.md) mechanisms and is facilitated by Legal Gateways that bridge the platform and real-world legal requirements. 
+**Description**:
+
+- **Purpose**:
+  - Ensure compliance with legal and regulatory requirements.
+  - Prevent illicit activities such as money laundering and financing of terrorism.
+
+- **Process Involves**:
+  - Collecting personal identification information.
+  - Verifying identity documents (e.g., passports, driver's licenses).
+  - Performing background checks and risk assessments.
+
+- **Importance**:
+  - Required for accessing regulated services.
+  - Facilitated by [Legal Gateways](legal-gateway.md) that bridge the platform with traditional financial and legal systems.
+  - Protects the integrity of the platform and its participants.
+
+**Related Concepts**:
+
+- [Identity](identity.md)
+- [Legal Gateway](legal-gateway.md)
+- [Regulatory Compliance](regulatory-compliance.md)
