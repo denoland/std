@@ -1137,3 +1137,15 @@ async function readUntilMatch(
   reader.releaseLock();
   return dec.decode(buf);
 }
+
+Deno.test(async function serveFileHeadRequest() {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
+  assertEquals(res.headers.get("content-length"), "10034");
+});
