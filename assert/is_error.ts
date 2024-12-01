@@ -33,15 +33,15 @@ export function assertIsError<E extends Error = Error>(
   msgMatches?: string | RegExp,
   msg?: string,
 ): asserts error is E {
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgPrefix = msg ? `${msg}: ` : "";
   if (!(error instanceof Error)) {
     throw new AssertionError(
-      `Expected "error" to be an Error object${msgSuffix}`,
+      `${msgPrefix}Expected "error" to be an Error object.`,
     );
   }
   if (ErrorClass && !(error instanceof ErrorClass)) {
     msg =
-      `Expected error to be instance of "${ErrorClass.name}", but was "${error?.constructor?.name}"${msgSuffix}`;
+      `${msgPrefix}Expected error to be instance of "${ErrorClass.name}", but was "${error?.constructor?.name}".`;
     throw new AssertionError(msg);
   }
   let msgCheck;
@@ -55,11 +55,12 @@ export function assertIsError<E extends Error = Error>(
   }
 
   if (msgMatches && !msgCheck) {
-    msg = `Expected error message to include ${
+    msg = `${msgPrefix}Expected error message to include ${
       msgMatches instanceof RegExp
         ? msgMatches.toString()
         : JSON.stringify(msgMatches)
-    }, but got ${JSON.stringify(error?.message)}${msgSuffix}`;
+    }, but got ${JSON.stringify(error?.message)}.`;
+    console.log("msg::", msg);
     throw new AssertionError(msg);
   }
 }

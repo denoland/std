@@ -63,18 +63,12 @@ Deno.test("expect().toHaveBeenNthCalledWith() with custom error message", () => 
   mockFn(4, 5, 6);
   mockFn(7, 8, 9);
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).not.toHaveBeenNthCalledWith(1, 1, 2, 3);
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).not.toHaveBeenNthCalledWith(1, 1, 2, 3),
     msg,
-  );
-  assertThrows(
-    () => {
-      expect(mockFn, msg).toHaveBeenNthCalledWith(1, 4, 5, 6);
-    },
-    AssertionError,
+  ).toThrow(new RegExp(`^${msg}`));
+  expect(
+    () => expect(mockFn, msg).toHaveBeenNthCalledWith(1, 4, 5, 6),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

@@ -44,19 +44,13 @@ Deno.test("expect().toHaveNthReturnedWith() with custom error message", () => {
   mockFn(100);
   mockFn(1000);
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).toHaveNthReturnedWith(1, 1);
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).toHaveNthReturnedWith(1, 1),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).not.toHaveNthReturnedWith(1, 8);
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).not.toHaveNthReturnedWith(1, 8),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

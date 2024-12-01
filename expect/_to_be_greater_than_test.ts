@@ -24,19 +24,13 @@ Deno.test("expect().toBeGreaterThan()", () => {
 Deno.test("expect().toBeGreaterThan() with custom error message message", () => {
   const msg = "toBeGreaterThan Custom Error";
 
-  assertThrows(
-    () => {
-      expect(10, msg).toBeGreaterThan(10);
-    },
-    AssertionError,
+  expect(
+    () => expect(10, msg).toBeGreaterThan(10),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(11, msg).not.toBeGreaterThan(10);
-    },
-    AssertionError,
+  expect(
+    () => expect(11, msg).not.toBeGreaterThan(10),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

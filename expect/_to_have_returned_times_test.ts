@@ -30,19 +30,13 @@ Deno.test("expect().toHaveReturnedTimes() with custom error message", () => {
   mockFn();
   mockFn();
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).toHaveReturnedTimes(1);
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).toHaveReturnedTimes(1),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).not.toHaveReturnedTimes(2);
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).not.toHaveReturnedTimes(2),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

@@ -26,19 +26,13 @@ Deno.test("expect().toHaveBeenCalledWith() with custom error message", () => {
   const mockFn = fn();
   mockFn("hello", "deno");
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).toHaveBeenCalledWith("hello", "DENO");
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).toHaveBeenCalledWith("hello", "DENO"),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(mockFn, msg).not.toHaveBeenCalledWith("hello", "deno");
-    },
-    AssertionError,
+  expect(
+    () => expect(mockFn, msg).not.toHaveBeenCalledWith("hello", "deno"),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

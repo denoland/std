@@ -28,19 +28,17 @@ Deno.test("expect().toHaveLength()", () => {
 Deno.test("expect().toHaveLength() with custom error message", () => {
   const msg = "toHaveLength Custom Error";
 
-  assertThrows(
+  expect(
     () => {
       expect([1, 2, 3], msg).toHaveLength(4);
     },
-    AssertionError,
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
+  expect(
     () => {
       expect("abc", msg).not.toHaveLength(3);
     },
-    AssertionError,
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

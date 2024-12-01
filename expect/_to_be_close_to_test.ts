@@ -31,17 +31,13 @@ Deno.test("expect().toBeCloseTo() throws error when the numDigits is smaller tha
 Deno.test("expect().toBeCloseTo() throws custom message", () => {
   const msg = "toBeCloseTo Custom Error";
 
-  assertThrows(
+  expect(
     () => expect(0.2 + 0.11, msg).toBeCloseTo(0.3),
-    Error,
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(0.2 + 0.1, msg).not.toBeCloseTo(0.3);
-    },
-    AssertionError,
+  expect(
+    () => expect(0.2 + 0.1, msg).not.toBeCloseTo(0.3),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

@@ -30,19 +30,17 @@ Deno.test("expect().toHaveLastReturnedWith() with custom error message", () => {
   mockFn(1);
   mockFn(4);
 
-  assertThrows(
+  expect(
     () => {
       expect(mockFn, msg).toHaveLastReturnedWith(4);
     },
-    AssertionError,
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
+  expect(
     () => {
       expect(mockFn, msg).not.toHaveLastReturnedWith(7);
     },
-    AssertionError,
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

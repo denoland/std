@@ -35,19 +35,13 @@ Deno.test("expect().toBeFalsy()", () => {
 
 Deno.test("expect().toBeFalsy() with custom error message message", () => {
   const msg = "toBeFalsy Custom Error";
-  assertThrows(
-    () => {
-      expect("hello", msg).toBeFalsy();
-    },
-    AssertionError,
+  expect(
+    () => expect("hello", msg).toBeFalsy(),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect("", msg).not.toBeFalsy();
-    },
-    AssertionError,
+  expect(
+    () => expect("", msg).not.toBeFalsy(),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });

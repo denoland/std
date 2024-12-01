@@ -30,6 +30,6 @@ export function assertNotEquals<T>(
     return;
   }
 
-  const message = buildNotEqualErrorMessage(actual, expected, options);
+  const message = buildNotEqualErrorMessage(actual, expected, options ?? {});
   throw new AssertionError(message);
 }

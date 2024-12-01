@@ -97,27 +97,18 @@ Deno.test("expect().toMatchObject() with custom error message", () => {
   };
   const msg = "toMatchObject Custom Error";
 
-  assertThrows(
-    () => {
-      expect([house1], msg).toMatchObject([desiredHouse]);
-    },
-    AssertionError,
+  expect(
+    () => expect([house1], msg).toMatchObject([desiredHouse]),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(house0, msg).not.toMatchObject(desiredHouse);
-    },
-    AssertionError,
+  expect(
+    () => expect(house0, msg).not.toMatchObject(desiredHouse),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 
-  assertThrows(
-    () => {
-      expect(null, msg).toMatchObject([desiredHouse]);
-    },
-    AssertionError,
+  expect(
+    () => expect(null, msg).toMatchObject([desiredHouse]),
     msg,
-  );
+  ).toThrow(new RegExp(`^${msg}`));
 });
