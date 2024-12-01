@@ -13,10 +13,10 @@ const CR = "\r";
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
 
-const CLR_ALL = "\x1b[J"; // Clear all lines after cursor
-
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+
+const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
@@ -41,19 +41,22 @@ export function promptSelect(
   const length = values.length;
   let selectedIndex = 0;
 
-  Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
   Deno.stdin.setRaw(true);
 
   const buffer = new Uint8Array(4);
   loop:
   while (true) {
+    Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
     for (const [index, value] of values.entries()) {
       const start = index === selectedIndex ? INDICATOR : PADDING;
       Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length - selectedIndex}A`));
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
+    const currentSelectedIndex = selectedIndex;
     const input = decoder.decode(buffer.slice(0, n));
+
     switch (input) {
       case ETX:
         return Deno.exit(0);
@@ -66,12 +69,16 @@ export function promptSelect(
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length}A`)); // move cursor after message
-    Deno.stdout.writeSync(encoder.encode(CLR_ALL));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${currentSelectedIndex + 1}A`));
   }
   if (clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`)); // move cursor before message
-    Deno.stdout.writeSync(encoder.encode(CLR_ALL));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${selectedIndex + 1}A`));
+
+    Deno.stdout.writeSync(CLR_ALL);
+  } else {
+    Deno.stdout.writeSync(
+      encoder.encode(`\x1b[${length - selectedIndex}B`),
+    );
   }
   Deno.stdin.setRaw(false);
   return values[selectedIndex] ?? null;

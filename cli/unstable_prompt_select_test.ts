@@ -15,17 +15,19 @@ Deno.test("promptSelect() handles enter", () => {
     "❯ safari\r\n",
     "  chrome\r\n",
     "  firefox\r\n",
+    "\x1b[3A",
+
+    "\x1b[3B",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -54,6 +56,7 @@ Deno.test("promptSelect() handles enter", () => {
   ]);
 
   assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
@@ -66,26 +69,32 @@ Deno.test("promptSelect() handles arrow down", () => {
     "  chrome\r\n",
     "  firefox\r\n",
     "\x1b[3A",
-    "\x1b[J",
+
+    "\x1b[1A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "❯ chrome\r\n",
     "  firefox\r\n",
-    "\x1b[3A",
-    "\x1b[J",
+    "\x1b[2A",
+
+    "\x1b[2A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "  chrome\r\n",
     "❯ firefox\r\n",
+    "\x1b[1A",
+
+    "\x1b[1B",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -116,6 +125,7 @@ Deno.test("promptSelect() handles arrow down", () => {
   ]);
 
   assertEquals(browser, "firefox");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
@@ -128,26 +138,32 @@ Deno.test("promptSelect() handles arrow up", () => {
     "  chrome\r\n",
     "  firefox\r\n",
     "\x1b[3A",
-    "\x1b[J",
+
+    "\x1b[1A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "❯ chrome\r\n",
     "  firefox\r\n",
-    "\x1b[3A",
-    "\x1b[J",
+    "\x1b[2A",
+
+    "\x1b[2A",
+    "Please select a browser:\r\n",
     "❯ safari\r\n",
     "  chrome\r\n",
     "  firefox\r\n",
+    "\x1b[3A",
+
+    "\x1b[3B",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -178,6 +194,7 @@ Deno.test("promptSelect() handles arrow up", () => {
   ]);
 
   assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
@@ -190,21 +207,25 @@ Deno.test("promptSelect() handles up index overflow", () => {
     "  chrome\r\n",
     "  firefox\r\n",
     "\x1b[3A",
-    "\x1b[J",
+
+    "\x1b[1A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "  chrome\r\n",
     "❯ firefox\r\n",
+    "\x1b[1A",
+
+    "\x1b[1B",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -234,6 +255,7 @@ Deno.test("promptSelect() handles up index overflow", () => {
   ]);
 
   assertEquals(browser, "firefox");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
@@ -246,31 +268,39 @@ Deno.test("promptSelect() handles down index overflow", () => {
     "  chrome\r\n",
     "  firefox\r\n",
     "\x1b[3A",
-    "\x1b[J",
+
+    "\x1b[1A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "❯ chrome\r\n",
     "  firefox\r\n",
-    "\x1b[3A",
-    "\x1b[J",
+    "\x1b[2A",
+
+    "\x1b[2A",
+    "Please select a browser:\r\n",
     "  safari\r\n",
     "  chrome\r\n",
     "❯ firefox\r\n",
+    "\x1b[1A",
+
     "\x1b[3A",
-    "\x1b[J",
+    "Please select a browser:\r\n",
     "❯ safari\r\n",
     "  chrome\r\n",
     "  firefox\r\n",
+    "\x1b[3A",
+
+    "\x1b[3B",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -302,6 +332,7 @@ Deno.test("promptSelect() handles down index overflow", () => {
   ]);
 
   assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
@@ -313,19 +344,20 @@ Deno.test("promptSelect() handles clear option", () => {
     "❯ safari\r\n",
     "  chrome\r\n",
     "  firefox\r\n",
-    "\x1b[4A",
+    "\x1b[3A",
+
+    "\x1b[1A",
     "\x1b[J",
   ];
 
-  let writeIndex = 0;
+  const actualOutput: string[] = [];
 
   stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
       const output = decoder.decode(data);
-      assertEquals(output, expectedOutput[writeIndex]);
-      writeIndex++;
+      actualOutput.push(output);
       return data.length;
     },
   );
@@ -354,5 +386,6 @@ Deno.test("promptSelect() handles clear option", () => {
   ], { clear: true });
 
   assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
   restore();
 });
