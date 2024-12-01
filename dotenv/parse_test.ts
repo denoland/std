@@ -16,7 +16,7 @@ Deno.test("parse()", () => {
   );
 
   const load = parse(testDotenv);
-  assertEquals(Object.keys(load).length, 24, "parses 24 keys");
+  assertEquals(Object.keys(load).length, 26, "parses 26 keys");
   assertEquals(load.BASIC, "basic", "parses a basic variable");
   assertEquals(load.AFTER_EMPTY, "empty", "skips empty lines");
   assertEquals(load["#COMMENT"], undefined, "skips lines with comments");
@@ -47,8 +47,13 @@ Deno.test("parse()", () => {
   );
 
   assertEquals(
-    load.MULTILINE,
+    load.MULTILINE1,
     "hello\nworld",
+    "new lines are expanded in double quotes",
+  );
+  assertEquals(
+    load.MULTILINE2,
+    "hello\r\nworld",
     "new lines are expanded in double quotes",
   );
 
@@ -71,8 +76,13 @@ Deno.test("parse()", () => {
   );
 
   assertEquals(
-    load.MULTILINE_SINGLE_QUOTE,
+    load.MULTILINE_SINGLE_QUOTE1,
     "hello\\nworld",
+    "new lines are escaped in single quotes",
+  );
+  assertEquals(
+    load.MULTILINE_SINGLE_QUOTE2,
+    "hello\\r\\nworld",
     "new lines are escaped in single quotes",
   );
 
