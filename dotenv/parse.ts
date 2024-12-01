@@ -10,7 +10,7 @@ type LineParseResult = {
 type CharactersMap = { [key: string]: string };
 
 const RE_KEY_VALUE =
-  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\n?(?<notInterpolated>(.|\n)*?)\n?'|"\n?(?<interpolated>(.|\n)*?)\n?"|(?<unquoted>[^\n#]*)) *#*.*$/gm;
+  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
 const RE_VALID_KEY = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
