@@ -60,7 +60,6 @@ export function assertIsError<E extends Error = Error>(
         ? msgMatches.toString()
         : JSON.stringify(msgMatches)
     }, but got ${JSON.stringify(error?.message)}.`;
-    console.log("msg::", msg);
     throw new AssertionError(msg);
   }
 }
