@@ -11,13 +11,13 @@ Deno.test("promptMultipleSelect() handles enter", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
 
-    "\x1b[3B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -64,20 +64,18 @@ Deno.test("promptMultipleSelect() handles selection", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☑️ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
 
-    "\x1b[3B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -125,48 +123,38 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☑️ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☑️ safari\r\n",
     "❯ ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[2A",
-
-    "\x1b[2A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☑️ safari\r\n",
     "❯ ☑️ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[2A",
-
-    "\x1b[2A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☑️ safari\r\n",
     "  ☑️ chrome\r\n",
     "❯ ☐ firefox\r\n",
-    "\x1b[1A",
+    "\x1b[4A",
 
-    "\x1b[3A",
     "Please select browsers:\r\n",
     "  ☑️ safari\r\n",
     "  ☑️ chrome\r\n",
     "❯ ☑️ firefox\r\n",
-    "\x1b[1A",
-
-    "\x1b[1B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -218,34 +206,28 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "❯ ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[2A",
-
-    "\x1b[2A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "❯ ☐ firefox\r\n",
-    "\x1b[1A",
+    "\x1b[4A",
 
-    "\x1b[3A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "❯ ☑️ firefox\r\n",
-    "\x1b[1A",
-
-    "\x1b[1B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -295,34 +277,28 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "❯ ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[2A",
-
-    "\x1b[2A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☑️ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
 
-    "\x1b[3B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -372,27 +348,23 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "❯ ☐ firefox\r\n",
-    "\x1b[1A",
+    "\x1b[4A",
 
-    "\x1b[3A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "❯ ☑️ firefox\r\n",
-    "\x1b[1A",
-
-    "\x1b[1B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -441,41 +413,34 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "❯ ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[2A",
-
-    "\x1b[2A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "  ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "❯ ☐ firefox\r\n",
-    "\x1b[1A",
+    "\x1b[4A",
 
-    "\x1b[3A",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☑️ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
 
-    "\x1b[3B",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
@@ -526,21 +491,19 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
+    "\x1b[?25l",
     "Please select browsers:\r\n",
     "❯ ☐ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "Please select browsers:\r\n",
     "❯ ☑️ safari\r\n",
     "  ☐ chrome\r\n",
     "  ☐ firefox\r\n",
-    "\x1b[3A",
-
-    "\x1b[1A",
+    "\x1b[4A",
     "\x1b[J",
+    "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];

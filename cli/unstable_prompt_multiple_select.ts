@@ -17,6 +17,8 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
+const HIDE_CURSOR = encoder.encode("\x1b[?25l");
+const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
@@ -43,25 +45,25 @@ export function promptMultipleSelect(
   const selectedIndexes = new Set<number>();
 
   Deno.stdin.setRaw(true);
-
+  Deno.stdout.writeSync(HIDE_CURSOR);
   const buffer = new Uint8Array(4);
   loop:
   while (true) {
     Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
     for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : PADDING;
-      const selected = selectedIndexes.has(index);
-      const box = selected ? "☑️" : "☐";
+      const selected = index === selectedIndex;
+      const start = selected ? INDICATOR : PADDING;
+      const checked = selectedIndexes.has(index);
+      const box = checked ? "☑️" : "☐";
       Deno.stdout.writeSync(encoder.encode(`${start} ${box} ${value}\r\n`));
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length - selectedIndex}A`));
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
-    const currentSelectedIndex = selectedIndex;
     const input = decoder.decode(buffer.slice(0, n));
 
     switch (input) {
       case ETX:
+        Deno.stdout.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
       case ARROW_UP:
         selectedIndex = (selectedIndex - 1 + length) % length;
@@ -79,17 +81,13 @@ export function promptMultipleSelect(
         }
         break;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${currentSelectedIndex + 1}A`));
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
   }
   if (clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${selectedIndex + 1}A`));
-
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
     Deno.stdout.writeSync(CLR_ALL);
-  } else {
-    Deno.stdout.writeSync(
-      encoder.encode(`\x1b[${length - selectedIndex}B`),
-    );
   }
+  Deno.stdout.writeSync(SHOW_CURSOR);
   Deno.stdin.setRaw(false);
   return [...selectedIndexes].map((it) => values[it] as string);
 }
