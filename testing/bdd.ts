@@ -763,11 +763,7 @@ export function test<T>(...args: ItArgs<T>) {
  * @param args The test case
  */
 test.only = function itOnly<T>(...args: ItArgs<T>): void {
-  const options = itDefinition(...args);
-  return it({
-    ...options,
-    only: true,
-  });
+  it.only(...args);
 };
 
 /**
@@ -792,11 +788,7 @@ test.only = function itOnly<T>(...args: ItArgs<T>): void {
  * @param args The test case
  */
 test.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
-  const options = itDefinition(...args);
-  return it({
-    ...options,
-    ignore: true,
-  });
+  it.ignore(...args);
 };
 
 /** Skip this test case.
