@@ -20,3 +20,19 @@ Deno.test("expect().toHaveBeenCalledWith()", () => {
     expect(mockFn).not.toHaveBeenCalledWith("hello", "deno");
   });
 });
+
+Deno.test("expect().toHaveBeenCalledWith() with custom error message", () => {
+  const msg = "toHaveBeenCalledWith custom error message";
+  const mockFn = fn();
+  mockFn("hello", "deno");
+
+  expect(
+    () => expect(mockFn, msg).toHaveBeenCalledWith("hello", "DENO"),
+    msg,
+  ).toThrow(new RegExp(`^${msg}`));
+
+  expect(
+    () => expect(mockFn, msg).not.toHaveBeenCalledWith("hello", "deno"),
+    msg,
+  ).toThrow(new RegExp(`^${msg}`));
+});

@@ -34,3 +34,17 @@ Deno.test("expect().toContain()", () => {
     'The value "foobarbaz" contains the expected item "bar"',
   );
 });
+
+Deno.test("expect().toContain() with custom error message", () => {
+  const arr = [1, 2, 3];
+  const msg = "toContain Custom Error";
+
+  expect(
+    () => expect(arr, msg).not.toContain(2),
+    msg,
+  ).toThrow(new RegExp(`${msg}`));
+  expect(
+    () => expect("foobarbaz", msg).not.toContain("bar"),
+    msg,
+  ).toThrow(new RegExp(`${msg}`));
+});

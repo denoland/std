@@ -100,3 +100,9 @@ Deno.test("expect().toThrow()", () => {
     'Expected error message to include /\\d/, but got "hello world".',
   );
 });
+
+Deno.test("expect().toThrow() with custom error message", () => {
+  const msg = "toThrow custom error message";
+
+  expect(() => {}, msg).not.toThrow(new RegExp(`^${msg}`));
+});
