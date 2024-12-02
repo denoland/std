@@ -4,7 +4,8 @@ import { assertEquals } from "./equals.ts";
 
 /**
  * Make an assertion that `expected` object is a subset of `actual` object,
- * deeply. If not, then throw.
+ * deeply. If not, then throw a diff of the objects, with mismatching
+ * properties highlighted.
  *
  * @example Usage
  * ```ts ignore
