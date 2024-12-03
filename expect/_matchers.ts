@@ -487,9 +487,15 @@ export function toMatchObject(
   const triggerError = () => {
     const actualString = format(context.value);
     const expectedString = format(expected);
-    throw new AssertionError(
-      `Expected ${actualString} to NOT match ${expectedString}`,
-    );
+    if (context.isNot) {
+      throw new AssertionError(
+        `Expected ${actualString} to NOT match ${expectedString}`,
+      );
+    } else {
+      throw new AssertionError(
+        `Expected ${actualString} to match ${expectedString}`,
+      );
+    }
   };
 
   if (context.isNot && pass || !context.isNot && !pass) {
