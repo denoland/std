@@ -1,8 +1,6 @@
 # Demander
 
-**Definition**: A type of [Actor](actor.md) that indicates willingness to pay
-standard consumer/subscription rates for platform resources or services that
-don't yet exist.
+**Definition**: A type of [Actor](actor.md) that indicates willingness to pay standard consumer/subscription rates for platform resources or services that don't yet exist.
 
 **Description**: Demanders participate in the platform ecosystem by:
 

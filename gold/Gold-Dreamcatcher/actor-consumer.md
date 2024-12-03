@@ -18,7 +18,7 @@ future benefits. Their usage directly drives decentralized income distribution
 to contributors. This sponsored model enables "free tier" access while
 maintaining the platform's value exchange principles.
 
-Consumer interactions are optimized through AI agents that continuously monitor
+Consumer interactions are optimized through [AI Agents](ai-agent.md) that continuously monitor
 and evaluate available solutions, automatically switching between services based
 on real-time utility assessment. These agents:
 

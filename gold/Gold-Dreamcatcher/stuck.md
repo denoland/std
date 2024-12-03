@@ -1,6 +1,11 @@
-# Stuck
+# Stuck (Interface)
 
-**Definition**: A "Stuck" is a detected inefficiency, obstruction, or opportunity within the platform that prevents an [Actor](actor.md) from achieving a desired outcome, signaling areas for potential improvement through [Contributions](contribution.md). Stucks can be identified either explicitly by Actors or implicitly through system analysis.
+**Definition**: A state where an [Actor](actor.md) encounters a problem or obstacle that prevents progress within the platform.
+
+**Context in `Gold-Dreamcatcher`**:
+
+- **Relevance**: Referenced by [Demanders](actor-demander.md) when indicating issues that need solutions.
+- **Note**: This Interface Definition ensures coherence without introducing external dependencies.
 
 ---
 

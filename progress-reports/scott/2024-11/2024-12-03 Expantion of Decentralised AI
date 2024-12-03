@@ -1,0 +1,17 @@
+Added **Rationale** section to each definition.
+The aim is to provide a rationale for each definition, to help the reader understand the definition and the context in which it is used.
+
+The concept of interface is important to avoid the cyclic nature of updating definitions to cross infect.
+
+You were right about the interface.  I'm now thinking about how to define the rules for what it is to be 'gold' standard, in order for 'gold' standard defs to be able to reference each other throgh an interface.
+
+Have added a new section to the gold rules to cover this.  I.e. @Gold-rules.md are intended to be used as a guide for what is required for gold standard definitions, but they are not a rigid set of rules.  It doesn however allow for an interface.
+
+Using cursor is awesome and sub-optimal.  I've just had to go through and manually reconcile because of an idiot mistake I made in location of folder, not the thinking.  
+
+We need a way to avoid what cursor is doing in giving suprious changes just because.  It doesn't help rewording if the rewording says basically the same thing, and needs a human to review.
+
+It's too easy to reference the wrong files using cursor.  I've just done it.  I've referenced a file that is in the same folder, but it's not the right one.  Cursor has helpfully highlighted the change, but it's not a change.  It's just a cursor error.  But it's a real problem when it happens in a review.  I think the problem is that they have the "Add context" area that is inheritted between prompts.  Everything should be through the prompt (possibly(
+    
+))
+
