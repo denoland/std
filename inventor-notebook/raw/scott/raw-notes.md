@@ -48,3 +48,28 @@
 - Lightweight network feed prototype
 - AI-driven connection discovery
 - Voice capture integration
+
+
+## 2024-12-02
+
+### Cude Sats versus NAPPS
+There are characteristics of NAPPS that make them similar to Cube Sats.
+
+Cubes sats are:
+- Self-contained by function, but with a common interface
+- Stay within a limited set of resources (weight, power, etc.)
+- Allow for reuse and knowable behavior
+- Are intended to be used as a building block for more complex systems
+- Are intended to be used to create new value by combination.
+
+NAPPS are:
+
+- Are self-contained by function, and deduplicated/made available.
+- May be a way to give a certain output for a certain amount of resource by building in use of multiple methods and models (ie it can advertise "I will do this for that")
+- Allow for resuse and knowable behavior
+- Can be used as a building block for more complex systems
+- Can be used to create new value by combination.
+
+Question: Does this comparison hold up?
+
+The comparison between CubeSats and NAPPS is valid. Both are modular, standardized units designed for integration into larger systems, operating within resource constraints, and enabling the creation of new value through combination. This analogy effectively illustrates how NAPPS can be conceptualized and utilized similar to how CubeSats revolutionized satellite deployment and usage.
