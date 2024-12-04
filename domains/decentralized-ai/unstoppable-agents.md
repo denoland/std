@@ -19,5 +19,5 @@ Unstoppable Agents are essential for maintaining the continuous and reliable ope
 
 ---
 
-**10. `Gold-DCI/decentralized-computation-marketplace.md`**
+**10. `Domain-DCI/decentralized-computation-marketplace.md`**
   

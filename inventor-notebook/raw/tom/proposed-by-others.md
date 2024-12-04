@@ -1,7 +1,7 @@
 # Proposals from Scott (2024-03-29)
 
 ## Repository Structure
-- Create staging area as duplication of gold definitions
+- Create staging area as duplication of domain definitions
 - Use dev/staging/prod style folders for definitions
 - Keep transcripts and raw work in separate folders
 - Create dedicated work reports folder

@@ -392,7 +392,7 @@ So, definition of consensus bound, autonomous program, autonomous? Doesn't reall
 
 Scott
 0:24:58
-Okay, let's roll with that and let's see with the, also one thing I've noticed was really useful in these transcripts. If you say something really obvious, like we are talking about the AI agent in gold DCI and the word autonomous is what we were just talking about and let's see what it comes up with.
+Okay, let's roll with that and let's see with the, also one thing I've noticed was really useful in these transcripts. If you say something really obvious, like we are talking about the AI agent in domain DCI and the word autonomous is what we were just talking about and let's see what it comes up with.
 
 Tom
 0:25:20

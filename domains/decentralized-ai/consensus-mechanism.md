@@ -23,4 +23,4 @@ The Consensus Mechanism is crucial for maintaining trust, integrity, and decentr
 
 ---
 
-**4. `Gold-DCI/decentralisted-income.md`**
+**4. `Domain-DCI/decentralisted-income.md`**

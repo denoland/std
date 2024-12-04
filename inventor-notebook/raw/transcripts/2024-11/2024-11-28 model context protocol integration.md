@@ -975,7 +975,7 @@ I did, I did, yeah. Okay, good. So, why is ActorStuck still in there then? Oh, I
 
 Tom
 1:16:18
-directed down to say a tour map. Are you trying to make a definition here that replaces the definition of stucks in gold? No, I'm trying to give an instance of it that makes sense given that really quite quickly generated a whole bunch of maps that may or may not be of use, however, given the narratives, the narratives require them, it's like, where do we stick them? And a quick review of the format of a stuck, because the stuck is...
+directed down to say a tour map. Are you trying to make a definition here that replaces the definition of stucks in domain? No, I'm trying to give an instance of it that makes sense given that really quite quickly generated a whole bunch of maps that may or may not be of use, however, given the narratives, the narratives require them, it's like, where do we stick them? And a quick review of the format of a stuck, because the stuck is...
 
 Tom
 1:17:10
@@ -1063,7 +1063,7 @@ That is cross-platform credential sharing. Need for secure credential sharing be
 
 Tom
 1:25:31
-which were in the definitions to reduce redundant API authentications. That's pretty good like that's actually a problem. Gold definitions is definitely the... And then it made up some stuff which is a good act as it likes to hallucinate. 12 homebrew platform operators explicitly requested this. Multiple instances of duplicate API usage detected. Oh, what's the solutions here? Implement an encrypted credential fault.
+which were in the definitions to reduce redundant API authentications. That's pretty good like that's actually a problem. Domain definitions is definitely the... And then it made up some stuff which is a good act as it likes to hallucinate. 12 homebrew platform operators explicitly requested this. Multiple instances of duplicate API usage detected. Oh, what's the solutions here? Implement an encrypted credential fault.
 
 Tom
 1:26:13

@@ -1,7 +1,7 @@
 # Proposals from Tom (2024-03-29)
 
 ## Repository & Process Management
-- Use pull requests for gold definitions to maintain quality
+- Use pull requests for domain definitions to maintain quality
 - Don't worry about Git complexity - everything can be rolled back
 - Keep shared space clean, separate from personal exploration areas
 
@@ -20,7 +20,7 @@
 ## Folder Structure
 - Create work reports folder in repo
 - Maintain separate areas for:
-  - Gold definitions (shared, clean)
+  - Domain definitions (shared, clean)
   - Personal exploration space
   - Work reports
 
