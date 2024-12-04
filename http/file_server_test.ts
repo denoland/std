@@ -737,6 +737,25 @@ Deno.test("serveDir() serves HTTP 304 response for if-modified-since request of 
   assertEquals(res.statusText, "Not Modified");
 });
 
+Deno.test("serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
+  const req = new Request("http://localhost/hello");
+  const res = await serveDir(req, { ...serveDirOptions, cleanUrls: true });
+  const downloadedFile = await res.text();
+  const localFile = await Deno.readTextFile(join(testdataDir, "hello.html"));
+
+  assertEquals(res.status, 200);
+  assertEquals(downloadedFile, localFile);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+});
+
+Deno.test("serveDir() does not shadow existing files and directory if cleanUrls=true", async () => {
+  const req = new Request("http://localhost/test_clean_urls");
+  const res = await serveDir(req, { ...serveDirOptions, cleanUrls: true });
+
+  assertEquals(res.status, 301);
+  assertEquals(res.headers.has("location"), true);
+});
+
 /**
  * When used in combination with If-None-Match, If-Modified-Since is ignored.
  * If etag doesn't match, don't return 304 even if if-modified-since is a valid
