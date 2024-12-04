@@ -51,7 +51,7 @@
   Contribution calculation systems
 - [Ambient Attribution](domain-definitions/ambient-attribution.md) - Automated
   attribution tracking
-- [Decentralized Income](domain-definitions/decentralized-income.md) -
+- [Decentralized Income](../domains/decentralized-ai/decentralized-income.md) -
   Decentralized reward distribution
 - [Estimation Tool](domain-definitions/estimation-tool.md) - Trade value
   estimation utility

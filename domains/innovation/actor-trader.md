@@ -34,7 +34,7 @@ assets:
 - Traders can compensate for funding gaps from withdrawn prepayments
 
 Traders play a key role in optimizing
-[Decentralized Income](decentralized-income.md) by:
+[Decentralized Income](../decentralized-ai/decentralized-income.md) by:
 
 - Providing liquidity for income streams
 - Enabling early value realization

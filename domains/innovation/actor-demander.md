@@ -12,7 +12,7 @@
 A Demander can transition to become a [Funder](actor-funder.md) by making
 explicit prepayment commitments for specific stucks. Without such commitments,
 they remain potential future consumers whose usage would generate
-[Decentralized Income](decentralized-income.md) through
+[Decentralized Income](../decentralized-ai/decentralized-income.md) through
 [Ambient Attribution](ambient-attribution.md).
 
 **Key characteristics**:
@@ -29,7 +29,7 @@ Role in Decentralized Value Creation:
 - Validates market opportunities through stuck reinforcement
 - Provides forward-looking demand signals without central coordination
 - Converts to [Consumer](actor-consumer.md) based on actual utility
-- Creates sustainable [Decentralized Income](decentralized-income.md) streams
+- Creates sustainable [Decentralized Income](../decentralized-ai/decentralized-income.md) streams
   through ongoing usage
 - Enables objective market validation through conversion metrics
 

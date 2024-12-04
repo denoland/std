@@ -23,7 +23,7 @@ These rules allow for the creation, modification, and maintenance of definitions
 
   **Examples**:
 
-  - **Correct**: Creating an Interface File between `Domain-Dreamcatcher` and `Domain-DCI` to reconcile definitions of **Stuck**.
+  - **Correct**: Creating an Interface File between `Domain-Dreamcatcher` and `Domain-Decentralized-AI` to reconcile definitions of **Stuck**.
   - **Incorrect**: Each set redefining **Stuck** differently without coordination via an Interface File.
 
 - **Guidelines**:
@@ -55,7 +55,7 @@ These rules allow for the creation, modification, and maintenance of definitions
 
   **Examples**:
 
-  - **Correct**: Using the Interface File between `Domain-Dreamcatcher` and `Domain-DCI` to identify that **AI Agent** is used differently and reconciling this within the Interface File.
+  - **Correct**: Using the Interface File between `Domain-Dreamcatcher` and `Domain-Decentralized-AI` to identify that **AI Agent** is used differently and reconciling this within the Interface File.
   - **Incorrect**: Duplicating definitions independently without coordinating through an Interface File.
 
 - **Guideline**:

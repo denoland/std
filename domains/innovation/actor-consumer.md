@@ -7,7 +7,7 @@ applications through [Value Exchange](value-exchange.md).
 
 - Using [NApps](napp.md) and platform services
 - Providing compensation through various payment methods
-- Generating [Decentralized Income](decentralized-income.md) streams through
+- Generating [Decentralized Income](../decentralized-ai/decentralized-income.md) streams through
   usage
 - Sharing data or other forms of value transfer
 - Accessing sponsored usage through [Funders](actor-funder.md)

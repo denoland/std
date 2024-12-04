@@ -10,7 +10,7 @@ talent contributors once solutions are approved.
 - Retaining ability to withdraw funds until QA approval
 - Becoming attributed contributors after solution acceptance
 - Sharing in future consumer revenue through
-  [Decentralized Income](decentralized-income.md)
+  [Decentralized Income](../decentralized-ai/decentralized-income.md)
 
 Key characteristics:
 

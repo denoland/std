@@ -1,6 +1,6 @@
-# Interface between Domain-Dreamcatcher and Domain-DCI
+# Interface between Domain-Dreamcatcher and Domain-Decentralized-AI
 
-This interface file reconciles shared concepts between the `Domain-Dreamcatcher` and `Domain-DCI` definition sets.
+This interface file reconciles shared concepts between the `Domain-Dreamcatcher` and `Domain-Decentralized-AI` definition sets.
 
 ---
 
@@ -16,7 +16,7 @@ An autonomous software entity capable of performing tasks and making decisions o
 
 - **Domain-Dreamcatcher Context**:
   - Assists Consumers by optimizing interactions, monitoring performance metrics, and automatically switching between services based on utility.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - A consensus-bound autonomous program that cannot be terminated or censored, capable of making and executing resource allocation decisions, initiating value transfers and payments, negotiating and striking bargains, and operating with complete transparency while maintaining integrity.
 
 **Requirements**:
@@ -36,7 +36,7 @@ The process through which Actors transfer or exchange value within the platform 
 
 - **Domain-Dreamcatcher Context**:
   - Consumers use Value Exchange when interacting with platform services, providing compensation through various payment methods.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - Facilitated by AI agents through smart contracts and consensus protocols, involving cryptocurrencies, tokens, or other digital assets.
 
 **Requirements**:
@@ -46,23 +46,23 @@ The process through which Actors transfer or exchange value within the platform 
 
 ---
 
-### 3. Decentralized Income (DCI)
+### 3. Decentralized Income
 
 **Common Definition**:
 
-**Decentralized Income (DCI)**
+**Decentralized Income**
 
 A system that enables fair and permissionless distribution of value to contributors based on utility, impact, and verifiable contributions, without relying on traditional hierarchical structures.
 
 - **Domain-Dreamcatcher Context**:
   - Emphasizes value distribution based on actual usage and utility within the platform, promoting sustainable income streams.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - Focuses on the role of censorship-resistant AI agents operating within decentralized consensus to manage resource allocation and value distribution autonomously.
 
 **Requirements**:
 
-- Both sets must refer to **Decentralized Income (DCI)** using this common definition.
-- Context-specific details must be provided as per each set's focus when discussing DCI.
+- Both sets must refer to **Decentralized Income** using this common definition.
+- Context-specific details must be provided as per each set's focus when discussing Decentralized-AI.
 
 ---
 
@@ -76,7 +76,7 @@ A system or protocol used in decentralized networks to achieve agreement on data
 
 - **Domain-Dreamcatcher Context**:
   - Ensures consistency across decentralized network instances by synchronizing data and operations using consensus algorithms.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - A market-driven system for achieving agreement on computation results, value distribution, and resource allocation, ensuring continuous and censorship-resistant operation of AI agents.
 
 **Requirements**:
@@ -96,7 +96,7 @@ An entity within the platform ecosystem that engages with services, resources, o
 
 - **Domain-Dreamcatcher Context**:
   - Participants who engage with the platform's services and resources, capable of fulfilling multiple roles (e.g., Consumer, Contributor, Service Provider).
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - Includes human participants and AI agents operating within the decentralized income ecosystem.
 
 **Requirements**:
@@ -116,7 +116,7 @@ A state where an Actor encounters a problem or obstacle that prevents progress w
 
 - **Domain-Dreamcatcher Context**:
   - Occurs when Actors cannot achieve desired outcomes, leading to the creation of Direct or Implied Stucks.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - Represents detected inefficiencies or opportunities within the system that can be addressed by AI agents or participants.
 
 **Requirements**:
@@ -136,7 +136,7 @@ The ability of a decentralized system to operate without interference or suppres
 
 - **Domain-Dreamcatcher Context**:
   - Embedded within platform principles to maintain decentralized operations and participant sovereignty.
-- **Domain-DCI Context**:
+- **Domain-Decentralized-AI Context**:
   - Critical for AI agents to operate continuously without the risk of external interference, aligning with the concept of Unstoppable Agents.
 
 **Requirements**:
