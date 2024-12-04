@@ -1,6 +1,6 @@
-# Rules of Engagement for 'Gold' Definitions
+# Rules of Engagement for 'Domain' Definitions
 
-These rules allow for the creation, modification, and maintenance of definitions within any 'gold' style set of definitions to ensure consistency, coherence, and correctness.
+These rules allow for the creation, modification, and maintenance of definitions within any 'domain' style set of definitions to ensure consistency, coherence, and correctness.
 
 ## 1. Self-Containment
 
@@ -14,22 +14,22 @@ These rules allow for the creation, modification, and maintenance of definitions
 
 - **Guideline**:
 
-  - Use **Interface Files** to reference concepts that are common across multiple 'gold' sets.
+  - Use **Interface Files** to reference concepts that are common across multiple 'domain' sets.
   - Ensure that your set remains self-contained by not introducing dependencies outside of your set and the Interface Files.
 
 ## 2. Interface File Usage
 
-- **Rule**: For each pair of 'gold' definition sets, there should be an **Interface File** that handles shared concepts and resolves duplication.
+- **Rule**: For each pair of 'domain' definition sets, there should be an **Interface File** that handles shared concepts and resolves duplication.
 
   **Examples**:
 
-  - **Correct**: Creating an Interface File between `Gold-Dreamcatcher` and `Gold-DCI` to reconcile definitions of **Stuck**.
+  - **Correct**: Creating an Interface File between `Domain-Dreamcatcher` and `Domain-DCI` to reconcile definitions of **Stuck**.
   - **Incorrect**: Each set redefining **Stuck** differently without coordination via an Interface File.
 
 - **Guidelines**:
 
   - **Creation and Maintenance**:
-    - Each Interface File is collaboratively created and maintained for a specific pair of 'gold' sets.
+    - Each Interface File is collaboratively created and maintained for a specific pair of 'domain' sets.
     - AI assistance can be used to reconcile concepts and suggest common definitions or identify differences.
     - The Interface File should document how concepts from both sets are interfaced, possibly by mapping different terms to a common concept or distinguishing between slightly different concepts.
 
@@ -38,12 +38,12 @@ These rules allow for the creation, modification, and maintenance of definitions
     - The Interface File may introduce a new common name or split concepts as necessary.
 
   - **Referencing**:
-    - Within your 'gold' set, reference shared concepts via the relevant Interface File.
-    - Do not directly reference definitions from other 'gold' sets without going through the Interface File.
+    - Within your 'domain' set, reference shared concepts via the relevant Interface File.
+    - Do not directly reference definitions from other 'domain' sets without going through the Interface File.
 
   - **Version Control**:
     - Maintain versioning of Interface Files.
-    - Each 'gold' set should specify the versions of Interface Files it adheres to.
+    - Each 'domain' set should specify the versions of Interface Files it adheres to.
 
   - **Consistency**:
     - Ensure consistent terminology by aligning with the Interface Files where appropriate.
@@ -51,11 +51,11 @@ These rules allow for the creation, modification, and maintenance of definitions
 
 ## 3. Dealing with Duplication
 
-- **Rule**: It is the responsibility of the Interface File, one for each pair of 'gold' definition sets, to handle duplication and reconcile concepts. AI may be used to facilitate this process.
+- **Rule**: It is the responsibility of the Interface File, one for each pair of 'domain' definition sets, to handle duplication and reconcile concepts. AI may be used to facilitate this process.
 
   **Examples**:
 
-  - **Correct**: Using the Interface File between `Gold-Dreamcatcher` and `Gold-DCI` to identify that **AI Agent** is used differently and reconciling this within the Interface File.
+  - **Correct**: Using the Interface File between `Domain-Dreamcatcher` and `Domain-DCI` to identify that **AI Agent** is used differently and reconciling this within the Interface File.
   - **Incorrect**: Duplicating definitions independently without coordinating through an Interface File.
 
 - **Guideline**:
@@ -90,7 +90,7 @@ These rules allow for the creation, modification, and maintenance of definitions
 
   **Example**:
 
-  - **Precise**: "An **Interface File** is a collaboratively maintained document between two 'gold' sets that reconciles shared concepts, possibly with AI assistance."
+  - **Precise**: "An **Interface File** is a collaboratively maintained document between two 'domain' sets that reconciles shared concepts, possibly with AI assistance."
 
 ## 7. Avoid Circular References
 
@@ -110,9 +110,9 @@ These rules allow for the creation, modification, and maintenance of definitions
 
 ## 9. General Guidance
 
-- **Interface Files** serve as the agreed-upon **lingua franca** between pairs of 'gold' sets, facilitating shared understanding while respecting each set's internal coherence.
+- **Interface Files** serve as the agreed-upon **lingua franca** between pairs of 'domain' sets, facilitating shared understanding while respecting each set's internal coherence.
 
 - **Collaboration and Communication** are key. Regular interaction between sets and appropriate use of AI assistance will help maintain consistency and resolve conflicts.
 
-- **Self-Containment** remains paramount. While Interface Files are shared resources, each 'gold' set should minimize dependencies and maintain the ability to function independently.
+- **Self-Containment** remains paramount. While Interface Files are shared resources, each 'domain' set should minimize dependencies and maintain the ability to function independently.
 

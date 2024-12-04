@@ -2,94 +2,94 @@
 
 ## Core Platform Concepts
 
-- [Definition](gold-definitions/definition.md) - Formal description of core
+- [Definition](domain-definitions/definition.md) - Formal description of core
   platform concepts in DAG structure
-- [Dreamcatcher Platform](gold-definitions/dreamcatcher-platform.md) -
+- [Dreamcatcher Platform](domain-definitions/dreamcatcher-platform.md) -
   Open-source, decentralized platform for NApps
-- [Platform](gold-definitions/platform.md) - Any Dreamcatcher software instance
-- [Platform Instance](gold-definitions/platform-instance.md) - Specific
+- [Platform](domain-definitions/platform.md) - Any Dreamcatcher software instance
+- [Platform Instance](domain-definitions/platform-instance.md) - Specific
   deployment of platform
-- [Protocol](gold-definitions/protocol.md) - Standards for platform
+- [Protocol](domain-definitions/protocol.md) - Standards for platform
   communication
-- [Consensus Mode](gold-definitions/consensus-mode.md) - Multi-instance
+- [Consensus Mode](domain-definitions/consensus-mode.md) - Multi-instance
   synchronization state
-- [Artifact](gold-definitions/artifact.md) - Foundational layer for NApp
+- [Artifact](domain-definitions/artifact.md) - Foundational layer for NApp
   execution
-- [Shockwave](gold-definitions/shockwave.md) - Distributed task execution system
-- [Universal API Gateway](gold-definitions/universal-api-gateway.md) - Managed
+- [Shockwave](domain-definitions/shockwave.md) - Distributed task execution system
+- [Universal API Gateway](domain-definitions/universal-api-gateway.md) - Managed
   external API connectivity for NApps
 
 ## Applications and Composition
 
-- [NApp](gold-definitions/napp.md) - Natural language Applications
-- [JITA](gold-definitions/jita.md) - Just-in-Time Applications composed
+- [NApp](domain-definitions/napp.md) - Natural language Applications
+- [JITA](domain-definitions/jita.md) - Just-in-Time Applications composed
   dynamically
-- [NApp Discovery](gold-definitions/napp-discovery.md) - Process for
+- [NApp Discovery](domain-definitions/napp-discovery.md) - Process for
   finding/accessing NApps
 
 ## Actors and Roles
 
-- [Actor](gold-definitions/actor.md) - Platform participant
-- [Service Provider](gold-definitions/actor-service-provider.md) -
+- [Actor](domain-definitions/actor.md) - Platform participant
+- [Service Provider](domain-definitions/actor-service-provider.md) -
   Service/resource providers
-- [Talent](gold-definitions/actor-talent.md) - Skill/expertise contributors
-- [Consumer](gold-definitions/actor-consumer.md) - Platform service users
-- [Demander](gold-definitions/actor-demander.md) - Future resource requesters
-- [Trader](gold-definitions/actor-trader.md) - Post-market value exchange
+- [Talent](domain-definitions/actor-talent.md) - Skill/expertise contributors
+- [Consumer](domain-definitions/actor-consumer.md) - Platform service users
+- [Demander](domain-definitions/actor-demander.md) - Future resource requesters
+- [Trader](domain-definitions/actor-trader.md) - Post-market value exchange
   facilitators
-- [Funder](gold-definitions/actor-funder.md) - Financial supporters
-- [Contributor](gold-definitions/contributor.md) - Value creators on platform
+- [Funder](domain-definitions/actor-funder.md) - Financial supporters
+- [Contributor](domain-definitions/contributor.md) - Value creators on platform
 
 ## Value and Attribution
 
-- [Asset](gold-definitions/asset.md) - Transferable value items
-- [Value Exchange](gold-definitions/value-exchange.md) - Asset transfers between
+- [Asset](domain-definitions/asset.md) - Transferable value items
+- [Value Exchange](domain-definitions/value-exchange.md) - Asset transfers between
   actors
-- [Payment Path](gold-definitions/payment-path.md) - Asset transfer mechanisms
-- [Contribution](gold-definitions/contribution.md) - Valuable platform inputs
-- [Attribution Algorithm](gold-definitions/attribution-algorithm.md) -
+- [Payment Path](domain-definitions/payment-path.md) - Asset transfer mechanisms
+- [Contribution](domain-definitions/contribution.md) - Valuable platform inputs
+- [Attribution Algorithm](domain-definitions/attribution-algorithm.md) -
   Contribution calculation systems
-- [Ambient Attribution](gold-definitions/ambient-attribution.md) - Automated
+- [Ambient Attribution](domain-definitions/ambient-attribution.md) - Automated
   attribution tracking
-- [Decentralized Income](gold-definitions/decentralized-income.md) -
+- [Decentralized Income](domain-definitions/decentralized-income.md) -
   Decentralized reward distribution
-- [Estimation Tool](gold-definitions/estimation-tool.md) - Trade value
+- [Estimation Tool](domain-definitions/estimation-tool.md) - Trade value
   estimation utility
 
 ## Identity and Compliance
 
-- [Identity](gold-definitions/identity.md) - Actor platform representation
-- [Identity Verification](gold-definitions/identity-verification.md) - Identity
+- [Identity](domain-definitions/identity.md) - Actor platform representation
+- [Identity Verification](domain-definitions/identity-verification.md) - Identity
   confirmation process
-- [KYC](gold-definitions/kyc.md) - Know Your Customer verification
-- [Regulatory Compliance](gold-definitions/regulatory-compliance.md) - Legal
+- [KYC](domain-definitions/kyc.md) - Know Your Customer verification
+- [Regulatory Compliance](domain-definitions/regulatory-compliance.md) - Legal
   requirement adherence
 
 ## Legal Framework
 
-- [Legal Entity](gold-definitions/legal-entity.md) - Real-world organizations
-- [Legal Gateway](gold-definitions/legal-gateway.md) - Platform-traditional
+- [Legal Entity](domain-definitions/legal-entity.md) - Real-world organizations
+- [Legal Gateway](domain-definitions/legal-gateway.md) - Platform-traditional
   system bridge
-- [Legal Gateway Relationships](gold-definitions/legal-gateway-relationships.md) -
+- [Legal Gateway Relationships](domain-definitions/legal-gateway-relationships.md) -
   Gateway interaction patterns
-- [Gateway Network](gold-definitions/gateway-network.md) - Interconnected Legal
+- [Gateway Network](domain-definitions/gateway-network.md) - Interconnected Legal
   Gateway system
-- [Trading-As](gold-definitions/trading-as.md) - Business identity mechanism
-- [Dreamcatcher Foundation](gold-definitions/dreamcatcher-foundation.md) -
+- [Trading-As](domain-definitions/trading-as.md) - Business identity mechanism
+- [Dreamcatcher Foundation](domain-definitions/dreamcatcher-foundation.md) -
   Specialized Legal Gateway for platform standards
 
 ## Documentation Patterns
 
-- [User Story](gold-definitions/user-story.md) - Narrative descriptions of actor
+- [User Story](domain-definitions/user-story.md) - Narrative descriptions of actor
   interactions
-- [Interaction Story](gold-definitions/interaction-story.md) - Paired user
+- [Interaction Story](domain-definitions/interaction-story.md) - Paired user
   stories showing bilateral interactions
 
 ## Example Implementations
 
-- [Alpha Network](gold-definitions/alpha-network.md) - Cross-jurisdictional
+- [Alpha Network](domain-definitions/alpha-network.md) - Cross-jurisdictional
   example
-- [Beta Network](gold-definitions/beta-network.md) - Large-scale deployment
+- [Beta Network](domain-definitions/beta-network.md) - Large-scale deployment
   example
-- [Homebrew Platform](gold-definitions/homebrew-platform.md) - Individual
+- [Homebrew Platform](domain-definitions/homebrew-platform.md) - Individual
   platform instances

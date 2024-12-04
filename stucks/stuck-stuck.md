@@ -1,4 +1,4 @@
-Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to provide the resolution, referencing the NApps from `@gold-definitions`. If any required NApp does not exist in `@gold-definitions`, I'll highlight it in a list at the conclusion.
+Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to provide the resolution, referencing the NApps from `@domain-definitions`. If any required NApp does not exist in `@domain-definitions`, I'll highlight it in a list at the conclusion.
 
 ---
 
@@ -11,9 +11,9 @@ Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to 
 
 - **Required NApp(s)**:
   - **Documentation NApp**: Provides access to tutorials, guides, and system documentation to educate Actors.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **Support NApp**: Offers assistance through FAQs, chat support, or community forums.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
 
 ---
 
@@ -27,11 +27,11 @@ Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to 
 
 - **Required NApp(s)**:
   - **Issue Reporting NApp**: Allows Actors to submit detailed reports of issues encountered.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **Contextual Analysis NApp**: Collects context from the Actor's session to aid in problem analysis.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **Problem Resolution NApp**: Facilitates communication between Actors and Contributors to resolve issues.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
 
 ---
 
@@ -45,9 +45,9 @@ Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to 
 
 - **Required NApp(s)**:
   - **User Behavior Analysis NApp**: Monitors and analyzes user interaction patterns to detect dissatisfaction.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **Feedback Solicitation NApp**: Prompts Actors for feedback when potential issues are detected.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
 
 ---
 
@@ -61,9 +61,9 @@ Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to 
 
 - **Required NApp(s)**:
   - **Aggregated Data Analysis NApp**: Collects and analyzes usage data across multiple Actors to identify common issues.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **System Issue Notification NApp**: Alerts Contributors or system administrators of widespread issues.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
 
 ---
 
@@ -77,15 +77,15 @@ Sure, I'll analyze each type of **Stuck** and identify the **NApp** required to 
 
 - **Required NApp(s)**:
   - **Advanced Analytics NApp**: Utilizes machine learning to identify patterns indicating potential improvements.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
   - **Feature Suggestion NApp**: Compiles insights and suggests new features or enhancements to Contributors.
-    - **Status**: **Not found** in `@gold-definitions`.
+    - **Status**: **Not found** in `@domain-definitions`.
 
 ---
 
 ## Conclusion
 
-The following NApps required for resolving the various types of **Stucks** are **not defined** in `@gold-definitions`:
+The following NApps required for resolving the various types of **Stucks** are **not defined** in `@domain-definitions`:
 
 1. **Documentation NApp**
 2. **Support NApp**
