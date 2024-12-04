@@ -1,0 +1,66 @@
++--------------------------------------------------------------------------------+
+| [ ] Toggle Sidebar Button   |                                                  |
+|-----------------------------|----------------- Main Window --------------------|
+|                             |                                                  |
+|  Left Sidebar               |                                                  |
+|                             |    [ Configure Chat Models Dropdown ]            |
+|  - Chat List                |                                                  |
+|    - Chat 1                 |--------------------------------------------------|
+|    - Chat 2                 |                                                  |
+|  - New Chat Button          |    Chat History                                  |
+|  - Search Chats Button      |    ----------------------------------------------|
+|  - User/Admin Panel (Bob)   |    [User]: Hello!                                |
+|    - Help                   |    [AI/Napp]: Hi there! How can I assist you?    |
+|    - Add Credits            |    [User]: I need help with my account.          |
+|    - Balance Display        |    [AI/Napp]: Sure, let's look into that.        |
+|    - Toggle Light/Dark Mode |                                                  |
+|                             |    [🔧 Fix Button]                                |
+|                             |                                                  |
+|                             |    ----------------------------------------------|
+|                             |    Message Input Box                             |
+|                             |    [ Type your message here...             ]     |
+|                             |                                                  |
++--------------------------------------------------------------------------------+
+
+Notes:
+
+- **Left Sidebar**:
+  - **Chat List**: Displays existing chats.
+  - **New Chat Button**: Starts a new chat session.
+  - **Search Chats Button**: Initiates a new chat to search across all chats.
+  - **User/Admin Panel (Bob)**:
+    - **Help**: Starts a new chat for assistance.
+    - **Add Credits**: Guides through adding credits.
+    - **Balance Display**: Shows current credit balance in USD.
+    - **Toggle Light/Dark Mode**: Switches the UI theme.
+
+- **Toggle Sidebar Button**: Collapses or expands the left sidebar.
+
+- **Main Window**:
+  - **Configure Chat Models Dropdown**: Select or change the active napp.
+  - **Chat History**: Displays the conversation.
+    - **Messages**: Between the user and the AI/napp.
+    - **Fix Button (🔧)**: Creates a direct stuck to resolve issues.
+  - **Message Input Box**: Where the user types messages.
+
+- **State Board** (Not depicted in main diagram):
+  - Activated by certain actions (e.g., Open Chat Controls).
+  - Displays complex widgets or interfaces separately.
+
+- **Open Chat Controls Button** (Location depends on UI layout):
+  - Opens chat controls within the State Board.
+  - Allows management of tools, files, and napps in the current chat.
+
+- **Context Management**:
+  - **Napp Integration**: Stack multiple napps to enhance functionality.
+  - **Tools and Files**: Add resources to the chat context.
+
+- **Switchboard** (Conceptual Feature):
+  - Manages and orchestrates multiple napps.
+  - Enables complex workflows and handles authentication.
+
+- **Mobile Interface Considerations**:
+  - UI adapts to smaller screens.
+  - Only one main component visible at a time.
+
+</rewritten_file> 
