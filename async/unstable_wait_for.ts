@@ -16,7 +16,7 @@ export interface WaitForOptions {
 
 /**
  * Resolve a {@linkcode Promise} after a given predicate becomes true or the
- * timeout amount of milliseconds ahs been reached.
+ * timeout amount of milliseconds has been reached.
  *
  * @throws {DOMException} If signal is aborted before either the waitFor
  * predicate is true or the timeout duration was reached, and `signal.reason`
