@@ -15,7 +15,7 @@ Deno.test("waitFor() returns fulfilled promise", async () => {
 
 Deno.test("waitFor() throws DOMException on timeout", async () => {
   let flag = false;
-  setTimeout(() => flag = true, 1000);
+  const id = setTimeout(() => flag = true, 1000);
   const start = Date.now();
   const error = await assertRejects(
     () => waitFor(() => flag === true, 100),
@@ -24,4 +24,5 @@ Deno.test("waitFor() throws DOMException on timeout", async () => {
   );
   assertAlmostEquals(Date.now() - start, 100, 10);
   assertEquals(error.name, "TimeoutError");
+  clearTimeout(id);
 });
