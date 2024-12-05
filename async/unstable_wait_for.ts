@@ -26,7 +26,7 @@ export interface WaitForOptions {
  * @param options Additional options.
  *
  * @example Basic usage
- * ```ts no-assert
+ * ```ts ignore
  * import { waitFor } from "@std/async/unstable-wait-for";
  *
  * // Deno server to acknowledge reception of request/webhook
