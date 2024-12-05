@@ -68,6 +68,8 @@ export function decodeBase32Crockford(b32: string): Uint8Array {
  * assertEquals(encodeBase32Crockford("foobar"), "CSQPYRK1E8======");
  * ```
  */
-export function encodeBase32Crockford(data: ArrayBuffer | Uint8Array | string): string {
+export function encodeBase32Crockford(
+  data: ArrayBuffer | Uint8Array | string,
+): string {
   return encode(data, lookup);
 }

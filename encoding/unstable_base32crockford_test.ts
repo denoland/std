@@ -2,7 +2,10 @@
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
-import {decodeBase32Crockford, encodeBase32Crockford} from "./unstable_base32crockford.ts";
+import {
+  decodeBase32Crockford,
+  encodeBase32Crockford,
+} from "./unstable_base32crockford.ts";
 
 // Test vectors from https://www.rfc-editor.org/rfc/rfc4648.html#section-10
 const testCases = [
