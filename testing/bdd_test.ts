@@ -1122,6 +1122,45 @@ Deno.test("describe()", async (t) => {
 
   await t.step("ignore", async (t) => {
     /**
+     * Asserts that `Deno.test` is called with the correct options for the `describe` call in the callback function.
+     * This is used to reduce code duplication when testing calling `describe` with different call signatures.
+     */
+    async function assertIgnoreOptions(
+      expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
+      cb: (fns: readonly [Spy, Spy]) => void,
+    ) {
+      using test = stub(Deno, "test");
+      const fns = [spy(), spy()] as const;
+      try {
+        cb(fns);
+        assertSpyCall(test, 0);
+        const call = test.calls[0];
+        const options = call?.args[0] as Deno.TestDefinition;
+        assertEquals(
+          Object.keys(options).sort(),
+          ["name", "fn", ...Object.keys(expectedOptions)].sort(),
+        );
+        assertObjectMatch(options, {
+          name: "example",
+          ...expectedOptions,
+        });
+
+        assertSpyCalls(fns[0], 0);
+        assertSpyCalls(fns[1], 0);
+
+        const context = new TestContext("example");
+        const result = options.fn(context);
+        assertStrictEquals(Promise.resolve(result), result);
+        assertEquals(await result, undefined);
+        assertSpyCalls(context.spies.step, 0);
+
+        assertSpyCalls(fns[0], 0);
+        assertSpyCalls(fns[1], 0);
+      } finally {
+        TestSuiteInternal.reset();
+      }
+    }
+    /**
      * Asserts that `Deno.test` is called with just the name, ignore, and function for the `describe.ignore` call in the callback function.
      * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
      * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
@@ -1129,7 +1168,7 @@ Deno.test("describe()", async (t) => {
     async function assertMinimumOptions(
       cb: (fns: readonly [Spy, Spy]) => void,
     ) {
-      await assertOptions({ ignore: true }, cb);
+      await assertIgnoreOptions({ ignore: true }, cb);
     }
 
     /**
@@ -1140,7 +1179,7 @@ Deno.test("describe()", async (t) => {
     async function assertAllOptions(
       cb: (fns: readonly [Spy, Spy]) => void,
     ) {
-      await assertOptions({ ...baseOptions, ignore: true }, cb);
+      await assertIgnoreOptions({ ...baseOptions, ignore: true }, cb);
     }
 
     await t.step("signature 1", async (t) => {

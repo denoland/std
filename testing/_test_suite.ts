@@ -82,7 +82,40 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     this.symbol = Symbol();
     TestSuiteInternal.suites.set(this.symbol, this);
 
-    const { fn } = describe;
+    const { fn, ignore } = describe;
+    if (ignore) {
+      const {
+        name,
+        only,
+        permissions,
+        sanitizeExit,
+        sanitizeOps,
+        sanitizeResources,
+      } = describe;
+      const options: Deno.TestDefinition = {
+        name,
+        fn: async () => {},
+        ignore: true,
+      };
+      if (only !== undefined) {
+        options.only = only;
+      }
+      if (permissions !== undefined) {
+        options.permissions = permissions;
+      }
+      if (sanitizeExit !== undefined) {
+        options.sanitizeExit = sanitizeExit;
+      }
+      if (sanitizeOps !== undefined) {
+        options.sanitizeOps = sanitizeOps;
+      }
+      if (sanitizeResources !== undefined) {
+        options.sanitizeResources = sanitizeResources;
+      }
+      TestSuiteInternal.registerTest(options);
+      return;
+    }
+
     if (fn) {
       const temp = TestSuiteInternal.current;
       TestSuiteInternal.current = this;
