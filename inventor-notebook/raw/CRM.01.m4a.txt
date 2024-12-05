@@ -1,0 +1,704 @@
+Malcolm
+0:00:00
+You'll hear me, right, I'm recording now, you'll hear me say a few phrases which might sound a bit jarring to the ear, but it's just for the recording. So, for example, I'll be talking about definitions. And definitions are the thing that what I'm trying to get out from a conversation. You don't need to define them, you just need to talk through. Now, what may happen is you start talking about processes, but they are different. And I'll explain why in a second.
+
+Malcolm
+0:00:36
+And you may just go off and, you know, I'd like to add in emails and that sort of thing, which is perfectly reasonable. But they are not core architecture because it's easy to add in in email, Twitter, whatever APIs we want. So, the format of it is if you can imagine yourself using
+
+Malcolm
+0:01:03
+the CRM, let's start off with a very high level don't go into anything more than one sentence. What sort of thing, and you can have as many as you want, what sort of thing would you want that CRM to be able to do? Tell us a story.
+
+Marla
+0:01:26
+journey of this lead from first connection through the iterations of you know what we've talked about and find and get to the end where we have conclusions but I also want the whole trail of our communication within that. Any thoughts we might have, any discussions we might have added to the mix.
+
+Malcolm
+0:02:03
+Okay, and in that journey we're talking about also adding in things like iterations of contracts, contract negotiations. There might be, we might even need to roll back and saying you and there's always the negotiation of the cost or the price.
+
+Marla
+0:02:31
+Yes, and as well as all of that, I would like as part of that process for just this one person to have all of our internal conversations put in it so that I know that what we've discussed and can refer back to the notes for what we want to do with this client.
+
+11
+0:02:59
+Okay, alright.
+
+Marla
+0:03:00
+So it's both external and internal chats. I also wanted to distinguish between open for everybody and open to, say, just us. This is completely private, this is just between the two of you, this is for discussion with the client.
+
+Malcolm
+0:03:20
+So, that really sounds like each thing, like thoughts or emails and so on. You're saying maybe we should have a list of people who can see it?
+
+3
+0:03:41
+Yes.
+
+Malcolm
+0:03:42
+An authorised list?
+
+Marla
+0:03:43
+Yes. So maybe we should have, you know, so can I give real examples?
+
+Malcolm
+0:03:51
+Yes, please. And examples are very helpful, so as many of those as possible.
+
+Marla
+0:03:55
+So we've had discussions with, say, Brigitte Capps. and we started off, we had a private discussion of dry netter in Zurich, impressions were wrong, but that I think still needs to be recorded because it's a learning experience. But going on to where we've talked about things and she's come back with something totally different or not what we want. I want that all in the mix. But also the discussions we have after our meetings on how can we work with this person? How can we work with Bridget? What are the things that
+
+Marla
+0:04:36
+we would like to do with her? And then, you know, so I can go into it and ask the AI afterwards, you know, following these conversations, what is the best way forward? Can you give me suggestions of how we can do this?
+
+Malcolm
+0:04:55
+Okay. Or is that too much? No, no, not at all. Ask for the heavens. Okay, so in that example, Bridget is a lead. Yep. Okay, and this is just for later, does a lead ever become anything else? Does it transition into a customer for example?
+
+Marla
+0:05:17
+Yes, I want the journey. I want the journey to be there.
+
+Malcolm
+0:05:23
+Okay, so let's imagine, let's go with the Bridget thing. Imagine she, we go through this iteration of discussions and we find out what she wants, we define the architecture, we get the contracts of course, she turns into a customer. Now, as a customer, taking that same story, what sort of thing would you expect from the system for a manager as a customer?
+
+Marla
+0:05:57
+all communication was logged and remembered if you like, inverted commas, so that anything that's brought into the mix should be forget along the way. But also what I would like is a almost a diarized itemized record of what we're doing and how we're doing it. What are the next actions? Checking up on the customer, making sure that we've actually achieved it, keeping to the deadlines and then following up on the customer for next steps and making sure that everything that we have outlined.
+
+Marla
+0:06:51
+So say, take Bhuji, she wants to do podcasts. Have we set them up right? Do we have everything we need for that? Have we discussed the content amongst us? Have we got a final plan for them? When is this podcast gonna be?
+
+Marla
+0:07:07
+Do I need a reminder for that? Do I need a reminder that things need to be done before the podcast happens? Post the podcast, what do we need to do for production? Where does it need to be posted? Check on the posting, how many views is it having? Am I responding to everybody who's responded to the posting? Does that answer your
+
+Malcolm
+0:07:34
+question? Yes, so that's an example of what we could call a customer task perhaps. Yeah. Where that customer task is, pulls in all the relevant information for that customer. So we know, the AI knows that that task refers to this customer, which that customer refers to this contract, this contract or the customer also refers to the lead journey so if we've said something then we can get prompted for it.
+
+Malcolm
+0:08:09
+There seems to be a few points here in that it's a recording of context as in an event with a capital E, as in something has happened, which is your log. Maybe it's a good thing, maybe it's a bad thing, so on. There may be a delivery, and that delivery should be linked back to what the contract says. There is a follow-up, which is not contractual,
+
+Malcolm
+0:08:48
+but that just shows excellent customer facing practice. I've written down here views, do you remember what you were saying there? I'm scribbling down notes as well. What do you mean by views under the customer tasks?
+
+Marla
+0:09:07
+Under tasks? Did I say views?
+
+Malcolm
+0:09:13
+Oh God, I think, well I'll look back on the transcript but I think what it is is views are effectively filters. It's like okay have we... Oh, oh, oh, oh, views, so if we're posting the podcast.
+
+10
+0:09:33
+Right, results.
+
+Marla
+0:09:35
+We're doing it on LinkedIn, can we check how we're doing, how many likes we've got, etc. That kind of thing. Okay. What is being the uptake? How have people responded to it? Is this a topic that they're happy to look at?
+
+Marla
+0:09:49
+You know, that kind of thing. Like a proper CRM system, you know, how many clicks of a hashtag. Right, right, okay.
+
+Malcolm
+0:09:55
+So we're talking about the results of actions taken, which link back to the contract. Yeah, exactly. Yeah, views are, can also be used as a technical term which essentially, it's not quite like filters but it's a bit like filters. It's like, you know, give me information about this as an accountant, give me information about this as a debtor. That would be brilliant too. I mean I'm not complaining about that one. Yeah that comes from free but uh that's what I thought you were talking about with the user. Yeah. Okay all right so uh can you give me another example that isn't Bridget's as different as we can get?
+
+Marla
+0:10:40
+Okay so let's look at somebody who's come to us to do to create an AI system for them. Let's take James come through a contact, somebody we know hasn't come from somebody I've just met, but they have a very specific task for us in hand. And it's just a task that once we've done it, we'll end. It's not an ongoing, maybe an ongoing association,
+
+Marla
+0:11:10
+but isn't an ongoing association.
+
+Malcolm
+0:11:12
+Oh, I'm sorry, what do you mean by that?
+
+Marla
+0:11:15
+By means that it might be just a single, solitary thing, make this for me and disappear.
+
+Malcolm
+0:11:20
+Okay, right, so the types of contract then, we've just got fire and forget.
+
+9
+0:11:30
+Yeah.
+
+Malcolm
+0:11:31
+That's probably a better word for it.
+
+Marla
+0:11:33
+That seems a better word for it.
+
+Malcolm
+0:11:36
+And then there's a service agreement necessarily Yeah, okay. All right, so this is a fire and forget This is a fire and forget
+
+Marla
+0:11:43
+Someone like Bridget is not fire and forget. It's an ongoing nurturing conversation which is Bringing us leads on a regular basis that it's a slightly different thing grand. So Okay, so for James to me through
+
+Malcolm
+0:11:57
+Timmy through sort of thing. So just pretend he's a bar and forget.
+
+Marla
+0:12:01
+He wants us to do this one task and then disappear. So he's coming to us, is actually, once again, following the email trail from where he contacts us. Our conversations and analysis of the conversations, reaching, help, keeping a record of them and helping us decide like what wasn't said or do an analysis of the conversation to actually help us decide what the next steps are going to be and then keep a record of what the contract you know when we sign the contract what the contract needs us to do the timelines it needs us to do, and then just prompt me to
+
+Marla
+0:12:55
+check that we're meeting those timelines. Because I'm assuming this is a CRM you're doing for me. Yes. Yeah? Rather than for you. It's to check, okay, where are we? This is the date and just prompt me to say, oh, we should be halfway through this task. Can you can you make sure that you check that that's what we are? Okay, so and yeah, we're having update client And then so and then update client is chief Benchmarks that we need to we you know get to so all the
+
+Marla
+0:13:28
+You know, we need to have got this done by now. He needs to see it. It's once again take on board the meetings and the to and fro of the conversations, the feedback we get and keep it, I suppose it's a feedback loop if you like, of yes that works, that doesn't, go back, just keep on top of the process until we get to completion. And then the handover and then a follow-on maybe a week, two weeks later a reminder to do that, adjust any problems and just keep on top of it and then maybe reminding you on a yearly basis just to check up on the client or even a six-month one. Okay, okay now you're talking
+
+Marla
+0:14:23
+what do you mean by process there? What I mean by process is the process of always so it's like if you've got a Trello board where are we there have I moved you to the next stage, that process. State board where are we now? Yeah where are we now? Are we completing? So if I was to go back to the glasses analogy, done the sight test. Okay, the glasses are supposed to be in in this time. Okay, they're due to come in in two days time. Let's check up where are we? Is it going to be in time? Is it made to the finish that I wanted to be made? Is it all done? Great. Right. Talk to the client. Okay, your glasses here, we now have to, your AI is ready.
+
+Marla
+0:15:17
+We need to implement. So we have an implementation process arranging that. When can we, you know, when can we go in and do it? How are we going to do it? These are the stages of implementation. Get to the end of implementation and its use. What needs tweaking? Do you need that adjustment here, that adjustment there? Okay, we've got that done. How long will that adjustment take? Right, okay, it's done. Can you try it? We've got another two days of trial. Yeah, that works. Okay, let's look at every little tweak.
+
+Marla
+0:15:52
+Are you ready to sign off? Yes, you're ready to sign off. Shall we have a final meeting to do the sign off to make sure that you, you know, we've all got on board. A week later, are you still happy with the sign-off? And we'll keep checking on you for the first, say, month. If you're happy, we'll sign off. But we'll contact you in six months. I need to contact in six months.
+
+Marla
+0:16:11
+Are you still okay? Do you need us for anything else? Do you need an add-on, etc., etc.? Does that explain it better?
+
+Malcolm
+0:16:18
+Yeah, it does. Is there any other kind of work? So we've got implementation, we've got improvement, we've got sign-off. Presumably, there's some kind of proactive work where we want to go above and beyond,
+
+Malcolm
+0:16:31
+or there's anticipatory work where if, for example, something changes in the background, we need to do that, like upgrades, server upgrades, upgrading LLMs, and so on. So that's the work. Is there any other kind of work? Because work equals cost. Which I'll come on to in a second.
+
+Marla
+0:16:58
+The only thing that I think that there isn't any... I wouldn't actually add extra work at this stage. But I would expect that we'd get to the month stage, which is why I say I think you contact them after a month. And I think you get to that month stage and what happens is that they suddenly go this really works well you know I just wish that bit worked well you know and it's a bit we haven't touched and then you go we can make it work well and that's extra work
+
+Malcolm
+0:17:30
+but hey it's an on that might be an ongoing client thing. Okay so there's work carried out, some of which we need to do because we're contracted, some of which we should do in anticipation of the spirit of the contract, and some of it which is discretionary. Discretionary could come from the customer, or it could come from us saying, hey, there's a new cool thing here.
+
+Marla
+0:18:04
+Yeah, there's a new upgrade. It's just doing the aftercare. Okay. So if I go back to the glasses bit, which I can really do well. Yeah.
+
+Marla
+0:18:14
+So you get, I would check up on people who bought glasses a month later, are you still doing okay? Do they still fit okay? Nothing's hurting? Do you wanna come in so I can just adjust it for
+
+Marla
+0:18:29
+you you having problems yeah I wish I'd got sunglasses well we can make you sunglasses you know we've done all the work it won't take a long time do you want to come in choose some frames and we can we can do that so it's it's that so shall we have a discussion on exactly how you want this done I mean you're the frame selection but in this if you like right let's arrange another meeting you know we can talk about how you want this done and we can go to the next
+
+Marla
+0:18:59
+bit because it'll make your life easier and actually you know we've already got so I would say we've already got your prescriptions not going to take us any time to you know you're not gonna have to come in for another assessment we already know what you need and that's the add-on you know we kind of know what you need and we can do that so there might be bits and I'm sure we'll see it where they'll ask us for one thing and you think why aren't they putting that in on as well because it works together and they're seeing it in two isolated bits. How do, let's go with the
+
+Malcolm
+0:19:42
+glasses thing because I saw that's a very helpful one. When you're talking there, what you're really trying to do is to get the best outcome for the customer. Yes. And that outcome really comes down to just suggesting work that should be carried out and also interesting enough suggesting when maybe the customer comes in and asks for work and you say well you don't really need that here's a better way so the aim of that on the the former R side. Now I'm calling this for sake of definition, I think I'll split this
+
+Malcolm
+0:20:40
+Dev, Ops and Customer Relations. Now, the reason I'm doing that is for the recording really. No problem. It makes sense. It makes sense to do it that way. Yeah, these are various hats that anyone can put on at any one time, but in terms of teaching the AI. Can you think of any others? So sales is everything to do with lead.
+
+Malcolm
+0:21:24
+Dev is everything to do with the production of the initial system and the improvement of the system. Ops is the stuff that the customer would never know to do like upgrades or updates but also response to the systems down or the systems not done something right and so on. Customer relations is that ongoing improvement cycle where there's follow-ups and so on. you want to make sure that the customer is feeling wanted.
+
+Malcolm
+0:22:03
+And so there's also another item of this one which you touched on with logging, which is time and cost logging. Because as a business, we probably want to measure ourselves to see whether this particular customer is worth it as in taking a lot of time and getting very little out but also in maybe we can improve our own metrics. Are there any other internal metrics you can think of?
+
+Marla
+0:22:45
+Yes, for internal metrics is how often we get it right the first time okay first time okay what do you mean by that look we will analyze and I'm not denying I'm not critical of you but this this will happen because it always happens even it happens, you know, is that you hear one thing and the customer means something else and they go along with it, they go along with it, you get to the end and then they suddenly go, actually I really meant that. So it's how often we can really dig deep and get that bit completely right. Bad optoms do that all the time. All the time. It takes a lot of
+
+Marla
+0:23:43
+practice to actually listen behind the words. How would you define getting it right for a first time? What does that mean? It is that you absolutely understand what the customer wants and deliver that. Not your variation of it, because... and this is, I know it's for the recording, but this is sometimes what I get with Adam is
+
+Marla
+0:24:12
+you've not really listened. Do you know what I mean? Are you 100% listening to what they're saying? What is being said?
+
+Malcolm
+0:24:21
+What's the definition of done when you're saying I've got it right first time. It might be you get it right second time but the definition of done would be the same for both and then we can you know. Yeah done is
+
+Marla
+0:24:37
+that the final product is being used by the and I know we hate the word product but the final solution, product, whatever you like.
+
+Malcolm
+0:24:50
+Product, fine. I dislike solution. Solution is terrible.
+
+Marla
+0:24:54
+Yeah. Yeah. That we implement and install for the customer actually is exactly what they want. Yeah. And now, I suspect with what we're doing, we're really looking at first time is a three-stage process for this. It's not like LALSA is getting it
+
+Marla
+0:25:20
+right the first time. I suspect that what we're looking with AI is this is draft one, draft two, final draft if you like, you know. Have we got it right at the
+
+Malcolm
+0:25:34
+final draft? That would count for the example of James which is the fire and forget. For an SLA done is harder because what you want to do is to get to a steady state where they're content.
+
+Marla
+0:25:57
+Yeah but that's still broken into stages isn't it? Have you got the first stage? Yes, yes. It's still a done thing you know it's still done but it's a steady state is moving all the time but it's like okay once again I did something called Ortho K and Ortho K is where they wear lenses at night so that it corrects their vision so during the day they don't have to wear anything at all. My daughter still wears them till this day and that's a steady state in
+
+Marla
+0:26:34
+that oh you've had a change of environment we need to update this. I need to change the shape of the lens because it's not fitting quite right but is it done for this period of time? Yeah because we know there's going to be changes. But is it working now? Then you know I'm gonna check you in three months to make sure that there's been no further changes. But is it right for now? Okay, so customer
+
+Malcolm
+0:27:04
+contentment really is, they are happy with a steady state. Things might change. In your example, their eyesight might change. However, we've got your back and we will anticipate when we'd actually come in for another check.
+
+8
+0:27:20
+Because we're expecting change.
+
+Marla
+0:27:22
+That's what they need to know. And we are expecting change. Exactly, and in terms of AI,
+
+Malcolm
+0:27:27
+we know that there's gonna be rapid changes. And so we just handle that part in terms of the OPS, the state of the service level agreement is that yeah you don't have to think about these things we'll just anticipate on your
+
+Marla
+0:27:49
+behalf. We'll be there, we will come in and look at it if it needs no change it needs no change at least we've checked and that the whole thing with customer satisfaction is that they know that you will make sure that they don't fail.
+
+Malcolm
+0:28:06
+Right and it's very important of course every time it is personalized as in it is you remember everything that you've ever said to them. Absolutely. And you look like you know one of these every now and again you get a fantastic barman who you haven't you know walked into this hotel for two years and you walk in and going ah mr.
+
+Marla
+0:28:32
+maxwell good to see you again yeah and he remembers how many children you have what you were doing last time remembers the holidays you've gone on but just remembers the things that make life personal I'll give you an example we we had an old man he used to come in with his wife to see us for glasses all the time and sometimes I just popped the head around and say hello because we were nice to them and then he came in and told us his wife wasn't feeling too well and so we started seeing less and less of the wife
+
+Marla
+0:29:10
+and then one day he came into our waiting room and he just sat there and we said and I said Albert what can we do for you um are you looking for another sight test he goes no I've just buried Judy was her name and I didn't know where else to go so I came here and for me that meant the world they didn't spend a lot but that meant the world because because he knew that he would get a comforting place to be. What's the...
+
+3
+0:29:43
+Sorry, go on.
+
+Marla
+0:29:44
+And he sat in our waiting room all day while we fed him tea, we brought him lunch, and he had no one else to go with. They'd never had kids who didn't have anywhere else to go.
+
+Malcolm
+0:29:54
+That is, I think, you've hit on a core there. What in your view is the essence of a recurring
+
+Marla
+0:30:09
+customer? It's trust but it's more than that. It's a feeling of comfort. It's a really it is a feeling of I can come and say anything here and it will be taken seriously. I'm not an idiot and I have, I may be really fussy, I may be whatever, but you know the best customers are actually the fussiest ones because they come in really fussy and you listen to them and you quietly listen to them, you don't get irritated with them, you just keep listening to them and say how would you like me to sort it out? How would you like me to sort it out? And they go well is it right yet? No don't worry if it's
+
+Marla
+0:30:56
+not right we'll tweak it a bit more, we'll tweak it a bit more. And at the end they come in and they are the best customers and they stop being fussy because they trust that you've got their back. It's that being of being absolutely
+
+4
+0:31:21
+comfortable.
+
+Malcolm
+0:31:22
+The corollary of that is the absence of anxiety.
+
+Marla
+0:31:26
+Yes.
+
+Malcolm
+0:31:27
+And anxiety is based on, I'm not entirely sure whether you've got my best interests at heart, and I'm not sure whether you can do your job as you've stated. And so I'm anxious and therefore I'm uncomfortable.
+
+Marla
+0:31:43
+My best customers are the ones who started off being incredibly, incredibly fussy. And in the end they'd say, well you know what to do, just do it.
+
+Malcolm
+0:31:54
+Okay. There's only one area, and I might think of others, and also this is an iterative process
+
+Marla
+0:32:04
+it's gonna be scrappy to start with. We'll think of it as we're actually doing this.
+
+Malcolm
+0:32:09
+Exactly but the one area where I mentioned sales, dev, ops, customer relations the major one I missed out was marketing. Yes, yes. So give me your thoughts on marketing.
+
+Marla
+0:32:28
+That's a bit I hate the boast. I'm not sure about the marketing I'm not sure how to get about it however I have been sitting here taking a course from someone who's made four seven-figure businesses and and he's done it through social media marketing.
+
+Malcolm
+0:33:16
+Um, yeah.
+
+Marla
+0:33:20
+And so I've been kind of following him and he's been really sensible. It isn't that marketing hype. It's just that if you want to make money, you go to LinkedIn and YouTube. Very simply. Because that's got the highest conversions. but if you want to build up your profiles you start with TikTok Instagram
+
+Malcolm
+0:33:41
+and Twitter. Okay but that's that oh finally I get to say that you're
+
+Marla
+0:33:49
+solutionary. I am, I am solutionary. But it's because I don't know I don't have answers for that I don't even I'm not good at either but okay so the top of my head
+
+Malcolm
+0:34:07
+you can break up marketing into brand, how you present yourself, awareness, awareness you can also reframe awareness as in share of voice would be one way of doing it. So in this area our share of voice is you know X whenever someone talks about this in the area that we're talking about they talk about us. We've also got reputation it's a huge part of marketing. I count marketing and PR very basically the same thing.
+
+Marla
+0:34:47
+It is. Sorry I'm interrupting but this is that follows very much with what you're saying. One of the things he said was the most successful companies are not necessarily the best companies, they're just the most visible.
+
+Malcolm
+0:35:02
+Yeah, that's sheer advice, absolutely.
+
+Marla
+0:35:05
+Yeah, and you just have to be constantly visible, which I'm, I don't think, I like doing...
+
+Malcolm
+0:35:14
+Well, it is a road to be filled. It is. And then the...
+
+Marla
+0:35:23
+No, but what I mean is it needs to be your voices is what he said.
+
+7
+0:35:27
+Yes.
+
+Marla
+0:35:28
+You've got to be the voices.
+
+6
+0:35:29
+Yes.
+
+Marla
+0:35:30
+So it's got to be us. But, you know, so take videos. And he says actually with things like YouTube and LinkedIn, the more real it is the better it is.
+
+Malcolm
+0:35:40
+Well that's... yeah that speaks to the next... again I'm just thinking off my hoof here but authenticity. Now authenticity is largely down to consistency because it's not in our power to compel people to like us, but it is in our power to be consistent and consistency leads to authenticity and authenticity leads to trust because you're not going from, hey one minute we're selling Aston Martin's So that's an area, again I'm not an expert of marketing but I'm just thinking on the lead here. But the point of marketing is lead generation. Lead generation feeds into sales.
+
+Malcolm
+0:36:38
+So sales requires marketing in order to get lead gen. Now when you're talking about lead generation, then you're talking about channel. And you could be talking about social media, or you could be talking about posters, or adorium and so on, exactly. But the channel is a thing that we need to be able to track, because we need to think about where to put our resources in terms of channel. Now each channel may have a separate message but the message still needs to be consistent
+
+Malcolm
+0:37:26
+with the authenticity of the brand. So we say this is our brand, we are authentic and consistent and we are going out in different channels and everything we see in each different channel is home to that channel but it's still authentic, it still works. And that leads on to for each channel what the type of message is and there is a thing called, again this is for the tape really, there's an item called a message, which then we get into things like A-B testing of messages. As long as all the messages are authentic, you can get great difference between just different wording. Even the difference between active and passive voice makes a difference, or even the colour of, you know, or the font type.
+
+Malcolm
+0:38:25
+It's very strange A-B testing, it's very difficult to predict. But then there's the follow-up, the initial follow-up, which is the conversion into a lead, at which point becomes sales. So given that neither of us are marketeers, unless you think of anything else that sounds like a good starter for ten.
+
+Marla
+0:38:51
+It is. One of... my cousin does a something called Soul Safaris. And the one thing... she does Soul Safaris, my niece has a Pilates studio. And their branding is so consistent all the way through. They're remarkably good at it. So the one who does the Pilates studio always has the same colors. It's very clean, it's like this baby pink and
+
+Marla
+0:39:25
+a beige color. Nothing veers from that. The font doesn't veer from that. The Seoul safaris one, okay, there's less about the font, more about the pictures of the resorts that they go to and the wildlife that they look after and they're very much into conservancy of the wildlife in Africa. So while you're going on these safaris there is a purpose to it and that shines strong through their messaging. Yeah, all of it shines but it looks the same. I can open it and not even look at who it's by and know who, which place it's from. And that comes from inside. And I think when we created
+
+Marla
+0:40:15
+the naked logo, we kind of felt that, didn't we? We felt that was us. those colors but everything it was clearly us and it was very consistent and we have to and we didn't want it to be that
+
+Malcolm
+0:40:45
+super super high AI almost black and white or navy blue and white contrast with AI the white robot type thing. Well of the nakedy I think is as time's gone on I've grown to love it more and more and I was thinking about this this morning I think the reason is we started to call it naked as you just did. Now naked is a bit like virgin as a
+
+Malcolm
+0:41:29
+it's not rude, it's just what it is, but it is like a hmm, the full name
+
+Marla
+0:41:39
+Naked AI explains it, but by shortening it, it makes it more conversational. So I think we've got a really good brand name, I'm really pleased with that actually I went on a call with, he's now a friend I belong to a non-exec
+
+Malcolm
+0:42:01
+group I need to come off it but you get good leads from it and he says every ooh, about it.
+
+5
+0:42:04
+Yeah.
+
+Malcolm
+0:42:05
+And yet it's perfectly innocent. It's perfectly innocent.
+
+Marla
+0:42:09
+Yeah, but he says, I just get a little, I just have a little giggle, you know, every time you come on. I see them naked and I think, ooh. So yeah, that's great. I agree with that.
+
+Marla
+0:42:22
+I may be able to actually get some free marketing advice from Quinton. So Quinton, I think I've spoke to him about him before, he's a really good friend. His full name is Quinton Crowe and we did start to do some like, my brain is not working he's up on my um my whiteboard um what i've got down is
+
+Malcolm
+0:42:55
+quinton good guy marketing yes yes that's the one and i haven't spoken to him for a while but
+
+Marla
+0:43:03
+um he was one of the guys and one year he turned around and he sent me 10 000 pounds because he So that's 10% of everything I've earned this year and every single contact has come from you.
+
+Malcolm
+0:43:16
+And now that is something that we want to replicate. How do we define that? It's almost like a, it's not quite a random act of kindness, but it's the doing the right thing. Yeah, he does the right thing. I assume he wasn't contracted to give you that money, otherwise he wouldn't have mentioned it.
+
+Marla
+0:43:47
+No, I just think he's a fabulous marketer. People ask me for somebody who knows marketing, and I said every single time, there's only one person.
+
+Malcolm
+0:43:56
+So that speaks to another part of marketing, which I didn't remember to speak about which is customer get customer. Which is the most powerful method of marketing. And he I met him
+
+Marla
+0:44:14
+because of marketing for KFC when we had the petrol stations. Right. And up We had a relationship as a marketer. We liked each other very much, but we had just a professional relationship. After KFC happened, after lockdown, well, it wasn't after lockdown, just before lockdown, he asked to meet me because his business partners had suddenly decided to go and take in half the business with them and
+
+Marla
+0:44:53
+he had this huge thriving business that just suddenly went down and he hadn't put the necessary checks and balances in because he's a decent guy who's starting a new business and he says can you help me set it up and we just became friends and I became part of his we had a mastermind group where it was like-minded people where you sat in a group and it was a safe space because most networking small networking groups when you're at work you only talk about work in the you don't tell the whole truth
+
+Marla
+0:45:33
+and you don't tell the whole truth about your home life and at home you don't tell them the whole truth about how you're feeling about them, and you don't also tell them the whole truth about work, because you don't want to worry them. So this is a safe space where people came together and it was just about the power of the crowd,
+
+Marla
+0:45:52
+you know, wisdom of the crowd. Wisdom of the masses. To sit there in a safe space. And we started running this, and he was the first, and it was in one of these mastermind groups during lockdown on Zoom that I, they were the first people I told that I was leaving DUS.
+
+Marla
+0:46:10
+And it all came from one little thing where they do this thing, very, very powerful. And I think it's well worth doing even within organizations where you put out a problem that you have and everybody asks you lots of questions, if the questions they listen to it and then while you're sat in the room you turn your back and they talk about it. So there
+
+Malcolm
+0:46:37
+there is potentially something else we want to consider which is a community. Yes. would be gatekeepers and so everyone knows, a bit like when I say you know is this person that you're about to introduce one of us in a shorthand and you know what I'm talking about. So there's potentially a community there well I think there is a community there that we should offer because things are going to be changing quite rapidly and that would really come down to, well two things really, trust in us as the gatekeepers and then trust in
+
+Malcolm
+0:47:32
+each other.
+
+3
+0:47:33
+Yes.
+
+Marla
+0:47:34
+And if you can get that right then you've got loyalty. Yeah I think they need I mean like I said to you first person I would turn to always Quinton and I can send him a message today saying Quinton we just need to have a chat with you, would you be happy to come on a call with us just to talk to us about how we can do this marketing or what we need to consider and he'd say yeah let's let's talk even if the even if there's no business for him and I say look if we can afford it and we can get you in it we will but there's we start up
+
+Marla
+0:48:14
+no money and he has followed me to Newcastle to this aviation tech to do this for me. But the
+
+Malcolm
+0:48:22
+The interesting thing is he paid you £10,000, right? Yeah. That is exactly what I'm trying to do with Jim Gatcher because Jim Gatcher requires a few, one or two fundamentals. The first one is a source of trusted truth.
+
+Malcolm
+0:48:42
+Now, in this case, it was in Quentin's own mind and his integrity. And that's the big thing.
+
+4
+0:48:52
+Yeah.
+
+Marla
+0:48:53
+The integrity of the people we work with.
+
+Malcolm
+0:48:55
+Exactly. And your contribution, he logged, and in Jim Catcher terms, the attribution was you're due something for this.
+
+Malcolm
+0:49:06
+And you get it. That is the essence of the Jim Catcher. Only he's doing it in his own mind. Yeah. Whereas I'm trying to make it disputed. We should by all means send him a copy of this conversation and see what he thinks. I've got one other area that
+
+Malcolm
+0:49:29
+I don't think we've covered yet, which is what I call incidents. I call them incidents because they can be bad events but there are no bad events there's only bad. That's where
+
+Marla
+0:50:01
+things go wrong. It's, yeah. It is, it's how you deal with it. It is what actually ends up making people trust you the most.
+
+Malcolm
+0:50:14
+Yes, exactly.
+
+Marla
+0:50:15
+Not when things go right, it's when they go horribly wrong. How did you deal with them? How did you talk to them? How did you make them feel?
+
+3
+0:50:23
+Yeah.
+
+Marla
+0:50:24
+And that.
+
+Malcolm
+0:50:25
+And it's resolution resolution, well there's two parts, there's internal and external so the internal is resolution okay so an incident has happened and we're on this, don't worry about it we'll fix it for you and then you pick up the phone
+
+Malcolm
+0:50:45
+eight hours later and say it's fixed and they go, thank God for that
+
+Marla
+0:50:48
+and they love you for it. And you made no fuss, you didn't blame them in fact you took uh you took the blame on yourself for not anticipating it even if it wasn't you know that should have thought you know just that whole thing well there's there's um well with instance
+
+Malcolm
+0:51:05
+um there um there is no blame unless you um turn that instant into a bad event and bad events are incidents with poor responses.
+
+Marla
+0:51:16
+Yeah, but you know, when something goes wrong also, the person bringing this thing that's gone wrong comes in usually very tense, where they go, okay, I'm going to have to
+
+Malcolm
+0:51:28
+have an argument with these guys. Right, and this is not our fault, honestly, it's not our fault. And it might not be. It might not be. I had indulged myself with that story here, because it's a good story. When I was running one of the data centers, we had a bunch of travel folk now.
+
+Malcolm
+0:51:49
+I'm personally think travel folk have got a very strong community ethos and a sense of honor. It just doesn't happen to be the same as lining up with law. lol. And they took a chainsaw and they did it in a really quite safe way as far as you could see because they knew their way around a transformer and they made it safe, shorted it in a way that
+
+Malcolm
+0:52:21
+there was no bodies around, let's put it that way, and then they took a chainsaw to the copper incoming and then they got away with probably about £20,000 worth of copper at the time and the datacenter goes down uh... now that is post-majure
+
+Malcolm
+0:52:42
+as the guy who was in charge of the company at the time, there's a couple of things you could do at that point you could say hey, it's not our fault. These guys literally ripped up the copper income and all your servers went down.
+
+Malcolm
+0:52:59
+That's not what I chose to do. What we ended up doing or what I ended up doing is phoning individually each customer and saying, this is what's happening, this is the status, and this is what we're doing, and we're going to keep you updated every two hours.
+
+Malcolm
+0:53:15
+There's a lot of customers affected and so I'm going to be putting up on this private website that only customers can see and that's where you find out what we're doing and what the progress is rest assured we're working day and night. And I ended up sleeping inside of the data center for three days in order to get that done and I got so much kudos. I mean, one of the customers was NHS Tayside and I got a very warm letter from NHS Tayside afterwards
+
+Malcolm
+0:53:48
+and a year later they gave us the contract for all their IT. So the incident control is hugely important. The second part, so that's the internal part of instinct control, the second part is external. So did you see the news about the cheese being stolen by the Russians? Yes.
+
+Marla
+0:54:13
+Now, what was it?
+
+Malcolm
+0:54:28
+That's right. 200,000 pounds worth of cheese, stolen, possibly by the Russians, didn't really know. A company that can barely absorb that cost. Now, what's your opinion about them, PR-wise? I think everybody's just smiling.
+
+3
+0:54:45
+Right.
+
+Marla
+0:54:46
+Because, you know, they're told everybody's been stolen.
+
+Malcolm
+0:54:50
+Yeah?
+
+Marla
+0:54:51
+You've got a lot of sympathy, but you've also got a lot of Twitters, you know, like, hey, hey, hey, you know, that's so funny.
+
+Malcolm
+0:54:58
+And the thing I would add, and again, I'm not an expert in PR, so I'm sure, Gutten, when you listen to this you can get more insight but the thing I was very impressed by is number one this bad thing had happened now two hundred thousand pounds being stolen and it's a lot of money but in turn you know there there's theft of two hundred thousand pounds probably happening every other day in companies all over the country through, I don't know, cybercrime. I had to sit through a board meeting where we got 125,000 stolen and we were trying to
+
+Malcolm
+0:55:50
+keep it quiet and so on. But what these guys did was put out a press release and the press all pay you. And that is for me, when it hits the fan, the external message is really important. Yeah, and they did very well. Yeah, and when I asked you your opinion, you were saying you just smelled is like you know the great cheese heist however you knew their name next time you know you're browsing through and you see the cheese you're probably going to go these guys are good I'm gonna buy these I'm gonna buy the
+
+Malcolm
+0:56:31
+cheese so no not at all and it was literally you know the morning after the the night before they put out press release saying we've just had £200,000 of cheese we think it might be the Russians we're not sure however just to be sure all our sub suppliers will pay you in full it's gonna hurt stick with us and I'll tell you what was the other thing was just I don't know whether it
+
+Marla
+0:57:03
+was the Russians in there and suddenly it's a game of espionage, you know? It's like, oh, the Russians, now they can't leave our cheese alone, you know? It was very good. I thought they were... it just made me laugh.
+
+Malcolm
+0:57:28
+Yeah, yeah. So the reason I'm raising that is the... when there's a thing that we need to have inside of our CRM a round instance because they will happen and those instance have two aspects the internal and the external and if run well you know good things can happen and you know we know you know internally in our own hearts we absolutely know that we're good guys but we an instance provides the opportunity to demonstrate that externally and demonstrate that internally beyond the call of any contract.
+
+Marla
+0:58:13
+Just very quickly, before we go into anything else,
+
+Malcolm
+0:58:27
+that is all I need in order to ingest this into the AI and build a CRM based on just this conversation. So I'm going to stop this audio thing, because otherwise, if we add extra stuff in, it might consider that. it might consider that.
+
+Malcolm
+0:58:43
+So we're at, there you go, one hour of conversation.
+
+
+
+
+Transcribed with Cockatoo
