@@ -90,3 +90,11 @@ Deno.test("escape() works with all ASCII", async (t) => {
     });
   });
 });
+
+Deno.test("escape() escapes the leading digit and ascii-letter", () => {
+  assertEquals(escape("123"), "\\x3123");
+  assertEquals(escape("abc"), "\\x61bc");
+  assertEquals(escape("ABC"), "\\x41BC");
+  assertEquals(escape("xyz"), "\\x78yz");
+  assertEquals(escape("XYZ"), "\\x58YZ");
+});
