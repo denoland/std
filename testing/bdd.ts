@@ -836,6 +836,8 @@ function addHook<T>(
 
 /**
  * Run some shared setup before all of the tests in the suite.
+ * `beforeAll` is only provided for compatibility. Top-level
+ * initialization code should be used instead.
  *
  * @example Usage
  * ```ts
