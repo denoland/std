@@ -3,6 +3,7 @@
 
 import { equal } from "./equal.ts";
 import { AssertionError } from "./assertion_error.ts";
+import { format } from "@std/internal/format";
 
 /**
  * Make an assertion that `actual` and `expected` are not equal, deeply.
@@ -27,8 +28,8 @@ export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;
   }
-  const actualString = String(actual);
-  const expectedString = String(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   const msgSuffix = msg ? `: ${msg}` : ".";
   throw new AssertionError(
     `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`,

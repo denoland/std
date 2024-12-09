@@ -17,7 +17,7 @@ Deno.test("assertNotEquals() throws", () => {
       assertNotEquals("foo", "foo");
     },
     AssertionError,
-    "Expected actual: foo not to be: foo.",
+    'Expected actual: "foo" not to be: "foo".',
   );
 });
 
@@ -27,6 +27,6 @@ Deno.test("assertNotEquals() throws with custom message", () => {
       assertNotEquals("foo", "foo", "CUSTOM MESSAGE");
     },
     AssertionError,
-    "Expected actual: foo not to be: foo: CUSTOM MESSAGE",
+    'Expected actual: "foo" not to be: "foo": CUSTOM MESSAGE',
   );
 });
