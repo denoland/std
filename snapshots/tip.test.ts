@@ -3,7 +3,7 @@ import { MockProvider } from './mock-provider.ts'
 import { expect } from '@std/expect/expect'
 import { assert } from '@std/assert/assert'
 
-Deno.test.only('mock provider', async (t) => {
+Deno.test('mock provider', async (t) => {
   const provider = MockProvider.create()
   expect(await provider.snapshots.latest()).toBeUndefined()
   expect(await provider.snapshots.parents()).toEqual([])
@@ -31,7 +31,7 @@ Deno.test.only('mock provider', async (t) => {
   expect(await provider.snapshots.parents({ snapshot: id })).toEqual([])
 })
 
-Deno.test.only('snapshot', async (t) => {
+Deno.test('snapshot', async (t) => {
   const provider = MockProvider.create()
 
   const tip = Tip.create(provider)

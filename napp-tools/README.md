@@ -22,6 +22,34 @@ Requirements of the `agent` key:
 2. Be called by other napps in pure agent mode, where this is a standalone
    agent, talking back to the caller
 
+Requirements of the `stucks` key:
+
+1. Define configuration for stuck detection and handling
+2. Include title, description, snapshot information, and crypto identifiers
+3. Support branch specification and expected conditions
+
+Requirements of the `evals` key:
+
+1. Specify test runner configuration
+2. Support listing of test files for napp verification
+
+Requirements of the `dependencies` key:
+
+1. List all required napps with version information
+2. Support optional name overrides for dependencies
+
+Requirements of the `graphics` key:
+
+1. Support exported widgets for stateboard display
+2. Allow framework specification (currently React)
+3. Enable component pass-through and renaming from other napps
+4. Support parameter configuration for components
+
+Requirements of the `effects` key:
+
+1. Provide mount and unmount hooks for side effects
+2. Support tooling for setup and cleanup operations
+
 Gateway requirements:
 
 1. Have different configuration for mock, test, and prod environments

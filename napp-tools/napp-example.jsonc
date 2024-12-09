@@ -99,7 +99,7 @@
     "parameters": {
       // config for the test runner, based on what the runner is
       "files": [
-        // list of test files that can be run to verify the napp is working correctly
+        // list of eval files that can be run to verify the napp is working correctly
       ]
     }
   },
