@@ -2,7 +2,8 @@
 import { emptyDir } from "../empty_dir.ts";
 
 try {
-  await emptyDir("fs/testdata/testfolder");
+  // Empty testfolder stored in Deno.args where the child.txt is located.
+  await emptyDir(Deno.args[0]!);
   console.log("success");
 } catch (error) {
   console.log(error);

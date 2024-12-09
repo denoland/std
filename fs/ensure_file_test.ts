@@ -8,7 +8,10 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("ensureFile() creates file if it does not exist", async function () {
-  const testDir = path.join(testdataDir, "ensure_file_1");
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_file_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_1");
   const testFile = path.join(testDir, "test.txt");
 
   try {
@@ -17,12 +20,15 @@ Deno.test("ensureFile() creates file if it does not exist", async function () {
     // test file should exists.
     await Deno.stat(testFile);
   } finally {
-    await Deno.remove(testDir, { recursive: true });
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("ensureFileSync() creates file if it does not exist", function () {
-  const testDir = path.join(testdataDir, "ensure_file_2");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_file_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_2");
   const testFile = path.join(testDir, "test.txt");
 
   try {
@@ -31,12 +37,15 @@ Deno.test("ensureFileSync() creates file if it does not exist", function () {
     // test file should exists.
     Deno.statSync(testFile);
   } finally {
-    Deno.removeSync(testDir, { recursive: true });
+    Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("ensureFile() ensures existing file exists", async function () {
-  const testDir = path.join(testdataDir, "ensure_file_3");
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_file_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_3");
   const testFile = path.join(testDir, "test.txt");
 
   try {
@@ -48,12 +57,15 @@ Deno.test("ensureFile() ensures existing file exists", async function () {
     // test file should exists.
     await Deno.stat(testFile);
   } finally {
-    await Deno.remove(testDir, { recursive: true });
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("ensureFileSync() ensures existing file exists", function () {
-  const testDir = path.join(testdataDir, "ensure_file_4");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_file_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_4");
   const testFile = path.join(testDir, "test.txt");
 
   try {
@@ -65,12 +77,15 @@ Deno.test("ensureFileSync() ensures existing file exists", function () {
     // test file should exists.
     Deno.statSync(testFile);
   } finally {
-    Deno.removeSync(testDir, { recursive: true });
+    Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("ensureFile() rejects if input is dir", async function () {
-  const testDir = path.join(testdataDir, "ensure_file_5");
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_file_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_5");
 
   try {
     await Deno.mkdir(testDir, { recursive: true });
@@ -83,12 +98,15 @@ Deno.test("ensureFile() rejects if input is dir", async function () {
       `Failed to ensure file exists: expected 'file', got 'dir'`,
     );
   } finally {
-    await Deno.remove(testDir, { recursive: true });
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("ensureFileSync() throws if input is dir", function () {
-  const testDir = path.join(testdataDir, "ensure_file_6");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_file_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_file_6");
 
   try {
     Deno.mkdirSync(testDir, { recursive: true });
@@ -101,7 +119,7 @@ Deno.test("ensureFileSync() throws if input is dir", function () {
       `Failed to ensure file exists: expected 'file', got 'dir'`,
     );
   } finally {
-    Deno.removeSync(testDir, { recursive: true });
+    Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
 
@@ -150,14 +168,14 @@ Deno.test({
     "ensureFile() can write file without write permissions on parent directory",
   permissions: {
     read: true,
-    write: [
-      path.join(testdataDir, "ensure_file_9"),
-      path.join(testdataDir, "ensure_file_9", "test.txt"),
-    ],
+    write: true,
     run: [Deno.execPath()],
   },
   async fn() {
-    const testDir = path.join(testdataDir, "ensure_file_9");
+    const tempDirPath = await Deno.makeTempDir({
+      prefix: "deno_std_ensure_file_",
+    });
+    const testDir = path.join(tempDirPath, "ensure_file_9");
     const testFile = path.join(testDir, "test.txt");
 
     try {
@@ -178,6 +196,7 @@ Deno.test({
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).output();
+      await Deno.remove(tempDirPath, { recursive: true });
     }
   },
 });
@@ -187,14 +206,14 @@ Deno.test({
     "ensureFileSync() can write file without write permissions on parent directory",
   permissions: {
     read: true,
-    write: [
-      path.join(testdataDir, "ensure_file_10"),
-      path.join(testdataDir, "ensure_file_10", "test.txt"),
-    ],
+    write: true,
     run: [Deno.execPath()],
   },
   fn() {
-    const testDir = path.join(testdataDir, "ensure_file_10");
+    const tempDirPath = Deno.makeTempDirSync({
+      prefix: "deno_std_ensure_file_sync_",
+    });
+    const testDir = path.join(tempDirPath, "ensure_file_10");
     const testFile = path.join(testDir, "test.txt");
 
     try {
@@ -215,6 +234,7 @@ Deno.test({
           `Deno.removeSync("${testDir}", { recursive: true });`,
         ],
       }).outputSync();
+      Deno.removeSync(tempDirPath, { recursive: true });
     }
   },
 });
