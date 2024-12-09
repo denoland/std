@@ -1,10 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { buildMessage } from "@std/internal/build-message";
-import { diff } from "@std/internal/diff";
-import { diffStr } from "@std/internal/diff-str";
-import { format } from "@std/internal/format";
+import { buildMessage } from "../internal/build_message.ts";
+import { diff } from "../internal/diff.ts";
+import { diffStr } from "../internal/diff_str.ts";
+import { format } from "../internal/format.ts";
 
 import { AssertionError } from "./assertion_error.ts";
 
