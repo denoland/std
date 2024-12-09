@@ -22,11 +22,12 @@ import { AssertionError } from "./assertion_error.ts";
  * @param msg The optional message to display if the assertion fails.
  */
 export function assertLessOrEqual<T>(
-  actual: T,
-  expected: T,
+  actual: Exclude<T, undefined> | null,
+  expected: NonNullable<T>,
   msg?: string,
-) {
-  if (actual <= expected) return;
+): asserts actual is Exclude<T, undefined> | null {
+  // Coerce null to 0 to avoid "Object is possibly null"
+  if ((actual ?? 0) <= expected) return;
 
   const actualString = format(actual);
   const expectedString = format(expected);
