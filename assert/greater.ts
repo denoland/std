@@ -21,8 +21,13 @@ import { AssertionError } from "./assertion_error.ts";
  * @param expected The expected value to compare.
  * @param msg The optional message to display if the assertion fails.
  */
-export function assertGreater<T>(actual: T, expected: T, msg?: string) {
-  if (actual > expected) return;
+export function assertGreater<T>(
+  actual: Exclude<T, undefined> | null,
+  expected: NonNullable<T>,
+  msg?: string,
+): asserts actual is Exclude<T, undefined> | null {
+  // Coerce null to 0 to avoid "Object is possibly null"
+  if ((actual ?? 0) > expected) return;
 
   const actualString = format(actual);
   const expectedString = format(expected);
