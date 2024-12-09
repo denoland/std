@@ -13,6 +13,7 @@
     "./retry": "./retry.ts",
     "./unstable-retry": "./unstable_retry.ts",
     "./tee": "./tee.ts",
-    "./unstable-throttle": "./unstable_throttle.ts"
+    "./unstable-throttle": "./unstable_throttle.ts",
+    "./unstable-wait-for": "./unstable_wait_for.ts"
   }
 }
