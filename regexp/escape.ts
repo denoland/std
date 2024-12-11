@@ -93,5 +93,5 @@ export function escape(str: string): string {
   return str.replaceAll(
     RX_REGEXP_ESCAPE,
     (m) => RESERVED_CHARS[m as keyof typeof RESERVED_CHARS],
-  );
+  ).replace(/^[0-9a-zA-Z]/, (m) => `\\x${m.codePointAt(0)!.toString(16)}`);
 }

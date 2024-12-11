@@ -10,8 +10,7 @@ const routes: Route[] = [
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    handler: (_request, _info, params) =>
-      new Response(params?.pathname.groups.id),
+    handler: (_request, params) => new Response(params?.pathname.groups.id),
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),

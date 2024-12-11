@@ -1,3 +1,44 @@
+### 2024.12.06
+
+#### @std/assert 1.0.9 (patch)
+
+- docs(assert): note the thrown diff in object_match.ts (#6227)
+- docs(assert): fix English in mod.ts (#6226)
+- docs(assert): add note and example for Blob comparison (#6210)
+
+#### @std/cbor 0.1.3 (patch)
+
+- perf(cbor): for encoding numbers, bigints, and dates (#6214)
+
+#### @std/cli 1.0.8 (patch)
+
+- feat(cli/unstable): export `/unstable-prompt-select` (#6212)
+- fix(cli/unstable): hide cursor while showing the selection with
+  `promptSelect()` (#6221)
+- refactor(cli): rewrite `promptSelect()` clear commands (#6215)
+
+#### @std/dotenv 0.225.3 (patch)
+
+- fix(dotenv): handle multiline variables on Windows (#6216)
+
+#### @std/expect 1.0.9 (patch)
+
+- fix(expect): fix error messages for `toMatchObject` (#6228)
+
+#### @std/http 1.0.12 (patch)
+
+- BREAKING(http/unstable): switch `params` and `info` args in `Handler` in
+  `route()` for more conveniency (#6094)
+- fix(http): handle HEAD requests in serveFile (#6218)
+
+#### @std/testing 1.0.6 (patch)
+
+- fix(testing): add missing methods to `test` alias of `it` (#6222)
+
+#### @std/text 1.0.9 (patch)
+
+- fix(text): use locale-independent letter case methods (#6204)
+
 ### 2024.11.25
 
 #### @std/cli 1.0.7 (patch)
