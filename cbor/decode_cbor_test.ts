@@ -5,6 +5,7 @@ import { random } from "./_common_test.ts";
 import { decodeCbor } from "./decode_cbor.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborTag } from "./tag.ts";
+import type { CborType } from "./types.ts";
 
 Deno.test("decodeCbor() decoding undefined", () => {
   assertEquals(decodeCbor(encodeCbor(undefined)), undefined);
@@ -109,6 +110,47 @@ Deno.test("decodeCbor() decoding Uint8Arrays", () => {
 Deno.test("decodeCbor() decoding Dates", () => {
   const date = new Date();
   assertEquals(decodeCbor(encodeCbor(date)), date);
+});
+
+Deno.test("decodeCbor() decoding Map<CborType, CborType>", () => {
+  const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+});
+
+Deno.test("decodeCbor() decoding Maps", () => {
+  let pairs = random(0, 24);
+  let map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(24, 2 ** 8);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(2 ** 8, 2 ** 16);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(2 ** 16, 2 ** 17);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  // Can't test the next bracket up due to JavaScript limitations.
 });
 
 Deno.test("decodeCbor() decoding arrays", () => {
@@ -651,5 +693,124 @@ Deno.test("decodeCbor() rejecting majorType 7 due to additional information", ()
     },
     RangeError,
     "Cannot decode value (0b111_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 259 due to additional information", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting TagNumber 259 due to maps having invalid keys", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_00010,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 259 due to invalid indefinite length maps", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([217, 1, 3, 0b101_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+          0b111_11111,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+        ]),
+      );
+    },
+    RangeError,
+    "More bytes were expected",
   );
 });
