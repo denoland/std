@@ -245,10 +245,9 @@ Deno.test("encodeCbor() encoding Map<CborType, CborType>", () => {
       1,
       3,
       0b101_00000 + 3,
-      ...map
-        .entries()
+      ...Array.from(map
+        .entries())
         .map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)])
-        .toArray()
         .flat(),
     ]),
   );

@@ -133,10 +133,9 @@ export function encodeMap(x: Map<CborType, CborType>): Uint8Array {
   return concat([
     Uint8Array.from([217, 1, 3]), // TagNumber 259
     head,
-    ...x
-      .entries()
+    ...Array.from(x
+      .entries())
       .map(([k, v]) => [encodeCbor(k), encodeCbor(v)])
-      .toArray()
       .flat(),
   ]);
 }
