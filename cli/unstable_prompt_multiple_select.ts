@@ -13,6 +13,9 @@ const CR = "\r";
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
 
+const CHECKED = "◉";
+const UNCHECKED = "◯";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -54,8 +57,8 @@ export function promptMultipleSelect(
       const selected = index === selectedIndex;
       const start = selected ? INDICATOR : PADDING;
       const checked = selectedIndexes.has(index);
-      const box = checked ? "☑️" : "☐";
-      Deno.stdout.writeSync(encoder.encode(`${start} ${box} ${value}\r\n`));
+      const state = checked ? CHECKED : UNCHECKED;
+      Deno.stdout.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
     }
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
