@@ -1,12 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertGreater,
-  assertLess,
-  assertLessOrEqual,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { delay } from "@std/async/delay";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
