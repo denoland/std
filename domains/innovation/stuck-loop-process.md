@@ -120,7 +120,7 @@ The aim of the Stuck Loop Process is to ensure that all Stucks are addressed met
 3. **Solution Development**
 
    - **Create a NAPP**:
-     - Develop a **Needs-Adaptive Platform Proposition (NAPP)** that addresses the Stuck.
+     - Develop a **NAPP** that addresses the Stuck.
      - **NAPP** is a solution proposal designed to meet the identified needs.
    - **Considerations**:
      - Leverage existing resources and capabilities.
