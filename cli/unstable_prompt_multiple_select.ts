@@ -19,7 +19,7 @@ const UNCHECKED = "◯";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
+const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
@@ -88,7 +88,7 @@ export function promptMultipleSelect(
   }
   if (clear) {
     Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
-    Deno.stdout.writeSync(CLR_ALL);
+    Deno.stdout.writeSync(CLEAR_ALL);
   }
   Deno.stdout.writeSync(SHOW_CURSOR);
   Deno.stdin.setRaw(false);
