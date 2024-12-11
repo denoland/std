@@ -4,6 +4,7 @@ import {
   encodeArray,
   encodeBigInt,
   encodeDate,
+  encodeMap,
   encodeNumber,
   encodeObject,
   encodeString,
@@ -61,5 +62,6 @@ export function encodeCbor(value: CborType): Uint8Array {
   if (value instanceof Uint8Array) return encodeUint8Array(value);
   if (value instanceof Array) return encodeArray(value);
   if (value instanceof CborTag) return encodeTag(value);
+  if (value instanceof Map) return encodeMap(value);
   return encodeObject(value);
 }
