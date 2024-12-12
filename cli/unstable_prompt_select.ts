@@ -41,12 +41,12 @@ export function promptSelect(
   const length = values.length;
   let selectedIndex = 0;
 
-  Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
   Deno.stdin.setRaw(true);
 
   const buffer = new Uint8Array(4);
   loop:
   while (true) {
+    Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
     for (const [index, value] of values.entries()) {
       const start = index === selectedIndex ? INDICATOR : PADDING;
       Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
@@ -66,11 +66,11 @@ export function promptSelect(
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length}A`)); // move cursor after message
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
     Deno.stdout.writeSync(encoder.encode(CLR_ALL));
   }
   if (clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`)); // move cursor before message
+    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
     Deno.stdout.writeSync(encoder.encode(CLR_ALL));
   }
   Deno.stdin.setRaw(false);
