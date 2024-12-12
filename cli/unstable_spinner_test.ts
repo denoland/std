@@ -1,149 +1,543 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertEquals,
-  assertGreater,
-  assertLess,
-  assertLessOrEqual,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { delay } from "@std/async/delay";
 import { Spinner } from "./unstable_spinner.ts";
+import { restore, stub } from "@std/testing/mock";
 
-async function spawnDeno(args: string[], opts?: Deno.CommandOptions) {
-  const cmd = new Deno.Command(Deno.execPath(), {
-    args: ["run", ...args],
-    stdout: "piped",
-    stderr: "piped",
-    ...opts,
-  });
-  const output = await cmd.output();
-  return decoder.decode(output.stdout);
-}
-
-const normalizeString = (s: string) =>
-  // deno-lint-ignore no-control-regex
-  s.replace(/\r\n|\r|\n|\u001b\[[0-9;]*[a-zA-Z]/g, "").trim();
-
-const COLOR_RESET = "\u001b[0m";
-const LINE_CLEAR = "\r\u001b[K";
 const decoder = new TextDecoder();
 
 Deno.test("Spinner can start and stop", async () => {
-  const spinner = new Spinner({ message: "Loading..." });
-  spinner.start();
-  spinner.start(); // This doesn't throw, but ignored
-  await delay(300);
-  spinner.stop();
+  try {
+    stub(Deno.stdin, "setRaw");
+
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m Loading...",
+      "\r\x1b[K⠙\x1b[0m Loading...",
+      "\r\x1b[K⠹\x1b[0m Loading...",
+      "\r\x1b[K⠸\x1b[0m Loading...",
+      "\r\x1b[K⠼\x1b[0m Loading...",
+      "\r\x1b[K⠴\x1b[0m Loading...",
+      "\r\x1b[K⠦\x1b[0m Loading...",
+      "\r\x1b[K⠧\x1b[0m Loading...",
+      "\r\x1b[K⠇\x1b[0m Loading...",
+      "\r\x1b[K⠏\x1b[0m Loading...",
+      "\r\x1b[K",
+    ];
+
+    const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
+        return data.length;
+      },
+    );
+
+    const spinner = new Spinner({ message: "Loading..." });
+    spinner.start();
+    await promise;
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
 
 Deno.test("Spinner constructor accepts spinner", async () => {
-  const text = await spawnDeno([
-    "cli/testdata/spinner_cases/custom_spinner.ts",
-  ]);
-  const actual = normalizeString(text);
+  try {
+    stub(Deno.stdin, "setRaw");
 
-  assertStringIncludes(actual, "0 1 2 3 4 5 6");
+    const expectedOutput = [
+      "\r\x1b[K0\x1b[0m ",
+      "\r\x1b[K1\x1b[0m ",
+      "\r\x1b[K2\x1b[0m ",
+      "\r\x1b[K3\x1b[0m ",
+      "\r\x1b[K4\x1b[0m ",
+      "\r\x1b[K5\x1b[0m ",
+      "\r\x1b[K6\x1b[0m ",
+      "\r\x1b[K7\x1b[0m ",
+      "\r\x1b[K8\x1b[0m ",
+      "\r\x1b[K9\x1b[0m ",
+      "\r\x1b[K",
+    ];
+
+    const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
+        return data.length;
+      },
+    );
+
+    const spinner = new Spinner({
+      spinner: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+    });
+    spinner.start();
+    await promise;
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
 
 Deno.test("Spinner constructor accepts message", async () => {
-  const text = await spawnDeno([
-    "cli/testdata/spinner_cases/custom_message.ts",
-  ]);
-  const actual = normalizeString(text);
+  try {
+    stub(Deno.stdin, "setRaw");
 
-  assert(actual.startsWith("⠋ Spinning with Deno 🦕"));
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m Spinning with Deno 🦕",
+      "\r\x1b[K⠙\x1b[0m Spinning with Deno 🦕",
+      "\r\x1b[K⠹\x1b[0m Spinning with Deno 🦕",
+      "\r\x1b[K",
+    ];
+
+    const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
+        return data.length;
+      },
+    );
+
+    const spinner = new Spinner({ message: "Spinning with Deno 🦕" });
+    spinner.start();
+    await promise;
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
 
 Deno.test("Spinner constructor accepts interval", async () => {
-  const text1 = await spawnDeno([
-    "cli/testdata/spinner_cases/custom_interval_750.ts",
-  ]);
-  const actual1 = normalizeString(text1);
+  try {
+    stub(Deno.stdin, "setRaw");
 
-  // means it only ran once
-  assertEquals(actual1, "⠋");
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m ",
+      "\r\x1b[K⠙\x1b[0m ",
+      "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K",
+    ];
 
-  const text2 = await spawnDeno([
-    "cli/testdata/spinner_cases/custom_interval_10.ts",
-  ]);
-  const actual2 = normalizeString(text2);
+    const actualOutput: string[] = [];
 
-  // give setInterval a good buffer to avoid needlessly failing
-  assertGreater(actual2.length, 50);
-  assertLess(actual2.length, 300);
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        return data.length;
+      },
+    );
+
+    const spinner = new Spinner({ interval: 300 });
+    spinner.start();
+    await delay(1000); // 100ms buffer
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
 
-Deno.test("Spinner constructor accepts each color", async () => {
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_black.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} `);
-  }
+Deno.test("Spinner constructor accepts each color", async (t) => {
+  await t.step("black", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_red.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[31m⠋${COLOR_RESET} `);
-  }
+      const expectedOutput = [
+        "\r\x1b[K\x1b[30m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[30m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_green.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[32m⠋${COLOR_RESET} `);
-  }
+      const actualOutput: string[] = [];
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_yellow.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[33m⠋${COLOR_RESET} `);
-  }
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_blue.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[34m⠋${COLOR_RESET} `);
-  }
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_magenta.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[35m⠋${COLOR_RESET} `);
-  }
+      const spinner = new Spinner({ color: "black" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("red", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_cyan.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[36m⠋${COLOR_RESET} `);
-  }
+      const expectedOutput = [
+        "\r\x1b[K\x1b[31m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[31m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_white.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[37m⠋${COLOR_RESET} `);
-  }
+      const actualOutput: string[] = [];
 
-  {
-    const text = await spawnDeno([
-      "cli/testdata/spinner_cases/custom_color_gray.ts",
-    ]);
-    assertStringIncludes(text, `${LINE_CLEAR}\u001b[90m⠋${COLOR_RESET} `);
-  }
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "red" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("green", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[32m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[32m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "green" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("yellow", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[33m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[33m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "yellow" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("blue", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[34m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[34m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "blue" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("magenta", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[35m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[35m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "magenta" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("cyan", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[36m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[36m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "cyan" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("white", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[37m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[37m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "white" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
+  await t.step("gray", async () => {
+    try {
+      stub(Deno.stdin, "setRaw");
+
+      const expectedOutput = [
+        "\r\x1b[K\x1b[90m⠋\x1b[0m ",
+        "\r\x1b[K\x1b[90m⠙\x1b[0m ",
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ color: "gray" });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  });
 });
 
 Deno.test("Spinner.color can set each color", async () => {
-  const text = await spawnDeno(["cli/testdata/spinner_cases/set_color.ts"]);
+  try {
+    stub(Deno.stdin, "setRaw");
 
-  assertStringIncludes(text, `${LINE_CLEAR}\u001b[30m⠋${COLOR_RESET} `); // includes black spinner
-  assertStringIncludes(text, `${LINE_CLEAR}\u001b[31m⠙${COLOR_RESET} `); // includes red spinner
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m ",
+      "\r\x1b[K\x1b[30m⠙\x1b[0m ",
+      "\r\x1b[K",
+    ];
+
+    const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+    const spinner = new Spinner();
+
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        spinner.color = "black";
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
+        return data.length;
+      },
+    );
+
+    spinner.start();
+    await promise;
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
 
 Deno.test("Spinner.color can get each color", () => {
@@ -177,36 +571,40 @@ Deno.test("Spinner.color can get each color", () => {
   assertEquals(spinner.color, "\u001b[90m");
 });
 
-Deno.test("Spinner.start() begins the sequence", async () => {
-  const text = await spawnDeno(["cli/testdata/spinner_cases/start.ts"]);
-  assertStringIncludes(text, `${LINE_CLEAR}⠋${COLOR_RESET} `);
-});
-
-Deno.test("Spinner.stop() terminates the sequence", async () => {
-  const text = await spawnDeno(["cli/testdata/spinner_cases/stop.ts"]);
-  // Spinner renders 2 times and then renders LINE_CLEAR at the end.
-  // (LINE_CLEAR(4) + ⠋(1) COLOR_RESET(4) + SPACE(1)) * 2 + LINE_CLEAR(4) = 24
-  assertLessOrEqual(text.length, 24);
-});
-
 Deno.test("Spinner.message can be updated", async () => {
-  const text = await spawnDeno([
-    "cli/testdata/spinner_cases/change_message.ts",
-  ]);
-  const actual = normalizeString(text);
-  assertStringIncludes(actual, "One dino 🦕");
-  assertStringIncludes(actual, "Two dinos 🦕🦕");
-});
+  try {
+    stub(Deno.stdin, "setRaw");
 
-Deno.test("Spinner.message returns the current value when updated", () => {
-  const spinner = new Spinner();
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m One dino 🦕",
+      "\r\x1b[K⠙\x1b[0m Two dinos 🦕🦕",
+      "\r\x1b[K",
+    ];
 
-  spinner.message = "Step 1";
-  assertEquals(spinner.message, "Step 1");
+    const actualOutput: string[] = [];
 
-  spinner.message = "Step 2";
-  assertEquals(spinner.message, "Step 2");
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
 
-  spinner.message = "Step 3";
-  assertEquals(spinner.message, "Step 3");
+    const spinner = new Spinner({ message: "One dino 🦕" });
+
+    stub(
+      Deno.stdout,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        spinner.message = "Two dinos 🦕🦕";
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
+        return data.length;
+      },
+    );
+
+    spinner.start();
+    await promise;
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
 });
