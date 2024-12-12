@@ -202,6 +202,10 @@ function assertHasParamDefinition(
       paramDoc.kind === "assign" && paramDoc.left.kind === "identifier"
     ) {
       return paramDoc.left.name === param.name;
+    } else if (
+      paramDoc.kind === "assign" && paramDoc.left.kind === "object"
+    ) {
+      return true;
     }
     return false;
   });
