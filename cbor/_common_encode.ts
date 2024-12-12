@@ -109,6 +109,37 @@ export function encodeDate(x: Date): Uint8Array {
   return output;
 }
 
+export function encodeMap(x: Map<CborType, CborType>): Uint8Array {
+  const len = x.size;
+  let head: Uint8Array;
+  if (len < 24) head = Uint8Array.from([0b101_00000 + len]);
+  else if (len < 2 ** 8) head = Uint8Array.from([0b101_11000, len]);
+  else {
+    head = new Uint8Array(9);
+    const view = new DataView(head.buffer);
+    if (len < 2 ** 16) {
+      head[0] = 0b101_11001;
+      view.setUint16(1, len);
+      head = head.subarray(0, 3);
+    } else if (len < 2 ** 32) {
+      head[0] = 0b101_11010;
+      view.setUint32(1, len);
+      head = head.subarray(0, 5);
+    } else {
+      head[0] = 0b101_11011;
+      view.setBigUint64(1, BigInt(len));
+    }
+  }
+  return concat([
+    Uint8Array.from([217, 1, 3]), // TagNumber 259
+    head,
+    ...Array.from(x
+      .entries())
+      .map(([k, v]) => [encodeCbor(k), encodeCbor(v)])
+      .flat(),
+  ]);
+}
+
 export function encodeArray(x: CborType[]): Uint8Array {
   let head: number[];
   if (x.length < 24) head = [0b100_00000 + x.length];

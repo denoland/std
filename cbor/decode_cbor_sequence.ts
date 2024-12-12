@@ -20,7 +20,7 @@ import type { CborType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
+ * import { type CborType, decodeCborSequence, encodeCborSequence } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -30,6 +30,8 @@ import type { CborType } from "./types.ts";
  *   -1,
  *   null,
  *   Uint8Array.from([0, 1, 2, 3]),
+ *   new Date(),
+ *   new Map<CborType, CborType>([[1, 2], ['3', 4], [[5], { a: 6 }]]),
  * ];
  *
  * const encodedMessage = encodeCborSequence(rawMessage);
