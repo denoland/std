@@ -41,8 +41,9 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 export function promptMultipleSelect(
   message: string,
   values: string[],
-  { clear }: PromptMultipleSelectOptions = {},
+  options: PromptMultipleSelectOptions = {},
 ): string[] {
+  const { clear } = options;
   const length = values.length;
   let selectedIndex = 0;
   const selectedIndexes = new Set<number>();
