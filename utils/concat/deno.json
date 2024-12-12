@@ -1,0 +1,13 @@
+{
+  "name": "@dreamcatcher/concat",
+  "version": "0.0.6",
+  "tasks": {
+    "run": "deno run --allow-read --allow-write --allow-net=jsr.io main.ts"
+  },
+  "bin": {
+    "concat": "main.ts"
+  },
+  "exports": {
+    ".": "./main.ts"
+  }
+}

@@ -76,6 +76,8 @@
     "./server",
     "./shockwave",
     "./snapshots",
-    "./stateboard"
+    "./stateboard",
+    "./utils/pdfs",
+    "./utils/concat"
   ]
 }

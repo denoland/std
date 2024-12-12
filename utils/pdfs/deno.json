@@ -1,0 +1,19 @@
+{
+  "name": "@dreamcatcher/pdfs",
+  "version": "0.0.1",
+  "description": "Processes PDFs into a text like form suitable for AI processing",
+  "tasks": {
+    "dev": "deno run --watch --allow-read --allow-write main.ts"
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/cli": "jsr:@std/cli@^1.0.8",
+    "pdf.js-extract": "npm:pdf.js-extract@^0.2.1"
+  },
+  "exports": {
+    ".": "./main.ts"
+  },
+  "bin": {
+    "pdfs": "./main.ts"
+  }
+}
