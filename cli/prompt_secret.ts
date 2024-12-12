@@ -44,57 +44,45 @@ export type PromptSecretOptions = {
  */
 export function promptSecret(
   message = "Secret",
-  options?: PromptSecretOptions,
+  { mask = "*", clear }: PromptSecretOptions = {},
 ): string | null {
-  const { mask = "*", clear } = options ?? {};
+  input.setRaw(true, setRawOptions);
 
-  if (!input.isTerminal()) {
-    return null;
-  }
-
-  // Make the output consistent with the built-in prompt()
-  message += " ";
-  const callback = !mask ? undefined : (n: number) => {
-    output.writeSync(CLR);
-    output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));
-  };
-  output.writeSync(encoder.encode(message));
-
-  Deno.stdin.setRaw(true, setRawOptions);
-  try {
-    return readLineFromStdinSync(callback);
-  } finally {
-    if (clear) {
-      output.writeSync(CLR);
-    } else {
-      output.writeSync(encoder.encode("\n"));
-    }
-    Deno.stdin.setRaw(false);
-  }
-}
-
-// Slightly modified from Deno's runtime/js/41_prompt.js
-// This implementation immediately break on CR or LF and accept callback.
-// The original version waits LF when CR is received.
-// https://github.com/denoland/deno/blob/e4593873a9c791238685dfbb45e64b4485884174/runtime/js/41_prompt.js#L52-L77
-function readLineFromStdinSync(callback?: (n: number) => void): string {
   const c = new Uint8Array(1);
   const buf = [];
 
+  loop:
   while (true) {
+    // Make the output consistent with the built-in prompt()
+    output.writeSync(encoder.encode(`${message} ${mask.repeat(buf.length)}`));
+
+    // Slightly modified from Deno's runtime/js/41_prompt.js
+    // This implementation immediately break on CR or LF and accept callback.
+    // The original version waits LF when CR is received.
+    // https://github.com/denoland/deno/blob/e4593873a9c791238685dfbb45e64b4485884174/runtime/js/41_prompt.js#L52-L77
     const n = input.readSync(c);
-    if (n === null || n === 0) {
-      break;
+    if (n === null || n === 0) break;
+    const charCode = c[0] as number;
+    switch (charCode) {
+      case CR:
+      case LF:
+        break loop;
+      case BS:
+      case DEL:
+        buf.pop();
+        break;
+      default:
+        buf.push(charCode);
+        break;
     }
-    if (c[0] === CR || c[0] === LF) {
-      break;
-    }
-    if (c[0] === BS || c[0] === DEL) {
-      buf.pop();
-    } else {
-      buf.push(c[0]!);
-    }
-    if (callback) callback(buf.length);
+    output.writeSync(CLR);
   }
+
+  if (clear) {
+    output.writeSync(CLR);
+  } else {
+    output.writeSync(encoder.encode("\n"));
+  }
+  input.setRaw(false);
   return decoder.decode(new Uint8Array(buf));
 }
