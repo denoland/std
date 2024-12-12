@@ -27,7 +27,8 @@ export interface FileInfo {
   /** The last change time of the file. This corresponds to the `ctime`
    * field from `stat` on Mac/BSD and `ChangeTime` on Windows. This may
    * not be available on all platforms. */
-  ctime: Date | null;
+  // TODO(kt3k): uncomment this when we drop support for Deno 1.x
+  // ctime: Date | null;
   /** ID of the device containing the file. */
   dev: number;
   /** Inode number.

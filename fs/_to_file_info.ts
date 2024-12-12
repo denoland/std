@@ -6,7 +6,8 @@ import { isWindows } from "./_utils.ts";
 export function toFileInfo(s: import("node:fs").Stats): FileInfo {
   return {
     atime: s.atime,
-    ctime: s.ctime,
+    // TODO(kt3k): uncomment this when we drop support for Deno 1.x
+    // ctime: s.ctime,
     birthtime: s.birthtime,
     blksize: isWindows ? null : s.blksize,
     blocks: isWindows ? null : s.blocks,
