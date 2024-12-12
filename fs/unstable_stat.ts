@@ -1,0 +1,35 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-process-globals
+
+import { isDeno } from "./_utils.ts";
+import { mapError } from "./_map_error.ts";
+import { toFileInfo } from "./_to_file_info.ts";
+import type { FileInfo } from "./unstable_types.ts";
+
+/** Resolves to a {@linkcode FileInfo} for the specified `path`. Will
+ * always follow symlinks.
+ *
+ * ```ts
+ * import { assert } from "jsr:@std/assert";
+ * const fileInfo = await Deno.stat("hello.txt");
+ * assert(fileInfo.isFile);
+ * ```
+ *
+ * Requires `allow-read` permission.
+ *
+ * @tags allow-read
+ * @category File System
+ */
+export async function stat(path: string | URL): Promise<FileInfo> {
+  if (isDeno) {
+    return Deno.stat(path);
+  } else {
+    const fsPromises = process.getBuiltinModule("node:fs/promises");
+    try {
+      const stat = await fsPromises.stat(path);
+      return toFileInfo(stat);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+}
