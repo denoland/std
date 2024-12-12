@@ -7,7 +7,7 @@ import { restore, stub } from "@std/testing/mock";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-Deno.test("promptMultipleSelect() handles enter", () => {
+Deno.test("promptMultipleSelect() handles CR", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
@@ -36,6 +36,59 @@ Deno.test("promptMultipleSelect() handles enter", () => {
 
   const inputs = [
     "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browsers, []);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() handles LF", () => {
+  stub(Deno.stdin, "setRaw");
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\n",
   ];
 
   stub(

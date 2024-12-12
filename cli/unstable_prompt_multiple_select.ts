@@ -10,7 +10,7 @@ const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
-const BS = "\b"; // ^H - Backspace on Linux and Windows
+const LF = "\n";
 
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
@@ -79,7 +79,7 @@ export function promptMultipleSelect(
         selectedIndex = (selectedIndex + 1) % length;
         break;
       case CR:
-      case BS:
+      case LF:
         break loop;
       case " ":
         if (selectedIndexes.has(selectedIndex)) {
