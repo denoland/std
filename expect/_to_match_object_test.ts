@@ -1,7 +1,12 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { expect } from "./expect.ts";
-import { AssertionError, assertThrows } from "@std/assert";
+import {
+  AssertionError,
+  assertMatch,
+  assertNotMatch,
+  assertThrows,
+} from "@std/assert";
 
 Deno.test("expect().toMatchObject()", () => {
   const house0 = {
@@ -67,4 +72,21 @@ Deno.test("expect(),toMatchObject() with asyAsymmetric matcher", () => {
       y: expect.any(Number),
     },
   });
+});
+
+Deno.test("expect().toMatchObject() throws the correct error messages", () => {
+  {
+    const e = assertThrows(
+      () => expect({ a: 1 }).toMatchObject({ a: 2 }),
+      Error,
+    );
+    assertNotMatch(e.message, /NOT/);
+  }
+  {
+    const e = assertThrows(
+      () => expect({ a: 1 }).not.toMatchObject({ a: 1 }),
+      Error,
+    );
+    assertMatch(e.message, /NOT/);
+  }
 });

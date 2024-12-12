@@ -1,11 +1,12 @@
 {
   "name": "@std/cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "exports": {
     ".": "./mod.ts",
     "./parse-args": "./parse_args.ts",
     "./prompt-secret": "./prompt_secret.ts",
     "./unstable-prompt-select": "./unstable_prompt_select.ts",
+    "./unstable-prompt-multiple-select": "./unstable_prompt_multiple_select.ts",
     "./unstable-spinner": "./unstable_spinner.ts",
     "./unicode-width": "./unicode_width.ts"
   }

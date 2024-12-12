@@ -741,6 +741,80 @@ export function test<T>(...args: ItArgs<T>) {
   it(...args);
 }
 
+/**
+ * Only execute this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.only("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.only = function itOnly<T>(...args: ItArgs<T>): void {
+  it.only(...args);
+};
+
+/**
+ * Ignore this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.ignore("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
+
+/** Skip this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.skip("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.skip = function itSkip<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
+
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
@@ -762,6 +836,8 @@ function addHook<T>(
 
 /**
  * Run some shared setup before all of the tests in the suite.
+ * `beforeAll` is only provided for compatibility. Top-level
+ * initialization code should be used instead.
  *
  * @example Usage
  * ```ts
