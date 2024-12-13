@@ -6,8 +6,7 @@ import { restore, stub } from "@std/testing/mock";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-
-Deno.test("promptSelect() handles enter", () => {
+Deno.test("promptSelect() handles CR", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
@@ -187,7 +186,7 @@ Deno.test("promptSelect() handles arrow up", () => {
   restore();
 });
 
-Deno.test("promptSelect() handles up index overflow", () => {
+Deno.test("promptSelect() handles index underflow", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
@@ -245,7 +244,7 @@ Deno.test("promptSelect() handles up index overflow", () => {
   restore();
 });
 
-Deno.test("promptSelect() handles down index overflow", () => {
+Deno.test("promptSelect() handles index overflow", () => {
   stub(Deno.stdin, "setRaw");
 
   const expectedOutput = [
