@@ -48,6 +48,10 @@ export function promptSecret(
 ): string | null {
   const { mask = "*", clear } = options ?? {};
 
+  if (!input.isTerminal()) {
+    return null;
+  }
+
   // Make the output consistent with the built-in prompt()
   message += " ";
   const callback = !mask ? undefined : (n: number) => {

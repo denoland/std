@@ -9,6 +9,7 @@ const decoder = new TextDecoder();
 
 Deno.test("promptSecret() handles CR", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -52,6 +53,7 @@ Deno.test("promptSecret() handles CR", () => {
 
 Deno.test("promptSecret() handles LF", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -95,6 +97,7 @@ Deno.test("promptSecret() handles LF", () => {
 
 Deno.test("promptSecret() handles input", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -151,6 +154,7 @@ Deno.test("promptSecret() handles input", () => {
 
 Deno.test("promptSecret() handles DEL", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -213,6 +217,7 @@ Deno.test("promptSecret() handles DEL", () => {
 
 Deno.test("promptSecret() handles BS", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -275,6 +280,7 @@ Deno.test("promptSecret() handles BS", () => {
 
 Deno.test("promptSecret() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -333,6 +339,7 @@ Deno.test("promptSecret() handles clear option", () => {
 
 Deno.test("promptSecret() handles mask option", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "Please provide the password: ",
