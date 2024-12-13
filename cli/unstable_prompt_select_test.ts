@@ -9,6 +9,7 @@ const decoder = new TextDecoder();
 
 Deno.test("promptSelect() handles enter", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -61,6 +62,7 @@ Deno.test("promptSelect() handles enter", () => {
 
 Deno.test("promptSelect() handles arrow down", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -125,6 +127,7 @@ Deno.test("promptSelect() handles arrow down", () => {
 
 Deno.test("promptSelect() handles arrow up", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -189,6 +192,7 @@ Deno.test("promptSelect() handles arrow up", () => {
 
 Deno.test("promptSelect() handles up index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -247,6 +251,7 @@ Deno.test("promptSelect() handles up index overflow", () => {
 
 Deno.test("promptSelect() handles down index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -317,6 +322,7 @@ Deno.test("promptSelect() handles down index overflow", () => {
 
 Deno.test("promptSelect() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -365,6 +371,35 @@ Deno.test("promptSelect() handles clear option", () => {
   ], { clear: true });
 
   assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is false", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => false);
+
+  const expectedOutput: string[] = [];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  const browser = promptSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browser, null);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
