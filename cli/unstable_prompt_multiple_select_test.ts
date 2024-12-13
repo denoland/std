@@ -9,6 +9,7 @@ const decoder = new TextDecoder();
 
 Deno.test("promptMultipleSelect() handles enter", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -62,6 +63,7 @@ Deno.test("promptMultipleSelect() handles enter", () => {
 
 Deno.test("promptMultipleSelect() handles selection", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -121,6 +123,7 @@ Deno.test("promptMultipleSelect() handles selection", () => {
 
 Deno.test("promptMultipleSelect() handles multiple selection", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -204,6 +207,7 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
 
 Deno.test("promptMultipleSelect() handles arrow down", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -275,6 +279,7 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
 
 Deno.test("promptMultipleSelect() handles arrow up", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -346,6 +351,7 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
 
 Deno.test("promptMultipleSelect() handles up index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -411,6 +417,7 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
 
 Deno.test("promptMultipleSelect() handles down index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -489,6 +496,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
 
 Deno.test("promptMultipleSelect() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
