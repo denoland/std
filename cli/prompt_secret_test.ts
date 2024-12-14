@@ -417,3 +417,63 @@ Deno.test("promptSecret() returns null if Deno.stdin.isTerminal() is false", () 
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptSecret() handles null readSync", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  stub(Deno.stdin, "readSync", () => null);
+
+  const password = promptSecret("Please provide the password:");
+
+  assertEquals(password, "");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSecret() handles empty readSync", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  stub(Deno.stdin, "readSync", () => 0);
+
+  const password = promptSecret("Please provide the password:");
+
+  assertEquals(password, "");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
