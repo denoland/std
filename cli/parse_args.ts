@@ -9,7 +9,7 @@
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
  *
- * console.dir(parseArgs(Deno.args));
+ * const args = parseArgs(Deno.args);
  * ```
  *
  * @module
@@ -282,10 +282,14 @@ export interface ParseOptions<
    * ```ts
    * // $ deno run example.ts -- a arg1
    * import { parseArgs } from "@std/cli/parse-args";
-   * console.dir(parseArgs(Deno.args, { "--": false }));
-   * // output: { _: [ "a", "arg1" ] }
-   * console.dir(parseArgs(Deno.args, { "--": true }));
-   * // output: { _: [], --: [ "a", "arg1" ] }
+   * const args = parseArgs(Deno.args, { "--": false }); // output: { _: [ "a", "arg1" ] }
+   * ```
+   *
+   *  @example
+   * ```ts
+   * // $ deno run example.ts -- a arg1
+   * import { parseArgs } from "@std/cli/parse-args";
+   * const args = parseArgs(Deno.args, { "--": true }); // output: { _: [], --: [ "a", "arg1" ] }
    * ```
    */
   "--"?: TDoubleDash;
