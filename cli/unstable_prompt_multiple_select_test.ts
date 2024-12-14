@@ -546,3 +546,65 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptMultipleSelect() handles ETX", () => {
+  stub(Deno.stdin, "setRaw");
+
+  let called = false;
+  stub(
+    Deno,
+    "exit",
+    (() => {
+      called = true;
+    }) as never,
+  );
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\x03",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browsers, undefined);
+  assertEquals(called, true);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
