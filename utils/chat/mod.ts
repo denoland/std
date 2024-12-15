@@ -1,5 +1,5 @@
 import { extract } from './extract.ts'
-import { join } from '@std/path'
+import { join } from 'jsr:@std/path@^1.0.8'
 
 export const main = async (url: string, output?: string): Promise<void> => {
   const sharedConversationId = url.split('/').pop()
