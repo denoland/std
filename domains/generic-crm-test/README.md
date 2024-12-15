@@ -1,4 +1,4 @@
-# So What - CRM Test Directory
+# CRM Test Directory
 
 The **CRM Test** directory contains documents and test files related to Customer Relationship Management functionalities within the project. It serves as a sandbox for developing, testing, and refining CRM-related features and processes.
 
