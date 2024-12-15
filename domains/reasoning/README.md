@@ -1,4 +1,4 @@
-# So What - Reasoning Directory
+# Reasoning Directory
 
 The **reasoning** directory focuses on the foundational principles that govern the logical structure and integrity of the project. It explores concepts such as coherence, consistency, correctness, domain rules, and the overall domain framework.
 

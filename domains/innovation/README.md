@@ -1,4 +1,4 @@
-# So What - Innovation Domain
+# Innovation Domain
 
 The **Innovation** domain is dedicated to exploring and developing new concepts, actors, artifacts, and protocols that drive the project's advancement. It serves as a think tank for pioneering ideas that enhance the functionality, efficiency, and impact of the overall system.
 

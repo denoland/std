@@ -1,4 +1,4 @@
-# So What - Decentralized AI Domain
+# Decentralized AI Domain
 
 The **Decentralized AI** domain focuses on defining and implementing concepts that enable decentralized artificial intelligence systems. It lays the groundwork for a trustless, censorship-resistant, and autonomous AI ecosystem, which is integral to the project's vision.
 
