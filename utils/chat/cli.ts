@@ -1,4 +1,4 @@
-#!/usr/bin/env deno run --allow-net --allow-read --allow-write
+#!/usr/bin/env deno run --allow-net --allow-read --allow-write --allow-env
 
 import { program } from 'commander'
 import { main } from './mod.ts'
