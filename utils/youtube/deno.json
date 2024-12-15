@@ -1,0 +1,9 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    "@distube/ytdl-core": "npm:@distube/ytdl-core@^4.15.1",
+    "@std/assert": "jsr:@std/assert@1"
+  }
+}

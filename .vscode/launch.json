@@ -6,7 +6,7 @@
   "configurations": [
     {
       "request": "launch",
-      "name": "Task",
+      "name": "Circular",
       "type": "node",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "~/.deno/bin/deno",
@@ -24,6 +24,17 @@
       "runtimeExecutable": "~/.deno/bin/deno",
       "runtimeArgs": ["test", "--inspect-wait", "--watch", "-A", "${file}"],
 
+      "attachSimplePort": 9229,
+      "internalConsoleOptions": "neverOpen",
+      "console": "integratedTerminal"
+    },
+    {
+      "request": "launch",
+      "name": "Execute Current File",
+      "type": "node",
+      "cwd": "${fileDirname}",
+      "runtimeExecutable": "~/.deno/bin/deno",
+      "runtimeArgs": ["run", "-A", "--inspect-wait", "--watch", "${file}"],
       "attachSimplePort": 9229,
       "internalConsoleOptions": "neverOpen",
       "console": "integratedTerminal"

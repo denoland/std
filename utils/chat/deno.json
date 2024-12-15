@@ -1,0 +1,19 @@
+{
+  "name": "@dreamcatcher/chat",
+  "tasks": {
+    "test": "deno test --allow-net --allow-read --allow-write"
+  },
+  "exports": "./mod.ts",
+  "bin": "./cli.ts",
+  "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
+    "@babel/parser": "npm:@babel/parser@^7.26.3",
+    "@babel/types": "npm:@babel/types@^7.26.3",
+    "@c4spar/mock-fetch": "jsr:@c4spar/mock-fetch@^1.0.0",
+    "@std/assert": "jsr:@std/assert@^1.0.9",
+    "@std/expect": "jsr:@std/expect@^1.0.9",
+    "commander": "npm:commander@^12.1.0",
+    "jsdom": "npm:jsdom@^25.0.1",
+    "json5": "npm:json5@^2.2.3"
+  }
+}

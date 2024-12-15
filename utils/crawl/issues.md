@@ -23,3 +23,11 @@ May store the original dom with the summary to do provenance.
 
 Should recognize some common urls, like if it is a github url, then we should
 know how to access the raw file.
+
+Might make this pluggable, and so have things like the youtube crawler be in
+here specially. Ideally an LLM would make the choice of what crawler to use and
+how to parse the output, since it might be a complex multistep job.
+
+Must set its user agent informatively.
+
+Recognize when using a chatgpt chat, and switch to using the chatgpt crawler.

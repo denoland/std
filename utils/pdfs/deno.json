@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Processes PDFs into a text like form suitable for AI processing",
   "tasks": {
+    "run": "deno run --allow-read --allow-write main.ts",
     "dev": "deno run --watch --allow-read --allow-write main.ts"
   },
   "imports": {

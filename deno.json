@@ -78,6 +78,9 @@
     "./snapshots",
     "./stateboard",
     "./utils/pdfs",
-    "./utils/concat"
+    "./utils/youtube",
+    "./utils/concat",
+    "./utils/chat",
+    "./utils/crawl"
   ]
 }

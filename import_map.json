@@ -17,7 +17,8 @@
     "@std/ulid": "jsr:@std/ulid",
     "@std/cli": "jsr:@std/cli",
     "@std/io": "jsr:@std/io",
-
+    "@std/testing": "jsr:@std/testing",
+    
     "@artifact/files": "jsr:@artifact/files@^0.0.1",
     "@artifact/openai": "jsr:@artifact/openai@^0.0.1",
     "@artifact/dumb-bot": "jsr:@artifact/dumb-bot@^0.0.16",

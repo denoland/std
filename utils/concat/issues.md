@@ -17,3 +17,19 @@ tho.
 
 concat should show what its args were at the start, so we can see what the shell
 processed.
+
+ignore concat.txt since this is the output of a previous run of this tool.
+
+allow --tokens to only count the tokens and not write an actual concat.txt file.
+
+should allow a preselection of purposes to include some base prompts with the
+concat as well as the project contents.
+
+optionally pull in the import map if in a monorepo, and the base rules. If we
+have a format for putting rules in somewhere known, it can navigate appropriate
+files and pull them in. Be like .concat-rules which gives it some command line
+options when it runs.
+
+.concat-rules should say what should specially be ignored as well ?
+
+honour .gitignore all the way up to the root of the repo.
