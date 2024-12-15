@@ -1,4 +1,4 @@
-# So What - Ideas Directory
+# Ideas Directory
 
 The **Ideas** directory is a repository of conceptual documents, exploratory writings, and brainstorming outputs. It captures innovative thoughts and theoretical models that can inform and enhance the project's development.
 

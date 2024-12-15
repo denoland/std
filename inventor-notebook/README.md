@@ -1,4 +1,4 @@
-# So What - Inventor Notebook Directory
+# Inventor Notebook Directory
 
 The **Inventor Notebook** directory serves as a comprehensive repository of raw notes, ideas, transcripts, and documentation from the project's contributors. It captures the thought processes, discussions, and developmental stages of the project.
 

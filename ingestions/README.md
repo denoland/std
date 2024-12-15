@@ -1,4 +1,4 @@
-# So What - Ingestions Directory
+# Ingestions Directory
 
 The **Ingestions** directory contains data imported from external sources, such as transcripts, documents, or datasets. This information enriches the project's knowledge base and provides valuable insights from outside perspectives.
 

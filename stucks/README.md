@@ -1,4 +1,4 @@
-# So What - Stucks Directory
+# Stucks Directory
 
 The **Stucks** directory documents challenges, obstacles, or issues that impede progress within the project. It serves as a record of problem areas requiring resolution and provides a space for collaborative troubleshooting.
 
