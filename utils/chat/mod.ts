@@ -1,6 +1,6 @@
 import { extract } from './extract.ts'
 
-export const main = async (url: string, output?: string) => {
+export const main = async (url: string, output?: string): Promise<void> => {
   const sharedConversationId = url.split('/').pop()
   if (!sharedConversationId) {
     throw new Error(
