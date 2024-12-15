@@ -4,6 +4,7 @@ import {
   encodeArray,
   encodeBigInt,
   encodeDate,
+  encodeMap,
   encodeNumber,
   encodeObject,
   encodeString,
@@ -21,7 +22,7 @@ import type { CborType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { decodeCbor, encodeCbor } from "@std/cbor";
+ * import { type CborType, decodeCbor, encodeCbor } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -31,6 +32,8 @@ import type { CborType } from "./types.ts";
  *   -1,
  *   null,
  *   Uint8Array.from([0, 1, 2, 3]),
+ *   new Date(),
+ *   new Map<CborType, CborType>([[1, 2], ['3', 4], [[5], { a: 6 }]]),
  * ];
  *
  * const encodedMessage = encodeCbor(rawMessage);
@@ -61,5 +64,6 @@ export function encodeCbor(value: CborType): Uint8Array {
   if (value instanceof Uint8Array) return encodeUint8Array(value);
   if (value instanceof Array) return encodeArray(value);
   if (value instanceof CborTag) return encodeTag(value);
+  if (value instanceof Map) return encodeMap(value);
   return encodeObject(value);
 }

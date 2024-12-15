@@ -234,29 +234,34 @@ export function decodeFive(
 export function decodeSix(
   source: number[],
   aI: number,
-): Date | CborTag<CborType> {
+): Date | Map<CborType, CborType> | CborTag<CborType> {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b110_${aI.toString(2).padStart(5, "0")})`,
     );
   }
   const tagNumber = decodeZero(source, aI);
-  const tagContent = decode(source);
   switch (BigInt(tagNumber)) {
-    case 0n:
+    case 0n: {
+      const tagContent = decode(source);
       if (typeof tagContent !== "string") {
         throw new TypeError('Invalid TagItem: Expected a "text string"');
       }
       return new Date(tagContent);
-    case 1n:
+    }
+    case 1n: {
+      const tagContent = decode(source);
       if (typeof tagContent !== "number" && typeof tagContent !== "bigint") {
         throw new TypeError(
           'Invalid TagItem: Expected a "integer" or "float"',
         );
       }
       return new Date(Number(tagContent) * 1000);
+    }
+    case 259n:
+      return decodeMap(source);
   }
-  return new CborTag(tagNumber, tagContent);
+  return new CborTag(tagNumber, decode(source));
 }
 
 export function decodeSeven(
@@ -283,5 +288,49 @@ export function decodeSeven(
   }
   throw new RangeError(
     `Cannot decode value (0b111_${aI.toString(2).padStart(5, "0")})`,
+  );
+}
+
+function decodeMap(source: number[]): Map<CborType, CborType> {
+  const byte = source.pop();
+  if (byte == undefined) throw new RangeError("More bytes were expected");
+
+  const majorType = byte >> 5;
+  if (majorType !== 5) throw new TypeError('Invalid TagItem: Expected a "map"');
+  const aI = byte & 0b000_11111;
+  if (aI <= 27) {
+    const map = new Map<CborType, CborType>();
+    // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
+    // 2 ** 53 is the tipping point where integers loose precision.
+    const len = Number(decodeZero(source, aI));
+    for (let i = 0; i < len; ++i) {
+      const key = decode(source);
+      if (map.has(key)) {
+        throw new TypeError(
+          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+        ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
+      }
+      map.set(key, decode(source));
+    }
+    return map;
+  }
+  if (aI === 31) {
+    const map = new Map<CborType, CborType>();
+    if (!source.length) throw new RangeError("More bytes were expected");
+    while (source[source.length - 1] !== 0b111_11111) {
+      const key = decode(source);
+      if (map.has(key)) {
+        throw new TypeError(
+          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+        ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
+      }
+      map.set(key, decode(source));
+      if (!source.length) throw new RangeError("More bytes were expected");
+    }
+    source.pop();
+    return map;
+  }
+  throw new RangeError(
+    `Cannot decode value (0b101_${aI.toString(2).padStart(5, "0")})`,
   );
 }

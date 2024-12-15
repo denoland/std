@@ -29,9 +29,14 @@ export type CborPrimitiveType =
  * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
  * {@link decodeCborSequence}.
  */
-export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
-  [k: string]: CborType;
-};
+export type CborType =
+  | CborPrimitiveType
+  | CborTag<CborType>
+  | Map<CborType, CborType>
+  | CborType[]
+  | {
+    [k: string]: CborType;
+  };
 
 /**
  * Specifies the encodable value types for the {@link CborSequenceEncoderStream}

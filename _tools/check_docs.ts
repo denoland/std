@@ -38,6 +38,7 @@ const ENTRY_POINTS = [
   "../cbor/mod.ts",
   "../cli/mod.ts",
   "../cli/unstable_spinner.ts",
+  "../cli/unstable_prompt_multiple_select.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",

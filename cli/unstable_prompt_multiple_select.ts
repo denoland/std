@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
-/** Options for {@linkcode promptSelect}. */
-export interface PromptSelectOptions {
+/** Options for {@linkcode promptMultipleSelect}. */
+export interface PromptMultipleSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
 }
@@ -13,10 +13,13 @@ const CR = "\r";
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
 
+const CHECKED = "◉";
+const UNCHECKED = "◯";
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
+const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
@@ -26,22 +29,24 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
- * @returns The string that was entered or `null` if stdin is not a TTY.
+ * @returns The selected values as an array of strings.
  *
  * @example Usage
  * ```ts ignore
- * import { promptSelect } from "@std/cli/prompt-select";
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
  *
- * const browser = promptSelect("Please select a browser:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
  * ```
  */
-export function promptSelect(
+export function promptMultipleSelect(
   message: string,
   values: string[],
-  { clear }: PromptSelectOptions = {},
-): string | null {
+  options: PromptMultipleSelectOptions = {},
+): string[] {
+  const { clear } = options;
   const length = values.length;
   let selectedIndex = 0;
+  const selectedIndexes = new Set<number>();
 
   Deno.stdin.setRaw(true);
   Deno.stdout.writeSync(HIDE_CURSOR);
@@ -50,8 +55,11 @@ export function promptSelect(
   while (true) {
     Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
     for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : PADDING;
-      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
+      const selected = index === selectedIndex;
+      const start = selected ? INDICATOR : PADDING;
+      const checked = selectedIndexes.has(index);
+      const state = checked ? CHECKED : UNCHECKED;
+      Deno.stdout.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
     }
     const n = Deno.stdin.readSync(buffer);
     if (n === null || n === 0) break;
@@ -69,14 +77,21 @@ export function promptSelect(
         break;
       case CR:
         break loop;
+      case " ":
+        if (selectedIndexes.has(selectedIndex)) {
+          selectedIndexes.delete(selectedIndex);
+        } else {
+          selectedIndexes.add(selectedIndex);
+        }
+        break;
     }
     Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
   }
   if (clear) {
     Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
-    Deno.stdout.writeSync(CLR_ALL);
+    Deno.stdout.writeSync(CLEAR_ALL);
   }
   Deno.stdout.writeSync(SHOW_CURSOR);
   Deno.stdin.setRaw(false);
-  return values[selectedIndex] ?? null;
+  return [...selectedIndexes].map((it) => values[it] as string);
 }
