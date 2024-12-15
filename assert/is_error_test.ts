@@ -76,6 +76,6 @@ Deno.test("assertIsError() throws with custom message", () => {
         "CUSTOM MESSAGE",
       ),
     AssertionError,
-    'Expected error to be instance of "AnotherCustomError", but was "CustomError": CUSTOM MESSAGE',
+    'CUSTOM MESSAGE: Expected error to be instance of "AnotherCustomError", but was "CustomError"',
   );
 });
