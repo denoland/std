@@ -1,4 +1,4 @@
-# Summary of [CURRENT_FOLDER_NAME].md
+# Summary of 2024-12-02 autonomous ai agents on blockchain-SUMMARY.md
 
 In this conversation, Tom and Scott discuss their ongoing project focused on integrating AI agents with blockchain technology to create decentralized systems that enhance innovation and collaboration.
 
