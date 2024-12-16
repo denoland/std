@@ -29,7 +29,11 @@ export const main = async (url: string, output?: string): Promise<void> => {
     output = `chat_${date}_${shortGuid}.md`
   }
 
+  console.log('cwd', Deno.cwd())
+
   const outputPath = join(Deno.cwd(), output)
+  console.log('outputPath', outputPath)
+
   await Deno.writeTextFile(outputPath, conversationMarkdown)
   console.log(`Conversation saved to ${outputPath}`)
 }

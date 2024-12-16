@@ -1,6 +1,6 @@
 {
   "name": "@dreamcatcher/chat",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "tasks": {
     "test": "deno test --allow-net --allow-read --allow-write"
   },

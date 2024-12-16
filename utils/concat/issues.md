@@ -33,3 +33,9 @@ options when it runs.
 .concat-rules should say what should specially be ignored as well ?
 
 honour .gitignore all the way up to the root of the repo.
+
+BEGIN FILE should maybe be a single name, and end in a colon, making it plain
+that it is a key attribute, and separate from the file name.
+
+If I run `concat . ../../reasoner/PROJECT_MAP_INSTRUCTIONS.md` then it does not
+pull in everything recursively from . however seems to be shell globbing again

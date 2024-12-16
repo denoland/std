@@ -8,3 +8,5 @@ should handle the url being a little bit messy, like extra spaces or a trailing
 slash.
 
 in chats, concat output used in context should be stripped ?
+
+help is not in the readme and does not output anything

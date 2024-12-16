@@ -13,7 +13,7 @@ To use this tool as a CLI command, first ensure you have Deno installed. Then
 run:
 
 ```sh
-deno install --global --allow-read --allow-write --allow-net=jsr.io jsr:@dreamcatcher/chat
+deno install --global --allow-read --allow-write --allow-env --allow-net=jsr.io jsr:@dreamcatcher/chat
 ```
 
 After this, `chat` will be available as a system-wide command.
@@ -90,5 +90,5 @@ This will produce `my_conversation.md` containing the fully reconstructed chat.
 ## Upgrading the CLI command
 
 ```sh
-deno install --global --reload --force --allow-read --allow-write --allow-net=jsr.io jsr:@dreamcatcher/chat
+deno install --global --reload --force --allow-read --allow-write --allow-env --allow-net=jsr.io jsr:@dreamcatcher/chat
 ```
