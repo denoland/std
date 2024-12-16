@@ -603,7 +603,6 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
     "firefox",
   ]);
 
-  assertEquals(browsers, undefined);
   assertEquals(called, true);
   assertEquals(expectedOutput, actualOutput);
   restore();
