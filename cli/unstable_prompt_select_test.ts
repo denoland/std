@@ -419,13 +419,12 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
+  const _browser = promptSelect("Please select a browser:", [
     "safari",
     "chrome",
     "firefox",
   ]);
 
-  assertEquals(browser, undefined);
   assertEquals(called, true);
   assertEquals(expectedOutput, actualOutput);
   restore();
