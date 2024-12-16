@@ -13,13 +13,13 @@ To use this tool as a CLI command, first ensure you have Deno installed. Then
 run:
 
 ```sh
-deno install --global --allow-read --allow-write --allow-env --allow-net=jsr.io jsr:@dreamcatcher/chat
+deno install --global --allow-read --allow-write --allow-env --allow-net=jsr.io,chatgpt.com jsr:@dreamcatcher/chat
 ```
 
 After this, `chat` will be available as a system-wide command.
 
 > Note: The `--allow-net` permission is required to check for package updates
-> from the jsr.io registry.
+> from the jsr.io registry and to fetch conversations from chatgpt.com.
 
 ## Usage
 
@@ -85,10 +85,11 @@ This will produce `my_conversation.md` containing the fully reconstructed chat.
 - Permissions:
   - `--allow-read` to read files
   - `--allow-write` if using `--output` option
-  - `--allow-net` to fetch the conversation data
+  - `--allow-net` to fetch the conversation data from chatgpt.com and check for
+    updates from jsr.io
 
 ## Upgrading the CLI command
 
 ```sh
-deno install --global --reload --force --allow-read --allow-write --allow-env --allow-net=jsr.io jsr:@dreamcatcher/chat
+deno install --global --reload --force --allow-read --allow-write --allow-env --allow-net=jsr.io,chatgpt.com jsr:@dreamcatcher/chat
 ```

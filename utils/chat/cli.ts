@@ -11,7 +11,12 @@ program
   .argument('<url>', 'The shared conversation URL')
   .option('-o, --output <filename>', 'Specify an output filename')
   .action(async (url: string, options: { output?: string }) => {
-    await main(url, options.output)
+    try {
+      await main(url, options.output)
+    } catch (e) {
+      console.error(e)
+      Deno.exit(1)
+    }
   })
 
 // Note the second parameter:
