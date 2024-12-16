@@ -405,6 +405,7 @@ Deno.test("promptSelect() returns null if Deno.stdin.isTerminal() is false", () 
 
 Deno.test("promptSelect() handles ETX", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   let called = false;
   stub(
