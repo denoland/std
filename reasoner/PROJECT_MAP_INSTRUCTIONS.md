@@ -1,42 +1,47 @@
 # PROJECT_MAP_INSTRUCTIONS
 
 **Motivation:**\
-A well-structured overview file named `PROJECT_MAP.md` provides a top-level,
-maintainable map of your project—whether it's a codebase or a knowledge base. It
-highlights the purpose of key components, how they connect, and why they exist,
-without getting lost in the details. This high-level perspective makes
-onboarding easier, streamlines maintenance, and ensures everyone stays aligned
-on the overall structure.
+A well-structured overview file named `PROJECT_MAP.md` **must** provide a
+top-level, maintainable map of your project—whether it's a codebase or a
+knowledge base. It **must** highlight the purpose of key components, how they
+connect, and why they exist, without getting lost in the details. This
+high-level perspective **must** make onboarding easier, streamline maintenance,
+and ensure everyone stays aligned on the overall structure.
 
-**How to Create One:**
+**How to Create a PROJECT_MAP.md file:**
 
 1. **Establish the Hierarchy:**
-   - Begin at the project’s **root** (e.g., `📦 PROJECT_ROOT/`).
-   - Organize by **folders**, **files**, and **dependent subprojects**, placing
-     the most important items nearer the top.
+   - You **must** begin at the project’s **root** (e.g., `📦 PROJECT_ROOT/`).
+   - You **must** organize by **folders**, **files**, placing the most important
+     items nearer the top.
+   - **dependent projects** and **code package dependencies** must be listed
+     under a dedicated `dependencies` directory at the bottom of the hierarchy,
+     with the `vendor-docs` above it, if present.
 
 2. **Notation and Sections:**
-   - Represent **projects** with `📦`, **directories** with `📂`, and **files**
-     with `📄`.
+   - Represent **projects** with `📦`, **directories** with `📂`, **files** with
+     `📄`, and **dependent projects** (non-package dependencies) with `🧩`.
    - Under each file, use numbered bullets (`1.`, `2.`, etc.) for individual
      **sections**, **functions**, or **tests**.
-   - Each item (file, function, or test) should have a **rationale note** (`ℹ`)
-     beneath it, explaining its purpose or relevance.
-     - For **code files**: Only list exported functions. Place a rationale note
-       under each function.
-     - For **test files**: List each test as a bullet, with a rationale note
-       explaining which function it tests and why.
-     - For **knowledge files**: List main topics or sections, each with a
-       rationale note.
+   - Each item (file, function, or test) **should** have a **rationale note**
+     (`ℹ`) beneath it, explaining its purpose or relevance.
+     - For **code files**: You **must** only list exported functions. You
+       **should** place a rationale note under each function.
+     - For **test files**: You **must** list each test as a bullet, with a
+       rationale note explaining which function it tests and why.
+     - For **knowledge files**: You **must** list top level topics or sections,
+       each with a rationale note.
 
 3. **High-Level Focus and Omissions:**
    - Do **not** include `PROJECT_MAP.md` itself in the diagram—it’s a
      meta-document, not part of the structure.
-   - Omit minor internal files that serve only private, non-architectural roles
-     to keep the map concise.
-   - Include **dependencies** or **subprojects** by listing them as `📦` entries
-     under a dedicated `dependencies` directory. This shows where nested
-     structures fit in the architecture.
+   - You **must** omit minor internal files that serve only private,
+     non-architectural roles to keep the map concise.
+   - Include **dependencies** and **subprojects** by listing them under a
+     dedicated `dependencies` directory.
+   - If there is a `vendor-docs` directory, list only the folders in this
+     directory, and use the rationale doc to state which dependency the
+     documentation is for.
 
 4. **Clarity Over Detail:**
    - The goal is to provide a meaningful overview. Avoid overly detailed
@@ -134,7 +139,18 @@ on the overall structure.
 │   3. Usage
 │     ℹ Explains how to run and interact with the project
 
+├─ 📂 vendor-docs
+│  │ ℹ Documentation here relates specifically to dependencies (both code packages and dependent projects)
+│  └─ 📄 commander/README.md
+│     ℹ Documentation for the `commander` library used by the CLI to parse command-line arguments
+
 └─ 📂 dependencies
-   ├─ 📦 subproject1
-   └─ 📦 subproject2
+   ├─ 📦 @babel/parser
+   │   ℹ Used to parse and evaluate embedded JSON data structures in script tags
+   ├─ 📦 @my-org/some-package
+   │   ℹ A scoped npm package providing specialized parsing utilities
+   ├─ 🧩 subproject1
+   │   ℹ A dependent project integrated as part of the tool’s ecosystem
+   └─ 📦 commander
+       ℹ Command-line argument parsing library for the CLI interface
 ```
