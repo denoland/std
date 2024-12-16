@@ -210,7 +210,8 @@ export const extract = async (
   }
 
   // Markdown formatting
-  let output = '# Conversation\n\n'
+  let output =
+    `# Conversation\nURL: https://chatgpt.com/share/${sharedConversationId}\n\n`
   for (const msg of conversationMessages) {
     output += `### Message ID: ${msg.id}\n`
     output += `**Author**: ${msg.authorRole}\n\n`

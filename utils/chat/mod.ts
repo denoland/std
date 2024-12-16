@@ -1,5 +1,4 @@
 import { extract } from './extract.ts'
-import { join } from 'jsr:@std/path@^1.0.8'
 
 export const main = async (url: string, output?: string): Promise<void> => {
   const sharedConversationId = url.split('/').pop()
@@ -29,11 +28,8 @@ export const main = async (url: string, output?: string): Promise<void> => {
     output = `chat_${date}_${shortGuid}.md`
   }
 
-  console.log('cwd', Deno.cwd())
+  await Deno.writeTextFile(output, conversationMarkdown)
 
-  const outputPath = join(Deno.cwd(), output)
-  console.log('outputPath', outputPath)
-
-  await Deno.writeTextFile(outputPath, conversationMarkdown)
-  console.log(`Conversation saved to ${outputPath}`)
+  // deno-lint-ignore no-console
+  console.log(`Conversation saved to ${output}`)
 }

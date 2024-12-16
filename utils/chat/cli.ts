@@ -12,10 +12,10 @@ program
     try {
       await main(url, options.output)
     } catch (e) {
+      // deno-lint-ignore no-console
       console.error(e)
       Deno.exit(1)
     }
   })
 
-// Note the second parameter:
 program.parse(Deno.args, { from: 'user' })
