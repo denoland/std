@@ -557,6 +557,7 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
 
 Deno.test("promptMultipleSelect() handles ETX", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   let called = false;
   stub(
