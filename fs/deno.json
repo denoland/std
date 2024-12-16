@@ -13,6 +13,7 @@
     "./exists": "./exists.ts",
     "./expand-glob": "./expand_glob.ts",
     "./move": "./move.ts",
+    "./unstable-stat": "./unstable_stat.ts",
     "./walk": "./walk.ts"
   }
 }

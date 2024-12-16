@@ -1,22 +1,19 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "@std/assert/equals";
-import { promptSelect } from "./unstable_prompt_select.ts";
+import { promptSecret } from "./prompt_secret.ts";
 import { restore, stub } from "@std/testing/mock";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-Deno.test("promptSelect() handles CR", () => {
+
+Deno.test("promptSecret() handles CR", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -48,38 +45,19 @@ Deno.test("promptSelect() handles CR", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
-
-  assertEquals(browser, "safari");
+  const password = promptSecret("Please provide the password:");
+  assertEquals(password, "");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles arrow down", () => {
+Deno.test("promptSecret() handles LF", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "❯ chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "  chrome\r\n",
-    "❯ firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -97,9 +75,7 @@ Deno.test("promptSelect() handles arrow down", () => {
   let readIndex = 0;
 
   const inputs = [
-    "\u001B[B",
-    "\u001B[B",
-    "\r",
+    "\n",
   ];
 
   stub(
@@ -113,38 +89,27 @@ Deno.test("promptSelect() handles arrow down", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
-
-  assertEquals(browser, "firefox");
+  const password = promptSecret("Please provide the password:");
+  assertEquals(password, "");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles arrow up", () => {
+Deno.test("promptSecret() handles input", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "❯ chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: **",
+    "\r\x1b[K",
+    "Please provide the password: ***",
+    "\r\x1b[K",
+    "Please provide the password: ****",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -162,8 +127,10 @@ Deno.test("promptSelect() handles arrow up", () => {
   let readIndex = 0;
 
   const inputs = [
-    "\u001B[B",
-    "\u001B[A",
+    "d",
+    "e",
+    "n",
+    "o",
     "\r",
   ];
 
@@ -178,33 +145,32 @@ Deno.test("promptSelect() handles arrow up", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
+  const password = promptSecret("Please provide the password:");
 
-  assertEquals(browser, "safari");
+  assertEquals(password, "deno");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles index underflow", () => {
+Deno.test("promptSecret() handles DEL", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "  chrome\r\n",
-    "❯ firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: **",
+    "\r\x1b[K",
+    "Please provide the password: ***",
+    "\r\x1b[K",
+    "Please provide the password: ****",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -222,7 +188,12 @@ Deno.test("promptSelect() handles index underflow", () => {
   let readIndex = 0;
 
   const inputs = [
-    "\u001B[A",
+    "n",
+    "\x7f",
+    "d",
+    "e",
+    "n",
+    "o",
     "\r",
   ];
 
@@ -237,43 +208,32 @@ Deno.test("promptSelect() handles index underflow", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
+  const password = promptSecret("Please provide the password:");
 
-  assertEquals(browser, "firefox");
+  assertEquals(password, "deno");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles index overflow", () => {
+Deno.test("promptSecret() handles BS", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "❯ chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "  safari\r\n",
-    "  chrome\r\n",
-    "❯ firefox\r\n",
-    "\x1b[4A",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: **",
+    "\r\x1b[K",
+    "Please provide the password: ***",
+    "\r\x1b[K",
+    "Please provide the password: ****",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -291,9 +251,12 @@ Deno.test("promptSelect() handles index overflow", () => {
   let readIndex = 0;
 
   const inputs = [
-    "\u001B[B",
-    "\u001B[B",
-    "\u001B[B",
+    "n",
+    "\b",
+    "d",
+    "e",
+    "n",
+    "o",
     "\r",
   ];
 
@@ -308,30 +271,28 @@ Deno.test("promptSelect() handles index overflow", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
+  const password = promptSecret("Please provide the password:");
 
-  assertEquals(browser, "safari");
+  assertEquals(password, "deno");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles clear option", () => {
+Deno.test("promptSecret() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[4A",
-    "\x1b[J",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: **",
+    "\r\x1b[K",
+    "Please provide the password: ***",
+    "\r\x1b[K",
+    "Please provide the password: ****",
+    "\r\x1b[K",
   ];
 
   const actualOutput: string[] = [];
@@ -349,6 +310,10 @@ Deno.test("promptSelect() handles clear option", () => {
   let readIndex = 0;
 
   const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
     "\r",
   ];
 
@@ -363,18 +328,73 @@ Deno.test("promptSelect() handles clear option", () => {
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ], { clear: true });
+  const password = promptSecret("Please provide the password:", {
+    clear: true,
+  });
 
-  assertEquals(browser, "safari");
+  assertEquals(password, "deno");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() returns null if Deno.stdin.isTerminal() is false", () => {
+Deno.test("promptSecret() handles mask option", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: $",
+    "\r\x1b[K",
+    "Please provide the password: $$",
+    "\r\x1b[K",
+    "Please provide the password: $$$",
+    "\r\x1b[K",
+    "Please provide the password: $$$$",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("Please provide the password:", { mask: "$" });
+
+  assertEquals(password, "deno");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSecret() returns null if Deno.stdin.isTerminal() is false", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => false);
 
@@ -392,36 +412,19 @@ Deno.test("promptSelect() returns null if Deno.stdin.isTerminal() is false", () 
     },
   );
 
-  const browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
-
-  assertEquals(browser, null);
+  const password = promptSecret("Please provide the password:");
+  assertEquals(password, null);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
 
-Deno.test("promptSelect() handles ETX", () => {
+Deno.test("promptSecret() handles null readSync", () => {
   stub(Deno.stdin, "setRaw");
-
-  let called = false;
-  stub(
-    Deno,
-    "exit",
-    (() => {
-      called = true;
-    }) as never,
-  );
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "\x1b[?25l",
-    "Please select a browser:\r\n",
-    "❯ safari\r\n",
-    "  chrome\r\n",
-    "  firefox\r\n",
-    "\x1b[?25h",
+    "Please provide the password: ",
+    "\n",
   ];
 
   const actualOutput: string[] = [];
@@ -436,30 +439,41 @@ Deno.test("promptSelect() handles ETX", () => {
     },
   );
 
-  let readIndex = 0;
+  stub(Deno.stdin, "readSync", () => null);
 
-  const inputs = [
-    "\x03",
+  const password = promptSecret("Please provide the password:");
+
+  assertEquals(password, "");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSecret() handles empty readSync", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\n",
   ];
 
+  const actualOutput: string[] = [];
+
   stub(
-    Deno.stdin,
-    "readSync",
+    Deno.stdout,
+    "writeSync",
     (data: Uint8Array) => {
-      const input = inputs[readIndex++];
-      const bytes = encoder.encode(input);
-      data.set(bytes);
-      return bytes.length;
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
     },
   );
 
-  const _browser = promptSelect("Please select a browser:", [
-    "safari",
-    "chrome",
-    "firefox",
-  ]);
+  stub(Deno.stdin, "readSync", () => 0);
 
-  assertEquals(called, true);
+  const password = promptSecret("Please provide the password:");
+
+  assertEquals(password, "");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
