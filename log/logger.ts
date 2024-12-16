@@ -200,7 +200,7 @@ export class LogRecord {
    *   loggerName: "example",
    * });
    *
-   * assertEquals(record.loggerName, "example");
+   * assertEquals(record.levelName, "INFO");
    * ```
    */
   readonly levelName: string;
