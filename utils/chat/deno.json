@@ -1,11 +1,10 @@
 {
   "name": "@dreamcatcher/chat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "tasks": {
     "test": "deno test --allow-read --allow-write"
   },
-  "exports": "./mod.ts",
-  "bin": "./cli.ts",
+  "exports": "./cli.ts",
   "imports": {
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
     "@babel/parser": "npm:@babel/parser@^7.26.3",
