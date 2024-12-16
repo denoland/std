@@ -31,7 +31,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
- * @returns The selected values as an array of strings.
+ * @returns The selected values as an array of strings or `null` if stdin is not a TTY.
  *
  * @example Usage
  * ```ts ignore
