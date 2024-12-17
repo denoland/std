@@ -142,7 +142,7 @@ Deno.test({
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),
       AssertionError,
       [
-        "Values are not equal: CUSTOM MESSAGE",
+        "CUSTOM MESSAGE: Values are not equal.",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
@@ -302,4 +302,10 @@ Deno.test("expect().toEqual() handles iterators", () => {
   const iter1 = Iterator.from([1, 2, 3]);
   iter1.foo = 1;
   expect(iter0).not.toEqual(iter1);
+});
+
+Deno.test("expect.toEqual with custom message", () => {
+  expect(() => expect(42, "toEqual Custom Message").toEqual(43)).toThrow(
+    /^toEqual Custom Message:/,
+  );
 });

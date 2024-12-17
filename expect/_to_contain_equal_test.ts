@@ -50,3 +50,18 @@ Deno.test("expect().toContainEqual() throws error when the value is not an array
     "The value is not iterable",
   );
 });
+
+Deno.test("expect().toContainEqual() with custom error message", () => {
+  const msg = "toContainEqual Custom Error";
+
+  expect(() =>
+    expect([{ foo: 42 }, { bar: 43 }, { baz: 44 }], msg).toContainEqual({
+      foo: 4,
+    })
+  ).toThrow(new RegExp(`^${msg}`));
+  expect(() =>
+    expect([{ foo: 42 }, { bar: 43 }, { baz: 44 }], msg).not.toContainEqual({
+      foo: 42,
+    })
+  ).toThrow(new RegExp(`^${msg}`));
+});

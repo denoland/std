@@ -100,3 +100,13 @@ Deno.test("expect().toThrow()", () => {
     'Expected error message to include /\\d/, but got "hello world".',
   );
 });
+
+Deno.test("expect().toThrow() with custom error message", () => {
+  const msg = "toThrow custom error message";
+
+  assertThrows(
+    () => expect(() => {}, msg).toThrow(),
+    AssertionError,
+    'toThrow custom error message: Expected "error" to be an Error object.',
+  );
+});

@@ -145,7 +145,7 @@ Deno.test({
       () => assertEquals(1, 2, { msg: "CUSTOM MESSAGE" }),
       AssertionError,
       [
-        "Values are not equal: CUSTOM MESSAGE",
+        "CUSTOM MESSAGE: Values are not equal.",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
