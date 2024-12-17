@@ -32,11 +32,9 @@ Deno.test("expect().toHaveReturnedTimes() with custom error message", () => {
 
   expect(
     () => expect(mockFn, msg).toHaveReturnedTimes(1),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => expect(mockFn, msg).not.toHaveReturnedTimes(2),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

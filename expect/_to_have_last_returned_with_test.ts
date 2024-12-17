@@ -34,13 +34,11 @@ Deno.test("expect().toHaveLastReturnedWith() with custom error message", () => {
     () => {
       expect(mockFn, msg).toHaveLastReturnedWith(4);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => {
       expect(mockFn, msg).not.toHaveLastReturnedWith(7);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

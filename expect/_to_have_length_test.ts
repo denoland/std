@@ -32,13 +32,11 @@ Deno.test("expect().toHaveLength() with custom error message", () => {
     () => {
       expect([1, 2, 3], msg).toHaveLength(4);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => {
       expect("abc", msg).not.toHaveLength(3);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

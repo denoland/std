@@ -28,11 +28,9 @@ Deno.test("expect().toHaveBeenCalledWith() with custom error message", () => {
 
   expect(
     () => expect(mockFn, msg).toHaveBeenCalledWith("hello", "DENO"),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => expect(mockFn, msg).not.toHaveBeenCalledWith("hello", "deno"),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

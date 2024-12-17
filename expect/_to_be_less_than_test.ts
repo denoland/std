@@ -26,11 +26,9 @@ Deno.test("expect().toBeLessThan() with custom error message", () => {
 
   expect(
     () => expect(10, msg).toBeLessThan(10),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => expect(9, msg).not.toBeLessThan(10),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

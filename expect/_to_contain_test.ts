@@ -41,10 +41,8 @@ Deno.test("expect().toContain() with custom error message", () => {
 
   expect(
     () => expect(arr, msg).not.toContain(2),
-    msg,
   ).toThrow(new RegExp(`${msg}`));
   expect(
     () => expect("foobarbaz", msg).not.toContain("bar"),
-    msg,
   ).toThrow(new RegExp(`${msg}`));
 });

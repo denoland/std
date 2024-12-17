@@ -104,17 +104,14 @@ Deno.test("expect().toMatchObject() with custom error message", () => {
 
   expect(
     () => expect([house1], msg).toMatchObject([desiredHouse]),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => expect(house0, msg).not.toMatchObject(desiredHouse),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => expect(null, msg).toMatchObject([desiredHouse]),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });
 

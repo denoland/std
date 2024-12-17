@@ -45,13 +45,11 @@ Deno.test("expect().toHaveBeenLastCalledWith() with custom error message", () =>
     () => {
       expect(mockFn, msg).toHaveBeenLastCalledWith(1, 2, 3);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
     () => {
       expect(mockFn, msg).not.toHaveBeenLastCalledWith(4, 5, 6);
     },
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });

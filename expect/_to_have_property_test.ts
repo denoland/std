@@ -35,7 +35,6 @@ Deno.test("expect().toHaveProperty() with custom error message", () => {
       expect({ a: { b: { c: { d: 5 } } } }, msg).toHaveProperty("a.b.c", {
         d: 6,
       }),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 
   expect(
@@ -43,6 +42,5 @@ Deno.test("expect().toHaveProperty() with custom error message", () => {
       expect({ a: { b: { c: { d: 5 } } } }, msg).not.toHaveProperty("a.b.c", {
         d: 5,
       }),
-    msg,
   ).toThrow(new RegExp(`^${msg}`));
 });
