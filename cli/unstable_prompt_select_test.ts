@@ -374,7 +374,7 @@ Deno.test("promptSelect() handles clear option", () => {
   restore();
 });
 
-Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is false", () => {
+Deno.test("promptSelect() returns null if Deno.stdin.isTerminal() is false", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => false);
 
@@ -399,6 +399,68 @@ Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is fal
   ]);
 
   assertEquals(browser, null);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSelect() handles ETX", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  let called = false;
+  stub(
+    Deno,
+    "exit",
+    (() => {
+      called = true;
+    }) as never,
+  );
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select a browser:\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\x03",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const _browser = promptSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(called, true);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
