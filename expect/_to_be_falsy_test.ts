@@ -35,11 +35,6 @@ Deno.test("expect().toBeFalsy()", () => {
 
 Deno.test("expect().toBeFalsy() with custom error message message", () => {
   const msg = "toBeFalsy Custom Error";
-  expect(
-    () => expect("hello", msg).toBeFalsy(),
-  ).toThrow(new RegExp(`^${msg}`));
-
-  expect(
-    () => expect("", msg).not.toBeFalsy(),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect("hello", msg).toBeFalsy()).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect("", msg).not.toBeFalsy()).toThrow(new RegExp(`^${msg}`));
 });

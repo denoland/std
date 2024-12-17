@@ -39,11 +39,6 @@ Deno.test("expect().toBeTruthy()", () => {
 
 Deno.test("expect().toBeTruthy() with custom error message message", () => {
   const msg = "toBeTruthy Custom Error";
-  expect(
-    () => expect(0, msg).toBeTruthy(),
-  ).toThrow(new RegExp(`^${msg}`));
-
-  expect(
-    () => expect({}, msg).not.toBeTruthy(),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(0, msg).toBeTruthy()).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect({}, msg).not.toBeTruthy()).toThrow(new RegExp(`^${msg}`));
 });

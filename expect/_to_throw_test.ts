@@ -105,9 +105,7 @@ Deno.test("expect().toThrow() with custom error message", () => {
   const msg = "toThrow custom error message";
 
   assertThrows(
-    () => {
-      expect(() => {}, msg).toThrow();
-    },
+    () => expect(() => {}, msg).toThrow(),
     AssertionError,
     'toThrow custom error message: Expected "error" to be an Error object.',
   );

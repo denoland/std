@@ -21,11 +21,11 @@ Deno.test("expect().toBeGreaterThanOrEqual()", () => {
 Deno.test("expect().toBeGreaterThanOrEqual() with custom error message", () => {
   const msg = "toBeGreaterThanOrEqual Custom Error";
 
-  expect(
-    () => expect(10, msg).toBeGreaterThan(10),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(10, msg).toBeGreaterThan(10)).toThrow(
+    new RegExp(`^${msg}`),
+  );
 
-  expect(
-    () => expect(11, msg).not.toBeGreaterThanOrEqual(10),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(11, msg).not.toBeGreaterThanOrEqual(10)).toThrow(
+    new RegExp(`^${msg}`),
+  );
 });

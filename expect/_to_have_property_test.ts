@@ -30,17 +30,13 @@ Deno.test("expect().toHaveProperty() handles null and undefined", () => {
 Deno.test("expect().toHaveProperty() with custom error message", () => {
   const msg = "toHaveProperty Custom Error";
 
-  expect(
-    () =>
-      expect({ a: { b: { c: { d: 5 } } } }, msg).toHaveProperty("a.b.c", {
-        d: 6,
-      }),
+  expect(() =>
+    expect({ a: { b: { c: { d: 5 } } } }, msg).toHaveProperty("a.b.c", { d: 6 })
   ).toThrow(new RegExp(`^${msg}`));
 
-  expect(
-    () =>
-      expect({ a: { b: { c: { d: 5 } } } }, msg).not.toHaveProperty("a.b.c", {
-        d: 5,
-      }),
+  expect(() =>
+    expect({ a: { b: { c: { d: 5 } } } }, msg).not.toHaveProperty("a.b.c", {
+      d: 5,
+    })
   ).toThrow(new RegExp(`^${msg}`));
 });

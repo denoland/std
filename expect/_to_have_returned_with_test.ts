@@ -30,11 +30,11 @@ Deno.test("expect().toHaveReturnedWith() with custom error message", () => {
   mockFn(5);
   mockFn(6);
 
-  expect(
-    () => expect(mockFn, msg).toHaveReturnedWith({ foo: 5 }),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(mockFn, msg).toHaveReturnedWith({ foo: 5 })).toThrow(
+    new RegExp(`^${msg}`),
+  );
 
-  expect(
-    () => expect(mockFn, msg).not.toHaveReturnedWith({ foo: 7 }),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(mockFn, msg).not.toHaveReturnedWith({ foo: 7 })).toThrow(
+    new RegExp(`^${msg}`),
+  );
 });

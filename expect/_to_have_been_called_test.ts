@@ -34,11 +34,11 @@ Deno.test("expect().toHaveBeenCalled() with custom error message", () => {
   const mockFn = fn();
   mockFn();
 
-  expect(
-    () => expect(mockFn, msg).not.toHaveBeenCalled(),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(mockFn, msg).not.toHaveBeenCalled()).toThrow(
+    new RegExp(`^${msg}`),
+  );
 
-  expect(
-    () => expect(fn(), msg).toHaveBeenCalled(),
-  ).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(fn(), msg).toHaveBeenCalled()).toThrow(
+    new RegExp(`^${msg}`),
+  );
 });

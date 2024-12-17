@@ -305,7 +305,7 @@ Deno.test("expect().toEqual() handles iterators", () => {
 });
 
 Deno.test("expect.toEqual with custom message", () => {
-  expect(
-    () => expect(42, "toEqual Custom Message").toEqual(43),
-  ).toThrow(/^toEqual Custom Message:/);
+  expect(() => expect(42, "toEqual Custom Message").toEqual(43)).toThrow(
+    /^toEqual Custom Message:/,
+  );
 });

@@ -44,11 +44,11 @@ Deno.test("expect().toHaveReturned() with custom error message", () => {
     // ignore
   }
 
-  expect(
-    () => expect(mockFn1, msg).toHaveReturned(),
-  ).toThrow(new RegExp(`${msg}`));
+  expect(() => expect(mockFn1, msg).toHaveReturned()).toThrow(
+    new RegExp(`${msg}`),
+  );
 
-  expect(
-    () => expect(mockFn0, msg).not.toHaveReturned(),
-  ).toThrow(new RegExp(`${msg}`));
+  expect(() => expect(mockFn0, msg).not.toHaveReturned()).toThrow(
+    new RegExp(`${msg}`),
+  );
 });
