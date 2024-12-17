@@ -3,7 +3,7 @@
 import { assertNotStrictEquals } from "@std/assert/not-strict-equals";
 import { assertStrictEquals } from "@std/assert/strict-equals";
 import { assertInstanceOf } from "@std/assert/instance-of";
-import { assertIsError } from "@std/assert/is-error";
+import { assertIsError } from "./_assert_is_error.ts";
 import { assertNotInstanceOf } from "@std/assert/not-instance-of";
 import { assertMatch } from "@std/assert/match";
 import { assertNotMatch } from "@std/assert/not-match";
