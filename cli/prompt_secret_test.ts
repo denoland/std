@@ -394,6 +394,55 @@ Deno.test("promptSecret() handles mask option", () => {
   restore();
 });
 
+Deno.test("promptSecret() handles empty mask option", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("Please provide the password:", { mask: "" });
+
+  assertEquals(password, "deno");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
 Deno.test("promptSecret() returns null if Deno.stdin.isTerminal() is false", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => false);
