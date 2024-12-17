@@ -74,6 +74,47 @@ Deno.test("expect(),toMatchObject() with asyAsymmetric matcher", () => {
   });
 });
 
+Deno.test("expect().toMatchObject() with custom error message", () => {
+  const house0 = {
+    bath: true,
+    bedrooms: 4,
+    kitchen: {
+      amenities: ["oven", "stove", "washer"],
+      area: 20,
+      wallColor: "white",
+    },
+  };
+  const house1 = {
+    bath: true,
+    bedrooms: 4,
+    kitchen: {
+      amenities: ["oven", "stove"],
+      area: 20,
+      wallColor: "white",
+    },
+  };
+  const desiredHouse = {
+    bath: true,
+    kitchen: {
+      amenities: ["oven", "stove", "washer"],
+      wallColor: "white",
+    },
+  };
+  const msg = "toMatchObject Custom Error";
+
+  expect(() => expect([house1], msg).toMatchObject([desiredHouse])).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(house0, msg).not.toMatchObject(desiredHouse)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(null, msg).toMatchObject([desiredHouse])).toThrow(
+    new RegExp(`^${msg}`),
+  );
+});
+
 Deno.test("expect().toMatchObject() throws the correct error messages", () => {
   {
     const e = assertThrows(
