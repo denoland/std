@@ -11,7 +11,7 @@ import type { FileInfo } from "./unstable_types.ts";
  * ```ts
  * import { assert } from "@std/assert";
  * import { stat } from "@std/fs/unstable-stat";
- * const fileInfo = await Deno.stat("README.md");
+ * const fileInfo = await stat("README.md");
  * assert(fileInfo.isFile);
  * ```
  *
