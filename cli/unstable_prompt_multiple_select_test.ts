@@ -9,6 +9,7 @@ const decoder = new TextDecoder();
 
 Deno.test("promptMultipleSelect() handles enter", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -62,6 +63,7 @@ Deno.test("promptMultipleSelect() handles enter", () => {
 
 Deno.test("promptMultipleSelect() handles selection", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -121,6 +123,7 @@ Deno.test("promptMultipleSelect() handles selection", () => {
 
 Deno.test("promptMultipleSelect() handles multiple selection", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -204,6 +207,7 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
 
 Deno.test("promptMultipleSelect() handles arrow down", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -275,6 +279,7 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
 
 Deno.test("promptMultipleSelect() handles arrow up", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -346,6 +351,7 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
 
 Deno.test("promptMultipleSelect() handles up index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -411,6 +417,7 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
 
 Deno.test("promptMultipleSelect() handles down index overflow", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -489,6 +496,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
 
 Deno.test("promptMultipleSelect() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -549,6 +557,7 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
 
 Deno.test("promptMultipleSelect() handles ETX", () => {
   stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
 
   let called = false;
   stub(
@@ -604,6 +613,34 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
   ]);
 
   assertEquals(called, true);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is false", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => false);
+
+  const expectedOutput: string[] = [];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+  assertEquals(browsers, null);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
