@@ -17,15 +17,19 @@ type PipeArgs<F extends AnyFunc[], Acc extends AnyFunc[] = []> = F extends [
     : Acc
   : Acc;
 
+export function pipe(): <T>(arg: T) => T;
 export function pipe<FirstFn extends AnyFunc, F extends AnyFunc[]>(
   firstFn: FirstFn,
   ...fns: PipeArgs<F> extends F ? F : PipeArgs<F>
-): (arg: Parameters<FirstFn>[0]) => LastFnReturnType<F, ReturnType<FirstFn>> {
+): (arg: Parameters<FirstFn>[0]) => LastFnReturnType<F, ReturnType<FirstFn>>;
+
+export function pipe<FirstFn extends AnyFunc, F extends AnyFunc[]>(
+  firstFn?: FirstFn,
+  ...fns: PipeArgs<F> extends F ? F : PipeArgs<F>
+): any {
+  if (!firstFn) {
+    return <T>(arg: T) => arg;
+  }
   return (arg: Parameters<FirstFn>[0]) =>
     (fns as AnyFunc[]).reduce((acc, fn) => fn(acc), firstFn(arg));
-}
-
-if (import.meta.main) {
-  const res = pipe(Math.abs, Math.sqrt, Math.floor);
-  res(-2); // 1
 }
