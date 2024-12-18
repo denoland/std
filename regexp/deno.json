@@ -1,6 +1,6 @@
 {
   "name": "@std/regexp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "exports": {
     ".": "./mod.ts",
     "./escape": "./escape.ts"
