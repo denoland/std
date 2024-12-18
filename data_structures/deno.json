@@ -1,6 +1,6 @@
 {
   "name": "@std/data-structures",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "exports": {
     ".": "./mod.ts",
     "./unstable-bidirectional-map": "./unstable_bidirectional_map.ts",
