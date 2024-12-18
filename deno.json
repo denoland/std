@@ -60,6 +60,7 @@
   "workspace": [
     "./actors",
     "./api",
+    "./compartment",
     "./dumb-bot",
     "./engine",
     "./evals",
