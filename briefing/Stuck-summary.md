@@ -1,6 +1,5 @@
-# Current Strategic and Tactical Tasks
+# Current Stucks
 
-## Strategic Tasks
 
 1. **NApp-to-NApp Communication Architecture (Highest Priority for Tom)**  
    Ensure NApps can seamlessly interact, enabling dynamic orchestration (JITAs) and shared functionalities.  
@@ -8,8 +7,8 @@
    - Integrate AI Agents for dynamic service selection and orchestrations.  
    - This serves as the platform’s “nervous system,” enabling modular interoperability.
 
-2. **AI Overlord Integration & Governance (Highest Priority for Scott)**  
-   Implement the AI Overlord (O1 Pro) to manage strategic and tactical tasks, track progress, re-prioritize as new data emerges, and ensure compliance with domain definitions.  
+2. **Commander Integration & Governance (Highest Priority for Scott)**  
+   Implement the Commander (O1 Pro) to manage strategic and tactical tasks, track progress, re-prioritize as new data emerges, and ensure compliance with domain definitions.  
    - Establish reasoning-first workflows and evaluation pipelines.  
    - Overlord queries for clarification, integrates regulatory and identity checks, and keeps strategies aligned with project goals.
 
@@ -22,13 +21,7 @@
 5. **UI Enhancements & Continuous Improvement Tools (Subsequent Priority)**  
    After fundamental pillars are in place, refine the UI so that Actors can seamlessly interact with NApps, report and resolve Stucks, and engage with the economic model. Integrate continuous improvement tools and Overlord-driven insights into the UI.
 
----
-
-## Tactical Tasks
-
-### Highest Priority Tactical Tasks
-
-1. **NApp-to-NApp Communication Framework (Tom’s Focus)**  
+6. **NApp-to-NApp Communication Framework (Tom’s Focus)**  
    - **Description:**  
      Develop standardized interfaces for NApp communication, including messaging or function-call protocols, AI Agent integration, and mechanisms for secure data exchange and permissions.  
      Support the creation of JITAs by orchestrating multiple NApps dynamically.
@@ -36,16 +29,16 @@
    - **Estimate:** ~5 hours AI time  
    - **Priority:** Highest
 
-2. **AI Overlord Integration & Governance (Your Focus)**  
+7. **Commander Integration & Governance (Your Focus)**  
    - **Description:**  
      Implement the Overlord to handle strategic/tactical decision-making, maintain evaluation pipelines, and integrate domain definitions. The Overlord should dynamically reprioritize tasks, handle clarifications, and ensure compliance with regulatory and economic logic.
    - **References:** `prompts/2024-12-15-AI-OVERLORD`, `regulatory-compliance.md`, `qa.md`  
    - **Estimate:** ~5 hours AI time initial setup, ongoing maintenance  
    - **Priority:** Highest
 
-### Subsequent Priority Tactical Tasks
+## Subsequent Priority Tactical Tasks
 
-3. **Economic Model Simulation Setup**  
+1. **Economic Model Simulation Setup**  
    - **Description:**  
      Once NApp communication and Overlord governance are in place, simulate scenarios to test the Intrinsic Currency, Attribution Algorithms, and Decentralized Income flows.  
      Use Actors (Consumer, Demander, Funder, Trader, Talent) to validate the economic model and ensure sustainable value exchange.
@@ -54,7 +47,7 @@
    - **References:** `decentralized-income.md`, `intrinsic-currency.md`, `attribution-algorithm.md`, `impact-crystal.md`, `actor-*`  
    - **Priority:** Subsequent
 
-4. **Stuck Loop & AI-Native Blockchain Foundations**  
+2. **Stuck Loop & AI-Native Blockchain Foundations**  
    - **Description:**  
      Implement the Stuck Loop Process to identify, analyze, and resolve Direct and Implied Stucks efficiently.  
      Integrate the AI-native blockchain (Artifact) and proof of inference for verifiable, trustless operations. Ensure that Stuck resolutions feed back into the Attribution and Income systems.
@@ -63,7 +56,7 @@
    - **References:** `stuck.md`, `stuck-loop-process.md`, `artifact.md`, `decentralized-income.md`, `qa.md`  
    - **Priority:** Subsequent
 
-5. **UI Integration Plan (Enhanced)**  
+3. **UI Integration Plan (Enhanced)**  
    - **Description:**  
      Improve the UI post-core infrastructure to let Actors easily find and interact with NApps, report Stucks, understand economic metrics, and utilize Overlord guidance.  
      Integrate dashboards, help panels, and context-aware interfaces driven by AI Agents.

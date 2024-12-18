@@ -1,4 +1,3 @@
-./
 ├── README.md
 ├── bash-scripts
 │   └── brief-the-commander.sh
@@ -245,4 +244,4 @@
 │           └── 2024-12-16-making-Command-be-dreamcatcher-native.md
 └── tree.md
 
-52 directories, 194 files
+
