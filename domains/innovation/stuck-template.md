@@ -1,60 +1,58 @@
-# Stuck name
-
+# Stuck Name
 A concise name that reflects the essence of the issue.
 
 ## Situation
-
-Links to data or additional text that gives background to the event in which this Stuck was raised.
+Contextual links, references, and data related to the Stuck.
 
 ## Background
-A short explanation of why this stuck was raised and how it fits into the bigger picture.
+Brief explanation of why this Stuck was raised and its place in a broader project.
 
 ## Done
+A clear, outcome-focused statement defining criteria for resolution.
 
-A brief, clear statement of what needs to be accomplished for this Stuck to be considered as a Napp.
+### Evals
+Links and references to 'Evals' evaluation criteria or tests that determine if “Done” is met.
 
 ## Assessment
 
-### Capabilities 
-Outline what the solution (eventual NApp) should do, even if vaguely.
+### Capabilities
+High-level description of what the eventual NApp should be able to do.
 
-Relevance: How does resolving it support project objectives or improve functionality?
+### Inputs & Trigger Conditions
+Detail the inputs/events that cause the NApp to run, including necessary data/resources.
 
-### Key functionalities
-Essential tasks the solution must handle.
+### Expected Behaviour
+Describe what the NApp should accomplish once complete.
+
+### Key Functionalities
+List essential tasks or features the NApp must implement.
+
+### Potential Impact
+Explain how resolving this Stuck supports project objectives, improves functionality, or aids other NApps.
 
 ### Constraints
+Note known limitations, requirements, or conditions affecting the solution.
 
-#### Known limitations or conditions that shape the solution.
+#### Known Limitations
+Record if this Stuck is blocked by other Stucks or external factors.
 
-#### Inputs & Trigger Conditions
-Detail what inputs or events cause this NApp to be invoked.
-
-#### Data/Resources: Information or assets needed.
-When/How triggered: Conditions or signals that prompt the solution’s use.
-
-#### Sub-Stucks
-
-Links to necessary sub-stucks before this stuck can be resolved into a napp.
+#### Unknown Limitations
+Record if this stuck requires other stucks before 'Done'.
+Links to related those related Stucks that must be resolved first.
 
 ## Current Situation
 
 ### Cost
-
-An estimation, based on data that is available including similar stucks to napp effort, commit times, or even straight user estimate.  Cost involves the following two categories:
+Estimate effort based on similar work, commits, or user estimates.
 
 #### Effort Expended
-
-A figure or description of work already completed to change this stuck into a napp.
+Describe completed work so far.
 
 #### Future Estimate
-
-The effort left to complete it, based potentially on unreliable data (such as guesses.)
+Approximate remaining effort.
 
 ### Progress
+Links or notes showing current progress towards resolving the Stuck.
 
-A description and links to progress towards resolving this stuck.
-
-## Recommondation
-
-A list to either work to be done or stucks to be solved that is most efficient to solve this stuck and produce a napp.
+## Recommendation
+Suggest next steps, tasks, or Stucks to address to finalize the NApp.
