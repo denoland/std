@@ -672,3 +672,6 @@ In this conversation, Tom and Scott discuss the idea of utilizing OpenAI's O1 Pr
 
 [Link back to original file](transcripts/2024-12/2024-12-14%20o1-pro%20as%20project%20overlord/2024-12-14%20o1-pro%20as%20project%20overlord.m4a.txt) 
 -----END FILE transcripts/2024-12/2024-12-14 o1-pro as project overlord/2024-12-14 o1-pro as project overlord-SUMMARY.md-----
+-----BEGIN FILE transcripts/2024-12/2024-12-16-making-Command-be-dreamcatcher-native/2024-12-16-making-Command-be-dreamcatcher-native-SUMMARY.md-----
+ 
+-----END FILE transcripts/2024-12/2024-12-16-making-Command-be-dreamcatcher-native/2024-12-16-making-Command-be-dreamcatcher-native-SUMMARY.md-----

@@ -3,27 +3,12 @@
 ├── bash-scripts
 │   └── brief-the-overlord.sh
 ├── briefing
-│   └── folders.md
-├── concat.txt
+│   ├── READMEs.md
+│   ├── basic-definitions.md
+│   ├── folders.md
+│   ├── strategic-tactical-tasks.md
+│   └── transcript-summaries.md
 ├── corrections.md
-├── crm-test
-│   ├── communication-logging.md
-│   ├── community-building.md
-│   ├── community-engagement.md
-│   ├── contract-management.md
-│   ├── customer-management.md
-│   ├── customer-tasks-and-reminders.md
-│   ├── incident-control-and-resolution.md
-│   ├── incident-handling.md
-│   ├── internal-metrics-and-logging.md
-│   ├── lead-journey.md
-│   ├── lead-management.md
-│   ├── marketing-strategy.md
-│   ├── marketing.md
-│   ├── privacy-and-access-control.md
-│   ├── recruitment-and-talents.md
-│   ├── so-what.md
-│   └── time-and-cost-logging.md
 ├── deno.json
 ├── deno.lock
 ├── domain-definitions-summary.md
@@ -34,6 +19,7 @@
 │   ├── Interfaces
 │   │   └── Interface-domain-Dreamcatcher-domain-DC.md
 │   ├── README.md
+│   ├── commander
 │   ├── concat.md
 │   ├── decentralized-ai
 │   │   ├── README.md
@@ -53,6 +39,24 @@
 │   │   ├── unstoppable-agents.md
 │   │   ├── value-distribution-mechanism.md
 │   │   └── value-exchange.md
+│   ├── generic-crm-test
+│   │   ├── README.md
+│   │   ├── communication-logging.md
+│   │   ├── community-building.md
+│   │   ├── community-engagement.md
+│   │   ├── contract-management.md
+│   │   ├── customer-management.md
+│   │   ├── customer-tasks-and-reminders.md
+│   │   ├── incident-control-and-resolution.md
+│   │   ├── incident-handling.md
+│   │   ├── internal-metrics-and-logging.md
+│   │   ├── lead-journey.md
+│   │   ├── lead-management.md
+│   │   ├── marketing-strategy.md
+│   │   ├── marketing.md
+│   │   ├── privacy-and-access-control.md
+│   │   ├── recruitment-and-talents.md
+│   │   └── time-and-cost-logging.md
 │   ├── innovation
 │   │   ├── README.md
 │   │   ├── actor-consumer.md
@@ -232,7 +236,9 @@
 │       ├── 2024-12-14 o1-pro as project overlord
 │       │   ├── 2024-12-14 o1-pro as project overlord-SUMMARY.md
 │       │   └── 2024-12-14 o1-pro as project overlord.m4a.txt
-│       └── concat.md
+│       └── 2024-12-16-making-Command-be-dreamcatcher-native
+│           ├── 2024-12-16-making-Command-be-dreamcatcher-native-SUMMARY.md
+│           └── 2024-12-16-making-Command-be-dreamcatcher-native.md
 └── tree.md
 
-50 directories, 186 files
+52 directories, 190 files
