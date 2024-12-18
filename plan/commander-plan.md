@@ -1,4 +1,3 @@
----
 ### **Updated Proposed Stucks:**
 
 1. **Stuck-001: Deliver the Trucking App**
