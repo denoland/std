@@ -1,7 +1,7 @@
 ./
 ├── README.md
 ├── bash-scripts
-│   └── brief-the-overlord.sh
+│   └── brief-the-commander.sh
 ├── briefing
 │   ├── READMEs.md
 │   ├── basic-definitions.md
@@ -20,6 +20,10 @@
 │   │   └── Interface-domain-Dreamcatcher-domain-DC.md
 │   ├── README.md
 │   ├── commander
+│   │   ├── README.md
+│   │   ├── commander.md
+│   │   ├── directive.md
+│   │   └── implied-stuck.md
 │   ├── concat.md
 │   ├── decentralized-ai
 │   │   ├── README.md
@@ -185,8 +189,8 @@
 │   │   └── prompt-diarise-transcripts.md
 │   ├── 2024-12-14 Summarise-transcrripts
 │   │   └── 2024-12-14 Summarise-transcrripts.md
-│   ├── 2024-12-15-AI-OVERLORD
-│   │   ├── 2024-12-15-AI-OVERLORD.md
+│   ├── 2024-12-15-Commander
+│   │   ├── 2024-12-15-Commander.md
 │   │   └── README.md
 │   └── diarise-transcripts
 ├── stucks
@@ -241,4 +245,4 @@
 │           └── 2024-12-16-making-Command-be-dreamcatcher-native.md
 └── tree.md
 
-52 directories, 190 files
+52 directories, 194 files

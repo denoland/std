@@ -1,4 +1,4 @@
-# AI OVERLORD README
+# Commander README
 
 ## Overview
 This prompt is designed to guide an AI system in managing a dynamic, evolving project. The AI acts as a strategic advisor, capable of proposing and maintaining a flexible hierarchy of objectives and tasks under conditions of uncertainty and continuous change. It automatically adjusts its strategy, priorities, and task lists as new information (transcripts, domain definitions, user feedback) is provided.
