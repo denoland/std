@@ -19,6 +19,23 @@ type PipeArgs<F extends AnyFunc[], Acc extends AnyFunc[] = []> = F extends [
     : Acc
   : Acc;
 
+/**
+ * Composes functions from left to right, the output of each function is the input for the next.
+ *
+ * @example Usage
+ * ```ts
+ *  const myPipe = pipe(
+ *    Math.abs,
+ *    Math.sqrt,
+ *    Math.floor,
+ *    (num) => `result: ${num}`,
+ *  );
+ *  assertEquals(myPipe(-2), "result: 1");
+ * ```
+ *
+ * @param input The functions to be composed
+ * @returns A function composed of the input functions, from left to right
+ */
 export function pipe(): <T>(arg: T) => T;
 export function pipe<FirstFn extends AnyFunc, F extends AnyFunc[]>(
   firstFn: FirstFn,

@@ -111,6 +111,7 @@
     "./fmt",
     "./front_matter",
     "./fs",
+    "./functions",
     "./html",
     "./http",
     "./ini",
@@ -134,7 +135,6 @@
     "./ulid",
     "./uuid",
     "./webgpu",
-    "./yaml",
-    "./functions"
+    "./yaml"
   ]
 }
