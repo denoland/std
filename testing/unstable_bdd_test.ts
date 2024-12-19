@@ -8,7 +8,7 @@ Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", a
       args: [
         "test",
         "-R",
-        "testing/testdata/configure_global_sanitizers/disable_sanitize_resources_test.ts",
+        "testing/testdata/configure_global_sanitizers/disable_sanitize_resources.ts",
       ],
     }).output();
     assertEquals(output.code, 0);
@@ -19,7 +19,7 @@ Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", a
       args: [
         "test",
         "-R",
-        "testing/testdata/configure_global_sanitizers/disable_sanitize_ops_and_resources_test.ts",
+        "testing/testdata/configure_global_sanitizers/disable_sanitize_ops_and_resources.ts",
       ],
     }).output();
     assertEquals(output.code, 0);
@@ -30,7 +30,7 @@ Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", a
       args: [
         "test",
         "-R",
-        "testing/testdata/configure_global_sanitizers/disable_sanitize_exit_test.ts",
+        "testing/testdata/configure_global_sanitizers/disable_sanitize_exit.ts",
       ],
     }).output();
     assertEquals(output.code, 42);
