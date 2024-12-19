@@ -39,3 +39,5 @@ that it is a key attribute, and separate from the file name.
 
 If I run `concat . ../../reasoner/PROJECT_MAP_INSTRUCTIONS.md` then it does not
 pull in everything recursively from . however seems to be shell globbing again
+
+Should supply a file system overview in the concat, optionally

@@ -78,6 +78,7 @@
     "./shockwave",
     "./snapshots",
     "./stateboard",
+    "./stucks",
     "./utils/pdfs",
     "./utils/youtube",
     "./utils/concat",
