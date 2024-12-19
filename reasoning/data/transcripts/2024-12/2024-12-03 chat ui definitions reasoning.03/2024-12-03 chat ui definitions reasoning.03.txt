@@ -1,0 +1,704 @@
+Tom
+0:00:00
+time yeah okay amplification so here's how okay so uh do you want to take off the screen so what i need to do is i'm i'm wanna i wanna walk you through where i'm at with the user interface and i want to use our conversation to generate um definitions for the areas of the face, the names, by giving them names, the purpose that each area serves. I want to go through some key narratives of how you would want to use the system, with the goal being that if we can do the same reasoning process with the UI, then I can
+
+Tom
+0:00:41
+include those definitions in the bots when people are asking for help or asking questions about the UI but more importantly when I want to put in a new feature into the UI I can reason it through first and it can present me with several examples of where might be a good place to put it because that's hard to do.
+
+Scott
+0:01:07
+Yeah okay good. Can I just check, is this being recorded? This is being recorded? Yeah, well how else would you?
+
+Tom
+0:01:16
+Yeah, no, I was just checking. Because you're saying you finished the last one. Ah, sorry, yeah, okay, fair enough, fair enough, fair enough. Okay, now, let me just... Okay, so where are we starting? Give me just a half a damn minute.
+
+Scott
+0:01:30
+Come on, man, hurry up.
+
+Tom
+0:01:33
+Good God, man. Christ Almighty.
+
+Tom
+0:01:39
+Christ almighty.
+
+Scott
+0:01:41
+Jesus and Joseph and the wee donkey.
+
+Tom
+0:01:44
+Christ!
+
+Tom
+0:01:46
+Oh. Hey! And we're up. So it's things in Singapore. Um. Now. It's very clean, no chingum. I, is that a bit of a problem where you're from? Not really. I just don't like Chingum. Instant way of making yourself look stupid. I'll remember that next time I buy something. So this is the three books you are right. I also sent this to you in what's that? So clearly you don't read no stuff and the other issue. I want to bring up with you is that for some reason Sometimes I think you either leave your desktop client on or something like that
+
+Tom
+0:02:55
+And then I send you a message and even though I know you're asleep It goes green it goes blue like you really and then I'm like is this thing fucking on? What is even happening here?
+
+Scott
+0:03:16
+I'm not sure, I think it's a Mac thing. Because I close my Mac, I switch off my computer.
+
+Tom
+0:03:19
+Your Mac doesn't go to sleep. You know how I know? It's because the other month you burned $30 worth of constant polling updates because you must have had a billion and one tab still open of the old Dreamcatcher that was running all night long. Your MacBook doesn't go to sleep. It should.
+
+Tom
+0:03:35
+I think all your problems would go away if your MacBook went to sleep.
+
+Scott
+0:03:39
+Monsieur, je désolais.
+
+Tom
+0:03:41
+Je désolais.
+
+9
+0:03:43
+Sacre bleu.
+
+Scott
+0:03:45
+Yeah, no, I just close it. I should.
+
+Tom
+0:03:49
+You check your power settings, you're not going to sleep. It's... Yeah, I'm probably burning the planet as well.
+
+Scott
+0:03:55
+Yeah, very good point, well made.
+
+Tom
+0:03:57
+Okay, so, here...
+
+Tom
+0:03:59
+Oh, look at that.
+
+Tom
+0:04:02
+This is the evolution of the three box UI. We have here on the left the list of chats.
+
+Tom
+0:04:07
+Yep. We have at the bottom of the list of chats we have the... Yeah, which is like the user admin panel. It's basically the idea is you click on this, you can sign out, you can get help and and the help every the principle at play here is that everything is supposed to start a new chat so when I hit help what it's supposed to do is if I'm like if I'm here looking in this thread here which is like information about blah blah blah I should be able to come in here hit help, and then it's going to start a new thread
+
+Tom
+0:04:54
+Which it doesn't but you you get help by talking you don't get help by reading a web page or being redirected Everything yeah, okay now add credits again starts a new chat It's context aware it knows about what payment methods you have or haven't got it guesses at what you are probably going to want to use and then it walks you through how to add through a credit card some ethos and all that right okay the balance this is this is how much credit you've got this is a contentious issue but I was thinking
+
+Tom
+0:05:32
+we'll just show the balance in USD no matter what you got we're going to charge USD to start with.
+
+Scott
+0:05:38
+Hey, whatever, yeah, yeah.
+
+Scott
+0:05:40
+Yeah, that was good.
+
+Tom
+0:05:42
+One of the most contentious questions we have to answer, you and me, is does the decentralized AI platform actually need an intrinsic currency? And I would say yes, not for any one reason, but because there's a lot of reasons that sort of need it. And in my world, a lot of sort of equals a definitely. I would also answer yes from a different vector.
+
+7
+0:06:10
+What's that?
+
+Tom
+0:06:11
+In that there needs to be a large number of transactions. Yeah, but transactional efficiency is irrelevant of having an internal currency or not because you could simply wrap Dogecoin and then microtransact and wrapped Doge. Yeah, sure. So that's not a good example.
+
+Scott
+0:06:37
+No, the point I was making is that if it was USD as you just said it was, then transactional cost may become an issue.
+
+Tom
+0:06:47
+Because again, it's wrapped, it's micro transactions on our platform that you periodically cash out once there's enough.
+
+Scott
+0:06:57
+Well that periodic cash out is a thing. So your question was, does it need an internal token? but is there any token that we can just adopt with the idea of off the shelf is better than rating or something? Look just use ETH or USCT or whatever but I think I will go into should there be a decentralized currency in another
+
+Tom
+0:07:26
+session I think that's a pretty deep topic. Please may I skip that now.
+
+7
+0:07:37
+Yep.
+
+Tom
+0:07:38
+Yep. Okay, we got your toggle light mode, toggle dark mode because I knew you wanted that.
+
+Scott
+0:07:43
+Yeah, because I'm dark. My soul is dark.
+
+Tom
+0:07:47
+I was going to say because you're light. You just need some contrast in your life. Okay, now the list of chats you have basically just the options for each chat is you can select it and go to it or you can delete it. Now, where it gets interesting...
+
+Scott
+0:08:05
+Oh, sorry, go ahead.
+
+Tom
+0:08:07
+I'm just trying to set the scene here, right? I'll start the question. Yeah. Now, inside the chat sidebar, you got new chat, which is easy enough to imagine, but you got the search chats. And search chats was supposed to be a special one where you click it and what's going to happen is it's going to make a new chat with all of the chats loaded as context.
+
+Tom
+0:08:34
+Ah, brilliant. So that you can chat about the chats. Right. Yes.
+
+Scott
+0:08:40
+And then you can... That's my use case that is close to my heart. Tell me. Last Christmas I chatted to you about the presents I gave to my family and loved ones and I don't want to do the same thing.
+
+Tom
+0:08:57
+Your family, not your loved ones? Yeah, okay.
+
+Scott
+0:09:00
+You know what I'm saying, but I can't remember when.
+
+Tom
+0:09:04
+I don't want to scroll down and read a whole bunch of stuff. Okay, so you'd use this to find out that list and then another narrative that I would want you to have in this function is to be able to do Operations on chats like if you said Say you did that search you just mentioned for all of the Christmas presents, and you got back
+
+Tom
+0:09:30
+17 different threads you could say I want to merge all these as one and carry on and then it would squish them all, right? And I'll give you another use case. I would like to narrow down my, all these charts that you found, I want to find out what we said about Tinsel.
+
+Tom
+0:09:59
+How is that a new narrative? Because you're giving it a context to squish it down. You're saying ignore anything that wasn't talked about. So you like recursively segmented the group of chats, is that what you're talking about? Yeah. Yeah, okay.
+
+Tom
+0:10:18
+All right, great. All right, so that's what that's all about. Then moving into the main window of the application, in the top left you've got this toggle sidebar button which is really just to...
+
+Scott
+0:10:31
+yeah yeah yeah boring
+
+Tom
+0:10:33
+yeah hang on buddy hang on what's not boring is is this when you hit mobile that's why this stuff gets sort of important because you need to be able to do that but also have some of the other um see like it but it needs to behave differently like in mobile you can only deal with one block at a time like either it's all the chats or it's all the chat history or it's you know, that's that's Yeah Demonstrate
+
+Tom
+0:11:18
+Yeah, I know I know but but here's here's the issue right like we're starting to get close to the main problem
+
+Scott
+0:11:24
+This is a drop-down
+
+Tom
+0:11:26
+that represents naps. These are the naps that if you had one selected when you click new chat I would expect that it would use that nap to begin with. But what I think is also legitimate is that half way through a chat you can hit that drop down and you can change the nap that you're talking to. Does that sound like a legitimate thing to do?
+
+6
+0:12:02
+Absolutely.
+
+Scott
+0:12:03
+I've been doing a similar thing with Cursor.
+
+Tom
+0:12:07
+You switch models?
+
+Scott
+0:12:09
+I switch models.
+
+Tom
+0:12:10
+Yeah, okay.
+
+Scott
+0:12:11
+I switch back to models.
+
+Tom
+0:12:12
+That's fine. But then what I've done here is this last thing is a button. And that says configure chat models. And what that means is that you hit that, and it will start a chat that is about the NAPs listed in this box so you can modify the short view but you can also modify the existing NAPs to either use a
+
+Tom
+0:12:39
+different NAP or have some different files or have some different context and all that. That's your chat to configure how you make new chats. That is interesting. I'm going to do this silence thing that I've been practising. Can you say that again? Sure. This drop down box is where you select the NAP that you're going to be conversing with or change it in the middle of a conversation. At the bottom there is a button that is always there no matter what this dynamic list of NAPCS is, is called configure chat models and you use
+
+Tom
+0:13:17
+it to modify the available models and their settings. When you click it, it starts a new chat where loaded into context is all of the available NAPCS and then you can configure the shortlist that shows up in every window or every session of which NAPCS you can select from the drop-down, or you can navigate around and search for a particular NAP and then start a chat with that.
+
+Tom
+0:13:43
+Or you can modify NAPs as in change the tools, change the files they start with or other such configuration parameters. It's the way to chat with NAPs before you use them. That feels like an admin power tool. Yeah, well, okay, well let me let me add in the real thorn in my side and then come back to that bit. Okay, so here we've got in this main window we've got the chat history.
+
+Tom
+0:14:18
+Yep. You know, no surprises there. This is the fix button. The idea is that you hit that and that creates a stuck
+
+Tom
+0:14:31
+Yes
+
+Scott
+0:14:33
+I like my icon by the way the spinner than the
+
+Scott
+0:14:36
+Yeah, yeah, okay
+
+Tom
+0:14:37
+and so you make you you can hit the fixed response button and that will create a stutter and the idea is that That's supposed to start a new chat that is talking about the context that just caused you to click that and the chat is with the StuxNAP, the Stux Creator
+
+Scott
+0:15:06
+NAP. And you're talking, you've taken a step back and you're now talking in definitions terms
+
+Tom
+0:15:12
+as a direct stock? Yeah, yeah this is a direct, a declared stock where you have made it yourself. Yeah, yeah. Okay now, just for completeness sake, the input box, free text here, real-time transcription going on here, where you're just like chatting away and then it's popping up, you know what to do attachments files whatever the send button blah blah blah now where does it get curly this button open chat controls this is curly This is clearly because it is the place where the context of the chat is managed.
+
+Tom
+0:16:11
+For example, I want to hit that and then I should be able to see all of the tools that are available in the chat. I may or may not wish to modify them. I should be able to hit that and I can see what files are in context in the chat. I should be able to add files from many different repos into the context. What's that?
+
+Tom
+0:16:39
+Cursor like. Yeah, yeah, yeah, yeah, yeah, yeah, yeah, yeah, yeah, yeah. But instead of having – see, in cursor, they sort of have the context in band Yeah, but I think that that's not that doesn't Having it out of band first of all keeps your in band stuff nice and clean But second of all
+
+Tom
+0:17:02
+Allows you to configure it on the fly because in cursor you can't You can't for example modify your prompt that's going on behind the scenes to the models on the fly. You can't... I guess you sort of have that in the cursor composer but it's just not... this is really the conundrum. This button is the conundrum button. And there's one more piece of the puzzle I need to load into your brain. Is that there's another mode we have here which is the stateboard mode.
+
+Tom
+0:17:50
+So when something occurs that modifies the stateboard, it makes this little thing here Also, sorry for the jumble there is some ability to have little pieces of information pop up in band so for example Tell me what the weather is in San Francisco right now Okay, so it's just transcription, thinking, thinking.
+
+Tom
+0:18:30
+See, I can have little bits of UI, like that was the weather box. So for some activities I can show some UI not in stateboard but in context or in chat, where like there are certain cases where that's more relevant. But here is an example of what the state board looks like. It indicates here that it's done something with the state board, in this case creating a document. I click on that chat event. I think I've just called it a chat event because like that would be a chat event and that's a chat event. Maybe there's a better name, whatever.
+
+Tom
+0:19:08
+But when it does that, that's when it clicks into the stateboard mode and now here we have a stateboard which is an entirely separate thing. When you're in stateboard mode you cannot be in you can't be browsing the chats because stateboard mode means that you only have the current chat history the input box and the state board. Okay, so when you go into IQ collection, I get what you're saying that you're now in
+
+Scott
+0:19:48
+a hermetically sealed area.
+
+Scott
+0:19:51
+Yeah.
+
+Scott
+0:19:52
+Now, let's say if there are a whole bunch of widgets.
+
+Tom
+0:19:57
+Yeah, this is where complex widgets would display as well. The stateboard can be anything. It is a big widget. Whereas this is like a mini widget and the stateboard is a big widget. So the stateboard of any type, let's say a battlefield, and you go click, click, click, click, you kind of want a way of bringing that interaction back in. Yeah, so how that's going to work is that the stateboard is connected to the selection model. So when I go like that and select a block of text,
+
+Tom
+0:20:54
+I would expect that inside of or adjacent to or connected in some way to the input box, it would indicate that I'd made a selection, a brief summary of what that selection is. That makes sense to me because the state board is like, okay, so I'm gonna give you lots of information.
+
+Tom
+0:21:14
+Yeah. And then you select that. And the reason for that selection is you're reducing the information provided by the State Board to what you're interested in at that point. Yeah, that's right. That's right.
+
+Tom
+0:21:29
+That's right. That's right. Yeah, so there'll be a, it'll be a little bit tricky to make, but I think I will enjoy in that even when you click on elements in the chat history, they should still be counted as selections being made that are added to the selection context or the selected something, the selected attachments which are going to be part
+
+Tom
+0:21:54
+of the next time you send a message to the LLM. It's also going to be told that you have currently selected these items which can be, they can be on the State Board or they can be in the chat history.
+
+Scott
+0:22:07
+Yeah, there's a possible rule here, isn't there? The State Board presents you with a way of navigating through a much larger piece of data and then selecting what you're actually interested in. So, the State Board is all about giving you the opportunity to actually be more precise.
+
+Tom
+0:22:28
+Yeah, or operate in a different mode. Like, for example, in mapping mode, where you're able to pick a GPS location based on how the land looks is a different mode of communicating than trying to do it in GPS coordinates. Well, there's a good example. So you're presented a map, and you scroll around the map, there's widgets,
+
+Tom
+0:22:52
+and then it's like, this is this. And you don't want to be writing it down on a piece of paper, then going back to your thread, and then typing it back in. Right, now where this gets... This works, this works. Yeah, I know this works, because this is what we discussed previously. This is not the problem. is this chat context button because what I expect this chat open chat controls button or chat context management thing to do is I expect it to open a open a
+
+Tom
+0:23:29
+stateboard where the stateboard is about this chat and that's the that's the kicker right yes. Yes. Yes, it's a hugely powerful. Okay. It's a specialized state board That's all about this chat Yeah, what you're considering and in that in that state board it has things like If there were documents that you created they would be listed here it's like you made the Haiku collection document you made the How to get different intonations on your thoughts document you made whatever then there'd be like
+
+Tom
+0:24:03
+Files these are the files that are currently in scope for this chat That's the word school scope yeah And then there's like what tools of those maps are available. You should be able to add them in, take them out, modify them using the widget here or having a chat with it directly or, just bear with me, kicking into here and going configure and then having a chat in the background maybe right or or last way is calling search chats, narrowing down to the chat you want to search about,
+
+Tom
+0:24:58
+and then you can do your very precise reconfiguring in there.
+
+Scott
+0:25:03
+Can I just trace through that? So, how does that search? So, I look for, in all my chats, whenever I talked about presents for my family for Christmas. Yeah. And it will come up with something. Yeah.
+
+Tom
+0:25:18
+Then I go to the top right. I should be able to see the smoosh of all the previous chats and the more than one where I've talked about presents. Yeah, because that would be in the header to the content. Yeah. Now that is a thing. Now I should be able to suggest, here's a NAP, which is a present chooser.
+
+Tom
+0:25:46
+Yep, and would you like to start a new conversation with this NAP, with this narrowed scope?
+
+Scott
+0:25:53
+Right, right. And then it's not, you know, because I've been
+
+Tom
+0:26:07
+sloppy thinking about, you know, my work accounts package or whatever.
+
+Scott
+0:26:14
+Yep.
+
+Tom
+0:26:15
+I know this, this is what we're talking about and it's like, oh, here's some maps that can help. It's like, oh, that sounds useful. Okay, fine. Then what's the last step there, where you got the pull down to configure? So now we've got, here's the context, and I've added a NAP to consider this,
+
+Scott
+0:26:38
+that configure chat models.
+
+Tom
+0:26:40
+But hang on, were you just in the, you just clicked search chats, and you were in a chat about the chats, and you narrowed down to everything you know it down So yeah, yeah, and then yeah And then what I would expect is that in the chat you would be presented with some example buttons where it's like start new conversation with your Configured context and it's gonna when you click that it's going to use the CHESS that you just added to context.
+
+Tom
+0:27:19
+Yeah, I get that. Okay, sorry. But the question is, in that flow, so search, constrain, go to the top right, I can see the constraints, suggested NAP, yes, I'm happy with that NAP, now got a thread. Now where is GPT for mini now? Under configured chat models, what's that step? What would that do? That's not anything part of this. I mean, I could make it have
+
+Tom
+0:27:50
+a second suggested button here that's like add to your shortlist of NAPs and then that would sort of like insert it up there. Another way that you could have achieved the same thing you just mentioned by going from search is to click on configure chat models and then do the same procedure you just outlined, but you've just done it, you've come at it from a different way. You do it the other direction and then you could have actually done all that. So long as you were in a NAP that was not constrained so much that it didn't have access
+
+Tom
+0:28:31
+to these workbench level tools, like show me all the chats and let me modify the context of the current thread. So long as you had access to those tools, you could do all of that within any chat. These buttons are there just to, as like sugar, to like, because under the hood all they're doing is they're just loading up a chat with some pre-selected context and some specific prompts.
+
+Tom
+0:29:01
+You could do all that directly in a chat without any of these buttons, but it would just be a dog to use.
+
+Scott
+0:29:08
+Yes, yes.
+
+Tom
+0:29:10
+Like it would be error prone and it would be frustrating.
+
+Scott
+0:29:13
+And also, if you go down the wrong way, say if you go down a rabbit hole, but there's like 10% gold at the bottom of the rabbit hole,
+
+Tom
+0:29:20
+you can search for it. Yeah, and it also, just like how you get these starter for 10 buttons, being able to click one of these really helps you, rapidly helps you get what you want done by sort of kick-starting you down the right path as opposed to you coming in and discovering it from a blank sheet and reading off cheat codes from the back of some CD magazine.
+
+Scott
+0:29:48
+As described, I love this.
+
+Tom
+0:29:50
+Okay, great. In the same way as I love Cursor, I think this is better than Cursor for... Now the final problem, the final problem was with what we've all been leading up to here. the configuration of access to remote files in a check context, such as I have come in as a user, a regular user, and now I want to access the company's CRM.
+
+Tom
+0:30:16
+Okay, so that comes down to a combination of the access NAP,
+
+Scott
+0:30:21
+which is NCP compliant, and the company's CRM is also NCP compliant.
+
+Tom
+0:30:27
+Yeah, I think so.
+
+Scott
+0:30:28
+So you have access.
+
+Tom
+0:30:29
+And I think that all that's happening is when I pop up the chat controls in the widget that shows up there, or having entered configure chat models during the configuration of the chat, which I think should bring up the same widget,
+
+Tom
+0:30:46
+it, I can search for remote servers that I can have access to or ask for access to and then add that as context. And I can add it in two ways. I can add it as the raw API of the NAPs and or the natural language interface of the NAPs on the remote server. So that means that I could take a NAP from anywhere, including possibly the CRM, run it on my local host,
+
+Tom
+0:31:20
+and then use the API calls back to the CRM to make API calls that are allowed. That's one option. could take the natural language, the NAP from the CRM, run it on my local instance with the prompt and the recommended model and all that, and then it makes the calls back to the CRM using the API, which would sound the same except for the fact that I could be controlling it with one of my NAPs on my local host too.
+
+Tom
+0:32:06
+So for example, I might speak Japanese. All my NAPs are in Japanese, but it knows to pull in this NAP from the CRM to be able to make the, because the function calls are all labeled and programmed in English. Right? And the last way that you can do all of that is that you can actually The last two ways you can do that that you can Have access to the CRM and you can chat to it directly so in that case you would use a nap on This side that was really just a very thin proxy nap
+
+Tom
+0:32:44
+where it's job was to just pass whatever you said straight through to the remote system and so your text prompts go straight through to the remote NAP it executes the inference on its end and then the response comes back and you're presented with it here you didn't pay for the inference, anything like that as far as you're concerned it was a remote API call that was with an agent and the final way and I promise I'll stop talking the final way is all that but one of your NAPs that could be in
+
+Tom
+0:33:24
+Belarusian communicated using MCP over to the natural language interface of the CRM which was in English which then called the NAP tools on the CRM to get some stuff done and then gave you back a result. Because you might have been doing a very complex workflow that involved picking, reading the stock market, reading the weather, and then making some changes in the CRM,
+
+Tom
+0:33:53
+but the CRM doesn't need to know any of that. It just knows that it did what it was told. Okay. Done.
+
+Scott
+0:34:00
+I know you're over your 10 minutes now so I'm going to keep this real short. But a question. In the top right when you're seeing context, can you add in more than one NAP?
+
+Tom
+0:34:20
+Yes, you can add arbitrarily many. As well, you may be able to add in a NAP that can search for NAPs, so that you should, with a properly configured NAP, be able to access every NAP ever written. Right. Okay. Good.
+
+5
+0:34:37
+By walking, by recursively walking.
+
+Tom
+0:34:39
+Exactly. So you go up there and they're saying,
+
+Scott
+0:34:41
+okay, so I've just been hired by this New Zealand company, and I only speak Belarusian, I'm going to add in Belarusian translation NAP, I'm going to add in New Zealand CRM app, and I'm going to add in whatever my job is, I don't know, marketing NAP,
+
+Scott
+0:35:07
+and is there any other NAPs out there that can help me with marketing?
+
+Tom
+0:35:11
+Yeah, and the purpose there is that you can very quickly, using that context programmer, wire things up. You can either do it by clicking around or you can do it by chatting, where the system itself will help you assemble these connections of things. So that top right throughout the interface. We tried to pack it into that little remote button that I had.
+
+Scott
+0:35:47
+We tried to make it be the router or switchboard. This is a better way of doing it. Basically, what you're adding is you're adding this capability, this capability, this capability, this capability. Yeah. And that one of those access to CRM
+
+Scott
+0:36:07
+infers the requirement of authentication, which is another NAP. But you don't need to explicitly say the authentication is there because the NAP requires it. So you got a stack of NAPs and you've got a stack of context,
+
+Scott
+0:36:24
+and that's your language. And then you go back and saying,
+
+Tom
+0:36:29
+this is what now I'm talking about.
+
+Scott
+0:36:31
+So, let me think about this today, but because I'm aware of your time, I think that's actually really quite sweet. Okay. It's a sweet way of doing it, I think. Well, that's good.
+
+Scott
+0:36:46
+NEIL SMITH Yeah, I think that's a really quite nice way of doing it because you're kind of just stacking capabilities with context and then going back to a thread and saying, right, now, you've got the capability of talking to the CRM in Belarusian, and I'm doing marketing and you've got an app that helps me with marketing, talks to X and posts to X, another app, boom.
+
+Scott
+0:37:24
+Right, now I can just do my job. It's just like a stack of naps and then the naps work out how they talk to each other and they know what they're talking about because you've given them the context. that feels, I try not to think about my belly, that feels right, but I try not to think about my belly. I think about my mind. Mind is usually much more... In your belly that feels right. No one asked you to eat the thing, did they?
+
+Tom
+0:37:54
+You know, it feels right, but might be wrong. But on first blush, I'll spend a bit of time today thinking about that alright, so this this was how
+
+Scott
+0:38:07
+this was how the
+
+Tom
+0:38:09
+that Little window is supposed to look right and uh is that when you click it you get things like Content like did you upload some files? There'll be for us. They'll be like repose which is down there There'll be like Artifacts as and did you create anything in this chat and here it is and then when you like when you click on it
+
+Tom
+0:38:31
+You can go into it It are their chats. You know it's basically The thing with cursor is that managing of the context is a little bit clunky where we're giving the context management, we think it's so complex that we're giving it its own dedicated state board widget. Can I, sorry not to cut you off, but time is up.
+
+Tom
+0:39:00
+I'm done. Can I give one idea and I'm not going to, it occurred to me yesterday. I'm gonna put it down inside of my inventor notebook Did you would have done been done already if you had just laid with the idea all right Keeps you had three words before you die. Okay. Yep, tube sets keep chance
+
+Tom
+0:39:28
+seem to have a number of
+
+Scott
+0:39:30
+Some of the characteristics to NAPs. Okay, I don't see them, but tell me. Okay, so they're self-contained by function, right, is number one.
+
+Tom
+0:39:37
+Right, they've got common interface.
+
+Scott
+0:39:40
+Interestingly enough, they have to stay within the limited set of resources, and I'll come back to that. The reuse, they have a knowable behavior that's proven, e-balance. Intend to be a building block for use, almost at random. You can put any CubeSats together. You know, you've got that kind of one unit, then you've got up to, I think,
+
+Scott
+0:40:01
+three by four units in order to make a satellite. And the reason to allow that is they create new value. That sounds a lot like a NAP. Now, I'm not suggesting anything here, I'm just trying to put a wee seed in your mind about that limited resources piece.
+
+Scott
+0:40:34
+So, if you've got a NAP, the thing I think people are gonna be concerned about is, if I have a stack of 12 NAPs, am I gonna end up with a bill? Whereas a CubeSat says I've only got 0.5 amps to use and I will never go above 0.5 amps, but how I use that internally is up to me. Now with the NAP formats when we've
+
+Tom
+0:41:05
+got multiple models... Yes, so the part of the NAP execution environment that we haven't mentioned in the definitions is the requirement to manage payment and to also constrain payment so you're like yeah this execution is allowed to take
+
+Scott
+0:41:23
+at most five minutes and two dollars and no more. Yeah exactly and the interface is you we know that because it's a NAP you can combine it with as many NAPs as you want and you can also model because you've got you know a stack of 12 naps, the total is going to be, it's going to take no more than 90 seconds and it's going to cost no more than 60 cents. There's a thing here, I just wanted to put that wee seed in your head.
+
+Tom
+0:41:52
+I can't see it personally, I don't think the metaphor is strong enough, but if that works for you, then that's good.
+
+Scott
+0:42:00
+I don't know if it works for me or not.
+
+Tom
+0:42:02
+Okay, all right.
+
+Scott
+0:42:03
+It's one of these things that, it's like, it seems very, very similar.
+
+Tom
+0:42:08
+Just before we go,
+
+Scott
+0:42:10
+I found a company called Scramjet
+
+Tom
+0:42:15
+that deals with what sounds like naps.
+
+Tom
+0:42:18
+Oh, really?
+
+Tom
+0:42:19
+Yeah, no kidding. Bloody hell, come on guys So here's how it's rubbing it down yet. Yeah, I know they're like your code with current industry tools Your code with scramjet That's fun Check what you can do private data mesh
+
+Tom
+0:42:40
+cloud native data mesh hybrid data mesh distributed data mesh virtual data mesh. So like they look pretty early and they're definitely not doing NAPs but my point my point is that the the definitions of a NAP environment if we were to write the definitions of an the NAP execution environment independent of implementation it would possibly look like this even.
+
+Tom
+0:43:14
+I don't know because this is all kind of, hey, we're brilliant and we've got a big cloudy thing. I know, I know. Very little information there. However, what I do draw from that is that idea of, well, they're talking about a different thing.
+
+Tom
+0:43:32
+We're talking about economically, how do you get enough people with enough ideas inside of... Yeah, but the naps are a good enough product to spin out on their own, just like the DAI is a good enough product to spin out on its own.
+
+Scott
+0:43:55
+I think so.
+
+Tom
+0:43:56
+I don't know why it is that we've ended up thinking that we, just to get the crappiest version of the Dreamcatcher going, we need like three new products to all work together. Yeah. I can't see a better way than that.
+
+Scott
+0:44:13
+That is a question and one thing I can work on if this would be valuable is I'm concerned
+
+Tom
+0:44:21
+that with decentralized AI. We just added a ton of work, months of work, onto your plate. Nah dude, well keep in mind that I've been chasing this thing, this is what I've been designing for, is decentralized AI, this whole time. That's why we have multi-threaded blockchains, that's why we have AI running on our blockchains. It's really not that much more work, honestly.
+
+Scott
+0:44:52
+Okay, alright. So, back in my mind, I was thinking, shit, we just added now three months of work.
+
+Tom
+0:45:00
+No, you got to be careful with that. Since I started working on this full-time in 2015, this has always been the architectural goal. So these guys here, Troy sent me this and was like, hey check these guys out, they're doing... Blockchain, AI, okay. Yeah, they're trying to do blockchain but with AI native sort of.
+
+Tom
+0:45:26
+Yeah, I guess my concern, not my concern, but my observation is
+
+Scott
+0:45:32
+there seems to be enough intelligent people working in the same place.
+
+Tom
+0:45:39
+Yeah, which is good. No, that's good. It's good because it doesn't sound crazy anymore. And all we've got to do…
+
+Scott
+0:45:44
+I don't think we're that crazy, you know. But we need to…
+
+Tom
+0:45:46
+That's what a crazy person would say. But ignoring that. Yeah, if we… what it means is that there's a language developing, there's a way to assess these things, there's pros and cons and design tradeoffs being explored. And so if we can hit the scene and we're like, this is how we're doing it, then that is better than just turning up
+
+Tom
+0:46:08
+with nothing to compare it to, right? And then more importantly, this graph, which is like how we're going to implement a capital coordination system from 1604, it is lovely, but what it says is ugly. And it's like, well, we would launch without that.
+
+Tom
+0:46:31
+We would launch with no tokenomics. We would only launch with ambient attribution. And I think that is a golden story to be told.
+
+Tom
+0:46:38
+Yes. I'm gonna go. I'm gonna shut down the video and then I'm gonna upload it.
+
+Tom
+0:46:44
+Yeah, cool. Anything else you wanna add before we close out? Anything else you wanna add before we close out? No, no, I think we've...
+
+
+
+
+Transcribed with Cockatoo

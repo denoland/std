@@ -1,0 +1,21 @@
+{
+  "imports": {
+    "@deno/graph": "jsr:@deno/graph@^0.85.0",
+    "gpt-tokenizer": "npm:gpt-tokenizer@^2.6.2",
+    "node-graphviz": "npm:node-graphviz@^0.1.1"
+  },
+  "tasks": {
+    "tokens": "deno run --allow-read .github/tokens.ts"
+  },
+  "fmt": {
+    "useTabs": false,
+    "indentWidth": 2,
+    "singleQuote": true,
+    "semiColons": false 
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-console"]
+    }
+  }
+}
