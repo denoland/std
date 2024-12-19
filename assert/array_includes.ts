@@ -1,7 +1,7 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
-import { format } from "@std/internal/format";
+import { format } from "../internal/format.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /** An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string */
