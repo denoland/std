@@ -7,7 +7,8 @@
     "./snapshot": "./snapshot.ts",
     "./time": "./time.ts",
     "./types": "./types.ts",
-    "./unstable-types": "./unstable_types.ts",
-    "./unstable-stub": "./unstable_stub.ts"
+    "./unstable-bdd": "./unstable_bdd.ts",
+    "./unstable-stub": "./unstable_stub.ts",
+    "./unstable-types": "./unstable_types.ts"
   }
 }
