@@ -3,56 +3,26 @@ import { escape } from "@std/regexp";
 
 export type StripOptions = {
   /**
-   * If `true`, all occurrences will be stripped from the start of the string.
-   * If a number, the specified number of occurrences will be stripped from the start.
-   *
-   * @default {true} // if `end` option is omitted
-   * @default {false} // if `end` option is specified
+   * The number of occurrences to strip.
+   * @default {Infinity}
    */
-  start?: boolean | number;
-  /**
-   * If `true`, all occurrences will be stripped from the end of the string.
-   * If a number, the specified number of occurrences will be stripped from the end.
-   *
-   * @default {true} // if `start` option is omitted
-   * @default {false} // if `start` option is specified
-   */
-  end?: boolean | number;
+  count?: number;
 };
 
 /**
- * Strips the specified pattern from the start and/or end of the string.
+ * Strips the specified pattern from the start and end of the string.
  *
- * @param str The string to strip from.
- * @param pattern The pattern to strip from the string.
- * @param options An object containing options for the strip operation.
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @example Strip both start and end
+ * @param str The input string
+ * @param pattern The pattern to strip from the input
+ * @param options Options for the strip operation
+ *
+ * @example Strip using a string
  * ```ts
  * import { strip } from "@std/text/unstable-strip";
  * import { assertEquals } from "@std/assert";
  * assertEquals(strip("---x---", "-"), "x");
- * ```
- *
- * @example Strip start only
- * ```ts
- * import { strip } from "@std/text/unstable-strip";
- * import { assertEquals } from "@std/assert";
- * assertEquals(strip("---x---", "-", { start: true }), "x---");
- * ```
- *
- * @example Strip end only
- * ```ts
- * import { strip } from "@std/text/unstable-strip";
- * import { assertEquals } from "@std/assert";
- * assertEquals(strip("---x---", "-", { end: true }), "---x");
- * ```
- *
- * @example Strip a given number of occurrences
- * ```ts
- * import { strip } from "@std/text/unstable-strip";
- * import { assertEquals } from "@std/assert";
- * assertEquals(strip("---x---", "-", { start: 2, end: 1 }), "-x--");
  * ```
  *
  * @example Strip using a regexp
@@ -61,42 +31,131 @@ export type StripOptions = {
  * import { assertEquals } from "@std/assert";
  * assertEquals(strip("-_-x-_-", /[-_]/), "x");
  * ```
+ *
+ * @example Strip a specified count
+ * ```ts
+ * import { strip } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(strip("---x---", "-", { count: 1 }), "--x--");
+ * ```
  */
 export function strip(
   str: string,
   pattern: string | RegExp,
   options?: StripOptions,
 ): string {
-  const source = typeof pattern === "string" ? escape(pattern) : pattern.source;
-  const flags = typeof pattern === "string" ? "" : getFlags(pattern);
+  const { source, flags } = cloneAsStatelessRegExp(pattern);
+  return stripByRegExp(
+    stripByRegExp(str, new RegExp(`^${source}`, flags), options),
+    new RegExp(`${source}$`, flags),
+    options,
+  );
+}
 
-  const start = options?.start ?? (options?.end == null ? true : false);
-  const end = options?.end ?? (options?.start == null ? true : false);
+/**
+ * Strips the specified pattern from the start of the string.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param str The input string
+ * @param pattern The pattern to strip from the input
+ * @param options Options for the strip operation
+ *
+ * @example Strip using a string
+ * ```ts
+ * import { stripStart } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripStart("---x---", "-"), "x---");
+ * ```
+ *
+ * @example Strip using a regexp
+ * ```ts
+ * import { stripStart } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripStart("-_-x-_-", /[-_]/), "x-_-");
+ * ```
+ *
+ * @example Strip a specified count
+ * ```ts
+ * import { stripStart } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripStart("---x---", "-", { count: 1 }), "--x---");
+ * ```
+ */
+export function stripStart(
+  str: string,
+  pattern: string | RegExp,
+  options?: StripOptions,
+): string {
+  const { source, flags } = cloneAsStatelessRegExp(pattern);
+  return stripByRegExp(str, new RegExp(`^${source}`, flags), options);
+}
 
+/**
+/**
+ * Strips the specified pattern from the start of the string.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param str The input string
+ * @param pattern The pattern to strip from the input
+ * @param options Options for the strip operation
+ *
+ * @example Strip using a string
+ * ```ts
+ * import { stripEnd } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripEnd("---x---", "-"), "---x");
+ * ```
+ *
+ * @example Strip using a regexp
+ * ```ts
+ * import { stripEnd } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripEnd("-_-x-_-", /[-_]/), "-_-x");
+ * ```
+ *
+ * @example Strip a specified count
+ * ```ts
+ * import { stripEnd } from "@std/text/unstable-strip";
+ * import { assertEquals } from "@std/assert";
+ * assertEquals(stripEnd("---x---", "-", { count: 1 }), "---x--");
+ * ```
+ */
+export function stripEnd(
+  str: string,
+  pattern: string | RegExp,
+  options?: StripOptions,
+): string {
+  const { source, flags } = cloneAsStatelessRegExp(pattern);
+  return stripByRegExp(str, new RegExp(`${source}$`, flags), options);
+}
+
+function stripByRegExp(
+  str: string,
+  regExp: RegExp,
+  options?: StripOptions,
+): string {
   let prev = str;
 
-  for (
-    const [option, regex] of [
-      [start, new RegExp(`^${source}`, flags)],
-      [end, new RegExp(`${source}$`, flags)],
-    ] as const
-  ) {
-    const count = typeof option === "number" ? option : option ? Infinity : 0;
+  const count = options?.count ?? Infinity;
 
-    for (let i = 0; i < count; ++i) {
-      str = str.replace(regex, "");
-      if (str === prev) break;
-      prev = str;
-    }
+  for (let i = 0; i < count; ++i) {
+    str = str.replace(regExp, "");
+    if (str === prev) break;
+    prev = str;
   }
 
   return str;
 }
 
-function getFlags(re: RegExp): string {
-  const flags = new Set(re.flags);
-  flags.delete("g");
-  flags.delete("y");
+function cloneAsStatelessRegExp(pattern: string | RegExp) {
+  return {
+    source: typeof pattern === "string" ? escape(pattern) : pattern.source,
+    flags: typeof pattern === "string" ? "" : getStatelessFlags(pattern),
+  };
+}
 
-  return [...flags.keys()].join("");
+function getStatelessFlags(re: RegExp): string {
+  return re.flags.replaceAll(/[gy]/g, "");
 }
