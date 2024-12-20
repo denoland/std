@@ -1,3 +1,13 @@
+### 2024.12.20
+
+#### @std/fs 1.0.8 (patch)
+
+- feat(fs/unstable): add `fs.lstat` (#6276)
+
+#### @std/testing 1.0.8 (patch)
+
+- feat(testing/unstable): add API for configuring global sanitizer state (#6282)
+
 ### 2024.12.18
 
 #### @std/assert 1.0.10 (patch)
