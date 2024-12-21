@@ -46,8 +46,8 @@ export function strip(
 ): string {
   const { source, flags } = cloneAsStatelessRegExp(pattern);
   return stripByRegExp(
-    stripByRegExp(str, new RegExp(`^${source}`, flags), options),
-    new RegExp(`${source}$`, flags),
+    stripByRegExp(str, new RegExp(`^(?:${source})`, flags), options),
+    new RegExp(`(?:${source})$`, flags),
     options,
   );
 }
@@ -88,7 +88,7 @@ export function stripStart(
   options?: StripOptions,
 ): string {
   const { source, flags } = cloneAsStatelessRegExp(pattern);
-  return stripByRegExp(str, new RegExp(`^${source}`, flags), options);
+  return stripByRegExp(str, new RegExp(`^(?:${source})`, flags), options);
 }
 
 /**
@@ -128,7 +128,7 @@ export function stripEnd(
   options?: StripOptions,
 ): string {
   const { source, flags } = cloneAsStatelessRegExp(pattern);
-  return stripByRegExp(str, new RegExp(`${source}$`, flags), options);
+  return stripByRegExp(str, new RegExp(`(?:${source})$`, flags), options);
 }
 
 function stripByRegExp(

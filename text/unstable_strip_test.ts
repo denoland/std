@@ -20,6 +20,7 @@ Deno.test("stripStart()", async (t) => {
 
   await t.step("strips prefixes by regex pattern", () => {
     assertEquals(stripStart("!@#$%x.x!@#$%", /./), "");
+    assertEquals(stripStart("ab_ab_ab", /a|b/g), "_ab_ab");
     assertEquals(
       stripStart("!@#$%x.x!@#$%", /[^\p{L}\p{M}\p{N}]+/u),
       "x.x!@#$%",
@@ -45,6 +46,7 @@ Deno.test("stripEnd()", async (t) => {
 
   await t.step("strips suffixes by regex pattern", () => {
     assertEquals(stripEnd("!@#$%x.x!@#$%", /./), "");
+    assertEquals(stripEnd("ab_ab_ab", /a|b/g), "ab_ab_");
     assertEquals(stripEnd("!@#$%x.x!@#$%", /[^\p{L}\p{M}\p{N}]+/u), "!@#$%x.x");
   });
 });
@@ -67,6 +69,7 @@ Deno.test("strip()", async (t) => {
 
   await t.step("strips prefixes and suffixes by regex pattern", () => {
     assertEquals(strip("!@#$%x.x!@#$%", /./), "");
+    assertEquals(strip("ab_ab_ab", /a|b/g), "_ab_");
     assertEquals(strip("!@#$%x.x!@#$%", /[^\p{L}\p{M}\p{N}]+/u), "x.x");
   });
 });
