@@ -89,7 +89,7 @@ export function toBeCloseTo(
   if (context.isNot) {
     if (pass) {
       const defaultMessage =
-        `Expected the value not to be close to ${expected} (using ${numDigits} digits), but it is`;
+        `Expected the value ${value} not to be close to ${expected} (using ${numDigits} digits), but it is`;
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
@@ -99,7 +99,7 @@ export function toBeCloseTo(
   } else {
     if (!pass) {
       const defaultMessage =
-        `Expected the value (${value} to be close to ${expected} (using ${numDigits} digits), but it is not`;
+        `Expected the value ${value} to be close to ${expected} (using ${numDigits} digits), but it is not`;
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
