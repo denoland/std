@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
-import { copy, copySync } from "./copy.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
@@ -84,13 +83,7 @@ Deno.test("ensureDirSync() ensures existing dir exists", function () {
 });
 
 Deno.test("ensureDir() accepts links to dirs", async function () {
-  const tempDirPath = await Deno.makeTempDir({
-    prefix: "deno_std_ensure_dir_",
-  });
-  // Copy ensure_dir and contents into temporary directory.
-  const tempEnsureDir = path.join(tempDirPath, "ensure_dir");
-  await copy(testdataDir, tempEnsureDir);
-  const ldir = path.join(tempEnsureDir, "ldir");
+  const ldir = path.join(testdataDir, "ldir");
 
   await ensureDir(ldir);
 
@@ -99,18 +92,10 @@ Deno.test("ensureDir() accepts links to dirs", async function () {
   // ldir should be still be a symlink
   const { isSymlink } = await Deno.lstat(ldir);
   assertEquals(isSymlink, true);
-
-  await Deno.remove(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureDirSync() accepts links to dirs", function () {
-  const tempDirPath = Deno.makeTempDirSync({
-    prefix: "deno_std_ensure_dir_sync_",
-  });
-  // Copy ensure_dir and contents into temporary directory.
-  const tempEnsureDir = path.join(tempDirPath, "ensure_dir");
-  copySync(testdataDir, tempEnsureDir);
-  const ldir = path.join(tempEnsureDir, "ldir");
+  const ldir = path.join(testdataDir, "ldir");
 
   ensureDirSync(ldir);
 
@@ -119,8 +104,6 @@ Deno.test("ensureDirSync() accepts links to dirs", function () {
   // ldir should be still be a symlink
   const { isSymlink } = Deno.lstatSync(ldir);
   assertEquals(isSymlink, true);
-
-  Deno.removeSync(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureDir() rejects if input is a file", async function () {
@@ -168,13 +151,7 @@ Deno.test("ensureDirSync() throws if input is a file", function () {
 });
 
 Deno.test("ensureDir() rejects links to files", async function () {
-  const tempDirPath = await Deno.makeTempDir({
-    prefix: "deno_std_ensure_dir_",
-  });
-  // Copy ensure_dir and contents into temporary directory.
-  const tempEnsureDir = path.join(tempDirPath, "ensure_dir");
-  await copy(testdataDir, tempEnsureDir);
-  const lf = path.join(tempEnsureDir, "lf");
+  const lf = path.join(testdataDir, "lf");
 
   await assertRejects(
     async () => {
@@ -183,18 +160,10 @@ Deno.test("ensureDir() rejects links to files", async function () {
     Error,
     `Failed to ensure directory exists: expected 'dir', got 'file'`,
   );
-
-  await Deno.remove(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureDirSync() rejects links to files", function () {
-  const tempDirPath = Deno.makeTempDirSync({
-    prefix: "deno_std_ensure_dir_sync_",
-  });
-  // Copy ensure_dir and contents into temporary directory.
-  const tempEnsureDir = path.join(tempDirPath, "ensure_dir");
-  copySync(testdataDir, tempEnsureDir);
-  const lf = path.join(tempEnsureDir, "lf");
+  const lf = path.join(testdataDir, "lf");
 
   assertThrows(
     () => {
@@ -203,8 +172,6 @@ Deno.test("ensureDirSync() rejects links to files", function () {
     Error,
     `Failed to ensure directory exists: expected 'dir', got 'file'`,
   );
-
-  Deno.removeSync(tempDirPath, { recursive: true });
 });
 
 Deno.test({
@@ -252,11 +219,8 @@ Deno.test({
   name: "ensureDir() isn't racy",
   async fn() {
     for (const _ of Array(100)) {
-      const tempDirPath = await Deno.makeTempDir({
-        prefix: "deno_std_ensure_dir_",
-      });
       const dir = path.join(
-        tempDirPath,
+        await Deno.makeTempDir(),
         "check",
         "race",
       );
@@ -266,8 +230,6 @@ Deno.test({
         ensureDir(dir),
         ensureDir(dir),
       ]);
-
-      await Deno.remove(tempDirPath, { recursive: true });
     }
   },
 });
