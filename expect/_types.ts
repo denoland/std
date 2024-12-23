@@ -178,7 +178,7 @@ export interface Expected<IsAsync = false> {
 
   /**
    * Asserts that a given numerical value is approximately equal to an
-   * expected number within a within a certain margin of error
+   * expected number within a certain margin of error
    * (tolerance). Useful when comparing floating-point numbers, which
    * may be represented internally with precision errors.
    *
