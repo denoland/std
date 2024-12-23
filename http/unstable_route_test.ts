@@ -6,31 +6,47 @@ import { assertEquals } from "../assert/equals.ts";
 const routes: Route[] = [
   {
     pattern: new URLPattern({ pathname: "/about" }),
-    handler: (request: Request) => new Response(new URL(request.url).pathname),
+    handlers: { GET: (request) => new Response(new URL(request.url).pathname) },
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    handler: (_request, params) => new Response(params?.pathname.groups.id),
-  },
-  {
-    pattern: new URLPattern({ pathname: "/users/:id" }),
-    method: "POST",
-    handler: () => new Response("Done"),
+    handlers: {
+      GET: (_request, params) => new Response(params?.pathname.groups.id),
+      POST: () => new Response("Done"),
+    },
   },
   {
     pattern: new URLPattern({ pathname: "/resource" }),
-    method: ["GET", "HEAD"],
-    handler: (request: Request) =>
-      new Response(request.method === "HEAD" ? null : "Ok"),
+    handlers: {
+      GET: (_request: Request) => new Response("Ok"),
+      HEAD: (_request: Request) => new Response(null),
+    },
+  },
+  {
+    pattern: new URLPattern({ pathname: "/will-throw" }),
+    handler: (_request: Request) => {
+      throw new Error("oops");
+      // deno-lint-ignore no-unreachable
+      return new Response(null, { status: 200 });
+    },
   },
 ];
 
-function defaultHandler(request: Request) {
-  return new Response(new URL(request.url).pathname, { status: 404 });
+const wildcardHandler: Route = {
+  pattern: new URLPattern({ pathname: "/*" }),
+  handler: (request: Request) => {
+    return new Response(new URL(request.url).pathname, { status: 404 });
+  },
+};
+
+function errorHandler(_err: unknown, _req: Request) {
+  return new Response("Custom Error Message", {
+    status: 500,
+  });
 }
 
 Deno.test("route()", async (t) => {
-  const handler = route(routes, defaultHandler);
+  let handler = route(routes);
 
   await t.step("handles static routes", async () => {
     const request = new Request("http://example.com/about");
@@ -53,13 +69,6 @@ Deno.test("route()", async (t) => {
     assertEquals(response2?.status, 200);
   });
 
-  await t.step("handles default handler", async () => {
-    const request = new Request("http://example.com/not-found");
-    const response = await handler(request);
-    assertEquals(response?.status, 404);
-    assertEquals(await response?.text(), "/not-found");
-  });
-
   await t.step("handles multiple methods", async () => {
     const getMethodRequest = new Request("http://example.com/resource");
     const getMethodResponse = await handler(getMethodRequest);
@@ -72,5 +81,48 @@ Deno.test("route()", async (t) => {
     const headMethodResponse = await handler(headMethodRequest);
     assertEquals(headMethodResponse?.status, 200);
     assertEquals(await headMethodResponse?.text(), "");
+  });
+
+  await t.step("handles method not allowed", async () => {
+    const request = new Request("http://example.com/resource", {
+      method: "POST",
+    });
+    const response = await handler(request);
+    assertEquals(response?.status, 405);
+    assertEquals(response?.headers.get("Allow"), "GET, HEAD");
+    assertEquals(await response?.text(), "Method Not Allowed");
+  });
+
+  await t.step("handles errors using default error handler", async () => {
+    const request = new Request("http://example.com/will-throw");
+    const response = await handler(request);
+    assertEquals(response?.status, 500);
+    assertEquals(await response?.text(), "Internal Server Error");
+  });
+
+  await t.step(
+    "handles no matching route with default 404 handler",
+    async () => {
+      const request = new Request("http://example.com/not-found");
+      const response = await handler(request);
+      assertEquals(response?.status, 404);
+      assertEquals(await response?.text(), "Not Found");
+    },
+  );
+
+  handler = route([...routes, wildcardHandler], errorHandler);
+
+  await t.step("handles routes using wildcard handler", async () => {
+    const request = new Request("http://example.com/not-found");
+    const response = await handler(request);
+    assertEquals(response?.status, 404);
+    assertEquals(await response?.text(), "/not-found");
+  });
+
+  await t.step("handles errors using custom error handler", async () => {
+    const request = new Request("http://example.com/will-throw");
+    const response = await handler(request);
+    assertEquals(response?.status, 500);
+    assertEquals(await response?.text(), "Custom Error Message");
   });
 });
