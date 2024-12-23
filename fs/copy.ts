@@ -7,6 +7,7 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
+import type { PathType } from "./_get_file_info_type.ts";
 
 // deno-lint-ignore no-explicit-any
 const isWindows = (globalThis as any).Deno?.build.os === "windows";
@@ -137,8 +138,13 @@ async function copySymLink(
 ) {
   await ensureValidCopy(src, dest, options);
   const originSrcFilePath = await Deno.readLink(src);
-  const type = getFileInfoType(await Deno.stat(src));
   if (isWindows) {
+    let type: PathType;
+    try {
+      type = getFileInfoType(await Deno.stat(src)) || "file";
+    } catch {
+      type = "file";
+    }
     await Deno.symlink(originSrcFilePath, dest, {
       type: type === "dir" ? "dir" : "file",
     });
@@ -161,8 +167,13 @@ function copySymlinkSync(
 ) {
   ensureValidCopySync(src, dest, options);
   const originSrcFilePath = Deno.readLinkSync(src);
-  const type = getFileInfoType(Deno.statSync(src));
   if (isWindows) {
+    let type: PathType;
+    try {
+      type = getFileInfoType(Deno.statSync(src)) || "file";
+    } catch {
+      type = "file";
+    }
     Deno.symlinkSync(originSrcFilePath, dest, {
       type: type === "dir" ? "dir" : "file",
     });
