@@ -61,7 +61,7 @@ export interface FormatOptions {
  *
  * @example UTC formatting
  *
- * Enable UTC formatting by setting the `utc` option to `true`.
+ * Enable UTC formatting by setting the `timeZone` option to `"UTC"`.
  *
  * ```ts ignore
  * import { format } from "@std/datetime/format";
