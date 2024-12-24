@@ -1,5 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
+/**
+ * Provides information about a file and is returned by
+ * {@linkcode stat}, {@linkcode lstat}, {@linkcode statSync},
+ * and {@linkcode lstatSync} or from calling `stat()` and `statSync()`
+ * on an {@linkcode FsFile} instance.
+ *
+ * @category File System
+ */
 export interface FileInfo {
   /** True if this is info for a regular file. Mutually exclusive to
    * `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
