@@ -14,6 +14,7 @@ const {
   rotateNode,
   insertNode,
   removeNode,
+  setSize,
 } = internals;
 
 /**
@@ -251,6 +252,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
             nodes.push(right);
           }
         }
+        setSize(result, collection.size);
       }
     } else {
       result = (options?.compare

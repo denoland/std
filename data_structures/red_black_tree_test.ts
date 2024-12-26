@@ -375,6 +375,7 @@ Deno.test("RedBlackTree.from() handles default ascend comparator", () => {
   const originalTree: RedBlackTree<number> = new RedBlackTree();
   for (const value of values) originalTree.insert(value);
   let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
+  assertEquals(originalTree.size, tree.size);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
@@ -434,6 +435,7 @@ Deno.test("RedBlackTree.from() handles descend comparator", () => {
   const originalTree: RedBlackTree<number> = new RedBlackTree(descend);
   for (const value of values) originalTree.insert(value);
   let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
+  assertEquals(originalTree.size, tree.size);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
