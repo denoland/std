@@ -23,53 +23,49 @@ function addZero(num: number, digits: number) {
   return String(num).padStart(digits, "0");
 }
 
-interface DurationObject {
-  d: number;
-  h: number;
-  m: number;
-  s: number;
-  ms: number;
-  us: number;
-  ns: number;
-}
+type DurationPartType =
+  | "day"
+  | "hour"
+  | "minute"
+  | "second"
+  | "millisecond"
+  | "microsecond"
+  | "nanosecond";
 
-const keyList: Record<keyof DurationObject, string> = {
-  d: "days",
-  h: "hours",
-  m: "minutes",
-  s: "seconds",
-  ms: "milliseconds",
-  us: "microseconds",
-  ns: "nanoseconds",
-};
+const NARROW_DURATION_NAME_MAP = new Map<DurationPartType, string>([
+  ["day", "d"],
+  ["hour", "h"],
+  ["minute", "m"],
+  ["second", "s"],
+  ["millisecond", "ms"],
+  ["microsecond", "µs"],
+  ["nanosecond", "ns"],
+]);
+const FULL_DURATION_NAME_MAP = new Map<DurationPartType, string>([
+  ["day", "days"],
+  ["hour", "hours"],
+  ["minute", "minutes"],
+  ["second", "seconds"],
+  ["millisecond", "milliseconds"],
+  ["microsecond", "microseconds"],
+  ["nanosecond", "nanoseconds"],
+]);
 
-/** Parse milliseconds into a duration. */
-function millisecondsToDurationObject(ms: number): DurationObject {
+/** Parse milliseconds into a duration parts. */
+function millisecondsToDurationParts(
+  ms: number,
+): { type: DurationPartType; value: number }[] {
   // Duration cannot be negative
   const millis = Math.abs(ms);
   const millisFraction = millis.toFixed(7).slice(-7, -1);
-  return {
-    d: Math.trunc(millis / 86400000),
-    h: Math.trunc(millis / 3600000) % 24,
-    m: Math.trunc(millis / 60000) % 60,
-    s: Math.trunc(millis / 1000) % 60,
-    ms: Math.trunc(millis) % 1000,
-    us: +millisFraction.slice(0, 3),
-    ns: +millisFraction.slice(3, 6),
-  };
-}
-
-function durationArray(
-  duration: DurationObject,
-): { type: keyof DurationObject; value: number }[] {
   return [
-    { type: "d", value: duration.d },
-    { type: "h", value: duration.h },
-    { type: "m", value: duration.m },
-    { type: "s", value: duration.s },
-    { type: "ms", value: duration.ms },
-    { type: "us", value: duration.us },
-    { type: "ns", value: duration.ns },
+    { type: "day", value: Math.trunc(millis / 86400000) },
+    { type: "hour", value: Math.trunc(millis / 3600000) % 24 },
+    { type: "minute", value: Math.trunc(millis / 60000) % 60 },
+    { type: "second", value: Math.trunc(millis / 1000) % 60 },
+    { type: "millisecond", value: Math.trunc(millis) % 1000 },
+    { type: "microsecond", value: +millisFraction.slice(0, 3) },
+    { type: "nanosecond", value: +millisFraction.slice(3, 6) },
   ];
 }
 
@@ -125,38 +121,24 @@ export function format(
     ignoreZero = false,
   } = options ?? {};
 
-  const duration = millisecondsToDurationObject(ms);
-  const durationArr = durationArray(duration);
+  const parts = millisecondsToDurationParts(ms);
+
   switch (style) {
     case "narrow": {
-      if (ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value}${x.type === "us" ? "µs" : x.type}`
-          )
-            .join(" ")
-        }`;
-      }
-      return `${
-        durationArr.map((x) => `${x.value}${x.type === "us" ? "µs" : x.type}`)
-          .join(" ")
-      }`;
+      const arr = ignoreZero ? parts.filter((x) => x.value) : parts;
+      return arr
+        .map((x) => `${x.value}${NARROW_DURATION_NAME_MAP.get(x.type)}`)
+        .join(" ");
     }
     case "full": {
-      if (ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value} ${keyList[x.type]}`
-          ).join(", ")
-        }`;
-      }
-      return `${
-        durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ")
-      }`;
+      const arr = ignoreZero ? parts.filter((x) => x.value) : parts;
+      return arr
+        .map((x) => `${x.value} ${FULL_DURATION_NAME_MAP.get(x.type)}`)
+        .join(", ");
     }
     case "digital": {
-      const arr = durationArr.map((x) =>
-        ["ms", "us", "ns"].includes(x.type)
+      const arr = parts.map((x) =>
+        ["millisecond", "microsecond", "nanosecond"].includes(x.type)
           ? addZero(x.value, 3)
           : addZero(x.value, 2)
       );
