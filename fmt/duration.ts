@@ -24,31 +24,31 @@ function addZero(num: number, digits: number) {
 }
 
 type DurationPartType =
-  | "day"
-  | "hour"
-  | "minute"
-  | "second"
-  | "millisecond"
-  | "microsecond"
-  | "nanosecond";
+  | "days"
+  | "hours"
+  | "minutes"
+  | "seconds"
+  | "milliseconds"
+  | "microseconds"
+  | "nanoseconds";
 
 const NARROW_DURATION_NAME_MAP = new Map<DurationPartType, string>([
-  ["day", "d"],
-  ["hour", "h"],
-  ["minute", "m"],
-  ["second", "s"],
-  ["millisecond", "ms"],
-  ["microsecond", "µs"],
-  ["nanosecond", "ns"],
+  ["days", "d"],
+  ["hours", "h"],
+  ["minutes", "m"],
+  ["seconds", "s"],
+  ["milliseconds", "ms"],
+  ["microseconds", "µs"],
+  ["nanoseconds", "ns"],
 ]);
-const FULL_DURATION_NAME_MAP = new Map<DurationPartType, string>([
-  ["day", "days"],
-  ["hour", "hours"],
-  ["minute", "minutes"],
-  ["second", "seconds"],
-  ["millisecond", "milliseconds"],
-  ["microsecond", "microseconds"],
-  ["nanosecond", "nanoseconds"],
+const FULL_EN_DURATION_NAME_MAP = new Map<DurationPartType, string>([
+  ["days", "days"],
+  ["hours", "hours"],
+  ["minutes", "minutes"],
+  ["seconds", "seconds"],
+  ["milliseconds", "milliseconds"],
+  ["microseconds", "microseconds"],
+  ["nanoseconds", "nanoseconds"],
 ]);
 
 /** Parse milliseconds into a duration parts. */
@@ -59,13 +59,13 @@ function millisecondsToDurationParts(
   const millis = Math.abs(ms);
   const millisFraction = millis.toFixed(7).slice(-7, -1);
   return [
-    { type: "day", value: Math.trunc(millis / 86400000) },
-    { type: "hour", value: Math.trunc(millis / 3600000) % 24 },
-    { type: "minute", value: Math.trunc(millis / 60000) % 60 },
-    { type: "second", value: Math.trunc(millis / 1000) % 60 },
-    { type: "millisecond", value: Math.trunc(millis) % 1000 },
-    { type: "microsecond", value: +millisFraction.slice(0, 3) },
-    { type: "nanosecond", value: +millisFraction.slice(3, 6) },
+    { type: "days", value: Math.trunc(millis / 86400000) },
+    { type: "hours", value: Math.trunc(millis / 3600000) % 24 },
+    { type: "minutes", value: Math.trunc(millis / 60000) % 60 },
+    { type: "seconds", value: Math.trunc(millis / 1000) % 60 },
+    { type: "milliseconds", value: Math.trunc(millis) % 1000 },
+    { type: "microseconds", value: +millisFraction.slice(0, 3) },
+    { type: "nanoseconds", value: +millisFraction.slice(3, 6) },
   ];
 }
 
@@ -133,12 +133,12 @@ export function format(
     case "full": {
       const arr = ignoreZero ? parts.filter((x) => x.value) : parts;
       return arr
-        .map((x) => `${x.value} ${FULL_DURATION_NAME_MAP.get(x.type)}`)
+        .map((x) => `${x.value} ${FULL_EN_DURATION_NAME_MAP.get(x.type)}`)
         .join(", ");
     }
     case "digital": {
       const arr = parts.map((x) =>
-        ["millisecond", "microsecond", "nanosecond"].includes(x.type)
+        ["milliseconds", "microseconds", "nanoseconds"].includes(x.type)
           ? addZero(x.value, 3)
           : addZero(x.value, 2)
       );
