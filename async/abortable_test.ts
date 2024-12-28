@@ -3,7 +3,7 @@ import { assertEquals, assertRejects } from "@std/assert";
 import { abortable } from "./abortable.ts";
 import { delay } from "./delay.ts";
 
-Deno.test("abortable() handles promise", async () => {
+Deno.test("abortable() handles resolved promise", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   setTimeout(() => resolve("Hello"), 10);
@@ -11,7 +11,18 @@ Deno.test("abortable() handles promise", async () => {
   assertEquals(result, "Hello");
 });
 
-Deno.test("abortable() handles promise with aborted signal after delay", async () => {
+Deno.test("abortable() handles rejected promise", async () => {
+  const c = new AbortController();
+  const { promise, reject } = Promise.withResolvers<string>();
+  setTimeout(() => reject(new Error("This is my error")), 10);
+  await assertRejects(
+    () => abortable(promise, c.signal),
+    Error,
+    "This is my error",
+  );
+});
+
+Deno.test("abortable() handles resolved promise with aborted signal after delay", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   setTimeout(() => resolve("Hello"), 10);
@@ -25,7 +36,22 @@ Deno.test("abortable() handles promise with aborted signal after delay", async (
   await delay(5); // wait for the promise to resolve
 });
 
-Deno.test("abortable() handles promise with aborted signal after delay with reason", async () => {
+Deno.test("abortable() handles rejected promise with aborted signal after delay", async () => {
+  const c = new AbortController();
+  const { promise, reject } = Promise.withResolvers<string>();
+  setTimeout(() => reject(new Error("This is my error")), 10);
+  setTimeout(() => c.abort(), 5);
+  const error = await assertRejects(
+    () => abortable(promise, c.signal),
+    DOMException,
+    "The signal has been aborted",
+  );
+  assertEquals(error.name, "AbortError");
+  await delay(5); // wait for the promise to reject
+  // an uncaught error should not occur
+});
+
+Deno.test("abortable() handles resolved promise with aborted signal after delay with reason", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   setTimeout(() => resolve("Hello"), 10);
@@ -38,7 +64,7 @@ Deno.test("abortable() handles promise with aborted signal after delay with reas
   await delay(5); // wait for the promise to resolve
 });
 
-Deno.test("abortable() handles promise with already aborted signal", async () => {
+Deno.test("abortable() handles resolved promise with already aborted signal", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   setTimeout(() => resolve("Hello"), 10);
@@ -54,7 +80,24 @@ Deno.test("abortable() handles promise with already aborted signal", async () =>
   await delay(10); // wait for the promise to resolve
 });
 
-Deno.test("abortable() handles promise with already aborted signal with reason", async () => {
+Deno.test("abortable() handles rejected promise with already aborted signal", async () => {
+  const c = new AbortController();
+  const { promise, reject } = Promise.withResolvers<string>();
+  setTimeout(() => reject(new Error("This is my error")), 10);
+  c.abort();
+  const error = await assertRejects(
+    async () => {
+      await abortable(promise, c.signal);
+    },
+    DOMException,
+    "The signal has been aborted",
+  );
+  assertEquals(error.name, "AbortError");
+  await delay(10); // wait for the promise to reject
+  // an uncaught error should not occur
+});
+
+Deno.test("abortable() handles resolved promise with already aborted signal and reason", async () => {
   const c = new AbortController();
   const { promise, resolve } = Promise.withResolvers<string>();
   setTimeout(() => resolve("Hello"), 10);
