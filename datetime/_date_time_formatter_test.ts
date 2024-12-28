@@ -112,6 +112,20 @@ Deno.test("dateTimeFormatter.formatToParts()", async (t) => {
       { type: "hour", value: "11" },
     ]);
   });
+  await t.step("handles h value bigger than 12 warning", () => {
+    const format = "h";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("13"), [
+      { type: "hour", value: "13" },
+    ]);
+  });
+  await t.step("handles hh value bigger than 12 warning", () => {
+    const format = "hh";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("13"), [
+      { type: "hour", value: "13" },
+    ]);
+  });
   await t.step("handles H", () => {
     const format = "H";
     const formatter = new DateTimeFormatter(format);
