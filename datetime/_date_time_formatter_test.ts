@@ -477,6 +477,10 @@ Deno.test("dateTimeFormatter.partsToDate() sets utc", () => {
       { type: "month", value: "01" },
       { type: "timeZoneName", value: "UTC" },
     ], date],
+    ["MM", [
+      { type: "month", value: "01" },
+      { type: "timeZoneName", value: "UTC" },
+    ], date],
   ] as const;
   for (const [format, input, output] of cases) {
     const formatter = new DateTimeFormatter(format);
