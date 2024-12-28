@@ -52,6 +52,7 @@
     "graphviz": "npm:node-graphviz@^0.1.1",
     "npm:/typescript": "npm:typescript@5.4.4"
   },
+  "importMap": "./import_map.json",
   "tasks": {
     "test": "deno test --unstable-http --unstable-webgpu --doc --allow-all --parallel --coverage --trace-leaks --clean",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | grep -v media_types/vendor/update.ts | xargs deno check --config browser-compat.tsconfig.json",
