@@ -5,11 +5,11 @@
  * Command line arguments parser based on
  * {@link https://github.com/minimistjs/minimist | minimist}.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
  *
- * console.dir(parseArgs(Deno.args));
+ * const args = parseArgs(Deno.args);
  * ```
  *
  * @module
@@ -278,14 +278,18 @@ export interface ParseOptions<
    *
    * @default {false}
    *
-   *  @example
+   * @example Double dash option is false
    * ```ts
    * // $ deno run example.ts -- a arg1
    * import { parseArgs } from "@std/cli/parse-args";
-   * console.dir(parseArgs(Deno.args, { "--": false }));
-   * // output: { _: [ "a", "arg1" ] }
-   * console.dir(parseArgs(Deno.args, { "--": true }));
-   * // output: { _: [], --: [ "a", "arg1" ] }
+   * const args = parseArgs(Deno.args, { "--": false }); // args equals { _: [ "a", "arg1" ] }
+   * ```
+   *
+   *  @example Double dash option is true
+   * ```ts
+   * // $ deno run example.ts -- a arg1
+   * import { parseArgs } from "@std/cli/parse-args";
+   * const args = parseArgs(Deno.args, { "--": true }); // args equals { _: [], --: [ "a", "arg1" ] }
    * ```
    */
   "--"?: TDoubleDash;

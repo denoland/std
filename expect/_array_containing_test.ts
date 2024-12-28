@@ -28,3 +28,30 @@ Deno.test("expect.arrayContaining() with array of mixed types", () => {
   expect([1, 2, 3, "hello", "bye"]).toEqual(expect.not.arrayContaining(arr));
   expect([4, "bye"]).not.toEqual(expect.arrayContaining(arr));
 });
+
+Deno.test("matchObject on array", () => {
+  const a = [
+    { foo: "bar" },
+    { foo: "baz" },
+  ];
+
+  expect(a).toEqual(expect.arrayContaining([
+    expect.objectContaining({ foo: "bar" }),
+  ]));
+});
+
+Deno.test("test from blog post", () => {
+  const state = [
+    { type: "START", data: "foo" },
+    { type: "START", data: "baz" },
+    { type: "END", data: "foo" },
+  ];
+
+  expect(state).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: "END",
+      }),
+    ]),
+  );
+});

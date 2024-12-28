@@ -5,13 +5,12 @@ import { mapError } from "./_map_error.ts";
 import { toFileInfo } from "./_to_file_info.ts";
 import type { FileInfo } from "./unstable_types.ts";
 
-/** Resolves to a {@linkcode FileInfo} for the specified `path`. Will
- * always follow symlinks.
+/** Resolves to a {@linkcode FileInfo} for the specified `path`. If `path` is a symlink, information for the symlink will be returned instead of what it points to.
  *
  * ```ts
  * import { assert } from "@std/assert";
- * import { stat } from "@std/fs/unstable-stat";
- * const fileInfo = await stat("README.md");
+ * import { lstat } from "@std/fs/unstable-lstat";
+ * const fileInfo = await lstat("README.md");
  * assert(fileInfo.isFile);
  * ```
  *
@@ -20,13 +19,13 @@ import type { FileInfo } from "./unstable_types.ts";
  * @tags allow-read
  * @category File System
  */
-export async function stat(path: string | URL): Promise<FileInfo> {
+export async function lstat(path: string | URL): Promise<FileInfo> {
   if (isDeno) {
-    return Deno.stat(path);
+    return Deno.lstat(path);
   } else {
     const fsPromises = getNodeFsPromises();
     try {
-      const stat = await fsPromises.stat(path);
+      const stat = await fsPromises.lstat(path);
       return toFileInfo(stat);
     } catch (error) {
       throw mapError(error);

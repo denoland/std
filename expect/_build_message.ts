@@ -21,11 +21,11 @@ export function buildEqualErrorMessage<T>(
   options: EqualErrorMessageOptions,
 ): string {
   const { formatter = format, msg } = options ?? {};
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const msgPrefix = msg ? `${msg}: ` : "";
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
 
-  let message = `Values are not equal${msgSuffix}`;
+  let message = `${msgPrefix}Values are not equal.`;
 
   const stringDiff = isString(actual) && isString(expected);
   const diffResult = stringDiff
@@ -46,6 +46,6 @@ export function buildNotEqualErrorMessage<T>(
   const actualString = String(actual);
   const expectedString = String(expected);
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
-  return `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`;
+  const msgPrefix = msg ? `${msg}: ` : "";
+  return `${msgPrefix}Expected actual: ${actualString} not to be: ${expectedString}.`;
 }

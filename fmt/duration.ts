@@ -14,7 +14,7 @@
  *
  * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
  *
- * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minute, 39 seconds, 674 milliseconds");
  * ```
  * @module
  */
@@ -34,14 +34,19 @@ interface DurationObject {
 }
 
 const keyList: Record<keyof DurationObject, string> = {
-  d: "days",
-  h: "hours",
-  m: "minutes",
-  s: "seconds",
-  ms: "milliseconds",
-  us: "microseconds",
-  ns: "nanoseconds",
+  d: "day",
+  h: "hour",
+  m: "minute",
+  s: "second",
+  ms: "millisecond",
+  us: "microsecond",
+  ns: "nanosecond",
 };
+
+/** Get key with pluralization */
+function getPluralizedKey(type: keyof DurationObject, value: number) {
+  return value === 1 ? keyList[type] : `${keyList[type]}s`;
+}
 
 /** Parse milliseconds into a duration. */
 function millisecondsToDurationObject(ms: number): DurationObject {
@@ -109,7 +114,7 @@ export interface FormatOptions {
  *
  * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
  *
- * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minute, 39 seconds, 674 milliseconds");
  * ```
  *
  * @param ms The milliseconds value to format
@@ -146,12 +151,14 @@ export function format(
       if (ignoreZero) {
         return `${
           durationArr.filter((x) => x.value).map((x) =>
-            `${x.value} ${keyList[x.type]}`
+            `${x.value} ${getPluralizedKey(x.type, x.value)}`
           ).join(", ")
         }`;
       }
       return `${
-        durationArr.map((x) => `${x.value} ${keyList[x.type]}`).join(", ")
+        durationArr.map((x) =>
+          `${x.value} ${getPluralizedKey(x.type, x.value)}`
+        ).join(", ")
       }`;
     }
     case "digital": {

@@ -22,3 +22,19 @@ Deno.test("expect().toHaveReturnedTimes()", () => {
     expect(mockFn).not.toHaveReturnedTimes(2);
   }, AssertionError);
 });
+
+Deno.test("expect().toHaveReturnedTimes() with custom error message", () => {
+  const msg = "toHaveReturnedTimes custom error message";
+  const mockFn = fn();
+
+  mockFn();
+  mockFn();
+
+  expect(() => expect(mockFn, msg).toHaveReturnedTimes(1)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(mockFn, msg).not.toHaveReturnedTimes(2)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+});

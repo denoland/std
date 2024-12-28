@@ -3,6 +3,11 @@
 import { getAssertionState } from "@std/internal/assertion-state";
 import { AssertionError } from "@std/assert/assertion-error";
 
+export const globalSanitizersState = {
+  sanitizeExit: undefined as boolean | undefined,
+  sanitizeOps: undefined as boolean | undefined,
+  sanitizeResources: undefined as boolean | undefined,
+};
 const assertionState = getAssertionState();
 
 /** The options for creating a test suite with the describe function. */
@@ -88,9 +93,9 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         name,
         only,
         permissions,
-        sanitizeExit,
-        sanitizeOps,
-        sanitizeResources,
+        sanitizeExit = globalSanitizersState.sanitizeExit,
+        sanitizeOps = globalSanitizersState.sanitizeOps,
+        sanitizeResources = globalSanitizersState.sanitizeResources,
       } = describe;
       const options: Deno.TestDefinition = {
         name,
@@ -139,9 +144,9 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         name,
         ignore,
         permissions,
-        sanitizeExit,
-        sanitizeOps,
-        sanitizeResources,
+        sanitizeExit = globalSanitizersState.sanitizeExit,
+        sanitizeOps = globalSanitizersState.sanitizeOps,
+        sanitizeResources = globalSanitizersState.sanitizeResources,
       } = describe;
       let { only } = describe;
       if (!ignore && this.hasOnlyStep) {
@@ -331,9 +336,9 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         fn,
         ignore,
         permissions,
-        sanitizeExit,
-        sanitizeOps,
-        sanitizeResources,
+        sanitizeExit = globalSanitizersState.sanitizeExit,
+        sanitizeOps = globalSanitizersState.sanitizeOps,
+        sanitizeResources = globalSanitizersState.sanitizeResources,
       } = step instanceof TestSuiteInternal ? step.describe : step;
 
       const options: Deno.TestStepDefinition = {

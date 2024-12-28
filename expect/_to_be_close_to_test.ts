@@ -27,3 +27,15 @@ Deno.test("expect().toBeCloseTo() throws error when the numDigits is smaller tha
     "toBeCloseTo second argument must be a non-negative integer. Got -1",
   );
 });
+
+Deno.test("expect().toBeCloseTo() throws custom message", () => {
+  const msg = "toBeCloseTo Custom Error";
+
+  expect(() => expect(0.2 + 0.11, msg).toBeCloseTo(0.3)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(0.2 + 0.1, msg).not.toBeCloseTo(0.3)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+});

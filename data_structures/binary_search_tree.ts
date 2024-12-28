@@ -281,6 +281,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
             nodes.push(right);
           }
         }
+        result.#size = collection.#size;
       }
     } else {
       result = (options?.compare
