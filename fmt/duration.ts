@@ -14,7 +14,7 @@
  *
  * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
  *
- * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minute, 39 seconds, 674 milliseconds");
  * ```
  * @module
  */
@@ -46,6 +46,23 @@ const NARROW_UNIT_NAME_MAP = new Map<DurationPartUnit, string>([
   ["microseconds", "µs"],
   ["nanoseconds", "ns"],
 ]);
+
+const FULL_UNIT_NAME_MAP = new Map<DurationPartUnit, string>([
+  ["days", "day"],
+  ["hours", "hour"],
+  ["minutes", "minute"],
+  ["seconds", "second"],
+  ["milliseconds", "millisecond"],
+  ["microseconds", "microsecond"],
+  ["nanoseconds", "nanosecond"],
+]);
+
+/** Get key with pluralization */
+function getPluralizedKey(unit: DurationPartUnit, value: number) {
+  return value === 1
+    ? FULL_UNIT_NAME_MAP.get(unit)
+    : `${FULL_UNIT_NAME_MAP.get(unit)}s`;
+}
 
 /** Parse milliseconds into a duration. */
 function millisecondsToDurationParts(
@@ -101,7 +118,7 @@ export interface FormatOptions {
  *
  * assertEquals(format(99674, { ignoreZero: true }), "1m 39s 674ms");
  *
- * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minutes, 39 seconds, 674 milliseconds");
+ * assertEquals(format(99674, { style: "full", ignoreZero: true }), "1 minute, 39 seconds, 674 milliseconds");
  * ```
  *
  * @param ms The milliseconds value to format
@@ -131,7 +148,7 @@ export function format(
       let arr = parts;
       if (ignoreZero) arr = arr.filter((x) => x.value);
       return arr
-        .map((x) => `${x.value} ${x.unit}`)
+        .map((x) => `${x.value} ${getPluralizedKey(x.unit, x.value)}`)
         .join(", ");
     }
     case "digital": {
