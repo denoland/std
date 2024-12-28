@@ -43,16 +43,194 @@ Deno.test("dateTimeFormatter.parse()", () => {
   assertEquals(formatter.parse("2020-01-01"), new Date(2020, 0, 1));
 });
 
-Deno.test("dateTimeFormatter.formatToParts()", () => {
-  const format = "yyyy-MM-dd";
-  const formatter = new DateTimeFormatter(format);
-  assertEquals(formatter.formatToParts("2020-01-01"), [
-    { type: "year", value: "2020" },
-    { type: "literal", value: "-" },
-    { type: "month", value: "01" },
-    { type: "literal", value: "-" },
-    { type: "day", value: "01" },
-  ]);
+Deno.test("dateTimeFormatter.formatToParts()", async (t) => {
+  await t.step("handles basic", () => {
+    const format = "yyyy-MM-dd";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("2020-01-01"), [
+      { type: "year", value: "2020" },
+      { type: "literal", value: "-" },
+      { type: "month", value: "01" },
+      { type: "literal", value: "-" },
+      { type: "day", value: "01" },
+    ]);
+  });
+
+  await t.step("handles yy", () => {
+    const format = "yy";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("20"), [
+      { type: "year", value: "20" },
+    ]);
+  });
+  await t.step("handles yyyy", () => {
+    const format = "yyyy";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("2020"), [
+      { type: "year", value: "2020" },
+    ]);
+  });
+  await t.step("handles M", () => {
+    const format = "M";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "month", value: "10" },
+    ]);
+  });
+  await t.step("handles MM", () => {
+    const format = "MM";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "month", value: "10" },
+    ]);
+  });
+  await t.step("handles d", () => {
+    const format = "d";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "day", value: "10" },
+    ]);
+  });
+  await t.step("handles dd", () => {
+    const format = "dd";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "day", value: "10" },
+    ]);
+  });
+  await t.step("handles h", () => {
+    const format = "h";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("1"), [
+      { type: "hour", value: "1" },
+    ]);
+  });
+  await t.step("handles hh", () => {
+    const format = "hh";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("11"), [
+      { type: "hour", value: "11" },
+    ]);
+  });
+  await t.step("handles H", () => {
+    const format = "H";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("13"), [
+      { type: "hour", value: "13" },
+    ]);
+  });
+  await t.step("handles HH", () => {
+    const format = "HH";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("13"), [
+      { type: "hour", value: "13" },
+    ]);
+  });
+  await t.step("handles m", () => {
+    const format = "m";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "minute", value: "10" },
+    ]);
+  });
+  await t.step("handles mm", () => {
+    const format = "mm";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "minute", value: "10" },
+    ]);
+  });
+  await t.step("handles s", () => {
+    const format = "s";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "second", value: "10" },
+    ]);
+  });
+  await t.step("handles ss", () => {
+    const format = "ss";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "second", value: "10" },
+    ]);
+  });
+  await t.step("handles s", () => {
+    const format = "s";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "second", value: "10" },
+    ]);
+  });
+  await t.step("handles S", () => {
+    const format = "S";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("1"), [
+      { type: "fractionalSecond", value: "1" },
+    ]);
+  });
+  await t.step("handles SS", () => {
+    const format = "SS";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("10"), [
+      { type: "fractionalSecond", value: "10" },
+    ]);
+  });
+  await t.step("handles SSS", () => {
+    const format = "SSS";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("100"), [
+      { type: "fractionalSecond", value: "100" },
+    ]);
+  });
+  await t.step("handles a", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("AM"), [
+      { type: "dayPeriod", value: "AM" },
+    ]);
+  });
+  await t.step("handles a AM", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("AM"), [
+      { type: "dayPeriod", value: "AM" },
+    ]);
+  });
+  await t.step("handles a AM.", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("AM."), [
+      { type: "dayPeriod", value: "AM" },
+    ]);
+  });
+  await t.step("handles a A.M.", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("A.M."), [
+      { type: "dayPeriod", value: "AM" },
+    ]);
+  });
+  await t.step("handles a PM", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("PM"), [
+      { type: "dayPeriod", value: "PM" },
+    ]);
+  });
+  await t.step("handles a PM.", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("PM."), [
+      { type: "dayPeriod", value: "PM" },
+    ]);
+  });
+  await t.step("handles a P.M.", () => {
+    const format = "a";
+    const formatter = new DateTimeFormatter(format);
+    assertEquals(formatter.formatToParts("P.M."), [
+      { type: "dayPeriod", value: "PM" },
+    ]);
+  });
 });
 
 Deno.test("dateTimeFormatter.formatToParts() throws on an empty string", () => {
