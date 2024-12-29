@@ -39,4 +39,5 @@ export const internals: {
     tree: BinarySearchTree<T>,
     node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null;
+  setSize<T>(tree: BinarySearchTree<T>, size: number): void;
 } = {} as typeof internals;
