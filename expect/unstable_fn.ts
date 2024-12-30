@@ -14,10 +14,23 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  *
  * Deno.test("example", () => {
  *   const mockFn = fn((a: number, b: number) => a + b);
- *   const result = mockFn(1, 2);
- *   expect(result).toEqual(3);
+ *   mockFn.mockReturnValueOnce(4);
+ *   expect(mockFn(1, 2)).toEqual(4);
+ *   expect(mockFn(1, 2)).toEqual(3);
  *   expect(mockFn).toHaveBeenCalledWith(1, 2);
- *   expect(mockFn).toHaveBeenCalledTimes(1);
+ *   expect(mockFn).toHaveBeenCalledTimes(2);
+ * });
+ *
+ * Deno.test("example combine args stubs and dynamic addition", () => {
+ *   const mockFn = fn(
+ *     (a: number, b: number) => a + b,
+ *     (a, b) => a - b,
+ *   );
+ *   mockFn.mockImplementationOnce((a, b) => a * b).mockImplementationOnce((a, b) => a / b);
+ *   expect(mockFn(1, 2)).toEqual(4);
+ *   expect(mockFn(1, 2)).toEqual(-1);
+ *   expect(mockFn(1, 2)).toEqual(2);
+ *   expect(mockFn(1, 2)).toEqual(0.5);
  * });
  * ```
  *
@@ -26,50 +39,86 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
 
 /**
  * Creates a mock function that can be used for testing and assertions.
- *
- * @param stubs Functions to be used as stubs for different calls.
- * @returns A mock function that keeps track of calls and returns values based on the provided stubs.
+ * Could accept arguments and return type generic arguments.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts
  * import { fn, expect } from "@std/expect";
  *
  * Deno.test("example", () => {
- *   const mockFn = fn(
- *     (a: number, b: number) => a + b,
- *     (a: number, b: number) => a - b
- *   );
- *   const result = mockFn(1, 2);
- *   expect(result).toEqual(3);
- *   expect(mockFn).toHaveBeenCalledWith(1, 2);
+ *   const mockFn = fn()
+ *   expect(mockFn()).toBeUndefined();
+ *   expect(mockFn).toHaveBeenCalledWith();
  *   expect(mockFn).toHaveBeenCalledTimes(1);
- *
- *   const result2 = mockFn(3, 2);
- *   expect(result2).toEqual(1);
- *   expect(mockFn).toHaveBeenCalledWith(3, 2);
- *   expect(mockFn).toHaveBeenCalledTimes(2);
  * });
  * ```
  */
-export function fn<Args extends unknown[], Return>(): Functor<Args, Return> &
+export function fn<Args extends unknown[] = never, Return = unknown>(): Functor<
+  Args,
+  Return
+> &
   ExpectMockInstance<Args, Return>;
+
+/**
+ * Creates a mock function that can be used for testing and assertions.
+ * Accepts an original implementation and a list of stubs.
+ * After all stubs are used, the original implementation is restored.
+ * Infers the arguments and return type from the original function.
+ *
+ * @example Usage
+ * ```ts
+ * import { fn, expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   const op = fn(
+ *     (a: number, b: number) => a + b,
+ *     (a, b) => a - b,
+ *     (a, b) => a * b,
+ *   );
+ *   expect(op(1, 2)).toEqual(3);
+ *   expect(op(1, 2)).toEqual(-1);
+ *   expect(op(1, 2)).toEqual(2);
+ *   expect(op(1, 2)).toEqual(3);
+ * });
+ * ```
+ */
 export function fn<
   Fn extends Functor<never, unknown> = Functor<unknown[], unknown>
 >(
   original: Fn,
-  ...initialStubs: Functor<Parameters<Fn>, ReturnType<Fn>>[]
+  ...stubs: Functor<Parameters<NoInfer<Fn>>, ReturnType<NoInfer<Fn>>>[]
 ): Fn & ExpectMockInstance<Parameters<Fn>, ReturnType<Fn>>;
+
+/**
+ * Creates a mock function that can be used for testing and assertions.
+ * Accepts an original implementation and a list of stubs.
+ * After all stubs are used, the original implementation is restored.
+ * Version that uses manually provided arguments and return value types.
+ *
+ * @example Usage
+ * ```ts
+ * import { fn, expect } from "@std/expect";
+ *
+ * Deno.test("example", () => {
+ *   const op = fn<[a: number, b: number], string>(
+ *     (a, b) => String(a + b),
+ *   );
+ *   expect(op(1, 2)).toEqual('3');
+ * });
+ * ```
+ */
 export function fn<Args extends unknown[], Return>(
-  original: Functor<Args, Return>,
-  ...initialStubs: Functor<Args, Return>[]
+  original: Functor<NoInfer<Args>, NoInfer<Return>>,
+  ...stubs: Functor<NoInfer<Args>, NoInfer<Return>>[]
 ): Functor<Args, Return> & ExpectMockInstance<Args, Return>;
+
 export function fn<Args extends unknown[], Return>(
   original?: Functor<Args, Return>,
-  ...initialStubs: Functor<Args, Return>[]
+  ...stubs: Functor<Args, Return>[]
 ): Functor<Args, Return> & ExpectMockInstance<Args, Return> {
   return createMockInstance(
     original,
-    initialStubs.toReversed(),
+    stubs.toReversed(),
     (calls, stubState) =>
       (...args: Args) => {
         const stub = stubState.once.pop() ?? stubState.current;

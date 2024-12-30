@@ -50,10 +50,9 @@ export function createMockInstance<
     current: originalStub,
     once: initialStubs,
   };
-  const calls: ExpectMockCall<Args, Return>[] = [];
   const instance: ExpectMockInstance<Args, Return> = functor as never;
   Object.defineProperty(instance, MOCK_SYMBOL, {
-    value: { calls },
+    value: { calls: [] },
     writable: false,
     enumerable: false,
     configurable: false,
@@ -92,10 +91,7 @@ export function createMockInstance<
   defineMethod(
     instance,
     "withImplementation",
-    <ScopeResult>(
-      stub: Functor<Args, Return>,
-      callback?: () => ScopeResult
-    ) => {
+    <ScopeResult>(stub: Functor<Args, Return>, scope?: () => ScopeResult) => {
       const prevState = { ...stubState };
       stubState.current = stub;
       stubState.once = [];
@@ -105,9 +101,9 @@ export function createMockInstance<
           stubState.once = prevState.once;
         },
       };
-      if (!callback) return resource;
+      if (!scope) return resource;
       try {
-        const result = callback();
+        const result = scope();
         if (result instanceof Promise) {
           return result.finally(() => resource[Symbol.dispose]());
         }
