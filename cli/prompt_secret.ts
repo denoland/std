@@ -59,15 +59,17 @@ export function promptSecret(
   const callback = !mask ? undefined : (n: number) => {
     let line = `${message}${mask.repeat(n)}`;
 
-    let charsPastLineLength = line.length % columns;
+    const charsPastLineLength = line.length % columns;
 
     if (line.length > columns) {
-      if (charsPastLineLength === 0) {
-        charsPastLineLength = columns;
-      }
-      line = line.slice(-1 * charsPastLineLength);
+      line = line.slice(
+        -1 * (charsPastLineLength === 0 ? columns : charsPastLineLength),
+      );
     }
-    output.writeSync(CLR);
+    // Always jump the cursor back to the beginning of the line unless it's the first character.
+    if (charsPastLineLength !== 1) {
+      output.writeSync(CLR);
+    }
     output.writeSync(encoder.encode(line));
   };
 
