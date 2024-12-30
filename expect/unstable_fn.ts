@@ -9,7 +9,7 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  * This module contains jest compatible `fn()` utility to mock functions for testing and assertions.
  *
  * ```ts
- * import { expect } from "@std/expect";
+ * import { expect } from "@std/expect/unstable-expect";
  * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
@@ -43,7 +43,7 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  *
  * @example Usage
  * ```ts
- * import { expect } from "@std/expect";
+ * import { expect } from "@std/expect/unstable-expect";
  * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
@@ -69,7 +69,7 @@ export function fn<Args extends unknown[] = unknown[], Return = unknown>():
  *
  * @example Usage
  * ```ts
- * import { expect } from "@std/expect";
+ * import { expect } from "@std/expect/unstable-expect";
  * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
@@ -101,7 +101,7 @@ export function fn<
  *
  * @example Usage
  * ```ts
- * import { expect } from "@std/expect";
+ * import { expect } from "@std/expect/unstable-expect";
  * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {

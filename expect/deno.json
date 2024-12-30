@@ -5,6 +5,7 @@
     ".": "./mod.ts",
     "./expect": "./expect.ts",
     "./fn": "./fn.ts",
+    "./unstable-expect": "./unstable_expect.ts",
     "./unstable-fn": "./unstable_fn.ts"
   }
 }
