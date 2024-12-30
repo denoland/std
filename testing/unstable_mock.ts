@@ -1259,11 +1259,8 @@ export function assertSpyCall<Self, Args extends unknown[], Return>(
     }
 
     if ("self" in expected) {
-      if (!("self" in call)) {
-        throw new AssertionError("Trying to assert self on a non-method call");
-      }
       try {
-        assertEquals(call.self, expected.self);
+        assertEquals("self" in call ? call.self : undefined, expected.self);
       } catch (e) {
         assertIsError(e);
         let message = expected.self

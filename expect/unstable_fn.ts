@@ -124,6 +124,6 @@ export function fn<Args extends unknown[], Return>(
   return createMockInstance(
     original,
     stubs.toReversed(),
-    (call) => (...args: Args) => call(...args),
+    (wrap) => (...args: Args) => wrap(...args),
   );
 }
