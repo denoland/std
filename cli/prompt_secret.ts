@@ -9,6 +9,7 @@ const CR = "\r".charCodeAt(0); // ^M - Enter on macOS and Windows (CRLF)
 const BS = "\b".charCodeAt(0); // ^H - Backspace on Linux and Windows
 const DEL = 0x7f; // ^? - Backspace on macOS
 const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
+const {width} = Deno.consoleSize();
 
 // The `cbreak` option is not supported on Windows
 const setRawOptions = Deno.build.os === "windows"
@@ -55,8 +56,15 @@ export function promptSecret(
   // Make the output consistent with the built-in prompt()
   message += " ";
   const callback = !mask ? undefined : (n: number) => {
+    let charsPastLineLength = line.length % columns;
+
+    if (line.length > columns) {
+      if (charsPastLineLength === 0) {
+        charsPastLineLength = columns;
+      }
+      line = line.slice(-1 * (charsPastLineLength));
+    }
     output.writeSync(CLR);
-    output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));
   };
   output.writeSync(encoder.encode(message));
 
