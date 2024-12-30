@@ -326,7 +326,8 @@ import { assertRejects } from "@std/assert/rejects";
 import {
   defineSpyInternals,
   isSpy,
-  type MOCK_SYMBOL,
+  type Mock,
+  MOCK_SYMBOL,
   type MockCall,
   registerMock,
   sessions,
@@ -384,6 +385,7 @@ export interface Spy<
   Return = any
 > {
   (this: Self, ...args: Args): Return;
+  /** Mock internals */
   readonly [MOCK_SYMBOL]: SpyInternals<Self, Args, Return>;
   /** The function that is being spied on. */
   original: (this: Self, ...args: Args) => Return;
@@ -690,6 +692,13 @@ export interface ConstructorSpy<
 > {
   /** Construct an instance. */
   new (...args: Args): Self;
+  /** Mock internals */
+  readonly [MOCK_SYMBOL]: SpyInternals<
+    Self,
+    Args,
+    Self,
+    new (...args: Args) => Self
+  >;
   /** The function that is being spied on. */
   original: new (...args: Args) => Self;
   /** Information about calls made to the function or instance method. */
@@ -1104,6 +1113,19 @@ export function stub<Self, Args extends unknown[], Return>(
   return stub;
 }
 
+function getMockCalls<Args extends unknown[], Return>(
+  mock: Mock<Args, Return>
+): MockCall[];
+function getMockCalls<Self, Args extends unknown[], Return>(
+  spy: SpyLike<Self, Args, Return>
+): SpyCall[];
+function getMockCalls<Self, Args extends unknown[], Return>(
+  spyOrMock: SpyLike<Self, Args, Return> | Mock<Args, Return>
+): SpyCall[] | MockCall[];
+function getMockCalls(mock: Mock | SpyLike): SpyCall[] | MockCall[] {
+  return mock[MOCK_SYMBOL].calls;
+}
+
 /**
  * Asserts that a spy is called as much as expected and no more.
  *
@@ -1126,15 +1148,16 @@ export function stub<Self, Args extends unknown[], Return>(
  * @param expectedCalls The number of the expected calls.
  */
 export function assertSpyCalls<Self, Args extends unknown[], Return>(
-  spy: SpyLike<Self, Args, Return>,
+  spy: Mock<Args, Return> | SpyLike<Self, Args, Return>,
   expectedCalls: number
 ) {
+  const calls = getMockCalls(spy);
   try {
-    assertEquals(spy.calls.length, expectedCalls);
+    assertEquals(calls.length, expectedCalls);
   } catch (e) {
     assertIsError(e);
     let message =
-      spy.calls.length < expectedCalls
+      calls.length < expectedCalls
         ? "Spy not called as much as expected:\n"
         : "Spy called more than expected:\n";
     message += e.message.split("\n").slice(1).join("\n");
@@ -1170,15 +1193,29 @@ export interface ExpectedSpyCall<
   };
 }
 
-function getSpyCall<Self, Args extends unknown[], Return>(
+function getMockCall<Args extends unknown[], Return>(
+  mock: Mock<Args, Return>,
+  callIndex: number
+): MockCall;
+function getMockCall<Self, Args extends unknown[], Return>(
   spy: SpyLike<Self, Args, Return>,
   callIndex: number
-): SpyCall {
-  if (spy.calls.length < callIndex + 1) {
+): SpyCall;
+function getMockCall<Self, Args extends unknown[], Return>(
+  spyOrMock: Mock<Args, Return> | SpyLike<Self, Args, Return>,
+  callIndex: number
+): SpyCall | MockCall;
+function getMockCall(
+  mock: Mock | SpyLike,
+  callIndex: number
+): SpyCall | MockCall {
+  const calls = getMockCalls(mock);
+  if (calls.length < callIndex + 1) {
     throw new AssertionError("Spy not called as much as expected");
   }
-  return spy.calls[callIndex]!;
+  return calls[callIndex] as never;
 }
+
 /**
  * Asserts that a spy is called as expected.
  *
@@ -1204,11 +1241,11 @@ function getSpyCall<Self, Args extends unknown[], Return>(
  * @param expected The expected spy call.
  */
 export function assertSpyCall<Self, Args extends unknown[], Return>(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Return>
 ) {
-  const call = getSpyCall(spy, callIndex);
+  const call = getMockCall(spy, callIndex);
   if (expected) {
     if (expected.args) {
       try {
@@ -1223,6 +1260,9 @@ export function assertSpyCall<Self, Args extends unknown[], Return>(
     }
 
     if ("self" in expected) {
+      if (!("self" in call)) {
+        throw new AssertionError("Trying to assert self on a non-method call");
+      }
       try {
         assertEquals(call.self, expected.self);
       } catch (e) {
@@ -1299,7 +1339,7 @@ export function assertSpyCall<Self, Args extends unknown[], Return>(
  * @param expected The expected spy call.
  */
 export async function assertSpyCallAsync<Self, Args extends unknown[], Return>(
-  spy: SpyLike<Self, Args, Promise<Return>>,
+  spy: SpyLike<Self, Args, Promise<Return>> | Mock<Args, Promise<Return>>,
   callIndex: number,
   expected?: ExpectedSpyCall<Self, Args, Promise<Return> | Return>
 ) {
@@ -1309,7 +1349,7 @@ export async function assertSpyCallAsync<Self, Args extends unknown[], Return>(
     delete expectedSync.error;
   }
   assertSpyCall(spy, callIndex, expectedSync);
-  const call = getSpyCall(spy, callIndex);
+  const call = getMockCall(spy, callIndex);
 
   if (call.error) {
     throw new AssertionError(
@@ -1401,12 +1441,12 @@ export function assertSpyCallArg<
   Return,
   ExpectedArg
 >(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   argIndex: number,
   expected: ExpectedArg
 ): ExpectedArg {
-  const call = getSpyCall(spy, callIndex);
+  const call = getMockCall(spy, callIndex);
   const arg = call?.args[argIndex];
   assertEquals(arg, expected);
   return arg as ExpectedArg;
@@ -1447,7 +1487,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[]
 >(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   expected: ExpectedArgs
 ): ExpectedArgs;
@@ -1484,7 +1524,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[]
 >(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   argsStart: number,
   expected: ExpectedArgs
@@ -1523,7 +1563,7 @@ export function assertSpyCallArgs<
   Return,
   ExpectedArgs extends unknown[]
 >(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   argsStart: number,
   argsEnd: number,
@@ -1535,13 +1575,13 @@ export function assertSpyCallArgs<
   Return,
   Self
 >(
-  spy: SpyLike<Self, Args, Return>,
+  spy: SpyLike<Self, Args, Return> | Mock<Args, Return>,
   callIndex: number,
   argsStart?: number | ExpectedArgs,
   argsEnd?: number | ExpectedArgs,
   expected?: ExpectedArgs
 ): ExpectedArgs {
-  const call = getSpyCall(spy, callIndex);
+  const call = getMockCall(spy, callIndex);
   if (!expected) {
     expected = argsEnd as ExpectedArgs;
     argsEnd = undefined;

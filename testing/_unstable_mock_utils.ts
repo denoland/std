@@ -4,6 +4,7 @@ import type { Spy, SpyCall } from "./unstable_mock.ts";
 
 export {
   MOCK_SYMBOL,
+  type Mock,
   type MockCall,
   type MockInternals,
 } from "@std/internal/unstable_mock";
@@ -14,11 +15,12 @@ export interface SpyInternals<
   // deno-lint-ignore no-explicit-any
   Args extends unknown[] = any[],
   // deno-lint-ignore no-explicit-any
-  Return = any
+  Return = any,
+  Original = (this: Self, ...args: Args) => Return
 > {
   readonly calls: SpyCall<Self, Args, Return>[];
   /** The function that is being spied on. */
-  readonly original: (this: Self, ...args: Args) => Return;
+  readonly original: Original;
 }
 
 export function defineSpyInternals<

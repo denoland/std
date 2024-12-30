@@ -3,7 +3,7 @@
 
 export const MOCK_SYMBOL = Symbol.for("@MOCK");
 
-export type MockCall<Args extends unknown[] = never, Return = unknown> = {
+export type MockCall<Args extends unknown[] = unknown[], Return = unknown> = {
   /** Arguments passed to a function when called. */
   args: Args;
   /** Call result status. */
@@ -14,10 +14,13 @@ export type MockCall<Args extends unknown[] = never, Return = unknown> = {
   error?: unknown;
 };
 
-export type MockInternals<Args extends unknown[] = never, Return = unknown> = {
+export type MockInternals<
+  Args extends unknown[] = unknown[],
+  Return = unknown
+> = {
   readonly calls: MockCall<Args, Return>[];
 };
-export type Mock<Args extends unknown[] = never, Return = unknown> = {
+export type Mock<Args extends unknown[] = unknown[], Return = unknown> = {
   readonly [MOCK_SYMBOL]: MockInternals<Args, Return>;
 };
 
