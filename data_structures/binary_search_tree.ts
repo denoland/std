@@ -258,31 +258,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
       if (options?.compare || options?.map) {
         unmappedValues = collection;
       } else {
-        const nodes: BinarySearchNode<U>[] = [];
+        // Just do a single deep clone from the root
         if (collection.#root) {
           result.#root = BinarySearchNode.from(
             collection.#root as unknown as BinarySearchNode<U>,
           );
-          nodes.push(result.#root);
         }
-        while (nodes.length) {
-          const node: BinarySearchNode<U> = nodes.pop()!;
-          const left: BinarySearchNode<U> | null = node.left
-            ? BinarySearchNode.from(node.left)
-            : null;
-          const right: BinarySearchNode<U> | null = node.right
-            ? BinarySearchNode.from(node.right)
-            : null;
-
-          if (left) {
-            left.parent = node;
-            nodes.push(left);
-          }
-          if (right) {
-            right.parent = node;
-            nodes.push(right);
-          }
-        }
+        // copy the size from the original
         result.#size = collection.#size;
       }
     } else {

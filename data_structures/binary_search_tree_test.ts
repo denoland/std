@@ -556,3 +556,36 @@ Deno.test("BinarySearchTree.clear()", () => {
   tree.clear();
   assert(tree.isEmpty());
 });
+
+Deno.test("BinarySearchTree.from() bug demo - removing in copy corrupts original", () => {
+  // 1. Build the original tree
+  const values = [3, 10, 13, 4, 6, 7, 1, 14];
+  const original = BinarySearchTree.from(values);
+  // original should have 8 elements and include 7
+
+  // 2. Create a copy without passing compare/map
+  const copy = BinarySearchTree.from(original);
+  // copy and original should be independent trees
+
+  // 3. Remove value 7 from the copy
+  const removedInCopy = 7;
+  const removeResult = copy.remove(removedInCopy);
+  // If all is well, removing 7 from copy should not affect original
+
+  // 4. Original tree should still find 7
+  const stillInOriginal = original.find(removedInCopy);
+
+  // Assertion: original should still contain 7
+  assertStrictEquals(
+    stillInOriginal !== null,
+    true,
+    `Expected original.find(${removedInCopy}) to not be null, but got null.`,
+  );
+
+  // Additionally, check if removeResult is true
+  assertStrictEquals(
+    removeResult,
+    true,
+    `Expected copy.remove(${removedInCopy}) to return true, but got false.`,
+  );
+});
