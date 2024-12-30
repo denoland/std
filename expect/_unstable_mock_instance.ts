@@ -1,10 +1,10 @@
 // Copyright 2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2024 Anton Mikhailov. All rights reserved. MIT License.
 
-import {
-  type ExpectMockCall,
-  type ExpectMockInstance,
-  MOCK_SYMBOL,
+import { defineMockInternals } from "@std/internal/unstable_mock";
+import type {
+  ExpectMockCall,
+  ExpectMockInstance,
 } from "./_unstable_mock_utils.ts";
 
 function defineMethod<Value extends object, Key extends keyof Value>(
@@ -50,13 +50,9 @@ export function createMockInstance<
     current: originalStub,
     once: initialStubs,
   };
-  const instance: ExpectMockInstance<Args, Return> = functor as never;
-  Object.defineProperty(instance, MOCK_SYMBOL, {
-    value: { calls: [] },
-    writable: false,
-    enumerable: false,
-    configurable: false,
-  });
+  const instance: ExpectMockInstance<Args, Return> = defineMockInternals(
+    functor
+  ) as never;
   defineMethod(instance, "mockImplementation", (stub) => {
     stubState.current = stub;
     return instance;

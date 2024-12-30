@@ -1,9 +1,9 @@
 // Copyright 2024 the Deno authors. All rights reserved. MIT license.
 // Copyright 2024 Anton Mikhailov. All rights reserved. MIT License.
 
-import type { MOCK_SYMBOL, MockCall } from "@std/internal/mock";
+import type { MOCK_SYMBOL, MockCall } from "@std/internal/unstable_mock";
 
-export { isMockFunction, MOCK_SYMBOL } from "@std/internal/mock";
+export { isMockFunction, MOCK_SYMBOL } from "@std/internal/unstable_mock";
 
 export type ExpectMockCall<Args extends unknown[], Return> = Omit<
   MockCall<Args, Return>,

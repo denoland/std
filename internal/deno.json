@@ -10,6 +10,6 @@
     "./format": "./format.ts",
     "./styles": "./styles.ts",
     "./types": "./types.ts",
-    "./mock": "./mock.ts"
+    "./unstable_mock": "./unstable_mock.ts"
   }
 }
