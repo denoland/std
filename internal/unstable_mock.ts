@@ -1,5 +1,4 @@
 // Copyright 2024 the Deno authors. All rights reserved. MIT license.
-// Copyright 2024 Anton Mikhailov. All rights reserved. MIT License.
 
 export const MOCK_SYMBOL = Symbol.for("@MOCK");
 

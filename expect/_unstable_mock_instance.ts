@@ -1,5 +1,4 @@
 // Copyright 2024 the Deno authors. All rights reserved. MIT license.
-// Copyright 2024 Anton Mikhailov. All rights reserved. MIT License.
 
 import { defineMockInternals } from "@std/internal/unstable_mock";
 import type {

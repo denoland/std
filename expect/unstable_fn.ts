@@ -1,7 +1,6 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
-// Copyright 2024 Anton Mikhailov. All rights reserved. MIT License.
 
 import { createMockInstance, type Functor } from "./_unstable_mock_instance.ts";
 import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
