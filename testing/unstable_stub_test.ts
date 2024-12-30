@@ -1,13 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
+import { Point, type PointWithExtra } from "./_test_utils.ts";
 import {
   assertSpyCall,
   assertSpyCallArg,
   assertSpyCalls,
   MockError,
   returnsNext,
-} from "./mock.ts";
-import { Point, type PointWithExtra } from "./_test_utils.ts";
+} from "./unstable_mock.ts";
 import { type Stub, stub } from "./unstable_stub.ts";
 
 Deno.test("stub()", () => {

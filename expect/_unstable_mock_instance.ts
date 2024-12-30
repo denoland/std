@@ -1,4 +1,4 @@
-// Copyright 2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import { defineMockInternals } from "@std/internal/unstable_mock";
 import type {
@@ -12,9 +12,8 @@ function defineMethod<Value extends object, Key extends keyof Value>(
   method: Value[Key] extends (
     this: Value,
     ...args: infer Args extends unknown[]
-  ) => infer Return
-    ? (this: Value, ...args: Args) => Return
-    : never
+  ) => infer Return ? (this: Value, ...args: Args) => Return
+    : never,
 ) {
   Object.defineProperty(value, key, {
     value: method,
@@ -33,14 +32,14 @@ export type StubState<Args extends unknown[], Return> = {
 export function createMockInstance<
   Args extends unknown[],
   Return,
-  Fn extends Functor<Args, Return>
+  Fn extends Functor<Args, Return>,
 >(
   original: Fn | undefined,
   initialStubs: Functor<Args, Return>[],
   functor: (
     calls: ExpectMockCall<Args, Return>[],
-    state: StubState<Args, Return>
-  ) => Functor<Args, Return | undefined>
+    state: StubState<Args, Return>,
+  ) => Functor<Args, Return | undefined>,
 ): Fn & ExpectMockInstance<Args, Return> {
   const originalStub: Functor<Args, Return> | undefined = original
     ? (...args) => original(...args)
@@ -50,7 +49,7 @@ export function createMockInstance<
     once: initialStubs,
   };
   const instance: ExpectMockInstance<Args, Return> = defineMockInternals(
-    functor
+    functor,
   ) as never;
   defineMethod(instance, "mockImplementation", (stub) => {
     stubState.current = stub;
@@ -60,23 +59,39 @@ export function createMockInstance<
     stubState.once.push(stub);
     return instance;
   });
-  defineMethod(instance, "mockReturnValue", (value) =>
-    instance.mockImplementation(() => value)
+  defineMethod(
+    instance,
+    "mockReturnValue",
+    (value) => instance.mockImplementation(() => value),
   );
-  defineMethod(instance, "mockReturnValueOnce", (value) =>
-    instance.mockImplementationOnce(() => value)
+  defineMethod(
+    instance,
+    "mockReturnValueOnce",
+    (value) => instance.mockImplementationOnce(() => value),
   );
-  defineMethod(instance, "mockResolvedValue", (value) =>
-    instance.mockImplementation(() => Promise.resolve(value) as never)
+  defineMethod(
+    instance,
+    "mockResolvedValue",
+    (value) =>
+      instance.mockImplementation(() => Promise.resolve(value) as never),
   );
-  defineMethod(instance, "mockResolvedValueOnce", (value) =>
-    instance.mockImplementationOnce(() => Promise.resolve(value) as never)
+  defineMethod(
+    instance,
+    "mockResolvedValueOnce",
+    (value) =>
+      instance.mockImplementationOnce(() => Promise.resolve(value) as never),
   );
-  defineMethod(instance, "mockRejectedValue", (reason) =>
-    instance.mockImplementation(() => Promise.reject(reason) as never)
+  defineMethod(
+    instance,
+    "mockRejectedValue",
+    (reason) =>
+      instance.mockImplementation(() => Promise.reject(reason) as never),
   );
-  defineMethod(instance, "mockRejectedValueOnce", (reason) =>
-    instance.mockImplementationOnce(() => Promise.reject(reason) as never)
+  defineMethod(
+    instance,
+    "mockRejectedValueOnce",
+    (reason) =>
+      instance.mockImplementationOnce(() => Promise.reject(reason) as never),
   );
   defineMethod(instance, "mockRestore", () => {
     stubState.current = originalStub;
@@ -108,7 +123,7 @@ export function createMockInstance<
         resource[Symbol.dispose]();
         throw error;
       }
-    }
+    },
   );
 
   return instance as never;

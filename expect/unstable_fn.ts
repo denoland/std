@@ -9,7 +9,8 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  * This module contains jest compatible `fn()` utility to mock functions for testing and assertions.
  *
  * ```ts
- * import { fn, expect } from "@std/expect";
+ * import { expect } from "@std/expect";
+ * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
  *   const mockFn = fn((a: number, b: number) => a + b);
@@ -42,7 +43,8 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  *
  * @example Usage
  * ```ts
- * import { fn, expect } from "@std/expect";
+ * import { expect } from "@std/expect";
+ * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
  *   const mockFn = fn()
@@ -52,11 +54,12 @@ import type { ExpectMockInstance } from "./_unstable_mock_utils.ts";
  * });
  * ```
  */
-export function fn<Args extends unknown[] = never, Return = unknown>(): Functor<
-  Args,
-  Return
-> &
-  ExpectMockInstance<Args, Return>;
+export function fn<Args extends unknown[] = unknown[], Return = unknown>():
+  & Functor<
+    Args,
+    Return
+  >
+  & ExpectMockInstance<Args, Return>;
 
 /**
  * Creates a mock function that can be used for testing and assertions.
@@ -66,7 +69,8 @@ export function fn<Args extends unknown[] = never, Return = unknown>(): Functor<
  *
  * @example Usage
  * ```ts
- * import { fn, expect } from "@std/expect";
+ * import { expect } from "@std/expect";
+ * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
  *   const op = fn(
@@ -82,7 +86,8 @@ export function fn<Args extends unknown[] = never, Return = unknown>(): Functor<
  * ```
  */
 export function fn<
-  Fn extends Functor<never, unknown> = Functor<unknown[], unknown>
+  // deno-lint-ignore no-explicit-any
+  Fn extends Functor<any[], unknown> = Functor<unknown[], unknown>,
 >(
   original: Fn,
   ...stubs: Functor<Parameters<NoInfer<Fn>>, ReturnType<NoInfer<Fn>>>[]
@@ -96,7 +101,8 @@ export function fn<
  *
  * @example Usage
  * ```ts
- * import { fn, expect } from "@std/expect";
+ * import { expect } from "@std/expect";
+ * import { fn } from "@std/expect/unstable-fn";
  *
  * Deno.test("example", () => {
  *   const op = fn<[a: number, b: number], string>(
@@ -118,22 +124,21 @@ export function fn<Args extends unknown[], Return>(
   return createMockInstance(
     original,
     stubs.toReversed(),
-    (calls, stubState) =>
-      (...args: Args) => {
-        const stub = stubState.once.pop() ?? stubState.current;
-        try {
-          const returned = stub?.(...args);
-          calls.push({
-            args,
-            timestamp: Date.now(),
-            result: "returned",
-            returned,
-          });
-          return returned;
-        } catch (error) {
-          calls.push({ args, timestamp: Date.now(), result: "thrown", error });
-          throw error;
-        }
+    (calls, stubState) => (...args: Args) => {
+      const stub = stubState.once.pop() ?? stubState.current;
+      try {
+        const returned = stub?.(...args);
+        calls.push({
+          args,
+          timestamp: Date.now(),
+          result: "returned",
+          returned,
+        });
+        return returned;
+      } catch (error) {
+        calls.push({ args, timestamp: Date.now(), result: "thrown", error });
+        throw error;
       }
+    },
   );
 }

@@ -22,7 +22,7 @@ export interface Stub<
   // deno-lint-ignore no-explicit-any
   Args extends unknown[] = any[],
   // deno-lint-ignore no-explicit-any
-  Return = any
+  Return = any,
 > extends MethodSpy<Self, Args, Return> {
   /** The function that is used instead of the original. */
   fake: (this: Self, ...args: Args) => Return;
@@ -60,7 +60,7 @@ export interface Stub<
  */
 export function stub<Self, Prop extends keyof Self>(
   self: Self,
-  property: Prop
+  property: Prop,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 /**
  * Replaces an instance method with a Stub with the given implementation.
@@ -94,7 +94,7 @@ export function stub<Self, Prop extends keyof Self>(
   func: (
     this: Self,
     ...args: GetParametersFromProp<Self, Prop>
-  ) => GetReturnFromProp<Self, Prop>
+  ) => GetReturnFromProp<Self, Prop>,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 /**
  * Replaces an instance property setter or getter with a Stub with the given implementation.
@@ -129,29 +129,31 @@ export function stub<Self, Prop extends keyof Self>(
 export function stub<Self, Prop extends keyof Self>(
   self: Self,
   property: Prop,
-  descriptor: Omit<PropertyDescriptor, "configurable">
-): Stub<
-  Self,
-  GetParametersFromProp<Self, Prop>,
-  GetReturnFromProp<Self, Prop>
-> & {
-  get: Spy<
+  descriptor: Omit<PropertyDescriptor, "configurable">,
+):
+  & Stub<
     Self,
     GetParametersFromProp<Self, Prop>,
     GetReturnFromProp<Self, Prop>
-  >;
-  set: Spy<
-    Self,
-    GetParametersFromProp<Self, Prop>,
-    GetReturnFromProp<Self, Prop>
-  >;
-};
+  >
+  & {
+    get: Spy<
+      Self,
+      GetParametersFromProp<Self, Prop>,
+      GetReturnFromProp<Self, Prop>
+    >;
+    set: Spy<
+      Self,
+      GetParametersFromProp<Self, Prop>,
+      GetReturnFromProp<Self, Prop>
+    >;
+  };
 export function stub<Self, Args extends unknown[], Return>(
   self: Self,
   property: keyof Self,
   descriptorOrFunction?:
     | ((this: Self, ...args: Args) => Return)
-    | Omit<PropertyDescriptor, "configurable">
+    | Omit<PropertyDescriptor, "configurable">,
 ): Stub<Self, Args, Return> {
   if (
     self[property] !== undefined &&
@@ -224,7 +226,7 @@ export function stub<Self, Args extends unknown[], Return>(
       value: () => {
         if (restored) {
           throw new MockError(
-            "Cannot restore: instance method already restored"
+            "Cannot restore: instance method already restored",
           );
         }
         if (propertyDescriptor) {

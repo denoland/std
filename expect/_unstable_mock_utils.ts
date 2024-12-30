@@ -1,16 +1,18 @@
-// Copyright 2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 
 import type { MOCK_SYMBOL, MockCall } from "@std/internal/unstable_mock";
 
 export { isMockFunction, MOCK_SYMBOL } from "@std/internal/unstable_mock";
 
-export type ExpectMockCall<Args extends unknown[], Return> = Omit<
-  MockCall<Args, Return>,
-  "returned"
-> & {
-  timestamp: number;
-  returned?: Return | undefined;
-};
+export type ExpectMockCall<Args extends unknown[], Return> =
+  & Omit<
+    MockCall<Args, Return>,
+    "returned"
+  >
+  & {
+    timestamp: number;
+    returned?: Return | undefined;
+  };
 export interface ExpectMockInternals<Args extends unknown[], Return> {
   readonly calls: ExpectMockCall<Args, Return>[];
 }
@@ -22,11 +24,12 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
-   *   const mockFn = fn().mockImplementation((a: number, b: number) => a + b);
-   *   expect(mockFn()).toEqual(3);
+   *   const mockFn = fn<[a: number, b: number]>().mockImplementation((a, b) => a + b);
+   *   expect(mockFn(1, 2)).toEqual(3);
    * });
    * ```
    */
@@ -37,7 +40,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
    *   const mockFn = fn((a: number, b: number) => a + b);
@@ -54,7 +58,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
    *   const mockFn = fn().mockReturnValue(5);
@@ -69,7 +74,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
    *   const mockFn = fn((a: number, b: number) => a + b);
@@ -86,7 +92,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", async () => {
    *   const mockFn = fn();
@@ -103,7 +110,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", async () => {
    *   const mockFn = fn((a: number, b: number) => a + b);
@@ -120,7 +128,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", async () => {
    *   const mockFn = fn();
@@ -137,7 +146,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", async () => {
    *   const mockFn = fn((a: number, b: number) => a + b);
@@ -155,7 +165,8 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
    *   const mockFn = fn((a: number, b: number) => a + b);
@@ -178,10 +189,11 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", async () => {
-   *   const mockFn = fn((a: number, b: number) => a + b);
+   *   const mockFn = fn((a: number, b: number): number | Promise<number> => a + b);
    *   mockFn.mockReturnValueOnce(5);
    *   await mockFn.withImplementation(async (a, b) => a - b, async () => {
    *     await expect(mockFn(1, 2)).resolves.toEqual(-1);
@@ -193,7 +205,7 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    */
   withImplementation<ScopeResult>(
     stub: (...args: Args) => Return,
-    scope: () => ScopeResult
+    scope: () => ScopeResult,
   ): ScopeResult;
 
   /**
@@ -202,13 +214,14 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    *
    * @example Usage
    * ```ts
-   * import { fn, expect } from "@std/expect";
+   * import { expect } from "@std/expect";
+   * import { fn } from "@std/expect/unstable-fn";
    *
    * Deno.test("example", () => {
    *   const mockFn = fn((a: number, b: number) => a + b).mockReturnValue(5).mockReturnValueOnce(1);
    *   mockFn.mockRestore();
-   *   expect(mockFn()).toEqual(3);
-   *   expect(mockFn()).toEqual(3);
+   *   expect(mockFn(1, 2)).toEqual(3);
+   *   expect(mockFn(1, 2)).toEqual(3);
    * });
    * ```
    */

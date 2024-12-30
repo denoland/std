@@ -3,8 +3,8 @@ import { defineMockInternals } from "@std/internal/unstable_mock";
 import type { Spy, SpyCall } from "./unstable_mock.ts";
 
 export {
-  MOCK_SYMBOL,
   type Mock,
+  MOCK_SYMBOL,
   type MockCall,
   type MockInternals,
 } from "@std/internal/unstable_mock";
@@ -16,7 +16,7 @@ export interface SpyInternals<
   Args extends unknown[] = any[],
   // deno-lint-ignore no-explicit-any
   Return = any,
-  Original = (this: Self, ...args: Args) => Return
+  Original = (this: Self, ...args: Args) => Return,
 > {
   readonly calls: SpyCall<Self, Args, Return>[];
   /** The function that is being spied on. */
@@ -24,20 +24,20 @@ export interface SpyInternals<
 }
 
 export function defineSpyInternals<
-  Fn extends (this: unknown, ...args: never) => unknown
+  Fn extends (this: unknown, ...args: never) => unknown,
 >(
   func: Fn,
   internals?: Partial<
     SpyInternals<ThisParameterType<Fn>, Parameters<Fn>, ReturnType<Fn>>
-  >
+  >,
 ): Fn & Spy<ThisParameterType<Fn>, Parameters<Fn>, ReturnType<Fn>>;
 export function defineSpyInternals<Self, Args extends unknown[], Return>(
   func: (this: Self, ...args: Args) => Return,
-  internals?: Partial<SpyInternals<Self, Args, Return>>
+  internals?: Partial<SpyInternals<Self, Args, Return>>,
 ): ((this: Self, ...args: Args) => Return) & Spy<Self, Args, Return>;
 export function defineSpyInternals(
   func: (...args: unknown[]) => unknown,
-  internals?: Partial<SpyInternals<unknown, unknown[], unknown>>
+  internals?: Partial<SpyInternals<unknown, unknown[], unknown>>,
 ) {
   return defineMockInternals(func, {
     original: undefined,
@@ -55,7 +55,7 @@ export function defineSpyInternals(
  * @return `true` if the function is a spy, `false` otherwise.
  */
 export function isSpy<Self, Args extends unknown[], Return>(
-  func: ((this: Self, ...args: Args) => Return) | unknown
+  func: ((this: Self, ...args: Args) => Return) | unknown,
 ): func is Spy<Self, Args, Return> {
   const spy = func as Spy<Self, Args, Return>;
   return (
