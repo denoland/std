@@ -60,7 +60,7 @@ export function createMockInstance<
         args,
         timestamp: Date.now(),
         result: "returned",
-        returned,
+        returned: returned as never,
       });
       return returned;
     } catch (error) {

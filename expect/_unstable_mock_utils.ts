@@ -5,13 +5,9 @@ import { MOCK_SYMBOL, type MockCall } from "@std/internal/unstable_mock";
 export { isMockFunction, MOCK_SYMBOL } from "@std/internal/unstable_mock";
 
 export type ExpectMockCall<Args extends unknown[], Return> =
-  & Omit<
-    MockCall<Args, Return>,
-    "returned"
-  >
+  & MockCall<Args, Return>
   & {
     timestamp: number;
-    returned?: Return | undefined;
   };
 export interface ExpectMockInternals<Args extends unknown[], Return> {
   readonly calls: ExpectMockCall<Args, Return>[];
