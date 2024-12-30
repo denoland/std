@@ -561,19 +561,31 @@ Deno.test("promptSecret() wraps characters wider than console columns", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
   stub(Deno, "consoleSize", () => {
-    return { columns: 32, rows: 20 };
+    return { columns: 5, rows: 20 };
   });
 
   const expectedOutput = [
-    "Please provide the password: ",
+    "? ",
     "\r\x1b[K",
-    "Please provide the password: *",
+    "? *",
     "\r\x1b[K",
-    "Please provide the password: **",
+    "? **",
     "\r\x1b[K",
-    "Please provide the password: ***",
+    "? ***",
     "\r\x1b[K",
     "*",
+    "\r\x1b[K",
+    "**",
+    "\r\x1b[K",
+    "***",
+    "\r\x1b[K",
+    "****",
+    "\r\x1b[K",
+    "*****",
+    "\r\x1b[K",
+    "*",
+    "\r\x1b[K",
+    "**",
     "\n",
   ];
 
@@ -596,6 +608,12 @@ Deno.test("promptSecret() wraps characters wider than console columns", () => {
     "e",
     "n",
     "o",
+    " ",
+    "r",
+    "u",
+    "l",
+    "e",
+    "s",
     "\r",
   ];
 
@@ -610,9 +628,9 @@ Deno.test("promptSecret() wraps characters wider than console columns", () => {
     },
   );
 
-  const password = promptSecret("Please provide the password:");
+  const password = promptSecret("?");
 
-  assertEquals(password, "deno");
+  assertEquals(password, "deno rules");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
