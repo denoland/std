@@ -227,3 +227,13 @@ export interface ExpectMockInstance<Args extends unknown[], Return> {
    */
   mockRestore(): void;
 }
+
+// deno-lint-ignore no-explicit-any
+export function getMockCalls(f: any): MockCall[] {
+  const mockInfo = f[MOCK_SYMBOL];
+  if (!mockInfo) {
+    throw new Error("Received function must be a mock or spy function");
+  }
+
+  return [...mockInfo.calls];
+}

@@ -36,10 +36,11 @@ export function createMockInstance<
 >(
   original: Fn | undefined,
   initialStubs: Functor<Args, Return>[],
-  functor: (
-    calls: ExpectMockCall<Args, Return>[],
-    state: StubState<Args, Return>,
-  ) => Functor<Args, Return | undefined>,
+  functor: (call: Functor<Args, Return | undefined>, context: {
+    implementation(): Functor<Args, Return> | undefined;
+    calls: ExpectMockCall<Args, Return>[];
+    state: StubState<Args, Return>;
+  }) => Functor<Args, Return | undefined>,
 ): Fn & ExpectMockInstance<Args, Return> {
   const originalStub: Functor<Args, Return> | undefined = original
     ? (...args) => original(...args)
@@ -48,8 +49,31 @@ export function createMockInstance<
     current: originalStub,
     once: initialStubs,
   };
+  const calls: ExpectMockCall<Args, Return>[] = [];
   const instance: ExpectMockInstance<Args, Return> = defineMockInternals(
-    functor,
+    functor((...args) => {
+      const stub = stubState.once.pop() ?? stubState.current;
+      try {
+        const returned = stub?.(...args);
+        calls.push({
+          args,
+          timestamp: Date.now(),
+          result: "returned",
+          returned,
+        });
+        return returned;
+      } catch (error) {
+        calls.push({ args, timestamp: Date.now(), result: "thrown", error });
+        throw error;
+      }
+    }, {
+      state: stubState,
+      implementation() {
+        return stubState.once.pop() ?? stubState.current;
+      },
+      calls,
+    }),
+    { calls },
   ) as never;
   defineMethod(instance, "mockImplementation", (stub) => {
     stubState.current = stub;

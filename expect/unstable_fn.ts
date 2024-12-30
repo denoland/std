@@ -124,21 +124,6 @@ export function fn<Args extends unknown[], Return>(
   return createMockInstance(
     original,
     stubs.toReversed(),
-    (calls, stubState) => (...args: Args) => {
-      const stub = stubState.once.pop() ?? stubState.current;
-      try {
-        const returned = stub?.(...args);
-        calls.push({
-          args,
-          timestamp: Date.now(),
-          result: "returned",
-          returned,
-        });
-        return returned;
-      } catch (error) {
-        calls.push({ args, timestamp: Date.now(), result: "thrown", error });
-        throw error;
-      }
-    },
+    (call) => (...args: Args) => call(...args),
   );
 }
