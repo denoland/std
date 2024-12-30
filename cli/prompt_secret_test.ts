@@ -556,3 +556,63 @@ Deno.test("promptSecret() handles empty readSync", () => {
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptSecret() wraps characters wider than console columns", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 32, rows: 20 };
+  });
+
+  const expectedOutput = [
+    "Please provide the password: ",
+    "\r\x1b[K",
+    "Please provide the password: *",
+    "\r\x1b[K",
+    "Please provide the password: **",
+    "\r\x1b[K",
+    "Please provide the password: ***",
+    "\r\x1b[K",
+    "*",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("Please provide the password:");
+
+  assertEquals(password, "deno");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
