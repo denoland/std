@@ -56,6 +56,7 @@ export function promptSecret(
   // Make the output consistent with the built-in prompt()
   message += " ";
   const callback = !mask ? undefined : (n: number) => {
+    let line = `${message}${mask.repeat(n)}`;
     let charsPastLineLength = line.length % columns;
 
     if (line.length > columns) {
