@@ -23,6 +23,7 @@
     "@std/fmt": "jsr:@std/fmt@^1.0.2",
     "@std/front-matter": "jsr:@std/front-matter@^1.0.5",
     "@std/fs": "jsr:@std/fs@^1.0.3",
+    "@std/functions": "jsr:@std/functions@^0.1.0",
     "@std/html": "jsr:@std/html@^1.0.3",
     "@std/http": "jsr:@std/http@^1.0.6",
     "@std/ini": "jsr:@std/ini@^1.0.0-rc.4",
