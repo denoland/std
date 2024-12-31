@@ -52,12 +52,27 @@ export function promptSecret(
     return null;
   }
 
+  const { columns } = Deno.consoleSize();
+
   // Make the output consistent with the built-in prompt()
   message += " ";
   const callback = !mask ? undefined : (n: number) => {
-    output.writeSync(CLR);
-    output.writeSync(encoder.encode(`${message}${mask.repeat(n)}`));
+    let line = `${message}${mask.repeat(n)}`;
+
+    const charsPastLineLength = line.length % columns;
+
+    if (line.length > columns) {
+      line = line.slice(
+        -1 * (charsPastLineLength === 0 ? columns : charsPastLineLength),
+      );
+    }
+    // Always jump the cursor back to the beginning of the line unless it's the first character.
+    if (charsPastLineLength !== 1) {
+      output.writeSync(CLR);
+    }
+    output.writeSync(encoder.encode(line));
   };
+
   output.writeSync(encoder.encode(message));
 
   Deno.stdin.setRaw(true, setRawOptions);
