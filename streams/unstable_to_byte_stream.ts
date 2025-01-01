@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 
 /**
  * The function takes a `ReadableStream<Uint8Array>` and wraps it in a BYOB

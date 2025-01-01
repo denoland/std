@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
 /** Multiplier for the PCG32 algorithm. */

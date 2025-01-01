@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 import { retry, RetryError } from "./retry.ts";
 import { assertEquals, assertRejects } from "@std/assert";
 import { FakeTime } from "@std/testing/time";

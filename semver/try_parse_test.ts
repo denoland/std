@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 // These tests were copied from `semver/parse_test.ts` and modified to use
 // `tryParse` instead of `parse`.
 import { assertEquals } from "@std/assert";

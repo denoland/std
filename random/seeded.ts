@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
 import type { Prng } from "./_types.ts";

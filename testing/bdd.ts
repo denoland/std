@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
 
 /**
  * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
