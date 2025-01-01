@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 /** Ways that lines in a diff can be different. */
 export type DiffType = "removed" | "common" | "added";

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { dropLastWhile } from "./drop_last_while.ts";
 import { assertEquals } from "@std/assert";
 

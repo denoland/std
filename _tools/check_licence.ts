@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-console
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { walk } from "../fs/walk.ts";
 import { globToRegExp } from "../path/glob_to_regexp.ts";
 
@@ -20,10 +20,10 @@ const CHECK = Deno.args.includes("--check");
 const FIRST_YEAR = 2018;
 const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
-  `// Copyright ([0-9]{4})-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
+  `// Copyright ([0-9]{4})-([0-9]{4}) the Deno authors\\. MIT license\\.\n`,
 );
 export const COPYRIGHT =
-  `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
+  `// Copyright ${FIRST_YEAR}-${CURRENT_YEAR} the Deno authors. MIT license.`;
 
 let failed = false;
 

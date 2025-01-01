@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects } from "../assert/mod.ts";
 import { concatReadableStreams } from "./concat_readable_streams.ts";

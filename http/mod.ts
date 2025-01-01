@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 /**
  * Provides user-friendly {@linkcode serve} on top of Deno's native HTTP server
  * and other utilities for creating HTTP servers and clients.
