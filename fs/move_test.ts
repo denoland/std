@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { move, moveSync } from "./move.ts";

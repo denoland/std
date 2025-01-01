@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 /**
  * Utilities for working with Deno's readers, writers, and web streams.

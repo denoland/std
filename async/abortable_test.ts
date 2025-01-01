@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import { abortable } from "./abortable.ts";
 

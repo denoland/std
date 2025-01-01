@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assert, assertEquals, assertMatch } from "@std/assert";
 import { Logger, type LogRecord } from "./logger.ts";
 import { type LevelName, LogLevels } from "./levels.ts";

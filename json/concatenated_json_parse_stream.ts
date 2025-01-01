@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { toTransformStream } from "@std/streams/to-transform-stream";
 import type { JsonValue } from "./types.ts";
 import { parse } from "./_common.ts";

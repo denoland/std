@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 export interface FileInfo {
   /** True if this is info for a regular file. Mutually exclusive to

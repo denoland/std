@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 import type { Prng, RandomOptions } from "./_types.ts";
 import { randomIntegerBetween } from "./integer_between.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright the Browserify authors. MIT License.
 
 import { fromFileUrl } from "@std/path/from-file-url";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { ReleaseLock } from "./_common.ts";
 import type { CborStreamOutput } from "./types.ts";

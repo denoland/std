@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { describe, it, test } from "@std/testing/bdd";
 import { expect } from "./expect.ts";

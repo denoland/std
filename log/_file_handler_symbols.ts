@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 export const fileSymbol = Symbol("file");
 export const bufSymbol = Symbol("buf");
 export const pointerSymbol = Symbol("pointer");
