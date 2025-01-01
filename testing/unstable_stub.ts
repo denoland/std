@@ -1,5 +1,10 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { isSpy, registerMock, unregisterMock } from "./_mock_utils.ts";
+import {
+  defineSpyInternals,
+  isSpy,
+  registerMock,
+  unregisterMock,
+} from "./_unstable_mock_utils.ts";
 import {
   type GetParametersFromProp,
   type GetReturnFromProp,
@@ -8,7 +13,7 @@ import {
   type Spy,
   spy,
   type SpyCall,
-} from "./mock.ts";
+} from "./unstable_mock.ts";
 
 /** An instance method replacement that records all calls made to it. */
 export interface Stub<
@@ -53,10 +58,7 @@ export interface Stub<
  * @param property The property of the instance to replace.
  * @returns The stub function which replaced the original.
  */
-export function stub<
-  Self,
-  Prop extends keyof Self,
->(
+export function stub<Self, Prop extends keyof Self>(
   self: Self,
   property: Prop,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
@@ -86,10 +88,7 @@ export function stub<
  * @param func The fake implementation of the function.
  * @returns The stub function which replaced the original.
  */
-export function stub<
-  Self,
-  Prop extends keyof Self,
->(
+export function stub<Self, Prop extends keyof Self>(
   self: Self,
   property: Prop,
   func: (
@@ -173,9 +172,7 @@ export function stub<Self, Args extends unknown[], Return>(
     descriptorOrFunction.get === undefined &&
     descriptorOrFunction.set === undefined
   ) {
-    throw new MockError(
-      "Cannot stub: neither setter nor getter is defined",
-    );
+    throw new MockError("Cannot stub: neither setter nor getter is defined");
   }
 
   const propertyDescriptor = Object.getOwnPropertyDescriptor(self, property);
@@ -194,11 +191,12 @@ export function stub<Self, Args extends unknown[], Return>(
   const calls: SpyCall<Self, Args, Return>[] = [];
   let restored = false;
   const stub = function (this: Self, ...args: Args): Return {
-    const call: SpyCall<Self, Args, Return> = { args };
+    const call: SpyCall<Self, Args, Return> = { result: "returned", args };
     if (this) call.self = this;
     try {
       call.returned = fake.apply(this, args);
     } catch (error) {
+      call.result = "thrown";
       call.error = error as Error;
       calls.push(call);
       throw error;
@@ -246,6 +244,7 @@ export function stub<Self, Args extends unknown[], Return>(
       },
     },
   });
+  defineSpyInternals(stub, { calls, original });
 
   if (descriptorOrFunction && typeof descriptorOrFunction !== "function") {
     const getterSpy = descriptorOrFunction.get

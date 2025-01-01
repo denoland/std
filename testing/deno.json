@@ -9,6 +9,7 @@
     "./types": "./types.ts",
     "./unstable-bdd": "./unstable_bdd.ts",
     "./unstable-stub": "./unstable_stub.ts",
-    "./unstable-types": "./unstable_types.ts"
+    "./unstable-types": "./unstable_types.ts",
+    "./unstable-mock": "./unstable_mock.ts"
   }
 }
