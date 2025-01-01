@@ -52,10 +52,10 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  * This handler requires `--allow-write` permission on the log file.
  *
  * @example Usage
- * ```ts no-assert ignore
+ * ```ts
  * import { FileHandler } from "@std/log/file-handler";
  *
- * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+ * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
  * handler.setup();
  * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
  * handler.flush(); // Manually flushes the buffer
@@ -63,96 +63,19 @@ export interface FileHandlerOptions extends BaseHandlerOptions {
  * ```
  */
 export class FileHandler extends BaseHandler {
-  /** Opened file to append logs to.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Opened file to append logs to. */
   [fileSymbol]: Deno.FsFile | undefined;
-  /** Buffer used to write to file.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Buffer used to write to file. */
   [bufSymbol]: Uint8Array;
-  /** Current position for pointer.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Current position for pointer. */
   [pointerSymbol] = 0;
-  /** Filename associated with the file being logged.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Filename associated with the file being logged. */
   [filenameSymbol]: string;
-  /** Current log mode.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Current log mode. */
   [modeSymbol]: LogMode;
-  /** File open options.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** File open options. */
   [openOptionsSymbol]: Deno.OpenOptions;
-  /** Text encoder.
-   * @example Usage
-   * ```ts no-assert ignore
-   * import { FileHandler } from "@std/log/file-handler";
-   *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
-   * handler.setup();
-   * handler.log('Hello, world!'); // Buffers the message, or writes it to the file depending on buffer state
-   * handler.flush(); // Manually flushes the buffer
-   * handler.destroy(); // Closes the file and removes listeners
-   * ```
-   * **/
+  /** Text encoder. */
   [encoderSymbol]: TextEncoder = new TextEncoder();
   #unloadCallback = (() => {
     this.destroy();
@@ -183,10 +106,10 @@ export class FileHandler extends BaseHandler {
    * Sets up the file handler by opening the specified file and initializing resources.
    *
    * @example Usage
-   * ```ts no-assert ignore
+   * ```ts
    * import { FileHandler } from "@std/log/file-handler";
    *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+   * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
    * handler.setup(); // Opens the file and prepares the handler for logging.
    * handler.destroy();
    * ```
@@ -207,13 +130,13 @@ export class FileHandler extends BaseHandler {
    * @param logRecord Log record to handle.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    * import { LogLevels } from "./levels.ts";
    * import { LogRecord } from "./logger.ts";
    *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+   * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
    * handler.setup();
    *
    * // Flushes the buffer immediately and logs "CRITICAL This log is very critical indeed." into the file.
@@ -245,11 +168,11 @@ export class FileHandler extends BaseHandler {
    * @param msg The message to log.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+   * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
    * handler.setup();
    * handler.log('Hello, world!');
    * handler.flush();
@@ -275,11 +198,11 @@ export class FileHandler extends BaseHandler {
    * Immediately writes the contents of the buffer to the previously opened file.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+   * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
    * handler.setup();
    * handler.log('Hello, world!');
    * handler.flush(); // Writes buffered log messages to the file immediately.
@@ -308,11 +231,11 @@ export class FileHandler extends BaseHandler {
    * Destroys the handler, performing any cleanup that is required and closes the file handler.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { FileHandler } from "@std/log/file-handler";
    * import { assertInstanceOf } from "@std/assert/instance-of";
    *
-   * const handler = new FileHandler("INFO", { filename: "./logs.txt" });
+   * const handler = new FileHandler("INFO", { filename: "./_tmp/logs.txt" });
    * handler.setup();
    * handler.destroy();
    *
