@@ -9,7 +9,7 @@
  *    Math.abs,
  *    Math.sqrt,
  *    Math.floor,
- *    (num) => `result: ${num}`,
+ *    (num: number) => `result: ${num}`,
  *  );
  *  assertEquals(myPipe(-2), "result: 1");
  * ```

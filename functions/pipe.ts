@@ -28,7 +28,7 @@ type PipeArgs<F extends AnyFunc[], Acc extends AnyFunc[] = []> = F extends [
  *    Math.abs,
  *    Math.sqrt,
  *    Math.floor,
- *    (num) => `result: ${num}`,
+ *    (num: number) => `result: ${num}`,
  *  );
  *  assertEquals(myPipe(-2), "result: 1");
  * ```
