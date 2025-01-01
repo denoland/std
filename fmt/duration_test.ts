@@ -32,7 +32,7 @@ Deno.test({
   fn() {
     assertEquals(
       format(99674, { style: "full" }),
-      "0 days, 0 hours, 1 minutes, 39 seconds, 674 milliseconds, 0 microseconds, 0 nanoseconds",
+      "0 days, 0 hours, 1 minute, 39 seconds, 674 milliseconds, 0 microseconds, 0 nanoseconds",
     );
   },
 });
@@ -62,7 +62,7 @@ Deno.test({
   fn() {
     assertEquals(
       format(99674, { style: "full", ignoreZero: true }),
-      "1 minutes, 39 seconds, 674 milliseconds",
+      "1 minute, 39 seconds, 674 milliseconds",
     );
   },
 });

@@ -15,7 +15,8 @@ import {
 
 export type { GlobOptions, WalkEntry };
 
-const isWindows = Deno.build.os === "windows";
+// deno-lint-ignore no-explicit-any
+const isWindows = (globalThis as any).Deno?.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {
@@ -117,7 +118,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -154,7 +155,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -182,7 +183,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -212,7 +213,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -246,7 +247,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── link.ts -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -404,7 +405,7 @@ export async function* expandGlob(
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * // script.ts
  * import { expandGlobSync } from "@std/fs/expand-glob";
  *

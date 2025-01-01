@@ -90,6 +90,17 @@ Deno.test("assertRejects() throws async parent error ", async () => {
   );
 });
 
+Deno.test("assertRejects() accepts abstract class", () => {
+  abstract class AbstractError extends Error {}
+  class ConcreteError extends AbstractError {}
+
+  assertRejects(
+    () => Promise.reject(new ConcreteError("failed")),
+    AbstractError,
+    "fail",
+  );
+});
+
 Deno.test(
   "assertRejects() throws with custom Error",
   async () => {

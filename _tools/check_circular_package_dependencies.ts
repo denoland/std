@@ -35,11 +35,11 @@ type Dep = {
   state: DepState;
 };
 type Mod =
-  | "archive"
   | "assert"
   | "async"
   | "bytes"
   | "cache"
+  | "cbor"
   | "cli"
   | "collections"
   | "crypto"
@@ -78,11 +78,11 @@ type Mod =
   | "yaml";
 
 const ENTRYPOINTS: Record<Mod, string[]> = {
-  archive: ["mod.ts"],
   assert: ["mod.ts"],
   async: ["mod.ts"],
   bytes: ["mod.ts"],
   cache: ["mod.ts"],
+  cbor: ["mod.ts"],
   cli: ["mod.ts"],
   collections: ["mod.ts"],
   crypto: ["mod.ts"],

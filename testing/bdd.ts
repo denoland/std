@@ -19,10 +19,10 @@
  * the test case passes. The *All hooks will be called once for the whole group
  * while the *Each hooks will be called for each individual test case.
  *
- * - `beforeAll`: Runs before all of the tests in the test suite.
- * - `afterAll`: Runs after all of the tests in the test suite finish.
- * - `beforeEach`: Runs before each of the individual test cases in the test suite.
- * - `afterEach`: Runs after each of the individual test cases in the test suite.
+ * - `beforeAll`: Runs before all of the tests in the group.
+ * - `afterAll`: Runs after all of the tests in the group finish.
+ * - `beforeEach`: Runs before each of the individual test cases in the group.
+ * - `afterEach`: Runs after each of the individual test cases in the group.
  *
  * If a hook is registered at the top level, a global test suite will be registered
  * and all tests will belong to it. Hooks registered at the top level must be
@@ -402,8 +402,11 @@
  * @module
  */
 
+import { getAssertionState } from "@std/internal/assertion-state";
+import { AssertionError } from "@std/assert/assertion-error";
 import {
   type DescribeDefinition,
+  globalSanitizersState,
   type HookNames,
   type ItDefinition,
   type TestSuite,
@@ -565,6 +568,7 @@ export function it<T>(...args: ItArgs<T>) {
       "Cannot register new test cases after already registered test cases start running",
     );
   }
+  const assertionState = getAssertionState();
   const options = itDefinition(...args);
   const { suite } = options;
   const testSuite = suite
@@ -581,9 +585,9 @@ export function it<T>(...args: ItArgs<T>) {
       ignore,
       only,
       permissions,
-      sanitizeExit,
-      sanitizeOps,
-      sanitizeResources,
+      sanitizeExit = globalSanitizersState.sanitizeExit,
+      sanitizeOps = globalSanitizersState.sanitizeOps,
+      sanitizeResources = globalSanitizersState.sanitizeResources,
     } = options;
     const opts: Deno.TestDefinition = {
       name,
@@ -594,6 +598,21 @@ export function it<T>(...args: ItArgs<T>) {
         } finally {
           TestSuiteInternal.runningCount--;
         }
+
+        if (assertionState.checkAssertionErrorState()) {
+          throw new AssertionError(
+            "Expected at least one assertion to be called but received none",
+          );
+        }
+
+        if (assertionState.checkAssertionCountSatisfied()) {
+          throw new AssertionError(
+            `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
+              `but received ${assertionState.assertionTriggeredCount}`,
+          );
+        }
+
+        assertionState.resetAssertionState();
       },
     };
     if (ignore !== undefined) {
@@ -723,6 +742,80 @@ export function test<T>(...args: ItArgs<T>) {
   it(...args);
 }
 
+/**
+ * Only execute this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.only("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.only = function itOnly<T>(...args: ItArgs<T>): void {
+  it.only(...args);
+};
+
+/**
+ * Ignore this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.ignore("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
+
+/** Skip this test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   test("should pass", () => {
+ *     assertEquals(2 + 2, 4);
+ *   });
+ *
+ *   test.skip("should pass too", () => {
+ *     assertEquals(3 + 4, 7);
+ *   });
+ * });
+ * ```
+ *
+ * @param args The test case
+ */
+test.skip = function itSkip<T>(...args: ItArgs<T>): void {
+  it.ignore(...args);
+};
+
 function addHook<T>(
   name: HookNames,
   fn: (this: T) => void | Promise<void>,
@@ -743,7 +836,9 @@ function addHook<T>(
 }
 
 /**
- * Run some shared setup before all of the tests in the suite.
+ * Run some shared setup before all of the tests in the group.
+ * Useful for async setup in `describe` blocks. Outside them,
+ * top-level initialization code should be used instead.
  *
  * @example Usage
  * ```ts

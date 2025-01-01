@@ -37,7 +37,7 @@ export interface ToReadableStreamOptions {
  * ```ts no-assert
  * import { toReadableStream } from "@std/io/to-readable-stream";
  *
- * const file = await Deno.open("./README.md", { read: true });
+ * using file = await Deno.open("./README.md", { read: true });
  * const fileStream = toReadableStream(file);
  * ```
  *

@@ -54,26 +54,27 @@
  *   - {@linkcode expect.anything}
  *   - {@linkcode expect.any}
  *   - {@linkcode expect.arrayContaining}
+ *   - {@linkcode expect.not.arrayContaining}
+ *   - {@linkcode expect.objectContaining}
+ *   - {@linkcode expect.not.objectContaining}
  *   - {@linkcode expect.closeTo}
  *   - {@linkcode expect.stringContaining}
+ *   - {@linkcode expect.not.stringContaining}
  *   - {@linkcode expect.stringMatching}
+ *   - {@linkcode expect.not.stringMatching}
  * - Utilities:
+ *   - {@linkcode expect.addSnapshotSerializer}
+ *   - {@linkcode expect.assertions}
  *   - {@linkcode expect.addEqualityTester}
  *   - {@linkcode expect.extend}
+ *   - {@linkcode expect.hasAssertions}
  *
  * Only these functions are still not available:
  * - Matchers:
  *   - `toMatchSnapShot`
- *   - `toMatchInlineSnapShot`
- *   - `toThrowErrorMatchingSnapShot`
- *   - `toThrowErrorMatchingInlineSnapShot`
- * - Asymmetric matchers:
- *   - `expect.objectContaining`
- *   - `expect.not.objectContaining`
- * - Utilities:
- *   - `expect.assertions`
- *   - `expect.hasAssertions`
- *   - `expect.addSnapshotSerializer`
+ *   - `toMatchInlineSnapshot`
+ *   - `toThrowErrorMatchingSnapshot`
+ *   - `toThrowErrorMatchingInlineSnapshot`
  *
  * The tracking issue to add support for unsupported parts of the API is
  * {@link https://github.com/denoland/std/issues/3964}.

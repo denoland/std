@@ -8,7 +8,8 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
 
-const isWindows = Deno.build.os === "windows";
+// deno-lint-ignore no-explicit-any
+const isWindows = (globalThis as any).Deno?.build.os === "windows";
 
 /** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {
@@ -275,7 +276,7 @@ function copyDirSync(
  * @returns A promise that resolves once the copy operation completes.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar");
@@ -285,7 +286,7 @@ function copyDirSync(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts no-eval
+ * ```ts ignore
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { overwrite: true });
@@ -295,7 +296,7 @@ function copyDirSync(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts no-eval
+ * ```ts ignore
  * import { copy } from "@std/fs/copy";
  *
  * await copy("./foo", "./bar", { preserveTimestamps: true });
@@ -351,7 +352,7 @@ export async function copy(
  * @returns A void value that returns once the copy operation completes.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar");
@@ -361,7 +362,7 @@ export async function copy(
  * overwriting.
  *
  * @example Overwriting files/directories
- * ```ts no-eval
+ * ```ts ignore
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { overwrite: true });
@@ -371,7 +372,7 @@ export async function copy(
  * any existing files or directories.
  *
  * @example Preserving timestamps
- * ```ts no-eval
+ * ```ts ignore
  * import { copySync } from "@std/fs/copy";
  *
  * copySync("./foo", "./bar", { preserveTimestamps: true });

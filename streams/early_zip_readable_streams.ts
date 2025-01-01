@@ -12,6 +12,7 @@
  * even after one of them ends, use {@linkcode zipReadableStreams}.
  *
  * @typeparam T The type of the chunks in the input streams.
+ * @param streams An iterable of `ReadableStream`s to merge.
  * @returns A `ReadableStream` that will emit the zipped chunks
  *
  * @example Zip 2 streams with the same length

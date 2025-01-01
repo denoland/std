@@ -1,11 +1,12 @@
 {
   "name": "@std/encoding",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "exports": {
     ".": "./mod.ts",
     "./ascii85": "./ascii85.ts",
     "./base32": "./base32.ts",
     "./unstable-base32-stream": "./unstable_base32_stream.ts",
+    "./unstable-base32crockford": "./unstable_base32crockford.ts",
     "./unstable-base32hex": "./unstable_base32hex.ts",
     "./unstable-base32hex-stream": "./unstable_base32hex_stream.ts",
     "./base58": "./base58.ts",

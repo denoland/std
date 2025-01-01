@@ -392,6 +392,7 @@ Deno.test("BinarySearchTree.from() handles default ascend comparator", () => {
   let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
+  assertEquals(tree.size, originalTree.size);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
@@ -443,6 +444,7 @@ Deno.test("BinarySearchTree.from() handles descend comparator", () => {
   let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
+  assertEquals(tree.size, originalTree.size);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 

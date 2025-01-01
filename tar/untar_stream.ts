@@ -156,7 +156,7 @@ export interface TarStreamEntry {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { UntarStream } from "@std/tar/untar-stream";
  * import { dirname, normalize } from "@std/path";
  *
@@ -167,7 +167,7 @@ export interface TarStreamEntry {
  *     .pipeThrough(new UntarStream())
  * ) {
  *   const path = normalize(entry.path);
- *   await Deno.mkdir(dirname(path));
+ *   await Deno.mkdir(dirname(path), { recursive: true });
  *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
  * }
  * ```
@@ -176,7 +176,8 @@ export class UntarStream
   implements TransformStream<Uint8Array, TarStreamEntry> {
   #readable: ReadableStream<TarStreamEntry>;
   #writable: WritableStream<Uint8Array>;
-  #gen: AsyncGenerator<Uint8Array>;
+  #reader: ReadableStreamDefaultReader<Uint8Array>;
+  #buffer: Uint8Array[] = [];
   #lock = false;
   constructor() {
     const { readable, writable } = new TransformStream<
@@ -185,47 +186,54 @@ export class UntarStream
     >();
     this.#readable = ReadableStream.from(this.#untar());
     this.#writable = writable;
+    this.#reader = readable.pipeThrough(new FixedChunkStream(512)).getReader();
+  }
 
-    this.#gen = async function* () {
-      const buffer: Uint8Array[] = [];
-      for await (
-        const chunk of readable.pipeThrough(new FixedChunkStream(512))
-      ) {
-        if (chunk.length !== 512) {
-          throw new RangeError(
-            `Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (${chunk.length})`,
-          );
-        }
+  async #read(): Promise<Uint8Array | undefined> {
+    const { done, value } = await this.#reader.read();
+    if (done) return undefined;
+    if (value.length !== 512) {
+      throw new RangeError(
+        `Cannot extract the tar archive: The tarball chunk has an unexpected number of bytes (${value.length})`,
+      );
+    }
+    this.#buffer.push(value);
+    return this.#buffer.shift();
+  }
 
-        buffer.push(chunk);
-        if (buffer.length > 2) yield buffer.shift()!;
-      }
-      if (buffer.length < 2) {
+  async *#untar(): AsyncGenerator<TarStreamEntry> {
+    for (let i = 0; i < 2; ++i) {
+      const { done, value } = await this.#reader.read();
+      if (done || value.length !== 512) {
         throw new RangeError(
           "Cannot extract the tar archive: The tarball is too small to be valid",
         );
       }
-      if (!buffer.every((value) => value.every((x) => x === 0))) {
-        throw new TypeError(
-          "Cannot extract the tar archive: The tarball has invalid ending",
-        );
-      }
-    }();
-  }
-
-  async *#untar(): AsyncGenerator<TarStreamEntry> {
+      this.#buffer.push(value);
+    }
     const decoder = new TextDecoder();
     while (true) {
       while (this.#lock) {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
 
-      const { done, value } = await this.#gen.next();
-      if (done) break;
+      // Check for premature ending
+      if (this.#buffer.every((value) => value.every((x) => x === 0))) {
+        await this.#reader.cancel("Tar stream finished prematurely");
+        return;
+      }
+
+      const value = await this.#read();
+      if (value == undefined) {
+        if (this.#buffer.every((value) => value.every((x) => x === 0))) break;
+        throw new TypeError(
+          "Cannot extract the tar archive: The tarball has invalid ending",
+        );
+      }
 
       // Validate Checksum
       const checksum = parseInt(
-        decoder.decode(value.subarray(148, 156 - 2)),
+        decoder.decode(value.subarray(148, 156)),
         8,
       );
       value.fill(32, 148, 156);
@@ -286,8 +294,8 @@ export class UntarStream
 
   async *#genFile(size: number): AsyncGenerator<Uint8Array> {
     for (let i = Math.ceil(size / 512); i > 0; --i) {
-      const { done, value } = await this.#gen.next();
-      if (done) {
+      const value = await this.#read();
+      if (value == undefined) {
         throw new SyntaxError(
           "Cannot extract the tar archive: Unexpected end of Tarball",
         );
@@ -340,7 +348,7 @@ export class UntarStream
    * @return ReadableStream<TarStreamChunk>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *
@@ -351,7 +359,7 @@ export class UntarStream
    *     .pipeThrough(new UntarStream())
    * ) {
    *   const path = normalize(entry.path);
-   *   await Deno.mkdir(dirname(path));
+   *   await Deno.mkdir(dirname(path), { recursive: true });
    *   await entry.readable?.pipeTo((await Deno.create(path)).writable);
    * }
    * ```
@@ -366,7 +374,7 @@ export class UntarStream
    * @return WritableStream<Uint8Array>
    *
    * @example Usage
-   * ```ts no-eval
+   * ```ts ignore
    * import { UntarStream } from "@std/tar/untar-stream";
    * import { dirname, normalize } from "@std/path";
    *

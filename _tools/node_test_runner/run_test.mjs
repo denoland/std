@@ -49,6 +49,8 @@ import "../../collections/union_test.ts";
 import "../../collections/unzip_test.ts";
 import "../../collections/without_all_test.ts";
 import "../../collections/zip_test.ts";
+import "../../fs/unstable_stat_test.ts";
+import "../../fs/unstable_lstat_test.ts";
 
 for (const testDef of testDefinitions) {
   test(testDef.name, testDef.fn);

@@ -18,7 +18,7 @@ import { toPathString } from "./_to_path_string.ts";
  * @returns A void promise that resolves once the directory is empty.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { emptyDir } from "@std/fs/empty-dir";
  *
  * await emptyDir("./foo");
@@ -61,7 +61,7 @@ export async function emptyDir(dir: string | URL) {
  * @returns A void value that returns once the directory is empty.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { emptyDirSync } from "@std/fs/empty-dir";
  *
  * emptyDirSync("./foo");

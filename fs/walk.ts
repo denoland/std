@@ -120,7 +120,7 @@ export type { WalkEntry };
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk("."));
@@ -162,7 +162,7 @@ export type { WalkEntry };
  *     └── bar.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { maxDepth: 1 }));
@@ -202,7 +202,7 @@ export type { WalkEntry };
  * └── foo
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeFiles: false }));
@@ -235,7 +235,7 @@ export type { WalkEntry };
  * └── foo
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeDirs: false }));
@@ -262,7 +262,7 @@ export type { WalkEntry };
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeSymlinks: false }));
@@ -296,7 +296,7 @@ export type { WalkEntry };
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { followSymlinks: true }));
@@ -338,7 +338,7 @@ export type { WalkEntry };
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { followSymlinks: true, canonicalize: true }));
@@ -379,7 +379,7 @@ export type { WalkEntry };
  * └── foo.js
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { exts: [".ts"] }));
@@ -406,7 +406,7 @@ export type { WalkEntry };
  * └── README.md
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { match: [/s/] }));
@@ -433,7 +433,7 @@ export type { WalkEntry };
  * └── README.md
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { skip: [/s/] }));
@@ -549,7 +549,7 @@ export async function* walk(
  * └── foo.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync("."));
@@ -591,7 +591,7 @@ export async function* walk(
  *     └── bar.ts
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { maxDepth: 1 }));
@@ -631,7 +631,7 @@ export async function* walk(
  * └── foo
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeFiles: false }));
@@ -664,7 +664,7 @@ export async function* walk(
  * └── foo
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeDirs: false }));
@@ -691,7 +691,7 @@ export async function* walk(
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeSymlinks: false }));
@@ -725,7 +725,7 @@ export async function* walk(
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { followSymlinks: true }));
@@ -767,7 +767,7 @@ export async function* walk(
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { followSymlinks: true, canonicalize: true }));
@@ -808,7 +808,7 @@ export async function* walk(
  * └── foo.js
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { exts: [".ts"] }));
@@ -835,7 +835,7 @@ export async function* walk(
  * └── README.md
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { match: [/s/] }));
@@ -862,7 +862,7 @@ export async function* walk(
  * └── README.md
  * ```
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { skip: [/s/] }));

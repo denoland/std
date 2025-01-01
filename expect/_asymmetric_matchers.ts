@@ -1,9 +1,13 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
+import { getCustomEqualityTesters } from "./_custom_equality_tester.ts";
+import { equal } from "./_equal.ts";
+
 export abstract class AsymmetricMatcher<T> {
   constructor(
     protected value: T,
+    protected inverse: boolean = false,
   ) {}
   abstract equals(other: unknown): boolean;
 }
@@ -67,17 +71,27 @@ export function any(c: unknown): Any {
 }
 
 export class ArrayContaining extends AsymmetricMatcher<any[]> {
-  constructor(arr: any[]) {
-    super(arr);
+  constructor(arr: any[], inverse = false) {
+    super(arr, inverse);
   }
 
   equals(other: any[]): boolean {
-    return Array.isArray(other) && this.value.every((e) => other.includes(e));
+    const res = Array.isArray(other) &&
+      this.value.every((e) =>
+        other.some((another) =>
+          equal(e, another, { customTesters: getCustomEqualityTesters() })
+        )
+      );
+    return this.inverse ? !res : res;
   }
 }
 
 export function arrayContaining(c: any[]): ArrayContaining {
   return new ArrayContaining(c);
+}
+
+export function arrayNotContaining(c: any[]): ArrayContaining {
+  return new ArrayContaining(c, true);
 }
 
 export class CloseTo extends AsymmetricMatcher<number> {
@@ -111,16 +125,13 @@ export function closeTo(num: number, numDigits?: number): CloseTo {
 }
 
 export class StringContaining extends AsymmetricMatcher<string> {
-  constructor(str: string) {
-    super(str);
+  constructor(str: string, inverse = false) {
+    super(str, inverse);
   }
 
   equals(other: string): boolean {
-    if (typeof other !== "string") {
-      return false;
-    }
-
-    return other.includes(this.value);
+    const res = typeof other !== "string" ? false : other.includes(this.value);
+    return this.inverse ? !res : res;
   }
 }
 
@@ -128,20 +139,60 @@ export function stringContaining(str: string): StringContaining {
   return new StringContaining(str);
 }
 
+export function stringNotContaining(str: string): StringContaining {
+  return new StringContaining(str, true);
+}
+
 export class StringMatching extends AsymmetricMatcher<RegExp> {
-  constructor(pattern: string | RegExp) {
-    super(new RegExp(pattern));
+  constructor(pattern: string | RegExp, inverse = false) {
+    super(new RegExp(pattern), inverse);
   }
 
   equals(other: string): boolean {
-    if (typeof other !== "string") {
-      return false;
-    }
-
-    return this.value.test(other);
+    const res = typeof other !== "string" ? false : this.value.test(other);
+    return this.inverse ? !res : res;
   }
 }
 
 export function stringMatching(pattern: string | RegExp): StringMatching {
   return new StringMatching(pattern);
+}
+
+export function stringNotMatching(pattern: string | RegExp): StringMatching {
+  return new StringMatching(pattern, true);
+}
+
+export class ObjectContaining
+  extends AsymmetricMatcher<Record<string, unknown>> {
+  constructor(obj: Record<string, unknown>, inverse = false) {
+    super(obj, inverse);
+  }
+
+  equals(other: Record<string, unknown>): boolean {
+    const keys = Object.keys(this.value);
+    let res = true;
+
+    for (const key of keys) {
+      if (
+        !Object.hasOwn(other, key) ||
+        !equal(this.value[key], other[key])
+      ) {
+        res = false;
+      }
+    }
+
+    return this.inverse ? !res : res;
+  }
+}
+
+export function objectContaining(
+  obj: Record<string, unknown>,
+): ObjectContaining {
+  return new ObjectContaining(obj);
+}
+
+export function objectNotContaining(
+  obj: Record<string, unknown>,
+): ObjectContaining {
+  return new ObjectContaining(obj, true);
 }

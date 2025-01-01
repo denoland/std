@@ -22,6 +22,7 @@ import denoConfig from "./deno.json" with { type: "json" };
 import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
+import { lessThan, parse as parseSemver } from "@std/semver";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -32,6 +33,11 @@ const serveDirOptions: ServeDirOptions = {
   showDotfiles: true,
   enableCors: true,
 };
+const denoVersion = parseSemver(Deno.version.deno);
+const isCanary = denoVersion.build ? denoVersion.build.length > 0 : false;
+// FileInfo.mode is not available on Windows before Deno 2.1.0
+const fsModeUnavailable = Deno.build.os === "windows" &&
+  lessThan(denoVersion, parseSemver("2.1.0")) && !isCanary;
 
 const TEST_FILE_PATH = join(testdataDir, "test_file.txt");
 const TEST_FILE_STAT = await Deno.stat(TEST_FILE_PATH);
@@ -188,10 +194,7 @@ Deno.test("serveDir() serves directory index", async () => {
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
-  // `Deno.FileInfo` is not completely compatible with Windows yet
-  // TODO(bartlomieju): `mode` should work correctly in the future.
-  // Correct this test case accordingly.
-  if (Deno.build.os === "windows") {
+  if (fsModeUnavailable) {
     assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
   } else {
     assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
@@ -212,10 +215,7 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="/tls/">tls/</a>');
   assertStringIncludes(page, "test%20file.txt");
-  // `Deno.FileInfo` is not completely compatible with Windows yet
-  // TODO(bartlomieju): `mode` should work correctly in the future.
-  // Correct this test case accordingly.
-  if (Deno.build.os === "windows") {
+  if (fsModeUnavailable) {
     assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
   } else {
     assertMatch(page, /<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/);
@@ -237,6 +237,22 @@ Deno.test("serveDir() serves directory index with file's mode is 0", async () =>
   const res = await serveDir(new Request("http://localhost/"), serveDirOptions);
   const page = await res.text();
   assertMatch(page, /<td class="mode">(\s)*- --- --- ---(\s)*<\/td>/);
+});
+
+Deno.test("serveDir() escapes file names when rendering directory index", {
+  ignore: Deno.build.os === "windows",
+}, async () => {
+  const dir = await Deno.makeTempDir();
+  const filePath = join(dir, "<img src=x onerror=alert(1)>");
+  await Deno.writeTextFile(filePath, "abc");
+  const res = await serveDir(new Request("http://localhost/"), {
+    ...serveDirOptions,
+    fsRoot: dir,
+  });
+  assertStringIncludes(
+    await res.text(),
+    '<a href="/%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E">&lt;img src=x onerror=alert(1)&gt;</a>',
+  );
 });
 
 Deno.test("serveDir() returns a response even if fileinfo is inaccessible", async () => {
@@ -445,7 +461,21 @@ Deno.test("serveDir() doesn't show directory listings", async () => {
   assertEquals(res.status, 404);
 });
 
-Deno.test("serveDir() doesn't show dotfiles", async () => {
+Deno.test("serveDir() shows dotfiles when showDotfiles=true", async () => {
+  const req1 = new Request("http://localhost/");
+  const res1 = await serveDir(req1, serveDirOptions);
+  const page1 = await res1.text();
+
+  assert(page1.includes(".dotfile"));
+
+  const req2 = new Request("http://localhost/.dotfile");
+  const res2 = await serveDir(req2, serveDirOptions);
+  const body = await res2.text();
+
+  assertEquals(body, "dotfile");
+});
+
+Deno.test("serveDir() doesn't show dotfiles when showDotfiles=false", async () => {
   const req1 = new Request("http://localhost/");
   const res1 = await serveDir(req1, {
     ...serveDirOptions,
@@ -462,7 +492,8 @@ Deno.test("serveDir() doesn't show dotfiles", async () => {
   });
   const body = await res2.text();
 
-  assertEquals(body, "dotfile");
+  assertEquals(res2.status, 404);
+  assertEquals(body, "Not Found");
 });
 
 Deno.test("serveDir() shows .. if it makes sense", async () => {
@@ -1106,3 +1137,15 @@ async function readUntilMatch(
   reader.releaseLock();
   return dec.decode(buf);
 }
+
+Deno.test(async function serveFileHeadRequest() {
+  const req = new Request("http://localhost/testdata/test_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveFile(req, TEST_FILE_PATH);
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
+  assertEquals(res.headers.get("content-length"), "10034");
+});

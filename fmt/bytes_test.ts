@@ -4,10 +4,10 @@
 
 import { format } from "./bytes.ts";
 import { assertEquals, assertThrows } from "@std/assert";
+import { stub } from "@std/testing/mock";
 
-const parts = new Intl.NumberFormat().formatToParts(1000.1);
+const parts = new Intl.NumberFormat().formatToParts(10000.1);
 const decimal = parts.find(({ type }) => type === "decimal")!.value;
-const group = parts.find(({ type }) => type === "group")!.value;
 
 Deno.test("format() throws on invalid input", () => {
   // deno-lint-ignore no-explicit-any
@@ -76,10 +76,6 @@ Deno.test("format() handles locale option", () => {
   assertEquals(format(0.4, { locale: true }), `0${decimal}4 B`);
   assertEquals(format(1001, { locale: true }), "1 kB");
   assertEquals(format(10.1, { locale: true }), `10${decimal}1 B`);
-  assertEquals(
-    format(1e30, { locale: true }),
-    `1${group}000${group}000 YB`,
-  );
 
   assertEquals(format(-0.4, { locale: false }), "-0.4 B");
   assertEquals(format(0.4, { locale: false }), "0.4 B");
@@ -103,6 +99,41 @@ Deno.test("format() handles locale option", () => {
   assertEquals(format(1001, {}), "1 kB");
   assertEquals(format(10.1, {}), "10.1 B");
   assertEquals(format(1e30, {}), "1000000 YB");
+});
+
+Deno.test("format() handles group separators", async (t) => {
+  const tests: { locale: string; expected: string }[] = [
+    { locale: "en-US", expected: "1,000,000 YB" },
+    { locale: "es-ES", expected: "1.000.000 YB" },
+
+    // narrow non-breaking space
+    { locale: "fr-FR", expected: "1\u202f000\u202f000 YB" },
+
+    // non-breaking space
+    { locale: "pl-PL", expected: "1\u00A0000\u00A0000 YB" },
+
+    // https://en.wikipedia.org/wiki/Indian_numbering_system
+    { locale: "hi-IN", expected: "10,00,000 YB" },
+    { locale: "gu-IN", expected: "10,00,000 YB" },
+  ];
+
+  for (const { locale, expected } of tests) {
+    await t.step(locale, () => {
+      const toLocaleString = Number.prototype.toLocaleString;
+      using _ = stub(
+        Number.prototype,
+        "toLocaleString",
+        function (loc) {
+          return toLocaleString.call(this, loc ?? locale);
+        },
+      );
+
+      // explicitly supplying the locale
+      assertEquals(format(1e30, { locale }), expected);
+      // using the default locale (mocked with stub)
+      assertEquals(format(1e30, { locale: true }), expected);
+    });
+  }
 });
 
 Deno.test("format() handles signed option", () => {

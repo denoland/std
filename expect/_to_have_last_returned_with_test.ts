@@ -22,3 +22,19 @@ Deno.test("expect().toHaveLastReturnedWith()", () => {
     expect(mockFn).not.toHaveLastReturnedWith(7);
   }, AssertionError);
 });
+
+Deno.test("expect().toHaveLastReturnedWith() with custom error message", () => {
+  const msg = "toHaveLastReturnedWith custom error message";
+  const mockFn = fn((x: number) => x + 3);
+
+  mockFn(1);
+  mockFn(4);
+
+  expect(() => {
+    expect(mockFn, msg).toHaveLastReturnedWith(4);
+  }).toThrow(new RegExp(`^${msg}`));
+
+  expect(() => {
+    expect(mockFn, msg).not.toHaveLastReturnedWith(7);
+  }).toThrow(new RegExp(`^${msg}`));
+});

@@ -15,7 +15,7 @@ import type { Writer, WriterSync } from "./types.ts";
  * ```
  *
  * @example Writing to file
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * import { writeAll } from "@std/io/write-all";
  *
  * const contentBytes = new TextEncoder().encode("Hello World");
@@ -46,7 +46,7 @@ export async function writeAll(writer: Writer, data: Uint8Array) {
  * ```
  *
  * @example Writing to file
- * ```ts no-eval no-assert
+ * ```ts ignore no-assert
  * import { writeAllSync } from "@std/io/write-all";
  *
  * const contentBytes = new TextEncoder().encode("Hello World");

@@ -406,11 +406,10 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * @example Usage
    * ```ts
    * import { Buffer } from "@std/io/buffer";
-   * import { StringReader } from "@std/io/string-reader";
    * import { assertEquals } from "@std/assert/equals";
    *
    * const buf = new Buffer();
-   * const r = new StringReader("Hello, world!");
+   * const r = new Buffer(new TextEncoder().encode("Hello, world!"));
    * const n = await buf.readFrom(r);
    *
    * assertEquals(n, 13);
@@ -453,11 +452,10 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * @example Usage
    * ```ts
    * import { Buffer } from "@std/io/buffer";
-   * import { StringReader } from "@std/io/string-reader";
    * import { assertEquals } from "@std/assert/equals";
    *
    * const buf = new Buffer();
-   * const r = new StringReader("Hello, world!");
+   * const r = new Buffer(new TextEncoder().encode("Hello, world!"));
    * const n = buf.readFromSync(r);
    *
    * assertEquals(n, 13);

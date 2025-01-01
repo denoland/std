@@ -10,13 +10,18 @@ const routes: Route[] = [
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    handler: (_request, _info, params) =>
-      new Response(params?.pathname.groups.id),
+    handler: (_request, params) => new Response(params?.pathname.groups.id),
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
     method: "POST",
     handler: () => new Response("Done"),
+  },
+  {
+    pattern: new URLPattern({ pathname: "/resource" }),
+    method: ["GET", "HEAD"],
+    handler: (request: Request) =>
+      new Response(request.method === "HEAD" ? null : "Ok"),
   },
 ];
 
@@ -53,5 +58,19 @@ Deno.test("route()", async (t) => {
     const response = await handler(request);
     assertEquals(response?.status, 404);
     assertEquals(await response?.text(), "/not-found");
+  });
+
+  await t.step("handles multiple methods", async () => {
+    const getMethodRequest = new Request("http://example.com/resource");
+    const getMethodResponse = await handler(getMethodRequest);
+    assertEquals(getMethodResponse?.status, 200);
+    assertEquals(await getMethodResponse?.text(), "Ok");
+
+    const headMethodRequest = new Request("http://example.com/resource", {
+      method: "HEAD",
+    });
+    const headMethodResponse = await handler(headMethodRequest);
+    assertEquals(headMethodResponse?.status, 200);
+    assertEquals(await headMethodResponse?.text(), "");
   });
 });

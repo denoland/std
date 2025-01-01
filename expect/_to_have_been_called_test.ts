@@ -28,3 +28,17 @@ Deno.test("expect().toHaveBeenCalled() handles the case when the mock is not cal
     "Expected mock function to be called, but it was not called",
   );
 });
+
+Deno.test("expect().toHaveBeenCalled() with custom error message", () => {
+  const msg = "toHaveBeenCalled Custom Error";
+  const mockFn = fn();
+  mockFn();
+
+  expect(() => expect(mockFn, msg).not.toHaveBeenCalled()).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(fn(), msg).toHaveBeenCalled()).toThrow(
+    new RegExp(`^${msg}`),
+  );
+});

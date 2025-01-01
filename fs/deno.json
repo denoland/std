@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "1.0.3",
+  "version": "1.0.8",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",
@@ -13,6 +13,8 @@
     "./exists": "./exists.ts",
     "./expand-glob": "./expand_glob.ts",
     "./move": "./move.ts",
+    "./unstable-stat": "./unstable_stat.ts",
+    "./unstable-lstat": "./unstable_lstat.ts",
     "./walk": "./walk.ts"
   }
 }

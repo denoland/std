@@ -24,3 +24,15 @@ Deno.test("expect().toHaveLength()", () => {
     expect("abc").not.toHaveLength(3);
   }, AssertionError);
 });
+
+Deno.test("expect().toHaveLength() with custom error message", () => {
+  const msg = "toHaveLength Custom Error";
+
+  expect(() => {
+    expect([1, 2, 3], msg).toHaveLength(4);
+  }).toThrow(new RegExp(`^${msg}`));
+
+  expect(() => {
+    expect("abc", msg).not.toHaveLength(3);
+  }).toThrow(new RegExp(`^${msg}`));
+});

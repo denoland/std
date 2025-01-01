@@ -7,7 +7,7 @@ import { AssertionError } from "./assertion_error.ts";
  * then throw.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { assertStringIncludes } from "@std/assert";
  *
  * assertStringIncludes("Hello", "ello"); // Doesn't throw

@@ -140,6 +140,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
       tree: BinarySearchTree<T>,
       node: BinarySearchNode<T>,
     ): BinarySearchNode<T> | null => tree.#removeNode(node);
+    internals.setSize = <T>(tree: BinarySearchTree<T>, size: number) =>
+      tree.#size = size;
   }
 
   /**
@@ -281,6 +283,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
             nodes.push(right);
           }
         }
+        result.#size = collection.#size;
       }
     } else {
       result = (options?.compare

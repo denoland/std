@@ -8,10 +8,11 @@
   },
   "importMap": "./import_map.json",
   "workspace": [
-    "./archive",
     "./assert",
     "./async",
     "./bytes",
+    "./cache",
+    "./cbor",
     "./cli",
     "./collections",
     "./crypto",
@@ -45,7 +46,6 @@
     "./text",
     "./toml",
     "./ulid",
-    "./url",
     "./uuid",
     "./webgpu",
     "./yaml"

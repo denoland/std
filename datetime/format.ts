@@ -46,7 +46,7 @@ export interface FormatOptions {
  * @return The formatted date string.
  *
  * @example Basic usage
- * ```ts no-eval
+ * ```ts ignore
  * import { format } from "@std/datetime/format";
  * import { assertEquals } from "@std/assert";
  *
@@ -61,9 +61,9 @@ export interface FormatOptions {
  *
  * @example UTC formatting
  *
- * Enable UTC formatting by setting the `utc` option to `true`.
+ * Enable UTC formatting by setting the `timeZone` option to `"UTC"`.
  *
- * ```ts no-eval
+ * ```ts ignore
  * import { format } from "@std/datetime/format";
  * import { assertEquals } from "@std/assert";
  *

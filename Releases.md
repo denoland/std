@@ -1,3 +1,433 @@
+### 2024.12.20
+
+#### @std/fs 1.0.8 (patch)
+
+- feat(fs/unstable): add `fs.lstat` (#6276)
+
+#### @std/testing 1.0.8 (patch)
+
+- feat(testing/unstable): add API for configuring global sanitizer state (#6282)
+
+### 2024.12.18
+
+#### @std/assert 1.0.10 (patch)
+
+- fix(assert): fix formatting for `assertNotEquals` error messages (#6246)
+
+#### @std/cbor 0.1.4 (patch)
+
+- feat(cbor): add encoding/decoding for `new Map()` instance (#6252)
+
+#### @std/cli 1.0.9 (patch)
+
+- feat(cli/unstable): add `promptMultipleSelect()` (#6223)
+- fix(cli/unstable): `promptMultipleSelect()` add `isTerminal()` check (#6263)
+- fix(cli/unstable): `promptSelect()` add `isTerminal()` check (#6264)
+- docs(cli): remove `parseArgs()` console logs from examples (#6268)
+- test(cli): add `promptSecret()` empty mask option test (#6273)
+- test(cli/unstable): add `promptSelect()` ETX test (#6267)
+- test(cli/unstable): add `promptMultipleSelect()` ETX test (#6266)
+- test(cli): add tests for `promptSecret()` (#6256)
+- test(cli/unstable): clean up `promptSelect()` tests (#6253)
+- test(cli/unstable): rewrite `Spinner` tests using stub (#6254)
+
+#### @std/data-structures 1.0.5 (patch)
+
+- fix(data-structures): ensure size consistency in BinarySearchTree.from (#6272)
+
+#### @std/encoding 1.0.6 (patch)
+
+- feat(encoding/unstable): Crockford base32 unstable support (#6238)
+
+#### @std/expect 1.0.10 (patch)
+
+- fix(expect): fix `expect.arrayContaining` bug (#6271)
+- fix(expect): always show custom message (#6217)
+- docs(expect): suggest using top-level code instead of beforeAll (#6240)
+
+#### @std/fs 1.0.7 (patch)
+
+- feat(fs/unstable): add `fs.stat` (#6258)
+- docs(fs/unstable): use `stat` function in `stat` example (#6275)
+
+#### @std/log 0.224.12 (patch)
+
+- docs(log): fix level name assertion in LogRecord example (#6269)
+
+#### @std/regexp 1.0.1 (patch)
+
+- fix(regexp): escape leading digit (#6208)
+
+#### @std/testing 1.0.7 (patch)
+
+- fix(testing): stop code execution in `describe.ignore` (#6237)
+
+### 2024.12.06
+
+#### @std/assert 1.0.9 (patch)
+
+- docs(assert): note the thrown diff in object_match.ts (#6227)
+- docs(assert): fix English in mod.ts (#6226)
+- docs(assert): add note and example for Blob comparison (#6210)
+
+#### @std/cbor 0.1.3 (patch)
+
+- perf(cbor): for encoding numbers, bigints, and dates (#6214)
+
+#### @std/cli 1.0.8 (patch)
+
+- feat(cli/unstable): export `/unstable-prompt-select` (#6212)
+- fix(cli/unstable): hide cursor while showing the selection with
+  `promptSelect()` (#6221)
+- refactor(cli): rewrite `promptSelect()` clear commands (#6215)
+
+#### @std/dotenv 0.225.3 (patch)
+
+- fix(dotenv): handle multiline variables on Windows (#6216)
+
+#### @std/expect 1.0.9 (patch)
+
+- fix(expect): fix error messages for `toMatchObject` (#6228)
+
+#### @std/http 1.0.12 (patch)
+
+- BREAKING(http/unstable): switch `params` and `info` args in `Handler` in
+  `route()` for more conveniency (#6094)
+- fix(http): handle HEAD requests in serveFile (#6218)
+
+#### @std/testing 1.0.6 (patch)
+
+- fix(testing): add missing methods to `test` alias of `it` (#6222)
+
+#### @std/text 1.0.9 (patch)
+
+- fix(text): use locale-independent letter case methods (#6204)
+
+### 2024.11.25
+
+#### @std/cli 1.0.7 (patch)
+
+- feat(cli/unstable): add `promptSelect()` (#6190)
+
+#### @std/tar 0.1.4 (patch)
+
+- fix(tar): untar checksum calculation for the pax format (#6199)
+
+### 2024.11.22
+
+### @std/archive
+
+- BREAKING(archive): remove std/archive package (#6185)
+
+#### @std/async 1.0.9 (patch)
+
+- feat(async/unstable): add `isRetriable` option to `retry` (#6197)
+
+#### @std/csv 1.0.4 (patch)
+
+- feat(csv/unstable): infer column names from object arrays for stringify()
+  (#6122)
+
+#### @std/fs 1.0.6 (patch)
+
+- fix(fs): improve the docs and error message of `ensureSymlink(Sync)` (#6198)
+
+#### @std/http 1.0.11 (patch)
+
+- fix(http): disable XSS in directory index page of file-server (CVE-2024-52793)
+  https://github.com/denoland/std/security/advisories/GHSA-32fx-h446-h8pf
+
+#### @std/log 0.224.11 (patch)
+
+- chore(log): do not exec file handler examples in CI (#6183)
+
+#### @std/toml 1.0.2 (patch)
+
+- fix(toml): parsing positive time zone offset (#6188)
+
+### 2024.11.13
+
+#### @std/assert 1.0.8 (patch)
+
+- fix(assert): check property equality up the prototype chain (#6153)
+
+#### @std/bytes 1.0.4 (patch)
+
+- test(bytes): fix typo in test description (#6179)
+
+#### @std/expect 1.0.8 (patch)
+
+- fix(expect): support `expect.addSnapshotSerializer` (#6173)
+
+#### @std/http 1.0.10 (patch)
+
+- fix(http): do not serve dot files when `showDotfiles=false` (#6180)
+
+#### @std/ini 1.0.0-rc.5 (prerelease)
+
+- BREAKING(ini): parse understands booleans, undefined, null and numbers (#6121)
+
+#### @std/log 0.224.10 (patch)
+
+- docs(log): improve logger.ts docs (#6176)
+- docs(log): document FileHandler (#6175)
+
+#### @std/media-types 1.1.0 (minor)
+
+- feat(media-types): update media-types from latest mime-db (#6169)
+
+#### @std/testing 1.0.5 (patch)
+
+- docs(testing): fix typo in snapshot.ts (#6171)
+
+### 2024.11.01
+
+#### @std/assert 1.0.7 (patch)
+
+- fix(assert): fix assertion error message of isError (#6147)
+- test(assert): change inert comments to @ts-expect-error directives (#6162)
+
+#### @std/async 1.0.8 (patch)
+
+- test(async): fix flakiness of throttle example (#6156)
+- test(async/unstable): fix typo (#6149)
+
+#### @std/bytes 1.0.3 (patch)
+
+- test(bytes): document the cases being tested for equals/startsWith/endsWith
+  (#6163)
+
+#### @std/expect 1.0.7 (patch)
+
+- fix(expect): re-align `expect.toMatchObject` api (#6160)
+- fix(expect): support
+  expect.not.{arrayContaining,objectContaining,stringContaining,stringMatching}
+  (#6138)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/internal 1.0.5 (patch)
+
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+#### @std/path 1.0.8 (patch)
+
+- refactor(path): always name the parameters (add param definition check in doc
+  linter) (#6158)
+
+#### @std/streams 1.0.8 (patch)
+
+- docs(streams): rest arguments not being asserted in docs (#6155)
+
+#### @std/testing 1.0.4 (patch)
+
+- feat(testing/unstable): support for stubbing properties (#6128)
+- feat(testing/unstable): add type test for mutual assignability (#6154)
+- fix(expect,internal,testing): support `expect.assertions` (#6032)
+
+### 2024.10.24
+
+#### @std/async 1.0.7 (patch)
+
+- feat(async/unstable): add `throttle()` function (#6110)
+
+#### @std/cbor 0.1.2 (patch)
+
+- refactor(cbor): replace `toByteStream` function in common with import from
+  `@std/streams` (#6107)
+- test(cbor): number precision error in decoding test (#6115)
+- test(cbor): empty string being excluded from expected result (#6106)
+
+#### @std/collections 1.0.9 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `slidingWindows`
+  (#6095)
+
+#### @std/expect 1.0.6 (patch)
+
+- fix(expect): support `expect.objectContaining` (#6065)
+
+#### @std/fmt 1.0.3 (patch)
+
+- docs(fmt): fix %f width typo in printf docs (#6139)
+- test(fmt): handle missing group separator for 1000.1 in some locales (#6117)
+
+#### @std/fs 1.0.5 (patch)
+
+- refactor(fs): fix uncaught errors in browsers (#6135)
+
+#### @std/http 1.0.9 (patch)
+
+- fix(http): fix tablet and smarttv in Device.type literal types (#6129)
+
+#### @std/json 1.0.1 (patch)
+
+- refactor(json): fix typo (#6103)
+
+#### @std/path 1.0.7 (patch)
+
+- docs(path): re-add URL examples to `@std/path/posix` examples (#6105)
+
+#### @std/tar 0.1.3 (patch)
+
+- docs(tar): fix example in creating directories (#6113)
+
+#### @std/text 1.0.8 (patch)
+
+- feat(text/unstable): handle non-Latin-script text in `slugify` (#6012)
+
+### 2024.10.10a
+
+#### @std/cbor 0.1.1 (patch)
+
+- fix(cbor): fix module specifier in import (#6099)
+
+### 2024.10.10
+
+#### @std/async 1.0.6 (patch)
+
+- feat(async/unstable): accept iterator varargs in `MuxAsyncIterator` (#6087)
+- chore(async/unstable): fix typo (#6096)
+
+#### @std/cbor 0.1.0 (minor)
+
+- feat(cbor/unstable): introduce `@std/cbor` (#5909)
+
+#### @std/collections 1.0.8 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `takeLastWhile()`
+  (#6090)
+- feat(collections/unstable): support `Iterable` argument in `dropWhile()`
+  (#6088)
+- feat(collections/unstable): support `Iterable` argument in `intersect()`
+  (#6036)
+- feat(collections/unstable): support `Iterable` argument in `dropLastWhile()`
+  (#6076)
+- test(collections): add tests for `filterInPlace()` util (#6089)
+
+#### @std/expect 1.0.5 (patch)
+
+- fix(expect): register extended matchers after native matchers (#6075)
+
+#### @std/http 1.0.8 (patch)
+
+- docs(http/unstable): add example for multiple request methods on route (#6045)
+
+#### @std/io 0.225.0 (minor)
+
+- BREAKING(io): remove `StringReader` (#6062)
+- BREAKING(io): remove `StringWriter` (#6061)
+- BREAKING(io): remove `MultiReader` (#6059)
+- BREAKING(io): remove `LimitedReader` (#6058)
+- BREAKING(io): remove `readDelim()` (#6052)
+- BREAKING(io): remove `BufWriter` (#6057)
+- BREAKING(io): remove `BufReader` (#6056)
+- BREAKING(io): remove `readShort()` (#6050)
+- BREAKING(io): remove `readInt()` (#6048)
+- BREAKING(io): remove `readLong()` (#6047)
+- BREAKING(io/unstable): remove `readStringDelim()` (#6001)
+- BREAKING(io): remove `readRange[Sync]()` (#6049)
+- BREAKING(io/unstable): remove `sliceLongToBytes()` (#6005)
+- BREAKING(io/unstable): remove `copyN()` (#5999)
+- BREAKING(io): remove `readLines()` (#5991)
+
+#### @std/log 0.224.9 (patch)
+
+- fix(log): remove leaky `Logger.prototype.asString()` method (#6082)
+- fix(log): remove leaky `ConsoleHandler.prototype.applyColors()` (#6072)
+- fix(log): ensure consistent behavior with `@std/log` (#5974)
+- docs(log): document `getLogger()` and `Logger` (#6084)
+- docs(log): document `ConsoleHandler` (#6071)
+- docs(log): document `formatters` module (#6073)
+- docs(log): correct the examples of `debug()` (#6077)
+- docs(log): document `BaseHandler` (#6067)
+- docs(log): document pass-through functions (#6066)
+
+#### @std/streams 1.0.7 (patch)
+
+- feat(streams/unstable): `toByteStream()` (#6046)
+
+#### @std/tar 0.1.2 (patch)
+
+- fix(tar): ignore non-tar file portion of a stream in `UntarStream` (#6064)
+
+### 2024.09.24
+
+#### @std/archive 0.225.4 (patch)
+
+- deprecation(archive/unstable): deprecate `@std/archive` (#5988)
+- docs(archive): clarify deprecation notices (#6034)
+- docs(archive): update `@std/archive` deprecation notices (#6028)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/assert 1.0.6 (patch)
+
+- fix(assert): accept abstract classes (#5978)
+
+#### @std/collections 1.0.7 (patch)
+
+- feat(collections/unstable): support `Iterable` argument in `sample()` (#6035)
+- feat(collections/unstable): support Iterable argument in `withoutAll()`
+  (#6031)
+- feat(collections/unstable): `Iterable` argument in `chunk()` (#5925)
+- feat(collections/unstable): support iterators in `sortBy()` (#5919)
+- feat(collections/unstable): support `Iterable` argument in `takeWhile()`
+  (#5911)
+
+#### @std/expect 1.0.4 (patch)
+
+- fix(expect): support `expect.hasAssertions()` (#5901)
+
+#### @std/fs 1.0.4 (patch)
+
+- docs(fs): clarify permissions requirements for `exists[Sync]()` (#5983)
+
+#### @std/http 1.0.7 (patch)
+
+- feat(http/unstable): add support for multiple request methods on route (#6003)
+- fix(http): make `file-server` work on Deno Deploy (#6033)
+- fix(http): use non-locale-sensitive string methods for comparison (#6029)
+
+#### @std/internal 1.0.4 (patch)
+
+- chore: bump to internal@1.0.4 (#6020)
+
+#### @std/io 0.224.9 (patch)
+
+- deprecation(io): deprecate `BufWriter` (#6041)
+- deprecation(io/unstable): deprecate `BufReader` (#6027)
+- deprecation(io/unstable): deprecate `StringWriter` (#6026)
+- deprecation(io/unstable): deprecate `StringReader` (#6025)
+- deprecation(io/unstable): deprecate `LimitedReader` (#6024)
+- deprecation(io/unstable): deprecate `MultiReader` (#6023)
+- deprecation(io/unstable): deprecate `readDelim()` (#6022)
+- deprecation(io/unstable): deprecate `readLong()` (#6007)
+- deprecation(io/unstable): deprecate `readRange()` (#6010)
+- deprecation(io/unstable): deprecate `readInt()` (#6009)
+- deprecation(io/unstable): deprecate `readShort()` (#6008)
+- deprecation(io/unstable): deprecate `sliceLongToBytes()` (#6002)
+- deprecation(io/unstable): deprecate `readStringDelim()` (#6000)
+- deprecation(io/unstable): deprecate `copyN()` (#5992)
+- deprecation(io/unstable): deprecate `readLines()` (#5990)
+- docs(io): update deprecation notices (#6021)
+
+#### @std/log 0.224.8 (patch)
+
+- docs(log): document `warn` module (#5973)
+- docs(archive,log,testing): correct typos (#5995)
+
+#### @std/streams 1.0.6 (patch)
+
+- feat(streams/unstable): `toBytes()` (#6011)
+
+#### @std/testing 1.0.3 (patch)
+
+- docs(archive,log,testing): correct typos (#5995)
+- docs(testing): fix typo in snapshot (#5994)
+
+#### @std/text 1.0.7 (patch)
+
+- fix(text): handle code points > U+FFFF in `levenshteinDistance` (#6014)
+
 ### 2024.09.16
 
 #### @std/cache 0.1.3 (patch)

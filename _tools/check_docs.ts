@@ -19,6 +19,7 @@ import {
   type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
+  type JsDocTagParam,
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
@@ -29,17 +30,19 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 };
 
 const ENTRY_POINTS = [
-  "../archive/mod.ts",
   "../assert/mod.ts",
   "../assert/unstable_never.ts",
   "../async/mod.ts",
   "../bytes/mod.ts",
   "../cache/mod.ts",
+  "../cbor/mod.ts",
   "../cli/mod.ts",
   "../cli/unstable_spinner.ts",
+  "../cli/unstable_prompt_multiple_select.ts",
   "../crypto/mod.ts",
   "../collections/mod.ts",
   "../csv/mod.ts",
+  "../csv/unstable_stringify.ts",
   "../data_structures/mod.ts",
   "../data_structures/unstable_bidirectional_map.ts",
   "../datetime/mod.ts",
@@ -70,6 +73,17 @@ const ENTRY_POINTS = [
   "../io/mod.ts",
   "../json/mod.ts",
   "../jsonc/mod.ts",
+  "../log/base_handler.ts",
+  "../log/file_handler.ts",
+  "../log/warn.ts",
+  "../log/critical.ts",
+  "../log/debug.ts",
+  "../log/error.ts",
+  "../log/info.ts",
+  "../log/console_handler.ts",
+  "../log/formatters.ts",
+  "../log/get_logger.ts",
+  "../log/logger.ts",
   "../media_types/mod.ts",
   "../msgpack/mod.ts",
   "../net/mod.ts",
@@ -88,6 +102,7 @@ const ENTRY_POINTS = [
   "../streams/mod.ts",
   "../streams/unstable_fixed_chunk_stream.ts",
   "../streams/unstable_to_lines.ts",
+  "../streams/unstable_to_bytes.ts",
   "../tar/mod.ts",
   "../text/mod.ts",
   "../text/unstable_slugify.ts",
@@ -171,6 +186,36 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   }
 }
 
+/**
+ * Asserts that a @param tag has a corresponding function definition.
+ */
+function assertHasParamDefinition(
+  document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
+  param: JsDocTagParam,
+) {
+  const paramDoc = document.functionDef.params.find((paramDoc) => {
+    if (paramDoc.kind === "identifier") {
+      return paramDoc.name === param.name;
+    } else if (paramDoc.kind === "rest" && paramDoc.arg.kind === "identifier") {
+      return paramDoc.arg.name === param.name;
+    } else if (
+      paramDoc.kind === "assign" && paramDoc.left.kind === "identifier"
+    ) {
+      return paramDoc.left.name === param.name;
+    }
+    return false;
+  });
+
+  if (!paramDoc) {
+    diagnostics.push(
+      new DocumentError(
+        `@param ${param.name} must have a corresponding named function parameter definition.`,
+        document,
+      ),
+    );
+  }
+}
+
 function assertHasParamTag(
   document: { jsDoc: JsDoc; location: Location },
   param: string,
@@ -189,55 +234,6 @@ function assertHasParamTag(
       `@param tag for ${param} must have a description`,
       document,
     );
-  }
-}
-
-async function assertSnippetEvals(
-  {
-    snippet,
-    document,
-    expectError,
-  }: {
-    snippet: string;
-    document: { jsDoc: JsDoc; location: Location };
-    expectError: boolean;
-  },
-) {
-  const command = new Deno.Command(Deno.execPath(), {
-    args: [
-      "eval",
-      "--ext=ts",
-      "--unstable-webgpu",
-      "--check",
-      "--no-lock",
-      snippet,
-    ],
-    stderr: "piped",
-  });
-  const timeoutId = setTimeout(() => {
-    // deno-lint-ignore no-console
-    console.warn(
-      `Snippet at ${document.location.filename}:${document.location.line} has been running for more than 10 seconds...\n${snippet}`,
-    );
-  }, 10_000);
-  try {
-    const { success, stderr } = await command.output();
-    const error = new TextDecoder().decode(stderr);
-    if (expectError) {
-      assert(
-        !success,
-        `Snippet is expected to have errors, but executed successfully: \n${snippet}\n${error}`,
-        document,
-      );
-    } else {
-      assert(
-        success,
-        `Failed to execute snippet: \n${snippet}\n${error}`,
-        document,
-      );
-    }
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 
@@ -262,24 +258,15 @@ function assertSnippetsWork(
   }
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
-    if (delim?.includes("no-eval")) continue;
     // Trim the code block delimiters
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
-    if (!delim?.includes("no-assert")) {
+    if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
         "Snippet must contain assertion from '@std/assert'",
         document,
       );
     }
-    snippetPromises.push(
-      () =>
-        assertSnippetEvals({
-          snippet,
-          document,
-          expectError: delim?.includes("expect-error") ?? false,
-        }),
-    );
   }
 }
 
@@ -342,6 +329,7 @@ function assertHasTypeParamTags(
  * Asserts that a function document has:
  * - A `@typeParam` tag for each type parameter.
  * - A {@linkcode https://jsdoc.app/tags-param | @param} tag for each parameter.
+ * - A parameter definition inside the function for each @param tag.
  * - A {@linkcode https://jsdoc.app/tags-returns | @returns} tag.
  * - At least one {@linkcode https://jsdoc.app/tags-example | @example} tag with
  *   a code snippet that executes successfully.
@@ -354,10 +342,24 @@ function assertFunctionDocs(
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
     }
+    if (param.kind === "rest" && param.arg.kind === "identifier") {
+      assertHasParamTag(document, param.arg.name);
+    }
     if (param.kind === "assign" && param.left.kind === "identifier") {
       assertHasParamTag(document, param.left.name);
     }
   }
+
+  const documentedParams = document.jsDoc.tags?.filter((
+    tag,
+  ): tag is JsDocTagParam =>
+    // Filter nested definitions like options.root as it is still documenting options parameter
+    tag.kind === "param" && !tag.name.includes(".")
+  ) ?? [];
+  for (const param of documentedParams) {
+    assertHasParamDefinition(document, param);
+  }
+
   for (const typeParam of document.functionDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
