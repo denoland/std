@@ -24,6 +24,9 @@ type PipeArgs<F extends AnyFunc[], Acc extends AnyFunc[] = []> = F extends [
  *
  * @example Usage
  * ```ts
+ *  import { assertEquals } from "@std/assert";
+ *  import { pipe } from "@std/functions";
+ *
  *  const myPipe = pipe(
  *    Math.abs,
  *    Math.sqrt,
