@@ -67,6 +67,7 @@
     "./fmt",
     "./front_matter",
     "./fs",
+    "./functions",
     "./html",
     "./http",
     "./ini",
