@@ -19,4 +19,4 @@
  *
  * @module
  */
-export { pipe } from "./pipe.ts";
+export * from "./pipe.ts";
