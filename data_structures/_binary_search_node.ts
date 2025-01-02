@@ -17,13 +17,27 @@ export class BinarySearchNode<T> {
   }
 
   static from<T>(node: BinarySearchNode<T>): BinarySearchNode<T> {
-    const copy: BinarySearchNode<T> = new BinarySearchNode(
-      node.parent,
-      node.value,
-    );
-    copy.left = node.left;
-    copy.right = node.right;
-    return copy;
+    // New deep copy
+    // 1. Create a brand new node (with no parent at first)
+    const clone = new BinarySearchNode<T>(null, node.value);
+
+    // 2. Recursively clone the left subtree
+    if (node.left) {
+      clone.left = BinarySearchNode.from(node.left);
+      clone.left.parent = clone;
+    }
+
+    // 3. Recursively clone the right subtree
+    if (node.right) {
+      clone.right = BinarySearchNode.from(node.right);
+      clone.right.parent = clone;
+    }
+
+    // 4. We do NOT copy over 'parent' from the old node!  Instead, when the
+    //    parent's 'from()' call links the child, it sets child.parent = parent.
+    //    This ensures the copied tree has all new references.
+
+    return clone;
   }
 
   directionFromParent(): Direction | null {

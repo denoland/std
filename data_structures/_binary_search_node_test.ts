@@ -1,5 +1,5 @@
 // Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertStrictEquals } from "@std/assert";
+import { assert, assertEquals, assertStrictEquals } from "@std/assert";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 
 let parent: BinarySearchNode<number>;
@@ -23,20 +23,55 @@ Deno.test("BinarySearchNode", () => {
   assertStrictEquals(child.value, 7);
 });
 
-Deno.test("BinarySearchNode.from()", () => {
-  beforeEach();
-  const parentClone: BinarySearchNode<number> = BinarySearchNode.from(parent);
-  const childClone: BinarySearchNode<number> = BinarySearchNode.from(child);
+Deno.test("BinarySearchNode.from() - deep copy", () => {
+  // Construct a small test tree:
+  //         (root:5)
+  //        /        \
+  // (left:3)        (right:7)
+  //       \
+  //       (4)
+  //
+  const root = new BinarySearchNode<number>(null, 5);
+  const leftChild = new BinarySearchNode<number>(root, 3);
+  const rightChild = new BinarySearchNode<number>(root, 7);
+  root.left = leftChild;
+  root.right = rightChild;
 
-  assertStrictEquals(parentClone.parent, null);
-  assertStrictEquals(parentClone.left, null);
-  assertStrictEquals(parentClone.right, child);
-  assertStrictEquals(parentClone.value, 5);
+  // Add a right child to the left child
+  const leftRightChild = new BinarySearchNode<number>(leftChild, 4);
+  leftChild.right = leftRightChild;
 
-  assertStrictEquals(childClone.parent, parent);
-  assertStrictEquals(childClone.left, null);
-  assertStrictEquals(childClone.right, null);
-  assertStrictEquals(childClone.value, 7);
+  // Invoke the new from() logic to perform a deep copy
+  const rootClone = BinarySearchNode.from(root);
+
+  // 1. rootClone is a different reference from root but has the same value
+  assert(rootClone !== root);
+  assertStrictEquals(rootClone.value, 5);
+  // The root node's parent must be null
+  assertStrictEquals(rootClone.parent, null);
+
+  // 2. Verify the cloned leftChild
+  assert(rootClone.left !== null);
+  assert(rootClone.left !== leftChild);
+  assertStrictEquals(rootClone.left!.value, 3);
+  // Verify the cloned leftChild's parent points to the new rootClone
+  assertStrictEquals(rootClone.left!.parent, rootClone);
+
+  // 3. Verify the cloned rightChild
+  assert(rootClone.right !== null);
+  assert(rootClone.right !== rightChild);
+  assertStrictEquals(rootClone.right!.value, 7);
+  assertStrictEquals(rootClone.right!.parent, rootClone);
+
+  // 4. Verify the cloned leftRightChild
+  const clonedLeftRightChild = rootClone.left!.right;
+  assert(clonedLeftRightChild !== null);
+  // It should not be the same as the original leftRightChild
+  assert(clonedLeftRightChild !== leftRightChild);
+  // But the value should be 4
+  assertStrictEquals(clonedLeftRightChild!.value, 4);
+  // And its parent should point to the cloned leftChild
+  assertStrictEquals(clonedLeftRightChild!.parent, rootClone.left);
 });
 
 Deno.test("BinarySearchNode.directionFromParent()", () => {
