@@ -21,6 +21,9 @@ function checkWindows(): boolean {
   return false;
 }
 
-export function getNodeFsPromises() {
-  return (globalThis as any).process.getBuiltinModule("node:fs/promises");
+/**
+ * @returns The Node.js `fs` module.
+ */
+export function getNodeFs() {
+  return (globalThis as any).process.getBuiltinModule("node:fs");
 }
