@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { ascend } from "./comparators.ts";
@@ -14,6 +14,7 @@ const {
   rotateNode,
   insertNode,
   removeNode,
+  setSize,
 } = internals;
 
 /**
@@ -251,6 +252,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
             nodes.push(right);
           }
         }
+        setSize(result, collection.size);
       }
     } else {
       result = (options?.compare
