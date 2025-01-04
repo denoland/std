@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Run this test with `deno test --unstable-ffi -A compare_with_rust.ts`
 
 import { unicodeWidth } from "../unicode_width.ts";

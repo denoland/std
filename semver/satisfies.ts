@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { Range, SemVer } from "./types.ts";
 import { testComparatorSet } from "./_test_comparator_set.ts";
