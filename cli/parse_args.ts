@@ -1,15 +1,73 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
  * Command line arguments parser based on
  * {@link https://github.com/minimistjs/minimist | minimist}.
  *
+ * See {@linkcode parseArgs} for more information.
+ *
  * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
  *
- * const args = parseArgs(Deno.args);
+ * // For proper use, one should use `parseArgs(Deno.args)`
+ * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {
+ *   foo: true,
+ *   bar: "baz",
+ *   _: ["./quux.txt"],
+ * });
+ * ```
+ *
+ * @example `string` and `boolean` options
+ *
+ * Use `string` and `boolean` options to specify the type of the argument.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--foo", "--bar", "baz"], {
+ *   boolean: ["foo"],
+ *   string: ["bar"],
+ * });
+ *
+ * assertEquals(args, { foo: true, bar: "baz", _: [] });
+ * ```
+ *
+ * @example `collect` option
+ *
+ * `collect` option tells the parser to treat the option as an array. All
+ * values will be collected into one array. If a non-collectable option is used
+ * multiple times, the last value is used.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--foo", "bar", "--foo", "baz"], {
+ *  collect: ["foo"],
+ * });
+ *
+ * assertEquals(args, { foo: ["bar", "baz"], _: [] });
+ * ```
+ *
+ * @example `negatable` option
+ *
+ * `negatable` option tells the parser to treat the option can be negated by
+ * prefixing them with `--no-`, like `--no-config`.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--no-foo"], {
+ *   boolean: ["foo"],
+ *   negatable: ["foo"],
+ * });
+ *
+ * assertEquals(args, { foo: false, _: [] });
  * ```
  *
  * @module
@@ -285,7 +343,7 @@ export interface ParseOptions<
    * const args = parseArgs(Deno.args, { "--": false }); // args equals { _: [ "a", "arg1" ] }
    * ```
    *
-   *  @example Double dash option is true
+   * @example Double dash option is true
    * ```ts
    * // $ deno run example.ts -- a arg1
    * import { parseArgs } from "@std/cli/parse-args";
@@ -455,6 +513,8 @@ function parseBooleanString(value: unknown) {
  * Numeric-looking arguments will be returned as numbers unless `options.string`
  * or `options.boolean` is set for that argument name.
  *
+ * See {@linkcode ParseOptions} for more information.
+ *
  * @param args An array of command line arguments.
  * @param options Options for the parse function.
  *
@@ -474,7 +534,7 @@ function parseBooleanString(value: unknown) {
  * @example Usage
  * ```ts
  * import { parseArgs } from "@std/cli/parse-args";
- * import { assertEquals } from "@std/assert";
+ * import { assertEquals } from "@std/assert/equals";
  *
  * // For proper use, one should use `parseArgs(Deno.args)`
  * assertEquals(parseArgs(["--foo", "--bar=baz", "./quux.txt"]), {
@@ -482,6 +542,56 @@ function parseBooleanString(value: unknown) {
  *   bar: "baz",
  *   _: ["./quux.txt"],
  * });
+ * ```
+ *
+ * @example `string` and `boolean` options
+ *
+ * Use `string` and `boolean` options to specify the type of the argument.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--foo", "--bar", "baz"], {
+ *   boolean: ["foo"],
+ *   string: ["bar"],
+ * });
+ *
+ * assertEquals(args, { foo: true, bar: "baz", _: [] });
+ * ```
+ *
+ * @example `collect` option
+ *
+ * `collect` option tells the parser to treat the option as an array. All
+ * values will be collected into one array. If a non-collectable option is used
+ * multiple times, the last value is used.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--foo", "bar", "--foo", "baz"], {
+ *  collect: ["foo"],
+ * });
+ *
+ * assertEquals(args, { foo: ["bar", "baz"], _: [] });
+ * ```
+ *
+ * @example `negatable` option
+ *
+ * `negatable` option tells the parser to treat the option can be negated by
+ * prefixing them with `--no-`, like `--no-config`.
+ *
+ * ```ts
+ * import { parseArgs } from "@std/cli/parse-args";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const args = parseArgs(["--no-foo"], {
+ *   boolean: ["foo"],
+ *   negatable: ["foo"],
+ * });
+ *
+ * assertEquals(args, { foo: false, _: [] });
  * ```
  */
 export function parseArgs<
