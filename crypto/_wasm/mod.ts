@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 export {
   instantiate as instantiateWasm,
 } from "./lib/deno_std_wasm_crypto.generated.mjs";
