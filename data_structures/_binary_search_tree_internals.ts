@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { BinarySearchNode } from "./_binary_search_node.ts";
@@ -39,4 +39,5 @@ export const internals: {
     tree: BinarySearchTree<T>,
     node: BinarySearchNode<T>,
   ): BinarySearchNode<T> | null;
+  setSize<T>(tree: BinarySearchTree<T>, size: number): void;
 } = {} as typeof internals;

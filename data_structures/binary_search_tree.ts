@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { ascend } from "./comparators.ts";
@@ -140,6 +140,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
       tree: BinarySearchTree<T>,
       node: BinarySearchNode<T>,
     ): BinarySearchNode<T> | null => tree.#removeNode(node);
+    internals.setSize = <T>(tree: BinarySearchTree<T>, size: number) =>
+      tree.#size = size;
   }
 
   /**

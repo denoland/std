@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved. MIT license.
 
 import type { EqualOptions, EqualOptionUtil } from "./_types.ts";
