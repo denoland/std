@@ -1,5 +1,5 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { formatRange } from "./format_range.ts";
 import { parseRange } from "./parse_range.ts";
