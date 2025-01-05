@@ -632,3 +632,117 @@ Deno.test("promptSecret() wraps characters wider than console columns", () => {
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptSecret() returns to previous line when deleting characters", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 6, rows: 20 };
+  });
+
+  const expectedOutput = [
+    "? ",
+    "\r\u001b[K",
+    "? *",
+    "\r\u001b[K",
+    "? **",
+    "\r\u001b[K",
+    "? ***",
+    "\r\u001b[K",
+    "? ****",
+    "*",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "****",
+    "\r\u001b[K",
+    "*****",
+    "\r\u001b[K",
+    "******",
+    "*",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "*",
+    "\r\u001b[K",
+    "\r\u001b[1F",
+    "******",
+    "\r\u001b[K",
+    "*****",
+    "\r\u001b[K",
+    "****",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "*",
+    "\r\u001b[K",
+    "\r\u001b[1F",
+    "? ****",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    " ",
+    "r",
+    "u",
+    "l",
+    "e",
+    "s",
+    "!",
+    "!",
+    "!",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("?");
+
+  assertEquals(password, "deno");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
