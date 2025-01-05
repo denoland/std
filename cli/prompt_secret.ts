@@ -9,6 +9,7 @@ const CR = "\r".charCodeAt(0); // ^M - Enter on macOS and Windows (CRLF)
 const BS = "\b".charCodeAt(0); // ^H - Backspace on Linux and Windows
 const DEL = 0x7f; // ^? - Backspace on macOS
 const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
+const MOVE_LINE_UP = encoder.encode("\r\u001b[1F"); // Move to previous line
 
 // The `cbreak` option is not supported on Windows
 const setRawOptions = Deno.build.os === "windows"
@@ -53,12 +54,12 @@ export function promptSecret(
   }
 
   const { columns } = Deno.consoleSize();
-
+  let previousLength = 0;
   // Make the output consistent with the built-in prompt()
   message += " ";
   const callback = !mask ? undefined : (n: number) => {
     let line = `${message}${mask.repeat(n)}`;
-
+    const currentLength = line.length;
     const charsPastLineLength = line.length % columns;
 
     if (line.length > columns) {
@@ -66,11 +67,23 @@ export function promptSecret(
         -1 * (charsPastLineLength === 0 ? columns : charsPastLineLength),
       );
     }
-    // Always jump the cursor back to the beginning of the line unless it's the first character.
-    if (charsPastLineLength !== 1) {
+
+    // If the user has deleted a character
+    if (currentLength < previousLength) {
+      // Then clear the current line
       output.writeSync(CLR);
+      if (charsPastLineLength === 0) {
+        // And if there's no characters on the current line, return to previous line
+        output.writeSync(MOVE_LINE_UP);
+      }
+    } else {
+      // Always jump the cursor back to the beginning of the line unless it's the first character.
+      if (charsPastLineLength !== 1) {
+        output.writeSync(CLR);
+      }
     }
     output.writeSync(encoder.encode(line));
+    previousLength = currentLength;
   };
 
   output.writeSync(encoder.encode(message));
