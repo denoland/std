@@ -70,10 +70,10 @@ export function promptSecret(
 
     // If the user has deleted a character
     if (currentLength < previousLength) {
-      // Then clear the current line
+      // Then clear the current line.
       output.writeSync(CLR);
       if (charsPastLineLength === 0) {
-        // And if there's no characters on the current line, return to previous line
+        // And if there's no characters on the current line, return to previous line.
         output.writeSync(MOVE_LINE_UP);
       }
     } else {
