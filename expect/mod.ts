@@ -71,7 +71,7 @@
  *
  * Only these functions are still not available:
  * - Matchers:
- *   - `toMatchSnapShot`
+ *   - `toMatchSnapshot`
  *   - `toMatchInlineSnapshot`
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`

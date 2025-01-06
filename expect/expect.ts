@@ -608,7 +608,7 @@ expect.not = {
  * The last module added is the first module tested.
  *
  * @example
- * ```ts no-eval
+ * ```ts
  * import { expect } from "@std/expect";
  * import serializerAnsi from "npm:jest-snapshot-serializer-ansi";
  *

@@ -19,3 +19,5 @@ codecov.SHA256SUM.sig
 .DS_Store
 .idea
 .vim
+_tmp/
+!_tmp/.keep
