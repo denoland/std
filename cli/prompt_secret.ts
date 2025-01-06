@@ -82,7 +82,9 @@ export function promptSecret(
         output.writeSync(CLR);
       }
     }
+
     output.writeSync(encoder.encode(line));
+
     previousLength = currentLength;
   };
 
