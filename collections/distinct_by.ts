@@ -2,15 +2,17 @@
 // This module is browser compatible.
 
 /**
- * Returns all elements in the given array that produce a distinct value using
- * the given selector, preserving order by first occurrence.
+ * Returns all elements in the given array that produce a unique value using
+ * the given selector, with the first matching occurrence retained.
+ *
+ * Uniqueness is determined by same-value-zero equality of the returned values.
  *
  * @typeParam T The type of the elements in the input array.
  * @typeParam D The type of the values produced by the selector function.
  *
  * @param array The array to filter for distinct elements.
  * @param selector The function to extract the value to compare for
- * distinctness.
+ * uniqueness.
  *
  * @returns An array of distinct elements in the input array.
  *
