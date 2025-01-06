@@ -16,7 +16,7 @@ for await (
   const { path: modFilePath } of walk(ROOT, {
     includeDirs: true,
     exts: ["ts"],
-    match: [/\/mod\.ts$/],
+    match: [/(\/|\\)mod\.ts$/],
     maxDepth: 2,
   })
 ) {
