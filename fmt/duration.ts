@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -23,58 +23,62 @@ function addZero(num: number, digits: number) {
   return String(num).padStart(digits, "0");
 }
 
-interface DurationObject {
-  d: number;
-  h: number;
-  m: number;
-  s: number;
-  ms: number;
-  us: number;
-  ns: number;
+type DurationPartUnit =
+  | "days"
+  | "hours"
+  | "minutes"
+  | "seconds"
+  | "milliseconds"
+  | "microseconds"
+  | "nanoseconds";
+
+interface DurationPart {
+  unit: DurationPartUnit;
+  value: number;
 }
 
-const keyList: Record<keyof DurationObject, string> = {
-  d: "day",
-  h: "hour",
-  m: "minute",
-  s: "second",
-  ms: "millisecond",
-  us: "microsecond",
-  ns: "nanosecond",
-};
+const NARROW_UNIT_NAME_MAP = new Map<DurationPartUnit, string>([
+  ["days", "d"],
+  ["hours", "h"],
+  ["minutes", "m"],
+  ["seconds", "s"],
+  ["milliseconds", "ms"],
+  ["microseconds", "µs"],
+  ["nanoseconds", "ns"],
+]);
+
+const FULL_UNIT_NAME_MAP = new Map<DurationPartUnit, string>([
+  ["days", "day"],
+  ["hours", "hour"],
+  ["minutes", "minute"],
+  ["seconds", "second"],
+  ["milliseconds", "millisecond"],
+  ["microseconds", "microsecond"],
+  ["nanoseconds", "nanosecond"],
+]);
 
 /** Get key with pluralization */
-function getPluralizedKey(type: keyof DurationObject, value: number) {
-  return value === 1 ? keyList[type] : `${keyList[type]}s`;
+function getPluralizedKey(unit: DurationPartUnit, value: number) {
+  return value === 1
+    ? FULL_UNIT_NAME_MAP.get(unit)
+    : `${FULL_UNIT_NAME_MAP.get(unit)}s`;
 }
 
 /** Parse milliseconds into a duration. */
-function millisecondsToDurationObject(ms: number): DurationObject {
+function millisecondsToDurationParts(
+  ms: number,
+): DurationPart[] {
   // Duration cannot be negative
   const millis = Math.abs(ms);
   const millisFraction = millis.toFixed(7).slice(-7, -1);
-  return {
-    d: Math.trunc(millis / 86400000),
-    h: Math.trunc(millis / 3600000) % 24,
-    m: Math.trunc(millis / 60000) % 60,
-    s: Math.trunc(millis / 1000) % 60,
-    ms: Math.trunc(millis) % 1000,
-    us: +millisFraction.slice(0, 3),
-    ns: +millisFraction.slice(3, 6),
-  };
-}
-
-function durationArray(
-  duration: DurationObject,
-): { type: keyof DurationObject; value: number }[] {
   return [
-    { type: "d", value: duration.d },
-    { type: "h", value: duration.h },
-    { type: "m", value: duration.m },
-    { type: "s", value: duration.s },
-    { type: "ms", value: duration.ms },
-    { type: "us", value: duration.us },
-    { type: "ns", value: duration.ns },
+    { unit: "days", value: Math.trunc(millis / 86400000) },
+    { unit: "hours", value: Math.trunc(millis / 3600000) % 24 },
+    { unit: "minutes", value: Math.trunc(millis / 60000) % 60 },
+    { unit: "seconds", value: Math.trunc(millis / 1000) % 60 },
+    { unit: "milliseconds", value: Math.trunc(millis) % 1000 },
+    { unit: "microseconds", value: +millisFraction.slice(0, 3) },
+    { unit: "nanoseconds", value: +millisFraction.slice(3, 6) },
   ];
 }
 
@@ -130,40 +134,26 @@ export function format(
     ignoreZero = false,
   } = options ?? {};
 
-  const duration = millisecondsToDurationObject(ms);
-  const durationArr = durationArray(duration);
+  const parts = millisecondsToDurationParts(ms);
+
   switch (style) {
     case "narrow": {
-      if (ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value}${x.type === "us" ? "µs" : x.type}`
-          )
-            .join(" ")
-        }`;
-      }
-      return `${
-        durationArr.map((x) => `${x.value}${x.type === "us" ? "µs" : x.type}`)
-          .join(" ")
-      }`;
+      let arr = parts;
+      if (ignoreZero) arr = arr.filter((x) => x.value);
+      return arr
+        .map((x) => `${x.value}${NARROW_UNIT_NAME_MAP.get(x.unit)}`)
+        .join(" ");
     }
     case "full": {
-      if (ignoreZero) {
-        return `${
-          durationArr.filter((x) => x.value).map((x) =>
-            `${x.value} ${getPluralizedKey(x.type, x.value)}`
-          ).join(", ")
-        }`;
-      }
-      return `${
-        durationArr.map((x) =>
-          `${x.value} ${getPluralizedKey(x.type, x.value)}`
-        ).join(", ")
-      }`;
+      let arr = parts;
+      if (ignoreZero) arr = arr.filter((x) => x.value);
+      return arr
+        .map((x) => `${x.value} ${getPluralizedKey(x.unit, x.value)}`)
+        .join(", ");
     }
     case "digital": {
-      const arr = durationArr.map((x) =>
-        ["ms", "us", "ns"].includes(x.type)
+      const arr = parts.map((x) =>
+        ["milliseconds", "microseconds", "nanoseconds"].includes(x.unit)
           ? addZero(x.value, 3)
           : addZero(x.value, 2)
       );

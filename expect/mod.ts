@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // This module is browser compatible.
 
@@ -71,7 +71,7 @@
  *
  * Only these functions are still not available:
  * - Matchers:
- *   - `toMatchSnapShot`
+ *   - `toMatchSnapshot`
  *   - `toMatchInlineSnapshot`
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`

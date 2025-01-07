@@ -1,7 +1,6 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
-import { concat } from "@std/bytes/concat";
-import { encodeCbor } from "./encode_cbor.ts";
+import { calcEncodingSize, encode } from "./_common_encode.ts";
 import type { CborType } from "./types.ts";
 
 /**
@@ -36,7 +35,11 @@ import type { CborType } from "./types.ts";
  * @returns A {@link Uint8Array} representing the encoded data.
  */
 export function encodeCborSequence(values: CborType[]): Uint8Array {
-  const output: Uint8Array[] = [];
-  for (const value of values) output.push(encodeCbor(value));
-  return concat(output);
+  let x = 0;
+  for (const value of values) x += calcEncodingSize(value);
+  const output = new Uint8Array(x);
+
+  x = 0;
+  for (const value of values) x = encode(value, output, x);
+  return output;
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { decode } from "./_common_decode.ts";
 import type { CborType } from "./types.ts";
@@ -40,13 +40,18 @@ import type { CborType } from "./types.ts";
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value The value to decode of type CBOR-sequence-encoded
+ * @param input The value to decode of type CBOR-sequence-encoded
  * {@link Uint8Array}.
  * @returns A {@link CborType} array representing the decoded data.
  */
-export function decodeCborSequence(value: Uint8Array): CborType[] {
+
+export function decodeCborSequence(input: Uint8Array): CborType[] {
   const output: CborType[] = [];
-  const source = Array.from(value).reverse();
-  while (source.length) output.push(decode(source));
+  let offset = 0;
+  while (offset < input.length) {
+    const x = decode(input, offset);
+    output.push(x[0]);
+    offset = x[1];
+  }
   return output;
 }
