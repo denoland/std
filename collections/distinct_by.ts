@@ -3,15 +3,15 @@
 
 /**
  * Returns all elements in the given array that produce a unique value using
- * the given selector, with the first matching occurrence retained.
+ * the given discriminator, with the first matching occurrence retained.
  *
  * Uniqueness is determined by same-value-zero equality of the returned values.
  *
  * @typeParam T The type of the elements in the input array.
- * @typeParam D The type of the values produced by the selector function.
+ * @typeParam D The type of the values produced by the discriminator function.
  *
  * @param array The array to filter for distinct elements.
- * @param selector The function to extract the value to compare for
+ * @param discriminator The function to extract the value to compare for
  * uniqueness.
  *
  * @returns An array of distinct elements in the input array.
@@ -21,22 +21,22 @@
  * import { distinctBy } from "@std/collections/distinct-by";
  * import { assertEquals } from "@std/assert";
  *
- * const names = ["Anna", "Kim", "Arnold", "Kate"];
- * const exampleNamesByFirstLetter = distinctBy(names, (name) => name.charAt(0));
+ * const users = [{ id: 1, name: "Anna" }, { id: 2, name: "Kim" }, { id: 1, name: "Anna again" }];
+ * const uniqueUsers = distinctBy(users, (user) => user.id);
  *
- * assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
+ * assertEquals(uniqueUsers, [{ id: 1, name: "Anna" }, { id: 2, name: "Kim" }]);
  * ```
  */
 export function distinctBy<T, D>(
   array: Iterable<T>,
-  selector: (el: T) => D,
+  discriminator: (el: T) => D,
 ): T[] {
-  const selectedValues = new Set<D>();
+  const keys = new Set<D>();
   const result: T[] = [];
   for (const element of array) {
-    const selected = selector(element);
-    if (!selectedValues.has(selected)) {
-      selectedValues.add(selected);
+    const key = discriminator(element);
+    if (!keys.has(key)) {
+      keys.add(key);
       result.push(element);
     }
   }
