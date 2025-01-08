@@ -80,3 +80,18 @@ export interface FileInfo {
    * _Linux/Mac OS only._ */
   isSocket: boolean | null;
 }
+
+export interface DirEntry {
+  /** The file name of the entry. It is just the entity name and does not
+   * include the full path. */
+  name: string;
+  /** True if this is info for a regular file. Mutually exclusive to
+   * `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
+  isFile: boolean;
+  /** True if this is info for a regular directory. Mutually exclusive to
+   * `FileInfo.isFile` and `FileInfo.isSymlink`. */
+  isDirectory: boolean;
+  /** True if this is info for a symlink. Mutually exclusive to
+   * `FileInfo.isFile` and `FileInfo.isDirectory`. */
+  isSymlink: boolean;
+}
