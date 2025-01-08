@@ -26,7 +26,7 @@ Deno.test("readDir() reads from the directory and its subdirectories", async () 
 
 Deno.test("readDir() rejects when the path is not a directory", async () => {
   await assertRejects(async () => {
-    const testFile = join(testdataDir, "0.txt");
+    const testFile = join(testdataDir, "0.ts");
     await readDir(testFile)[Symbol.asyncIterator]().next();
   }, Error);
 });
