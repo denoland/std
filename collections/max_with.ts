@@ -36,7 +36,7 @@ export function maxWith<T>(
   let isFirst = true;
 
   for (const current of array) {
-    if (isFirst || comparator(current, <T> max) > 0) {
+    if (isFirst || comparator(current, max as T) > 0) {
       max = current;
       isFirst = false;
     }
