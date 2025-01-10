@@ -10,6 +10,9 @@ const decoder = new TextDecoder();
 Deno.test("promptSecret() handles CR", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -54,6 +57,9 @@ Deno.test("promptSecret() handles CR", () => {
 Deno.test("promptSecret() handles LF", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -98,6 +104,9 @@ Deno.test("promptSecret() handles LF", () => {
 Deno.test("promptSecret() handles input", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -155,6 +164,9 @@ Deno.test("promptSecret() handles input", () => {
 Deno.test("promptSecret() handles DEL", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -218,6 +230,9 @@ Deno.test("promptSecret() handles DEL", () => {
 Deno.test("promptSecret() handles BS", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -281,6 +296,9 @@ Deno.test("promptSecret() handles BS", () => {
 Deno.test("promptSecret() handles clear option", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -340,6 +358,9 @@ Deno.test("promptSecret() handles clear option", () => {
 Deno.test("promptSecret() handles mask option", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -397,6 +418,9 @@ Deno.test("promptSecret() handles mask option", () => {
 Deno.test("promptSecret() handles empty mask option", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -470,6 +494,9 @@ Deno.test("promptSecret() returns null if Deno.stdin.isTerminal() is false", () 
 Deno.test("promptSecret() handles null readSync", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -500,6 +527,9 @@ Deno.test("promptSecret() handles null readSync", () => {
 Deno.test("promptSecret() handles empty readSync", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 80, rows: 20 };
+  });
 
   const expectedOutput = [
     "Please provide the password: ",
@@ -523,6 +553,196 @@ Deno.test("promptSecret() handles empty readSync", () => {
   const password = promptSecret("Please provide the password:");
 
   assertEquals(password, "");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSecret() wraps characters wider than console columns", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 5, rows: 20 };
+  });
+
+  const expectedOutput = [
+    "? ",
+    "\r\x1b[K",
+    "? *",
+    "\r\x1b[K",
+    "? **",
+    "\r\x1b[K",
+    "? ***",
+    "*",
+    "\r\x1b[K",
+    "**",
+    "\r\x1b[K",
+    "***",
+    "\r\x1b[K",
+    "****",
+    "\r\x1b[K",
+    "*****",
+    "*",
+    "\r\x1b[K",
+    "**",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    " ",
+    "r",
+    "u",
+    "l",
+    "e",
+    "s",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("?");
+
+  assertEquals(password, "deno rules");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSecret() returns to previous line when deleting characters", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => {
+    return { columns: 6, rows: 20 };
+  });
+
+  const expectedOutput = [
+    "? ",
+    "\r\u001b[K",
+    "? *",
+    "\r\u001b[K",
+    "? **",
+    "\r\u001b[K",
+    "? ***",
+    "\r\u001b[K",
+    "? ****",
+    "*",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "****",
+    "\r\u001b[K",
+    "*****",
+    "\r\u001b[K",
+    "******",
+    "*",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "*",
+    "\r\u001b[K",
+    "\r\u001b[1F",
+    "******",
+    "\r\u001b[K",
+    "*****",
+    "\r\u001b[K",
+    "****",
+    "\r\u001b[K",
+    "***",
+    "\r\u001b[K",
+    "**",
+    "\r\u001b[K",
+    "*",
+    "\r\u001b[K",
+    "\r\u001b[1F",
+    "? ****",
+    "\n",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "d",
+    "e",
+    "n",
+    "o",
+    " ",
+    "r",
+    "u",
+    "l",
+    "e",
+    "s",
+    "!",
+    "!",
+    "!",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const password = promptSecret("?");
+
+  assertEquals(password, "deno");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
