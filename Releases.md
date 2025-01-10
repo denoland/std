@@ -1,3 +1,56 @@
+### 2025.01.10
+
+#### @std/cbor 0.1.5 (patch)
+
+- perf(cbor): improve decodeCbor & decodeCborSequence performance (#6323)
+- perf(cbor): encodeCbor & encodeCborSequence (#6311)
+
+#### @std/cli 1.0.10 (patch)
+
+- docs(cli): add examples of parseArgs (#6283)
+
+#### @std/data-structures 1.0.6 (patch)
+
+- fix(data-structures): ensure size consistency in RedBlackTree.from (#6307)
+
+#### @std/datetime 0.225.3 (patch)
+
+- fix(datetime): correct parsing of day period (#6313)
+- docs(datetime): remove outdated mention of `utc` option (#6301)
+
+#### @std/expect 1.0.11 (patch)
+
+- fix(expect): consistent `toBeCloseTo` assertion messages (#6291)
+- docs(expect,text): remove no-eval directives that appear to be unneccessary
+  (#6333)
+- docs(expect): correct minor typo (#6329)
+- docs(expect): clarify the tolerance in `toBeCloseTo` (#6292)
+
+#### @std/fmt 1.0.4 (patch)
+
+- fix(fmt): add correct pluralization to fmt/duration when using style: full
+  (#6295)
+- refactor(fmt): cleanup duration `format()` and utils (#6309)
+- test(fmt): add invalid duration `style` option test (#6310)
+
+#### @std/fs 1.0.9 (patch)
+
+- feat(fs/unstable): add statSync and lstatSync (#6300)
+- test(fs): do not write files in source tree during test (#6236)
+
+#### @std/log 0.224.13 (patch)
+
+- test(log): re-enable doc tests for `FileHandler` (#6321)
+
+#### @std/testing 1.0.9 (patch)
+
+- docs(testing): clarify beforeAll in describe vs. outside (#6294)
+
+#### @std/text 1.0.10 (patch)
+
+- docs(expect,text): remove no-eval directives that appear to be unneccessary
+  (#6333)
+
 ### 2024.12.20
 
 #### @std/fs 1.0.8 (patch)
