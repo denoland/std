@@ -168,7 +168,7 @@
 
 ### 2024.11.22
 
-### @std/archive
+#### @std/archive
 
 - BREAKING(archive): remove std/archive package (#6185)
 
