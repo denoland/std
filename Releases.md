@@ -21,7 +21,7 @@
 #### @std/expect 1.0.11 (patch)
 
 - fix(expect): consistent `toBeCloseTo` assertion messages (#6291)
-- docs(expect,text): remove no-eval directives that appear to be unneccessary
+- docs(expect,text): remove no-eval directives that appear to be unnecessary
   (#6333)
 - docs(expect): correct minor typo (#6329)
 - docs(expect): clarify the tolerance in `toBeCloseTo` (#6292)
@@ -48,7 +48,7 @@
 
 #### @std/text 1.0.10 (patch)
 
-- docs(expect,text): remove no-eval directives that appear to be unneccessary
+- docs(expect,text): remove no-eval directives that appear to be unnecessary
   (#6333)
 
 ### 2024.12.20
