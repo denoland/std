@@ -420,7 +420,7 @@ Deno.test(
     const objectA = { ["__proto__"]: { polluted: true } };
     const objectB = { ["__proto__"]: { polluted: true } };
     const objectC = { ["__proto__"]: { polluted: false } };
-    assertObjectMatch(objectA, objectB)
+    assertObjectMatch(objectA, objectB);
     assertThrows(
       () => assertObjectMatch(objectA, objectC),
       AssertionError,
@@ -431,5 +431,5 @@ Deno.test(
       },
     }`,
     );
-  }
+  },
 );

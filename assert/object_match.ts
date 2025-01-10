@@ -137,7 +137,11 @@ function filter(a: loose, b: loose): loose {
           continue;
         }
 
-        defineProperty(filtered, key, filterObject(value as loose, subset as loose));
+        defineProperty(
+          filtered,
+          key,
+          filterObject(value as loose, subset as loose),
+        );
         continue;
       }
 
