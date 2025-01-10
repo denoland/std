@@ -1,6 +1,6 @@
 {
   "name": "@std/log",
-  "version": "0.224.12",
+  "version": "0.224.13",
   "exports": {
     ".": "./mod.ts",
     "./base-handler": "./base_handler.ts",
