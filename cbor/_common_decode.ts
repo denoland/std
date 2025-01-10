@@ -1,79 +1,94 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { concat } from "@std/bytes";
-import { arrayToNumber } from "./_common.ts";
 import { CborTag } from "./tag.ts";
 import type { CborType } from "./types.ts";
 
-export function decode(source: number[]): CborType {
-  const byte = source.pop();
+function calcLength(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [number | bigint, number] {
+  if (aI < 24) return [aI, offset];
+  const view = new DataView(input.buffer);
+  switch (aI) {
+    case 24:
+      return [view.getUint8(offset), offset + 1];
+    case 25:
+      return [view.getUint16(offset), offset + 2];
+    case 26:
+      return [view.getUint32(offset), offset + 4];
+    default: // Only possible for it to be 27
+      return [view.getBigUint64(offset), offset + 8];
+  }
+}
+
+export function decode(input: Uint8Array, offset: number): [CborType, number] {
+  const byte = input[offset++];
   if (byte == undefined) throw new RangeError("More bytes were expected");
 
-  const majorType = byte >> 5;
-  const aI = byte & 0b000_11111;
-  switch (majorType) {
+  switch (byte >> 5) {
     case 0:
-      return decodeZero(source, aI);
+      return decodeZero(input, byte & 0b000_11111, offset);
     case 1:
-      return decodeOne(source, aI);
+      return decodeOne(input, byte & 0b000_11111, offset);
     case 2:
-      return decodeTwo(source, aI);
+      return decodeTwo(input, byte & 0b000_11111, offset);
     case 3:
-      return decodeThree(source, aI);
+      return decodeThree(input, byte & 0b000_11111, offset);
     case 4:
-      return decodeFour(source, aI);
+      return decodeFour(input, byte & 0b000_11111, offset);
     case 5:
-      return decodeFive(source, aI);
+      return decodeFive(input, byte & 0b000_11111, offset);
     case 6:
-      return decodeSix(source, aI);
+      return decodeSix(input, byte & 0b000_11111, offset);
     default: // Only possible for it to be 7
-      return decodeSeven(source, aI);
+      return decodeSeven(input, byte & 0b000_11111, offset);
   }
 }
 
-export function decodeZero(source: number[], aI: number): number | bigint {
-  if (aI < 24) return aI;
-  if (aI <= 27) {
-    return arrayToNumber(
-      Uint8Array.from(
-        source.splice(-(2 ** (aI - 24)), 2 ** (aI - 24)).reverse(),
-      ).buffer,
-      true,
+function decodeZero(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [number | bigint, number] {
+  if (aI > 27) {
+    throw new RangeError(
+      `Cannot decode value (0b000_${aI.toString(2).padStart(5, "0")})`,
     );
   }
-  throw new RangeError(
-    `Cannot decode value (0b000_${aI.toString(2).padStart(5, "0")})`,
-  );
+  return calcLength(input, aI, offset);
 }
 
-export function decodeOne(source: number[], aI: number): number | bigint {
+function decodeOne(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [number | bigint, number] {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b001_${aI.toString(2).padStart(5, "0")})`,
     );
   }
-  const x = decodeZero(source, aI);
-  if (typeof x === "bigint") return -x - 1n;
-  return -x - 1;
+  const output = calcLength(input, aI, offset);
+  output[0] = typeof output[0] === "bigint" ? -output[0] - 1n : -output[0] - 1;
+  return output;
 }
 
-export function decodeTwo(source: number[], aI: number): Uint8Array {
-  if (aI < 24) return Uint8Array.from(source.splice(-aI, aI).reverse());
+function decodeTwo(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [Uint8Array, number] {
+  if (aI < 24) return [input.subarray(offset, offset + aI), offset + aI];
   if (aI <= 27) {
-    // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
-    // 2 ** 53 is the tipping point where integers loose precision.
-    const len = Number(
-      arrayToNumber(
-        Uint8Array.from(
-          source.splice(-(2 ** (aI - 24)), 2 ** (aI - 24)).reverse(),
-        ).buffer,
-        true,
-      ),
-    );
-    return Uint8Array.from(source.splice(-len, len).reverse());
+    const x = calcLength(input, aI, offset);
+    const start = x[1];
+    const end = Number(x[0]) + x[1];
+    return [input.subarray(start, end), end];
   }
   if (aI === 31) {
-    let byte = source.pop();
+    let byte = input[offset++];
     if (byte == undefined) throw new RangeError("More bytes were expected");
 
     const output: Uint8Array[] = [];
@@ -85,32 +100,46 @@ export function decodeTwo(source: number[], aI: number): Uint8Array {
           }) inside an indefinite length byte string`,
         );
       }
-
-      const aI = byte & 0b11111;
+      const aI = byte & 0b000_11111;
       if (aI === 31) {
         throw new TypeError(
           "Indefinite length byte strings cannot contain indefinite length byte strings",
         );
       }
-
-      output.push(decodeTwo(source, aI));
-      byte = source.pop();
+      const x = decodeTwo(input, aI, offset);
+      output.push(x[0]);
+      offset = x[1];
+      byte = input[offset++];
       if (byte == undefined) throw new RangeError("More bytes were expected");
     }
-    return concat(output);
+    return [concat(output), offset + 1];
   }
   throw new RangeError(
     `Cannot decode value (0b010_${aI.toString(2).padStart(5, "0")})`,
   );
 }
 
-export function decodeThree(source: number[], aI: number): string {
-  if (aI <= 27) return new TextDecoder().decode(decodeTwo(source, aI));
+function decodeThree(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [string, number] {
+  if (aI < 24) {
+    return [
+      new TextDecoder().decode(input.subarray(offset, offset + aI)),
+      offset + aI,
+    ];
+  }
+  if (aI <= 27) {
+    const x = calcLength(input, aI, offset);
+    const start = x[1];
+    const end = Number(x[0]) + x[1];
+    return [new TextDecoder().decode(input.subarray(start, end)), end];
+  }
   if (aI === 31) {
-    let byte = source.pop();
+    let byte = input[offset++];
     if (byte == undefined) throw new RangeError("More bytes were expected");
-
-    const output: string[] = [];
+    const output: Uint8Array[] = [];
     while (byte !== 0b111_11111) {
       if (byte >> 5 !== 3) {
         throw new TypeError(
@@ -119,216 +148,226 @@ export function decodeThree(source: number[], aI: number): string {
           }) inside an indefinite length text string`,
         );
       }
-
-      const aI = byte & 0b11111;
+      const aI = byte & 0b000_11111;
       if (aI === 31) {
         throw new TypeError(
           "Indefinite length text strings cannot contain indefinite length text strings",
         );
       }
-
-      output.push(decodeThree(source, aI));
-      byte = source.pop();
+      if (aI > 27) {
+        throw new RangeError(
+          `Cannot decode value (0b011_${aI.toString(2).padStart(5, "0")})`,
+        );
+      }
+      const x = decodeTwo(input, aI, offset);
+      output.push(x[0]);
+      offset = x[1];
+      byte = input[offset++];
       if (byte == undefined) throw new RangeError("More bytes were expected");
     }
-    return output.join("");
+    return [new TextDecoder().decode(concat(output)), offset + 1];
   }
   throw new RangeError(
     `Cannot decode value (0b011_${aI.toString(2).padStart(5, "0")})`,
   );
 }
 
-export function decodeFour(source: number[], aI: number): CborType[] {
+function decodeFour(
+  input: Uint8Array,
+  aI: number,
+  offset: number,
+): [CborType[], number] {
   if (aI <= 27) {
-    const array: CborType[] = [];
-    // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
-    // 2 ** 53 is the tipping point where integers loose precision.
-    const len = aI < 24 ? aI : Number(
-      arrayToNumber(
-        Uint8Array.from(
-          source.splice(-(2 ** (aI - 24)), 2 ** (aI - 24)).reverse(),
-        ).buffer,
-        true,
-      ),
-    );
-    for (let i = 0; i < len; ++i) array.push(decode(source));
-    return array;
+    const x = calcLength(input, aI, offset);
+    // Can safely assume `x[0] < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
+    const length = Number(x[0]);
+    offset = x[1];
+    const output: CborType[] = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      const y = decode(input, offset);
+      output[i] = y[0];
+      offset = y[1];
+    }
+    return [output, offset];
   }
   if (aI === 31) {
-    const array: CborType[] = [];
-    if (!source.length) throw new RangeError("More bytes were expected");
-    while (source[source.length - 1] !== 0b111_11111) {
-      array.push(decode(source));
-      if (!source.length) throw new RangeError("More bytes were expected");
+    const output: CborType[] = [];
+    while (input[offset] !== 0b111_11111) {
+      const x = decode(input, offset);
+      output.push(x[0]);
+      offset = x[1];
     }
-    source.pop();
-    return array;
+    return [output, offset + 1];
   }
   throw new RangeError(
     `Cannot decode value (0b100_${aI.toString(2).padStart(5, "0")})`,
   );
 }
 
-export function decodeFive(
-  source: number[],
+function decodeFive(
+  input: Uint8Array,
   aI: number,
-): { [k: string]: CborType } {
+  offset: number,
+): [{ [k: string]: CborType }, number] {
   if (aI <= 27) {
-    const object: { [k: string]: CborType } = {};
-    // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
-    // 2 ** 53 is the tipping point where integers loose precision.
-    const len = aI < 24 ? aI : Number(
-      arrayToNumber(
-        Uint8Array.from(
-          source.splice(-(2 ** (aI - 24)), 2 ** (aI - 24)).reverse(),
-        ).buffer,
-        true,
-      ),
-    );
-    for (let i = 0; i < len; ++i) {
-      const key = decode(source);
-      if (typeof key !== "string") {
+    const x = calcLength(input, aI, offset);
+    // Can safely assume `x[0] < 2 ** 53` as JavaScript doesn't support an `Object` being that large.
+    const length = Number(x[0]);
+    offset = x[1];
+    const output: { [k: string]: CborType } = {};
+    for (let i = 0; i < length; ++i) {
+      const y = decode(input, offset);
+      if (typeof y[0] !== "string") {
         throw new TypeError(
-          `Cannot decode key of type (${typeof key}): This implementation only supports "text string" keys`,
+          `Cannot decode key of type (${typeof y[
+            0
+          ]}): This implementation only supports "text string" keys`,
         );
       }
-
-      if (object[key] !== undefined) {
+      if (output[y[0]] !== undefined) {
         throw new TypeError(
-          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+          `A Map cannot have duplicate keys: Key (${y[0]}) already exists`,
         ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
       }
-
-      object[key] = decode(source);
+      const z = decode(input, y[1]);
+      output[y[0]] = z[0];
+      offset = z[1];
     }
-    return object;
+    return [output, offset];
   }
   if (aI === 31) {
-    const object: { [k: string]: CborType } = {};
-    if (!source.length) throw new RangeError("More bytes were expected");
-    while (source[source.length - 1] !== 0b111_11111) {
-      const key = decode(source);
-      if (typeof key !== "string") {
+    const output: { [k: string]: CborType } = {};
+    while (input[offset] !== 0b111_11111) {
+      const x = decode(input, offset);
+      if (typeof x[0] !== "string") {
         throw new TypeError(
-          `Cannot decode key of type (${typeof key}): This implementation only supports "text string" keys`,
+          `Cannot decode key of type (${typeof x[
+            0
+          ]}): This implementation only supports "text string" keys`,
         );
       }
-
-      if (object[key] !== undefined) {
+      if (output[x[0]] !== undefined) {
         throw new TypeError(
-          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+          `A Map cannot have duplicate keys: Key (${x[0]}) already exists`,
         ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
       }
-
-      object[key] = decode(source);
-      if (!source.length) throw new RangeError("More bytes were expected");
+      const y = decode(input, x[1]);
+      output[x[0]] = y[0];
+      offset = y[1];
     }
-    source.pop();
-    return object;
+    return [output, offset + 1];
   }
   throw new RangeError(
     `Cannot decode value (0b101_${aI.toString(2).padStart(5, "0")})`,
   );
 }
 
-export function decodeSix(
-  source: number[],
+function decodeSix(
+  input: Uint8Array,
   aI: number,
-): Date | Map<CborType, CborType> | CborTag<CborType> {
+  offset: number,
+): [Date | Map<CborType, CborType> | CborTag<CborType>, number] {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b110_${aI.toString(2).padStart(5, "0")})`,
     );
   }
-  const tagNumber = decodeZero(source, aI);
-  switch (BigInt(tagNumber)) {
+  const x = decodeZero(input, aI, offset);
+  switch (BigInt(x[0])) {
     case 0n: {
-      const tagContent = decode(source);
-      if (typeof tagContent !== "string") {
+      const y = decode(input, x[1]);
+      if (typeof y[0] !== "string") {
         throw new TypeError('Invalid TagItem: Expected a "text string"');
       }
-      return new Date(tagContent);
+      return [new Date(y[0]), y[1]];
     }
     case 1n: {
-      const tagContent = decode(source);
-      if (typeof tagContent !== "number" && typeof tagContent !== "bigint") {
-        throw new TypeError(
-          'Invalid TagItem: Expected a "integer" or "float"',
-        );
+      const y = decode(input, x[1]);
+      if (typeof y[0] !== "number" && typeof y[0] !== "bigint") {
+        throw new TypeError('Invalid TagItem: Expected a "integer" or "float"');
       }
-      return new Date(Number(tagContent) * 1000);
+      return [new Date(Number(y[0]) * 1000), y[1]];
     }
     case 259n:
-      return decodeMap(source);
+      return decodeMap(input, x[1]);
+    default: {
+      const y = decode(input, x[1]);
+      return [new CborTag(x[0], y[0]), y[1]];
+    }
   }
-  return new CborTag(tagNumber, decode(source));
 }
 
-export function decodeSeven(
-  source: number[],
+function decodeSeven(
+  input: Uint8Array,
   aI: number,
-): undefined | null | boolean | number {
+  offset: number,
+): [undefined | null | boolean | number, number] {
   switch (aI) {
     case 20:
-      return false;
+      return [false, offset];
     case 21:
-      return true;
+      return [true, offset];
     case 22:
-      return null;
+      return [null, offset];
     case 23:
-      return undefined;
+      return [undefined, offset];
   }
-  if (25 <= aI && aI <= 27) {
-    return arrayToNumber(
-      Uint8Array.from(
-        source.splice(-(2 ** (aI - 24)), 2 ** (aI - 24)).reverse(),
-      ).buffer,
-      false,
-    );
+  const view = new DataView(input.buffer);
+  switch (aI) {
+    case 25:
+      return [view.getFloat16(offset), offset + 2];
+    case 26:
+      return [view.getFloat32(offset), offset + 4];
+    case 27:
+      return [view.getFloat64(offset), offset + 8];
+    default:
+      throw new RangeError(
+        `Cannot decode value (0b111_${aI.toString(2).padStart(5, "0")})`,
+      );
   }
-  throw new RangeError(
-    `Cannot decode value (0b111_${aI.toString(2).padStart(5, "0")})`,
-  );
 }
 
-function decodeMap(source: number[]): Map<CborType, CborType> {
-  const byte = source.pop();
-  if (byte == undefined) throw new RangeError("More bytes were expected");
-
-  const majorType = byte >> 5;
-  if (majorType !== 5) throw new TypeError('Invalid TagItem: Expected a "map"');
+function decodeMap(
+  input: Uint8Array,
+  offset: number,
+): [Map<CborType, CborType>, number] {
+  const byte = input[offset++];
+  if (byte == undefined) throw new RangeError("more bytes were expected");
+  if (byte >> 5 !== 5) throw new TypeError('invalid TagItem: Expected a "map"');
   const aI = byte & 0b000_11111;
   if (aI <= 27) {
-    const map = new Map<CborType, CborType>();
-    // Can safely assume `source.length < 2 ** 53` as JavaScript doesn't support an `Array` being that large.
-    // 2 ** 53 is the tipping point where integers loose precision.
-    const len = Number(decodeZero(source, aI));
-    for (let i = 0; i < len; ++i) {
-      const key = decode(source);
-      if (map.has(key)) {
+    const x = calcLength(input, aI, offset);
+    // Can safely assume `x[0] < 2 ** 53` as JavaScript doesn't support an `Map` being that large.
+    const length = Number(x[0]);
+    offset = x[1];
+    const output = new Map<CborType, CborType>();
+    for (let i = 0; i < length; ++i) {
+      const y = decode(input, offset);
+      if (output.has(y[0])) {
         throw new TypeError(
-          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+          `A Map cannot have duplicate keys: Key (${y[0]}) already exists`,
         ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
       }
-      map.set(key, decode(source));
+      const z = decode(input, y[1]);
+      output.set(y[0], z[0]);
+      offset = z[1];
     }
-    return map;
+    return [output, offset];
   }
   if (aI === 31) {
-    const map = new Map<CborType, CborType>();
-    if (!source.length) throw new RangeError("More bytes were expected");
-    while (source[source.length - 1] !== 0b111_11111) {
-      const key = decode(source);
-      if (map.has(key)) {
+    const output = new Map<CborType, CborType>();
+    while (input[offset] !== 0b111_11111) {
+      const x = decode(input, offset);
+      if (output.has(x[0])) {
         throw new TypeError(
-          `A Map cannot have duplicate keys: Key (${key}) already exists`,
+          `A Map cannot have duplicate keys: Key (${x[0]}) already exists`,
         ); // https://datatracker.ietf.org/doc/html/rfc8949#name-specifying-keys-for-maps
       }
-      map.set(key, decode(source));
-      if (!source.length) throw new RangeError("More bytes were expected");
+      const y = decode(input, x[1]);
+      output.set(x[0], y[0]);
+      offset = y[1];
     }
-    source.pop();
-    return map;
+    return [output, offset + 1];
   }
   throw new RangeError(
     `Cannot decode value (0b101_${aI.toString(2).padStart(5, "0")})`,

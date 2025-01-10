@@ -62,6 +62,9 @@ const ENTRY_POINTS = [
   "../front_matter/mod.ts",
   "../front_matter/unstable_yaml.ts",
   "../fs/mod.ts",
+  "../fs/unstable_lstat.ts",
+  "../fs/unstable_stat.ts",
+  "../fs/unstable_types.ts",
   "../html/mod.ts",
   "../html/unstable_is_valid_custom_element_name.ts",
   "../http/mod.ts",
@@ -273,16 +276,21 @@ function assertSnippetsWork(
 function assertHasExampleTag(
   document: { jsDoc: JsDoc; location: Location },
 ) {
-  const tags = document.jsDoc.tags?.filter((tag) =>
+  const exampleTags = document.jsDoc.tags?.filter((tag) =>
     tag.kind === "example"
   ) as JsDocTagDocRequired[];
-  if (tags === undefined || tags.length === 0) {
+  const hasNoExampleTags = exampleTags === undefined ||
+    exampleTags.length === 0;
+  if (
+    hasNoExampleTags &&
+    !document.jsDoc.tags?.some((tag) => tag.kind === "private")
+  ) {
     diagnostics.push(
       new DocumentError("Symbol must have an @example tag", document),
     );
     return;
   }
-  for (const tag of tags) {
+  for (const tag of exampleTags) {
     assert(
       tag.doc !== undefined,
       "@example tag must have a title and TypeScript code snippet",
