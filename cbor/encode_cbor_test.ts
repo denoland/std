@@ -440,7 +440,7 @@ Deno.test("encodeCbor() rejecting numbers as Int", () => {
       encodeCbor(num);
     },
     RangeError,
-    `Cannot encode number: It (${num}) exceeds -2 ** 64 - 1`,
+    `Cannot encode number: It (${num}) exceeds -(2 ** 64) - 1`,
   );
 });
 
@@ -451,7 +451,7 @@ Deno.test("encodeCbor() rejecting bigints as Uint", () => {
       encodeCbor(num);
     },
     RangeError,
-    `Cannot encode bigint: It (${num}) exceeds 2 ** 64 - 1`,
+    `Cannot encode bigint: It (${num}) exceeds 2n ** 64n - 1n`,
   );
 });
 
@@ -462,7 +462,7 @@ Deno.test("encodeCbor() rejecting bigints as Int", () => {
       encodeCbor(num);
     },
     RangeError,
-    `Cannot encode bigint: It (${num}) exceeds -2 ** 64 - 1`,
+    `Cannot encode bigint: It (${num}) exceeds -(2n ** 64n) - 1n`,
   );
 });
 

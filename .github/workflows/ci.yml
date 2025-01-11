@@ -97,9 +97,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install
-        working-directory: _tools/node_test_runner
-
       - name: Run tests
         run: deno task test:node
 

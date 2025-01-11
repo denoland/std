@@ -1,6 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { transform } from "sucrase";
 import { readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -20,33 +19,4 @@ export async function resolve(specifier, context, nextResolve) {
   }
 
   return await nextResolve(specifier, context);
-}
-
-export async function load(specifier, context, nextLoad) {
-  const { format, source } = await nextLoad(specifier, context).catch(
-    async (error) => {
-      if (
-        error.code === "ERR_UNKNOWN_FILE_EXTENSION" &&
-        specifier.endsWith(".ts")
-      ) {
-        return await nextLoad(specifier, {
-          ...context,
-          format: "module",
-        });
-      } else {
-        throw error;
-      }
-    },
-  );
-
-  if (source && specifier.endsWith(".ts")) {
-    return {
-      format,
-      source: encoder.encode(
-        transform(decoder.decode(source), { transforms: ["typescript"] }).code,
-      ),
-    };
-  }
-
-  return { format, source };
 }

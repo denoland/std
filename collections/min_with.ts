@@ -32,7 +32,7 @@ export function minWith<T>(
   let isFirst = true;
 
   for (const current of array) {
-    if (isFirst || comparator(current, <T> min) < 0) {
+    if (isFirst || comparator(current, min as T) < 0) {
       min = current;
       isFirst = false;
     }
