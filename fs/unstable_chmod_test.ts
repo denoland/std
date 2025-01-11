@@ -57,8 +57,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "chmod() sets write only permission bits of regular file through the symlink",
+  name: "chmod() sets write only permission bits of regular file via symlink",
   ignore: Deno.build.os === "windows",
   fn: async () => {
     const tempDirPath = await Deno.makeTempDir({ prefix: "chmod_" });
@@ -140,7 +139,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "chmodSync() sets write only permission on a regular file through a symlink",
+  name: "chmodSync() sets write only permission on a regular file via symlink",
   ignore: Deno.build.os === "windows",
   fn: () => {
     const tempDirPath = Deno.makeTempDirSync({ prefix: "chmodSync_" });
