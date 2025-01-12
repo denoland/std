@@ -13,13 +13,13 @@ function calcLength(
   const view = new DataView(input.buffer);
   switch (aI) {
     case 24:
-      return [view.getUint8(offset), offset + 1];
+      return [view.getUint8(offset + input.byteOffset), offset + 1];
     case 25:
-      return [view.getUint16(offset), offset + 2];
+      return [view.getUint16(offset + input.byteOffset), offset + 2];
     case 26:
-      return [view.getUint32(offset), offset + 4];
+      return [view.getUint32(offset + input.byteOffset), offset + 4];
     default: // Only possible for it to be 27
-      return [view.getBigUint64(offset), offset + 8];
+      return [view.getBigUint64(offset + input.byteOffset), offset + 8];
   }
 }
 
@@ -315,11 +315,11 @@ function decodeSeven(
   const view = new DataView(input.buffer);
   switch (aI) {
     case 25:
-      return [view.getFloat16(offset), offset + 2];
+      return [view.getFloat16(offset + input.byteOffset), offset + 2];
     case 26:
-      return [view.getFloat32(offset), offset + 4];
+      return [view.getFloat32(offset + input.byteOffset), offset + 4];
     case 27:
-      return [view.getFloat64(offset), offset + 8];
+      return [view.getFloat64(offset + input.byteOffset), offset + 8];
     default:
       throw new RangeError(
         `Cannot decode value (0b111_${aI.toString(2).padStart(5, "0")})`,
