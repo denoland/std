@@ -30,7 +30,7 @@ import { mapError } from "./_map_error.ts";
  * NOTE: This API currently throws on Windows.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { chmod } from "@std/fs/unstable-chmod";
  *
  * await chmod("README.md", 0o444);
@@ -64,7 +64,7 @@ export async function chmod(path: string | URL, mode: number) {
  * NOTE: This API currently throws on Windows.
  *
  * @example Usage
- * ```ts no-eval
+ * ```ts ignore
  * import { chmodSync } from "@std/fs/unstable-chmod";
  *
  * chmodSync("README.md", 0o666);
