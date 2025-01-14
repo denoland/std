@@ -39,6 +39,14 @@ Deno.test({
       new Date(2019, 0, 3, 21, 33),
     );
     assertEquals(
+      parse("01-03-2019 09:33 PM.", "MM-dd-yyyy HH:mm a"),
+      new Date(2019, 0, 3, 21, 33),
+    );
+    assertEquals(
+      parse("01-03-2019 09:33 P.M.", "MM-dd-yyyy HH:mm a"),
+      new Date(2019, 0, 3, 21, 33),
+    );
+    assertEquals(
       parse("16:34 03-01-2019", "HH:mm dd-MM-yyyy"),
       new Date(2019, 0, 3, 16, 34),
     );
