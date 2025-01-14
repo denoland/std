@@ -62,7 +62,7 @@ function defineProperty(target: object, key: PropertyKey, value: unknown) {
 }
 
 function filter(a: loose, b: loose): loose {
-  const seen = new WeakMap();
+  const seen = new WeakMap<object, object>();
   return filterObject(a, b);
 
   function filterObject(a: loose, b: loose): loose {
