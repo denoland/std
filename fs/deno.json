@@ -14,6 +14,7 @@
     "./expand-glob": "./expand_glob.ts",
     "./move": "./move.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
+    "./unstable-read-dir": "./unstable_read_dir.ts",
     "./unstable-stat": "./unstable_stat.ts",
     "./unstable-types": "./unstable_types.ts",
     "./walk": "./walk.ts"
