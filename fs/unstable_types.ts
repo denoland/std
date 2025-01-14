@@ -81,6 +81,10 @@ export interface FileInfo {
   isSocket: boolean | null;
 }
 
+/**
+ * Information about a directory entry returned from {@linkcode readDir}
+ * and {@linkcode readDirSync}.
+ */
 export interface DirEntry {
   /** The file name of the entry. It is just the entity name and does not
    * include the full path. */
