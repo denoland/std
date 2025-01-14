@@ -1,14 +1,14 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { getNodeFsPromises, isDeno } from "./_utils.ts";
+import { getNodeFs, isDeno } from "./_utils.ts";
 import { mapError } from "./_map_error.ts";
 import { toDirEntry } from "./_to_dir_entry.ts";
 import type { DirEntry } from "./unstable_types.ts";
 
 async function* getDirEntries(path: string | URL): AsyncIterable<DirEntry> {
-  const fsPromises = getNodeFsPromises();
+  const fs = getNodeFs();
   try {
-    const dir = await fsPromises.opendir(path);
+    const dir = await fs.promises.opendir(path);
     for await (const entry of dir) {
       const dirEntry = toDirEntry(entry);
       yield dirEntry;
