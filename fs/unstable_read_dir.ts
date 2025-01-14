@@ -5,14 +5,6 @@ import { mapError } from "./_map_error.ts";
 import { toDirEntry } from "./_to_dir_entry.ts";
 import type { DirEntry } from "./unstable_types.ts";
 
-async function* getDirEntries(path: string | URL): AsyncIterable<DirEntry> {
-  const fs = getNodeFs();
-  const dir = await fs.promises.opendir(path);
-  for await (const entry of dir) {
-    yield toDirEntry(entry);
-  }
-}
-
 /** Reads the directory given by `path` and returns an async iterable of
  * {@linkcode DirEntry}. The order of entries is not guaranteed.
  *
@@ -32,12 +24,15 @@ async function* getDirEntries(path: string | URL): AsyncIterable<DirEntry> {
  * @tags allow-read
  * @category File System
  */
-export function readDir(path: string | URL): AsyncIterable<DirEntry> {
+export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
   if (isDeno) {
-    return Deno.readDir(path);
+    yield* Deno.readDir(path);
   } else {
     try {
-      return getDirEntries(path);
+      const dir = await getNodeFs().promises.opendir(path);
+      for await (const entry of dir) {
+        yield toDirEntry(entry);
+      }
     } catch (error) {
       throw mapError(error);
     }
