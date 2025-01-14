@@ -7,20 +7,16 @@ import type { DirEntry } from "./unstable_types.ts";
 
 async function* getDirEntries(path: string | URL): AsyncIterable<DirEntry> {
   const fs = getNodeFs();
-  try {
-    const dir = await fs.promises.opendir(path);
-    for await (const entry of dir) {
-      const dirEntry = toDirEntry(entry);
-      yield dirEntry;
-    }
-  } catch (error) {
-    throw error;
+  const dir = await fs.promises.opendir(path);
+  for await (const entry of dir) {
+    yield toDirEntry(entry);
   }
 }
 
 /** Reads the directory given by `path` and returns an async iterable of
  * {@linkcode DirEntry}. The order of entries is not guaranteed.
  *
+ * @example Usage
  * ```ts
  * import { readDir } from "@std/fs/unstable-read-dir";
  *
@@ -41,8 +37,7 @@ export function readDir(path: string | URL): AsyncIterable<DirEntry> {
     return Deno.readDir(path);
   } else {
     try {
-      const dirEntries = getDirEntries(path);
-      return dirEntries;
+      return getDirEntries(path);
     } catch (error) {
       throw mapError(error);
     }
