@@ -10,7 +10,7 @@ function calcLength(
   offset: number,
 ): [number | bigint, number] {
   if (aI < 24) return [aI, offset];
-  const view = new DataView(input.buffer);
+  const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
   switch (aI) {
     case 24:
       return [view.getUint8(offset), offset + 1];
@@ -312,7 +312,7 @@ function decodeSeven(
     case 23:
       return [undefined, offset];
   }
-  const view = new DataView(input.buffer);
+  const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
   switch (aI) {
     case 25:
       return [view.getFloat16(offset), offset + 2];
