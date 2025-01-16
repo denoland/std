@@ -814,3 +814,35 @@ Deno.test("decodeCbor() rejecting tagNumber 259 due to invalid indefinite length
     "More bytes were expected",
   );
 });
+
+Deno.test("decodeCbor() correctly decoding with subarrays", () => {
+  let encodedData = encodeCbor(0);
+  let buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 0);
+
+  encodedData = encodeCbor(24);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 24);
+
+  encodedData = encodeCbor(2 ** 8);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2 ** 8);
+
+  encodedData = encodeCbor(2 ** 16);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2 ** 16);
+
+  encodedData = encodeCbor(2 ** 32);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2n ** 32n);
+
+  encodedData = encodeCbor(3.14);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 3.14);
+});
