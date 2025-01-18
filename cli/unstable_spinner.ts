@@ -75,6 +75,12 @@ export interface SpinnerOptions {
    * This can be changed while the spinner is active.
    */
   color?: Color;
+  /**
+   * The stream to write the spinner to.
+   *
+   * @default {Deno.stdout}
+   */
+  stream?: typeof Deno.stderr | typeof Deno.stdout;
 }
 
 /**
@@ -126,6 +132,7 @@ export class Spinner {
   #color: Color | undefined;
   #intervalId: number | undefined;
   #active = false;
+  #stream: typeof Deno.stdout | typeof Deno.stderr;
 
   /**
    * Creates a new spinner.
@@ -142,6 +149,7 @@ export class Spinner {
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
+    this.#stream = options?.stream ?? Deno.stdout;
     this.color = color;
   }
 
@@ -199,7 +207,7 @@ export class Spinner {
    * ```
    */
   start() {
-    if (this.#active || Deno.stdout.writable.locked) {
+    if (this.#active || this.#stream.writable.locked) {
       return;
     }
 
@@ -219,7 +227,7 @@ export class Spinner {
       const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
       writeData.set(LINE_CLEAR);
       writeData.set(frame, LINE_CLEAR.length);
-      Deno.stdout.writeSync(writeData);
+      this.#stream.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
 
@@ -245,7 +253,7 @@ export class Spinner {
   stop() {
     if (this.#intervalId && this.#active) {
       clearInterval(this.#intervalId);
-      Deno.stdout.writeSync(LINE_CLEAR); // Clear the current line
+      this.#stream.writeSync(LINE_CLEAR); // Clear the current line
       this.#active = false;
     }
   }
