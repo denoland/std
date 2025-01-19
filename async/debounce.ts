@@ -17,6 +17,8 @@ export interface DebouncedFunction<Fn extends (...args: any[]) => any> {
   readonly pending: boolean;
 }
 
+type Resolver<T> = (value: PromiseLike<T> | T) => void;
+
 /**
  * Creates a debounced function that delays the given `func`
  * by a given `wait` time in milliseconds. If the method is called
