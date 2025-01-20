@@ -6,11 +6,19 @@ import { pipe } from "./pipe.ts";
 Deno.test("pipe() handles mixed types", () => {
   const inputPipe = pipe(
     Math.abs,
-    Math.sqrt,
-    Math.floor,
-    (num: number) => `result: ${num}`,
+    (num) => `result: ${num}`,
   );
-  assertEquals(inputPipe(-2), "result: 1");
+  assertEquals(inputPipe(-2), "result: 2");
+});
+Deno.test("pipe() handles first function with two arguments", () => {
+  function add(a: number, b: number): number {
+    return a + b;
+  }
+  const inputPipe = pipe(
+    add,
+    (num) => `result: ${num}`,
+  );
+  assertEquals(inputPipe(3, 2), "result: 5");
 });
 
 Deno.test("en empty pipe is the identity function", () => {
