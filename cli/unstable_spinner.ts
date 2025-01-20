@@ -83,7 +83,8 @@ export interface SpinnerOptions {
   stream?: typeof Deno.stderr | typeof Deno.stdout;
 }
 
-/**
+/**nnnn
+ * that
  * A spinner that can be used to indicate that something is loading.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -98,6 +99,15 @@ export interface SpinnerOptions {
  * setTimeout(() => {
  *  spinner.stop();
  *  console.log("Finished loading!");
+ * }, 3_000);
+ *
+ * // You can also use the spinner with `Deno.stderr`
+ * const spinner2 = new Spinner({ message: "Loading...", color: "yellow", stream: Deno.stderr });
+ * spinner.start();
+ *
+ * setTimeout(() => {
+ *  spinner.stop();
+ *  console.error"Finished loading!");
  * }, 3_000);
  * ```
  */
