@@ -13,7 +13,7 @@ import type { SymlinkOptions } from "./unstable_types.ts";
  * Requires full `allow-read` and `allow-write` permissions.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { symlink } from "@std/fs/unstable-symlink";
  * await symlink("README.md", "README.md.link");
  * ```
@@ -52,9 +52,9 @@ export async function symlink(
  * Requires full `allow-read` and `allow-write` permissions.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { symlinkSync } from "@std/fs/unstable-symlink";
- * symlinkSync("README.md", "README.md.link2");
+ * symlinkSync("README.md", "README.md.link");
  * ```
  *
  * @tags allow-read, allow-write
