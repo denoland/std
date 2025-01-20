@@ -107,3 +107,13 @@ export interface DirEntry {
    * `FileInfo.isFile` and `FileInfo.isDirectory`. */
   isSymlink: boolean;
 }
+
+/**
+ * Options that can be used with {@linkcode symlink} and
+ * {@linkcode symlinkSync}.
+ */
+export interface SymlinkOptions {
+  /** Specify the symbolic link type as file, directory or NTFS junction. This
+   * option only applies to Windows and is ignored on other operating systems. */
+  type: "file" | "dir" | "junction";
+}
