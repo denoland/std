@@ -17,6 +17,7 @@
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-read-dir": "./unstable_read_dir.ts",
     "./unstable-stat": "./unstable_stat.ts",
+    "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-types": "./unstable_types.ts",
     "./walk": "./walk.ts"
   }

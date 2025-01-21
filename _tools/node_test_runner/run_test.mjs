@@ -51,6 +51,7 @@ import "../../collections/without_all_test.ts";
 import "../../collections/zip_test.ts";
 import "../../fs/unstable_read_dir_test.ts";
 import "../../fs/unstable_stat_test.ts";
+import "../../fs/unstable_symlink_test.ts";
 import "../../fs/unstable_lstat_test.ts";
 import "../../fs/unstable_chmod_test.ts";
 
