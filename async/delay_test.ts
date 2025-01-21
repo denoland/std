@@ -106,7 +106,7 @@ Deno.test("delay() handles already aborted signal", async () => {
   assertIsDefaultAbortReason(cause);
 });
 
-Deno.test("delay() handles persitent option", async () => {
+Deno.test("delay() handles persistent option", async () => {
   using unrefTimer = stub(Deno, "unrefTimer");
   await delay(100, { persistent: false });
   assertSpyCalls(unrefTimer, 1);
