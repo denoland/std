@@ -83,8 +83,7 @@ export interface SpinnerOptions {
   stream?: typeof Deno.stderr | typeof Deno.stdout;
 }
 
-/**nnnn
- * that
+/**
  * A spinner that can be used to indicate that something is loading.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
