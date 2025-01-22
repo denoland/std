@@ -413,3 +413,23 @@ Deno.test("assertObjectMatch() prints inputs correctly", () => {
     }`,
   );
 });
+
+Deno.test(
+  "assertObjectMatch() should be able to test target object's own `__proto__`",
+  () => {
+    const objectA = { ["__proto__"]: { polluted: true } };
+    const objectB = { ["__proto__"]: { polluted: true } };
+    const objectC = { ["__proto__"]: { polluted: false } };
+    assertObjectMatch(objectA, objectB);
+    assertThrows(
+      () => assertObjectMatch(objectA, objectC),
+      AssertionError,
+      `    {
+      ['__proto__']: {
+-       polluted: true,
++       polluted: false,
+      },
+    }`,
+    );
+  },
+);

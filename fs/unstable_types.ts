@@ -88,3 +88,32 @@ export interface FileInfo {
    * _Linux/Mac OS only._ */
   isSocket: boolean | null;
 }
+
+/**
+ * Information about a directory entry returned from {@linkcode readDir}
+ * and {@linkcode readDirSync}.
+ */
+export interface DirEntry {
+  /** The file name of the entry. It is just the entity name and does not
+   * include the full path. */
+  name: string;
+  /** True if this is info for a regular file. Mutually exclusive to
+   * `FileInfo.isDirectory` and `FileInfo.isSymlink`. */
+  isFile: boolean;
+  /** True if this is info for a regular directory. Mutually exclusive to
+   * `FileInfo.isFile` and `FileInfo.isSymlink`. */
+  isDirectory: boolean;
+  /** True if this is info for a symlink. Mutually exclusive to
+   * `FileInfo.isFile` and `FileInfo.isDirectory`. */
+  isSymlink: boolean;
+}
+
+/**
+ * Options that can be used with {@linkcode symlink} and
+ * {@linkcode symlinkSync}.
+ */
+export interface SymlinkOptions {
+  /** Specify the symbolic link type as file, directory or NTFS junction. This
+   * option only applies to Windows and is ignored on other operating systems. */
+  type: "file" | "dir" | "junction";
+}

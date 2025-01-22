@@ -52,15 +52,23 @@ function isObject(val: unknown): boolean {
   return typeof val === "object" && val !== null;
 }
 
+function defineProperty(target: object, key: PropertyKey, value: unknown) {
+  return Object.defineProperty(target, key, {
+    value,
+    configurable: true,
+    enumerable: true,
+    writable: true,
+  });
+}
+
 function filter(a: loose, b: loose): loose {
-  const seen = new WeakMap();
+  const seen = new WeakMap<loose | unknown[], loose | unknown[]>();
   return filterObject(a, b);
 
   function filterObject(a: loose, b: loose): loose {
     // Prevent infinite loop with circular references with same filter
-    if ((seen.has(a)) && (seen.get(a) === b)) {
-      return a;
-    }
+    const memo = seen.get(a);
+    if (memo && (memo === b)) return a;
 
     try {
       seen.set(a, b);
@@ -82,17 +90,14 @@ function filter(a: loose, b: loose): loose {
     if (keysA.length && keysB.length && !entries.length) {
       // If both objects are not empty but don't have the same keys or symbols,
       // returns the entries in object a.
-      for (const key of keysA) {
-        filtered[key] = a[key];
-      }
-
+      for (const key of keysA) defineProperty(filtered, key, a[key]);
       return filtered;
     }
 
     for (const [key, value] of entries) {
       // On regexp references, keep value as it to avoid loosing pattern and flags
       if (value instanceof RegExp) {
-        filtered[key] = value;
+        defineProperty(filtered, key, value);
         continue;
       }
 
@@ -100,7 +105,7 @@ function filter(a: loose, b: loose): loose {
 
       // On array references, build a filtered array and filter nested objects inside
       if (Array.isArray(value) && Array.isArray(subset)) {
-        filtered[key] = filterArray(value, subset);
+        defineProperty(filtered, key, filterArray(value, subset));
         continue;
       }
 
@@ -108,16 +113,19 @@ function filter(a: loose, b: loose): loose {
       if (isObject(value) && isObject(subset)) {
         // When both operands are maps, build a filtered map with common keys and filter nested objects inside
         if ((value instanceof Map) && (subset instanceof Map)) {
-          filtered[key] = new Map(
-            [...value].filter(([k]) => subset.has(k)).map(
-              ([k, v]) => {
-                const v2 = subset.get(k);
-                if (isObject(v) && isObject(v2)) {
-                  return [k, filterObject(v as loose, v2 as loose)];
-                }
-
-                return [k, v];
-              },
+          defineProperty(
+            filtered,
+            key,
+            new Map(
+              [...value].filter(([k]) => subset.has(k)).map(
+                ([k, v]) => {
+                  const v2 = subset.get(k);
+                  if (isObject(v) && isObject(v2)) {
+                    return [k, filterObject(v as loose, v2 as loose)];
+                  }
+                  return [k, v];
+                },
+              ),
             ),
           );
           continue;
@@ -125,15 +133,19 @@ function filter(a: loose, b: loose): loose {
 
         // When both operands are set, build a filtered set with common values
         if ((value instanceof Set) && (subset instanceof Set)) {
-          filtered[key] = value.intersection(subset);
+          defineProperty(filtered, key, value.intersection(subset));
           continue;
         }
 
-        filtered[key] = filterObject(value as loose, subset as loose);
+        defineProperty(
+          filtered,
+          key,
+          filterObject(value as loose, subset as loose),
+        );
         continue;
       }
 
-      filtered[key] = value;
+      defineProperty(filtered, key, value);
     }
 
     return filtered;
@@ -141,9 +153,8 @@ function filter(a: loose, b: loose): loose {
 
   function filterArray(a: unknown[], b: unknown[]): unknown[] {
     // Prevent infinite loop with circular references with same filter
-    if (seen.has(a) && (seen.get(a) === b)) {
-      return a;
-    }
+    const memo = seen.get(a);
+    if (memo && (memo === b)) return a;
 
     seen.set(a, b);
 
