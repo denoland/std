@@ -1,3 +1,45 @@
+### 2025.01.22
+
+#### @std/assert 1.0.11 (patch)
+
+- fix(assert): handle `__proto__` correctly in `assertObjectMatch` (#6342)
+
+#### @std/async 1.0.10 (patch)
+
+- feat(async/unstable): add `waitFor` function to wait for condition to be true
+  (#6230)
+
+#### @std/cbor 0.1.6 (patch)
+
+- fix(cbor): incorrect decoding with subarrays (#6344)
+
+#### @std/cli 1.0.11 (patch)
+
+- fix(cli): handle overflow in `promptSecret` (#6318)
+
+#### @std/collections 1.0.10 (patch)
+
+- docs(collections): add the word "unique" to `distinctBy` JSDoc for grepping
+  purposes (#6336)
+
+#### @std/csv 1.0.5 (patch)
+
+- test(csv): unstable stringify tests (#6337)
+
+#### @std/expect 1.0.12 (patch)
+
+- docs(expect): fix typo on objectContaining example (#6357)
+
+#### @std/fs 1.0.10 (patch)
+
+- feat(fs/unstable): add symlink and symlinkSync (#6352)
+- feat(fs/unstable): add chmod and chmodSync (#6343)
+- feat(fs/unstable): add readDir (#6338)
+
+#### @std/io 0.225.1 (patch)
+
+- fix(io): fix readAllSync for the case when read source is slow (#6355)
+
 ### 2025.01.10
 
 #### @std/cbor 0.1.5 (patch)
