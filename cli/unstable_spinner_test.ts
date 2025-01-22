@@ -166,7 +166,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
   }
 });
 
-Deno.test("Spinner constructor accepts stream", async () => {
+Deno.test("Spinner constructor accepts output", async () => {
   try {
     stub(Deno.stdin, "setRaw");
 
@@ -189,7 +189,7 @@ Deno.test("Spinner constructor accepts stream", async () => {
       },
     );
 
-    const spinner = new Spinner({ interval: 300, stream: Deno.stderr });
+    const spinner = new Spinner({ interval: 300, output: Deno.stderr });
     spinner.start();
     await delay(1000); // 100ms buffer
     spinner.stop();
