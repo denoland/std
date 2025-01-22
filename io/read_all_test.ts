@@ -4,7 +4,7 @@ import { assert, assertEquals } from "@std/assert";
 import { readAll, readAllSync } from "./read_all.ts";
 import { Buffer } from "./buffer.ts";
 import { init } from "./_test_common.ts";
-import { Reader, ReaderSync } from "./types.ts";
+import type { Reader, ReaderSync } from "./types.ts";
 
 Deno.test("readAll()", async () => {
   const testBytes = init();
