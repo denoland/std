@@ -166,6 +166,39 @@ Deno.test("Spinner constructor accepts interval", async () => {
   }
 });
 
+Deno.test("Spinner constructor accepts output", async () => {
+  try {
+    stub(Deno.stdin, "setRaw");
+
+    const expectedOutput = [
+      "\r\x1b[K⠋\x1b[0m ",
+      "\r\x1b[K⠙\x1b[0m ",
+      "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K",
+    ];
+
+    const actualOutput: string[] = [];
+
+    stub(
+      Deno.stderr,
+      "writeSync",
+      (data: Uint8Array) => {
+        const output = decoder.decode(data);
+        actualOutput.push(output);
+        return data.length;
+      },
+    );
+
+    const spinner = new Spinner({ interval: 300, output: Deno.stderr });
+    spinner.start();
+    await delay(1000); // 100ms buffer
+    spinner.stop();
+    assertEquals(actualOutput, expectedOutput);
+  } finally {
+    restore();
+  }
+});
+
 Deno.test("Spinner constructor accepts each color", async (t) => {
   await t.step("black", async () => {
     try {

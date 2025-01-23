@@ -75,6 +75,12 @@ export interface SpinnerOptions {
    * This can be changed while the spinner is active.
    */
   color?: Color;
+  /**
+   * The stream to write the spinner to.
+   *
+   * @default {Deno.stdout}
+   */
+  output?: typeof Deno.stderr | typeof Deno.stdout;
 }
 
 /**
@@ -92,6 +98,15 @@ export interface SpinnerOptions {
  * setTimeout(() => {
  *  spinner.stop();
  *  console.log("Finished loading!");
+ * }, 3_000);
+ *
+ * // You can also use the spinner with `Deno.stderr`
+ * const spinner2 = new Spinner({ message: "Loading...", color: "yellow", output: Deno.stderr });
+ * spinner.start();
+ *
+ * setTimeout(() => {
+ *  spinner.stop();
+ *  console.error"Finished loading!");
  * }, 3_000);
  * ```
  */
@@ -126,6 +141,7 @@ export class Spinner {
   #color: Color | undefined;
   #intervalId: number | undefined;
   #active = false;
+  #output: typeof Deno.stdout | typeof Deno.stderr;
 
   /**
    * Creates a new spinner.
@@ -142,6 +158,7 @@ export class Spinner {
     this.#spinner = spinner;
     this.message = message;
     this.#interval = interval;
+    this.#output = options?.output ?? Deno.stdout;
     this.color = color;
   }
 
@@ -199,7 +216,7 @@ export class Spinner {
    * ```
    */
   start() {
-    if (this.#active || Deno.stdout.writable.locked) {
+    if (this.#active || this.#output.writable.locked) {
       return;
     }
 
@@ -219,7 +236,7 @@ export class Spinner {
       const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
       writeData.set(LINE_CLEAR);
       writeData.set(frame, LINE_CLEAR.length);
-      Deno.stdout.writeSync(writeData);
+      this.#output.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
 
@@ -245,7 +262,7 @@ export class Spinner {
   stop() {
     if (this.#intervalId && this.#active) {
       clearInterval(this.#intervalId);
-      Deno.stdout.writeSync(LINE_CLEAR); // Clear the current line
+      this.#output.writeSync(LINE_CLEAR); // Clear the current line
       this.#active = false;
     }
   }
