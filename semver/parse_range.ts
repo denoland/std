@@ -147,21 +147,21 @@ function handleRightHyphenRangeGroups(
     build: [],
   };
 }
-function parseHyphenRange(range: string): Comparator[] | undefined {
+function parseHyphenRange(range: string): Comparator[] | null {
   const leftMatch = range.match(new RegExp(`^${XRANGE}`));
   const leftGroup = leftMatch?.groups;
-  if (!leftGroup) return;
+  if (!leftGroup) return null;
   const leftLength = leftMatch[0].length;
 
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
-  if (!hyphenMatch) return;
+  if (!hyphenMatch) return null;
   const hyphenLength = hyphenMatch[0].length;
 
   const rightMatch = range.slice(leftLength + hyphenLength).match(
     new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return;
+  if (!rightGroups) return null;
 
   const from = handleLeftHyphenRangeGroups(leftGroup as RangeRegExpGroups);
   const to = handleRightHyphenRangeGroups(rightGroups as RangeRegExpGroups);
