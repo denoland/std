@@ -81,3 +81,23 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "compare() handles undefined in prerelease",
+  fn: () => {
+    assertEquals(
+      compare({
+        major: 1,
+        minor: 0,
+        patch: 0,
+        prerelease: [undefined as unknown as string],
+      }, {
+        major: 1,
+        minor: 0,
+        patch: 0,
+        prerelease: [undefined as unknown as string],
+      }),
+      0,
+    );
+  },
+});
