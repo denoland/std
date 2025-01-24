@@ -141,9 +141,7 @@ function handleRightHyphenRangeGroups(
     major: +rightGroups.major,
     minor: +rightGroups.minor,
     patch: +rightGroups.patch,
-    prerelease: rightGroups.prerelease
-      ? parsePrerelease(rightGroups.prerelease)
-      : [],
+    prerelease: [],
     build: [],
   };
 }
