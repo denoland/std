@@ -8,6 +8,7 @@
 import { printf, sprintf } from "./printf.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { assertSpyCall, spy } from "@std/testing/mock";
+import * as c from "./colors.ts";
 
 Deno.test("sprintf() handles noVerb", function () {
   assertEquals(sprintf("bla"), "bla");
@@ -167,6 +168,54 @@ Deno.test("sprintf() handles floatfF", function () {
 
 Deno.test("sprintf() handles string", function () {
   assertEquals(sprintf("%s World%s", "Hello", "!"), "Hello World!");
+});
+
+Deno.test("printf() handles string with colors", () => {
+  assertEquals(sprintf("%4s", c.bold("foo")), " [1mfoo[22m");
+  assertEquals(sprintf("%4s", c.dim("foo")), " [2mfoo[22m");
+  assertEquals(sprintf("%4s", c.italic("foo")), " [3mfoo[23m");
+  assertEquals(sprintf("%4s", c.underline("foo")), " [4mfoo[24m");
+  assertEquals(sprintf("%4s", c.inverse("foo")), " [7mfoo[27m");
+  assertEquals(sprintf("%4s", c.hidden("foo")), " [8mfoo[28m");
+  assertEquals(sprintf("%4s", c.strikethrough("foo")), " [9mfoo[29m");
+
+  assertEquals(sprintf("%4s", c.black("foo")), " [30mfoo[39m");
+  assertEquals(sprintf("%4s", c.red("foo")), " [31mfoo[39m");
+  assertEquals(sprintf("%4s", c.green("foo")), " [32mfoo[39m");
+  assertEquals(sprintf("%4s", c.yellow("foo")), " [33mfoo[39m");
+  assertEquals(sprintf("%4s", c.blue("foo")), " [34mfoo[39m");
+  assertEquals(sprintf("%4s", c.magenta("foo")), " [35mfoo[39m");
+  assertEquals(sprintf("%4s", c.cyan("foo")), " [36mfoo[39m");
+  assertEquals(sprintf("%4s", c.white("foo")), " [37mfoo[39m");
+  assertEquals(sprintf("%4s", c.gray("foo")), " [90mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightBlack("foo")), " [90mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightRed("foo")), " [91mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightGreen("foo")), " [92mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightYellow("foo")), " [93mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightBlue("foo")), " [94mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightMagenta("foo")), " [95mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightCyan("foo")), " [96mfoo[39m");
+  assertEquals(sprintf("%4s", c.brightWhite("foo")), " [97mfoo[39m");
+  assertEquals(sprintf("%4s", c.bgBlack("foo")), " [40mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgRed("foo")), " [41mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgGreen("foo")), " [42mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgYellow("foo")), " [43mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBlue("foo")), " [44mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgMagenta("foo")), " [45mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgCyan("foo")), " [46mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgWhite("foo")), " [47mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightBlack("foo")), " [100mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightRed("foo")), " [101mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightGreen("foo")), " [102mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightYellow("foo")), " [103mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightBlue("foo")), " [104mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightMagenta("foo")), " [105mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightCyan("foo")), " [106mfoo[49m");
+  assertEquals(sprintf("%4s", c.bgBrightWhite("foo")), " [107mfoo[49m");
+  assertEquals(sprintf("%4s", c.rgb8("foo", -10)), " [38;5;0mfoo[39m");
+  assertEquals(sprintf("%4s", c.rgb8("foo", 42.5)), " [38;5;42mfoo[39m");
+  assertEquals(sprintf("%4s", c.rgb8("foo", 42)), " [38;5;42mfoo[39m");
+  assertEquals(sprintf("%4s", c.bgRgb8("foo", 42)), " [48;5;42mfoo[49m");
 });
 
 Deno.test("sprintf() handles hex", function () {
