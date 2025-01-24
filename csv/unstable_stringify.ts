@@ -85,11 +85,46 @@ export type ColumnDetails = {
  */
 export type Column = ColumnDetails | PropertyAccessor | PropertyAccessor[];
 
+type ArrayItem = Readonly<unknown[]>;
+type ObjectItem = Readonly<Record<string, unknown>>;
 /** An object (plain or array) */
-export type DataItem = Readonly<Record<string, unknown> | unknown[]>;
+export type DataItem = ArrayItem | ObjectItem;
 
-/** Options for {@linkcode stringify}. */
-export type StringifyOptions = {
+type ArrayStringifyOptions = {
+  /** Whether to include the row of headers or not.
+   *
+   * @default {true}
+   */
+  headers?: boolean;
+  /**
+   * Delimiter used to separate values. Examples:
+   *  - `","` _comma_
+   *  - `"\t"` _tab_
+   *  - `"|"` _pipe_
+   *  - etc.
+   *
+   *  @default {","}
+   */
+  separator?: string;
+  /**
+   * A list of instructions for how to target and transform the data for each
+   * column of output. This is also where you can provide an explicit header
+   * name for the column.
+   *
+   * @default {undefined}
+   */
+  columns?: readonly number[] | undefined;
+  /**
+   * Whether to add a
+   * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
+   * beginning of the file content. Required by software such as MS Excel to
+   * properly display Unicode text.
+   *
+   * @default {false}
+   */
+  bom?: boolean;
+};
+type ObjectStringifyOptions = {
   /** Whether to include the row of headers or not.
    *
    * @default {true}
@@ -123,7 +158,17 @@ export type StringifyOptions = {
    */
   bom?: boolean;
 };
+/** Options for {@linkcode stringify}. */
+export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
 
+export function stringify(
+  data: readonly ArrayItem[],
+  options?: ArrayStringifyOptions,
+): string;
+export function stringify(
+  data: readonly ObjectItem[],
+  options?: ObjectStringifyOptions,
+): string;
 /**
  * Converts an array of objects into a CSV string.
  *
