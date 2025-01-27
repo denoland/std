@@ -16,6 +16,7 @@
     "./unstable-chmod": "./unstable_chmod.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-read-dir": "./unstable_read_dir.ts",
+    "./unstable-real-path": "./unstable_real_path.ts",
     "./unstable-stat": "./unstable_stat.ts",
     "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-types": "./unstable_types.ts",
