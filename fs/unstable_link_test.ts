@@ -19,7 +19,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { tmpdir } from "node:os";
+import { platform, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 Deno.test("link() creates a hard link to a file and mutate through hard link", async () => {
@@ -28,26 +28,28 @@ Deno.test("link() creates a hard link to a file and mutate through hard link", a
   const linkFile = join(tempDirPath, "testFile.txt.hardlink");
 
   const helloWrite = "Hello";
-  const testFh = await open(testFile, "w");
-  await testFh.writeFile(helloWrite);
-  await testFh.close();
+  await writeFile(testFile, helloWrite);
 
-  // A single file implicitly has 1 hard link to an inode.
-  let testFileStat = await stat(testFile);
-  assertExists(testFileStat.nlink, "Hard link count is null");
-  assert(testFileStat.nlink === 1);
+  // Linux & Mac: A single file implicitly has 1 hard link count to an inode.
+  if (platform() !== "win32") {
+    const testFileStat = await stat(testFile);
+    assertExists(testFileStat.nlink, "Hard link count is null");
+    assert(testFileStat.nlink === 1);
+  }
 
-  // Make another hard link with `link` to the same inode.
+  // Make another hard link with `link` to the same file. (Linux & Mac - inode).
   await link(testFile, linkFile);
-  testFileStat = await stat(testFile);
-  assertExists(testFileStat.nlink, "Hard link count is null");
-  assert(testFileStat.nlink === 2);
+
+  // Linux & Mac: Count hard links.
+  if (platform() !== "win32") {
+    const testFileStat = await stat(testFile);
+    assertExists(testFileStat.nlink, "Hard link count is null");
+    assert(testFileStat.nlink === 2);
+  }
 
   // Read test file content through the hard link.
-  const testLinkFh = await open(linkFile, "r+");
-  const helloRead = await testLinkFh.readFile({ encoding: "utf8" });
+  const helloRead = await readFile(linkFile, { encoding: "utf8" });
   assertEquals(helloRead, helloWrite);
-  await testLinkFh.close();
 
   // Overwrite file content through hard link and read through testFile.
   const stdWrite = "Standard Library";
@@ -57,11 +59,16 @@ Deno.test("link() creates a hard link to a file and mutate through hard link", a
 
   // Remove testFile, count links, and check hard link properties.
   await rm(testFile);
+
   const linkFileStat = await stat(linkFile);
-  assertExists(linkFileStat.nlink, "Hard link count is null");
-  assert(linkFileStat.nlink === 1);
   assert(linkFileStat.isFile());
   assert(!linkFileStat.isSymbolicLink());
+
+  // Linux & Mac: Count hard links.
+  if (platform() !== "win32") {
+    assertExists(linkFileStat.nlink, "Hard link count is null");
+    assert(linkFileStat.nlink === 1);
+  }
 
   await rm(tempDirPath, { recursive: true, force: true });
 });
@@ -76,7 +83,7 @@ Deno.test("link() rejects with AlreadyExists when hard linking with an existing 
   const anotherFh = await open(anotherFile, "w");
   await anotherFh.close();
 
-  assertRejects(async () => {
+  await assertRejects(async () => {
     await link(testFile, anotherFile);
   }, AlreadyExists);
 
@@ -97,16 +104,22 @@ Deno.test("linkSync() creates a hard link to a file and mutate through hard link
   const helloWrite = "Hello";
   writeFileSync(testFile, helloWrite);
 
-  // A single file implicitly has 1 hard link to an inode.
-  let testFileStat = statSync(testFile);
-  assertExists(testFileStat.nlink, "Hard link count is null");
-  assert(testFileStat.nlink === 1);
+  // Linux & Mac: A single file implicitly has 1 hard link to an inode.
+  if (platform() !== "win32") {
+    const testFileStat = statSync(testFile);
+    assertExists(testFileStat.nlink, "Hard link count is null");
+    assert(testFileStat.nlink === 1);
+  }
 
   // Make another hard link with `link` to the same inode.
   linkSync(testFile, linkFile);
-  testFileStat = statSync(testFile);
-  assertExists(testFileStat.nlink, "Hard link count is null");
-  assert(testFileStat.nlink === 2);
+
+  // Linux & Mac: Count hard links.
+  if (platform() !== "win32") {
+    const testFileStat = statSync(testFile);
+    assertExists(testFileStat.nlink, "Hard link count is null");
+    assert(testFileStat.nlink === 2);
+  }
 
   // Read test file content through the hard link.
   const helloRead = readFileSync(linkFile, { encoding: "utf8" });
@@ -120,11 +133,16 @@ Deno.test("linkSync() creates a hard link to a file and mutate through hard link
 
   // Remove testFile, count links, and check hard link properties.
   rmSync(testFile);
+
   const linkFileStat = statSync(linkFile);
-  assertExists(linkFileStat.nlink, "Hard link count is null");
-  assert(linkFileStat.nlink === 1);
   assert(linkFileStat.isFile());
   assert(!linkFileStat.isSymbolicLink());
+
+  // Linux & Mac: Count hard links.
+  if (platform() !== "win32") {
+    assertExists(linkFileStat.nlink, "Hard link count is null");
+    assert(linkFileStat.nlink === 1);
+  }
 
   rmSync(tempDirPath, { recursive: true, force: true });
 });
