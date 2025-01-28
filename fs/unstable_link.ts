@@ -32,7 +32,7 @@ export async function link(oldpath: string, newpath: string): Promise<void> {
 }
 
 /**
- * Synchonously creates `newpath` as a hard link to `oldpath`.
+ * Synchronously creates `newpath` as a hard link to `oldpath`.
  *
  * Requires `allow-read` and `allow-write` permissions.
  *
