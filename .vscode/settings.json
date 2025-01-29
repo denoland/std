@@ -1,6 +1,6 @@
 {
   "deno.enable": true,
-  "deno.unstable": true,
+  "deno.path": "V:\\deno\\target\\debug\\deno.exe",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "denoland.vscode-deno"
 }

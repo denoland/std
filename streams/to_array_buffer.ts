@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { concat } from "@std/bytes/concat";
+import type { Uint8Array } from "./_uint8Array.ts";
 
 /**
  * Converts a {@linkcode ReadableStream} of {@linkcode Uint8Array}s to an
@@ -24,10 +25,10 @@ import { concat } from "@std/bytes/concat";
  * ```
  */
 export async function toArrayBuffer(
-  readableStream: ReadableStream<Uint8Array>,
+  readableStream: ReadableStream<Uint8Array<ArrayBuffer>>,
 ): Promise<ArrayBuffer> {
   const reader = readableStream.getReader();
-  const chunks: Uint8Array[] = [];
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
 
   while (true) {
     const { done, value } = await reader.read();

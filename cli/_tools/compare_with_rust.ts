@@ -48,7 +48,7 @@ Deno.test("fast-check equality with unicode_width Rust crate", async (t) => {
               // JSON stringify to allow "\0" chars to cross FFI boundary in a null-terminated string
               // deno-lint-ignore no-explicit-any
               (str: any) =>
-                unicodeWidth(str) ===
+                BigInt(unicodeWidth(str)) ===
                   dylib.symbols.unicode_width(toCString(JSON.stringify(str))),
             ),
           );

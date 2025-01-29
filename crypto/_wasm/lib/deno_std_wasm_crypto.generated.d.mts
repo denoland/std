@@ -1,6 +1,8 @@
 // deno-lint-ignore-file
 // deno-fmt-ignore-file
 
+import { Uint8Array } from "../../_uint8array.ts"
+
 export interface InstantiateResult {
   instance: WebAssembly.Instance;
   exports: {
@@ -37,7 +39,7 @@ export function instantiateWithInstance(): InstantiateResult;
 * @param {number | undefined} [length]
 * @returns {Uint8Array}
 */
-export function digest(algorithm: string, data: Uint8Array, length?: number): Uint8Array;
+export function digest(algorithm: string, data: Uint8Array, length?: number): Uint8Array<ArrayBuffer>;
 /**
 * A context for incrementally computing a digest using a given hash algorithm.
 */
@@ -74,5 +76,5 @@ export class DigestContext {
 * @param {number | undefined} [length]
 * @returns {Uint8Array}
 */
-  digestAndDrop(length?: number): Uint8Array;
+  digestAndDrop(length?: number): Uint8Array<ArrayBuffer>;
 }

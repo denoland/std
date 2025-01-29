@@ -37,7 +37,7 @@ const testSetBinary = testSetString.map(([data, b58]) => {
   }
 
   return [data, b58];
-}) as Array<[Uint8Array, string]>;
+}) as Array<[Uint8Array<ArrayBuffer>, string]>;
 
 Deno.test("encodeBase58() encodes string", () => {
   for (const [input, output] of testSetString) {
