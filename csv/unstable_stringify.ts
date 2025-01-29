@@ -85,11 +85,50 @@ export type ColumnDetails = {
  */
 export type Column = ColumnDetails | PropertyAccessor | PropertyAccessor[];
 
+/** An array of arrays */
+export type ArrayItem = Readonly<unknown[]>;
+/** An array of plain objects */
+export type ObjectItem = Readonly<Record<string, unknown>>;
 /** An object (plain or array) */
-export type DataItem = Readonly<Record<string, unknown> | unknown[]>;
+export type DataItem = ArrayItem | ObjectItem;
 
-/** Options for {@linkcode stringify}. */
-export type StringifyOptions = {
+/** Options for {@linkcode stringify} with an array of of arrays as data. */
+export type ArrayStringifyOptions = {
+  /** Whether to include the row of headers or not.
+   *
+   * @default {true}
+   */
+  headers?: boolean;
+  /**
+   * Delimiter used to separate values. Examples:
+   *  - `","` _comma_
+   *  - `"\t"` _tab_
+   *  - `"|"` _pipe_
+   *  - etc.
+   *
+   *  @default {","}
+   */
+  separator?: string;
+  /**
+   * A list of instructions for how to target and transform the data for each
+   * column of output. This is also where you can provide an explicit header
+   * name for the column.
+   *
+   * @default {undefined}
+   */
+  columns?: readonly number[] | undefined;
+  /**
+   * Whether to add a
+   * {@link https://en.wikipedia.org/wiki/Byte_order_mark | byte-order mark} to the
+   * beginning of the file content. Required by software such as MS Excel to
+   * properly display Unicode text.
+   *
+   * @default {false}
+   */
+  bom?: boolean;
+};
+/** Options for {@linkcode stringify} with an array of of objects as data. */
+export type ObjectStringifyOptions = {
   /** Whether to include the row of headers or not.
    *
    * @default {true}
@@ -123,22 +162,11 @@ export type StringifyOptions = {
    */
   bom?: boolean;
 };
+/** Options for {@linkcode stringify}. */
+export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
 
 /**
  * Converts an array of objects into a CSV string.
- *
- * @example Default options
- * ```ts
- * import { stringify } from "@std/csv/unstable-stringify";
- * import { assertEquals } from "@std/assert/equals";
- *
- * const data = [
- *   ["Rick", 70],
- *   ["Morty", 14],
- * ];
- *
- * assertEquals(stringify(data), `Rick,70\r\nMorty,14\r\n`);
- * ```
  *
  * @example Give an array of objects and specify columns
  * ```ts
@@ -280,55 +308,15 @@ export type StringifyOptions = {
  * );
  * ```
  *
- * @example Give an array of string arrays and specify columns with renaming
- * ```ts
- * import { stringify } from "@std/csv/unstable-stringify";
- * import { assertEquals } from "@std/assert/equals";
- *
- * const data = [
- *   ["Rick", 70],
- *   ["Morty", 14],
- * ];
- *
- * const columns = [
- *   { prop: 0, header: "name" },
- *   { prop: 1, header: "age" },
- * ];
- *
- * assertEquals(
- *   stringify(data, { columns }),
- *  `name,age\r\nRick,70\r\nMorty,14\r\n`,
- * );
- * ```
- *
- * @example Emit TSV (tab-separated values) with `separator: "\t"`
- * ```ts
- * import { stringify } from "@std/csv/unstable-stringify";
- * import { assertEquals } from "@std/assert/equals";
- *
- * const data = [
- *   ["Rick", 70],
- *   ["Morty", 14],
- * ];
- *
- * assertEquals(stringify(data, { separator: "\t" }), `Rick\t70\r\nMorty\t14\r\n`);
- * ```
- *
- * @example Prepend a byte-order mark with `bom: true`
- * ```ts
- * import { stringify } from "@std/csv/unstable-stringify";
- * import { assertEquals } from "@std/assert/equals";
- *
- * const data = [["Rick", 70]];
- *
- * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
- * ```
- *
  * @param data The source data to stringify. It's an array of items which are
  * plain objects or arrays.
  * @param options Options for the stringification.
  * @returns A CSV string.
  */
+export function stringify(
+  data: readonly ObjectItem[],
+  options?: ObjectStringifyOptions,
+): string;
 export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions,
