@@ -1,8 +1,17 @@
-type IsAny<T> = 0 extends (1 & T) ? true : false;
-// @ts-ignore Uint8array is not generic in TS < 5.7
+interface Child {
+  // deno-lint-ignore camelcase
+  __test_property__: string;
+}
+interface Parent extends Uint8Array, Child {
+}
+
+// Uint8Array#reverse() started returning `this` in TS 5.7
+type IsNew = ReturnType<Parent["reverse"]> extends Child ? true : false;
+
+// @ts-ignore for old ts
 type NewUint8Array<T> = Uint8Array<T>;
 
-type IsOld = IsAny<NewUint8Array<ArrayBuffer>>;
-type Uint8Array2<T = ArrayBufferLike> = IsOld extends true ? Uint8Array
-  : NewUint8Array<T>;
-export type { Uint8Array2 as Uint8Array };
+type LocalUint8Array<T extends ArrayBufferLike = ArrayBufferLike> =
+  IsNew extends true ? NewUint8Array<T> : Uint8Array;
+
+export type { LocalUint8Array as Uint8Array };
