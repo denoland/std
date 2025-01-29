@@ -1,6 +1,6 @@
 {
   "imports": {
-    "@deno/graph": "jsr:@deno/graph@^0.82",
+    "@deno/graph": "jsr:@deno/graph@^0.87.2",
     "@deno/doc": "jsr:@deno/doc@0.148",
     "npm:/typescript": "npm:typescript@5.6.2",
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/",
