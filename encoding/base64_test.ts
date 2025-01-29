@@ -33,7 +33,7 @@ Deno.test("encodeBase64() encodes binary", () => {
 
 Deno.test("encodeBase64() encodes binary buffer", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(encodeBase64(input.buffer), output);
+    assertEquals(encodeBase64(input.buffer as ArrayBuffer), output);
   }
 });
 

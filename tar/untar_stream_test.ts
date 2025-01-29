@@ -97,7 +97,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  let buffer = new Uint8Array();
+  let buffer: Uint8Array = new Uint8Array();
   for await (const item of readable) {
     if (item.readable) buffer = await toBytes(item.readable);
   }
@@ -122,7 +122,7 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  let buffer = new Uint8Array();
+  let buffer: Uint8Array = new Uint8Array();
   for await (const entry of readable) {
     if (entry.readable) buffer = await toBytes(entry.readable);
   }
