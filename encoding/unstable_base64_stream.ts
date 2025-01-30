@@ -22,6 +22,8 @@
  */
 
 import { decodeBase64, encodeBase64 } from "./base64.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Converts a Uint8Array stream into a base64-encoded stream.
@@ -88,7 +90,7 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class Base64DecoderStream extends TransformStream<string, Uint8Array> {
+export class Base64DecoderStream extends TransformStream<string, Uint8Array_> {
   constructor() {
     let push = "";
     super({

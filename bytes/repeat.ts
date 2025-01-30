@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 import { copy } from "./copy.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Returns a new byte slice composed of `count` repetitions of the `source`
@@ -31,7 +33,7 @@ import { copy } from "./copy.ts";
  * assertEquals(repeat(source, 0), new Uint8Array());
  * ```
  */
-export function repeat(source: Uint8Array, count: number): Uint8Array {
+export function repeat(source: Uint8Array, count: number): Uint8Array_ {
   if (count < 0 || !Number.isInteger(count)) {
     throw new RangeError("Count must be a non-negative integer");
   }

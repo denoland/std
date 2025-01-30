@@ -27,6 +27,8 @@
  */
 
 import { validateBinaryLike } from "./_validate_binary_like.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 const textEncoder = new TextEncoder();
@@ -100,7 +102,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * );
  * ```
  */
-export function decodeHex(src: string): Uint8Array {
+export function decodeHex(src: string): Uint8Array_ {
   const u8 = textEncoder.encode(src);
   const dst = new Uint8Array(u8.length / 2);
   for (let i = 0; i < dst.length; i++) {
