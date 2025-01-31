@@ -28,6 +28,8 @@
  * @module
  */
 import { decode, encode } from "./_base32_common.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 const lookup: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV".split("");
 const revLookup: number[] = [];
@@ -54,7 +56,7 @@ lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
  * );
  * ```
  */
-export function decodeBase32Hex(b32: string): Uint8Array {
+export function decodeBase32Hex(b32: string): Uint8Array_ {
   return decode(b32, lookup);
 }
 

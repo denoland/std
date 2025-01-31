@@ -22,6 +22,8 @@
  */
 
 import { decodeBase32Hex, encodeBase32Hex } from "./unstable_base32hex.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Converts a Uint8Array stream into a base32hex-encoded stream.
@@ -90,7 +92,7 @@ export class Base32HexEncoderStream
  * ```
  */
 export class Base32HexDecoderStream
-  extends TransformStream<string, Uint8Array> {
+  extends TransformStream<string, Uint8Array_> {
   constructor() {
     let push = "";
     super({

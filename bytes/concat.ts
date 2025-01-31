@@ -1,6 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
+
 /**
  * Concatenate an array of byte slices into a single slice.
  *
@@ -18,7 +21,7 @@
  * assertEquals(concat([a, b]), new Uint8Array([0, 1, 2, 3, 4, 5]));
  * ```
  */
-export function concat(buffers: Uint8Array[]): Uint8Array {
+export function concat(buffers: Uint8Array[]): Uint8Array_ {
   let length = 0;
   for (const buffer of buffers) {
     length += buffer.length;

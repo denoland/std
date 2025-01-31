@@ -7,6 +7,7 @@
  */
 
 import { validateBinaryLike } from "./_validate_binary_like.ts";
+import type { Uint8Array_ } from "./_types.ts";
 
 const placeHolderPadLookup = [0, 1, , 2, 3, , 4];
 
@@ -46,7 +47,10 @@ function getByteLength(validLen: number, placeHoldersLen: number): number {
  * @param lookup The lookup table
  * @returns The encoded string.
  */
-export function decode(b32: string, lookup: ReadonlyArray<string>): Uint8Array {
+export function decode(
+  b32: string,
+  lookup: ReadonlyArray<string>,
+): Uint8Array_ {
   const revLookup: number[] = [];
   lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
 

@@ -22,6 +22,8 @@
  */
 
 import { decodeHex, encodeHex } from "./hex.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Converts a Uint8Array stream into a hex-encoded stream.
@@ -74,7 +76,7 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class HexDecoderStream extends TransformStream<string, Uint8Array> {
+export class HexDecoderStream extends TransformStream<string, Uint8Array_> {
   constructor() {
     let push = "";
     super({
