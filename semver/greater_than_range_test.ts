@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
-import { assert, assertFalse } from "@std/assert";
+import { assert, assertEquals, assertFalse } from "@std/assert";
 import {
   format,
   formatRange,
@@ -9,6 +9,7 @@ import {
   parse,
   parseRange,
 } from "./mod.ts";
+import type { Operator } from "./types.ts";
 
 Deno.test("greaterThanRange() checks if the semver is greater than the range", async (t) => {
   // from https://github.com/npm/node-semver/blob/692451bd6f75b38a71a99f39da405c94a5954a22/test/fixtures/version-gt-range.js
@@ -166,4 +167,42 @@ Deno.test("greaterThanRange() checks if the semver is greater than the range", a
       assertFalse(greaterThanRange(v, r), testName);
     });
   }
+});
+
+Deno.test("greaterThanRange() handles equals operator", () => {
+  const version = {
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  };
+  const range = [[{
+    operator: "=" as unknown as Operator,
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  }]];
+  assertEquals(greaterThanRange(version, range), false);
+});
+
+Deno.test("greaterThanRange() handles not equals operator", () => {
+  const version = {
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  };
+  const range = [[{
+    operator: "!=" as unknown as Operator,
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  }]];
+  assertEquals(greaterThanRange(version, range), true);
 });

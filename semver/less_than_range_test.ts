@@ -1,11 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
-import { assert, assertFalse } from "@std/assert";
+import { assert, assertEquals, assertFalse } from "@std/assert";
 import {
   format,
   formatRange,
   lessThanRange,
+  type Operator,
   parse,
   parseRange,
 } from "./mod.ts";
@@ -168,4 +169,23 @@ Deno.test("lessThanRange() checks if the SemVer is less than the range", async (
       assertFalse(lessThanRange(v, r), testName);
     });
   }
+});
+
+Deno.test("lessThanRange() handles not equals operator", () => {
+  const version = {
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  };
+  const range = [[{
+    operator: "!=" as unknown as Operator,
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  }]];
+  assertEquals(lessThanRange(version, range), true);
 });
