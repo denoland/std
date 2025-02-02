@@ -246,9 +246,9 @@ export class UntarStream
       // Decode Header
       let header: OldStyleFormat | PosixUstarFormat = {
         name: decoder.decode(value.subarray(0, 100)).split("\0")[0]!,
-        mode: parseInt(decoder.decode(value.subarray(100, 108 - 2))),
-        uid: parseInt(decoder.decode(value.subarray(108, 116 - 2))),
-        gid: parseInt(decoder.decode(value.subarray(116, 124 - 2))),
+        mode: parseInt(decoder.decode(value.subarray(100, 108 - 2)), 8),
+        uid: parseInt(decoder.decode(value.subarray(108, 116 - 2)), 8),
+        gid: parseInt(decoder.decode(value.subarray(116, 124 - 2)), 8),
         size: parseInt(decoder.decode(value.subarray(124, 136)).trimEnd(), 8),
         mtime: parseInt(decoder.decode(value.subarray(136, 148 - 1)), 8),
         typeflag: decoder.decode(value.subarray(156, 157)),
@@ -295,7 +295,7 @@ export class UntarStream
   async *#genFile(size: number): AsyncGenerator<Uint8Array> {
     for (let i = Math.ceil(size / 512); i > 0; --i) {
       const value = await this.#read();
-      if (value == undefined) {
+      if (value == undefined) {https://github.com/denoland/std
         throw new SyntaxError(
           "Cannot extract the tar archive: Unexpected end of Tarball",
         );
