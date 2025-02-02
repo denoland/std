@@ -21,6 +21,8 @@
  */
 
 import { validateBinaryLike } from "./_validate_binary_like.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 // deno-fmt-ignore
 const mapBase58: Record<string, number> = {
@@ -120,7 +122,7 @@ export function encodeBase58(data: ArrayBuffer | Uint8Array | string): string {
  * );
  * ```
  */
-export function decodeBase58(b58: string): Uint8Array {
+export function decodeBase58(b58: string): Uint8Array_ {
   const splitInput = b58.trim().split("");
 
   let length = 0;

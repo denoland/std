@@ -10,6 +10,8 @@
  */
 
 import * as base64 from "./base64.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Some variants allow or require omitting the padding '=' signs:
@@ -83,6 +85,6 @@ export function encodeBase64Url(
  * );
  * ```
  */
-export function decodeBase64Url(b64url: string): Uint8Array {
+export function decodeBase64Url(b64url: string): Uint8Array_ {
   return base64.decodeBase64(convertBase64urlToBase64(b64url));
 }

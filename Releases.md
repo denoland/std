@@ -1,3 +1,68 @@
+### 2025.01.31
+
+#### @std/bytes 1.0.5 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/cli 1.0.12 (patch)
+
+- feat(cli/unstable): support stderr on spinner (#6350)
+
+#### @std/crypto 1.0.4 (patch)
+
+- docs(crypto): clarify doc comment (#6368)
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/encoding 1.0.7 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/expect 1.0.13 (patch)
+
+- test(expect): check error message of `.toBeCloseTo()` (#6296)
+
+#### @std/fmt 1.0.5 (patch)
+
+- fix(fmt): make printf working with colors. (#6360)
+
+#### @std/fs 1.0.11 (patch)
+
+- feat(fs/unstable): add readLink and readLinkSync (#6373)
+- feat(fs/unstable): add link and linkSync (#6369)
+- feat(fs/unstable): add realPath and realPathSync (#6366)
+
+#### @std/http 1.0.13 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/io 0.225.2 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/log 0.224.14 (patch)
+
+- docs(log): mention potential deprecation of @std/log (#6364)
+
+#### @std/msgpack 1.0.3 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/streams 1.0.9 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/tar 0.1.5 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
 ### 2025.01.22
 
 #### @std/assert 1.0.11 (patch)

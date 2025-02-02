@@ -1125,7 +1125,7 @@ async function readUntilMatch(
   match: string,
 ) {
   const reader = source.getReader();
-  let buf = new Uint8Array(0);
+  let buf: Uint8Array = new Uint8Array(0);
   const dec = new TextDecoder();
   while (!dec.decode(buf).includes(match)) {
     const { value } = await reader.read();

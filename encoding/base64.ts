@@ -23,6 +23,8 @@
  */
 
 import { validateBinaryLike } from "./_validate_binary_like.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 const base64abc = [
   "A",
@@ -163,7 +165,7 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
  * );
  * ```
  */
-export function decodeBase64(b64: string): Uint8Array {
+export function decodeBase64(b64: string): Uint8Array_ {
   const binString = atob(b64);
   const size = binString.length;
   const bytes = new Uint8Array(size);
