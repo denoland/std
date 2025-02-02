@@ -22,6 +22,8 @@
  */
 
 import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Converts a Uint8Array stream into a base64url-encoded stream.
@@ -91,7 +93,7 @@ export class Base64UrlEncoderStream
  * ```
  */
 export class Base64UrlDecoderStream
-  extends TransformStream<string, Uint8Array> {
+  extends TransformStream<string, Uint8Array_> {
   constructor() {
     let push = "";
     super({

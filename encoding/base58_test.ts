@@ -53,7 +53,7 @@ Deno.test("encodeBase58() encodes binary", () => {
 
 Deno.test("encodeBase58() encodes binary buffer", () => {
   for (const [input, output] of testSetBinary) {
-    assertEquals(encodeBase58(input.buffer), output);
+    assertEquals(encodeBase58(input.buffer as ArrayBuffer), output);
   }
 });
 

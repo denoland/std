@@ -2,6 +2,9 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
+
 /**
  * Utilities for
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
@@ -48,7 +51,7 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * );
  * ```
  */
-export function decodeBase32(b32: string): Uint8Array {
+export function decodeBase32(b32: string): Uint8Array_ {
   return decode(b32, lookup);
 }
 

@@ -53,7 +53,14 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    * @param ab The ArrayBuffer to use as the initial contents of the buffer.
    */
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
-    this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
+    if (ab === undefined) {
+      this.#buf = new Uint8Array(0);
+    } else if (ab instanceof SharedArrayBuffer) {
+      // Note: This is necessary to avoid type error
+      this.#buf = new Uint8Array(ab);
+    } else {
+      this.#buf = new Uint8Array(ab);
+    }
   }
 
   /**

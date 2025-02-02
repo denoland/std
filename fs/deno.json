@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",
@@ -14,8 +14,11 @@
     "./expand-glob": "./expand_glob.ts",
     "./move": "./move.ts",
     "./unstable-chmod": "./unstable_chmod.ts",
+    "./unstable-link": "./unstable_link.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-read-dir": "./unstable_read_dir.ts",
+    "./unstable-read-link": "./unstable_read_link.ts",
+    "./unstable-real-path": "./unstable_real_path.ts",
     "./unstable-stat": "./unstable_stat.ts",
     "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-types": "./unstable_types.ts",

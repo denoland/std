@@ -28,6 +28,9 @@
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
+
 /**
  * The maximum value of an unsigned 64-bit integer.
  * Equivalent to `2n**64n - 1n`
@@ -216,7 +219,7 @@ export function encodeVarint(
   num: bigint | number,
   buf: Uint8Array = new Uint8Array(MaxVarintLen64),
   offset = 0,
-): [Uint8Array, number] {
+): [Uint8Array_, number] {
   num = BigInt(num);
   if (num < 0n) {
     throw new RangeError(
