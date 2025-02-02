@@ -295,7 +295,7 @@ export class UntarStream
   async *#genFile(size: number): AsyncGenerator<Uint8Array> {
     for (let i = Math.ceil(size / 512); i > 0; --i) {
       const value = await this.#read();
-      if (value == undefined) {https://github.com/denoland/std
+      if (value == undefined) {
         throw new SyntaxError(
           "Cannot extract the tar archive: Unexpected end of Tarball",
         );
