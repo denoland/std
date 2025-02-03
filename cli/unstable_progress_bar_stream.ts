@@ -23,7 +23,7 @@ import {
  *     ?.pipeThrough(new ProgressBarStream(
  *       Deno.stdout.writable,
  *       { totalSize },
- *     ));
+ *     )) ?? null;
  * }
  * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
  * ```
