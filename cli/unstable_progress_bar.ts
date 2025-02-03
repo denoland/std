@@ -85,7 +85,8 @@ export function createProgressBar(
   }
   function percent(): string {
     if (!options.includePercent) return "";
-    return "[" + (options.currentSize! / options.totalSize).toFixed(2) + "%] ";
+    return "[" +
+      (options.currentSize! / options.totalSize * 100).toFixed(2) +
   }
   function amount(): string {
     if (!options.includeAmount) return "";
