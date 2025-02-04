@@ -43,7 +43,6 @@ Deno.test("rename() renames a regular file", async () => {
   await rm(tempDirPath, { recursive: true, force: true });
 });
 
-// Rejects for both windows and *nixes
 Deno.test("rename() rejects with Error when an existing regular file is renamed with an existing directory path", async () => {
   const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
   const testFile = join(tempDirPath, "testFile.txt");
@@ -60,7 +59,6 @@ Deno.test("rename() rejects with Error when an existing regular file is renamed 
   await rm(tempDirPath, { recursive: true, force: true });
 });
 
-// Rejects for windows and mac.
 Deno.test("rename() rejects with Error when an existing directory is renamed with an existing directory containing a file", async () => {
   const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
   const emptyDir = join(tempDirPath, "emptyDir");
