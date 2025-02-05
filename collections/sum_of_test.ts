@@ -130,3 +130,11 @@ Deno.test("sumOf() handles Infinity", () => {
 
   assertEquals(actual, Infinity);
 });
+
+Deno.test("sumOf() passes index to selector", () => {
+  const array = [1, 2, 3];
+
+  const actual = sumOf(array, (_, index) => index);
+
+  assertEquals(actual, 3);
+});

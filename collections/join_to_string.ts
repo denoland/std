@@ -77,7 +77,7 @@ export type JoinToStringOptions = {
  */
 export function joinToString<T>(
   array: Iterable<T>,
-  selector: (el: T) => string,
+  selector: (el: T, index: number) => string,
   options: Readonly<JoinToStringOptions> = {},
 ): string {
   const {
@@ -101,7 +101,7 @@ export function joinToString<T>(
       break;
     }
 
-    result += selector(el);
+    result += selector(el, index);
     index++;
   }
 

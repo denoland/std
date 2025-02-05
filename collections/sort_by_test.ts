@@ -331,3 +331,10 @@ Deno.test({
     assertEquals(sorted.length, 10000);
   },
 });
+
+Deno.test({
+  name: "sortBy() passes index to selector",
+  fn() {
+    assertEquals(sortBy([2, 3, 1], (_, index) => -index), [1, 3, 2]);
+  },
+});

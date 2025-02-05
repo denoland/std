@@ -5,7 +5,7 @@ import { distinctBy } from "./distinct_by.ts";
 
 function distinctByTest<I>(
   array: Array<I>,
-  selector: (element: I) => unknown,
+  selector: (element: I, index: number) => unknown,
   expected: Array<I>,
   message?: string,
 ) {
@@ -114,6 +114,17 @@ Deno.test({
       people,
       (it) => it.name.length,
       [kim, arthur, anna],
+    );
+  },
+});
+
+Deno.test({
+  name: "distinctBy() passes index to discriminator",
+  fn() {
+    distinctByTest(
+      [25, "asdf", true],
+      (_, index) => index > 1,
+      [25, true],
     );
   },
 });

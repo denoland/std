@@ -30,12 +30,13 @@
  */
 export function sumOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): number {
   let sum = 0;
+  let index = 0;
 
   for (const i of array) {
-    sum += selector(i);
+    sum += selector(i, index++);
   }
 
   return sum;

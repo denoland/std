@@ -192,3 +192,14 @@ Deno.test("minBy() handles Map values", () => {
   const min = minBy(input.values(), (i) => i.age);
   assertEquals(min, { age: 23 });
 });
+
+Deno.test({
+  name: "minBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = minBy(input, (_, index) => index);
+
+    assertEquals(max, 4);
+  },
+});

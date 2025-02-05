@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { mapNotNullish } from "./map_not_nullish.ts";
 
 function mapNotNullishTest<T, O>(
-  input: [Array<T>, (el: T) => O | undefined | null],
+  input: [Array<T>, (el: T, index: number) => O | undefined | null],
   expected: Array<O>,
   message?: string,
 ) {
@@ -87,6 +87,19 @@ Deno.test({
         (it) => it.middle,
       ],
       ["Hans", "Marija"],
+    );
+  },
+});
+
+Deno.test({
+  name: "mapNotNullish() passes index to transformer",
+  fn() {
+    mapNotNullishTest(
+      [
+        [1, 2, 3, 4],
+        (it, index) => index === 1 ? null : it + index,
+      ],
+      [1, 5, 7],
     );
   },
 });

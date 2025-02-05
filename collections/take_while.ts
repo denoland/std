@@ -28,11 +28,12 @@
  */
 export function takeWhile<T>(
   iterable: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
+  let index = 0;
   const result: T[] = [];
   for (const element of iterable) {
-    if (!predicate(element)) {
+    if (!predicate(element, index++)) {
       break;
     }
     result.push(element);

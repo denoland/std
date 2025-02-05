@@ -80,3 +80,11 @@ Deno.test("dropLastWhile() handles a generator", () => {
   const actual = dropLastWhile(gen(), (i) => i > 30);
   assertEquals(actual, [20]);
 });
+
+Deno.test("dropLastWhile() passes index to predicate", () => {
+  const array = [20, 30, 20];
+
+  const actual = dropLastWhile(array, (_, index) => index > 1);
+
+  assertEquals(actual, [20, 30]);
+});

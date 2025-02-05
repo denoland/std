@@ -31,7 +31,7 @@
  */
 export function maxBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): T | undefined;
 /**
  * Returns the first element that is the largest value of the given function or
@@ -63,7 +63,7 @@ export function maxBy<T>(
  */
 export function maxBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => string,
+  selector: (el: T, index: number) => string,
 ): T | undefined;
 /**
  * Returns the first element that is the largest value of the given function or
@@ -95,7 +95,7 @@ export function maxBy<T>(
  */
 export function maxBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => bigint,
+  selector: (el: T, index: number) => bigint,
 ): T | undefined;
 /**
  * Returns the first element that is the largest value of the given function or
@@ -127,26 +127,26 @@ export function maxBy<T>(
  */
 export function maxBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => Date,
+  selector: (el: T, index: number) => Date,
 ): T | undefined;
 export function maxBy<T>(
   array: Iterable<T>,
   selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => string)
+    | ((el: T, index: number) => bigint)
+    | ((el: T, index: number) => Date),
 ): T | undefined {
   if (Array.isArray(array)) {
     const length = array.length;
     if (length === 0) return undefined;
 
     let max: T = array[0]!;
-    let maxValue = selector(max);
+    let maxValue = selector(max, 0);
 
     for (let i = 1; i < length; i++) {
       const current = array[i]!;
-      const currentValue = selector(current);
+      const currentValue = selector(current, i);
       if (currentValue > maxValue) {
         max = current;
         maxValue = currentValue;
@@ -161,12 +161,13 @@ export function maxBy<T>(
 
   if (first.done) return undefined;
 
+  let index = 0;
   let max: T = first.value;
-  let maxValue = selector(max);
+  let maxValue = selector(max, index++);
 
   let next = iter.next();
   while (!next.done) {
-    const currentValue = selector(next.value);
+    const currentValue = selector(next.value, index++);
     if (currentValue > maxValue) {
       max = next.value;
       maxValue = currentValue;

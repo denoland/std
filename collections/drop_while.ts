@@ -26,19 +26,20 @@
  */
 export function dropWhile<T>(
   iterable: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
   if (Array.isArray(iterable)) {
-    const idx = iterable.findIndex((el) => !predicate(el));
+    const idx = iterable.findIndex((el, index) => !predicate(el, index));
     if (idx === -1) {
       return [];
     }
     return iterable.slice(idx);
   }
   const array: T[] = [];
+  let index = 0;
   let found = false;
   for (const item of iterable) {
-    if (found || !predicate(item)) {
+    if (found || !predicate(item, index++)) {
       found = true;
       array.push(item);
     }
