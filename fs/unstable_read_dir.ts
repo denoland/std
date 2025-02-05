@@ -5,8 +5,13 @@ import { mapError } from "./_map_error.ts";
 import { toDirEntry } from "./_to_dir_entry.ts";
 import type { DirEntry } from "./unstable_types.ts";
 
-/** Reads the directory given by `path` and returns an async iterable of
+/**
+ * Reads the directory given by `path` and returns an async iterable of
  * {@linkcode DirEntry}. The order of entries is not guaranteed.
+ *
+ * Throws Error if `path` is not a directory.
+ *
+ * Requires `allow-read` permission.
  *
  * @example Usage
  * ```ts
@@ -17,12 +22,10 @@ import type { DirEntry } from "./unstable_types.ts";
  * }
  * ```
  *
- * Throws error if `path` is not a directory.
- *
- * Requires `allow-read` permission.
- *
  * @tags allow-read
- * @category File System
+ *
+ * @param path The path to the directory.
+ * @returns An async iterable of `DirEntry` elements.
  */
 export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
   if (isDeno) {
