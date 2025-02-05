@@ -9,11 +9,11 @@ export interface ProgressBarOptions {
    * The offset size of the input if progress is resuming part way through.
    * @default {0}
    */
-  currentSize?: number;
+  value?: number;
   /**
    * The total size expected to receive.
    */
-  totalSize: number;
+  max: number;
   /**
    * The length that the progress bar should be, in characters.
    * @default {50}
@@ -23,7 +23,7 @@ export interface ProgressBarOptions {
    * The character to fill the progress bar up with as it makes progress.
    * @default {'#'}
    */
-  fullChar?: string;
+  fillChar?: string;
   /**
    * The character the progress bar starts out with.
    * @default {'-'}
@@ -33,7 +33,7 @@ export interface ProgressBarOptions {
    * Whether the progress bar should be removed after completion.
    * @default {false}
    */
-  clearBar?: boolean;
+  clear?: boolean;
   /**
    * Whether or not a timer `[mm:ss]` should be displayed.
    * @default {true}
@@ -51,11 +51,11 @@ export interface ProgressBarOptions {
    */
   includeAmount?: boolean;
   /**
-   * Whether or not the {@link WritableStream} argument should be closed upon
+   * Whether or not the {@link WritableStream} argument should be kept open upon
    * completion.
    * @default {true}
    */
-  preventClose?: boolean;
+  keepOpen?: boolean;
 }
 
 /**
@@ -100,27 +100,27 @@ export function createProgressBar(
   writable: WritableStream<Uint8Array>,
   options: ProgressBarOptions,
 ): (addSize: number, done?: boolean) => Promise<void> {
-  options.currentSize = options.currentSize ?? 0;
+  options.value = options.value ?? 0;
   options.barLength = options.barLength ?? 50;
-  options.fullChar = options.fullChar ?? "#";
+  options.fillChar = options.fillChar ?? "#";
   options.emptyChar = options.emptyChar ?? "-";
-  options.clearBar = options.clearBar ?? false;
+  options.clear = options.clear ?? false;
   options.includeTime = options.includeTime ?? true;
   options.includePercent = options.includePercent ?? false;
   options.includeAmount = options.includeAmount ?? true;
-  options.preventClose = options.preventClose ?? true;
+  options.keepOpen = options.keepOpen ?? true;
 
   const [unit, rate] = function (): [string, number] {
-    if (options.totalSize < 2 ** 20) return ["KiB", 2 ** 10];
-    if (options.totalSize < 2 ** 30) return ["MiB", 2 ** 20];
-    if (options.totalSize < 2 ** 40) return ["GiB", 2 ** 30];
-    if (options.totalSize < 2 ** 50) return ["TiB", 2 ** 40];
+    if (options.max < 2 ** 20) return ["KiB", 2 ** 10];
+    if (options.max < 2 ** 30) return ["MiB", 2 ** 20];
+    if (options.max < 2 ** 40) return ["GiB", 2 ** 30];
+    if (options.max < 2 ** 50) return ["TiB", 2 ** 40];
     return ["PiB", 2 ** 50];
   }();
 
   const writer = function () {
     const stream = new TextEncoderStream();
-    stream.readable.pipeTo(writable, options);
+    stream.readable.pipeTo(writable, { preventClose: options.keepOpen });
     return stream.writable.getWriter();
   }();
   const startTime = performance.now();
@@ -134,19 +134,19 @@ export function createProgressBar(
     addSize: number,
     done = false,
   ): Promise<void> {
-    options.currentSize! += addSize;
+    options.value! += addSize;
     if (done) {
       clearInterval(id);
       await print();
-      if (options.clearBar) await writer.write("\r\u001b[K");
+      if (options.clear) await writer.write("\r\u001b[K");
       else await writer.write("\n");
       await writer.close();
     }
   };
   async function print(): Promise<void> {
     const currentTime = performance.now();
-    const size = options.currentSize! /
-        options.totalSize *
+    const size = options.value! /
+        options.max *
         options.barLength! | 0;
     await writer.write(
       "\r\u001b[K" +
@@ -166,22 +166,22 @@ export function createProgressBar(
   }
   function progress(size: number): string {
     return "[" +
-      options.fullChar!.repeat(size) +
+      options.fillChar!.repeat(size) +
       options.emptyChar!.repeat(options.barLength! - size) +
       "] ";
   }
   function percent(): string {
     if (!options.includePercent) return "";
     return "[" +
-      (options.currentSize! / options.totalSize * 100).toFixed(2) +
+      (options.value! / options.max * 100).toFixed(2) +
       "%] ";
   }
   function amount(): string {
     if (!options.includeAmount) return "";
     return "[" +
-      (options.currentSize! / rate).toFixed(2) +
+      (options.value! / rate).toFixed(2) +
       "/" +
-      (options.totalSize / rate).toFixed(2) +
+      (options.max / rate).toFixed(2) +
       " " +
       unit +
       "] ";
