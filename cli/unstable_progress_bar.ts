@@ -1,6 +1,48 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 /**
+ * The properties provided to the fmt function upon every visual update.
+ */
+export interface ProgressBarFormatter {
+  /**
+   * A function that returns a formatted version of the duration.
+   * `[mm:ss] `
+   */
+  styledTime: () => string;
+  /**
+   * A function that returns a formatted version of the data received.
+   * `[0.40/97.66 KiB] `
+   * @param fractions The number of decimal places the values should have.
+   */
+  styledData: (fractions?: number) => string;
+  /**
+   * The progress bar string.
+   * Default Style: `[###-------] `
+   */
+  progressBar: string;
+  /**
+   * The duration of the progress bar.
+   */
+  time: number;
+  /**
+   * The duration passed to the last call.
+   */
+  previousTime: number;
+  /**
+   * The current value the progress bar is sitting at.
+   */
+  value: number;
+  /**
+   * The value passed to the last call.
+   */
+  previousValue: number;
+  /**
+   * The max value expected to receive.
+   */
+  max: number;
+}
+
+/**
  * The options that are provided to a {@link createProgressBar} or
  * {@link ProgressBarStream}.
  */
@@ -35,26 +77,10 @@ export interface ProgressBarOptions {
    */
   clear?: boolean;
   /**
-   * Whether or not a timer `[mm:ss]` should be displayed.
-   * @default {true}
+   * A function that creates the style of the progress bar.
+   * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
-  includeTime?: boolean;
-  /**
-   * Whether or not a percentage `[0.00%]` should be displayed.
-   * @default {false}
-   */
-  includePercent?: boolean;
-  /**
-   * Whether or not the amount `[0.00/97.04 KiB]` passed through should be
-   * displayed.
-   * @default {true}
-   */
-  includeAmount?: boolean;
-  /**
-   * Whether or not the {@link WritableStream} argument should be kept open upon
-   * completion.
-   * @default {true}
-   */
+  fmt?: (fmt: ProgressBarFormatter) => string;
   keepOpen?: boolean;
 }
 
@@ -105,9 +131,9 @@ export function createProgressBar(
   options.fillChar = options.fillChar ?? "#";
   options.emptyChar = options.emptyChar ?? "-";
   options.clear = options.clear ?? false;
-  options.includeTime = options.includeTime ?? true;
-  options.includePercent = options.includePercent ?? false;
-  options.includeAmount = options.includeAmount ?? true;
+  options.fmt = options.fmt ?? function (x) {
+    return x.styledTime() + x.progressBar + x.styledData();
+  };
   options.keepOpen = options.keepOpen ?? true;
 
   const [unit, rate] = function (): [string, number] {
@@ -125,6 +151,8 @@ export function createProgressBar(
   }();
   const startTime = performance.now();
   const id = setInterval(print, 1_000);
+  let lastTime = startTime;
+  let lastValue = options.value!;
 
   return addProgress;
   /**
@@ -147,42 +175,39 @@ export function createProgressBar(
     const size = options.value! /
         options.max *
         options.barLength! | 0;
-    await writer.write(
-      "\r\u001b[K" +
-        time(currentTime) +
-        progress(size) +
-        percent() +
-        amount(),
-    );
-  }
-  function time(currentTime: number): string {
-    if (!options.includeTime) return "";
-    return "[" +
-      ((currentTime - startTime) / 1000 / 60 | 0).toString().padStart(2, "0") +
-      ":" +
-      ((currentTime - startTime) / 1000 % 60 | 0).toString().padStart(2, "0") +
-      "] ";
-  }
-  function progress(size: number): string {
-    return "[" +
-      options.fillChar!.repeat(size) +
-      options.emptyChar!.repeat(options.barLength! - size) +
-      "] ";
-  }
-  function percent(): string {
-    if (!options.includePercent) return "";
-    return "[" +
-      (options.value! / options.max * 100).toFixed(2) +
-      "%] ";
-  }
-  function amount(): string {
-    if (!options.includeAmount) return "";
-    return "[" +
-      (options.value! / rate).toFixed(2) +
-      "/" +
-      (options.max / rate).toFixed(2) +
-      " " +
-      unit +
-      "] ";
+    const x: ProgressBarFormatter = {
+      styledTime() {
+        return "[" +
+          (this.time / 1000 / 60 | 0)
+            .toString()
+            .padStart(2, "0") +
+          ":" +
+          (this.time / 1000 % 60 | 0)
+            .toString()
+            .padStart(2, "0") +
+          "] ";
+      },
+      styledData(fractions = 2) {
+        return "[" +
+          (this.value / rate).toFixed(fractions) +
+          "/" +
+          (this.max / rate).toFixed(fractions) +
+          " " +
+          unit +
+          "] ";
+      },
+      progressBar: "[" +
+        options.fillChar!.repeat(size) +
+        options.emptyChar!.repeat(options.barLength! - size) +
+        "] ",
+      time: currentTime - startTime,
+      previousTime: lastTime - startTime,
+      value: options.value!,
+      previousValue: lastValue,
+      max: options.max,
+    };
+    lastTime = currentTime;
+    lastValue = options.value!;
+    await writer.write("\r\u001b[K" + options.fmt!(x));
   }
 }
