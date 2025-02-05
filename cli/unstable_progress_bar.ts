@@ -145,7 +145,9 @@ export function createProgressBar(
 
   const writer = function () {
     const stream = new TextEncoderStream();
-    stream.readable.pipeTo(writable, { preventClose: options.keepOpen });
+    stream.readable
+      .pipeTo(writable, { preventClose: options.keepOpen })
+      .catch(() => {});
     return stream.writable.getWriter();
   }();
   const startTime = performance.now();
@@ -166,7 +168,8 @@ export function createProgressBar(
       clearInterval(id);
       return print()
         .then(() => writer.write(options.clear ? "\r\u001b[K" : "\n"))
-        .then(() => writer.close());
+        .then(() => writer.close())
+        .catch(() => {});
     }
   }
   async function print(): Promise<void> {
@@ -207,6 +210,7 @@ export function createProgressBar(
     };
     lastTime = currentTime;
     lastValue = options.value!;
-    await writer.write("\r\u001b[K" + options.fmt!(x));
+    await writer.write("\r\u001b[K" + options.fmt!(x))
+      .catch(() => {});
   }
 }

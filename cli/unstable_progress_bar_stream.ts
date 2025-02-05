@@ -44,10 +44,10 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
         controller.enqueue(chunk);
       },
       flush(_controller) {
-        return addProgress(0, true);
+        addProgress(0, true);
       },
       cancel() {
-        return addProgress(0, true);
+        addProgress(0, true);
       },
     });
   }
