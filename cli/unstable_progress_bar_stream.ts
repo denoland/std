@@ -39,15 +39,15 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
   ) {
     const addProgress = createProgressBar(writable, options);
     super({
-      async transform(chunk, controller) {
-        await addProgress(chunk.length);
+      transform(chunk, controller) {
+        addProgress(chunk.length);
         controller.enqueue(chunk);
       },
-      async flush(_controller) {
-        await addProgress(0, true);
+      flush(_controller) {
+        return addProgress(0, true);
       },
-      async cancel() {
-        await addProgress(0, true);
+      cancel() {
+        return addProgress(0, true);
       },
     });
   }

@@ -86,7 +86,7 @@ export interface ProgressBarOptions {
  * const addProgress = createProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   await addProgress(buffer.length);
+ *   addProgress(buffer.length);
  *   await writer.write(buffer);
  * }
  * await addProgress(0, true);
@@ -96,7 +96,10 @@ export interface ProgressBarOptions {
 export function createProgressBar(
   writable: WritableStream<Uint8Array>,
   options: ProgressBarOptions,
-): (addSize: number, done?: boolean) => Promise<void> {
+): {
+  (addSize: number, done?: false): void;
+  (addSize: number, done: true): Promise<void>;
+} {
   options.value = options.value ?? 0;
   options.barLength = options.barLength ?? 50;
   options.fillChar = options.fillChar ?? "#";
@@ -123,23 +126,22 @@ export function createProgressBar(
   const startTime = performance.now();
   const id = setInterval(print, 1_000);
 
+  return addProgress;
   /**
    * @param addSize The amount of bytes of progressed made since last call.
    * @param done Whether or not you're done reporting progress.
    */
-  return async function addProgress(
-    addSize: number,
-    done = false,
-  ): Promise<void> {
+  function addProgress(addSize: number, done?: false): void;
+  function addProgress(addSize: number, done: true): Promise<void>;
+  function addProgress(addSize: number, done = false): void | Promise<void> {
     options.value! += addSize;
     if (done) {
       clearInterval(id);
-      await print();
-      if (options.clear) await writer.write("\r\u001b[K");
-      else await writer.write("\n");
-      await writer.close();
+      return print()
+        .then(() => writer.write(options.clear ? "\r\u001b[K" : "\n"))
+        .then(() => writer.close());
     }
-  };
+  }
   async function print(): Promise<void> {
     const currentTime = performance.now();
     const size = options.value! /
