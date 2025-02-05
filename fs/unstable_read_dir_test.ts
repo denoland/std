@@ -32,10 +32,7 @@ Deno.test("readDir() rejects when the path is not a directory", async () => {
 });
 
 Deno.test("readDir() rejects when the directory does not exist", async () => {
-  await assertRejects(
-    async () => {
-      await readDir("non_existent_dir")[Symbol.asyncIterator]().next();
-    },
-    NotFound,
-  );
+  await assertRejects(async () => {
+    await readDir("non_existent_dir")[Symbol.asyncIterator]().next();
+  }, NotFound);
 });
