@@ -83,10 +83,7 @@ export interface ProgressBarOptions {
  * const file = await Deno.create("./_tmp/output.txt");
  * const writer = file.writable.getWriter();
  *
- * const addProgress = createProgressBar(
- *   Deno.stdout.writable,
- *   { totalSize: 100_000 },
- * );
+ * const addProgress = createProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
  * for await (const buffer of gen) {
  *   await addProgress(buffer.length);
