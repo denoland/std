@@ -29,12 +29,13 @@
  */
 export function distinctBy<T, D>(
   array: Iterable<T>,
-  discriminator: (el: T) => D,
+  discriminator: (el: T, index: number) => D,
 ): T[] {
   const keys = new Set<D>();
   const result: T[] = [];
+  let index = 0;
   for (const element of array) {
-    const key = discriminator(element);
+    const key = discriminator(element, index++);
     if (!keys.has(key)) {
       keys.add(key);
       result.push(element);

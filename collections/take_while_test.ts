@@ -144,3 +144,11 @@ Deno.test("(unstable) takeWhile() handles a Map", () => {
     ["c", 3],
   ]);
 });
+
+Deno.test("takeWhile() passes the index to the predicate", () => {
+  const arr = [1, 2, 3, 4];
+
+  const actual = takeWhile(arr, (_, index) => index < 1);
+
+  assertEquals(actual, [1]);
+});
