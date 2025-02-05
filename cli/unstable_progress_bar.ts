@@ -106,8 +106,7 @@ export interface ProgressBarOptions {
  *       await new Promise((a) => setTimeout(a, (Math.random() * 200) | 0));
  *     }
  *   }();
- * const file = await Deno.create("./_tmp/output.txt");
- * const writer = file.writable.getWriter();
+ * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
  * const addProgress = createProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
@@ -116,7 +115,7 @@ export interface ProgressBarOptions {
  *   await writer.write(buffer);
  * }
  * await addProgress(0, true);
- * file.close();
+ * await writer.close();
  * ```
  */
 export function createProgressBar(
