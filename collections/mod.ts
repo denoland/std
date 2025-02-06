@@ -74,3 +74,4 @@ export * from "./union.ts";
 export * from "./unzip.ts";
 export * from "./without_all.ts";
 export * from "./zip.ts";
+export * from "./cycle.ts";
