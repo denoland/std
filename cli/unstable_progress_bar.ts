@@ -152,7 +152,9 @@ export function createProgressBar(
   }();
   const startTime = performance.now();
   const id = setInterval(print, 1_000);
-  writer.closed.finally(() => clearInterval(id));
+  writer.closed
+    .catch(() => {})
+    .finally(() => clearInterval(id));
   let lastTime = startTime;
   let lastValue = options.value!;
 
