@@ -147,14 +147,11 @@ export function createProgressBar(
     const stream = new TextEncoderStream();
     stream.readable
       .pipeTo(writable, { preventClose: options.keepOpen })
-      .catch(() => {});
+      .catch(() => clearInterval(id));
     return stream.writable.getWriter();
   }();
   const startTime = performance.now();
   const id = setInterval(print, 1_000);
-  writer.closed
-    .catch(() => {})
-    .finally(() => clearInterval(id));
   let lastTime = startTime;
   let lastValue = options.value!;
 
