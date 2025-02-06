@@ -27,7 +27,7 @@
  * console.log(result);
  * ```
  */
-function* cycle<T>(iterable: Iterable<T>): Generator<T> {
+export function* cycle<T>(iterable: Iterable<T>): Generator<T> {
   let iterator = iterable[Symbol.iterator]();
 
   while (true) {
