@@ -15,18 +15,17 @@
  * @example Basic usage
  * ```ts
  * import { cycle } from "@std/collections/cycle";
+ * import { assertEquals } from "@std/assert";
  *
  * const cyclic = cycle([1, 2, 3]);
  * const result: number[] = [];
  *
- * // Get the first 7 values of the infinite cycle.
  * for (const num of cyclic) {
  *   result.push(num);
  *   if (result.length === 7) break;
  * }
  *
- * // result is [1, 2, 3, 1, 2, 3, 1]
- * console.log(result);
+ * assertEquals(result, [1, 2, 3, 1, 2, 3, 1]);
  * ```
  */
 export function* cycle<T>(iterable: Iterable<T>): Generator<T> {
