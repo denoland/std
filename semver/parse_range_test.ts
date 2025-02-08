@@ -665,4 +665,44 @@ Deno.test("parseRange() throws on invalid range", () => {
     TypeError,
     'Cannot parse version range: range "blerg" is invalid',
   );
+  assertThrows(
+    () => parseRange("1.*.3"),
+    TypeError,
+    'Cannot parse version range: range "1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange("=1.*.3"),
+    TypeError,
+    'Cannot parse version range: range "=1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange("<1.*.3"),
+    TypeError,
+    'Cannot parse version range: range "<1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange("<=1.*.3"),
+    TypeError,
+    'Cannot parse version range: range "<=1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange(">1.*.3"),
+    TypeError,
+    'Cannot parse version range: range ">1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange(">=1.*.3"),
+    TypeError,
+    'Cannot parse version range: range ">=1.*.3" is invalid',
+  );
+  assertThrows(
+    () => parseRange("1.*.3 - 2.3.4"),
+    TypeError,
+    'Cannot parse version range: range "1.*.3 - 2.3.4" is invalid',
+  );
+  assertThrows(
+    () => parseRange("1.2.3 - 2.*.4"),
+    TypeError,
+    'Cannot parse version range: range "1.2.3 - 2.*.4" is invalid',
+  );
 });
