@@ -188,6 +188,8 @@ Deno.test("greaterThanRange() handles equals operator", () => {
   assertEquals(greaterThanRange(version, range), false);
 });
 
+// BUG `!=` operator type does not exist in semver and should be removed.
+// TODO remove this test once `!=` operator is removed.
 Deno.test("greaterThanRange() handles not equals operator", () => {
   const version = {
     major: 1,
