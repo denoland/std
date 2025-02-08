@@ -65,6 +65,28 @@ type RangeRegExpGroups = {
   build?: string;
 };
 
+function verifyVersionGroups(groups: RangeRegExpGroups, string: string) {
+  const majorIsWildcard = isWildcard(groups.major);
+  const minorIsWildcard = isWildcard(groups.minor);
+  const patchIsWildcard = isWildcard(groups.patch);
+
+  const major = +groups.major;
+  const minor = +groups.minor;
+  const patch = +groups.patch;
+
+  if (
+    (!majorIsWildcard && isNaN(major)) ||
+    (majorIsWildcard && (!minorIsWildcard || !patchIsWildcard)) ||
+    (!minorIsWildcard && isNaN(minor)) ||
+    (minorIsWildcard && !patchIsWildcard) ||
+    (!patchIsWildcard && isNaN(patch))
+  ) {
+    throw new TypeError(
+      `Cannot parse version range: range "${string}" is invalid`,
+    );
+  }
+}
+
 function handleLeftHyphenRangeGroups(
   leftGroup: RangeRegExpGroups,
 ): Comparator | undefined {
@@ -154,6 +176,7 @@ function parseHyphenRange(range: string): Comparator[] | undefined {
   const leftLength = leftMatch[0].length;
 
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
+
   if (!hyphenMatch) return;
   const hyphenLength = hyphenMatch[0].length;
 
@@ -163,6 +186,8 @@ function parseHyphenRange(range: string): Comparator[] | undefined {
   const rightGroups = rightMatch?.groups;
   if (!rightGroups) return;
 
+  verifyVersionGroups(leftGroup as RangeRegExpGroups, range);
+  verifyVersionGroups(rightGroups as RangeRegExpGroups, range);
   const from = handleLeftHyphenRangeGroups(leftGroup as RangeRegExpGroups);
   const to = handleRightHyphenRangeGroups(rightGroups as RangeRegExpGroups);
   return [from, to].filter(Boolean) as Comparator[];
@@ -356,6 +381,8 @@ function parseOperatorRange(string: string): Comparator | Comparator[] | null {
   const groups = string.match(OPERATOR_XRANGE_REGEXP)
     ?.groups as RangeRegExpGroups;
   if (!groups) return parseComparator(string);
+
+  verifyVersionGroups(groups, string);
 
   switch (groups.operator) {
     case "^":
