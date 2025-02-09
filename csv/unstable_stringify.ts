@@ -168,6 +168,19 @@ export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
 /**
  * Converts an array of objects into a CSV string.
  *
+ * @example Give an array of objects without specifying columns
+ * ```ts
+ * import { stringify } from "@std/csv/unstable-stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
+ * ```
+ *
  * @example Give an array of objects and specify columns
  * ```ts
  * import { stringify } from "@std/csv/unstable-stringify";
@@ -183,19 +196,6 @@ export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
  * assertEquals(stringify(data, { columns }), `name,age\r\nRick,70\r\nMorty,14\r\n`);
  * ```
  *
- * @example Give an array of objects without specifying columns
- * ```ts
- * import { stringify } from "@std/csv/unstable-stringify";
- * import { assertEquals } from "@std/assert/equals";
- *
- * const data = [
- *   { name: "Rick", age: 70 },
- *   { name: "Morty", age: 14 },
- * ];
- *
- * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
- * ```
- *
  * @example Give an array of objects and specify columns with `headers: false`
  * ```ts
  * import { stringify } from "@std/csv/unstable-stringify";
@@ -206,10 +206,8 @@ export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
  *   { name: "Morty", age: 14 },
  * ];
  *
- * const columns = ["name", "age"];
- *
  * assertEquals(
- *   stringify(data, { columns, headers: false }),
+ *   stringify(data, { headers: false }),
  *  `Rick,70\r\nMorty,14\r\n`,
  * );
  * ```
@@ -317,9 +315,58 @@ export function stringify(
   data: readonly ObjectItem[],
   options?: ObjectStringifyOptions,
 ): string;
+/**
+ * @example Give an array of string arrays and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * const columns = [
+ *   { prop: 0, header: "name" },
+ *   { prop: 1, header: "age" },
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @example Emit TSV (tab-separated values) with `separator: "\t"`
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * assertEquals(stringify(data, { separator: "\t" }), `Rick\t70\r\nMorty\t14\r\n`);
+ * ```
+ *
+ * @example Prepend a byte-order mark with `bom: true`
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [["Rick", 70]];
+ *
+ * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
+ * ```
+ */
+export function stringify(
+  data: readonly ArrayItem[],
+  options?: ArrayStringifyOptions,
+): string;
 export function stringify(
   data: readonly DataItem[],
-  options?: StringifyOptions,
+  options?: StringifyOptions | ArrayStringifyOptions,
 ): string {
   let { columns } = options ?? {};
 
