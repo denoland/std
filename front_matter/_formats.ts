@@ -9,15 +9,15 @@ export type Format = "yaml" | "toml" | "json";
 const BOM = "\\ufeff?";
 
 const YAML_DELIMITER = "= yaml =|---";
-const YAML_HEADER = `(---yaml|${YAML_DELIMITER})`;
+const YAML_HEADER = `(?:---yaml|${YAML_DELIMITER})`;
 const YAML_FOOTER = `(?:---|${YAML_DELIMITER})`;
 
 const TOML_DELIMITER = "\\+\\+\\+|= toml =";
-const TOML_HEADER = `(---toml|${TOML_DELIMITER})`;
+const TOML_HEADER = `(?:---toml|${TOML_DELIMITER})`;
 const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
 
 const JSON_DELIMITER = `= json =`;
-const JSON_HEADER = `(---json|${JSON_DELIMITER})`;
+const JSON_HEADER = `(?:---json|${JSON_DELIMITER})`;
 const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
 
 const WHITESPACES = "\\s*";
