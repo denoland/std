@@ -11,13 +11,11 @@ export function extractAndParse<T>(
   extractRegExp: RegExp,
   parse: Parser,
 ): Extract<T> {
-  const match = extractRegExp.exec(input);
-  if (!match || match.index !== 0) {
-    throw new TypeError("Unexpected end of input");
-  }
-  const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") ?? "";
+  const groups = extractRegExp.exec(input)?.groups;
+  if (!groups) throw new TypeError("Unexpected end of input");
+  const { data = "", body = "" } = groups;
+  const frontMatter = data;
   const attrs = parse(frontMatter) as T;
-  const body = input.replace(match[0], "");
   return { frontMatter, body, attrs };
 }
 
@@ -33,11 +31,8 @@ export function recognize(
   str: string,
   formats: Format[],
 ): Format {
-  const [firstLine] = str.split(/(\r?\n)/) as [string];
-
   for (const format of formats) {
-    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(firstLine)) return format;
+    if (RECOGNIZE_REGEXP_MAP.get(format)?.test(str)) return format;
   }
-
   throw new TypeError("Unsupported front matter format");
 }
