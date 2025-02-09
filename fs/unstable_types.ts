@@ -117,3 +117,30 @@ export interface SymlinkOptions {
    * option only applies to Windows and is ignored on other operating systems. */
   type: "file" | "dir" | "junction";
 }
+
+/**
+ * Options which can be set when using {@linkcode makeTempDir},
+ * {@linkcode makeTempDirSync}, {@linkcode makeTempFile}, and
+ * {@linkcode makeTempFileSync}.
+ */
+export interface MakeTempOptions {
+  /**
+   * Directory where the temporary directory should be created (defaults to the
+   * env variable `TMPDIR`, or the system's default, usually `/tmp`).
+   *
+   * Note that if the passed `dir` is relative, the path returned by
+   * `makeTempFile()` and `makeTempDir()` will also be relative. Be mindful of
+   * this when changing working directory.
+   */
+  dir?: string;
+  /**
+   * String that should precede the random portion of the temporary directory's
+   * name.
+   */
+  prefix?: string;
+  /**
+   * String that should follow the random portion of the temporary directory's
+   * name.
+   */
+  suffix?: string;
+}
