@@ -316,6 +316,8 @@ export function stringify(
   options?: ObjectStringifyOptions,
 ): string;
 /**
+ * Converts an array of arrays into a CSV string.
+ *
  * @example Give an array of string arrays and specify columns with renaming
  * ```ts
  * import { stringify } from "@std/csv/stringify";
@@ -359,11 +361,58 @@ export function stringify(
  *
  * assertEquals(stringify(data, { bom: true }), "\ufeffRick,70\r\n");
  * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @param options Options for the stringification.
+ * @returns A CSV string.
  */
 export function stringify(
   data: readonly ArrayItem[],
   options?: ArrayStringifyOptions,
 ): string;
+/**
+ * Converts an array of objects or arrays into a CSV string.
+ *
+ * @example Give an array of objects without specifying columns
+ * ```ts
+ * import { stringify } from "@std/csv/unstable-stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   { name: "Rick", age: 70 },
+ *   { name: "Morty", age: 14 },
+ * ];
+ *
+ * assertEquals(stringify(data), `name,age\r\nRick,70\r\nMorty,14\r\n`);
+ * ```
+ *
+ * @example Give an array of string arrays and specify columns with renaming
+ * ```ts
+ * import { stringify } from "@std/csv/stringify";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const data = [
+ *   ["Rick", 70],
+ *   ["Morty", 14],
+ * ];
+ *
+ * const columns = [
+ *   { prop: 0, header: "name" },
+ *   { prop: 1, header: "age" },
+ * ];
+ *
+ * assertEquals(
+ *   stringify(data, { columns }),
+ *  `name,age\r\nRick,70\r\nMorty,14\r\n`,
+ * );
+ * ```
+ *
+ * @param data The source data to stringify. It's an array of items which are
+ * plain objects or arrays.
+ * @param options Options for the stringification.
+ * @returns A CSV string.
+ */
 export function stringify(
   data: readonly DataItem[],
   options?: StringifyOptions | ArrayStringifyOptions,
