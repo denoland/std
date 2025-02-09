@@ -34,5 +34,5 @@ export type { Extract };
  * @returns The extracted TOML front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return extractAndParse(text, EXTRACT_TOML_REGEXP, parse as Parser);
+  return extractAndParse<T>(text, EXTRACT_TOML_REGEXP, parse as Parser);
 }
