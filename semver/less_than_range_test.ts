@@ -6,7 +6,6 @@ import {
   format,
   formatRange,
   lessThanRange,
-  type Operator,
   parse,
   parseRange,
 } from "./mod.ts";
