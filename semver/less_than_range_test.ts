@@ -180,12 +180,13 @@ Deno.test("lessThanRange() handles not equals operator", () => {
     build: [],
   };
   const range = [[{
-    operator: "!=" as unknown as Operator,
+    operator: "!=" as const,
     major: 1,
     minor: 0,
     patch: 0,
     prerelease: [],
     build: [],
   }]];
+  // FIXME(kt3k): This demonstrates a bug. This should be false
   assertEquals(lessThanRange(version, range), true);
 });
