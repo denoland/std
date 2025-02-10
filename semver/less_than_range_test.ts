@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
-import { assert, assertFalse } from "@std/assert";
+import { assert, assertEquals, assertFalse } from "@std/assert";
 import {
   format,
   formatRange,
@@ -168,4 +168,24 @@ Deno.test("lessThanRange() checks if the SemVer is less than the range", async (
       assertFalse(lessThanRange(v, r), testName);
     });
   }
+});
+
+Deno.test("lessThanRange() handles not equals operator", () => {
+  const version = {
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  };
+  const range = [[{
+    operator: "!=" as const,
+    major: 1,
+    minor: 0,
+    patch: 0,
+    prerelease: [],
+    build: [],
+  }]];
+  // FIXME(kt3k): This demonstrates a bug. This should be false
+  assertEquals(lessThanRange(version, range), true);
 });
