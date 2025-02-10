@@ -21,7 +21,7 @@ export type ReleaseType =
 export type Operator =
   | undefined
   | "="
-  // `!=` operator type does not exist in semver and should be removed.
+  // Note: `!=` operator type does not exist in npm:semver
   | "!="
   | ">"
   | ">="
