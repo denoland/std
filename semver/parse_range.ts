@@ -253,7 +253,7 @@ function handleLessThanOperator(groups: RangeRegExpGroups): Comparator[] {
   if (majorIsWildcard) return [{ operator: "<", major: 0, minor: 0, patch: 0 }];
   if (minorIsWildcard) {
     if (patchIsWildcard) return [{ operator: "<", major, minor: 0, patch: 0 }];
-    return [{ operator: "<", major, minor, patch: 0 }];
+    return [{ operator: "<", major, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) return [{ operator: "<", major, minor, patch: 0 }];
   const prerelease = parsePrerelease(groups.prerelease ?? "");
@@ -316,7 +316,7 @@ function handleGreaterOrEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   if (majorIsWildcard) return [ALL];
   if (minorIsWildcard) {
     if (patchIsWildcard) return [{ operator: ">=", major, minor: 0, patch: 0 }];
-    return [{ operator: ">=", major, minor, patch: 0 }];
+    return [{ operator: ">=", major, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) return [{ operator: ">=", major, minor, patch: 0 }];
   const prerelease = parsePrerelease(groups.prerelease ?? "");
