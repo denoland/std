@@ -117,3 +117,14 @@ export interface SymlinkOptions {
    * option only applies to Windows and is ignored on other operating systems. */
   type: "file" | "dir" | "junction";
 }
+
+/**
+ * Options which can be set when using {@linkcode readFile} or
+ * {@linkcode readTextFile}.
+ */
+export interface ReadFileOptions {
+  /** An abort signal to allow cancellation of the file read operation. If the
+   * signal becomes aborted the readFile operation will be stopped and the
+   * promise returned will be rejected with an AbortError. */
+  signal?: AbortSignal;
+}
