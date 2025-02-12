@@ -52,6 +52,7 @@ import "../../collections/zip_test.ts";
 import "../../fs/unstable_link_test.ts";
 import "../../fs/unstable_make_temp_dir_test.ts";
 import "../../fs/unstable_read_dir_test.ts";
+import "../../fs/unstable_read_file_test.ts";
 import "../../fs/unstable_read_link_test.ts";
 import "../../fs/unstable_real_path_test.ts";
 import "../../fs/unstable_rename_test.ts";
