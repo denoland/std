@@ -666,3 +666,24 @@ Deno.test("parseRange() throws on invalid range", () => {
     'Cannot parse version range: range "blerg" is invalid',
   );
 });
+
+Deno.test("parseRange() handles wildcards", () => {
+  assertEquals(parseRange("<1.*"), [
+    [{ operator: "<", major: 1, minor: 0, patch: 0 }],
+  ]);
+  assertEquals(parseRange("<1.*.0"), [
+    [{ operator: "<", major: 1, minor: 0, patch: 0 }],
+  ]);
+  assertEquals(parseRange("<1.*.*"), [
+    [{ operator: "<", major: 1, minor: 0, patch: 0 }],
+  ]);
+  assertEquals(parseRange(">=1.*.0"), [
+    [{ operator: ">=", major: 1, minor: 0, patch: 0 }],
+  ]);
+  assertEquals(parseRange(">=1.*.*"), [
+    [{ operator: ">=", major: 1, minor: 0, patch: 0 }],
+  ]);
+  assertEquals(parseRange(">=1.0.*"), [
+    [{ operator: ">=", major: 1, minor: 0, patch: 0 }],
+  ]);
+});

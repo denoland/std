@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { parse } from "./parse.ts";
 import { compare } from "./compare.ts";
 
@@ -52,5 +52,52 @@ Deno.test({
         assertEquals(actual, expected);
       });
     }
+  },
+});
+
+Deno.test({
+  name: "compare() throws on NaN",
+  fn: () => {
+    assertThrows(
+      () =>
+        compare({ major: NaN, minor: 0, patch: 0 }, {
+          major: 1,
+          minor: 0,
+          patch: 0,
+        }),
+      Error,
+      "Cannot compare against non-numbers",
+    );
+
+    assertThrows(
+      () =>
+        compare({ major: 1, minor: 0, patch: 0 }, {
+          major: 1,
+          minor: NaN,
+          patch: 0,
+        }),
+      Error,
+      "Cannot compare against non-numbers",
+    );
+  },
+});
+
+Deno.test({
+  name: "compare() handles undefined in prerelease",
+  fn: () => {
+    assertEquals(
+      compare({
+        major: 1,
+        minor: 0,
+        patch: 0,
+        prerelease: [undefined as unknown as string],
+      }, {
+        major: 1,
+        minor: 0,
+        patch: 0,
+        prerelease: [undefined as unknown as string],
+      }),
+      0,
+    );
   },
 });
