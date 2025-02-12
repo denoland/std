@@ -27,3 +27,17 @@ function checkWindows(): boolean {
 export function getNodeFs() {
   return (globalThis as any).process.getBuiltinModule("node:fs");
 }
+
+/**
+ * @returns The Node.js `os` module.
+ */
+export function getNodeOs() {
+  return (globalThis as any).process.getBuiltinModule("node:os");
+}
+
+/**
+ * @returns The Node.js `path` module.
+ */
+export function getNodePath() {
+  return (globalThis as any).process.getBuiltinModule("node:path");
+}
