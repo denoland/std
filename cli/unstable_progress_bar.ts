@@ -93,12 +93,13 @@ export interface ProgressBarOptions {
  *
  * @example Basic Usage
  * ```ts
+ * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
  * const gen = async function* (): AsyncGenerator<Uint8Array> {
  *     for (let i = 0; i < 100; ++i) {
  *       yield new Uint8Array(1000).fill(97);
- *       await new Promise((a) => setTimeout(a, (Math.random() * 200) | 0));
+ *       await delay(Math.random() * 200 | 0);
  *     }
  *   }();
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
@@ -109,8 +110,10 @@ export interface ProgressBarOptions {
  *   bar.add(buffer.length);
  *   await writer.write(buffer);
  * }
+ *
  * await bar.end();
  * await writer.close();
+ * await delay(0);
  * ```
  */
 export class ProgressBar {
