@@ -131,6 +131,8 @@ export interface ProgressBarOptions {
  *   bar.add(1);
  *   await delay(Math.random() * 500);
  * }
+ *
+ * bar.end();
  */
 export class ProgressBar {
   #options: Required<ProgressBarOptions>;
