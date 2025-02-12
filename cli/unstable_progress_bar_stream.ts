@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import {
-  createProgressBar,
+  ProgressBar,
   type ProgressBarOptions,
 } from "./unstable_progress_bar.ts";
 
@@ -37,17 +37,20 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
     writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
-    const addProgress = createProgressBar(writable, options);
+    let bar: ProgressBar | undefined;
     super({
+      start(_controller) {
+        bar = new ProgressBar(writable, options);
+      },
       transform(chunk, controller) {
-        addProgress(chunk.length);
+        bar?.add(chunk.length);
         controller.enqueue(chunk);
       },
       flush(_controller) {
-        addProgress(0, true);
+        bar?.end();
       },
       cancel() {
-        addProgress(0, true);
+        bar?.end();
       },
     });
   }

@@ -85,20 +85,15 @@ export interface ProgressBarOptions {
 }
 
 /**
- * `createProgressBar` is a customisable function that reports updates to a
+ * `ProgressBar` is a customisable class that reports updates to a
  * {@link WritableStream} on a 1s interval. Progress is communicated by calling
- * the function returned from `createProgressBar`.
- *
- * @param writable The {@link WritableStream} that will receive the progress bar
- * reports.
- * @param options The options to configure various settings of the progress bar.
- * @returns A function to update the amount of progress made.
+ * the `ProgressBar.add(x: number)` method.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic Usage
  * ```ts
- * import { createProgressBar } from "@std/cli/unstable-progress-bar";
+ * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
  * const gen = async function* (): AsyncGenerator<Uint8Array> {
  *     for (let i = 0; i < 100; ++i) {
@@ -108,75 +103,83 @@ export interface ProgressBarOptions {
  *   }();
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
- * const addProgress = createProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   addProgress(buffer.length);
+ *   bar.add(buffer.length);
  *   await writer.write(buffer);
  * }
- * await addProgress(0, true);
+ * await bar.end();
  * await writer.close();
  * ```
  */
-export function createProgressBar(
-  writable: WritableStream<Uint8Array>,
-  options: ProgressBarOptions,
-): {
-  (addSize: number, done?: false): void;
-  (addSize: number, done: true): Promise<void>;
-} {
-  options.value = options.value ?? 0;
-  options.barLength = options.barLength ?? 50;
-  options.fillChar = options.fillChar ?? "#";
-  options.emptyChar = options.emptyChar ?? "-";
-  options.clear = options.clear ?? false;
-  options.fmt = options.fmt ?? function (x) {
-    return x.styledTime() + x.progressBar + x.styledData();
-  };
-  options.keepOpen = options.keepOpen ?? true;
+export class ProgressBar {
+  #options: Required<ProgressBarOptions>;
+  #unit: string;
+  #rate: number;
+  #writer: WritableStreamDefaultWriter;
+  #id: number;
+  #startTime: number;
+  #lastTime: number;
+  #lastValue: number;
+  /**
+   * Constructs a new instance.
+   *
+   * @param writable The {@link WritableStream} that will receive the progress bar reports.
+   * @param options The options to configure various settings of the progress bar.
+   */
+  constructor(
+    writable: WritableStream<Uint8Array>,
+    options: ProgressBarOptions,
+  ) {
+    this.#options = {
+      value: options.value ?? 0,
+      max: options.max,
+      barLength: options.barLength ?? 50,
+      fillChar: options.fillChar ?? "#",
+      emptyChar: options.emptyChar ?? "-",
+      clear: options.clear ?? false,
+      fmt: options.fmt ?? function (x) {
+        return x.styledTime() + x.progressBar + x.styledData();
+      },
+      keepOpen: options.keepOpen ?? true,
+    };
 
-  const [unit, rate] = function (): [string, number] {
-    if (options.max < 2 ** 20) return ["KiB", 2 ** 10];
-    if (options.max < 2 ** 30) return ["MiB", 2 ** 20];
-    if (options.max < 2 ** 40) return ["GiB", 2 ** 30];
-    if (options.max < 2 ** 50) return ["TiB", 2 ** 40];
-    return ["PiB", 2 ** 50];
-  }();
+    if (options.max < 2 ** 20) {
+      this.#unit = "KiB";
+      this.#rate = 2 ** 10;
+    } else if (options.max < 2 ** 30) {
+      this.#unit = "MiB";
+      this.#rate = 2 ** 20;
+    } else if (options.max < 2 ** 40) {
+      this.#unit = "GiB";
+      this.#rate = 2 ** 30;
+    } else if (options.max < 2 ** 50) {
+      this.#unit = "TiB";
+      this.#rate = 2 ** 40;
+    } else {
+      this.#unit = "PiB";
+      this.#rate = 2 ** 50;
+    }
 
-  const writer = function () {
     const stream = new TextEncoderStream();
     stream.readable
-      .pipeTo(writable, { preventClose: options.keepOpen })
-      .catch(() => clearInterval(id));
-    return stream.writable.getWriter();
-  }();
-  const startTime = performance.now();
-  const id = setInterval(print, 1_000);
-  let lastTime = startTime;
-  let lastValue = options.value!;
-
-  return addProgress;
-  /**
-   * @param addSize The amount of bytes of progressed made since last call.
-   * @param done Whether or not you're done reporting progress.
-   */
-  function addProgress(addSize: number, done?: false): void;
-  function addProgress(addSize: number, done: true): Promise<void>;
-  function addProgress(addSize: number, done = false): void | Promise<void> {
-    options.value! += addSize;
-    if (done) {
-      clearInterval(id);
-      return print()
-        .then(() => writer.write(options.clear ? "\r\u001b[K" : "\n"))
-        .then(() => writer.close())
-        .catch(() => {});
-    }
+      .pipeTo(writable, { preventClose: this.#options.keepOpen })
+      .catch(() => clearInterval(this.#id));
+    this.#writer = stream.writable.getWriter();
+    this.#id = setInterval(() => this.#print());
+    this.#startTime = performance.now();
+    this.#lastTime = this.#startTime;
+    this.#lastValue = this.#options.value;
   }
-  async function print(): Promise<void> {
+
+  async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = options.value! /
-        options.max *
-        options.barLength! | 0;
+    const size = this.#options.value /
+        this.#options.max *
+        this.#options.barLength | 0;
+    const unit = this.#unit;
+    const rate = this.#rate;
     const x: ProgressBarFormatter = {
       styledTime() {
         return "[" +
@@ -189,7 +192,7 @@ export function createProgressBar(
             .padStart(2, "0") +
           "] ";
       },
-      styledData(fractions = 2) {
+      styledData: function (fractions = 2): string {
         return "[" +
           (this.value / rate).toFixed(fractions) +
           "/" +
@@ -199,18 +202,38 @@ export function createProgressBar(
           "] ";
       },
       progressBar: "[" +
-        options.fillChar!.repeat(size) +
-        options.emptyChar!.repeat(options.barLength! - size) +
+        this.#options.fillChar.repeat(size) +
+        this.#options.emptyChar.repeat(this.#options.barLength - size) +
         "] ",
-      time: currentTime - startTime,
-      previousTime: lastTime - startTime,
-      value: options.value!,
-      previousValue: lastValue,
-      max: options.max,
+      time: currentTime - this.#startTime,
+      previousTime: this.#lastTime - this.#startTime,
+      value: this.#options.value,
+      previousValue: this.#lastValue,
+      max: this.#options.max,
     };
-    lastTime = currentTime;
-    lastValue = options.value!;
-    await writer.write("\r\u001b[K" + options.fmt!(x))
+    this.#lastTime = currentTime;
+    this.#lastValue = this.#options.value;
+    await this.#writer.write("\r\u001b[K" + this.#options.fmt(x))
+      .catch(() => {});
+  }
+
+  /**
+   * Increments the progress by `x`.
+   *
+   * @param x The amount of progress that has been made.
+   */
+  add(x: number): void {
+    this.#options.value += x;
+  }
+
+  /**
+   * Ends the progress bar and cleans up any lose ends.
+   */
+  async end(): Promise<void> {
+    clearInterval(this.#id);
+    await this.#print()
+      .then(() => this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n"))
+      .then(() => this.#writer.close())
       .catch(() => {});
   }
 }
