@@ -59,6 +59,6 @@
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts",
-    "./cycle": "./cycle.ts"
+    "./unstable-cycle": "./cycle.ts"
   }
 }
