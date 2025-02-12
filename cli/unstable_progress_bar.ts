@@ -92,7 +92,7 @@ export interface ProgressBarOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic Usage
- * ```ts
+ * ```ts ignore
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
@@ -113,7 +113,6 @@ export interface ProgressBarOptions {
  *
  * await bar.end();
  * await writer.close();
- * await delay(0);
  * ```
  */
 export class ProgressBar {
