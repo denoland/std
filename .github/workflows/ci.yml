@@ -38,7 +38,7 @@ jobs:
 
       - name: Run tests
         run: |
-          deno task test
+          deno task test --doc
           deno task test:with-unsafe-proto
 
       - name: Run timezone-dependent tests
