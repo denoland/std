@@ -96,7 +96,7 @@ export interface ProgressBarOptions {
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
- * const gen = async function* (): AsyncGenerator<Uint8Array> {
+ * const gen = async function* () {
  *   for (let i = 0; i < 100; ++i) {
  *     yield new Uint8Array(1000).fill(97);
  *     await delay(Math.random() * 200 | 0);
@@ -114,6 +114,23 @@ export interface ProgressBarOptions {
  * await bar.end();
  * await writer.close();
  * ```
+ *
+ * @example Custom Formatting
+ * ```ts ignore
+ * import { delay } from "@std/async";
+ * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+ *
+ * const bar = new ProgressBar(Deno.stdout.writable, {
+ *   max: 100,
+ *   fmt(x) {
+ *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
+ *   },
+ * });
+ *
+ * for (const x of Array(100)) {
+ *   bar.add(1);
+ *   await delay(Math.random() * 500);
+ * }
  */
 export class ProgressBar {
   #options: Required<ProgressBarOptions>;
