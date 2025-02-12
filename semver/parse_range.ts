@@ -141,27 +141,25 @@ function handleRightHyphenRangeGroups(
     major: +rightGroups.major,
     minor: +rightGroups.minor,
     patch: +rightGroups.patch,
-    prerelease: rightGroups.prerelease
-      ? parsePrerelease(rightGroups.prerelease)
-      : [],
+    prerelease: [],
     build: [],
   };
 }
-function parseHyphenRange(range: string): Comparator[] | undefined {
+function parseHyphenRange(range: string): Comparator[] | null {
   const leftMatch = range.match(new RegExp(`^${XRANGE}`));
   const leftGroup = leftMatch?.groups;
-  if (!leftGroup) return;
+  if (!leftGroup) return null;
   const leftLength = leftMatch[0].length;
 
   const hyphenMatch = range.slice(leftLength).match(/^\s+-\s+/);
-  if (!hyphenMatch) return;
+  if (!hyphenMatch) return null;
   const hyphenLength = hyphenMatch[0].length;
 
   const rightMatch = range.slice(leftLength + hyphenLength).match(
     new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return;
+  if (!rightGroups) return null;
 
   const from = handleLeftHyphenRangeGroups(leftGroup as RangeRegExpGroups);
   const to = handleRightHyphenRangeGroups(rightGroups as RangeRegExpGroups);
@@ -255,7 +253,7 @@ function handleLessThanOperator(groups: RangeRegExpGroups): Comparator[] {
   if (majorIsWildcard) return [{ operator: "<", major: 0, minor: 0, patch: 0 }];
   if (minorIsWildcard) {
     if (patchIsWildcard) return [{ operator: "<", major, minor: 0, patch: 0 }];
-    return [{ operator: "<", major, minor, patch: 0 }];
+    return [{ operator: "<", major, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) return [{ operator: "<", major, minor, patch: 0 }];
   const prerelease = parsePrerelease(groups.prerelease ?? "");
@@ -318,7 +316,7 @@ function handleGreaterOrEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   if (majorIsWildcard) return [ALL];
   if (minorIsWildcard) {
     if (patchIsWildcard) return [{ operator: ">=", major, minor: 0, patch: 0 }];
-    return [{ operator: ">=", major, minor, patch: 0 }];
+    return [{ operator: ">=", major, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) return [{ operator: ">=", major, minor, patch: 0 }];
   const prerelease = parsePrerelease(groups.prerelease ?? "");

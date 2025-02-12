@@ -1,24 +1,14 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { extractAndParse, type Parser, recognize } from "./_shared.ts";
-import { parse as parseYaml } from "@std/yaml/parse";
-import { parse as parseToml } from "@std/toml/parse";
+import { recognize } from "./_shared.ts";
+import { extract as extractToml } from "@std/front-matter/toml";
+import { extract as extractYaml } from "@std/front-matter/yaml";
+import { extract as extractJson } from "@std/front-matter/json";
 import type { Extract } from "./types.ts";
 import type { Format } from "./test.ts";
 import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
 
 export type { Extract };
-
-function getParserForFormat(format: Format): Parser {
-  switch (format) {
-    case "yaml":
-      return parseYaml as Parser;
-    case "toml":
-      return parseToml as Parser;
-    case "json":
-      return JSON.parse;
-  }
-}
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
@@ -49,7 +39,12 @@ function getParserForFormat(format: Format): Parser {
 export function extract<T>(text: string): Extract<T> {
   const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
   const format = recognize(text, formats);
-  const regexp = EXTRACT_REGEXP_MAP.get(format) as RegExp;
-  const parser = getParserForFormat(format);
-  return extractAndParse(text, regexp, parser);
+  switch (format) {
+    case "yaml":
+      return extractYaml<T>(text);
+    case "toml":
+      return extractToml<T>(text);
+    case "json":
+      return extractJson<T>(text);
+  }
 }
