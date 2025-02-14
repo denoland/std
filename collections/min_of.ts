@@ -32,7 +32,7 @@
  */
 export function minOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): number | undefined;
 /**
  * Applies the given selector to all elements of the given collection and
@@ -65,16 +65,22 @@ export function minOf<T>(
  */
 export function minOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => bigint,
+  selector: (el: T, index: number) => bigint,
 ): bigint | undefined;
-export function minOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
+export function minOf<
+  T,
+  S extends
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => bigint),
+>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
   let minimumValue: ReturnType<S> | undefined;
+  let index = 0;
 
   for (const element of array) {
-    const currentValue = selector(element) as ReturnType<S>;
+    const currentValue = selector(element, index++) as ReturnType<S>;
 
     if (minimumValue === undefined || currentValue < minimumValue) {
       minimumValue = currentValue;

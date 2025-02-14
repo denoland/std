@@ -55,3 +55,11 @@ Deno.test("dropWhile() returns the same array when all elements match the predic
 
   assertEquals(actual, []);
 });
+
+Deno.test("dropWhile() passes index to predicate", () => {
+  const array = [20, 30, 20];
+
+  const actual = dropWhile(array, (_, index) => index < 1);
+
+  assertEquals(actual, [30, 20]);
+});
