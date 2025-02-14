@@ -22,6 +22,7 @@ import type { SymlinkOptions } from "./unstable_types.ts";
  *
  * @param oldpath The path of the resource pointed by the symbolic link.
  * @param newpath The path of the symbolic link.
+ * @param options Options when creating a symbolic link.
  */
 export async function symlink(
   oldpath: string | URL,
@@ -61,6 +62,7 @@ export async function symlink(
  *
  * @param oldpath The path of the resource pointed by the symbolic link.
  * @param newpath The path of the symbolic link.
+ * @param options Options when creating a symbolic link.
  */
 export function symlinkSync(
   oldpath: string | URL,
