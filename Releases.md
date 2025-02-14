@@ -1,3 +1,25 @@
+### 2025.02.14
+
+#### @std/cli 1.0.13 (patch)
+
+- feat(cli/unstable): introduce `new ProgressBar()` & `new ProgressBarStream()`
+  (#6378)
+
+#### @std/front-matter 1.0.6 (patch)
+
+- refactor(front-matter): call `extract()` functions in `any.ts` (#6390)
+
+#### @std/fs 1.0.12 (patch)
+
+- feat(fs/unstable): add renameSync (#6396)
+- feat(fs/unstable): add readFile and readFileSync (#6394)
+- feat(fs/unstable): add makeTempDir and makeTempDirSync (#6391)
+- feat(fs/unstable): add rename (#6379)
+
+#### @std/semver 1.0.4 (patch)
+
+- refactor(semver): clean up `parseRange`, add missing tests (#6362)
+
 ### 2025.01.31
 
 #### @std/bytes 1.0.5 (patch)
