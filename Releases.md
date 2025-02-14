@@ -1,5 +1,16 @@
 ### 2025.02.14
 
+#### @std/front-matter 1.0.7 (patch)
+
+- refactor(front-matter): use relative path for importing module in the same
+  package (#6401)
+
+#### @std/fs 1.0.13 (patch)
+
+- docs(fs): add missing docs (#6400)
+
+### 2025.02.14
+
 #### @std/cli 1.0.13 (patch)
 
 - feat(cli/unstable): introduce `new ProgressBar()` & `new ProgressBarStream()`
