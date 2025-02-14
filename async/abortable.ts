@@ -127,9 +127,9 @@ function abortablePromise<T>(
   p: Promise<T>,
   signal: AbortSignal,
 ): Promise<T> {
-  if (signal.aborted) return Promise.reject(signal.reason);
   const { promise, reject } = Promise.withResolvers<never>();
   const abort = () => reject(signal.reason);
+  if (signal.aborted) abort();
   signal.addEventListener("abort", abort, { once: true });
   return Promise.race([promise, p]).finally(() => {
     signal.removeEventListener("abort", abort);
