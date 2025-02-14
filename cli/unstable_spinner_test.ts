@@ -158,7 +158,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
 
     const spinner = new Spinner({ interval: 300 });
     spinner.start();
-    await delay(1000); // 100ms buffer
+    await delay(1199); // 299ms buffer
     spinner.stop();
     assertEquals(actualOutput, expectedOutput);
   } finally {
@@ -168,16 +168,24 @@ Deno.test("Spinner constructor accepts interval", async () => {
 
 Deno.test("Spinner constructor accepts output", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
       "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K⠸\x1b[0m ",
+      "\r\x1b[K⠼\x1b[0m ",
+      "\r\x1b[K⠴\x1b[0m ",
+      "\r\x1b[K⠦\x1b[0m ",
+      "\r\x1b[K⠧\x1b[0m ",
+      "\r\x1b[K⠇\x1b[0m ",
+      "\r\x1b[K⠏\x1b[0m ",
       "\r\x1b[K",
     ];
 
     const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
 
     stub(
       Deno.stderr,
@@ -185,13 +193,14 @@ Deno.test("Spinner constructor accepts output", async () => {
       (data: Uint8Array) => {
         const output = decoder.decode(data);
         actualOutput.push(output);
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
         return data.length;
       },
     );
 
-    const spinner = new Spinner({ interval: 300, output: Deno.stderr });
+    const spinner = new Spinner({ output: Deno.stderr });
     spinner.start();
-    await delay(1000); // 100ms buffer
+    await promise;
     spinner.stop();
     assertEquals(actualOutput, expectedOutput);
   } finally {
