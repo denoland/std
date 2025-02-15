@@ -250,7 +250,7 @@ export class ProgressBar {
   /**
    * Ends the progress bar and cleans up any lose ends.
    */
-  async end(): Promise<void> {
+  async stop(): Promise<void> {
     clearInterval(this.#id);
     await this.#print()
       .then(() => this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n"))
