@@ -49,7 +49,7 @@ export interface ProgressBarFormatter {
 export interface ProgressBarOptions {
   /**
    * The {@link WritableStream} that will receive the progress bar reports.
-   * @default {Deno.stdout.writable}
+   * @default {Deno.stderr.writable}
    */
   writable?: WritableStream<Uint8Array>;
   /**
@@ -155,7 +155,7 @@ export class ProgressBar {
    */
   constructor(options: ProgressBarOptions) {
     this.#options = {
-      writable: options.writable ??= Deno.stdout.writable,
+      writable: options.writable ??= Deno.stderr.writable,
       value: options.value ?? 0,
       max: options.max,
       barLength: options.barLength ?? 50,
