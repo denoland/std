@@ -47,7 +47,7 @@ export async function readTextFile(
  * @tags allow-read
  *
  * @param path The path of the symbolic link.
- * @returns A promise that resolves to string of the file content.
+ * @returns The string of file content.
  */
 export function readTextFileSync(
   path: string | URL,
