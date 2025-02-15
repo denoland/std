@@ -48,6 +48,11 @@ export interface ProgressBarFormatter {
  */
 export interface ProgressBarOptions {
   /**
+   * @param writable The {@link WritableStream} that will receive the progress bar reports.
+   * @default {Deno.stdout.writable}
+   */
+  writable?: WritableStream<Uint8Array>;
+  /**
    * The offset size of the input if progress is resuming part way through.
    * @default {0}
    */
@@ -104,7 +109,7 @@ export interface ProgressBarOptions {
  * }();
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
- * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * const bar = new ProgressBar({ max: 100_000 });
  *
  * for await (const buffer of gen) {
  *   bar.add(buffer.length);
@@ -120,7 +125,7 @@ export interface ProgressBarOptions {
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
- * const bar = new ProgressBar(Deno.stdout.writable, {
+ * const bar = new ProgressBar({
  *   max: 100,
  *   fmt(x) {
  *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
@@ -146,14 +151,11 @@ export class ProgressBar {
   /**
    * Constructs a new instance.
    *
-   * @param writable The {@link WritableStream} that will receive the progress bar reports.
    * @param options The options to configure various settings of the progress bar.
    */
-  constructor(
-    writable: WritableStream<Uint8Array>,
-    options: ProgressBarOptions,
-  ) {
+  constructor(options: ProgressBarOptions) {
     this.#options = {
+      writable: options.writable ??= Deno.stdout.writable,
       value: options.value ?? 0,
       max: options.max,
       barLength: options.barLength ?? 50,
@@ -185,7 +187,7 @@ export class ProgressBar {
 
     const stream = new TextEncoderStream();
     stream.readable
-      .pipeTo(writable, { preventClose: this.#options.keepOpen })
+      .pipeTo(options.writable, { preventClose: this.#options.keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
     this.#id = setInterval(() => this.#print(), 200);

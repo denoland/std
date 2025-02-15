@@ -20,7 +20,7 @@ import {
  * let readable = response.body
  * if (max) {
  *   readable = readable
- *     ?.pipeThrough(new ProgressBarStream(Deno.stdout.writable, { max })) ?? null;
+ *     ?.pipeThrough(new ProgressBarStream({ max })) ?? null;
  * }
  * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
  * ```
@@ -34,13 +34,12 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
    * @param options The options to configure various settings of the progress bar.
    */
   constructor(
-    writable: WritableStream<Uint8Array>,
-    options: ProgressBarOptions,
+    options: ProgressBarOptions & { writable: WritableStream<Uint8Array> },
   ) {
     let bar: ProgressBar | undefined;
     super({
       start(_controller) {
-        bar = new ProgressBar(writable, options);
+        bar = new ProgressBar(options);
       },
       transform(chunk, controller) {
         bar?.add(chunk.length);
