@@ -1,10 +1,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeno } from "./_utils.ts";
-import { readTextFile } from "./unstable_read_text.ts";
+import { NotFound } from "./unstable_errors.js";
+import { readTextFile, readTextFileSync } from "./unstable_read_text_file.ts";
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const testDir = resolve(moduleDir, "testdata");
@@ -48,4 +49,23 @@ Deno.test("readTextFile() handles an AbortSignal with a reason", async () => {
   } else {
     assertEquals(error.cause, ac.signal.reason);
   }
+});
+
+Deno.test("readTextFileSync() reads content from txt file", () => {
+  const content = readTextFileSync(testFile);
+
+  assert(content.length > 0);
+  assert(content === "txt");
+});
+
+Deno.test("readTextFileSync() throws an Error when reading a directory", () => {
+  assertThrows(() => {
+    readTextFileSync(testDir);
+  }, Error);
+});
+
+Deno.test("readTextFileSync() throws NotFound when reading through a non-existent file", () => {
+  assertThrows(() => {
+    readTextFileSync("no-this-file.txt");
+  }, NotFound);
 });

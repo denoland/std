@@ -3,12 +3,12 @@
 import { mapError } from "./_map_error.ts";
 import type { ReadFileOptions } from "./unstable_types.ts";
 import { isDeno } from "./_utils.ts";
-import { readFile } from "./unstable_read_file.ts";
+import { readFile, readFileSync } from "./unstable_read_file.ts";
 
 /**
  * @example Usage
  * ```ts
- * import { readTextFile } from "@std/fs/unstable-read-text";
+ * import { readTextFile } from "@std/fs/unstable-read-text-file";
  * const content = await readTextFile("./test.txt"); // full content of ./test.txt
  * console.log(content);
  * ```
@@ -29,6 +29,35 @@ export async function readTextFile(
     try {
       const decoder = new TextDecoder("utf-8");
       const data = await readFile(path, options);
+      return decoder.decode(data);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+}
+
+/**
+ * @example Usage
+ * ```ts
+ * import { readTextFileSync } from "@std/fs/unstable-read-text-file";
+ * const content = readTextFileSync("./test.txt"); // full content of ./test.txt
+ * console.log(content);
+ * ```
+ *
+ * @tags allow-read
+ *
+ * @param path The path of the symbolic link.
+ * @returns A promise that resolves to string of the file content.
+ */
+export function readTextFileSync(
+  path: string | URL,
+): string {
+  if (isDeno) {
+    return Deno.readTextFileSync(path);
+  } else {
+    try {
+      const decoder = new TextDecoder("utf-8");
+      const data = readFileSync(path);
       return decoder.decode(data);
     } catch (error) {
       throw mapError(error);
