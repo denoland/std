@@ -48,7 +48,7 @@ export interface ProgressBarFormatter {
  */
 export interface ProgressBarOptions {
   /**
-   * @param writable The {@link WritableStream} that will receive the progress bar reports.
+   * The {@link WritableStream} that will receive the progress bar reports.
    * @default {Deno.stdout.writable}
    */
   writable?: WritableStream<Uint8Array>;

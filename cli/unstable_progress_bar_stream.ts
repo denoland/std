@@ -29,12 +29,10 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
   /**
    * Constructs a new instance.
    *
-   * @param writable The {@link WritableStream} that will receive the progress bar
-   * reports.
    * @param options The options to configure various settings of the progress bar.
    */
   constructor(
-    options: ProgressBarOptions & { writable: WritableStream<Uint8Array> },
+    options: ProgressBarOptions,
   ) {
     let bar: ProgressBar | undefined;
     super({
