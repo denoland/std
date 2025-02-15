@@ -41,6 +41,7 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
     super({
       start(_controller) {
         bar = new ProgressBar(writable, options);
+        bar.start();
       },
       transform(chunk, controller) {
         bar?.add(chunk.length);

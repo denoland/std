@@ -139,10 +139,11 @@ export class ProgressBar {
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
-  #id: number;
-  #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
+  #interval?: number;
+  #startTime: number = 0;
+  #lastTime: number = 0;
+  #lastValue: number = 0;
+
   /**
    * Constructs a new instance.
    *
@@ -186,12 +187,8 @@ export class ProgressBar {
     const stream = new TextEncoderStream();
     stream.readable
       .pipeTo(writable, { preventClose: this.#options.keepOpen })
-      .catch(() => clearInterval(this.#id));
+      .catch(() => clearInterval(this.#interval));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 200);
-    this.#startTime = performance.now();
-    this.#lastTime = this.#startTime;
-    this.#lastValue = this.#options.value;
   }
 
   async #print(): Promise<void> {
@@ -248,13 +245,35 @@ export class ProgressBar {
   }
 
   /**
+   * Starts the progress bar.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const bar = new ProgressBar(Deno.stdout.writable, { max: 1 });
+   * bar.start();
+   * ```
+   */
+  start(): void {
+    this.#interval = setInterval(() => this.#print(), 200);
+    this.#startTime = performance.now();
+    this.#lastTime = this.#startTime;
+    this.#lastValue = this.#options.value;
+  }
+
+  /**
    * Ends the progress bar and cleans up any lose ends.
    */
   async end(): Promise<void> {
-    clearInterval(this.#id);
-    await this.#print()
-      .then(() => this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n"))
-      .then(() => this.#writer.close())
-      .catch(() => {});
+    if (this.#interval) {
+      clearInterval(this.#interval);
+      await this.#print()
+        .then(() =>
+          this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n")
+        )
+        .then(() => this.#writer.close())
+        .catch(() => {});
+    }
   }
 }
