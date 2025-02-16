@@ -9,7 +9,7 @@ import type { DirEntry } from "./unstable_types.ts";
  * {@linkcode DirEntry}. The order of entries is not guaranteed.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { readDir } from "@std/fs/unstable-read-dir";
  *
  * for await (const dirEntry of readDir("/")) {
@@ -23,6 +23,9 @@ import type { DirEntry } from "./unstable_types.ts";
  *
  * @tags allow-read
  * @category File System
+ *
+ * @param path The path to the directory to read.
+ * @returns An async iterable of {@linkcode DirEntry}.
  */
 export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
   if (isDeno) {
