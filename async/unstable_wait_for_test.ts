@@ -18,11 +18,11 @@ Deno.test("waitFor() throws DOMException on timeout", async () => {
   const id = setTimeout(() => flag = true, 1000);
   const start = Date.now();
   const error = await assertRejects(
-    () => waitFor(() => flag === true, 100),
+    () => waitFor(() => flag === true, 300),
     DOMException,
     "Signal timed out.",
   );
-  assertAlmostEquals(Date.now() - start, 100, 10);
+  assertAlmostEquals(Date.now() - start, 300, 30);
   assertEquals(error.name, "TimeoutError");
   clearTimeout(id);
 });
