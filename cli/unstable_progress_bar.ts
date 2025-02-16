@@ -139,7 +139,7 @@ export class ProgressBar {
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
-  #interval?: number;
+  #intervalId?: number;
   #startTime: number = 0;
   #lastTime: number = 0;
   #lastValue: number = 0;
@@ -187,7 +187,7 @@ export class ProgressBar {
     const stream = new TextEncoderStream();
     stream.readable
       .pipeTo(writable, { preventClose: this.#options.keepOpen })
-      .catch(() => clearInterval(this.#interval));
+      .catch(() => clearInterval(this.#intervalId));
     this.#writer = stream.writable.getWriter();
   }
 
@@ -256,8 +256,8 @@ export class ProgressBar {
    * ```
    */
   start(): void {
-    if (this.#interval) return;
-    this.#interval = setInterval(() => this.#print(), 200);
+    if (this.#intervalId) return;
+    this.#intervalId = setInterval(() => this.#print(), 200);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.#options.value;
@@ -267,8 +267,8 @@ export class ProgressBar {
    * Ends the progress bar and cleans up any lose ends.
    */
   async end(): Promise<void> {
-    if (this.#interval) {
-      clearInterval(this.#interval);
+    if (this.#intervalId) {
+      clearInterval(this.#intervalId);
       await this.#print()
         .then(() =>
           this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n")
