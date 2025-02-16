@@ -256,6 +256,7 @@ export class ProgressBar {
    * ```
    */
   start(): void {
+    if (this.#interval) return;
     this.#interval = setInterval(() => this.#print(), 200);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;

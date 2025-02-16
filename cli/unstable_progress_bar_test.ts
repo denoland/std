@@ -132,3 +132,48 @@ Deno.test("ProgressBar() uses correct unit type", async () => {
     bar.end();
   }
 });
+
+Deno.test("ProgressBar() handles successive start() calls", () => {
+  const { writable } = new TransformStream();
+  const bar = new ProgressBar(writable, { max: 1 });
+  bar.start();
+  bar.start();
+  bar.end();
+});
+
+Deno.test("ProgressBar() handles successive end() calls", () => {
+  const { writable } = new TransformStream();
+  const bar = new ProgressBar(writable, { max: 1 });
+  bar.start();
+  bar.end();
+  bar.end();
+});
+
+Deno.test(
+  "ProgressBar() handles multiple start() and stop() calls",
+  async () => {
+    const { readable, writable } = new TransformStream();
+    const bar = new ProgressBar(writable, { max: 1 });
+    bar.start();
+    bar.add(0.5);
+    bar.end();
+    const decoder = new TextDecoder();
+    for await (const buffer of readable) {
+      assertEquals(
+        decoder.decode(buffer),
+        "\r\x1b[K[00:00] [#########################-------------------------] [0.00/0.00 KiB] ",
+      );
+      break;
+    }
+    bar.start();
+    bar.add(0.5);
+    bar.end();
+    for await (const buffer of readable) {
+      assertEquals(
+        decoder.decode(buffer),
+        "\r\x1b[K[00:00] [#########################-------------------------] [0.00/0.00 KiB] ",
+      );
+      break;
+    }
+  },
+);
