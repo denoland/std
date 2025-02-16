@@ -9,7 +9,7 @@ import { readFile, readFileSync } from "./unstable_read_file.ts";
  * @example Usage
  * ```ts
  * import { readTextFile } from "@std/fs/unstable-read-text-file";
- * const content = await readTextFile("./testdata/copy_file.txt"); // full content of ./testdata/copy_file.txt
+ * const content = await readTextFile("README.md"); // full content of README.md
  * console.log(content);
  * ```
  *
@@ -40,7 +40,7 @@ export async function readTextFile(
  * @example Usage
  * ```ts
  * import { readTextFileSync } from "@std/fs/unstable-read-text-file";
- * const content = readTextFileSync("./testdata/copy_file.txt"); // full content of ./testdata/copy_file.txt
+ * const content = readTextFileSync("README.md"); // full content of README.md
  * console.log(content);
  * ```
  *
