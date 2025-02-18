@@ -63,7 +63,7 @@ const ENTRY_POINTS = [
   "../front_matter/unstable_yaml.ts",
   "../fs/mod.ts",
   "../fs/unstable_chmod.ts",
-  "../fs/unstable_copy.ts",
+  "../fs/unstable_copy_file.ts",
   "../fs/unstable_link.ts",
   "../fs/unstable_lstat.ts",
   "../fs/unstable_make_temp_dir.ts",
