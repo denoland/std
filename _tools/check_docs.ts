@@ -70,6 +70,7 @@ const ENTRY_POINTS = [
   "../fs/unstable_read_dir.ts",
   "../fs/unstable_read_file.ts",
   "../fs/unstable_read_link.ts",
+  "../fs/unstable_read_text_file.ts",
   "../fs/unstable_real_path.ts",
   "../fs/unstable_rename.ts",
   "../fs/unstable_stat.ts",
