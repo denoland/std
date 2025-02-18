@@ -1,6 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
-import { delay } from "@std/async/delay";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
 import { FakeTime } from "@std/testing/time";
