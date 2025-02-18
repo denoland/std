@@ -623,25 +623,17 @@ Deno.test("Spinner.message can be updated", async () => {
 });
 
 Deno.test("Spinner handles multiple start() calls", () => {
-  try {
-    const spinner = new Spinner();
+  const spinner = new Spinner();
 
-    spinner.start();
-    spinner.start();
-    spinner.stop();
-  } finally {
-    restore();
-  }
+  spinner.start();
+  spinner.start();
+  spinner.stop();
 });
 
 Deno.test("Spinner handles multiple stop() calls", () => {
-  try {
-    const spinner = new Spinner();
+  const spinner = new Spinner();
 
-    spinner.start();
-    spinner.stop();
-    spinner.stop();
-  } finally {
-    restore();
-  }
+  spinner.start();
+  spinner.stop();
+  spinner.stop();
 });
