@@ -9,7 +9,7 @@ async function* getData(
 ): AsyncGenerator<Uint8Array> {
   for (let i = 0; i < loops; ++i) {
     yield new Uint8Array(bufferSize);
-    await new Promise((a) => setTimeout(a, Math.random() * 500 + 500));
+    await new Promise((a) => setTimeout(a, Math.random() * 100));
   }
 }
 
