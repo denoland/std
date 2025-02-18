@@ -74,6 +74,7 @@ const ENTRY_POINTS = [
   "../fs/unstable_rename.ts",
   "../fs/unstable_stat.ts",
   "../fs/unstable_symlink.ts",
+  "../fs/unstable_truncate.ts",
   "../fs/unstable_types.ts",
   "../html/mod.ts",
   "../html/unstable_is_valid_custom_element_name.ts",
