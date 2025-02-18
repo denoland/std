@@ -17,6 +17,16 @@ export type MemoizationCache<K, V> = {
 };
 
 /**
+ * The result of a memoized function, as stored in its cache.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type MemoizationCacheResult<T> =
+  | { kind: "ok"; value: T }
+  | { kind: "error"; error: unknown }
+  | (T extends Promise<unknown> ? { kind: "promise"; value: T } : never);
+
+/**
  * Options for {@linkcode memoize}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -28,7 +38,7 @@ export type MemoizationCache<K, V> = {
 export type MemoizeOptions<
   Fn extends (...args: never[]) => unknown,
   Key,
-  Cache extends MemoizationCache<Key, ReturnType<Fn>>,
+  Cache extends MemoizationCache<Key, MemoizationCacheResult<ReturnType<Fn>>>,
 > = {
   /**
    * Provide a custom cache for getting previous results. By default, a new
@@ -59,6 +69,15 @@ export type MemoizeOptions<
    * ```
    */
   getKey?: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
+  /**
+   * Callback to determine if an error or other thrown value is retriable.
+   *
+   * @default {() => true}
+   *
+   * @param err The thrown error or other value.
+   * @returns `true` if the error is retriable, `false` otherwise.
+   */
+  isRetriable?: (err: unknown) => boolean;
 };
 
 /**
@@ -94,17 +113,15 @@ export type MemoizeOptions<
  * >   cached results, as the index is implicitly passed as an argument. To
  * >   avoid this, you can pass a custom `getKey` option or use the memoized
  * >   function inside an anonymous callback like `arr.map((x) => func(x))`.
- * > * Memoization will not cache thrown errors and will eject promises from
- * >   the cache upon rejection. If you want to retain errors or rejected
- * >   promises in the cache, you will need to catch and return them.
  */
 export function memoize<
   Fn extends (...args: never[]) => unknown,
   Key = string,
-  Cache extends MemoizationCache<Key, ReturnType<Fn>> = Map<
-    Key,
-    ReturnType<Fn>
-  >,
+  Cache extends MemoizationCache<Key, MemoizationCacheResult<ReturnType<Fn>>> =
+    Map<
+      Key,
+      MemoizationCacheResult<ReturnType<Fn>>
+    >,
 >(
   fn: Fn,
   options?: MemoizeOptions<Fn, Key, Cache>,
@@ -116,6 +133,8 @@ export function memoize<
     ) as unknown as (
       (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key
     );
+  const isRetriable = options?.isRetriable ?? (() => true);
+
   const memoized = function (
     this: ThisParameterType<Fn>,
     ...args: Parameters<Fn>
@@ -123,21 +142,43 @@ export function memoize<
     const key = getKey.apply(this, args) as Key;
 
     if (cache.has(key)) {
-      return cache.get(key)!;
+      const result = cache.get(key)!;
+      switch (result.kind) {
+        case "ok":
+        case "promise":
+          return result.value;
+        case "error":
+          throw result.error;
+      }
     }
 
-    let val = fn.apply(this, args) as ReturnType<Fn>;
+    try {
+      let value = fn.apply(this, args) as ReturnType<Fn>;
 
-    if (val instanceof Promise) {
-      val = val.catch((reason) => {
-        cache.delete(key);
-        throw reason;
-      }) as typeof val;
+      if (value instanceof Promise) {
+        value = value.catch((reason) => {
+          if (isRetriable(reason)) {
+            cache.delete(key);
+          }
+          throw reason;
+        }) as typeof value;
+
+        cache.set(
+          key,
+          { kind: "promise", value } as MemoizationCacheResult<ReturnType<Fn>>,
+        );
+      } else {
+        cache.set(key, { kind: "ok", value });
+      }
+
+      return value;
+    } catch (e) {
+      if (!isRetriable(e)) {
+        cache.set(key, { kind: "error", error: e });
+      }
+
+      throw e;
     }
-
-    cache.set(key, val);
-
-    return val;
   } as Fn;
 
   return Object.defineProperties(
