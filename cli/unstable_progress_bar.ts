@@ -188,7 +188,7 @@ export class ProgressBar {
       .pipeTo(writable, { preventClose: this.#options.keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 200);
+    this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.#options.value;
