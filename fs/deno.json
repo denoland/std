@@ -24,6 +24,7 @@
     "./unstable-rename": "./unstable_rename.ts",
     "./unstable-stat": "./unstable_stat.ts",
     "./unstable-symlink": "./unstable_symlink.ts",
+    "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
     "./walk": "./walk.ts"
   }
