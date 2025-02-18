@@ -3,6 +3,7 @@ import { assertEquals } from "@std/assert";
 import { delay } from "@std/async/delay";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
+import { FakeTime } from "@std/testing/time";
 
 const decoder = new TextDecoder();
 
@@ -129,6 +130,7 @@ Deno.test("Spinner constructor accepts message", async () => {
 
 Deno.test("Spinner constructor accepts interval", async () => {
   try {
+    using time = new FakeTime();
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
@@ -150,7 +152,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
 
     const spinner = new Spinner({ interval: 300 });
     spinner.start();
-    await delay(1199); // 299ms buffer
+    await time.tick(1000);
     spinner.stop();
     assertEquals(actualOutput, expectedOutput);
   } finally {
