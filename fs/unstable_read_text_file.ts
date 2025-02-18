@@ -6,6 +6,12 @@ import { isDeno } from "./_utils.ts";
 import { readFile, readFileSync } from "./unstable_read_file.ts";
 
 /**
+ * Asynchronously reads and returns the entire contents of a file as an UTF-8 decoded string.
+ *
+ * Reading a directory throws an error.
+ *
+ * Requires `allow-read` permission.
+ *
  * @example Usage
  * ```ts
  * import { readTextFile } from "@std/fs/unstable-read-text-file";
@@ -37,6 +43,12 @@ export async function readTextFile(
 }
 
 /**
+ * Synchronously reads and returns the entire contents of a file as an UTF-8 decoded string.
+ *
+ * Reading a directory throws an error.
+ *
+ * Requires `allow-read` permission.
+ *
  * @example Usage
  * ```ts
  * import { readTextFileSync } from "@std/fs/unstable-read-text-file";
