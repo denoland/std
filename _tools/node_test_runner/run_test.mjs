@@ -58,6 +58,7 @@ import "../../fs/unstable_real_path_test.ts";
 import "../../fs/unstable_rename_test.ts";
 import "../../fs/unstable_stat_test.ts";
 import "../../fs/unstable_symlink_test.ts";
+import "../../fs/unstable_truncate_test.ts";
 import "../../fs/unstable_lstat_test.ts";
 import "../../fs/unstable_chmod_test.ts";
 
