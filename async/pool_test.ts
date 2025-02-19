@@ -2,24 +2,26 @@
 import { delay } from "./delay.ts";
 import { pooledMap } from "./pool.ts";
 import {
-  assert,
   assertEquals,
+  assertGreaterOrEqual,
+  assertLess,
   assertRejects,
   assertStringIncludes,
 } from "@std/assert";
 
 Deno.test("pooledMap()", async () => {
-  const start = new Date();
+  const start = performance.now();
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 300)),
   );
   const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
-  const diff = new Date().getTime() - start.getTime();
-  assert(diff >= 200);
-  assert(diff < 300);
+  const diff = performance.now() - start;
+
+  assertGreaterOrEqual(diff, 600);
+  assertLess(diff, 900);
 });
 
 Deno.test("pooledMap() handles errors", async () => {
