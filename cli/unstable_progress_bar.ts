@@ -86,8 +86,8 @@ export interface ProgressBarOptions {
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
- * {@link WritableStream} on a 1s interval. Progress is communicated by calling
- * the `ProgressBar.add(x: number)` method.
+ * {@link WritableStream} on a 1s interval. Progress is communicated by using
+ * the `ProgressBar.value` property.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -107,7 +107,7 @@ export interface ProgressBarOptions {
  * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   bar.add(buffer.length);
+ *   bar.value += buffer.length;
  *   await writer.write(buffer);
  * }
  *
@@ -128,14 +128,25 @@ export interface ProgressBarOptions {
  * });
  *
  * for (const x of Array(100)) {
- *   bar.add(1);
+ *   bar.value += 1;
  *   await delay(Math.random() * 500);
  * }
  *
  * bar.end();
  */
 export class ProgressBar {
-  #options: Required<ProgressBarOptions>;
+  value: number;
+
+  #options: {
+    max: number;
+    barLength: number;
+    fillChar: string;
+    emptyChar: string;
+    clear: boolean;
+    fmt: (fmt: ProgressBarFormatter) => string;
+    keepOpen: boolean;
+  };
+
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
@@ -153,8 +164,8 @@ export class ProgressBar {
     writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
+    this.value = options.value ?? 0;
     this.#options = {
-      value: options.value ?? 0,
       max: options.max,
       barLength: options.barLength ?? 50,
       fillChar: options.fillChar ?? "#",
@@ -191,12 +202,12 @@ export class ProgressBar {
     this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
-    this.#lastValue = this.#options.value;
+    this.#lastValue = this.value;
   }
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = this.#options.value /
+    const size = this.value /
         this.#options.max *
         this.#options.barLength | 0;
     const unit = this.#unit;
@@ -228,23 +239,14 @@ export class ProgressBar {
         "] ",
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
-      value: this.#options.value,
+      value: this.value,
       previousValue: this.#lastValue,
       max: this.#options.max,
     };
     this.#lastTime = currentTime;
-    this.#lastValue = this.#options.value;
+    this.#lastValue = this.value;
     await this.#writer.write("\r\u001b[K" + this.#options.fmt(x))
       .catch(() => {});
-  }
-
-  /**
-   * Increments the progress by `x`.
-   *
-   * @param x The amount of progress that has been made.
-   */
-  add(x: number): void {
-    this.#options.value += x;
   }
 
   /**
