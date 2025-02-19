@@ -29,7 +29,7 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
-  expected: ArrayLikeArg<T>,
+  expected: NoInfer<ArrayLikeArg<T>>,
   msg?: string,
 ) {
   const missing: unknown[] = [];
