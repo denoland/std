@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { extractAndParse, type Parser } from "./_shared.ts";
+import { extractFrontMatter } from "./_shared.ts";
 import { parse } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
@@ -37,9 +37,7 @@ export type { Extract };
  * @returns The extracted YAML front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return extractAndParse(
-    text,
-    EXTRACT_YAML_REGEXP,
-    ((s) => parse(s)) as Parser,
-  );
+  const { frontMatter, body } = extractFrontMatter(text, EXTRACT_YAML_REGEXP);
+  const attrs = parse(frontMatter) as T;
+  return { frontMatter, body, attrs };
 }
