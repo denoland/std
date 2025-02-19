@@ -119,7 +119,7 @@ export interface RetryOptions {
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
-  options: RetryOptions = {},
+  options?: RetryOptions,
 ): Promise<T> {
   const {
     multiplier = 2,
@@ -127,7 +127,7 @@ export async function retry<T>(
     maxAttempts = 5,
     minTimeout = 1000,
     jitter = 1,
-  } = options;
+  } = options ?? {};
 
   if (maxTimeout <= 0) {
     throw new TypeError(
