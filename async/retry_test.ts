@@ -15,6 +15,12 @@ function generateErroringFunction(errorsBeforeSucceeds: number) {
   };
 }
 
+Deno.test("retry() with default options", async () => {
+  const threeErrors = generateErroringFunction(3);
+  const result = await retry(threeErrors);
+  assertEquals(result, 3);
+});
+
 Deno.test("retry()", async () => {
   const threeErrors = generateErroringFunction(3);
   const result = await retry(threeErrors, {
