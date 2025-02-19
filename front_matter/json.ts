@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { extractAndParse } from "./_shared.ts";
+import { extractFrontMatter } from "./_shared.ts";
 import { EXTRACT_JSON_REGEXP } from "./_formats.ts";
 import type { Extract } from "./types.ts";
 
@@ -33,5 +33,7 @@ export type { Extract };
  * @returns The extracted JSON front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return extractAndParse(text, EXTRACT_JSON_REGEXP, JSON.parse);
+  const { frontMatter, body } = extractFrontMatter(text, EXTRACT_JSON_REGEXP);
+  const attrs = JSON.parse(frontMatter) as T;
+  return { frontMatter, body, attrs };
 }
