@@ -19,8 +19,8 @@ import { getNodeFs, isDeno } from "./_utils.ts";
  *
  * @tags allow-read, allow-write
  *
- * @param path The path of source filename to copy.
- * @param path The path of destination filename.
+ * @param from The path of source filename to copy.
+ * @param to The path of destination filename.
  */
 export async function copyFile(
   from: string | URL,
@@ -54,8 +54,8 @@ export async function copyFile(
  *
  * @tags allow-read, allow-write
  *
- * @param path The path of source filename to copy.
- * @param path The path of destination filename.
+ * @param from The path of source filename to copy.
+ * @param to The path of destination filename.
  */
 export function copyFileSync(
   from: string | URL,
