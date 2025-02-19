@@ -72,7 +72,7 @@ Deno.test("copyFileSync() copies content to a directory, which will throw an err
     copyFileSync(source, tmpdir());
   });
 
-  rm(tempDirPath, { recursive: true, force: true });
+  rmSync(tempDirPath, { recursive: true, force: true });
 });
 
 Deno.test("copyFileSync() copies content to a non existed file", () => {
