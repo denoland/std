@@ -10,7 +10,7 @@ import { copyFile, copyFileSync } from "./unstable_copy_file.ts";
 Deno.test("copyFile() copies content to an existed file", async () => {
   const tempDirPath = await mkdtemp(resolve(tmpdir(), "copy_"));
   const source = join(tempDirPath, "source.txt");
-  const target = join(tempDirPath, "target.txt");
+  const target = join(tempDirPath, "target_0.txt");
 
   const content = "This is written by `copyFile` API";
 
@@ -28,7 +28,7 @@ Deno.test("copyFile() copies content to an existed file", async () => {
 Deno.test("copyFile() copies content to a non existed file", async () => {
   const tempDirPath = await mkdtemp(resolve(tmpdir(), "copy_"));
   const source = join(tempDirPath, "source.txt");
-  const target = join(tempDirPath, "target.txt");
+  const target = join(tempDirPath, "target_1.txt");
 
   const content = "This is written by `copyFile` API";
 
