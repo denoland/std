@@ -565,10 +565,10 @@ Deno.test("memoize() has correct TS types", async (t) => {
   });
 });
 
-Deno.test("memoize() respects `isRetriable` option", async (t) => {
+Deno.test("memoize() respects `errorIsCacheable` option", async (t) => {
   type ErrKind = "retriable" | "persistent";
 
-  const isRetriable = (err: unknown) => (err as ErrKind) === "retriable";
+  const errorIsCacheable = (err: unknown) => (err as ErrKind) === "persistent";
 
   await t.step("default behavior (everything is retriable)", () => {
     let numTimesCalled = 0;
@@ -591,7 +591,7 @@ Deno.test("memoize() respects `isRetriable` option", async (t) => {
     const throws = memoize((val: ErrKind) => {
       ++numTimesCalled;
       throw val;
-    }, { isRetriable });
+    }, { errorIsCacheable });
 
     assertThrows(() => throws("persistent"));
     assertEquals(numTimesCalled, 1);
@@ -613,7 +613,7 @@ Deno.test("memoize() respects `isRetriable` option", async (t) => {
       await Promise.resolve();
       ++numTimesCalled;
       throw val;
-    }, { isRetriable });
+    }, { errorIsCacheable });
 
     await assertRejects(() => rejects("persistent"));
     assertEquals(numTimesCalled, 1);

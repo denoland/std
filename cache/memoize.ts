@@ -70,14 +70,14 @@ export type MemoizeOptions<
    */
   getKey?: (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key;
   /**
-   * Callback to determine if an error or other thrown value is retriable.
+   * Callback to determine if an error or other thrown value is cacheable.
    *
-   * @default {() => true}
+   * @default {() => false}
    *
    * @param err The thrown error or other value.
-   * @returns `true` if the error is retriable, `false` otherwise.
+   * @returns `true` if the error is cacheable, `false` otherwise.
    */
-  isRetriable?: (err: unknown) => boolean;
+  errorIsCacheable?: (err: unknown) => boolean;
 };
 
 /**
@@ -133,7 +133,7 @@ export function memoize<
     ) as unknown as (
       (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key
     );
-  const isRetriable = options?.isRetriable ?? (() => true);
+  const errorIsCacheable = options?.errorIsCacheable ?? (() => false);
 
   const memoized = function (
     this: ThisParameterType<Fn>,
@@ -157,7 +157,7 @@ export function memoize<
 
       if (value instanceof Promise) {
         value = value.catch((reason) => {
-          if (isRetriable(reason)) {
+          if (!errorIsCacheable(reason)) {
             cache.delete(key);
           }
           throw reason;
@@ -173,7 +173,7 @@ export function memoize<
 
       return value;
     } catch (e) {
-      if (!isRetriable(e)) {
+      if (errorIsCacheable(e)) {
         cache.set(key, { kind: "error", error: e });
       }
 
