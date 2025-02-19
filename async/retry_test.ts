@@ -151,3 +151,9 @@ Deno.test("retry() checks backoff function timings", async (t) => {
 
   Math.random = originalMathRandom;
 });
+
+Deno.test("retry() with default options", async () => {
+  const threeErrors = generateErroringFunction(3);
+  const result = await retry(threeErrors);
+  assertEquals(result, 3);
+});
