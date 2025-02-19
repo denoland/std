@@ -27,7 +27,7 @@ export async function copyFile(
   to: string | URL,
 ): Promise<void> {
   if (isDeno) {
-    Deno.copyFile(from, to);
+    await Deno.copyFile(from, to);
   } else {
     try {
       await getNodeFs().promises.copyFile(from, to);
