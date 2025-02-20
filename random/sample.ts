@@ -38,7 +38,7 @@ export type SampleOptions = RandomOptions & {
  * import { assertArrayIncludes } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4];
- * const sampled = sample(numbers);
+ * const sampled = sample(numbers)!;
  *
  * assertArrayIncludes(numbers, [sampled]);
  * ```

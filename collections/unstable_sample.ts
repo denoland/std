@@ -18,7 +18,7 @@
  * import { assertArrayIncludes } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4];
- * const random = sample(numbers);
+ * const random = sample(numbers)!;
  *
  * assertArrayIncludes(numbers, [random]);
  * ```
