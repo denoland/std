@@ -3,7 +3,7 @@
 import { getNodeFs, isDeno } from "./_utils.ts";
 import { mapError } from "./_map_error.ts";
 
-/** 
+/**
  * Options which can be set when using {@linkcode mkdir} and
  * {@linkcode mkdirSync}.
  */
