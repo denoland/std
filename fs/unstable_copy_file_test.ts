@@ -1,20 +1,16 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
-import {
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { rm, stat, writeFile } from "node:fs/promises";
+import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { copyFile, copyFileSync } from "./unstable_copy_file.ts";
+import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
+import { readTextFile, readTextFileSync } from "./unstable_read_text_file.ts";
 
 Deno.test("copyFile() copies content to an existed file", async () => {
-  const tempDirPath = await mkdtemp(resolve(tmpdir(), "copy_file_async_"));
+  const tempDirPath = await makeTempDir({ prefix: "copy_file_async_" });
   const source = join(tempDirPath, "source.txt");
   const target = join(tempDirPath, "target.txt");
 
@@ -24,32 +20,35 @@ Deno.test("copyFile() copies content to an existed file", async () => {
   await writeFile(target, "");
   await copyFile(source, target);
 
-  const targetContent = await readFile(target, "utf-8");
-
-  assert(content === targetContent);
-
-  await rm(tempDirPath, { recursive: true });
+  try {
+    const targetContent = await readTextFile(target);
+    assert(content === targetContent);
+  } finally {
+    await rm(tempDirPath, { recursive: true, force: true });
+  }
 });
 
 Deno.test("copyFile() copies content to a directory, which will throw an error", async () => {
-  const tempDirPath = await mkdtemp(resolve(tmpdir(), "copy_file_sync_"));
+  const tempDirPath = await makeTempDir({ prefix: "copy_file_async_" });
   const source = join(tempDirPath, "source.txt");
 
   const content = "This is written by `copyFile` API";
 
   await writeFile(source, content);
 
-  assertRejects(async () => {
-    await copyFile(source, tmpdir());
-  });
-
-  await rm(tempDirPath, { recursive: true, force: true });
+  try {
+    assertRejects(async () => {
+      await copyFile(source, tmpdir());
+    });
+  } finally {
+    await rm(tempDirPath, { recursive: true, force: true });
+  }
 });
 
 Deno.test(
   "copyFile() copies content to a non existed file",
   async () => {
-    const tempDirPath = await mkdtemp(resolve(tmpdir(), "copy_file_async_"));
+    const tempDirPath = await makeTempDir({ prefix: "copy_file_async_" });
     const source = join(tempDirPath, "source.txt");
     const target = join(tempDirPath, "target.txt");
 
@@ -59,17 +58,19 @@ Deno.test(
     await copyFile(source, target);
 
     const fileInfo = await stat(target);
-    const targetContent = await readFile(target, "utf-8");
+    const targetContent = await readTextFile(target);
 
-    assert(fileInfo.isFile());
-    assert(content === targetContent);
-
-    await rm(tempDirPath, { recursive: true, force: true });
+    try {
+      assert(fileInfo.isFile());
+      assert(content === targetContent);
+    } finally {
+      await rm(tempDirPath, { recursive: true, force: true });
+    }
   },
 );
 
 Deno.test("copyFileSync() copies content to an existed file", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "copy_file_sync_"));
+  const tempDirPath = makeTempDirSync({ prefix: "copy_file_sync_" });
   const source = join(tempDirPath, "source.txt");
   const target = join(tempDirPath, "target.txt");
 
@@ -79,14 +80,14 @@ Deno.test("copyFileSync() copies content to an existed file", () => {
   writeFileSync(target, "");
   copyFileSync(source, target);
 
-  const targetContent = readFileSync(target, "utf-8");
+  const targetContent = readTextFileSync(target);
   assert(content === targetContent);
 
   rmSync(tempDirPath, { recursive: true, force: true });
 });
 
 Deno.test("copyFileSync() copies content to a directory, which will throw an error", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "copy_file_sync_"));
+  const tempDirPath = makeTempDirSync({ prefix: "copy_file_sync_" });
   const source = join(tempDirPath, "source.txt");
 
   const content = "This is written by `copyFile` API";
@@ -101,7 +102,7 @@ Deno.test("copyFileSync() copies content to a directory, which will throw an err
 });
 
 Deno.test("copyFileSync() copies content to a non existed file", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "copy_file_sync_"));
+  const tempDirPath = makeTempDirSync({ prefix: "copy_file_sync_" });
   const source = join(tempDirPath, "source.txt");
   const target = join(tempDirPath, "target.txt");
 
@@ -111,7 +112,7 @@ Deno.test("copyFileSync() copies content to a non existed file", () => {
   copyFileSync(source, target);
 
   const targetIsExists = existsSync(target);
-  const targetContent = readFileSync(target, "utf-8");
+  const targetContent = readTextFileSync(target);
 
   assert(targetIsExists);
   assert(content === targetContent);
