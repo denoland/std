@@ -18,6 +18,7 @@
     "./unstable-link": "./unstable_link.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-make-temp-dir": "./unstable_make_temp_dir.ts",
+    "./unstable-mkdir": "./unstable_mkdir.ts",
     "./unstable-read-dir": "./unstable_read_dir.ts",
     "./unstable-read-file": "./unstable_read_file.ts",
     "./unstable-read-link": "./unstable_read_link.ts",
