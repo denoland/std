@@ -1,3 +1,5 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
 import { assert, assertRejects, assertThrows } from "@std/assert";
 import { rmSync } from "node:fs";
 import { rm } from "node:fs/promises";

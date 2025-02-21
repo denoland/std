@@ -64,11 +64,11 @@ export async function remove(
  * import { makeTempDirSync } from "@std/fs/unstable-make-temp-dir";
  *
  * const tempDir = makeTempDirSync({ prefix: "remove_sync_" });
- * assert(existSync(tempDir) === true);
+ * assert(existsSync(tempDir) === true);
  *
  * removeSync(tempDir);
  *
- * assert(existSync(tempDir) === false);
+ * assert(existsSync(tempDir) === false);
  * ```
  *
  * @tags allow-write
