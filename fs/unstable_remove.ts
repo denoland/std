@@ -11,11 +11,19 @@ import { mapError } from "./_map_error.ts";
  * Requires `allow-write` permission.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
  * import { assert } from "@std/assert";
+ * import { exists } from "@std/fs/exists";
  * import { remove } from "@std/fs/unstable-remove";
+ * import { makeTempDir } from "@std/fs/unstable-make-temp-dir.ts";
  *
- * await remove("/var/folders/tt/gd7mljws4_1bqsbpy9gdg6k40000gn/T");
+ * const tempDir = await makeTempDir({ prefix: "remove_async_" });
+ * const existed = await exists(tempDir);
+ * assert(existed === true);
+ *
+ * await remove(tempDir);
+ * const existedAgain = await exists(tempDir);
+ * assert(existedAgain === false);
  * ```
  *
  * @tags allow-write
@@ -47,11 +55,18 @@ export async function remove(
  * Requires `allow-write` permission.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
  * import { assert } from "@std/assert";
+ * import { existsSync } from "@std/fs/exists";
  * import { removeSync } from "@std/fs/unstable-remove";
+ * import { makeTempDirSync } from "@std/fs/unstable-make-temp-dir";
  *
- * await removeSync("/var/folders/tt/gd7mljws4_1bqsbpy9gdg6k40000gn/T");
+ * const tempDir = makeTempDirSync({ prefix: "remove_sync_" });
+ * assert(existSync(tempDir) === true);
+ *
+ * removeSync(tempDir);
+ *
+ * assert(existSync(tempDir) === false);
  * ```
  *
  * @tags allow-write
