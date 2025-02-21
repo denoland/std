@@ -38,27 +38,27 @@ export interface GenerateOptions {
   /**
    * An array of 6 bytes that represents a 48-bit IEEE 802 MAC address.
    *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.6}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1}
    */
   node?: number[];
   /**
    * A 14-bit value used to avoid duplicates that could arise when the clock is
    * set backwards in time or if the node ID changes (0 - 16383).
    *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.5}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1}
    */
   clockseq?: number;
   /**
    * The number of milliseconds since the Unix epoch (January 1, 1970).
    *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1}
    */
   msecs?: number;
   /**
    * The number of nanoseconds to add to {@linkcode V1Options.msecs}
    * (0 - 10,000).
    *
-   * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
+   * @see {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1}
    */
   nsecs?: number;
   /** An array of 16 random bytes (0 - 255). */
