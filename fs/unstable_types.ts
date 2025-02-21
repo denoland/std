@@ -155,3 +155,10 @@ export interface MakeTempOptions {
    */
   suffix?: string;
 }
+
+export interface RemoveOptions {
+  /*
+   * If set to true, path will be removed even if it's a non-empty directory.
+   */
+  recursive?: boolean;
+}
