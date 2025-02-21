@@ -1,23 +1,23 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
-import { rmSync } from "node:fs";
-import { rm } from "node:fs/promises";
+import { rmSync, writeFileSync } from "node:fs";
+import { rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { NotFound } from "./unstable_errors.js";
 import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
 import { remove, removeSync } from "./unstable_remove.ts";
-import { exists, existsSync } from "./exists.ts";
+import { stat, statSync } from "./unstable_stat.ts";
 
 Deno.test("remove() remove an existed and empty directory", async () => {
   const tempDir = await makeTempDir({ prefix: "remove_async_" });
-  const existedCheck = await exists(tempDir);
-  assert(existedCheck === true);
+  const existedCheck = await stat(tempDir);
+  assert(existedCheck.isDirectory === true);
 
   try {
     await remove(tempDir);
-    const existedCheckAgain = await exists(tempDir);
-    assert(existedCheckAgain === false);
+    const existedCheckAgain = await stat(tempDir);
+    assert(existedCheckAgain.isDirectory === false);
   } catch {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -34,8 +34,8 @@ Deno.test("remove() remove a non empty directory", async () => {
 
   const encoder = new TextEncoder();
   const data = encoder.encode("This is a test content");
-  await Deno.writeFile(testFile1, data, { mode: 0o777 });
-  await Deno.writeFile(testFile2, data, { mode: 0o777 });
+  await writeFile(testFile1, data, { mode: 0o777 });
+  await writeFile(testFile2, data, { mode: 0o777 });
 
   try {
     assertRejects(async () => {
@@ -43,8 +43,8 @@ Deno.test("remove() remove a non empty directory", async () => {
     }, Error);
 
     await remove(tempDir1, { recursive: true });
-    const existed = await exists(tempDir1);
-    assert(existed === false);
+    const fsStat = await stat(tempDir1);
+    assert(fsStat.isDirectory === false);
   } catch {
     await rm(tempDir1, { recursive: true, force: true });
   }
@@ -59,8 +59,8 @@ Deno.test("remove() remove a non existed directory", async () => {
       await remove(nonExistedDir);
     }, NotFound);
     await remove(tempDir);
-    const existed = await exists(tempDir);
-    assert(existed === false);
+    const fsStat = await stat(tempDir);
+    assert(fsStat.isDirectory === false);
   } catch {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -75,8 +75,8 @@ Deno.test("remove() remove a non existed directory with option", async () => {
       await remove(nonExistedDir, { recursive: true });
     }, NotFound);
     await remove(tempDir);
-    const existed = await exists(tempDir);
-    assert(existed === false);
+    const fsStat = await stat(tempDir);
+    assert(fsStat.isDirectory === false);
   } catch {
     await rm(tempDir, { recursive: true, force: true });
   }
@@ -84,11 +84,11 @@ Deno.test("remove() remove a non existed directory with option", async () => {
 
 Deno.test("removeSync() remove an existed and empty directory", () => {
   const tempDir = makeTempDirSync({ prefix: "remove_sync_" });
-  assert(existsSync(tempDir) === true);
+  assert(statSync(tempDir).isDirectory === true);
 
   try {
     removeSync(tempDir);
-    assert(existsSync(tempDir) === false);
+    assert(statSync(tempDir).isDirectory === false);
   } catch {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -105,8 +105,8 @@ Deno.test("removeSync() remove a non empty directory", () => {
 
   const encoder = new TextEncoder();
   const data = encoder.encode("This is a test content");
-  Deno.writeFileSync(testFile1, data, { mode: 0o777 });
-  Deno.writeFileSync(testFile2, data, { mode: 0o777 });
+  writeFileSync(testFile1, data, { mode: 0o777 });
+  writeFileSync(testFile2, data, { mode: 0o777 });
 
   try {
     assertThrows(() => {
@@ -114,8 +114,7 @@ Deno.test("removeSync() remove a non empty directory", () => {
     }, Error);
 
     removeSync(tempDir1, { recursive: true });
-    const existed = existsSync(tempDir1);
-    assert(existed === false);
+    assert(statSync(tempDir1).isDirectory === false);
   } catch {
     rmSync(tempDir1, { recursive: true, force: true });
   }
@@ -131,7 +130,7 @@ Deno.test("removeSync() remove a non existed directory", () => {
     }, NotFound);
 
     removeSync(tempDir, { recursive: true });
-    assert(existsSync(tempDir) === false);
+    assert(statSync(tempDir).isDirectory === false);
   } catch {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -147,7 +146,7 @@ Deno.test("removeSync() remove a non existed directory with option", () => {
     }, NotFound);
 
     removeSync(tempDir, { recursive: true });
-    assert(existsSync(tempDir) === false);
+    assert(statSync(tempDir).isDirectory === false);
   } catch {
     rmSync(tempDir, { recursive: true, force: true });
   }
