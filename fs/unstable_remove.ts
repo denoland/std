@@ -17,7 +17,7 @@ import { mapError } from "./_map_error.ts";
  * import { assert } from "@std/assert";
  * import { exists } from "@std/fs/exists";
  * import { remove } from "@std/fs/unstable-remove";
- * import { makeTempDir } from "@std/fs/unstable-make-temp-dir.ts";
+ * import { makeTempDir } from "@std/fs/unstable-make-temp-dir";
  *
  * const tempDir = await makeTempDir({ prefix: "remove_async_" });
  * const existed = await exists(tempDir);
