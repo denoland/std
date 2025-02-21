@@ -1,1 +1,1 @@
-"\ufeffhello"
+﻿hello

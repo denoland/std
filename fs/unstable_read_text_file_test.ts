@@ -2,7 +2,6 @@
 
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { readFileSync } from "node:fs";
-import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isDeno } from "./_utils.ts";
@@ -23,10 +22,8 @@ Deno.test("readTextFile() reads content from txt file", async () => {
 
 Deno.test("readTextFile() reads a file with byte order mark", async () => {
   const content = await readTextFile(testFile2);
-  const pivot = await readFile(testFile2, "utf-8");
 
-  assert(content.length > 0);
-  assert(content === pivot);
+  assertEquals(content, "\ufeffhello");
 });
 
 Deno.test("readTextFile() throws an Error when reading a directory", async () => {
@@ -71,10 +68,8 @@ Deno.test("readTextFileSync() reads content from txt file", () => {
 
 Deno.test("readTextFileSync() reads a file with byte order mark", () => {
   const content = readTextFileSync(testFile2);
-  const pivot = readFileSync(testFile2, "utf-8");
 
-  assert(content.length > 0);
-  assert(content === pivot);
+  assertEquals(content, "\ufeffhello");
 });
 
 Deno.test("readTextFileSync() throws an Error when reading a directory", () => {
