@@ -1,3 +1,5 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
 import type { RemoveOptions } from "./unstable_types.ts";
 import { getNodeFs, isDeno } from "./_utils.ts";
 import { mapError } from "./_map_error.ts";
