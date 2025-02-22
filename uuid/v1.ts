@@ -105,7 +105,7 @@ export function generate(options: GenerateOptions = {}): string {
   if (node === undefined || clockseq === undefined) {
     // deno-lint-ignore no-explicit-any
     const seedBytes: any = options.random ??
-      options.rng ??
+      options.rng?.() ??
       crypto.getRandomValues(new Uint8Array(16));
 
     if (node === undefined) {
