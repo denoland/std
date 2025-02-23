@@ -1,8 +1,6 @@
-// Test cases copied from https://github.com/LinusU/base32-encode/blob/master/test.js
-// Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
-import { decodeBase32, encodeBase32 } from "./base32.ts";
+import { decodeBase32, encodeBase32 } from "./unstable_base32.ts";
 
 // Test vectors from https://www.rfc-editor.org/rfc/rfc4648.html#section-10
 const testCases = [
@@ -37,9 +35,9 @@ Deno.test({
   name: "decodeBase32() throws on bad length",
   fn() {
     assertThrows(
-      () => decodeBase32("OOOO=="),
+      () => decodeBase32("OOO=="),
       Error,
-      "Cannot decode base32 string as the length must be a multiple of 8: received length 6",
+      "Invalid Character",
     );
   },
 });
@@ -50,7 +48,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("5HXR334AQYAAAA=="),
       Error,
-      "Invalid pad length",
+      "Invalid Character",
     );
   },
 });

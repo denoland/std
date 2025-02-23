@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
+import { decodeBase64Url, encodeBase64Url } from "./unstable_base64url.ts";
 
 const testsetString = [
   ["", ""],
@@ -24,7 +24,9 @@ const testsetInvalid = [
   "Pj8/ZD+Dnw",
   "PDw/Pz8+Pg",
   "Pj8/ZD+Dnw==",
+  "Pj8_ZD.Dnw==",
   "PDw/Pz8+Pg==",
+  "PDw_Pz8-Pg=.",
 ];
 
 Deno.test("encodeBase64Url() encodes string", () => {
@@ -35,7 +37,7 @@ Deno.test("encodeBase64Url() encodes string", () => {
 
 Deno.test("encodeBase64Url() encodes binary", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(encodeBase64Url(input), output);
+    assertEquals(encodeBase64Url(input.slice()), output);
   }
 });
 
@@ -50,7 +52,7 @@ Deno.test("decodeBase64Url() throws on invalid input", () => {
     assertThrows(
       () => decodeBase64Url(invalidb64url),
       TypeError,
-      "invalid character",
+      "Invalid Character",
     );
   }
 });
@@ -67,7 +69,7 @@ Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
     assertThrows(
       () => decodeBase64Url(illegalBase64url),
       TypeError,
-      "Illegal base64url string",
+      "Invalid Character",
     );
   }
 });

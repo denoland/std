@@ -1,5 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
+
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * Utilities for
@@ -22,43 +26,18 @@
  *
  * @module
  */
+import { decode, encode } from "./_base32_common.ts";
 
-import {
-  decodeBase32 as decode,
-  encodeBase32 as encode,
-} from "./unstable_base32.ts";
-
-/**
- * Converts data into a base32-encoded string.
- *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
- *
- * @param input The data to encode.
- * @returns The base32-encoded string.
- *
- * @example Usage
- * ```ts
- * import { encodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
- * ```
- */
-export function encodeBase32(input: string | Uint8Array | ArrayBuffer): string {
-  if (typeof input === "string") {
-    return encode(input);
-  } else if (input instanceof ArrayBuffer) {
-    return encode(new Uint8Array(input).slice());
-  }
-  return encode(input.slice());
-}
+const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
+const revLookup: number[] = [];
+lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
 
 /**
  * Decodes a base32-encoded string.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @param input The base32-encoded string to decode.
+ * @param b32 The base32-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage
@@ -72,6 +51,26 @@ export function encodeBase32(input: string | Uint8Array | ArrayBuffer): string {
  * );
  * ```
  */
-export function decodeBase32(input: string): Uint8Array<ArrayBuffer> {
-  return decode(input);
+export function decodeBase32(b32: string): Uint8Array_ {
+  return decode(b32, lookup);
+}
+
+/**
+ * Converts data into a base32-encoded string.
+ *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
+ *
+ * @param data The data to encode.
+ * @returns The base32-encoded string.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
+ * ```
+ */
+export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
+  return encode(data, lookup);
 }

@@ -6,7 +6,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 
-import { decodeHex, encodeHex } from "./hex.ts";
+import { decodeHex, encodeHex } from "./unstable_hex.ts";
 
 const testCases = [
   // encoded(hex) / decoded(Uint8Array)
@@ -19,16 +19,15 @@ const testCases = [
   ["e3a1", [0xe3, 0xa1]],
 ];
 
-const errCases: [string, ErrorConstructor, string][] = [
-  // encoded(hex) / error / msg
-  ["0", RangeError, ""],
-  ["zd4aa", TypeError, "'z'"],
-  ["d4aaz", TypeError, "'z'"],
-  ["30313", RangeError, ""],
-  ["0g", TypeError, "'g'"],
-  ["00gg", TypeError, "'g'"],
-  ["0\x01", TypeError, "'\x01'"],
-  ["ffeed", RangeError, ""],
+const errCases: string[] = [
+  "0",
+  "zd4aa",
+  "d4aaz",
+  "30313",
+  "0g",
+  "00gg",
+  "0\x01",
+  "ffeed",
 ];
 
 Deno.test("encodeHex() handles string", () => {
@@ -40,7 +39,7 @@ Deno.test("encodeHex() handles string", () => {
 
   for (const [enc, dec] of testCases) {
     const src = new Uint8Array(dec as number[]);
-    const dest = encodeHex(src);
+    const dest = encodeHex(src.slice());
     assertEquals(dest.length, src.length * 2);
     assertEquals(dest, enc);
   }
@@ -62,11 +61,11 @@ Deno.test("decodeHex() handles hex", () => {
 });
 
 Deno.test("decodeHex() throws on invalid input", () => {
-  for (const [input, expectedErr, msg] of errCases) {
+  for (const input of errCases) {
     assertThrows(
       () => decodeHex(input),
-      expectedErr,
-      msg,
+      TypeError,
+      "Invalid Character",
     );
   }
 });
