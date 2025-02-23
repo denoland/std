@@ -21,9 +21,10 @@
  * @module
  */
 
-import { decodeHex, encodeHex } from "./hex.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
+import {
+  decodeRawHex as decode,
+  encodeRawHex as encode,
+} from "./unstable_hex.ts";
 
 /**
  * Converts a Uint8Array stream into a hex-encoded stream.
@@ -46,11 +47,13 @@ export type { Uint8Array_ };
  * assertEquals(await toText(stream), encodeHex(new TextEncoder().encode("Hello, world!")));
  * ```
  */
-export class HexEncoderStream extends TransformStream<Uint8Array, string> {
+export class HexEncoderStream
+  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
   constructor() {
+    const decoder = new TextDecoder();
     super({
       transform(chunk, controller) {
-        controller.enqueue(encodeHex(chunk));
+        controller.enqueue(decoder.decode(encode(chunk)));
       },
     });
   }
@@ -76,22 +79,30 @@ export class HexEncoderStream extends TransformStream<Uint8Array, string> {
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class HexDecoderStream extends TransformStream<string, Uint8Array_> {
+export class HexDecoderStream
+  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
   constructor() {
-    let push = "";
+    const encoder = new TextEncoder();
+    const push = new Uint8Array(1);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        push += chunk;
-        if (push.length < 2) {
-          return;
+        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        if (remainder) {
+          const originalSize = input.length;
+          const maxSize = remainder + input.length;
+          input = new Uint8Array(input.buffer.transfer(maxSize));
+          input.set(input.subarray(0, originalSize), maxSize - originalSize);
+          input.set(push.subarray(0, remainder));
         }
-        const remainder = -push.length % 2;
-        controller.enqueue(decodeHex(push.slice(0, remainder || undefined)));
-        push = remainder ? push.slice(remainder) : "";
+
+        remainder = input.length % 2;
+        if (remainder) push.set(input.subarray(-remainder));
+        controller.enqueue(decode(input.subarray(0, -remainder || undefined)));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(decodeHex(push));
+        if (remainder) {
+          controller.enqueue(encode(push.subarray(0, remainder)));
         }
       },
     });

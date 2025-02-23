@@ -21,9 +21,10 @@
  * @module
  */
 
-import { decodeBase32Hex, encodeBase32Hex } from "./unstable_base32hex.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
+import {
+  decodeRawBase32Hex as decode,
+  encodeRawBase32Hex as encode,
+} from "./unstable_base32hex.ts";
 
 /**
  * Converts a Uint8Array stream into a base32hex-encoded stream.
@@ -47,24 +48,38 @@ export type { Uint8Array_ };
  * ```
  */
 export class Base32HexEncoderStream
-  extends TransformStream<Uint8Array, string> {
+  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
   constructor() {
-    let push = new Uint8Array(0);
+    const decoder = new TextDecoder();
+    const push = new Uint8Array(4);
+    let remainder = 0;
+    // let push = new Uint8Array(0);
     super({
       transform(chunk, controller) {
-        const concat = new Uint8Array(push.length + chunk.length);
-        concat.set(push);
-        concat.set(chunk, push.length);
+        if (remainder) {
+          const originalSize = chunk.length;
+          const maxSize = remainder + chunk.length;
+          if (chunk.byteOffset) {
+            const buffer = new Uint8Array(chunk.buffer);
+            buffer.set(chunk);
+            chunk = buffer.subarray(0, chunk.length);
+          }
+          chunk = new Uint8Array(chunk.buffer.transfer(maxSize));
+          chunk.set(chunk.subarray(0, originalSize), maxSize - originalSize);
+          chunk.set(push.subarray(0, remainder));
+        }
 
-        const remainder = -concat.length % 5;
+        remainder = chunk.length % 5;
+        if (remainder) push.set(chunk.subarray(-remainder));
         controller.enqueue(
-          encodeBase32Hex(concat.slice(0, remainder || undefined)),
+          decoder.decode(encode(chunk.subarray(0, -remainder || undefined))),
         );
-        push = remainder ? concat.slice(remainder) : new Uint8Array(0);
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(encodeBase32Hex(push));
+        if (remainder) {
+          controller.enqueue(
+            decoder.decode(encode(push.subarray(0, remainder))),
+          );
         }
       },
     });
@@ -92,24 +107,29 @@ export class Base32HexEncoderStream
  * ```
  */
 export class Base32HexDecoderStream
-  extends TransformStream<string, Uint8Array_> {
+  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
   constructor() {
-    let push = "";
+    const encoder = new TextEncoder();
+    const push = new Uint8Array(7);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        push += chunk;
-        if (push.length < 8) {
-          return;
+        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        if (remainder) {
+          const originalSize = input.length;
+          const maxSize = remainder + input.length;
+          input = new Uint8Array(input.buffer.transfer(maxSize));
+          input.set(input.subarray(0, originalSize), maxSize - originalSize);
+          input.set(push.subarray(0, remainder));
         }
-        const remainder = -push.length % 8;
-        controller.enqueue(
-          decodeBase32Hex(push.slice(0, remainder || undefined)),
-        );
-        push = remainder ? chunk.slice(remainder) : "";
+
+        remainder = input.length % 8;
+        if (remainder) push.set(input.subarray(-remainder));
+        controller.enqueue(decode(input.subarray(0, -remainder || undefined)));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(decodeBase32Hex(push));
+        if (remainder) {
+          controller.enqueue(decode(push.subarray(0, remainder)));
         }
       },
     });

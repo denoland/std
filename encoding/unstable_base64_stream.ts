@@ -21,9 +21,10 @@
  * @module
  */
 
-import { decodeBase64, encodeBase64 } from "./base64.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
+import {
+  decodeRawBase64 as decode,
+  encodeRawBase64 as encode,
+} from "./unstable_base64.ts";
 
 /**
  * Converts a Uint8Array stream into a base64-encoded stream.
@@ -46,24 +47,38 @@ export type { Uint8Array_ };
  * assertEquals(await toText(stream), encodeBase64(new TextEncoder().encode("Hello, world!")));
  * ```
  */
-export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
+export class Base64EncoderStream
+  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
   constructor() {
-    let push = new Uint8Array(0);
+    const decoder = new TextDecoder();
+    const push = new Uint8Array(2);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        const concat = new Uint8Array(push.length + chunk.length);
-        concat.set(push);
-        concat.set(chunk, push.length);
+        if (remainder) {
+          const originalSize = chunk.length;
+          const maxSize = remainder + chunk.length;
+          if (chunk.byteOffset) {
+            const buffer = new Uint8Array(chunk.buffer);
+            buffer.set(chunk);
+            chunk = buffer.subarray(0, chunk.length);
+          }
+          chunk = new Uint8Array(chunk.buffer.transfer(maxSize));
+          chunk.set(chunk.subarray(0, originalSize), maxSize - originalSize);
+          chunk.set(push.subarray(0, remainder));
+        }
 
-        const remainder = -concat.length % 3;
+        remainder = chunk.length % 3;
+        if (remainder) push.set(chunk.subarray(-remainder));
         controller.enqueue(
-          encodeBase64(concat.slice(0, remainder || undefined)),
+          decoder.decode(encode(chunk.subarray(0, -remainder || undefined))),
         );
-        push = remainder ? concat.slice(remainder) : new Uint8Array(0);
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(encodeBase64(push));
+        if (remainder) {
+          controller.enqueue(
+            decoder.decode(encode(push.subarray(0, remainder))),
+          );
         }
       },
     });
@@ -90,22 +105,30 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class Base64DecoderStream extends TransformStream<string, Uint8Array_> {
+export class Base64DecoderStream
+  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
   constructor() {
-    let push = "";
+    const encoder = new TextEncoder();
+    const push = new Uint8Array(3);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        push += chunk;
-        if (push.length < 4) {
-          return;
+        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        if (remainder) {
+          const originalSize = input.length;
+          const maxSize = remainder + input.length;
+          input = new Uint8Array(input.buffer.transfer(maxSize));
+          input.set(input.subarray(0, originalSize), maxSize - originalSize);
+          input.set(push.subarray(0, remainder));
         }
-        const remainder = -push.length % 4;
-        controller.enqueue(decodeBase64(push.slice(0, remainder || undefined)));
-        push = remainder ? push.slice(remainder) : "";
+
+        remainder = input.length % 4;
+        if (remainder) push.set(input.subarray(-remainder));
+        controller.enqueue(decode(input.subarray(0, -remainder || undefined)));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(decodeBase64(push));
+        if (remainder) {
+          controller.enqueue(decode(push.subarray(0, remainder)));
         }
       },
     });
