@@ -1,5 +1,4 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-// Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
 /**
@@ -27,13 +26,57 @@
  *
  * @module
  */
-import { decode, encode } from "./_base32_common.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
 
-const lookup: string[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV".split("");
-const revLookup: number[] = [];
-lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
+import { decodeRawBase32, encodeRawBase32 } from "./unstable_base32.ts";
+
+const toHex = new Uint8Array(128);
+const fromHex = new Uint8Array(128);
+{
+  const encoder = new TextEncoder();
+  const a = encoder.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=");
+  const b = encoder.encode("0123456789ABCDEFGHIJKLMNOPQRSTUV=");
+  a.forEach((byte, i) => {
+    toHex[byte] = b[i]!;
+    fromHex[b[i]!] = byte;
+  });
+}
+
+/**
+ * Converts data into a base32hex-encoded string.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
+ *
+ * @param data The data to encode.
+ * @returns The base32hex-encoded string.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeBase32Hex } from "@std/encoding/unstable-base32hex";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
+ * ```
+ */
+export function encodeBase32Hex(
+  input: string | Uint8Array<ArrayBuffer> | ArrayBuffer,
+): string {
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
+  }
+  return new TextDecoder().decode(encodeRawBase32Hex(input));
+}
+
+export function encodeRawBase32Hex(
+  input: Uint8Array<ArrayBuffer>,
+): Uint8Array<ArrayBuffer> {
+  input = encodeRawBase32(input);
+  for (let i = 0; i < input.length; ++i) input[i] = toHex[input[i]!]!;
+  return input;
+}
 
 /**
  * Decodes a base32hex-encoded string.
@@ -56,30 +99,15 @@ lookup.forEach((c, i) => revLookup[c.charCodeAt(0)] = i);
  * );
  * ```
  */
-export function decodeBase32Hex(b32: string): Uint8Array_ {
-  return decode(b32, lookup);
+export function decodeBase32Hex(input: string): Uint8Array<ArrayBuffer> {
+  return decodeRawBase32Hex(new TextEncoder()
+    .encode(input) as Uint8Array<ArrayBuffer>);
 }
 
-/**
- * Converts data into a base32hex-encoded string.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
- *
- * @param data The data to encode.
- * @returns The base32hex-encoded string.
- *
- * @example Usage
- * ```ts
- * import { encodeBase32Hex } from "@std/encoding/unstable-base32hex";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(encodeBase32Hex("6c60c0"), "6PHJCC3360======");
- * ```
- */
-export function encodeBase32Hex(
-  data: ArrayBuffer | Uint8Array | string,
-): string {
-  return encode(data, lookup);
+export function decodeRawBase32Hex(
+  input: Uint8Array<ArrayBuffer>,
+): Uint8Array<ArrayBuffer> {
+  for (let i = 0; i < input.length; ++i) input[i] = fromHex[input[i]!]!;
+  input = decodeRawBase32(input);
+  return input;
 }
