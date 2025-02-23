@@ -44,7 +44,7 @@ import {
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeThrough(new Base32HexEncoderStream());
  *
- * assertEquals(await toText(stream), encodeBase32Hex(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(await toText(stream), encodeBase32Hex(new TextEncoder().encode("Hello, world!") as Uint8Array<ArrayBuffer>));
  * ```
  */
 export class Base32HexEncoderStream
