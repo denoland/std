@@ -24,6 +24,7 @@
  */
 
 import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 import { decodeRawBase32, encodeRawBase32 } from "./unstable_base32.ts";
 
 const toHex = new Uint8Array(128);

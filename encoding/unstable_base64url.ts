@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 import { decodeRawBase64, encodeRawBase64 } from "./unstable_base64.ts";
 
 const PLUS = "+".charCodeAt(0);

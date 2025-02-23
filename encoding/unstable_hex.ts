@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 const alphabet = new TextEncoder().encode("0123456789abcdef");
 const rAlphabet = new Uint8Array(128);

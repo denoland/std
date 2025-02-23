@@ -22,6 +22,7 @@
  */
 
 import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 import {
   decodeRawBase32Crockford as decode,
   encodeRawBase32Crockford as encode,
