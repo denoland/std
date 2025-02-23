@@ -26,35 +26,7 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_validate_binary_like.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
-
-const hexTable = new TextEncoder().encode("0123456789abcdef");
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
-
-function errInvalidByte(byte: number) {
-  return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
-}
-
-function errLength(len: number) {
-  return new RangeError(
-    `Cannot decode the hex string as the input length should be even: length is ${len}`,
-  );
-}
-
-/** Converts a hex character into its value. */
-function fromHexChar(byte: number): number {
-  // '0' <= byte && byte <= '9'
-  if (48 <= byte && byte <= 57) return byte - 48;
-  // 'a' <= byte && byte <= 'f'
-  if (97 <= byte && byte <= 102) return byte - 97 + 10;
-  // 'A' <= byte && byte <= 'F'
-  if (65 <= byte && byte <= 70) return byte - 65 + 10;
-
-  throw errInvalidByte(byte);
-}
+import { decodeHex as decode, encodeHex as encode } from "./unstable_hex.ts";
 
 /**
  * Converts data into a hex-encoded string.
@@ -71,16 +43,13 @@ function fromHexChar(byte: number): number {
  * assertEquals(encodeHex("abc"), "616263");
  * ```
  */
-export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
-  const u8 = validateBinaryLike(src);
-
-  const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < u8.length; i++) {
-    const v = u8[i]!;
-    dst[i * 2] = hexTable[v >> 4]!;
-    dst[i * 2 + 1] = hexTable[v & 0x0f]!;
+export function encodeHex(input: string | Uint8Array | ArrayBuffer): string {
+  if (typeof input === "string") {
+    return encode(input);
+  } else if (input instanceof ArrayBuffer) {
+    return encode(new Uint8Array(input).slice());
   }
-  return textDecoder.decode(dst);
+  return encode(input.slice());
 }
 
 /**
@@ -102,21 +71,6 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * );
  * ```
  */
-export function decodeHex(src: string): Uint8Array_ {
-  const u8 = textEncoder.encode(src);
-  const dst = new Uint8Array(u8.length / 2);
-  for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(u8[i * 2]!);
-    const b = fromHexChar(u8[i * 2 + 1]!);
-    dst[i] = (a << 4) | b;
-  }
-
-  if (u8.length % 2 === 1) {
-    // Check for invalid char before reporting bad length,
-    // since the invalid char (if present) is an earlier problem.
-    fromHexChar(u8[dst.length * 2]!);
-    throw errLength(u8.length);
-  }
-
-  return dst;
+export function decodeHex(input: string): Uint8Array<ArrayBuffer> {
+  return decode(input);
 }
