@@ -31,7 +31,7 @@ import {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The base64-encoded string.
  *
  * @example Usage
@@ -56,7 +56,7 @@ export function encodeBase64(input: string | Uint8Array | ArrayBuffer): string {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @param b64 The base64-encoded string to decode.
+ * @param input The base64-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage

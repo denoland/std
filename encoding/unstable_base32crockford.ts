@@ -42,7 +42,7 @@ const fromHex = new Uint8Array(128);
  *
  * @see {@link https://www.crockford.com/base32.html}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The Crockford base32-encoded string.
  *
  * @example Usage
@@ -77,7 +77,7 @@ export function encodeRawBase32Crockford(
  *
  * @see {@link https://www.crockford.com/base32.html}
  *
- * @param b32 The Crockford Base32-encoded string to decode.
+ * @param input The Crockford Base32-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage

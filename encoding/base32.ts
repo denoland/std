@@ -33,7 +33,7 @@ import {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The base32-encoded string.
  *
  * @example Usage
@@ -58,7 +58,7 @@ export function encodeBase32(input: string | Uint8Array | ArrayBuffer): string {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
  *
- * @param b32 The base32-encoded string to decode.
+ * @param input The base32-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage

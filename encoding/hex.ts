@@ -31,7 +31,7 @@ import { decodeHex as decode, encodeHex as encode } from "./unstable_hex.ts";
 /**
  * Converts data into a hex-encoded string.
  *
- * @param src The data to encode.
+ * @param input The data to encode.
  *
  * @returns The hex-encoded string.
  *
@@ -56,7 +56,7 @@ export function encodeHex(input: string | Uint8Array | ArrayBuffer): string {
  * Decodes the given hex-encoded string. If the input is malformed, an error is
  * thrown.
  *
- * @param src The hex-encoded string to decode.
+ * @param input The hex-encoded string to decode.
  *
  * @returns The decoded data.
  *

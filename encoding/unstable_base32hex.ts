@@ -48,7 +48,7 @@ const fromHex = new Uint8Array(128);
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The base32hex-encoded string.
  *
  * @example Usage
@@ -85,7 +85,7 @@ export function encodeRawBase32Hex(
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-7}
  *
- * @param b32 The base32hex-encoded string to decode.
+ * @param input The base32hex-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage

@@ -19,7 +19,7 @@ import {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The base64url-encoded string.
  *
  * @example Usage
@@ -47,7 +47,7 @@ export function encodeBase64Url(
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
- * @param b64url The base64url-encoded string to decode.
+ * @param input The base64url-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage
