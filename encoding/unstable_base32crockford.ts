@@ -1,5 +1,4 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-// Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
 /**
@@ -23,13 +22,55 @@
  *
  * @module
  */
-import { decode, encode } from "./_base32_common.ts";
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
 
-const lookup: string[] = "0123456789ABCDEFGHJKMNPQRSTVWXYZ".split("");
-const revLookup: number[] = [];
-lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
+import { decodeRawBase32, encodeRawBase32 } from "./unstable_base32.ts";
+
+const toHex = new Uint8Array(128);
+const fromHex = new Uint8Array(128);
+{
+  const encoder = new TextEncoder();
+  const a = encoder.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=");
+  const b = encoder.encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ=");
+  a.forEach((byte, i) => {
+    toHex[byte] = b[i]!;
+    fromHex[b[i]!] = byte;
+  });
+}
+
+/**
+ * Converts data into a Crockford base32-encoded string.
+ *
+ * @see {@link https://www.crockford.com/base32.html}
+ *
+ * @param data The data to encode.
+ * @returns The Crockford base32-encoded string.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeBase32Crockford } from "@std/encoding/unstable-base32crockford";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32Crockford("foobar"), "CSQPYRK1E8======");
+ * ```
+ */
+export function encodeBase32Crockford(
+  input: string | Uint8Array<ArrayBuffer> | ArrayBuffer,
+): string {
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
+  }
+  return new TextDecoder().decode(encodeRawBase32Crockford(input));
+}
+
+export function encodeRawBase32Crockford(
+  input: Uint8Array<ArrayBuffer>,
+): Uint8Array<ArrayBuffer> {
+  input = encodeRawBase32(input);
+  for (let i = 0; i < input.length; ++i) input[i] = toHex[input[i]!]!;
+  return input;
+}
 
 /**
  * Decodes a Crockford base32-encoded string.
@@ -50,28 +91,15 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * );
  * ```
  */
-export function decodeBase32Crockford(b32: string): Uint8Array_ {
-  return decode(b32, lookup);
+export function decodeBase32Crockford(input: string): Uint8Array<ArrayBuffer> {
+  return decodeRawBase32Crockford(new TextEncoder()
+    .encode(input) as Uint8Array<ArrayBuffer>);
 }
 
-/**
- * Converts data into a Crockford base32-encoded string.
- *
- * @see {@link https://www.crockford.com/base32.html}
- *
- * @param data The data to encode.
- * @returns The Crockford base32-encoded string.
- *
- * @example Usage
- * ```ts
- * import { encodeBase32Crockford } from "@std/encoding/unstable-base32crockford";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(encodeBase32Crockford("foobar"), "CSQPYRK1E8======");
- * ```
- */
-export function encodeBase32Crockford(
-  data: ArrayBuffer | Uint8Array | string,
-): string {
-  return encode(data, lookup);
+export function decodeRawBase32Crockford(
+  input: Uint8Array<ArrayBuffer>,
+): Uint8Array<ArrayBuffer> {
+  for (let i = 0; i < input.length; ++i) input[i] = fromHex[input[i]!]!;
+  input = decodeRawBase32(input);
+  return input;
 }

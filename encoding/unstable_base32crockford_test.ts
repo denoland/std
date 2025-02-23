@@ -40,9 +40,9 @@ Deno.test({
   name: "decodeBase32() throws on bad length",
   fn() {
     assertThrows(
-      () => decodeBase32Crockford("OOOO=="),
+      () => decodeBase32Crockford("OOO=="),
       Error,
-      "Cannot decode base32 string as the length must be a multiple of 8: received length 6",
+      "Invalid Character",
     );
   },
 });
@@ -53,7 +53,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32Crockford("5HXR334AQYAAAA=="),
       Error,
-      "Invalid pad length",
+      "Invalid Character",
     );
   },
 });
