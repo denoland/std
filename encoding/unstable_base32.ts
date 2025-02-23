@@ -187,6 +187,7 @@ export function decodeRawBase32(
         (input[i - 1]! >> 3);
       break;
   }
+
   return input.subarray(0, o);
 }
 

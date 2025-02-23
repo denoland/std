@@ -77,6 +77,7 @@ export function decodeRawBase64(
   } else if (input[input.length - 1] === padding) {
     input = input.subarray(0, input.length - 1);
   }
+
   let i = 3;
   let o = 0;
   for (; i < input.length; i += 4) {
@@ -102,6 +103,7 @@ export function decodeRawBase64(
       input[o++] = ((input[i - 2]! & 0xF) << 4) | (input[i - 1]! >> 2);
       break;
   }
+
   return input.subarray(0, o);
 }
 
