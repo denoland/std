@@ -1,3 +1,6 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
+
 import { decodeRawBase64, encodeRawBase64 } from "./unstable_base64.ts";
 
 const PLUS = "+".charCodeAt(0);
