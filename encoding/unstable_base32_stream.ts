@@ -21,6 +21,7 @@
  * @module
  */
 
+import type { Uint8Array_ } from "./_types.ts";
 import {
   decodeRawBase32 as decode,
   encodeRawBase32 as encode,
@@ -47,8 +48,7 @@ import {
  * assertEquals(await toText(stream), encodeBase32(new TextEncoder().encode("Hello, world!")));
  * ```
  */
-export class Base32EncoderStream
-  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
+export class Base32EncoderStream extends TransformStream<Uint8Array_, string> {
   constructor() {
     const decoder = new TextDecoder();
     const push = new Uint8Array(4);
@@ -106,15 +106,14 @@ export class Base32EncoderStream
  * assertEquals(await toText(stream), "Hello World!");
  * ```
  */
-export class Base32DecoderStream
-  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
+export class Base32DecoderStream extends TransformStream<string, Uint8Array_> {
   constructor() {
     const encoder = new TextEncoder();
     const push = new Uint8Array(7);
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        let input = encoder.encode(chunk) as Uint8Array_;
         if (remainder) {
           const originalSize = input.length;
           const maxSize = remainder + input.length;

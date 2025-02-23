@@ -27,6 +27,7 @@
  * @module
  */
 
+import type { Uint8Array_ } from "./_types.ts";
 import { decodeRawBase32, encodeRawBase32 } from "./unstable_base32.ts";
 
 const toHex = new Uint8Array(128);
@@ -60,10 +61,10 @@ const fromHex = new Uint8Array(128);
  * ```
  */
 export function encodeBase32Hex(
-  input: string | Uint8Array<ArrayBuffer> | ArrayBuffer,
+  input: string | Uint8Array_ | ArrayBuffer,
 ): string {
   if (typeof input === "string") {
-    input = new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>;
+    input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
@@ -71,8 +72,8 @@ export function encodeBase32Hex(
 }
 
 export function encodeRawBase32Hex(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   input = encodeRawBase32(input);
   for (let i = 0; i < input.length; ++i) input[i] = toHex[input[i]!]!;
   return input;
@@ -99,14 +100,14 @@ export function encodeRawBase32Hex(
  * );
  * ```
  */
-export function decodeBase32Hex(input: string): Uint8Array<ArrayBuffer> {
+export function decodeBase32Hex(input: string): Uint8Array_ {
   return decodeRawBase32Hex(new TextEncoder()
-    .encode(input) as Uint8Array<ArrayBuffer>);
+    .encode(input) as Uint8Array_);
 }
 
 export function decodeRawBase32Hex(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   for (let i = 0; i < input.length; ++i) input[i] = fromHex[input[i]!]!;
   input = decodeRawBase32(input);
   return input;

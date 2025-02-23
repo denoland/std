@@ -21,6 +21,7 @@
  * @module
  */
 
+import type { Uint8Array_ } from "./_types.ts";
 import {
   decodeRawHex as decode,
   encodeRawHex as encode,
@@ -47,8 +48,7 @@ import {
  * assertEquals(await toText(stream), encodeHex(new TextEncoder().encode("Hello, world!")));
  * ```
  */
-export class HexEncoderStream
-  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
+export class HexEncoderStream extends TransformStream<Uint8Array_, string> {
   constructor() {
     const decoder = new TextDecoder();
     super({
@@ -79,15 +79,14 @@ export class HexEncoderStream
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class HexDecoderStream
-  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
+export class HexDecoderStream extends TransformStream<string, Uint8Array_> {
   constructor() {
     const encoder = new TextEncoder();
     const push = new Uint8Array(1);
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        let input = encoder.encode(chunk) as Uint8Array_;
         if (remainder) {
           const originalSize = input.length;
           const maxSize = remainder + input.length;

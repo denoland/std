@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+
 const alphabet = new TextEncoder()
   .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
 const padding = "=".charCodeAt(0);
@@ -8,10 +10,10 @@ const rAlphabet = new Uint8Array(128);
 alphabet.forEach((byte, i) => rAlphabet[byte] = i);
 
 export function encodeBase32(
-  input: string | Uint8Array<ArrayBuffer> | ArrayBuffer,
+  input: string | Uint8Array_ | ArrayBuffer,
 ): string {
   if (typeof input === "string") {
-    input = new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>;
+    input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
@@ -19,8 +21,8 @@ export function encodeBase32(
 }
 
 export function encodeRawBase32(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   const originalSize = input.length;
   const maxSize = ((originalSize + 4) / 5 | 0) * 8;
   if (input.byteOffset) {
@@ -98,15 +100,15 @@ export function encodeRawBase32(
   return output;
 }
 
-export function decodeBase32(input: string): Uint8Array<ArrayBuffer> {
+export function decodeBase32(input: string): Uint8Array_ {
   return decodeRawBase32(
-    new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>,
+    new TextEncoder().encode(input) as Uint8Array_,
   );
 }
 
 export function decodeRawBase32(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   switch (input.length % 8) {
     case 6:
     case 3:
@@ -191,7 +193,7 @@ export function decodeRawBase32(
   return input.subarray(0, o);
 }
 
-function assertIsPadding(input: Uint8Array<ArrayBuffer>) {
+function assertIsPadding(input: Uint8Array_) {
   for (let i = 0; i < input.length; ++i) {
     if (input[i] !== padding) throw new TypeError("Invalid Character");
   }

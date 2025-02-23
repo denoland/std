@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+
 const alphabet = new TextEncoder().encode("0123456789abcdef");
 const rAlphabet = new Uint8Array(128);
 alphabet.forEach((byte, i) => rAlphabet[byte] = i);
@@ -9,10 +11,10 @@ new TextEncoder()
   .forEach((byte, i) => rAlphabet[byte] = i + 10);
 
 export function encodeHex(
-  input: string | Uint8Array<ArrayBuffer> | ArrayBuffer,
+  input: string | Uint8Array_ | ArrayBuffer,
 ): string {
   if (typeof input === "string") {
-    input = new TextEncoder().encode(input) as Uint8Array<ArrayBuffer>;
+    input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
@@ -20,8 +22,8 @@ export function encodeHex(
 }
 
 export function encodeRawHex(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   const originalSize = input.length;
   const maxSize = originalSize * 2;
   if (input.byteOffset) {
@@ -42,14 +44,14 @@ export function encodeRawHex(
   return output;
 }
 
-export function decodeHex(input: string): Uint8Array<ArrayBuffer> {
+export function decodeHex(input: string): Uint8Array_ {
   return decodeRawHex(new TextEncoder()
-    .encode(input) as Uint8Array<ArrayBuffer>);
+    .encode(input) as Uint8Array_);
 }
 
 export function decodeRawHex(
-  input: Uint8Array<ArrayBuffer>,
-): Uint8Array<ArrayBuffer> {
+  input: Uint8Array_,
+): Uint8Array_ {
   if (input.length % 2 === 1) throw new TypeError("Invalid Character");
 
   let i = 1;

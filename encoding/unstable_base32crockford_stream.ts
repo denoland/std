@@ -21,6 +21,7 @@
  * @module
  */
 
+import type { Uint8Array_ } from "./_types.ts";
 import {
   decodeRawBase32Crockford as decode,
   encodeRawBase32Crockford as encode,
@@ -44,11 +45,11 @@ import {
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeThrough(new Base32CrockfordEncoderStream());
  *
- * assertEquals(await toText(stream), encodeBase32Crockford(new TextEncoder().encode("Hello, world!") as Uint8Array<ArrayBuffer>));
+ * assertEquals(await toText(stream), encodeBase32Crockford(new TextEncoder().encode("Hello, world!") as Uint8Array_));
  * ```
  */
 export class Base32CrockfordEncoderStream
-  extends TransformStream<Uint8Array<ArrayBuffer>, string> {
+  extends TransformStream<Uint8Array_, string> {
   constructor() {
     const decoder = new TextDecoder();
     const push = new Uint8Array(4);
@@ -107,14 +108,14 @@ export class Base32CrockfordEncoderStream
  * ```
  */
 export class Base32CrockfordDecoderStream
-  extends TransformStream<string, Uint8Array<ArrayBuffer>> {
+  extends TransformStream<string, Uint8Array_> {
   constructor() {
     const encoder = new TextEncoder();
     const push = new Uint8Array(7);
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let input = encoder.encode(chunk) as Uint8Array<ArrayBuffer>;
+        let input = encoder.encode(chunk) as Uint8Array_;
         if (remainder) {
           const originalSize = input.length;
           const maxSize = remainder + input.length;
