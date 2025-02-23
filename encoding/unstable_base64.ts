@@ -40,17 +40,21 @@ export function encodeRawBase64(
     output[o++] = alphabet[((output[i - 1]! & 0xF) << 2) | (output[i]! >> 6)]!;
     output[o++] = alphabet[output[i]! & 0x3F]!;
   }
-  if (i === output.length + 1) {
-    output[o++] = alphabet[output[i - 2]! >> 2]!;
-    output[o++] = alphabet[(output[i - 2]! & 0x3) << 4]!;
-    output[o++] = padding;
-    output[o++] = padding;
-  } else if (i === output.length) {
-    output[o++] = alphabet[output[i - 2]! >> 2]!;
-    output[o++] =
-      alphabet[((output[i - 2]! & 0x3) << 4) | (output[i - 1]! >> 4)]!;
-    output[o++] = alphabet[((output[i - 1]! & 0xF) << 2) | (output[i]! >> 6)]!;
-    output[o++] = padding;
+  switch (i) {
+    case output.length + 1:
+      output[o++] = alphabet[output[i - 2]! >> 2]!;
+      output[o++] = alphabet[(output[i - 2]! & 0x3) << 4]!;
+      output[o++] = padding;
+      output[o++] = padding;
+      break;
+    case output.length:
+      output[o++] = alphabet[output[i - 2]! >> 2]!;
+      output[o++] =
+        alphabet[((output[i - 2]! & 0x3) << 4) | (output[i - 1]! >> 4)]!;
+      output[o++] =
+        alphabet[((output[i - 1]! & 0xF) << 2) | (output[i]! >> 6)]!;
+      output[o++] = padding;
+      break;
   }
 
   return output;
@@ -76,30 +80,32 @@ export function decodeRawBase64(
   let i = 3;
   let o = 0;
   for (; i < input.length; i += 4) {
-    assertValidByte(input[i - 3]!);
-    assertValidByte(input[i - 2]!);
-    assertValidByte(input[i - 1]!);
-    assertValidByte(input[i]!);
-    input[o++] = (rAlphabet[input[i - 3]!]! << 2) |
-      (rAlphabet[input[i - 2]!]! >> 4);
-    input[o++] = ((rAlphabet[input[i - 2]!]! & 0xF) << 4) |
-      (rAlphabet[input[i - 1]!]! >> 2);
-    input[o++] = ((rAlphabet[input[i - 1]!]! & 0x3) << 6) |
-      rAlphabet[input[i]!]!;
+    input[i - 3] = offsetByte(input[i - 3]!);
+    input[i - 2] = offsetByte(input[i - 2]!);
+    input[i - 1] = offsetByte(input[i - 1]!);
+    input[i] = offsetByte(input[i]!);
+    input[o++] = (input[i - 3]! << 2) | (input[i - 2]! >> 4);
+    input[o++] = ((input[i - 2]! & 0xF) << 4) | (input[i - 1]! >> 2);
+    input[o++] = ((input[i - 1]! & 0x3) << 6) | input[i]!;
   }
-  if (i === input.length + 1) {
-    input[o++] = (rAlphabet[input[i - 3]!]! << 2) |
-      (rAlphabet[input[i - 2]!]! >> 4);
-  } else if (i === input.length) {
-    input[o++] = (rAlphabet[input[i - 3]!]! << 2) |
-      (rAlphabet[input[i - 2]!]! >> 4);
-    input[o++] = ((rAlphabet[input[i - 2]!]! & 0xF) << 4) |
-      (rAlphabet[input[i - 1]!]! >> 2);
+  switch (i) {
+    case input.length + 1:
+      input[i - 3] = offsetByte(input[i - 3]!);
+      input[i - 2] = offsetByte(input[i - 2]!);
+      input[o++] = (input[i - 3]! << 2) | (input[i - 2]! >> 4);
+      break;
+    case input.length:
+      input[i - 3] = offsetByte(input[i - 3]!);
+      input[i - 2] = offsetByte(input[i - 2]!);
+      input[i - 1] = offsetByte(input[i - 1]!);
+      input[o++] = (input[i - 3]! << 2) | (input[i - 2]! >> 4);
+      input[o++] = ((input[i - 2]! & 0xF) << 4) | (input[i - 1]! >> 2);
+      break;
   }
   return input.subarray(0, o);
 }
 
-function assertValidByte(byte: number) {
+function offsetByte(byte: number): number {
   if (
     !((65 <= byte && byte <= 90) ||
       (97 <= byte && byte <= 122) ||
@@ -107,4 +113,5 @@ function assertValidByte(byte: number) {
       byte === 43 ||
       byte === 47)
   ) throw new TypeError("Invalid Character");
+  return rAlphabet[byte]!;
 }
