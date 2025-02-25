@@ -41,3 +41,10 @@ export function getNodeOs() {
 export function getNodePath() {
   return (globalThis as any).process.getBuiltinModule("node:path");
 }
+
+/**
+ * @returns The Node.js `stream` module.
+ */
+export function getNodeStream() {
+  return (globalThis as any).process.getBuiltinModule("node:stream");
+}
