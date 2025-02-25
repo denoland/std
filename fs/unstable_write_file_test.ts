@@ -16,6 +16,7 @@ import { stat, statSync } from "./unstable_stat.ts";
 import { AlreadyExists, NotFound } from "./unstable_errors.js";
 import { rmSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { platform } from "node:os";
 import { join } from "node:path";
 
 function assertMissing(path: string | URL) {
@@ -116,24 +117,28 @@ Deno.test("writeFile() handles 'createNew' when writing to a file", async () => 
   await rm(tempDirPath, { recursive: true, force: true });
 });
 
-Deno.test("writeFile() can change the mode of a file", async () => {
-  const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
-  const testFile = join(tempDirPath, "testFile.txt");
+Deno.test({
+  name: "writeFile() can change the mode of a file",
+  ignore: platform() === "win32",
+  fn: async () => {
+    const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
+    const testFile = join(tempDirPath, "testFile.txt");
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode("Hello");
+    const encoder = new TextEncoder();
+    const data = encoder.encode("Hello");
 
-  await writeFile(testFile, data);
-  const testFileStatBefore = await stat(testFile);
-  assertExists(testFileStatBefore.mode, "mode is null");
-  assertEquals(testFileStatBefore.mode & 0o777, 0o644);
+    await writeFile(testFile, data);
+    const testFileStatBefore = await stat(testFile);
+    assertExists(testFileStatBefore.mode, "mode is null");
+    assertEquals(testFileStatBefore.mode & 0o777, 0o644);
 
-  await writeFile(testFile, data, { mode: 0o222 });
-  const testFileStatAfter = await stat(testFile);
-  assertExists(testFileStatAfter.mode, "mode is null");
-  assertEquals(testFileStatAfter.mode & 0o777, 0o222);
+    await writeFile(testFile, data, { mode: 0o222 });
+    const testFileStatAfter = await stat(testFile);
+    assertExists(testFileStatAfter.mode, "mode is null");
+    assertEquals(testFileStatAfter.mode & 0o777, 0o222);
 
-  await rm(tempDirPath, { recursive: true, force: true });
+    await rm(tempDirPath, { recursive: true, force: true });
+  },
 });
 
 Deno.test("writeFile() writes to a file with a ReadableStream instance", async () => {
@@ -353,24 +358,28 @@ Deno.test("writeFileSync() handles 'createNew' when writing to a file", () => {
   rmSync(tempDirPath, { recursive: true, force: true });
 });
 
-Deno.test("writeFileSync() can change the mode of a file", () => {
-  const tempDirPath = makeTempDirSync({ prefix: "writeFileSync_" });
-  const testFile = join(tempDirPath, "testFile.txt");
+Deno.test({
+  name: "writeFileSync() can change the mode of a file",
+  ignore: platform() === "win32",
+  fn: () => {
+    const tempDirPath = makeTempDirSync({ prefix: "writeFileSync_" });
+    const testFile = join(tempDirPath, "testFile.txt");
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode("Hello");
+    const encoder = new TextEncoder();
+    const data = encoder.encode("Hello");
 
-  writeFileSync(testFile, data);
-  const testFileStatBefore = statSync(testFile);
-  assertExists(testFileStatBefore.mode, "mode is null");
-  assertEquals(testFileStatBefore.mode & 0o777, 0o644);
+    writeFileSync(testFile, data);
+    const testFileStatBefore = statSync(testFile);
+    assertExists(testFileStatBefore.mode, "mode is null");
+    assertEquals(testFileStatBefore.mode & 0o777, 0o644);
 
-  writeFileSync(testFile, data, { mode: 0o222 });
-  const testFileStatAfter = statSync(testFile);
-  assertExists(testFileStatAfter.mode, "mode is null");
-  assertEquals(testFileStatAfter.mode & 0o777, 0o222);
+    writeFileSync(testFile, data, { mode: 0o222 });
+    const testFileStatAfter = statSync(testFile);
+    assertExists(testFileStatAfter.mode, "mode is null");
+    assertEquals(testFileStatAfter.mode & 0o777, 0o222);
 
-  rmSync(tempDirPath, { recursive: true, force: true });
+    rmSync(tempDirPath, { recursive: true, force: true });
+  },
 });
 
 Deno.test("writeFileSync() throws NotFound when writing data to a non-existent path", () => {
