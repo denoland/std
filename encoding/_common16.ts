@@ -13,6 +13,7 @@ export type { Uint8Array_ };
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
+ * import { calcMax } from "@std/encoding/unstable-hex";
  *
  * assertEquals(calcMax(1), 2);
  * ```

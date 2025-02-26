@@ -89,7 +89,10 @@ export function encodeHex(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const [output, i] = detach(input, calcMax(input.length));
+  const [output, i] = detach(
+    input as Uint8Array_,
+    calcMax((input as Uint8Array_).length),
+  );
   encode(output, i, 0, alphabet[format]);
   return new TextDecoder().decode(output);
 }

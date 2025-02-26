@@ -123,7 +123,10 @@ export function encodeBase32(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const [output, i] = detach(input, calcMax(input.length));
+  const [output, i] = detach(
+    input as Uint8Array_,
+    calcMax((input as Uint8Array_).length),
+  );
   encode(output, i, 0, alphabet[format], padding);
   return new TextDecoder().decode(output);
 }

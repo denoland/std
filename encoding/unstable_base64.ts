@@ -109,7 +109,10 @@ export function encodeBase64(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  let [output, i] = detach(input, calcMax(input.length));
+  let [output, i] = detach(
+    input as Uint8Array_,
+    calcMax((input as Uint8Array_).length),
+  );
   let o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
     o = output.indexOf(padding, o - 2);
