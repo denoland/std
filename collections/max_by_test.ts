@@ -136,3 +136,14 @@ Deno.test({
     assertEquals(maxBy(input, (it) => new Date(it)), "February 1, 2022");
   },
 });
+
+Deno.test({
+  name: "maxBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = maxBy(input, (_, index) => index);
+
+    assertEquals(max, 1);
+  },
+});
