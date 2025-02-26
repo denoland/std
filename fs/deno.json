@@ -29,6 +29,7 @@
     "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
+    "./unstable-write-file": "./unstable_write_file.ts",
     "./walk": "./walk.ts"
   }
 }
