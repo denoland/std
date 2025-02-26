@@ -24,9 +24,11 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
+  calcMax,
   decodeRawHex as decode,
   encodeRawHex as encode,
 } from "./unstable_hex.ts";
+import { detach } from "./_common_detach.ts";
 
 /**
  * Converts a Uint8Array stream into a hex-encoded stream.
@@ -54,7 +56,9 @@ export class HexEncoderStream extends TransformStream<Uint8Array_, string> {
     const decoder = new TextDecoder();
     super({
       transform(chunk, controller) {
-        controller.enqueue(decoder.decode(encode(chunk)));
+        const [output, i] = detach(chunk, calcMax(chunk.length));
+        encode(output, i, 0);
+        controller.enqueue(decoder.decode(output));
       },
     });
   }
@@ -87,22 +91,25 @@ export class HexDecoderStream extends TransformStream<string, Uint8Array_> {
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let input = encoder.encode(chunk) as Uint8Array_;
+        let output = encoder.encode(chunk) as Uint8Array_;
         if (remainder) {
-          const originalSize = input.length;
-          const maxSize = remainder + input.length;
-          input = new Uint8Array(input.buffer.transfer(maxSize));
-          input.set(input.subarray(0, originalSize), maxSize - originalSize);
-          input.set(push.subarray(0, remainder));
+          output = detach(output, remainder + output.length)[0];
+          output.set(push.subarray(0, remainder));
         }
-
-        remainder = input.length % 2;
-        if (remainder) push.set(input.subarray(-remainder));
-        controller.enqueue(decode(input.subarray(0, -remainder || undefined)));
+        remainder = output.length % 2;
+        if (remainder) push.set(output.subarray(-remainder));
+        controller.enqueue(
+          output.subarray(
+            0,
+            decode(output.subarray(0, -remainder || undefined), 0, 0),
+          ),
+        );
       },
       flush(controller) {
         if (remainder) {
-          controller.enqueue(encode(push.subarray(0, remainder)));
+          controller.enqueue(
+            push.subarray(0, decode(push.subarray(0, remainder), 0, 0)),
+          );
         }
       },
     });

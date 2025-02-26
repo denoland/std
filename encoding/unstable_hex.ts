@@ -3,6 +3,9 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
+import { calcMax, decode, encode } from "./_common16.ts";
+export { calcMax };
+import { detach } from "./_common_detach.ts";
 
 const alphabet = new TextEncoder().encode("0123456789abcdef");
 const rAlphabet = new Uint8Array(128);
@@ -19,54 +22,41 @@ export function encodeHex(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  return new TextDecoder().decode(encodeRawHex(input));
+  const [output, i] = detach(input, calcMax(input.length));
+  encode(output, i, 0, alphabet);
+  return new TextDecoder().decode(output);
 }
 
 export function encodeRawHex(
-  input: Uint8Array_,
-): Uint8Array_ {
-  const originalSize = input.length;
-  const maxSize = originalSize * 2;
-  if (input.byteOffset) {
-    const buffer = new Uint8Array(input.buffer);
-    buffer.set(input);
-    input = buffer.subarray(0, input.length);
-  }
-  const output = new Uint8Array(input.buffer.transfer(maxSize));
-  output.set(output.subarray(0, originalSize), maxSize - originalSize);
-
-  let i = maxSize - originalSize;
-  let o = 0;
-  for (; i < output.length; ++i) {
-    output[o++] = alphabet[output[i]! >> 4]!;
-    output[o++] = alphabet[output[i]! & 0xF]!;
-  }
-
-  return output;
+  buffer: Uint8Array_,
+  i: number,
+  o: number,
+): number {
+  const max = calcMax(buffer.length - i);
+  if (max > buffer.length - o) throw new RangeError("Buffer too small");
+  return encode(buffer, i, o, alphabet);
 }
 
 export function decodeHex(input: string): Uint8Array_ {
-  return decodeRawHex(new TextEncoder()
-    .encode(input) as Uint8Array_);
+  const output = new TextEncoder().encode(input) as Uint8Array_;
+  return output
+    .subarray(0, decode(output, 0, 0, rAlphabet, assertChar));
 }
 
 export function decodeRawHex(
-  input: Uint8Array_,
-): Uint8Array_ {
-  if (input.length % 2 === 1) throw new TypeError("Invalid Character");
-
-  let i = 1;
-  let o = 0;
-  for (; i < input.length; i += 2) {
-    input[i - 1] = offsetByte(input[i - 1]!);
-    input[i] = offsetByte(input[i]!);
-    input[o++] = (input[i - 1]! << 4) | input[i]!;
+  buffer: Uint8Array_,
+  i: number,
+  o: number,
+): number {
+  if (i < o) {
+    throw new RangeError(
+      "Input (i) must be greater than or equal to output (o)",
+    );
   }
-
-  return input.subarray(0, o);
+  return decode(buffer, i, o, rAlphabet, assertChar);
 }
 
-function offsetByte(byte: number): number {
+function assertChar(byte: number): void {
   if (
     !(
       (48 <= byte && byte <= 57) ||
@@ -74,5 +64,4 @@ function offsetByte(byte: number): number {
       (65 <= byte && byte <= 70)
     )
   ) throw new TypeError("Invalid Character");
-  return rAlphabet[byte]!;
 }

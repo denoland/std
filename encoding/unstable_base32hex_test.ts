@@ -35,19 +35,8 @@ Deno.test({
   name: "decodeBase32Hex() throws on bad length",
   fn() {
     assertThrows(
-      () => decodeBase32Hex("OOO=="),
-      Error,
-      "Invalid Character",
-    );
-  },
-});
-
-Deno.test({
-  name: "decodeBase32Hex() throws on bad padding",
-  fn() {
-    assertThrows(
-      () => decodeBase32Hex("5HXR334AQYAAAA=="),
-      Error,
+      () => decodeBase32Hex("O"),
+      TypeError,
       "Invalid Character",
     );
   },

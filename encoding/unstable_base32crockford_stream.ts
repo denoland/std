@@ -24,9 +24,11 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
+  calcMax,
   decodeRawBase32Crockford as decode,
   encodeRawBase32Crockford as encode,
 } from "./unstable_base32crockford.ts";
+import { detach } from "./_common_detach.ts";
 
 /**
  * Converts a Uint8Array stream into a base32crockford-encoded stream.
@@ -55,33 +57,32 @@ export class Base32CrockfordEncoderStream
     const decoder = new TextDecoder();
     const push = new Uint8Array(4);
     let remainder = 0;
-    // let push = new Uint8Array(0);
     super({
       transform(chunk, controller) {
+        let [output, i] = detach(chunk, calcMax(remainder + chunk.length));
         if (remainder) {
-          const originalSize = chunk.length;
-          const maxSize = remainder + chunk.length;
-          if (chunk.byteOffset) {
-            const buffer = new Uint8Array(chunk.buffer);
-            buffer.set(chunk);
-            chunk = buffer.subarray(0, chunk.length);
-          }
-          chunk = new Uint8Array(chunk.buffer.transfer(maxSize));
-          chunk.set(chunk.subarray(0, originalSize), maxSize - originalSize);
-          chunk.set(push.subarray(0, remainder));
+          i -= remainder;
+          output.set(push.subarray(0, remainder), i);
         }
-
-        remainder = chunk.length % 5;
-        if (remainder) push.set(chunk.subarray(-remainder));
+        remainder = (output.length - i) % 5;
+        if (remainder) push.set(output.subarray(-remainder));
         controller.enqueue(
-          decoder.decode(encode(chunk.subarray(0, -remainder || undefined))),
+          decoder.decode(
+            output.subarray(
+              0,
+              encode(output.subarray(0, -remainder || undefined), i, 0),
+            ),
+          ),
         );
       },
       flush(controller) {
         if (remainder) {
-          controller.enqueue(
-            decoder.decode(encode(push.subarray(0, remainder))),
+          const [output, i] = detach(
+            push.subarray(0, remainder),
+            calcMax(remainder),
           );
+          encode(output, i, 0);
+          controller.enqueue(decoder.decode(output));
         }
       },
     });
@@ -116,22 +117,25 @@ export class Base32CrockfordDecoderStream
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let input = encoder.encode(chunk) as Uint8Array_;
+        let output = encoder.encode(chunk) as Uint8Array_;
         if (remainder) {
-          const originalSize = input.length;
-          const maxSize = remainder + input.length;
-          input = new Uint8Array(input.buffer.transfer(maxSize));
-          input.set(input.subarray(0, originalSize), maxSize - originalSize);
-          input.set(push.subarray(0, remainder));
+          output = detach(output, remainder + output.length)[0];
+          output.set(push.subarray(0, remainder));
         }
-
-        remainder = input.length % 8;
-        if (remainder) push.set(input.subarray(-remainder));
-        controller.enqueue(decode(input.subarray(0, -remainder || undefined)));
+        remainder = output.length % 8;
+        if (remainder) push.set(output.subarray(-remainder));
+        controller.enqueue(
+          output.subarray(
+            0,
+            decode(output.subarray(0, -remainder || undefined), 0, 0),
+          ),
+        );
       },
       flush(controller) {
         if (remainder) {
-          controller.enqueue(decode(push.subarray(0, remainder)));
+          controller.enqueue(
+            push.subarray(0, decode(push.subarray(0, remainder), 0, 0)),
+          );
         }
       },
     });

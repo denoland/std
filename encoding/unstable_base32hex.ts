@@ -29,19 +29,15 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { decodeRawBase32, encodeRawBase32 } from "./unstable_base32.ts";
+import { calcMax, decode, encode } from "./_common32.ts";
+export { calcMax };
+import { detach } from "./_common_detach.ts";
 
-const toHex = new Uint8Array(128);
-const fromHex = new Uint8Array(128);
-{
-  const encoder = new TextEncoder();
-  const a = encoder.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=");
-  const b = encoder.encode("0123456789ABCDEFGHIJKLMNOPQRSTUV=");
-  a.forEach((byte, i) => {
-    toHex[byte] = b[i]!;
-    fromHex[b[i]!] = byte;
-  });
-}
+const alphabet = new TextEncoder()
+  .encode("0123456789ABCDEFGHIJKLMNOPQRSTUV");
+const padding = "=".charCodeAt(0);
+const rAlphabet = new Uint8Array(128);
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
 
 /**
  * Converts data into a base32hex-encoded string.
@@ -69,15 +65,19 @@ export function encodeBase32Hex(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  return new TextDecoder().decode(encodeRawBase32Hex(input));
+  const [output, i] = detach(input, calcMax(input.length));
+  encode(output, i, 0, alphabet, padding);
+  return new TextDecoder().decode(output);
 }
 
 export function encodeRawBase32Hex(
-  input: Uint8Array_,
-): Uint8Array_ {
-  input = encodeRawBase32(input);
-  for (let i = 0; i < input.length; ++i) input[i] = toHex[input[i]!]!;
-  return input;
+  buffer: Uint8Array_,
+  i: number,
+  o: number,
+): number {
+  const max = calcMax(buffer.length - i);
+  if (max > buffer.length - o) throw new RangeError("Buffer too small");
+  return encode(buffer, i, o, alphabet, padding);
 }
 
 /**
@@ -102,14 +102,25 @@ export function encodeRawBase32Hex(
  * ```
  */
 export function decodeBase32Hex(input: string): Uint8Array_ {
-  return decodeRawBase32Hex(new TextEncoder()
-    .encode(input) as Uint8Array_);
+  const output = new TextEncoder().encode(input) as Uint8Array_;
+  return output
+    .subarray(0, decode(output, 0, 0, rAlphabet, padding, assertChar));
 }
 
 export function decodeRawBase32Hex(
-  input: Uint8Array_,
-): Uint8Array_ {
-  for (let i = 0; i < input.length; ++i) input[i] = fromHex[input[i]!]!;
-  input = decodeRawBase32(input);
-  return input;
+  buffer: Uint8Array_,
+  i: number,
+  o: number,
+): number {
+  if (i < o) {
+    throw new RangeError("Input (i) must be greater or equal to output (o)");
+  }
+  return decode(buffer, i, o, rAlphabet, padding, assertChar);
+}
+
+function assertChar(byte: number): void {
+  if (
+    !((48 <= byte && byte <= 57) ||
+      (65 <= byte && byte <= 86))
+  ) throw new TypeError("Invalid Character");
 }
