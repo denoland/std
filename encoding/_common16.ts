@@ -3,6 +3,20 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+/**
+ * Calculate the output size needed to encode a given input size for
+ * {@linkcode encodeRawHex}.
+ *
+ * @param originalSize The size of the input buffer.
+ * @returns The size of the output buffer.
+ *
+ * @example Basic Usage
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(calcMax(1), 2);
+ * ```
+ */
 export function calcMax(originalSize: number): number {
   return originalSize * 2;
 }
@@ -27,7 +41,11 @@ export function decode(
   alphabet: Uint8Array,
   assertChar: (byte: number) => void,
 ): number {
-  if (buffer.length % 2 === 1) throw new TypeError("Invalid Character");
+  if ((buffer.length - o) % 2 === 1) {
+    throw new TypeError(
+      `Invalid Character (${String.fromCharCode(buffer[buffer.length - 1]!)})`,
+    );
+  }
 
   i += 1;
   for (; i < buffer.length; i += 2) {

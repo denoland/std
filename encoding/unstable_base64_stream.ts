@@ -2,18 +2,22 @@
 // This module is browser compatible.
 
 /**
- * Utilities for encoding and decoding to and from base64 in a streaming manner.
+ * TransformStream classes to encode and decode to and from base64 data in a streaming manner.
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { encodeBase64 } from "@std/encoding/unstable-base64";
+ * import { Base64EncoderStream } from "@std/encoding/unstable-base64-stream";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
- *   .pipeThrough(new Base64DecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base64EncoderStream("Base64"));
  *
- * assertEquals(await toText(stream), "Hello, world!");
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
+ * );
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -24,6 +28,7 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
+  type Base64Format,
   calcMax,
   decodeRawBase64 as decode,
   encodeRawBase64 as encode,
@@ -31,29 +36,54 @@ import {
 import { detach } from "./_common_detach.ts";
 
 /**
- * Converts a Uint8Array stream into a base64-encoded stream.
+ * The raw base64 encoding formats.
+ */
+export type Base64RawFormat = `Raw-${Base64Format}`;
+/**
+ * A type used to represent the expected output of a base64 stream.
+ */
+export type Expect<T> = T extends Base64Format ? string : Uint8Array_;
+
+/**
+ * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a base64 stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
+ * @typeParam T The type of the base64 stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase64 } from "@std/encoding/base64";
+ * import { encodeBase64 } from "@std/encoding/unstable-base64";
  * import { Base64EncoderStream } from "@std/encoding/unstable-base64-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["Hello,", " world!"])
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeThrough(new Base64EncoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base64EncoderStream("Base64"));
  *
- * assertEquals(await toText(stream), encodeBase64(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
+ * );
  * ```
  */
-export class Base64EncoderStream extends TransformStream<Uint8Array_, string> {
-  constructor() {
-    const decoder = new TextDecoder();
+export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
+  extends TransformStream<Uint8Array_, Expect<T>> {
+  /**
+   * Constructs a new instance.
+   *
+   * @param format The format of the base64 stream.
+   */
+  constructor(format: T) {
+    const decode = function (): (input: Uint8Array_) => Expect<T> {
+      if (format.startsWith("Raw-")) {
+        format = format.slice(4) as T;
+        return (x) => x as Expect<T>;
+      }
+      const decoder = new TextDecoder();
+      return (x) => decoder.decode(x) as Expect<T>;
+    }();
     const push = new Uint8Array(2);
     let remainder = 0;
     super({
@@ -65,14 +95,13 @@ export class Base64EncoderStream extends TransformStream<Uint8Array_, string> {
         }
         remainder = (output.length - i) % 3;
         if (remainder) push.set(output.subarray(-remainder));
-        controller.enqueue(
-          decoder.decode(
-            output.subarray(
-              0,
-              encode(output.subarray(0, -remainder || undefined), i, 0),
-            ),
-          ),
+        const o = encode(
+          output.subarray(0, -remainder || undefined),
+          i,
+          0,
+          format as Base64Format,
         );
+        controller.enqueue(decode(output.subarray(0, o)));
       },
       flush(controller) {
         if (remainder) {
@@ -80,8 +109,8 @@ export class Base64EncoderStream extends TransformStream<Uint8Array_, string> {
             push.subarray(0, remainder),
             calcMax(remainder),
           );
-          encode(output, i, 0);
-          controller.enqueue(decoder.decode(output));
+          const o = encode(output, i, 0, format as Base64Format);
+          controller.enqueue(decode(output.subarray(0, o)));
         }
       },
     });
@@ -89,51 +118,76 @@ export class Base64EncoderStream extends TransformStream<Uint8Array_, string> {
 }
 
 /**
- * Decodes a base64-encoded stream into a Uint8Array stream.
+ * Transforms a base64 stream into a {@link Uint8Array<ArrayBuffer>} stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
+ * @typeParam T The type of the base64 stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
- * import { toText } from "@std/streams/to-text";
+ * import {
+ *   Base64DecoderStream,
+ *   Base64EncoderStream,
+ * } from "@std/encoding/unstable-base64-stream";
+ * import { toBytes } from "@std/streams/unstable-to-bytes";
  *
- * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
- *   .pipeThrough(new Base64DecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base64EncoderStream("Base64"))
+ *   .pipeThrough(new Base64DecoderStream("Base64"));
  *
- * assertEquals(await toText(stream), "Hello, world!");
+ * assertEquals(
+ *   await toBytes(readable),
+ *   await Deno.readFile("./deno.lock"),
+ * );
  * ```
  */
-export class Base64DecoderStream extends TransformStream<string, Uint8Array_> {
-  constructor() {
-    const encoder = new TextEncoder();
+export class Base64DecoderStream<T extends Base64Format | Base64RawFormat>
+  extends TransformStream<Expect<T>, Uint8Array_> {
+  /**
+   * Constructs a new instance.
+   *
+   * @param format The format of the base64 stream.
+   */
+  constructor(format: T) {
+    const encode = function (): (input: Expect<T>) => Uint8Array_ {
+      if (format.startsWith("Raw-")) {
+        format = format.slice(4) as T;
+        return (x) => x as Uint8Array_;
+      }
+      const encoder = new TextEncoder();
+      return (x) => encoder.encode(x as string) as Uint8Array_;
+    }();
     const push = new Uint8Array(3);
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let output = encoder.encode(chunk) as Uint8Array_;
+        let output = encode(chunk);
         if (remainder) {
           output = detach(output, remainder + output.length)[0];
           output.set(push.subarray(0, remainder));
         }
         remainder = output.length % 4;
         if (remainder) push.set(output.subarray(-remainder));
-        controller.enqueue(
-          output.subarray(
-            0,
-            decode(output.subarray(0, -remainder || undefined), 0, 0),
-          ),
+        const o = decode(
+          output.subarray(0, -remainder || undefined),
+          0,
+          0,
+          format as Base64Format,
         );
+        controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
         if (remainder) {
-          controller.enqueue(
-            push.subarray(0, decode(push.subarray(0, remainder), 0, 0)),
+          const o = decode(
+            push.subarray(0, remainder),
+            0,
+            0,
+            format as Base64Format,
           );
+          controller.enqueue(push.subarray(0, o));
         }
       },
     });

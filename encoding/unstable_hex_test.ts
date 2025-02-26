@@ -1,71 +1,182 @@
-// Ported from Go
-// https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go
-// Copyright 2009 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
 // Copyright 2018-2025 the Deno authors. MIT license.
+
 import { assertEquals, assertThrows } from "@std/assert";
+import { concat } from "@std/bytes";
+import {
+  calcMax,
+  decodeHex,
+  decodeRawHex,
+  encodeHex,
+  encodeRawHex,
+} from "./unstable_hex.ts";
 
-import { decodeHex, encodeHex } from "./unstable_hex.ts";
-
-const testCases = [
-  // encoded(hex) / decoded(Uint8Array)
-  ["", []],
-  ["0001020304050607", [0, 1, 2, 3, 4, 5, 6, 7]],
-  ["08090a0b0c0d0e0f", [8, 9, 10, 11, 12, 13, 14, 15]],
-  ["f0f1f2f3f4f5f6f7", [0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7]],
-  ["f8f9fafbfcfdfeff", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
-  ["67", Array.from(new TextEncoder().encode("g"))],
-  ["e3a1", [0xe3, 0xa1]],
+const inputOutput: [string | ArrayBuffer, string][] = [
+  ["", ""],
+  ["Z", "5a"],
+  ["ZZ", "5a5a"],
+  [new Uint8Array(0).fill("Z".charCodeAt(0)).buffer, ""],
+  [new Uint8Array(1).fill("Z".charCodeAt(0)).buffer, "5a"],
+  [new Uint8Array(2).fill("Z".charCodeAt(0)).buffer, "5a5a"],
 ];
 
-const errCases: string[] = [
-  "0",
-  "zd4aa",
-  "d4aaz",
-  "30313",
-  "0g",
-  "00gg",
-  "0\x01",
-  "ffeed",
-];
-
-Deno.test("encodeHex() handles string", () => {
-  {
-    const srcStr = "abc";
-    const dest = encodeHex(srcStr);
-    assertEquals(dest, "616263");
-  }
-
-  for (const [enc, dec] of testCases) {
-    const src = new Uint8Array(dec as number[]);
-    const dest = encodeHex(src.slice());
-    assertEquals(dest.length, src.length * 2);
-    assertEquals(dest, enc);
+Deno.test("encodeHex()", () => {
+  for (const [input, hex] of inputOutput) {
+    assertEquals(encodeHex(input.slice(0), "Hex"), hex, "Hex");
   }
 });
 
-Deno.test("decodeHex() handles hex", () => {
-  // Case for decoding uppercase hex characters, since
-  // Encode always uses lowercase.
-  const extraTestcase: [string, number[]][] = [
-    ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
-  ];
+Deno.test("encodeHex() subarray", () => {
+  for (const [input, hex] of inputOutput) {
+    if (typeof input === "string") continue;
 
-  const cases = testCases.concat(extraTestcase);
+    const buffer = new Uint8Array(10);
+    buffer.set(new Uint8Array(input), 10 - input.byteLength);
 
-  for (const [enc, dec] of cases) {
-    const dest = decodeHex(enc as string);
-    assertEquals(dest, new Uint8Array(dec as number[]));
-  }
-});
-
-Deno.test("decodeHex() throws on invalid input", () => {
-  for (const input of errCases) {
-    assertThrows(
-      () => decodeHex(input),
-      TypeError,
-      "Invalid Character",
+    assertEquals(
+      encodeHex(buffer.slice().subarray(10 - input.byteLength), "Hex"),
+      hex,
+      "Hex",
     );
+  }
+});
+
+Deno.test("encodeRawHex()", () => {
+  const prefix = new TextEncoder().encode("data:fake/url,");
+  for (const [input, hex] of inputOutput) {
+    if (typeof input === "string") continue;
+
+    for (
+      const [output, format] of [
+        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
+      ] as const
+    ) {
+      const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+      buffer.set(prefix);
+      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
+
+      encodeRawHex(
+        buffer,
+        buffer.length - input.byteLength,
+        prefix.length,
+        format,
+      );
+      assertEquals(buffer, output, format);
+    }
+  }
+});
+
+Deno.test("encodeRawHex() with too small buffer", () => {
+  const prefix = new TextEncoder().encode("data:fake/url,");
+  for (const [input] of inputOutput) {
+    if (typeof input === "string" || input.byteLength === 0) continue;
+
+    for (const format of ["Hex"] as const) {
+      const buffer = new Uint8Array(
+        prefix.length + calcMax(input.byteLength) - 2,
+      );
+      buffer.set(prefix);
+      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
+
+      assertThrows(
+        () =>
+          encodeRawHex(
+            buffer,
+            buffer.length - input.byteLength,
+            prefix.length,
+            format,
+          ),
+        RangeError,
+        "Buffer too small",
+        format,
+      );
+    }
+  }
+});
+
+Deno.test("decodeHex()", () => {
+  for (const [input, hex] of inputOutput) {
+    if (input instanceof ArrayBuffer) continue;
+    const output = new TextEncoder().encode(input);
+
+    assertEquals(decodeHex(hex, "Hex"), output, "Hex");
+  }
+});
+
+Deno.test("decodeHex() invalid length", () => {
+  for (const [input, hex] of inputOutput) {
+    if (input instanceof ArrayBuffer) continue;
+
+    for (
+      const [input, format] of [
+        [hex + "a", "Hex"],
+      ] as const
+    ) {
+      assertThrows(
+        () => decodeHex(input, format),
+        TypeError,
+        "Invalid Character (a)",
+        format,
+      );
+    }
+  }
+});
+
+Deno.test("decodeHex() invalid char", () => {
+  for (const [input, hex] of inputOutput) {
+    if (input instanceof ArrayBuffer) continue;
+
+    for (
+      const [input, format] of [
+        [".".repeat(2) + hex, "Hex"],
+      ] as const
+    ) {
+      assertThrows(
+        () => decodeHex(input, format),
+        TypeError,
+        "Invalid Character (.)",
+        format,
+      );
+    }
+  }
+});
+
+Deno.test("decodeRawHex()", () => {
+  const prefix = new TextEncoder().encode("data:fake/url,");
+  for (const [output, hex] of inputOutput) {
+    if (typeof output === "string") continue;
+
+    for (
+      const [input, format] of [
+        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
+      ] as const
+    ) {
+      assertEquals(
+        input.subarray(
+          prefix.length,
+          decodeRawHex(input, prefix.length, prefix.length, format),
+        ),
+        new Uint8Array(output),
+        format,
+      );
+    }
+  }
+});
+
+Deno.test("decodeRawHex() with invalid offsets", () => {
+  const prefix = new TextEncoder().encode("data:fake/url,");
+  for (const [output, hex] of inputOutput) {
+    if (typeof output === "string") continue;
+
+    for (
+      const [input, format] of [
+        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
+      ] as const
+    ) {
+      assertThrows(
+        () => decodeRawHex(input, prefix.length - 2, prefix.length, format),
+        RangeError,
+        "Input (i) must be greater than or equal to output (o)",
+      );
+    }
   }
 });

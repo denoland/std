@@ -3,6 +3,20 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+/**
+ * Calculate the output size needed to encode a given input size for
+ * {@linkcode encodeRawBase32}.
+ *
+ * @param originalSize The size of the input buffer.
+ * @returns The size of the output buffer.
+ *
+ * @example Basic Usage
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(calcMax(1), 8);
+ * ```
+ */
 export function calcMax(originalSize: number): number {
   return ((originalSize + 4) / 5 | 0) * 8;
 }
@@ -86,20 +100,28 @@ export function decode(
   padding: number,
   assertChar: (byte: number) => void,
 ): number {
-  switch (buffer.length % 8) {
-    case 6:
-    case 3:
-    case 1:
-      throw new TypeError("Invalid Character");
-  }
   for (let x = buffer.length - 6; x < buffer.length; ++x) {
     if (buffer[x] === padding) {
       for (let y = x + 1; y < buffer.length; ++y) {
-        if (buffer[y] !== padding) throw new TypeError("Invalid Character");
+        if (buffer[y] !== padding) {
+          throw new TypeError(
+            `Invalid Character (${String.fromCharCode(buffer[y]!)})`,
+          );
+        }
       }
       buffer = buffer.subarray(0, x);
       break;
     }
+  }
+  switch ((buffer.length - o) % 8) {
+    case 6:
+    case 3:
+    case 1:
+      throw new TypeError(
+        `Invalid Character (${
+          String.fromCharCode(buffer[buffer.length - 1]!)
+        })`,
+      );
   }
 
   i += 7;
