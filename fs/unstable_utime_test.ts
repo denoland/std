@@ -19,10 +19,10 @@ Deno.test("utime() change atime and mtime date", async () => {
   assert(fileBefore.mtime != fileAfter.mtime);
 });
 
-Deno.test("utime() fail on NotFound file", () => {
+Deno.test("utime() fail on NotFound file", async () => {
   const randomFile = "foo.txt";
 
-  assertRejects(async () => {
+  await assertRejects(async () => {
     await utime(randomFile, now, now);
   }, NotFound);
 });
