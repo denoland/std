@@ -38,7 +38,7 @@ Deno.test("remove() remove a non empty directory", async () => {
   await writeFile(testFile2, data, { mode: 0o777 });
 
   try {
-    assertRejects(async () => {
+    await assertRejects(async () => {
       await remove(tempDir1);
     }, Error);
 
@@ -55,7 +55,7 @@ Deno.test("remove() remove a non existed directory", async () => {
   const nonExistedDir = join(tempDir, "non", "existed", "dir");
 
   try {
-    assertRejects(async () => {
+    await assertRejects(async () => {
       await remove(nonExistedDir);
     }, NotFound);
     await remove(tempDir);
@@ -71,7 +71,7 @@ Deno.test("remove() remove a non existed directory with option", async () => {
   const nonExistedDir = join(tempDir, "non", "existed", "dir");
 
   try {
-    assertRejects(async () => {
+    await assertRejects(async () => {
       await remove(nonExistedDir, { recursive: true });
     }, NotFound);
     await remove(tempDir);
