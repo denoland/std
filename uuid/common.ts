@@ -5,7 +5,7 @@ import { NIL_UUID } from "./constants.ts";
 
 /**
  * Determines whether the UUID is the
- * {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.7 | nil UUID}.
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.9 | nil UUID}.
  *
  * @param id UUID value.
  *
