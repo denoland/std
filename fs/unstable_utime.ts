@@ -38,7 +38,7 @@ export async function utime(
     await Deno.utime(path, atime, mtime);
   } else {
     try {
-      await getNodeFs().promises.utime(path, atime, mtime);
+      await getNodeFs().promises.utimes(path, atime, mtime);
       return;
     } catch (error) {
       throw mapError(error);
@@ -81,7 +81,7 @@ export function utimeSync(
     return Deno.utimeSync(path, atime, mtime);
   } else {
     try {
-      getNodeFs().utimeSync(path, atime, mtime);
+      getNodeFs().utimesSync(path, atime, mtime);
     } catch (error) {
       throw mapError(error);
     }
