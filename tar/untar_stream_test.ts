@@ -18,9 +18,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
       type: "directory",
       path: "./potato",
       options: {
-        mode: 111111,
-        uid: 12,
-        gid: 21,
+        mode: 0o111111,
+        uid: 0o12,
+        gid: 0o21,
         mtime: seconds,
         uname: "potato",
         gname: "cake",
@@ -46,9 +46,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
   }
   assertEquals(headers, [{
     name: "./potato",
-    mode: 111111,
-    uid: 12,
-    gid: 21,
+    mode: 0o111111,
+    uid: 0o12,
+    gid: 0o21,
     mtime: seconds,
     uname: "potato",
     gname: "cake",
@@ -62,9 +62,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
     prefix: "",
   }, {
     name: "./text.txt",
-    mode: 644,
-    uid: 0,
-    gid: 0,
+    mode: 0o644,
+    uid: 0o0,
+    gid: 0o0,
     mtime: seconds,
     uname: "",
     gname: "",
