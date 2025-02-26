@@ -32,7 +32,7 @@ export async function copyFile(
     try {
       await getNodeFs().promises.copyFile(from, to);
     } catch (error) {
-      mapError(error);
+      throw mapError(error);
     }
   }
 }
@@ -67,7 +67,7 @@ export function copyFileSync(
     try {
       getNodeFs().copyFileSync(from, to);
     } catch (error) {
-      mapError(error);
+      throw mapError(error);
     }
   }
 }
