@@ -8,7 +8,9 @@ import { getNodeProcess, isDeno } from "./_utils.ts";
  * @example Usage
  *
  * ```ts
- * import { assert } from "@std/assert"
+ * import { assert } from "@std/assert";
+ * import { umask } from "@std/fs/unstable-umask";
+ *
  * const prevUmaskValue = Deno.umask(0o077);
  * const currentUmaskValue = Deno.umask();
  * assert(prevUmaskValue !== currentUmaskValue)
