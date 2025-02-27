@@ -19,10 +19,10 @@ import {
 } from "node:fs";
 
 // In Deno 2.2.1 or earlier, the `rename` function has an issue on Windows.
-const RENAME_HAS_ISSUE_ON_WINDOWS = lessOrEqual(
+const RENAME_HAS_ISSUE = lessOrEqual(
   parseSemver(Deno.version?.deno),
   parseSemver("2.2.1"),
-);
+) && platform() === "win32";
 
 /** Tests if the original file/directory is missing since the file is renamed.
  * Uses Node.js Error instances to check because the `lstatSync` function is
@@ -95,7 +95,7 @@ Deno.test("rename() rejects with Error when an existing directory is renamed wit
 
 Deno.test(
   "rename() succeeds when an existing directory is renamed with another directory path",
-  { ignore: RENAME_HAS_ISSUE_ON_WINDOWS && platform() === "win32" },
+  { ignore: RENAME_HAS_ISSUE },
   async () => {
     const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
     const testDir = join(tempDirPath, "testDir");
@@ -115,7 +115,7 @@ Deno.test(
 
 Deno.test(
   "rename() rejects with Error when an existing directory is renamed with an existing regular file path",
-  { ignore: RENAME_HAS_ISSUE_ON_WINDOWS && platform() === "win32" },
+  { ignore: RENAME_HAS_ISSUE },
   async () => {
     const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
     const testFile = join(tempDirPath, "testFile.txt");
@@ -252,7 +252,7 @@ Deno.test("renameSync() throws with Error when an existing file path is renamed 
 
 Deno.test(
   "renameSync() throws with Error when an existing directory is renamed with an existing directory containing a file",
-  { ignore: RENAME_HAS_ISSUE_ON_WINDOWS && platform() === "win32" },
+  { ignore: RENAME_HAS_ISSUE },
   () => {
     const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
     const emptyDir = join(tempDirPath, "emptyDir");
@@ -274,7 +274,7 @@ Deno.test(
 
 Deno.test(
   "renameSync() succeeds when an existing directory is renamed with another directory path",
-  { ignore: RENAME_HAS_ISSUE_ON_WINDOWS && platform() === "win32" },
+  { ignore: RENAME_HAS_ISSUE },
   () => {
     const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
     const testDir = join(tempDirPath, "testDir");
