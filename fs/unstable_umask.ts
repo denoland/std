@@ -1,0 +1,33 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
+import { mapError } from "./_map_error.ts";
+import { getNodeFs, isDeno } from "./_utils.ts";
+
+/** Retrieve the process umask.  If `mask` is provided, sets the process umask.
+ * This call always returns what the umask was before the call.
+ *
+ * ```ts
+ * console.log(Deno.umask());  // e.g. 18 (0o022)
+ * const prevUmaskValue = Deno.umask(0o077);  // e.g. 18 (0o022)
+ * console.log(Deno.umask());  // e.g. 63 (0o077)
+ * ```
+ *
+ * This API is under consideration to determine if permissions are required to
+ * call it.
+ *
+ * *Note*: This API is not implemented on Windows
+ *
+ * @category File System
+ * @param mask The new process mask
+ */
+export function umask(mask?: number): number {
+  if (isDeno) {
+    return Deno.umask(mask);
+  } else {
+    try {
+      return getNodeFs().umask(mask);
+    } catch (error) {
+      throw mapError(error);
+    }
+  }
+}
