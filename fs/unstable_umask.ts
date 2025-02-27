@@ -8,9 +8,10 @@ import { getNodeProcess, isDeno } from "./_utils.ts";
  * @example Usage
  *
  * ```ts
- * console.log(Deno.umask());  // e.g. 18 (0o022)
- * const prevUmaskValue = Deno.umask(0o077);  // e.g. 18 (0o022)
- * console.log(Deno.umask());  // e.g. 63 (0o077)
+ * import { assert } from "@std/assert"
+ * const prevUmaskValue = Deno.umask(0o077);
+ * const currentUmaskValue = Deno.umask();
+ * assert(prevUmaskValue !== currentUmaskValue)
  * ```
  *
  * This API is under consideration to determine if permissions are required to
