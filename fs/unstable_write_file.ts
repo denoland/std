@@ -35,7 +35,7 @@ export async function writeFile(
   options?: WriteFileOptions,
 ): Promise<void> {
   if (isDeno) {
-    return Deno.writeFile(path, data, { ...options });
+    await Deno.writeFile(path, data, { ...options });
   } else {
     const {
       append = false,
@@ -102,7 +102,7 @@ export function writeFileSync(
   options?: WriteFileOptions,
 ): void {
   if (isDeno) {
-    return Deno.writeFileSync(path, data, { ...options });
+    Deno.writeFileSync(path, data, { ...options });
   } else {
     const {
       append = false,
