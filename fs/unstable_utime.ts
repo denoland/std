@@ -28,6 +28,9 @@ import { mapError } from "./_map_error.ts";
  * ```
  * @tags allow-write
  * @category File System
+ * @param path The path for the file to be updated
+ * @param atime The new access time
+ * @param mtime The new modified time
  */
 export async function utime(
   path: string | URL,
@@ -71,6 +74,9 @@ export async function utime(
  * ```
  * @tags allow-write
  * @category File System
+ * @param path The path for the file to be updated
+ * @param atime The new access time
+ * @param mtime The new modified time
  */
 export function utimeSync(
   path: string | URL,
