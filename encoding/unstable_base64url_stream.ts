@@ -2,15 +2,15 @@
 // This module is browser compatible.
 
 /**
- * Utilities for encoding and decoding to and from base64 in a streaming manner.
+ * Utilities for encoding and decoding to and from base64url in a streaming manner.
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
+ * import { Base64UrlDecoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
- * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
- *   .pipeThrough(new Base64DecoderStream())
+ * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ"])
+ *   .pipeThrough(new Base64UrlDecoderStream())
  *   .pipeThrough(new TextDecoderStream());
  *
  * assertEquals(await toText(stream), "Hello, world!");
@@ -21,32 +21,33 @@
  * @module
  */
 
-import { decodeBase64, encodeBase64 } from "./base64.ts";
+import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
 /**
- * Converts a Uint8Array stream into a base64-encoded stream.
+ * Converts a Uint8Array stream into a base64url-encoded stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase64 } from "@std/encoding/base64";
- * import { Base64EncoderStream } from "@std/encoding/unstable-base64-stream";
+ * import { encodeBase64Url } from "@std/encoding/base64url";
+ * import { Base64UrlEncoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
  * const stream = ReadableStream.from(["Hello,", " world!"])
  *   .pipeThrough(new TextEncoderStream())
- *   .pipeThrough(new Base64EncoderStream());
+ *   .pipeThrough(new Base64UrlEncoderStream());
  *
- * assertEquals(await toText(stream), encodeBase64(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(await toText(stream), encodeBase64Url(new TextEncoder().encode("Hello, world!")));
  * ```
  */
-export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
+export class Base64UrlEncoderStream
+  extends TransformStream<Uint8Array, string> {
   constructor() {
     let push = new Uint8Array(0);
     super({
@@ -57,13 +58,13 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
 
         const remainder = -concat.length % 3;
         controller.enqueue(
-          encodeBase64(concat.slice(0, remainder || undefined)),
+          encodeBase64Url(concat.slice(0, remainder || undefined)),
         );
         push = remainder ? concat.slice(remainder) : new Uint8Array(0);
       },
       flush(controller) {
         if (push.length) {
-          controller.enqueue(encodeBase64(push));
+          controller.enqueue(encodeBase64Url(push));
         }
       },
     });
@@ -71,26 +72,28 @@ export class Base64EncoderStream extends TransformStream<Uint8Array, string> {
 }
 
 /**
- * Decodes a base64-encoded stream into a Uint8Array stream.
+ * Decodes a base64url-encoded stream into a Uint8Array stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base64DecoderStream } from "@std/encoding/unstable-base64-stream";
+ * import { encodeBase64Url } from "@std/encoding/base64url";
+ * import { Base64UrlDecoderStream } from "@std/encoding/unstable-base64url-stream";
  * import { toText } from "@std/streams/to-text";
  *
- * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ=="])
- *   .pipeThrough(new Base64DecoderStream())
+ * const stream = ReadableStream.from(["SGVsbG8s", "IHdvcmxkIQ"])
+ *   .pipeThrough(new Base64UrlDecoderStream())
  *   .pipeThrough(new TextDecoderStream());
  *
  * assertEquals(await toText(stream), "Hello, world!");
  * ```
  */
-export class Base64DecoderStream extends TransformStream<string, Uint8Array_> {
+export class Base64UrlDecoderStream
+  extends TransformStream<string, Uint8Array_> {
   constructor() {
     let push = "";
     super({
@@ -100,12 +103,14 @@ export class Base64DecoderStream extends TransformStream<string, Uint8Array_> {
           return;
         }
         const remainder = -push.length % 4;
-        controller.enqueue(decodeBase64(push.slice(0, remainder || undefined)));
+        controller.enqueue(
+          decodeBase64Url(push.slice(0, remainder || undefined)),
+        );
         push = remainder ? push.slice(remainder) : "";
       },
       flush(controller) {
         if (push.length) {
-          controller.enqueue(decodeBase64(push));
+          controller.enqueue(decodeBase64Url(push));
         }
       },
     });
