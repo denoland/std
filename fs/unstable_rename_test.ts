@@ -292,21 +292,25 @@ Deno.test(
   },
 );
 
-Deno.test("renameSync() throws with Error when an existing directory is renamed with an existing regular file path", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
-  const testFile = join(tempDirPath, "testFile.txt");
-  const testDir = join(tempDirPath, "testDir");
+Deno.test(
+  "renameSync() throws with Error when an existing directory is renamed with an existing regular file path",
+  { ignore: RENAME_HAS_ISSUE },
+  () => {
+    const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
+    const testFile = join(tempDirPath, "testFile.txt");
+    const testDir = join(tempDirPath, "testDir");
 
-  const testFd = openSync(testFile, "w");
-  closeSync(testFd);
-  mkdirSync(testDir);
+    const testFd = openSync(testFile, "w");
+    closeSync(testFd);
+    mkdirSync(testDir);
 
-  assertThrows(() => {
-    renameSync(testDir, testFile);
-  }, Error);
+    assertThrows(() => {
+      renameSync(testDir, testFile);
+    }, Error);
 
-  rmSync(tempDirPath, { recursive: true, force: true });
-});
+    rmSync(tempDirPath, { recursive: true, force: true });
+  },
+);
 
 Deno.test({
   name:
