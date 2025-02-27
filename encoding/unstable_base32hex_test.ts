@@ -2,42 +2,42 @@
 // Copyright (c) 2016-2017 Linus Unnebäck. MIT license.
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertExists, assertThrows } from "@std/assert";
-import { decodeBase32, encodeBase32 } from "./base32.ts";
+import { decodeBase32Hex, encodeBase32Hex } from "./unstable_base32hex.ts";
 
 // Test vectors from https://www.rfc-editor.org/rfc/rfc4648.html#section-10
 const testCases = [
   ["", ""],
-  ["f", "MY======"],
-  ["fo", "MZXQ===="],
-  ["foo", "MZXW6==="],
-  ["foob", "MZXW6YQ="],
-  ["fooba", "MZXW6YTB"],
-  ["foobar", "MZXW6YTBOI======"],
+  ["f", "CO======"],
+  ["fo", "CPNG===="],
+  ["foo", "CPNMU==="],
+  ["foob", "CPNMUOG="],
+  ["fooba", "CPNMUOJ1"],
+  ["foobar", "CPNMUOJ1E8======"],
 ] as const;
 
 Deno.test({
-  name: "encodeBase32()",
+  name: "encodeBase32Hex()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(encodeBase32(bin), b32);
+      assertEquals(encodeBase32Hex(bin), b32);
     }
   },
 });
 
 Deno.test({
-  name: "decodeBase32()",
+  name: "decodeBase32Hex()",
   fn() {
     for (const [bin, b32] of testCases) {
-      assertEquals(decodeBase32(b32), new TextEncoder().encode(bin));
+      assertEquals(decodeBase32Hex(b32), new TextEncoder().encode(bin));
     }
   },
 });
 
 Deno.test({
-  name: "decodeBase32() throws on bad length",
+  name: "decodeBase32Hex() throws on bad length",
   fn() {
     assertThrows(
-      () => decodeBase32("OOOO=="),
+      () => decodeBase32Hex("OOOO=="),
       Error,
       "Cannot decode base32 string as the length must be a multiple of 8: received length 6",
     );
@@ -45,10 +45,10 @@ Deno.test({
 });
 
 Deno.test({
-  name: "decodeBase32() throws on bad padding",
+  name: "decodeBase32Hex() throws on bad padding",
   fn() {
     assertThrows(
-      () => decodeBase32("5HXR334AQYAAAA=="),
+      () => decodeBase32Hex("5HXR334AQYAAAA=="),
       Error,
       "Invalid pad length",
     );
@@ -56,9 +56,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "encodeBase32() encodes very long text",
+  name: "encodeBase32Hex() encodes very long text",
   fn() {
     const data = "a".repeat(16400);
-    assertExists(encodeBase32(data));
+    assertExists(encodeBase32Hex(data));
   },
 });
