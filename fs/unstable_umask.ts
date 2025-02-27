@@ -7,7 +7,7 @@ import { getNodeProcess, isDeno } from "./_utils.ts";
  * This call always returns what the umask was before the call.
  * @example Usage
  *
- * ```ts
+ * ```ts ignore
  * import { assert } from "@std/assert";
  * import { umask } from "@std/fs/unstable-umask";
  *

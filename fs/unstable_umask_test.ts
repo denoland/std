@@ -9,7 +9,7 @@ Deno.test({
   ignore: platform() === "win32",
 }, () => {
   const previousMask = umask(0o77);
-  const currentMask = umask();
+  const anotherMask = umask(0o22);
 
-  assert(currentMask !== previousMask);
+  assert(anotherMask !== previousMask);
 });
