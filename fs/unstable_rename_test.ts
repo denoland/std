@@ -19,8 +19,8 @@ import {
 } from "node:fs";
 
 // In Deno 2.2.1 or earlier, the `rename` function has an issue on Windows.
-const RENAME_HAS_ISSUE = lessOrEqual(
-  parseSemver(Deno.version?.deno),
+const RENAME_HAS_ISSUE = Deno.version && lessOrEqual(
+  parseSemver(Deno.version.deno),
   parseSemver("2.2.1"),
 ) && platform() === "win32";
 
