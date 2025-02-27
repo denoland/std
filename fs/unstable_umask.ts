@@ -5,6 +5,7 @@ import { getNodeProcess, isDeno } from "./_utils.ts";
 
 /** Retrieve the process umask.  If `mask` is provided, sets the process umask.
  * This call always returns what the umask was before the call.
+ * @example Usage
  *
  * ```ts
  * console.log(Deno.umask());  // e.g. 18 (0o022)
