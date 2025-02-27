@@ -22,23 +22,83 @@
  * @module
  */
 
+import { validateBinaryLike } from "./_validate_binary_like.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common64.ts";
-import { detach } from "./_common_detach.ts";
 
-const alphabet = new TextEncoder()
-  .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
-const padding = "=".charCodeAt(0);
-const rAlphabet = new Uint8Array(128);
-alphabet.forEach((byte, i) => rAlphabet[byte] = i);
+const base64abc = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "+",
+  "/",
+];
 
 /**
  * Converts data into a base64-encoded string.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @param input The data to encode.
+ * @param data The data to encode.
  * @returns The base64-encoded string.
  *
  * @example Usage
@@ -49,19 +109,41 @@ alphabet.forEach((byte, i) => rAlphabet[byte] = i);
  * assertEquals(encodeBase64("foobar"), "Zm9vYmFy");
  * ```
  */
-export function encodeBase64(input: string | Uint8Array | ArrayBuffer): string {
-  let output: Uint8Array_;
-  if (typeof input === "string") {
-    output = new TextEncoder().encode(input) as Uint8Array_;
-  } else if (input instanceof ArrayBuffer) {
-    output = new Uint8Array(input).slice();
-  } else {
-    output = input.slice();
+export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
+  // CREDIT: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
+  const uint8 = validateBinaryLike(data);
+  let result = "";
+  let i;
+  const l = uint8.length;
+  for (i = 2; i < l; i += 3) {
+    result += base64abc[(uint8[i - 2]!) >> 2];
+    result += base64abc[
+      (((uint8[i - 2]!) & 0x03) << 4) |
+      ((uint8[i - 1]!) >> 4)
+    ];
+    result += base64abc[
+      (((uint8[i - 1]!) & 0x0f) << 2) |
+      ((uint8[i]!) >> 6)
+    ];
+    result += base64abc[(uint8[i]!) & 0x3f];
   }
-  let i: number;
-  [output, i] = detach(output, calcMax(output.length));
-  encode(output, i, 0, alphabet, padding);
-  return new TextDecoder().decode(output);
+  if (i === l + 1) {
+    // 1 octet yet to write
+    result += base64abc[(uint8[i - 2]!) >> 2];
+    result += base64abc[((uint8[i - 2]!) & 0x03) << 4];
+    result += "==";
+  }
+  if (i === l) {
+    // 2 octets yet to write
+    result += base64abc[(uint8[i - 2]!) >> 2];
+    result += base64abc[
+      (((uint8[i - 2]!) & 0x03) << 4) |
+      ((uint8[i - 1]!) >> 4)
+    ];
+    result += base64abc[((uint8[i - 1]!) & 0x0f) << 2];
+    result += "=";
+  }
+  return result;
 }
 
 /**
@@ -69,7 +151,7 @@ export function encodeBase64(input: string | Uint8Array | ArrayBuffer): string {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  *
- * @param input The base64-encoded string to decode.
+ * @param b64 The base64-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage
@@ -83,18 +165,12 @@ export function encodeBase64(input: string | Uint8Array | ArrayBuffer): string {
  * );
  * ```
  */
-export function decodeBase64(input: string): Uint8Array_ {
-  const output = new TextEncoder().encode(input) as Uint8Array_;
-  return output
-    .subarray(0, decode(output, 0, 0, rAlphabet, padding, assertChar));
-}
-
-function assertChar(byte: number): void {
-  if (
-    !((65 <= byte && byte <= 90) ||
-      (97 <= byte && byte <= 122) ||
-      (48 <= byte && byte <= 57) ||
-      byte === 43 ||
-      byte === 47)
-  ) throw new TypeError("Invalid Character");
+export function decodeBase64(b64: string): Uint8Array_ {
+  const binString = atob(b64);
+  const size = binString.length;
+  const bytes = new Uint8Array(size);
+  for (let i = 0; i < size; i++) {
+    bytes[i] = binString.charCodeAt(i);
+  }
+  return bytes;
 }
