@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { findSingle } from "./find_single.ts";
 
 function findSingleTest<I>(
-  input: [Array<I>, (element: I) => boolean],
+  input: [Array<I>, (element: I, index: number) => boolean],
   expected: I | undefined,
   message?: string,
 ) {
@@ -100,6 +100,16 @@ Deno.test({
     findSingleTest(
       [["zap", "foo", "bar", "zee"], (it) => it.startsWith("z")],
       undefined,
+    );
+  },
+});
+
+Deno.test({
+  name: "findSingle() passes index to predicate",
+  fn() {
+    findSingleTest(
+      [[9, 12, 13], (_, index) => index === 1],
+      12,
     );
   },
 });
