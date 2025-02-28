@@ -9,47 +9,23 @@
  * @module
  */
 
-import * as base64 from "./base64.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
+import { calcMax, decode, encode } from "./_common64.ts";
+import { detach } from "./_common_detach.ts";
 
-/**
- * Some variants allow or require omitting the padding '=' signs:
- * https://en.wikipedia.org/wiki/Base64#The_URL_applications
- *
- * @param base64url
- */
-function addPaddingToBase64url(base64url: string): string {
-  if (base64url.length % 4 === 2) return base64url + "==";
-  if (base64url.length % 4 === 3) return base64url + "=";
-  if (base64url.length % 4 === 1) {
-    throw new TypeError("Illegal base64url string");
-  }
-  return base64url;
-}
-
-function convertBase64urlToBase64(b64url: string): string {
-  if (!/^[-_A-Z0-9]*?={0,2}$/i.test(b64url)) {
-    // Contains characters not part of base64url spec.
-    throw new TypeError("Failed to decode base64url: invalid character");
-  }
-  return addPaddingToBase64url(b64url).replace(/\-/g, "+").replace(/_/g, "/");
-}
-
-function convertBase64ToBase64url(b64: string) {
-  return b64.endsWith("=")
-    ? b64.endsWith("==")
-      ? b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -2)
-      : b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -1)
-    : b64.replace(/\+/g, "-").replace(/\//g, "_");
-}
+const alphabet = new TextEncoder()
+  .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+const padding = "=".charCodeAt(0);
+const rAlphabet = new Uint8Array(128);
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
 
 /**
  * Convert data into a base64url-encoded string.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
- * @param data The data to encode.
+ * @param input The data to encode.
  * @returns The base64url-encoded string.
  *
  * @example Usage
@@ -61,9 +37,21 @@ function convertBase64ToBase64url(b64: string) {
  * ```
  */
 export function encodeBase64Url(
-  data: ArrayBuffer | Uint8Array | string,
+  input: string | Uint8Array | ArrayBuffer,
 ): string {
-  return convertBase64ToBase64url(base64.encodeBase64(data));
+  let output: Uint8Array_;
+  if (typeof input === "string") {
+    output = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    output = new Uint8Array(input).slice();
+  } else {
+    output = input.slice();
+  }
+  let i: number;
+  [output, i] = detach(output, calcMax(output.length));
+  let o = encode(output, i, 0, alphabet, padding);
+  o = output.indexOf(padding, o - 2);
+  return new TextDecoder().decode(o > 0 ? output.subarray(0, o) : output);
 }
 
 /**
@@ -71,7 +59,7 @@ export function encodeBase64Url(
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-5}
  *
- * @param b64url The base64url-encoded string to decode.
+ * @param input The base64url-encoded string to decode.
  * @returns The decoded data.
  *
  * @example Usage
@@ -85,6 +73,18 @@ export function encodeBase64Url(
  * );
  * ```
  */
-export function decodeBase64Url(b64url: string): Uint8Array_ {
-  return base64.decodeBase64(convertBase64urlToBase64(b64url));
+export function decodeBase64Url(input: string): Uint8Array_ {
+  const output = new TextEncoder().encode(input) as Uint8Array_;
+  return output
+    .subarray(0, decode(output, 0, 0, rAlphabet, padding, assertChar));
+}
+
+function assertChar(byte: number): void {
+  if (
+    !((65 <= byte && byte <= 90) ||
+      (97 <= byte && byte <= 122) ||
+      (48 <= byte && byte <= 57) ||
+      byte === 45 ||
+      byte === 95)
+  ) throw new TypeError("Invalid Character");
 }
