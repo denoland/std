@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
+import { lessOrEqual, parse as parseSemver } from "@std/semver";
 import { rename, renameSync } from "./unstable_rename.ts";
 import { NotFound } from "./unstable_errors.js";
 import { mkdir, mkdtemp, open, rm, stat, symlink } from "node:fs/promises";
@@ -16,6 +17,12 @@ import {
   statSync,
   symlinkSync,
 } from "node:fs";
+
+// In Deno 2.2.2 or earlier, the `rename` function has an issue on Windows.
+const RENAME_HAS_ISSUE = Deno.version &&
+  parseSemver(Deno.version.deno).build?.length === 0 && // not canary
+  lessOrEqual(parseSemver(Deno.version.deno), parseSemver("2.2.2")) &&
+  platform() === "win32";
 
 /** Tests if the original file/directory is missing since the file is renamed.
  * Uses Node.js Error instances to check because the `lstatSync` function is
@@ -86,49 +93,45 @@ Deno.test("rename() rejects with Error when an existing directory is renamed wit
   await rm(tempDirPath, { recursive: true, force: true });
 });
 
-Deno.test("rename() rejects with Error on Windows and succeeds on *nix when an existing directory is renamed with another directory path", async () => {
-  const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
-  const testDir = join(tempDirPath, "testDir");
-  const anotherDir = join(tempDirPath, "anotherDir");
+Deno.test(
+  "rename() succeeds when an existing directory is renamed with another directory path",
+  { ignore: RENAME_HAS_ISSUE },
+  async () => {
+    const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
+    const testDir = join(tempDirPath, "testDir");
+    const anotherDir = join(tempDirPath, "anotherDir");
 
-  await mkdir(testDir);
-  await mkdir(anotherDir);
+    await mkdir(testDir);
+    await mkdir(anotherDir);
 
-  if (platform() === "win32") {
-    await assertRejects(async () => {
-      await rename(testDir, anotherDir);
-    }, Error);
-  } else {
     await rename(testDir, anotherDir);
     assertMissing(testDir);
     const anotherDirStat = await stat(anotherDir);
     assert(anotherDirStat.isDirectory());
-  }
 
-  await rm(tempDirPath, { recursive: true, force: true });
-});
+    await rm(tempDirPath, { recursive: true, force: true });
+  },
+);
 
-Deno.test("rename() rejects with Error on *nix and succeeds on Windows when an existing directory is renamed with an existing regular file path", async () => {
-  const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
-  const testFile = join(tempDirPath, "testFile.txt");
-  const testDir = join(tempDirPath, "testDir");
+Deno.test(
+  "rename() rejects with Error when an existing directory is renamed with an existing regular file path",
+  { ignore: RENAME_HAS_ISSUE },
+  async () => {
+    const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
+    const testFile = join(tempDirPath, "testFile.txt");
+    const testDir = join(tempDirPath, "testDir");
 
-  const testFh = await open(testFile, "w");
-  await testFh.close();
-  await mkdir(testDir);
+    const testFh = await open(testFile, "w");
+    await testFh.close();
+    await mkdir(testDir);
 
-  if (platform() === "win32") {
-    await rename(testDir, testFile);
-    const fileStat = await stat(testFile);
-    assert(fileStat.isDirectory());
-  } else {
     await assertRejects(async () => {
       await rename(testDir, testFile);
     }, Error);
-  }
 
-  await rm(tempDirPath, { recursive: true, force: true });
-});
+    await rm(tempDirPath, { recursive: true, force: true });
+  },
+);
 
 Deno.test({
   name:
@@ -247,67 +250,67 @@ Deno.test("renameSync() throws with Error when an existing file path is renamed 
   rmSync(tempDirPath, { recursive: true, force: true });
 });
 
-Deno.test("renameSync() throws with Error when an existing directory is renamed with an existing directory containing a file", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
-  const emptyDir = join(tempDirPath, "emptyDir");
-  const fullDir = join(tempDirPath, "fullDir");
-  const testFile = join(fullDir, "testFile.txt");
+Deno.test(
+  "renameSync() throws with Error when an existing directory is renamed with an existing directory containing a file",
+  { ignore: RENAME_HAS_ISSUE },
+  () => {
+    const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
+    const emptyDir = join(tempDirPath, "emptyDir");
+    const fullDir = join(tempDirPath, "fullDir");
+    const testFile = join(fullDir, "testFile.txt");
 
-  mkdirSync(fullDir);
-  mkdirSync(emptyDir);
-  const testFd = openSync(testFile, "w");
-  closeSync(testFd);
+    mkdirSync(fullDir);
+    mkdirSync(emptyDir);
+    const testFd = openSync(testFile, "w");
+    closeSync(testFd);
 
-  assertThrows(() => {
-    renameSync(emptyDir, fullDir);
-  }, Error);
-
-  rmSync(tempDirPath, { recursive: true, force: true });
-});
-
-Deno.test("renameSync() throws with Error on Windows and succeeds on *nix when an existing directory is renamed with another directory path", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
-  const testDir = join(tempDirPath, "testDir");
-  const anotherDir = join(tempDirPath, "anotherDir");
-
-  mkdirSync(testDir);
-  mkdirSync(anotherDir);
-
-  if (platform() === "win32") {
     assertThrows(() => {
-      renameSync(testDir, anotherDir);
+      renameSync(emptyDir, fullDir);
     }, Error);
-  } else {
+
+    rmSync(tempDirPath, { recursive: true, force: true });
+  },
+);
+
+Deno.test(
+  "renameSync() succeeds when an existing directory is renamed with another directory path",
+  { ignore: RENAME_HAS_ISSUE },
+  () => {
+    const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
+    const testDir = join(tempDirPath, "testDir");
+    const anotherDir = join(tempDirPath, "anotherDir");
+
+    mkdirSync(testDir);
+    mkdirSync(anotherDir);
+
     renameSync(testDir, anotherDir);
     assertMissing(testDir);
     const anotherDirStat = statSync(anotherDir);
     assert(anotherDirStat.isDirectory());
-  }
 
-  rmSync(tempDirPath, { recursive: true, force: true });
-});
+    rmSync(tempDirPath, { recursive: true, force: true });
+  },
+);
 
-Deno.test("renameSync() throws with Error on *nix and succeeds on Windows when an existing directory is renamed with an existing regular file path", () => {
-  const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
-  const testFile = join(tempDirPath, "testFile.txt");
-  const testDir = join(tempDirPath, "testDir");
+Deno.test(
+  "renameSync() throws with Error when an existing directory is renamed with an existing regular file path",
+  { ignore: RENAME_HAS_ISSUE },
+  () => {
+    const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
+    const testFile = join(tempDirPath, "testFile.txt");
+    const testDir = join(tempDirPath, "testDir");
 
-  const testFd = openSync(testFile, "w");
-  closeSync(testFd);
-  mkdirSync(testDir);
+    const testFd = openSync(testFile, "w");
+    closeSync(testFd);
+    mkdirSync(testDir);
 
-  if (platform() === "win32") {
-    renameSync(testDir, testFile);
-    const fileStat = statSync(testFile);
-    assert(fileStat.isDirectory());
-  } else {
     assertThrows(() => {
       renameSync(testDir, testFile);
     }, Error);
-  }
 
-  rmSync(tempDirPath, { recursive: true, force: true });
-});
+    rmSync(tempDirPath, { recursive: true, force: true });
+  },
+);
 
 Deno.test({
   name:
