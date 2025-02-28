@@ -86,8 +86,8 @@ export interface ProgressBarOptions {
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
- * {@link WritableStream} on a 1s interval. Progress is communicated by calling
- * the `ProgressBar.add(x: number)` method.
+ * {@link WritableStream} on a 1s interval. Progress is communicated by using
+ * the `ProgressBar.value` property.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -107,7 +107,7 @@ export interface ProgressBarOptions {
  * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   bar.add(buffer.length);
+ *   bar.value += buffer.length;
  *   await writer.write(buffer);
  * }
  *
@@ -128,14 +128,23 @@ export interface ProgressBarOptions {
  * });
  *
  * for (const x of Array(100)) {
- *   bar.add(1);
+ *   bar.value += 1;
  *   await delay(Math.random() * 500);
  * }
  *
  * bar.end();
  */
 export class ProgressBar {
-  #options: Required<ProgressBarOptions>;
+  value: number;
+  max: number;
+
+  #barLength: number;
+  #fillChar: string;
+  #emptyChar: string;
+  #clear: boolean;
+  #fmt: (fmt: ProgressBarFormatter) => string;
+  #keepOpen: boolean;
+
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
@@ -153,18 +162,16 @@ export class ProgressBar {
     writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
-    this.#options = {
-      value: options.value ?? 0,
-      max: options.max,
-      barLength: options.barLength ?? 50,
-      fillChar: options.fillChar ?? "#",
-      emptyChar: options.emptyChar ?? "-",
-      clear: options.clear ?? false,
-      fmt: options.fmt ?? function (x) {
-        return x.styledTime() + x.progressBar + x.styledData();
-      },
-      keepOpen: options.keepOpen ?? true,
+    this.value = options.value ?? 0;
+    this.max = options.max;
+    this.#barLength = options.barLength ?? 50;
+    this.#fillChar = options.fillChar ?? "#";
+    this.#emptyChar = options.emptyChar ?? "-";
+    this.#clear = options.clear ?? false;
+    this.#fmt = options.fmt ?? function (x: ProgressBarFormatter) {
+      return x.styledTime() + x.progressBar + x.styledData();
     };
+    this.#keepOpen = options.keepOpen ?? true;
 
     if (options.max < 2 ** 20) {
       this.#unit = "KiB";
@@ -185,20 +192,20 @@ export class ProgressBar {
 
     const stream = new TextEncoderStream();
     stream.readable
-      .pipeTo(writable, { preventClose: this.#options.keepOpen })
+      .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
     this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
-    this.#lastValue = this.#options.value;
+    this.#lastValue = this.value;
   }
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = this.#options.value /
-        this.#options.max *
-        this.#options.barLength | 0;
+    const size = this.value /
+        this.max *
+        this.#barLength | 0;
     const unit = this.#unit;
     const rate = this.#rate;
     const x: ProgressBarFormatter = {
@@ -223,28 +230,19 @@ export class ProgressBar {
           "] ";
       },
       progressBar: "[" +
-        this.#options.fillChar.repeat(size) +
-        this.#options.emptyChar.repeat(this.#options.barLength - size) +
+        this.#fillChar.repeat(size) +
+        this.#emptyChar.repeat(this.#barLength - size) +
         "] ",
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
-      value: this.#options.value,
+      value: this.value,
       previousValue: this.#lastValue,
-      max: this.#options.max,
+      max: this.max,
     };
     this.#lastTime = currentTime;
-    this.#lastValue = this.#options.value;
-    await this.#writer.write("\r\u001b[K" + this.#options.fmt(x))
+    this.#lastValue = this.value;
+    await this.#writer.write("\r\u001b[K" + this.#fmt(x))
       .catch(() => {});
-  }
-
-  /**
-   * Increments the progress by `x`.
-   *
-   * @param x The amount of progress that has been made.
-   */
-  add(x: number): void {
-    this.#options.value += x;
   }
 
   /**
@@ -253,7 +251,7 @@ export class ProgressBar {
   async end(): Promise<void> {
     clearInterval(this.#id);
     await this.#print()
-      .then(() => this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n"))
+      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
       .then(() => this.#writer.close())
       .catch(() => {});
   }
