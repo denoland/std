@@ -18,7 +18,7 @@ Deno.test("remove() remove an existed and empty directory", async () => {
     await remove(tempDir);
     const existedCheckAgain = await stat(tempDir);
     assert(existedCheckAgain.isDirectory === false);
-  } catch {
+  } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
 });
@@ -45,7 +45,7 @@ Deno.test("remove() remove a non empty directory", async () => {
     await remove(tempDir1, { recursive: true });
     const fsStat = await stat(tempDir1);
     assert(fsStat.isDirectory === false);
-  } catch {
+  } finally {
     await rm(tempDir1, { recursive: true, force: true });
   }
 });
@@ -61,7 +61,7 @@ Deno.test("remove() remove a non existed directory", async () => {
     await remove(tempDir);
     const fsStat = await stat(tempDir);
     assert(fsStat.isDirectory === false);
-  } catch {
+  } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
 });
@@ -77,7 +77,7 @@ Deno.test("remove() remove a non existed directory with option", async () => {
     await remove(tempDir);
     const fsStat = await stat(tempDir);
     assert(fsStat.isDirectory === false);
-  } catch {
+  } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
 });
@@ -89,7 +89,7 @@ Deno.test("removeSync() remove an existed and empty directory", () => {
   try {
     removeSync(tempDir);
     assert(statSync(tempDir).isDirectory === false);
-  } catch {
+  } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
@@ -115,7 +115,7 @@ Deno.test("removeSync() remove a non empty directory", () => {
 
     removeSync(tempDir1, { recursive: true });
     assert(statSync(tempDir1).isDirectory === false);
-  } catch {
+  } finally {
     rmSync(tempDir1, { recursive: true, force: true });
   }
 });
@@ -131,7 +131,7 @@ Deno.test("removeSync() remove a non existed directory", () => {
 
     removeSync(tempDir, { recursive: true });
     assert(statSync(tempDir).isDirectory === false);
-  } catch {
+  } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
@@ -147,7 +147,7 @@ Deno.test("removeSync() remove a non existed directory with option", () => {
 
     removeSync(tempDir, { recursive: true });
     assert(statSync(tempDir).isDirectory === false);
-  } catch {
+  } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
