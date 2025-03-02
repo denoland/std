@@ -27,9 +27,11 @@
     "./unstable-remove": "./unstable_remove.ts",
     "./unstable-rename": "./unstable_rename.ts",
     "./unstable-stat": "./unstable_stat.ts",
+    "./unstable-utime": "./unstable_utime.ts",
     "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
+    "./unstable-umask": "./unstable_umask.ts",
     "./walk": "./walk.ts"
   }
 }
