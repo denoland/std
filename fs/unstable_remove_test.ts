@@ -1,14 +1,32 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
-import { rmdirSync, writeFileSync } from "node:fs";
-import { rmdir, writeFile } from "node:fs/promises";
+import { rmSync, writeFileSync } from "node:fs";
+import { rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { exists, existsSync } from "./exists.ts";
+import { exists } from "./exists.ts";
 import { NotFound } from "./unstable_errors.js";
 import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
 import { remove, removeSync } from "./unstable_remove.ts";
 import { stat, statSync } from "./unstable_stat.ts";
+
+async function checkExists(path: string | URL) {
+  try {
+    const stated = await stat(path);
+    return stated.isDirectory;
+  } catch {
+    return false;
+  }
+}
+
+function checkExistsSync(path: string | URL) {
+  try {
+    const stated = statSync(path);
+    return stated.isDirectory;
+  } catch {
+    return false;
+  }
+}
 
 Deno.test("remove() remove an existed and empty directory", async () => {
   const tempDir = await makeTempDir({ prefix: "remove_async_" });
@@ -17,10 +35,10 @@ Deno.test("remove() remove an existed and empty directory", async () => {
 
   try {
     await remove(tempDir);
-    const existed = await exists(tempDir);
+    const existed = await checkExists(tempDir);
     assert(existed === false);
   } catch {
-    await rmdir(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true });
   }
 });
 
@@ -44,10 +62,10 @@ Deno.test("remove() remove a non empty directory", async () => {
     }, Error);
 
     await remove(tempDir1, { recursive: true });
-    const existed = await exists(tempDir1);
+    const existed = await checkExists(tempDir1);
     assert(existed === false);
   } catch {
-    await rmdir(tempDir1, { recursive: true });
+    await rm(tempDir1, { recursive: true });
   }
 });
 
@@ -63,7 +81,7 @@ Deno.test("remove() remove a non existed directory", async () => {
     const existed = await exists(tempDir);
     assert(existed === false);
   } catch {
-    await rmdir(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true });
   }
 });
 
@@ -76,10 +94,10 @@ Deno.test("remove() remove a non existed directory with option", async () => {
       await remove(nonExistedDir, { recursive: true });
     }, NotFound);
     await remove(tempDir);
-    const existed = await exists(tempDir);
+    const existed = await checkExists(tempDir);
     assert(existed === false);
   } catch {
-    await rmdir(tempDir, { recursive: true });
+    await rm(tempDir, { recursive: true });
   }
 });
 
@@ -89,9 +107,9 @@ Deno.test("removeSync() remove an existed and empty directory", () => {
 
   try {
     removeSync(tempDir);
-    assert(existsSync(tempDir) === false);
+    assert(checkExistsSync(tempDir) === false);
   } catch {
-    rmdirSync(tempDir, { recursive: true });
+    rmSync(tempDir, { recursive: true });
   }
 });
 
@@ -115,9 +133,9 @@ Deno.test("removeSync() remove a non empty directory", () => {
     }, Error);
 
     removeSync(tempDir1, { recursive: true });
-    assert(existsSync(tempDir1) === false);
+    assert(checkExistsSync(tempDir1) === false);
   } catch {
-    rmdirSync(tempDir1, { recursive: true });
+    rmSync(tempDir1, { recursive: true });
   }
 });
 
@@ -131,9 +149,9 @@ Deno.test("removeSync() remove a non existed directory", () => {
     }, NotFound);
 
     removeSync(tempDir, { recursive: true });
-    assert(existsSync(tempDir) === false);
+    assert(checkExistsSync(tempDir) === false);
   } catch {
-    rmdirSync(tempDir, { recursive: true });
+    rmSync(tempDir, { recursive: true });
   }
 });
 
@@ -147,8 +165,8 @@ Deno.test("removeSync() remove a non existed directory with option", () => {
     }, NotFound);
 
     removeSync(tempDir, { recursive: true });
-    assert(existsSync(tempDir) === false);
+    assert(checkExistsSync(tempDir) === false);
   } catch {
-    rmdirSync(tempDir, { recursive: true });
+    rmSync(tempDir, { recursive: true });
   }
 });
