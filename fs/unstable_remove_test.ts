@@ -34,7 +34,7 @@ function checkExistsSync(path: string | URL) {
   }
 }
 
-Deno.test("remove() remove an existed and empty directory", async () => {
+Deno.test("remove() removes an existing and empty directory", async () => {
   const tempDir = await makeTempDir({ prefix: "remove_async_" });
   const existedCheck = await stat(tempDir);
   assert(existedCheck.isDirectory === true);
