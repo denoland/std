@@ -112,6 +112,14 @@ Deno.test("decodeCbor() decoding Dates", () => {
   assertEquals(decodeCbor(encodeCbor(date)), date);
 });
 
+Deno.test("decodeCbor() decoding bignums", () => {
+  let num = 2n ** 64n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+
+  num = -(2n ** 64n) - 1n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+});
+
 Deno.test("decodeCbor() decoding Map<CborType, CborType>", () => {
   const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
   assertEquals(decodeCbor(encodeCbor(map)), map);
@@ -197,7 +205,7 @@ Deno.test("decodeCbor() decoding objects", () => {
 
 Deno.test("decodeCbor() decoding CborTag()", () => {
   const tag = new CborTag(
-    2,
+    4,
     new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
   );
   assertEquals(decodeCbor(encodeCbor(tag)), tag);

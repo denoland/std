@@ -236,6 +236,22 @@ Deno.test("encodeCbor() encoding Dates", () => {
   );
 });
 
+Deno.test("encodeCbor() encoding bignums as Uint byte string", () => {
+  const num = 2n ** 64n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00010, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
+  );
+});
+
+Deno.test("encodeCbor() rejecting bigints as Int byte string", () => {
+  const num = -(2n ** 64n) - 1n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00011, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
+  );
+});
+
 Deno.test("encodeCbor() encoding Map<CborType, CborType>", () => {
   const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
   assertEquals(
@@ -441,28 +457,6 @@ Deno.test("encodeCbor() rejecting numbers as Int", () => {
     },
     RangeError,
     `Cannot encode number: It (${num}) exceeds -(2 ** 64) - 1`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Uint", () => {
-  const num = 2n ** 65n;
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds 2n ** 64n - 1n`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Int", () => {
-  const num = -(2n ** 65n);
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds -(2n ** 64n) - 1n`,
   );
 });
 
