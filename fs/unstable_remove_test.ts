@@ -14,8 +14,11 @@ async function checkExists(path: string | URL) {
   try {
     const stated = await stat(path);
     return stated.isDirectory;
-  } catch {
-    return false;
+  } catch (e) {
+    if (e instanceof NotFound) {
+      return false;
+    }
+    throw e;
   }
 }
 
@@ -23,8 +26,11 @@ function checkExistsSync(path: string | URL) {
   try {
     const stated = statSync(path);
     return stated.isDirectory;
-  } catch {
-    return false;
+  } catch (e) {
+    if (e instanceof NotFound) {
+      return false;
+    }
+    throw e;
   }
 }
 
@@ -37,8 +43,8 @@ Deno.test("remove() remove an existed and empty directory", async () => {
     await remove(tempDir);
     const existed = await checkExists(tempDir);
     assert(existed === false);
-  } catch {
-    await rm(tempDir, { recursive: true });
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
@@ -64,8 +70,8 @@ Deno.test("remove() remove a non empty directory", async () => {
     await remove(tempDir1, { recursive: true });
     const existed = await checkExists(tempDir1);
     assert(existed === false);
-  } catch {
-    await rm(tempDir1, { recursive: true });
+  } finally {
+    await rm(tempDir1, { recursive: true, force: true });
   }
 });
 
@@ -80,8 +86,8 @@ Deno.test("remove() remove a non existed directory", async () => {
     await remove(tempDir);
     const existed = await exists(tempDir);
     assert(existed === false);
-  } catch {
-    await rm(tempDir, { recursive: true });
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
@@ -96,8 +102,8 @@ Deno.test("remove() remove a non existed directory with option", async () => {
     await remove(tempDir);
     const existed = await checkExists(tempDir);
     assert(existed === false);
-  } catch {
-    await rm(tempDir, { recursive: true });
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
   }
 });
 
@@ -108,8 +114,8 @@ Deno.test("removeSync() remove an existed and empty directory", () => {
   try {
     removeSync(tempDir);
     assert(checkExistsSync(tempDir) === false);
-  } catch {
-    rmSync(tempDir, { recursive: true });
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
   }
 });
 
@@ -134,8 +140,8 @@ Deno.test("removeSync() remove a non empty directory", () => {
 
     removeSync(tempDir1, { recursive: true });
     assert(checkExistsSync(tempDir1) === false);
-  } catch {
-    rmSync(tempDir1, { recursive: true });
+  } finally {
+    rmSync(tempDir1, { recursive: true, force: true });
   }
 });
 
@@ -150,8 +156,8 @@ Deno.test("removeSync() remove a non existed directory", () => {
 
     removeSync(tempDir, { recursive: true });
     assert(checkExistsSync(tempDir) === false);
-  } catch {
-    rmSync(tempDir, { recursive: true });
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
   }
 });
 
@@ -166,7 +172,7 @@ Deno.test("removeSync() remove a non existed directory with option", () => {
 
     removeSync(tempDir, { recursive: true });
     assert(checkExistsSync(tempDir) === false);
-  } catch {
-    rmSync(tempDir, { recursive: true });
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
   }
 });
