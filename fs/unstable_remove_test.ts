@@ -4,7 +4,6 @@ import { assert, assertRejects, assertThrows } from "@std/assert";
 import { rmSync, writeFileSync } from "node:fs";
 import { rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { exists } from "./exists.ts";
 import { NotFound } from "./unstable_errors.js";
 import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
 import { remove, removeSync } from "./unstable_remove.ts";
