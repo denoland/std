@@ -63,6 +63,8 @@ import "../../fs/unstable_symlink_test.ts";
 import "../../fs/unstable_truncate_test.ts";
 import "../../fs/unstable_lstat_test.ts";
 import "../../fs/unstable_chmod_test.ts";
+import "../../fs/unstable_umask_test.ts";
+import "../../fs/unstable_utime_test.ts";
 
 for (const testDef of testDefinitions) {
   test(testDef.name, testDef.fn);
