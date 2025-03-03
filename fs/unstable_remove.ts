@@ -36,9 +36,18 @@ export async function remove(
   if (isDeno) {
     await Deno.remove(path, options);
   } else {
+    const { recursive } = options ?? {};
     try {
-      await getNodeFs().promises.rm(path, options);
+      await getNodeFs().promises.rm(path, { recursive: recursive });
     } catch (error) {
+      if ((error as Error & { code: string }).code === "EISDIR") {
+        try {
+          await getNodeFs().promises.rmdir(path);
+        } catch (error) {
+          throw mapError(error);
+        }
+        return;
+      }
       throw mapError(error);
     }
   }
@@ -76,9 +85,18 @@ export function removeSync(
   if (isDeno) {
     Deno.removeSync(path, options);
   } else {
+    const { recursive } = options ?? {};
     try {
-      getNodeFs().rmSync(path, options);
+      getNodeFs().rmSync(path, { recursive: recursive });
     } catch (error) {
+      if ((error as Error & { code: string }).code === "EISDIR") {
+        try {
+          getNodeFs().rmdir(path);
+        } catch (error) {
+          throw mapError(error);
+        }
+        return;
+      }
       throw mapError(error);
     }
   }
