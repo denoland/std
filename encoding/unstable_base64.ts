@@ -35,34 +35,13 @@ const alphabet: Record<Base64Format, Uint8Array> = {
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
 };
 const rAlphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new Uint8Array(128),
-  Base64Url: new Uint8Array(128),
+  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
+  Base64Url: new Uint8Array(128).fill(64),
 };
 alphabet.Base64
   .forEach((byte, i) => rAlphabet.Base64[byte] = i);
 alphabet.Base64Url
   .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
-
-const assertChar: Record<Base64Format, (byte: number) => void> = {
-  Base64(byte: number): void {
-    if (
-      !((65 <= byte && byte <= 90) ||
-        (97 <= byte && byte <= 122) ||
-        (48 <= byte && byte <= 57) ||
-        byte === 43 ||
-        byte === 47)
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-  Base64Url(byte: number): void {
-    if (
-      !((65 <= byte && byte <= 90) ||
-        (97 <= byte && byte <= 122) ||
-        (48 <= byte && byte <= 57) ||
-        byte === 45 ||
-        byte === 95)
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-};
 
 /**
  * The base 64 encoding formats.
@@ -208,7 +187,7 @@ export function decodeBase64(input: string, format: Base64Format): Uint8Array_ {
   return output
     .subarray(
       0,
-      decode(output, 0, 0, rAlphabet[format], padding, assertChar[format]),
+      decode(output, 0, 0, rAlphabet[format], padding),
     );
 }
 
@@ -258,5 +237,5 @@ export function decodeRawBase64(
       "Input (i) must be greater than or equal to output (o)",
     );
   }
-  return decode(buffer, i, o, rAlphabet[format], padding, assertChar[format]);
+  return decode(buffer, i, o, rAlphabet[format], padding);
 }
