@@ -84,7 +84,7 @@ Deno.test("remove() remove a non existed directory", async () => {
       await remove(nonExistedDir);
     }, NotFound);
     await remove(tempDir);
-    const existed = await exists(tempDir);
+    const existed = await checkExists(tempDir);
     assert(existed === false);
   } finally {
     await rm(tempDir, { recursive: true, force: true });

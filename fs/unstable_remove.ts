@@ -36,11 +36,11 @@ export async function remove(
   if (isDeno) {
     await Deno.remove(path, options);
   } else {
-    const { recursive } = options ?? {};
+    const { recursive = false } = options ?? {};
     try {
       await getNodeFs().promises.rm(path, { recursive: recursive });
     } catch (error) {
-      if ((error as Error & { code: string }).code === "EISDIR") {
+      if ((error as Error & { code: string }).code === "ERR_FS_EISDIR") {
         try {
           await getNodeFs().promises.rmdir(path);
         } catch (error) {
@@ -85,13 +85,13 @@ export function removeSync(
   if (isDeno) {
     Deno.removeSync(path, options);
   } else {
-    const { recursive } = options ?? {};
+    const { recursive = false } = options ?? {};
     try {
       getNodeFs().rmSync(path, { recursive: recursive });
     } catch (error) {
-      if ((error as Error & { code: string }).code === "EISDIR") {
+      if ((error as Error & { code: string }).code === "ERR_FS_EISDIR") {
         try {
-          getNodeFs().rmdir(path);
+          getNodeFs().rmdirSync(path);
         } catch (error) {
           throw mapError(error);
         }
