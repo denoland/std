@@ -35,34 +35,13 @@ const alphabet: Record<Base64Format, Uint8Array> = {
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
 };
 const rAlphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new Uint8Array(128),
-  Base64Url: new Uint8Array(128),
+  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
+  Base64Url: new Uint8Array(128).fill(64),
 };
 alphabet.Base64
   .forEach((byte, i) => rAlphabet.Base64[byte] = i);
 alphabet.Base64Url
   .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
-
-const assertChar: Record<Base64Format, (byte: number) => void> = {
-  Base64(byte: number): void {
-    if (
-      !((65 <= byte && byte <= 90) ||
-        (97 <= byte && byte <= 122) ||
-        (48 <= byte && byte <= 57) ||
-        byte === 43 ||
-        byte === 47)
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-  Base64Url(byte: number): void {
-    if (
-      !((65 <= byte && byte <= 90) ||
-        (97 <= byte && byte <= 122) ||
-        (48 <= byte && byte <= 57) ||
-        byte === 45 ||
-        byte === 95)
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-};
 
 /**
  * The base 64 encoding formats.
@@ -79,7 +58,7 @@ export type Base64Format = "Base64" | "Base64Url";
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to encode.
- * @param format The format to use for encoding.
+ * @param format The format to use for encoding. Defaults to "Base64".
  * @returns The base64 string representation of the input.
  *
  * @example Basic Usage
@@ -102,7 +81,7 @@ export type Base64Format = "Base64" | "Base64Url";
  */
 export function encodeBase64(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: Base64Format,
+  format: Base64Format = "Base64",
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
@@ -133,7 +112,7 @@ export function encodeBase64(
  * @param buffer The buffer to encode in place.
  * @param i The index of where the raw data starts reading from.
  * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding.
+ * @param format The format to use for encoding. Defaults to "Base64".
  * @returns The index of where the encoded data finished writing to.
  *
  * @example Basic Usage
@@ -165,7 +144,7 @@ export function encodeRawBase64(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: Base64Format,
+  format: Base64Format = "Base64",
 ): number {
   const max = calcMax(buffer.length - i);
   if (max > buffer.length - o) throw new RangeError("Buffer too small");
@@ -184,7 +163,7 @@ export function encodeRawBase64(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to decode.
- * @param format The format to use for decoding.
+ * @param format The format to use for decoding. Defaults to "Base64".
  * @returns The decoded {@linkcode Uint8Array<ArrayBuffer>}.
  *
  * @example Basic Usage
@@ -203,12 +182,15 @@ export function encodeRawBase64(
  * );
  * ```
  */
-export function decodeBase64(input: string, format: Base64Format): Uint8Array_ {
+export function decodeBase64(
+  input: string,
+  format: Base64Format = "Base64",
+): Uint8Array_ {
   const output = new TextEncoder().encode(input) as Uint8Array_;
   return output
     .subarray(
       0,
-      decode(output, 0, 0, rAlphabet[format], padding, assertChar[format]),
+      decode(output, 0, 0, rAlphabet[format], padding),
     );
 }
 
@@ -224,7 +206,7 @@ export function decodeBase64(input: string, format: Base64Format): Uint8Array_ {
  * @param buffer The buffer to decode in place.
  * @param i The index of where the encoded data starts reading from.
  * @param o The index of where the decoded data starts writing to.
- * @param format The format to use for decoding.
+ * @param format The format to use for decoding. Defaults to "Base64".
  * @returns The index of where the decoded data finished writing to.
  *
  * @example Basic Usage
@@ -251,12 +233,12 @@ export function decodeRawBase64(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: Base64Format,
+  format: Base64Format = "Base64",
 ): number {
   if (i < o) {
     throw new RangeError(
       "Input (i) must be greater than or equal to output (o)",
     );
   }
-  return decode(buffer, i, o, rAlphabet[format], padding, assertChar[format]);
+  return decode(buffer, i, o, rAlphabet[format], padding);
 }

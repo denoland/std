@@ -31,27 +31,29 @@ export function encode(
 ): number {
   i += 2;
   for (; i < buffer.length; i += 3) {
-    buffer[o++] = alphabet[buffer[i - 2]! >> 2]!;
-    buffer[o++] =
-      alphabet[((buffer[i - 2]! & 0x3) << 4) | (buffer[i - 1]! >> 4)]!;
-    buffer[o++] = alphabet[((buffer[i - 1]! & 0xF) << 2) | (buffer[i]! >> 6)]!;
-    buffer[o++] = alphabet[buffer[i]! & 0x3F]!;
+    const x = (buffer[i - 2]! << 16) | (buffer[i - 1]! << 8) | buffer[i]!;
+    buffer[o++] = alphabet[x >> 18]!;
+    buffer[o++] = alphabet[x >> 12 & 0x3F]!;
+    buffer[o++] = alphabet[x >> 6 & 0x3F]!;
+    buffer[o++] = alphabet[x & 0x3F]!;
   }
   switch (i) {
-    case buffer.length + 1:
-      buffer[o++] = alphabet[buffer[i - 2]! >> 2]!;
-      buffer[o++] = alphabet[(buffer[i - 2]! & 0x3) << 4]!;
+    case buffer.length + 1: {
+      const x = buffer[i - 2]! << 16;
+      buffer[o++] = alphabet[x >> 18]!;
+      buffer[o++] = alphabet[x >> 12 & 0x3F]!;
       buffer[o++] = padding;
       buffer[o++] = padding;
       break;
-    case buffer.length:
-      buffer[o++] = alphabet[buffer[i - 2]! >> 2]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 2]! & 0x3) << 4) | (buffer[i - 1]! >> 4)]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 1]! & 0xF) << 2) | (buffer[i]! >> 6)]!;
+    }
+    case buffer.length: {
+      const x = (buffer[i - 2]! << 16) | (buffer[i - 1]! << 8);
+      buffer[o++] = alphabet[x >> 18]!;
+      buffer[o++] = alphabet[x >> 12 & 0x3F]!;
+      buffer[o++] = alphabet[x >> 6 & 0x3F]!;
       buffer[o++] = padding;
       break;
+    }
   }
   return o;
 }
@@ -62,7 +64,6 @@ export function decode(
   o: number,
   alphabet: Uint8Array,
   padding: number,
-  assertChar: (byte: number) => void,
 ): number {
   for (let x = buffer.length - 2; x < buffer.length; ++x) {
     if (buffer[x] === padding) {
@@ -85,33 +86,37 @@ export function decode(
 
   i += 3;
   for (; i < buffer.length; i += 4) {
-    assertChar(buffer[i - 3]!);
-    assertChar(buffer[i - 2]!);
-    assertChar(buffer[i - 1]!);
-    assertChar(buffer[i]!);
-    buffer[o++] = (alphabet[buffer[i - 3]!]! << 2) |
-      (alphabet[buffer[i - 2]!]! >> 4);
-    buffer[o++] = ((alphabet[buffer[i - 2]!]! & 0xF) << 4) |
-      (alphabet[buffer[i - 1]!]! >> 2);
-    buffer[o++] = ((alphabet[buffer[i - 1]!]! & 0x3) << 6) |
-      alphabet[buffer[i]!]!;
+    const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
+      (getByte(buffer[i - 2]!, alphabet) << 12) |
+      (getByte(buffer[i - 1]!, alphabet) << 6) |
+      getByte(buffer[i]!, alphabet);
+    buffer[o++] = x >> 16;
+    buffer[o++] = x >> 8 & 0xFF;
+    buffer[o++] = x & 0xFF;
   }
   switch (i) {
-    case buffer.length + 1:
-      assertChar(buffer[i - 3]!);
-      assertChar(buffer[i - 2]!);
-      buffer[o++] = (alphabet[buffer[i - 3]!]! << 2) |
-        (alphabet[buffer[i - 2]!]! >> 4);
+    case buffer.length + 1: {
+      const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
+        (getByte(buffer[i - 2]!, alphabet) << 12);
+      buffer[o++] = x >> 16;
       break;
-    case buffer.length:
-      assertChar(buffer[i - 3]!);
-      assertChar(buffer[i - 2]!);
-      assertChar(buffer[i - 1]!);
-      buffer[o++] = (alphabet[buffer[i - 3]!]! << 2) |
-        (alphabet[buffer[i - 2]!]! >> 4);
-      buffer[o++] = ((alphabet[buffer[i - 2]!]! & 0xF) << 4) |
-        (alphabet[buffer[i - 1]!]! >> 2);
+    }
+    case buffer.length: {
+      const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
+        (getByte(buffer[i - 2]!, alphabet) << 12) |
+        (getByte(buffer[i - 1]!, alphabet) << 6);
+      buffer[o++] = x >> 16;
+      buffer[o++] = x >> 8 & 0xFF;
       break;
+    }
   }
   return o;
+}
+
+function getByte(char: number, alphabet: Uint8Array): number {
+  const byte = alphabet[char]!;
+  if (byte === 64) { // alphabet.Base64.length
+    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+  }
+  return byte;
 }
