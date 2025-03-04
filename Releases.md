@@ -16,7 +16,7 @@
 
 #### @std/fmt 1.0.6 (patch)
 
-- docs(fmt): fix `printf` module doc absense (#6424)
+- docs(fmt): fix `printf` module doc (#6424)
 
 #### @std/front-matter 1.0.8 (patch)
 
