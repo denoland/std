@@ -704,6 +704,19 @@ Deno.test("decodeCbor() rejecting majorType 7 due to additional information", ()
   );
 });
 
+Deno.test("decodeCbor() rejecting tagNumber 2 & 3 due to invalid tagContent", () => {
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(2, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
+  );
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(3, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
+  );
+});
+
 Deno.test("decodeCbor() rejecting tagNumber 259 due to additional information", () => {
   assertThrows(
     () => {
