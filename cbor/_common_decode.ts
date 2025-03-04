@@ -266,7 +266,7 @@ function decodeSix(
   input: Uint8Array,
   aI: number,
   offset: number,
-): [Date | Map<CborType, CborType> | CborTag<CborType>, number] {
+): [Date | bigint | Map<CborType, CborType> | CborTag<CborType>, number] {
   if (aI > 27) {
     throw new RangeError(
       `Cannot decode value (0b110_${aI.toString(2).padStart(5, "0")})`,
@@ -287,6 +287,24 @@ function decodeSix(
         throw new TypeError('Invalid TagItem: Expected a "integer" or "float"');
       }
       return [new Date(Number(y[0]) * 1000), y[1]];
+    }
+    case 2n: {
+      const y = decode(input, x[1]);
+      if (!(y[0] instanceof Uint8Array)) {
+        throw new TypeError('Invalid TagItem: Expected a "byte string"');
+      }
+      let z = 0n;
+      for (const byte of y[0]) z = (z << 8n) | BigInt(byte);
+      return [z, y[1]];
+    }
+    case 3n: {
+      const y = decode(input, x[1]);
+      if (!(y[0] instanceof Uint8Array)) {
+        throw new TypeError('Invalid TagItem: Expected a "byte string"');
+      }
+      let z = 0n;
+      for (const byte of y[0]) z = (z << 8n) | BigInt(byte);
+      return [-z - 1n, y[1]];
     }
     case 259n:
       return decodeMap(input, x[1]);

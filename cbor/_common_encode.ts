@@ -3,6 +3,15 @@
 import { CborTag } from "./tag.ts";
 import type { CborType } from "./types.ts";
 
+function calcBytes(x: bigint): number {
+  let bytes = 0;
+  while (x > 0n) {
+    ++bytes;
+    x >>= 8n;
+  }
+  return bytes;
+}
+
 function calcHeaderSize(x: number | bigint): number {
   if (x < 24) return 1;
   if (x < 2 ** 8) return 2;
@@ -16,7 +25,12 @@ export function calcEncodingSize(x: CborType): number {
   if (typeof x === "number") {
     return x % 1 === 0 ? calcHeaderSize(x < 0 ? -x - 1 : x) : 9;
   }
-  if (typeof x === "bigint") return calcHeaderSize(x < 0n ? -x - 1n : x);
+  if (typeof x === "bigint") {
+    if (x < 0n) x = -x - 1n;
+    if (x < 2n ** 64n) return calcHeaderSize(x);
+    const bytes = calcBytes(x);
+    return 1 + calcHeaderSize(bytes) + bytes;
+  }
   if (typeof x === "string" || x instanceof Uint8Array) {
     return calcHeaderSize(x.length) + x.length;
   }
@@ -141,18 +155,20 @@ function encodeBigInt(
   offset: number,
 ): number {
   const isNegative = input < 0n;
-  if (isNegative && input <= -(2n ** 64n)) {
-    throw new RangeError(
-      `Cannot encode bigint: It (${input}) exceeds -(2n ** 64n) - 1n`,
-    );
-  } else if (input >= 2n ** 64n) {
-    throw new RangeError(
-      `Cannot encode bigint: It (${input}) exceeds 2n ** 64n - 1n`,
-    );
+  if (isNegative) input = -input - 1n;
+  if (input >= 2n ** 64n) {
+    output[offset++] = isNegative ? 0b110_00011 : 0b110_00010;
+    const bytes = calcBytes(input);
+    offset = encodeHeader(0b010_00000, bytes, output, offset);
+    for (let i = bytes - 1; i >= 0; --i) {
+      output[offset + i] = Number(input & 0xFFn);
+      input >>= 8n;
+    }
+    return offset + bytes;
   }
   return encodeHeader(
     isNegative ? 0b001_00000 : 0b000_00000,
-    isNegative ? -input - 1n : input,
+    input,
     output,
     offset,
   );
