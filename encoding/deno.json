@@ -14,7 +14,6 @@
     "./unstable-base64": "./unstable_base64.ts",
     "./unstable-base64-stream": "./unstable_base64_stream.ts",
     "./base64url": "./base64url.ts",
-    "./unstable-base64url-stream": "./unstable_base64url_stream.ts",
     "./hex": "./hex.ts",
     "./unstable-hex-stream": "./unstable_hex_stream.ts",
     "./varint": "./varint.ts"
