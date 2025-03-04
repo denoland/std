@@ -32,7 +32,7 @@
     "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
     "./unstable-umask": "./unstable_umask.ts",
->>>>>>> main
+    "./unstable-write-file": "./unstable_write_file.ts",
     "./walk": "./walk.ts"
   }
 }
