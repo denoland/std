@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { getNodeFs, getNodeStream, isDeno } from "./_utils.ts";
-import { getFsFlag } from "./_get_fs_flag.ts";
+import { getNodeFs, isDeno } from "./_utils.ts";
+import { getWriteFsFlag } from "./_get_fs_flag.ts";
 import { mapError } from "./_map_error.ts";
 import type { WriteFileOptions } from "./unstable_types.ts";
 
@@ -27,7 +27,7 @@ import type { WriteFileOptions } from "./unstable_types.ts";
  *
  * @param path The path of the file that `data` is written to.
  * @param data The content in bytes or a stream of bytes to be written.
- * @param options Options to write files.
+ * @param options Options to write files. See {@linkcode WriteFileOptions}.
  */
 export async function writeFile(
   path: string | URL,
@@ -45,24 +45,9 @@ export async function writeFile(
       signal,
     } = options ?? {};
 
-    const truncate = create && !append;
-    const flag = getFsFlag({
-      append,
-      create,
-      createNew,
-      truncate,
-      write: true,
-    });
+    const flag = getWriteFsFlag({ append, create, createNew });
     try {
-      if (data instanceof ReadableStream) {
-        const { Readable } = getNodeStream();
-        await getNodeFs().promises.writeFile(path, Readable.fromWeb(data), {
-          flag,
-          signal,
-        });
-      } else {
-        await getNodeFs().promises.writeFile(path, data, { flag, signal });
-      }
+      await getNodeFs().promises.writeFile(path, data, { flag, signal });
       if (mode != null) {
         await getNodeFs().promises.chmod(path, mode);
       }
@@ -94,7 +79,7 @@ export async function writeFile(
  *
  * @param path The path of the file that `data` is written to.
  * @param data The content in bytes to be written.
- * @param options Options to write files.
+ * @param options Options to write files. See {@linkcode WriteFileOptions}.
  */
 export function writeFileSync(
   path: string | URL,
@@ -112,14 +97,7 @@ export function writeFileSync(
       signal,
     } = options ?? {};
 
-    const truncate = create && !append;
-    const flag = getFsFlag({
-      append,
-      create,
-      createNew,
-      truncate,
-      write: true,
-    });
+    const flag = getWriteFsFlag({ append, create, createNew });
     try {
       getNodeFs().writeFileSync(path, data, { flag, signal });
       if (mode != null) {
