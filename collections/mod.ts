@@ -18,7 +18,7 @@
  *
  * assertEquals(intersect(lisaInterests, kimInterests), ["Cooking", "Music"]);
  *
- * assertArrayIncludes(lisaInterests, [sample(lisaInterests)]);
+ * assertArrayIncludes(lisaInterests, [sample(lisaInterests)!]);
  *
  * const cat = { name: "Lulu", age: 3, breed: "Ragdoll" };
  *
