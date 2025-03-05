@@ -4,8 +4,9 @@ import {
   assertAlmostEquals,
   assertEquals,
   assertRejects,
+  assertThrows,
 } from "@std/assert";
-import { memoize } from "./memoize.ts";
+import { type MemoizationCacheResult, memoize } from "./memoize.ts";
 import { LruCache } from "./lru_cache.ts";
 import { FakeTime } from "@std/testing/time";
 
@@ -455,7 +456,7 @@ Deno.test("memoize() deletes stale entries of passed `LruCache`", () => {
   const fn = memoize((n: number) => {
     ++numTimesCalled;
     return 0 - n;
-  }, { cache: new LruCache<string, number>(MAX_SIZE) });
+  }, { cache: new LruCache<string, MemoizationCacheResult<number>>(MAX_SIZE) });
 
   assertEquals(fn(0), 0);
   assertEquals(fn(0), 0);
@@ -482,7 +483,7 @@ Deno.test("memoize() only caches single latest result with a `LruCache` of maxSi
   const fn = memoize((n: number) => {
     ++numTimesCalled;
     return 0 - n;
-  }, { cache: new LruCache<string, number>(1) });
+  }, { cache: new LruCache<string, MemoizationCacheResult<number>>(1) });
 
   assertEquals(fn(0), 0);
   assertEquals(fn(0), 0);
@@ -561,5 +562,69 @@ Deno.test("memoize() has correct TS types", async (t) => {
       // @ts-expect-error Type 'string' is not assignable to type 'number'.
       const _fn5: typeof fn<string> = (n: number) => n;
     });
+  });
+});
+
+Deno.test("memoize() respects `errorIsCacheable` option", async (t) => {
+  type ErrKind = "retriable" | "persistent";
+
+  const errorIsCacheable = (err: unknown) => (err as ErrKind) === "persistent";
+
+  await t.step("default behavior (everything is retriable)", () => {
+    let numTimesCalled = 0;
+
+    const throws = memoize((val: ErrKind) => {
+      ++numTimesCalled;
+      throw val;
+    });
+
+    assertThrows(() => throws("retriable"));
+    assertEquals(numTimesCalled, 1);
+
+    assertThrows(() => throws("retriable"));
+    assertEquals(numTimesCalled, 2);
+  });
+
+  await t.step("synchronously thrown errors", () => {
+    let numTimesCalled = 0;
+
+    const throws = memoize((val: ErrKind) => {
+      ++numTimesCalled;
+      throw val;
+    }, { errorIsCacheable });
+
+    assertThrows(() => throws("persistent"));
+    assertEquals(numTimesCalled, 1);
+
+    assertThrows(() => throws("persistent"));
+    assertEquals(numTimesCalled, 1);
+
+    assertThrows(() => throws("retriable"));
+    assertEquals(numTimesCalled, 2);
+
+    assertThrows(() => throws("retriable"));
+    assertEquals(numTimesCalled, 3);
+  });
+
+  await t.step("rejected promises", async () => {
+    let numTimesCalled = 0;
+
+    const rejects = memoize(async (val: ErrKind) => {
+      await Promise.resolve();
+      ++numTimesCalled;
+      throw val;
+    }, { errorIsCacheable });
+
+    await assertRejects(() => rejects("persistent"));
+    assertEquals(numTimesCalled, 1);
+
+    await assertRejects(() => rejects("persistent"));
+    assertEquals(numTimesCalled, 1);
+
+    await assertRejects(() => rejects("retriable"));
+    assertEquals(numTimesCalled, 2);
+
+    await assertRejects(() => rejects("retriable"));
+    assertEquals(numTimesCalled, 3);
   });
 });
