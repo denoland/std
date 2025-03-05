@@ -37,6 +37,7 @@ import type { CborType } from "./types.ts";
  */
 export function encodeCbor(value: CborType): Uint8Array {
   const output = new Uint8Array(calcEncodingSize(value));
-  encode(value, output, 0);
+  const o = encode(value, output, 0);
+  if (o !== output.length) return output.subarray(0, o);
   return output;
 }
