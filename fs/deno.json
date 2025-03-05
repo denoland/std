@@ -33,6 +33,7 @@
     "./unstable-types": "./unstable_types.ts",
     "./unstable-umask": "./unstable_umask.ts",
     "./unstable-write-file": "./unstable_write_file.ts",
+    "./unstable-write-text-file": "./unstable_write_text_file.ts",
     "./walk": "./walk.ts"
   }
 }
