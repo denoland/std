@@ -1,23 +1,84 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+import { assertThrows } from "../assert/throws.ts";
 import { extract } from "./toml.ts";
-import {
-  runExtractTomlTests,
-  runExtractTomlTests2,
-  runExtractTypeErrorTests,
-} from "./_test_utils.ts";
 import { assertEquals } from "@std/assert/equals";
 
 Deno.test("toml() extracts type error on invalid input", () => {
-  runExtractTypeErrorTests("toml", extract);
+  assertThrows(() => extract(""));
+  assertThrows(() => extract("---"));
+  assertThrows(() => extract(`---toml`));
+  assertThrows(() => extract(`= toml =`));
+  assertThrows(() => extract("---\n"));
+  assertThrows(() => extract(`---toml\n`));
+  assertThrows(() => extract(`= toml =\n`));
+  assertThrows(() => extract("---\nasdasdasd"));
 });
 
-Deno.test("toml() parses toml delineate by ---toml", async () => {
-  await runExtractTomlTests(extract);
+Deno.test("toml() parses toml delineate by ---toml", () => {
+  const input = `---toml
+title = 'Three dashes followed by the format marks the spot'
+tags = ['toml', 'front-matter']
+'expanded-description' = 'with some ---toml 👌 crazy stuff in it'
+---
+don't break
+---
+Also = '---toml this shouldn't be a problem'
+`;
+  const content = extract(input);
+
+  assertEquals(
+    content.frontMatter,
+    `title = 'Three dashes followed by the format marks the spot'
+tags = ['toml', 'front-matter']
+'expanded-description' = 'with some ---toml 👌 crazy stuff in it'`,
+  );
+  assertEquals(
+    content.body,
+    "don't break\n---\nAlso = '---toml this shouldn't be a problem'\n",
+  );
+  assertEquals(
+    content.attrs.title,
+    "Three dashes followed by the format marks the spot",
+  );
+  assertEquals(content.attrs.tags, ["toml", "front-matter"]);
+  assertEquals(
+    content.attrs["expanded-description"],
+    "with some ---toml 👌 crazy stuff in it",
+  );
 });
 
-Deno.test("toml() parses toml delineate by +++", async () => {
-  await runExtractTomlTests2(extract);
+Deno.test("toml() parses toml delineate by +++", () => {
+  const str = `+++
+title = 'Three pluses followed by the format marks the spot'
+tags = ['toml', 'front-matter']
+'expanded-description' = 'with some +++toml 👌 crazy stuff in it'
++++
+don't break
++++
+Also = '+++toml this shouldn't be a problem'
+`;
+  const content = extract(str);
+
+  assertEquals(
+    content.frontMatter,
+    `title = 'Three pluses followed by the format marks the spot'
+tags = ['toml', 'front-matter']
+'expanded-description' = 'with some +++toml 👌 crazy stuff in it'`,
+  );
+  assertEquals(
+    content.body,
+    "don't break\n+++\nAlso = '+++toml this shouldn't be a problem'\n",
+  );
+  assertEquals(
+    content.attrs.title,
+    "Three pluses followed by the format marks the spot",
+  );
+  assertEquals(content.attrs.tags, ["toml", "front-matter"]);
+  assertEquals(
+    content.attrs["expanded-description"],
+    "with some +++toml 👌 crazy stuff in it",
+  );
 });
 
 Deno.test("extractToml() allows whitespaces after the header", () => {

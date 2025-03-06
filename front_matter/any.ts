@@ -53,7 +53,9 @@ function recognize(
  * @param text The text to extract front matter from.
  * @returns The extracted front matter and body content.
  */
-export function extract<T>(text: string): Extract<T> {
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+): Extract<T> {
   const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
   const format = recognize(text, formats);
   switch (format) {

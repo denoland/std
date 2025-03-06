@@ -32,7 +32,9 @@ export type { Extract };
  * @param text The text to extract JSON front matter from.
  * @returns The extracted JSON front matter and body content.
  */
-export function extract<T>(text: string): Extract<T> {
+export function extract<T extends Record<string, unknown>>(
+  text: string,
+): Extract<T> {
   const { frontMatter, body } = extractFrontMatter(text, EXTRACT_JSON_REGEXP);
   const attrs = JSON.parse(frontMatter) as T;
   return { frontMatter, body, attrs };
