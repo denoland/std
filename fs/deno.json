@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",
@@ -32,6 +32,7 @@
     "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
     "./unstable-umask": "./unstable_umask.ts",
+    "./unstable-write-file": "./unstable_write_file.ts",
     "./walk": "./walk.ts"
   }
 }

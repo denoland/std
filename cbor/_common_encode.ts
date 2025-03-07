@@ -31,7 +31,10 @@ export function calcEncodingSize(x: CborType): number {
     const bytes = calcBytes(x);
     return 1 + calcHeaderSize(bytes) + bytes;
   }
-  if (typeof x === "string" || x instanceof Uint8Array) {
+  if (typeof x === "string") {
+    return calcHeaderSize(x.length * 3) + x.length * 3;
+  }
+  if (x instanceof Uint8Array) {
     return calcHeaderSize(x.length) + x.length;
   }
   if (x instanceof Date) return 1 + calcEncodingSize(x.getTime() / 1000);
@@ -189,10 +192,13 @@ function encodeString(
   output: Uint8Array,
   offset: number,
 ): number {
-  const binary = new TextEncoder().encode(input);
-  offset = encodeHeader(0b011_00000, binary.length, output, offset);
-  output.set(binary, offset);
-  return offset + binary.length;
+  const length = new TextEncoder()
+    .encodeInto(input, output.subarray(offset)).written;
+  output.set(
+    output.subarray(offset, offset + length),
+    offset + calcHeaderSize(length),
+  );
+  return encodeHeader(0b011_00000, length, output, offset) + length;
 }
 
 function encodeArray(
