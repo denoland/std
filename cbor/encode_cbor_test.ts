@@ -244,7 +244,7 @@ Deno.test("encodeCbor() encoding bignums as Uint byte string", () => {
   );
 });
 
-Deno.test("encodeCbor() rejecting bigints as Int byte string", () => {
+Deno.test("encodeCbor() encoding bignums as Int byte string", () => {
   const num = -(2n ** 64n) - 1n;
   assertEquals(
     encodeCbor(num),
