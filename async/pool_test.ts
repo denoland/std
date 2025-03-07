@@ -8,17 +8,24 @@ import {
   assertRejects,
   assertStringIncludes,
 } from "@std/assert";
+import { FakeTime } from "@std/testing/time";
 
 Deno.test("pooledMap()", async () => {
-  const start = performance.now();
+  using time = new FakeTime();
+
+  const start = Date.now();
   const results = pooledMap(
     2,
     [1, 2, 3],
     (i) => new Promise<number>((r) => setTimeout(() => r(i), 300)),
   );
+  for (const _ of Array(7)) {
+    time.tick(100);
+    await time.runMicrotasks();
+  }
   const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
-  const diff = performance.now() - start;
+  const diff = Date.now() - start;
 
   assertGreaterOrEqual(diff, 600);
   assertLess(diff, 900);
