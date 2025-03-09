@@ -186,7 +186,10 @@ export function encodeRawBase32(
  * );
  * ```
  */
-export function decodeBase32(input: string, format: Base32Format): Uint8Array_ {
+export function decodeBase32(
+  input: string,
+  format: Base32Format = "Base32",
+): Uint8Array_ {
   const output = new TextEncoder().encode(input) as Uint8Array_;
   return output
     .subarray(
@@ -234,7 +237,7 @@ export function decodeRawBase32(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: Base32Format,
+  format: Base32Format = "Base32",
 ): number {
   if (i < o) {
     throw new RangeError(
