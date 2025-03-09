@@ -34,9 +34,9 @@ const alphabet: Record<Base32Format, Uint8Array> = {
   Base32Crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
 };
 const rAlphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new Uint8Array(128),
-  Base32Hex: new Uint8Array(128),
-  Base32Crockford: new Uint8Array(128),
+  Base32: new Uint8Array(128).fill(32), // alphabet.Base32.length
+  Base32Hex: new Uint8Array(128).fill(32),
+  Base32Crockford: new Uint8Array(128).fill(32),
 };
 alphabet.Base32
   .forEach((byte, i) => rAlphabet.Base32[byte] = i);
@@ -44,33 +44,6 @@ alphabet.Base32Hex
   .forEach((byte, i) => rAlphabet.Base32Hex[byte] = i);
 alphabet.Base32Crockford
   .forEach((byte, i) => rAlphabet.Base32Crockford[byte] = i);
-
-const assertChar: Record<Base32Format, (byte: number) => void> = {
-  Base32(byte: number): void {
-    if (
-      !((65 <= byte && byte <= 90) ||
-        (50 <= byte && byte <= 55))
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-  Base32Hex(byte: number): void {
-    if (
-      !((48 <= byte && byte <= 57) ||
-        (65 <= byte && byte <= 86))
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-  Base32Crockford(byte: number): void {
-    if (
-      !((48 <= byte && byte <= 57) ||
-        (65 <= byte && byte <= 72) ||
-        byte == 74 ||
-        byte == 75 ||
-        byte == 77 ||
-        byte == 78 ||
-        (80 <= byte && byte <= 84) ||
-        (86 <= byte && byte <= 90))
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-};
 
 /**
  * The base 32 encoding formats.
@@ -218,7 +191,7 @@ export function decodeBase32(input: string, format: Base32Format): Uint8Array_ {
   return output
     .subarray(
       0,
-      decode(output, 0, 0, rAlphabet[format], padding, assertChar[format]),
+      decode(output, 0, 0, rAlphabet[format], padding),
     );
 }
 
@@ -268,5 +241,5 @@ export function decodeRawBase32(
       "Input (i) must be greater than or equal to output (o)",
     );
   }
-  return decode(buffer, i, o, rAlphabet[format], padding, assertChar[format]);
+  return decode(buffer, i, o, rAlphabet[format], padding);
 }

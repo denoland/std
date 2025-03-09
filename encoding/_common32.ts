@@ -31,22 +31,22 @@ export function encode(
 ): number {
   i += 4;
   for (; i < buffer.length; i += 5) {
-    buffer[o++] = alphabet[buffer[i - 4]! >> 3]!;
-    buffer[o++] =
-      alphabet[((buffer[i - 4]! & 7) << 2) | (buffer[i - 3]! >> 6)]!;
-    buffer[o++] = alphabet[(buffer[i - 3]! >> 1) & 31]!;
-    buffer[o++] =
-      alphabet[((buffer[i - 3]! & 1) << 4) | (buffer[i - 2]! >> 4)]!;
-    buffer[o++] =
-      alphabet[((buffer[i - 2]! & 15) << 1) | (buffer[i - 1]! >> 7)]!;
-    buffer[o++] = alphabet[(buffer[i - 1]! >> 2) & 31]!;
-    buffer[o++] = alphabet[((buffer[i - 1]! & 3) << 3) | (buffer[i]! >> 5)]!;
-    buffer[o++] = alphabet[buffer[i]! & 31]!;
+    let x = (buffer[i - 4]! << 16) | (buffer[i - 3]! << 8) | buffer[i - 2]!;
+    buffer[o++] = alphabet[x >> 19]!;
+    buffer[o++] = alphabet[x >> 14 & 0x1F]!;
+    buffer[o++] = alphabet[x >> 9 & 0x1F]!;
+    buffer[o++] = alphabet[x >> 4 & 0x1F]!;
+    x = (x << 16) | (buffer[i - 1]! << 8) | buffer[i]!;
+    buffer[o++] = alphabet[x >> 15 & 0x1F]!;
+    buffer[o++] = alphabet[x >> 10 & 0x1F]!;
+    buffer[o++] = alphabet[x >> 5 & 0x1F]!;
+    buffer[o++] = alphabet[x & 0x1F]!;
   }
   switch (i) {
-    case buffer.length + 3:
-      buffer[o++] = alphabet[buffer[i - 4]! >> 3]!;
-      buffer[o++] = alphabet[(buffer[i - 4]! & 7) << 2]!;
+    case buffer.length + 3: {
+      const x = buffer[i - 4]! << 16;
+      buffer[o++] = alphabet[x >> 19]!;
+      buffer[o++] = alphabet[x >> 14 & 0x1F]!;
       buffer[o++] = padding;
       buffer[o++] = padding;
       buffer[o++] = padding;
@@ -54,41 +54,45 @@ export function encode(
       buffer[o++] = padding;
       buffer[o++] = padding;
       break;
-    case buffer.length + 2:
-      buffer[o++] = alphabet[buffer[i - 4]! >> 3]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 4]! & 7) << 2) | (buffer[i - 3]! >> 6)]!;
-      buffer[o++] = alphabet[(buffer[i - 3]! >> 1) & 31]!;
-      buffer[o++] = alphabet[(buffer[i - 3]! & 1) << 4]!;
+    }
+    case buffer.length + 2: {
+      const x = (buffer[i - 4]! << 16) | (buffer[i - 3]! << 8);
+      buffer[o++] = alphabet[x >> 19]!;
+      buffer[o++] = alphabet[x >> 14 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 9 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 4 & 0x1F]!;
       buffer[o++] = padding;
       buffer[o++] = padding;
       buffer[o++] = padding;
       buffer[o++] = padding;
       break;
-    case buffer.length + 1:
-      buffer[o++] = alphabet[buffer[i - 4]! >> 3]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 4]! & 7) << 2) | (buffer[i - 3]! >> 6)]!;
-      buffer[o++] = alphabet[(buffer[i - 3]! >> 1) & 31]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 3]! & 1) << 4) | (buffer[i - 2]! >> 4)]!;
-      buffer[o++] = alphabet[(buffer[i - 2]! & 15) << 1 & 0x1F]!;
+    }
+    case buffer.length + 1: {
+      let x = (buffer[i - 4]! << 16) | (buffer[i - 3]! << 8) | buffer[i - 2]!;
+      buffer[o++] = alphabet[x >> 19]!;
+      buffer[o++] = alphabet[x >> 14 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 9 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 4 & 0x1F]!;
+      x <<= 16;
+      buffer[o++] = alphabet[x >> 15 & 0x1F]!;
       buffer[o++] = padding;
       buffer[o++] = padding;
       buffer[o++] = padding;
       break;
-    case buffer.length:
-      buffer[o++] = alphabet[buffer[i - 4]! >> 3]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 4]! & 7) << 2) | (buffer[i - 3]! >> 6)]!;
-      buffer[o++] = alphabet[(buffer[i - 3]! >> 1) & 31]!;
-      buffer[o++] =
-        alphabet[((buffer[i - 3]! & 1) << 4) | (buffer[i - 2]! >> 4)]!;
-      buffer[o++] = alphabet[(buffer[i - 2]! & 15) << 1 & 0x1F]!;
-      buffer[o++] = alphabet[(buffer[i - 1]! >> 2) & 31]!;
-      buffer[o++] = alphabet[(buffer[i - 1]! & 3) << 3]!;
+    }
+    case buffer.length: {
+      let x = (buffer[i - 4]! << 16) | (buffer[i - 3]! << 8) | buffer[i - 2]!;
+      buffer[o++] = alphabet[x >> 19]!;
+      buffer[o++] = alphabet[x >> 14 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 9 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 4 & 0x1F]!;
+      x = (x << 16) | (buffer[i - 1]! << 8);
+      buffer[o++] = alphabet[x >> 15 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 10 & 0x1F]!;
+      buffer[o++] = alphabet[x >> 5 & 0x1F]!;
       buffer[o++] = padding;
       break;
+    }
   }
   return o;
 }
@@ -99,7 +103,6 @@ export function decode(
   o: number,
   alphabet: Uint8Array,
   padding: number,
-  assertChar: (byte: number) => void,
 ): number {
   for (let x = buffer.length - 6; x < buffer.length; ++x) {
     if (buffer[x] === padding) {
@@ -127,78 +130,72 @@ export function decode(
 
   i += 7;
   for (; i < buffer.length; i += 8) {
-    assertChar(buffer[i - 7]!);
-    assertChar(buffer[i - 6]!);
-    assertChar(buffer[i - 5]!);
-    assertChar(buffer[i - 4]!);
-    assertChar(buffer[i - 3]!);
-    assertChar(buffer[i - 2]!);
-    assertChar(buffer[i - 1]!);
-    assertChar(buffer[i]!);
-    buffer[o++] = (alphabet[buffer[i - 7]!]! << 3) |
-      (alphabet[buffer[i - 6]!]! >> 2);
-    buffer[o++] = ((alphabet[buffer[i - 6]!]! & 3) << 6) |
-      (alphabet[buffer[i - 5]!]! << 1) |
-      (alphabet[buffer[i - 4]!]! >> 4);
-    buffer[o++] = ((alphabet[buffer[i - 4]!]! & 15) << 4) |
-      (alphabet[buffer[i - 3]!]! >> 1);
-    buffer[o++] = ((alphabet[buffer[i - 3]!]! & 1) << 7) |
-      (alphabet[buffer[i - 2]!]! << 2) |
-      (alphabet[buffer[i - 1]!]! >> 3);
-    buffer[o++] = ((alphabet[buffer[i - 1]!]! & 3) << 5) |
-      alphabet[buffer[i]!]!;
+    let x = (getByte(buffer[i - 7]!, alphabet) << 19) |
+      (getByte(buffer[i - 6]!, alphabet) << 14) |
+      (getByte(buffer[i - 5]!, alphabet) << 9) |
+      (getByte(buffer[i - 4]!, alphabet) << 4);
+    buffer[o++] = x >> 16;
+    buffer[o++] = x >> 8 & 0xFF;
+    x = (x << 16) |
+      (getByte(buffer[i - 3]!, alphabet) << 15) |
+      (getByte(buffer[i - 2]!, alphabet) << 10) |
+      (getByte(buffer[i - 1]!, alphabet) << 5) |
+      getByte(buffer[i]!, alphabet);
+    buffer[o++] = x >> 16 & 0xFF;
+    buffer[o++] = x >> 8 & 0xFF;
+    buffer[o++] = x & 0xFF;
   }
   switch (i) {
-    case buffer.length + 5:
-      assertChar(buffer[i - 7]!);
-      assertChar(buffer[i - 6]!);
-      buffer[o++] = (alphabet[buffer[i - 7]!]! << 3) |
-        (alphabet[buffer[i - 6]!]! >> 2);
+    case buffer.length + 5: {
+      const x = (getByte(buffer[i - 7]!, alphabet) << 19) |
+        (getByte(buffer[i - 6]!, alphabet) << 14);
+      buffer[o++] = x >> 16;
       break;
-    case buffer.length + 3:
-      assertChar(buffer[i - 7]!);
-      assertChar(buffer[i - 6]!);
-      assertChar(buffer[i - 5]!);
-      assertChar(buffer[i - 4]!);
-      buffer[o++] = (alphabet[buffer[i - 7]!]! << 3) |
-        (alphabet[buffer[i - 6]!]! >> 2);
-      buffer[o++] = ((alphabet[buffer[i - 6]!]! & 3) << 6) |
-        (alphabet[buffer[i - 5]!]! << 1) |
-        (alphabet[buffer[i - 4]!]! >> 4);
+    }
+    case buffer.length + 3: {
+      const x = (getByte(buffer[i - 7]!, alphabet) << 19) |
+        (getByte(buffer[i - 6]!, alphabet) << 14) |
+        (getByte(buffer[i - 5]!, alphabet) << 9) |
+        (getByte(buffer[i - 4]!, alphabet) << 4);
+      buffer[o++] = x >> 16;
+      buffer[o++] = x >> 8 & 0xFF;
       break;
-    case buffer.length + 2:
-      assertChar(buffer[i - 7]!);
-      assertChar(buffer[i - 6]!);
-      assertChar(buffer[i - 5]!);
-      assertChar(buffer[i - 4]!);
-      assertChar(buffer[i - 3]!);
-      buffer[o++] = (alphabet[buffer[i - 7]!]! << 3) |
-        (alphabet[buffer[i - 6]!]! >> 2);
-      buffer[o++] = ((alphabet[buffer[i - 6]!]! & 3) << 6) |
-        (alphabet[buffer[i - 5]!]! << 1) |
-        (alphabet[buffer[i - 4]!]! >> 4);
-      buffer[o++] = ((alphabet[buffer[i - 4]!]! & 15) << 4) |
-        (alphabet[buffer[i - 3]!]! >> 1);
+    }
+    case buffer.length + 2: {
+      let x = (getByte(buffer[i - 7]!, alphabet) << 19) |
+        (getByte(buffer[i - 6]!, alphabet) << 14) |
+        (getByte(buffer[i - 5]!, alphabet) << 9) |
+        (getByte(buffer[i - 4]!, alphabet) << 4);
+      buffer[o++] = x >> 16;
+      buffer[o++] = x >> 8 & 0xFF;
+      x = (x << 16) |
+        (getByte(buffer[i - 3]!, alphabet) << 15);
+      buffer[o++] = x >> 16 & 0xFF;
       break;
-    case buffer.length:
-      assertChar(buffer[i - 7]!);
-      assertChar(buffer[i - 6]!);
-      assertChar(buffer[i - 5]!);
-      assertChar(buffer[i - 4]!);
-      assertChar(buffer[i - 3]!);
-      assertChar(buffer[i - 2]!);
-      assertChar(buffer[i - 1]!);
-      buffer[o++] = (alphabet[buffer[i - 7]!]! << 3) |
-        (alphabet[buffer[i - 6]!]! >> 2);
-      buffer[o++] = ((alphabet[buffer[i - 6]!]! & 3) << 6) |
-        (alphabet[buffer[i - 5]!]! << 1) |
-        (alphabet[buffer[i - 4]!]! >> 4);
-      buffer[o++] = ((alphabet[buffer[i - 4]!]! & 15) << 4) |
-        (alphabet[buffer[i - 3]!]! >> 1);
-      buffer[o++] = ((alphabet[buffer[i - 3]!]! & 1) << 7) |
-        (alphabet[buffer[i - 2]!]! << 2) |
-        (alphabet[buffer[i - 1]!]! >> 3);
+    }
+    case buffer.length: {
+      let x = (getByte(buffer[i - 7]!, alphabet) << 19) |
+        (getByte(buffer[i - 6]!, alphabet) << 14) |
+        (getByte(buffer[i - 5]!, alphabet) << 9) |
+        (getByte(buffer[i - 4]!, alphabet) << 4);
+      buffer[o++] = x >> 16;
+      buffer[o++] = x >> 8 & 0xFF;
+      x = (x << 16) |
+        (getByte(buffer[i - 3]!, alphabet) << 15) |
+        (getByte(buffer[i - 2]!, alphabet) << 10) |
+        (getByte(buffer[i - 1]!, alphabet) << 5);
+      buffer[o++] = x >> 16 & 0xFF;
+      buffer[o++] = x >> 8 & 0xFF;
       break;
+    }
   }
   return o;
+}
+
+function getByte(char: number, alphabet: Uint8Array): number {
+  const byte = alphabet[char] ?? 32;
+  if (byte === 32) { // alphabet.Base32.length
+    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+  }
+  return byte;
 }
