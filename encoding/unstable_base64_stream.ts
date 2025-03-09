@@ -71,7 +71,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
    *
    * @param options The options for the base64 stream.
    */
-  constructor(options: { format?: Base64Format; output?: T }) {
+  constructor(options: { format?: Base64Format; output?: T } = {}) {
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
       const decoder = new TextDecoder();
@@ -144,7 +144,7 @@ export class Base64DecoderStream<T extends "string" | "bytes">
    *
    * @param options The options for the base64 stream.
    */
-  constructor(options: { format?: Base64Format; input?: T }) {
+  constructor(options: { format?: Base64Format; input?: T } = {}) {
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
       const encoder = new TextEncoder();
