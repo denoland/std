@@ -12,7 +12,7 @@
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base64EncoderStream("Base64"));
+ *   .pipeThrough(new Base64EncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
@@ -36,13 +36,9 @@ import {
 import { detach } from "./_common_detach.ts";
 
 /**
- * The raw base64 encoding formats.
+ * A type used to represent the expected type of a base64 stream.
  */
-export type Base64RawFormat = `Raw-${Base64Format}`;
-/**
- * A type used to represent the expected output of a base64 stream.
- */
-export type Expect<T> = T extends Base64Format ? string : Uint8Array_;
+export type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
  * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a base64 stream.
@@ -60,27 +56,24 @@ export type Expect<T> = T extends Base64Format ? string : Uint8Array_;
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base64EncoderStream("Base64"));
+ *   .pipeThrough(new Base64EncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
+ *   encodeBase64(await Deno.readFile("./deno.lock")),
  * );
  * ```
  */
-export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
+export class Base64EncoderStream<T extends "string" | "bytes">
   extends TransformStream<Uint8Array_, Expect<T>> {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the base64 stream.
+   * @param options The options for the base64 stream.
    */
-  constructor(format: T) {
+  constructor(options: { format?: Base64Format; output?: T }) {
     const decode = function (): (input: Uint8Array_) => Expect<T> {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Expect<T>;
-      }
+      if (options.output === "bytes") return (x) => x as Expect<T>;
       const decoder = new TextDecoder();
       return (x) => decoder.decode(x) as Expect<T>;
     }();
@@ -99,7 +92,7 @@ export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
           output.subarray(0, -remainder || undefined),
           i,
           0,
-          format as Base64Format,
+          options.format,
         );
         controller.enqueue(decode(output.subarray(0, o)));
       },
@@ -109,7 +102,7 @@ export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
             push.subarray(0, remainder),
             calcMax(remainder),
           );
-          const o = encode(output, i, 0, format as Base64Format);
+          const o = encode(output, i, 0, options.format);
           controller.enqueue(decode(output.subarray(0, o)));
         }
       },
@@ -135,8 +128,8 @@ export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base64EncoderStream("Base64"))
- *   .pipeThrough(new Base64DecoderStream("Base64"));
+ *   .pipeThrough(new Base64EncoderStream({ output: "string" }))
+ *   .pipeThrough(new Base64DecoderStream({ input: "string" }));
  *
  * assertEquals(
  *   await toBytes(readable),
@@ -144,19 +137,16 @@ export class Base64EncoderStream<T extends Base64Format | Base64RawFormat>
  * );
  * ```
  */
-export class Base64DecoderStream<T extends Base64Format | Base64RawFormat>
+export class Base64DecoderStream<T extends "string" | "bytes">
   extends TransformStream<Expect<T>, Uint8Array_> {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the base64 stream.
+   * @param options The options for the base64 stream.
    */
-  constructor(format: T) {
+  constructor(options: { format?: Base64Format; input?: T }) {
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Uint8Array_;
-      }
+      if (options.input === "bytes") return (x) => x as Uint8Array_;
       const encoder = new TextEncoder();
       return (x) => encoder.encode(x as string) as Uint8Array_;
     }();
@@ -175,7 +165,7 @@ export class Base64DecoderStream<T extends Base64Format | Base64RawFormat>
           output.subarray(0, -remainder || undefined),
           0,
           0,
-          format as Base64Format,
+          options.format,
         );
         controller.enqueue(output.subarray(0, o));
       },
@@ -185,7 +175,7 @@ export class Base64DecoderStream<T extends Base64Format | Base64RawFormat>
             push.subarray(0, remainder),
             0,
             0,
-            format as Base64Format,
+            options.format,
           );
           controller.enqueue(push.subarray(0, o));
         }
