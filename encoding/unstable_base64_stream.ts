@@ -38,7 +38,7 @@ import { detach } from "./_common_detach.ts";
 /**
  * A type used to represent the expected type of a base64 stream.
  */
-export type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
+type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
  * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a base64 stream.
@@ -65,7 +65,10 @@ export type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
  * ```
  */
 export class Base64EncoderStream<T extends "string" | "bytes">
-  extends TransformStream<Uint8Array_, Expect<T>> {
+  extends TransformStream<
+    Uint8Array_,
+    T extends "bytes" ? Uint8Array_ : string
+  > {
   /**
    * Constructs a new instance.
    *
@@ -138,7 +141,10 @@ export class Base64EncoderStream<T extends "string" | "bytes">
  * ```
  */
 export class Base64DecoderStream<T extends "string" | "bytes">
-  extends TransformStream<Expect<T>, Uint8Array_> {
+  extends TransformStream<
+    T extends "bytes" ? Uint8Array_ : string,
+    Uint8Array_
+  > {
   /**
    * Constructs a new instance.
    *
