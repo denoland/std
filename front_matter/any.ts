@@ -34,10 +34,8 @@ export type { Extract };
  * @param text The text to extract front matter from.
  * @returns The extracted front matter and body content.
  */
-export function extract<T>(
-  text: string,
-): Extract<T> {
-  const format = RECOGNIZE_REGEXP_MAP.entries()
+export function extract<T>(text: string): Extract<T> {
+  const format = [...RECOGNIZE_REGEXP_MAP.entries()]
     .find(([_, regexp]) => regexp.test(text))?.[0];
   switch (format) {
     case "yaml":
