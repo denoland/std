@@ -32,8 +32,7 @@ don't break
 {Also: "---json this shouldn't be a problem"}
 `;
 
-  const content = extract(input);
-
+  const content = extract<Record<string, unknown>>(input);
   assertEquals(
     content.frontMatter,
     `{

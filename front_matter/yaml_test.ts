@@ -29,8 +29,7 @@ don't break
 ---
 Also this shouldn't be a problem
 `;
-  const content = extract(input);
-
+  const content = extract<Record<string, unknown>>(input);
   assertEquals(
     content.frontMatter,
     `title: Three dashes marks the spot
@@ -65,8 +64,7 @@ don't break
 ---
 Also this shouldn't be a problem
 `;
-  const content = extract(input);
-
+  const content = extract<Record<string, unknown>>(input);
   assertEquals(
     content.frontMatter,
     `title: Three dashes marks the spot

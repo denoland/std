@@ -25,8 +25,7 @@ don't break
 ---
 Also = '---toml this shouldn't be a problem'
 `;
-  const content = extract(input);
-
+  const content = extract<Record<string, unknown>>(input);
   assertEquals(
     content.frontMatter,
     `title = 'Three dashes followed by the format marks the spot'
@@ -49,7 +48,7 @@ tags = ['toml', 'front-matter']
 });
 
 Deno.test("toml() parses toml delineate by +++", () => {
-  const str = `+++
+  const input = `+++
 title = 'Three pluses followed by the format marks the spot'
 tags = ['toml', 'front-matter']
 'expanded-description' = 'with some +++toml 👌 crazy stuff in it'
@@ -58,7 +57,7 @@ don't break
 +++
 Also = '+++toml this shouldn't be a problem'
 `;
-  const content = extract(str);
+  const content = extract<Record<string, unknown>>(input);
 
   assertEquals(
     content.frontMatter,

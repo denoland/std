@@ -33,9 +33,7 @@ export type { Extract };
  * @param text The text to extract TOML front matter from.
  * @returns The extracted TOML front matter and body content.
  */
-export function extract<T extends Record<string, unknown>>(
-  text: string,
-): Extract<T> {
+export function extract<T>(text: string): Extract<T> {
   const { frontMatter, body } = extractFrontMatter(text, EXTRACT_TOML_REGEXP);
   const attrs = parse(frontMatter) as T;
   return { frontMatter, body, attrs };
