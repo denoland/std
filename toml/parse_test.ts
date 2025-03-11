@@ -806,7 +806,7 @@ hosts = [
 profiles = [ { name = "John", "john@example.com" = true }, { name = "Doe", "doe@example.com" = true }, ]
 
 floats = [ 0.1, -1.25 ]`);
-    
+
     assertEquals(actual, expected);
   },
 });
