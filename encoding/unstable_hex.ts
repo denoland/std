@@ -129,7 +129,7 @@ export function encodeRawHex(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: HexFormat,
+  format: HexFormat = "Hex",
 ): number {
   const max = calcMax(buffer.length - i);
   if (max > buffer.length - o) throw new RangeError("Buffer too small");
@@ -205,7 +205,7 @@ export function decodeRawHex(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: HexFormat,
+  format: HexFormat = "Hex",
 ): number {
   if (i < o) {
     throw new RangeError(
