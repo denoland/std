@@ -48,3 +48,13 @@ export function getNodePath() {
 export function getNodeProcess() {
   return (globalThis as any).process.getBuiltinModule("node:process");
 }
+
+/**
+ * Used for naming temporary files. See {@linkcode makeTempFile} and
+ * {@linkcode makeTempFileSync}.
+ * @returns A randomized 6-digit hexadecimal string.
+ */
+export function randomId(): string {
+  const n = (Math.random() * 0xfffff * 1_000_000).toString(16);
+  return "".concat(n.slice(0, 6));
+}
