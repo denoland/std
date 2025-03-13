@@ -12,7 +12,7 @@
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base32EncoderStream("Base32"));
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
@@ -35,14 +35,7 @@ import {
 } from "./unstable_base32.ts";
 import { detach } from "./_common_detach.ts";
 
-/**
- * The raw base32 encoding formats.
- */
-export type Base32RawFormat = `Raw-${Base32Format}`;
-/**
- * A type used to represent the expected output of a base32 stream.
- */
-export type Expect<T> = T extends Base32Format ? string : Uint8Array_;
+type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
  * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a base32 stream.
@@ -60,7 +53,7 @@ export type Expect<T> = T extends Base32Format ? string : Uint8Array_;
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base32EncoderStream("Base32"));
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
@@ -68,22 +61,19 @@ export type Expect<T> = T extends Base32Format ? string : Uint8Array_;
  * );
  * ```
  */
-export class Base32EncoderStream<T extends Base32Format | Base32RawFormat>
+export class Base32EncoderStream<T extends "string" | "bytes">
   extends TransformStream<
     Uint8Array_,
-    Expect<T>
+    T extends "bytes" ? Uint8Array_ : string
   > {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the base32 stream.
+   * @param options The options of the base32 stream.
    */
-  constructor(format: T) {
+  constructor(options: { format?: Base32Format; output?: T } = {}) {
     const decode = function (): (input: Uint8Array_) => Expect<T> {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Expect<T>;
-      }
+      if (options.output === "bytes") return (x) => x as Expect<T>;
       const decoder = new TextDecoder();
       return (x) => decoder.decode(x) as Expect<T>;
     }();
@@ -102,7 +92,7 @@ export class Base32EncoderStream<T extends Base32Format | Base32RawFormat>
           output.subarray(0, -remainder || undefined),
           i,
           0,
-          format as Base32Format,
+          options.format,
         );
         controller.enqueue(decode(output.subarray(0, o)));
       },
@@ -112,7 +102,7 @@ export class Base32EncoderStream<T extends Base32Format | Base32RawFormat>
             push.subarray(0, remainder),
             calcMax(remainder),
           );
-          encode(output, i, 0, format as Base32Format);
+          encode(output, i, 0, options.format);
           controller.enqueue(decode(output));
         }
       },
@@ -138,8 +128,8 @@ export class Base32EncoderStream<T extends Base32Format | Base32RawFormat>
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new Base32EncoderStream("Base32"))
- *   .pipeThrough(new Base32DecoderStream("Base32"));
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }))
+ *   .pipeThrough(new Base32DecoderStream({ input: "string" }));
  *
  * assertEquals(
  *   await toBytes(readable),
@@ -149,19 +139,19 @@ export class Base32EncoderStream<T extends Base32Format | Base32RawFormat>
  *
  * @module
  */
-export class Base32DecoderStream<T extends Base32Format | Base32RawFormat>
-  extends TransformStream<Expect<T>, Uint8Array_> {
+export class Base32DecoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    T extends "bytes" ? Uint8Array_ : string,
+    Uint8Array_
+  > {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the base32 stream.
+   * @param options The options of the base32 stream.
    */
-  constructor(format: T) {
+  constructor(options: { format?: Base32Format; input?: T } = {}) {
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Uint8Array_;
-      }
+      if (options.input === "bytes") return (x) => x as Uint8Array_;
       const encoder = new TextEncoder();
       return (x) => encoder.encode(x as string) as Uint8Array_;
     }();
@@ -180,7 +170,7 @@ export class Base32DecoderStream<T extends Base32Format | Base32RawFormat>
           output.subarray(0, -remainder || undefined),
           0,
           0,
-          format as Base32Format,
+          options.format,
         );
         controller.enqueue(output.subarray(0, o));
       },
@@ -190,7 +180,7 @@ export class Base32DecoderStream<T extends Base32Format | Base32RawFormat>
             push.subarray(0, remainder),
             0,
             0,
-            format as Base32Format,
+            options.format,
           );
           controller.enqueue(push.subarray(0, o));
         }

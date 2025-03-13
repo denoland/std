@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { toText } from "@std/streams";
 import { toBytes } from "@std/streams/unstable-to-bytes";
 import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
-import { type Base32Format, encodeBase32 } from "./unstable_base32.ts";
+import { encodeBase32 } from "./unstable_base32.ts";
 import {
   Base32DecoderStream,
   Base32EncoderStream,
@@ -15,7 +15,7 @@ Deno.test("Base32EncoderStream() with normal format", async () => {
     const readable = (await Deno.open("./deno.lock"))
       .readable
       .pipeThrough(new FixedChunkStream(1021))
-      .pipeThrough(new Base32EncoderStream(format));
+      .pipeThrough(new Base32EncoderStream({ format, output: "string" }));
 
     assertEquals(
       await toText(readable),
@@ -28,22 +28,22 @@ Deno.test("Base32EncoderStream() with normal format", async () => {
 Deno.test("Base32EncoderStream() with raw format", async () => {
   for (
     const format of [
-      "Raw-Base32",
-      "Raw-Base32Hex",
-      "Raw-Base32Crockford",
+      "Base32",
+      "Base32Hex",
+      "Base32Crockford",
     ] as const
   ) {
     const readable = (await Deno.open("./deno.lock"))
       .readable
       .pipeThrough(new FixedChunkStream(1021))
-      .pipeThrough(new Base32EncoderStream(format));
+      .pipeThrough(new Base32EncoderStream({ format, output: "bytes" }));
 
     assertEquals(
       await toBytes(readable),
       new TextEncoder().encode(
         encodeBase32(
           await Deno.readFile("./deno.lock"),
-          format.slice(4) as Base32Format,
+          format,
         ),
       ),
       format,
@@ -55,11 +55,11 @@ Deno.test("Base32DecoderStream() with normal format", async () => {
   for (const format of ["Base32", "Base32Hex", "Base32Crockford"] as const) {
     const readable = (await Deno.open("./deno.lock"))
       .readable
-      .pipeThrough(new Base32EncoderStream(format))
+      .pipeThrough(new Base32EncoderStream({ format, output: "string" }))
       .pipeThrough(new TextEncoderStream())
       .pipeThrough(new FixedChunkStream(1021))
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new Base32DecoderStream(format));
+      .pipeThrough(new Base32DecoderStream({ format, input: "string" }));
 
     assertEquals(
       await toBytes(readable),
@@ -71,16 +71,16 @@ Deno.test("Base32DecoderStream() with normal format", async () => {
 Deno.test("Base32DecoderStream() with raw format", async () => {
   for (
     const format of [
-      "Raw-Base32",
-      "Raw-Base32Hex",
-      "Raw-Base32Crockford",
+      "Base32",
+      "Base32Hex",
+      "Base32Crockford",
     ] as const
   ) {
     const readable = (await Deno.open("./deno.lock"))
       .readable
-      .pipeThrough(new Base32EncoderStream(format))
+      .pipeThrough(new Base32EncoderStream({ format, output: "bytes" }))
       .pipeThrough(new FixedChunkStream(1021))
-      .pipeThrough(new Base32DecoderStream(format));
+      .pipeThrough(new Base32DecoderStream({ format, input: "bytes" }));
 
     assertEquals(
       await toBytes(readable),
