@@ -50,3 +50,11 @@ Deno.test("dropLastWhile() returns empty array when all elements get dropped", (
 
   assertEquals(actual, []);
 });
+
+Deno.test("dropLastWhile() passes index to predicate", () => {
+  const array = [20, 30, 20];
+
+  const actual = dropLastWhile(array, (_, index) => index > 1);
+
+  assertEquals(actual, [20, 30]);
+});
