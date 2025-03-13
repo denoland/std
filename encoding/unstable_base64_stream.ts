@@ -35,9 +35,6 @@ import {
 } from "./unstable_base64.ts";
 import { detach } from "./_common_detach.ts";
 
-/**
- * A type used to represent the expected type of a base64 stream.
- */
 type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
