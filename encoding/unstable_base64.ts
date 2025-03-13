@@ -2,20 +2,20 @@
 // This module is browser compatible.
 
 /**
- * Functions to encode and decode to and from base32 strings.
+ * Functions to encode and decode to and from base64 strings.
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32, type Uint8Array_ } from "@std/encoding/unstable-base32";
+ * import { encodeBase64, type Uint8Array_ } from "@std/encoding/unstable-base64";
  *
- * assertEquals(encodeBase32("Hello World", "Base32"), "JBSWY3DPEBLW64TMMQ======");
+ * assertEquals(encodeBase64("Hello World", "Base64"), "SGVsbG8gV29ybGQ=");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32"),
- *   "JBSWY3DPEBLW64TMMQ======",
+ *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64"),
+ *   "SGVsbG8gV29ybGQ=",
  * );
  * ```
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-4}
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -23,90 +23,86 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common32.ts";
+import { calcMax, decode, encode } from "./_common64.ts";
 export { calcMax };
 import { detach } from "./_common_detach.ts";
 
 const padding = "=".charCodeAt(0);
-const alphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new TextEncoder().encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
-  Base32Hex: new TextEncoder().encode("0123456789ABCDEFGHIJKLMNOPQRSTUV"),
-  Base32Crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
+const alphabet: Record<Base64Format, Uint8Array> = {
+  Base64: new TextEncoder()
+    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
+  Base64Url: new TextEncoder()
+    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
 };
-const rAlphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new Uint8Array(128).fill(32), // alphabet.Base32.length
-  Base32Hex: new Uint8Array(128).fill(32),
-  Base32Crockford: new Uint8Array(128).fill(32),
+const rAlphabet: Record<Base64Format, Uint8Array> = {
+  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
+  Base64Url: new Uint8Array(128).fill(64),
 };
-alphabet.Base32
-  .forEach((byte, i) => rAlphabet.Base32[byte] = i);
-alphabet.Base32Hex
-  .forEach((byte, i) => rAlphabet.Base32Hex[byte] = i);
-alphabet.Base32Crockford
-  .forEach((byte, i) => rAlphabet.Base32Crockford[byte] = i);
+alphabet.Base64
+  .forEach((byte, i) => rAlphabet.Base64[byte] = i);
+alphabet.Base64Url
+  .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
 
 /**
- * The base 32 encoding formats.
+ * The base 64 encoding formats.
  */
-export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
+export type Base64Format = "Base64" | "Base64Url";
 
 /**
- * `encodeBase32` takes an input source and encodes it into a base32 string. If
+ * `encodeBase64` takes an input source and encodes it into a base64 string. If
  * a {@linkcode Uint8Array<ArrayBuffer>} or {@linkcode ArrayBuffer} is provided,
  * the underlying source will be detached and reused for the encoding. If you
- * need the input source after providing it to this function, call `.slice()` to
- * pass in a copy.
+ * need the input source after providing it to this function, call `.slice()`
+ * to pass in a copy.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to encode.
- * @param format The format to use for encoding.
- * @returns The base32 string representation of the input.
+ * @param format The format to use for encoding. Defaults to "Base64".
+ * @returns The base64 string representation of the input.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32, type Uint8Array_ } from "@std/encoding/unstable-base32";
+ * import { encodeBase64, type Uint8Array_ } from "@std/encoding/unstable-base64";
  *
- * assertEquals(encodeBase32("Hello World", "Base32"), "JBSWY3DPEBLW64TMMQ======");
+ * assertEquals(encodeBase64("Hello World", "Base64"), "SGVsbG8gV29ybGQ=");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32"),
- *   "JBSWY3DPEBLW64TMMQ======",
+ *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64"),
+ *   "SGVsbG8gV29ybGQ=",
  * );
  *
- * assertEquals(encodeBase32("Hello World", "Base32Hex"), "91IMOR3F41BMUSJCCG======");
+ * assertEquals(encodeBase64("Hello World", "Base64Url"), "SGVsbG8gV29ybGQ");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32Hex"),
- *   "91IMOR3F41BMUSJCCG======",
- * );
- *
- * assertEquals(encodeBase32("Hello World", "Base32Crockford"), "91JPRV3F41BPYWKCCG======");
- * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32Crockford"),
- *   "91JPRV3F41BPYWKCCG======",
+ *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64Url"),
+ *   "SGVsbG8gV29ybGQ",
  * );
  * ```
  */
-export function encodeBase32(
+export function encodeBase64(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: Base32Format,
+  format: Base64Format = "Base64",
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const [output, i] = detach(
+  let [output, i] = detach(
     input as Uint8Array_,
     calcMax((input as Uint8Array_).length),
   );
-  encode(output, i, 0, alphabet[format], padding);
+  let o = encode(output, i, 0, alphabet[format], padding);
+  if (format === "Base64Url") {
+    o = output.indexOf(padding, o - 2);
+    if (o > 0) output = output.subarray(0, o);
+  }
   return new TextDecoder().decode(output);
 }
 
 /**
- * `encodeRawBase32` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to base32 in place. The function assumes
+ * `encodeRawBase64` is a low-level function that encodes a
+ * {@linkcode Uint8Array<ArrayBuffer>} to base64 in place. The function assumes
  * that the raw data starts at param {@linkcode i} and ends at the end of the
  * buffer, and that the entire buffer provided is large enough to hold the
  * encoded data.
@@ -116,13 +112,13 @@ export function encodeBase32(
  * @param buffer The buffer to encode in place.
  * @param i The index of where the raw data starts reading from.
  * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding.
+ * @param format The format to use for encoding. Defaults to "Base64".
  * @returns The index of where the encoded data finished writing to.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeBase32, encodeRawBase32 } from "@std/encoding/unstable-base32";
+ * import { calcMax, encodeBase64, encodeRawBase64 } from "@std/encoding/unstable-base64";
  *
  * const prefix = new TextEncoder().encode("data:url/fake,");
  * const input = await Deno.readFile("./deno.lock");
@@ -137,58 +133,58 @@ export function encodeBase32(
  * output.set(output.subarray(0, originalSize), i);
  * output.set(prefix);
  *
- * encodeRawBase32(output, i, o, "Base32");
+ * encodeRawBase64(output, i, o, "Base64");
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   "data:url/fake," + encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
  * );
  * ```
  */
-export function encodeRawBase32(
+export function encodeRawBase64(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: Base32Format,
+  format: Base64Format = "Base64",
 ): number {
   const max = calcMax(buffer.length - i);
   if (max > buffer.length - o) throw new RangeError("Buffer too small");
-  return encode(buffer, i, o, alphabet[format], padding);
+  o = encode(buffer, i, o, alphabet[format], padding);
+  if (format === "Base64Url") {
+    i = buffer.indexOf(padding, o - 2);
+    if (i > 0) return i;
+  }
+  return o;
 }
 
 /**
- * `decodeBase32` takes an input source and decodes it into a
+ * `decodeBase64` takes an input source and decodes it into a
  * {@linkcode Uint8Array<ArrayBuffer>} using the specified format.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to decode.
- * @param format The format to use for decoding.
+ * @param format The format to use for decoding. Defaults to "Base64".
  * @returns The decoded {@linkcode Uint8Array<ArrayBuffer>}.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { decodeBase32 } from "@std/encoding/unstable-base32";
+ * import { decodeBase64 } from "@std/encoding/unstable-base64";
  *
  * assertEquals(
- *   decodeBase32("JBSWY3DPEBLW64TMMQ======", "Base32"),
+ *   decodeBase64("SGVsbG8gV29ybGQ=", "Base64"),
  *   new TextEncoder().encode("Hello World"),
  * );
  *
  * assertEquals(
- *   decodeBase32("91IMOR3F41BMUSJCCG======", "Base32Hex"),
- *   new TextEncoder().encode("Hello World"),
- * );
- *
- * assertEquals(
- *   decodeBase32("91JPRV3F41BPYWKCCG======", "Base32Crockford"),
+ *   decodeBase64("SGVsbG8gV29ybGQ", "Base64Url"),
  *   new TextEncoder().encode("Hello World"),
  * );
  * ```
  */
-export function decodeBase32(
+export function decodeBase64(
   input: string,
-  format: Base32Format = "Base32",
+  format: Base64Format = "Base64",
 ): Uint8Array_ {
   const output = new TextEncoder().encode(input) as Uint8Array_;
   return output
@@ -210,34 +206,34 @@ export function decodeBase32(
  * @param buffer The buffer to decode in place.
  * @param i The index of where the encoded data starts reading from.
  * @param o The index of where the decoded data starts writing to.
- * @param format The format to use for decoding.
+ * @param format The format to use for decoding. Defaults to "Base64".
  * @returns The index of where the decoded data finished writing to.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import {
- *   decodeRawBase32,
- *   encodeBase32,
+ *   decodeRawBase64,
+ *   encodeBase64,
  *   type Uint8Array_,
- * } from "@std/encoding/unstable-base32";
+ * } from "@std/encoding/unstable-base64";
  *
  * let buffer = new TextEncoder().encode(
- *   "data:url/fake," + encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   "data:url/fake," + encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
  * ) as Uint8Array_;
  *
  * const i = buffer.indexOf(",".charCodeAt(0)) + 1;
- * const o = decodeRawBase32(buffer, i, i, "Base32");
+ * const o = decodeRawBase64(buffer, i, i, "Base64");
  *
  * buffer = buffer.subarray(i, o);
  * assertEquals(buffer, await Deno.readFile("./deno.lock"));
  * ```
  */
-export function decodeRawBase32(
+export function decodeRawBase64(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: Base32Format = "Base32",
+  format: Base64Format = "Base64",
 ): number {
   if (i < o) {
     throw new RangeError(
