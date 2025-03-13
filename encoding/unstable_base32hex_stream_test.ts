@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { encodeBase32Hex } from "./unstable_base32hex.ts";
+import { encodeBase32 } from "./unstable_base32.ts";
 import {
   Base32HexDecoderStream,
   Base32HexEncoderStream,
@@ -18,7 +18,7 @@ Deno.test("Base32EncoderStream() encodes stream", async () => {
 
   assertEquals(
     await toText(stream),
-    encodeBase32Hex(await Deno.readFile("./deno.lock")),
+    encodeBase32(await Deno.readFile("./deno.lock"), "Base32Hex"),
   );
 });
 

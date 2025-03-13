@@ -1,3 +1,55 @@
+### 2025.03.04
+
+#### @std/async 1.0.11 (patch)
+
+- test(async/unstable): add `retry()` tests (#6423)
+- test(async): fix flaky `pooledMap()` test (#6412)
+- test(async/unstable): fix flaky `waitFor()` test (#6413)
+
+#### @std/cli 1.0.14 (patch)
+
+- fix(cli/unstable): update interval in ProgressBar (#6402)
+- refactor(cli/unstable): clean up `start` end `stop` methods of `Spinner`, add
+  test cases for multiple start/stop calls (#6420)
+- test(cli): fix flaky spinner test (#6404)
+- test(cli/unstable): make `ProgressBar` tests run faster (#6411)
+
+#### @std/fmt 1.0.6 (patch)
+
+- docs(fmt): fix `printf` module doc (#6424)
+
+#### @std/front-matter 1.0.8 (patch)
+
+- perf(front-matter): remove regexp `m` flags, reduce unnecessary string
+  operations (#6393)
+- refactor(front-matter): cleanup `_shared.ts` (#6418)
+
+#### @std/fs 1.0.14 (patch)
+
+- feat(fs/unstable): add `remove` and `removeSync` api. (#6438)
+- feat(fs/unstable): add umask (#6454)
+- feat(fs/unstable): add utime and utimeSync (#6446)
+- feat(fs/unstable): add mkdir and mkdirSync (#6436)
+- feat(fs/unstable): add `copyFile` and `copyFileSync` (#6425)
+- feat(fs/unstable): add truncate and truncateSync (#6416)
+- feat(fs/unstable): add readTextFileSync and readTextFile (#6405)
+- fix(fs/unstable): fix node.js test runner, fix readTextFile and copyFile in
+  Node.js (#6441)
+- test(fs/unstable): remove windows specific paths and fix ci (#6448)
+- test(fs/unstable): add test case for reading text file with BOM (#6431)
+
+#### @std/tar 0.1.6 (patch)
+
+- BREAKING(tar/unstable): fix handling of mode, uid, and gid (#6440)
+
+#### @std/text 1.0.11 (patch)
+
+- feat(text/unstable): add `reverse` function (#6410)
+
+#### @std/uuid 1.0.5 (patch)
+
+- fix(uuid): handle `rng` correctly in uuid v1 (#6432)
+
 ### 2025.02.14a
 
 #### @std/front-matter 1.0.7 (patch)

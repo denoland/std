@@ -155,3 +155,48 @@ export interface MakeTempOptions {
    */
   suffix?: string;
 }
+
+/**
+ * Options that can be used with {@linkcode remove} and
+ * {@linkcode removeSync}.
+ */
+export interface RemoveOptions {
+  /**
+   * If set to true, path will be removed even if it's a non-empty directory.
+   */
+  recursive?: boolean;
+}
+
+/** Options for writing to a file. */
+export interface WriteFileOptions {
+  /**
+   * If set to `true`, will append to a file instead of overwriting previous
+   * contents.
+   *
+   * @default {false}
+   */
+  append?: boolean;
+  /**
+   * Sets the option to allow creating a new file, if one doesn't already
+   * exist at the specified path.
+   *
+   * @default {true}
+   */
+  create?: boolean;
+  /**
+   * If set to `true`, no file, directory, or symlink is allowed to exist at
+   * the target location. When createNew is set to `true`, `create` is ignored.
+   *
+   * @default {false}
+   */
+  createNew?: boolean;
+  /** Permissions always applied to file. */
+  mode?: number;
+  /**
+   * An abort signal to allow cancellation of the file write operation.
+   *
+   * If the signal becomes aborted the write file operation will be stopped
+   * and the promise returned will be rejected with an {@linkcode AbortError}.
+   */
+  signal?: AbortSignal;
+}

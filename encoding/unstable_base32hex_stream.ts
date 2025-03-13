@@ -21,7 +21,7 @@
  * @module
  */
 
-import { decodeBase32Hex, encodeBase32Hex } from "./unstable_base32hex.ts";
+import { decodeBase32, encodeBase32 } from "./unstable_base32.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
@@ -35,7 +35,7 @@ export type { Uint8Array_ };
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32Hex } from "@std/encoding/unstable-base32hex";
+ * import { encodeBase32 } from "@std/encoding/unstable-base32";
  * import { Base32HexEncoderStream } from "@std/encoding/unstable-base32hex-stream";
  * import { toText } from "@std/streams/to-text";
  *
@@ -43,7 +43,7 @@ export type { Uint8Array_ };
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeThrough(new Base32HexEncoderStream());
  *
- * assertEquals(await toText(stream), encodeBase32Hex(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(await toText(stream), encodeBase32("Hello, world!", "Base32Hex"));
  * ```
  */
 export class Base32HexEncoderStream
@@ -58,13 +58,13 @@ export class Base32HexEncoderStream
 
         const remainder = -concat.length % 5;
         controller.enqueue(
-          encodeBase32Hex(concat.slice(0, remainder || undefined)),
+          encodeBase32(concat.slice(0, remainder || undefined), "Base32Hex"),
         );
         push = remainder ? concat.slice(remainder) : new Uint8Array(0);
       },
       flush(controller) {
         if (push.length) {
-          controller.enqueue(encodeBase32Hex(push));
+          controller.enqueue(encodeBase32(push, "Base32Hex"));
         }
       },
     });
@@ -103,13 +103,13 @@ export class Base32HexDecoderStream
         }
         const remainder = -push.length % 8;
         controller.enqueue(
-          decodeBase32Hex(push.slice(0, remainder || undefined)),
+          decodeBase32(push.slice(0, remainder || undefined), "Base32Hex"),
         );
         push = remainder ? chunk.slice(remainder) : "";
       },
       flush(controller) {
         if (push.length) {
-          controller.enqueue(decodeBase32Hex(push));
+          controller.enqueue(decodeBase32(push, "Base32Hex"));
         }
       },
     });
