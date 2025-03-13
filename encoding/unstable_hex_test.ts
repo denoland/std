@@ -180,3 +180,12 @@ Deno.test("decodeRawHex() with invalid offsets", () => {
     }
   }
 });
+
+Deno.test("decodeHex() throws with invalid byte >= 128", () => {
+  const input = new TextDecoder().decode(new Uint8Array(2).fill(200));
+  assertThrows(
+    () => decodeHex(input),
+    TypeError,
+    "Invalid Character",
+  );
+});
