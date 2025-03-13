@@ -31,24 +31,12 @@ const alphabet: Record<HexFormat, Uint8Array> = {
   Hex: new TextEncoder().encode("0123456789abcdef"),
 };
 const rAlphabet: Record<HexFormat, Uint8Array> = {
-  Hex: new Uint8Array(128),
+  Hex: new Uint8Array(128).fill(16), // alphabet.Hex.length
 };
 alphabet.Hex.forEach((byte, i) => rAlphabet.Hex[byte] = i);
 new TextEncoder()
   .encode("ABCDEF")
   .forEach((byte, i) => rAlphabet.Hex[byte] = i + 10);
-
-const assertChar: Record<HexFormat, (byte: number) => void> = {
-  Hex(byte: number): void {
-    if (
-      !(
-        (48 <= byte && byte <= 57) ||
-        (97 <= byte && byte <= 102) ||
-        (65 <= byte && byte <= 70)
-      )
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-};
 
 /**
  * The hex encoding formats.
@@ -82,7 +70,7 @@ export type HexFormat = "Hex";
  */
 export function encodeHex(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: HexFormat,
+  format: HexFormat = "Hex",
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
@@ -169,10 +157,13 @@ export function encodeRawHex(
  * );
  * ```
  */
-export function decodeHex(input: string, format: HexFormat): Uint8Array_ {
+export function decodeHex(
+  input: string,
+  format: HexFormat = "Hex",
+): Uint8Array_ {
   const output = new TextEncoder().encode(input) as Uint8Array_;
   return output
-    .subarray(0, decode(output, 0, 0, rAlphabet[format], assertChar[format]));
+    .subarray(0, decode(output, 0, 0, rAlphabet[format]));
 }
 
 /**
@@ -221,5 +212,5 @@ export function decodeRawHex(
       "Input (i) must be greater than or equal to output (o)",
     );
   }
-  return decode(buffer, i, o, rAlphabet[format], assertChar[format]);
+  return decode(buffer, i, o, rAlphabet[format]);
 }
