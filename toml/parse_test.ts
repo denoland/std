@@ -657,8 +657,8 @@ Deno.test({
   name: "parse() handles CRLF",
   fn() {
     const expected = { boolean: { bool1: true, bool2: false } };
-    const actual = parse(`[boolean]
-bool1 = true
+    const actual = parse(`[boolean]\r
+bool1 = true\r
 bool2 = false`);
     assertEquals(actual, expected);
   },
