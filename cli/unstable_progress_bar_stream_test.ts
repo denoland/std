@@ -20,7 +20,7 @@ Deno.test("ProgressBarStream() flushes", async () => {
     const _ of ReadableStream
       .from(getData(10, 1000))
       .pipeThrough(
-        new ProgressBarStream(writable, { max: 10 * 1000, keepOpen: false }),
+        new ProgressBarStream({ writable, max: 10 * 1000, keepOpen: false }),
       )
     // deno-lint-ignore no-empty
   ) {}
@@ -34,7 +34,7 @@ Deno.test("ProgressBarStream() cancels", async () => {
   await ReadableStream
     .from(getData(10, 1000))
     .pipeThrough(
-      new ProgressBarStream(writable, { max: 10 * 1000, keepOpen: false }),
+      new ProgressBarStream({ writable, max: 10 * 1000, keepOpen: false }),
     )
     .cancel();
 
