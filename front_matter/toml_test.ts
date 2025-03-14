@@ -25,26 +25,19 @@ don't break
 ---
 Also = '---toml this shouldn't be a problem'
 `;
-  const content = extract<Record<string, unknown>>(input);
-  assertEquals(
-    content.frontMatter,
-    `title = 'Three dashes followed by the format marks the spot'
+  const actual = extract<Record<string, unknown>>(input);
+  const expected = {
+    frontMatter: `title = 'Three dashes followed by the format marks the spot'
 tags = ['toml', 'front-matter']
 'expanded-description' = 'with some ---toml 👌 crazy stuff in it'`,
-  );
-  assertEquals(
-    content.body,
-    "don't break\n---\nAlso = '---toml this shouldn't be a problem'\n",
-  );
-  assertEquals(
-    content.attrs.title,
-    "Three dashes followed by the format marks the spot",
-  );
-  assertEquals(content.attrs.tags, ["toml", "front-matter"]);
-  assertEquals(
-    content.attrs["expanded-description"],
-    "with some ---toml 👌 crazy stuff in it",
-  );
+    body: "don't break\n---\nAlso = '---toml this shouldn't be a problem'\n",
+    attrs: {
+      title: "Three dashes followed by the format marks the spot",
+      tags: ["toml", "front-matter"],
+      "expanded-description": "with some ---toml 👌 crazy stuff in it",
+    },
+  };
+  assertEquals(actual, expected);
 });
 
 Deno.test("toml() parses toml delineate by +++", () => {
