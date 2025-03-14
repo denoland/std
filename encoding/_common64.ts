@@ -114,7 +114,7 @@ export function decode(
 }
 
 function getByte(char: number, alphabet: Uint8Array): number {
-  const byte = alphabet[char]!;
+  const byte = alphabet[char] ?? 64;
   if (byte === 64) { // alphabet.Base64.length
     throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
   }
