@@ -100,3 +100,19 @@ Deno.test("(unstable)extractYaml() parses with schema options", () => {
     },
   );
 });
+
+Deno.test("extractYaml() handles empty frontMatter", () => {
+  assertEquals(
+    extract("---\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+
+  assertEquals(
+    extract("---\n\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+  assertEquals(
+    extract("---\n   \n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+});
