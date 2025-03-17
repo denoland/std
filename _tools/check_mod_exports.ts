@@ -52,7 +52,6 @@ for await (
         /uuid(\/|\\)v5\.ts$/,
         /uuid(\/|\\)v6\.ts$/,
         /uuid(\/|\\)v7\.ts$/,
-        /yaml(\/|\\)schema\.ts$/,
         /test\.ts$/,
         /_bench\.ts$/,
         /\.d\.ts$/,
