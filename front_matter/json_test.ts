@@ -32,10 +32,9 @@ don't break
 {Also: "---json this shouldn't be a problem"}
 `;
 
-  const content = extract<Record<string, unknown>>(input);
-  assertEquals(
-    content.frontMatter,
-    `{
+  const actual = extract(input);
+  const expected = {
+    frontMatter: `{
   "title": "Three dashes followed by the format marks the spot",
   "tags": [
     "json",
@@ -43,20 +42,14 @@ don't break
   ],
   "expanded-description": "with some ---json 🙃 crazy stuff in it"
 }`,
-  );
-  assertEquals(
-    content.body,
-    "don't break\n---\n{Also: \"---json this shouldn't be a problem\"}\n",
-  );
-  assertEquals(
-    content.attrs.title,
-    "Three dashes followed by the format marks the spot",
-  );
-  assertEquals(content.attrs.tags, ["json", "front-matter"]);
-  assertEquals(
-    content.attrs["expanded-description"],
-    "with some ---json 🙃 crazy stuff in it",
-  );
+    body: "don't break\n---\n{Also: \"---json this shouldn't be a problem\"}\n",
+    attrs: {
+      title: "Three dashes followed by the format marks the spot",
+      tags: ["json", "front-matter"],
+      "expanded-description": "with some ---json 🙃 crazy stuff in it",
+    },
+  };
+  assertEquals(actual, expected);
 });
 
 Deno.test("extractJson() allows whitespaces after the header", () => {
