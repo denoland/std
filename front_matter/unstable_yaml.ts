@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 import { extractFrontMatter } from "./_shared.ts";
 import { parse, type ParseOptions } from "@std/yaml/parse";

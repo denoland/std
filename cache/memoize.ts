@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 // deno-lint-ignore no-unused-vars
 import type { LruCache } from "./lru_cache.ts";
