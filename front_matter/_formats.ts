@@ -8,22 +8,19 @@ export type Format = "yaml" | "toml" | "json";
 
 const BOM = "\\ufeff?";
 
-const YAML_DELIMITER = "= yaml =|---";
-const YAML_HEADER = `(?:---yaml|${YAML_DELIMITER})`;
-const YAML_FOOTER = `(?:${YAML_DELIMITER})`;
+const YAML_HEADER = `(?:---yaml|= yaml =|---)`;
+const YAML_FOOTER = `(?:= yaml =|---)`;
 
-const TOML_DELIMITER = "\\+\\+\\+|= toml =";
-const TOML_HEADER = `(?:---toml|${TOML_DELIMITER})`;
-const TOML_FOOTER = `(?:---|${TOML_DELIMITER})`;
+const TOML_HEADER = `(?:---toml|\\+\\+\\+|= toml =)`;
+const TOML_FOOTER = `(?:---|\\+\\+\\+|= toml =)`;
 
-const JSON_DELIMITER = `= json =`;
-const JSON_HEADER = `(?:---json|${JSON_DELIMITER})`;
-const JSON_FOOTER = `(?:---|${JSON_DELIMITER})`;
+const JSON_HEADER = `(?:---json|= json =)`;
+const JSON_FOOTER = `(?:---|= json =)`;
 
 const WHITESPACES = "\\s*";
 const NEWLINE = "\\r?\\n";
 
-const FRONT_MATTER = "(?<frontMatter>.*?)";
+const FRONT_MATTER = "(?<frontMatter>.+?)";
 const BODY = "(?<body>.*)";
 
 export const RECOGNIZE_YAML_REGEXP = new RegExp(
@@ -40,15 +37,15 @@ export const RECOGNIZE_JSON_REGEXP = new RegExp(
 );
 
 export const EXTRACT_YAML_REGEXP = new RegExp(
-  `^${BOM}${YAML_HEADER}${WHITESPACES}${FRONT_MATTER}${WHITESPACES}${NEWLINE}${YAML_FOOTER}${WHITESPACES}${BODY}$`,
+  `^${BOM}${YAML_HEADER}${WHITESPACES}${NEWLINE}${WHITESPACES}(?:${FRONT_MATTER}${WHITESPACES}${NEWLINE})?${YAML_FOOTER}${WHITESPACES}${BODY}$`,
   "is",
 );
 export const EXTRACT_TOML_REGEXP = new RegExp(
-  `^${BOM}${TOML_HEADER}${WHITESPACES}${FRONT_MATTER}${WHITESPACES}${NEWLINE}${TOML_FOOTER}${WHITESPACES}${BODY}$`,
+  `^${BOM}${TOML_HEADER}${WHITESPACES}${NEWLINE}${WHITESPACES}(?:${FRONT_MATTER}${WHITESPACES}${NEWLINE})?${TOML_FOOTER}${WHITESPACES}${BODY}$`,
   "is",
 );
 export const EXTRACT_JSON_REGEXP = new RegExp(
-  `^${BOM}${JSON_HEADER}${WHITESPACES}${FRONT_MATTER}${WHITESPACES}${NEWLINE}${JSON_FOOTER}${WHITESPACES}${BODY}$`,
+  `^${BOM}${JSON_HEADER}${WHITESPACES}${NEWLINE}${WHITESPACES}(?:${FRONT_MATTER}${WHITESPACES}${NEWLINE})?${JSON_FOOTER}${WHITESPACES}${BODY}$`,
   "is",
 );
 
