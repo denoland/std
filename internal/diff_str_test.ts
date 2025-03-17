@@ -79,6 +79,35 @@ Deno.test({
 });
 
 Deno.test({
+  name: 'diff() "a b" vs "a  b" (diffstr)',
+  fn() {
+    const diffResult = diffStr("a b", "a  b");
+    assertEquals(diffResult, [
+      {
+        details: [
+          { type: "common", value: "a" },
+          { type: "removed", value: " " },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+        type: "removed",
+        value: "a b\n",
+      },
+      {
+        details: [
+          { type: "common", value: "a" },
+          { type: "added", value: "  " },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+        type: "added",
+        value: "a  b\n",
+      },
+    ]);
+  },
+});
+
+Deno.test({
   name: `diff() "3.14" vs "2.71" (diffStr)`,
   fn() {
     const diffResult = diffStr("3.14", "2.71");
@@ -219,6 +248,35 @@ Deno.test({
 });
 
 Deno.test({
+  name: `diff() single line, "a\\\\tb" vs "a\tb" (diffStr)`,
+  fn() {
+    const diffResult = diffStr("a\\tb", "a\tb");
+    assertEquals(diffResult, [
+      {
+        type: "removed",
+        value: "a\\\\tb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "removed", value: "\\\\" },
+          { type: "removed", value: "tb" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "added",
+        value: "a\\tb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "added", value: "\\t" },
+          { type: "added", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+      },
+    ]);
+  },
+});
+
+Deno.test({
   name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffStr)`,
   fn() {
     const diffResult = diffStr("\b\f\r\t\v\n", "\r\n");
@@ -227,11 +285,9 @@ Deno.test({
         type: "removed",
         value: "\\b\\f\\r\\t\\v\\n\n",
         details: [
-          { type: "removed", value: "\\b" },
-          { type: "removed", value: "\\f" },
+          { type: "removed", value: "\\b\\f" },
           { type: "common", value: "\\r" },
-          { type: "removed", value: "\\t" },
-          { type: "removed", value: "\\v" },
+          { type: "removed", value: "\\t\\v" },
           { type: "common", value: "\\n" },
           { type: "common", value: "\n" },
         ],
