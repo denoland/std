@@ -7,7 +7,6 @@
     "./base32": "./base32.ts",
     "./unstable-base32": "./unstable_base32.ts",
     "./unstable-base32-stream": "./unstable_base32_stream.ts",
-    "./unstable-base32hex-stream": "./unstable_base32hex_stream.ts",
     "./base58": "./base58.ts",
     "./base64": "./base64.ts",
     "./unstable-base64": "./unstable_base64.ts",
