@@ -32,7 +32,7 @@ export function unescape(string: string): string {
     );
 }
 
-const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
+const WHITESPACE_SYMBOLS = /([^\S\r\n]+|\\[bftvrn]|[()[\]{}'"\r\n]|\b)/;
 
 /**
  * Tokenizes a string into an array of tokens.
