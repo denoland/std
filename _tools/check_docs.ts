@@ -24,7 +24,6 @@ import {
   type TsTypeDef,
 } from "@deno/doc";
 import { walk } from "@std/fs/walk";
-import { isTestFile } from "./utils.ts";
 import { greaterOrEqual, parse } from "@std/semver";
 import { join } from "@std/path/join";
 
@@ -42,8 +41,9 @@ for await (
   if (!version || !greaterOrEqual(parse(version), STABLE_VERSION)) continue;
   for (const relativeFilePath of Object.values<string>(exports)) {
     if (!relativeFilePath.endsWith(".ts")) continue;
+    const filePath = join(path, "..", relativeFilePath);
     ENTRY_POINT_URLS.push(
-      new URL(join(path, "..", relativeFilePath), import.meta.url)
+      new URL(filePath, import.meta.url)
         .href,
     );
   }
