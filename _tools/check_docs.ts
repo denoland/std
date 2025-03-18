@@ -23,10 +23,10 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { walk } from "../fs/walk.ts";
+import { walk } from "@std/fs/walk";
 import { isTestFile } from "./utils.ts";
 import { greaterOrEqual, parse } from "@std/semver";
-import { join } from "../path/join.ts";
+import { join } from "@std/path/join";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
