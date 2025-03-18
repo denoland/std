@@ -543,25 +543,27 @@ function resolve(specifier: string, referrer: string): string {
 }
 
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier, { resolve });
-  for (const d of docs.filter(isExported)) {
-    if (d.jsDoc === undefined) continue; // this is caught by other checks
-    const document = d as DocNodeWithJsDoc<DocNode>;
-    switch (document.kind) {
-      case "moduleDoc": {
-        assertModuleDoc(document);
-        break;
+  const entries = await doc([specifier], { resolve });
+  for (const docs of Object.values(entries)) {
+    for (const d of docs.filter(isExported)) {
+      if (d.jsDoc === undefined) continue; // this is caught by other checks
+      const document = d as DocNodeWithJsDoc<DocNode>;
+      switch (document.kind) {
+        case "moduleDoc": {
+          assertModuleDoc(document);
+          break;
+        }
+        case "function": {
+          assertFunctionDocs(document);
+          break;
+        }
+        case "class": {
+          assertClassDocs(document);
+          break;
+        }
+        case "interface":
+          assertInterfaceDocs(document);
       }
-      case "function": {
-        assertFunctionDocs(document);
-        break;
-      }
-      case "class": {
-        assertClassDocs(document);
-        break;
-      }
-      case "interface":
-        assertInterfaceDocs(document);
     }
   }
 }
