@@ -14,8 +14,8 @@ export type ConfigureGlobalSanitizersOptions = {
  * @param options The options
  * @example Usage
  * ```ts no-assert
- * import { configureGlobalSanitizers } from "@std/testing"
- * configureGlobalSanitizers()
+ * import { configureGlobalSanitizers } from "@std/testing/unstable-bdd";
+ * configureGlobalSanitizers({ sanitizeResources: false })
  * ```
  */
 export function configureGlobalSanitizers(

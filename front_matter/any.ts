@@ -27,7 +27,7 @@ export type { Extract };
  * Hello, world!`;
  * const result = extract(output);
  * assertEquals(result, {
- *   frontMatter: { title: "Three dashes marks the spot" },
+ *   frontMatter: '{\n  "title": "Three dashes marks the spot"\n}',
  *   body: "Hello, world!",
  *   attrs: { title: "Three dashes marks the spot" }
  * })
