@@ -38,7 +38,7 @@ export function resolveWorkspaceSpecifiers(
 }
 
 /**
- * Checks wether a file is named `test.ts` and has no exports.
+ * Checks whether a file is named `test.ts` and has no exports.
  * @param filePath
  * @returns true if file is named `test.ts` and has no exports, false otherwise
  */
