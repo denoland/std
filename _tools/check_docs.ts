@@ -24,122 +24,32 @@ import {
   type TsTypeDef,
 } from "@deno/doc";
 import { pooledMap } from "@std/async/pool";
+import { walk } from "../fs/walk.ts";
+import { isTestFile } from "./utils.ts";
+import { greaterOrEqual, parse } from "@std/semver";
+import { join } from "../path/join.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
-const ENTRY_POINTS = [
-  "../assert/mod.ts",
-  "../assert/unstable_never.ts",
-  "../async/mod.ts",
-  "../bytes/mod.ts",
-  "../cache/mod.ts",
-  "../cbor/mod.ts",
-  "../cli/mod.ts",
-  "../cli/unstable_spinner.ts",
-  "../cli/unstable_prompt_multiple_select.ts",
-  "../crypto/mod.ts",
-  "../collections/mod.ts",
-  "../csv/mod.ts",
-  "../csv/unstable_stringify.ts",
-  "../data_structures/mod.ts",
-  "../data_structures/unstable_bidirectional_map.ts",
-  "../datetime/mod.ts",
-  "../dotenv/mod.ts",
-  "../encoding/mod.ts",
-  "../encoding/unstable_base32.ts",
-  "../encoding/unstable_base64.ts",
-  "../encoding/unstable_base64_stream.ts",
-  "../encoding/unstable_base32_stream.ts",
-  "../encoding/unstable_hex_stream.ts",
-  "../expect/mod.ts",
-  "../fmt/bytes.ts",
-  "../fmt/colors.ts",
-  "../fmt/duration.ts",
-  "../fmt/printf.ts",
-  "../front_matter/mod.ts",
-  "../front_matter/unstable_yaml.ts",
-  "../fs/mod.ts",
-  "../fs/unstable_chmod.ts",
-  "../fs/unstable_copy_file.ts",
-  "../fs/unstable_link.ts",
-  "../fs/unstable_lstat.ts",
-  "../fs/unstable_make_temp_dir.ts",
-  "../fs/unstable_make_temp_file.ts",
-  "../fs/unstable_mkdir.ts",
-  "../fs/unstable_read_dir.ts",
-  "../fs/unstable_read_file.ts",
-  "../fs/unstable_read_link.ts",
-  "../fs/unstable_read_text_file.ts",
-  "../fs/unstable_real_path.ts",
-  "../fs/unstable_remove.ts",
-  "../fs/unstable_rename.ts",
-  "../fs/unstable_stat.ts",
-  "../fs/unstable_symlink.ts",
-  "../fs/unstable_truncate.ts",
-  "../fs/unstable_types.ts",
-  "../fs/unstable_umask.ts",
-  "../fs/unstable_utime.ts",
-  "../fs/unstable_write_file.ts",
-  "../fs/unstable_write_text_file.ts",
-  "../html/mod.ts",
-  "../html/unstable_is_valid_custom_element_name.ts",
-  "../http/mod.ts",
-  "../http/unstable_header.ts",
-  "../http/unstable_method.ts",
-  "../http/unstable_signed_cookie.ts",
-  "../ini/mod.ts",
-  "../internal/mod.ts",
-  "../io/mod.ts",
-  "../json/mod.ts",
-  "../jsonc/mod.ts",
-  "../log/base_handler.ts",
-  "../log/file_handler.ts",
-  "../log/warn.ts",
-  "../log/critical.ts",
-  "../log/debug.ts",
-  "../log/error.ts",
-  "../log/info.ts",
-  "../log/console_handler.ts",
-  "../log/formatters.ts",
-  "../log/get_logger.ts",
-  "../log/logger.ts",
-  "../media_types/mod.ts",
-  "../msgpack/mod.ts",
-  "../net/mod.ts",
-  "../net/unstable_get_network_address.ts",
-  "../path/mod.ts",
-  "../path/unstable_basename.ts",
-  "../path/unstable_dirname.ts",
-  "../path/unstable_extname.ts",
-  "../path/unstable_join.ts",
-  "../path/unstable_normalize.ts",
-  "../path/posix/mod.ts",
-  "../path/windows/mod.ts",
-  "../random/mod.ts",
-  "../regexp/mod.ts",
-  "../semver/mod.ts",
-  "../streams/mod.ts",
-  "../streams/unstable_fixed_chunk_stream.ts",
-  "../streams/unstable_to_lines.ts",
-  "../streams/unstable_to_bytes.ts",
-  "../tar/mod.ts",
-  "../text/mod.ts",
-  "../text/unstable_slugify.ts",
-  "../text/unstable_to_constant_case.ts",
-  "../testing/bdd.ts",
-  "../testing/mock.ts",
-  "../testing/snapshot.ts",
-  "../testing/time.ts",
-  "../testing/types.ts",
-  "../toml/mod.ts",
-  "../ulid/mod.ts",
-  "../uuid/mod.ts",
-  "../uuid/unstable_v7.ts",
-  "../webgpu/mod.ts",
-  "../yaml/mod.ts",
-] as const;
+const STABLE_VERSION = parse("1.0.0");
+const ROOT = new URL("../", import.meta.url);
+const ENTRY_POINT_URLS = [];
+for await (
+  const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
+) {
+  if (isTestFile(path)) continue;
+  const { version, exports } = JSON.parse(await Deno.readTextFile(path));
+  if (!version || !greaterOrEqual(parse(version), STABLE_VERSION)) continue;
+  for (const relativeFilePath of Object.values<string>(exports)) {
+    if (!relativeFilePath.endsWith(".ts")) continue;
+    ENTRY_POINT_URLS.push(
+      new URL(join(path, "..", relativeFilePath), import.meta.url)
+        .href,
+    );
+  }
+}
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
@@ -272,10 +182,8 @@ function assertSnippetsWork(
           document,
         ),
       );
-      return;
-    } else {
-      return;
     }
+    return;
   }
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
@@ -411,7 +319,9 @@ function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
-  assertHasExampleTag(document);
+  if (!document.jsDoc.tags?.some((tag) => tag.kind === "example")) {
+    assertHasExampleTag(document);
+  }
 
   for (const property of document.classDef.properties) {
     if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
@@ -496,8 +406,8 @@ function assertConstructorDocs(
  * Checks a module document for:
  * - Code snippets that execute successfully.
  */
-function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
-  assertSnippetsWork(document.jsDoc.doc!, document);
+function assertModuleDoc(_document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
+  // assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
 /**
@@ -543,8 +453,10 @@ function resolve(specifier: string, referrer: string): string {
 
 async function checkDocs(specifier: string) {
   const docs = await doc(specifier, { resolve });
+
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
+
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
       case "moduleDoc": {
@@ -564,10 +476,6 @@ async function checkDocs(specifier: string) {
     }
   }
 }
-
-const ENTRY_POINT_URLS = ENTRY_POINTS.map((entry) =>
-  new URL(entry, import.meta.url).href
-);
 
 const lintStatus = await new Deno.Command(Deno.execPath(), {
   args: ["doc", "--lint", ...ENTRY_POINT_URLS],

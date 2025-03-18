@@ -14,9 +14,10 @@ export type { Extract };
  * TOML}, or {@link https://www.json.org/ | JSON} from the metadata of front
  * matter content, depending on the format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { extract } from "@std/front-matter/any";
+ * import { assertEquals } from "@std/assert";
  *
  * const output = `---json
  * {
@@ -25,10 +26,11 @@ export type { Extract };
  * ---
  * Hello, world!`;
  * const result = extract(output);
- *
- * result.frontMatter; // '{\n "title": "Three dashes marks the spot"\n}'
- * result.body; // "Hello, world!"
- * result.attrs; // { title: "Three dashes marks the spot" }
+ * assertEquals(result, {
+ *   frontMatter: { title: "Three dashes marks the spot" },
+ *   body: "Hello, world!",
+ *   attrs: { title: "Three dashes marks the spot" }
+ * })
  * ```
  *
  * @typeParam T The type of the parsed front matter.
