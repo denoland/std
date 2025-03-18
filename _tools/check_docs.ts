@@ -23,7 +23,6 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { pooledMap } from "@std/async/pool";
 import { walk } from "../fs/walk.ts";
 import { isTestFile } from "./utils.ts";
 import { greaterOrEqual, parse } from "@std/semver";
@@ -56,7 +55,6 @@ const ASSERTION_IMPORT =
   /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
-const snippetPromises: (() => Promise<void>)[] = [];
 
 class DocumentError extends Error {
   constructor(
@@ -493,16 +491,10 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-await Promise.all(ENTRY_POINT_URLS.map(checkDocs));
-
-const iter = pooledMap(
-  navigator.hardwareConcurrency,
-  snippetPromises,
-  (fn) => fn(),
-);
-for await (const _ of iter) {
-  // noop
+for (const url of ENTRY_POINT_URLS) {
+  await checkDocs(url);
 }
+
 if (diagnostics.length > 0) {
   for (const error of diagnostics) {
     // deno-lint-ignore no-console
