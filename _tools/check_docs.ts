@@ -38,7 +38,6 @@ const ENTRY_POINT_URLS = [];
 for await (
   const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
 ) {
-  if (isTestFile(path)) continue;
   const { version, exports } = JSON.parse(await Deno.readTextFile(path));
   if (!version || !greaterOrEqual(parse(version), STABLE_VERSION)) continue;
   for (const relativeFilePath of Object.values<string>(exports)) {
