@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 import { extract as extractToml } from "./toml.ts";
 import { extract as extractYaml } from "./yaml.ts";
