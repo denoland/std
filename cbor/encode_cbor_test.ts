@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import { random } from "./_common_test.ts";
 import { encodeCbor } from "./encode_cbor.ts";
@@ -188,6 +188,16 @@ Deno.test("encodeCbor() encoding strings", () => {
   // Can't test the next bracket up due to JavaScript limitations.
 });
 
+Deno.test("encodeCbor() correctly preallocates enough space for strings", () => {
+  const input = "\uD83D\uDCA9";
+  const binary = new TextEncoder().encode(input);
+  assert(input.length !== binary.length);
+  assertEquals(
+    encodeCbor(input),
+    new Uint8Array([0b011_00100, ...binary]),
+  );
+});
+
 Deno.test("encodeCbor() encoding Uint8Arrays", () => {
   let bytes = new Uint8Array(random(0, 24));
   assertEquals(
@@ -233,6 +243,22 @@ Deno.test("encodeCbor() encoding Dates", () => {
   assertEquals(
     encodeCbor(date),
     new Uint8Array([0b110_00001, ...encodeCbor(date.getTime() / 1000)]),
+  );
+});
+
+Deno.test("encodeCbor() encoding bignums as Uint byte string", () => {
+  const num = 2n ** 64n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00010, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
+  );
+});
+
+Deno.test("encodeCbor() encoding bignums as Int byte string", () => {
+  const num = -(2n ** 64n) - 1n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00011, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
   );
 });
 
@@ -441,28 +467,6 @@ Deno.test("encodeCbor() rejecting numbers as Int", () => {
     },
     RangeError,
     `Cannot encode number: It (${num}) exceeds -(2 ** 64) - 1`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Uint", () => {
-  const num = 2n ** 65n;
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds 2n ** 64n - 1n`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Int", () => {
-  const num = -(2n ** 65n);
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds -(2n ** 64n) - 1n`,
   );
 });
 

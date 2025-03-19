@@ -1,15 +1,13 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
-import { delay } from "@std/async/delay";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
+import { FakeTime } from "@std/testing/time";
 
 const decoder = new TextDecoder();
 
 Deno.test("Spinner can start and stop", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m Loading...",
       "\r\x1b[K⠙\x1b[0m Loading...",
@@ -52,8 +50,6 @@ Deno.test("Spinner can start and stop", async () => {
 
 Deno.test("Spinner constructor accepts spinner", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K0\x1b[0m ",
       "\r\x1b[K1\x1b[0m ",
@@ -98,8 +94,6 @@ Deno.test("Spinner constructor accepts spinner", async () => {
 
 Deno.test("Spinner constructor accepts message", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m Spinning with Deno 🦕",
       "\r\x1b[K⠙\x1b[0m Spinning with Deno 🦕",
@@ -135,8 +129,7 @@ Deno.test("Spinner constructor accepts message", async () => {
 
 Deno.test("Spinner constructor accepts interval", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
+    using time = new FakeTime();
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
@@ -158,7 +151,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
 
     const spinner = new Spinner({ interval: 300 });
     spinner.start();
-    await delay(1000); // 100ms buffer
+    await time.tick(1000);
     spinner.stop();
     assertEquals(actualOutput, expectedOutput);
   } finally {
@@ -168,16 +161,24 @@ Deno.test("Spinner constructor accepts interval", async () => {
 
 Deno.test("Spinner constructor accepts output", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
       "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K⠸\x1b[0m ",
+      "\r\x1b[K⠼\x1b[0m ",
+      "\r\x1b[K⠴\x1b[0m ",
+      "\r\x1b[K⠦\x1b[0m ",
+      "\r\x1b[K⠧\x1b[0m ",
+      "\r\x1b[K⠇\x1b[0m ",
+      "\r\x1b[K⠏\x1b[0m ",
       "\r\x1b[K",
     ];
 
     const actualOutput: string[] = [];
+
+    let resolvePromise: (value: void | PromiseLike<void>) => void;
+    const promise = new Promise<void>((resolve) => resolvePromise = resolve);
 
     stub(
       Deno.stderr,
@@ -185,13 +186,14 @@ Deno.test("Spinner constructor accepts output", async () => {
       (data: Uint8Array) => {
         const output = decoder.decode(data);
         actualOutput.push(output);
+        if (actualOutput.length === expectedOutput.length - 1) resolvePromise();
         return data.length;
       },
     );
 
-    const spinner = new Spinner({ interval: 300, output: Deno.stderr });
+    const spinner = new Spinner({ output: Deno.stderr });
     spinner.start();
-    await delay(1000); // 100ms buffer
+    await promise;
     spinner.stop();
     assertEquals(actualOutput, expectedOutput);
   } finally {
@@ -202,8 +204,6 @@ Deno.test("Spinner constructor accepts output", async () => {
 Deno.test("Spinner constructor accepts each color", async (t) => {
   await t.step("black", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[30m⠋\x1b[0m ",
         "\r\x1b[K\x1b[30m⠙\x1b[0m ",
@@ -239,8 +239,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("red", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[31m⠋\x1b[0m ",
         "\r\x1b[K\x1b[31m⠙\x1b[0m ",
@@ -276,8 +274,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("green", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[32m⠋\x1b[0m ",
         "\r\x1b[K\x1b[32m⠙\x1b[0m ",
@@ -313,8 +309,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("yellow", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[33m⠋\x1b[0m ",
         "\r\x1b[K\x1b[33m⠙\x1b[0m ",
@@ -350,8 +344,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("blue", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[34m⠋\x1b[0m ",
         "\r\x1b[K\x1b[34m⠙\x1b[0m ",
@@ -387,8 +379,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("magenta", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[35m⠋\x1b[0m ",
         "\r\x1b[K\x1b[35m⠙\x1b[0m ",
@@ -424,8 +414,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("cyan", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[36m⠋\x1b[0m ",
         "\r\x1b[K\x1b[36m⠙\x1b[0m ",
@@ -461,8 +449,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("white", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[37m⠋\x1b[0m ",
         "\r\x1b[K\x1b[37m⠙\x1b[0m ",
@@ -498,8 +484,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
   });
   await t.step("gray", async () => {
     try {
-      stub(Deno.stdin, "setRaw");
-
       const expectedOutput = [
         "\r\x1b[K\x1b[90m⠋\x1b[0m ",
         "\r\x1b[K\x1b[90m⠙\x1b[0m ",
@@ -537,8 +521,6 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
 
 Deno.test("Spinner.color can set each color", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K\x1b[30m⠙\x1b[0m ",
@@ -606,8 +588,6 @@ Deno.test("Spinner.color can get each color", () => {
 
 Deno.test("Spinner.message can be updated", async () => {
   try {
-    stub(Deno.stdin, "setRaw");
-
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m One dino 🦕",
       "\r\x1b[K⠙\x1b[0m Two dinos 🦕🦕",
@@ -640,4 +620,20 @@ Deno.test("Spinner.message can be updated", async () => {
   } finally {
     restore();
   }
+});
+
+Deno.test("Spinner handles multiple start() calls", () => {
+  const spinner = new Spinner();
+
+  spinner.start();
+  spinner.start();
+  spinner.stop();
+});
+
+Deno.test("Spinner handles multiple stop() calls", () => {
+  const spinner = new Spinner();
+
+  spinner.start();
+  spinner.stop();
+  spinner.stop();
 });
