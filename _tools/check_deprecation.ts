@@ -30,7 +30,8 @@ const iter = walk(ROOT, {
 
 for await (const entry of iter) {
   const url = toFileUrl(entry.path);
-  const docs = await doc(url.href, { resolve: resolveWorkspaceSpecifiers });
+  const docs =
+    (await doc([url.href], { resolve: resolveWorkspaceSpecifiers }))[url.href]!;
   for (const document of docs) {
     const tags = document.jsDoc?.tags;
     if (!tags) continue;
