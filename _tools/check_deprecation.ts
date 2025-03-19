@@ -30,22 +30,19 @@ const iter = walk(ROOT, {
 
 for await (const entry of iter) {
   const url = toFileUrl(entry.path);
-  const entries = await doc([url.href], {
-    resolve: resolveWorkspaceSpecifiers,
-  });
-  for (const docs of Object.values(entries)) {
-    for (const document of docs) {
-      const tags = document.jsDoc?.tags;
-      if (!tags) continue;
-      for (const tag of tags) {
-        if (tag.kind !== "deprecated") continue;
-        if (tag.doc === undefined) {
-          console.log(
-            `%c@deprecated tag with JSDoc block must have a message: ${document.location.filename}:${document.location.line}`,
-            "color: yellow",
-          );
-          failed = true;
-        }
+  const docs =
+    (await doc([url.href], { resolve: resolveWorkspaceSpecifiers }))[url.href]!;
+  for (const document of docs) {
+    const tags = document.jsDoc?.tags;
+    if (!tags) continue;
+    for (const tag of tags) {
+      if (tag.kind !== "deprecated") continue;
+      if (tag.doc === undefined) {
+        console.log(
+          `%c@deprecated tag with JSDoc block must have a message: ${document.location.filename}:${document.location.line}`,
+          "color: yellow",
+        );
+        failed = true;
       }
     }
   }
