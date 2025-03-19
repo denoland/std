@@ -537,25 +537,70 @@ export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
 
-  // If binary / octal / hex
+  // Handle binary, octal, or hex numbers
   const first2 = scanner.slice(0, 2);
   if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
     scanner.next(2);
     const acc = [first2];
-    while (/[0-9a-f_]/i.test(scanner.char()) && !scanner.eof()) {
+    const prefix = first2.toLowerCase();
+    let allowedChars: RegExp;
+    switch (prefix) {
+      case "0b":
+        allowedChars = /[01_]/; // Binary allows 0-1 and _
+        break;
+      case "0o":
+        allowedChars = /[0-7_]/; // Octal allows 0-7 and _
+        break;
+      case "0x":
+        allowedChars = /[0-9a-f_]/i; // Hex allows 0-9, a-f and _
+        break;
+      default:
+        return failure();
+    }
+
+    // Collect valid characters
+    while (!scanner.eof() && allowedChars.test(scanner.char())) {
       acc.push(scanner.char());
       scanner.next();
     }
-    if (acc.length === 1) return failure();
-    return success(acc.join(""));
+
+    if (acc.length === 1) return failure(); // Only prefix, no digits
+
+    // Process the collected characters
+    const numberStr = acc.join("").replace(/_/g, ""); // Remove underscores
+    const digits = numberStr.slice(2); // Remove the prefix (0b, 0o, 0x)
+    if (digits.length === 0) return failure(); // No digits after prefix
+
+    // Determine the base and parse
+    let base: number;
+    switch (prefix) {
+      case "0b":
+        base = 2;
+        break;
+      case "0o":
+        base = 8;
+        break;
+      case "0x":
+        base = 16;
+        break;
+      default:
+        return failure();
+    }
+
+    const number = parseInt(digits, base);
+    if (isNaN(number)) return failure();
+
+    return success(number);
   }
 
+  // Handle regular integers
   const acc = [];
   if (/[+-]/.test(scanner.char())) {
     acc.push(scanner.char());
     scanner.next();
   }
-  while (/[0-9_]/.test(scanner.char()) && !scanner.eof()) {
+
+  while (!scanner.eof() && /[0-9_]/.test(scanner.char())) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -564,7 +609,8 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
     return failure();
   }
 
-  const int = parseInt(acc.filter((char) => char !== "_").join(""));
+  const intStr = acc.filter((c) => c !== "_").join("");
+  const int = parseInt(intStr, 10);
   return success(int);
 }
 
