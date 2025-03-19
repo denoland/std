@@ -449,8 +449,7 @@ function resolve(specifier: string, referrer: string): string {
 }
 
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier, { resolve });
-
+  const docs = (await doc([specifier], { resolve }))[specifier]!;
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
 
