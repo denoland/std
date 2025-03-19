@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
-import { extractAndParse, type Parser } from "./_shared.ts";
+import { extractFrontMatter } from "./_shared.ts";
 import { parse } from "@std/toml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_TOML_REGEXP } from "./_formats.ts";
@@ -34,5 +35,7 @@ export type { Extract };
  * @returns The extracted TOML front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  return extractAndParse<T>(text, EXTRACT_TOML_REGEXP, parse as Parser);
+  const { frontMatter, body } = extractFrontMatter(text, EXTRACT_TOML_REGEXP);
+  const attrs = parse(frontMatter) as T;
+  return { frontMatter, body, attrs };
 }

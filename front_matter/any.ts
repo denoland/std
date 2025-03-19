@@ -1,12 +1,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
-import { recognize } from "./_shared.ts";
-import { extract as extractToml } from "@std/front-matter/toml";
-import { extract as extractYaml } from "@std/front-matter/yaml";
-import { extract as extractJson } from "@std/front-matter/json";
+import { extract as extractToml } from "./toml.ts";
+import { extract as extractYaml } from "./yaml.ts";
+import { extract as extractJson } from "./json.ts";
 import type { Extract } from "./types.ts";
-import type { Format } from "./test.ts";
-import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
+import { RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 
 export type { Extract };
 
@@ -37,8 +36,8 @@ export type { Extract };
  * @returns The extracted front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
-  const format = recognize(text, formats);
+  const format = [...RECOGNIZE_REGEXP_MAP.entries()]
+    .find(([_, regexp]) => regexp.test(text))?.[0];
   switch (format) {
     case "yaml":
       return extractYaml<T>(text);
@@ -46,5 +45,7 @@ export function extract<T>(text: string): Extract<T> {
       return extractToml<T>(text);
     case "json":
       return extractJson<T>(text);
+    default:
+      throw new TypeError("Unsupported front matter format");
   }
 }
