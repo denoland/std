@@ -150,7 +150,7 @@ export class ProgressBar {
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
-  #fmt: ((fmt: ProgressBarFormatter) => string) | ((x: any) => any);
+  #fmt: (fmt: ProgressBarFormatter) => string;
   #keepOpen: boolean;
   /**
    * Constructs a new instance.
