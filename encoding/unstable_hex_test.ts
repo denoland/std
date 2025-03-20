@@ -21,47 +21,39 @@ const inputOutput: [string | ArrayBuffer, string][] = [
 
 Deno.test("encodeHex()", () => {
   for (const [input, hex] of inputOutput) {
-    assertEquals(encodeHex(input.slice(0), "Hex"), hex, "Hex");
+    assertEquals(encodeHex(input.slice(0)), hex);
   }
 });
 
 Deno.test("encodeHex() subarray", () => {
-  for (const [input, hex] of inputOutput) {
+  for (const [input, output] of inputOutput) {
     if (typeof input === "string") continue;
 
     const buffer = new Uint8Array(10);
     buffer.set(new Uint8Array(input), 10 - input.byteLength);
 
     assertEquals(
-      encodeHex(buffer.slice().subarray(10 - input.byteLength), "Hex"),
-      hex,
-      "Hex",
+      encodeHex(buffer.slice().subarray(10 - input.byteLength)),
+      output,
     );
   }
 });
 
 Deno.test("encodeRawHex()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [input, hex] of inputOutput) {
+  for (const [input, output] of inputOutput) {
     if (typeof input === "string") continue;
 
-    for (
-      const [output, format] of [
-        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
-      ] as const
-    ) {
-      const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
-      buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
+    const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+    buffer.set(prefix);
+    buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      encodeRawHex(
-        buffer,
-        buffer.length - input.byteLength,
-        prefix.length,
-        format,
-      );
-      assertEquals(buffer, output, format);
-    }
+    encodeRawHex(
+      buffer,
+      buffer.length - input.byteLength,
+      prefix.length,
+    );
+    assertEquals(buffer, concat([prefix, new TextEncoder().encode(output)]));
   }
 });
 
@@ -70,113 +62,96 @@ Deno.test("encodeRawHex() with too small buffer", () => {
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
-    for (const format of ["Hex"] as const) {
-      const buffer = new Uint8Array(
-        prefix.length + calcMax(input.byteLength) - 2,
-      );
-      buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
+    const buffer = new Uint8Array(
+      prefix.length + calcMax(input.byteLength) - 2,
+    );
+    buffer.set(prefix);
+    buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      assertThrows(
-        () =>
-          encodeRawHex(
-            buffer,
-            buffer.length - input.byteLength,
-            prefix.length,
-            format,
-          ),
-        RangeError,
-        "Buffer too small",
-        format,
-      );
-    }
+    assertThrows(
+      () =>
+        encodeRawHex(
+          buffer,
+          buffer.length - input.byteLength,
+          prefix.length,
+        ),
+      RangeError,
+      "Buffer too small",
+    );
   }
 });
 
 Deno.test("decodeHex()", () => {
-  for (const [input, hex] of inputOutput) {
+  for (const [input, output] of inputOutput) {
     if (input instanceof ArrayBuffer) continue;
-    const output = new TextEncoder().encode(input);
 
-    assertEquals(decodeHex(hex, "Hex"), output, "Hex");
+    assertEquals(decodeHex(output), new TextEncoder().encode(input));
   }
 });
 
 Deno.test("decodeHex() invalid length", () => {
-  for (const [input, hex] of inputOutput) {
+  for (const [input, output] of inputOutput) {
     if (input instanceof ArrayBuffer) continue;
 
-    for (
-      const [input, format] of [
-        [hex + "a", "Hex"],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeHex(input, format),
-        TypeError,
-        "Invalid Character (a)",
-        format,
-      );
-    }
+    assertThrows(
+      () => decodeHex(output + "a"),
+      TypeError,
+      "Invalid Character (a)",
+    );
   }
 });
 
 Deno.test("decodeHex() invalid char", () => {
-  for (const [input, hex] of inputOutput) {
+  for (const [input, output] of inputOutput) {
     if (input instanceof ArrayBuffer) continue;
 
-    for (
-      const [input, format] of [
-        [".".repeat(2) + hex, "Hex"],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeHex(input, format),
-        TypeError,
-        "Invalid Character (.)",
-        format,
-      );
-    }
+    assertThrows(
+      () => decodeHex(".".repeat(2) + output),
+      TypeError,
+      "Invalid Character (.)",
+    );
   }
 });
 
 Deno.test("decodeRawHex()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, hex] of inputOutput) {
-    if (typeof output === "string") continue;
+  for (const [input, output] of inputOutput) {
+    if (typeof input === "string") continue;
 
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
-      ] as const
-    ) {
-      assertEquals(
-        input.subarray(
-          prefix.length,
-          decodeRawHex(input, prefix.length, prefix.length, format),
-        ),
-        new Uint8Array(output),
-        format,
-      );
-    }
+    const buffer = concat([prefix, new TextEncoder().encode(output)]);
+    assertEquals(
+      buffer.subarray(
+        prefix.length,
+        decodeRawHex(buffer, prefix.length, prefix.length),
+      ),
+      new Uint8Array(input),
+    );
   }
 });
 
 Deno.test("decodeRawHex() with invalid offsets", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, hex] of inputOutput) {
-    if (typeof output === "string") continue;
+  for (const [input, output] of inputOutput) {
+    if (typeof input === "string") continue;
 
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(hex)]), "Hex"],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeRawHex(input, prefix.length - 2, prefix.length, format),
-        RangeError,
-        "Input (i) must be greater than or equal to output (o)",
-      );
-    }
+    assertThrows(
+      () =>
+        decodeRawHex(
+          concat([prefix, new TextEncoder().encode(output)]),
+          prefix.length - 2,
+          prefix.length,
+        ),
+      RangeError,
+      "Input (i) must be greater than or equal to output (o)",
+    );
   }
+});
+
+Deno.test("decodeHex() throws with invalid byte >= 128", () => {
+  const input = new TextDecoder().decode(new Uint8Array(2).fill(200));
+  assertThrows(
+    () => decodeHex(input),
+    TypeError,
+    "Invalid Character",
+  );
 });

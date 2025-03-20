@@ -8,9 +8,9 @@
  * import { assertEquals } from "@std/assert";
  * import { encodeHex, type Uint8Array_ } from "@std/encoding/unstable-hex";
  *
- * assertEquals(encodeHex("Hello World", "Hex"), "48656c6c6f20576f726c64");
+ * assertEquals(encodeHex("Hello World"), "48656c6c6f20576f726c64");
  * assertEquals(
- *   encodeHex(new TextEncoder().encode("Hello World") as Uint8Array_, "Hex"),
+ *   encodeHex(new TextEncoder().encode("Hello World") as Uint8Array_),
  *   "48656c6c6f20576f726c64",
  * );
  * ```
@@ -27,33 +27,12 @@ import { calcMax, decode, encode } from "./_common16.ts";
 export { calcMax };
 import { detach } from "./_common_detach.ts";
 
-const alphabet: Record<HexFormat, Uint8Array> = {
-  Hex: new TextEncoder().encode("0123456789abcdef"),
-};
-const rAlphabet: Record<HexFormat, Uint8Array> = {
-  Hex: new Uint8Array(128),
-};
-alphabet.Hex.forEach((byte, i) => rAlphabet.Hex[byte] = i);
+const alphabet = new TextEncoder().encode("0123456789abcdef");
+const rAlphabet = new Uint8Array(128).fill(16); // alphabet.Hex.length
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
 new TextEncoder()
   .encode("ABCDEF")
-  .forEach((byte, i) => rAlphabet.Hex[byte] = i + 10);
-
-const assertChar: Record<HexFormat, (byte: number) => void> = {
-  Hex(byte: number): void {
-    if (
-      !(
-        (48 <= byte && byte <= 57) ||
-        (97 <= byte && byte <= 102) ||
-        (65 <= byte && byte <= 70)
-      )
-    ) throw new TypeError(`Invalid Character (${String.fromCharCode(byte)})`);
-  },
-};
-
-/**
- * The hex encoding formats.
- */
-export type HexFormat = "Hex";
+  .forEach((byte, i) => rAlphabet[byte] = i + 10);
 
 /**
  * `encodeHex` takes an input source and encodes it into a hexadecimal string.
@@ -65,7 +44,6 @@ export type HexFormat = "Hex";
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to encode.
- * @param format The format to use for encoding.
  * @returns The hexadecimal string representation of the input.
  *
  * @example Basic Usage
@@ -73,16 +51,15 @@ export type HexFormat = "Hex";
  * import { assertEquals } from "@std/assert";
  * import { encodeHex, type Uint8Array_ } from "@std/encoding/unstable-hex";
  *
- * assertEquals(encodeHex("Hello World", "Hex"), "48656c6c6f20576f726c64");
+ * assertEquals(encodeHex("Hello World"), "48656c6c6f20576f726c64");
  * assertEquals(
- *   encodeHex(new TextEncoder().encode("Hello World") as Uint8Array_, "Hex"),
+ *   encodeHex(new TextEncoder().encode("Hello World") as Uint8Array_),
  *   "48656c6c6f20576f726c64",
  * );
  * ```
  */
 export function encodeHex(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: HexFormat,
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
@@ -93,7 +70,7 @@ export function encodeHex(
     input as Uint8Array_,
     calcMax((input as Uint8Array_).length),
   );
-  encode(output, i, 0, alphabet[format]);
+  encode(output, i, 0, alphabet);
   return new TextDecoder().decode(output);
 }
 
@@ -109,7 +86,6 @@ export function encodeHex(
  * @param buffer The buffer to encode in place.
  * @param i The index of where the raw data starts reading from.
  * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding.
  * @returns The index of where the encoded data finished writing to.
  *
  * @example Basic Usage
@@ -130,10 +106,10 @@ export function encodeHex(
  * output.set(output.subarray(0, originalSize), i);
  * output.set(prefix);
  *
- * encodeRawHex(output, i, o, "Hex");
+ * encodeRawHex(output, i, o);
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock"), "Hex"),
+ *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock")),
  * );
  * ```
  */
@@ -141,11 +117,10 @@ export function encodeRawHex(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: HexFormat,
 ): number {
   const max = calcMax(buffer.length - i);
   if (max > buffer.length - o) throw new RangeError("Buffer too small");
-  return encode(buffer, i, o, alphabet[format]);
+  return encode(buffer, i, o, alphabet);
 }
 
 /**
@@ -155,7 +130,6 @@ export function encodeRawHex(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to decode.
- * @param format The format to use for decoding.
  * @returns The decoded {@linkcode Uint8Array<ArrayBuffer>}.
  *
  * @example Basic Usage
@@ -164,15 +138,17 @@ export function encodeRawHex(
  * import { decodeHex } from "@std/encoding/unstable-hex";
  *
  * assertEquals(
- *   decodeHex("48656c6c6f20576f726c64", "Hex"),
+ *   decodeHex("48656c6c6f20576f726c64"),
  *   new TextEncoder().encode("Hello World"),
  * );
  * ```
  */
-export function decodeHex(input: string, format: HexFormat): Uint8Array_ {
+export function decodeHex(
+  input: string,
+): Uint8Array_ {
   const output = new TextEncoder().encode(input) as Uint8Array_;
   return output
-    .subarray(0, decode(output, 0, 0, rAlphabet[format], assertChar[format]));
+    .subarray(0, decode(output, 0, 0, rAlphabet));
 }
 
 /**
@@ -187,7 +163,6 @@ export function decodeHex(input: string, format: HexFormat): Uint8Array_ {
  * @param buffer The buffer to decode in place.
  * @param i The index of where the encoded data starts reading from.
  * @param o The index of where the decoded data starts writing to.
- * @param format The format to use for decoding.
  * @returns The index of where the decoded data finished writing to.
  *
  * @example Basic Usage
@@ -200,11 +175,11 @@ export function decodeHex(input: string, format: HexFormat): Uint8Array_ {
  * } from "@std/encoding/unstable-hex";
  *
  * let buffer = new TextEncoder().encode(
- *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock"), "Hex"),
+ *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock")),
  * ) as Uint8Array_;
  *
  * const i = buffer.indexOf(",".charCodeAt(0)) + 1;
- * const o = decodeRawHex(buffer, i, i, "Hex");
+ * const o = decodeRawHex(buffer, i, i);
  *
  * buffer = buffer.subarray(i, o);
  * assertEquals(buffer, await Deno.readFile("./deno.lock"));
@@ -214,12 +189,11 @@ export function decodeRawHex(
   buffer: Uint8Array_,
   i: number,
   o: number,
-  format: HexFormat,
 ): number {
   if (i < o) {
     throw new RangeError(
       "Input (i) must be greater than or equal to output (o)",
     );
   }
-  return decode(buffer, i, o, rAlphabet[format], assertChar[format]);
+  return decode(buffer, i, o, rAlphabet);
 }

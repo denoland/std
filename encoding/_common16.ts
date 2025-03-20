@@ -29,8 +29,9 @@ export function encode(
   alphabet: Uint8Array,
 ): number {
   for (; i < buffer.length; ++i) {
-    buffer[o++] = alphabet[buffer[i]! >> 4]!;
-    buffer[o++] = alphabet[buffer[i]! & 0xF]!;
+    const x = buffer[i]!;
+    buffer[o++] = alphabet[x >> 4]!;
+    buffer[o++] = alphabet[x & 0xF]!;
   }
   return o;
 }
@@ -40,7 +41,6 @@ export function decode(
   i: number,
   o: number,
   alphabet: Uint8Array,
-  assertChar: (byte: number) => void,
 ): number {
   if ((buffer.length - o) % 2 === 1) {
     throw new TypeError(
@@ -50,9 +50,16 @@ export function decode(
 
   i += 1;
   for (; i < buffer.length; i += 2) {
-    assertChar(buffer[i - 1]!);
-    assertChar(buffer[i]!);
-    buffer[o++] = (alphabet[buffer[i - 1]!]! << 4) | alphabet[buffer[i]!]!;
+    buffer[o++] = (getByte(buffer[i - 1]!, alphabet) << 4) |
+      getByte(buffer[i]!, alphabet);
   }
   return o;
+}
+
+function getByte(char: number, alphabet: Uint8Array): number {
+  const byte = alphabet[char] ?? 16;
+  if (byte === 16) { // alphabet.Hex.length
+    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+  }
+  return byte;
 }
