@@ -43,8 +43,7 @@ Deno.test({
         value: "x\\n\n",
         details: [
           { type: "added", value: "x" },
-          { type: "common", value: "\\" },
-          { type: "common", value: "n" },
+          { type: "common", value: "\\n" },
           { type: "common", value: "\n" },
         ],
       },
@@ -53,8 +52,7 @@ Deno.test({
         value: "d\\n\n",
         details: [
           { type: "common", value: "d" },
-          { type: "added", value: "\\" },
-          { type: "added", value: "n" },
+          { type: "added", value: "\\n" },
           { type: "common", value: "\n" },
         ],
       },
@@ -64,8 +62,7 @@ Deno.test({
         value: "c\\n\n",
         details: [
           { type: "removed", value: "c" },
-          { type: "common", value: "\\" },
-          { type: "common", value: "n" },
+          { type: "common", value: "\\n" },
           { type: "common", value: "\n" },
         ],
       },
@@ -76,6 +73,35 @@ Deno.test({
           { type: "common", value: "d" },
           { type: "common", value: "\n" },
         ],
+      },
+    ]);
+  },
+});
+
+Deno.test({
+  name: 'diff() "a b" vs "a  b" (diffstr)',
+  fn() {
+    const diffResult = diffStr("a b", "a  b");
+    assertEquals(diffResult, [
+      {
+        details: [
+          { type: "common", value: "a" },
+          { type: "removed", value: " " },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+        type: "removed",
+        value: "a b\n",
+      },
+      {
+        details: [
+          { type: "common", value: "a" },
+          { type: "added", value: "  " },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+        type: "added",
+        value: "a  b\n",
       },
     ]);
   },
@@ -193,6 +219,64 @@ Deno.test({
 });
 
 Deno.test({
+  name: `diff() single line, "a\tb" vs "a\fb" (diffStr)`,
+  fn() {
+    const diffResult = diffStr("a\tb", "a\fb");
+    assertEquals(diffResult, [
+      {
+        type: "removed",
+        value: "a\\tb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "removed", value: "\\t" },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "added",
+        value: "a\\fb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "added", value: "\\f" },
+          { type: "common", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+      },
+    ]);
+  },
+});
+
+Deno.test({
+  name: `diff() single line, "a\\\\tb" vs "a\tb" (diffStr)`,
+  fn() {
+    const diffResult = diffStr("a\\tb", "a\tb");
+    assertEquals(diffResult, [
+      {
+        type: "removed",
+        value: "a\\\\tb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "removed", value: "\\\\" },
+          { type: "removed", value: "tb" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "added",
+        value: "a\\tb\n",
+        details: [
+          { type: "common", value: "a" },
+          { type: "added", value: "\\t" },
+          { type: "added", value: "b" },
+          { type: "common", value: "\n" },
+        ],
+      },
+    ]);
+  },
+});
+
+Deno.test({
   name: `diff() "\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffStr)`,
   fn() {
     const diffResult = diffStr("\b\f\r\t\v\n", "\r\n");
@@ -201,18 +285,10 @@ Deno.test({
         type: "removed",
         value: "\\b\\f\\r\\t\\v\\n\n",
         details: [
-          { type: "common", value: "\\" },
-          { type: "removed", value: "b" },
-          { type: "removed", value: "\\" },
-          { type: "removed", value: "f" },
-          { type: "removed", value: "\\" },
-          { type: "common", value: "r" },
-          { type: "common", value: "\\" },
-          { type: "removed", value: "t" },
-          { type: "removed", value: "\\" },
-          { type: "removed", value: "v" },
-          { type: "removed", value: "\\" },
-          { type: "common", value: "n" },
+          { type: "removed", value: "\\b\\f" },
+          { type: "common", value: "\\r" },
+          { type: "removed", value: "\\t\\v" },
+          { type: "common", value: "\\n" },
           { type: "common", value: "\n" },
         ],
       },
@@ -220,10 +296,8 @@ Deno.test({
         type: "added",
         value: "\\r\\n\r\n",
         details: [
-          { type: "common", value: "\\" },
-          { type: "common", value: "r" },
-          { type: "common", value: "\\" },
-          { type: "common", value: "n" },
+          { type: "common", value: "\\r" },
+          { type: "common", value: "\\n" },
           { type: "added", value: "\r" },
           { type: "common", value: "\n" },
         ],
