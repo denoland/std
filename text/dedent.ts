@@ -9,11 +9,12 @@
  * - Replaces whitespace-only lines with empty lines
  * - Finds the minimum indentation among remaining lines and removes that much indentation from all of them
  *
- * @param input The string or template to remove indentation from.
+ * @param input The string to remove indentation from.
  * @returns The string without indentation.
  *
  * @example Usage
  * ```ts
+ * import { dedent } from "@std/text";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
@@ -24,6 +25,26 @@
  *   `),
  *   `{\n  msg: "Hello",\n}`
  * );
+ * ```
+ */
+export function dedent(input: string): string;
+
+/**
+ * Removes indentation from multiline strings.
+ *
+ * - Removes leading newline
+ * - Removes trailing whitespace, including newlines
+ * - Replaces whitespace-only lines with empty lines
+ * - Finds the minimum indentation among remaining lines and removes that much indentation from all of them
+ *
+ * @param input The template to remove indentation from.
+ * @param values The template substitution values.
+ * @returns The string without indentation.
+ *
+ * @example Usage
+ * ```ts
+ * import { dedent } from "@std/text";
+ * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
  *   dedent`line 1
@@ -32,6 +53,11 @@
  * );
  * ```
  */
+export function dedent(
+  input: TemplateStringsArray,
+  ...values: unknown[]
+): string;
+
 export function dedent(
   input: TemplateStringsArray | string,
   ...values: unknown[]
