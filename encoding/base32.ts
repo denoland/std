@@ -85,6 +85,11 @@ export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
  */
 export function decodeBase32(b32: string): Uint8Array_ {
   const output = new TextEncoder().encode(b32) as Uint8Array_;
+  if (output.length % 8) {
+    throw new TypeError(
+      `Invalid base32 string: length (${output.length}) must be a multiple of 8`,
+    );
+  }
   // deno-lint-ignore no-explicit-any
   return new Uint8Array((output.buffer as any)
     .transfer(decode(output, 0, 0, rAlphabet, padding)));
