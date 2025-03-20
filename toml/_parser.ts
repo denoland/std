@@ -745,9 +745,9 @@ export function tableArray(
   });
 }
 
-export function toml(
+export function toml<T extends Record<string, unknown>>(
   scanner: Scanner,
-): ParseResult<Record<string, unknown>> {
+): ParseResult<T> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
   if (!blocks.ok) return failure();
   let body = {};
@@ -767,7 +767,7 @@ export function toml(
       }
     }
   }
-  return success(body);
+  return success<T>(body as T);
 }
 
 export function parserFactory<T>(parser: ParserComponent<T>) {

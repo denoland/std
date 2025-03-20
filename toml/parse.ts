@@ -19,9 +19,12 @@ import { parserFactory, toml } from "./_parser.ts";
  * const obj = parse(tomlString);
  * assertEquals(obj, { title: "TOML Example", owner: { name: "Alice", bio: "Alice is a programmer." } });
  * ```
+ * @typeParam T The type of the parsed data.
  * @param tomlString TOML string to be parsed.
  * @returns The parsed JS object.
  */
-export function parse(tomlString: string): Record<string, unknown> {
-  return parserFactory(toml)(tomlString);
+export function parse<T extends Record<string, unknown>>(
+  tomlString: string,
+): T {
+  return parserFactory<T>(toml)(tomlString);
 }

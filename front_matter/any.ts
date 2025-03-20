@@ -42,7 +42,7 @@ export function extract<T>(text: string): Extract<T> {
     case "yaml":
       return extractYaml<T>(text);
     case "toml":
-      return extractToml<T>(text);
+      return extractToml(text) as Extract<T>;
     case "json":
       return extractJson<T>(text);
     default:
