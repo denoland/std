@@ -12,11 +12,11 @@
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new HexEncoderStream("Hex"));
+ *   .pipeThrough(new HexEncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeHex(await Deno.readFile("./deno.lock"), "Hex"),
+ *   encodeHex(await Deno.readFile("./deno.lock")),
  * );
  * ```
  *
@@ -31,18 +31,10 @@ import {
   calcMax,
   decodeRawHex as decode,
   encodeRawHex as encode,
-  type HexFormat,
 } from "./unstable_hex.ts";
 import { detach } from "./_common_detach.ts";
 
-/**
- * The raw hex encoding formats.
- */
-export type HexRawFormat = `Raw-${HexFormat}`;
-/**
- * A type used to represent the expected output of a hex stream.
- */
-export type Expect<T> = T extends HexFormat ? string : Uint8Array_;
+type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
  * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a hexadecimal stream.
@@ -60,34 +52,34 @@ export type Expect<T> = T extends HexFormat ? string : Uint8Array_;
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new HexEncoderStream("Hex"));
+ *   .pipeThrough(new HexEncoderStream({ output: "string" }));
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeHex(await Deno.readFile("./deno.lock"), "Hex"),
+ *   encodeHex(await Deno.readFile("./deno.lock")),
  * );
  * ```
  */
-export class HexEncoderStream<T extends HexFormat | HexRawFormat>
-  extends TransformStream<Uint8Array_, Expect<T>> {
+export class HexEncoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    Uint8Array_,
+    T extends "bytes" ? Uint8Array_ : string
+  > {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the hexadecimal stream.
+   * @param options The options for the hexadecimal stream.
    */
-  constructor(format: T) {
+  constructor(options: { output?: T } = {}) {
     const decode = function (): (input: Uint8Array_) => Expect<T> {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Expect<T>;
-      }
+      if (options.output === "bytes") return (x) => x as Expect<T>;
       const decoder = new TextDecoder();
       return (x) => decoder.decode(x) as Expect<T>;
     }();
     super({
       transform(chunk, controller) {
         const [output, i] = detach(chunk, calcMax(chunk.length));
-        encode(output, i, 0, format as HexFormat);
+        encode(output, i, 0);
         controller.enqueue(decode(output));
       },
     });
@@ -112,8 +104,8 @@ export class HexEncoderStream<T extends HexFormat | HexRawFormat>
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
- *   .pipeThrough(new HexEncoderStream("Hex"))
- *   .pipeThrough(new HexDecoderStream("Hex"));
+ *   .pipeThrough(new HexEncoderStream({ output: "bytes" }))
+ *   .pipeThrough(new HexDecoderStream({ input: "bytes" }));
  *
  * assertEquals(
  *   await toBytes(readable),
@@ -121,19 +113,19 @@ export class HexEncoderStream<T extends HexFormat | HexRawFormat>
  * );
  * ```
  */
-export class HexDecoderStream<T extends HexFormat | HexRawFormat>
-  extends TransformStream<Expect<T>, Uint8Array_> {
+export class HexDecoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    T extends "bytes" ? Uint8Array_ : string,
+    Uint8Array_
+  > {
   /**
    * Constructs a new instance.
    *
-   * @param format The format of the hexadecimal stream.
+   * @param options The options of the hexadecimal stream.
    */
-  constructor(format: T) {
+  constructor(options: { input?: T } = {}) {
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
-      if (format.startsWith("Raw-")) {
-        format = format.slice(4) as T;
-        return (x) => x as Uint8Array_;
-      }
+      if (options.input === "bytes") return (x) => x as Uint8Array_;
       const encoder = new TextEncoder();
       return (x) => encoder.encode(x as string) as Uint8Array_;
     }();
@@ -148,22 +140,12 @@ export class HexDecoderStream<T extends HexFormat | HexRawFormat>
         }
         remainder = output.length % 2;
         if (remainder) push.set(output.subarray(-remainder));
-        const o = decode(
-          output.subarray(0, -remainder || undefined),
-          0,
-          0,
-          format as HexFormat,
-        );
+        const o = decode(output.subarray(0, -remainder || undefined), 0, 0);
         controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
         if (remainder) {
-          const o = decode(
-            push.subarray(0, remainder),
-            0,
-            0,
-            format as HexFormat,
-          );
+          const o = decode(push.subarray(0, remainder), 0, 0);
           controller.enqueue(push.subarray(0, o));
         }
       },
