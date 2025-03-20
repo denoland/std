@@ -49,3 +49,22 @@ b
     "        a\nb",
   );
 });
+
+Deno.test("dedent() handles templates", () => {
+  assertEquals(
+    dedent`
+      line 1
+      ${"line 2"}
+      line ${3}
+      line 4
+    `,
+    "line 1\nline 2\nline 3\nline 4",
+  );
+});
+
+Deno.test("dedent() handles one line", () => {
+  assertEquals(
+    dedent`one line`,
+    "one line",
+  );
+});

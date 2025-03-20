@@ -32,8 +32,13 @@
  * );
  * ```
  */
-export function dedent(input: TemplateStringsArray | string): string {
-  const inputString = typeof input === "string" ? input : input.raw.join("");
+export function dedent(
+  input: TemplateStringsArray | string,
+  ...values: unknown[]
+): string {
+  const inputString = typeof input === "string"
+    ? input
+    : String.raw({ raw: input }, ...values);
   const ignoreFirstUnindented = !inputString.startsWith("\n");
   const trimmedInput = inputString.replace(/^\n/, "").trimEnd();
   const lines = trimmedInput.split("\n");
