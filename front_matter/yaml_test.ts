@@ -16,7 +16,7 @@ Deno.test("yaml() extracts type error on invalid input", () => {
   assertThrows(() => extract("---\nasdasdasd"));
 });
 
-Deno.test("yaml() parses yaml delineate by `---`", () => {
+Deno.test("yaml() parses yaml delineated by `---`", () => {
   const input = `---
 title: Three dashes marks the spot
 tags:
@@ -29,29 +29,27 @@ don't break
 ---
 Also this shouldn't be a problem
 `;
-  const content = extract<Record<string, unknown>>(input);
-  assertEquals(
-    content.frontMatter,
-    `title: Three dashes marks the spot
+
+  const expected = {
+    frontMatter: `title: Three dashes marks the spot
 tags:
   - yaml
   - front-matter
   - dashes
 expanded-description: with some --- crazy stuff in it`,
-  );
-  assertEquals(
-    content.body,
-    "don't break\n---\nAlso this shouldn't be a problem\n",
-  );
-  assertEquals(content.attrs.title, "Three dashes marks the spot");
-  assertEquals(content.attrs.tags, ["yaml", "front-matter", "dashes"]);
-  assertEquals(
-    content.attrs["expanded-description"],
-    "with some --- crazy stuff in it",
-  );
+    body: "don't break\n---\nAlso this shouldn't be a problem\n",
+    attrs: {
+      title: "Three dashes marks the spot",
+      tags: ["yaml", "front-matter", "dashes"],
+      "expanded-description": "with some --- crazy stuff in it",
+    },
+  };
+
+  const content = extract<Record<string, unknown>>(input);
+  assertEquals(content, expected);
 });
 
-Deno.test("yaml() parses yaml delineate by `---yaml`", () => {
+Deno.test("yaml() parses yaml delineated by `---yaml`", () => {
   const input = `---yaml
 title: Three dashes marks the spot
 tags:
@@ -64,26 +62,24 @@ don't break
 ---
 Also this shouldn't be a problem
 `;
-  const content = extract<Record<string, unknown>>(input);
-  assertEquals(
-    content.frontMatter,
-    `title: Three dashes marks the spot
+
+  const expected = {
+    frontMatter: `title: Three dashes marks the spot
 tags:
   - yaml
   - front-matter
   - dashes
 expanded-description: with some --- crazy stuff in it`,
-  );
-  assertEquals(
-    content.body,
-    "don't break\n---\nAlso this shouldn't be a problem\n",
-  );
-  assertEquals(content.attrs.title, "Three dashes marks the spot");
-  assertEquals(content.attrs.tags, ["yaml", "front-matter", "dashes"]);
-  assertEquals(
-    content.attrs["expanded-description"],
-    "with some --- crazy stuff in it",
-  );
+    body: "don't break\n---\nAlso this shouldn't be a problem\n",
+    attrs: {
+      title: "Three dashes marks the spot",
+      tags: ["yaml", "front-matter", "dashes"],
+      "expanded-description": "with some --- crazy stuff in it",
+    },
+  };
+
+  const content = extract<Record<string, unknown>>(input);
+  assertEquals(content, expected);
 });
 
 Deno.test("extractYaml() allows whitespaces after the header", () => {

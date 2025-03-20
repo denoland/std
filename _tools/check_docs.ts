@@ -50,10 +50,9 @@ const ENTRY_POINTS = [
   "../encoding/mod.ts",
   "../encoding/unstable_base32.ts",
   "../encoding/unstable_base64.ts",
+  "../encoding/unstable_hex.ts",
   "../encoding/unstable_base64_stream.ts",
-  "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_base32_stream.ts",
-  "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_hex_stream.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
@@ -68,6 +67,7 @@ const ENTRY_POINTS = [
   "../fs/unstable_link.ts",
   "../fs/unstable_lstat.ts",
   "../fs/unstable_make_temp_dir.ts",
+  "../fs/unstable_make_temp_file.ts",
   "../fs/unstable_mkdir.ts",
   "../fs/unstable_read_dir.ts",
   "../fs/unstable_read_file.ts",
@@ -543,7 +543,7 @@ function resolve(specifier: string, referrer: string): string {
 }
 
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier, { resolve });
+  const docs = (await doc([specifier], { resolve }))[specifier]!;
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;

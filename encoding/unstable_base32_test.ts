@@ -289,3 +289,12 @@ Deno.test("decodeRawBase32() with invalid offsets", () => {
     }
   }
 });
+
+Deno.test("decodeBase32() throws with invalid byte >= 128", () => {
+  const input = new TextDecoder().decode(new Uint8Array(5).fill(200));
+  assertThrows(
+    () => decodeBase32(input),
+    TypeError,
+    "Invalid Character",
+  );
+});
