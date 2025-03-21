@@ -211,7 +211,7 @@ export class ProgressBar {
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = this.value / this.#max * this.#barLength | 0;
+    const size = this.value / this.max * this.#barLength | 0;
     const unit = this.#unit;
     const rate = this.#rate;
     const x: ProgressBarFormatter = {
