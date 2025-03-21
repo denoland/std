@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assert, assertThrows } from "@std/assert";
+import { assert, assertFalse, assertThrows } from "@std/assert";
 
 import { type Format, test } from "./test.ts";
 
@@ -83,4 +83,15 @@ Deno.test("test() handles invalid toml input", () => {
   assert(!test("---toml\n"));
   assert(!test("= toml =\n"));
   assert(!test("---\nasdasdasd"));
+});
+
+Deno.test("test() handles wrong format", () => {
+  const result = test(
+    `---json
+{"title": "Three dashes followed by format marks the spot"}
+---
+`,
+    ["yaml"],
+  );
+  assertFalse(result);
 });
