@@ -48,11 +48,11 @@ const ENTRY_POINTS = [
   "../datetime/mod.ts",
   "../dotenv/mod.ts",
   "../encoding/mod.ts",
+  "../encoding/unstable_base32.ts",
+  "../encoding/unstable_base64.ts",
+  "../encoding/unstable_hex.ts",
   "../encoding/unstable_base64_stream.ts",
-  "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_base32_stream.ts",
-  "../encoding/unstable_base64url_stream.ts",
-  "../encoding/unstable_base32hex_stream.ts",
   "../encoding/unstable_hex_stream.ts",
   "../expect/mod.ts",
   "../fmt/bytes.ts",
@@ -67,17 +67,23 @@ const ENTRY_POINTS = [
   "../fs/unstable_link.ts",
   "../fs/unstable_lstat.ts",
   "../fs/unstable_make_temp_dir.ts",
+  "../fs/unstable_make_temp_file.ts",
   "../fs/unstable_mkdir.ts",
   "../fs/unstable_read_dir.ts",
   "../fs/unstable_read_file.ts",
   "../fs/unstable_read_link.ts",
   "../fs/unstable_read_text_file.ts",
   "../fs/unstable_real_path.ts",
+  "../fs/unstable_remove.ts",
   "../fs/unstable_rename.ts",
   "../fs/unstable_stat.ts",
   "../fs/unstable_symlink.ts",
   "../fs/unstable_truncate.ts",
   "../fs/unstable_types.ts",
+  "../fs/unstable_umask.ts",
+  "../fs/unstable_utime.ts",
+  "../fs/unstable_write_file.ts",
+  "../fs/unstable_write_text_file.ts",
   "../html/mod.ts",
   "../html/unstable_is_valid_custom_element_name.ts",
   "../http/mod.ts",
@@ -537,7 +543,7 @@ function resolve(specifier: string, referrer: string): string {
 }
 
 async function checkDocs(specifier: string) {
-  const docs = await doc(specifier, { resolve });
+  const docs = (await doc([specifier], { resolve }))[specifier]!;
   for (const d of docs.filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
     const document = d as DocNodeWithJsDoc<DocNode>;

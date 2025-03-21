@@ -112,6 +112,14 @@ Deno.test("decodeCbor() decoding Dates", () => {
   assertEquals(decodeCbor(encodeCbor(date)), date);
 });
 
+Deno.test("decodeCbor() decoding bignums", () => {
+  let num = 2n ** 64n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+
+  num = -(2n ** 64n) - 1n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+});
+
 Deno.test("decodeCbor() decoding Map<CborType, CborType>", () => {
   const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
   assertEquals(decodeCbor(encodeCbor(map)), map);
@@ -197,7 +205,7 @@ Deno.test("decodeCbor() decoding objects", () => {
 
 Deno.test("decodeCbor() decoding CborTag()", () => {
   const tag = new CborTag(
-    2,
+    4,
     new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
   );
   assertEquals(decodeCbor(encodeCbor(tag)), tag);
@@ -693,6 +701,19 @@ Deno.test("decodeCbor() rejecting majorType 7 due to additional information", ()
     },
     RangeError,
     "Cannot decode value (0b111_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 2 & 3 due to invalid tagContent", () => {
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(2, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
+  );
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(3, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
   );
 });
 

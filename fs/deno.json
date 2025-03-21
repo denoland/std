@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",
@@ -18,17 +18,23 @@
     "./unstable-link": "./unstable_link.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-make-temp-dir": "./unstable_make_temp_dir.ts",
+    "./unstable-make-temp-file": "./unstable_make_temp_file.ts",
     "./unstable-mkdir": "./unstable_mkdir.ts",
     "./unstable-read-dir": "./unstable_read_dir.ts",
     "./unstable-read-file": "./unstable_read_file.ts",
     "./unstable-read-link": "./unstable_read_link.ts",
     "./unstable-read-text-file": "./unstable_read_text_file.ts",
     "./unstable-real-path": "./unstable_real_path.ts",
+    "./unstable-remove": "./unstable_remove.ts",
     "./unstable-rename": "./unstable_rename.ts",
     "./unstable-stat": "./unstable_stat.ts",
+    "./unstable-utime": "./unstable_utime.ts",
     "./unstable-symlink": "./unstable_symlink.ts",
     "./unstable-truncate": "./unstable_truncate.ts",
     "./unstable-types": "./unstable_types.ts",
+    "./unstable-umask": "./unstable_umask.ts",
+    "./unstable-write-file": "./unstable_write_file.ts",
+    "./unstable-write-text-file": "./unstable_write_text_file.ts",
     "./walk": "./walk.ts"
   }
 }

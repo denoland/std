@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 /**
  * The properties provided to the fmt function upon every visual update.
@@ -138,13 +139,6 @@ export class ProgressBar {
   value: number;
   max: number;
 
-  #barLength: number;
-  #fillChar: string;
-  #emptyChar: string;
-  #clear: boolean;
-  #fmt: (fmt: ProgressBarFormatter) => string;
-  #keepOpen: boolean;
-
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
@@ -152,6 +146,12 @@ export class ProgressBar {
   #startTime: number;
   #lastTime: number;
   #lastValue: number;
+  #barLength: number;
+  #fillChar: string;
+  #emptyChar: string;
+  #clear: boolean;
+  #fmt: (fmt: ProgressBarFormatter) => string;
+  #keepOpen: boolean;
   /**
    * Constructs a new instance.
    *
@@ -162,16 +162,23 @@ export class ProgressBar {
     writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
+    const {
+      value = 0,
+      barLength = 50,
+      fillChar = "#",
+      emptyChar = "-",
+      clear = false,
+      fmt = (x) => x.styledTime() + x.progressBar + x.styledData(),
+      keepOpen = true,
+    } = options;
     this.value = options.value ?? 0;
     this.max = options.max;
-    this.#barLength = options.barLength ?? 50;
-    this.#fillChar = options.fillChar ?? "#";
-    this.#emptyChar = options.emptyChar ?? "-";
-    this.#clear = options.clear ?? false;
-    this.#fmt = options.fmt ?? function (x: ProgressBarFormatter) {
-      return x.styledTime() + x.progressBar + x.styledData();
-    };
-    this.#keepOpen = options.keepOpen ?? true;
+    this.#barLength = barLength;
+    this.#fillChar = fillChar;
+    this.#emptyChar = emptyChar;
+    this.#clear = clear;
+    this.#fmt = fmt;
+    this.#keepOpen = keepOpen;
 
     if (options.max < 2 ** 20) {
       this.#unit = "KiB";
@@ -203,9 +210,7 @@ export class ProgressBar {
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = this.value /
-        this.max *
-        this.#barLength | 0;
+    const size = this.value / this.#max * this.#barLength | 0;
     const unit = this.#unit;
     const rate = this.#rate;
     const x: ProgressBarFormatter = {

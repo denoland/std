@@ -37,7 +37,7 @@ Deno.test("copyFile() copies content to a directory, which will throw an error",
   await writeFile(source, content);
 
   try {
-    assertRejects(async () => {
+    await assertRejects(async () => {
       await copyFile(source, tmpdir());
     });
   } finally {
@@ -94,11 +94,13 @@ Deno.test("copyFileSync() copies content to a directory, which will throw an err
 
   writeFileSync(source, content);
 
-  assertThrows(() => {
-    copyFileSync(source, tmpdir());
-  });
-
-  rmSync(tempDirPath, { recursive: true, force: true });
+  try {
+    assertThrows(() => {
+      copyFileSync(source, tmpdir());
+    });
+  } finally {
+    rmSync(tempDirPath, { recursive: true, force: true });
+  }
 });
 
 Deno.test("copyFileSync() copies content to a non existed file", () => {
