@@ -140,7 +140,6 @@ export interface ProgressBarOptions {
  * bar.end();
  */
 export class ProgressBar {
-  #options: Required<ProgressBarOptions>;
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
@@ -148,6 +147,15 @@ export class ProgressBar {
   #startTime: number;
   #lastTime: number;
   #lastValue: number;
+
+  #value: number;
+  #max: number;
+  #barLength: number;
+  #fillChar: string;
+  #emptyChar: string;
+  #clear: boolean;
+  #fmt: (fmt: ProgressBarFormatter) => string;
+  #keepOpen: boolean;
   /**
    * Constructs a new instance.
    *
@@ -158,18 +166,23 @@ export class ProgressBar {
     writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
-    this.#options = {
-      value: options.value ?? 0,
-      max: options.max,
-      barLength: options.barLength ?? 50,
-      fillChar: options.fillChar ?? "#",
-      emptyChar: options.emptyChar ?? "-",
-      clear: options.clear ?? false,
-      fmt: options.fmt ?? function (x) {
-        return x.styledTime() + x.progressBar + x.styledData();
-      },
-      keepOpen: options.keepOpen ?? true,
-    };
+    const {
+      value = 0,
+      barLength = 50,
+      fillChar = "#",
+      emptyChar = "-",
+      clear = false,
+      fmt = (x) => x.styledTime() + x.progressBar + x.styledData(),
+      keepOpen = true,
+    } = options;
+    this.#value = value;
+    this.#max = options.max;
+    this.#barLength = barLength;
+    this.#fillChar = fillChar;
+    this.#emptyChar = emptyChar;
+    this.#clear = clear;
+    this.#fmt = fmt;
+    this.#keepOpen = keepOpen;
 
     if (options.max < 2 ** 20) {
       this.#unit = "KiB";
@@ -190,20 +203,18 @@ export class ProgressBar {
 
     const stream = new TextEncoderStream();
     stream.readable
-      .pipeTo(writable, { preventClose: this.#options.keepOpen })
+      .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
     this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
-    this.#lastValue = this.#options.value;
+    this.#lastValue = this.#value;
   }
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
-    const size = this.#options.value /
-        this.#options.max *
-        this.#options.barLength | 0;
+    const size = this.#value / this.#max * this.#barLength | 0;
     const unit = this.#unit;
     const rate = this.#rate;
     const x: ProgressBarFormatter = {
@@ -228,18 +239,18 @@ export class ProgressBar {
           "] ";
       },
       progressBar: "[" +
-        this.#options.fillChar.repeat(size) +
-        this.#options.emptyChar.repeat(this.#options.barLength - size) +
+        this.#fillChar.repeat(size) +
+        this.#emptyChar.repeat(this.#barLength - size) +
         "] ",
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
-      value: this.#options.value,
+      value: this.#value,
       previousValue: this.#lastValue,
-      max: this.#options.max,
+      max: this.#max,
     };
     this.#lastTime = currentTime;
-    this.#lastValue = this.#options.value;
-    await this.#writer.write("\r\u001b[K" + this.#options.fmt(x))
+    this.#lastValue = this.#value;
+    await this.#writer.write("\r\u001b[K" + this.#fmt(x))
       .catch(() => {});
   }
 
@@ -256,7 +267,7 @@ export class ProgressBar {
    * @param x The amount of progress that has been made.
    */
   add(x: number): void {
-    this.#options.value += x;
+    this.#value += x;
   }
 
   /**
@@ -273,7 +284,7 @@ export class ProgressBar {
   async end(): Promise<void> {
     clearInterval(this.#id);
     await this.#print()
-      .then(() => this.#writer.write(this.#options.clear ? "\r\u001b[K" : "\n"))
+      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
       .then(() => this.#writer.close())
       .catch(() => {});
   }
