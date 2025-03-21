@@ -1,33 +1,60 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { encodeHex } from "./hex.ts";
+import { toText } from "@std/streams";
+import { toBytes } from "@std/streams/unstable-to-bytes";
+import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
+import { encodeHex } from "./unstable_hex.ts";
 import { HexDecoderStream, HexEncoderStream } from "./unstable_hex_stream.ts";
-import { toText } from "@std/streams/to-text";
-import { concat } from "@std/bytes/concat";
-import { RandomSliceStream } from "./_random_slice_stream.ts";
 
-Deno.test("HexEncoderStream() encodes stream", async () => {
-  const stream = (await Deno.open("./deno.lock"))
+Deno.test("HexEncoderStream() with normal format", async () => {
+  const readable = (await Deno.open("./deno.lock"))
     .readable
-    .pipeThrough(new RandomSliceStream())
-    .pipeThrough(new HexEncoderStream());
+    .pipeThrough(new FixedChunkStream(1021))
+    .pipeThrough(new HexEncoderStream({ output: "string" }));
 
   assertEquals(
-    await toText(stream),
+    await toText(readable),
     encodeHex(await Deno.readFile("./deno.lock")),
   );
 });
 
-Deno.test("HexDecoderStream() decodes stream", async () => {
-  const stream = (await Deno.open("./deno.lock"))
+Deno.test("HexEncoderStream() with raw format", async () => {
+  const readable = (await Deno.open("./deno.lock"))
     .readable
-    .pipeThrough(new HexEncoderStream())
-    .pipeThrough(new RandomSliceStream())
-    .pipeThrough(new HexDecoderStream());
+    .pipeThrough(new FixedChunkStream(1021))
+    .pipeThrough(new HexEncoderStream({ output: "bytes" }));
 
   assertEquals(
-    concat(await Array.fromAsync(stream)),
+    await toBytes(readable),
+    new TextEncoder().encode(encodeHex(await Deno.readFile("./deno.lock"))),
+  );
+});
+
+Deno.test("HexDecoderStream() with normal format", async () => {
+  const readable = (await Deno.open("./deno.lock"))
+    .readable
+    .pipeThrough(new HexEncoderStream({ output: "string" }))
+    .pipeThrough(new TextEncoderStream())
+    .pipeThrough(new FixedChunkStream(1021))
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new HexDecoderStream({ input: "string" }));
+
+  assertEquals(
+    await toBytes(readable),
+    await Deno.readFile("./deno.lock"),
+  );
+});
+
+Deno.test("HexDecoderStream() with raw format", async () => {
+  const readable = (await Deno.open("./deno.lock"))
+    .readable
+    .pipeThrough(new HexEncoderStream({ output: "bytes" }))
+    .pipeThrough(new FixedChunkStream(1021))
+    .pipeThrough(new HexDecoderStream({ input: "bytes" }));
+
+  assertEquals(
+    await toBytes(readable),
     await Deno.readFile("./deno.lock"),
   );
 });
