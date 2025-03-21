@@ -6,39 +6,12 @@ import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
+import { isTestFile } from "./utils.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 let shouldFail = false;
-
-function hasExports(filePath: string): boolean {
-  const source = Deno.readTextFileSync(filePath);
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    source,
-    ts.ScriptTarget.Latest,
-  );
-
-  let result = false;
-
-  function visitNode(node: ts.Node) {
-    if (
-      ts.isExportSpecifier(node) ||
-      ts.isExportAssignment(node) ||
-      ts.isExportDeclaration(node) ||
-      node.kind === ts.SyntaxKind.ExportKeyword
-    ) {
-      result = true;
-    } else {
-      ts.forEachChild(node, visitNode);
-    }
-  }
-
-  visitNode(sourceFile);
-
-  return result;
-}
 
 for await (
   const { path: modFilePath } of walk(ROOT, {
@@ -95,8 +68,7 @@ for await (
       .replaceAll("\\", "/");
 
     if (!modExportSpecifiers.has(relativeSpecifier)) {
-      // ignore test.ts files have no exports (which means that are Deno.test() files)
-      if (relativeSpecifier === "./test.ts" && !hasExports(filePath)) continue;
+      if (isTestFile(filePath)) continue;
 
       console.warn(
         `${

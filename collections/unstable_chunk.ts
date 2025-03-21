@@ -9,7 +9,7 @@
  * @typeParam T The type of the elements in the iterable.
  *
  * @param iterable The iterable to take elements from.
- * @param predicate The size of the chunks. This must be a positive integer.
+ * @param size The size of the chunks. This must be a positive integer.
  *
  * @returns An array of chunks of the given size.
  *
