@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { dedent } from "./dedent.ts";
+import { dedent } from "./unstable_dedent.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test("dedent() handles example 1", () => {

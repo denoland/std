@@ -5,7 +5,7 @@
     ".": "./mod.ts",
     "./closest-string": "./closest_string.ts",
     "./compare-similarity": "./compare_similarity.ts",
-    "./dedent": "./dedent.ts",
+    "./unstable_dedent": "./unstable_dedent.ts",
     "./levenshtein-distance": "./levenshtein_distance.ts",
     "./unstable-reverse": "./unstable_reverse.ts",
     "./unstable-slugify": "./unstable_slugify.ts",
