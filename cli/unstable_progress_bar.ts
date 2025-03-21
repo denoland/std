@@ -164,6 +164,7 @@ export class ProgressBar {
   ) {
     const {
       value = 0,
+      max,
       barLength = 50,
       fillChar = "#",
       emptyChar = "-",
@@ -171,8 +172,8 @@ export class ProgressBar {
       fmt = (x) => x.styledTime() + x.progressBar + x.styledData(),
       keepOpen = true,
     } = options;
-    this.value = options.value ?? 0;
-    this.max = options.max;
+    this.value = value;
+    this.max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
