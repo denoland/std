@@ -24,25 +24,39 @@ import {
   type TsTypeDef,
 } from "@deno/doc";
 import { walk } from "@std/fs/walk";
-import { greaterOrEqual, parse } from "@std/semver";
 import { join } from "@std/path/join";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
-const STABLE_VERSION = parse("1.0.0");
 const ROOT = new URL("../", import.meta.url);
 const ENTRY_POINT_URLS = [];
 for await (
   const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
 ) {
-  const { version, exports } = await import(path, { with: { type: "json" } })
+  const { exports } = await import(path, { with: { type: "json" } })
     .then((it) => it.default);
-  if (!version || !greaterOrEqual(parse(version), STABLE_VERSION)) continue;
+
+  if (!exports) continue;
   for (const relativeFilePath of Object.values<string>(exports)) {
     if (!relativeFilePath.endsWith(".ts")) continue;
+
     const filePath = join(path, "..", relativeFilePath);
+
+    if (
+      filePath.endsWith("log/mod.ts") ||
+      filePath.endsWith("log/levels.ts") ||
+      filePath.endsWith("log/setup.ts") ||
+      filePath.endsWith("log/rotating_file_handler.ts")
+    ) {
+      // deno-lint-ignore no-console
+      console.warn(
+        `Doc check for ${filePath} is ignored. Visit https://github.com/denoland/std/issues/6124 for more details.`,
+      );
+      continue;
+    }
+
     ENTRY_POINT_URLS.push(
       new URL(filePath, import.meta.url)
         .href,
