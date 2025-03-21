@@ -418,8 +418,8 @@ function assertConstructorDocs(
  * Checks a module document for:
  * - Code snippets that execute successfully.
  */
-function assertModuleDoc(_document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
-  // assertSnippetsWork(document.jsDoc.doc!, document);
+function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
+  assertSnippetsWork(document.jsDoc.doc!, document);
 }
 
 /**
@@ -471,7 +471,9 @@ async function checkDocs(specifier: string) {
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
       case "moduleDoc": {
-        assertModuleDoc(document);
+        if (document.location.filename.endsWith("/mod.ts")) {
+          assertModuleDoc(document);
+        }
         break;
       }
       case "function": {
