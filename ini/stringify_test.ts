@@ -4,8 +4,8 @@ import { stringify, type StringifyOptions } from "./mod.ts";
 import { assertEquals } from "@std/assert";
 
 function assertValidStringify(
-  obj: unknown,
-  expected: unknown,
+  obj: object,
+  expected: string,
   options?: StringifyOptions,
 ) {
   assertEquals(stringify(obj, options), expected);

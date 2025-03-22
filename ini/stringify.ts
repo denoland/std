@@ -86,10 +86,6 @@ export type { ReplacerFunction };
  * @param options The option to use
  * @returns The INI string
  */
-export function stringify(
-  // deno-lint-ignore no-explicit-any
-  object: any,
-  options?: StringifyOptions,
-): string {
+export function stringify(object: object, options?: StringifyOptions): string {
   return IniMap.from(object, options).toString(options?.replacer);
 }
