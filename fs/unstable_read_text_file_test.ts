@@ -10,12 +10,19 @@ import { readTextFile, readTextFileSync } from "./unstable_read_text_file.ts";
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const testDir = resolve(moduleDir, "testdata");
 const testFile = join(testDir, "copy_file.txt");
+const testFile2 = join(testDir, "copy_file_bom.txt");
 
 Deno.test("readTextFile() reads content from txt file", async () => {
   const content = await readTextFile(testFile);
 
   assert(content.length > 0);
   assert(content === "txt");
+});
+
+Deno.test("readTextFile() reads a file with byte order mark", async () => {
+  const content = await readTextFile(testFile2);
+
+  assertEquals(content, "\ufeffhello");
 });
 
 Deno.test("readTextFile() throws an Error when reading a directory", async () => {
@@ -56,6 +63,12 @@ Deno.test("readTextFileSync() reads content from txt file", () => {
 
   assert(content.length > 0);
   assert(content === "txt");
+});
+
+Deno.test("readTextFileSync() reads a file with byte order mark", () => {
+  const content = readTextFileSync(testFile2);
+
+  assertEquals(content, "\ufeffhello");
 });
 
 Deno.test("readTextFileSync() throws an Error when reading a directory", () => {
