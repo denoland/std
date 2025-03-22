@@ -35,11 +35,12 @@ import type { CborType } from "./types.ts";
  * @returns A {@link Uint8Array} representing the encoded data.
  */
 export function encodeCborSequence(values: CborType[]): Uint8Array {
-  let x = 0;
-  for (const value of values) x += calcEncodingSize(value);
-  const output = new Uint8Array(x);
+  let o = 0;
+  for (const value of values) o += calcEncodingSize(value);
+  const output = new Uint8Array(o);
 
-  x = 0;
-  for (const value of values) x = encode(value, output, x);
+  o = 0;
+  for (const value of values) o = encode(value, output, o);
+  if (o !== output.length) return output.subarray(0, o);
   return output;
 }
