@@ -48,6 +48,7 @@ const ENTRY_POINTS = [
   "../datetime/mod.ts",
   "../dotenv/mod.ts",
   "../encoding/mod.ts",
+  "../encoding/unstable_hex.ts",
   "../encoding/unstable_base32.ts",
   "../encoding/unstable_base64.ts",
   "../encoding/unstable_hex.ts",
