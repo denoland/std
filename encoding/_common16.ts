@@ -44,9 +44,7 @@ export function decode(
 ): number {
   if ((buffer.length - o) % 2 === 1) {
     throw new RangeError(
-      `Invalid Length: Hexadecimal string length (${
-        buffer.length - o
-      }) must be divisible by 2`,
+      `Length (${buffer.length - o}) must be divisible by 2`,
     );
   }
 

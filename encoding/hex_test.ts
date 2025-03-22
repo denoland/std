@@ -24,18 +24,18 @@ const errCases: [string, ErrorConstructor, string][] = [
   [
     "0",
     RangeError,
-    "Invalid Length: Hexadecimal string length (1) must be divisible by 2",
+    "Length (1) must be divisible by 2",
   ],
   [
     "zd4aa",
     RangeError,
-    "Invalid Length: Hexadecimal string length (5) must be divisible by 2",
+    "Length (5) must be divisible by 2",
   ],
   ["d4az", TypeError, "Invalid Character (z)"],
   [
     "30313",
     RangeError,
-    "Invalid Length: Hexadecimal string length (5) must be divisible by 2",
+    "Length (5) must be divisible by 2",
   ],
   ["0g", TypeError, "Invalid Character (g)"],
   ["00gg", TypeError, "Invalid Character (g)"],
@@ -43,7 +43,7 @@ const errCases: [string, ErrorConstructor, string][] = [
   [
     "ffeed",
     RangeError,
-    "Invalid Length: Hexadecimal string length (5) must be divisible by 2",
+    "Length (5) must be divisible by 2",
   ],
 ];
 
