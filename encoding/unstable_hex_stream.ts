@@ -2,18 +2,22 @@
 // This module is browser compatible.
 
 /**
- * Utilities for encoding and decoding to and from hex in a streaming manner.
+ * TransformStream classes to encode and decode to and from hexadecimal data in a streaming manner.
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { HexDecoderStream } from "@std/encoding/unstable-hex-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { encodeHex } from "@std/encoding/unstable-hex";
+ * import { HexEncoderStream } from "@std/encoding/unstable-hex-stream";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["48656c6c6f2c", "20776f726c6421"])
- *   .pipeThrough(new HexDecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new HexEncoderStream({ output: "string" }));
  *
- * assertEquals(await toText(stream), "Hello, world!");
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeHex(await Deno.readFile("./deno.lock")),
+ * );
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -21,77 +25,128 @@
  * @module
  */
 
-import { decodeHex, encodeHex } from "./hex.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
+import {
+  calcMax,
+  decodeRawHex as decode,
+  encodeRawHex as encode,
+} from "./unstable_hex.ts";
+import { detach } from "./_common_detach.ts";
+
+type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
 /**
- * Converts a Uint8Array stream into a hex-encoded stream.
+ * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a hexadecimal stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
+ * @typeParam T The type of the hexadecimal stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeHex } from "@std/encoding/hex";
+ * import { encodeHex } from "@std/encoding/unstable-hex";
  * import { HexEncoderStream } from "@std/encoding/unstable-hex-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["Hello,", " world!"])
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeThrough(new HexEncoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new HexEncoderStream({ output: "string" }));
  *
- * assertEquals(await toText(stream), encodeHex(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeHex(await Deno.readFile("./deno.lock")),
+ * );
  * ```
  */
-export class HexEncoderStream extends TransformStream<Uint8Array, string> {
-  constructor() {
+export class HexEncoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    Uint8Array_,
+    T extends "bytes" ? Uint8Array_ : string
+  > {
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options for the hexadecimal stream.
+   */
+  constructor(options: { output?: T } = {}) {
+    const decode = function (): (input: Uint8Array_) => Expect<T> {
+      if (options.output === "bytes") return (x) => x as Expect<T>;
+      const decoder = new TextDecoder();
+      return (x) => decoder.decode(x) as Expect<T>;
+    }();
     super({
       transform(chunk, controller) {
-        controller.enqueue(encodeHex(chunk));
+        const [output, i] = detach(chunk, calcMax(chunk.length));
+        encode(output, i, 0);
+        controller.enqueue(decode(output));
       },
     });
   }
 }
 
 /**
- * Decodes a hex-encoded stream into a Uint8Array stream.
+ * Transforms a hexadecimal stream into a {@link Uint8Array<ArrayBuffer>} stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-8}
+ * @typeParam T The type of the hexadecimal stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { HexDecoderStream } from "@std/encoding/unstable-hex-stream";
- * import { toText } from "@std/streams/to-text";
+ * import {
+ *   HexDecoderStream,
+ *   HexEncoderStream,
+ * } from "@std/encoding/unstable-hex-stream";
+ * import { toBytes } from "@std/streams/unstable-to-bytes";
  *
- * const stream = ReadableStream.from(["48656c6c6f2c", "20776f726c6421"])
- *   .pipeThrough(new HexDecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new HexEncoderStream({ output: "bytes" }))
+ *   .pipeThrough(new HexDecoderStream({ input: "bytes" }));
  *
- * assertEquals(await toText(stream), "Hello, world!");
+ * assertEquals(
+ *   await toBytes(readable),
+ *   await Deno.readFile("./deno.lock"),
+ * );
  * ```
  */
-export class HexDecoderStream extends TransformStream<string, Uint8Array_> {
-  constructor() {
-    let push = "";
+export class HexDecoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    T extends "bytes" ? Uint8Array_ : string,
+    Uint8Array_
+  > {
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options of the hexadecimal stream.
+   */
+  constructor(options: { input?: T } = {}) {
+    const encode = function (): (input: Expect<T>) => Uint8Array_ {
+      if (options.input === "bytes") return (x) => x as Uint8Array_;
+      const encoder = new TextEncoder();
+      return (x) => encoder.encode(x as string) as Uint8Array_;
+    }();
+    const push = new Uint8Array(1);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        push += chunk;
-        if (push.length < 2) {
-          return;
+        let output = encode(chunk);
+        if (remainder) {
+          output = detach(output, remainder + output.length)[0];
+          output.set(push.subarray(0, remainder));
         }
-        const remainder = -push.length % 2;
-        controller.enqueue(decodeHex(push.slice(0, remainder || undefined)));
-        push = remainder ? push.slice(remainder) : "";
+        remainder = output.length % 2;
+        if (remainder) push.set(output.subarray(-remainder));
+        const o = decode(output.subarray(0, -remainder || undefined), 0, 0);
+        controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(decodeHex(push));
+        if (remainder) {
+          const o = decode(push.subarray(0, remainder), 0, 0);
+          controller.enqueue(push.subarray(0, o));
         }
       },
     });
