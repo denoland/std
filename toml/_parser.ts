@@ -543,19 +543,25 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
     scanner.next(2);
     const acc = [first2];
     const prefix = first2.toLowerCase();
+
+    // Determine allowed characters and base in one switch
     let allowedChars: RegExp;
+    let base: number;
     switch (prefix) {
       case "0b":
-        allowedChars = /[01_]/; // Binary allows 0-1 and _
+        allowedChars = /[01_]/; // Binary
+        base = 2;
         break;
       case "0o":
-        allowedChars = /[0-7_]/; // Octal allows 0-7 and _
+        allowedChars = /[0-7_]/; // Octal
+        base = 8;
         break;
       case "0x":
-        allowedChars = /[0-9a-f_]/i; // Hex allows 0-9, a-f and _
+        allowedChars = /[0-9a-f_]/i; // Hex
+        base = 16;
         break;
       default:
-        return failure();
+        return failure(); // Unreachable due to regex check
     }
 
     // Collect valid characters
@@ -566,31 +572,13 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 
     if (acc.length === 1) return failure(); // Only prefix, no digits
 
-    // Process the collected characters
+    // Process and parse
     const numberStr = acc.join("").replace(/_/g, ""); // Remove underscores
-    const digits = numberStr.slice(2); // Remove the prefix (0b, 0o, 0x)
-    if (digits.length === 0) return failure(); // No digits after prefix
-
-    // Determine the base and parse
-    let base: number;
-    switch (prefix) {
-      case "0b":
-        base = 2;
-        break;
-      case "0o":
-        base = 8;
-        break;
-      case "0x":
-        base = 16;
-        break;
-      default:
-        return failure();
-    }
+    const digits = numberStr.slice(2); // Remove prefix
+    if (digits.length === 0) return failure();
 
     const number = parseInt(digits, base);
-    if (isNaN(number)) return failure();
-
-    return success(number);
+    return isNaN(number) ? failure() : success(number);
   }
 
   // Handle regular integers
