@@ -210,8 +210,8 @@ Deno.test("decodeBase32() invalid length", () => {
     ) {
       assertThrows(
         () => decodeBase32(input, format),
-        TypeError,
-        "Invalid Character (A)",
+        RangeError,
+        `Length (${input.length}), excluding padding, must not have a remainder of 1, 3, or 6 when divided by 8`,
         format,
       );
     }

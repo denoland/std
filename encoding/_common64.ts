@@ -79,8 +79,10 @@ export function decode(
     }
   }
   if ((buffer.length - o) % 4 === 1) {
-    throw new TypeError(
-      `Invalid Character (${String.fromCharCode(buffer[buffer.length - 1]!)})`,
+    throw new RangeError(
+      `Length (${
+        buffer.length - o
+      }), excluding padding, must not have a remainder of 1 when divided by 4`,
     );
   }
 

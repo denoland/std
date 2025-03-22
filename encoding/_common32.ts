@@ -121,10 +121,10 @@ export function decode(
     case 6:
     case 3:
     case 1:
-      throw new TypeError(
-        `Invalid Character (${
-          String.fromCharCode(buffer[buffer.length - 1]!)
-        })`,
+      throw new RangeError(
+        `Length (${
+          buffer.length - o
+        }), excluding padding, must not have a remainder of 1, 3, or 6 when divided by 8`,
       );
   }
 
