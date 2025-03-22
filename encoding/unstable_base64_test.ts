@@ -157,8 +157,8 @@ Deno.test("decodeBase64() invalid length", () => {
     ) {
       assertThrows(
         () => decodeBase64(input, format),
-        TypeError,
-        "Invalid Character (a)",
+        RangeError,
+        `Length (${input.length}), excluding padding, must not have a remainder of 1 when divided by 4`,
         format,
       );
     }
