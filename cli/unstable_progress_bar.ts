@@ -106,6 +106,7 @@ export interface ProgressBarOptions {
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
  * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * bar.start();
  *
  * for await (const buffer of gen) {
  *   bar.add(buffer.length);
@@ -127,6 +128,7 @@ export interface ProgressBarOptions {
  *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
  *   },
  * });
+ * bar.start();
  *
  * for (const x of Array(100)) {
  *   bar.add(1);
