@@ -82,6 +82,10 @@ export interface ProgressBarOptions {
    * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
   fmt?: (fmt: ProgressBarFormatter) => string;
+  /**
+   * Whether the writable should be kept open when progress bar stops.
+   * @default {true}
+   */
   keepOpen?: boolean;
 }
 
@@ -242,6 +246,13 @@ export class ProgressBar {
   /**
    * Increments the progress by `x`.
    *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
+   * progressBar.add(10);
+   * ```
    * @param x The amount of progress that has been made.
    */
   add(x: number): void {
@@ -250,6 +261,14 @@ export class ProgressBar {
 
   /**
    * Ends the progress bar and cleans up any lose ends.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
+   * await progressBar.end()
+   * ```
    */
   async end(): Promise<void> {
     clearInterval(this.#id);
