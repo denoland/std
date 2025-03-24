@@ -44,11 +44,9 @@ for await (
 
     const filePath = join(path, "..", relativeFilePath);
 
+    // Ignores 4 files in @std/log package
     if (
-      filePath.endsWith("log/mod.ts") ||
-      filePath.endsWith("log/levels.ts") ||
-      filePath.endsWith("log/setup.ts") ||
-      filePath.endsWith("log/rotating_file_handler.ts")
+      /log[/\\](mod|levels|setup|rotating_file_handler)\.ts$/.test(filePath)
     ) {
       // deno-lint-ignore no-console
       console.warn(
