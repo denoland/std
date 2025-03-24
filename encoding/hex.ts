@@ -26,35 +26,18 @@
  * @module
  */
 
-import { validateBinaryLike } from "./_validate_binary_like.ts";
+import { calcMax, decode, encode } from "./_common16.ts";
+import { detach } from "./_common_detach.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
-const hexTable = new TextEncoder().encode("0123456789abcdef");
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
-
-function errInvalidByte(byte: number) {
-  return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
-}
-
-function errLength(len: number) {
-  return new RangeError(
-    `Cannot decode the hex string as the input length should be even: length is ${len}`,
-  );
-}
-
-/** Converts a hex character into its value. */
-function fromHexChar(byte: number): number {
-  // '0' <= byte && byte <= '9'
-  if (48 <= byte && byte <= 57) return byte - 48;
-  // 'a' <= byte && byte <= 'f'
-  if (97 <= byte && byte <= 102) return byte - 97 + 10;
-  // 'A' <= byte && byte <= 'F'
-  if (65 <= byte && byte <= 70) return byte - 65 + 10;
-
-  throw errInvalidByte(byte);
-}
+const alphabet = new TextEncoder()
+  .encode("0123456789abcdef");
+const rAlphabet = new Uint8Array(128).fill(16); // alphabet.length
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
+new TextEncoder()
+  .encode("ABCDEF")
+  .forEach((byte, i) => rAlphabet[byte] = i + 10);
 
 /**
  * Converts data into a hex-encoded string.
@@ -72,15 +55,16 @@ function fromHexChar(byte: number): number {
  * ```
  */
 export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
-  const u8 = validateBinaryLike(src);
-
-  const dst = new Uint8Array(u8.length * 2);
-  for (let i = 0; i < u8.length; i++) {
-    const v = u8[i]!;
-    dst[i * 2] = hexTable[v >> 4]!;
-    dst[i * 2 + 1] = hexTable[v & 0x0f]!;
-  }
-  return textDecoder.decode(dst);
+  if (typeof src === "string") {
+    src = new TextEncoder().encode(src) as Uint8Array_;
+  } else if (src instanceof ArrayBuffer) src = new Uint8Array(src).slice();
+  else src = src.slice();
+  const [output, i] = detach(
+    src as Uint8Array_,
+    calcMax((src as Uint8Array_).length),
+  );
+  encode(output, i, 0, alphabet);
+  return new TextDecoder().decode(output);
 }
 
 /**
@@ -103,20 +87,8 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
  * ```
  */
 export function decodeHex(src: string): Uint8Array_ {
-  const u8 = textEncoder.encode(src);
-  const dst = new Uint8Array(u8.length / 2);
-  for (let i = 0; i < dst.length; i++) {
-    const a = fromHexChar(u8[i * 2]!);
-    const b = fromHexChar(u8[i * 2 + 1]!);
-    dst[i] = (a << 4) | b;
-  }
-
-  if (u8.length % 2 === 1) {
-    // Check for invalid char before reporting bad length,
-    // since the invalid char (if present) is an earlier problem.
-    fromHexChar(u8[dst.length * 2]!);
-    throw errLength(u8.length);
-  }
-
-  return dst;
+  const output = new TextEncoder().encode(src) as Uint8Array_;
+  // deno-lint-ignore no-explicit-any
+  return new Uint8Array((output.buffer as any)
+    .transfer(decode(output, 0, 0, rAlphabet)));
 }

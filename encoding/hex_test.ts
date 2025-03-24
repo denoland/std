@@ -21,14 +21,30 @@ const testCases = [
 
 const errCases: [string, ErrorConstructor, string][] = [
   // encoded(hex) / error / msg
-  ["0", RangeError, ""],
-  ["zd4aa", TypeError, "'z'"],
-  ["d4aaz", TypeError, "'z'"],
-  ["30313", RangeError, ""],
-  ["0g", TypeError, "'g'"],
-  ["00gg", TypeError, "'g'"],
-  ["0\x01", TypeError, "'\x01'"],
-  ["ffeed", RangeError, ""],
+  [
+    "0",
+    RangeError,
+    "Length (1) must be divisible by 2",
+  ],
+  [
+    "zd4aa",
+    RangeError,
+    "Length (5) must be divisible by 2",
+  ],
+  ["d4az", TypeError, "Invalid Character (z)"],
+  [
+    "30313",
+    RangeError,
+    "Length (5) must be divisible by 2",
+  ],
+  ["0g", TypeError, "Invalid Character (g)"],
+  ["00gg", TypeError, "Invalid Character (g)"],
+  ["0\x01", TypeError, "Invalid Character (\x01)"],
+  [
+    "ffeed",
+    RangeError,
+    "Length (5) must be divisible by 2",
+  ],
 ];
 
 Deno.test("encodeHex() handles string", () => {

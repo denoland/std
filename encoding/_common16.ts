@@ -44,9 +44,9 @@ export function decode(
 ): number {
   if ((buffer.length - o) % 2 === 1) {
     throw new TypeError(
-      `Cannot decode input as hex: Invalid character (${
-        String.fromCharCode(buffer[buffer.length - 1]!)
-      })`,
+      `Cannot decode input as hex: Length (${
+        buffer.length - o
+      }) must be divisible by 2`,
     );
   }
 
