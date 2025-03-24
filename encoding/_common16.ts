@@ -43,8 +43,8 @@ export function decode(
   alphabet: Uint8Array,
 ): number {
   if ((buffer.length - o) % 2 === 1) {
-    throw new TypeError(
-      `Invalid Character (${String.fromCharCode(buffer[buffer.length - 1]!)})`,
+    throw new RangeError(
+      `Length (${buffer.length - o}) must be divisible by 2`,
     );
   }
 
