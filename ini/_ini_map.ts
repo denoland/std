@@ -18,7 +18,7 @@ export interface FormattingOptions {
 }
 
 /** Possible INI value types. */
-export type IniValue =
+type IniValue =
   | string
   | number
   | boolean
@@ -26,7 +26,7 @@ export type IniValue =
   | undefined;
 
 /** Represents an INI section. */
-export type IniSection = Record<string, IniValue>;
+type IniSection = Record<string, IniValue>;
 
 /** Options for parsing INI strings. */
 interface ParseOptions {

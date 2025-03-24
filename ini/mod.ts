@@ -31,6 +31,5 @@
  * @module
  */
 
-export type { IniSection, IniValue } from "./_ini_map.ts";
 export * from "./parse.ts";
 export * from "./stringify.ts";
