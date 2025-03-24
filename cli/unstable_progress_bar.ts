@@ -214,34 +214,23 @@ export class ProgressBar {
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
+
     const size = this.#value / this.#max * this.#barLength | 0;
-    const unit = this.#unit;
-    const rate = this.#rate;
-    const x: ProgressBarFormatter = {
+    const fillChars = this.#fillChar.repeat(size);
+    const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
+
+    const formatter: ProgressBarFormatter = {
       styledTime() {
-        return "[" +
-          (this.time / 1000 / 60 | 0)
-            .toString()
-            .padStart(2, "0") +
-          ":" +
-          (this.time / 1000 % 60 | 0)
-            .toString()
-            .padStart(2, "0") +
-          "] ";
+        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
+        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
+        return `[${minutes}:${seconds}] `;
       },
-      styledData: function (fractions = 2): string {
-        return "[" +
-          (this.value / rate).toFixed(fractions) +
-          "/" +
-          (this.max / rate).toFixed(fractions) +
-          " " +
-          unit +
-          "] ";
+      styledData: (fractions = 2): string => {
+        const currentValue = (this.#value / this.#rate).toFixed(fractions);
+        const maxValue = (this.#max / this.#rate).toFixed(fractions);
+        return `[${currentValue}/${maxValue} ${this.#unit}] `;
       },
-      progressBar: "[" +
-        this.#fillChar.repeat(size) +
-        this.#emptyChar.repeat(this.#barLength - size) +
-        "] ",
+      progressBar: `[${fillChars}${emptyChars}] `,
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
       value: this.#value,
@@ -250,7 +239,7 @@ export class ProgressBar {
     };
     this.#lastTime = currentTime;
     this.#lastValue = this.#value;
-    await this.#writer.write("\r\u001b[K" + this.#fmt(x))
+    await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
       .catch(() => {});
   }
 
