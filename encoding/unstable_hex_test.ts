@@ -96,7 +96,9 @@ Deno.test("decodeHex() invalid length", () => {
     assertThrows(
       () => decodeHex(output + "a"),
       RangeError,
-      `Length (${output.length + 1}) must be divisible by 2`,
+      `Cannot decode input as hex: Length (${
+        output.length + 1
+      }) must be divisible by 2`,
     );
   }
 });
@@ -108,7 +110,7 @@ Deno.test("decodeHex() invalid char", () => {
     assertThrows(
       () => decodeHex(".".repeat(2) + output),
       TypeError,
-      "Invalid Character (.)",
+      "Cannot decode input as hex: Invalid character (.)",
     );
   }
 });
@@ -152,6 +154,6 @@ Deno.test("decodeHex() throws with invalid byte >= 128", () => {
   assertThrows(
     () => decodeHex(input),
     TypeError,
-    "Invalid Character",
+    "Cannot decode input as hex: Invalid character",
   );
 });

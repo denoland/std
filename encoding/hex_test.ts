@@ -24,26 +24,26 @@ const errCases: [string, ErrorConstructor, string][] = [
   [
     "0",
     RangeError,
-    "Length (1) must be divisible by 2",
+    "Cannot decode input as hex: Length (1) must be divisible by 2",
   ],
   [
     "zd4aa",
     RangeError,
-    "Length (5) must be divisible by 2",
+    "Cannot decode input as hex: Length (5) must be divisible by 2",
   ],
-  ["d4az", TypeError, "Invalid Character (z)"],
+  ["d4az", TypeError, "Cannot decode input as hex: Invalid character (z)"],
   [
     "30313",
     RangeError,
-    "Length (5) must be divisible by 2",
+    "Cannot decode input as hex: Length (5) must be divisible by 2",
   ],
-  ["0g", TypeError, "Invalid Character (g)"],
-  ["00gg", TypeError, "Invalid Character (g)"],
-  ["0\x01", TypeError, "Invalid Character (\x01)"],
+  ["0g", TypeError, "Cannot decode input as hex: Invalid character (g)"],
+  ["00gg", TypeError, "Cannot decode input as hex: Invalid character (g)"],
+  ["0\x01", TypeError, "Cannot decode input as hex: Invalid character (\x01)"],
   [
     "ffeed",
     RangeError,
-    "Length (5) must be divisible by 2",
+    "Cannot decode input as hex: Length (5) must be divisible by 2",
   ],
 ];
 
