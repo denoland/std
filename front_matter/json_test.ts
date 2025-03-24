@@ -72,3 +72,11 @@ Deno.test("extractJson() handles empty frontMatter", () => {
     { attrs: {}, body: "", frontMatter: "" },
   );
 });
+
+Deno.test("extractJson() throws at missing newline before body", () => {
+  assertThrows(
+    () => extract('---json\n{ "foo": "bar" }\n---body'),
+    TypeError,
+    "Unexpected end of input",
+  );
+});

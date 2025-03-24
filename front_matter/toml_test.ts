@@ -93,3 +93,11 @@ Deno.test("extractToml() handles empty frontMatter", () => {
     { attrs: {}, body: "", frontMatter: "" },
   );
 });
+
+Deno.test("extractToml() throws at missing newline before body", () => {
+  assertThrows(
+    () => extract('---toml\nfoo = "bar"\n---body'),
+    TypeError,
+    "Unexpected end of input",
+  );
+});
