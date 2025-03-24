@@ -36,6 +36,9 @@ import { detach } from "./_common_detach.ts";
 
 type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
 /**
  * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a hexadecimal stream.
  *
@@ -73,7 +76,6 @@ export class HexEncoderStream<T extends "string" | "bytes">
   constructor(options: { output?: T } = {}) {
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
-      const decoder = new TextDecoder();
       return (x) => decoder.decode(x) as Expect<T>;
     }();
     super({
@@ -126,7 +128,6 @@ export class HexDecoderStream<T extends "string" | "bytes">
   constructor(options: { input?: T } = {}) {
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
-      const encoder = new TextEncoder();
       return (x) => encoder.encode(x as string) as Uint8Array_;
     }();
     const push = new Uint8Array(1);
