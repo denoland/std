@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 /**
  * Provides information about a file and is returned by

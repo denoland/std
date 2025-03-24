@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 import { extract as extractToml } from "./toml.ts";
 import { extract as extractYaml } from "./yaml.ts";
@@ -13,9 +14,10 @@ export type { Extract };
  * TOML}, or {@link https://www.json.org/ | JSON} from the metadata of front
  * matter content, depending on the format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { extract } from "@std/front-matter/any";
+ * import { assertEquals } from "@std/assert";
  *
  * const output = `---json
  * {
@@ -24,10 +26,11 @@ export type { Extract };
  * ---
  * Hello, world!`;
  * const result = extract(output);
- *
- * result.frontMatter; // '{\n "title": "Three dashes marks the spot"\n}'
- * result.body; // "Hello, world!"
- * result.attrs; // { title: "Three dashes marks the spot" }
+ * assertEquals(result, {
+ *   frontMatter: '{\n  "title": "Three dashes marks the spot"\n}',
+ *   body: "Hello, world!",
+ *   attrs: { title: "Three dashes marks the spot" }
+ * })
  * ```
  *
  * @typeParam T The type of the parsed front matter.

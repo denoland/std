@@ -241,12 +241,12 @@ Deno.test({
     assertEquals(parse("+123"), 123);
     assertEquals(parse("-123"), -123);
     assertEquals(parse("123_456"), 123456);
-    assertEquals(parse("0xDEADBEEF"), "0xDEADBEEF");
-    assertEquals(parse("0xdeadbeef"), "0xdeadbeef");
-    assertEquals(parse("0xdead_beef"), "0xdead_beef");
-    assertEquals(parse("0o01234567"), "0o01234567");
-    assertEquals(parse("0o755"), "0o755");
-    assertEquals(parse("0b11010110"), "0b11010110");
+    assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
+    assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
+    assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
+    assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
+    assertEquals(parse("0o755"), 0o755); // 0o755 = 493
+    assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
@@ -688,12 +688,12 @@ Deno.test({
         int5: 1000,
         int6: 5349221,
         int7: 12345,
-        hex1: "0xDEADBEEF",
-        hex2: "0xdeadbeef",
-        hex3: "0xdead_beef",
-        oct1: "0o01234567",
-        oct2: "0o755",
-        bin1: "0b11010110",
+        hex1: 0xDEADBEEF,
+        hex2: 0xdead_beef,
+        hex3: 0xdeadbeef,
+        oct1: 0o01234567,
+        oct2: 0o755,
+        bin1: 0b11010110,
       },
     };
     const actual = parse(`[integer]
