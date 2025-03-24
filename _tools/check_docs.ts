@@ -505,6 +505,8 @@ if (!lintStatus.success) {
 }
 
 for (const url of ENTRY_POINT_URLS) {
+  // deno-lint-ignore no-console
+  console.log("checking", url);
   await checkDocs(url);
 }
 
