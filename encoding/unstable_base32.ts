@@ -88,13 +88,11 @@ export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
  * ```
  */
 export function encodeBase32(
-  input: string | Uint8Array_ | ArrayBuffer,
+  input: string | Uint8Array_,
   format: Base32Format = "Base32",
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
-  } else if (input instanceof ArrayBuffer) {
-    input = new Uint8Array(input);
   }
   const [output, i] = detach(
     input as Uint8Array_,

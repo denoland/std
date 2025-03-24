@@ -8,19 +8,20 @@ import {
   decodeRawBase64,
   encodeBase64,
   encodeRawBase64,
+  type Uint8Array_,
 } from "./unstable_base64.ts";
 
-const inputOutput: [string | ArrayBuffer, string, string][] = [
+const inputOutput: [string | Uint8Array_, string, string][] = [
   ["", "", ""],
   ["A", "QQ==", "QQ"],
   ["AA", "QUE=", "QUE"],
   ["AAA", "QUFB", "QUFB"],
   ["AAAA", "QUFBQQ==", "QUFBQQ"],
-  [new Uint8Array(0).fill(255).buffer, "", ""],
-  [new Uint8Array(1).fill(255).buffer, "/w==", "_w"],
-  [new Uint8Array(2).fill(255).buffer, "//8=", "__8"],
-  [new Uint8Array(3).fill(255).buffer, "////", "____"],
-  [new Uint8Array(4).fill(255).buffer, "/////w==", "_____w"],
+  [new Uint8Array(0).fill(255), "", ""],
+  [new Uint8Array(1).fill(255), "/w==", "_w"],
+  [new Uint8Array(2).fill(255), "//8=", "__8"],
+  [new Uint8Array(3).fill(255), "////", "____"],
+  [new Uint8Array(4).fill(255), "/////w==", "_____w"],
 ];
 
 Deno.test("encodeBase64()", () => {
@@ -110,7 +111,7 @@ Deno.test("encodeRawBase64() with too small buffer", () => {
 
 Deno.test("decodeBase64()", () => {
   for (const [input, base64, base64url] of inputOutput) {
-    if (input instanceof ArrayBuffer) continue;
+    if (input instanceof Uint8Array) continue;
     const output = new TextEncoder().encode(input);
 
     assertEquals(decodeBase64(base64, "Base64"), output, "Base64");
@@ -120,7 +121,7 @@ Deno.test("decodeBase64()", () => {
 
 Deno.test("decodeBase64() invalid char after padding", () => {
   for (const [input, base64, base64url] of inputOutput) {
-    if (input instanceof ArrayBuffer) continue;
+    if (input instanceof Uint8Array) continue;
     if (base64[base64.length - 2] !== "=") continue;
 
     for (
@@ -141,7 +142,7 @@ Deno.test("decodeBase64() invalid char after padding", () => {
 
 Deno.test("decodeBase64() invalid length", () => {
   for (const [input, base64, _base64url] of inputOutput) {
-    if (input instanceof ArrayBuffer) continue;
+    if (input instanceof Uint8Array) continue;
 
     for (
       const [input, format] of [
@@ -167,7 +168,7 @@ Deno.test("decodeBase64() invalid length", () => {
 
 Deno.test("decodeBase64() invalid char", () => {
   for (const [input, base64, base64url] of inputOutput) {
-    if (input instanceof ArrayBuffer) continue;
+    if (input instanceof Uint8Array) continue;
 
     for (
       const [input, format] of [
