@@ -96,3 +96,33 @@ Deno.test("(unstable)extractYaml() parses with schema options", () => {
     },
   );
 });
+
+Deno.test("extractYaml() handles empty frontMatter", () => {
+  assertEquals(
+    extract("---\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+
+  assertEquals(
+    extract("---\n\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+  assertEquals(
+    extract("---\n   \n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+
+  assertThrows(
+    () => extract("---yaml\nfoo: bar\n---body"),
+    TypeError,
+    "Unexpected end of input",
+  );
+});
+
+Deno.test("extractYaml() throws at missing newline before body", () => {
+  assertThrows(
+    () => extract("---yaml\nfoo: bar\n---body"),
+    TypeError,
+    "Unexpected end of input",
+  );
+});

@@ -119,7 +119,9 @@ export function encodeRawHex(
   o: number,
 ): number {
   const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) throw new RangeError("Buffer too small");
+  if (max > buffer.length - o) {
+    throw new RangeError("Cannot encode buffer as hex: Buffer too small");
+  }
   return encode(buffer, i, o, alphabet);
 }
 
@@ -192,7 +194,7 @@ export function decodeRawHex(
 ): number {
   if (i < o) {
     throw new RangeError(
-      "Input (i) must be greater than or equal to output (o)",
+      "Cannot decode buffer as hex: Input (i) must be greater than or equal to output (o)",
     );
   }
   return decode(buffer, i, o, rAlphabet);
