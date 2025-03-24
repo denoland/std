@@ -95,7 +95,7 @@ Deno.test("decodeHex() invalid length", () => {
 
     assertThrows(
       () => decodeHex(output + "a"),
-      TypeError,
+      RangeError,
       `Cannot decode input as hex: Length (${
         output.length + 1
       }) must be divisible by 2`,

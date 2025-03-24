@@ -43,7 +43,7 @@ export function decode(
   alphabet: Uint8Array,
 ): number {
   if ((buffer.length - o) % 2 === 1) {
-    throw new TypeError(
+    throw new RangeError(
       `Cannot decode input as hex: Length (${
         buffer.length - o
       }) must be divisible by 2`,
