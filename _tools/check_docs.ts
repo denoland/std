@@ -25,6 +25,7 @@ import {
 } from "@deno/doc";
 import { walk } from "@std/fs/walk";
 import { join } from "@std/path/join";
+import { distinctBy } from "@std/collections/distinct-by";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -511,7 +512,8 @@ for (const url of ENTRY_POINT_URLS) {
 }
 
 if (diagnostics.length > 0) {
-  for (const error of diagnostics) {
+  const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
+  for (const error of errors) {
     // deno-lint-ignore no-console
     console.error(
       `%c[error] %c${error.message} %cat ${error.cause}`,
@@ -522,6 +524,6 @@ if (diagnostics.length > 0) {
   }
 
   // deno-lint-ignore no-console
-  console.log(`%c${diagnostics.length} errors found`, "color: red");
+  console.log(`%c${errors.length} errors found`, "color: red");
   Deno.exit(1);
 }
