@@ -144,11 +144,12 @@ export function encodeRawHex(
  * ```
  */
 export function decodeHex(
-  input: string,
+  input: string | Uint8Array_,
 ): Uint8Array_ {
-  const output = new TextEncoder().encode(input) as Uint8Array_;
-  return output
-    .subarray(0, decode(output, 0, 0, rAlphabet));
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  }
+  return input.subarray(0, decode(input, 0, 0, rAlphabet));
 }
 
 /**
