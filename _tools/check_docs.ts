@@ -26,6 +26,7 @@ import {
 import { walk } from "@std/fs/walk";
 import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
+import { toFileUrl } from "@std/path/to-file-url";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -55,10 +56,7 @@ for await (
       continue;
     }
 
-    ENTRY_POINT_URLS.push(
-      new URL(filePath, import.meta.url)
-        .href,
-    );
+    ENTRY_POINT_URLS.push(toFileUrl(filePath).href);
   }
 }
 
@@ -505,8 +503,6 @@ if (!lintStatus.success) {
 }
 
 for (const url of ENTRY_POINT_URLS) {
-  // deno-lint-ignore no-console
-  console.log("checking", url);
   await checkDocs(url);
 }
 
