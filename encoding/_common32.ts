@@ -109,7 +109,9 @@ export function decode(
       for (let y = x + 1; y < buffer.length; ++y) {
         if (buffer[y] !== padding) {
           throw new TypeError(
-            `Invalid Character (${String.fromCharCode(buffer[y]!)})`,
+            `Cannot decode input as base32: Invalid character (${
+              String.fromCharCode(buffer[y]!)
+            })`,
           );
         }
       }
@@ -122,7 +124,7 @@ export function decode(
     case 3:
     case 1:
       throw new RangeError(
-        `Length (${
+        `Cannot decode input as base32: Length (${
           buffer.length - o
         }), excluding padding, must not have a remainder of 1, 3, or 6 when divided by 8`,
       );
@@ -195,7 +197,11 @@ export function decode(
 function getByte(char: number, alphabet: Uint8Array): number {
   const byte = alphabet[char] ?? 32;
   if (byte === 32) { // alphabet.Base32.length
-    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+    throw new TypeError(
+      `Cannot decode input as base32: Invalid character (${
+        String.fromCharCode(char)
+      })`,
+    );
   }
   return byte;
 }

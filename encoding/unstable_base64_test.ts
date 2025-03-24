@@ -132,7 +132,7 @@ Deno.test("decodeBase64() invalid char after padding", () => {
       assertThrows(
         () => decodeBase64(input, format),
         TypeError,
-        "Invalid Character (.)",
+        "Cannot decode input as base64: Invalid character (.)",
         format,
       );
     }
@@ -178,7 +178,7 @@ Deno.test("decodeBase64() invalid char", () => {
       assertThrows(
         () => decodeBase64(input, format),
         TypeError,
-        "Invalid Character (.)",
+        "Cannot decode input as base64: Invalid character (.)",
         format,
       );
     }
@@ -233,6 +233,6 @@ Deno.test("decodeBase64() throws with invalid byte >= 128", () => {
   assertThrows(
     () => decodeBase64(input),
     TypeError,
-    "Invalid Character",
+    "Cannot decode input as base64: Invalid character",
   );
 });

@@ -70,7 +70,9 @@ export function decode(
       for (let y = x + 1; y < buffer.length; ++y) {
         if (buffer[y] !== padding) {
           throw new TypeError(
-            `Invalid Character (${String.fromCharCode(buffer[y]!)})`,
+            `Cannot decode input as base64: Invalid character (${
+              String.fromCharCode(buffer[y]!)
+            })`,
           );
         }
       }
@@ -80,7 +82,7 @@ export function decode(
   }
   if ((buffer.length - o) % 4 === 1) {
     throw new RangeError(
-      `Length (${
+      `Cannot decode input as base64: Length (${
         buffer.length - o
       }), excluding padding, must not have a remainder of 1 when divided by 4`,
     );
@@ -118,7 +120,11 @@ export function decode(
 function getByte(char: number, alphabet: Uint8Array): number {
   const byte = alphabet[char] ?? 64;
   if (byte === 64) { // alphabet.Base64.length
-    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+    throw new TypeError(
+      `Cannot decode input as base64: Invalid character (${
+        String.fromCharCode(char)
+      })`,
+    );
   }
   return byte;
 }
