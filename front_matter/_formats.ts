@@ -21,7 +21,7 @@ const WHITESPACES = "\\s*";
 const NEWLINE = "\\r?\\n";
 
 const FRONT_MATTER = "(?<frontMatter>.+?)";
-const BODY = "(?:\\r?\\n(?<body>.*))?";
+const BODY = "(?:\\r?\\n(?<body>.+))?";
 
 export const RECOGNIZE_YAML_REGEXP = new RegExp(
   `^${YAML_HEADER}${WHITESPACES}${NEWLINE}`,
