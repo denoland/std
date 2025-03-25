@@ -100,7 +100,7 @@ function defaultReplacer(_key: string, value: unknown, _section?: string) {
  * @returns The INI string
  */
 export function stringify(
-  object: Record<PropertyKey, unknown>,
+  object: object,
   options: StringifyOptions = {},
 ): string {
   const {
