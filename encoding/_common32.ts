@@ -7,19 +7,19 @@ export type { Uint8Array_ };
  * Calculate the output size needed to encode a given input size for
  * {@linkcode encodeRawBase32}.
  *
- * @param originalSize The size of the input buffer.
+ * @param rawSize The size of the input buffer.
  * @returns The size of the output buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax } from "@std/encoding/unstable-base32";
+ * import { calcBase32Size } from "@std/encoding/unstable-base32";
  *
- * assertEquals(calcMax(1), 8);
+ * assertEquals(calcBase32Size(1), 8);
  * ```
  */
-export function calcMax(originalSize: number): number {
-  return ((originalSize + 4) / 5 | 0) * 8;
+export function calcBase32Size(rawSize: number): number {
+  return ((rawSize + 4) / 5 | 0) * 8;
 }
 
 export function encode(

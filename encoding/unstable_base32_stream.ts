@@ -29,7 +29,7 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   type Base32Format,
-  calcMax,
+  calcBase32Size,
   decodeRawBase32 as decode,
   encodeRawBase32 as encode,
 } from "./unstable_base32.ts";
@@ -83,7 +83,10 @@ export class Base32EncoderStream<T extends "string" | "bytes">
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let [output, i] = detach(chunk, calcMax(remainder + chunk.length));
+        let [output, i] = detach(
+          chunk,
+          calcBase32Size(remainder + chunk.length),
+        );
         if (remainder) {
           i -= remainder;
           output.set(push.subarray(0, remainder), i);
@@ -102,7 +105,7 @@ export class Base32EncoderStream<T extends "string" | "bytes">
         if (remainder) {
           const [output, i] = detach(
             push.subarray(0, remainder),
-            calcMax(remainder),
+            calcBase32Size(remainder),
           );
           encode(output, i, 0, options.format);
           controller.enqueue(decode(output));

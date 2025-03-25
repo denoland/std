@@ -23,8 +23,8 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common32.ts";
-export { calcMax };
+import { calcBase32Size, decode, encode } from "./_common32.ts";
+export { calcBase32Size };
 import { detach } from "./_common_detach.ts";
 
 const padding = "=".charCodeAt(0);
@@ -98,7 +98,7 @@ export function encodeBase32(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcBase32Size((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet[format], padding);
   return new TextDecoder().decode(output);
@@ -122,13 +122,13 @@ export function encodeBase32(
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeBase32, encodeRawBase32 } from "@std/encoding/unstable-base32";
+ * import { calcBase32Size, encodeBase32, encodeRawBase32 } from "@std/encoding/unstable-base32";
  *
  * const prefix = new TextEncoder().encode("data:url/fake,");
  * const input = await Deno.readFile("./deno.lock");
  *
  * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
+ * const newSize = prefix.length + calcBase32Size(originalSize);
  * const i = newSize - originalSize;
  * const o = prefix.length;
  *
@@ -150,7 +150,7 @@ export function encodeRawBase32(
   o: number,
   format: Base32Format = "Base32",
 ): number {
-  const max = calcMax(buffer.length - i);
+  const max = calcBase32Size(buffer.length - i);
   if (max > buffer.length - o) {
     throw new RangeError("Cannot encode buffer as base32: Buffer too small");
   }
