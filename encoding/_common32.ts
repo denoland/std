@@ -3,6 +3,29 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+export const padding = "=".charCodeAt(0);
+export const alphabet: Record<Base32Format, Uint8Array> = {
+  Base32: new TextEncoder().encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
+  Base32Hex: new TextEncoder().encode("0123456789ABCDEFGHIJKLMNOPQRSTUV"),
+  Base32Crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
+};
+export const rAlphabet: Record<Base32Format, Uint8Array> = {
+  Base32: new Uint8Array(128).fill(32), // alphabet.Base32.length
+  Base32Hex: new Uint8Array(128).fill(32),
+  Base32Crockford: new Uint8Array(128).fill(32),
+};
+alphabet.Base32
+  .forEach((byte, i) => rAlphabet.Base32[byte] = i);
+alphabet.Base32Hex
+  .forEach((byte, i) => rAlphabet.Base32Hex[byte] = i);
+alphabet.Base32Crockford
+  .forEach((byte, i) => rAlphabet.Base32Crockford[byte] = i);
+
+/**
+ * The base 32 encoding formats.
+ */
+export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
+
 /**
  * Calculate the output size needed to encode a given input size for
  * {@linkcode encodeRawBase32}.
