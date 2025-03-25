@@ -4,8 +4,8 @@
 import type { ReviverFunction } from "./_ini_map.ts";
 export type { ReviverFunction };
 
-const ASSIGNMENT_MARK = "=";
-const NON_WHITESPACE_REGEXP = /\S/;
+const SECTION_REGEXP = /^\[(?<name>.+)]$/;
+const KEY_VALUE_REGEXP = /^\s*(?<key>.*?)\s*=\s*(?<value>.*?)\s*$/;
 
 function trimQuotes(value: string): string {
   if (value.startsWith('"') && value.endsWith('"')) {
@@ -16,10 +16,11 @@ function trimQuotes(value: string): string {
 
 /** Detect supported comment styles. */
 function isComment(input: string): boolean {
-  return input === "" ||
+  return (
     input.startsWith("#") ||
     input.startsWith(";") ||
-    input.startsWith("//");
+    input.startsWith("//")
+  );
 }
 
 /** Detect a section start. */
@@ -36,46 +37,26 @@ function isSection(input: string, lineNumber: number): boolean {
 }
 
 function* readTextLines(text: string): Generator<string> {
-  const { length } = text;
   let line = "";
-  let lineBreak;
-  for (let i = 0; i < length; i += 1) {
-    const char = text[i]!;
-
-    if (char === "\n" || char === "\r") {
-      yield line;
-      line = "";
-      if (char === "\r" && text[i + 1] === "\n") {
-        i++;
-        if (!lineBreak) {
-          lineBreak = "\r\n";
-        }
-      } else if (!lineBreak) {
-        lineBreak = char;
-      }
-    } else {
-      line += char;
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    switch (char) {
+      case "\n":
+        yield line;
+        line = "";
+        break;
+      case "\r":
+        yield line;
+        line = "";
+        if (text[i + 1] === "\n") i += 1;
+        break;
+      default:
+        if (line === " " || line === "\t") continue;
+        line += char;
+        break;
     }
   }
-
   yield line;
-}
-
-interface LineSection {
-  type: "section";
-  num: number;
-  sec: string;
-  map: Map<string, LineValue>;
-  end: number;
-}
-
-interface LineValue {
-  type: "value";
-  num: number;
-  sec?: string;
-  key: string;
-  // deno-lint-ignore no-explicit-any
-  val: any;
 }
 
 /** Options for {@linkcode parse}. */
@@ -87,6 +68,13 @@ export interface ParseOptions<T = any> {
    * function in {@linkcode JSON.parse}.
    */
   reviver?: ReviverFunction<T>;
+}
+
+function defaultReviver(_key: string, value: string, _section?: string) {
+  if (!isNaN(+value) && !value.includes('"')) return +value;
+  if (value === "null") return null;
+  if (value === "true" || value === "false") return value === "true";
+  return trimQuotes(value);
 }
 
 /**
@@ -157,131 +145,69 @@ export interface ParseOptions<T = any> {
 // deno-lint-ignore no-explicit-any
 export function parse<T = any>(
   text: string,
-  options?: ParseOptions<T>,
+  options: ParseOptions<T> = {},
 ): Record<string, T | Record<string, T>> {
   if (typeof text !== "string") {
     throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
   }
-  const reviverFunc: ReviverFunction = typeof options?.reviver === "function"
-    ? options.reviver
-    : (_key, value, _section) => {
-      if (!isNaN(+value) && !value.includes('"')) return +value;
-      if (value === "null") return null;
-      if (value === "true" || value === "false") return value === "true";
-      return trimQuotes(value);
-    };
-  let lineNumber = 1;
-  let currentSection: LineSection | undefined;
-  let pretty;
 
-  const global = new Map<string, LineValue>();
-  const sections = new Map<string, LineSection>();
+  const { reviver = defaultReviver } = options;
 
-  const lines = [];
+  const root: Record<string, T | Record<string, T>> = {};
+  let object = root;
+  let sectionName: string | undefined;
+
+  let lineNumber = 0;
   for (const line of readTextLines(text)) {
-    const trimmed = line.trim();
-    if (isComment(trimmed)) {
-      lines.push({
-        type: "comment",
-        num: lineNumber,
-        val: trimmed,
-      });
-    } else if (isSection(trimmed, lineNumber)) {
-      const sec = trimmed.substring(1, trimmed.length - 1);
+    lineNumber += 1;
 
-      if (!NON_WHITESPACE_REGEXP.test(sec)) {
+    // skip empty lines
+    if (line === "") continue;
+
+    // skip comment
+    if (isComment(line)) continue;
+
+    if (isSection(line, lineNumber)) {
+      sectionName = SECTION_REGEXP.exec(line)?.groups?.name;
+
+      if (!sectionName) {
         throw new SyntaxError(
           `Unexpected empty section name at line ${lineNumber}`,
         );
       }
 
-      currentSection = {
-        type: "section",
-        num: lineNumber,
-        sec,
-        map: new Map<string, LineValue>(),
-        end: lineNumber,
-      };
-      lines.push(currentSection);
-      sections.set(currentSection.sec, currentSection);
-    } else {
-      const assignmentPos = trimmed.indexOf(ASSIGNMENT_MARK);
+      object = {};
+      Object.defineProperty(root, sectionName, {
+        value: object,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
 
-      if (assignmentPos === -1) {
-        throw new SyntaxError(
-          `Unexpected token ${trimmed[0]} in INI at line ${lineNumber}`,
-        );
-      }
-      if (assignmentPos === 0) {
-        throw new SyntaxError(
-          `Unexpected empty key name at line ${lineNumber}`,
-        );
-      }
-
-      const leftHand = trimmed.substring(0, assignmentPos);
-      const rightHand = trimmed.substring(assignmentPos + 1);
-
-      if (pretty === undefined) {
-        pretty = leftHand.endsWith(" ") &&
-          rightHand.startsWith(" ");
-      }
-
-      const key = leftHand.trim();
-      const value = rightHand.trim();
-
-      if (currentSection) {
-        const lineValue: LineValue = {
-          type: "value",
-          num: lineNumber,
-          sec: currentSection.sec,
-          key,
-          val: reviverFunc(key, value, currentSection.sec),
-        };
-        currentSection.map.set(key, lineValue);
-        lines.push(lineValue);
-        currentSection.end = lineNumber;
-      } else {
-        const lineValue: LineValue = {
-          type: "value",
-          num: lineNumber,
-          key,
-          val: reviverFunc(key, value),
-        };
-        global.set(key, lineValue);
-        lines.push(lineValue);
-      }
+      continue;
     }
 
-    lineNumber += 1;
-  }
+    const groups = KEY_VALUE_REGEXP.exec(line)?.groups;
 
-  const obj: Record<string, T | Record<string, T>> = {};
+    if (!groups) {
+      throw new SyntaxError(
+        `Unexpected token ${line[0]} in INI at line ${lineNumber}`,
+      );
+    }
 
-  for (const { key, val } of global.values()) {
-    Object.defineProperty(obj, key, {
+    const { key, value } = groups as { key: string; value: string };
+    if (!key.length) {
+      throw new SyntaxError(`Unexpected empty key name at line ${lineNumber}`);
+    }
+
+    const val = reviver(key, value, sectionName);
+    Object.defineProperty(object, key, {
       value: val,
       writable: true,
       enumerable: true,
       configurable: true,
     });
   }
-  for (const { sec, map } of sections.values()) {
-    const section: Record<string, T> = {};
-    Object.defineProperty(obj, sec, {
-      value: section,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    });
-    for (const { key, val } of map.values()) {
-      Object.defineProperty(section, key, {
-        value: val,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
-    }
-  }
 
-  return obj;
+  return root;
 }
