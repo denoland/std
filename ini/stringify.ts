@@ -115,9 +115,10 @@ export function stringify(
   const lines = [];
   for (const [key, value] of entries) {
     if (isObject(value)) {
-      lines.push(`[${key}]`);
+      const sectionName = key;
+      lines.push(`[${sectionName}]`);
       for (const [key, val] of Object.entries(value)) {
-        const line = `${key}${assignment}${replacer(key, val)}`;
+        const line = `${key}${assignment}${replacer(key, val, sectionName)}`;
         lines.push(line);
       }
     } else {
