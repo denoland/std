@@ -239,29 +239,105 @@ export class IniMap {
   }
 
   /**
-   * Convert this `IniMap` to an INI string.
+   * Parse an INI string in this `IniMap`.
    *
-   * @param replacer The replacer
-   * @returns Ini string
+   * @param text The text to parse
+   * @param reviver The reviver function
+   * @returns This {@code IniMap} object
    */
-  toString(replacer?: ReplacerFunction): string {
-    replacer ??= (_key, value, _section) => `${value}`;
+  parse(text: string, reviver?: ReviverFunction): this {
+    if (typeof text !== "string") {
+      throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
+    }
 
-    const pretty = this.#formatting?.pretty ?? false;
-    const assignment = pretty ? ` ${ASSIGNMENT_MARK} ` : ASSIGNMENT_MARK;
-    const lines = this.#lines;
+    reviver ??= (_key, value, _section) => {
+      if (!isNaN(+value) && !value.includes('"')) return +value;
+      if (value === "null") return null;
+      if (value === "true" || value === "false") return value === "true";
+      return trimQuotes(value);
+    };
 
-    return lines.map((line) => {
-      switch (line.type) {
-        case "comment":
-          return line.val;
-        case "section":
-          return `[${line.sec}]`;
-        case "value":
-          return line.key + assignment +
-            replacer(line.key, line.val, line.sec);
+    let lineNumber = 1;
+    let currentSection: LineSection | undefined;
+
+    for (const line of this.#readTextLines(text)) {
+      const trimmed = line.trim();
+      if (isComment(trimmed)) {
+        this.#lines.push({
+          type: "comment",
+          num: lineNumber,
+          val: trimmed,
+        });
+      } else if (isSection(trimmed, lineNumber)) {
+        const sec = trimmed.substring(1, trimmed.length - 1);
+
+        if (!NON_WHITESPACE_REGEXP.test(sec)) {
+          throw new SyntaxError(
+            `Unexpected empty section name at line ${lineNumber}`,
+          );
+        }
+
+        currentSection = {
+          type: "section",
+          num: lineNumber,
+          sec,
+          map: new Map<string, LineValue>(),
+          end: lineNumber,
+        };
+        this.#lines.push(currentSection);
+        this.#sections.set(currentSection.sec, currentSection);
+      } else {
+        const assignmentPos = trimmed.indexOf(ASSIGNMENT_MARK);
+
+        if (assignmentPos === -1) {
+          throw new SyntaxError(
+            `Unexpected token ${trimmed[0]} in INI at line ${lineNumber}`,
+          );
+        }
+        if (assignmentPos === 0) {
+          throw new SyntaxError(
+            `Unexpected empty key name at line ${lineNumber}`,
+          );
+        }
+
+        const leftHand = trimmed.substring(0, assignmentPos);
+        const rightHand = trimmed.substring(assignmentPos + 1);
+
+        if (this.#formatting.pretty === undefined) {
+          this.#formatting.pretty = leftHand.endsWith(" ") &&
+            rightHand.startsWith(" ");
+        }
+
+        const key = leftHand.trim();
+        const value = rightHand.trim();
+
+        if (currentSection) {
+          const lineValue: LineValue = {
+            type: "value",
+            num: lineNumber,
+            sec: currentSection.sec,
+            key,
+            val: reviver(key, value, currentSection.sec),
+          };
+          currentSection.map.set(key, lineValue);
+          this.#lines.push(lineValue);
+          currentSection.end = lineNumber;
+        } else {
+          const lineValue: LineValue = {
+            type: "value",
+            num: lineNumber,
+            key,
+            val: reviver(key, value),
+          };
+          this.#global.set(key, lineValue);
+          this.#lines.push(lineValue);
+        }
       }
-    }).join(this.#formatting?.lineBreak ?? "\n");
+
+      lineNumber += 1;
+    }
+
+    return this;
   }
 
   /**
