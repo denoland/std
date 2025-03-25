@@ -10,7 +10,7 @@
 - test(async): fix flaky waitFor test (#6467)
 - test(async): use FakeTime in pooledMap testing (#6468)
 
-#### @std/cache 0.1.4 (patch)
+#### @std/cache 0.2.0 (minor)
 
 - BREAKING(cache/unstable): configurable cache ejection of thrown or rejected
   values, change cache type (#6417) (#6419)
