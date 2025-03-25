@@ -17,11 +17,21 @@ export interface FormattingOptions {
   pretty?: boolean;
 }
 
+/** Possible INI value types. */
+type IniValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
+
+/** Represents an INI section. */
+type IniSection = Record<string, IniValue>;
+
 /** Options for parsing INI strings. */
-// deno-lint-ignore no-explicit-any
-interface ParseOptions<T = any> {
+interface ParseOptions {
   /** Provide custom parsing of the value in a key/value pair. */
-  reviver?: ReviverFunction<T>;
+  reviver?: ReviverFunction;
 }
 
 /** Function for replacing JavaScript values with INI string values. */
@@ -33,12 +43,11 @@ export type ReplacerFunction = (
 ) => string;
 
 /** Function for replacing INI values with JavaScript values. */
-// deno-lint-ignore no-explicit-any
-export type ReviverFunction<T = any> = (
+export type ReviverFunction = (
   key: string,
   value: string,
   section?: string,
-) => T;
+) => unknown;
 
 const ASSIGNMENT_MARK = "=";
 
@@ -54,8 +63,7 @@ const NON_WHITESPACE_REGEXP = /\S/;
 /**
  * Class implementation for fine control of INI data structures.
  */
-// deno-lint-ignore no-explicit-any
-export class IniMap<T = any> {
+export class IniMap {
   #global = new Map<string, LineValue>();
   #sections = new Map<string, LineSection>();
   #lines: Line[] = [];
@@ -76,7 +84,7 @@ export class IniMap<T = any> {
    * @param value The value to set
    * @returns The map object itself
    */
-  set(key: string, value: unknown): this;
+  set(key: string, value: IniValue): this;
   /**
    * Set the value of a section key in the INI.
    *
@@ -85,9 +93,12 @@ export class IniMap<T = any> {
    * @param value The value to set
    * @return The map object itself
    */
-  set(section: string, key: string, value: unknown): this;
-  // deno-lint-ignore no-explicit-any
-  set(keyOrSection: string, valueOrKey: any, value?: any): this {
+  set(section: string, key: string, value: IniValue): this;
+  set(
+    keyOrSection: string,
+    valueOrKey: string | IniValue,
+    value?: IniValue,
+  ): this {
     if (typeof valueOrKey === "string" && value !== undefined) {
       const section = this.#getOrCreateSection(keyOrSection);
       const exists = section.map.get(valueOrKey);
@@ -230,8 +241,8 @@ export class IniMap<T = any> {
    *
    * @returns The object equivalent to this {@code IniMap}
    */
-  toObject(): Record<string, T | Record<string, T>> {
-    const obj: Record<string, T | Record<string, T>> = {};
+  toObject<T extends object>(): T {
+    const obj: T = {} as T;
 
     for (const { key, val } of this.#global.values()) {
       Object.defineProperty(obj, key, {
@@ -242,7 +253,7 @@ export class IniMap<T = any> {
       });
     }
     for (const { sec, map } of this.#sections.values()) {
-      const section: Record<string, T> = {};
+      const section: IniSection = {};
       Object.defineProperty(obj, sec, {
         value: section,
         writable: true,
@@ -269,9 +280,8 @@ export class IniMap<T = any> {
    * @returns Ini string
    */
   toString(replacer?: ReplacerFunction): string {
-    const replacerFunc: ReplacerFunction = typeof replacer === "function"
-      ? replacer
-      : (_key, value, _section) => `${value}`;
+    replacer ??= (_key, value, _section) => `${value}`;
+
     const pretty = this.#formatting?.pretty ?? false;
     const assignment = pretty ? ` ${ASSIGNMENT_MARK} ` : ASSIGNMENT_MARK;
     const lines = this.#lines;
@@ -284,7 +294,7 @@ export class IniMap<T = any> {
           return `[${line.sec}]`;
         case "value":
           return line.key + assignment +
-            replacerFunc(line.key, line.val, line.sec);
+            replacer(line.key, line.val, line.sec);
       }
     }).join(this.#formatting?.lineBreak ?? "\n");
   }
@@ -300,14 +310,14 @@ export class IniMap<T = any> {
     if (typeof text !== "string") {
       throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
     }
-    const reviverFunc: ReviverFunction = typeof reviver === "function"
-      ? reviver
-      : (_key, value, _section) => {
-        if (!isNaN(+value) && !value.includes('"')) return +value;
-        if (value === "null") return null;
-        if (value === "true" || value === "false") return value === "true";
-        return trimQuotes(value);
-      };
+
+    reviver ??= (_key, value, _section) => {
+      if (!isNaN(+value) && !value.includes('"')) return +value;
+      if (value === "null") return null;
+      if (value === "true" || value === "false") return value === "true";
+      return trimQuotes(value);
+    };
+
     let lineNumber = 1;
     let currentSection: LineSection | undefined;
 
@@ -368,7 +378,7 @@ export class IniMap<T = any> {
             num: lineNumber,
             sec: currentSection.sec,
             key,
-            val: reviverFunc(key, value, currentSection.sec),
+            val: reviver(key, value, currentSection.sec),
           };
           currentSection.map.set(key, lineValue);
           this.#lines.push(lineValue);
@@ -378,7 +388,7 @@ export class IniMap<T = any> {
             type: "value",
             num: lineNumber,
             key,
-            val: reviverFunc(key, value),
+            val: reviver(key, value),
           };
           this.#global.set(key, lineValue);
           this.#lines.push(lineValue);
@@ -409,22 +419,19 @@ export class IniMap<T = any> {
    * @param formatting The options to use
    * @returns The parsed {@code IniMap}
    */
+  static from(input: object, formatting?: FormattingOptions): IniMap;
   static from(
-    input: Record<string, unknown>,
-    formatting?: FormattingOptions,
-  ): IniMap;
-  static from(
-    // deno-lint-ignore no-explicit-any
-    input: Record<string, any> | string,
+    input: string | object,
     formatting?: ParseOptions & FormattingOptions,
   ): IniMap {
     const ini = new IniMap(formatting);
     if (typeof input === "object" && input !== null) {
-      // deno-lint-ignore no-explicit-any
-      const isRecord = (val: any): val is Record<string, any> =>
+      const isRecord = (val: unknown): val is IniSection =>
         typeof val === "object" && val !== null;
-      // deno-lint-ignore no-explicit-any
-      const sort = ([_a, valA]: [string, any], [_b, valB]: [string, any]) => {
+      const sort = (
+        [_a, valA]: [string, unknown],
+        [_b, valB]: [string, unknown],
+      ) => {
         if (isRecord(valA)) return 1;
         if (isRecord(valB)) return -1;
         return 0;
@@ -499,8 +506,7 @@ interface LineValue {
   num: number;
   sec?: string;
   key: string;
-  // deno-lint-ignore no-explicit-any
-  val: any;
+  val: unknown;
 }
 
 type Line = LineComment | LineSection | LineValue;
