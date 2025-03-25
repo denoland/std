@@ -23,11 +23,7 @@ Deno.test({
     assertValidStringify(
       { dates: { a: new Date("1977-05-25") } },
       `[dates]\na=1977-05-25T00:00:00.000Z`,
-      {
-        replacer: (_, val) => {
-          return val?.toJSON();
-        },
-      },
+      { replacer: (_, val) => val?.toJSON() },
     );
     assertValidStringify({
       keyA: "1977-05-25",
