@@ -98,7 +98,7 @@ Deno.test("encodeBase64Into() with too small buffer", () => {
             format,
           ),
         RangeError,
-        "Cannot decode input as base64: Output too small",
+        "Cannot encode input as base64: Output too small",
         format,
       );
     }

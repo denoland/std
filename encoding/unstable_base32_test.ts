@@ -149,7 +149,7 @@ Deno.test("encodeBase32Into() with too small buffer", () => {
             format,
           ),
         RangeError,
-        "Cannot decode input as base32: Output too small",
+        "Cannot encode input as base32: Output too small",
         format,
       );
     }

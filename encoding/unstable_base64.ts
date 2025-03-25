@@ -132,7 +132,7 @@ export function encodeBase64Into(
   }
   const min = calcBase64Size(input.length);
   if (output.length < min) {
-    throw new RangeError("Cannot decode input as base64: Output too small");
+    throw new RangeError("Cannot encode input as base64: Output too small");
   }
   output = output.subarray(0, min);
   const i = min - input.length;

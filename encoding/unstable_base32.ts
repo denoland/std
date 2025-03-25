@@ -134,7 +134,7 @@ export function encodeBase32Into(
   }
   const min = calcBase32Size(input.length);
   if (output.length < min) {
-    throw new RangeError("Cannot decode input as base32: Output too small");
+    throw new RangeError("Cannot encode input as base32: Output too small");
   }
   output = output.subarray(0, min);
   const i = min - input.length;
