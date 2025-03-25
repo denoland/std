@@ -3,7 +3,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcMax,
+  calcBase64Size,
   decodeBase64,
   decodeRawBase64,
   encodeBase64,
@@ -65,7 +65,9 @@ Deno.test("encodeRawBase64()", () => {
         [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
       ] as const
     ) {
-      const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+      const buffer = new Uint8Array(
+        prefix.length + calcBase64Size(input.byteLength),
+      );
       buffer.set(prefix);
       buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
@@ -87,7 +89,7 @@ Deno.test("encodeRawBase64() with too small buffer", () => {
 
     for (const format of ["Base64", "Base64Url"] as const) {
       const buffer = new Uint8Array(
-        prefix.length + calcMax(input.byteLength) - 2,
+        prefix.length + calcBase64Size(input.byteLength) - 2,
       );
       buffer.set(prefix);
       buffer.set(new Uint8Array(input), buffer.length - input.byteLength);

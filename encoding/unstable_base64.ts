@@ -23,8 +23,8 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common64.ts";
-export { calcMax };
+import { calcBase64Size, decode, encode } from "./_common64.ts";
+export { calcBase64Size };
 import { detach } from "./_common_detach.ts";
 
 const padding = "=".charCodeAt(0);
@@ -90,7 +90,7 @@ export function encodeBase64(
   }
   let [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcBase64Size((input as Uint8Array_).length),
   );
   let o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
@@ -118,13 +118,13 @@ export function encodeBase64(
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeBase64, encodeRawBase64 } from "@std/encoding/unstable-base64";
+ * import { calcBase64Size, encodeBase64, encodeRawBase64 } from "@std/encoding/unstable-base64";
  *
  * const prefix = new TextEncoder().encode("data:url/fake,");
  * const input = await Deno.readFile("./deno.lock");
  *
  * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
+ * const newSize = prefix.length + calcBase64Size(originalSize);
  * const i = newSize - originalSize;
  * const o = prefix.length;
  *
@@ -146,7 +146,7 @@ export function encodeRawBase64(
   o: number,
   format: Base64Format = "Base64",
 ): number {
-  const max = calcMax(buffer.length - i);
+  const max = calcBase64Size(buffer.length - i);
   if (max > buffer.length - o) {
     throw new RangeError("Cannot encode buffer as base64: Buffer too small");
   }

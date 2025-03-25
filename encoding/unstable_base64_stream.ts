@@ -29,7 +29,7 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   type Base64Format,
-  calcMax,
+  calcBase64Size,
   decodeRawBase64 as decode,
   encodeRawBase64 as encode,
 } from "./unstable_base64.ts";
@@ -83,7 +83,10 @@ export class Base64EncoderStream<T extends "string" | "bytes">
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let [output, i] = detach(chunk, calcMax(remainder + chunk.length));
+        let [output, i] = detach(
+          chunk,
+          calcBase64Size(remainder + chunk.length),
+        );
         if (remainder) {
           i -= remainder;
           output.set(push.subarray(0, remainder), i);
@@ -102,7 +105,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
         if (remainder) {
           const [output, i] = detach(
             push.subarray(0, remainder),
-            calcMax(remainder),
+            calcBase64Size(remainder),
           );
           const o = encode(output, i, 0, options.format);
           controller.enqueue(decode(output.subarray(0, o)));

@@ -13,12 +13,12 @@ export type { Uint8Array_ };
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax } from "@std/encoding/unstable-base64";
+ * import { calcBase64Size } from "@std/encoding/unstable-base64";
  *
- * assertEquals(calcMax(1), 4);
+ * assertEquals(calcBase64Size(1), 4);
  * ```
  */
-export function calcMax(originalSize: number): number {
+export function calcBase64Size(originalSize: number): number {
   return ((originalSize + 2) / 3 | 0) * 4;
 }
 
