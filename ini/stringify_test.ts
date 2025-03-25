@@ -5,7 +5,7 @@ import { assertEquals } from "@std/assert";
 
 function assertValidStringify(
   obj: object,
-  expected: unknown,
+  expected: string,
   options?: StringifyOptions,
 ) {
   assertEquals(stringify(obj, options), expected);
