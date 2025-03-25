@@ -5,7 +5,6 @@ import { concat } from "@std/bytes";
 import {
   calcHexSize,
   decodeHex,
-  decodeRawHex,
   encodeHex,
   encodeHexInto,
 } from "./unstable_hex.ts";
@@ -110,40 +109,6 @@ Deno.test("decodeHex() invalid char", () => {
       () => decodeHex(".".repeat(2) + output),
       TypeError,
       "Cannot decode input as hex: Invalid character (.)",
-    );
-  }
-});
-
-Deno.test("decodeRawHex()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [input, output] of inputOutput) {
-    if (typeof input === "string") continue;
-
-    const buffer = concat([prefix, new TextEncoder().encode(output)]);
-    assertEquals(
-      buffer.subarray(
-        prefix.length,
-        decodeRawHex(buffer, prefix.length, prefix.length),
-      ),
-      new Uint8Array(input),
-    );
-  }
-});
-
-Deno.test("decodeRawHex() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [input, output] of inputOutput) {
-    if (typeof input === "string") continue;
-
-    assertThrows(
-      () =>
-        decodeRawHex(
-          concat([prefix, new TextEncoder().encode(output)]),
-          prefix.length - 2,
-          prefix.length,
-        ),
-      RangeError,
-      "Input (i) must be greater than or equal to output (o)",
     );
   }
 });
