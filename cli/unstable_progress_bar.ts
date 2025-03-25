@@ -7,18 +7,18 @@
 export interface ProgressBarFormatter {
   /**
    * A function that returns a formatted version of the duration.
-   * `[mm:ss] `
+   * `[mm:ss]`
    */
   styledTime: () => string;
   /**
    * A function that returns a formatted version of the data received.
-   * `[0.40/97.66 KiB] `
+   * `[0.40/97.66 KiB]`
    * @param fractions The number of decimal places the values should have.
    */
   styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
-   * Default Style: `[###-------] `
+   * Default Style: `[###-------]`
    */
   progressBar: string;
   /**
@@ -172,7 +172,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => x.styledTime() + x.progressBar + x.styledData(),
+      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
       keepOpen = true,
     } = options;
     this.#value = value;
@@ -223,14 +223,14 @@ export class ProgressBar {
       styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `[${minutes}:${seconds}] `;
+        return `[${minutes}:${seconds}]`;
       },
       styledData: (fractions = 2): string => {
         const currentValue = (this.#value / this.#rate).toFixed(fractions);
         const maxValue = (this.#max / this.#rate).toFixed(fractions);
-        return `[${currentValue}/${maxValue} ${this.#unit}] `;
+        return `[${currentValue}/${maxValue} ${this.#unit}]`;
       },
-      progressBar: `[${fillChars}${emptyChars}] `,
+      progressBar: `[${fillChars}${emptyChars}]`,
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
       value: this.#value,
