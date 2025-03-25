@@ -90,56 +90,56 @@ export function encodeBase32(
 }
 
 /**
- * `encodeRawBase32` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to base32 in place. The function assumes
- * that the raw data starts at param {@linkcode i} and ends at the end of the
- * buffer, and that the entire buffer provided is large enough to hold the
- * encoded data.
+ * `encodeBase32Into` takes an input source and encodes it as base32 into the
+ * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param buffer The buffer to encode in place.
- * @param i The index of where the raw data starts reading from.
- * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding.
- * @returns The index of where the encoded data finished writing to.
+ * @param input the source to encode.
+ * @param output the buffer to write the encoded source to.
+ * @param format the format to use for encoding.
+ * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcBase32Size, encodeBase32, encodeRawBase32 } from "@std/encoding/unstable-base32";
+ * import {
+ *   calcBase32Size,
+ *   encodeBase32,
+ *   encodeBase32Into,
+ * } from "@std/encoding/unstable-base32";
  *
- * const prefix = new TextEncoder().encode("data:url/fake,");
+ * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
+ * const output = new Uint8Array(prefix.length + calcBase32Size(input.length));
  *
- * const originalSize = input.length;
- * const newSize = prefix.length + calcBase32Size(originalSize);
- * const i = newSize - originalSize;
- * const o = prefix.length;
- *
- * // deno-lint-ignore no-explicit-any
- * const output = new Uint8Array((input.buffer as any).transfer(newSize));
- * output.set(output.subarray(0, originalSize), i);
- * output.set(prefix);
- *
- * encodeRawBase32(output, i, o, "Base32");
+ * const o = new TextEncoder().encodeInto(prefix, output).written;
+ * encodeBase32Into(input, output.subarray(o), "Base32");
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   "data:url/fake," +
+ *     encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
  * );
  * ```
  */
-export function encodeRawBase32(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
+export function encodeBase32Into(
+  input: string | Uint8Array_ | ArrayBuffer,
+  output: Uint8Array_,
   format: Base32Format = "Base32",
 ): number {
-  const max = calcBase32Size(buffer.length - i);
-  if (max > buffer.length - o) {
-    throw new RangeError("Cannot encode buffer as base32: Buffer too small");
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
-  return encode(buffer, i, o, alphabet[format], padding);
+  const min = calcBase32Size(input.length);
+  if (output.length < min) {
+    throw new RangeError("Cannot decode input as base32: Output too small");
+  }
+  output = output.subarray(0, min);
+  const i = min - input.length;
+  output.set(input, i);
+  return encode(output, i, 0, alphabet[format], padding);
 }
 
 /**

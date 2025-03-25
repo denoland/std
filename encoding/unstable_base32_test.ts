@@ -7,7 +7,7 @@ import {
   decodeBase32,
   decodeRawBase32,
   encodeBase32,
-  encodeRawBase32,
+  encodeBase32Into,
 } from "./unstable_base32.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string, string][] = [
@@ -101,7 +101,7 @@ Deno.test("encodeBase32() subarray", () => {
   }
 });
 
-Deno.test("encodeRawBase32()", () => {
+Deno.test("encodeBase32Into()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
     if (typeof input === "string") continue;
@@ -120,12 +120,10 @@ Deno.test("encodeRawBase32()", () => {
         prefix.length + calcBase32Size(input.byteLength),
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      encodeRawBase32(
-        buffer,
-        buffer.length - input.byteLength,
-        prefix.length,
+      encodeBase32Into(
+        input,
+        buffer.subarray(prefix.length),
         format,
       );
       assertEquals(buffer, output, format);
@@ -133,7 +131,7 @@ Deno.test("encodeRawBase32()", () => {
   }
 });
 
-Deno.test("encodeRawBase32() with too small buffer", () => {
+Deno.test("encodeBase32Into() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
@@ -143,18 +141,16 @@ Deno.test("encodeRawBase32() with too small buffer", () => {
         prefix.length + calcBase32Size(input.byteLength) - 2,
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
       assertThrows(
         () =>
-          encodeRawBase32(
-            buffer,
-            buffer.length - input.byteLength,
-            prefix.length,
+          encodeBase32Into(
+            input,
+            buffer.subarray(prefix.length),
             format,
           ),
         RangeError,
-        "Buffer too small",
+        "Cannot decode input as base32: Output too small",
         format,
       );
     }
