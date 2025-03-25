@@ -23,16 +23,15 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcHexSize, decode, encode } from "./_common16.ts";
+import {
+  alphabet,
+  calcHexSize,
+  decode,
+  encode,
+  rAlphabet,
+} from "./_common16.ts";
 export { calcHexSize };
 import { detach } from "./_common_detach.ts";
-
-const alphabet = new TextEncoder().encode("0123456789abcdef");
-const rAlphabet = new Uint8Array(128).fill(16); // alphabet.Hex.length
-alphabet.forEach((byte, i) => rAlphabet[byte] = i);
-new TextEncoder()
-  .encode("ABCDEF")
-  .forEach((byte, i) => rAlphabet[byte] = i + 10);
 
 /**
  * `encodeHex` takes an input source and encodes it into a hexadecimal string.

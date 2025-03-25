@@ -3,6 +3,13 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+export const alphabet = new TextEncoder().encode("0123456789abcdef");
+export const rAlphabet = new Uint8Array(128).fill(16); // alphabet.Hex.length
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
+new TextEncoder()
+  .encode("ABCDEF")
+  .forEach((byte, i) => rAlphabet[byte] = i + 10);
+
 /**
  * Calculate the output size needed to encode a given input size for
  * {@linkcode encodeRawHex}.
