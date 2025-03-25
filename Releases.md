@@ -1,3 +1,107 @@
+### 2025.03.25
+
+#### @std/assert 1.0.12 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/async 1.0.12 (patch)
+
+- test(async): fix flaky waitFor test (#6467)
+- test(async): use FakeTime in pooledMap testing (#6468)
+
+#### @std/cache 0.2.0 (minor)
+
+- BREAKING(cache/unstable): configurable cache ejection of thrown or rejected
+  values, change cache type (#6417) (#6419)
+
+#### @std/cbor 0.1.7 (patch)
+
+- feat(cbor): add support for bignums (#6458)
+- fix(cbor): bug in preallocating space for string encoding (#6459)
+
+#### @std/cli 1.0.15 (patch)
+
+- BREAKING(cli/unstable): remove trailing whitespaces from
+  `ProgressBarFormatter` properties (#6502)
+- refactor(cli/unstable): make `ProgressBar.#print()` better readable (#6503)
+- refactor(cli/unstable): replace `ProgressBar` `#options` property with actual
+  properties (#6497)
+
+#### @std/encoding 1.0.8 (patch)
+
+- BREAKING(encoding/unstable): merge Base32Hex(Encoder|Decoder)Stream to
+  Base32(Encoder|Decoder)Stream (#6452)
+- BREAKING(encoding/unstable): merge base32 variations, add format option to
+  encodeBase32 and decodeBase32 (#6471)
+- BREAKING(encoding/unstable): merge Base64Url(Encoder|Decoder)Stream to
+  Base64(Encoder|Decoder)Stream (#6451)
+- feat(encoding/unstable): add options argument to hex streaming & performance
+  (#6453)
+- feat(encoding/unstable): add encode/decodeRawHex and rewrite underlying code
+  (#6480)
+- feat(encoding/unstable): add format option to encodeBase64 and decodeBase64
+  (#6457)
+- fix(encoding): decoding base64 with invalid bytes >= 128 (#6477)
+- fix(encoding/unstable): encodeBase32 missing default option for format (#6476)
+- perf(encoding): improve hex encode/decode performance (#6499)
+- perf(encoding): improve base32 encode/decode performance (#6479)
+- perf(encoding): improve base64 encode/decode performance (#6461)
+- refactor(encoding): align error messages (#6504)
+- chore(encoding): extract streaming textEncoder/Decoder (#6505)
+- chore(encoding): remove reductant JSDoc in base64 stream (#6478)
+
+#### @std/expect 1.0.14 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/front-matter 1.0.9 (patch)
+
+- fix(front-matter): handle BOM when recognizing format (#6507)
+- fix(front-matter): handle empty frontMatter data (#6481)
+- refactor(front-matter): inline `recognize()` (#6466)
+- test(front-matter): simplify asserts (#6475)
+- test(front-matter): remove double tests in `any_test.ts` (#6474)
+- test(front-matter): inline test data (#6465)
+
+#### @std/fs 1.0.15 (patch)
+
+- feat(fs/unstable): add makeTempFile and makeTempFileSync (#6469)
+- feat(fs/unstable): add writeTextFile and writeTextFileSync (#6463)
+- feat(fs/unstable): add writeFile and writeFileSync (#6444)
+
+#### @std/ini 1.0.0-rc.6 (prerelease)
+
+- refactor(ini): limit INI value type to possible allowed INI values. (#6495)
+
+#### @std/internal 1.0.6 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/testing 1.0.10 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/text 1.0.12 (patch)
+
+- feat(text/unstable): add dedent (#6500)
+
+#### @std/toml 1.0.3 (patch)
+
+- fix(toml): handle hexadecimal, octal, and binary numbers (#6496)
+- test(toml): inline test data (#6473)
+
+#### @std/uuid 1.0.6 (patch)
+
+- feat(uuid/unstable): implement support for UUID V6 (#6415)
+
+#### @std/webgpu 0.224.8 (patch)
+
+- chore(webgpu): ignore createTextureWithData() test case on windows (#6493)
+
 ### 2025.03.04
 
 #### @std/async 1.0.11 (patch)
