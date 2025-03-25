@@ -42,15 +42,6 @@ export type ReviverFunction<T = any> = (
 
 const ASSIGNMENT_MARK = "=";
 
-function trimQuotes(value: string): string {
-  if (value.startsWith('"') && value.endsWith('"')) {
-    return value.slice(1, -1);
-  }
-  return value;
-}
-
-const NON_WHITESPACE_REGEXP = /\S/;
-
 /**
  * Class implementation for fine control of INI data structures.
  */
@@ -191,32 +182,6 @@ export class IniMap<T = any> {
     }
   }
 
-  *#readTextLines(text: string): Generator<string> {
-    const { length } = text;
-    let line = "";
-
-    for (let i = 0; i < length; i += 1) {
-      const char = text[i]!;
-
-      if (char === "\n" || char === "\r") {
-        yield line;
-        line = "";
-        if (char === "\r" && text[i + 1] === "\n") {
-          i++;
-          if (!this.#formatting.lineBreak) {
-            this.#formatting.lineBreak = "\r\n";
-          }
-        } else if (!this.#formatting.lineBreak) {
-          this.#formatting.lineBreak = char;
-        }
-      } else {
-        line += char;
-      }
-    }
-
-    yield line;
-  }
-
   #cleanFormatting(options?: FormattingOptions): FormattingOptions {
     return Object.fromEntries(
       Object.entries(options ?? {}).filter(([key]) =>
@@ -290,108 +255,6 @@ export class IniMap<T = any> {
   }
 
   /**
-   * Parse an INI string in this `IniMap`.
-   *
-   * @param text The text to parse
-   * @param reviver The reviver function
-   * @returns This {@code IniMap} object
-   */
-  parse(text: string, reviver?: ReviverFunction): this {
-    if (typeof text !== "string") {
-      throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
-    }
-    const reviverFunc: ReviverFunction = typeof reviver === "function"
-      ? reviver
-      : (_key, value, _section) => {
-        if (!isNaN(+value) && !value.includes('"')) return +value;
-        if (value === "null") return null;
-        if (value === "true" || value === "false") return value === "true";
-        return trimQuotes(value);
-      };
-    let lineNumber = 1;
-    let currentSection: LineSection | undefined;
-
-    for (const line of this.#readTextLines(text)) {
-      const trimmed = line.trim();
-      if (isComment(trimmed)) {
-        this.#lines.push({
-          type: "comment",
-          num: lineNumber,
-          val: trimmed,
-        });
-      } else if (isSection(trimmed, lineNumber)) {
-        const sec = trimmed.substring(1, trimmed.length - 1);
-
-        if (!NON_WHITESPACE_REGEXP.test(sec)) {
-          throw new SyntaxError(
-            `Unexpected empty section name at line ${lineNumber}`,
-          );
-        }
-
-        currentSection = {
-          type: "section",
-          num: lineNumber,
-          sec,
-          map: new Map<string, LineValue>(),
-          end: lineNumber,
-        };
-        this.#lines.push(currentSection);
-        this.#sections.set(currentSection.sec, currentSection);
-      } else {
-        const assignmentPos = trimmed.indexOf(ASSIGNMENT_MARK);
-
-        if (assignmentPos === -1) {
-          throw new SyntaxError(
-            `Unexpected token ${trimmed[0]} in INI at line ${lineNumber}`,
-          );
-        }
-        if (assignmentPos === 0) {
-          throw new SyntaxError(
-            `Unexpected empty key name at line ${lineNumber}`,
-          );
-        }
-
-        const leftHand = trimmed.substring(0, assignmentPos);
-        const rightHand = trimmed.substring(assignmentPos + 1);
-
-        if (this.#formatting.pretty === undefined) {
-          this.#formatting.pretty = leftHand.endsWith(" ") &&
-            rightHand.startsWith(" ");
-        }
-
-        const key = leftHand.trim();
-        const value = rightHand.trim();
-
-        if (currentSection) {
-          const lineValue: LineValue = {
-            type: "value",
-            num: lineNumber,
-            sec: currentSection.sec,
-            key,
-            val: reviverFunc(key, value, currentSection.sec),
-          };
-          currentSection.map.set(key, lineValue);
-          this.#lines.push(lineValue);
-          currentSection.end = lineNumber;
-        } else {
-          const lineValue: LineValue = {
-            type: "value",
-            num: lineNumber,
-            key,
-            val: reviverFunc(key, value),
-          };
-          this.#global.set(key, lineValue);
-          this.#lines.push(lineValue);
-        }
-      }
-
-      lineNumber += 1;
-    }
-
-    return this;
-  }
-
-  /**
    * Create an `IniMap` from an INI string.
    *
    * @param input The input string
@@ -439,32 +302,9 @@ export class IniMap<T = any> {
           ini.set(key, val);
         }
       }
-    } else {
-      ini.parse(input, formatting?.reviver);
     }
     return ini;
   }
-}
-
-/** Detect supported comment styles. */
-function isComment(input: string): boolean {
-  return input === "" ||
-    input.startsWith("#") ||
-    input.startsWith(";") ||
-    input.startsWith("//");
-}
-
-/** Detect a section start. */
-function isSection(input: string, lineNumber: number): boolean {
-  if (input.startsWith("[")) {
-    if (input.endsWith("]")) {
-      return true;
-    }
-    throw new SyntaxError(
-      `Unexpected end of INI section at line ${lineNumber}`,
-    );
-  }
-  return false;
 }
 
 type LineOp = typeof LineOp[keyof typeof LineOp];
