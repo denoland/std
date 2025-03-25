@@ -9,7 +9,7 @@
     "@std/assert": "jsr:@std/assert@^1.0.12",
     "@std/async": "jsr:@std/async@^1.0.12",
     "@std/bytes": "jsr:@std/bytes@^1.0.5",
-    "@std/cache": "jsr:@std/cache@^0.1.4",
+    "@std/cache": "jsr:@std/cache@^0.2.0",
     "@std/cbor": "jsr:@std/cbor@^0.1.7",
     "@std/cli": "jsr:@std/cli@^1.0.15",
     "@std/collections": "jsr:@std/collections@^1.0.10",
