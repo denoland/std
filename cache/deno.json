@@ -1,6 +1,6 @@
 {
   "name": "@std/cache",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "exports": {
     ".": "./mod.ts",
     "./lru-cache": "./lru_cache.ts",
