@@ -5,7 +5,6 @@ import { concat } from "@std/bytes";
 import {
   calcBase32Size,
   decodeBase32,
-  decodeRawBase32,
   encodeBase32,
   encodeBase32Into,
 } from "./unstable_base32.ts";
@@ -232,57 +231,6 @@ Deno.test("decodeBase32() invalid char", () => {
         TypeError,
         "Cannot decode input as base32: Invalid character (.)",
         format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase32()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base32, base32hex, base32crockford] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base32)]), "Base32"],
-        [concat([prefix, new TextEncoder().encode(base32hex)]), "Base32Hex"],
-        [
-          concat([prefix, new TextEncoder().encode(base32crockford)]),
-          "Base32Crockford",
-        ],
-      ] as const
-    ) {
-      assertEquals(
-        input.subarray(
-          prefix.length,
-          decodeRawBase32(input, prefix.length, prefix.length, format),
-        ),
-        new Uint8Array(output),
-        format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase32() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base32, base32hex, base32crockford] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base32)]), "Base32"],
-        [concat([prefix, new TextEncoder().encode(base32hex)]), "Base32Hex"],
-        [
-          concat([prefix, new TextEncoder().encode(base32crockford)]),
-          "Base32Crockford",
-        ],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeRawBase32(input, prefix.length - 2, prefix.length, format),
-        RangeError,
-        "Input (i) must be greater than or equal to output (o)",
       );
     }
   }
