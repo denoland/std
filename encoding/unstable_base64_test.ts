@@ -5,7 +5,6 @@ import { concat } from "@std/bytes";
 import {
   calcBase64Size,
   decodeBase64,
-  decodeRawBase64,
   encodeBase64,
   encodeBase64Into,
 } from "./unstable_base64.ts";
@@ -178,49 +177,6 @@ Deno.test("decodeBase64() invalid char", () => {
         TypeError,
         "Cannot decode input as base64: Invalid character (.)",
         format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase64()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base64, base64url] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base64)]), "Base64"],
-        [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
-      ] as const
-    ) {
-      assertEquals(
-        input.subarray(
-          prefix.length,
-          decodeRawBase64(input, prefix.length, prefix.length, format),
-        ),
-        new Uint8Array(output),
-        format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase64() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base64, base64url] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base64)]), "Base64"],
-        [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeRawBase64(input, prefix.length - 2, prefix.length, format),
-        RangeError,
-        "Input (i) must be greater than or equal to output (o)",
       );
     }
   }
