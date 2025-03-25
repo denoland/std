@@ -7,7 +7,7 @@ import {
   decodeHex,
   decodeRawHex,
   encodeHex,
-  encodeRawHex,
+  encodeHexInto,
 } from "./unstable_hex.ts";
 
 const inputOutput: [string | ArrayBuffer, string][] = [
@@ -39,7 +39,7 @@ Deno.test("encodeHex() subarray", () => {
   }
 });
 
-Deno.test("encodeRawHex()", () => {
+Deno.test("encodeHexInto()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, output] of inputOutput) {
     if (typeof input === "string") continue;
@@ -48,18 +48,16 @@ Deno.test("encodeRawHex()", () => {
       prefix.length + calcHexSize(input.byteLength),
     );
     buffer.set(prefix);
-    buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-    encodeRawHex(
-      buffer,
-      buffer.length - input.byteLength,
-      prefix.length,
+    encodeHexInto(
+      input,
+      buffer.subarray(prefix.length),
     );
     assertEquals(buffer, concat([prefix, new TextEncoder().encode(output)]));
   }
 });
 
-Deno.test("encodeRawHex() with too small buffer", () => {
+Deno.test("encodeHexInto() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
@@ -72,13 +70,12 @@ Deno.test("encodeRawHex() with too small buffer", () => {
 
     assertThrows(
       () =>
-        encodeRawHex(
-          buffer,
-          buffer.length - input.byteLength,
-          prefix.length,
+        encodeHexInto(
+          input,
+          buffer.subarray(prefix.length),
         ),
       RangeError,
-      "Buffer too small",
+      "Cannot encode input as hex: Output too small",
     );
   }
 });

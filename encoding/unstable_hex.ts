@@ -74,54 +74,54 @@ export function encodeHex(
 }
 
 /**
- * `encodeRawHex` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to hexadecimal in place. The function
- * assumes that the raw data starts at param {@linkcode i} and ends at the end
- * of the buffer, and that the entire buffer provided is large enough to hold
- * the encoded data.
+ * `encodeHexInto` takes an input source and encodes it as hex into the
+ * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param buffer The buffer to encode in place.
- * @param i The index of where the raw data starts reading from.
- * @param o The index of where the encoded data starts writing to.
- * @returns The index of where the encoded data finished writing to.
+ * @param input the source to encode.
+ * @param output the buffer to write the encoded source to.
+ * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcHexSize, encodeHex, encodeRawHex } from "@std/encoding/unstable-hex";
+ * import {
+ *   calcHexSize,
+ *   encodeHex,
+ *   encodeHexInto,
+ * } from "@std/encoding/unstable-hex";
  *
- * const prefix = new TextEncoder().encode("data:url/fake,");
+ * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
+ * const output = new Uint8Array(prefix.length + calcHexSize(input.length));
  *
- * const originalSize = input.length;
- * const newSize = prefix.length + calcHexSize(originalSize);
- * const i = newSize - originalSize;
- * const o = prefix.length;
- *
- * // deno-lint-ignore no-explicit-any
- * const output = new Uint8Array((input.buffer as any).transfer(newSize));
- * output.set(output.subarray(0, originalSize), i);
- * output.set(prefix);
- *
- * encodeRawHex(output, i, o);
+ * const o = new TextEncoder().encodeInto(prefix, output).written;
+ * encodeHexInto(input, output.subarray(o));
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock")),
+ *   "data:url/fake," +
+ *     encodeHex(await Deno.readFile("./deno.lock")),
  * );
  * ```
  */
-export function encodeRawHex(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
+export function encodeHexInto(
+  input: string | Uint8Array_ | ArrayBuffer,
+  output: Uint8Array_,
 ): number {
-  const max = calcHexSize(buffer.length - i);
-  if (max > buffer.length - o) {
-    throw new RangeError("Cannot encode buffer as hex: Buffer too small");
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
-  return encode(buffer, i, o, alphabet);
+  const min = calcHexSize(input.length);
+  if (output.length < min) {
+    throw new RangeError("Cannot encode input as hex: Output too small");
+  }
+  output = output.subarray(0, min);
+  const i = min - input.length;
+  output.set(input, i);
+  return encode(output, i, 0, alphabet);
 }
 
 /**
