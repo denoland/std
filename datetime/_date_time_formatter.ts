@@ -132,53 +132,55 @@ function symbolToFormatPart(symbol: string): FormatPart {
   }
 }
 
-function formatToFormatParts(format: string) {
-  const formatParts: FormatPart[] = [];
-  let index = 0;
-  while (index < format.length) {
-    const substring = format.slice(index);
-
-    const symbolMatch = SYMBOL_REGEXP.exec(substring);
-    if (symbolMatch) {
-      const symbol = symbolMatch.groups!.symbol!;
-      formatParts.push(symbolToFormatPart(symbol));
-      index += symbol.length;
-      continue;
-    }
-
-    const quotedLiteralMatch = QUOTED_LITERAL_REGEXP.exec(substring);
-    if (quotedLiteralMatch) {
-      const value = quotedLiteralMatch.groups!.value!;
-      formatParts.push({ type: "literal", value });
-      index += quotedLiteralMatch[0].length;
-      continue;
-    }
-
-    const literalMatch = LITERAL_REGEXP.exec(substring)!;
-    const value = literalMatch.groups!.value!;
-    formatParts.push({ type: "literal", value });
-    index += value.length;
-  }
-
-  return formatParts;
-}
-
 export class DateTimeFormatter {
   #formatParts: FormatPart[];
 
   constructor(formatString: string) {
-    this.#formatParts = formatToFormatParts(formatString);
+    this.#formatParts = DateTimeFormatter.formatToFormatParts(formatString);
   }
 
-  format(date: Date, options: Options = {}): string {
+  static formatToFormatParts(format: string) {
+    const formatParts: FormatPart[] = [];
+    let index = 0;
+    while (index < format.length) {
+      const substring = format.slice(index);
+
+      const symbolMatch = SYMBOL_REGEXP.exec(substring);
+      if (symbolMatch) {
+        const symbol = symbolMatch.groups!.symbol!;
+        formatParts.push(symbolToFormatPart(symbol));
+        index += symbol.length;
+        continue;
+      }
+
+      const quotedLiteralMatch = QUOTED_LITERAL_REGEXP.exec(substring);
+      if (quotedLiteralMatch) {
+        const value = quotedLiteralMatch.groups!.value!;
+        formatParts.push({ type: "literal", value });
+        index += quotedLiteralMatch[0].length;
+        continue;
+      }
+
+      const literalMatch = LITERAL_REGEXP.exec(substring)!;
+      const value = literalMatch.groups!.value!;
+      formatParts.push({ type: "literal", value });
+      index += value.length;
+    }
+
+    return formatParts;
+  }
+
+  static formatPartsToString(
+    date: Date,
+    parts: FormatPart[],
+    options: Options = {},
+  ): string {
     let string = "";
 
     const utc = options.timeZone === "UTC";
 
-    for (const part of this.#formatParts) {
-      const type = part.type;
-
-      switch (type) {
+    for (const part of parts) {
+      switch (part.type) {
         case "year": {
           const value = utc ? date.getUTCFullYear() : date.getFullYear();
           switch (part.value) {
@@ -292,6 +294,14 @@ export class DateTimeFormatter {
           break;
         }
         case "fractionalSecond": {
+          if (
+            typeof part.value === "string" || part.value < 1 || part.value > 3
+          ) {
+            throw new Error(
+              `FormatterError: DateTimeFormatPartType "fractionalSecond" does not support value ${part.value}`,
+            );
+          }
+
           const value = utc
             ? date.getUTCMilliseconds()
             : date.getMilliseconds();
@@ -305,7 +315,9 @@ export class DateTimeFormatter {
           }
 
           // TODO(WWRS): add support for time zones
-          throw new Error(`FormatterError: Time zone is not supported`);
+          throw new Error(
+            `FormatterError: DateTimeFormatPartType "timeZoneName" does not support value ${part.value}`,
+          );
         }
         case "dayPeriod": {
           switch (part.value) {
@@ -336,10 +348,13 @@ export class DateTimeFormatter {
     return string;
   }
 
-  formatToParts(string: string): DateTimeFormatPart[] {
-    const parts: DateTimeFormatPart[] = [];
+  static formatPartsToDateTimeParts(
+    string: string,
+    formatParts: FormatPart[],
+  ): DateTimeFormatPart[] {
+    const dateTimeParts: DateTimeFormatPart[] = [];
 
-    for (const part of this.#formatParts) {
+    for (const part of formatParts) {
       let value: string | undefined;
       // The number of chars consumed in the parse, defaults to `value.length`
       let parsedLength: number | undefined;
@@ -434,7 +449,7 @@ export class DateTimeFormatter {
             }
             default:
               throw new Error(
-                `ParserError: DateTimeFormatPartType "hour" does not support value "${part.value}"`,
+                `ParserError: DateTimeFormatPartType "hour" does not support value ${part.value}`,
               );
           }
           break;
@@ -474,6 +489,14 @@ export class DateTimeFormatter {
           break;
         }
         case "fractionalSecond": {
+          if (
+            typeof part.value === "string" || part.value < 1 || part.value > 3
+          ) {
+            throw new Error(
+              `ParserError: DateTimeFormatPartType "fractionalSecond" does not support value ${part.value}`,
+            );
+          }
+
           const re = new RegExp(`^\\d{${part.value}}`);
           value = re.exec(string)?.[0];
           break;
@@ -484,22 +507,49 @@ export class DateTimeFormatter {
           break;
         }
         case "dayPeriod": {
-          value = /^[AP](?:\.M\.|M\.?)/i.exec(string)?.[0];
-          parsedLength = value?.length;
-          switch (value?.toUpperCase()) {
-            case "AM":
-            case "AM.":
-            case "A.M.":
-              value = "AM";
+          switch (part.value) {
+            case "short":
+            case "long": {
+              value = /^[AP](?:\.M\.|M\.?)/i.exec(string)?.[0];
+              parsedLength = value?.length;
+              switch (value?.toUpperCase()) {
+                case "AM":
+                case "AM.":
+                case "A.M.":
+                  value = "AM";
+                  break;
+                case "PM":
+                case "PM.":
+                case "P.M.":
+                  value = "PM";
+                  break;
+                default:
+                  throw new Error(
+                    `ParserError: Could not parse dayPeriod from "${string}"`,
+                  );
+              }
               break;
-            case "PM":
-            case "PM.":
-            case "P.M.":
-              value = "PM";
+            }
+            case "narrow": {
+              value = /^[AP]/i.exec(string)?.[0];
+              parsedLength = 1;
+              switch (value?.toUpperCase()) {
+                case "A":
+                  value = "AM";
+                  break;
+                case "P":
+                  value = "PM";
+                  break;
+                default:
+                  throw new Error(
+                    `ParserError: Could not parse dayPeriod from "${string}"`,
+                  );
+              }
               break;
+            }
             default:
               throw new Error(
-                `ParserError: Could not parse dayPeriod from "${value}"`,
+                `ParserError: DateTimeFormatPartType "dayPeriod" does not support value ${part.value}`,
               );
           }
           break;
@@ -536,7 +586,7 @@ export class DateTimeFormatter {
           }`,
         );
       }
-      parts.push({ type: part.type, value });
+      dateTimeParts.push({ type: part.type, value });
 
       string = string.slice(parsedLength ?? value.length);
     }
@@ -549,10 +599,10 @@ export class DateTimeFormatter {
       );
     }
 
-    return parts;
+    return dateTimeParts;
   }
 
-  partsToDate(parts: DateTimeFormatPart[]): Date {
+  static dateTimePartsToDate(parts: DateTimeFormatPart[]): Date {
     let year;
     let month;
     let day;
@@ -612,11 +662,6 @@ export class DateTimeFormatter {
     }
 
     if (dayPeriod !== undefined) {
-      if (hour === undefined) {
-        throw new Error(
-          `ParserError: Cannot use dayPeriod without hour`,
-        );
-      }
       if (hour > 12) {
         throw new Error(
           `ParserError: Cannot use dayPeriod with hour greater than 12, hour is "${hour}"`,
@@ -647,8 +692,19 @@ export class DateTimeFormatter {
     );
   }
 
+  format(date: Date, options: Options = {}): string {
+    return DateTimeFormatter.formatPartsToString(
+      date,
+      this.#formatParts,
+      options,
+    );
+  }
+
   parse(string: string): Date {
-    const parts = this.formatToParts(string);
-    return this.partsToDate(parts);
+    const parts = DateTimeFormatter.formatPartsToDateTimeParts(
+      string,
+      this.#formatParts,
+    );
+    return DateTimeFormatter.dateTimePartsToDate(parts);
   }
 }
