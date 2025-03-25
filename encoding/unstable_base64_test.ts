@@ -7,7 +7,7 @@ import {
   decodeBase64,
   decodeRawBase64,
   encodeBase64,
-  encodeRawBase64,
+  encodeBase64Into,
 } from "./unstable_base64.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string][] = [
@@ -54,7 +54,7 @@ Deno.test("encodeBase64() subarray", () => {
   }
 });
 
-Deno.test("encodeRawBase64()", () => {
+Deno.test("encodeBase64Into()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, base64, base64url] of inputOutput) {
     if (typeof input === "string") continue;
@@ -69,12 +69,10 @@ Deno.test("encodeRawBase64()", () => {
         prefix.length + calcBase64Size(input.byteLength),
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      const o = encodeRawBase64(
-        buffer,
-        buffer.length - input.byteLength,
-        prefix.length,
+      const o = prefix.length + encodeBase64Into(
+        input,
+        buffer.subarray(prefix.length),
         format,
       );
       assertEquals(buffer.subarray(0, o), output, format);
@@ -82,7 +80,7 @@ Deno.test("encodeRawBase64()", () => {
   }
 });
 
-Deno.test("encodeRawBase64() with too small buffer", () => {
+Deno.test("encodeBase64Into() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
@@ -92,18 +90,16 @@ Deno.test("encodeRawBase64() with too small buffer", () => {
         prefix.length + calcBase64Size(input.byteLength) - 2,
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
       assertThrows(
         () =>
-          encodeRawBase64(
-            buffer,
-            buffer.length - input.byteLength,
-            prefix.length,
+          encodeBase64Into(
+            input,
+            buffer.subarray(prefix.length),
             format,
           ),
         RangeError,
-        "Buffer too small",
+        "Cannot decode input as base64: Output too small",
         format,
       );
     }
