@@ -28,11 +28,14 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
+  alphabet,
   type Base64Format,
   calcBase64Size,
-  decodeRawBase64 as decode,
-  encodeRawBase64 as encode,
-} from "./unstable_base64.ts";
+  decode,
+  encode,
+  padding,
+  rAlphabet,
+} from "./_common64.ts";
 import { detach } from "./_common_detach.ts";
 
 type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
@@ -75,6 +78,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
    * @param options The options for the base64 stream.
    */
   constructor(options: { format?: Base64Format; output?: T } = {}) {
+    const abc = alphabet[options.format ?? "Base64"];
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
       return (x) => decoder.decode(x) as Expect<T>;
@@ -97,7 +101,8 @@ export class Base64EncoderStream<T extends "string" | "bytes">
           output.subarray(0, -remainder || undefined),
           i,
           0,
-          options.format,
+          abc,
+          padding,
         );
         controller.enqueue(decode(output.subarray(0, o)));
       },
@@ -107,7 +112,11 @@ export class Base64EncoderStream<T extends "string" | "bytes">
             push.subarray(0, remainder),
             calcBase64Size(remainder),
           );
-          const o = encode(output, i, 0, options.format);
+          let o = encode(output, i, 0, abc, padding);
+          if (options.format === "Base64Url") {
+            const i = output.indexOf(padding, o - 2);
+            if (i > 0) o = i;
+          }
           controller.enqueue(decode(output.subarray(0, o)));
         }
       },
@@ -153,6 +162,7 @@ export class Base64DecoderStream<T extends "string" | "bytes">
    * @param options The options for the base64 stream.
    */
   constructor(options: { format?: Base64Format; input?: T } = {}) {
+    const abc = rAlphabet[options.format ?? "Base64"];
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
       return (x) => encoder.encode(x as string) as Uint8Array_;
@@ -172,7 +182,8 @@ export class Base64DecoderStream<T extends "string" | "bytes">
           output.subarray(0, -remainder || undefined),
           0,
           0,
-          options.format,
+          abc,
+          padding,
         );
         controller.enqueue(output.subarray(0, o));
       },
@@ -182,7 +193,8 @@ export class Base64DecoderStream<T extends "string" | "bytes">
             push.subarray(0, remainder),
             0,
             0,
-            options.format,
+            abc,
+            padding,
           );
           controller.enqueue(push.subarray(0, o));
         }
