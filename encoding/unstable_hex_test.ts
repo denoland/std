@@ -8,16 +8,15 @@ import {
   decodeRawHex,
   encodeHex,
   encodeRawHex,
-  type Uint8Array_,
 } from "./unstable_hex.ts";
 
-const inputOutput: [string | Uint8Array_, string][] = [
+const inputOutput: [string | ArrayBuffer, string][] = [
   ["", ""],
   ["Z", "5a"],
   ["ZZ", "5a5a"],
-  [new Uint8Array(0).fill("Z".charCodeAt(0)), ""],
-  [new Uint8Array(1).fill("Z".charCodeAt(0)), "5a"],
-  [new Uint8Array(2).fill("Z".charCodeAt(0)), "5a5a"],
+  [new Uint8Array(0).fill("Z".charCodeAt(0)).buffer, ""],
+  [new Uint8Array(1).fill("Z".charCodeAt(0)).buffer, "5a"],
+  [new Uint8Array(2).fill("Z".charCodeAt(0)).buffer, "5a5a"],
 ];
 
 Deno.test("encodeHex()", () => {
@@ -84,7 +83,7 @@ Deno.test("encodeRawHex() with too small buffer", () => {
 
 Deno.test("decodeHex()", () => {
   for (const [input, output] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
 
     assertEquals(decodeHex(output), new TextEncoder().encode(input));
   }
@@ -92,7 +91,7 @@ Deno.test("decodeHex()", () => {
 
 Deno.test("decodeHex() invalid length", () => {
   for (const [input, output] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
 
     assertThrows(
       () => decodeHex(output + "a"),
@@ -106,7 +105,7 @@ Deno.test("decodeHex() invalid length", () => {
 
 Deno.test("decodeHex() invalid char", () => {
   for (const [input, output] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
 
     assertThrows(
       () => decodeHex(".".repeat(2) + output),

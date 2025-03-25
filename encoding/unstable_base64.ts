@@ -80,11 +80,13 @@ export type Base64Format = "Base64" | "Base64Url";
  * ```
  */
 export function encodeBase64(
-  input: string | Uint8Array_,
+  input: string | Uint8Array_ | ArrayBuffer,
   format: Base64Format = "Base64",
 ): string {
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
   let [output, i] = detach(
     input as Uint8Array_,

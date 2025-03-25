@@ -8,10 +8,9 @@ import {
   decodeRawBase32,
   encodeBase32,
   encodeRawBase32,
-  type Uint8Array_,
 } from "./unstable_base32.ts";
 
-const inputOutput: [string | Uint8Array_, string, string, string][] = [
+const inputOutput: [string | ArrayBuffer, string, string, string][] = [
   ["", "", "", ""],
   ["A", "IE======", "84======", "84======"],
   ["AA", "IFAQ====", "850G====", "850G===="],
@@ -19,39 +18,39 @@ const inputOutput: [string | Uint8Array_, string, string, string][] = [
   ["AAAA", "IFAUCQI=", "850K2G8=", "850M2G8="],
   ["AAAAA", "IFAUCQKB", "850K2GA1", "850M2GA1"],
   ["AAAAAA", "IFAUCQKBIE======", "850K2GA184======", "850M2GA184======"],
-  [new Uint8Array(0).fill("A".charCodeAt(0)), "", "", ""],
+  [new Uint8Array(0).fill("A".charCodeAt(0)).buffer, "", "", ""],
   [
-    new Uint8Array(1).fill("A".charCodeAt(0)),
+    new Uint8Array(1).fill("A".charCodeAt(0)).buffer,
     "IE======",
     "84======",
     "84======",
   ],
   [
-    new Uint8Array(2).fill("A".charCodeAt(0)),
+    new Uint8Array(2).fill("A".charCodeAt(0)).buffer,
     "IFAQ====",
     "850G====",
     "850G====",
   ],
   [
-    new Uint8Array(3).fill("A".charCodeAt(0)),
+    new Uint8Array(3).fill("A".charCodeAt(0)).buffer,
     "IFAUC===",
     "850K2===",
     "850M2===",
   ],
   [
-    new Uint8Array(4).fill("A".charCodeAt(0)),
+    new Uint8Array(4).fill("A".charCodeAt(0)).buffer,
     "IFAUCQI=",
     "850K2G8=",
     "850M2G8=",
   ],
   [
-    new Uint8Array(5).fill("A".charCodeAt(0)),
+    new Uint8Array(5).fill("A".charCodeAt(0)).buffer,
     "IFAUCQKB",
     "850K2GA1",
     "850M2GA1",
   ],
   [
-    new Uint8Array(6).fill("A".charCodeAt(0)),
+    new Uint8Array(6).fill("A".charCodeAt(0)).buffer,
     "IFAUCQKBIE======",
     "850K2GA184======",
     "850M2GA184======",
@@ -162,7 +161,7 @@ Deno.test("encodeRawBase32() with too small buffer", () => {
 
 Deno.test("decodeBase32()", () => {
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
     const output = new TextEncoder().encode(input);
 
     assertEquals(decodeBase32(base32, "Base32"), output, "Base32");
@@ -177,7 +176,7 @@ Deno.test("decodeBase32()", () => {
 
 Deno.test("decodeBase32() invalid char after padding", () => {
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
     if (base32[base32.length - 2] !== "=") continue;
 
     for (
@@ -199,7 +198,7 @@ Deno.test("decodeBase32() invalid char after padding", () => {
 
 Deno.test("decodeBase32() invalid length", () => {
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
     if (input.length === 4 || input.length === 2) continue;
 
     for (
@@ -221,7 +220,7 @@ Deno.test("decodeBase32() invalid length", () => {
 
 Deno.test("decodeBase32() invalid char", () => {
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
-    if (input instanceof Uint8Array) continue;
+    if (input instanceof ArrayBuffer) continue;
 
     for (
       const [input, format] of [
