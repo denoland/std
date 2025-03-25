@@ -3,6 +3,27 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+export const padding = "=".charCodeAt(0);
+export const alphabet: Record<Base64Format, Uint8Array> = {
+  Base64: new TextEncoder()
+    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
+  Base64Url: new TextEncoder()
+    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
+};
+export const rAlphabet: Record<Base64Format, Uint8Array> = {
+  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
+  Base64Url: new Uint8Array(128).fill(64),
+};
+alphabet.Base64
+  .forEach((byte, i) => rAlphabet.Base64[byte] = i);
+alphabet.Base64Url
+  .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
+
+/**
+ * The base 64 encoding formats.
+ */
+export type Base64Format = "Base64" | "Base64Url";
+
 /**
  * Calculate the output size needed to encode a given input size for
  * {@linkcode encodeRawBase64}.

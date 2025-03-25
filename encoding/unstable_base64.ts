@@ -23,30 +23,17 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcBase64Size, decode, encode } from "./_common64.ts";
-export { calcBase64Size };
+import {
+  alphabet,
+  type Base64Format,
+  calcBase64Size,
+  decode,
+  encode,
+  padding,
+  rAlphabet,
+} from "./_common64.ts";
+export { type Base64Format, calcBase64Size };
 import { detach } from "./_common_detach.ts";
-
-const padding = "=".charCodeAt(0);
-const alphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new TextEncoder()
-    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
-  Base64Url: new TextEncoder()
-    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
-};
-const rAlphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
-  Base64Url: new Uint8Array(128).fill(64),
-};
-alphabet.Base64
-  .forEach((byte, i) => rAlphabet.Base64[byte] = i);
-alphabet.Base64Url
-  .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
-
-/**
- * The base 64 encoding formats.
- */
-export type Base64Format = "Base64" | "Base64Url";
 
 /**
  * `encodeBase64` takes an input source and encodes it into a base64 string. If
