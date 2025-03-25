@@ -60,14 +60,13 @@ function* readTextLines(text: string): Generator<string> {
 }
 
 /** Options for {@linkcode parse}. */
-// deno-lint-ignore no-explicit-any
-export interface ParseOptions<T = any> {
+export interface ParseOptions {
   /**
    * Provide custom parsing of the value in a key/value pair. Similar to the
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
    * function in {@linkcode JSON.parse}.
    */
-  reviver?: ReviverFunction<T>;
+  reviver?: ReviverFunction;
 }
 
 function defaultReviver(_key: string, value: string, _section?: string) {
@@ -142,19 +141,18 @@ function defaultReviver(_key: string, value: string, _section?: string) {
  * @typeParam T The type of the value
  * @return The parsed object
  */
-// deno-lint-ignore no-explicit-any
-export function parse<T = any>(
+export function parse<T extends object>(
   text: string,
-  options: ParseOptions<T> = {},
-): Record<string, T | Record<string, T>> {
+  options: ParseOptions = {},
+): T {
   if (typeof text !== "string") {
     throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
   }
 
   const { reviver = defaultReviver } = options;
 
-  const root: Record<string, T | Record<string, T>> = {};
-  let object = root;
+  const root = {} as T;
+  let object: object = root;
   let sectionName: string | undefined;
 
   let lineNumber = 0;
