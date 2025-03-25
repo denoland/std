@@ -23,8 +23,8 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common16.ts";
-export { calcMax };
+import { calcHexSize, decode, encode } from "./_common16.ts";
+export { calcHexSize };
 import { detach } from "./_common_detach.ts";
 
 const alphabet = new TextEncoder().encode("0123456789abcdef");
@@ -68,7 +68,7 @@ export function encodeHex(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcHexSize((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet);
   return new TextDecoder().decode(output);
@@ -91,13 +91,13 @@ export function encodeHex(
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeHex, encodeRawHex } from "@std/encoding/unstable-hex";
+ * import { calcHexSize, encodeHex, encodeRawHex } from "@std/encoding/unstable-hex";
  *
  * const prefix = new TextEncoder().encode("data:url/fake,");
  * const input = await Deno.readFile("./deno.lock");
  *
  * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
+ * const newSize = prefix.length + calcHexSize(originalSize);
  * const i = newSize - originalSize;
  * const o = prefix.length;
  *
@@ -118,7 +118,7 @@ export function encodeRawHex(
   i: number,
   o: number,
 ): number {
-  const max = calcMax(buffer.length - i);
+  const max = calcHexSize(buffer.length - i);
   if (max > buffer.length - o) {
     throw new RangeError("Cannot encode buffer as hex: Buffer too small");
   }

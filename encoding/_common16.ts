@@ -13,12 +13,12 @@ export type { Uint8Array_ };
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax } from "@std/encoding/unstable-hex";
+ * import { calcHexSize } from "@std/encoding/unstable-hex";
  *
- * assertEquals(calcMax(1), 2);
+ * assertEquals(calcHexSize(1), 2);
  * ```
  */
-export function calcMax(originalSize: number): number {
+export function calcHexSize(originalSize: number): number {
   return originalSize * 2;
 }
 

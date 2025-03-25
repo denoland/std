@@ -28,7 +28,7 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
-  calcMax,
+  calcHexSize,
   decodeRawHex as decode,
   encodeRawHex as encode,
 } from "./unstable_hex.ts";
@@ -80,7 +80,7 @@ export class HexEncoderStream<T extends "string" | "bytes">
     }();
     super({
       transform(chunk, controller) {
-        const [output, i] = detach(chunk, calcMax(chunk.length));
+        const [output, i] = detach(chunk, calcHexSize(chunk.length));
         encode(output, i, 0);
         controller.enqueue(decode(output));
       },

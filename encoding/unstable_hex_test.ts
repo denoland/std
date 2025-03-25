@@ -3,7 +3,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcMax,
+  calcHexSize,
   decodeHex,
   decodeRawHex,
   encodeHex,
@@ -44,7 +44,9 @@ Deno.test("encodeRawHex()", () => {
   for (const [input, output] of inputOutput) {
     if (typeof input === "string") continue;
 
-    const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+    const buffer = new Uint8Array(
+      prefix.length + calcHexSize(input.byteLength),
+    );
     buffer.set(prefix);
     buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
@@ -63,7 +65,7 @@ Deno.test("encodeRawHex() with too small buffer", () => {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
     const buffer = new Uint8Array(
-      prefix.length + calcMax(input.byteLength) - 2,
+      prefix.length + calcHexSize(input.byteLength) - 2,
     );
     buffer.set(prefix);
     buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
