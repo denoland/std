@@ -78,3 +78,26 @@ Deno.test("extractToml() allows whitespaces after the header", () => {
   assertEquals(extract("+++  \nfoo = 0\n--- \n").attrs, { foo: 0 });
   assertEquals(extract("= toml =  \nfoo = 0\n---\n").attrs, { foo: 0 });
 });
+
+Deno.test("extractToml() handles empty frontMatter", () => {
+  assertEquals(
+    extract("---toml\n---"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+  assertEquals(
+    extract("---toml\n\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+  assertEquals(
+    extract("---toml\n   \n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+});
+
+Deno.test("extractToml() throws at missing newline before body", () => {
+  assertThrows(
+    () => extract('---toml\nfoo = "bar"\n---body'),
+    TypeError,
+    "Unexpected end of input",
+  );
+});

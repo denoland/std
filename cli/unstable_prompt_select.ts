@@ -40,7 +40,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 export function promptSelect(
   message: string,
   values: string[],
-  { clear }: PromptSelectOptions = {},
+  options: PromptSelectOptions = {},
 ): string | null {
   if (!input.isTerminal()) return null;
 
@@ -79,7 +79,7 @@ export function promptSelect(
     output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
   }
 
-  if (clear) {
+  if (options.clear) {
     output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
     output.writeSync(CLR_ALL);
   }

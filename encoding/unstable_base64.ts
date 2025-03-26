@@ -147,7 +147,9 @@ export function encodeRawBase64(
   format: Base64Format = "Base64",
 ): number {
   const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) throw new RangeError("Buffer too small");
+  if (max > buffer.length - o) {
+    throw new RangeError("Cannot encode buffer as base64: Buffer too small");
+  }
   o = encode(buffer, i, o, alphabet[format], padding);
   if (format === "Base64Url") {
     i = buffer.indexOf(padding, o - 2);
@@ -183,15 +185,13 @@ export function encodeRawBase64(
  * ```
  */
 export function decodeBase64(
-  input: string,
+  input: string | Uint8Array_,
   format: Base64Format = "Base64",
 ): Uint8Array_ {
-  const output = new TextEncoder().encode(input) as Uint8Array_;
-  return output
-    .subarray(
-      0,
-      decode(output, 0, 0, rAlphabet[format], padding),
-    );
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  }
+  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
 }
 
 /**
@@ -237,7 +237,7 @@ export function decodeRawBase64(
 ): number {
   if (i < o) {
     throw new RangeError(
-      "Input (i) must be greater than or equal to output (o)",
+      "Cannot decode buffer as base64: Input (i) must be greater than or equal to output (o)",
     );
   }
   return decode(buffer, i, o, rAlphabet[format], padding);
