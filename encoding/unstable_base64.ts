@@ -130,13 +130,13 @@ export function encodeBase64Into(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const min = calcBase64Size(input.length);
+  const min = calcBase64Size((input as Uint8Array_).length);
   if (output.length < min) {
     throw new RangeError("Cannot encode input as base64: Output too small");
   }
   output = output.subarray(0, min);
-  const i = min - input.length;
-  output.set(input, i);
+  const i = min - (input as Uint8Array_).length;
+  output.set(input as Uint8Array_, i);
   const o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
     const i = output.indexOf(padding, o - 2);

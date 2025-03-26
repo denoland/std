@@ -114,13 +114,13 @@ export function encodeHexInto(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const min = calcHexSize(input.length);
+  const min = calcHexSize((input as Uint8Array_).length);
   if (output.length < min) {
     throw new RangeError("Cannot encode input as hex: Output too small");
   }
   output = output.subarray(0, min);
-  const i = min - input.length;
-  output.set(input, i);
+  const i = min - (input as Uint8Array_).length;
+  output.set(input as Uint8Array_, i);
   return encode(output, i, 0, alphabet);
 }
 
