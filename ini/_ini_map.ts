@@ -73,8 +73,8 @@ export class IniMap {
    *
    * @param formatting Optional formatting options when printing an INI file.
    */
-  constructor(formatting?: FormattingOptions) {
-    this.#formatting = this.#cleanFormatting(formatting);
+  constructor(formatting: FormattingOptions = {}) {
+    this.#formatting = formatting;
   }
 
   /**
@@ -226,14 +226,6 @@ export class IniMap {
     }
 
     yield line;
-  }
-
-  #cleanFormatting(options?: FormattingOptions): FormattingOptions {
-    return Object.fromEntries(
-      Object.entries(options ?? {}).filter(([key]) =>
-        FormattingKeys.includes(key as keyof FormattingOptions)
-      ),
-    );
   }
 
   /**
@@ -479,13 +471,6 @@ const LineOp = {
   Del: -1,
   Add: 1,
 } as const;
-const DummyFormatting: Required<FormattingOptions> = {
-  lineBreak: "\n",
-  pretty: false,
-};
-const FormattingKeys = Object.keys(
-  DummyFormatting,
-) as (keyof FormattingOptions)[];
 
 interface LineComment {
   type: "comment";
