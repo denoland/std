@@ -28,12 +28,13 @@ export interface StringifyOptions {
 
 export type { ReplacerFunction };
 
-const isObject = (val: unknown): val is Record<string, unknown> =>
-  typeof val === "object" && val !== null;
+function isPlainObject(object: unknown): object is object {
+  return Object.prototype.toString.call(object) === "[object Object]";
+}
 
 const sort = ([_a, valA]: [string, unknown], [_b, valB]: [string, unknown]) => {
-  if (isObject(valA)) return 1;
-  if (isObject(valB)) return -1;
+  if (isPlainObject(valA)) return 1;
+  if (isPlainObject(valB)) return -1;
   return 0;
 };
 
@@ -114,7 +115,7 @@ export function stringify(
 
   const lines = [];
   for (const [key, value] of entries) {
-    if (isObject(value)) {
+    if (isPlainObject(value)) {
       const sectionName = key;
       lines.push(`[${sectionName}]`);
       for (const [key, val] of Object.entries(value)) {
