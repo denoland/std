@@ -51,6 +51,10 @@ export type ReviverFunction = (
 
 const ASSIGNMENT_MARK = "=";
 
+function isPlainObject(object: unknown): object is object {
+  return Object.prototype.toString.call(object) === "[object Object]";
+}
+
 /**
  * Class implementation for fine control of INI data structures.
  */
@@ -281,19 +285,17 @@ export class IniMap {
   ): IniMap {
     const ini = new IniMap(formatting);
     if (typeof input === "object" && input !== null) {
-      const isRecord = (val: unknown): val is IniSection =>
-        typeof val === "object" && val !== null;
       const sort = (
         [_a, valA]: [string, unknown],
         [_b, valB]: [string, unknown],
       ) => {
-        if (isRecord(valA)) return 1;
-        if (isRecord(valB)) return -1;
+        if (isPlainObject(valA)) return 1;
+        if (isPlainObject(valB)) return -1;
         return 0;
       };
 
       for (const [key, val] of Object.entries(input).sort(sort)) {
-        if (isRecord(val)) {
+        if (isPlainObject(val)) {
           for (const [sectionKey, sectionValue] of Object.entries(val)) {
             ini.set(key, sectionKey, sectionValue);
           }
