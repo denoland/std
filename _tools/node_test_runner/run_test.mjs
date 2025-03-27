@@ -54,6 +54,7 @@ import "../../fs/unstable_link_test.ts";
 import "../../fs/unstable_make_temp_dir_test.ts";
 import "../../fs/unstable_make_temp_file_test.ts";
 import "../../fs/unstable_mkdir_test.ts";
+import "../../fs/unstable_open_test.ts";
 import "../../fs/unstable_read_dir_test.ts";
 import "../../fs/unstable_read_file_test.ts";
 import "../../fs/unstable_read_link_test.ts";
