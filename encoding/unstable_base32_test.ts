@@ -3,10 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcBase32Size,
+  calcSizeBase32,
   decodeBase32,
   encodeBase32,
-  encodeBase32Into,
+  encodeIntoBase32,
 } from "./unstable_base32.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string, string][] = [
@@ -116,11 +116,11 @@ Deno.test("encodeBase32Into()", () => {
       ] as const
     ) {
       const buffer = new Uint8Array(
-        prefix.length + calcBase32Size(input.byteLength),
+        prefix.length + calcSizeBase32(input.byteLength),
       );
       buffer.set(prefix);
 
-      encodeBase32Into(
+      encodeIntoBase32(
         input,
         buffer.subarray(prefix.length),
         format,
@@ -137,13 +137,13 @@ Deno.test("encodeBase32Into() with too small buffer", () => {
 
     for (const format of ["Base32", "Base32Hex", "Base32Crockford"] as const) {
       const buffer = new Uint8Array(
-        prefix.length + calcBase32Size(input.byteLength) - 2,
+        prefix.length + calcSizeBase32(input.byteLength) - 2,
       );
       buffer.set(prefix);
 
       assertThrows(
         () =>
-          encodeBase32Into(
+          encodeIntoBase32(
             input,
             buffer.subarray(prefix.length),
             format,

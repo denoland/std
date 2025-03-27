@@ -20,12 +20,12 @@ new TextEncoder()
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcHexSize } from "@std/encoding/unstable-hex";
+ * import { calcSizeHex } from "@std/encoding/unstable-hex";
  *
- * assertEquals(calcHexSize(1), 2);
+ * assertEquals(calcSizeHex(1), 2);
  * ```
  */
-export function calcHexSize(originalSize: number): number {
+export function calcSizeHex(originalSize: number): number {
   return originalSize * 2;
 }
 

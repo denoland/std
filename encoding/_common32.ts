@@ -36,12 +36,12 @@ export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcBase32Size } from "@std/encoding/unstable-base32";
+ * import { calcSizeBase32 } from "@std/encoding/unstable-base32";
  *
- * assertEquals(calcBase32Size(1), 8);
+ * assertEquals(calcSizeBase32(1), 8);
  * ```
  */
-export function calcBase32Size(rawSize: number): number {
+export function calcSizeBase32(rawSize: number): number {
   return ((rawSize + 4) / 5 | 0) * 8;
 }
 

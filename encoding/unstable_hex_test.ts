@@ -3,10 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcHexSize,
+  calcSizeHex,
   decodeHex,
   encodeHex,
-  encodeHexInto,
+  encodeIntoHex,
 } from "./unstable_hex.ts";
 
 const inputOutput: [string | ArrayBuffer, string][] = [
@@ -44,11 +44,11 @@ Deno.test("encodeHexInto()", () => {
     if (typeof input === "string") continue;
 
     const buffer = new Uint8Array(
-      prefix.length + calcHexSize(input.byteLength),
+      prefix.length + calcSizeHex(input.byteLength),
     );
     buffer.set(prefix);
 
-    encodeHexInto(
+    encodeIntoHex(
       input,
       buffer.subarray(prefix.length),
     );
@@ -62,14 +62,14 @@ Deno.test("encodeHexInto() with too small buffer", () => {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
     const buffer = new Uint8Array(
-      prefix.length + calcHexSize(input.byteLength) - 2,
+      prefix.length + calcSizeHex(input.byteLength) - 2,
     );
     buffer.set(prefix);
     buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
     assertThrows(
       () =>
-        encodeHexInto(
+        encodeIntoHex(
           input,
           buffer.subarray(prefix.length),
         ),

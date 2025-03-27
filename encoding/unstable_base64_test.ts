@@ -3,10 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcBase64Size,
+  calcSizeBase64,
   decodeBase64,
   encodeBase64,
-  encodeBase64Into,
+  encodeIntoBase64,
 } from "./unstable_base64.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string][] = [
@@ -65,11 +65,11 @@ Deno.test("encodeBase64Into()", () => {
       ] as const
     ) {
       const buffer = new Uint8Array(
-        prefix.length + calcBase64Size(input.byteLength),
+        prefix.length + calcSizeBase64(input.byteLength),
       );
       buffer.set(prefix);
 
-      const o = prefix.length + encodeBase64Into(
+      const o = prefix.length + encodeIntoBase64(
         input,
         buffer.subarray(prefix.length),
         format,
@@ -86,13 +86,13 @@ Deno.test("encodeBase64Into() with too small buffer", () => {
 
     for (const format of ["Base64", "Base64Url"] as const) {
       const buffer = new Uint8Array(
-        prefix.length + calcBase64Size(input.byteLength) - 2,
+        prefix.length + calcSizeBase64(input.byteLength) - 2,
       );
       buffer.set(prefix);
 
       assertThrows(
         () =>
-          encodeBase64Into(
+          encodeIntoBase64(
             input,
             buffer.subarray(prefix.length),
             format,

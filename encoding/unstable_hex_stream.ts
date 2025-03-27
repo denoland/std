@@ -29,7 +29,7 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  calcHexSize,
+  calcSizeHex,
   decode,
   encode,
   rAlphabet,
@@ -82,7 +82,7 @@ export class HexEncoderStream<T extends "string" | "bytes">
     }();
     super({
       transform(chunk, controller) {
-        const [output, i] = detach(chunk, calcHexSize(chunk.length));
+        const [output, i] = detach(chunk, calcSizeHex(chunk.length));
         encode(output, i, 0, alphabet);
         controller.enqueue(decode(output));
       },

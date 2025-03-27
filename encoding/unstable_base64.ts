@@ -26,13 +26,13 @@ export type { Uint8Array_ };
 import {
   alphabet,
   type Base64Format,
-  calcBase64Size,
+  calcSizeBase64,
   decode,
   encode,
   padding,
   rAlphabet,
 } from "./_common64.ts";
-export { type Base64Format, calcBase64Size };
+export { type Base64Format, calcSizeBase64 };
 import { detach } from "./_common_detach.ts";
 
 /**
@@ -77,7 +77,7 @@ export function encodeBase64(
   }
   let [output, i] = detach(
     input as Uint8Array_,
-    calcBase64Size((input as Uint8Array_).length),
+    calcSizeBase64((input as Uint8Array_).length),
   );
   let o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
@@ -88,7 +88,7 @@ export function encodeBase64(
 }
 
 /**
- * `encodeBase64Into` takes an input source and encodes it as base64 into the
+ * `encodeIntoBase64` takes an input source and encodes it as base64 into the
  * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -102,17 +102,17 @@ export function encodeBase64(
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import {
- *   calcBase64Size,
+ *   calcSizeBase64,
  *   encodeBase64,
- *   encodeBase64Into,
+ *   encodeIntoBase64,
  * } from "@std/encoding/unstable-base64";
  *
  * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
- * const output = new Uint8Array(prefix.length + calcBase64Size(input.length));
+ * const output = new Uint8Array(prefix.length + calcSizeBase64(input.length));
  *
  * let o = new TextEncoder().encodeInto(prefix, output).written;
- * o += encodeBase64Into(input, output.subarray(o), "Base64Url");
+ * o += encodeIntoBase64(input, output.subarray(o), "Base64Url");
  * assertEquals(
  *   new TextDecoder().decode(output.subarray(0, o)),
  *   "data:url/fake," +
@@ -120,7 +120,7 @@ export function encodeBase64(
  * );
  * ```
  */
-export function encodeBase64Into(
+export function encodeIntoBase64(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,
   format: Base64Format = "Base64",
@@ -130,7 +130,7 @@ export function encodeBase64Into(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const min = calcBase64Size((input as Uint8Array_).length);
+  const min = calcSizeBase64((input as Uint8Array_).length);
   if (output.length < min) {
     throw new RangeError("Cannot encode input as base64: Output too small");
   }

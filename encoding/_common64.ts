@@ -34,12 +34,12 @@ export type Base64Format = "Base64" | "Base64Url";
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcBase64Size } from "@std/encoding/unstable-base64";
+ * import { calcSizeBase64 } from "@std/encoding/unstable-base64";
  *
- * assertEquals(calcBase64Size(1), 4);
+ * assertEquals(calcSizeBase64(1), 4);
  * ```
  */
-export function calcBase64Size(originalSize: number): number {
+export function calcSizeBase64(originalSize: number): number {
   return ((originalSize + 2) / 3 | 0) * 4;
 }
 

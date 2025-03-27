@@ -30,7 +30,7 @@ export type { Uint8Array_ };
 import {
   alphabet,
   type Base32Format,
-  calcBase32Size,
+  calcSizeBase32,
   decode,
   encode,
   padding,
@@ -89,7 +89,7 @@ export class Base32EncoderStream<T extends "string" | "bytes">
       transform(chunk, controller) {
         let [output, i] = detach(
           chunk,
-          calcBase32Size(remainder + chunk.length),
+          calcSizeBase32(remainder + chunk.length),
         );
         if (remainder) {
           i -= remainder;
@@ -110,7 +110,7 @@ export class Base32EncoderStream<T extends "string" | "bytes">
         if (remainder) {
           const [output, i] = detach(
             push.subarray(0, remainder),
-            calcBase32Size(remainder),
+            calcSizeBase32(remainder),
           );
           encode(output, i, 0, abc, padding);
           controller.enqueue(decode(output));

@@ -26,13 +26,13 @@ export type { Uint8Array_ };
 import {
   alphabet,
   type Base32Format,
-  calcBase32Size,
+  calcSizeBase32,
   decode,
   encode,
   padding,
   rAlphabet,
 } from "./_common32.ts";
-export { type Base32Format, calcBase32Size };
+export { type Base32Format, calcSizeBase32 };
 import { detach } from "./_common_detach.ts";
 
 /**
@@ -83,14 +83,14 @@ export function encodeBase32(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcBase32Size((input as Uint8Array_).length),
+    calcSizeBase32((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet[format], padding);
   return new TextDecoder().decode(output);
 }
 
 /**
- * `encodeBase32Into` takes an input source and encodes it as base32 into the
+ * `encodeIntoBase32` takes an input source and encodes it as base32 into the
  * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -104,17 +104,17 @@ export function encodeBase32(
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import {
- *   calcBase32Size,
+ *   calcSizeBase32,
  *   encodeBase32,
- *   encodeBase32Into,
+ *   encodeIntoBase32,
  * } from "@std/encoding/unstable-base32";
  *
  * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
- * const output = new Uint8Array(prefix.length + calcBase32Size(input.length));
+ * const output = new Uint8Array(prefix.length + calcSizeBase32(input.length));
  *
  * const o = new TextEncoder().encodeInto(prefix, output).written;
- * encodeBase32Into(input, output.subarray(o), "Base32");
+ * encodeIntoBase32(input, output.subarray(o), "Base32");
  * assertEquals(
  *   new TextDecoder().decode(output),
  *   "data:url/fake," +
@@ -122,7 +122,7 @@ export function encodeBase32(
  * );
  * ```
  */
-export function encodeBase32Into(
+export function encodeIntoBase32(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,
   format: Base32Format = "Base32",
@@ -132,7 +132,7 @@ export function encodeBase32Into(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const min = calcBase32Size((input as Uint8Array_).length);
+  const min = calcSizeBase32((input as Uint8Array_).length);
   if (output.length < min) {
     throw new RangeError("Cannot encode input as base32: Output too small");
   }

@@ -25,12 +25,12 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  calcHexSize,
+  calcSizeHex,
   decode,
   encode,
   rAlphabet,
 } from "./_common16.ts";
-export { calcHexSize };
+export { calcSizeHex };
 import { detach } from "./_common_detach.ts";
 
 /**
@@ -67,14 +67,14 @@ export function encodeHex(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcHexSize((input as Uint8Array_).length),
+    calcSizeHex((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet);
   return new TextDecoder().decode(output);
 }
 
 /**
- * `encodeHexInto` takes an input source and encodes it as hex into the
+ * `encodeIntoHex` takes an input source and encodes it as hex into the
  * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -87,17 +87,17 @@ export function encodeHex(
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import {
- *   calcHexSize,
+ *   calcSizeHex,
  *   encodeHex,
- *   encodeHexInto,
+ *   encodeIntoHex,
  * } from "@std/encoding/unstable-hex";
  *
  * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
- * const output = new Uint8Array(prefix.length + calcHexSize(input.length));
+ * const output = new Uint8Array(prefix.length + calcSizeHex(input.length));
  *
  * const o = new TextEncoder().encodeInto(prefix, output).written;
- * encodeHexInto(input, output.subarray(o));
+ * encodeIntoHex(input, output.subarray(o));
  * assertEquals(
  *   new TextDecoder().decode(output),
  *   "data:url/fake," +
@@ -105,7 +105,7 @@ export function encodeHex(
  * );
  * ```
  */
-export function encodeHexInto(
+export function encodeIntoHex(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,
 ): number {
@@ -114,7 +114,7 @@ export function encodeHexInto(
   } else if (input instanceof ArrayBuffer) {
     input = new Uint8Array(input);
   }
-  const min = calcHexSize((input as Uint8Array_).length);
+  const min = calcSizeHex((input as Uint8Array_).length);
   if (output.length < min) {
     throw new RangeError("Cannot encode input as hex: Output too small");
   }

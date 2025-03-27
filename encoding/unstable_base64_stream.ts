@@ -30,7 +30,7 @@ export type { Uint8Array_ };
 import {
   alphabet,
   type Base64Format,
-  calcBase64Size,
+  calcSizeBase64,
   decode,
   encode,
   padding,
@@ -89,7 +89,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
       transform(chunk, controller) {
         let [output, i] = detach(
           chunk,
-          calcBase64Size(remainder + chunk.length),
+          calcSizeBase64(remainder + chunk.length),
         );
         if (remainder) {
           i -= remainder;
@@ -110,7 +110,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
         if (remainder) {
           const [output, i] = detach(
             push.subarray(0, remainder),
-            calcBase64Size(remainder),
+            calcSizeBase64(remainder),
           );
           let o = encode(output, i, 0, abc, padding);
           if (options.format === "Base64Url") {
