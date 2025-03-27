@@ -110,6 +110,7 @@ export interface ProgressBarOptions {
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
  * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * bar.start();
  *
  * for await (const buffer of gen) {
  *   bar.add(buffer.length);
@@ -131,6 +132,7 @@ export interface ProgressBarOptions {
  *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
  *   },
  * });
+ * bar.start();
  *
  * for (const x of Array(100)) {
  *   bar.add(1);
@@ -143,10 +145,10 @@ export class ProgressBar {
   #unit: string;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
-  #id: number;
-  #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
+  #intervalId?: number;
+  #startTime: number = 0;
+  #lastTime: number = 0;
+  #lastValue: number = 0;
 
   #value: number;
   #max: number;
@@ -204,9 +206,9 @@ export class ProgressBar {
     const stream = new TextEncoderStream();
     stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
-      .catch(() => clearInterval(this.#id));
+      .catch(() => clearInterval(this.#intervalId));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 1000);
+    this.#intervalId = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.#value;
@@ -260,6 +262,25 @@ export class ProgressBar {
   }
 
   /**
+   * Starts the progress bar.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const bar = new ProgressBar(Deno.stdout.writable, { max: 1 });
+   * bar.start();
+   * ```
+   */
+  start(): void {
+    if (this.#intervalId) return;
+    this.#intervalId = setInterval(() => this.#print(), 200);
+    this.#startTime = performance.now();
+    this.#lastTime = this.#startTime;
+    this.#lastValue = this.#value;
+  }
+
+  /**
    * Ends the progress bar and cleans up any lose ends.
    *
    * @example Usage
@@ -271,7 +292,7 @@ export class ProgressBar {
    * ```
    */
   async end(): Promise<void> {
-    clearInterval(this.#id);
+    clearInterval(this.#intervalId);
     await this.#print()
       .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
       .then(() => this.#writer.close())
