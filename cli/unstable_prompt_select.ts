@@ -4,14 +4,18 @@
 export interface PromptSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
+
+  /** The number of lines to be visible at once */
+  visibleLines?: number;
+
+  /** The string to indicate the selected item */
+  indicator?: string;
 }
 
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
-const INDICATOR = "❯";
-const PADDING = " ".repeat(INDICATOR.length);
 
 const input = Deno.stdin;
 const output = Deno.stdout;
@@ -34,7 +38,14 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ```ts ignore
  * import { promptSelect } from "@std/cli/prompt-select";
  *
- * const browser = promptSelect("Please select a browser:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browser = promptSelect("What country are you from?", [
+ *   "Brazil",
+ *   "United States",
+ *   "Japan",
+ *   "China",
+ *   "Canada",
+ *   "Spain",
+ * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
 export function promptSelect(
@@ -44,8 +55,13 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
+  const { visibleLines = 5, indicator = "❯" } = options;
+  const PADDING = " ".repeat(indicator.length);
+
   const length = values.length;
   let selectedIndex = 0;
+  let showIndex = 0;
+  let offset = 0;
 
   input.setRaw(true);
   output.writeSync(HIDE_CURSOR);
@@ -55,8 +71,9 @@ export function promptSelect(
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
-    for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : PADDING;
+    const chunk = values.slice(offset, visibleLines + offset);
+    for (const [index, value] of chunk.entries()) {
+      const start = index === showIndex ? indicator : PADDING;
       output.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
     const n = input.readSync(buffer);
@@ -68,19 +85,32 @@ export function promptSelect(
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
       case ARROW_UP:
-        selectedIndex = (selectedIndex - 1 + length) % length;
+        if (selectedIndex > 0) {
+          selectedIndex--;
+          if (selectedIndex < offset) {
+            offset--;
+          }
+        }
+        showIndex = Math.max(showIndex - 1, 0);
         break;
       case ARROW_DOWN:
-        selectedIndex = (selectedIndex + 1) % length;
+        if (selectedIndex < length - 1) {
+          selectedIndex++;
+          if (selectedIndex >= offset + visibleLines) {
+            offset++;
+          }
+          showIndex = Math.min(showIndex + 1, visibleLines - 1);
+        }
         break;
       case CR:
         break loop;
     }
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
+    output.writeSync(CLR_ALL);
   }
 
   if (options.clear) {
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
     output.writeSync(CLR_ALL);
   }
 
