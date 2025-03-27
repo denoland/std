@@ -55,7 +55,7 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
-  const { visibleLines = 5, indicator = "❯" } = options;
+  const { visibleLines = 3, indicator = "❯" } = options;
   const PADDING = " ".repeat(indicator.length);
 
   const length = values.length;
