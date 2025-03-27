@@ -70,6 +70,14 @@ Deno.test({
       parse("2019-01-03", "yyyy-MM-dd"),
       new Date(2019, 0, 3),
     );
+    assertEquals(
+      parse("19-01-03", "yy-MM-dd"),
+      new Date(2019, 0, 3),
+    );
+    assertEquals(
+      parse("3-1-19", "d-M-yy"),
+      new Date(2019, 0, 3),
+    );
   },
 });
 
@@ -136,6 +144,12 @@ Deno.test("parse(): The date is 2021-12-31", () => {
   assertEquals(
     parse("31", "dd"),
     new Date(2021, 11, 31),
+  );
+
+  // Ensure 2021-02-29 (which does not exist) is not an intermediate result
+  assertEquals(
+    parse("29-02-2020", "dd-MM-yyyy"),
+    new Date(2020, 1, 29),
   );
 });
 
