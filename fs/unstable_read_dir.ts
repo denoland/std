@@ -45,14 +45,14 @@ export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
 
 /**
  * Synchronously reads the directory given by `path` and returns an iterable
- * of {@linkcode Deno.DirEntry}. The order of entries is not guaranteed.
+ * of {@linkcode DirEntry}. The order of entries is not guaranteed.
  *
  * Throws Error if `path` is not a directory.
  *
  * Requires `allow-read` permission.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { readDirSync } from "@std/fs/unstable-read-dir";
  *
  * for (const dirEntry of readDirSync("/")) {
@@ -61,11 +61,12 @@ export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
  * ```
  *
  * @tags allow-read
+ * @category File System
  *
- * @param path The path to the directory.
- * @returns An iterator object of `DirEntry` elements.
+ * @param path The path to the directory to read.
+ * @returns An iterable of {@linkcode DirEntry}.
  */
-export function* readDirSync(path: string | URL): IteratorObject<DirEntry> {
+export function* readDirSync(path: string | URL): Iterable<DirEntry> {
   if (isDeno) {
     return yield* Deno.readDirSync(path);
   } else {
