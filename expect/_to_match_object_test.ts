@@ -119,16 +119,16 @@ Deno.test("expect().toMatchObject() throws the correct error messages", () => {
   {
     const e = assertThrows(
       () => expect({ a: 1 }).toMatchObject({ a: 2 }),
-      Error,
+      AssertionError,
     );
-    assertNotMatch(e.message, /NOT/);
+    assertNotMatch(e.message, /not to be/);
   }
   {
     const e = assertThrows(
       () => expect({ a: 1 }).not.toMatchObject({ a: 1 }),
-      Error,
+      AssertionError,
     );
-    assertMatch(e.message, /NOT/);
+    assertMatch(e.message, /not to be/);
   }
 });
 

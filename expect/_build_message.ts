@@ -42,9 +42,9 @@ export function buildNotEqualErrorMessage<T>(
   expected: T,
   options: EqualErrorMessageOptions = {},
 ): string {
-  const { msg } = options;
-  const actualString = String(actual);
-  const expectedString = String(expected);
+  const { formatter = format, msg } = options;
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
 
   const msgPrefix = msg ? `${msg}: ` : "";
   return `${msgPrefix}Expected actual: ${actualString} not to be: ${expectedString}.`;
