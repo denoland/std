@@ -60,7 +60,7 @@ export type SortByOptions = {
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
   options?: SortByOptions,
 ): T[];
 /**
@@ -98,7 +98,7 @@ export function sortBy<T>(
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: (el: T) => string,
+  selector: (el: T, index: number) => string,
   options?: SortByOptions,
 ): T[];
 /**
@@ -138,7 +138,7 @@ export function sortBy<T>(
 
 export function sortBy<T>(
   array: readonly T[],
-  selector: (el: T) => bigint,
+  selector: (el: T, index: number) => bigint,
   options?: SortByOptions,
 ): T[];
 /**
@@ -177,16 +177,16 @@ export function sortBy<T>(
  */
 export function sortBy<T>(
   array: readonly T[],
-  selector: (el: T) => Date,
+  selector: (el: T, index: number) => Date,
   options?: SortByOptions,
 ): T[];
 export function sortBy<T>(
   array: readonly T[],
   selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => string)
+    | ((el: T, index: number) => bigint)
+    | ((el: T, index: number) => Date),
   options?: SortByOptions,
 ): T[] {
   const len = array.length;
@@ -196,7 +196,7 @@ export function sortBy<T>(
 
   array.forEach((element, index) => {
     indexes[index] = index;
-    const selected = selector(element);
+    const selected = selector(element, index);
     selectors[index] = Number.isNaN(selected) ? null : selected;
   });
 
