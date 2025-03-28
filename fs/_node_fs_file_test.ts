@@ -8,7 +8,7 @@ import { readFile, readFileSync } from "./unstable_read_file.ts";
 import { readTextFile } from "./unstable_read_text_file.ts";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getNodeProcess, isDeno } from "./_utils.ts";
+import { getNodeProcess, getNodeTty } from "./_utils.ts";
 import { NodeFsFile } from "./_node_fs_file.ts";
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
@@ -354,12 +354,11 @@ Deno.test("FsFile object throws with Error when synchronously reading from a dir
   fh.close();
 });
 
-Deno.test("FsFile objects can determine if the file handle is a TTY (Terminal)", async () => {
-  if (isDeno) {
-    assert(Deno.stdin.isTerminal());
-  } else {
-    const fh = new NodeFsFile(getNodeProcess().stdin.fd);
-    assert(fh.isTerminal());
+Deno.test("FsFile object can determine if the file handle is a TTY (Terminal)", async () => {
+  {
+    const fd = getNodeProcess().stdout.fd;
+    const fh = new NodeFsFile(fd);
+    assertEquals(!fh.isTerminal(), !getNodeTty().isatty(fd));
   }
 
   {
