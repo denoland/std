@@ -1,3 +1,192 @@
+### 2025.03.25
+
+#### @std/assert 1.0.12 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/async 1.0.12 (patch)
+
+- test(async): fix flaky waitFor test (#6467)
+- test(async): use FakeTime in pooledMap testing (#6468)
+
+#### @std/cache 0.2.0 (minor)
+
+- BREAKING(cache/unstable): configurable cache ejection of thrown or rejected
+  values, change cache type (#6417) (#6419)
+
+#### @std/cbor 0.1.7 (patch)
+
+- feat(cbor): add support for bignums (#6458)
+- fix(cbor): bug in preallocating space for string encoding (#6459)
+
+#### @std/cli 1.0.15 (patch)
+
+- BREAKING(cli/unstable): remove trailing whitespaces from
+  `ProgressBarFormatter` properties (#6502)
+- refactor(cli/unstable): make `ProgressBar.#print()` better readable (#6503)
+- refactor(cli/unstable): replace `ProgressBar` `#options` property with actual
+  properties (#6497)
+
+#### @std/encoding 1.0.8 (patch)
+
+- BREAKING(encoding/unstable): merge Base32Hex(Encoder|Decoder)Stream to
+  Base32(Encoder|Decoder)Stream (#6452)
+- BREAKING(encoding/unstable): merge base32 variations, add format option to
+  encodeBase32 and decodeBase32 (#6471)
+- BREAKING(encoding/unstable): merge Base64Url(Encoder|Decoder)Stream to
+  Base64(Encoder|Decoder)Stream (#6451)
+- feat(encoding/unstable): add options argument to hex streaming & performance
+  (#6453)
+- feat(encoding/unstable): add encode/decodeRawHex and rewrite underlying code
+  (#6480)
+- feat(encoding/unstable): add format option to encodeBase64 and decodeBase64
+  (#6457)
+- fix(encoding): decoding base64 with invalid bytes >= 128 (#6477)
+- fix(encoding/unstable): encodeBase32 missing default option for format (#6476)
+- perf(encoding): improve hex encode/decode performance (#6499)
+- perf(encoding): improve base32 encode/decode performance (#6479)
+- perf(encoding): improve base64 encode/decode performance (#6461)
+- refactor(encoding): align error messages (#6504)
+- chore(encoding): extract streaming textEncoder/Decoder (#6505)
+- chore(encoding): remove reductant JSDoc in base64 stream (#6478)
+
+#### @std/expect 1.0.14 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/front-matter 1.0.9 (patch)
+
+- fix(front-matter): handle BOM when recognizing format (#6507)
+- fix(front-matter): handle empty frontMatter data (#6481)
+- refactor(front-matter): inline `recognize()` (#6466)
+- test(front-matter): simplify asserts (#6475)
+- test(front-matter): remove double tests in `any_test.ts` (#6474)
+- test(front-matter): inline test data (#6465)
+
+#### @std/fs 1.0.15 (patch)
+
+- feat(fs/unstable): add makeTempFile and makeTempFileSync (#6469)
+- feat(fs/unstable): add writeTextFile and writeTextFileSync (#6463)
+- feat(fs/unstable): add writeFile and writeFileSync (#6444)
+
+#### @std/ini 1.0.0-rc.6 (prerelease)
+
+- refactor(ini): limit INI value type to possible allowed INI values. (#6495)
+
+#### @std/internal 1.0.6 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/testing 1.0.10 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/text 1.0.12 (patch)
+
+- feat(text/unstable): add dedent (#6500)
+
+#### @std/toml 1.0.3 (patch)
+
+- fix(toml): handle hexadecimal, octal, and binary numbers (#6496)
+- test(toml): inline test data (#6473)
+
+#### @std/uuid 1.0.6 (patch)
+
+- feat(uuid/unstable): implement support for UUID V6 (#6415)
+
+#### @std/webgpu 0.224.8 (patch)
+
+- chore(webgpu): ignore createTextureWithData() test case on windows (#6493)
+
+### 2025.03.04
+
+#### @std/async 1.0.11 (patch)
+
+- test(async/unstable): add `retry()` tests (#6423)
+- test(async): fix flaky `pooledMap()` test (#6412)
+- test(async/unstable): fix flaky `waitFor()` test (#6413)
+
+#### @std/cli 1.0.14 (patch)
+
+- fix(cli/unstable): update interval in ProgressBar (#6402)
+- refactor(cli/unstable): clean up `start` end `stop` methods of `Spinner`, add
+  test cases for multiple start/stop calls (#6420)
+- test(cli): fix flaky spinner test (#6404)
+- test(cli/unstable): make `ProgressBar` tests run faster (#6411)
+
+#### @std/fmt 1.0.6 (patch)
+
+- docs(fmt): fix `printf` module doc (#6424)
+
+#### @std/front-matter 1.0.8 (patch)
+
+- perf(front-matter): remove regexp `m` flags, reduce unnecessary string
+  operations (#6393)
+- refactor(front-matter): cleanup `_shared.ts` (#6418)
+
+#### @std/fs 1.0.14 (patch)
+
+- feat(fs/unstable): add `remove` and `removeSync` api. (#6438)
+- feat(fs/unstable): add umask (#6454)
+- feat(fs/unstable): add utime and utimeSync (#6446)
+- feat(fs/unstable): add mkdir and mkdirSync (#6436)
+- feat(fs/unstable): add `copyFile` and `copyFileSync` (#6425)
+- feat(fs/unstable): add truncate and truncateSync (#6416)
+- feat(fs/unstable): add readTextFileSync and readTextFile (#6405)
+- fix(fs/unstable): fix node.js test runner, fix readTextFile and copyFile in
+  Node.js (#6441)
+- test(fs/unstable): remove windows specific paths and fix ci (#6448)
+- test(fs/unstable): add test case for reading text file with BOM (#6431)
+
+#### @std/tar 0.1.6 (patch)
+
+- BREAKING(tar/unstable): fix handling of mode, uid, and gid (#6440)
+
+#### @std/text 1.0.11 (patch)
+
+- feat(text/unstable): add `reverse` function (#6410)
+
+#### @std/uuid 1.0.5 (patch)
+
+- fix(uuid): handle `rng` correctly in uuid v1 (#6432)
+
+### 2025.02.14a
+
+#### @std/front-matter 1.0.7 (patch)
+
+- refactor(front-matter): use relative path for importing module in the same
+  package (#6401)
+
+#### @std/fs 1.0.13 (patch)
+
+- docs(fs): add missing docs (#6400)
+
+### 2025.02.14
+
+#### @std/cli 1.0.13 (patch)
+
+- feat(cli/unstable): introduce `new ProgressBar()` & `new ProgressBarStream()`
+  (#6378)
+
+#### @std/front-matter 1.0.6 (patch)
+
+- refactor(front-matter): call `extract()` functions in `any.ts` (#6390)
+
+#### @std/fs 1.0.12 (patch)
+
+- feat(fs/unstable): add renameSync (#6396)
+- feat(fs/unstable): add readFile and readFileSync (#6394)
+- feat(fs/unstable): add makeTempDir and makeTempDirSync (#6391)
+- feat(fs/unstable): add rename (#6379)
+
+#### @std/semver 1.0.4 (patch)
+
+- refactor(semver): clean up `parseRange`, add missing tests (#6362)
+
 ### 2025.01.31
 
 #### @std/bytes 1.0.5 (patch)

@@ -139,8 +139,7 @@ export class Spinner {
 
   #interval: number;
   #color: Color | undefined;
-  #intervalId: number | undefined;
-  #active = false;
+  #intervalId: number | null = null;
   #output: typeof Deno.stdout | typeof Deno.stderr;
 
   /**
@@ -216,11 +215,10 @@ export class Spinner {
    * ```
    */
   start() {
-    if (this.#active || this.#output.writable.locked) {
+    if (this.#intervalId !== null || this.#output.writable.locked) {
       return;
     }
 
-    this.#active = true;
     let i = 0;
     const noColor = Deno.noColor;
 
@@ -260,10 +258,9 @@ export class Spinner {
    * ```
    */
   stop() {
-    if (this.#intervalId && this.#active) {
-      clearInterval(this.#intervalId);
-      this.#output.writeSync(LINE_CLEAR); // Clear the current line
-      this.#active = false;
-    }
+    if (this.#intervalId === null) return;
+    clearInterval(this.#intervalId);
+    this.#intervalId = null;
+    this.#output.writeSync(LINE_CLEAR); // Clear the current line
   }
 }

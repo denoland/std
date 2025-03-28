@@ -2,9 +2,6 @@
 // Copyright (c) 2014 Jameson Little. MIT License.
 // This module is browser compatible.
 
-import type { Uint8Array_ } from "./_types.ts";
-export type { Uint8Array_ };
-
 /**
  * Utilities for
  * {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6 | base32}
@@ -26,11 +23,46 @@ export type { Uint8Array_ };
  *
  * @module
  */
-import { decode, encode } from "./_base32_common.ts";
 
-const lookup: string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".split("");
-const revLookup: number[] = [];
-lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
+import { calcMax, decode, encode } from "./_common32.ts";
+import { detach } from "./_common_detach.ts";
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
+
+const padding = "=".charCodeAt(0);
+const alphabet = new TextEncoder()
+  .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+const rAlphabet = new Uint8Array(128).fill(32); //alphabet.length
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
+
+/**
+ * Converts data into a base32-encoded string.
+ *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
+ *
+ * @param data The data to encode.
+ * @returns The base32-encoded string.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeBase32 } from "@std/encoding/base32";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
+ * ```
+ */
+export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
+  if (typeof data === "string") {
+    data = new TextEncoder().encode(data) as Uint8Array_;
+  } else if (data instanceof ArrayBuffer) data = new Uint8Array(data).slice();
+  else data = data.slice();
+  const [output, i] = detach(
+    data as Uint8Array_,
+    calcMax((data as Uint8Array_).length),
+  );
+  encode(output, i, 0, alphabet, padding);
+  return new TextDecoder().decode(output);
+}
 
 /**
  * Decodes a base32-encoded string.
@@ -52,25 +84,13 @@ lookup.forEach((c, i) => (revLookup[c.charCodeAt(0)] = i));
  * ```
  */
 export function decodeBase32(b32: string): Uint8Array_ {
-  return decode(b32, lookup);
-}
-
-/**
- * Converts data into a base32-encoded string.
- *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
- *
- * @param data The data to encode.
- * @returns The base32-encoded string.
- *
- * @example Usage
- * ```ts
- * import { encodeBase32 } from "@std/encoding/base32";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(encodeBase32("6c60c0"), "GZRTMMDDGA======");
- * ```
- */
-export function encodeBase32(data: ArrayBuffer | Uint8Array | string): string {
-  return encode(data, lookup);
+  const output = new TextEncoder().encode(b32) as Uint8Array_;
+  if (output.length % 8) {
+    throw new TypeError(
+      `Invalid base32 string: length (${output.length}) must be a multiple of 8`,
+    );
+  }
+  // deno-lint-ignore no-explicit-any
+  return new Uint8Array((output.buffer as any)
+    .transfer(decode(output, 0, 0, rAlphabet, padding)));
 }

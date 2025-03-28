@@ -2,18 +2,22 @@
 // This module is browser compatible.
 
 /**
- * Utilities for encoding and decoding to and from base32 in a streaming manner.
+ * TransformStream classes to encode and decode to and from base32 data in a streaming manner.
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base32DecoderStream } from "@std/encoding/unstable-base32-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { encodeBase32 } from "@std/encoding/unstable-base32";
+ * import { Base32EncoderStream } from "@std/encoding/unstable-base32-stream";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["JBSWY3DPEBLW64TMMQQQ===="])
- *   .pipeThrough(new Base32DecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }));
  *
- * assertEquals(await toText(stream), "Hello World!");
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ * );
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -21,49 +25,87 @@
  * @module
  */
 
-import { decodeBase32, encodeBase32 } from "./base32.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
+import {
+  type Base32Format,
+  calcMax,
+  decodeRawBase32 as decode,
+  encodeRawBase32 as encode,
+} from "./unstable_base32.ts";
+import { detach } from "./_common_detach.ts";
+
+type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 /**
- * Converts a Uint8Array stream into a base32-encoded stream.
+ * Transforms a {@linkcode Uint8Array<ArrayBuffer>} stream into a base32 stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
+ * @typeParam T The type of the base32 stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32 } from "@std/encoding/base32";
+ * import { encodeBase32 } from "@std/encoding/unstable-base32";
  * import { Base32EncoderStream } from "@std/encoding/unstable-base32-stream";
- * import { toText } from "@std/streams/to-text";
+ * import { toText } from "@std/streams";
  *
- * const stream = ReadableStream.from(["Hello,", " world!"])
- *   .pipeThrough(new TextEncoderStream())
- *   .pipeThrough(new Base32EncoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }));
  *
- * assertEquals(await toText(stream), encodeBase32(new TextEncoder().encode("Hello, world!")));
+ * assertEquals(
+ *   await toText(readable),
+ *   encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ * );
  * ```
  */
-export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
-  constructor() {
-    let push = new Uint8Array(0);
+export class Base32EncoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    Uint8Array_,
+    T extends "bytes" ? Uint8Array_ : string
+  > {
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options of the base32 stream.
+   */
+  constructor(options: { format?: Base32Format; output?: T } = {}) {
+    const decode = function (): (input: Uint8Array_) => Expect<T> {
+      if (options.output === "bytes") return (x) => x as Expect<T>;
+      return (x) => decoder.decode(x) as Expect<T>;
+    }();
+    const push = new Uint8Array(4);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        const concat = new Uint8Array(push.length + chunk.length);
-        concat.set(push);
-        concat.set(chunk, push.length);
-
-        const remainder = -concat.length % 5;
-        controller.enqueue(
-          encodeBase32(concat.slice(0, remainder || undefined)),
+        let [output, i] = detach(chunk, calcMax(remainder + chunk.length));
+        if (remainder) {
+          i -= remainder;
+          output.set(push.subarray(0, remainder), i);
+        }
+        remainder = (output.length - i) % 5;
+        if (remainder) push.set(output.subarray(-remainder));
+        const o = encode(
+          output.subarray(0, -remainder || undefined),
+          i,
+          0,
+          options.format,
         );
-        push = remainder ? concat.slice(remainder) : new Uint8Array(0);
+        controller.enqueue(decode(output.subarray(0, o)));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(encodeBase32(push));
+        if (remainder) {
+          const [output, i] = detach(
+            push.subarray(0, remainder),
+            calcMax(remainder),
+          );
+          encode(output, i, 0, options.format);
+          controller.enqueue(decode(output));
         }
       },
     });
@@ -71,41 +113,77 @@ export class Base32EncoderStream extends TransformStream<Uint8Array, string> {
 }
 
 /**
- * Decodes a base32-encoded stream into a Uint8Array stream.
+ * Transforms a base32 stream into a {@link Uint8Array<ArrayBuffer>} stream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @see {@link https://www.rfc-editor.org/rfc/rfc4648.html#section-6}
+ * @typeParam T The type of the base32 stream.
  *
- * @example Usage
+ * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { Base32DecoderStream } from "@std/encoding/unstable-base32-stream";
- * import { toText } from "@std/streams/to-text";
+ * import {
+ *   Base32DecoderStream,
+ *   Base32EncoderStream,
+ * } from "@std/encoding/unstable-base32-stream";
+ * import { toBytes } from "@std/streams/unstable-to-bytes";
  *
- * const stream = ReadableStream.from(["JBSWY3DPEBLW64TMMQQQ===="])
- *   .pipeThrough(new Base32DecoderStream())
- *   .pipeThrough(new TextDecoderStream());
+ * const readable = (await Deno.open("./deno.lock"))
+ *   .readable
+ *   .pipeThrough(new Base32EncoderStream({ output: "string" }))
+ *   .pipeThrough(new Base32DecoderStream({ input: "string" }));
  *
- * assertEquals(await toText(stream), "Hello World!");
+ * assertEquals(
+ *   await toBytes(readable),
+ *   await Deno.readFile("./deno.lock"),
+ * );
  * ```
+ *
+ * @module
  */
-export class Base32DecoderStream extends TransformStream<string, Uint8Array_> {
-  constructor() {
-    let push = "";
+export class Base32DecoderStream<T extends "string" | "bytes">
+  extends TransformStream<
+    T extends "bytes" ? Uint8Array_ : string,
+    Uint8Array_
+  > {
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options of the base32 stream.
+   */
+  constructor(options: { format?: Base32Format; input?: T } = {}) {
+    const encode = function (): (input: Expect<T>) => Uint8Array_ {
+      if (options.input === "bytes") return (x) => x as Uint8Array_;
+      return (x) => encoder.encode(x as string) as Uint8Array_;
+    }();
+    const push = new Uint8Array(7);
+    let remainder = 0;
     super({
       transform(chunk, controller) {
-        push += chunk;
-        if (push.length < 8) {
-          return;
+        let output = encode(chunk);
+        if (remainder) {
+          output = detach(output, remainder + output.length)[0];
+          output.set(push.subarray(0, remainder));
         }
-        const remainder = -push.length % 8;
-        controller.enqueue(decodeBase32(push.slice(0, remainder || undefined)));
-        push = remainder ? chunk.slice(remainder) : "";
+        remainder = output.length % 8;
+        if (remainder) push.set(output.subarray(-remainder));
+        const o = decode(
+          output.subarray(0, -remainder || undefined),
+          0,
+          0,
+          options.format,
+        );
+        controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
-        if (push.length) {
-          controller.enqueue(decodeBase32(push));
+        if (remainder) {
+          const o = decode(
+            push.subarray(0, remainder),
+            0,
+            0,
+            options.format,
+          );
+          controller.enqueue(push.subarray(0, o));
         }
       },
     });

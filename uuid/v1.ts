@@ -75,8 +75,6 @@ export interface GenerateOptions {
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.1 | UUIDv1}.
  *
  * @param options Can use RFC time sequence values as overwrites.
- * @param buf Can allow the UUID to be written in byte-form starting at the offset.
- * @param offset Index to start writing on the UUID bytes in buffer.
  *
  * @returns Returns a UUIDv1 string or an array of 16 bytes.
  *
@@ -105,7 +103,7 @@ export function generate(options: GenerateOptions = {}): string {
   if (node === undefined || clockseq === undefined) {
     // deno-lint-ignore no-explicit-any
     const seedBytes: any = options.random ??
-      options.rng ??
+      options.rng?.() ??
       crypto.getRandomValues(new Uint8Array(16));
 
     if (node === undefined) {

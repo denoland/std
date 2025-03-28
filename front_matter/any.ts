@@ -1,33 +1,23 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
-import { extractAndParse, type Parser, recognize } from "./_shared.ts";
-import { parse as parseYaml } from "@std/yaml/parse";
-import { parse as parseToml } from "@std/toml/parse";
+import { extract as extractToml } from "./toml.ts";
+import { extract as extractYaml } from "./yaml.ts";
+import { extract as extractJson } from "./json.ts";
 import type { Extract } from "./types.ts";
-import type { Format } from "./test.ts";
-import { EXTRACT_REGEXP_MAP } from "./_formats.ts";
+import { RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 
 export type { Extract };
-
-function getParserForFormat(format: Format): Parser {
-  switch (format) {
-    case "yaml":
-      return parseYaml as Parser;
-    case "toml":
-      return parseToml as Parser;
-    case "json":
-      return JSON.parse;
-  }
-}
 
 /**
  * Extracts and parses {@link https://yaml.org | YAML}, {@link https://toml.io |
  * TOML}, or {@link https://www.json.org/ | JSON} from the metadata of front
  * matter content, depending on the format.
  *
- * @example
+ * @example Usage
  * ```ts
  * import { extract } from "@std/front-matter/any";
+ * import { assertEquals } from "@std/assert";
  *
  * const output = `---json
  * {
@@ -36,10 +26,11 @@ function getParserForFormat(format: Format): Parser {
  * ---
  * Hello, world!`;
  * const result = extract(output);
- *
- * result.frontMatter; // '{\n "title": "Three dashes marks the spot"\n}'
- * result.body; // "Hello, world!"
- * result.attrs; // { title: "Three dashes marks the spot" }
+ * assertEquals(result, {
+ *   frontMatter: '{\n  "title": "Three dashes marks the spot"\n}',
+ *   body: "Hello, world!",
+ *   attrs: { title: "Three dashes marks the spot" }
+ * })
  * ```
  *
  * @typeParam T The type of the parsed front matter.
@@ -47,9 +38,16 @@ function getParserForFormat(format: Format): Parser {
  * @returns The extracted front matter and body content.
  */
 export function extract<T>(text: string): Extract<T> {
-  const formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
-  const format = recognize(text, formats);
-  const regexp = EXTRACT_REGEXP_MAP.get(format) as RegExp;
-  const parser = getParserForFormat(format);
-  return extractAndParse(text, regexp, parser);
+  const format = [...RECOGNIZE_REGEXP_MAP.entries()]
+    .find(([_, regexp]) => regexp.test(text))?.[0];
+  switch (format) {
+    case "yaml":
+      return extractYaml<T>(text);
+    case "toml":
+      return extractToml<T>(text);
+    case "json":
+      return extractJson<T>(text);
+    default:
+      throw new TypeError("Unsupported front matter format");
+  }
 }

@@ -39,7 +39,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("OOOO=="),
       Error,
-      "Cannot decode base32 string as the length must be a multiple of 8: received length 6",
+      "Invalid base32 string: length (6) must be a multiple of 8",
     );
   },
 });
@@ -48,9 +48,9 @@ Deno.test({
   name: "decodeBase32() throws on bad padding",
   fn() {
     assertThrows(
-      () => decodeBase32("5HXR334AQYAAAA=="),
+      () => decodeBase32("5HXR334AQYAAAA=========="),
       Error,
-      "Invalid pad length",
+      "Cannot decode input as base32: Invalid character (=)",
     );
   },
 });

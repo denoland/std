@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 
 /**
  * Provides information about a file and is returned by
@@ -116,4 +117,87 @@ export interface SymlinkOptions {
   /** Specify the symbolic link type as file, directory or NTFS junction. This
    * option only applies to Windows and is ignored on other operating systems. */
   type: "file" | "dir" | "junction";
+}
+
+/**
+ * Options which can be set when using {@linkcode readFile} or
+ * {@linkcode readTextFile}.
+ */
+export interface ReadFileOptions {
+  /** An abort signal to allow cancellation of the file read operation. If the
+   * signal becomes aborted the readFile operation will be stopped and the
+   * promise returned will be rejected with an AbortError. */
+  signal?: AbortSignal;
+}
+
+/**
+ * Options which can be set when using {@linkcode makeTempDir},
+ * {@linkcode makeTempDirSync}, {@linkcode makeTempFile}, and
+ * {@linkcode makeTempFileSync}.
+ */
+export interface MakeTempOptions {
+  /**
+   * Directory where the temporary directory should be created (defaults to the
+   * env variable `TMPDIR`, or the system's default, usually `/tmp`).
+   *
+   * Note that if the passed `dir` is relative, the path returned by
+   * `makeTempFile()` and `makeTempDir()` will also be relative. Be mindful of
+   * this when changing working directory.
+   */
+  dir?: string;
+  /**
+   * String that should precede the random portion of the temporary directory's
+   * name.
+   */
+  prefix?: string;
+  /**
+   * String that should follow the random portion of the temporary directory's
+   * name.
+   */
+  suffix?: string;
+}
+
+/**
+ * Options that can be used with {@linkcode remove} and
+ * {@linkcode removeSync}.
+ */
+export interface RemoveOptions {
+  /**
+   * If set to true, path will be removed even if it's a non-empty directory.
+   */
+  recursive?: boolean;
+}
+
+/** Options for writing to a file. */
+export interface WriteFileOptions {
+  /**
+   * If set to `true`, will append to a file instead of overwriting previous
+   * contents.
+   *
+   * @default {false}
+   */
+  append?: boolean;
+  /**
+   * Sets the option to allow creating a new file, if one doesn't already
+   * exist at the specified path.
+   *
+   * @default {true}
+   */
+  create?: boolean;
+  /**
+   * If set to `true`, no file, directory, or symlink is allowed to exist at
+   * the target location. When createNew is set to `true`, `create` is ignored.
+   *
+   * @default {false}
+   */
+  createNew?: boolean;
+  /** Permissions always applied to file. */
+  mode?: number;
+  /**
+   * An abort signal to allow cancellation of the file write operation.
+   *
+   * If the signal becomes aborted the write file operation will be stopped
+   * and the promise returned will be rejected with an {@linkcode AbortError}.
+   */
+  signal?: AbortSignal;
 }

@@ -1,16 +1,13 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { assert } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { ALL, MIN } from "./_constants.ts";
-import { formatRange } from "./format_range.ts";
 import { isRange } from "./is_range.ts";
 import type { Range } from "./types.ts";
 
 Deno.test({
-  name: "isRange()",
-  fn: async (t) => {
-    const ranges: Range[] = [[
-      [ALL],
-    ], [
+  name: "isRange() handles simple range",
+  fn: () => {
+    const range: Range = [
       [{
         operator: ">=",
         major: 0,
@@ -22,12 +19,53 @@ Deno.test({
         operator: "<",
         ...MIN,
       }],
-    ]];
-    for (const r of ranges) {
-      await t.step(`${formatRange(r)}`, () => {
-        const actual = isRange(r);
-        assert(actual);
-      });
-    }
+    ];
+    const actual = isRange(range);
+    assertEquals(actual, true);
+  },
+});
+
+Deno.test({
+  name: "isRange() handles ALL constant",
+  fn: () => {
+    const range: Range = [[ALL]];
+    const actual = isRange(range);
+    assertEquals(actual, true);
+  },
+});
+
+Deno.test({
+  name: "isRange() handles null",
+  fn: () => {
+    const range: Range = [[null]] as unknown as Range;
+    const actual = isRange(range);
+    assertEquals(actual, false);
+  },
+});
+
+Deno.test({
+  name: "isRange() handles undefined",
+  fn: () => {
+    const range: Range = [[undefined]] as unknown as Range;
+    const actual = isRange(range);
+    assertEquals(actual, false);
+  },
+});
+
+Deno.test({
+  name: "isRange() handles array type",
+  fn: () => {
+    const range: Range = [[[1, 2, 3]]] as unknown as Range;
+    const actual = isRange(range);
+    assertEquals(actual, false);
+  },
+});
+
+Deno.test({
+  name: "isRange() handles not object type",
+  fn: () => {
+    const range: Range = [[[true]]] as unknown as Range;
+    const actual = isRange(range);
+    assertEquals(actual, false);
   },
 });

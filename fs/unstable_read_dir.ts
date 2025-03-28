@@ -14,7 +14,7 @@ import type { DirEntry } from "./unstable_types.ts";
  * Requires `allow-read` permission.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { readDir } from "@std/fs/unstable-read-dir";
  *
  * for await (const dirEntry of readDir("/")) {
@@ -23,9 +23,10 @@ import type { DirEntry } from "./unstable_types.ts";
  * ```
  *
  * @tags allow-read
+ * @category File System
  *
- * @param path The path to the directory.
- * @returns An async iterable of `DirEntry` elements.
+ * @param path The path to the directory to read.
+ * @returns An async iterable of {@linkcode DirEntry}.
  */
 export async function* readDir(path: string | URL): AsyncIterable<DirEntry> {
   if (isDeno) {

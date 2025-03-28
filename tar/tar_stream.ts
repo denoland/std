@@ -68,17 +68,17 @@ type TarStreamInputInternal =
 export interface TarStreamOptions {
   /**
    * An octal literal.
-   * Defaults to 755 for directories and 644 for files.
+   * Defaults to 0o755 for directories and 0o644 for files.
    */
   mode?: number;
   /**
    * An octal literal.
-   * @default {0}
+   * @default {0o0}
    */
   uid?: number;
   /**
    * An octal literal.
-   * @default {0}
+   * @default {0o0}
    */
   gid?: number;
   /**
@@ -208,9 +208,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         const header = new Uint8Array(512);
         const size = "size" in chunk ? chunk.size : 0;
         const options: Required<TarStreamOptions> = {
-          mode: typeflag === "5" ? 755 : 644,
-          uid: 0,
-          gid: 0,
+          mode: typeflag === "5" ? 0o755 : 0o644,
+          uid: 0o0,
+          gid: 0o0,
           mtime: Math.floor(Date.now() / 1000),
           uname: "",
           gname: "",
@@ -222,9 +222,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         header.set(name); // name
         header.set(
           encoder.encode(
-            options.mode.toString().padStart(6, "0") + " \0" + // mode
-              options.uid.toString().padStart(6, "0") + " \0" + //uid
-              options.gid.toString().padStart(6, "0") + " \0" + // gid
+            options.mode.toString(8).padStart(6, "0") + " \0" + // mode
+              options.uid.toString(8).padStart(6, "0") + " \0" + //uid
+              options.gid.toString(8).padStart(6, "0") + " \0" + // gid
               size.toString(8).padStart(size < 8 ** 11 ? 11 : 12, "0") +
               (size < 8 ** 11 ? " " : "") + // size
               options.mtime.toString(8).padStart(11, "0") + " " + // mtime
@@ -508,21 +508,15 @@ export function assertValidPath(path: string) {
  * ```
  */
 export function assertValidTarStreamOptions(options: TarStreamOptions) {
-  if (
-    options.mode &&
-    (options.mode.toString().length > 6 ||
-      !/^[0-7]*$/.test(options.mode.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid Mode provided");
-  if (
-    options.uid &&
-    (options.uid.toString().length > 6 ||
-      !/^[0-7]*$/.test(options.uid.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid UID provided");
-  if (
-    options.gid &&
-    (options.gid.toString().length > 6 ||
-      !/^[0-7]*$/.test(options.gid.toString()))
-  ) throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
+  if (options.mode && (options.mode.toString(8).length > 6)) {
+    throw new TypeError("Cannot add to the tar archive: Invalid Mode provided");
+  }
+  if (options.uid && (options.uid.toString(8).length > 6)) {
+    throw new TypeError("Cannot add to the tar archive: Invalid UID provided");
+  }
+  if (options.gid && (options.gid.toString(8).length > 6)) {
+    throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
+  }
   if (
     options.mtime != undefined &&
     (options.mtime.toString(8).length > 11 ||
