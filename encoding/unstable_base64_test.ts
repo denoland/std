@@ -3,11 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcMax,
+  calcSizeBase64,
   decodeBase64,
-  decodeRawBase64,
   encodeBase64,
-  encodeRawBase64,
+  encodeIntoBase64,
 } from "./unstable_base64.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string][] = [
@@ -54,7 +53,7 @@ Deno.test("encodeBase64() subarray", () => {
   }
 });
 
-Deno.test("encodeRawBase64()", () => {
+Deno.test("encodeBase64Into()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, base64, base64url] of inputOutput) {
     if (typeof input === "string") continue;
@@ -65,14 +64,14 @@ Deno.test("encodeRawBase64()", () => {
         [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
       ] as const
     ) {
-      const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+      const buffer = new Uint8Array(
+        prefix.length + calcSizeBase64(input.byteLength),
+      );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      const o = encodeRawBase64(
-        buffer,
-        buffer.length - input.byteLength,
-        prefix.length,
+      const o = prefix.length + encodeIntoBase64(
+        input,
+        buffer.subarray(prefix.length),
         format,
       );
       assertEquals(buffer.subarray(0, o), output, format);
@@ -80,28 +79,26 @@ Deno.test("encodeRawBase64()", () => {
   }
 });
 
-Deno.test("encodeRawBase64() with too small buffer", () => {
+Deno.test("encodeBase64Into() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
     for (const format of ["Base64", "Base64Url"] as const) {
       const buffer = new Uint8Array(
-        prefix.length + calcMax(input.byteLength) - 2,
+        prefix.length + calcSizeBase64(input.byteLength) - 2,
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
       assertThrows(
         () =>
-          encodeRawBase64(
-            buffer,
-            buffer.length - input.byteLength,
-            prefix.length,
+          encodeIntoBase64(
+            input,
+            buffer.subarray(prefix.length),
             format,
           ),
         RangeError,
-        "Buffer too small",
+        "Cannot encode input as base64: Output too small",
         format,
       );
     }
@@ -180,49 +177,6 @@ Deno.test("decodeBase64() invalid char", () => {
         TypeError,
         "Cannot decode input as base64: Invalid character (.)",
         format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase64()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base64, base64url] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base64)]), "Base64"],
-        [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
-      ] as const
-    ) {
-      assertEquals(
-        input.subarray(
-          prefix.length,
-          decodeRawBase64(input, prefix.length, prefix.length, format),
-        ),
-        new Uint8Array(output),
-        format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase64() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base64, base64url] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base64)]), "Base64"],
-        [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeRawBase64(input, prefix.length - 2, prefix.length, format),
-        RangeError,
-        "Input (i) must be greater than or equal to output (o)",
       );
     }
   }

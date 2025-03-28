@@ -22,7 +22,7 @@
  * @module
  */
 
-import { calcMax, decode, encode } from "./_common64.ts";
+import { calcSizeBase64, decode, encode } from "./_common64.ts";
 import { detach } from "./_common_detach.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
@@ -56,7 +56,7 @@ export function encodeBase64(data: ArrayBuffer | Uint8Array | string): string {
   else data = data.slice();
   const [output, i] = detach(
     data as Uint8Array_,
-    calcMax((data as Uint8Array_).length),
+    calcSizeBase64((data as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet, padding);
   return new TextDecoder().decode(output);

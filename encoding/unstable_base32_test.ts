@@ -3,11 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcMax,
+  calcSizeBase32,
   decodeBase32,
-  decodeRawBase32,
   encodeBase32,
-  encodeRawBase32,
+  encodeIntoBase32,
 } from "./unstable_base32.ts";
 
 const inputOutput: [string | ArrayBuffer, string, string, string][] = [
@@ -101,7 +100,7 @@ Deno.test("encodeBase32() subarray", () => {
   }
 });
 
-Deno.test("encodeRawBase32()", () => {
+Deno.test("encodeBase32Into()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, base32, base32hex, base32crockford] of inputOutput) {
     if (typeof input === "string") continue;
@@ -116,14 +115,14 @@ Deno.test("encodeRawBase32()", () => {
         ],
       ] as const
     ) {
-      const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+      const buffer = new Uint8Array(
+        prefix.length + calcSizeBase32(input.byteLength),
+      );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-      encodeRawBase32(
-        buffer,
-        buffer.length - input.byteLength,
-        prefix.length,
+      encodeIntoBase32(
+        input,
+        buffer.subarray(prefix.length),
         format,
       );
       assertEquals(buffer, output, format);
@@ -131,28 +130,26 @@ Deno.test("encodeRawBase32()", () => {
   }
 });
 
-Deno.test("encodeRawBase32() with too small buffer", () => {
+Deno.test("encodeBase32Into() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
     for (const format of ["Base32", "Base32Hex", "Base32Crockford"] as const) {
       const buffer = new Uint8Array(
-        prefix.length + calcMax(input.byteLength) - 2,
+        prefix.length + calcSizeBase32(input.byteLength) - 2,
       );
       buffer.set(prefix);
-      buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
       assertThrows(
         () =>
-          encodeRawBase32(
-            buffer,
-            buffer.length - input.byteLength,
-            prefix.length,
+          encodeIntoBase32(
+            input,
+            buffer.subarray(prefix.length),
             format,
           ),
         RangeError,
-        "Buffer too small",
+        "Cannot encode input as base32: Output too small",
         format,
       );
     }
@@ -234,57 +231,6 @@ Deno.test("decodeBase32() invalid char", () => {
         TypeError,
         "Cannot decode input as base32: Invalid character (.)",
         format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase32()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base32, base32hex, base32crockford] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base32)]), "Base32"],
-        [concat([prefix, new TextEncoder().encode(base32hex)]), "Base32Hex"],
-        [
-          concat([prefix, new TextEncoder().encode(base32crockford)]),
-          "Base32Crockford",
-        ],
-      ] as const
-    ) {
-      assertEquals(
-        input.subarray(
-          prefix.length,
-          decodeRawBase32(input, prefix.length, prefix.length, format),
-        ),
-        new Uint8Array(output),
-        format,
-      );
-    }
-  }
-});
-
-Deno.test("decodeRawBase32() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [output, base32, base32hex, base32crockford] of inputOutput) {
-    if (typeof output === "string") continue;
-
-    for (
-      const [input, format] of [
-        [concat([prefix, new TextEncoder().encode(base32)]), "Base32"],
-        [concat([prefix, new TextEncoder().encode(base32hex)]), "Base32Hex"],
-        [
-          concat([prefix, new TextEncoder().encode(base32crockford)]),
-          "Base32Crockford",
-        ],
-      ] as const
-    ) {
-      assertThrows(
-        () => decodeRawBase32(input, prefix.length - 2, prefix.length, format),
-        RangeError,
-        "Input (i) must be greater than or equal to output (o)",
       );
     }
   }

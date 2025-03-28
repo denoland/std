@@ -26,7 +26,7 @@
  * @module
  */
 
-import { calcMax, decode, encode } from "./_common16.ts";
+import { calcSizeHex, decode, encode } from "./_common16.ts";
 import { detach } from "./_common_detach.ts";
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
@@ -61,7 +61,7 @@ export function encodeHex(src: string | Uint8Array | ArrayBuffer): string {
   else src = src.slice();
   const [output, i] = detach(
     src as Uint8Array_,
-    calcMax((src as Uint8Array_).length),
+    calcSizeHex((src as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet);
   return new TextDecoder().decode(output);

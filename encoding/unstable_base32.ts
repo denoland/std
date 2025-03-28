@@ -23,32 +23,17 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common32.ts";
-export { calcMax };
+import {
+  alphabet,
+  type Base32Format,
+  calcSizeBase32,
+  decode,
+  encode,
+  padding,
+  rAlphabet,
+} from "./_common32.ts";
+export { type Base32Format, calcSizeBase32 };
 import { detach } from "./_common_detach.ts";
-
-const padding = "=".charCodeAt(0);
-const alphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new TextEncoder().encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
-  Base32Hex: new TextEncoder().encode("0123456789ABCDEFGHIJKLMNOPQRSTUV"),
-  Base32Crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
-};
-const rAlphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new Uint8Array(128).fill(32), // alphabet.Base32.length
-  Base32Hex: new Uint8Array(128).fill(32),
-  Base32Crockford: new Uint8Array(128).fill(32),
-};
-alphabet.Base32
-  .forEach((byte, i) => rAlphabet.Base32[byte] = i);
-alphabet.Base32Hex
-  .forEach((byte, i) => rAlphabet.Base32Hex[byte] = i);
-alphabet.Base32Crockford
-  .forEach((byte, i) => rAlphabet.Base32Crockford[byte] = i);
-
-/**
- * The base 32 encoding formats.
- */
-export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
 
 /**
  * `encodeBase32` takes an input source and encodes it into a base32 string. If
@@ -98,63 +83,63 @@ export function encodeBase32(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcSizeBase32((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet[format], padding);
   return new TextDecoder().decode(output);
 }
 
 /**
- * `encodeRawBase32` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to base32 in place. The function assumes
- * that the raw data starts at param {@linkcode i} and ends at the end of the
- * buffer, and that the entire buffer provided is large enough to hold the
- * encoded data.
+ * `encodeIntoBase32` takes an input source and encodes it as base32 into the
+ * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param buffer The buffer to encode in place.
- * @param i The index of where the raw data starts reading from.
- * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding.
- * @returns The index of where the encoded data finished writing to.
+ * @param input the source to encode.
+ * @param output the buffer to write the encoded source to.
+ * @param format the format to use for encoding.
+ * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeBase32, encodeRawBase32 } from "@std/encoding/unstable-base32";
+ * import {
+ *   calcSizeBase32,
+ *   encodeBase32,
+ *   encodeIntoBase32,
+ * } from "@std/encoding/unstable-base32";
  *
- * const prefix = new TextEncoder().encode("data:url/fake,");
+ * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
+ * const output = new Uint8Array(prefix.length + calcSizeBase32(input.length));
  *
- * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
- * const i = newSize - originalSize;
- * const o = prefix.length;
- *
- * // deno-lint-ignore no-explicit-any
- * const output = new Uint8Array((input.buffer as any).transfer(newSize));
- * output.set(output.subarray(0, originalSize), i);
- * output.set(prefix);
- *
- * encodeRawBase32(output, i, o, "Base32");
+ * const o = new TextEncoder().encodeInto(prefix, output).written;
+ * encodeIntoBase32(input, output.subarray(o), "Base32");
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   "data:url/fake," +
+ *     encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
  * );
  * ```
  */
-export function encodeRawBase32(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
+export function encodeIntoBase32(
+  input: string | Uint8Array_ | ArrayBuffer,
+  output: Uint8Array_,
   format: Base32Format = "Base32",
 ): number {
-  const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) {
-    throw new RangeError("Cannot encode buffer as base32: Buffer too small");
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
-  return encode(buffer, i, o, alphabet[format], padding);
+  const min = calcSizeBase32((input as Uint8Array_).length);
+  if (output.length < min) {
+    throw new RangeError("Cannot encode input as base32: Output too small");
+  }
+  output = output.subarray(0, min);
+  const i = min - (input as Uint8Array_).length;
+  output.set(input as Uint8Array_, i);
+  return encode(output, i, 0, alphabet[format], padding);
 }
 
 /**
@@ -198,53 +183,4 @@ export function decodeBase32(
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
   return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
-}
-
-/**
- * `decodeRawHex` is a low-level function that decodes a
- * {@linkcode Uint8Array<ArrayBuffer>} from hexadecimal in place. Param
- * {@linkcode i} must be greater than or equal to param {@linkcode o}. The
- * function assumes that the encoded data starts at param {@linkcode i} and ends
- * at the end of the buffer.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @param buffer The buffer to decode in place.
- * @param i The index of where the encoded data starts reading from.
- * @param o The index of where the decoded data starts writing to.
- * @param format The format to use for decoding.
- * @returns The index of where the decoded data finished writing to.
- *
- * @example Basic Usage
- * ```ts
- * import { assertEquals } from "@std/assert";
- * import {
- *   decodeRawBase32,
- *   encodeBase32,
- *   type Uint8Array_,
- * } from "@std/encoding/unstable-base32";
- *
- * let buffer = new TextEncoder().encode(
- *   "data:url/fake," + encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
- * ) as Uint8Array_;
- *
- * const i = buffer.indexOf(",".charCodeAt(0)) + 1;
- * const o = decodeRawBase32(buffer, i, i, "Base32");
- *
- * buffer = buffer.subarray(i, o);
- * assertEquals(buffer, await Deno.readFile("./deno.lock"));
- * ```
- */
-export function decodeRawBase32(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
-  format: Base32Format = "Base32",
-): number {
-  if (i < o) {
-    throw new RangeError(
-      "Cannot decode buffer as base32: Input (i) must be greater than or equal to output (o)",
-    );
-  }
-  return decode(buffer, i, o, rAlphabet[format], padding);
 }
