@@ -18,9 +18,9 @@ function isString(value: unknown): value is string {
 export function buildEqualErrorMessage<T>(
   actual: T,
   expected: T,
-  options: EqualErrorMessageOptions,
+  options: EqualErrorMessageOptions = {},
 ): string {
-  const { formatter = format, msg } = options ?? {};
+  const { formatter = format, msg } = options;
   const msgPrefix = msg ? `${msg}: ` : "";
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
@@ -40,9 +40,9 @@ export function buildEqualErrorMessage<T>(
 export function buildNotEqualErrorMessage<T>(
   actual: T,
   expected: T,
-  options: EqualErrorMessageOptions,
+  options: EqualErrorMessageOptions = {},
 ): string {
-  const { msg } = options ?? {};
+  const { msg } = options;
   const actualString = String(actual);
   const expectedString = String(expected);
 

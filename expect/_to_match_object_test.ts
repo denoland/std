@@ -65,7 +65,7 @@ Deno.test("expect().toMatchObject() with array", () => {
   ]);
 });
 
-Deno.test("expect(),toMatchObject() with asyAsymmetric matcher", () => {
+Deno.test("expect().toMatchObject() with asymmetric matcher", () => {
   expect({ position: { x: 0, y: 0 } }).toMatchObject({
     position: {
       x: expect.any(Number),
@@ -130,4 +130,101 @@ Deno.test("expect().toMatchObject() throws the correct error messages", () => {
     );
     assertMatch(e.message, /NOT/);
   }
+});
+
+Deno.test("expect().toMatchObject() displays a diff", async (t) => {
+  await t.step("with expect.any", () => {
+    assertThrows(
+      () =>
+        expect({ a: "a" })
+          .toMatchObject({ a: expect.any(Number) }),
+      AssertionError,
+      `    {
++     a: Any {
++       inverse: false,
++       value: [Function: Number],
++     },
+-     a: "a",
+    }`,
+    );
+  });
+
+  await t.step("with nested properties", () => {
+    const x = {
+      command: "error",
+      payload: {
+        message: "NodeNotFound",
+      },
+      protocol: "graph",
+    };
+
+    const y = {
+      protocol: "graph",
+      command: "addgroup",
+      payload: {
+        graph: "foo",
+        metadata: {
+          description: "foo",
+        },
+        name: "somegroup",
+        nodes: [
+          "somenode",
+          "someothernode",
+        ],
+      },
+    };
+
+    assertThrows(
+      () => expect(x).toMatchObject(y),
+      AssertionError,
+      `    {
++     command: "addgroup",
+-     command: "error",
+      payload: {
++       graph: "foo",
++       metadata: {
++         description: "foo",
++       },
++       name: "somegroup",
++       nodes: [
++         "somenode",
++         "someothernode",
++       ],
+-       message: "NodeNotFound",
+      },
+      protocol: "graph",
+    }`,
+    );
+
+    assertThrows(
+      () => expect({ foo: [] }).toMatchObject({ foo: ["bar"] }),
+      AssertionError,
+      `    {
++     foo: [
++       "bar",
++     ],
+-     foo: [],
+    }`,
+    );
+  });
+
+  await t.step(
+    "with `__proto__`",
+    () => {
+      const objectA = { ["__proto__"]: { polluted: true } };
+      const objectB = { ["__proto__"]: { polluted: true } };
+      const objectC = { ["__proto__"]: { polluted: false } };
+      expect(objectA).toMatchObject(objectB);
+      assertThrows(
+        () => expect(objectA).toMatchObject(objectC),
+        AssertionError,
+        `    {
+      ['__proto__']: {
+-       polluted: true,
++       polluted: false,
+      },
+    }`,
+      );
+    },
+  );
 });
