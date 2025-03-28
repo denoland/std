@@ -9,16 +9,12 @@ import { readTextFile } from "./unstable_read_text_file.ts";
 import { platform } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getNodeProcess, isDeno } from "./_utils.ts";
+import { NodeFsFile } from "./_node_fs_file.ts";
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 const readTestFile = join(testdataDir, "copy_file.txt");
-
-/*
--[] isTerminal (win32?)
--[x] isTerminal (unix)
--[] setRaw
-*/
 
 Deno.test("FsFile object writes to a newly created file", async () => {
   const tempDirPath = await makeTempDir({ prefix: "FsFile_write_" });
@@ -362,13 +358,24 @@ Deno.test("FsFile object throws with Error when synchronously reading from a dir
 Deno.test({
   name: "FsFile objects can determine if the file handle is a TTY (Terminal)",
   ignore: platform() === "win32",
-  fn: () => {
-    let fh = openSync("/dev/fd/1");
-    assert(fh.isTerminal());
-    fh.close();
+  fn: async () => {
+    if (isDeno) {
+      assert(Deno.stdin.isTerminal());
+    } else {
+      const fh = new NodeFsFile(getNodeProcess().stdin.fd);
+      assert(fh.isTerminal());
+    }
 
-    fh = openSync(readTestFile);
-    assert(!fh.isTerminal());
-    fh.close();
+    {
+      const fh = await open(readTestFile);
+      assert(!fh.isTerminal());
+      fh.close();
+    }
+
+    {
+      const fh = openSync(readTestFile);
+      assert(!fh.isTerminal());
+      fh.close();
+    }
   },
 });
