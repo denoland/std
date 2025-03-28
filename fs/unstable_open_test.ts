@@ -8,7 +8,7 @@ import { makeTempFile, makeTempFileSync } from "./unstable_make_temp_file.ts";
 import { remove, removeSync } from "./unstable_remove.ts";
 import { platform } from "node:os";
 import { join } from "node:path";
-import { getNodeProcess } from "./_utils.ts";
+import { umask } from "node:process";
 
 Deno.test("open() handles 'createNew' when opening a file", async () => {
   const tempDirPath = await makeTempDir({ prefix: "open_" });
@@ -156,14 +156,14 @@ Deno.test({
     });
     let fhStats = await fh.stat();
     fh.close();
-    assertEquals(fhStats.mode! & 0o777, 0o624 & ~getNodeProcess().umask(0o022));
+    assertEquals(fhStats.mode! & 0o777, 0o624 & ~umask(0o022));
 
     // Opening the same file under a different mode should not change the
     // current file mode.
     fh = await open(testFile, { mode: 0o777, write: true });
     fhStats = await fh.stat();
     fh.close();
-    assertEquals(fhStats.mode! & 0o777, 0o624 & ~getNodeProcess().umask(0o022));
+    assertEquals(fhStats.mode! & 0o777, 0o624 & ~umask(0o022));
 
     await remove(tempDirPath, { recursive: true });
   },
@@ -354,14 +354,14 @@ Deno.test({
     let fh = openSync(testFile, { mode: 0o624, createNew: true, write: true });
     let fhStats = fh.statSync();
     fh.close();
-    assertEquals(fhStats.mode! & 0o777, 0o624 & ~getNodeProcess().umask(0o022));
+    assertEquals(fhStats.mode! & 0o777, 0o624 & ~umask(0o022));
 
     // Opening the same file under a different mode should not change the
     // current file mode.
     fh = openSync(testFile, { mode: 0o777, write: true });
     fhStats = fh.statSync();
     fh.close();
-    assertEquals(fhStats.mode! & 0o777, 0o624 & ~getNodeProcess().umask(0o022));
+    assertEquals(fhStats.mode! & 0o777, 0o624 & ~umask(0o022));
 
     removeSync(tempDirPath, { recursive: true });
   },
