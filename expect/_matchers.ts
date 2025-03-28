@@ -21,6 +21,10 @@ import {
   iterableEquality,
   subsetEquality,
 } from "./_utils.ts";
+import {
+  buildEqualErrorMessage,
+  buildNotEqualErrorMessage,
+} from "./_build_message.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   if (context.isNot) {
@@ -565,7 +569,7 @@ export function toMatchObject(
     );
   }
 
-  const pass = equal(context.value, expected, {
+  const pass = equal(received, expected, {
     strictCheck: false,
     customTesters: [
       ...context.customTesters,
@@ -575,20 +579,15 @@ export function toMatchObject(
   });
 
   const triggerError = () => {
-    const actualString = format(context.value);
-    const expectedString = format(expected);
-
     if (context.isNot) {
-      const defaultMessage =
-        `Expected ${actualString} to NOT match ${expectedString}`;
+      const defaultMessage = buildNotEqualErrorMessage(received, expected);
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
           : defaultMessage,
       );
     } else {
-      const defaultMessage =
-        `Expected ${actualString} to match ${expectedString}`;
+      const defaultMessage = buildEqualErrorMessage(received, expected);
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
