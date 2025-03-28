@@ -428,3 +428,150 @@ Deno.test("deepMerge() handles target object is not modified", () => {
     quux: new Set([1, 2, 3]),
   });
 });
+
+Deno.test("deepMerge() handles number vs undefined", () => {
+  assertEquals(
+    deepMerge<{ a: number | undefined }>(
+      { a: 1 },
+      { a: undefined },
+      { undefined: "ignore" },
+    ),
+    { a: 1 },
+  );
+  assertEquals(
+    deepMerge(
+      { a: 1 },
+      { a: undefined },
+      { undefined: "replace" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      { a: 1 },
+      { a: undefined },
+      // Default is replace
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: 1 },
+      { undefined: "ignore" },
+    ),
+    { a: 1 },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: 1 },
+      { undefined: "replace" },
+    ),
+    { a: 1 },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: 1 },
+      // Default is replace
+    ),
+    { a: 1 },
+  );
+
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: undefined },
+      { undefined: "ignore" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: undefined },
+      { undefined: "replace" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      { a: undefined },
+      // Default is replace
+    ),
+    { a: undefined },
+  );
+});
+
+Deno.test("deepMerge() handles mergeable vs undefined", () => {
+  assertEquals<{ a: { b: number } | undefined }>(
+    deepMerge(
+      { a: { b: 1 } },
+      { a: undefined },
+      { undefined: "ignore" },
+    ),
+    { a: { b: 1 } },
+  );
+  assertEquals(
+    deepMerge(
+      { a: { b: 1 } },
+      { a: undefined },
+      { undefined: "replace" },
+    ),
+    { a: undefined },
+  );
+
+  assertEquals(
+    deepMerge<{ a: { b: number; c: number | undefined } }>(
+      { a: { b: 1, c: 2 } },
+      { a: { b: 1, c: undefined } },
+      { undefined: "ignore" },
+    ),
+    { a: { b: 1, c: 2 } },
+  );
+  assertEquals(
+    deepMerge(
+      { a: { b: 1, c: 2 } },
+      { a: { b: 1, c: undefined } },
+      { undefined: "replace" },
+    ),
+    { a: { b: 1, c: undefined } },
+  );
+});
+
+Deno.test("deepMerge() handles undefined vs omitted", () => {
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      {},
+      { undefined: "ignore" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      { a: undefined },
+      {},
+      { undefined: "replace" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      {},
+      { a: undefined },
+      { undefined: "ignore" },
+    ),
+    { a: undefined },
+  );
+  assertEquals(
+    deepMerge(
+      {},
+      { a: undefined },
+      { undefined: "replace" },
+    ),
+    { a: undefined },
+  );
+});
