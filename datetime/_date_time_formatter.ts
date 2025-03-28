@@ -295,7 +295,7 @@ export class DateTimeFormatter {
           const value = utc
             ? date.getUTCMilliseconds()
             : date.getMilliseconds();
-          string += digits(value, Number(part.value));
+          string += digits(value, 3).slice(0, Number(part.value));
           break;
         }
         // FIXME(bartlomieju)
@@ -331,12 +331,12 @@ export class DateTimeFormatter {
         case "year": {
           switch (part.value) {
             case "numeric": {
-              value = /^\d{1,4}/.exec(string)?.[0] as string;
+              value = /^\d{4}/.exec(string)?.[0] as string;
               length = value?.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(string)?.[0] as string;
               length = value?.length;
               break;
             }
