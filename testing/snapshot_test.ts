@@ -893,8 +893,8 @@ Deno.test(
   }),
 );
 
-Deno.test("assertInlineSnapshot()", (t) => {
-  assertInlineSnapshot(
+Deno.test("assertInlineSnapshot()", async (t) => {
+  await assertInlineSnapshot(
     t,
     { a: 1, b: 2 },
     `{
@@ -902,7 +902,7 @@ Deno.test("assertInlineSnapshot()", (t) => {
   b: 2,
 }`,
   );
-  assertInlineSnapshot(
+  await assertInlineSnapshot(
     t,
     new TestClass(),
     `TestClass {
@@ -910,7 +910,7 @@ Deno.test("assertInlineSnapshot()", (t) => {
   b: 2,
 }`,
   );
-  assertInlineSnapshot(
+  await assertInlineSnapshot(
     t,
     map,
     `Map(3) {
@@ -919,7 +919,7 @@ Deno.test("assertInlineSnapshot()", (t) => {
   [Function (anonymous)] => "World!",
 }`,
   );
-  assertInlineSnapshot(
+  await assertInlineSnapshot(
     t,
     new Set([1, 2, 3]),
     `Set(3) {
@@ -928,15 +928,15 @@ Deno.test("assertInlineSnapshot()", (t) => {
   3,
 }`,
   );
-  assertInlineSnapshot(
+  await assertInlineSnapshot(
     t,
     { fn() {} },
     `{
   fn: [Function: fn],
 }`,
   );
-  assertInlineSnapshot(t, function fn() {}, `[Function: fn]`);
-  assertInlineSnapshot(
+  await assertInlineSnapshot(t, function fn() {}, `[Function: fn]`);
+  await assertInlineSnapshot(
     t,
     [1, 2, 3],
     `[
@@ -945,7 +945,7 @@ Deno.test("assertInlineSnapshot()", (t) => {
   3,
 ]`,
   );
-  assertInlineSnapshot(t, "hello world", `"hello world"`);
+  await assertInlineSnapshot(t, "hello world", `"hello world"`);
 });
 
 Deno.test("assertInlineSnapshot() formats", async () => {
@@ -956,15 +956,15 @@ Deno.test("assertInlineSnapshot() formats", async () => {
     await Deno.writeTextFile(
       formatTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
-Deno.test("format", (t) => {
-  assertInlineSnapshot( t, "hello world", \`CREATE\` );
+Deno.test("format", async (t) => {
+  await assertInlineSnapshot( t, "hello world", \`CREATE\` );
 });`,
     );
     await Deno.writeTextFile(
       noFormatTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
-Deno.test("no format", (t) => {
-  assertInlineSnapshot( t, "hello world", \`CREATE\`, { format: false } );
+Deno.test("no format", async (t) => {
+  await assertInlineSnapshot( t, "hello world", \`CREATE\`, { format: false } );
 });`,
     );
 
@@ -983,15 +983,15 @@ Deno.test("no format", (t) => {
     assertEquals(
       await Deno.readTextFile(formatTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
-Deno.test("format", (t) => {
-  assertInlineSnapshot(t, "hello world", \`"hello world"\`);
+Deno.test("format", async (t) => {
+  await assertInlineSnapshot(t, "hello world", \`"hello world"\`);
 });\n`,
     );
     assertEquals(
       await Deno.readTextFile(noFormatTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
-Deno.test("no format", (t) => {
-  assertInlineSnapshot( t, "hello world", \`"hello world"\`, { format: false } );
+Deno.test("no format", async (t) => {
+  await assertInlineSnapshot( t, "hello world", \`"hello world"\`, { format: false } );
 });`,
     );
   } finally {
