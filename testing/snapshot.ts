@@ -155,7 +155,7 @@ const SNAPSHOT_EXT = "snap";
 export type SnapshotMode = "assert" | "update";
 
 /** The options for {@linkcode assertSnapshot}. */
-export type SnapshotOptions<T = unknown> = {
+export interface SnapshotOptions<T = unknown> {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
    * This can be relative to the test directory or an absolute path.
@@ -192,7 +192,20 @@ export type SnapshotOptions<T = unknown> = {
    * Function to use when serializing the snapshot. The default is {@linkcode serialize}.
    */
   serializer?: (actual: T) => string;
-};
+}
+
+/** The options for {@linkcode assertInlineSnapshot}. */
+export interface InlineSnapshotOptions<T = unknown>
+  extends Pick<SnapshotOptions, "msg" | "serializer"> {
+  /**
+   * Whether to format the test file after updating.
+   *
+   * The default is `true`. If multiple snapshot tests are defined and have
+   * incompatible `format` options, the snapshots will be written, the file will
+   * not be formatted, and all updated tests will fail.
+   */
+  format?: boolean;
+}
 
 function getErrorMessage(message: string, options: SnapshotOptions) {
   return typeof options.msg === "string" ? options.msg : message;
@@ -261,6 +274,32 @@ function getMode(options: SnapshotOptions) {
  */
 function getIsUpdate(options: SnapshotOptions) {
   return getMode(options) === "update";
+}
+
+function getOptions<T>(
+  msgOrOpts?: string | T,
+): T {
+  if (msgOrOpts === undefined) return {} as T;
+
+  if (typeof msgOrOpts === "object" && msgOrOpts !== null) {
+    return msgOrOpts;
+  }
+
+  return { msg: msgOrOpts } as T;
+}
+
+function getSnapshotNotMatchMessage(
+  actualSnapshot: string,
+  expectedSnapshot: string,
+  options: SnapshotOptions,
+) {
+  const stringDiff = !actualSnapshot.includes("\n");
+  const diffResult = stringDiff
+    ? diffStr(actualSnapshot, expectedSnapshot)
+    : diff(actualSnapshot.split("\n"), expectedSnapshot.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  const message = `Snapshot does not match:\n${diffMsg}`;
+  return getErrorMessage(message, options);
 }
 
 class AssertSnapshotContext {
@@ -523,6 +562,152 @@ class AssertSnapshotContext {
   }
 }
 
+class AssertInlineSnapshotContext {
+  static contexts = new Map<string, AssertInlineSnapshotContext>();
+
+  /**
+   * Returns an instance of `AssertInlineSnapshotContext`. This will be retrieved from
+   * a cache if an instance was already created for a given snapshot file path.
+   */
+  static fromContext(
+    testContext: Deno.TestContext,
+  ): AssertInlineSnapshotContext {
+    const testFilePath = fromFileUrl(testContext.origin);
+    const { dir, base } = parse(testFilePath);
+    const path = resolve(dir, base);
+
+    let context = this.contexts.get(path);
+    if (context) {
+      return context;
+    }
+
+    context = new this(toFileUrl(path));
+    this.contexts.set(path, context);
+    return context;
+  }
+
+  #teardownRegistered = false;
+  #indexToSnapshot: string[] = [];
+  #snapshotsCreated = 0;
+  #testFileUrl: URL;
+  #format: boolean | undefined | "error";
+
+  constructor(testFileUrl: URL) {
+    this.#testFileUrl = testFileUrl;
+  }
+
+  /**
+   * Asserts that `this.#currentSnapshots` has been initialized and then returns it.
+   *
+   * Should only be called when `this.#currentSnapshots` has already been initialized.
+   */
+  #getCurrentSnapshotsInitialized() {
+    assert(
+      this.#indexToSnapshot,
+      "Snapshot was not initialized. This is a bug in `assertInlineSnapshot`.",
+    );
+    return this.#indexToSnapshot;
+  }
+
+  /**
+   * Write updates to the snapshot file and log statistics.
+   */
+  #teardown = () => {
+    if (this.#snapshotsCreated === 0) return;
+    const currentSnapshots = this.#indexToSnapshot;
+
+    const testFilePath = fromFileUrl(this.#testFileUrl);
+    ensureFileSync(testFilePath);
+    const file = Deno.readTextFileSync(testFilePath);
+
+    const parts = file.split("`CREATE`");
+    if (parts.length !== this.#snapshotsCreated + 1) {
+      throw new Error(
+        `assertInlineSnapshot expected to update ${this.#snapshotsCreated} ${
+          this.#snapshotsCreated === 1 ? "snapshot" : "snapshots"
+        } but found ${parts.length - 1} snapshot ${
+          parts.length === 2 ? "location" : "locations"
+        }.`,
+      );
+    }
+
+    let result = parts[0]!;
+
+    for (let i = 0; i < this.#snapshotsCreated; i++) {
+      const createdSnapshot = currentSnapshots[i];
+      if (createdSnapshot === undefined) {
+        throw new Error(
+          `assertInlineSnapshot expected to create a snapshot at index ${i} but none was registered.`,
+        );
+      }
+
+      const formattedSnapshot = escapeStringForJs(createdSnapshot);
+      result += `\`${formattedSnapshot}\`${parts[i + 1]}`;
+    }
+
+    Deno.writeTextFileSync(testFilePath, result);
+
+    const created = this.#snapshotsCreated;
+    if (created > 0) {
+      // deno-lint-ignore no-console
+      console.log(
+        `%c\n > ${created} ${
+          created === 1 ? "snapshot" : "snapshots"
+        } created.`,
+        "color: green; font-weight: bold;",
+      );
+    }
+  };
+
+  /**
+   * Register a teardown function which writes the snapshot file to disk and logs the number
+   * of snapshots updated after all tests have run.
+   *
+   * This method can safely be called more than once and will only register the teardown
+   * function once in a context.
+   */
+  async registerTeardown() {
+    if (!this.#teardownRegistered) {
+      for (const perm of ["read", "write"] as const) {
+        const permission = await Deno.permissions.query({
+          name: perm,
+          path: this.#testFileUrl,
+        });
+        if (permission.state !== "granted") {
+          throw new Deno.errors.PermissionDenied(
+            `Missing ${perm} access to snapshot file (${this.#testFileUrl}). This is required because assertInlineSnapshot is trying to create snapshots. Please pass the --allow-${perm} flag.`,
+          );
+        }
+      }
+      globalThis.addEventListener("unload", this.#teardown);
+      this.#teardownRegistered = true;
+    }
+  }
+
+  /**
+   * Gets the number of snapshots which have been created and increments the count by 1.
+   */
+  getCount() {
+    const count = this.#snapshotsCreated;
+    this.#snapshotsCreated++;
+    return count;
+  }
+
+  /**
+   * Creates a snapshot by index. Updates will be written to the snapshot file when all
+   * tests have run.
+   */
+  createSnapshot(index: number, snapshot: string, format: boolean) {
+    const currentSnapshots = this.#getCurrentSnapshotsInitialized();
+    currentSnapshots[index] = snapshot;
+    if (this.#format === undefined) {
+      this.#format = format;
+    } else if (this.#format !== format) {
+      this.#format = "error";
+    }
+  }
+}
+
 /**
  * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
  * not match, then throw.
@@ -577,7 +762,7 @@ export async function assertSnapshot(
   actual: unknown,
   msgOrOpts?: string | SnapshotOptions<unknown>,
 ) {
-  const options = getOptions();
+  const options = getOptions(msgOrOpts);
   const assertSnapshotContext = AssertSnapshotContext.fromOptions(
     context,
     options,
@@ -585,29 +770,30 @@ export async function assertSnapshot(
   const testName = getTestName(context, options);
   const count = assertSnapshotContext.getCount(testName);
   const name = `${testName} ${count}`;
-  const snapshot = await assertSnapshotContext.getSnapshot(
+  const expectedSnapshot = await assertSnapshotContext.getSnapshot(
     name,
     options,
   );
 
   assertSnapshotContext.pushSnapshotToUpdateQueue(name);
-  const _serialize = options.serializer || serialize;
-  const _actual = _serialize(actual);
+  const serializer = options.serializer ?? serialize;
+  const actualSnapshot = serializer(actual);
   if (getIsUpdate(options)) {
     await assertSnapshotContext.registerTeardown();
-    if (!equal(_actual, snapshot)) {
-      assertSnapshotContext.updateSnapshot(name, _actual);
+    if (!equal(actualSnapshot, expectedSnapshot)) {
+      assertSnapshotContext.updateSnapshot(name, actualSnapshot);
     }
   } else {
     if (
       !assertSnapshotContext.hasSnapshot(name) ||
-      typeof snapshot === "undefined"
+      typeof expectedSnapshot === "undefined"
     ) {
       throw new AssertionError(
         getErrorMessage(`Missing snapshot: ${name}`, options),
       );
     }
-    if (equal(_actual, snapshot)) {
+
+    if (equal(actualSnapshot, expectedSnapshot)) {
       return;
     }
     const stringDiff = !_actual.includes("\n");
@@ -618,19 +804,10 @@ export async function assertSnapshot(
     const message =
       `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
     throw new AssertionError(
-      getErrorMessage(message, options),
+      getSnapshotNotMatchMessage(actualSnapshot, expectedSnapshot, options),
     );
   }
 
-  function getOptions(): SnapshotOptions {
-    if (typeof msgOrOpts === "object" && msgOrOpts !== null) {
-      return msgOrOpts;
-    }
-
-    return {
-      msg: msgOrOpts!,
-    };
-  }
   function getTestName(
     context: Deno.TestContext,
     options?: SnapshotOptions,
@@ -675,7 +852,7 @@ export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,
   baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
 ): typeof assertSnapshot {
-  return async function _assertSnapshot(
+  return async function (
     context: Deno.TestContext,
     actual: T,
     messageOrOptions?: string | SnapshotOptions<T>,
@@ -691,4 +868,86 @@ export function createAssertSnapshot<T>(
 
     await baseAssertSnapshot(context, actual, mergedOptions);
   };
+}
+
+/**
+ * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
+ * not match, then throw.
+ *
+ * Type parameter can be specified to ensure values under comparison have the same type.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertInlineSnapshot } from "@std/testing/snapshot";
+ *
+ * Deno.test("snapshot", async (t) => {
+ *   await assertInlineSnapshot<number>(t, 2, "2");
+ * });
+ * ```
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param expectedSnapshot The expected snapshot, or `CREATE` to create
+ * @param options The options
+ */
+export async function assertInlineSnapshot<T>(
+  context: Deno.TestContext,
+  actual: T,
+  expectedSnapshot: string,
+  options?: InlineSnapshotOptions<T>,
+): Promise<void>;
+/**
+ * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
+ * not match, then throw.
+ *
+ * Type parameter can be specified to ensure values under comparison have the same type.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertInlineSnapshot } from "@std/testing/snapshot";
+ *
+ * Deno.test("snapshot", async (t) => {
+ *   await assertInlineSnapshot<number>(t, 2, "2");
+ * });
+ * ```
+ *
+ * @typeParam T The type of the snapshot
+ * @param context The test context
+ * @param actual The actual value to compare
+ * @param expectedSnapshot The expected snapshot, or `CREATE` to create
+ * @param message The optional assertion message
+ */
+export async function assertInlineSnapshot<T>(
+  context: Deno.TestContext,
+  actual: T,
+  expectedSnapshot: string,
+  message?: string,
+): Promise<void>;
+export async function assertInlineSnapshot(
+  context: Deno.TestContext,
+  actual: unknown,
+  expectedSnapshot: string,
+  msgOrOpts?: string | InlineSnapshotOptions<unknown>,
+) {
+  const options = getOptions(msgOrOpts);
+
+  const serializer = options.serializer ?? serialize;
+  const actualSnapshot = serializer(actual);
+
+  if (expectedSnapshot === `CREATE`) {
+    const assertInlineSnapshotContext = AssertInlineSnapshotContext.fromContext(
+      context,
+    );
+    const index = assertInlineSnapshotContext.getCount();
+    await assertInlineSnapshotContext.registerTeardown();
+    assertInlineSnapshotContext.createSnapshot(
+      index,
+      actualSnapshot,
+      options.format ?? true,
+    );
+  } else if (!equal(actualSnapshot, expectedSnapshot)) {
+    throw new AssertionError(
+      getSnapshotNotMatchMessage(actualSnapshot, expectedSnapshot, options),
+    );
+  }
 }
