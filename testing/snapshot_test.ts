@@ -3,6 +3,7 @@ import { stripAnsiCode } from "@std/fmt/colors";
 import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
   assert,
+  assertEquals,
   assertInstanceOf,
   AssertionError,
   assertRejects,
@@ -12,6 +13,7 @@ import {
 import {
   assertInlineSnapshot,
   assertSnapshot,
+  createAssertInlineSnapshot,
   createAssertSnapshot,
   serialize,
 } from "./snapshot.ts";
@@ -891,6 +893,119 @@ Deno.test(
   }),
 );
 
-Deno.test("assertSnapshot() - should work with the string with '\\r' character", async (t) => {
-  await assertSnapshot(t, "Hello\r\nWorld!\r\n");
+Deno.test("assertInlineSnapshot()", (t) => {
+  assertInlineSnapshot(
+    t,
+    { a: 1, b: 2 },
+    `{
+  a: 1,
+  b: 2,
+}`,
+  );
+  assertInlineSnapshot(
+    t,
+    new TestClass(),
+    `TestClass {
+  a: 1,
+  b: 2,
+}`,
+  );
+  assertInlineSnapshot(
+    t,
+    map,
+    `Map(3) {
+  "Hello" => "World!",
+  1 => 2,
+  [Function (anonymous)] => "World!",
+}`,
+  );
+  assertInlineSnapshot(
+    t,
+    new Set([1, 2, 3]),
+    `Set(3) {
+  1,
+  2,
+  3,
+}`,
+  );
+  assertInlineSnapshot(
+    t,
+    { fn() {} },
+    `{
+  fn: [Function: fn],
+}`,
+  );
+  assertInlineSnapshot(t, function fn() {}, `[Function: fn]`);
+  assertInlineSnapshot(
+    t,
+    [1, 2, 3],
+    `[
+  1,
+  2,
+  3,
+]`,
+  );
+  assertInlineSnapshot(t, "hello world", `"hello world"`);
+});
+
+Deno.test("assertInlineSnapshot() formats", async () => {
+  const tempDir = await Deno.makeTempDir();
+  const formatTestFile = join(tempDir, "format_test.ts");
+  const noFormatTestFile = join(tempDir, "no_format_test.ts");
+  try {
+    await Deno.writeTextFile(
+      formatTestFile,
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+Deno.test("format", (t) => {
+  assertInlineSnapshot( t, "hello world", \`CREATE\` );
+});`,
+    );
+    await Deno.writeTextFile(
+      noFormatTestFile,
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+Deno.test("no format", (t) => {
+  assertInlineSnapshot( t, "hello world", \`CREATE\`, { format: false } );
+});`,
+    );
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "test",
+        "--no-lock",
+        "--allow-read",
+        "--allow-write",
+        "--allow-run",
+        tempDir,
+      ],
+    });
+    await command.output();
+
+    assertEquals(
+      await Deno.readTextFile(formatTestFile),
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+Deno.test("format", (t) => {
+  assertInlineSnapshot(t, "hello world", \`"hello world"\`);
+});\n`,
+    );
+    assertEquals(
+      await Deno.readTextFile(noFormatTestFile),
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+Deno.test("no format", (t) => {
+  assertInlineSnapshot( t, "hello world", \`"hello world"\`, { format: false } );
+});`,
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("createAssertInlineSnapshot()", async (t) => {
+  const assertMonochromeInlineSnapshot = createAssertInlineSnapshot<string>({
+    serializer: stripAnsiCode,
+  });
+  await assertMonochromeInlineSnapshot(
+    t,
+    "\x1b[32mThis green text has had its colors stripped\x1b[39m",
+    `This green text has had its colors stripped`,
+  );
 });
