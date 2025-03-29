@@ -325,7 +325,7 @@ const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
 const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 
-export function bareKey(scanner: Scanner): ParseResult<string> {
+function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
   if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
     return failure();
@@ -384,7 +384,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
   }
 }
 
-export function basicString(scanner: Scanner): ParseResult<string> {
+function basicString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
   if (scanner.char() !== '"') return failure();
   scanner.next();
@@ -410,7 +410,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
   return success(acc.join(""));
 }
 
-export function literalString(scanner: Scanner): ParseResult<string> {
+function literalString(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
   if (scanner.char() !== "'") return failure();
   scanner.next();
@@ -431,7 +431,7 @@ export function literalString(scanner: Scanner): ParseResult<string> {
   return success(acc.join(""));
 }
 
-export function multilineBasicString(
+function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
@@ -479,7 +479,7 @@ export function multilineBasicString(
   return success(acc.join(""));
 }
 
-export function multilineLiteralString(
+function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
@@ -521,7 +521,7 @@ const symbolPairs: [string, unknown][] = [
   ["+nan", NaN],
   ["-nan", NaN],
 ];
-export function symbols(scanner: Scanner): ParseResult<unknown> {
+function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
   const found = symbolPairs.find(([str]) =>
     scanner.slice(0, str.length) === str
@@ -532,9 +532,9 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
   return success(value);
 }
 
-export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
+const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
-export function integer(scanner: Scanner): ParseResult<number | string> {
+function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
 
   // Handle binary, octal, or hex numbers
@@ -602,7 +602,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   return success(int);
 }
 
-export function float(scanner: Scanner): ParseResult<number> {
+function float(scanner: Scanner): ParseResult<number> {
   scanner.nextUntilChar({ inline: true });
 
   // lookahead validation is needed for integer value is similar to float
@@ -632,7 +632,7 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-export function dateTime(scanner: Scanner): ParseResult<Date> {
+function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.nextUntilChar({ inline: true });
 
   let dateStr = scanner.slice(0, 10);
@@ -656,7 +656,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   return success(date);
 }
 
-export function localTime(scanner: Scanner): ParseResult<string> {
+function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
   let timeStr = scanner.slice(0, 8);
@@ -676,7 +676,7 @@ export function localTime(scanner: Scanner): ParseResult<string> {
   return success(timeStr);
 }
 
-export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
+function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
   scanner.nextUntilChar({ inline: true });
 
   if (scanner.char() !== "[") return failure();
@@ -701,7 +701,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
   return success(array);
 }
 
-export function inlineTable(
+function inlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   scanner.nextUntilChar();
@@ -722,7 +722,7 @@ export function inlineTable(
   return success(table);
 }
 
-export const value = or([
+const value = or([
   multilineBasicString,
   multilineLiteralString,
   basicString,
@@ -736,9 +736,9 @@ export const value = or([
   inlineTable,
 ]);
 
-export const pair = kv(dottedKey, "=", value);
+const pair = kv(dottedKey, "=", value);
 
-export function block(
+function block(
   scanner: Scanner,
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
@@ -747,9 +747,9 @@ export function block(
   return failure();
 }
 
-export const tableHeader = surround("[", dottedKey, "]");
+const tableHeader = surround("[", dottedKey, "]");
 
-export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
+function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
   const header = tableHeader(scanner);
   if (!header.ok) return failure();
@@ -762,9 +762,9 @@ export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   });
 }
 
-export const tableArrayHeader = surround("[[", dottedKey, "]]");
+const tableArrayHeader = surround("[[", dottedKey, "]]");
 
-export function tableArray(
+function tableArray(
   scanner: Scanner,
 ): ParseResult<BlockParseResultBody> {
   scanner.nextUntilChar();
@@ -802,38 +802,4 @@ export function toml(
     }
   }
   return success(body);
-}
-
-export function parserFactory<T>(parser: ParserComponent<T>) {
-  return (tomlString: string): T => {
-    const scanner = new Scanner(tomlString);
-
-    let parsed: ParseResult<T> | null = null;
-    let err: Error | null = null;
-    try {
-      parsed = parser(scanner);
-    } catch (e) {
-      err = e instanceof Error ? e : new Error("Invalid error type caught");
-    }
-
-    if (err || !parsed || !parsed.ok || !scanner.eof()) {
-      const position = scanner.position();
-      const subStr = tomlString.slice(0, position);
-      const lines = subStr.split("\n");
-      const row = lines.length;
-      const column = (() => {
-        let count = subStr.length;
-        for (const line of lines) {
-          if (count <= line.length) break;
-          count -= line.length + 1;
-        }
-        return count;
-      })();
-      const message = `Parse error on line ${row}, column ${column}: ${
-        err ? err.message : `Unexpected character: "${scanner.char()}"`
-      }`;
-      throw new SyntaxError(message);
-    }
-    return parsed.body;
-  };
 }

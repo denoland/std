@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { parserFactory, toml } from "./_parser.ts";
+import { Scanner, toml } from "./_parser.ts";
 
 /**
  * Parses a {@link https://toml.io | TOML} string into an object.
@@ -23,5 +23,33 @@ import { parserFactory, toml } from "./_parser.ts";
  * @returns The parsed JS object.
  */
 export function parse(tomlString: string): Record<string, unknown> {
-  return parserFactory(toml)(tomlString);
+  const scanner = new Scanner(tomlString);
+
+  let parsed = null;
+  let err: Error | null = null;
+  try {
+    parsed = toml(scanner);
+  } catch (e) {
+    err = e instanceof Error ? e : new Error("Invalid error type caught");
+  }
+
+  if (err || !parsed || !parsed.ok || !scanner.eof()) {
+    const position = scanner.position();
+    const subStr = tomlString.slice(0, position);
+    const lines = subStr.split("\n");
+    const row = lines.length;
+    const column = (() => {
+      let count = subStr.length;
+      for (const line of lines) {
+        if (count <= line.length) break;
+        count -= line.length + 1;
+      }
+      return count;
+    })();
+    const message = `Parse error on line ${row}, column ${column}: ${
+      err ? err.message : `Unexpected character: "${scanner.char()}"`
+    }`;
+    throw new SyntaxError(message);
+  }
+  return parsed.body;
 }

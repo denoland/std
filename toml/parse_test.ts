@@ -1,26 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
-import {
-  arrayValue,
-  bareKey,
-  basicString,
-  dateTime,
-  deepAssignWithTable,
-  dottedKey,
-  float,
-  inlineTable,
-  integer,
-  literalString,
-  localTime,
-  multilineBasicString,
-  multilineLiteralString,
-  pair,
-  parserFactory,
-  Scanner,
-  symbols,
-  table,
-  value,
-} from "./_parser.ts";
+import { deepAssignWithTable, Scanner } from "./_parser.ts";
 import { parse, stringify } from "./mod.ts";
 
 Deno.test({
@@ -44,9 +24,8 @@ Deno.test({
 Deno.test({
   name: "parse() handles bare key",
   fn() {
-    const parse = parserFactory(bareKey);
-    assertEquals(parse("A-Za-z0-9_-"), "A-Za-z0-9_-");
-    assertThrows(() => parse(""));
+    assertEquals(parse("A-Za-z0-9_- = true"), { "A-Za-z0-9_-": true });
+    assertThrows(() => parse("= true"));
     assertThrows(() => parse('"foo"'));
   },
 });
@@ -54,13 +33,12 @@ Deno.test({
 Deno.test({
   name: "parse() handles basic string",
   fn() {
-    const parse = parserFactory(basicString);
     assertEquals(
-      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
-      'a"\n\t\b\\\あ🦕',
+      parse('key = "a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
+      { key: 'a"\n\t\b\\\あ🦕' },
     );
-    assertEquals(parse('""'), "");
-    assertEquals(parse('"a\\n"'), "a\n");
+    assertEquals(parse('key = ""'), { key: "" });
+    assertEquals(parse('key = "a\\n"'), { key: "a\n" });
     assertThrows(
       () => parse('"a\\0b\\?c"'),
       SyntaxError,
@@ -75,8 +53,7 @@ Deno.test({
 Deno.test({
   name: "parse() handles literal string",
   fn() {
-    const parse = parserFactory(literalString);
-    assertEquals(parse("'a\\n'"), "a\\n");
+    assertEquals(parse("value = 'a\\n'"), { value: "a\\n" });
     assertThrows(() => parse(""));
     assertThrows(() => parse("'a"));
     assertThrows(() => parse("a\nb"));
@@ -86,24 +63,23 @@ Deno.test({
 Deno.test({
   name: "parse() handles multi-line basic string",
   fn() {
-    const parse = parserFactory(multilineBasicString);
     assertEquals(
-      parse(`"""
+      parse(`value = """
 Roses are red
 Violets are\\tblue"""`),
-      "Roses are red\nViolets are\tblue",
+      { value: "Roses are red\nViolets are\tblue" },
     );
     assertEquals(
-      parse(`"""\\
+      parse(`value = """\\
     The quick brown \\
     fox jumps over \\
     the lazy dog.\\
     """`),
-      "The quick brown fox jumps over the lazy dog.",
+      { value: "The quick brown fox jumps over the lazy dog." },
     );
     assertThrows(
       () =>
-        parse(`"""\\
+        parse(`value = """\\
     The quick brown \\
     fox jumps over\\? \\
     the lazy dog\\0.\\
@@ -113,7 +89,7 @@ Violets are\\tblue"""`),
     );
     assertThrows(
       () =>
-        parse(`"""
+        parse(`value = """
 Roses are red
 Violets are\\tblue`),
       SyntaxError,
@@ -125,20 +101,19 @@ Violets are\\tblue`),
 Deno.test({
   name: "parse() handles multi-line basic string (CRLF)",
   fn() {
-    const parse = parserFactory(multilineBasicString);
     assertEquals(
-      parse(`"""\r
+      parse(`value = """\r
 Roses are red\r
 Violets are\\tblue"""`),
-      "Roses are red\r\nViolets are\tblue",
+      { value: "Roses are red\r\nViolets are\tblue" },
     );
     assertEquals(
-      parse(`"""\\\r
+      parse(`value = """\\\r
     The quick brown \\\r
     fox jumps over \\\r
     the lazy dog.\\\r
     """`),
-      "The quick brown fox jumps over the lazy dog.",
+      { value: "The quick brown fox jumps over the lazy dog." },
     );
   },
 });
@@ -146,16 +121,15 @@ Violets are\\tblue"""`),
 Deno.test({
   name: "parse() handles multi-line literal string",
   fn() {
-    const parse = parserFactory(multilineLiteralString);
     assertEquals(
-      parse(`'''
+      parse(`value = '''
 Roses are red
 Violets are\\tblue'''`),
-      "Roses are red\nViolets are\\tblue",
+      { value: "Roses are red\nViolets are\\tblue" },
     );
     assertThrows(
       () =>
-        parse(`'''
+        parse(`value = '''
 Roses are red
 Violets are\\tblue`),
       SyntaxError,
@@ -167,12 +141,11 @@ Violets are\\tblue`),
 Deno.test({
   name: "parse() handles multi-line literal string (CRLF)",
   fn() {
-    const parse = parserFactory(multilineLiteralString);
     assertEquals(
-      parse(`'''\r
+      parse(`value = '''\r
 Roses are red\r
 Violets are\\tblue'''`),
-      "Roses are red\r\nViolets are\\tblue",
+      { value: "Roses are red\r\nViolets are\\tblue" },
     );
   },
 });
@@ -180,21 +153,21 @@ Violets are\\tblue'''`),
 Deno.test({
   name: "parse() handles symbols",
   fn() {
-    const parse = parserFactory(symbols);
-    assertEquals(parse("true"), true);
-    assertEquals(parse("nan"), NaN);
-    assertEquals(parse("inf"), Infinity);
-    assertThrows(() => parse(""));
-    assertThrows(() => parse("_"));
+    assertEquals(parse("value = true"), { value: true });
+    assertEquals(parse("value = nan"), { value: NaN });
+    assertEquals(parse("value = inf"), { value: Infinity });
+    assertThrows(() => parse("value = "));
+    assertThrows(() => parse("value = _"));
   },
 });
 
 Deno.test({
   name: "parse() handles dotted key",
   fn() {
-    const parse = parserFactory(dottedKey);
-    assertEquals(parse("a . b . c"), ["a", "b", "c"]);
-    assertEquals(parse(`a.'b.c'."d.e"`), ["a", "b.c", "d.e"]);
+    assertEquals(parse("a . b . c = true"), { a: { b: { c: true } } });
+    assertEquals(parse(`a.'b.c'."d.e" = true`), {
+      a: { "b.c": { "d.e": true } },
+    });
     assertThrows(() => parse(""));
     assertThrows(() => parse("a.b ."));
     assertThrows(() => parse("."));
@@ -204,29 +177,15 @@ Deno.test({
 Deno.test({
   name: "parse() handles table",
   fn() {
-    const parse = parserFactory(table);
     assertEquals(
       parse(`
 [foo.bar]
 baz = true
 fizz.buzz = true
 `.trim()),
-      {
-        type: "Table",
-        key: ["foo", "bar"],
-        value: {
-          baz: true,
-          fizz: {
-            buzz: true,
-          },
-        },
-      },
+      { foo: { bar: { baz: true, fizz: { buzz: true } } } },
     );
-    assertEquals(parse(`[only.header]`), {
-      type: "Table",
-      key: ["only", "header"],
-      value: {},
-    });
+    assertEquals(parse(`[only.header]`), { only: { header: {} } });
     assertThrows(() => parse(""));
     assertThrows(() => parse("["));
     assertThrows(() => parse("[o"));
@@ -236,71 +195,72 @@ fizz.buzz = true
 Deno.test({
   name: "parse() handles integer",
   fn() {
-    const parse = parserFactory(integer);
-    assertEquals(parse("123"), 123);
-    assertEquals(parse("+123"), 123);
-    assertEquals(parse("-123"), -123);
-    assertEquals(parse("123_456"), 123456);
-    assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
-    assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
-    assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
-    assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
-    assertEquals(parse("0o755"), 0o755); // 0o755 = 493
-    assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
-    assertThrows(() => parse(""));
-    assertThrows(() => parse("+Z"));
-    assertThrows(() => parse("0x"));
+    assertEquals(parse("number = 123"), { number: 123 });
+    assertEquals(parse("number = +123"), { number: 123 });
+    assertEquals(parse("number = -123"), { number: -123 });
+    assertEquals(parse("number = 123_456"), { number: 123456 });
+    assertEquals(parse("number = 0xDEADBEEF"), { number: 0xDEADBEEF }); // 0xDEADBEEF = 3735928559
+    assertEquals(parse("number = 0xdeadbeef"), { number: 0xdeadbeef }); // 0xdeadbeef = 3735928559
+    assertEquals(parse("number = 0xdead_beef"), { number: 0xdead_beef }); // 0xdead_beef = 3735928559
+    assertEquals(parse("number = 0o01234567"), { number: 0o01234567 }); //  0o01234567 = 342391
+    assertEquals(parse("number = 0o755"), { number: 0o755 }); // 0o755 = 493
+    assertEquals(parse("number = 0b11010110"), { number: 0b11010110 }); // 0b11010110 = 214
+    assertThrows(() => parse("number = "));
+    assertThrows(() => parse("number = +Z"));
+    assertThrows(() => parse("number = 0x"));
   },
 });
 
 Deno.test({
   name: "parse() handles float",
   fn() {
-    const parse = parserFactory(float);
-    assertEquals(parse("+1.0"), 1.0);
-    assertEquals(parse("3.1415"), 3.1415);
-    assertEquals(parse("-0.01"), -0.01);
-    assertEquals(parse("5e+22"), 5e+22);
-    assertEquals(parse("1e06"), 1e06);
-    assertEquals(parse("-2E-2"), -2E-2);
-    assertEquals(parse("6.626e-34"), 6.626e-34);
-    assertEquals(parse("224_617.445_991_228"), 224_617.445_991_228);
-    assertThrows(() => parse(""));
-    assertThrows(() => parse("X"));
-    assertThrows(() => parse("e_+-"));
+    assertEquals(parse("number = +1.0"), { number: 1.0 });
+    assertEquals(parse("number = 3.1415"), { number: 3.1415 });
+    assertEquals(parse("number = -0.01"), { number: -0.01 });
+    assertEquals(parse("number = 5e+22"), { number: 5e+22 });
+    assertEquals(parse("number = 1e06"), { number: 1e06 });
+    assertEquals(parse("number = -2E-2"), { number: -2E-2 });
+    assertEquals(parse("number = 6.626e-34"), { number: 6.626e-34 });
+    assertEquals(parse("number = 224_617.445_991_228"), {
+      number: 224_617.445_991_228,
+    });
+    assertThrows(() => parse("number = "));
+    assertThrows(() => parse("number = X"));
+    assertThrows(() => parse("number = e_+-"));
   },
 });
 
 Deno.test({
   name: "parse() handles date and date time",
   fn() {
-    const parse = parserFactory(dateTime);
     assertEquals(
-      parse("1979-05-27T07:32:00Z"),
-      new Date("1979-05-27T07:32:00Z"),
+      parse("date = 1979-05-27T07:32:00Z"),
+      { date: new Date("1979-05-27T07:32:00Z") },
     );
     assertEquals(
-      parse("1979-05-27T00:32:00-07:00"),
-      new Date("1979-05-27T07:32:00Z"),
+      parse("date = 1979-05-27T00:32:00-07:00"),
+      { date: new Date("1979-05-27T07:32:00Z") },
     );
     assertEquals(
-      parse("1979-05-27T14:32:00+07:00"),
-      new Date("1979-05-27T07:32:00Z"),
+      parse("date = 1979-05-27T14:32:00+07:00"),
+      { date: new Date("1979-05-27T07:32:00Z") },
     );
     assertEquals(
-      parse("1979-05-27T00:32:00.999999-07:00"),
-      new Date("1979-05-27T07:32:00.999Z"),
+      parse("date = 1979-05-27T00:32:00.999999-07:00"),
+      { date: new Date("1979-05-27T07:32:00.999Z") },
     );
     assertEquals(
-      parse("1979-05-27 07:32:00Z"),
-      new Date("1979-05-27T07:32:00Z"),
+      parse("date = 1979-05-27 07:32:00Z"),
+      { date: new Date("1979-05-27T07:32:00Z") },
     );
-    assertEquals(parse("1979-05-27T07:32:00"), new Date("1979-05-27T07:32:00"));
+    assertEquals(parse("date = 1979-05-27T07:32:00"), {
+      date: new Date("1979-05-27T07:32:00"),
+    });
     assertEquals(
-      parse("1979-05-27T00:32:00.999999"),
-      new Date("1979-05-27T00:32:00.999999"),
+      parse("date = 1979-05-27T00:32:00.999999"),
+      { date: new Date("1979-05-27T00:32:00.999999") },
     );
-    assertEquals(parse("1979-05-27"), new Date("1979-05-27"));
+    assertEquals(parse("date = 1979-05-27"), { date: new Date("1979-05-27") });
     assertThrows(() => parse(""));
     assertThrows(() => parse("X"));
     assertThrows(() => parse("0000-00-00"));
@@ -310,9 +270,8 @@ Deno.test({
 Deno.test({
   name: "parse() handles local time",
   fn() {
-    const parse = parserFactory(localTime);
-    assertEquals(parse("07:32:00"), "07:32:00");
-    assertEquals(parse("07:32:00.999"), "07:32:00.999");
+    assertEquals(parse("time = 07:32:00"), { time: "07:32:00" });
+    assertEquals(parse("time = 07:32:00.999"), { time: "07:32:00.999" });
     assertThrows(() => parse(""));
   },
 });
@@ -320,20 +279,20 @@ Deno.test({
 Deno.test({
   name: "parse() handles value",
   fn() {
-    const parse = parserFactory(value);
-    assertEquals(parse("1"), 1);
-    assertEquals(parse("1.2"), 1.2);
-    assertEquals(parse("1979-05-27"), new Date("1979-05-27"));
-    assertEquals(parse("07:32:00"), "07:32:00");
-    assertEquals(parse(`"foo.com"`), "foo.com");
-    assertEquals(parse(`'foo.com'`), "foo.com");
+    assertEquals(parse("value = 1"), { value: 1 });
+    assertEquals(parse("value = 1.2"), { value: 1.2 });
+    assertEquals(parse("value = 1979-05-27"), {
+      value: new Date("1979-05-27"),
+    });
+    assertEquals(parse("value = 07:32:00"), { value: "07:32:00" });
+    assertEquals(parse(`value = "foo.com"`), { value: "foo.com" });
+    assertEquals(parse(`value = 'foo.com'`), { value: "foo.com" });
   },
 });
 
 Deno.test({
   name: "parse() handles key value pair",
   fn() {
-    const parse = parserFactory(pair);
     assertEquals(parse("key = 'value'"), { key: "value" });
     assertThrows(() => parse("key ="));
     assertThrows(() => parse("key = \n 'value'"));
@@ -344,47 +303,61 @@ Deno.test({
 Deno.test({
   name: "parse() handles array",
   fn() {
-    const parse = parserFactory(arrayValue);
-    assertEquals(parse("[]"), []);
-    assertEquals(parse("[1, 2, 3]"), [1, 2, 3]);
-    assertEquals(parse(`[ "red", "yellow", "green" ]`), [
-      "red",
-      "yellow",
-      "green",
-    ]);
-    assertEquals(parse(`[ [ 1, 2 ], [3, 4, 5] ]`), [[1, 2], [3, 4, 5]]);
-    assertEquals(parse(`[ [ 1, 2 ], ["a", "b", "c"] ]`), [
-      [1, 2],
-      ["a", "b", "c"],
-    ]);
+    assertEquals(parse("array = []"), { array: [] });
+    assertEquals(parse("array = [1, 2, 3]"), { array: [1, 2, 3] });
+    assertEquals(parse(`array= [ "red", "yellow", "green" ]`), {
+      array: [
+        "red",
+        "yellow",
+        "green",
+      ],
+    });
+    assertEquals(parse(`array = [ [ 1, 2 ], [3, 4, 5] ]`), {
+      array: [[1, 2], [3, 4, 5]],
+    });
+    assertEquals(parse(`array = [ [ 1, 2 ], ["a", "b", "c"] ]`), {
+      array: [
+        [1, 2],
+        ["a", "b", "c"],
+      ],
+    });
     assertEquals(
-      parse(`[
+      parse(`array = [
       { x = 1, y = 2, z = 3 },
       { x = 7, y = 8, z = 9 },
       { x = 2, y = 4, z = 8 }
     ]`),
-      [{ x: 1, y: 2, z: 3 }, { x: 7, y: 8, z: 9 }, { x: 2, y: 4, z: 8 }],
+      {
+        array: [{ x: 1, y: 2, z: 3 }, { x: 7, y: 8, z: 9 }, {
+          x: 2,
+          y: 4,
+          z: 8,
+        }],
+      },
     );
     assertEquals(
-      parse(`[ # comment
+      parse(`array = [ # comment
         1, # comment
         2, # this is ok
       ]`),
-      [1, 2],
+      { array: [1, 2] },
     );
-    assertThrows(() => parse("[1, 2, 3"), SyntaxError, "not closed");
+    assertThrows(() => parse("array = [1, 2, 3"), SyntaxError, "not closed");
   },
 });
 
 Deno.test({
   name: "parse() handles inline table",
   fn() {
-    const parse = parserFactory(inlineTable);
-    assertEquals(parse(`{ first = "Tom", last = "Preston-Werner" }`), {
-      first: "Tom",
-      last: "Preston-Werner",
+    assertEquals(parse(`value = { first = "Tom", last = "Preston-Werner" }`), {
+      value: {
+        first: "Tom",
+        last: "Preston-Werner",
+      },
     });
-    assertEquals(parse(`{ type.name = "pug" }`), { type: { name: "pug" } });
+    assertEquals(parse(`value = { type.name = "pug" }`), {
+      value: { type: { name: "pug" } },
+    });
     assertThrows(() => parse(`{ x = 1`));
     assertThrows(() => parse(`{ x = 1,\n y = 2 }`));
     assertThrows(() => parse(`{ x = 1, }`));
@@ -543,14 +516,6 @@ Deno.test({
       () => parse(""),
       SyntaxError,
       "line 1, column 0",
-    );
-    assertThrows(
-      () =>
-        parserFactory((_s) => {
-          throw "Custom parser";
-        })(""),
-      SyntaxError,
-      "Invalid error type caught",
     );
   },
 });
