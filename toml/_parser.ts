@@ -123,6 +123,14 @@ export class Scanner {
   isCurrentCharEOL() {
     return this.char() === "\n" || this.slice(0, 2) === "\r\n";
   }
+
+  match(regExp: RegExp) {
+    const match = this.#source.slice(this.#position).match(regExp);
+    if (!match) return null;
+    const string = match[0];
+    this.next(string.length);
+    return string;
+  }
 }
 
 // -----------------------
@@ -321,21 +329,13 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
-const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
+const BARE_KEY_REGEXP = /^[A-Za-z0-9_-]+/;
+const FLOAT_REGEXP = /^[0-9_\.e+\-]+/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
-
 export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
-    return failure();
-  }
-  const acc: string[] = [];
-  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  const key = acc.join("");
+  const key = scanner.match(BARE_KEY_REGEXP);
+  if (!key) return failure();
   return success(key);
 }
 
@@ -615,18 +615,9 @@ export function float(scanner: Scanner): ParseResult<number> {
     position++;
   }
 
-  const acc = [];
-  if (/[+-]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  if (acc.length === 0) return failure();
-  const float = parseFloat(acc.filter((char) => char !== "_").join(""));
+  const match = scanner.match(FLOAT_REGEXP);
+  if (!match) return failure();
+  const float = parseFloat([...match].filter((char) => char !== "_").join(""));
   if (isNaN(float)) return failure();
 
   return success(float);
@@ -634,45 +625,28 @@ export function float(scanner: Scanner): ParseResult<number> {
 
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.nextUntilChar({ inline: true });
-
-  let dateStr = scanner.slice(0, 10);
   // example: 1979-05-27
-  if (!/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return failure();
-  scanner.next(10);
-
-  const acc = [];
-  // example: 1979-05-27T00:32:00Z
-  while (/[ 0-9TZ.:+-]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  dateStr += acc.join("");
+  let dateStr = scanner.match(/^\d{4}-\d{2}-\d{2}/);
+  if (!dateStr) return failure();
+  dateStr += scanner.match(/^[ 0-9TZ.:+-]+/) ?? "";
   const date = new Date(dateStr.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${dateStr}"`);
   }
-
   return success(date);
 }
 
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
-  let timeStr = scanner.slice(0, 8);
-  if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
-  scanner.next(8);
+  let timeStr = scanner.match(/^(\d{2}):(\d{2}):(\d{2})/);
+  if (!timeStr) return failure();
 
-  const acc = [];
   if (scanner.char() !== ".") return success(timeStr);
-  acc.push(scanner.char());
+  timeStr += scanner.char();
   scanner.next();
-
-  while (/[0-9]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  timeStr += acc.join("");
+  timeStr += scanner.match(/^[0-9]+/) ?? "";
   return success(timeStr);
 }
 
