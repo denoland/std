@@ -3,6 +3,7 @@
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { open, openSync } from "./unstable_open.ts";
 import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
+import { makeTempFile, makeTempFileSync } from "./unstable_make_temp_file.ts";
 import { remove, removeSync } from "./unstable_remove.ts";
 import { readFile, readFileSync } from "./unstable_read_file.ts";
 import { readTextFile } from "./unstable_read_text_file.ts";
@@ -160,8 +161,9 @@ Deno.test("FsFile object handles a WritableStream", async () => {
 });
 
 Deno.test("FsFile object changes access and modification times with utime", async () => {
+  const tempFile = await makeTempFile({ prefix: "FsFile_utime_" });
   const timeNow = new Date();
-  const fh = await open(readTestFile, { write: true });
+  const fh = await open(tempFile, { write: true });
 
   const statBefore = await fh.stat();
   await fh.utime(timeNow, timeNow);
@@ -171,6 +173,8 @@ Deno.test("FsFile object changes access and modification times with utime", asyn
 
   assert(statBefore.atime !== statAfter.atime);
   assert(statBefore.mtime !== statAfter.mtime);
+
+  await remove(tempFile);
 });
 
 Deno.test("FsFile object flushes data to disk with 'dataSync'", async () => {
@@ -300,8 +304,9 @@ Deno.test("FsFile object synchronously returns the 'stat' of the file handle", (
 });
 
 Deno.test("FsFile object synchronously changes the access and modification times of a file", () => {
+  const tempFile = makeTempFileSync({ prefix: "FsFile_utimeSync_" });
   const timeNow = new Date();
-  const fh = openSync(readTestFile, { write: true });
+  const fh = openSync(tempFile, { write: true });
 
   const statBefore = fh.statSync();
   fh.utimeSync(timeNow, timeNow);
@@ -310,6 +315,8 @@ Deno.test("FsFile object synchronously changes the access and modification times
 
   assert(statBefore.atime !== statAfter.atime);
   assert(statBefore.mtime !== statAfter.mtime);
+
+  removeSync(tempFile);
 });
 
 Deno.test("FsFile object synchronously flushes data to disk with 'syncDataSync'", () => {
