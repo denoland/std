@@ -151,13 +151,17 @@ export function encodeRawBase32(
   format: Base32Format = "Base32",
 ): number {
   const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) throw new RangeError("Buffer too small");
+  if (max > buffer.length - o) {
+    throw new RangeError("Cannot encode buffer as base32: Buffer too small");
+  }
   return encode(buffer, i, o, alphabet[format], padding);
 }
 
 /**
  * `decodeBase32` takes an input source and decodes it into a
- * {@linkcode Uint8Array<ArrayBuffer>} using the specified format.
+ * {@linkcode Uint8Array<ArrayBuffer>} using the specified format. If a
+ * {@linkcode Uint8Array<ArrayBuffer>} is provided as input then a subarray of
+ * the input containing the decoded data is returned.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -187,15 +191,13 @@ export function encodeRawBase32(
  * ```
  */
 export function decodeBase32(
-  input: string,
+  input: string | Uint8Array_,
   format: Base32Format = "Base32",
 ): Uint8Array_ {
-  const output = new TextEncoder().encode(input) as Uint8Array_;
-  return output
-    .subarray(
-      0,
-      decode(output, 0, 0, rAlphabet[format], padding),
-    );
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  }
+  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
 }
 
 /**
@@ -241,7 +243,7 @@ export function decodeRawBase32(
 ): number {
   if (i < o) {
     throw new RangeError(
-      "Input (i) must be greater than or equal to output (o)",
+      "Cannot decode buffer as base32: Input (i) must be greater than or equal to output (o)",
     );
   }
   return decode(buffer, i, o, rAlphabet[format], padding);

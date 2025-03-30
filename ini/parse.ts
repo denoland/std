@@ -5,14 +5,13 @@ import { IniMap, type ReviverFunction } from "./_ini_map.ts";
 export type { ReviverFunction };
 
 /** Options for {@linkcode parse}. */
-// deno-lint-ignore no-explicit-any
-export interface ParseOptions<T = any> {
+export interface ParseOptions {
   /**
    * Provide custom parsing of the value in a key/value pair. Similar to the
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
    * function in {@linkcode JSON.parse}.
    */
-  reviver?: ReviverFunction<T>;
+  reviver?: ReviverFunction;
 }
 
 /**
@@ -80,10 +79,9 @@ export interface ParseOptions<T = any> {
  * @typeParam T The type of the value
  * @return The parsed object
  */
-// deno-lint-ignore no-explicit-any
-export function parse<T = any>(
+export function parse<T extends object>(
   text: string,
-  options?: ParseOptions<T>,
-): Record<string, T | Record<string, T>> {
-  return IniMap.from(text, options).toObject();
+  options?: ParseOptions,
+): T {
+  return IniMap.from(text, options).toObject<T>();
 }

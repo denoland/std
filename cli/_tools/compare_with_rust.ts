@@ -49,7 +49,9 @@ Deno.test("fast-check equality with unicode_width Rust crate", async (t) => {
               // deno-lint-ignore no-explicit-any
               (str: any) =>
                 unicodeWidth(str) ===
-                  dylib.symbols.unicode_width(toCString(JSON.stringify(str))),
+                  Number(
+                    dylib.symbols.unicode_width(toCString(JSON.stringify(str))),
+                  ),
             ),
           );
         },
