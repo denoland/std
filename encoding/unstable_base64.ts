@@ -172,13 +172,11 @@ export function encodeIntoBase64(
  * ```
  */
 export function decodeBase64(
-  input: string,
+  input: string | Uint8Array_,
   format: Base64Format = "Base64",
 ): Uint8Array_ {
-  const output = new TextEncoder().encode(input) as Uint8Array_;
-  return output
-    .subarray(
-      0,
-      decode(output, 0, 0, rAlphabet[format], padding),
-    );
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  }
+  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
 }
