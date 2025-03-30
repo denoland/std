@@ -1,6 +1,6 @@
 {
   "name": "@std/async",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "exports": {
     ".": "./mod.ts",
     "./abortable": "./abortable.ts",

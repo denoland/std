@@ -7,18 +7,18 @@
 export interface ProgressBarFormatter {
   /**
    * A function that returns a formatted version of the duration.
-   * `[mm:ss] `
+   * `[mm:ss]`
    */
   styledTime: () => string;
   /**
    * A function that returns a formatted version of the data received.
-   * `[0.40/97.66 KiB] `
+   * `[0.40/97.66 KiB]`
    * @param fractions The number of decimal places the values should have.
    */
   styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
-   * Default Style: `[###-------] `
+   * Default Style: `[###-------]`
    */
   progressBar: string;
   /**
@@ -82,6 +82,10 @@ export interface ProgressBarOptions {
    * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
   fmt?: (fmt: ProgressBarFormatter) => string;
+  /**
+   * Whether the writable should be kept open when progress bar stops.
+   * @default {true}
+   */
   keepOpen?: boolean;
 }
 
@@ -169,7 +173,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => x.styledTime() + x.progressBar + x.styledData(),
+      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
       keepOpen = true,
     } = options;
     this.#value = value;
@@ -211,34 +215,23 @@ export class ProgressBar {
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
+
     const size = this.#value / this.#max * this.#barLength | 0;
-    const unit = this.#unit;
-    const rate = this.#rate;
-    const x: ProgressBarFormatter = {
+    const fillChars = this.#fillChar.repeat(size);
+    const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
+
+    const formatter: ProgressBarFormatter = {
       styledTime() {
-        return "[" +
-          (this.time / 1000 / 60 | 0)
-            .toString()
-            .padStart(2, "0") +
-          ":" +
-          (this.time / 1000 % 60 | 0)
-            .toString()
-            .padStart(2, "0") +
-          "] ";
+        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
+        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
+        return `[${minutes}:${seconds}]`;
       },
-      styledData: function (fractions = 2): string {
-        return "[" +
-          (this.value / rate).toFixed(fractions) +
-          "/" +
-          (this.max / rate).toFixed(fractions) +
-          " " +
-          unit +
-          "] ";
+      styledData: (fractions = 2): string => {
+        const currentValue = (this.#value / this.#rate).toFixed(fractions);
+        const maxValue = (this.#max / this.#rate).toFixed(fractions);
+        return `[${currentValue}/${maxValue} ${this.#unit}]`;
       },
-      progressBar: "[" +
-        this.#fillChar.repeat(size) +
-        this.#emptyChar.repeat(this.#barLength - size) +
-        "] ",
+      progressBar: `[${fillChars}${emptyChars}]`,
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
       value: this.#value,
@@ -247,13 +240,20 @@ export class ProgressBar {
     };
     this.#lastTime = currentTime;
     this.#lastValue = this.#value;
-    await this.#writer.write("\r\u001b[K" + this.#fmt(x))
+    await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
       .catch(() => {});
   }
 
   /**
    * Increments the progress by `x`.
    *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
+   * progressBar.add(10);
+   * ```
    * @param x The amount of progress that has been made.
    */
   add(x: number): void {
@@ -262,6 +262,14 @@ export class ProgressBar {
 
   /**
    * Ends the progress bar and cleans up any lose ends.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
+   * await progressBar.end()
+   * ```
    */
   async end(): Promise<void> {
     clearInterval(this.#id);

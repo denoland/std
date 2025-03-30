@@ -50,7 +50,7 @@ Deno.test("decodeBase64Url() throws on invalid input", () => {
     assertThrows(
       () => decodeBase64Url(invalidb64url),
       TypeError,
-      "Invalid Character",
+      "Cannot decode input as base64: Invalid character",
     );
   }
 });
@@ -66,8 +66,8 @@ Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
   for (const illegalBase64url of testsetIllegalBase64url) {
     assertThrows(
       () => decodeBase64Url(illegalBase64url),
-      TypeError,
-      "Invalid Character",
+      RangeError,
+      `Length (${illegalBase64url.length}), excluding padding, must not have a remainder of 1 when divided by 4`,
     );
   }
 });

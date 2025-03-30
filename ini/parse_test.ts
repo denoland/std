@@ -10,7 +10,7 @@ import {
 
 function assertValidParse(
   text: string,
-  expected: unknown,
+  expected: object,
   options?: ParseOptions,
 ) {
   assertEquals(parse(text, options), expected);

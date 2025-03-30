@@ -56,3 +56,27 @@ Deno.test("extractJson() allows whitespaces after the header", () => {
   assertEquals(extract('---json  \n{"foo": 0}\n---\n').attrs, { foo: 0 });
   assertEquals(extract('= json =  \n{"foo": 0}\n---\n').attrs, { foo: 0 });
 });
+
+Deno.test("extractJson() handles empty frontMatter", () => {
+  assertEquals(
+    extract("---json\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+
+  assertEquals(
+    extract("---json\n\n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+  assertEquals(
+    extract("---json\n   \n---\n"),
+    { attrs: {}, body: "", frontMatter: "" },
+  );
+});
+
+Deno.test("extractJson() throws at missing newline before body", () => {
+  assertThrows(
+    () => extract('---json\n{ "foo": "bar" }\n---body'),
+    TypeError,
+    "Unexpected end of input",
+  );
+});

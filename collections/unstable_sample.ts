@@ -8,7 +8,7 @@
  *
  * @typeParam T The type of the elements in the iterable.
  *
- * @param array The iterable to sample from.
+ * @param iterable The iterable to sample from.
  *
  * @returns A random element from the given iterable, or `undefined` if the iterable has no elements.
  *
