@@ -13,7 +13,6 @@ export function mockConn(base: Partial<Deno.Conn> = {}): Deno.Conn {
       hostname: "",
       port: 0,
     },
-    rid: -1,
     closeWrite: () => {
       return Promise.resolve();
     },
@@ -24,7 +23,7 @@ export function mockConn(base: Partial<Deno.Conn> = {}): Deno.Conn {
       return Promise.resolve(-1);
     },
     close: () => {},
-    readable: new ReadableStream({
+    readable: new ReadableStream<Uint8Array<ArrayBuffer>>({
       type: "bytes",
       async pull(_controller) {
       },
