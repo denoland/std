@@ -121,7 +121,11 @@ export class Scanner {
   }
 
   isCurrentCharEOL() {
-    return this.char() === "\n" || this.slice(0, 2) === "\r\n";
+    return this.char() === "\n" || this.startsWith("\r\n");
+  }
+
+  startsWith(searchString: string) {
+    return this.#source.startsWith(searchString, this.#position);
   }
 }
 
@@ -310,7 +314,7 @@ function surround<T>(
 function character(str: string) {
   return (scanner: Scanner): ParseResult<void> => {
     scanner.nextUntilChar({ inline: true });
-    if (scanner.slice(0, str.length) !== str) return failure();
+    if (!scanner.startsWith(str)) return failure();
     scanner.next(str.length);
     scanner.nextUntilChar({ inline: true });
     return success(undefined);
@@ -435,23 +439,23 @@ export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== '"""') return failure();
+  if (!scanner.startsWith('"""')) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== '"""' && !scanner.eof()) {
+  while (!scanner.startsWith('"""') && !scanner.eof()) {
     // line ending backslash
-    if (scanner.slice(0, 2) === "\\\n") {
+    if (scanner.startsWith("\\\n")) {
       scanner.next();
       scanner.nextUntilChar({ comment: false });
       continue;
-    } else if (scanner.slice(0, 3) === "\\\r\n") {
+    } else if (scanner.startsWith("\\\r\n")) {
       scanner.next();
       scanner.nextUntilChar({ comment: false });
       continue;
@@ -483,17 +487,17 @@ export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== "'''") return failure();
+  if (!scanner.startsWith("'''")) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== "'''" && !scanner.eof()) {
+  while (!scanner.startsWith("'''") && !scanner.eof()) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -523,9 +527,7 @@ const symbolPairs: [string, unknown][] = [
 ];
 export function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
-  const found = symbolPairs.find(([str]) =>
-    scanner.slice(0, str.length) === str
-  );
+  const found = symbolPairs.find(([str]) => scanner.startsWith(str));
   if (!found) return failure();
   const [str, value] = found;
   scanner.next(str.length);
