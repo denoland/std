@@ -541,7 +541,6 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   const first2 = scanner.slice(0, 2);
   if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
     scanner.next(2);
-    const acc = [first2];
     const prefix = first2.toLowerCase();
 
     // Determine allowed characters and base in one switch
@@ -564,20 +563,23 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
         return failure(); // Unreachable due to regex check
     }
 
+    const acc = [];
     // Collect valid characters
-    while (!scanner.eof() && allowedChars.test(scanner.char())) {
-      acc.push(scanner.char());
+    while (!scanner.eof()) {
+      const char = scanner.char();
+      if (!allowedChars.test(char)) break;
+      if (char === "_") {
+        scanner.next();
+        continue;
+      }
+      acc.push(char);
       scanner.next();
     }
 
-    if (acc.length === 1) return failure(); // Only prefix, no digits
+    if (acc.length === 0) return failure(); // Only prefix, no digits
 
-    // Process and parse
-    const numberStr = acc.join("").replace(/_/g, ""); // Remove underscores
-    const digits = numberStr.slice(2); // Remove prefix
-    if (digits.length === 0) return failure();
-
-    const number = parseInt(digits, base);
+    const numberStr = acc.join("");
+    const number = parseInt(numberStr, base);
     return isNaN(number) ? failure() : success(number);
   }
 
