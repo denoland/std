@@ -36,6 +36,7 @@ export type { Extract };
  */
 export function extract<T>(text: string): Extract<T> {
   const { frontMatter, body } = extractFrontMatter(text, EXTRACT_TOML_REGEXP);
-  const attrs = parse(frontMatter) as T;
+
+  const attrs = (frontMatter ? parse(frontMatter) : {}) as T;
   return { frontMatter, body, attrs };
 }

@@ -43,8 +43,10 @@ export function decode(
   alphabet: Uint8Array,
 ): number {
   if ((buffer.length - o) % 2 === 1) {
-    throw new TypeError(
-      `Invalid Character (${String.fromCharCode(buffer[buffer.length - 1]!)})`,
+    throw new RangeError(
+      `Cannot decode input as hex: Length (${
+        buffer.length - o
+      }) must be divisible by 2`,
     );
   }
 
@@ -59,7 +61,11 @@ export function decode(
 function getByte(char: number, alphabet: Uint8Array): number {
   const byte = alphabet[char] ?? 16;
   if (byte === 16) { // alphabet.Hex.length
-    throw new TypeError(`Invalid Character (${String.fromCharCode(char)})`);
+    throw new TypeError(
+      `Cannot decode input as hex: Invalid character (${
+        String.fromCharCode(char)
+      })`,
+    );
   }
   return byte;
 }

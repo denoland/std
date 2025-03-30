@@ -189,7 +189,7 @@ Deno.test("decodeBase32() invalid char after padding", () => {
       assertThrows(
         () => decodeBase32(input, format),
         TypeError,
-        "Invalid Character (.)",
+        "Cannot decode input as base32: Invalid character (.)",
         format,
       );
     }
@@ -210,8 +210,8 @@ Deno.test("decodeBase32() invalid length", () => {
     ) {
       assertThrows(
         () => decodeBase32(input, format),
-        TypeError,
-        "Invalid Character (A)",
+        RangeError,
+        `Length (${input.length}), excluding padding, must not have a remainder of 1, 3, or 6 when divided by 8`,
         format,
       );
     }
@@ -232,7 +232,7 @@ Deno.test("decodeBase32() invalid char", () => {
       assertThrows(
         () => decodeBase32(input, format),
         TypeError,
-        "Invalid Character (.)",
+        "Cannot decode input as base32: Invalid character (.)",
         format,
       );
     }
@@ -295,6 +295,6 @@ Deno.test("decodeBase32() throws with invalid byte >= 128", () => {
   assertThrows(
     () => decodeBase32(input),
     TypeError,
-    "Invalid Character",
+    "Cannot decode input as base32: Invalid character",
   );
 });
