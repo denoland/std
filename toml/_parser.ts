@@ -576,7 +576,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
       scanner.next();
     }
 
-    if (acc.length === 0) return failure(); // Only prefix, no digits
+    if (!acc.length) return failure();
 
     const numberStr = acc.join("");
     const number = parseInt(numberStr, base);
