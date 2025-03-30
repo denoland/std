@@ -78,22 +78,20 @@ export class Scanner {
     options: { inline?: boolean; comment?: boolean } = { comment: true },
   ) {
     if (options.inline) {
-      while (this.#whitespace.test(this.char()) && !this.eof()) {
-        this.next();
+      for (const char of this) {
+        if (!this.#whitespace.test(char)) break;
       }
     } else {
-      while (!this.eof()) {
-        const char = this.char();
-        if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
-          this.next();
-        } else if (options.comment && this.char() === "#") {
+      for (const char of this) {
+        if (this.#whitespace.test(char)) continue;
+        if (this.isCurrentCharEOL()) continue;
+        if (options.comment && this.char() === "#") {
           // entering comment
-          while (!this.isCurrentCharEOL() && !this.eof()) {
-            this.next();
-          }
-        } else {
-          break;
+          this.next();
+          for (const _ of this) if (this.isCurrentCharEOL()) break;
+          continue;
         }
+        break;
       }
     }
     // Invalid if current char is other kinds of whitespace
@@ -122,6 +120,13 @@ export class Scanner {
 
   isCurrentCharEOL() {
     return this.char() === "\n" || this.slice(0, 2) === "\r\n";
+  }
+
+  *[Symbol.iterator]() {
+    while (!this.eof()) {
+      yield this.char();
+      this.next();
+    }
   }
 }
 
@@ -331,9 +336,9 @@ export function bareKey(scanner: Scanner): ParseResult<string> {
     return failure();
   }
   const acc: string[] = [];
-  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
+  for (const char of scanner) {
+    if (!BARE_KEY_REGEXP.test(char)) break;
+    acc.push(char);
   }
   const key = acc.join("");
   return success(key);
@@ -415,12 +420,12 @@ export function literalString(scanner: Scanner): ParseResult<string> {
   if (scanner.char() !== "'") return failure();
   scanner.next();
   const acc: string[] = [];
-  while (scanner.char() !== "'" && !scanner.eof()) {
+  for (const char of scanner) {
+    if (char === "'") break;
     if (scanner.char() === "\n") {
       throw new SyntaxError("Single-line string cannot contain EOL");
     }
-    acc.push(scanner.char());
-    scanner.next();
+    acc.push(char);
   }
   if (scanner.eof()) {
     throw new SyntaxError(
@@ -565,9 +570,9 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
     }
 
     // Collect valid characters
-    while (!scanner.eof() && allowedChars.test(scanner.char())) {
-      acc.push(scanner.char());
-      scanner.next();
+    for (const char of scanner) {
+      if (!allowedChars.test(char)) break;
+      acc.push(char);
     }
 
     if (acc.length === 1) return failure(); // Only prefix, no digits
@@ -588,9 +593,9 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
     scanner.next();
   }
 
-  while (!scanner.eof() && /[0-9_]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
+  for (const char of scanner) {
+    if (!/[0-9_]/.test(char)) break;
+    acc.push(char);
   }
 
   if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]!))) {
@@ -620,9 +625,9 @@ export function float(scanner: Scanner): ParseResult<number> {
     acc.push(scanner.char());
     scanner.next();
   }
-  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
+  for (const char of scanner) {
+    if (!FLOAT_REGEXP.test(char)) break;
+    acc.push(char);
   }
 
   if (acc.length === 0) return failure();
@@ -642,9 +647,9 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 
   const acc = [];
   // example: 1979-05-27T00:32:00Z
-  while (/[ 0-9TZ.:+-]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
+  for (const char of scanner) {
+    if (!/[ 0-9TZ.:+-]/.test(char)) break;
+    acc.push(char);
   }
   dateStr += acc.join("");
   const date = new Date(dateStr.trim());
@@ -667,10 +672,9 @@ export function localTime(scanner: Scanner): ParseResult<string> {
   if (scanner.char() !== ".") return success(timeStr);
   acc.push(scanner.char());
   scanner.next();
-
-  while (/[0-9]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
+  for (const char of scanner) {
+    if (!/[0-9]/.test(char)) break;
+    acc.push(char);
   }
   timeStr += acc.join("");
   return success(timeStr);
