@@ -24,6 +24,8 @@ export const internals: {
   findNode<T>(
     tree: BinarySearchTree<T>,
     value: T,
+    select?: "higher" | "lower",
+    returnIfFound?: boolean,
   ): BinarySearchNode<T> | null;
   rotateNode<T>(
     tree: BinarySearchTree<T>,
