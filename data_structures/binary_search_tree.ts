@@ -125,7 +125,10 @@ export class BinarySearchTree<T> implements Iterable<T> {
     internals.findNode = <T>(
       tree: BinarySearchTree<T>,
       value: T,
-    ): BinarySearchNode<T> | null => tree.#findNode(value);
+      select?: "higher" | "lower",
+      returnIfFound?: boolean,
+    ): BinarySearchNode<T> | null =>
+      tree.#findNode(value, select, returnIfFound);
     internals.rotateNode = <T>(
       tree: BinarySearchTree<T>,
       node: BinarySearchNode<T>,
@@ -319,15 +322,60 @@ export class BinarySearchTree<T> implements Iterable<T> {
     return this.#size;
   }
 
-  #findNode(value: T): BinarySearchNode<T> | null {
+  /**
+   * Finds the node matching the given selection criteria.
+   *
+   * When searching for higher nodes, returns the lowest node that is higher than
+   * the value. When searching for lower nodes, returns the highest node that is
+   * lower than the value.
+   *
+   * By default, only accepts a node exactly matching the passed value and returns
+   * it if found.
+   *
+   * @param value The value to search for
+   * @param select Whether to accept nodes that are higher or lower than the value
+   * @param returnIfFound Whether a node matching the value itself is accepted
+   * @returns The node that matched, or null if none matched
+   */
+  #findNode(
+    value: T,
+    select?: "higher" | "lower",
+    returnIfFound: boolean = true,
+  ): BinarySearchNode<T> | null {
     let node: BinarySearchNode<T> | null = this.#root;
+    let result: BinarySearchNode<T> | null = null;
     while (node) {
-      const order: number = this.#compare(value as T, node.value);
-      if (order === 0) break;
-      const direction: "left" | "right" = order < 0 ? "left" : "right";
+      const order = this.#compare(value, node.value);
+      if (order === 0 && returnIfFound) return node;
+
+      if (select === "higher" && order < 0) {
+        if (result === null) {
+          result = node;
+          continue;
+        }
+
+        const nodeOrder = this.#compare(node.value, result.value);
+        if (nodeOrder < 0) result = node;
+      } else if (select === "lower" && order > 0) {
+        if (result === null) {
+          result = node;
+          continue;
+        }
+
+        const nodeOrder = this.#compare(node.value, result.value);
+        if (nodeOrder > 0) result = node;
+      }
+
+      let direction: Direction = order < 0 ? "left" : "right";
+      if (select === "higher" && order === 0) {
+        direction = "right";
+      } else if (select === "lower" && order === 0) {
+        direction = "left";
+      }
+
       node = node[direction];
     }
-    return node;
+    return result;
   }
 
   #rotateNode(node: BinarySearchNode<T>, direction: Direction) {
@@ -486,6 +534,114 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   find(value: T): T | null {
     return this.#findNode(value)?.value ?? null;
+  }
+
+  /**
+   * Finds the lowest (leftmost) value in the binary search tree which is
+   * greater than or equal to the given value, or null if the given value
+   * is higher than all elements of the tree.
+   *
+   * The complexity of this operation depends on the underlying structure of the
+   * tree. Refer to the documentation of the structure itself for more details.
+   *
+   * @example Finding values in the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const tree = BinarySearchTree.from<number>([42]);
+   *
+   * assertEquals(tree.ceiling(41), 42);
+   * assertEquals(tree.ceiling(42), 42);
+   * assertEquals(tree.ceiling(43), null);
+   * ```
+   *
+   * @param value The value to search for in the binary search tree.
+   * @returns The ceiling if it was found, or null if not.
+   */
+  ceiling(value: T): T | null {
+    return this.#findNode(value, "higher")?.value ?? null;
+  }
+
+  /**
+   * Finds the highest (rightmost) value in the binary search tree which is
+   * less than or equal to the given value, or null if the given value
+   * is lower than all elements of the tree.
+   *
+   * The complexity of this operation depends on the underlying structure of the
+   * tree. Refer to the documentation of the structure itself for more details.
+   *
+   * @example Finding values in the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const tree = BinarySearchTree.from<number>([42]);
+   *
+   * assertEquals(tree.floor(41), null);
+   * assertEquals(tree.floor(42), 42);
+   * assertEquals(tree.floor(43), 42);
+   * ```
+   *
+   * @param value The value to search for in the binary search tree.
+   * @returns The floor if it was found, or null if not.
+   */
+  floor(value: T): T | null {
+    return this.#findNode(value, "lower")?.value ?? null;
+  }
+
+  /**
+   * Finds the lowest (leftmost) value in the binary search tree which is
+   * strictly greater than the given value, or null if the given value
+   * is higher than or equal to all elements of the tree
+   *
+   * The complexity of this operation depends on the underlying structure of the
+   * tree. Refer to the documentation of the structure itself for more details.
+   *
+   * @example Finding values in the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const tree = BinarySearchTree.from<number>([42]);
+   *
+   * assertEquals(tree.higher(41), 42);
+   * assertEquals(tree.higher(42), null);
+   * assertEquals(tree.higher(43), null);
+   * ```
+   *
+   * @param value The value to search for in the binary search tree.
+   * @returns The higher value if it was found, or null if not.
+   */
+  higher(value: T): T | null {
+    return this.#findNode(value, "higher", false)?.value ?? null;
+  }
+
+  /**
+   * Finds the highest (rightmost) value in the binary search tree which is
+   * strictly less than the given value, or null if the given value
+   * is lower than or equal to all elements of the tree
+   *
+   * The complexity of this operation depends on the underlying structure of the
+   * tree. Refer to the documentation of the structure itself for more details.
+   *
+   * @example Finding values in the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const tree = BinarySearchTree.from<number>([42]);
+   *
+   * assertEquals(tree.lower(41), null);
+   * assertEquals(tree.lower(42), null);
+   * assertEquals(tree.lower(43), 42);
+   * ```
+   *
+   * @param value The value to search for in the binary search tree.
+   * @returns The lower value if it was found, or null if not.
+   */
+  lower(value: T): T | null {
+    return this.#findNode(value, "lower", false)?.value ?? null;
   }
 
   /**
