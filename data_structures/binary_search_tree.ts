@@ -348,29 +348,18 @@ export class BinarySearchTree<T> implements Iterable<T> {
       const order = this.#compare(value, node.value);
       if (order === 0 && returnIfFound) return node;
 
-      if (select === "higher" && order < 0) {
-        if (result === null) {
-          result = node;
-          continue;
-        }
-
-        const nodeOrder = this.#compare(node.value, result.value);
-        if (nodeOrder < 0) result = node;
-      } else if (select === "lower" && order > 0) {
-        if (result === null) {
-          result = node;
-          continue;
-        }
-
-        const nodeOrder = this.#compare(node.value, result.value);
-        if (nodeOrder > 0) result = node;
-      }
-
       let direction: Direction = order < 0 ? "left" : "right";
       if (select === "higher" && order === 0) {
         direction = "right";
       } else if (select === "lower" && order === 0) {
         direction = "left";
+      }
+
+      if (
+        (select === "higher" && direction === "left") ||
+        (select === "lower" && direction === "right")
+      ) {
+        result = node;
       }
 
       node = node[direction];
