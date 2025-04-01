@@ -4,8 +4,8 @@ import { stringify, type StringifyOptions } from "./mod.ts";
 import { assertEquals } from "@std/assert";
 
 function assertValidStringify(
-  obj: unknown,
-  expected: unknown,
+  obj: object,
+  expected: string,
   options?: StringifyOptions,
 ) {
   assertEquals(stringify(obj, options), expected);
@@ -23,6 +23,11 @@ Deno.test({
     assertValidStringify(
       { dates: { a: new Date("1977-05-25") } },
       `[dates]\na=1977-05-25T00:00:00.000Z`,
+      { replacer: (_, val) => val?.toJSON() },
+    );
+    assertValidStringify(
+      { a: new Date("1977-05-25") },
+      "a=1977-05-25T00:00:00.000Z",
       { replacer: (_, val) => val?.toJSON() },
     );
     assertValidStringify({

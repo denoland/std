@@ -50,7 +50,7 @@ Deno.test({
     assertThrows(
       () => decodeBase32("5HXR334AQYAAAA=========="),
       Error,
-      "Invalid Character (=)",
+      "Cannot decode input as base32: Invalid character (=)",
     );
   },
 });

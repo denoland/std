@@ -10,7 +10,7 @@ import {
 
 function assertValidParse(
   text: string,
-  expected: unknown,
+  expected: object,
   options?: ParseOptions,
 ) {
   assertEquals(parse(text, options), expected);
@@ -200,5 +200,33 @@ Deno.test({
   fn() {
     assertEquals(parse("value=true"), { value: true });
     assertEquals(parse("value=false"), { value: false });
+  },
+});
+
+Deno.test({
+  name: "parse() handles line breaks",
+  fn() {
+    assertEquals(parse("value=true\rvalue2=false\r"), {
+      value: true,
+      value2: false,
+    });
+    assertEquals(parse("value=true\r\nvalue2=false\r\n"), {
+      value: true,
+      value2: false,
+    });
+    assertEquals(parse("value=true\nvalue2=false\n"), {
+      value: true,
+      value2: false,
+    });
+  },
+});
+
+Deno.test({
+  name: "parse() handles spaces around value",
+  fn() {
+    assertEquals(parse("value= true"), { value: true });
+    assertEquals(parse("value=true "), { value: true });
+    assertEquals(parse("value=\ttrue"), { value: true });
+    assertEquals(parse("value=true\t"), { value: true });
   },
 });
