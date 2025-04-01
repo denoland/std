@@ -9,7 +9,7 @@
  *
  * @typeParam T The type of the elements in the input array.
  *
- * @param array The iterable to drop elements from.
+ * @param iterable The iterable to drop elements from.
  * @param predicate The function to test each element for a condition.
  *
  * @returns An array that drops all elements until the first element that

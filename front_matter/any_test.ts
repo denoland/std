@@ -65,3 +65,19 @@ Hello, world!`;
     "Unsupported front matter format",
   );
 });
+
+Deno.test("extract() handles bom when recognizing format", () => {
+  const actual = extract(
+    `\ufeff---
+  foo: bar
+---
+Hello, world!
+`,
+  );
+  const expected = {
+    attrs: { foo: "bar" },
+    body: "Hello, world!\n",
+    frontMatter: "foo: bar",
+  };
+  assertEquals(actual, expected);
+});
