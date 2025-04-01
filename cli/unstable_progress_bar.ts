@@ -142,10 +142,20 @@ export interface ProgressBarOptions {
 export class ProgressBar {
   /**
    * The current progress that has been completed.
+   * @example Usage
+   * ```ts no-assert
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 10 });
+   * progressBar.value += 1
+   * ```
    */
   value: number;
   /**
    * The maximum progress that is expected.
+   * @example Usage
+   * ```ts no-assert
+   * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 1 });
+   * progressBar.max = 100
+   * ```
    */
   max: number;
 
