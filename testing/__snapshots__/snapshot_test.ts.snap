@@ -154,6 +154,9 @@ snapshot[`assertSnapshot() - failed assertion > object 1`] = `
       2,
 +     3,
     ]
+
+To update snapshots, run
+    deno test --allow-read --allow-write [files]... -- --update
 "
 `;
 
@@ -167,6 +170,9 @@ snapshot[`assertSnapshot() - failed assertion > string 1`] = `
 -   "Hello!"
 +   "Hello World!"
 
+
+To update snapshots, run
+    deno test --allow-read --allow-write [files]... -- --update
 '
 `;
 
