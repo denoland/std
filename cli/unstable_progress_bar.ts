@@ -140,7 +140,13 @@ export interface ProgressBarOptions {
  * bar.end();
  */
 export class ProgressBar {
+  /**
+   * The current progress that has been completed.
+   */
   value: number;
+  /**
+   * The maximum progress that is expected.
+   */
   max: number;
 
   #unit: string;
