@@ -15,6 +15,13 @@ Deno.test({
         patch: 0,
         prerelease: [],
         build: [],
+      }, {
+        operator: "<",
+        major: 0,
+        minor: 0,
+        patch: 0,
+        prerelease: [],
+        build: [],
       }],
     ];
     const actual = isRange(range);
