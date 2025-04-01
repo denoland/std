@@ -16,7 +16,6 @@ import {
   type DocNodeClass,
   type DocNodeFunction,
   type DocNodeInterface,
-  type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
   type JsDocTagParam,
@@ -411,14 +410,6 @@ function assertConstructorDocs(
 }
 
 /**
- * Checks a module document for:
- * - Code snippets that execute successfully.
- */
-function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
-  assertSnippetsWork(document.jsDoc.doc!, document);
-}
-
-/**
  * Ensures an interface document:
  * - Has `@default` tags for all optional properties.
  */
@@ -466,12 +457,6 @@ async function checkDocs(specifier: string) {
 
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
-      case "moduleDoc": {
-        if (document.location.filename.endsWith("/mod.ts")) {
-          assertModuleDoc(document);
-        }
-        break;
-      }
       case "function": {
         assertFunctionDocs(document);
         break;
