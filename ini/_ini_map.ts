@@ -49,8 +49,6 @@ export type ReviverFunction = (
   section?: string,
 ) => unknown;
 
-const ASSIGNMENT_MARK = "=";
-
 function isPlainObject(object: unknown): object is object {
   return Object.prototype.toString.call(object) === "[object Object]";
 }
