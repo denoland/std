@@ -23,6 +23,7 @@ import { diff } from "./diff.ts";
  */
 export function unescape(string: string): string {
   return string
+    .replaceAll("\\", "\\\\")
     .replaceAll("\b", "\\b")
     .replaceAll("\f", "\\f")
     .replaceAll("\t", "\\t")
@@ -34,7 +35,8 @@ export function unescape(string: string): string {
     );
 }
 
-const WHITESPACE_SYMBOLS = /([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/;
+const WHITESPACE_SYMBOLS =
+  /((?:\\[bftv]|[^\S\r\n])+|\\[rn\\]|[()[\]{}'"\r\n]|\b)/;
 
 /**
  * Tokenizes a string into an array of tokens.
