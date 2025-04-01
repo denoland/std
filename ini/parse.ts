@@ -51,7 +51,6 @@ function* readTextLines(text: string): Generator<string> {
         if (text[i + 1] === "\n") i += 1;
         break;
       default:
-        if (line === " " || line === "\t") continue;
         line += char;
         break;
     }
@@ -156,7 +155,8 @@ export function parse<T extends object>(
   let sectionName: string | undefined;
 
   let lineNumber = 0;
-  for (const line of readTextLines(text)) {
+  for (let line of readTextLines(text)) {
+    line = line.trim();
     lineNumber += 1;
 
     // skip empty lines
