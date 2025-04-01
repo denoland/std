@@ -38,7 +38,7 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
    * let readable = response.body
    * if (max) {
    *   readable = readable
-   *     ?.pipeThrough(new ProgressBarStream(Deno.stdout.writable, { max })) ?? null;
+   *     ?.pipeThrough(new ProgressBarStream({ max })) ?? null;
    * }
    * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
    * ```
