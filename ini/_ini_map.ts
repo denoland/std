@@ -235,32 +235,6 @@ export class IniMap {
   }
 
   /**
-   * Convert this `IniMap` to an INI string.
-   *
-   * @param replacer The replacer
-   * @returns Ini string
-   */
-  toString(replacer?: ReplacerFunction): string {
-    replacer ??= (_key, value, _section) => `${value}`;
-
-    const pretty = this.#formatting?.pretty ?? false;
-    const assignment = pretty ? ` ${ASSIGNMENT_MARK} ` : ASSIGNMENT_MARK;
-    const lines = this.#lines;
-
-    return lines.map((line) => {
-      switch (line.type) {
-        case "comment":
-          return line.val;
-        case "section":
-          return `[${line.sec}]`;
-        case "value":
-          return line.key + assignment +
-            replacer(line.key, line.val, line.sec);
-      }
-    }).join(this.#formatting?.lineBreak ?? "\n");
-  }
-
-  /**
    * Create an `IniMap` from an INI string.
    *
    * @param input The input string
