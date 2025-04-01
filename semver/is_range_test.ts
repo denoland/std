@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
-import { ALL, MIN } from "./_constants.ts";
+import { ALL } from "./_constants.ts";
 import { isRange } from "./is_range.ts";
 import type { Range } from "./types.ts";
 
@@ -17,7 +17,11 @@ Deno.test({
         build: [],
       }, {
         operator: "<",
-        ...MIN,
+        major: 0,
+        minor: 0,
+        patch: 0,
+        prerelease: [],
+        build: [],
       }],
     ];
     const actual = isRange(range);
