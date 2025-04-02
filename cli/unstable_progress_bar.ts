@@ -144,8 +144,14 @@ export class ProgressBar {
    * The current progress that has been completed.
    * @example Usage
    * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
    * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 10 });
    * progressBar.value += 1
+   *
+   * // do stuff
+   *
+   * progressBar.end()
    * ```
    */
   value: number;
@@ -153,8 +159,14 @@ export class ProgressBar {
    * The maximum progress that is expected.
    * @example Usage
    * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
    * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 1 });
    * progressBar.max = 100
+   *
+   * // do stuff
+   *
+   * progressBar.end()
    * ```
    */
   max: number;
