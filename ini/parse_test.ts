@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { parse, type ParseOptions } from "./mod.ts";
+import { parse } from "./mod.ts";
 import {
   assert,
   assertEquals,
@@ -8,59 +8,38 @@ import {
   assertThrows,
 } from "@std/assert";
 
-function assertValidParse(
-  text: string,
-  expected: object,
-  options?: ParseOptions,
-) {
-  assertEquals(parse(text, options), expected);
-}
-
-function assertInvalidParse(
-  text: string,
-  // deno-lint-ignore no-explicit-any
-  ErrorClass: new (...args: any[]) => Error,
-  msgIncludes?: string,
-  options?: ParseOptions,
-) {
-  assertThrows(
-    () => parse(text, options),
-    ErrorClass,
-    msgIncludes,
-  );
-}
-
 Deno.test({
   name: "parse()",
   fn() {
-    assertValidParse(`a=100`, { a: 100 }, {
-      reviver: (_, value) => Number(value),
-    });
-    assertValidParse(`a=b\n[section]\nc=d`, { a: "b", section: { c: "d" } });
-    assertValidParse('value="value"', { value: "value" });
-    assertValidParse('#comment\nkeyA=1977-05-25\n[section1]\nkeyA="100"', {
-      keyA: "1977-05-25",
-      section1: { keyA: "100" },
-    });
+    assertEquals(
+      parse("a=100", { reviver: (_, value) => Number(value) }),
+      { a: 100 },
+    );
+    assertEquals(parse("a=b\n[section]\nc=d"), { a: "b", section: { c: "d" } });
+    assertEquals(parse('value="value"'), { value: "value" });
+    assertEquals(
+      parse('#comment\nkeyA=1977-05-25\n[section1]\nkeyA="100"'),
+      { keyA: "1977-05-25", section1: { keyA: "100" } },
+    );
   },
 });
 
 Deno.test({
   name: "parse() with comment",
   fn() {
-    assertValidParse(`#comment\na=b`, { a: "b" });
-    assertValidParse(`;comment\ra=b`, { a: "b" });
-    assertValidParse(`//comment\n\ra=b`, { a: "b" });
+    assertEquals(parse("#comment\na=b"), { a: "b" });
+    assertEquals(parse(";comment\ra=b"), { a: "b" });
+    assertEquals(parse("//comment\n\ra=b"), { a: "b" });
   },
 });
 
 Deno.test({
   name: "parse() special character",
   fn() {
-    assertValidParse(`a=👪`, { a: "👪" });
-    assertValidParse(`a=🦕`, { a: "🦕" });
-    assertValidParse(
-      `a=\u543e\u8f29\u306f\u732b\u3067\u3042\u308b\u3002`,
+    assertEquals(parse("a=👪"), { a: "👪" });
+    assertEquals(parse("a=🦕"), { a: "🦕" });
+    assertEquals(
+      parse("a=\u543e\u8f29\u306f\u732b\u3067\u3042\u308b\u3002"),
       { a: "\u543e\u8f29\u306f\u732b\u3067\u3042\u308b\u3002" },
     );
   },
@@ -69,23 +48,23 @@ Deno.test({
 Deno.test({
   name: "parse() throws error with correct messages",
   fn() {
-    assertInvalidParse(
-      `:::::`,
+    assertThrows(
+      () => parse(":::::"),
       SyntaxError,
       "Unexpected token : in INI at line 1",
     );
-    assertInvalidParse(
-      `[`,
+    assertThrows(
+      () => parse("["),
       SyntaxError,
       "Unexpected end of INI section at line 1",
     );
-    assertInvalidParse(
-      `[]`,
+    assertThrows(
+      () => parse("[]"),
       SyntaxError,
       "Unexpected empty section name at line 1",
     );
-    assertInvalidParse(
-      `=100`,
+    assertThrows(
+      () => parse("=100"),
       SyntaxError,
       "Unexpected empty key name at line 1",
     );
@@ -118,9 +97,7 @@ Deno.test({
   fn() {
     // The result of JSON.parse and the result of INI.parse should match
     const json = JSON.parse('{"aaa": 0, "aaa": 1}');
-    const ini = parse("aaa=0\naaa=1", {
-      reviver: (_, value) => Number(value),
-    });
+    const ini = parse("aaa=0\naaa=1", { reviver: (_, value) => Number(value) });
     assertEquals(ini, { aaa: 1 });
     assertEquals(ini, json);
   },
@@ -129,15 +106,21 @@ Deno.test({
 Deno.test({
   name: "parse() does not parse other than strings",
   fn() {
-    assertInvalidParse(
-      // deno-lint-ignore no-explicit-any
-      undefined as any,
+    assertThrows(
+      () =>
+        parse(
+          // deno-lint-ignore no-explicit-any
+          undefined as any,
+        ),
       SyntaxError,
       "Unexpected token undefined in INI at line 0",
     );
-    assertInvalidParse(
-      // deno-lint-ignore no-explicit-any
-      0 as any,
+    assertThrows(
+      () =>
+        parse(
+          // deno-lint-ignore no-explicit-any
+          0 as any,
+        ),
       SyntaxError,
       "Unexpected token 0 in INI at line 0",
     );
