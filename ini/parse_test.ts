@@ -230,3 +230,14 @@ Deno.test({
     assertEquals(parse("value=true\t"), { value: true });
   },
 });
+
+Deno.test({
+  name: "parse() parses padded lines",
+  fn() {
+    assertEquals(parse(" value=true "), { value: true });
+    assertEquals(parse('  value = "abc"  '), { value: "abc" });
+    assertEquals(parse("  [section]  \n  value  =  foo  "), {
+      section: { value: "foo" },
+    });
+  },
+});
