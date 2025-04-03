@@ -4,7 +4,7 @@
 import type { ReviverFunction } from "./_ini_map.ts";
 export type { ReviverFunction };
 
-const SECTION_REGEXP = /^\[(?<name>.+)]$/;
+const SECTION_REGEXP = /^\[(?<name>\S+)]$/;
 const KEY_VALUE_REGEXP = /^\s*(?<key>.*?)\s*=\s*(?<value>.*?)\s*$/;
 
 function trimQuotes(value: string): string {

@@ -85,6 +85,11 @@ Deno.test({
       "Unexpected empty section name at line 1",
     );
     assertInvalidParse(
+      "[ ]\na=1",
+      SyntaxError,
+      "Unexpected empty section name at line 1",
+    );
+    assertInvalidParse(
       `=100`,
       SyntaxError,
       "Unexpected empty key name at line 1",
