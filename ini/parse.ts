@@ -5,7 +5,7 @@ import type { ReviverFunction } from "./_ini_map.ts";
 export type { ReviverFunction };
 
 const SECTION_REGEXP = /^\[(?<name>\S+)]$/;
-const KEY_VALUE_REGEXP = /^\s*(?<key>.*?)\s*=\s*(?<value>.*?)\s*$/;
+const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
 
 function trimQuotes(value: string): string {
   if (value.startsWith('"') && value.endsWith('"')) {
