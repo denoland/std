@@ -16,6 +16,7 @@ import {
   type DocNodeClass,
   type DocNodeFunction,
   type DocNodeInterface,
+  type DocNodeModuleDoc,
   type JsDoc,
   type JsDocTagDocRequired,
   type JsDocTagParam,
@@ -175,7 +176,7 @@ function assertHasParamTag(
   }
 }
 
-function assertSnippetsWork(
+function assertHasSnippet(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
   required = true,
@@ -238,7 +239,7 @@ function assertHasExampleTag(
       "@example tag must have a title",
       document,
     );
-    assertSnippetsWork(tag.doc, document);
+    assertHasSnippet(tag.doc, document);
   }
 }
 
@@ -278,7 +279,7 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
-  assertSnippetsWork(document.jsDoc.doc!, document, false);
+  assertHasSnippet(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -322,7 +323,7 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertSnippetsWork(document.jsDoc.doc!, document, false);
+  assertHasSnippet(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -410,6 +411,14 @@ function assertConstructorDocs(
 }
 
 /**
+ * Checks a module document for:
+ * - Code snippets that execute successfully.
+ */
+function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
+  assertHasSnippet(document.jsDoc.doc!, document);
+}
+
+/**
  * Ensures an interface document:
  * - Has `@default` tags for all optional properties.
  */
@@ -457,6 +466,12 @@ async function checkDocs(specifier: string) {
 
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
+      case "moduleDoc": {
+        if (document.location.filename.endsWith("/mod.ts")) {
+          assertModuleDoc(document);
+        }
+        break;
+      }
       case "function": {
         assertFunctionDocs(document);
         break;
