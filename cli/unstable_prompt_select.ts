@@ -56,7 +56,9 @@ export function promptSelect(
   if (!input.isTerminal()) return null;
 
   const {
-    visibleLines = Math.min(Deno.consoleSize().rows - 2, values.length),
+    // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
+    // and we dont actually use the last line
+    visibleLines = Math.min(Deno.consoleSize().rows - 3, values.length),
     indicator = "❯",
   } = options;
   const PADDING = " ".repeat(indicator.length);
