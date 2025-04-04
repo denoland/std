@@ -60,14 +60,8 @@ export class Scanner {
   /**
    * Move position to next
    */
-  next(count?: number) {
-    if (typeof count === "number") {
-      for (let i = 0; i < count; i++) {
-        this.#position++;
-      }
-    } else {
-      this.#position++;
-    }
+  next(count: number = 1) {
+    this.#position += count;
   }
 
   /**
