@@ -16,7 +16,9 @@ function assertLintPluginDiagnostics(
   assertEquals(actualDiagnostics, expectedDiagnostics);
 }
 
-Deno.test("deno-style-guide/prefer-private-field", () => {
+Deno.test("deno-style-guide/prefer-private-field", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
   // Good
   assertLintPluginDiagnostics(
     `
@@ -27,6 +29,8 @@ class MyClass {
     `,
     [],
   );
+
+  // Bad
   assertLintPluginDiagnostics(
     `
 class MyClass {
