@@ -56,7 +56,7 @@ export interface ProgressBarOptions {
   /**
    * The total size expected to receive.
    */
-  max: number;
+  max?: number;
   /**
    * The length that the progress bar should be, in characters.
    * @default {50}
@@ -164,10 +164,11 @@ export class ProgressBar {
    */
   constructor(
     writable: WritableStream<Uint8Array>,
-    options: ProgressBarOptions,
+    options: ProgressBarOptions = {},
   ) {
     const {
       value = 0,
+      max = 1,
       barLength = 50,
       fillChar = "#",
       emptyChar = "-",
@@ -176,7 +177,7 @@ export class ProgressBar {
       keepOpen = true,
     } = options;
     this.#value = value;
-    this.#max = options.max;
+    this.#max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
@@ -184,16 +185,16 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    if (options.max < 2 ** 20) {
+    if (this.#max < 2 ** 20) {
       this.#unit = "KiB";
       this.#rate = 2 ** 10;
-    } else if (options.max < 2 ** 30) {
+    } else if (this.#max < 2 ** 30) {
       this.#unit = "MiB";
       this.#rate = 2 ** 20;
-    } else if (options.max < 2 ** 40) {
+    } else if (this.#max < 2 ** 40) {
       this.#unit = "GiB";
       this.#rate = 2 ** 30;
-    } else if (options.max < 2 ** 50) {
+    } else if (this.#max < 2 ** 50) {
       this.#unit = "TiB";
       this.#rate = 2 ** 40;
     } else {
