@@ -4,7 +4,7 @@
 import type { ReviverFunction } from "./_ini_map.ts";
 export type { ReviverFunction };
 
-const SECTION_REGEXP = /^\[(?<name>\S.*\S|\S+)]$/;
+const SECTION_REGEXP = /^\[(?<name>.*\S.*)]$/;
 const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
 
 function trimQuotes(value: string): string {
@@ -166,8 +166,7 @@ export function parse<T extends object>(
     if (isComment(line)) continue;
 
     if (isSection(line, lineNumber)) {
-      sectionName = SECTION_REGEXP.exec(line)?.groups?.name!;
-
+      sectionName = SECTION_REGEXP.exec(line)?.groups?.name;
       if (!sectionName) {
         throw new SyntaxError(
           `Unexpected empty section name at line ${lineNumber}`,

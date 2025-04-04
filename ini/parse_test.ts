@@ -248,6 +248,11 @@ Deno.test({
     assertEquals(parse("value=  true  "), { value: true });
     assertEquals(parse("value=true\t"), { value: true });
     assertEquals(parse("  \tvalue  \t=  \ttrue  \t"), { value: true });
+    assertEquals(parse("[s]"), { s: {} });
+    assertEquals(parse("[ s ]"), { " s ": {} });
+    assertEquals(parse("[section]"), { section: {} });
+    assertEquals(parse("[ section ]"), { " section ": {} });
+
     assertEquals(parse("  [section]"), { section: {} });
     assertEquals(parse("\t[section]"), { section: {} });
     assertEquals(parse("[section]  "), { section: {} });
