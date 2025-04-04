@@ -55,7 +55,10 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
-  const { visibleLines = 3, indicator = "❯" } = options;
+  const {
+    visibleLines = Math.min(Deno.consoleSize().rows - 2, values.length),
+    indicator = "❯",
+  } = options;
   const PADDING = " ".repeat(indicator.length);
 
   const length = values.length;

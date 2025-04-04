@@ -402,9 +402,108 @@ Deno.test("promptSelect() scrolls down and display lines correctly", () => {
     "chrome",
     "firefox",
     "brave",
-  ]);
+  ], { visibleLines: 3 });
 
   assertEquals(browser, "brave");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptSelect() uses Deno.consoleSize().rows", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select a Country:\r\n",
+    "❯ Brazil\r\n",
+    "  Spain\r\n",
+    "  Japan\r\n",
+    "  USA\r\n",
+    "  Mexico\r\n",
+    "  Canada\r\n",
+    "  Portugal\r\n",
+    "  India\r\n",
+    "\x1b[9A",
+    "\x1b[J",
+    "Please select a Country:\r\n",
+    "  Brazil\r\n",
+    "❯ Spain\r\n",
+    "  Japan\r\n",
+    "  USA\r\n",
+    "  Mexico\r\n",
+    "  Canada\r\n",
+    "  Portugal\r\n",
+    "  India\r\n",
+    "\x1b[9A",
+    "\x1b[J",
+    "Please select a Country:\r\n",
+    "  Brazil\r\n",
+    "  Spain\r\n",
+    "❯ Japan\r\n",
+    "  USA\r\n",
+    "  Mexico\r\n",
+    "  Canada\r\n",
+    "  Portugal\r\n",
+    "  India\r\n",
+    "\x1b[9A",
+    "\x1b[J",
+    "Please select a Country:\r\n",
+    "  Brazil\r\n",
+    "  Spain\r\n",
+    "  Japan\r\n",
+    "❯ USA\r\n",
+    "  Mexico\r\n",
+    "  Canada\r\n",
+    "  Portugal\r\n",
+    "  India\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\u001B[B",
+    "\u001B[B",
+    "\u001B[B",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browser = promptSelect("Please select a Country:", [
+    "Brazil",
+    "Spain",
+    "Japan",
+    "USA",
+    "Mexico",
+    "Canada",
+    "Portugal",
+    "India",
+  ]);
+
+  assertEquals(browser, "USA");
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
