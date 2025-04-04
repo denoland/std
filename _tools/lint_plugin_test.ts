@@ -36,12 +36,12 @@ class MyClass {
     [{
       id: "deno-style-guide/prefer-private-field",
       fix: [],
-      range: [18, 34],
+      range: [19, 35],
       message: "Use private field instead",
       hint: "Use #foo instead of private foo",
     }, {
       id: "deno-style-guide/prefer-private-field",
-      range: [37, 53],
+      range: [38, 54],
       fix: [],
       message: "Use private field instead",
       hint: "Use #foo() instead of private foo()",
