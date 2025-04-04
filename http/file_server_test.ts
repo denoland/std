@@ -191,6 +191,7 @@ Deno.test("serveDir() serves directory index", async () => {
   const page = await res.text();
 
   assertEquals(res.status, 200);
+  assertStringIncludes(page, '<a href=".">home</a>/');
   assertStringIncludes(page, '<a href="./hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="./tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
@@ -204,18 +205,17 @@ Deno.test("serveDir() serves directory index", async () => {
 });
 
 Deno.test("serveDir() serves directory index with entry to the parent directory", async () => {
-  const filePath = join(testdataDir, "%25A.txt");
-  await Deno.writeTextFile(filePath, "25A");
-
-  const req = new Request("http://localhost/tls/");
+  const req = new Request("http://localhost/nested-subdirs/subdir/");
   const res = await serveDir(req, serveDirOptions);
   const page = await res.text();
 
   assertEquals(res.status, 200);
+  assertStringIncludes(
+    page,
+    '<a href="../../">home</a>/<a href="../">nested-subdirs</a>/<a href=".">subdir</a>/',
+  );
   assertStringIncludes(page, '<a href="..">../</a>');
-  assertStringIncludes(page, '<a href="./domains.txt">domains.txt</a>');
-
-  await Deno.remove(filePath);
+  assertStringIncludes(page, '<a href="./test_file.txt">test_file.txt</a>');
 });
 
 Deno.test("serveDir() serves directory index with file containing space in the filename", async () => {

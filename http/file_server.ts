@@ -433,7 +433,8 @@ function createBaseHeaders(): Headers {
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
-  const paths = dirname.split("/");
+  const splitDirname = dirname.split("/").filter((path) => Boolean(path));
+  const headerPaths = ["home", ...splitDirname];
 
   return `
     <!DOCTYPE html>
@@ -508,15 +509,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       <body>
         <main>
           <h1>Index of
-          <a href="/">home</a>${
-    paths
-      .map((path, index, array) => {
+          ${
+    headerPaths
+      .map((path, index) => {
         if (path === "") return "";
-        const link = array.slice(0, index + 1).join("/");
-        return `<a href="${escape(link)}">${escape(path)}</a>`;
+        const depth = headerPaths.length - index - 1;
+        let link;
+        if (depth == 0) {
+          link = ".";
+        } else {
+          link = "../".repeat(depth);
+        }
+        return `<a href="${link}">${escape(path)}</a>`;
       })
       .join("/")
-  }
+  }/
           </h1>
           <table>
             <thead>
