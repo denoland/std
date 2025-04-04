@@ -32,7 +32,6 @@
  * @module
  */
 
-import { join as posixJoin } from "@std/path/posix/join";
 import { normalize as posixNormalize } from "@std/path/posix/normalize";
 import { extname } from "@std/path/extname";
 import { join } from "@std/path/join";
@@ -341,12 +340,10 @@ async function serveDirIndex(
   options: {
     showDotfiles: boolean;
     target: string;
-    urlRoot: string | undefined;
     quiet: boolean | undefined;
   },
 ): Promise<Response> {
   const { showDotfiles } = options;
-  const urlRoot = options.urlRoot ? "/" + options.urlRoot : "";
   const dirUrl = `/${
     relative(options.target, dirPath).replaceAll(
       new RegExp(SEPARATOR_PATTERN, "g"),
@@ -362,7 +359,7 @@ async function serveDirIndex(
       mode: modeToString(true, fileInfo.mode),
       size: "",
       name: "../",
-      url: `${urlRoot}${posixJoin(dirUrl, "..")}`,
+      url: "..",
     }));
     listEntryPromise.push(entryInfo);
   }
@@ -373,7 +370,7 @@ async function serveDirIndex(
       continue;
     }
     const filePath = join(dirPath, entry.name);
-    const fileUrl = encodeURIComponent(posixJoin(dirUrl, entry.name))
+    const fileUrl = encodeURIComponent(entry.name)
       .replaceAll("%2F", "/");
 
     listEntryPromise.push((async () => {
@@ -383,7 +380,7 @@ async function serveDirIndex(
           mode: modeToString(entry.isDirectory, fileInfo.mode),
           size: entry.isFile ? formatBytes(fileInfo.size ?? 0) : "",
           name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          url: `./${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       } catch (error) {
         // Note: Deno.stat for windows system files may be rejected with os error 32.
@@ -392,7 +389,7 @@ async function serveDirIndex(
           mode: "(unknown mode)",
           size: "",
           name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-          url: `${urlRoot}${fileUrl}${entry.isDirectory ? "/" : ""}`,
+          url: `./${fileUrl}${entry.isDirectory ? "/" : ""}`,
         };
       }
     })());
@@ -436,7 +433,8 @@ function createBaseHeaders(): Headers {
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
-  const paths = dirname.split("/");
+  const splitDirname = dirname.split("/").filter((path) => Boolean(path));
+  const headerPaths = ["home", ...splitDirname];
 
   return `
     <!DOCTYPE html>
@@ -511,15 +509,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       <body>
         <main>
           <h1>Index of
-          <a href="/">home</a>${
-    paths
-      .map((path, index, array) => {
+          ${
+    headerPaths
+      .map((path, index) => {
         if (path === "") return "";
-        const link = array.slice(0, index + 1).join("/");
-        return `<a href="${escape(link)}">${escape(path)}</a>`;
+        const depth = headerPaths.length - index - 1;
+        let link;
+        if (depth == 0) {
+          link = ".";
+        } else {
+          link = "../".repeat(depth);
+        }
+        return `<a href="${link}">${escape(path)}</a>`;
       })
       .join("/")
-  }
+  }/
           </h1>
           <table>
             <thead>
@@ -774,7 +778,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { urlRoot, showDotfiles, target, quiet });
+    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);
