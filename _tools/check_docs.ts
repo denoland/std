@@ -176,7 +176,7 @@ function assertHasParamTag(
   }
 }
 
-function assertHasSnippet(
+function assertHasSnippets(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
   required = true,
@@ -239,7 +239,7 @@ function assertHasExampleTag(
       "@example tag must have a title",
       document,
     );
-    assertHasSnippet(tag.doc, document);
+    assertHasSnippets(tag.doc, document);
   }
 }
 
@@ -279,7 +279,7 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
-  assertHasSnippet(document.jsDoc.doc!, document, false);
+  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -323,7 +323,7 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertHasSnippet(document.jsDoc.doc!, document, false);
+  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -415,7 +415,7 @@ function assertConstructorDocs(
  * - Code snippets that execute successfully.
  */
 function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
-  assertHasSnippet(document.jsDoc.doc!, document);
+  assertHasSnippets(document.jsDoc.doc!, document);
 }
 
 /**
