@@ -3,6 +3,13 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+export const alphabet = new TextEncoder().encode("0123456789abcdef");
+export const rAlphabet = new Uint8Array(128).fill(16); // alphabet.Hex.length
+alphabet.forEach((byte, i) => rAlphabet[byte] = i);
+new TextEncoder()
+  .encode("ABCDEF")
+  .forEach((byte, i) => rAlphabet[byte] = i + 10);
+
 /**
  * Calculate the output size needed to encode a given input size for
  * {@linkcode encodeRawHex}.
@@ -13,12 +20,12 @@ export type { Uint8Array_ };
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax } from "@std/encoding/unstable-hex";
+ * import { calcSizeHex } from "@std/encoding/unstable-hex";
  *
- * assertEquals(calcMax(1), 2);
+ * assertEquals(calcSizeHex(1), 2);
  * ```
  */
-export function calcMax(originalSize: number): number {
+export function calcSizeHex(originalSize: number): number {
   return originalSize * 2;
 }
 

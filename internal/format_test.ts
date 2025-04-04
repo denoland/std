@@ -27,7 +27,7 @@ Deno.test("format() overrides default behaviours of Deno.inspect", async (t) => 
   // Wraps objects into multiple lines even when they are small. Prints trailing
   // commas.
   await t.step(
-    "fromat() always wraps objects into multiple lines and prints trailing commas",
+    "format() always wraps objects into multiple lines and prints trailing commas",
     () =>
       assertEquals(
         stripAnsiCode(format({ a: 1, b: 2 })),
@@ -37,6 +37,12 @@ Deno.test("format() overrides default behaviours of Deno.inspect", async (t) => 
 }`,
       ),
   );
+
+  await t.step("format() sorts properties", () =>
+    assertEquals(
+      format({ b: 2, a: 1 }),
+      format({ a: 1, b: 2 }),
+    ));
 
   await t.step("format() wraps Object with getters", () =>
     assertEquals(

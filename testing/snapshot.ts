@@ -615,7 +615,8 @@ export async function assertSnapshot(
       ? diffStr(_actual, snapshot)
       : diff(_actual.split("\n"), snapshot.split("\n"));
     const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    const message = `Snapshot does not match:\n${diffMsg}`;
+    const message =
+      `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
     throw new AssertionError(
       getErrorMessage(message, options),
     );
