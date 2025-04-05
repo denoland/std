@@ -354,7 +354,8 @@ function getSnapshotNotMatchMessage(
     ? diffStr(actualSnapshot, expectedSnapshot)
     : diff(actualSnapshot.split("\n"), expectedSnapshot.split("\n"));
   const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-  const message = `Snapshot does not match:\n${diffMsg}`;
+  const message =
+    `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
   return getErrorMessage(message, options);
 }
 
@@ -859,13 +860,7 @@ export async function assertSnapshot(
     if (equal(actualSnapshot, expectedSnapshot)) {
       return;
     }
-    const stringDiff = !_actual.includes("\n");
-    const diffResult = stringDiff
-      ? diffStr(_actual, snapshot)
-      : diff(_actual.split("\n"), snapshot.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    const message =
-      `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
+
     throw new AssertionError(
       getSnapshotNotMatchMessage(actualSnapshot, expectedSnapshot, options),
     );
