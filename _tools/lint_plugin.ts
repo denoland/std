@@ -1,3 +1,5 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
 /**
  * Lint plugin that enforces the
  * {@link https://docs.deno.com/runtime/contributing/style_guide/ | Deno Style Guide}
