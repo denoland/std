@@ -45,11 +45,11 @@
   ],
   "lint": {
     "rules": {
+      "tags": ["recommended", "jsr"],
       "include": [
         "camelcase",
         "no-sync-fn-in-async-fn",
         "single-var-declarator",
-        "verbatim-module-syntax",
         "no-console"
       ]
     },

@@ -28,10 +28,12 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
-  calcMax,
-  decodeRawHex as decode,
-  encodeRawHex as encode,
-} from "./unstable_hex.ts";
+  alphabet,
+  calcSizeHex,
+  decode,
+  encode,
+  rAlphabet,
+} from "./_common16.ts";
 import { detach } from "./_common_detach.ts";
 
 type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
@@ -80,8 +82,8 @@ export class HexEncoderStream<T extends "string" | "bytes">
     }();
     super({
       transform(chunk, controller) {
-        const [output, i] = detach(chunk, calcMax(chunk.length));
-        encode(output, i, 0);
+        const [output, i] = detach(chunk, calcSizeHex(chunk.length));
+        encode(output, i, 0, alphabet);
         controller.enqueue(decode(output));
       },
     });
@@ -141,12 +143,17 @@ export class HexDecoderStream<T extends "string" | "bytes">
         }
         remainder = output.length % 2;
         if (remainder) push.set(output.subarray(-remainder));
-        const o = decode(output.subarray(0, -remainder || undefined), 0, 0);
+        const o = decode(
+          output.subarray(0, -remainder || undefined),
+          0,
+          0,
+          rAlphabet,
+        );
         controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
         if (remainder) {
-          const o = decode(push.subarray(0, remainder), 0, 0);
+          const o = decode(push.subarray(0, remainder), 0, 0, rAlphabet);
           controller.enqueue(push.subarray(0, o));
         }
       },
