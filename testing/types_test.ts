@@ -33,7 +33,11 @@ import {
 // IsExact
 {
   class _Class<T> {
-    declare private _prop: T;
+    prop: T;
+
+    constructor(prop: T) {
+      this.prop = prop;
+    }
   }
 
   // matching
