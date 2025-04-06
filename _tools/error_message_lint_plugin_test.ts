@@ -36,7 +36,8 @@ new Error("Cannot parse input x: value is empty");
 new Error("cannot parse input");
 new TypeError("Cannot parse input.");
 new SyntaxError("Invalid input x");
-new CustomError("Cannot parse input x. value is empty")
+new RangeError("Cannot parse input x. value is empty")
+new CustomError("Can't parse input");
 
     `,
     [
@@ -62,7 +63,15 @@ new CustomError("Cannot parse input x. value is empty")
           "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
         id: "deno-style-guide/error-message",
         message: "Error message should not contain periods.",
-        range: [124, 162],
+        range: [123, 161],
+      },
+      {
+        fix: [],
+        hint:
+          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message should not use contractions.",
+        range: [179, 198],
       },
     ],
   );
