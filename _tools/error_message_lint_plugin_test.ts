@@ -26,6 +26,13 @@ new Error("Cannot parse input");
 new Error("Cannot parse input x");
 new Error('Cannot parse input "hello, world"');
 new Error("Cannot parse input x: value is empty");
+
+// ignored
+const classes = { Error: Error }
+new classes.Error();
+new Class("Cannot parse input");
+new Error(message);
+new WrongParamTypeForAnError(true);
     `,
     [],
   );
