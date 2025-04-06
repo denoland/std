@@ -46,11 +46,11 @@
   "lint": {
     "plugins": ["./_tools/error_message_lint_plugin.ts"],
     "rules": {
+      "tags": ["recommended", "jsr"],
       "include": [
         "camelcase",
         "no-sync-fn-in-async-fn",
         "single-var-declarator",
-        "verbatim-module-syntax",
         "no-console"
       ]
     }
