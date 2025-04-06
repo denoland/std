@@ -29,9 +29,9 @@ Deno.test("assertIsError() allows subclass of Error", () => {
 });
 
 Deno.test("assertIsError() allows custom error", () => {
-  assertIsError(new CustomError("failed"), CustomError, "fail");
+  assertIsError(new CustomError("Failed"), CustomError, "Fail");
   assertThrows(
-    () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
+    () => assertIsError(new AnotherCustomError("Failed"), CustomError, "Fail"),
     AssertionError,
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
@@ -41,19 +41,19 @@ Deno.test("assertIsError() accepts abstract class", () => {
   abstract class AbstractError extends Error {}
   class ConcreteError extends AbstractError {}
 
-  assertIsError(new ConcreteError("failed"), AbstractError, "fail");
+  assertIsError(new ConcreteError("Failed"), AbstractError, "Fail");
 });
 
 Deno.test("assertIsError() throws with message diff containing double quotes", () => {
   assertThrows(
     () =>
       assertIsError(
-        new CustomError('error with "double quotes"'),
+        new CustomError('Error with "double quotes"'),
         CustomError,
         'doesn\'t include "this message"',
       ),
     AssertionError,
-    `Expected error message to include "doesn't include \\"this message\\"", but got "error with \\"double quotes\\"".`,
+    `Expected error message to include "doesn't include \\"this message\\"", but got "Error with \\"double quotes\\"".`,
   );
 });
 
@@ -70,9 +70,9 @@ Deno.test("assertIsError() throws with custom message", () => {
   assertThrows(
     () =>
       assertIsError(
-        new CustomError("failed"),
+        new CustomError("Failed"),
         AnotherCustomError,
-        "fail",
+        "Fail",
         "CUSTOM MESSAGE",
       ),
     AssertionError,

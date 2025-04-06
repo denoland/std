@@ -92,12 +92,12 @@ Deno.test({
     assertThrows(
       () => stringify({ a: [[null]] }),
       Error,
-      "should never reach",
+      "Should never reach",
     );
     assertThrows(
       () => stringify({ a: [[undefined]] }),
       Error,
-      "should never reach",
+      "Should never reach",
     );
   },
 });

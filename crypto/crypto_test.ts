@@ -333,7 +333,7 @@ Deno.test("digest() throws on invalid input", async () => {
   await assertRejects(
     async () => await stdCrypto.subtle.digest("BLAKE2B", {} as Iterable<never>),
     TypeError,
-    "data must be a BufferSource or [Async]Iterable<BufferSource>",
+    "Data must be a BufferSource or [Async]Iterable<BufferSource>",
   );
 
   await assertRejects(
@@ -363,7 +363,7 @@ Deno.test("digestSync() throws on invalid input", () => {
   assertThrows(
     () => stdCrypto.subtle.digestSync("BLAKE2B", {} as Iterable<never>),
     TypeError,
-    "data must be a BufferSource or Iterable<BufferSource>",
+    "Data must be a BufferSource or Iterable<BufferSource>",
   );
 
   assertThrows(
@@ -1753,7 +1753,7 @@ for (const algorithm of DIGEST_ALGORITHM_NAMES) {
             );
           }
         } else {
-          throw new TypeError("expected value has an unexpected type");
+          throw new TypeError("Expected value has an unexpected type");
         }
       }
     }

@@ -40,12 +40,12 @@ Deno.test("mergeReadableStreams() handles errors", async () => {
     for await (const s of mergeReadableStreams(textStream, textStream2)) {
       buf.push(s);
       if (s === "2") {
-        throw new Error("error");
+        throw new Error("Error");
       }
     }
-    throw new Error("should not be here");
+    throw new Error("Should not be here");
   } catch (error) {
-    assertEquals((error as Error).message, "error");
+    assertEquals((error as Error).message, "Error");
     assertEquals(buf, ["1", "2"]);
   }
 });

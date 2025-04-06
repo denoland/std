@@ -339,17 +339,17 @@ Deno.test("stub() correctly handles types", () => {
 Deno.test("stub() works with throwing fake implementation", () => {
   const obj = {
     fn() {
-      throw new Error("failed");
+      throw new Error("Failed");
     },
   };
   const stubFn = stub(obj, "fn", () => {
-    throw new Error("failed");
+    throw new Error("Failed");
   });
-  assertThrows(() => obj.fn(), Error, "failed");
+  assertThrows(() => obj.fn(), Error, "Failed");
   assertSpyCall(stubFn, 0, {
     self: obj,
     args: [],
-    error: { Class: Error, msgIncludes: "failed" },
+    error: { Class: Error, msgIncludes: "Failed" },
   });
 });
 

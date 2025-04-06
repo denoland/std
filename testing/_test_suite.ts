@@ -346,7 +346,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         fn: async (t) => {
           if (permissions) {
             throw new Error(
-              "permissions option not available for nested tests",
+              "Permissions option not available for nested tests",
             );
           }
           context = { ...context };

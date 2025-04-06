@@ -27,11 +27,11 @@ Deno.test("assertRejects() with PromiseLike", async () => {
   await assertRejects(
     () => ({
       then() {
-        throw new Error("some error");
+        throw new Error("Some error");
       },
     }),
     Error,
-    "some error",
+    "Some error",
   );
 });
 
@@ -63,21 +63,21 @@ Deno.test("assertRejects() with non-error value rejected", async () => {
 Deno.test("assertRejects() with error class", async () => {
   await assertRejects(
     () => {
-      return Promise.reject(new Error("foo"));
+      return Promise.reject(new Error("Foo"));
     },
     Error,
-    "foo",
+    "Foo",
   );
 });
 
 Deno.test("assertRejects() resolves with caught error", async () => {
   const error = await assertRejects(
     () => {
-      return Promise.reject(new Error("foo"));
+      return Promise.reject(new Error("Foo"));
     },
   );
   assert(error instanceof Error);
-  assertEquals(error.message, "foo");
+  assertEquals(error.message, "Foo");
 });
 
 Deno.test("assertRejects() throws async parent error ", async () => {
@@ -95,9 +95,9 @@ Deno.test("assertRejects() accepts abstract class", () => {
   class ConcreteError extends AbstractError {}
 
   assertRejects(
-    () => Promise.reject(new ConcreteError("failed")),
+    () => Promise.reject(new ConcreteError("Failed")),
     AbstractError,
-    "fail",
+    "Fail",
   );
 });
 
@@ -109,9 +109,9 @@ Deno.test(
     await assertRejects(
       () =>
         assertRejects(
-          () => Promise.reject(new AnotherCustomError("failed")),
+          () => Promise.reject(new AnotherCustomError("Failed")),
           CustomError,
-          "fail",
+          "Fail",
         ),
       AssertionError,
       'Expected error to be instance of "CustomError", but was "AnotherCustomError".',

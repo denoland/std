@@ -34,13 +34,13 @@ Deno.test("deadline() throws when promise is rejected", async () => {
   const { signal } = controller;
   const p = delay(100, { signal })
     .catch(() => {})
-    .then(() => Promise.reject(new Error("booom")));
+    .then(() => Promise.reject(new Error("Booom")));
   await assertRejects(
     async () => {
       await deadline(p, 1000);
     },
     Error,
-    "booom",
+    "Booom",
   );
   controller.abort();
 });

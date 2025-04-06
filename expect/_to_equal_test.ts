@@ -258,13 +258,13 @@ Deno.test("expect().toEqual() align to jest test cases", () => {
 
 Deno.test("expect().toEqual() matches when Error Objects are equal", () => {
   function getError() {
-    return new Error("missing param: name");
+    return new Error("Missing param: name");
   }
 
-  const expectErrObjectWithName = new Error("missing param: name");
+  const expectErrObjectWithName = new Error("Missing param: name");
   expect(getError()).toEqual(expectErrObjectWithName);
 
-  const expectErrObjectWithEmail = new Error("missing param: email");
+  const expectErrObjectWithEmail = new Error("Missing param: email");
   expect(getError()).not.toEqual(expectErrObjectWithEmail);
 });
 

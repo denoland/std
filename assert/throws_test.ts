@@ -68,21 +68,21 @@ Deno.test("assertThrows() matches thrown non-error value", () => {
 Deno.test("assertThrows() matches thrown error with given error class", () => {
   assertThrows(
     () => {
-      throw new Error("foo");
+      throw new Error("Foo");
     },
     Error,
-    "foo",
+    "Foo",
   );
 });
 
 Deno.test("assertThrows() matches and returns thrown error value", () => {
   const error = assertThrows(
     () => {
-      throw new Error("foo");
+      throw new Error("Foo");
     },
   );
   assert(error instanceof Error);
-  assertEquals(error.message, "foo");
+  assertEquals(error.message, "Foo");
 });
 
 Deno.test("assertThrows() matches and returns thrown non-error", () => {
@@ -134,10 +134,10 @@ Deno.test("assertThrows() accepts abstract class", () => {
 
   assertThrows(
     () => {
-      throw new ConcreteError("failed");
+      throw new ConcreteError("Failed");
     },
     AbstractError,
-    "fail",
+    "Fail",
   );
 });
 

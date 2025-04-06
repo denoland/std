@@ -3,7 +3,7 @@ import { AssertionError, assertIsError, assertStrictEquals } from "./mod.ts";
 
 Deno.test("AssertionError", () => {
   const errorCause = { bar: "baz" };
-  const error = new AssertionError("foo", { cause: errorCause });
-  assertIsError(error, AssertionError, "foo");
+  const error = new AssertionError("Foo", { cause: errorCause });
+  assertIsError(error, AssertionError, "Foo");
   assertStrictEquals(error.cause, errorCause);
 });

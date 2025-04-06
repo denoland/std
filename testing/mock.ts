@@ -1300,7 +1300,7 @@ export function assertSpyCall<
       }
       if (call.error) {
         throw new AssertionError(
-          "Spy call did not return expected value, an error was thrown.",
+          "Spy call did not return expected value, an error was thrown",
         );
       }
       try {
@@ -1317,7 +1317,7 @@ export function assertSpyCall<
     if ("error" in expected) {
       if ("returned" in call) {
         throw new AssertionError(
-          "Spy call did not throw an error, a value was returned.",
+          "Spy call did not throw an error, a value was returned",
         );
       }
       assertIsError(
@@ -1374,12 +1374,12 @@ export async function assertSpyCallAsync<
 
   if (call.error) {
     throw new AssertionError(
-      "Spy call did not return a promise, an error was thrown.",
+      "Spy call did not return a promise, an error was thrown",
     );
   }
   if (call.returned !== Promise.resolve(call.returned)) {
     throw new AssertionError(
-      "Spy call did not return a promise, a value was returned.",
+      "Spy call did not return a promise, a value was returned",
     );
   }
 

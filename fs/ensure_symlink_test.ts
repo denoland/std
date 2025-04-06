@@ -30,7 +30,7 @@ Deno.test("ensureSymlink() rejects if file does not exist", async function () {
   await assertRejects(
     async () => {
       await Deno.stat(testFile).then(() => {
-        throw new Error("test file should exist.");
+        throw new Error("Test file should exist");
       });
     },
   );
@@ -51,7 +51,7 @@ Deno.test("ensureSymlinkSync() throws if file does not exist", function () {
 
   assertThrows(() => {
     Deno.statSync(testFile);
-    throw new Error("test file should exist.");
+    throw new Error("Test file should exist");
   });
 
   Deno.removeSync(tempDirPath, { recursive: true });

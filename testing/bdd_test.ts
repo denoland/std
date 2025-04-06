@@ -2040,7 +2040,7 @@ Deno.test("describe()", async (t) => {
         await assertRejects(
           async () => await options.fn(context),
           Error,
-          "permissions option not available for nested tests",
+          "Permissions option not available for nested tests",
         );
       } finally {
         TestSuiteInternal.reset();
