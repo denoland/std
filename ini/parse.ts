@@ -1,15 +1,14 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-/** Function for replacing INI values with JavaScript values. */
 export type ReviverFunction = (
   key: string,
   value: string,
   section?: string,
 ) => unknown;
 
-const SECTION_REGEXP = /^\[(?<name>.+)]$/;
-const KEY_VALUE_REGEXP = /^\s*(?<key>.*?)\s*=\s*(?<value>.*?)\s*$/;
+const SECTION_REGEXP = /^\[(?<name>.*\S.*)]$/;
+const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
 
 function trimQuotes(value: string): string {
   if (value.startsWith('"') && value.endsWith('"')) {
@@ -55,7 +54,6 @@ function* readTextLines(text: string): Generator<string> {
         if (text[i + 1] === "\n") i += 1;
         break;
       default:
-        if (line === " " || line === "\t") continue;
         line += char;
         break;
     }
@@ -160,7 +158,8 @@ export function parse<T extends object>(
   let sectionName: string | undefined;
 
   let lineNumber = 0;
-  for (const line of readTextLines(text)) {
+  for (let line of readTextLines(text)) {
+    line = line.trim();
     lineNumber += 1;
 
     // skip empty lines
@@ -171,7 +170,6 @@ export function parse<T extends object>(
 
     if (isSection(line, lineNumber)) {
       sectionName = SECTION_REGEXP.exec(line)?.groups?.name;
-
       if (!sectionName) {
         throw new SyntaxError(
           `Unexpected empty section name at line ${lineNumber}`,
