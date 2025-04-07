@@ -41,14 +41,16 @@ class MyClass {
       id: "deno-style-guide/prefer-private-field",
       fix: [],
       range: [19, 35],
-      message: "Use private field instead",
-      hint: "Use #foo instead of private foo",
+      message: "Property uses `private` keyword",
+      hint:
+        "Use private field (`#`) instead of the `private` keyword. E.g. Use `#foo` instead of `private foo`.",
     }, {
       id: "deno-style-guide/prefer-private-field",
       range: [38, 54],
       fix: [],
-      message: "Use private field instead",
-      hint: "Use #foo() instead of private foo()",
+      message: "Method uses `private` keyword",
+      hint:
+        "Use private field (`#`) instead of the `private` keyword. E.g. Use `#foo()` instead of `private foo()`.",
     }],
   );
 });

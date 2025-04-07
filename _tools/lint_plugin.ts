@@ -13,26 +13,26 @@ export default {
       create(context) {
         return {
           MethodDefinition(node) {
-            if (node.accessibility === "private") {
-              // TODO(iuioiua): add fix
-              context.report({
-                node,
-                range: node.range,
-                message: "Use private field instead",
-                hint: "Use #foo() instead of private foo()",
-              });
-            }
+            if (node.accessibility !== "private") return;
+            // TODO(iuioiua): add fix
+            context.report({
+              node,
+              range: node.range,
+              message: "Method uses `private` keyword",
+              hint:
+                "Use private field (`#`) instead of the `private` keyword. E.g. Use `#foo()` instead of `private foo()`.",
+            });
           },
           PropertyDefinition(node) {
-            if (node.accessibility === "private") {
-              // TODO(iuioiua): add fix
-              context.report({
-                node,
-                range: node.range,
-                message: "Use private field instead",
-                hint: "Use #foo instead of private foo",
-              });
-            }
+            if (node.accessibility !== "private") return;
+            // TODO(iuioiua): add fix
+            context.report({
+              node,
+              range: node.range,
+              message: "Property uses `private` keyword",
+              hint:
+                "Use private field (`#`) instead of the `private` keyword. E.g. Use `#foo` instead of `private foo`.",
+            });
           },
         };
       },
