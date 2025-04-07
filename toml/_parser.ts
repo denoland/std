@@ -134,20 +134,13 @@ function failure(): Failure {
   return { ok: false };
 }
 
-export function unflat(
+export function unflat<T extends unknown[] | Record<string, unknown>>(
   keys: string[],
-  values: unknown = {},
-  cObj?: unknown,
-): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  if (keys.length === 0) {
-    return cObj as Record<string, unknown>;
-  }
-  if (!cObj) cObj = values;
-  const key: string | undefined = keys[keys.length - 1];
-  if (typeof key === "string") out[key] = cObj;
-  return unflat(keys.slice(0, -1), values, out);
+  values: T,
+): T {
+  return keys.reduceRight((acc, key) => ({ [key]: acc } as T), values);
 }
+
 export function deepAssignWithTable(target: Record<string, unknown>, table: {
   type: "Table" | "TableArray";
   key: string[];
@@ -244,7 +237,7 @@ function kv<T>(
         `Value of key/value pair is invalid data format`,
       );
     }
-    return success(unflat(key.body, value.body));
+    return success(unflat(key.body, value.body as Record<string, unknown>));
   };
 }
 
