@@ -85,6 +85,11 @@ Deno.test({
       "Unexpected empty section name at line 1",
     );
     assertInvalidParse(
+      "[ ]\na=1",
+      SyntaxError,
+      "Unexpected empty section name at line 1",
+    );
+    assertInvalidParse(
       `=100`,
       SyntaxError,
       "Unexpected empty key name at line 1",
@@ -228,5 +233,36 @@ Deno.test({
     assertEquals(parse("value=true "), { value: true });
     assertEquals(parse("value=\ttrue"), { value: true });
     assertEquals(parse("value=true\t"), { value: true });
+  },
+});
+
+Deno.test({
+  name: "parse() parses padded lines",
+  fn() {
+    assertEquals(parse("  value=true"), { value: true });
+    assertEquals(parse("\tvalue=true"), { value: true });
+    assertEquals(parse("value  =true"), { value: true });
+    assertEquals(parse("value\t=true"), { value: true });
+    assertEquals(parse("value=  true"), { value: true });
+    assertEquals(parse("value=\ttrue"), { value: true });
+    assertEquals(parse("value=  true  "), { value: true });
+    assertEquals(parse("value=true\t"), { value: true });
+    assertEquals(parse("  \tvalue  \t=  \ttrue  \t"), { value: true });
+    assertEquals(parse("[s]"), { s: {} });
+    assertEquals(parse("[ s ]"), { " s ": {} });
+    assertEquals(parse("[section]"), { section: {} });
+    assertEquals(parse("[ section ]"), { " section ": {} });
+
+    assertEquals(parse("  [section]"), { section: {} });
+    assertEquals(parse("\t[section]"), { section: {} });
+    assertEquals(parse("[section]  "), { section: {} });
+    assertEquals(parse("[section]\t"), { section: {} });
+    assertEquals(parse("  \t[section]  \t"), { section: {} });
+
+    assertEquals(parse(" value=true "), { value: true });
+    assertEquals(parse('  value = "abc"  '), { value: "abc" });
+    assertEquals(parse("  [section]  \n  value  =  foo  "), {
+      section: { value: "foo" },
+    });
   },
 });
