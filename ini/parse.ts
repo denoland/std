@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+/** Function for replacing INI values with JavaScript values. */
 export type ReviverFunction = (
   key: string,
   value: string,
