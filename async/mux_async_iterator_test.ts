@@ -16,7 +16,8 @@ async function* gen456(): AsyncIterableIterator<number> {
 
 async function* genThrows(): AsyncIterableIterator<number> {
   yield 7;
-  throw new Error("Something went wrong");
+  // deno-lint-ignore deno-style-guide/error-message
+  throw new Error("something went wrong");
 }
 
 class CustomAsyncIterable {
@@ -69,7 +70,7 @@ Deno.test("MuxAsyncIterator() throws when the source throws", async () => {
   await assertRejects(
     async () => await Array.fromAsync(mux),
     Error,
-    "Something went wrong",
+    "something went wrong",
   );
 });
 
@@ -79,11 +80,11 @@ Deno.test("MuxAsyncIterator() doesn't clear iterables after throwing", async () 
   await assertRejects(
     async () => await Array.fromAsync(mux),
     Error,
-    "Something went wrong",
+    "something went wrong",
   );
   await assertRejects(
     async () => await Array.fromAsync(mux),
     Error,
-    "Something went wrong",
+    "something went wrong",
   );
 });

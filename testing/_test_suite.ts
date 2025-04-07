@@ -346,7 +346,8 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         fn: async (t) => {
           if (permissions) {
             throw new Error(
-              "Permissions option not available for nested tests",
+              // deno-lint-ignore deno-style-guide/error-message
+              "permissions option not available for nested tests",
             );
           }
           context = { ...context };

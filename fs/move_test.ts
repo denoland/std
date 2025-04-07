@@ -31,10 +31,11 @@ Deno.test("move() creates dest dir if it does not exist", async function () {
   await assertRejects(
     async () => {
       await move(srcDir, destDir);
-      throw new Error("Should not throw error");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("should not throw error");
     },
     Error,
-    "Should not throw error",
+    "should not throw error",
   );
 
   await Deno.remove(tempDirPath, { recursive: true });
@@ -53,10 +54,11 @@ Deno.test(
     await assertRejects(
       async () => {
         await move(srcDir, destDir, { overwrite: true });
-        throw new Error("Should not throw error");
+        // deno-lint-ignore deno-style-guide/error-message
+        throw new Error("should not throw error");
       },
       Error,
-      "Should not throw error",
+      "should not throw error",
     );
 
     await Deno.remove(tempDirPath, { recursive: true });
@@ -113,10 +115,11 @@ Deno.test("move() moves file and can overwrite content", async function () {
   await assertRejects(
     async () => {
       await move(srcFile, destFile, { overwrite: true });
-      throw new Error("Should not throw error");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("should not throw error");
     },
     Error,
-    "Should not throw error",
+    "should not throw error",
   );
 
   await assertRejects(async () => await Deno.lstat(srcFile));
@@ -229,10 +232,11 @@ Deno.test("moveSync() creates dest dir if it does not exist", function () {
   assertThrows(
     () => {
       moveSync(srcDir, destDir);
-      throw new Error("Should not throw error");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("should not throw error");
     },
     Error,
-    "Should not throw error",
+    "should not throw error",
   );
 
   Deno.removeSync(tempDirPath, { recursive: true });
@@ -249,10 +253,11 @@ Deno.test("moveSync() creates dest dir if it does not exist and overwrite option
   assertThrows(
     () => {
       moveSync(srcDir, destDir, { overwrite: true });
-      throw new Error("Should not throw error");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("should not throw error");
     },
     Error,
-    "Should not throw error",
+    "should not throw error",
   );
 
   Deno.removeSync(tempDirPath, { recursive: true });
@@ -304,10 +309,11 @@ Deno.test("moveSync() moves file and can overwrite content", function () {
   assertThrows(
     () => {
       moveSync(srcFile, destFile, { overwrite: true });
-      throw new Error("Should not throw error");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("should not throw error");
     },
     Error,
-    "Should not throw error",
+    "should not throw error",
   );
 
   assertEquals(existsSync(srcFile), false);

@@ -197,13 +197,14 @@ Deno.test({
     // deno-lint-ignore require-yield
     const transform = toTransformStream(function* (src) {
       src.getReader(); // lock the source stream to cause error at cancel
-      throw new Error("Foo");
+      // deno-lint-ignore deno-style-guide/error-message
+      throw new Error("foo");
     });
 
     await assertRejects(
       async () => await Array.fromAsync(src.pipeThrough(transform)),
       Error,
-      "Foo",
+      "foo",
     );
   },
 });

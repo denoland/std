@@ -37,7 +37,8 @@ Deno.test("readAll() and readAllSync() can read slow buffer correctly", async ()
 
     readSync(p: Uint8Array): number | null {
       if (p.length === 0) {
-        throw new TypeError("Uint8Array is empty");
+        // deno-lint-ignore deno-style-guide/error-message
+        throw new TypeError("p is empty");
       }
       const remaining = this.#remaining;
       if (remaining.length === 0) {
