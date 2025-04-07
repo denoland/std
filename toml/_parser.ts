@@ -123,7 +123,12 @@ export class Scanner {
   }
 
   match(regExp: RegExp) {
-    const match = this.#source.slice(this.#position).match(regExp);
+    regExp = new RegExp(
+      regExp.source,
+      regExp.sticky ? regExp.flags : regExp.flags + "y",
+    );
+    regExp.lastIndex = this.#position;
+    const match = regExp.exec(this.#source);
     if (!match) return null;
     const string = match[0];
     this.next(string.length);
@@ -327,8 +332,8 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const BARE_KEY_REGEXP = /^[A-Za-z0-9_-]+/;
-const FLOAT_REGEXP = /^[0-9_\.e+\-]+/i;
+const BARE_KEY_REGEXP = /[A-Za-z0-9_-]+/;
+const FLOAT_REGEXP = /[0-9_\.e+\-]+/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
@@ -624,9 +629,9 @@ export function float(scanner: Scanner): ParseResult<number> {
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.nextUntilChar({ inline: true });
   // example: 1979-05-27
-  let dateStr = scanner.match(/^\d{4}-\d{2}-\d{2}/);
+  let dateStr = scanner.match(/\d{4}-\d{2}-\d{2}/);
   if (!dateStr) return failure();
-  dateStr += scanner.match(/^[ 0-9TZ.:+-]+/) ?? "";
+  dateStr += scanner.match(/[ 0-9TZ.:+-]+/) ?? "";
   const date = new Date(dateStr.trim());
   // invalid date
   if (isNaN(date.getTime())) {
@@ -638,13 +643,13 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
-  let timeStr = scanner.match(/^(\d{2}):(\d{2}):(\d{2})/);
+  let timeStr = scanner.match(/(\d{2}):(\d{2}):(\d{2})/);
   if (!timeStr) return failure();
 
   if (scanner.char() !== ".") return success(timeStr);
   timeStr += scanner.char();
   scanner.next();
-  timeStr += scanner.match(/^[0-9]+/) ?? "";
+  timeStr += scanner.match(/[0-9]+/) ?? "";
   return success(timeStr);
 }
 
