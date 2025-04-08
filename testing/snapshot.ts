@@ -572,6 +572,7 @@ export async function assertSnapshot<T>(
   actual: T,
   message?: string,
 ): Promise<void>;
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,

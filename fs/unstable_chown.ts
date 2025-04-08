@@ -24,6 +24,7 @@ import { mapError } from "./_map_error.ts";
  * @param uid The user id (UID) of the new owner, or `null` for no change.
  * @param gid The group id (GID) of the new owner, or `null` for no change.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function chown(
   path: string | URL,
   uid: number | null,
@@ -61,6 +62,7 @@ export async function chown(
  * @param uid The user id (UID) of the new owner, or `null` for no change.
  * @param gid The group id (GID) of the new owner, or `null` for no change.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function chownSync(
   path: string | URL,
   uid: number | null,

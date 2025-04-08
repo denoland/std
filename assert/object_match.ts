@@ -29,6 +29,7 @@ import { assertEquals } from "./equals.ts";
  * @param expected The expected value to match.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertObjectMatch(
   // deno-lint-ignore no-explicit-any
   actual: Record<PropertyKey, any>,

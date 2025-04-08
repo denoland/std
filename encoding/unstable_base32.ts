@@ -122,6 +122,7 @@ export function encodeBase32(
  * );
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encodeIntoBase32(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,

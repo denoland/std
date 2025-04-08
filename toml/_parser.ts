@@ -134,6 +134,7 @@ function failure(): Failure {
   return { ok: false };
 }
 
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function unflat(
   keys: string[],
   values: unknown = {},

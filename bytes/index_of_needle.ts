@@ -44,6 +44,7 @@
  * Defining a start index will begin the search at the specified index in the
  * source array.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function indexOfNeedle(
   source: Uint8Array,
   needle: Uint8Array,

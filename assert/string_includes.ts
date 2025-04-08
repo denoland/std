@@ -18,6 +18,7 @@ import { AssertionError } from "./assertion_error.ts";
  * @param expected The expected string to check for inclusion.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertStringIncludes(
   actual: string,
   expected: string,

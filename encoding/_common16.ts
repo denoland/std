@@ -29,6 +29,7 @@ export function calcSizeHex(originalSize: number): number {
   return originalSize * 2;
 }
 
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encode(
   buffer: Uint8Array_,
   i: number,
@@ -43,6 +44,7 @@ export function encode(
   return o;
 }
 
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function decode(
   buffer: Uint8Array_,
   i: number,
