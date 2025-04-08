@@ -91,33 +91,33 @@ new CustomError("Can't parse input");
       {
         fix: [{ range: [11, 31], text: '"Cannot parse input"' }],
         hint:
-          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+          "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
         id: "deno-style-guide/error-message",
-        message: "Error message should start with an uppercase.",
+        message: "Error message starts with a lowercase.",
         range: [11, 31],
       },
       {
         fix: [{ range: [48, 69], text: '"Cannot parse input"' }],
         hint:
-          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+          "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
         id: "deno-style-guide/error-message",
-        message: "Error message should not end with a period.",
+        message: "Error message ends with a period.",
         range: [48, 69],
       },
       {
         fix: [],
         hint:
-          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+          "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
         id: "deno-style-guide/error-message",
-        message: "Error message should not contain periods.",
+        message: "Error message contains periods.",
         range: [123, 161],
       },
       {
         fix: [],
         hint:
-          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+          "Use the full form in error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
         id: "deno-style-guide/error-message",
-        message: "Error message should not use contractions.",
+        message: "Error message uses contractions.",
         range: [179, 198],
       },
     ],
