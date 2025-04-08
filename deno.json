@@ -53,7 +53,8 @@
         "single-var-declarator",
         "no-console"
       ]
-    }
+    },
+    "plugins": ["./_tools/lint_plugin.ts"]
   },
   "workspace": [
     "./assert",
