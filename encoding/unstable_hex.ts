@@ -23,16 +23,15 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common16.ts";
-export { calcMax };
+import {
+  alphabet,
+  calcSizeHex,
+  decode,
+  encode,
+  rAlphabet,
+} from "./_common16.ts";
+export { calcSizeHex };
 import { detach } from "./_common_detach.ts";
-
-const alphabet = new TextEncoder().encode("0123456789abcdef");
-const rAlphabet = new Uint8Array(128).fill(16); // alphabet.Hex.length
-alphabet.forEach((byte, i) => rAlphabet[byte] = i);
-new TextEncoder()
-  .encode("ABCDEF")
-  .forEach((byte, i) => rAlphabet[byte] = i + 10);
 
 /**
  * `encodeHex` takes an input source and encodes it into a hexadecimal string.
@@ -68,61 +67,61 @@ export function encodeHex(
   }
   const [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcSizeHex((input as Uint8Array_).length),
   );
   encode(output, i, 0, alphabet);
   return new TextDecoder().decode(output);
 }
 
 /**
- * `encodeRawHex` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to hexadecimal in place. The function
- * assumes that the raw data starts at param {@linkcode i} and ends at the end
- * of the buffer, and that the entire buffer provided is large enough to hold
- * the encoded data.
+ * `encodeIntoHex` takes an input source and encodes it as hex into the
+ * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param buffer The buffer to encode in place.
- * @param i The index of where the raw data starts reading from.
- * @param o The index of where the encoded data starts writing to.
- * @returns The index of where the encoded data finished writing to.
+ * @param input the source to encode.
+ * @param output the buffer to write the encoded source to.
+ * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeHex, encodeRawHex } from "@std/encoding/unstable-hex";
+ * import {
+ *   calcSizeHex,
+ *   encodeHex,
+ *   encodeIntoHex,
+ * } from "@std/encoding/unstable-hex";
  *
- * const prefix = new TextEncoder().encode("data:url/fake,");
+ * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
+ * const output = new Uint8Array(prefix.length + calcSizeHex(input.length));
  *
- * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
- * const i = newSize - originalSize;
- * const o = prefix.length;
- *
- * // deno-lint-ignore no-explicit-any
- * const output = new Uint8Array((input.buffer as any).transfer(newSize));
- * output.set(output.subarray(0, originalSize), i);
- * output.set(prefix);
- *
- * encodeRawHex(output, i, o);
+ * const o = new TextEncoder().encodeInto(prefix, output).written;
+ * encodeIntoHex(input, output.subarray(o));
  * assertEquals(
  *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock")),
+ *   "data:url/fake," +
+ *     encodeHex(await Deno.readFile("./deno.lock")),
  * );
  * ```
  */
-export function encodeRawHex(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
+export function encodeIntoHex(
+  input: string | Uint8Array_ | ArrayBuffer,
+  output: Uint8Array_,
 ): number {
-  const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) {
-    throw new RangeError("Cannot encode buffer as hex: Buffer too small");
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
-  return encode(buffer, i, o, alphabet);
+  const min = calcSizeHex((input as Uint8Array_).length);
+  if (output.length < min) {
+    throw new RangeError("Cannot encode input as hex: Output too small");
+  }
+  output = output.subarray(0, min);
+  const i = min - (input as Uint8Array_).length;
+  output.set(input as Uint8Array_, i);
+  return encode(output, i, 0, alphabet);
 }
 
 /**
@@ -152,51 +151,4 @@ export function decodeHex(
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
   return input.subarray(0, decode(input, 0, 0, rAlphabet));
-}
-
-/**
- * `decodeRawHex` is a low-level function that decodes a
- * {@linkcode Uint8Array<ArrayBuffer>} from hexadecimal in place. Param
- * {@linkcode i} must be greater than or equal to param {@linkcode o}. The
- * function assumes that the encoded data starts at param {@linkcode i} and ends
- * at the end of the buffer.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @param buffer The buffer to decode in place.
- * @param i The index of where the encoded data starts reading from.
- * @param o The index of where the decoded data starts writing to.
- * @returns The index of where the decoded data finished writing to.
- *
- * @example Basic Usage
- * ```ts
- * import { assertEquals } from "@std/assert";
- * import {
- *   decodeRawHex,
- *   encodeHex,
- *   type Uint8Array_,
- * } from "@std/encoding/unstable-hex";
- *
- * let buffer = new TextEncoder().encode(
- *   "data:url/fake," + encodeHex(await Deno.readFile("./deno.lock")),
- * ) as Uint8Array_;
- *
- * const i = buffer.indexOf(",".charCodeAt(0)) + 1;
- * const o = decodeRawHex(buffer, i, i);
- *
- * buffer = buffer.subarray(i, o);
- * assertEquals(buffer, await Deno.readFile("./deno.lock"));
- * ```
- */
-export function decodeRawHex(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
-): number {
-  if (i < o) {
-    throw new RangeError(
-      "Cannot decode buffer as hex: Input (i) must be greater than or equal to output (o)",
-    );
-  }
-  return decode(buffer, i, o, rAlphabet);
 }

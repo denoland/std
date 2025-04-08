@@ -3,11 +3,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
-  calcMax,
+  calcSizeHex,
   decodeHex,
-  decodeRawHex,
   encodeHex,
-  encodeRawHex,
+  encodeIntoHex,
 } from "./unstable_hex.ts";
 
 const inputOutput: [string | ArrayBuffer, string][] = [
@@ -39,44 +38,43 @@ Deno.test("encodeHex() subarray", () => {
   }
 });
 
-Deno.test("encodeRawHex()", () => {
+Deno.test("encodeHexInto()", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input, output] of inputOutput) {
     if (typeof input === "string") continue;
 
-    const buffer = new Uint8Array(prefix.length + calcMax(input.byteLength));
+    const buffer = new Uint8Array(
+      prefix.length + calcSizeHex(input.byteLength),
+    );
     buffer.set(prefix);
-    buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
-    encodeRawHex(
-      buffer,
-      buffer.length - input.byteLength,
-      prefix.length,
+    encodeIntoHex(
+      input,
+      buffer.subarray(prefix.length),
     );
     assertEquals(buffer, concat([prefix, new TextEncoder().encode(output)]));
   }
 });
 
-Deno.test("encodeRawHex() with too small buffer", () => {
+Deno.test("encodeHexInto() with too small buffer", () => {
   const prefix = new TextEncoder().encode("data:fake/url,");
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
     const buffer = new Uint8Array(
-      prefix.length + calcMax(input.byteLength) - 2,
+      prefix.length + calcSizeHex(input.byteLength) - 2,
     );
     buffer.set(prefix);
     buffer.set(new Uint8Array(input), buffer.length - input.byteLength);
 
     assertThrows(
       () =>
-        encodeRawHex(
-          buffer,
-          buffer.length - input.byteLength,
-          prefix.length,
+        encodeIntoHex(
+          input,
+          buffer.subarray(prefix.length),
         ),
       RangeError,
-      "Buffer too small",
+      "Cannot encode input as hex: Output too small",
     );
   }
 });
@@ -111,40 +109,6 @@ Deno.test("decodeHex() invalid char", () => {
       () => decodeHex(".".repeat(2) + output),
       TypeError,
       "Cannot decode input as hex: Invalid character (.)",
-    );
-  }
-});
-
-Deno.test("decodeRawHex()", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [input, output] of inputOutput) {
-    if (typeof input === "string") continue;
-
-    const buffer = concat([prefix, new TextEncoder().encode(output)]);
-    assertEquals(
-      buffer.subarray(
-        prefix.length,
-        decodeRawHex(buffer, prefix.length, prefix.length),
-      ),
-      new Uint8Array(input),
-    );
-  }
-});
-
-Deno.test("decodeRawHex() with invalid offsets", () => {
-  const prefix = new TextEncoder().encode("data:fake/url,");
-  for (const [input, output] of inputOutput) {
-    if (typeof input === "string") continue;
-
-    assertThrows(
-      () =>
-        decodeRawHex(
-          concat([prefix, new TextEncoder().encode(output)]),
-          prefix.length - 2,
-          prefix.length,
-        ),
-      RangeError,
-      "Input (i) must be greater than or equal to output (o)",
     );
   }
 });
