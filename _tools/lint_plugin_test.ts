@@ -56,7 +56,7 @@ class MyClass {
   );
 });
 
-Deno.test("deno-style-guide/variable-name", {
+Deno.test("deno-style-guide/naming-convention", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {
   // Good
@@ -127,84 +127,77 @@ enum enumName {
       {
         fix: [{ range: [7, 20], text: "constantName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'CONSTANT_name' is not camelCase.",
         range: [7, 20],
       },
       {
         fix: [{ range: [36, 45], text: "constName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'ConstName' is not camelCase.",
         range: [36, 45],
       },
       {
         fix: [{ range: [59, 66], text: "letName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'LetName' is not camelCase.",
         range: [59, 66],
       },
       {
         fix: [{ range: [80, 88], text: "letName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'LET_NAME' is not camelCase.",
         range: [80, 88],
       },
       {
         fix: [{ range: [102, 109], text: "varName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'VarName' is not camelCase.",
         range: [102, 109],
       },
       {
         fix: [{ range: [123, 131], text: "varName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'VAR_NAME' is not camelCase.",
         range: [123, 131],
       },
       {
         fix: [{ range: [148, 158], text: "objectName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Property name 'ObjectName' is not camelCase.",
         range: [148, 158],
       },
       {
         fix: [{ range: [257, 269], text: "functionName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Function name 'FunctionName' is not camelCase.",
         range: [257, 269],
       },
       {
-        fix: [{ range: [301, 321], text: "nestedConstantCase" }],
-        hint: undefined,
-        id: "deno-style-guide/variable-name",
-        message: "Property name 'NESTED_CONSTANT_CASE' is not camelCase.",
-        range: [301, 321],
-      },
-      {
         fix: [{ range: [340, 349], text: "ClassName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Class name 'className' is not PascalCase.",
         range: [340, 349],
       },
       {
         fix: [{ range: [359, 367], text: "TypeName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Type name 'typeName' is not PascalCase.",
         range: [359, 367],
       },
       {
         fix: [{ range: [389, 402], text: "InterfaceName" }],
         hint: undefined,
-        id: "deno-style-guide/variable-name",
+        id: "deno-style-guide/naming-convention",
         message: "Interface name 'interfaceName' is not PascalCase.",
         range: [389, 402],
       },

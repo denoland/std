@@ -160,7 +160,7 @@
 
 import { stripAnsiCode } from "./colors.ts";
 
-const State = {
+const STATE = {
   PASSTHROUGH: 0,
   PERCENT: 1,
   POSITIONAL: 2,
@@ -168,14 +168,15 @@ const State = {
   WIDTH: 4,
 } as const;
 
-type State = typeof State[keyof typeof State];
+type State = typeof STATE[keyof typeof STATE];
 
-const WorP = {
+const WOR_P = {
   WIDTH: 0,
   PRECISION: 1,
 } as const;
 
-type WorP = typeof WorP[keyof typeof WorP];
+// deno-lint-ignore deno-style-guide/naming-convention
+type WorP = typeof WOR_P[keyof typeof WOR_P];
 
 const F = {
   sign: 1,
@@ -206,7 +207,7 @@ class Printf {
   args: unknown[];
   i: number;
 
-  state: State = State.PASSTHROUGH;
+  state: State = STATE.PASSTHROUGH;
   verb = "";
   buf = "";
   argNum = 0;
@@ -228,17 +229,17 @@ class Printf {
     for (; this.i < this.format.length; ++this.i) {
       const c = this.format[this.i];
       switch (this.state) {
-        case State.PASSTHROUGH:
+        case STATE.PASSTHROUGH:
           if (c === "%") {
-            this.state = State.PERCENT;
+            this.state = STATE.PERCENT;
           } else {
             this.buf += c;
           }
           break;
-        case State.PERCENT:
+        case STATE.PERCENT:
           if (c === "%") {
             this.buf += c;
-            this.state = State.PASSTHROUGH;
+            this.state = STATE.PASSTHROUGH;
           } else {
             this.handleFormat();
           }
@@ -272,11 +273,11 @@ class Printf {
     for (; this.i < this.format.length; ++this.i) {
       const c = this.format[this.i]!;
       switch (this.state) {
-        case State.PERCENT:
+        case STATE.PERCENT:
           switch (c) {
             case "[":
               this.handlePositional();
-              this.state = State.POSITIONAL;
+              this.state = STATE.POSITIONAL;
               break;
             case "+":
               flags.plus = true;
@@ -302,10 +303,10 @@ class Printf {
               if (("1" <= c && c <= "9") || c === "." || c === "*") {
                 if (c === ".") {
                   this.flags.precision = 0;
-                  this.state = State.PRECISION;
+                  this.state = STATE.PRECISION;
                   this.i++;
                 } else {
-                  this.state = State.WIDTH;
+                  this.state = STATE.WIDTH;
                 }
                 this.handleWidthAndPrecision(flags);
               } else {
@@ -314,14 +315,14 @@ class Printf {
               }
           } // switch c
           break;
-        case State.POSITIONAL:
+        case STATE.POSITIONAL:
           // TODO(bartlomieju): either a verb or * only verb for now
           if (c === "*") {
             const worp = this.flags.precision === -1
-              ? WorP.WIDTH
-              : WorP.PRECISION;
+              ? WOR_P.WIDTH
+              : WOR_P.PRECISION;
             this.handleWidthOrPrecisionRef(worp);
-            this.state = State.PERCENT;
+            this.state = STATE.PERCENT;
             break;
           } else {
             this.handleVerb();
@@ -348,14 +349,14 @@ class Printf {
     this.haveSeen[this.argNum] = true;
     if (typeof arg === "number") {
       switch (wOrP) {
-        case WorP.WIDTH:
+        case WOR_P.WIDTH:
           this.flags.width = arg;
           break;
         default:
           this.flags.precision = arg;
       }
     } else {
-      const tmp = wOrP === WorP.WIDTH ? "WIDTH" : "PREC";
+      const tmp = wOrP === WOR_P.WIDTH ? "WIDTH" : "PREC";
       this.tmpError = `%!(BAD ${tmp} '${this.args[this.argNum]}')`;
     }
     this.argNum++;
@@ -370,15 +371,15 @@ class Printf {
     for (; this.i !== this.format.length; ++this.i) {
       const c = fmt[this.i]!;
       switch (this.state) {
-        case State.WIDTH:
+        case STATE.WIDTH:
           switch (c) {
             case ".":
               // initialize precision, %9.f -> precision=0
               this.flags.precision = 0;
-              this.state = State.PRECISION;
+              this.state = STATE.PRECISION;
               break;
             case "*":
-              this.handleWidthOrPrecisionRef(WorP.WIDTH);
+              this.handleWidthOrPrecisionRef(WOR_P.WIDTH);
               // force . or flag at this point
               break;
             default: {
@@ -388,7 +389,7 @@ class Printf {
               // if we encounter a non (number|*|.) we're done with prec & wid
               if (isNaN(val)) {
                 this.i--;
-                this.state = State.PERCENT;
+                this.state = STATE.PERCENT;
                 return;
               }
 
@@ -398,16 +399,16 @@ class Printf {
             }
           } // switch c
           break;
-        case State.PRECISION: {
+        case STATE.PRECISION: {
           if (c === "*") {
-            this.handleWidthOrPrecisionRef(WorP.PRECISION);
+            this.handleWidthOrPrecisionRef(WOR_P.PRECISION);
             break;
           }
           const val = parseInt(c);
           if (isNaN(val)) {
             // one too far, rewind
             this.i--;
-            this.state = State.PERCENT;
+            this.state = STATE.PERCENT;
             return;
           }
           flags.precision *= 10;
@@ -495,7 +496,7 @@ class Printf {
       }
     }
     this.argNum++; // if there is a further positional, it will reset.
-    this.state = State.PASSTHROUGH;
+    this.state = STATE.PASSTHROUGH;
   }
 
   // deno-lint-ignore no-explicit-any
@@ -827,10 +828,10 @@ class Printf {
     // converted in the style of an f or F conversion specifier.
     // https://pubs.opengroup.org/onlinepubs/9699919799/functions/fprintf.html
 
-    let P = this.flags.precision !== -1
+    let p = this.flags.precision !== -1
       ? this.flags.precision
       : DEFAULT_PRECISION;
-    P = P === 0 ? 1 : P;
+    p = p === 0 ? 1 : p;
 
     const m = n.toExponential().match(FLOAT_REGEXP);
     if (!m) {
@@ -841,14 +842,14 @@ class Printf {
 
     const X = parseInt(m[F.exponent]!) * (m[F.esign] === "-" ? -1 : 1);
     let nStr = "";
-    if (P > X && X >= -4) {
-      this.flags.precision = P - (X + 1);
+    if (p > X && X >= -4) {
+      this.flags.precision = p - (X + 1);
       nStr = this.fmtFloatF(n);
       if (!this.flags.sharp) {
         nStr = nStr.replace(/\.?0*$/, "");
       }
     } else {
-      this.flags.precision = P - 1;
+      this.flags.precision = p - 1;
       nStr = this.fmtFloatE(n);
       if (!this.flags.sharp) {
         nStr = nStr.replace(/\.?0*e/, upcase ? "E" : "e");

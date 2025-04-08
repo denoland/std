@@ -292,7 +292,7 @@ Deno.test("expect().toEqual() handles Maps", () => {
 
 // TODO(kt3k): Iterator global exists in the runtime but not in the TypeScript
 // Remove the below lines when `Iterator` global is available in TypeScript
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore no-explicit-any deno-style-guide/naming-convention
 const Iterator = (globalThis as any).Iterator;
 Deno.test("expect().toEqual() handles iterators", () => {
   expect(Iterator.from([1, 2, 3])).toEqual(Iterator.from([1, 2, 3]));

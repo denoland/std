@@ -97,6 +97,7 @@ Deno.test("(unstable) sample() handles TypedArrays", () => {
     Float32Array,
     Float64Array,
   ];
+  // deno-lint-ignore deno-style-guide/naming-convention
   for (const TypedArray of typedArrays) {
     const input = new TypedArray([1, 2, 3]);
     const actual = sample(input);

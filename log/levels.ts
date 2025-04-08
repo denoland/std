@@ -7,6 +7,7 @@
  *
  * @internal
  */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const LogLevels = {
   NOTSET: 0,
   DEBUG: 10,
@@ -23,6 +24,7 @@ export type LogLevel = typeof LogLevels[LevelName];
 export type LevelName = Exclude<keyof typeof LogLevels, number>;
 
 /** Permitted log level names */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const LogLevelNames: LevelName[] = Object.keys(LogLevels).filter((key) =>
   isNaN(Number(key))
 ) as LevelName[];

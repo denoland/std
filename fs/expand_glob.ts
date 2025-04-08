@@ -66,13 +66,13 @@ function split(path: string): SplitPath {
   const segments = path
     .replace(new RegExp(`^${s}|${s}$`, "g"), "")
     .split(SEPARATOR_PATTERN);
-  const isAbsolute_ = isAbsolute(path);
+  const isAbsolutePath = isAbsolute(path);
   const split: SplitPath = {
     segments,
-    isAbsolute: isAbsolute_,
+    isAbsolute: isAbsolutePath,
     hasTrailingSep: path.match(new RegExp(`${s}$`)) !== null,
   };
-  if (isWindows && isAbsolute_) {
+  if (isWindows && isAbsolutePath) {
     split.winRoot = segments.shift()!;
   }
   return split;

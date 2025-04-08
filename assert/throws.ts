@@ -65,7 +65,7 @@ export function assertThrows<E extends Error = Error>(
   msgIncludesOrMsg?: string,
   msg?: string,
 ): E | Error | unknown {
-  // deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any deno-style-guide/naming-convention
   let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
   let msgIncludes: string | undefined;
   let err;

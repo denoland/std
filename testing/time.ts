@@ -70,22 +70,22 @@ export class TimeError extends Error {
   }
 }
 
-function FakeTimeNow() {
+function fakeTimeNow() {
   return time?.now ?? _internals.Date.now();
 }
 
-const FakeDate = new Proxy(Date, {
+const fakeDate = new Proxy(Date, {
   construct(_target, args) {
-    if (args.length === 0) args.push(FakeDate.now());
+    if (args.length === 0) args.push(fakeDate.now());
     // @ts-expect-error this is a passthrough
     return new _internals.Date(...args);
   },
   apply(_target, _thisArg, _args) {
-    return new _internals.Date(FakeTimeNow()).toString();
+    return new _internals.Date(fakeTimeNow()).toString();
   },
   get(target, prop, receiver) {
     if (prop === "now") {
-      return FakeTimeNow;
+      return fakeTimeNow;
     }
     return Reflect.get(target, prop, receiver);
   },
@@ -199,7 +199,7 @@ function fakeAbortSignalTimeout(delay: number): AbortSignal {
 }
 
 function overrideGlobals() {
-  globalThis.Date = FakeDate;
+  globalThis.Date = fakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;

@@ -629,6 +629,7 @@ Deno.test("FakeTime.runAllAsync() runs all microtasks and timers", async () => {
   assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
 });
 
+// deno-lint-ignore deno-style-guide/naming-convention
 const Date_ = Date;
 
 Deno.test("Date from FakeTime is structured cloneable", () => {

@@ -45,6 +45,7 @@ Deno.test({
       `Expected object to be an instance of "Number" but was "number".`,
     );
 
+    // deno-lint-ignore deno-style-guide/naming-convention
     let TestClassWithSameName: new () => unknown;
     {
       class TestClass3 {}

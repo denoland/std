@@ -55,7 +55,7 @@ export default {
       },
     },
     // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
-    "variable-name": {
+    "naming-convention": {
       create(context) {
         return {
           TSTypeAliasDeclaration(node) {

@@ -35,15 +35,18 @@ export type { Uint8Array_ };
  * The maximum value of an unsigned 64-bit integer.
  * Equivalent to `2n**64n - 1n`
  */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const MaxUint64 = 18446744073709551615n;
 
 /**
  * The maximum length, in bytes, of a Varint encoded 64-bit integer.
  */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const MaxVarintLen64 = 10;
 /**
  * The maximum length, in bytes, of a Varint encoded 32-bit integer.
  */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const MaxVarintLen32 = 5;
 
 const MSB = 0x80;

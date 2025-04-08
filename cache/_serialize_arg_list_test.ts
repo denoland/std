@@ -130,7 +130,7 @@ Deno.test("_serializeArgList() allows garbage collection for weak keys", async (
     };
   }
 
-  const OriginalFinalizationRegistry = FinalizationRegistry;
+  const ORIGINAL_FINALIZATION_REGISTRY = FinalizationRegistry;
 
   try {
     if (!gc) {
@@ -179,6 +179,6 @@ Deno.test("_serializeArgList() allows garbage collection for weak keys", async (
     await delay(0);
     assertEquals(cache.size, persistentKeys.size);
   } finally {
-    globalThis.FinalizationRegistry = OriginalFinalizationRegistry;
+    globalThis.FinalizationRegistry = ORIGINAL_FINALIZATION_REGISTRY;
   }
 });

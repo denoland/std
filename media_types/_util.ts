@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface DBEntry {
   source: string;
   compressible?: boolean;

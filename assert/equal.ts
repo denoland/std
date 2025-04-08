@@ -41,7 +41,7 @@ function getKeysDeep(obj: object) {
   return keys;
 }
 
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore no-explicit-any deno-style-guide/naming-convention
 const Temporal: any = (globalThis as any).Temporal ??
   new Proxy({}, { get: () => {} });
 
@@ -73,6 +73,7 @@ function isPrimitive(x: unknown) {
 }
 
 type TypedArray = Pick<Uint8Array | BigUint64Array, "length" | number>;
+// deno-lint-ignore deno-style-guide/naming-convention
 const TypedArray = Object.getPrototypeOf(Uint8Array);
 function compareTypedArrays(a: TypedArray, b: TypedArray) {
   if (a.length !== b.length) return false;

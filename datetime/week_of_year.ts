@@ -1,11 +1,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { DAY, WEEK } from "./constants.ts";
+import { DAY as DAY_MILLISECONDS, WEEK } from "./constants.ts";
 
 const DAYS_PER_WEEK = 7;
 
-const Day = {
+const DAY = {
   Sun: 0,
   Mon: 1,
   Tue: 2,
@@ -39,8 +39,8 @@ export function weekOfYear(date: Date): number {
   const day = workingDate.getUTCDay();
 
   const nearestThursday = workingDate.getUTCDate() +
-    Day.Thu -
-    (day === Day.Sun ? DAYS_PER_WEEK : day);
+    DAY.Thu -
+    (day === DAY.Sun ? DAYS_PER_WEEK : day);
 
   workingDate.setUTCDate(nearestThursday);
 
@@ -48,5 +48,7 @@ export function weekOfYear(date: Date): number {
   const yearStart = new Date(Date.UTC(workingDate.getUTCFullYear(), 0, 1));
 
   // return the calculated full weeks to nearest Thursday
-  return Math.ceil((workingDate.getTime() - yearStart.getTime() + DAY) / WEEK);
+  return Math.ceil(
+    (workingDate.getTime() - yearStart.getTime() + DAY_MILLISECONDS) / WEEK,
+  );
 }
