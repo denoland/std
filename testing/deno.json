@@ -1,6 +1,6 @@
 {
   "name": "@std/testing",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "exports": {
     "./bdd": "./bdd.ts",
     "./mock": "./mock.ts",

@@ -1,7 +1,13 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import type { ReplacerFunction } from "./_ini_map.ts";
+/** Function for replacing JavaScript values with INI string values. */
+export type ReplacerFunction = (
+  key: string,
+  // deno-lint-ignore no-explicit-any
+  value: any,
+  section?: string,
+) => string;
 
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions {
@@ -25,8 +31,6 @@ export interface StringifyOptions {
    */
   replacer?: ReplacerFunction;
 }
-
-export type { ReplacerFunction };
 
 function isPlainObject(object: unknown): object is object {
   return Object.prototype.toString.call(object) === "[object Object]";

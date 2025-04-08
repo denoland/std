@@ -1,8 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import type { ReviverFunction } from "./_ini_map.ts";
-export type { ReviverFunction };
+/** Function for replacing INI values with JavaScript values. */
+export type ReviverFunction = (
+  key: string,
+  value: string,
+  section?: string,
+) => unknown;
 
 const SECTION_REGEXP = /^\[(?<name>.*\S.*)]$/;
 const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
