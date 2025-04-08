@@ -38,5 +38,30 @@ export default {
         };
       },
     },
+    // https://docs.deno.com/runtime/contributing/style_guide/#top-level-functions-should-not-use-arrow-syntax
+    "no-top-level-arrow-syntax": {
+      create(context) {
+        return {
+          // TODO(iuioiua): Use `VariableDeclaration` once https://github.com/denoland/deno/issues/28799 is fixed
+          Program(node) {
+            for (const child of node.body) {
+              if (
+                child.declaration.kind !== "const" &&
+                !child.declaration.declarations?.some((d) =>
+                  d.init?.type === "ArrowFunctionExpression"
+                )
+              ) continue;
+              context.report({
+                node: child,
+                range: child.range,
+                message: "Top-level functions should not use arrow syntax",
+                hint:
+                  "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+              });
+            }
+          },
+        };
+      },
+    },
   },
 } satisfies Deno.lint.Plugin;

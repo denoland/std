@@ -55,3 +55,34 @@ class MyClass {
     }],
   );
 });
+
+Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+export const foo = (): string => {
+  return "bar";
+};
+`,
+    [{
+      id: "deno-style-guide/no-top-level-arrow-syntax",
+      range: [1, 54],
+      fix: [],
+      message: "Top-level functions should not use arrow syntax",
+      hint:
+        "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+    }],
+  );
+
+  // Good
+  assertLintPluginDiagnostics(
+    `
+export function foo(): string {
+  return "bar";
+}
+`,
+    [],
+  );
+});
