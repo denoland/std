@@ -179,8 +179,5 @@ export function decodeBase64(
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
-  return input.subarray(
-    0,
-    decode({ buffer: input, i: 0, o: 0, alphabet: rAlphabet[format], padding }),
-  );
+  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
 }
