@@ -99,7 +99,7 @@ export function foo(bar: unknown, baz: unknown, bat: unknown, options: Record<st
           "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
         id: "deno-style-guide/exported-function-args-maximum",
         message: "Third argument of export function is not an options object.",
-        range: [8, 66],
+        range: [17, 20],
       },
       {
         fix: [],
@@ -107,7 +107,7 @@ export function foo(bar: unknown, baz: unknown, bat: unknown, options: Record<st
           "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
         id: "deno-style-guide/exported-function-args-maximum",
         message: "Exported function has more than three arguments.",
-        range: [74, 166],
+        range: [83, 86],
       },
     ],
   );
