@@ -17,7 +17,7 @@ function isCamelCase(string: string): boolean {
   return CAMEL_CASE_REGEXP.test(string);
 }
 
-const CONSTANT_CASE_REGEXP = /^[A-Z]+(?:_[A-Z0-9]+)*$/;
+const CONSTANT_CASE_REGEXP = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
 function isConstantCase(string: string): boolean {
   return CONSTANT_CASE_REGEXP.test(string);
 }
@@ -170,12 +170,7 @@ export default {
               if (id.type !== "Identifier") return;
               const name = id.name;
               if (!name) return;
-              if (
-                node.kind === "const" &&
-                isConstantCase(name) &&
-                context.sourceCode.getAncestors(node).length === 1
-              ) return;
-
+              if (node.kind === "const" && isConstantCase(name)) return;
               if (!isCamelCase(name)) {
                 context.report({
                   node: id,
