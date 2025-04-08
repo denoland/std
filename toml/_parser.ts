@@ -128,7 +128,7 @@ export class Scanner {
       regExp.sticky ? regExp.flags : regExp.flags + "y",
     );
     regExp.lastIndex = this.#position;
-    const match = regExp.exec(this.#source);
+    const match = this.#source.match(regExp);
     if (!match) return null;
     const string = match[0];
     this.next(string.length);
@@ -366,10 +366,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
     case "U": {
       // Unicode character
       const codePointLen = scanner.char() === "u" ? 4 : 6;
-      const codePoint = parseInt(
-        "0x" + scanner.slice(1, 1 + codePointLen),
-        16,
-      );
+      const codePoint = parseInt("0x" + scanner.slice(1, 1 + codePointLen), 16);
       const str = String.fromCodePoint(codePoint);
       scanner.next(codePointLen + 1);
       return success(str);
@@ -539,10 +536,9 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
 
   // Handle binary, octal, or hex numbers
-  const first2 = scanner.slice(0, 2);
-  if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
-    scanner.next(2);
-    const prefix = first2.toLowerCase();
+  const match = scanner.match(/0(?:x|o|b)/i);
+  if (match) {
+    const prefix = match.toLowerCase();
 
     // Determine allowed characters and base in one switch
     let allowedChars: RegExp;
