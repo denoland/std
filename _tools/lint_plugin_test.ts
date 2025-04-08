@@ -55,3 +55,71 @@ class MyClass {
     }],
   );
 });
+
+Deno.test("deno-style-guide/error-message", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics(
+    `
+new Error("Cannot parse input");
+new Error("Cannot parse input x");
+new Error('Cannot parse input "hello, world"');
+new Error("Cannot parse input x: value is empty");
+
+// ignored
+const classes = { Error: Error }
+new classes.Error();
+new Class("Cannot parse input");
+new Error(message);
+new WrongParamTypeForAnError(true);
+    `,
+    [],
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+new Error("cannot parse input");
+new TypeError("Cannot parse input.");
+new SyntaxError("Invalid input x");
+new RangeError("Cannot parse input x. value is empty")
+new CustomError("Can't parse input");
+
+    `,
+    [
+      {
+        fix: [{ range: [11, 31], text: '"Cannot parse input"' }],
+        hint:
+          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message should start with an uppercase.",
+        range: [11, 31],
+      },
+      {
+        fix: [{ range: [48, 69], text: '"Cannot parse input"' }],
+        hint:
+          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message should not end with a period.",
+        range: [48, 69],
+      },
+      {
+        fix: [],
+        hint:
+          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message should not contain periods.",
+        range: [123, 161],
+      },
+      {
+        fix: [],
+        hint:
+          "See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message should not use contractions.",
+        range: [179, 198],
+      },
+    ],
+  );
+});
