@@ -179,22 +179,26 @@ export class Base64DecoderStream<T extends "string" | "bytes">
         remainder = output.length % 4;
         if (remainder) push.set(output.subarray(-remainder));
         const o = decode(
-          output.subarray(0, -remainder || undefined),
-          0,
-          0,
-          abc,
-          padding,
+          {
+            buffer: output.subarray(0, -remainder || undefined),
+            i: 0,
+            o: 0,
+            alphabet: abc,
+            padding,
+          },
         );
         controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
         if (remainder) {
           const o = decode(
-            push.subarray(0, remainder),
-            0,
-            0,
-            abc,
-            padding,
+            {
+              buffer: push.subarray(0, remainder),
+              i: 0,
+              o: 0,
+              alphabet: abc,
+              padding,
+            },
           );
           controller.enqueue(push.subarray(0, o));
         }

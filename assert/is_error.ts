@@ -26,6 +26,7 @@ import { stripAnsiCode } from "@std/internal/styles";
  * @param msgMatches The optional string or RegExp to assert in the error message.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any

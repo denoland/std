@@ -78,5 +78,7 @@ export function decodeBase64Url(b64url: string): Uint8Array_ {
   const output = new TextEncoder().encode(b64url) as Uint8Array_;
   // deno-lint-ignore no-explicit-any
   return new Uint8Array((output.buffer as any)
-    .transfer(decode(output, 0, 0, rAlphabet, padding)));
+    .transfer(
+      decode({ buffer: output, i: 0, o: 0, alphabet: rAlphabet, padding }),
+    ));
 }

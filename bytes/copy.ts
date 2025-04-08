@@ -40,6 +40,7 @@
  * Defining an offset will start copying at the specified index in the
  * destination array.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function copy(src: Uint8Array, dst: Uint8Array, offset = 0): number {
   offset = Math.max(0, Math.min(offset, dst.byteLength));
   const dstBytesAvailable = dst.byteLength - offset;

@@ -6,6 +6,7 @@
 import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./constants.ts";
 
 // Resolves . and .. elements in a path with directory names
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function normalizeString(
   path: string,
   allowAboveRoot: boolean,

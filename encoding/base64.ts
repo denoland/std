@@ -85,5 +85,7 @@ export function decodeBase64(b64: string): Uint8Array_ {
   const output = new TextEncoder().encode(b64) as Uint8Array_;
   // deno-lint-ignore no-explicit-any
   return new Uint8Array((output.buffer as any)
-    .transfer(decode(output, 0, 0, rAlphabet, padding)));
+    .transfer(
+      decode({ buffer: output, i: 0, o: 0, alphabet: rAlphabet, padding }),
+    ));
 }

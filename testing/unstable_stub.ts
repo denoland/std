@@ -149,6 +149,7 @@ export function stub<Self, Prop extends keyof Self>(
       GetReturnFromProp<Self, Prop>
     >;
   };
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function stub<Self, Args extends unknown[], Return>(
   self: Self,
   property: keyof Self,

@@ -24,6 +24,7 @@ import { format } from "@std/internal/format";
  * @param expected The expected value to compare.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertNotEquals<T>(actual: T, expected: T, msg?: string) {
   if (!equal(actual, expected)) {
     return;

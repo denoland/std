@@ -36,6 +36,7 @@ const ERROR_WHILE_MAPPING_MESSAGE =
  * @param iteratorFn The function to call for every item of the array.
  * @returns The async iterator with the transformed values.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function pooledMap<T, R>(
   poolLimit: number,
   array: Iterable<T> | AsyncIterable<T>,

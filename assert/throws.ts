@@ -56,6 +56,7 @@ export function assertThrows<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): E;
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   errorClassOrMsg?:

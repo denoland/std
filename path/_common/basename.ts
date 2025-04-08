@@ -19,6 +19,7 @@ export function stripSuffix(name: string, suffix: string): string {
   return name.slice(0, -suffix.length);
 }
 
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function lastPathSegment(
   path: string,
   isSep: (char: number) => boolean,

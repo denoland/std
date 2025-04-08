@@ -58,6 +58,7 @@ export interface GlobConstants {
   escapePrefix: string;
 }
 
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function _globToRegExp(
   c: GlobConstants,
   glob: string,

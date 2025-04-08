@@ -120,6 +120,7 @@ function textureMipLevelSize(
  * @param data The data to write to the texture.
  * @returns The newly created texture.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createTextureWithData(
   device: GPUDevice,
   descriptor: GPUTextureDescriptor,

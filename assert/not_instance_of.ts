@@ -20,6 +20,7 @@ import { assertFalse } from "./false.ts";
  * @param unexpectedType The class constructor to check against.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertNotInstanceOf<A, T>(
   actual: A,
   // deno-lint-ignore no-explicit-any
