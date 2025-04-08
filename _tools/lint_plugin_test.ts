@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
 
 import { assertEquals } from "@std/assert/equals";
 import lintPlugin from "./lint_plugin.ts";
