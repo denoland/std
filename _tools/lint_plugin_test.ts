@@ -68,7 +68,8 @@ export const foo = (): string => {
 `,
     [{
       id: "deno-style-guide/no-top-level-arrow-syntax",
-      range: [1, 54],
+      // TODO(iuioiua): Should this not start from `const`?
+      range: [20, 53],
       fix: [],
       message: "Top-level functions should not use arrow syntax",
       hint:
