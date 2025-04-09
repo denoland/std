@@ -141,7 +141,7 @@ function failure(): Failure {
  */
 export function unflat(
   keys: string[],
-  values: unknown,
+  values: unknown = {},
 ): Record<string, unknown> {
   return keys.reduceRight(
     (acc, key) => ({ [key]: acc }),
@@ -245,7 +245,7 @@ function kv<T>(
         `Value of key/value pair is invalid data format`,
       );
     }
-    return success(unflat(key.body, value.body as Record<string, unknown>));
+    return success(unflat(key.body, value.body));
   };
 }
 
