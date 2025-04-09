@@ -509,7 +509,7 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const symbolPairs: [string, unknown][] = [
+const symbolPairsMap = new Map<string, unknown>([
   ["true", true],
   ["false", false],
   ["inf", Infinity],
@@ -518,14 +518,17 @@ const symbolPairs: [string, unknown][] = [
   ["nan", NaN],
   ["+nan", NaN],
   ["-nan", NaN],
-];
+]);
+
 export function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
-  const found = symbolPairs.find(([str]) => scanner.startsWith(str));
-  if (!found) return failure();
-  const [str, value] = found;
-  scanner.next(str.length);
-  return success(value);
+  for (const [name, value] of symbolPairsMap) {
+    if (scanner.startsWith(name)) {
+      scanner.next(name.length);
+      return success(value);
+    }
+  }
+  return failure();
 }
 
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
