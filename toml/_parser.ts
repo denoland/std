@@ -147,20 +147,21 @@ function failure(): Failure {
   return { ok: false };
 }
 
+/**
+ * Creates a nested object from the keys and values.
+ *
+ * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
+ */
 export function unflat(
   keys: string[],
   values: unknown = {},
-  cObj?: unknown,
 ): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  if (keys.length === 0) {
-    return cObj as Record<string, unknown>;
-  }
-  if (!cObj) cObj = values;
-  const key: string | undefined = keys[keys.length - 1];
-  if (typeof key === "string") out[key] = cObj;
-  return unflat(keys.slice(0, -1), values, out);
+  return keys.reduceRight(
+    (acc, key) => ({ [key]: acc }),
+    values,
+  ) as Record<string, unknown>;
 }
+
 export function deepAssignWithTable(target: Record<string, unknown>, table: {
   type: "Table" | "TableArray";
   key: string[];
