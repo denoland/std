@@ -509,7 +509,7 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const symbolPairsMap = new Map<string, unknown>([
+const SYMBOL_PAIRS_MAP = new Map<string, unknown>([
   ["true", true],
   ["false", false],
   ["inf", Infinity],
@@ -522,7 +522,7 @@ const symbolPairsMap = new Map<string, unknown>([
 
 export function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
-  for (const [name, value] of symbolPairsMap) {
+  for (const [name, value] of SYMBOL_PAIRS_MAP) {
     if (scanner.startsWith(name)) {
       scanner.next(name.length);
       return success(value);
