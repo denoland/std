@@ -31,6 +31,7 @@ Deno.test("move() creates dest dir if it does not exist", async function () {
   await assertRejects(
     async () => {
       await move(srcDir, destDir);
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("should not throw error");
     },
     Error,
@@ -53,6 +54,7 @@ Deno.test(
     await assertRejects(
       async () => {
         await move(srcDir, destDir, { overwrite: true });
+        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("should not throw error");
       },
       Error,
@@ -113,6 +115,7 @@ Deno.test("move() moves file and can overwrite content", async function () {
   await assertRejects(
     async () => {
       await move(srcFile, destFile, { overwrite: true });
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("should not throw error");
     },
     Error,
@@ -229,6 +232,7 @@ Deno.test("moveSync() creates dest dir if it does not exist", function () {
   assertThrows(
     () => {
       moveSync(srcDir, destDir);
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("should not throw error");
     },
     Error,
@@ -249,6 +253,7 @@ Deno.test("moveSync() creates dest dir if it does not exist and overwrite option
   assertThrows(
     () => {
       moveSync(srcDir, destDir, { overwrite: true });
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("should not throw error");
     },
     Error,
@@ -304,6 +309,7 @@ Deno.test("moveSync() moves file and can overwrite content", function () {
   assertThrows(
     () => {
       moveSync(srcFile, destFile, { overwrite: true });
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("should not throw error");
     },
     Error,

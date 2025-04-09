@@ -27,6 +27,7 @@ Deno.test("assertRejects() with PromiseLike", async () => {
   await assertRejects(
     () => ({
       then() {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("some error");
       },
     }),
@@ -63,6 +64,7 @@ Deno.test("assertRejects() with non-error value rejected", async () => {
 Deno.test("assertRejects() with error class", async () => {
   await assertRejects(
     () => {
+      // deno-lint-ignore deno-style-guide/error-message
       return Promise.reject(new Error("foo"));
     },
     Error,
@@ -73,6 +75,7 @@ Deno.test("assertRejects() with error class", async () => {
 Deno.test("assertRejects() resolves with caught error", async () => {
   const error = await assertRejects(
     () => {
+      // deno-lint-ignore deno-style-guide/error-message
       return Promise.reject(new Error("foo"));
     },
   );
@@ -95,6 +98,7 @@ Deno.test("assertRejects() accepts abstract class", () => {
   class ConcreteError extends AbstractError {}
 
   assertRejects(
+    // deno-lint-ignore deno-style-guide/error-message
     () => Promise.reject(new ConcreteError("failed")),
     AbstractError,
     "fail",
@@ -109,6 +113,7 @@ Deno.test(
     await assertRejects(
       () =>
         assertRejects(
+          // deno-lint-ignore deno-style-guide/error-message
           () => Promise.reject(new AnotherCustomError("failed")),
           CustomError,
           "fail",

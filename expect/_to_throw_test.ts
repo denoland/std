@@ -5,6 +5,7 @@ import { AssertionError, assertThrows } from "@std/assert";
 
 Deno.test("expect().toThrow()", () => {
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new Error("hello world");
   }).toThrow();
 
@@ -16,12 +17,14 @@ Deno.test("expect().toThrow()", () => {
 
   assertThrows(() => {
     expect(() => {
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("hello world");
     }).not.toThrow();
   }, AssertionError);
 
   // Passes when type is correct
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new AssertionError("hello world");
   }).toThrow(AssertionError);
 
@@ -29,6 +32,7 @@ Deno.test("expect().toThrow()", () => {
   assertThrows(
     () => {
       expect(() => {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("hello world");
       }).toThrow(AssertionError);
     },
@@ -38,14 +42,18 @@ Deno.test("expect().toThrow()", () => {
 
   // Passes when error instance type is correct
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new AssertionError("hello world");
+    // deno-lint-ignore deno-style-guide/error-message
   }).toThrow(new AssertionError("hello world"));
 
   // Throws when error instance type is incorrect
   assertThrows(
     () => {
       expect(() => {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("hello world");
+        // deno-lint-ignore deno-style-guide/error-message
       }).toThrow(new AssertionError("hello world"));
     },
     AssertionError,
@@ -54,6 +62,7 @@ Deno.test("expect().toThrow()", () => {
 
   // Passes when literal string is in error
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new AssertionError("hello world");
   }).toThrow("hello");
 
@@ -61,6 +70,7 @@ Deno.test("expect().toThrow()", () => {
   assertThrows(
     () => {
       expect(() => {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new AssertionError("hello world");
       }).toThrow("goodbye");
     },
@@ -70,14 +80,18 @@ Deno.test("expect().toThrow()", () => {
 
   // Passes when error instance string is in error
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new AssertionError("hello world");
+    // deno-lint-ignore deno-style-guide/error-message
   }).toThrow(new AssertionError("hello world"));
 
   // Throws when error instance string is not in error
   assertThrows(
     () => {
       expect(() => {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new AssertionError("hello world");
+        // deno-lint-ignore deno-style-guide/error-message
       }).toThrow(new AssertionError("goodbye"));
     },
     AssertionError,
@@ -86,6 +100,7 @@ Deno.test("expect().toThrow()", () => {
 
   // Passes when regex does match error
   expect(() => {
+    // deno-lint-ignore deno-style-guide/error-message
     throw new AssertionError("hello world");
   }).toThrow(/\w/);
 
@@ -93,6 +108,7 @@ Deno.test("expect().toThrow()", () => {
   assertThrows(
     () => {
       expect(() => {
+        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("hello world");
       }).toThrow(/\d/);
     },

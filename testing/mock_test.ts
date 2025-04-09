@@ -514,30 +514,30 @@ Deno.test("spy() works on constructor of child class", () => {
 Deno.test("spy() works on constructor that throws an error", () => {
   class Foo {
     constructor() {
-      throw new Error("foo");
+      throw new Error("Foo");
     }
   }
   const FooSpy = spy(Foo);
-  assertThrows(() => new FooSpy(), Error, "foo");
+  assertThrows(() => new FooSpy(), Error, "Foo");
   assertSpyCall(FooSpy, 0, {
     self: undefined,
     args: [],
-    error: { Class: Error, msgIncludes: "foo" },
+    error: { Class: Error, msgIncludes: "Foo" },
   });
 });
 
 Deno.test("spy() works with throwing method", () => {
   const obj = {
     fn() {
-      throw new Error("failed");
+      throw new Error("Failed");
     },
   };
   const spyFn = spy(obj, "fn");
-  assertThrows(() => obj.fn(), Error, "failed");
+  assertThrows(() => obj.fn(), Error, "Failed");
   assertSpyCall(spyFn, 0, {
     self: obj,
     args: [],
-    error: { Class: Error, msgIncludes: "failed" },
+    error: { Class: Error, msgIncludes: "Failed" },
   });
 });
 
@@ -778,17 +778,17 @@ Deno.test("stub() correctly handles types", () => {
 Deno.test("stub() works with throwing fake implementation", () => {
   const obj = {
     fn() {
-      throw new Error("failed");
+      throw new Error("Failed");
     },
   };
   const stubFn = stub(obj, "fn", () => {
-    throw new Error("failed");
+    throw new Error("Failed");
   });
-  assertThrows(() => obj.fn(), Error, "failed");
+  assertThrows(() => obj.fn(), Error, "Failed");
   assertSpyCall(stubFn, 0, {
     self: obj,
     args: [],
-    error: { Class: Error, msgIncludes: "failed" },
+    error: { Class: Error, msgIncludes: "Failed" },
   });
 });
 
@@ -1059,7 +1059,7 @@ Deno.test("assertSpyCall() works with function", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1192,7 +1192,7 @@ Deno.test("assertSpyCall() works with method", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned.",
+    "Spy call did not throw an error, a value was returned",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 2),
@@ -1206,17 +1206,17 @@ class OtherError extends Error {}
 
 Deno.test("assertSpyCall() works with error", () => {
   const spyFunc = spy((_value?: number) => {
-    throw new ExampleError("failed");
+    throw new ExampleError("Failed");
   });
 
-  assertThrows(() => spyFunc(), ExampleError, "fail");
+  assertThrows(() => spyFunc(), ExampleError, "Fail");
   assertSpyCall(spyFunc, 0);
   assertSpyCall(spyFunc, 0, {
     args: [],
     self: undefined,
     error: {
       Class: ExampleError,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   assertSpyCall(spyFunc, 0, {
@@ -1228,13 +1228,13 @@ Deno.test("assertSpyCall() works with error", () => {
   assertSpyCall(spyFunc, 0, {
     error: {
       Class: ExampleError,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   assertSpyCall(spyFunc, 0, {
     error: {
       Class: Error,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
 
@@ -1245,7 +1245,7 @@ Deno.test("assertSpyCall() works with error", () => {
         self: {},
         error: {
           Class: OtherError,
-          msgIncludes: "fail",
+          msgIncludes: "Fail",
         },
       }),
     AssertionError,
@@ -1272,11 +1272,11 @@ Deno.test("assertSpyCall() works with error", () => {
       assertSpyCall(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msgIncludes: "fail",
+          msgIncludes: "Fail",
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError".',
+    'Expected error to be instance of "OtherError", but was "ExampleError"',
   );
   assertThrows(
     () =>
@@ -1287,7 +1287,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError".',
+    'Expected error to be instance of "OtherError", but was "ExampleError"',
   );
   assertThrows(
     () =>
@@ -1298,7 +1298,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   assertThrows(
     () =>
@@ -1309,7 +1309,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   assertThrows(
     () =>
@@ -1319,7 +1319,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   assertThrows(
     () =>
@@ -1327,7 +1327,7 @@ Deno.test("assertSpyCall() works with error", () => {
         returned: 7,
       }),
     AssertionError,
-    "Spy call did not return expected value, an error was thrown.",
+    "Spy call did not return expected value, an error was thrown",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1601,36 +1601,36 @@ Deno.test("assertSpyCallAsync() rejects on sync value", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, a value was returned.",
+    "Spy call did not return a promise, a value was returned",
   );
 });
 
 Deno.test("assertSpyCallAsync() rejects on sync error", async () => {
   const spyFunc = spy(() => {
-    throw new ExampleError("failed");
+    throw new ExampleError("Failed");
   });
 
-  assertThrows(() => spyFunc(), ExampleError, "fail");
+  assertThrows(() => spyFunc(), ExampleError, "Fail");
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, an error was thrown.",
+    "Spy call did not return a promise, an error was thrown",
   );
 });
 
 Deno.test("assertSpyCallAsync() works with error", async () => {
   const spyFunc = spy((..._args: number[]): Promise<number> =>
-    Promise.reject(new ExampleError("failed"))
+    Promise.reject(new ExampleError("Failed"))
   );
 
-  await assertRejects(() => spyFunc(), ExampleError, "fail");
+  await assertRejects(() => spyFunc(), ExampleError, "Fail");
   await assertSpyCallAsync(spyFunc, 0);
   await assertSpyCallAsync(spyFunc, 0, {
     args: [],
     self: undefined,
     error: {
       Class: ExampleError,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
@@ -1642,18 +1642,18 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
   await assertSpyCallAsync(spyFunc, 0, {
     error: {
       Class: ExampleError,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
     error: {
       Class: Error,
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
     error: {
-      msgIncludes: "fail",
+      msgIncludes: "Fail",
     },
   });
   await assertSpyCallAsync(spyFunc, 0, {
@@ -1669,7 +1669,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         self: {},
         error: {
           Class: OtherError,
-          msgIncludes: "fail",
+          msgIncludes: "Fail",
         },
       }),
     AssertionError,
@@ -1696,7 +1696,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
       assertSpyCallAsync(spyFunc, 0, {
         error: {
           Class: OtherError,
-          msgIncludes: "fail",
+          msgIncludes: "Fail",
         },
       }),
     AssertionError,
@@ -1722,7 +1722,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   await assertRejects(
     () =>
@@ -1733,7 +1733,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   await assertRejects(
     () =>
@@ -1743,7 +1743,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed".',
+    'Expected error message to include "x", but got "Failed"',
   );
   await assertRejects(
     () =>
@@ -1776,7 +1776,7 @@ Deno.test("assertSpyCallAsync() throws type error if expected return value is re
   await assertRejects(
     () =>
       assertSpyCallAsync(spyFunc, 0, {
-        returned: Promise.reject(new Error("failed")),
+        returned: Promise.reject(new Error("Failed")),
       }),
     TypeError,
     "Do not expect rejected promise, expect error instead",
@@ -2107,11 +2107,11 @@ Deno.test("returnsArgs()", () => {
 });
 
 Deno.test("returnsNext() works with array", () => {
-  let results = [1, 2, new Error("oops"), 3];
+  let results = [1, 2, new Error("Oops"), 3];
   let callback = returnsNext(results);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   assertThrows(
     () => callback(),
@@ -2126,10 +2126,10 @@ Deno.test("returnsNext() works with array", () => {
 
   results = [];
   callback = returnsNext(results);
-  results.push(1, 2, new Error("oops"), 3);
+  results.push(1, 2, new Error("Oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
@@ -2147,11 +2147,11 @@ Deno.test("returnsNext() works with array", () => {
 });
 
 Deno.test("returnsNext() works with iterator", () => {
-  let results = [1, 2, new Error("oops"), 3];
+  let results = [1, 2, new Error("Oops"), 3];
   let callback = returnsNext(results.values());
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   assertThrows(
     () => callback(),
@@ -2166,10 +2166,10 @@ Deno.test("returnsNext() works with iterator", () => {
 
   results = [];
   callback = returnsNext(results.values());
-  results.push(1, 2, new Error("oops"), 3);
+  results.push(1, 2, new Error("Oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
@@ -2187,14 +2187,14 @@ Deno.test("returnsNext() works with iterator", () => {
 });
 
 Deno.test("returnsNext() works with generator", () => {
-  let results = [1, 2, new Error("oops"), 3];
+  let results = [1, 2, new Error("Oops"), 3];
   const generator = function* () {
     yield* results;
   };
   let callback = returnsNext(generator());
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   assertThrows(
     () => callback(),
@@ -2209,10 +2209,10 @@ Deno.test("returnsNext() works with generator", () => {
 
   results = [];
   callback = returnsNext(generator());
-  results.push(1, 2, new Error("oops"), 3);
+  results.push(1, 2, new Error("Oops"), 3);
   assertEquals(callback(), 1);
   assertEquals(callback(), 2);
-  assertThrows(() => callback(), Error, "oops");
+  assertThrows(() => callback(), Error, "Oops");
   assertEquals(callback(), 3);
   results.push(4);
   assertEquals(callback(), 4);
@@ -2232,18 +2232,18 @@ Deno.test("returnsNext() works with generator", () => {
 Deno.test("resolvesNext() works with array", async () => {
   let results = [
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   ];
   let callback = resolvesNext(results);
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   await assertRejects(
     async () => await callback(),
@@ -2260,15 +2260,15 @@ Deno.test("resolvesNext() works with array", async () => {
   callback = resolvesNext(results);
   results.push(
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   );
   assertEquals(await callback(), 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
@@ -2288,18 +2288,18 @@ Deno.test("resolvesNext() works with array", async () => {
 Deno.test("resolvesNext() works with iterator", async () => {
   let results = [
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   ];
   let callback = resolvesNext(results.values());
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   await assertRejects(
     async () => await callback(),
@@ -2316,15 +2316,15 @@ Deno.test("resolvesNext() works with iterator", async () => {
   callback = resolvesNext(results.values());
   results.push(
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   );
   assertEquals(await callback(), 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);
@@ -2344,9 +2344,9 @@ Deno.test("resolvesNext() works with iterator", async () => {
 Deno.test("resolvesNext() works with async generator", async () => {
   let results = [
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   ];
   const asyncGenerator = async function* () {
@@ -2357,9 +2357,9 @@ Deno.test("resolvesNext() works with async generator", async () => {
   const value = callback();
   assertEquals(Promise.resolve(value), value);
   assertEquals(await value, 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   await assertRejects(
     async () => await callback(),
@@ -2376,15 +2376,15 @@ Deno.test("resolvesNext() works with async generator", async () => {
   callback = resolvesNext(asyncGenerator());
   results.push(
     1,
-    new Error("oops"),
+    new Error("Oops"),
     Promise.resolve(2),
-    Promise.resolve(new Error("oops")),
+    Promise.resolve(new Error("Oops")),
     3,
   );
   assertEquals(await callback(), 1);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 2);
-  await assertRejects(() => callback(), Error, "oops");
+  await assertRejects(() => callback(), Error, "Oops");
   assertEquals(await callback(), 3);
   results.push(4);
   assertEquals(await callback(), 4);

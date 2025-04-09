@@ -350,8 +350,8 @@ function decodeMap(
   offset: number,
 ): [Map<CborType, CborType>, number] {
   const byte = input[offset++];
-  if (byte == undefined) throw new RangeError("more bytes were expected");
-  if (byte >> 5 !== 5) throw new TypeError('invalid TagItem: Expected a "map"');
+  if (byte == undefined) throw new RangeError("More bytes were expected");
+  if (byte >> 5 !== 5) throw new TypeError('Invalid TagItem: Expected a "map"');
   const aI = byte & 0b000_11111;
   if (aI <= 27) {
     const x = calcLength(input, aI, offset);
