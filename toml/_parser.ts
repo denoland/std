@@ -78,10 +78,6 @@ export class Scanner {
     }
   }
 
-  /**
-   * Move position until current char is not a whitespace, EOL, or comment.
-   * @param options.inline - skip only whitespaces
-   */
   nextUntilChar(options: { skipComments?: boolean } = { skipComments: true }) {
     while (!this.eof()) {
       const char = this.char();
