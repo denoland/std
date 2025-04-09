@@ -134,11 +134,19 @@ function failure(): Failure {
   return { ok: false };
 }
 
-export function unflat<T extends unknown[] | Record<string, unknown>>(
+/**
+ * Creates a nested object from the keys and values.
+ *
+ * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
+ */
+export function unflat(
   keys: string[],
-  values: T,
-): T {
-  return keys.reduceRight((acc, key) => ({ [key]: acc } as T), values);
+  values: unknown,
+): Record<string, unknown> {
+  return keys.reduceRight(
+    (acc, key) => ({ [key]: acc }),
+    values,
+  ) as Record<string, unknown>;
 }
 
 export function deepAssignWithTable(target: Record<string, unknown>, table: {
