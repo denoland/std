@@ -12,7 +12,7 @@ new TextEncoder()
 
 /**
  * Calculate the output size needed to encode a given input size for
- * {@linkcode encodeRawHex}.
+ * {@linkcode encodeIntoHex}.
  *
  * @param originalSize The size of the input buffer.
  * @returns The size of the output buffer.
