@@ -176,6 +176,44 @@ Deno.test("new DateTimeFormatter() errors on unknown or unsupported format", () 
   assertThrows(() => new DateTimeFormatter("z"));
 });
 
+Deno.test("formatDate() throws on unsupported values", () => {
+  const testValue = "testUnsupportedValue";
+  const partTypes = [
+    "day",
+    //"dayPeriod",
+    "hour",
+    "minute",
+    "month",
+    "second",
+    //"timeZoneName",
+    "year",
+    //"fractionalSecond",
+  ] as const;
+
+  for (const partType of partTypes) {
+    assertThrows(
+      () =>
+        formatDate(
+          new Date(2020, 0, 1),
+          [{ type: partType, value: testValue }],
+        ),
+      Error,
+      `FormatterError: value "${testValue}" is not supported`,
+    );
+  }
+
+  assertThrows(
+    () =>
+      formatDate(
+        new Date(2020, 0, 1),
+        // deno-lint-ignore no-explicit-any
+        [{ type: "testUnsupportedType" as any, value: testValue }],
+      ),
+    Error,
+    `FormatterError: { testUnsupportedType testUnsupportedValue }`,
+  );
+});
+
 Deno.test("dateStringToDateTimeFormatParts()", async (t) => {
   await t.step("handles basic", () => {
     const formatParts = formatStringToFormatParts("yyyy-MM-dd");
