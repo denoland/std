@@ -64,31 +64,9 @@ export class Scanner {
     this.#position += count;
   }
 
-  /**
-   * Move position until current char is not a whitespace, EOL, or comment.
-   * @param options.inline - skip only whitespaces
-   */
-  nextUntilChar(
-    options: { inline?: boolean; comment?: boolean } = { comment: true },
-  ) {
-    if (options.inline) {
-      while (this.#whitespace.test(this.char()) && !this.eof()) {
-        this.next();
-      }
-    } else {
-      while (!this.eof()) {
-        const char = this.char();
-        if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
-          this.next();
-        } else if (options.comment && this.char() === "#") {
-          // entering comment
-          while (!this.isCurrentCharEOL() && !this.eof()) {
-            this.next();
-          }
-        } else {
-          break;
-        }
-      }
+  skipWhitespaces() {
+    while (this.#whitespace.test(this.char()) && !this.eof()) {
+      this.next();
     }
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
@@ -97,6 +75,22 @@ export class Scanner {
       throw new SyntaxError(
         `Cannot parse the TOML: It contains invalid whitespace at position '${position}': \`${escaped}\``,
       );
+    }
+  }
+
+  nextUntilChar(options: { skipComments?: boolean } = { skipComments: true }) {
+    while (!this.eof()) {
+      const char = this.char();
+      if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
+        this.next();
+      } else if (options.skipComments && this.char() === "#") {
+        // entering comment
+        while (!this.isCurrentCharEOL() && !this.eof()) {
+          this.next();
+        }
+      } else {
+        break;
+      }
     }
   }
 
@@ -308,10 +302,10 @@ function surround<T>(
 
 function character(str: string) {
   return (scanner: Scanner): ParseResult<void> => {
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     if (!scanner.startsWith(str)) return failure();
     scanner.next(str.length);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     return success(undefined);
   };
 }
@@ -325,7 +319,7 @@ const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 
 export function bareKey(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
     return failure();
   }
@@ -384,7 +378,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
 }
 
 export function basicString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== '"') return failure();
   scanner.next();
   const acc = [];
@@ -410,7 +404,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
 }
 
 export function literalString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== "'") return failure();
   scanner.next();
   const acc: string[] = [];
@@ -433,7 +427,7 @@ export function literalString(scanner: Scanner): ParseResult<string> {
 export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (!scanner.startsWith('"""')) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
@@ -448,11 +442,11 @@ export function multilineBasicString(
     // line ending backslash
     if (scanner.startsWith("\\\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
     } else if (scanner.startsWith("\\\r\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
     }
     const escapedChar = escapeSequence(scanner);
@@ -481,7 +475,7 @@ export function multilineBasicString(
 export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (!scanner.startsWith("'''")) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
@@ -521,7 +515,7 @@ const symbolPairs: [string, unknown][] = [
   ["-nan", NaN],
 ];
 export function symbols(scanner: Scanner): ParseResult<unknown> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   const found = symbolPairs.find(([str]) => scanner.startsWith(str));
   if (!found) return failure();
   const [str, value] = found;
@@ -532,7 +526,7 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
 export function integer(scanner: Scanner): ParseResult<number | string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   // Handle binary, octal, or hex numbers
   const first2 = scanner.slice(0, 2);
@@ -602,7 +596,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 }
 
 export function float(scanner: Scanner): ParseResult<number> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   // lookahead validation is needed for integer value is similar to float
   let position = 0;
@@ -632,7 +626,7 @@ export function float(scanner: Scanner): ParseResult<number> {
 }
 
 export function dateTime(scanner: Scanner): ParseResult<Date> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   let dateStr = scanner.slice(0, 10);
   // example: 1979-05-27
@@ -656,7 +650,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 }
 
 export function localTime(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   let timeStr = scanner.slice(0, 8);
   if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
@@ -676,7 +670,7 @@ export function localTime(scanner: Scanner): ParseResult<string> {
 }
 
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   if (scanner.char() !== "[") return failure();
   scanner.next();
@@ -687,7 +681,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
     const result = value(scanner);
     if (!result.ok) break;
     array.push(result.body);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     // may have a next item, but trailing comma is allowed at array
     if (scanner.char() !== ",") break;
     scanner.next();
