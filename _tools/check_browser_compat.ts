@@ -9,12 +9,13 @@
  */
 
 import { walk } from "../fs/walk.ts";
-import { COPYRIGHT } from "./check_licence.ts";
+import licenseRc from "../.licenserc.json" with { type: "json" };
 
 const ROOT = new URL("../", import.meta.url);
 const SKIP = [/(test|bench|\/_|\\_|testdata|version.ts)/];
 const DECLARATION = "// This module is browser compatible.";
 const CHECK = Deno.args.includes("--check");
+const COPYRIGHT = `// ${licenseRc["**/*.{mjs,js,ts,rs}"]}`;
 
 function isBrowserCompatible(filePath: string): boolean {
   const command = new Deno.Command(Deno.execPath(), {
