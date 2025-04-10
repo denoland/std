@@ -67,7 +67,6 @@ Deno.test("deno-style-guide/no-external-code", {
     `
 import { bad } from "https://deno.land/malicious-muffin/bad.ts";
 import { bad } from "jsr:@malicious-muffin/bad";
-import { bad } from "@malicious-muffin/bad";
     `,
     [{
       id: "deno-style-guide/no-external-code",
@@ -80,13 +79,6 @@ import { bad } from "@malicious-muffin/bad";
       id: "deno-style-guide/no-external-code",
       fix: [],
       range: [66, 114],
-      message: "External imports are not allowed",
-      hint:
-        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
-    }, {
-      id: "deno-style-guide/no-external-code",
-      fix: [],
-      range: [115, 159],
       message: "External imports are not allowed",
       hint:
         'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',

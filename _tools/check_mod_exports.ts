@@ -5,6 +5,7 @@ import { walk } from "../fs/walk.ts";
 import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
+// deno-lint-ignore deno-style-guide/no-external-code
 import ts from "npm:typescript";
 import { isTestFile } from "./utils.ts";
 

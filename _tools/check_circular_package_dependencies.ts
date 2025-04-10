@@ -6,6 +6,7 @@ import {
   type ModuleJson,
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
+// deno-lint-ignore deno-style-guide/no-external-code
 import graphviz from "graphviz";
 import { parse } from "../semver/parse.ts";
 

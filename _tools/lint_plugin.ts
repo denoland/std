@@ -38,12 +38,22 @@ export default {
         };
       },
     },
-    // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.9
+    // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
     "no-external-code": {
       create(context) {
         return {
           ImportDeclaration(node) {
-            if (node.source.value.startsWith("@std")) return;
+            const resolvedSpecifier = import.meta.resolve(node.source.value);
+            if (
+              resolvedSpecifier.startsWith("file:") ||
+              resolvedSpecifier.startsWith("jsr:@std") ||
+              resolvedSpecifier.startsWith("jsr:/@std") ||
+              resolvedSpecifier.startsWith("jsr:@deno") ||
+              resolvedSpecifier.startsWith("jsr:/@deno") ||
+              resolvedSpecifier.startsWith("node:")
+            ) {
+              return;
+            }
             context.report({
               node,
               range: node.source.range,

@@ -3,6 +3,7 @@
 
 // JSON version of the full canonical list of named HTML entities
 // https://html.spec.whatwg.org/multipage/named-characters.html
+// deno-lint-ignore deno-style-guide/no-external-code
 import entityList from "https://html.spec.whatwg.org/entities.json" with {
   type: "json",
 };
