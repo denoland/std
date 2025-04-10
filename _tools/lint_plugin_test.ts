@@ -61,29 +61,28 @@ Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
 }, () => {
   // Bad
   assertLintPluginDiagnostics(
-    `
-export const foo = (): string => {
-  return "bar";
-};
-`,
-    [{
-      id: "deno-style-guide/no-top-level-arrow-syntax",
-      // TODO(iuioiua): Should this not start from `const`?
-      range: [20, 53],
-      fix: [],
-      message: "Top-level functions should not use arrow syntax",
-      hint:
-        "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
-    }],
+    'const foo = () => "bar";',
+    [
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        // TODO(iuioiua): Should this not start from `const`?
+        range: [12, 23],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+    ],
   );
 
   // Good
   assertLintPluginDiagnostics(
     `
-export function foo(): string {
+function foo() {
+  const bar = () => "baz";
+
   return "bar";
-}
-`,
+}`,
     [],
   );
 });
