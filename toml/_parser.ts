@@ -121,6 +121,15 @@ export class Scanner {
   startsWith(searchString: string) {
     return this.#source.startsWith(searchString, this.#position);
   }
+
+  match(regExp: RegExp) {
+    regExp = new RegExp(
+      regExp.source,
+      regExp.sticky ? regExp.flags : regExp.flags + "y",
+    );
+    regExp.lastIndex = this.#position;
+    return this.#source.match(regExp);
+  }
 }
 
 // -----------------------
@@ -510,7 +519,7 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const SYMBOL_PAIRS_MAP = new Map<string, unknown>([
+const SYMBOL_MAP = new Map<string, unknown>([
   ["true", true],
   ["false", false],
   ["inf", Infinity],
@@ -520,16 +529,15 @@ const SYMBOL_PAIRS_MAP = new Map<string, unknown>([
   ["+nan", NaN],
   ["-nan", NaN],
 ]);
-
+const SYMBOL_REGEXP = /(?:true|false|(?:[+-]?inf)|(?:[+-]?nan))\b/;
 export function symbols(scanner: Scanner): ParseResult<unknown> {
   scanner.nextUntilChar({ inline: true });
-  for (const [name, value] of SYMBOL_PAIRS_MAP) {
-    if (scanner.startsWith(name)) {
-      scanner.next(name.length);
-      return success(value);
-    }
-  }
-  return failure();
+  const match = scanner.match(SYMBOL_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = SYMBOL_MAP.get(string);
+  return success(value);
 }
 
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
