@@ -33,9 +33,7 @@ type BlockParseResultBody = {
 
 export class Scanner {
   #whitespace = /[ \t]/;
-
   #position = 0;
-
   #source: string;
 
   constructor(source: string) {
