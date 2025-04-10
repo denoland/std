@@ -128,11 +128,7 @@ export class Scanner {
       regExp.sticky ? regExp.flags : regExp.flags + "y",
     );
     regExp.lastIndex = this.#position;
-    const match = this.#source.match(regExp);
-    if (!match) return null;
-    const string = match[0];
-    this.next(string.length);
-    return string;
+    return this.#source.match(regExp);
   }
 }
 
@@ -338,8 +334,9 @@ const FLOAT_REGEXP = /[0-9_\.e+\-]+/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
-  const key = scanner.match(BARE_KEY_REGEXP);
+  const key = scanner.match(BARE_KEY_REGEXP)?.[0];
   if (!key) return failure();
+  scanner.next(key.length);
   return success(key);
 }
 
@@ -537,8 +534,9 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
 
   // Handle binary, octal, or hex numbers
-  const match = scanner.match(/0(?:x|o|b)/i);
+  const match = scanner.match(/0(?:x|o|b)/i)?.[0];
   if (match) {
+    scanner.next(match.length);
     const prefix = match.toLowerCase();
 
     // Determine allowed characters and base in one switch
@@ -615,8 +613,9 @@ export function float(scanner: Scanner): ParseResult<number> {
     position++;
   }
 
-  const match = scanner.match(FLOAT_REGEXP);
+  const match = scanner.match(FLOAT_REGEXP)?.[0];
   if (!match) return failure();
+  scanner.next(match.length);
   const float = parseFloat([...match].filter((char) => char !== "_").join(""));
   if (isNaN(float)) return failure();
 
@@ -626,9 +625,17 @@ export function float(scanner: Scanner): ParseResult<number> {
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.nextUntilChar({ inline: true });
   // example: 1979-05-27
-  let dateStr = scanner.match(/\d{4}-\d{2}-\d{2}/);
-  if (!dateStr) return failure();
-  dateStr += scanner.match(/[ 0-9TZ.:+-]+/) ?? "";
+  const match = scanner.match(/\d{4}-\d{2}-\d{2}/)?.[0];
+  if (!match) return failure();
+  let dateStr = match;
+  scanner.next(match.length);
+
+  const match2 = scanner.match(/[ 0-9TZ.:+-]+/)?.[0];
+  if (match2) {
+    scanner.next(match2.length);
+    dateStr += match2;
+  }
+
   const date = new Date(dateStr.trim());
   // invalid date
   if (isNaN(date.getTime())) {
@@ -640,13 +647,19 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.nextUntilChar({ inline: true });
 
-  let timeStr = scanner.match(/(\d{2}):(\d{2}):(\d{2})/);
-  if (!timeStr) return failure();
+  const match = scanner.match(/(\d{2}):(\d{2}):(\d{2})/)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  let timeStr = match;
 
   if (scanner.char() !== ".") return success(timeStr);
   timeStr += scanner.char();
   scanner.next();
-  timeStr += scanner.match(/[0-9]+/) ?? "";
+  const match2 = scanner.match(/[0-9]+/)?.[0];
+  if (match2) {
+    scanner.next(match2.length);
+    timeStr += match2;
+  }
   return success(timeStr);
 }
 
