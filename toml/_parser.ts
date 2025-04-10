@@ -33,11 +33,11 @@ type BlockParseResultBody = {
 
 export class Scanner {
   #whitespace = /[ \t]/;
-  #position = 0;
-  #source: string;
+  position = 0;
+  input: string;
 
   constructor(source: string) {
-    this.#source = source;
+    this.input = source;
   }
 
   /**
@@ -45,7 +45,7 @@ export class Scanner {
    * @param index - relative index from current position
    */
   char(index = 0) {
-    return this.#source[this.#position + index] ?? "";
+    return this.input[this.position + index] ?? "";
   }
 
   /**
@@ -54,14 +54,14 @@ export class Scanner {
    * @param end - end position relative from current position
    */
   slice(start: number, end: number): string {
-    return this.#source.slice(this.#position + start, this.#position + end);
+    return this.input.slice(this.position + start, this.position + end);
   }
 
   /**
    * Move position to next
    */
   next(count: number = 1) {
-    this.#position += count;
+    this.position += count;
   }
 
   /**
@@ -93,7 +93,7 @@ export class Scanner {
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
       const escaped = "\\u" + this.char().charCodeAt(0).toString(16);
-      const position = this.#position;
+      const position = this.position;
       throw new SyntaxError(
         `Cannot parse the TOML: It contains invalid whitespace at position '${position}': \`${escaped}\``,
       );
@@ -104,14 +104,7 @@ export class Scanner {
    * Position reached EOF or not
    */
   eof() {
-    return this.position() >= this.#source.length;
-  }
-
-  /**
-   * Get current position
-   */
-  position() {
-    return this.#position;
+    return this.position >= this.input.length;
   }
 
   isCurrentCharEOL() {
@@ -119,7 +112,7 @@ export class Scanner {
   }
 
   startsWith(searchString: string) {
-    return this.#source.startsWith(searchString, this.#position);
+    return this.input.startsWith(searchString, this.position);
   }
 }
 
@@ -803,36 +796,28 @@ export function toml(
   return success(body);
 }
 
+function createParseErrorMessage(scanner: Scanner, message: string) {
+  const string = scanner.input.slice(0, scanner.position);
+  const lines = string.split("\n");
+  const row = lines.length;
+  const column = lines.at(-1)?.length ?? 0;
+  return `Parse error on line ${row}, column ${column}: ${message}`;
+}
+
 export function parserFactory<T>(parser: ParserComponent<T>) {
   return (tomlString: string): T => {
     const scanner = new Scanner(tomlString);
-
-    let parsed: ParseResult<T> | null = null;
-    let err: Error | null = null;
     try {
-      parsed = parser(scanner);
-    } catch (e) {
-      err = e instanceof Error ? e : new Error("Invalid error type caught");
+      const result = parser(scanner);
+      if (result.ok && scanner.eof()) return result.body;
+      const message = `Unexpected character: "${scanner.char()}"`;
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new SyntaxError(createParseErrorMessage(scanner, error.message));
+      }
+      const message = "Invalid error type caught";
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
     }
-
-    if (err || !parsed || !parsed.ok || !scanner.eof()) {
-      const position = scanner.position();
-      const subStr = tomlString.slice(0, position);
-      const lines = subStr.split("\n");
-      const row = lines.length;
-      const column = (() => {
-        let count = subStr.length;
-        for (const line of lines) {
-          if (count <= line.length) break;
-          count -= line.length + 1;
-        }
-        return count;
-      })();
-      const message = `Parse error on line ${row}, column ${column}: ${
-        err ? err.message : `Unexpected character: "${scanner.char()}"`
-      }`;
-      throw new SyntaxError(message);
-    }
-    return parsed.body;
   };
 }
