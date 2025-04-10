@@ -28,11 +28,14 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
+  alphabet,
   type Base32Format,
-  calcMax,
-  decodeRawBase32 as decode,
-  encodeRawBase32 as encode,
-} from "./unstable_base32.ts";
+  calcSizeBase32,
+  decode,
+  encode,
+  padding,
+  rAlphabet,
+} from "./_common32.ts";
 import { detach } from "./_common_detach.ts";
 
 type Expect<T> = T extends "bytes" ? Uint8Array_ : string;
@@ -75,6 +78,7 @@ export class Base32EncoderStream<T extends "string" | "bytes">
    * @param options The options of the base32 stream.
    */
   constructor(options: { format?: Base32Format; output?: T } = {}) {
+    const abc = alphabet[options.format ?? "Base32"];
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
       return (x) => decoder.decode(x) as Expect<T>;
@@ -83,7 +87,10 @@ export class Base32EncoderStream<T extends "string" | "bytes">
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let [output, i] = detach(chunk, calcMax(remainder + chunk.length));
+        let [output, i] = detach(
+          chunk,
+          calcSizeBase32(remainder + chunk.length),
+        );
         if (remainder) {
           i -= remainder;
           output.set(push.subarray(0, remainder), i);
@@ -94,7 +101,8 @@ export class Base32EncoderStream<T extends "string" | "bytes">
           output.subarray(0, -remainder || undefined),
           i,
           0,
-          options.format,
+          abc,
+          padding,
         );
         controller.enqueue(decode(output.subarray(0, o)));
       },
@@ -102,9 +110,9 @@ export class Base32EncoderStream<T extends "string" | "bytes">
         if (remainder) {
           const [output, i] = detach(
             push.subarray(0, remainder),
-            calcMax(remainder),
+            calcSizeBase32(remainder),
           );
-          encode(output, i, 0, options.format);
+          encode(output, i, 0, abc, padding);
           controller.enqueue(decode(output));
         }
       },
@@ -152,6 +160,7 @@ export class Base32DecoderStream<T extends "string" | "bytes">
    * @param options The options of the base32 stream.
    */
   constructor(options: { format?: Base32Format; input?: T } = {}) {
+    const abc = rAlphabet[options.format ?? "Base32"];
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
       return (x) => encoder.encode(x as string) as Uint8Array_;
@@ -171,7 +180,8 @@ export class Base32DecoderStream<T extends "string" | "bytes">
           output.subarray(0, -remainder || undefined),
           0,
           0,
-          options.format,
+          abc,
+          padding,
         );
         controller.enqueue(output.subarray(0, o));
       },
@@ -181,7 +191,8 @@ export class Base32DecoderStream<T extends "string" | "bytes">
             push.subarray(0, remainder),
             0,
             0,
-            options.format,
+            abc,
+            padding,
           );
           controller.enqueue(push.subarray(0, o));
         }
