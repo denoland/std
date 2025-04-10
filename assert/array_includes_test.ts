@@ -82,3 +82,12 @@ Deno.test("assertArrayIncludes() type-checks failing cases", () => {
   // @ts-expect-error both args - 'string' is not assignable to 'ArrayLikeArg<string>'.
   assertThrows(() => assertArrayIncludes("a", "b"));
 });
+
+// https://github.com/denoland/std/issues/6427
+Deno.test("assertArrayIncludes() fails type checking when element type of expected not assignable to actual", () => {
+  const ones: 1[] = [1];
+  const twos: 2[] = [2];
+
+  // @ts-expect-error Argument of type '2[]' is not assignable to parameter of type 'ArrayLikeArg<1>'.
+  assertThrows(() => assertArrayIncludes(ones, twos));
+});

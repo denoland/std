@@ -31,7 +31,7 @@ Deno.test({
   name: "sample() handles array of numbers",
   fn() {
     const input = [1, 2, 3];
-    const actual = sample(input);
+    const actual = sample(input)!;
 
     assertArrayIncludes(input, [actual]);
   },
@@ -50,7 +50,7 @@ Deno.test({
         age: 24,
       },
     ];
-    const actual = sample(input);
+    const actual = sample(input)!;
 
     assertArrayIncludes(input, [actual]);
   },
