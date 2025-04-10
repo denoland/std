@@ -33,11 +33,20 @@ type BlockParseResultBody = {
 
 export class Scanner {
   #whitespace = /[ \t]/;
-  position = 0;
-  source: string;
+
+  #position = 0;
+
+  #source: string;
 
   constructor(source: string) {
-    this.source = source;
+    this.#source = source;
+  }
+
+  get position() {
+    return this.#position;
+  }
+  get source() {
+    return this.#source;
   }
 
   /**
@@ -45,7 +54,7 @@ export class Scanner {
    * @param index - relative index from current position
    */
   char(index = 0) {
-    return this.source[this.position + index] ?? "";
+    return this.#source[this.#position + index] ?? "";
   }
 
   /**
@@ -54,14 +63,14 @@ export class Scanner {
    * @param end - end position relative from current position
    */
   slice(start: number, end: number): string {
-    return this.source.slice(this.position + start, this.position + end);
+    return this.#source.slice(this.#position + start, this.#position + end);
   }
 
   /**
    * Move position to next
    */
   next(count: number = 1) {
-    this.position += count;
+    this.#position += count;
   }
 
   /**
@@ -93,7 +102,7 @@ export class Scanner {
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
       const escaped = "\\u" + this.char().charCodeAt(0).toString(16);
-      const position = this.position;
+      const position = this.#position;
       throw new SyntaxError(
         `Cannot parse the TOML: It contains invalid whitespace at position '${position}': \`${escaped}\``,
       );
@@ -104,7 +113,7 @@ export class Scanner {
    * Position reached EOF or not
    */
   eof() {
-    return this.position >= this.source.length;
+    return this.#position >= this.#source.length;
   }
 
   isCurrentCharEOL() {
@@ -112,7 +121,7 @@ export class Scanner {
   }
 
   startsWith(searchString: string) {
-    return this.source.startsWith(searchString, this.position);
+    return this.#source.startsWith(searchString, this.#position);
   }
 }
 
