@@ -48,8 +48,6 @@ export default {
               resolvedSpecifier.startsWith("file:") ||
               resolvedSpecifier.startsWith("jsr:@std") ||
               resolvedSpecifier.startsWith("jsr:/@std") ||
-              resolvedSpecifier.startsWith("jsr:@deno") ||
-              resolvedSpecifier.startsWith("jsr:/@deno") ||
               resolvedSpecifier.startsWith("node:")
             ) {
               return;
