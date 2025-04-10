@@ -77,9 +77,10 @@ export default {
               hint:
                 'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
             });
-          }
-        }
-},
+          },
+        };
+      },
+    },
     // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
     "naming-convention": {
       create(context) {

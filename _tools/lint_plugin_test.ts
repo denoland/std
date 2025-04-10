@@ -61,8 +61,8 @@ Deno.test("deno-style-guide/no-external-code", {
 }, () => {
   // Good
   assertLintPluginDiagnostics('import { walk } from "@std/fs/walk";', []);
-  
-    // Bad
+
+  // Bad
   assertLintPluginDiagnostics(
     `
 import { bad } from "https://deno.land/malicious-muffin/bad.ts";
@@ -83,7 +83,8 @@ import { bad } from "jsr:@malicious-muffin/bad";
       hint:
         'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
     }],
-    });
+  );
+});
 
 Deno.test("deno-style-guide/naming-convention", {
   ignore: !Deno.version.deno.startsWith("2"),
@@ -120,10 +121,6 @@ interface InterfaceName {};
 enum EnumName {
   foo = "bar",
 }
-
-    `,
-    [],
-  );
 
 const CONSTANT_name = "foo";
 
