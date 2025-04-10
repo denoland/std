@@ -434,7 +434,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge<{ a: number | undefined }>(
       { a: 1 },
       { a: undefined },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: 1 },
   );
@@ -442,7 +442,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge(
       { a: 1 },
       { a: undefined },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: undefined },
   );
@@ -458,7 +458,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge(
       { a: undefined },
       { a: 1 },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: 1 },
   );
@@ -466,7 +466,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge(
       { a: undefined },
       { a: 1 },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: 1 },
   );
@@ -483,7 +483,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge(
       { a: undefined },
       { a: undefined },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: undefined },
   );
@@ -491,7 +491,7 @@ Deno.test("deepMerge() handles number vs undefined", () => {
     deepMerge(
       { a: undefined },
       { a: undefined },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: undefined },
   );
@@ -510,7 +510,7 @@ Deno.test("deepMerge() handles mergeable vs undefined", () => {
     deepMerge(
       { a: { b: 1 } },
       { a: undefined },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: { b: 1 } },
   );
@@ -518,7 +518,7 @@ Deno.test("deepMerge() handles mergeable vs undefined", () => {
     deepMerge(
       { a: { b: 1 } },
       { a: undefined },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: undefined },
   );
@@ -527,7 +527,7 @@ Deno.test("deepMerge() handles mergeable vs undefined", () => {
     deepMerge<{ a: { b: number; c: number | undefined } }>(
       { a: { b: 1, c: 2 } },
       { a: { b: 1, c: undefined } },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: { b: 1, c: 2 } },
   );
@@ -535,7 +535,7 @@ Deno.test("deepMerge() handles mergeable vs undefined", () => {
     deepMerge(
       { a: { b: 1, c: 2 } },
       { a: { b: 1, c: undefined } },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: { b: 1, c: undefined } },
   );
@@ -546,7 +546,7 @@ Deno.test("deepMerge() handles undefined vs omitted", () => {
     deepMerge(
       { a: undefined },
       {},
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: undefined },
   );
@@ -554,7 +554,7 @@ Deno.test("deepMerge() handles undefined vs omitted", () => {
     deepMerge(
       { a: undefined },
       {},
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: undefined },
   );
@@ -562,7 +562,7 @@ Deno.test("deepMerge() handles undefined vs omitted", () => {
     deepMerge(
       {},
       { a: undefined },
-      { undefined: "ignore" },
+      { undefineds: "ignore" },
     ),
     { a: undefined },
   );
@@ -570,7 +570,7 @@ Deno.test("deepMerge() handles undefined vs omitted", () => {
     deepMerge(
       {},
       { a: undefined },
-      { undefined: "replace" },
+      { undefineds: "replace" },
     ),
     { a: undefined },
   );

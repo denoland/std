@@ -208,7 +208,7 @@ export function deepMerge<
     arrays: "merge";
     sets: "merge";
     maps: "merge";
-    undefined: "replace";
+    undefineds: "replace";
   },
 >(
   record: Readonly<T>,
@@ -225,7 +225,7 @@ function deepMergeInternal<
     arrays: "merge";
     sets: "merge";
     maps: "merge";
-    undefined: "replace";
+    undefineds: "replace";
   },
 >(
   record: Readonly<T>,
@@ -255,7 +255,7 @@ function deepMergeInternal<
 
     if (
       !Object.hasOwn(other, key) ||
-      (other[key] === undefined && options?.undefined === "ignore")
+      (other[key] === undefined && options?.undefineds === "ignore")
     ) {
       result[key] = a;
 
@@ -289,7 +289,7 @@ function mergeObjects(
     arrays: "merge",
     sets: "merge",
     maps: "merge",
-    undefined: "replace",
+    undefineds: "replace",
   },
 ): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
@@ -403,7 +403,7 @@ export type DeepMergeOptions = {
    *
    * @default {"replace"}
    */
-  undefined?: "replace" | "ignore";
+  undefineds?: "replace" | "ignore";
 };
 
 /**
