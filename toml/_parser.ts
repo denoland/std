@@ -34,10 +34,10 @@ type BlockParseResultBody = {
 export class Scanner {
   #whitespace = /[ \t]/;
   position = 0;
-  input: string;
+  source: string;
 
   constructor(source: string) {
-    this.input = source;
+    this.source = source;
   }
 
   /**
@@ -45,7 +45,7 @@ export class Scanner {
    * @param index - relative index from current position
    */
   char(index = 0) {
-    return this.input[this.position + index] ?? "";
+    return this.source[this.position + index] ?? "";
   }
 
   /**
@@ -54,7 +54,7 @@ export class Scanner {
    * @param end - end position relative from current position
    */
   slice(start: number, end: number): string {
-    return this.input.slice(this.position + start, this.position + end);
+    return this.source.slice(this.position + start, this.position + end);
   }
 
   /**
@@ -104,7 +104,7 @@ export class Scanner {
    * Position reached EOF or not
    */
   eof() {
-    return this.position >= this.input.length;
+    return this.position >= this.source.length;
   }
 
   isCurrentCharEOL() {
@@ -112,7 +112,7 @@ export class Scanner {
   }
 
   startsWith(searchString: string) {
-    return this.input.startsWith(searchString, this.position);
+    return this.source.startsWith(searchString, this.position);
   }
 }
 
@@ -797,7 +797,7 @@ export function toml(
 }
 
 function createParseErrorMessage(scanner: Scanner, message: string) {
-  const string = scanner.input.slice(0, scanner.position);
+  const string = scanner.source.slice(0, scanner.position);
   const lines = string.split("\n");
   const row = lines.length;
   const column = lines.at(-1)?.length ?? 0;
