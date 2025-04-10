@@ -538,6 +538,7 @@ export function binary(scanner: Scanner): ParseResult<number | string> {
   const number = parseInt(value, 2);
   return isNaN(number) ? failure() : success(number);
 }
+
 const OCTAL_REGEXP = /0o[0-7_]+/;
 export function octal(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
@@ -548,6 +549,7 @@ export function octal(scanner: Scanner): ParseResult<number | string> {
   const number = parseInt(value, 8);
   return isNaN(number) ? failure() : success(number);
 }
+
 const HEX_REGEXP = /0x[0-9a-f_]+/i;
 export function hex(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
@@ -558,6 +560,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   const number = parseInt(value, 16);
   return isNaN(number) ? failure() : success(number);
 }
+
 const INTEGER_REGEXP = /[+-]?[0-9_]+/;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.nextUntilChar({ inline: true });
@@ -568,6 +571,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   const int = parseInt(value, 10);
   return success(int);
 }
+
 const FLOAT_REGEXP = /[+-]?[0-9_]+(?:\.[0-9_]+)?(?:e[+-]?[0-9_]+)?/i;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.nextUntilChar({ inline: true });
