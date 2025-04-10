@@ -42,19 +42,21 @@ export default {
     "no-top-level-arrow-syntax": {
       create(context) {
         return {
-          // TODO(iuioiua): Should work once https://github.com/denoland/deno/issues/28799 is fixed
           ArrowFunctionExpression(node) {
             if (
-              node.parent.type !== "VariableDeclarator" &&
-              node.parent.parent.type !== "Program"
-            ) return;
-            context.report({
-              node,
-              range: node.range,
-              message: "Top-level functions should not use arrow syntax",
-              hint:
-                "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
-            });
+              node.parent.type === "VariableDeclarator" &&
+              node.parent.parent.type === "VariableDeclaration" &&
+              (node.parent.parent.parent.type === "Program" ||
+                node.parent.parent.parent.type === "ExportNamedDeclaration")
+            ) {
+              context.report({
+                node,
+                range: node.range,
+                message: "Top-level functions should not use arrow syntax",
+                hint:
+                  "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+              });
+            }
           },
         };
       },
