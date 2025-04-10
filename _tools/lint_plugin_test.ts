@@ -95,6 +95,7 @@ function foo() {
 }`,
     [],
   );
+});
 
 Deno.test("deno-style-guide/naming-convention", {
   ignore: !Deno.version.deno.startsWith("2"),

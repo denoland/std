@@ -67,6 +67,7 @@ export default {
               (node.parent.parent.parent.type === "Program" ||
                 node.parent.parent.parent.type === "ExportNamedDeclaration")
             ) {
+              // TODO(iuioiua): add fix
               context.report({
                 node,
                 range: node.range,
@@ -76,136 +77,136 @@ export default {
               });
             }
           },
-          // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
-          "naming-convention": {
-            create(context) {
-              return {
-                TSTypeAliasDeclaration(node) {
-                  const name = node.id.name;
-                  if (!name) return;
-                  if (!isPascalCase(name)) {
-                    context.report({
-                      node: node.id,
-                      message: `Type name '${name}' is not PascalCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(node.id, toPascalCase(name));
-                      },
-                    });
-                  }
+        };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
+    "naming-convention": {
+      create(context) {
+        return {
+          TSTypeAliasDeclaration(node) {
+            const name = node.id.name;
+            if (!name) return;
+            if (!isPascalCase(name)) {
+              context.report({
+                node: node.id,
+                message: `Type name '${name}' is not PascalCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(node.id, toPascalCase(name));
                 },
-                TSInterfaceDeclaration(node) {
-                  const name = node.id.name;
-                  if (!name) return;
-                  if (!isPascalCase(name)) {
-                    context.report({
-                      node: node.id,
-                      message: `Interface name '${name}' is not PascalCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(node.id, toPascalCase(name));
-                      },
-                    });
-                  }
+              });
+            }
+          },
+          TSInterfaceDeclaration(node) {
+            const name = node.id.name;
+            if (!name) return;
+            if (!isPascalCase(name)) {
+              context.report({
+                node: node.id,
+                message: `Interface name '${name}' is not PascalCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(node.id, toPascalCase(name));
                 },
-                TSEnumDeclaration(node) {
-                  const name = node.id.name;
-                  if (!name) return;
-                  if (!isPascalCase(name)) {
-                    context.report({
-                      node: node.id,
-                      message: `Enum name '${name}' is not PascalCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(node.id, toPascalCase(name));
-                      },
-                    });
-                  }
+              });
+            }
+          },
+          TSEnumDeclaration(node) {
+            const name = node.id.name;
+            if (!name) return;
+            if (!isPascalCase(name)) {
+              context.report({
+                node: node.id,
+                message: `Enum name '${name}' is not PascalCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(node.id, toPascalCase(name));
                 },
-                FunctionDeclaration(node) {
-                  const id = node.id;
-                  if (!id) return;
-                  const name = id.name;
-                  if (!name) return;
-                  if (!isCamelCase(name)) {
-                    context.report({
-                      node: id,
-                      message: `Function name '${name}' is not camelCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(id, toCamelCase(name));
-                      },
-                    });
-                  }
+              });
+            }
+          },
+          FunctionDeclaration(node) {
+            const id = node.id;
+            if (!id) return;
+            const name = id.name;
+            if (!name) return;
+            if (!isCamelCase(name)) {
+              context.report({
+                node: id,
+                message: `Function name '${name}' is not camelCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(id, toCamelCase(name));
                 },
-                ClassDeclaration(node) {
-                  const id = node.id;
-                  if (!id) return;
-                  const name = id.name;
-                  if (!name) return;
-                  if (!isPascalCase(name)) {
-                    context.report({
-                      node: id,
-                      message: `Class name '${name}' is not PascalCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(id, toPascalCase(name));
-                      },
-                    });
-                  }
+              });
+            }
+          },
+          ClassDeclaration(node) {
+            const id = node.id;
+            if (!id) return;
+            const name = id.name;
+            if (!name) return;
+            if (!isPascalCase(name)) {
+              context.report({
+                node: id,
+                message: `Class name '${name}' is not PascalCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(id, toPascalCase(name));
                 },
-                MethodDefinition(node) {
-                  const key = node.key;
-                  if (key.type !== "Identifier") return;
-                  const name = key.name;
-                  if (!name) return;
-                  if (!isCamelCase(name)) {
-                    context.report({
-                      node: key,
-                      message: `Method name '${name}' is not camelCase.`,
-                      fix(fixer) {
-                        return fixer.replaceText(key, toCamelCase(name));
-                      },
-                    });
-                  }
+              });
+            }
+          },
+          MethodDefinition(node) {
+            const key = node.key;
+            if (key.type !== "Identifier") return;
+            const name = key.name;
+            if (!name) return;
+            if (!isCamelCase(name)) {
+              context.report({
+                node: key,
+                message: `Method name '${name}' is not camelCase.`,
+                fix(fixer) {
+                  return fixer.replaceText(key, toCamelCase(name));
                 },
-                PropertyDefinition(node) {
-                  const key = node.key;
-                  switch (key.type) {
-                    case "Identifier":
-                    case "PrivateIdentifier": {
-                      const name = key.name;
-                      if (!name) return;
-                      if (!isCamelCase(name)) {
-                        context.report({
-                          node: key,
-                          message: `Property name '${name}' is not camelCase.`,
-                          fix(fixer) {
-                            return fixer.replaceText(key, toCamelCase(name));
-                          },
-                        });
-                      }
-                      break;
-                    }
-                    default:
-                      break;
-                  }
-                },
-                VariableDeclaration(node) {
-                  for (const declaration of node.declarations) {
-                    const id = declaration.id;
-                    if (id.type !== "Identifier") return;
-                    const name = id.name;
-                    if (!name) return;
-                    if (
-                      !isConstantCase(name) && !isCamelCase(name) &&
-                      !isPascalCase(name)
-                    ) {
-                      context.report({
-                        node: id,
-                        message:
-                          `Variable name '${name}' is not camelCase, PascalCase, or CONSTANT_CASE.`,
-                      });
-                    }
-                  }
-                },
-              };
-            },
+              });
+            }
+          },
+          PropertyDefinition(node) {
+            const key = node.key;
+            switch (key.type) {
+              case "Identifier":
+              case "PrivateIdentifier": {
+                const name = key.name;
+                if (!name) return;
+                if (!isCamelCase(name)) {
+                  context.report({
+                    node: key,
+                    message: `Property name '${name}' is not camelCase.`,
+                    fix(fixer) {
+                      return fixer.replaceText(key, toCamelCase(name));
+                    },
+                  });
+                }
+                break;
+              }
+              default:
+                break;
+            }
+          },
+          VariableDeclaration(node) {
+            for (const declaration of node.declarations) {
+              const id = declaration.id;
+              if (id.type !== "Identifier") return;
+              const name = id.name;
+              if (!name) return;
+              if (
+                !isConstantCase(name) && !isCamelCase(name) &&
+                !isPascalCase(name)
+              ) {
+                context.report({
+                  node: id,
+                  message:
+                    `Variable name '${name}' is not camelCase, PascalCase, or CONSTANT_CASE.`,
+                });
+              }
+            }
           },
         };
       },
