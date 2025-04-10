@@ -1,3 +1,59 @@
+### 2025.04.08
+
+#### @std/cli 1.0.16 (patch)
+
+- refactor(cli/unstable): add `ProgressBar` `Unit` type (#6506)
+- chore(cli,http): fix typechecking errors (#6521)
+
+#### @std/datetime 0.225.4 (patch)
+
+- fix(datetime): fix formatting of `fractionalSecond`, fix parsing of `yy` and
+  `yyyy`, test each part type in dateTimeFormatter.format (#6516)
+
+#### @std/encoding 1.0.9 (patch)
+
+- BREAKING(encoding/unstable): replace `encodeRaw` with `encodeInto` & remove
+  `decodeRaw` (#6513)
+- feat(encoding/unstable): add Uint8Array support to decodeBase64, 32, and hex
+  (#6508)
+
+#### @std/expect 1.0.15 (patch)
+
+- fix(expect): include diff when `expect.toMatchObject` throws (#6525)
+
+#### @std/fs 1.0.16 (patch)
+
+- feat(fs/unstable): add chown and chownSync (#6552)
+- feat(fs/unstable): add readDirSync (#6381)
+
+#### @std/http 1.0.14 (patch)
+
+- fix(http): use relative urls in file server dirlisting (#6537)
+- chore(cli,http): fix typechecking errors (#6521)
+
+#### @std/ini 1.0.0-rc.7 (prerelease)
+
+- fix(ini): replace `isRecord()` with `isPlainObject()` (#6517)
+- refactor(ini): simplify `parse()` (#6512)
+- refactor(ini): simplify `stringify()` (#6514)
+- refactor(ini): remove `IniMap.prototype.#cleanFormatting()` (#6511)
+- test(ini): refactor ini tests (#6549)
+- test(ini): add line break and whitespace tests (#6519)
+
+#### @std/semver 1.0.5 (patch)
+
+- chore(semver): remove `MIN` constant (#6526)
+
+#### @std/testing 1.0.11 (patch)
+
+- refactor(testing): add instructions to update snapshots (#6543)
+
+#### @std/toml 1.0.4 (patch)
+
+- refactor(toml): improve `integer()` function (#6533)
+- refactor(toml): add `Scanner` `startsWith()` method (#6532)
+- refactor(toml): improve `Scanner` `next()` method (#6534)
+
 ### 2025.03.25
 
 #### @std/assert 1.0.12 (patch)
