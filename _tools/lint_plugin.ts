@@ -56,6 +56,31 @@ export default {
         };
       },
     },
+    // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
+    "no-external-code": {
+      create(context) {
+        return {
+          ImportDeclaration(node) {
+            const resolvedSpecifier = import.meta.resolve(node.source.value);
+            if (
+              resolvedSpecifier.startsWith("file:") ||
+              resolvedSpecifier.startsWith("jsr:@std") ||
+              resolvedSpecifier.startsWith("jsr:/@std") ||
+              resolvedSpecifier.startsWith("node:")
+            ) {
+              return;
+            }
+            context.report({
+              node,
+              range: node.source.range,
+              message: "External imports are not allowed",
+              hint:
+                'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
+            });
+          },
+        };
+      },
+    },
     // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
     "naming-convention": {
       create(context) {

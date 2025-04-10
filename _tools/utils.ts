@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+// deno-lint-ignore deno-style-guide/no-external-code
 import ts from "npm:typescript";
 
 const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))

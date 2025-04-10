@@ -9,6 +9,7 @@
  * ```
  */
 
+// deno-lint-ignore deno-style-guide/no-external-code
 import { doc } from "@deno/doc";
 import { walk } from "../fs/walk.ts";
 import { toFileUrl } from "../path/to_file_url.ts";
