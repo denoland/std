@@ -9,22 +9,26 @@ import {
   yellow,
 } from "@std/internal/styles";
 
-const createHeader = (): string[] => [
-  "",
-  "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-    green(
-      bold("Expected"),
-    )
-  }`,
-  "",
-  "",
-];
+function createHeader(): string[] {
+  return [
+    "",
+    "",
+    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
+      green(
+        bold("Expected"),
+      )
+    }`,
+    "",
+    "",
+  ];
+}
 
-const added: (s: string) => string = (s: string): string =>
-  green(bold(stripAnsiCode(s)));
-const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripAnsiCode(s)));
+function added(s: string): string {
+  return green(bold(stripAnsiCode(s)));
+}
+function removed(s: string): string {
+  return red(bold(stripAnsiCode(s)));
+}
 
 Deno.test({
   name: "assertEquals() matches when values are equal",
