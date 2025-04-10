@@ -67,6 +67,12 @@ const constName = "foo";
 let letName = "foo";
 var varName = "foo";
 
+// trailing underscore is allowed for avoiding conflicts
+const Date_ = Date;
+
+// trailing capital letter is allowed in PascalCase
+type FooX = string;
+
 const objectName = {
   methodName() {
   },
@@ -105,10 +111,16 @@ function fn() {
 class className {}
 
 type typeName = unknown;
+
+// capital-only acronym name is not PascalCase
+// This should be Db, not DB
+type DB = {};
+
 interface interfaceName {};
 enum enumName {
   foo = "bar",
 }
+
 
 `,
     [
@@ -142,11 +154,18 @@ enum enumName {
         range: [142, 150],
       },
       {
-        fix: [{ range: [172, 185], text: "InterfaceName" }],
+        fix: [{ range: [244, 246], text: "Db" }],
+        hint: undefined,
+        id: "deno-style-guide/naming-convention",
+        message: "Type name 'DB' is not PascalCase.",
+        range: [244, 246],
+      },
+      {
+        fix: [{ range: [264, 277], text: "InterfaceName" }],
         hint: undefined,
         id: "deno-style-guide/naming-convention",
         message: "Interface name 'interfaceName' is not PascalCase.",
-        range: [172, 185],
+        range: [264, 277],
       },
     ],
   );
