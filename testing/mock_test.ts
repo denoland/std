@@ -452,7 +452,6 @@ Deno.test("spy() supports explicit resource management", () => {
 });
 
 Deno.test("spy() works on constructor", () => {
-  // deno-lint-ignore deno-style-guide/naming-convention
   const PointSpy = spy(Point);
   assertSpyCalls(PointSpy, 0);
 
@@ -485,9 +484,7 @@ Deno.test("spy() works on constructor", () => {
 });
 
 Deno.test("spy() works on constructor of child class", () => {
-  // deno-lint-ignore deno-style-guide/naming-convention
   const PointSpy = spy(Point);
-  // deno-lint-ignore deno-style-guide/naming-convention
   const PointSpyChild = class extends PointSpy {
     override action() {
       return 1;
@@ -520,7 +517,6 @@ Deno.test("spy() works on constructor that throws an error", () => {
       throw new Error("foo");
     }
   }
-  // deno-lint-ignore deno-style-guide/naming-convention
   const FooSpy = spy(Foo);
   assertThrows(() => new FooSpy(), Error, "foo");
   assertSpyCall(FooSpy, 0, {

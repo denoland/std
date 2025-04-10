@@ -1,4 +1,3 @@
-// deno-lint-ignore-file deno-style-guide/naming-convention
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 // @ts-self-types="./unstable_errors.d.ts"

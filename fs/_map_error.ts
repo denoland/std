@@ -4,7 +4,6 @@ import * as errors from "./unstable_errors.js";
 
 type Class<T> = new (...params: unknown[]) => T;
 
-// deno-lint-ignore deno-style-guide/naming-convention
 type ClassOrT<T> = T extends Class<infer U> ? U : T;
 
 const mapper = (Ctor: typeof errors[keyof typeof errors]) => (err: Error) =>

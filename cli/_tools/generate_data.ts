@@ -11,21 +11,21 @@ const UNICODE_VERSION = "15.0.0";
 const NUM_CODEPOINTS = 0x110000;
 const MAX_CODEPOINT_BITS = Math.ceil(Math.log2(NUM_CODEPOINTS - 1));
 
-const OFFSET_TYPE = {
+const OffsetType = {
   U2: 2,
   U4: 4,
   U8: 8,
 } as const;
 
-type OffsetType = typeof OFFSET_TYPE[keyof typeof OFFSET_TYPE];
+type OffsetType = typeof OffsetType[keyof typeof OffsetType];
 
 type CodePoint = number;
 type BitPos = number;
 
 const TABLE_CFGS: [BitPos, BitPos, OffsetType][] = [
-  [13, MAX_CODEPOINT_BITS, OFFSET_TYPE.U8],
-  [6, 13, OFFSET_TYPE.U8],
-  [0, 6, OFFSET_TYPE.U2],
+  [13, MAX_CODEPOINT_BITS, OffsetType.U8],
+  [6, 13, OffsetType.U8],
+  [0, 6, OffsetType.U2],
 ];
 
 async function fetchUnicodeData(filename: string, version: string) {
@@ -40,22 +40,22 @@ async function fetchUnicodeData(filename: string, version: string) {
   return await res.text();
 }
 
-const EFFECTIVE_WIDTH = {
+const EffectiveWidth = {
   Zero: 0,
   Narrow: 1,
   Wide: 2,
   Ambiguous: 3,
 } as const;
 
-type EffectiveWidth = typeof EFFECTIVE_WIDTH[keyof typeof EFFECTIVE_WIDTH];
+type EffectiveWidth = typeof EffectiveWidth[keyof typeof EffectiveWidth];
 
 const widthCodes = {
-  N: EFFECTIVE_WIDTH.Narrow,
-  Na: EFFECTIVE_WIDTH.Narrow,
-  H: EFFECTIVE_WIDTH.Narrow,
-  W: EFFECTIVE_WIDTH.Wide,
-  F: EFFECTIVE_WIDTH.Wide,
-  A: EFFECTIVE_WIDTH.Ambiguous,
+  N: EffectiveWidth.Narrow,
+  Na: EffectiveWidth.Narrow,
+  H: EffectiveWidth.Narrow,
+  W: EffectiveWidth.Wide,
+  F: EffectiveWidth.Wide,
+  A: EffectiveWidth.Ambiguous,
 };
 
 async function loadEastAsianWidths(version: string) {
@@ -88,13 +88,13 @@ async function loadEastAsianWidths(version: string) {
     assert(current <= high);
 
     while (current <= high) {
-      widthMap.push(current < low ? EFFECTIVE_WIDTH.Narrow : width);
+      widthMap.push(current < low ? EffectiveWidth.Narrow : width);
       ++current;
     }
   }
 
   while (widthMap.length < NUM_CODEPOINTS) {
-    widthMap.push(EFFECTIVE_WIDTH.Narrow);
+    widthMap.push(EffectiveWidth.Narrow);
   }
 
   return widthMap;
@@ -304,12 +304,12 @@ export async function tables(version: string) {
   const eawMap = await loadEastAsianWidths(version);
   const zwMap = await loadZeroWidths(version);
 
-  const widthMap = eawMap.map((x, i) => zwMap[i] ? EFFECTIVE_WIDTH.Zero : x);
+  const widthMap = eawMap.map((x, i) => zwMap[i] ? EffectiveWidth.Zero : x);
 
-  widthMap[0x00AD] = EFFECTIVE_WIDTH.Narrow;
+  widthMap[0x00AD] = EffectiveWidth.Narrow;
 
   for (let i = 0x1160; i < 0x11FF + 1; ++i) {
-    widthMap[i] = EFFECTIVE_WIDTH.Zero;
+    widthMap[i] = EffectiveWidth.Zero;
   }
 
   const tables = makeTables(TABLE_CFGS, [...widthMap.entries()]);

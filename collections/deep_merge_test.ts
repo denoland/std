@@ -129,7 +129,6 @@ Deno.test("deepMerge() overrides target (non-mergeable source)", () => {
 });
 
 Deno.test("deepMerge() overrides target (non-mergeable destination, object like)", () => {
-  // deno-lint-ignore deno-style-guide/naming-convention
   const CustomClass = class {};
   assertEquals(
     deepMerge({
@@ -180,7 +179,6 @@ Deno.test("deepMerge() overrides target (different object like source and destin
 });
 
 Deno.test("deepMerge() handles primitive types handling", () => {
-  // deno-lint-ignore deno-style-guide/naming-convention
   const CustomClass = class {};
   const expected = {
     boolean: true,

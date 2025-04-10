@@ -208,13 +208,13 @@ function join<T>(
   parser: ParserComponent<T>,
   separator: string,
 ): ParserComponent<T[]> {
-  const separatorParser = character(separator);
+  const Separator = character(separator);
   return (scanner: Scanner): ParseResult<T[]> => {
     const first = parser(scanner);
     if (!first.ok) return failure();
     const out: T[] = [first.body];
     while (!scanner.eof()) {
-      if (!separatorParser(scanner).ok) break;
+      if (!Separator(scanner).ok) break;
       const result = parser(scanner);
       if (!result.ok) {
         throw new SyntaxError(`Invalid token after "${separator}"`);
@@ -230,11 +230,11 @@ function kv<T>(
   separator: string,
   valueParser: ParserComponent<T>,
 ): ParserComponent<{ [key: string]: unknown }> {
-  const separatorParser = character(separator);
+  const Separator = character(separator);
   return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
     const key = keyParser(scanner);
     if (!key.ok) return failure();
-    const sep = separatorParser(scanner);
+    const sep = Separator(scanner);
     if (!sep.ok) {
       throw new SyntaxError(`key/value pair doesn't have "${separator}"`);
     }
@@ -286,17 +286,17 @@ function surround<T>(
   parser: ParserComponent<T>,
   right: string,
 ): ParserComponent<T> {
-  const leftParser = character(left);
-  const rightParser = character(right);
+  const Left = character(left);
+  const Right = character(right);
   return (scanner: Scanner) => {
-    if (!leftParser(scanner).ok) {
+    if (!Left(scanner).ok) {
       return failure();
     }
     const result = parser(scanner);
     if (!result.ok) {
       throw new SyntaxError(`Invalid token after "${left}"`);
     }
-    if (!rightParser(scanner).ok) {
+    if (!Right(scanner).ok) {
       throw new SyntaxError(
         `Not closed by "${right}" after started with "${left}"`,
       );

@@ -74,9 +74,9 @@ function fakeTimeNow() {
   return time?.now ?? _internals.Date.now();
 }
 
-const fakeDate = new Proxy(Date, {
+const FakeDate = new Proxy(Date, {
   construct(_target, args) {
-    if (args.length === 0) args.push(fakeDate.now());
+    if (args.length === 0) args.push(FakeDate.now());
     // @ts-expect-error this is a passthrough
     return new _internals.Date(...args);
   },
@@ -199,7 +199,7 @@ function fakeAbortSignalTimeout(delay: number): AbortSignal {
 }
 
 function overrideGlobals() {
-  globalThis.Date = fakeDate;
+  globalThis.Date = FakeDate;
   globalThis.setTimeout = fakeSetTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
   globalThis.setInterval = fakeSetInterval;

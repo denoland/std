@@ -8,17 +8,18 @@
 
 import { toCamelCase, toPascalCase } from "@std/text";
 
-const PASCAL_CASE_REGEXP = /^[_A-Z][a-z0-9]*(?:[A-Z][a-z0-9]+)*$/;
+const PASCAL_CASE_REGEXP = /^_?(?:[A-Z][a-z0-9]*)*_?$/;
+const UPPER_CASE_ONLY = /^_?[A-Z]{2,}$/;
 function isPascalCase(string: string): boolean {
-  return PASCAL_CASE_REGEXP.test(string);
+  return PASCAL_CASE_REGEXP.test(string) && !UPPER_CASE_ONLY.test(string);
 }
 
-const CAMEL_CASE_REGEXP = /^[_a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*$/;
+const CAMEL_CASE_REGEXP = /^[_a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*_?$/;
 function isCamelCase(string: string): boolean {
   return CAMEL_CASE_REGEXP.test(string);
 }
 
-const CONSTANT_CASE_REGEXP = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
+const CONSTANT_CASE_REGEXP = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_?$/;
 function isConstantCase(string: string): boolean {
   return CONSTANT_CASE_REGEXP.test(string);
 }
@@ -171,14 +172,14 @@ export default {
               if (id.type !== "Identifier") return;
               const name = id.name;
               if (!name) return;
-              if (node.kind === "const" && isConstantCase(name)) return;
-              if (!isCamelCase(name)) {
+              if (
+                !isConstantCase(name) && !isCamelCase(name) &&
+                !isPascalCase(name)
+              ) {
                 context.report({
                   node: id,
-                  message: `Property name '${name}' is not camelCase.`,
-                  fix(fixer) {
-                    return fixer.replaceText(id, toCamelCase(name));
-                  },
+                  message:
+                    `Variable name '${name}' is not camelCase, PascalCase, or CONSTANT_CASE.`,
                 });
               }
             }

@@ -8,5 +8,4 @@
  * @internal @private
  */
 
-// deno-lint-ignore deno-style-guide/naming-convention
 export type Uint8Array_ = ReturnType<Uint8Array["slice"]>;

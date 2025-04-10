@@ -62,7 +62,7 @@ export async function assertRejects<E extends Error = Error>(
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<E | Error | unknown> {
-  // deno-lint-ignore no-explicit-any deno-style-guide/naming-convention
+  // deno-lint-ignore no-explicit-any
   let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
   let msgIncludes: string | undefined;
   let err;
