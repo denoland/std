@@ -4,16 +4,19 @@ import {
   arrayValue,
   bareKey,
   basicString,
+  binary,
   dateTime,
   deepAssignWithTable,
   dottedKey,
   float,
+  hex,
   inlineTable,
   integer,
   literalString,
   localTime,
   multilineBasicString,
   multilineLiteralString,
+  octal,
   pair,
   parserFactory,
   Scanner,
@@ -234,6 +237,40 @@ fizz.buzz = true
 });
 
 Deno.test({
+  name: "parse() handles binary",
+  fn() {
+    const parse = parserFactory(binary);
+    assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
+    assertThrows(() => parse(""));
+    assertThrows(() => parse("+Z"));
+    assertThrows(() => parse("0x"));
+  },
+});
+Deno.test({
+  name: "parse() handles octal",
+  fn() {
+    const parse = parserFactory(octal);
+    assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
+    assertEquals(parse("0o755"), 0o755); // 0o755 = 493
+    assertThrows(() => parse(""));
+    assertThrows(() => parse("+Z"));
+    assertThrows(() => parse("0x"));
+  },
+});
+Deno.test({
+  name: "parse() handles hex",
+  fn() {
+    const parse = parserFactory(hex);
+
+    assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
+    assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
+    assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
+    assertThrows(() => parse(""));
+    assertThrows(() => parse("+Z"));
+    assertThrows(() => parse("0x"));
+  },
+});
+Deno.test({
   name: "parse() handles integer",
   fn() {
     const parse = parserFactory(integer);
@@ -241,12 +278,6 @@ Deno.test({
     assertEquals(parse("+123"), 123);
     assertEquals(parse("-123"), -123);
     assertEquals(parse("123_456"), 123456);
-    assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
-    assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
-    assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
-    assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
-    assertEquals(parse("0o755"), 0o755); // 0o755 = 493
-    assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
