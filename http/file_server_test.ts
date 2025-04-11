@@ -191,8 +191,9 @@ Deno.test("serveDir() serves directory index", async () => {
   const page = await res.text();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
-  assertStringIncludes(page, '<a href="/tls/">tls/</a>');
+  assertStringIncludes(page, '<a href=".">home</a>/');
+  assertStringIncludes(page, '<a href="./hello.html">hello.html</a>');
+  assertStringIncludes(page, '<a href="./tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
   if (fsModeUnavailable) {
     assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
@@ -201,6 +202,20 @@ Deno.test("serveDir() serves directory index", async () => {
   }
 
   await Deno.remove(filePath);
+});
+
+Deno.test("serveDir() serves directory index with entry to the parent directory", async () => {
+  const req = new Request("http://localhost/nested-subdirs/subdir/");
+  const res = await serveDir(req, serveDirOptions);
+  const page = await res.text();
+
+  assertEquals(res.status, 200);
+  assertStringIncludes(
+    page,
+    '<a href="../../">home</a>/<a href="../">nested-subdirs</a>/<a href=".">subdir</a>/',
+  );
+  assertStringIncludes(page, '<a href="..">../</a>');
+  assertStringIncludes(page, '<a href="./test_file.txt">test_file.txt</a>');
 });
 
 Deno.test("serveDir() serves directory index with file containing space in the filename", async () => {
@@ -212,8 +227,8 @@ Deno.test("serveDir() serves directory index with file containing space in the f
   const page = await res.text();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, '<a href="/hello.html">hello.html</a>');
-  assertStringIncludes(page, '<a href="/tls/">tls/</a>');
+  assertStringIncludes(page, '<a href="./hello.html">hello.html</a>');
+  assertStringIncludes(page, '<a href="./tls/">tls/</a>');
   assertStringIncludes(page, "test%20file.txt");
   if (fsModeUnavailable) {
     assertMatch(page, /<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/);
@@ -251,7 +266,7 @@ Deno.test("serveDir() escapes file names when rendering directory index", {
   });
   assertStringIncludes(
     await res.text(),
-    '<a href="/%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E">&lt;img src=x onerror=alert(1)&gt;</a>',
+    '<a href="./%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E">&lt;img src=x onerror=alert(1)&gt;</a>',
   );
 });
 
@@ -272,7 +287,7 @@ Deno.test("serveDir() returns a response even if fileinfo is inaccessible", asyn
   const page = await res.text();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, "/test_file.txt");
+  assertStringIncludes(page, "./test_file.txt");
 });
 
 Deno.test("serveDir() handles not found files", async () => {

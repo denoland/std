@@ -21,7 +21,7 @@ export interface StringifyStreamOptions {
  * Convert each chunk to JSON string.
  *
  * This can be used to stringify {@link https://jsonlines.org/ | JSON lines},
- * {@link https://ndjson.org/ | NDJSON},
+ * {@link https://en.wikipedia.org/wiki/JSON_streaming#Newline-delimited_JSON | NDJSON},
  * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences},
  * and {@link https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON | Concatenated JSON}.
  *
