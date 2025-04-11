@@ -11,13 +11,6 @@ export type ReviverFunction = (
 const SECTION_REGEXP = /^\[(?<name>.*\S.*)]$/;
 const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
 
-function trimQuotes(value: string): string {
-  if (value.startsWith('"') && value.endsWith('"')) {
-    return value.slice(1, -1);
-  }
-  return value;
-}
-
 /** Detect supported comment styles. */
 function isComment(input: string): boolean {
   return (
@@ -72,11 +65,15 @@ export interface ParseOptions {
   reviver?: ReviverFunction;
 }
 
+const QUOTED_VALUE_REGEXP = /^"(?<value>.*)"$/;
 function defaultReviver(_key: string, value: string, _section?: string) {
-  if (!isNaN(+value) && !value.includes('"')) return +value;
   if (value === "null") return null;
-  if (value === "true" || value === "false") return value === "true";
-  return trimQuotes(value);
+  if (value === "true") return true;
+  if (value === "false") return false;
+  const match = value.match(QUOTED_VALUE_REGEXP);
+  if (match) return match.groups?.value as string;
+  if (!isNaN(+value)) return +value;
+  return value;
 }
 
 /**
