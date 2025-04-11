@@ -173,6 +173,9 @@ Deno.test({
   fn() {
     assertEquals(parse("value=123foo"), { value: "123foo" });
     assertEquals(parse('value="1e3"'), { value: "1e3" });
+    assertEquals(parse('value=""'), { value: "" });
+    assertEquals(parse('value=foo"bar'), { value: 'foo"bar' });
+    assertEquals(parse('value="'), { value: '"' });
   },
 });
 
