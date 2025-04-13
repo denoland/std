@@ -74,14 +74,14 @@ import { bad } from "jsr:@malicious-muffin/bad";
       range: [1, 65],
       message: "External imports are not allowed",
       hint:
-        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
+        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std/foo.ts"`.',
     }, {
       id: "deno-style-guide/no-external-code",
       fix: [],
       range: [66, 114],
       message: "External imports are not allowed",
       hint:
-        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std@0.177.0/foo.ts"`.',
+        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std/foo.ts"`.',
     }],
   );
 });
@@ -122,6 +122,13 @@ enum EnumName {
   foo = "bar",
 }
 
+    `,
+    [],
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
 const CONSTANT_name = "foo";
 
 function FunctionName() {
