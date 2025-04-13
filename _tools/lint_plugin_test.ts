@@ -55,7 +55,6 @@ class MyClass {
     }],
   );
 });
-
 Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {
