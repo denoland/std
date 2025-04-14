@@ -36,7 +36,7 @@ const ENTRYPOINTS = (await getEntrypoints())
       // Ignores 4 files in @std/log package
       !(path.endsWith("log/mod.ts") || path.endsWith("log/levels.ts") ||
         path.endsWith("log/setup.ts") ||
-        path.endsWith("log/rotating_file_handler.ts")),
+        path.endsWith("log/rotating_file_handler.ts")) && path.endsWith(".ts"),
   );
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
