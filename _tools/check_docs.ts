@@ -459,9 +459,9 @@ function resolve(specifier: string, referrer: string): string {
   return new URL(specifier, referrer).href;
 }
 
-async function checkDocs(specifier: string) {
-  const docs = (await doc([specifier], { resolve }))[specifier]!;
-  for (const d of docs.filter(isExported)) {
+async function checkDocs(specifiers: string[]) {
+  const docs = await doc(specifiers, { resolve });
+  for (const d of Object.values(docs).flat().filter(isExported)) {
     if (d.jsDoc === undefined) continue; // this is caught by other checks
 
     const document = d as DocNodeWithJsDoc<DocNode>;
@@ -502,9 +502,7 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-for (const url of ENTRY_POINT_URLS) {
-  await checkDocs(url);
-}
+await checkDocs(ENTRY_POINT_URLS);
 
 if (diagnostics.length > 0) {
   const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
