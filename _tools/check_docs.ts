@@ -448,33 +448,6 @@ function resolve(specifier: string, referrer: string): string {
     : import.meta.resolve(specifier);
 }
 
-async function checkDocs(specifiers: string[]) {
-  const docs = await doc(specifiers, { resolve });
-  for (const d of Object.values(docs).flat()) {
-    if (d.jsDoc === undefined || d.declarationKind === "export") continue; // this is caught by other checks
-
-    const document = d as DocNodeWithJsDoc<DocNode>;
-    switch (document.kind) {
-      case "moduleDoc": {
-        if (document.location.filename.endsWith("/mod.ts")) {
-          assertModuleDoc(document);
-        }
-        break;
-      }
-      case "function": {
-        assertFunctionDocs(document);
-        break;
-      }
-      case "class": {
-        assertClassDocs(document);
-        break;
-      }
-      case "interface":
-        assertInterfaceDocs(document);
-    }
-  }
-}
-
 const lintStatus = await new Deno.Command(Deno.execPath(), {
   args: ["doc", "--lint", ...ENTRY_POINT_URLS],
   stdin: "inherit",
@@ -491,7 +464,30 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-await checkDocs(ENTRY_POINT_URLS);
+const docs = await doc(ENTRY_POINT_URLS, { resolve });
+for (const d of Object.values(docs).flat()) {
+  if (d.jsDoc === undefined || d.declarationKind === "export") continue; // this is caught by other checks
+
+  const document = d as DocNodeWithJsDoc<DocNode>;
+  switch (document.kind) {
+    case "moduleDoc": {
+      if (document.location.filename.endsWith("/mod.ts")) {
+        assertModuleDoc(document);
+      }
+      break;
+    }
+    case "function": {
+      assertFunctionDocs(document);
+      break;
+    }
+    case "class": {
+      assertClassDocs(document);
+      break;
+    }
+    case "interface":
+      assertInterfaceDocs(document);
+  }
+}
 
 if (diagnostics.length > 0) {
   const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
