@@ -2,8 +2,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { walk } from "../fs/walk.ts";
-import { relative } from "../path/relative.ts";
-import { dirname } from "../path/dirname.ts";
+import { relative } from "@std/path/relative";
+import { dirname } from "@std/path/unstable-dirname";
 import ts from "npm:typescript";
 import { getEntrypoints, isTestFile } from "./utils.ts";
 
@@ -12,9 +12,9 @@ const FAIL_FAST = Deno.args.includes("--fail-fast");
 let shouldFail = false;
 
 for (const path of await getEntrypoints()) {
-  if (!path.endsWith("mod.ts")) continue;
+  if (!path.endsWith("/mod.ts")) continue;
 
-  const modSource = await Deno.readTextFile(path);
+  const modSource = await Deno.readTextFile(new URL(path));
   const modSourceFile = ts.createSourceFile(
     path,
     modSource,
@@ -32,7 +32,7 @@ for (const path of await getEntrypoints()) {
   });
 
   for await (
-    const { path: filePath } of walk(dirname(path), {
+    const { path: filePath } of walk(dirname(new URL(path)), {
       exts: [".ts"],
       includeDirs: false,
       maxDepth: 1,
@@ -57,7 +57,8 @@ for (const path of await getEntrypoints()) {
       ],
     })
   ) {
-    const relativeSpecifier = relative(path, filePath).slice(1)
+    const relativeSpecifier = relative(path.replace("file://", ""), filePath)
+      .slice(1)
       .replaceAll("\\", "/");
 
     if (!modExportSpecifiers.has(relativeSpecifier)) {
