@@ -6,6 +6,7 @@ import type { Writer } from "./types.ts";
 import { isCloser } from "./_common.ts";
 
 /** Options for {@linkcode toWritableStream}. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface toWritableStreamOptions {
   /**
    * If the `writer` is also a `Closer`, automatically close the `writer`

@@ -23,30 +23,17 @@
 
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
-import { calcMax, decode, encode } from "./_common64.ts";
-export { calcMax };
+import {
+  alphabet,
+  type Base64Format,
+  calcSizeBase64,
+  decode,
+  encode,
+  padding,
+  rAlphabet,
+} from "./_common64.ts";
+export { type Base64Format, calcSizeBase64 };
 import { detach } from "./_common_detach.ts";
-
-const padding = "=".charCodeAt(0);
-const alphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new TextEncoder()
-    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
-  Base64Url: new TextEncoder()
-    .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
-};
-const rAlphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
-  Base64Url: new Uint8Array(128).fill(64),
-};
-alphabet.Base64
-  .forEach((byte, i) => rAlphabet.Base64[byte] = i);
-alphabet.Base64Url
-  .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
-
-/**
- * The base 64 encoding formats.
- */
-export type Base64Format = "Base64" | "Base64Url";
 
 /**
  * `encodeBase64` takes an input source and encodes it into a base64 string. If
@@ -90,7 +77,7 @@ export function encodeBase64(
   }
   let [output, i] = detach(
     input as Uint8Array_,
-    calcMax((input as Uint8Array_).length),
+    calcSizeBase64((input as Uint8Array_).length),
   );
   let o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
@@ -101,58 +88,58 @@ export function encodeBase64(
 }
 
 /**
- * `encodeRawBase64` is a low-level function that encodes a
- * {@linkcode Uint8Array<ArrayBuffer>} to base64 in place. The function assumes
- * that the raw data starts at param {@linkcode i} and ends at the end of the
- * buffer, and that the entire buffer provided is large enough to hold the
- * encoded data.
+ * `encodeIntoBase64` takes an input source and encodes it as base64 into the
+ * output buffer.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param buffer The buffer to encode in place.
- * @param i The index of where the raw data starts reading from.
- * @param o The index of where the encoded data starts writing to.
- * @param format The format to use for encoding. Defaults to "Base64".
- * @returns The index of where the encoded data finished writing to.
+ * @param input the source to encode.
+ * @param output the buffer to write the encoded source to.
+ * @param format the format to use for encoding.
+ * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { calcMax, encodeBase64, encodeRawBase64 } from "@std/encoding/unstable-base64";
+ * import {
+ *   calcSizeBase64,
+ *   encodeBase64,
+ *   encodeIntoBase64,
+ * } from "@std/encoding/unstable-base64";
  *
- * const prefix = new TextEncoder().encode("data:url/fake,");
+ * const prefix = "data:url/fake,";
  * const input = await Deno.readFile("./deno.lock");
+ * const output = new Uint8Array(prefix.length + calcSizeBase64(input.length));
  *
- * const originalSize = input.length;
- * const newSize = prefix.length + calcMax(originalSize);
- * const i = newSize - originalSize;
- * const o = prefix.length;
- *
- * // deno-lint-ignore no-explicit-any
- * const output = new Uint8Array((input.buffer as any).transfer(newSize));
- * output.set(output.subarray(0, originalSize), i);
- * output.set(prefix);
- *
- * encodeRawBase64(output, i, o, "Base64");
+ * let o = new TextEncoder().encodeInto(prefix, output).written;
+ * o += encodeIntoBase64(input, output.subarray(o), "Base64Url");
  * assertEquals(
- *   new TextDecoder().decode(output),
- *   "data:url/fake," + encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
+ *   new TextDecoder().decode(output.subarray(0, o)),
+ *   "data:url/fake," +
+ *     encodeBase64(await Deno.readFile("./deno.lock"), "Base64Url"),
  * );
  * ```
  */
-export function encodeRawBase64(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
+export function encodeIntoBase64(
+  input: string | Uint8Array_ | ArrayBuffer,
+  output: Uint8Array_,
   format: Base64Format = "Base64",
 ): number {
-  const max = calcMax(buffer.length - i);
-  if (max > buffer.length - o) {
-    throw new RangeError("Cannot encode buffer as base64: Buffer too small");
+  if (typeof input === "string") {
+    input = new TextEncoder().encode(input) as Uint8Array_;
+  } else if (input instanceof ArrayBuffer) {
+    input = new Uint8Array(input);
   }
-  o = encode(buffer, i, o, alphabet[format], padding);
+  const min = calcSizeBase64((input as Uint8Array_).length);
+  if (output.length < min) {
+    throw new RangeError("Cannot encode input as base64: Output too small");
+  }
+  output = output.subarray(0, min);
+  const i = min - (input as Uint8Array_).length;
+  output.set(input as Uint8Array_, i);
+  const o = encode(output, i, 0, alphabet[format], padding);
   if (format === "Base64Url") {
-    i = buffer.indexOf(padding, o - 2);
+    const i = output.indexOf(padding, o - 2);
     if (i > 0) return i;
   }
   return o;
@@ -192,53 +179,4 @@ export function decodeBase64(
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
   return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
-}
-
-/**
- * `decodeRawHex` is a low-level function that decodes a
- * {@linkcode Uint8Array<ArrayBuffer>} from hexadecimal in place. Param
- * {@linkcode i} must be greater than or equal to param {@linkcode o}. The
- * function assumes that the encoded data starts at param {@linkcode i} and ends
- * at the end of the buffer.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @param buffer The buffer to decode in place.
- * @param i The index of where the encoded data starts reading from.
- * @param o The index of where the decoded data starts writing to.
- * @param format The format to use for decoding. Defaults to "Base64".
- * @returns The index of where the decoded data finished writing to.
- *
- * @example Basic Usage
- * ```ts
- * import { assertEquals } from "@std/assert";
- * import {
- *   decodeRawBase64,
- *   encodeBase64,
- *   type Uint8Array_,
- * } from "@std/encoding/unstable-base64";
- *
- * let buffer = new TextEncoder().encode(
- *   "data:url/fake," + encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
- * ) as Uint8Array_;
- *
- * const i = buffer.indexOf(",".charCodeAt(0)) + 1;
- * const o = decodeRawBase64(buffer, i, i, "Base64");
- *
- * buffer = buffer.subarray(i, o);
- * assertEquals(buffer, await Deno.readFile("./deno.lock"));
- * ```
- */
-export function decodeRawBase64(
-  buffer: Uint8Array_,
-  i: number,
-  o: number,
-  format: Base64Format = "Base64",
-): number {
-  if (i < o) {
-    throw new RangeError(
-      "Cannot decode buffer as base64: Input (i) must be greater than or equal to output (o)",
-    );
-  }
-  return decode(buffer, i, o, rAlphabet[format], padding);
 }

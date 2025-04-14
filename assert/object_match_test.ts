@@ -9,11 +9,11 @@ const d = { corge: c, grault: c };
 const e = { foo: true } as { [key: string]: unknown };
 e.bar = e;
 const f = { [sym]: true, bar: false };
-interface r {
+interface R {
   foo: boolean;
   bar: boolean;
 }
-const g: r = { foo: true, bar: false };
+const g: R = { foo: true, bar: false };
 const h = { foo: [1, 2, 3], bar: true };
 const i = { foo: [a, e], bar: true };
 const j = { foo: [[1, 2, 3]], bar: true };

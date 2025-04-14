@@ -27,7 +27,7 @@ export function parse(text: string): JsonValue {
       "Cannot create an instance: parse is not a constructor",
     );
   }
-  return new JSONCParser(text).parse();
+  return new JsoncParser(text).parse();
 }
 
 type TokenType =
@@ -58,7 +58,7 @@ type Token = {
 };
 
 // First tokenize and then parse the token.
-class JSONCParser {
+class JsoncParser {
   readonly #whitespace = new Set(" \t\r\n");
   readonly #numberEndToken = new Set([..."[]{}:,/", ...this.#whitespace]);
   #text: string;
