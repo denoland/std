@@ -88,10 +88,6 @@ function assert(
   }
 }
 
-function isExported(document: DocNodeBase) {
-  return document.declarationKind === "export";
-}
-
 function isVoidOrPromiseVoid(returnType: TsTypeDef) {
   return isVoid(returnType) ||
     (returnType.kind === "typeRef" &&
@@ -461,8 +457,8 @@ function resolve(specifier: string, referrer: string): string {
 
 async function checkDocs(specifiers: string[]) {
   const docs = await doc(specifiers, { resolve });
-  for (const d of Object.values(docs).flat().filter(isExported)) {
-    if (d.jsDoc === undefined) continue; // this is caught by other checks
+  for (const d of Object.values(docs).flat()) {
+    if (d.jsDoc === undefined || d.declarationKind === "export") continue; // this is caught by other checks
 
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
