@@ -443,16 +443,9 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
 }
 
 function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/")) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
-    const parts = specifier.split("/");
-    if (parts.length === 2) {
-      specifier += "/mod.ts";
-    } else if (parts.length > 2) {
-      specifier += ".ts";
-    }
-  }
-  return new URL(specifier, referrer).href;
+  return (specifier.startsWith("./") || specifier.startsWith("../"))
+    ? new URL(specifier, referrer).href
+    : import.meta.resolve(specifier);
 }
 
 async function checkDocs(specifiers: string[]) {
