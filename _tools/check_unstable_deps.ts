@@ -16,23 +16,24 @@ const EXCEPTIONS = [
   "std/http/mod.ts",
 ];
 
-import denoJson from "../deno.json" with { type: "json" };
+import ROOT_DENO_JSON from "../deno.json" with { type: "json" };
 import { join } from "@std/path/unstable-join";
-import { greaterOrEqual, parse } from "@std/semver";
 import { zip } from "@std/collections/zip";
-import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import { resolve } from "./utils.ts";
 import { createGraph } from "@deno/graph";
 
 type DenoJson = { version: string; exports: Record<string, string> };
-function readDenoJson(path: string): Promise<DenoJson> {
-  return Deno.readTextFile(join(path, "deno.json")).then(JSON.parse);
-}
-const semver1 = parse("1.0.0");
-function isStable(version: string) {
-  return greaterOrEqual(parse(version), semver1);
+async function readDenoJson(path: string): Promise<DenoJson> {
+  return (await import(`../${path}/deno.json`, {
+    with: { type: "json" },
+  })).default as DenoJson;
 }
 
-const { workspace } = denoJson;
+function isStable(version: string) {
+  return !version.startsWith("0");
+}
+
+const { workspace } = ROOT_DENO_JSON;
 const packages = zip(workspace, await Promise.all(workspace.map(readDenoJson)));
 const stablePackages = packages.filter(([_, { version }]) => isStable(version));
 const unstablePackagePaths = packages
@@ -55,9 +56,7 @@ for (const path of stableEntrypoints) {
     console.log(`Skip checking ${path}`);
     continue;
   }
-  const graph = await createGraph(path, {
-    resolve: resolveWorkspaceSpecifiers,
-  });
+  const graph = await createGraph(path, { resolve });
   const dependencySpecifiers = graph.modules.map((m) => m.specifier);
   const unstableDependencies = dependencySpecifiers.filter(isUnstableModule);
   if (unstableDependencies.length > 0) {
