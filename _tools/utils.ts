@@ -2,17 +2,6 @@
 
 import ts from "npm:typescript";
 
-const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
-  .workspace as string[];
-// deno-lint-ignore no-explicit-any
-const denoConfig = {} as Record<string, any>;
-for (const workspace of workspaces) {
-  const { default: config } = await import("../" + workspace + "/deno.json", {
-    with: { type: "json" },
-  });
-  denoConfig[config.name.replace("@std/", "")] = config;
-}
-
 export function resolve(
   specifier: string,
   referrer: string,
