@@ -20,7 +20,7 @@ import denoJson from "../deno.json" with { type: "json" };
 import { join } from "@std/path/unstable-join";
 import { greaterOrEqual, parse } from "@std/semver";
 import { zip } from "@std/collections/zip";
-import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import { resolve } from "./utils.ts";
 import { createGraph } from "@deno/graph";
 
 type DenoJson = { version: string; exports: Record<string, string> };
@@ -56,7 +56,7 @@ for (const path of stableEntrypoints) {
     continue;
   }
   const graph = await createGraph(path, {
-    resolve: resolveWorkspaceSpecifiers,
+    resolve: resolve,
   });
   const dependencySpecifiers = graph.modules.map((m) => m.specifier);
   const unstableDependencies = dependencySpecifiers.filter(isUnstableModule);

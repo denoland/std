@@ -13,28 +13,13 @@ for (const workspace of workspaces) {
   denoConfig[config.name.replace("@std/", "")] = config;
 }
 
-export function resolveWorkspaceSpecifiers(
+export function resolve(
   specifier: string,
   referrer: string,
 ) {
-  if (specifier.startsWith("../") || specifier.startsWith("./")) {
-    return new URL(specifier, referrer).href;
-  } else if (specifier.startsWith("@std/")) {
-    let [_std, pkg, exp] = specifier.split("/");
-    if (exp === undefined) {
-      exp = ".";
-    } else {
-      exp = "./" + exp;
-    }
-    const pkgPath = "../" + pkg!.replaceAll("-", "_") + "/";
-    const config = denoConfig[pkg!];
-    if (typeof config.exports === "string") {
-      return new URL(pkgPath + config.exports, import.meta.url).href;
-    }
-    return new URL(pkgPath + config.exports[exp], import.meta.url).href;
-  } else {
-    return new URL(specifier).href;
-  }
+  return (specifier.startsWith("./") || specifier.startsWith("../"))
+    ? new URL(specifier, referrer).href
+    : import.meta.resolve(specifier);
 }
 
 /**

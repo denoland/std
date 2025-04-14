@@ -27,6 +27,7 @@ import { walk } from "@std/fs/walk";
 import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
 import { toFileUrl } from "@std/path/to-file-url";
+import { resolve } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -444,19 +445,6 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
   // when checking for `@default` tags again, or when a solution is found for
   // ignoring some properties (those that don't require a `@default` tag).
   // assertHasDefaultTags(document);
-}
-
-function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/")) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
-    const parts = specifier.split("/");
-    if (parts.length === 2) {
-      specifier += "/mod.ts";
-    } else if (parts.length > 2) {
-      specifier += ".ts";
-    }
-  }
-  return new URL(specifier, referrer).href;
 }
 
 async function checkDocs(specifier: string) {
