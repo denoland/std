@@ -23,42 +23,21 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { walk } from "@std/fs/walk";
-import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
-import { toFileUrl } from "@std/path/to-file-url";
+import { getEntrypoints } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
-const ROOT = new URL("../", import.meta.url);
-const ENTRY_POINT_URLS = [];
-for await (
-  const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
-) {
-  const { exports } = await Deno.readTextFile(path).then(JSON.parse);
-
-  if (!exports) continue;
-  for (const relativeFilePath of Object.values<string>(exports)) {
-    if (!relativeFilePath.endsWith(".ts")) continue;
-
-    const filePath = join(path, "..", relativeFilePath);
-
-    // Ignores 4 files in @std/log package
-    if (
-      /log[/\\](mod|levels|setup|rotating_file_handler)\.ts$/.test(filePath)
-    ) {
-      // deno-lint-ignore no-console
-      console.warn(
-        `Doc check for ${filePath} is ignored. Visit https://github.com/denoland/std/issues/6124 for more details.`,
-      );
-      continue;
-    }
-
-    ENTRY_POINT_URLS.push(toFileUrl(filePath).href);
-  }
-}
+const ENTRYPOINTS = (await getEntrypoints())
+  .filter(
+    (path) =>
+      // Ignores 4 files in @std/log package
+      !(path.endsWith("log/mod.ts") || path.endsWith("log/levels.ts") ||
+        path.endsWith("log/setup.ts") ||
+        path.endsWith("log/rotating_file_handler.ts")),
+  );
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
@@ -449,7 +428,7 @@ function resolve(specifier: string, referrer: string): string {
 }
 
 const lintStatus = await new Deno.Command(Deno.execPath(), {
-  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
+  args: ["doc", "--lint", ...ENTRYPOINTS],
   stdin: "inherit",
   stdout: "inherit",
   stderr: "inherit",
@@ -464,7 +443,7 @@ if (!lintStatus.success) {
   Deno.exit(1);
 }
 
-const docs = await doc(ENTRY_POINT_URLS, { resolve });
+const docs = await doc(ENTRYPOINTS, { resolve });
 for (const d of Object.values(docs).flat()) {
   if (d.jsDoc === undefined || d.declarationKind === "export") continue; // this is caught by other checks
 

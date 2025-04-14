@@ -1,16 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import ts from "npm:typescript";
+import ROOT_DENO_JSON from "../deno.json" with { type: "json" };
 
-const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
-  .workspace as string[];
-// deno-lint-ignore no-explicit-any
-const denoConfig = {} as Record<string, any>;
-for (const workspace of workspaces) {
-  const { default: config } = await import("../" + workspace + "/deno.json", {
-    with: { type: "json" },
-  });
-  denoConfig[config.name.replace("@std/", "")] = config;
+export interface DenoJson {
+  name: string;
+  version: string;
+  exports: Record<string, string>;
 }
 
 export function resolve(
@@ -20,6 +16,21 @@ export function resolve(
   return (specifier.startsWith("../") || specifier.startsWith("./"))
     ? new URL(specifier, referrer).href
     : import.meta.resolve(specifier);
+}
+
+export async function getEntrypoints(): Promise<string[]> {
+  const { workspace } = ROOT_DENO_JSON;
+  const packagesDenoJsons = await Promise.all(workspace.map(async (path) => {
+    return (await import(`../${path}/deno.json`, { with: { type: "json" } }))
+      .default as DenoJson;
+  }));
+  return packagesDenoJsons.flatMap((denoJson) =>
+    Object.values(denoJson.exports).map((path) =>
+      path === "." ? denoJson.name : import.meta.resolve(
+        `../${denoJson.name}/${path}`,
+      )
+    )
+  );
 }
 
 /**

@@ -4,26 +4,19 @@
 import { walk } from "../fs/walk.ts";
 import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
-import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
-import { isTestFile } from "./utils.ts";
+import { getEntrypoints, isTestFile } from "./utils.ts";
 
-const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 let shouldFail = false;
 
-for await (
-  const { path: modFilePath } of walk(ROOT, {
-    includeDirs: true,
-    exts: ["ts"],
-    match: [/(\/|\\)mod\.ts$/],
-    maxDepth: 2,
-  })
-) {
-  const modSource = await Deno.readTextFile(modFilePath);
+for (const path of await getEntrypoints()) {
+  if (!path.endsWith("mod.ts")) continue;
+
+  const modSource = await Deno.readTextFile(path);
   const modSourceFile = ts.createSourceFile(
-    modFilePath,
+    path,
     modSource,
     ts.ScriptTarget.Latest,
   );
@@ -39,7 +32,7 @@ for await (
   });
 
   for await (
-    const { path: filePath } of walk(dirname(modFilePath), {
+    const { path: filePath } of walk(dirname(path), {
       exts: [".ts"],
       includeDirs: false,
       maxDepth: 1,
@@ -64,16 +57,16 @@ for await (
       ],
     })
   ) {
-    const relativeSpecifier = relative(modFilePath, filePath).slice(1)
+    const relativeSpecifier = relative(path, filePath).slice(1)
       .replaceAll("\\", "/");
 
     if (!modExportSpecifiers.has(relativeSpecifier)) {
       if (isTestFile(filePath)) continue;
 
       console.warn(
-        `${
-          colors.yellow("Warn")
-        } ${modFilePath} does not export '${relativeSpecifier}'.`,
+        `%cWarn%c ${path} does not export '${relativeSpecifier}'.`,
+        "color: yellow;",
+        "",
       );
       shouldFail = true;
       if (FAIL_FAST) Deno.exit(1);
