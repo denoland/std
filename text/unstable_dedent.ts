@@ -14,7 +14,7 @@
  *
  * @example Usage
  * ```ts
- * import { dedent } from "@std/text/unstable_dedent";
+ * import { dedent } from "@std/text/unstable-dedent";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
@@ -43,7 +43,7 @@ export function dedent(input: string): string;
  *
  * @example Usage
  * ```ts
- * import { dedent } from "@std/text/unstable_dedent";
+ * import { dedent } from "@std/text/unstable-dedent";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
