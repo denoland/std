@@ -25,9 +25,9 @@ export async function getEntrypoints(): Promise<string[]> {
       .default as DenoJson;
   }));
   return packagesDenoJsons.flatMap((denoJson) =>
-    Object.values(denoJson.exports).map((path) =>
-      path === "." ? denoJson.name : import.meta.resolve(
-        `../${denoJson.name}/${path}`,
+    Object.keys(denoJson.exports).map((mod) =>
+      import.meta.resolve(
+        mod === "." ? denoJson.name : `${denoJson.name}/${mod}`,
       )
     )
   );
