@@ -33,7 +33,11 @@ import {
 // IsExact
 {
   class _Class<T> {
-    declare private _prop: T;
+    prop: T;
+
+    constructor(prop: T) {
+      this.prop = prop;
+    }
   }
 
   // matching
@@ -277,17 +281,17 @@ import {
 
 // AssertTrue
 {
-  type test = AssertTrue<IsNever<never>>;
+  type Test = AssertTrue<IsNever<never>>;
 }
 
 // AssertFalse
 {
-  type test = AssertFalse<IsNever<string>>;
+  type Test = AssertFalse<IsNever<string>>;
 }
 
 // Assert
 {
-  type test =
+  type Test =
     | Assert<Has<string | number, number>, true>
     | Assert<Has<string | number, Date>, false>;
 }
