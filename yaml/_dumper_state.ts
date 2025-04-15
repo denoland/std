@@ -120,11 +120,12 @@ function generateNextLine(indent: number, level: number): string {
  * @link https://yaml.org/spec/1.2.2/ 5.1. Character Set
  * @return `true` if the character is printable without escaping, `false` otherwise.
  */
-function isPrintable(c: number): boolean {
+function isPrintable(s: string): boolean {
+  const c = s.charCodeAt(0);
   return (
     (0x00020 <= c && c <= 0x00007e) ||
     (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
-    (0x0e000 <= c && c <= 0x00fffd && c !== BOM) ||
+    (0x0e000 <= c && c <= 0x00fffd && s !== BOM) ||
     (0x10000 <= c && c <= 0x10ffff)
   );
 }
@@ -132,7 +133,7 @@ function isPrintable(c: number): boolean {
 /**
  * @return `true` if value is allowed after the first character in plain style, `false` otherwise.
  */
-function isPlainSafe(c: number): boolean {
+function isPlainSafe(c: string): boolean {
   return (
     isPrintable(c) &&
     c !== BOM &&
@@ -149,7 +150,7 @@ function isPlainSafe(c: number): boolean {
 /**
  * @return `true` if value is allowed as the first character in plain style, `false` otherwise.
  */
-function isPlainSafeFirst(c: number): boolean {
+function isPlainSafeFirst(c: string): boolean {
   return (
     isPlainSafe(c) &&
     !isWhiteSpace(c) &&
@@ -191,16 +192,16 @@ function chooseScalarStyle(
   let hasLineBreak = false;
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
-  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-    !isWhiteSpace(string.charCodeAt(string.length - 1));
+  let plain = isPlainSafeFirst(string[0]!) &&
+    !isWhiteSpace(string.at(-1)!);
 
-  let char: number;
+  let char: string;
   let i: number;
   if (singleLineOnly) {
     // Case: no block styles.
     // Check for disallowed characters to rule out plain and single.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      char = string.at(i)!;
       if (!isPrintable(char)) {
         return STYLE_DOUBLE;
       }
@@ -209,7 +210,7 @@ function chooseScalarStyle(
   } else {
     // Case: block styles permitted.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      char = string.at(i)!;
       if (char === LINE_FEED) {
         hasLineBreak = true;
         // Check if any line can be folded.
@@ -358,7 +359,7 @@ function escapeString(string: string): string {
       }
     }
     escapeSeq = ESCAPE_SEQUENCES.get(char);
-    result += !escapeSeq && isPrintable(char)
+    result += !escapeSeq && isPrintable(String.fromCharCode(char))
       ? string[i]
       : escapeSeq || charCodeToHexString(char);
   }
@@ -591,7 +592,7 @@ export class DumperState {
         isKey: false,
       });
       if (string === null) continue;
-      const linePrefix = LINE_FEED === string.charCodeAt(0) ? "-" : "- ";
+      const linePrefix = LINE_FEED === string[0] ? "-" : "- ";
       results.push(`${linePrefix}${string}`);
     }
     return results.length ? prefix + results.join(whitespace) : "[]";
@@ -684,11 +685,11 @@ export class DumperState {
 
       let pairBuffer = "";
       if (explicitPair) {
-        pairBuffer += keyString.charCodeAt(0) === LINE_FEED ? "?" : "? ";
+        pairBuffer += keyString[0] === LINE_FEED ? "?" : "? ";
       }
       pairBuffer += keyString;
       if (explicitPair) pairBuffer += separator;
-      pairBuffer += valueString.charCodeAt(0) === LINE_FEED ? ":" : ": ";
+      pairBuffer += valueString[0] === LINE_FEED ? ":" : ": ";
       pairBuffer += valueString;
       results.push(pairBuffer);
     }
