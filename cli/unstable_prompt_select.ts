@@ -85,8 +85,9 @@ export function promptSelect(
       const start = index === showIndex ? indicator : PADDING;
       output.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
-    if (visibleLines + offset < length) {
-      output.writeSync(encoder.encode("...\n"));
+    const moreContent = visibleLines + offset < length;
+    if (moreContent) {
+      output.writeSync(encoder.encode("...\r\n"));
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -130,7 +131,10 @@ export function promptSelect(
       Deno.consoleSize().rows - SAFE_PADDING,
       visibleLines,
     );
-    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
+    // if we print the "...\r\n" we need to clear an additional line
+    output.writeSync(
+      encoder.encode(`\x1b[${visibleLines + (moreContent ? 2 : 1)}A`),
+    );
     output.writeSync(CLR_ALL);
   }
 
