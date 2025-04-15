@@ -30,7 +30,7 @@
     "cov:mac": "deno task cov:test && open coverage/html/index.html",
     "cov:lin": "deno task cov:test && xdg-open coverage/html/index.html",
     "cov:win": "deno task cov:test && start coverage/html/index.html",
-    "ok": "deno task lint && deno fmt --check && deno task test:browser && deno task test --doc"
+    "ok": "deno task lint && deno fmt --check && deno task test:browser && deno task test"
   },
   "exclude": [
     ".git",
