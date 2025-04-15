@@ -523,6 +523,20 @@ Deno.test({
       Error,
       "Unexpected assign",
     );
+
+    assertThrows(
+      () =>
+        deepAssign(
+          source,
+          {
+            type: "Table",
+            keys: ["bar", "items"],
+            value: { email: "mail@example.com" },
+          },
+        ),
+      Error,
+      "Unexpected assign",
+    );
   },
 });
 
