@@ -270,8 +270,6 @@ export interface FsFile extends Disposable {
   /** Disposal protocol enabling the `using` keyword **TypeScript Only** */
   [Symbol.dispose](): void;
   /**
-   * **UNSTABLE**: New API, yet to be vetted.
-   *
    * Checks if the file resource is a TTY (terminal).
    *
    * @example Usage
@@ -343,8 +341,6 @@ export interface FsFile extends Disposable {
    */
   readSync(p: Uint8Array): number | null;
   /**
-   * **UNSTABLE**: New API, yet to be vetted.
-   *
    * Set TTY to be under raw mode or not. In raw mode, characters are read and
    * returned as is, without being processed. All special processing of
    * characters by the terminal is disabled, including echoing input
