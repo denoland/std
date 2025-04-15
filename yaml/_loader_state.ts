@@ -256,20 +256,14 @@ export class LoaderState {
     this.onWarning?.(error);
   }
 
-  yamlDirectiveHandler(...args: string[]) {
+  yamlDirectiveHandler(arg: string) {
     if (this.version !== null) {
       return this.throwError(
         "Cannot handle YAML directive: duplication of %YAML directive",
       );
     }
 
-    if (args.length !== 1) {
-      return this.throwError(
-        "Cannot handle YAML directive: YAML directive accepts exactly one argument",
-      );
-    }
-
-    const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]!);
+    const match = /^([0-9]+)\.([0-9]+)$/.exec(arg!);
     if (match === null) {
       return this.throwError(
         "Cannot handle YAML directive: ill-formed argument",
@@ -284,7 +278,7 @@ export class LoaderState {
       );
     }
 
-    this.version = args[0] ?? null;
+    this.version = arg ?? null;
     this.checkLineBreaks = minor < 2;
     if (minor !== 1 && minor !== 2) {
       return this.dispatchWarning(
@@ -292,16 +286,7 @@ export class LoaderState {
       );
     }
   }
-  tagDirectiveHandler(...args: string[]) {
-    if (args.length !== 2) {
-      return this.throwError(
-        `Cannot handle tag directive: directive accepts exactly two arguments, received ${args.length}`,
-      );
-    }
-
-    const handle = args[0]!;
-    const prefix = args[1]!;
-
+  tagDirectiveHandler(handle: string, prefix: string) {
     if (!PATTERN_TAG_HANDLE.test(handle)) {
       return this.throwError(
         `Cannot handle tag directive: ill-formed handle (first argument) in "${handle}"`,
@@ -1662,11 +1647,23 @@ export class LoaderState {
 
       switch (directiveName) {
         case "YAML":
-          this.yamlDirectiveHandler(...directiveArgs);
+          if (directiveArgs.length !== 1) {
+            return this.throwError(
+              "Cannot handle YAML directive: YAML directive accepts exactly one argument",
+            );
+          }
+          this.yamlDirectiveHandler(directiveArgs[0]!);
           break;
-        case "TAG":
-          this.tagDirectiveHandler(...directiveArgs);
+        case "TAG": {
+          if (directiveArgs.length !== 2) {
+            return this.throwError(
+              `Cannot handle tag directive: directive accepts exactly two arguments, received ${directiveArgs.length}`,
+            );
+          }
+          const [handle, prefix] = directiveArgs;
+          this.tagDirectiveHandler(handle!, prefix!);
           break;
+        }
         default:
           this.dispatchWarning(
             `unknown document directive "${directiveName}"`,
