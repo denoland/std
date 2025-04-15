@@ -527,6 +527,7 @@ function itDefinition<T>(...args: ItArgs<T>): ItDefinition<T> {
 }
 
 /** Registers an individual test case. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface it {
   <T>(...args: ItArgs<T>): void;
 
@@ -1142,6 +1143,7 @@ function describeDefinition<T>(
 }
 
 /** Registers a test suite. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface describe {
   <T>(...args: DescribeArgs<T>): TestSuite<T>;
 

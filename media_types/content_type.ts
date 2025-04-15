@@ -8,6 +8,7 @@ import type { db } from "./_db.ts";
 import { typeByExtension } from "./type_by_extension.ts";
 
 /** MIME-types database. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export type DB = typeof db;
 /** Maps content types to their corresponding file extensions. */
 export type ContentTypeToExtension = {

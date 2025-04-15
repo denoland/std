@@ -40,6 +40,13 @@ export class Scanner {
     this.#source = source;
   }
 
+  get position() {
+    return this.#position;
+  }
+  get source() {
+    return this.#source;
+  }
+
   /**
    * Get current character
    * @param index - relative index from current position
@@ -60,41 +67,13 @@ export class Scanner {
   /**
    * Move position to next
    */
-  next(count?: number) {
-    if (typeof count === "number") {
-      for (let i = 0; i < count; i++) {
-        this.#position++;
-      }
-    } else {
-      this.#position++;
-    }
+  next(count: number = 1) {
+    this.#position += count;
   }
 
-  /**
-   * Move position until current char is not a whitespace, EOL, or comment.
-   * @param options.inline - skip only whitespaces
-   */
-  nextUntilChar(
-    options: { inline?: boolean; comment?: boolean } = { comment: true },
-  ) {
-    if (options.inline) {
-      while (this.#whitespace.test(this.char()) && !this.eof()) {
-        this.next();
-      }
-    } else {
-      while (!this.eof()) {
-        const char = this.char();
-        if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
-          this.next();
-        } else if (options.comment && this.char() === "#") {
-          // entering comment
-          while (!this.isCurrentCharEOL() && !this.eof()) {
-            this.next();
-          }
-        } else {
-          break;
-        }
-      }
+  skipWhitespaces() {
+    while (this.#whitespace.test(this.char()) && !this.eof()) {
+      this.next();
     }
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
@@ -106,22 +85,35 @@ export class Scanner {
     }
   }
 
+  nextUntilChar(options: { skipComments?: boolean } = { skipComments: true }) {
+    while (!this.eof()) {
+      const char = this.char();
+      if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
+        this.next();
+      } else if (options.skipComments && this.char() === "#") {
+        // entering comment
+        while (!this.isCurrentCharEOL() && !this.eof()) {
+          this.next();
+        }
+      } else {
+        break;
+      }
+    }
+  }
+
   /**
    * Position reached EOF or not
    */
   eof() {
-    return this.position() >= this.#source.length;
-  }
-
-  /**
-   * Get current position
-   */
-  position() {
-    return this.#position;
+    return this.#position >= this.#source.length;
   }
 
   isCurrentCharEOL() {
-    return this.char() === "\n" || this.slice(0, 2) === "\r\n";
+    return this.char() === "\n" || this.startsWith("\r\n");
+  }
+
+  startsWith(searchString: string) {
+    return this.#source.startsWith(searchString, this.#position);
   }
 }
 
@@ -136,20 +128,21 @@ function failure(): Failure {
   return { ok: false };
 }
 
+/**
+ * Creates a nested object from the keys and values.
+ *
+ * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
+ */
 export function unflat(
   keys: string[],
   values: unknown = {},
-  cObj?: unknown,
 ): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  if (keys.length === 0) {
-    return cObj as Record<string, unknown>;
-  }
-  if (!cObj) cObj = values;
-  const key: string | undefined = keys[keys.length - 1];
-  if (typeof key === "string") out[key] = cObj;
-  return unflat(keys.slice(0, -1), values, out);
+  return keys.reduceRight(
+    (acc, key) => ({ [key]: acc }),
+    values,
+  ) as Record<string, unknown>;
 }
+
 export function deepAssignWithTable(target: Record<string, unknown>, table: {
   type: "Table" | "TableArray";
   key: string[];
@@ -309,10 +302,10 @@ function surround<T>(
 
 function character(str: string) {
   return (scanner: Scanner): ParseResult<void> => {
-    scanner.nextUntilChar({ inline: true });
-    if (scanner.slice(0, str.length) !== str) return failure();
+    scanner.skipWhitespaces();
+    if (!scanner.startsWith(str)) return failure();
     scanner.next(str.length);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     return success(undefined);
   };
 }
@@ -326,7 +319,7 @@ const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
 const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
 
 export function bareKey(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
     return failure();
   }
@@ -385,7 +378,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
 }
 
 export function basicString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== '"') return failure();
   scanner.next();
   const acc = [];
@@ -411,7 +404,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
 }
 
 export function literalString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== "'") return failure();
   scanner.next();
   const acc: string[] = [];
@@ -434,26 +427,26 @@ export function literalString(scanner: Scanner): ParseResult<string> {
 export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== '"""') return failure();
+  scanner.skipWhitespaces();
+  if (!scanner.startsWith('"""')) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== '"""' && !scanner.eof()) {
+  while (!scanner.startsWith('"""') && !scanner.eof()) {
     // line ending backslash
-    if (scanner.slice(0, 2) === "\\\n") {
+    if (scanner.startsWith("\\\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
-    } else if (scanner.slice(0, 3) === "\\\r\n") {
+    } else if (scanner.startsWith("\\\r\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
     }
     const escapedChar = escapeSequence(scanner);
@@ -482,18 +475,18 @@ export function multilineBasicString(
 export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== "'''") return failure();
+  scanner.skipWhitespaces();
+  if (!scanner.startsWith("'''")) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== "'''" && !scanner.eof()) {
+  while (!scanner.startsWith("'''") && !scanner.eof()) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -522,10 +515,8 @@ const symbolPairs: [string, unknown][] = [
   ["-nan", NaN],
 ];
 export function symbols(scanner: Scanner): ParseResult<unknown> {
-  scanner.nextUntilChar({ inline: true });
-  const found = symbolPairs.find(([str]) =>
-    scanner.slice(0, str.length) === str
-  );
+  scanner.skipWhitespaces();
+  const found = symbolPairs.find(([str]) => scanner.startsWith(str));
   if (!found) return failure();
   const [str, value] = found;
   scanner.next(str.length);
@@ -535,13 +526,12 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
 export function integer(scanner: Scanner): ParseResult<number | string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   // Handle binary, octal, or hex numbers
   const first2 = scanner.slice(0, 2);
   if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
     scanner.next(2);
-    const acc = [first2];
     const prefix = first2.toLowerCase();
 
     // Determine allowed characters and base in one switch
@@ -564,20 +554,23 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
         return failure(); // Unreachable due to regex check
     }
 
+    const acc = [];
     // Collect valid characters
-    while (!scanner.eof() && allowedChars.test(scanner.char())) {
-      acc.push(scanner.char());
+    while (!scanner.eof()) {
+      const char = scanner.char();
+      if (!allowedChars.test(char)) break;
+      if (char === "_") {
+        scanner.next();
+        continue;
+      }
+      acc.push(char);
       scanner.next();
     }
 
-    if (acc.length === 1) return failure(); // Only prefix, no digits
+    if (!acc.length) return failure();
 
-    // Process and parse
-    const numberStr = acc.join("").replace(/_/g, ""); // Remove underscores
-    const digits = numberStr.slice(2); // Remove prefix
-    if (digits.length === 0) return failure();
-
-    const number = parseInt(digits, base);
+    const numberStr = acc.join("");
+    const number = parseInt(numberStr, base);
     return isNaN(number) ? failure() : success(number);
   }
 
@@ -603,7 +596,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 }
 
 export function float(scanner: Scanner): ParseResult<number> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   // lookahead validation is needed for integer value is similar to float
   let position = 0;
@@ -633,7 +626,7 @@ export function float(scanner: Scanner): ParseResult<number> {
 }
 
 export function dateTime(scanner: Scanner): ParseResult<Date> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   let dateStr = scanner.slice(0, 10);
   // example: 1979-05-27
@@ -657,7 +650,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
 }
 
 export function localTime(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   let timeStr = scanner.slice(0, 8);
   if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
@@ -677,7 +670,7 @@ export function localTime(scanner: Scanner): ParseResult<string> {
 }
 
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   if (scanner.char() !== "[") return failure();
   scanner.next();
@@ -688,7 +681,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
     const result = value(scanner);
     if (!result.ok) break;
     array.push(result.body);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     // may have a next item, but trailing comma is allowed at array
     if (scanner.char() !== ",") break;
     scanner.next();
@@ -804,36 +797,28 @@ export function toml(
   return success(body);
 }
 
+function createParseErrorMessage(scanner: Scanner, message: string) {
+  const string = scanner.source.slice(0, scanner.position);
+  const lines = string.split("\n");
+  const row = lines.length;
+  const column = lines.at(-1)?.length ?? 0;
+  return `Parse error on line ${row}, column ${column}: ${message}`;
+}
+
 export function parserFactory<T>(parser: ParserComponent<T>) {
   return (tomlString: string): T => {
     const scanner = new Scanner(tomlString);
-
-    let parsed: ParseResult<T> | null = null;
-    let err: Error | null = null;
     try {
-      parsed = parser(scanner);
-    } catch (e) {
-      err = e instanceof Error ? e : new Error("Invalid error type caught");
+      const result = parser(scanner);
+      if (result.ok && scanner.eof()) return result.body;
+      const message = `Unexpected character: "${scanner.char()}"`;
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new SyntaxError(createParseErrorMessage(scanner, error.message));
+      }
+      const message = "Invalid error type caught";
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
     }
-
-    if (err || !parsed || !parsed.ok || !scanner.eof()) {
-      const position = scanner.position();
-      const subStr = tomlString.slice(0, position);
-      const lines = subStr.split("\n");
-      const row = lines.length;
-      const column = (() => {
-        let count = subStr.length;
-        for (const line of lines) {
-          if (count <= line.length) break;
-          count -= line.length + 1;
-        }
-        return count;
-      })();
-      const message = `Parse error on line ${row}, column ${column}: ${
-        err ? err.message : `Unexpected character: "${scanner.char()}"`
-      }`;
-      throw new SyntaxError(message);
-    }
-    return parsed.body;
   };
 }
