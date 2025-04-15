@@ -5,7 +5,7 @@ import {
   bareKey,
   basicString,
   dateTime,
-  deepAssignWithTable,
+  deepAssign,
   dottedKey,
   float,
   inlineTable,
@@ -213,7 +213,7 @@ fizz.buzz = true
 `.trim()),
       {
         type: "Table",
-        key: ["foo", "bar"],
+        keys: ["foo", "bar"],
         value: {
           baz: true,
           fizz: {
@@ -224,7 +224,7 @@ fizz.buzz = true
     );
     assertEquals(parse(`[only.header]`), {
       type: "Table",
-      key: ["only", "header"],
+      keys: ["only", "header"],
       value: {},
     });
     assertThrows(() => parse(""));
@@ -410,11 +410,11 @@ Deno.test({
       },
     };
 
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "Table",
-        key: ["foo", "items", "profile", "email", "x"],
+        keys: ["foo", "items", "profile", "email", "x"],
         value: { main: "mail@example.com" },
       },
     );
@@ -450,11 +450,11 @@ Deno.test({
       bar: null,
     };
 
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "TableArray",
-        key: ["foo", "items"],
+        keys: ["foo", "items"],
         value: { email: "mail@example.com" },
       },
     );
@@ -471,11 +471,11 @@ Deno.test({
         bar: null,
       },
     );
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "TableArray",
-        key: ["foo", "items"],
+        keys: ["foo", "items"],
         value: { email: "sub@example.com" },
       },
     );
@@ -498,11 +498,11 @@ Deno.test({
 
     assertThrows(
       () =>
-        deepAssignWithTable(
+        deepAssign(
           source,
           {
             type: "TableArray",
-            key: [],
+            keys: [],
             value: { email: "sub@example.com" },
           },
         ),
@@ -512,11 +512,11 @@ Deno.test({
 
     assertThrows(
       () =>
-        deepAssignWithTable(
+        deepAssign(
           source,
           {
             type: "TableArray",
-            key: ["bar", "items"],
+            keys: ["bar", "items"],
             value: { email: "mail@example.com" },
           },
         ),

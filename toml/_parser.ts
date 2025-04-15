@@ -18,16 +18,18 @@ type ParseResult<T> = Success<T> | Failure;
 
 type ParserComponent<T = unknown> = (scanner: Scanner) => ParseResult<T>;
 
-type BlockParseResultBody = {
-  type: "Block";
-  value: Record<string, unknown>;
-} | {
+type Table = {
   type: "Table";
-  key: string[];
+  keys: string[];
   value: Record<string, unknown>;
-} | {
+};
+type TableArray = {
   type: "TableArray";
-  key: string[];
+  keys: string[];
+  value: Record<string, unknown>;
+};
+type Block = {
+  type: "Block";
   value: Record<string, unknown>;
 };
 
@@ -133,55 +135,81 @@ function failure(): Failure {
  *
  * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
  */
-export function unflat(
+export function unflat<T extends Record<string, unknown>>(
   keys: string[],
-  values: unknown = {},
-): Record<string, unknown> {
-  return keys.reduceRight(
-    (acc, key) => ({ [key]: acc }),
-    values,
-  ) as Record<string, unknown>;
+  values: unknown,
+): T {
+  return keys.reduceRight((acc, key) => ({ [key]: acc }), values) as T;
 }
 
-export function deepAssignWithTable(target: Record<string, unknown>, table: {
-  type: "Table" | "TableArray";
-  key: string[];
-  value: Record<string, unknown>;
-}) {
-  if (table.key.length === 0 || table.key[0] == null) {
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getTargetValue(target: Record<string, unknown>, keys: string[]) {
+  const key = keys[0];
+  if (!key) {
     throw new Error(
       "Cannot parse the TOML: key length is not a positive number",
     );
   }
-  const value = target[table.key[0]];
+  return target[key];
+}
 
-  if (typeof value === "undefined") {
-    Object.assign(
-      target,
-      unflat(
-        table.key,
-        table.type === "Table" ? table.value : [table.value],
-      ),
-    );
-  } else if (Array.isArray(value)) {
-    if (table.type === "TableArray" && table.key.length === 1) {
-      value.push(table.value);
-    } else {
-      const last = value[value.length - 1];
-      deepAssignWithTable(last, {
-        type: table.type,
-        key: table.key.slice(1),
-        value: table.value,
-      });
-    }
-  } else if (typeof value === "object" && value !== null) {
-    deepAssignWithTable(value as Record<string, unknown>, {
-      type: table.type,
-      key: table.key.slice(1),
-      value: table.value,
-    });
-  } else {
-    throw new Error("Unexpected assign");
+function deepAssignTable<T extends Record<string, unknown>>(
+  target: T,
+  table: Table,
+) {
+  const { keys, type, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, value));
+  }
+  if (Array.isArray(currentValue)) {
+    const last = currentValue.at(-1);
+    deepAssign(last, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+function deepAssignTableArray<T extends Record<string, unknown>>(
+  target: T,
+  table: TableArray,
+) {
+  const { type, keys, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, [value]));
+  }
+  if (Array.isArray(currentValue)) {
+    currentValue.push(value);
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+export function deepAssign<T extends Record<string, unknown>>(
+  target: T,
+  body: Block | Table | TableArray,
+) {
+  switch (body.type) {
+    case "Block":
+      return deepMerge(target, body.value);
+    case "Table":
+      return deepAssignTable<T>(target, body);
+    case "TableArray":
+      return deepAssignTableArray<T>(target, body);
   }
 }
 
@@ -189,8 +217,13 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
 // Parser combinators and generators
 // ---------------------------------
 
-function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
-  return (scanner: Scanner): ParseResult<T> => {
+// deno-lint-ignore no-explicit-any
+function or<T extends readonly ParserComponent<any>[]>(
+  parsers: T,
+): ParserComponent<
+  ReturnType<T[number]> extends ParseResult<infer R> ? R : never
+> {
+  return (scanner: Scanner) => {
     for (const parse of parsers) {
       const result = parse(scanner);
       if (result.ok) return result;
@@ -731,9 +764,7 @@ export const value = or([
 
 export const pair = kv(dottedKey, "=", value);
 
-export function block(
-  scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+export function block(scanner: Scanner): ParseResult<Block> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
@@ -742,7 +773,7 @@ export function block(
 
 export const tableHeader = surround("[", dottedKey, "]");
 
-export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
+export function table(scanner: Scanner): ParseResult<Table> {
   scanner.nextUntilChar();
   const header = tableHeader(scanner);
   if (!header.ok) return failure();
@@ -750,16 +781,14 @@ export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   const b = block(scanner);
   return success({
     type: "Table",
-    key: header.body,
+    keys: header.body,
     value: b.ok ? b.body.value : {},
   });
 }
 
 export const tableArrayHeader = surround("[[", dottedKey, "]]");
 
-export function tableArray(
-  scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+export function tableArray(scanner: Scanner): ParseResult<TableArray> {
   scanner.nextUntilChar();
   const header = tableArrayHeader(scanner);
   if (!header.ok) return failure();
@@ -767,7 +796,7 @@ export function tableArray(
   const b = block(scanner);
   return success({
     type: "TableArray",
-    key: header.body,
+    keys: header.body,
     value: b.ok ? b.body.value : {},
   });
 }
@@ -777,23 +806,7 @@ export function toml(
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
   if (!blocks.ok) return failure();
-  let body = {};
-  for (const block of blocks.body) {
-    switch (block.type) {
-      case "Block": {
-        body = deepMerge(body, block.value);
-        break;
-      }
-      case "Table": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-      case "TableArray": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-    }
-  }
+  const body = blocks.body.reduce(deepAssign, {});
   return success(body);
 }
 
