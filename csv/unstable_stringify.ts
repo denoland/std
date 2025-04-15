@@ -85,13 +85,6 @@ export type ColumnDetails = {
  */
 export type Column = ColumnDetails | PropertyAccessor | PropertyAccessor[];
 
-/** An array of arrays */
-export type ArrayItem = Readonly<unknown[]>;
-/** An array of plain objects */
-export type ObjectItem = Readonly<Record<string, unknown>>;
-/** An object (plain or array) */
-export type DataItem = ArrayItem | ObjectItem;
-
 /** Options for {@linkcode stringify} with an array of of arrays as data. */
 export type ArrayStringifyOptions = {
   /** Whether to include the row of headers or not.
@@ -312,7 +305,7 @@ export type StringifyOptions = ArrayStringifyOptions | ObjectStringifyOptions;
  * @returns A CSV string.
  */
 export function stringify(
-  data: readonly ObjectItem[],
+  data: Record<string, unknown>[],
   options?: ObjectStringifyOptions,
 ): string;
 /**
@@ -368,7 +361,7 @@ export function stringify(
  * @returns A CSV string.
  */
 export function stringify(
-  data: readonly ArrayItem[],
+  data: unknown[][],
   options?: ArrayStringifyOptions,
 ): string;
 /**
@@ -414,7 +407,7 @@ export function stringify(
  * @returns A CSV string.
  */
 export function stringify(
-  data: readonly DataItem[],
+  data: unknown[][] | Record<string, unknown>[],
   options?: StringifyOptions | ArrayStringifyOptions,
 ): string {
   let { columns } = options ?? {};
@@ -433,7 +426,9 @@ export function stringify(
 /**
  * Infers the columns from the first object element of the given array.
  */
-function inferColumns(data: readonly DataItem[]): string[] {
+function inferColumns(
+  data: unknown[][] | Record<string, unknown>[],
+): string[] {
   const firstElement = data.at(0);
   if (
     firstElement &&
