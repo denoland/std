@@ -221,7 +221,8 @@ export function deepAssign<T extends Record<string, unknown>>(
 function or<T extends readonly ParserComponent<any>[]>(
   parsers: T,
 ): ParserComponent<
-  ReturnType<T[number]> extends ParseResult<infer R> ? R : never
+  ReturnType<T[number]> extends ParseResult<infer R> ? R
+    : Failure
 > {
   return (scanner: Scanner) => {
     for (const parse of parsers) {
