@@ -36,11 +36,11 @@ function isPlainObject(object: unknown): object is object {
   return Object.prototype.toString.call(object) === "[object Object]";
 }
 
-const sort = ([_a, valA]: [string, unknown], [_b, valB]: [string, unknown]) => {
+function sort([_a, valA]: [string, unknown], [_b, valB]: [string, unknown]) {
   if (isPlainObject(valA)) return 1;
   if (isPlainObject(valB)) return -1;
   return 0;
-};
+}
 
 function defaultReplacer(_key: string, value: unknown, _section?: string) {
   return `${value}`;

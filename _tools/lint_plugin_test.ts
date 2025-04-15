@@ -56,6 +56,47 @@ class MyClass {
   );
 });
 
+Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+const foo = () => "bar";
+export const bar = () => "foo";
+    `,
+    [
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [13, 24],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [45, 56],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+    ],
+  );
+
+  // Good
+  assertLintPluginDiagnostics(
+    `
+function foo() {
+  const bar = () => "baz";
+
+  return "bar";
+}`,
+    [],
+  );
+});
+
 Deno.test("deno-style-guide/no-external-code", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {
