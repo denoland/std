@@ -55,10 +55,14 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
-  const {
+  const SAFE_PADDING = 3;
+  let {
     // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
-    // and we dont actually use the last line
-    visibleLines = Math.min(Deno.consoleSize().rows - 3, values.length),
+    // and we use the last line to display the "..."
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      values.length,
+    ),
     indicator = "❯",
   } = options;
   const PADDING = " ".repeat(indicator.length);
@@ -81,6 +85,9 @@ export function promptSelect(
       const start = index === showIndex ? indicator : PADDING;
       output.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
+    if (visibleLines + offset < length) {
+      output.writeSync(encoder.encode("...\n"));
+    }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
     const string = decoder.decode(buffer.slice(0, n));
@@ -89,28 +96,41 @@ export function promptSelect(
       case ETX:
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
-      case ARROW_UP:
-        if (selectedIndex > 0) {
-          selectedIndex--;
-          if (selectedIndex < offset) {
-            offset--;
-          }
-        }
-        showIndex = Math.max(showIndex - 1, 0);
-        break;
-      case ARROW_DOWN:
-        if (selectedIndex < length - 1) {
-          selectedIndex++;
-          if (selectedIndex >= offset + visibleLines) {
-            offset++;
-          }
-          showIndex = Math.min(showIndex + 1, visibleLines - 1);
+      case ARROW_UP: {
+        const atTop = selectedIndex === 0;
+        selectedIndex = atTop ? length - 1 : selectedIndex - 1;
+        if (atTop) {
+          offset = Math.max(length - visibleLines, 0);
+          showIndex = Math.min(visibleLines - 1, length - 1);
+        } else if (showIndex > 0) {
+          showIndex--;
+        } else {
+          offset = Math.max(offset - 1, 0);
         }
         break;
+      }
+      case ARROW_DOWN: {
+        const atBottom = selectedIndex === length - 1;
+        selectedIndex = atBottom ? 0 : selectedIndex + 1;
+        if (atBottom) {
+          offset = 0;
+          showIndex = 0;
+        } else if (showIndex < visibleLines - 1) {
+          showIndex++;
+        } else {
+          offset++;
+        }
+        break;
+      }
       case CR:
         break loop;
     }
-    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
+
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      visibleLines,
+    );
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 2}A`));
     output.writeSync(CLR_ALL);
   }
 
