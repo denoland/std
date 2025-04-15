@@ -72,16 +72,16 @@ import { bad } from "jsr:@malicious-muffin/bad";
       id: "deno-style-guide/no-external-code",
       fix: [],
       range: [1, 65],
-      message: "External imports are not allowed",
+      message: "External imports are not allowed outside of tools",
       hint:
-        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std/foo.ts"`.',
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
     }, {
       id: "deno-style-guide/no-external-code",
       fix: [],
       range: [66, 114],
-      message: "External imports are not allowed",
+      message: "External imports are not allowed outside of tools",
       hint:
-        'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std/foo.ts"`.',
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
     }],
   );
 });

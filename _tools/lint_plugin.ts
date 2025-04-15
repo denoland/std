@@ -77,9 +77,9 @@ export default {
             context.report({
               node,
               range: node.source.range,
-              message: "External imports are not allowed",
+              message: "External imports are not allowed outside of tools",
               hint:
-                'Use code from within `@std` instead of external code, if possible. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/std/foo.ts"`.',
+                'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
             });
           },
         };
