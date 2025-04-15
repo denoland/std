@@ -130,7 +130,7 @@ export function promptSelect(
       Deno.consoleSize().rows - SAFE_PADDING,
       visibleLines,
     );
-    output.writeSync(encoder.encode(`\x1b[${visibleLines + 2}A`));
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
     output.writeSync(CLR_ALL);
   }
 
