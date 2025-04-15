@@ -13,6 +13,8 @@ export class NodeFsFile implements FsFile {
   #nodeStream = getNodeStream();
   #nodeTty = getNodeTty();
   #nodeUtil = getNodeUtil();
+  #nodeReadFd = this.#nodeUtil.promisify(this.#nodeFs.read);
+  #nodeWriteFd = this.#nodeUtil.promisify(this.#nodeFs.write);
 
   #closed: boolean;
   #rid: number;
@@ -72,9 +74,14 @@ export class NodeFsFile implements FsFile {
   }
 
   async read(p: Uint8Array): Promise<number | null> {
-    const nodeReadFd = this.#nodeUtil.promisify(this.#nodeFs.read);
     try {
-      const { bytesRead } = await nodeReadFd(this.#rid, p, 0, p.length, null);
+      const { bytesRead } = await this.#nodeReadFd(
+        this.#rid,
+        p,
+        0,
+        p.length,
+        null,
+      );
       return bytesRead === 0 ? null : bytesRead;
     } catch (error) {
       throw mapError(error);
@@ -192,9 +199,8 @@ export class NodeFsFile implements FsFile {
   }
 
   async write(p: Uint8Array): Promise<number> {
-    const nodeWriteFd = this.#nodeUtil.promisify(this.#nodeFs.write);
     try {
-      const { bytesWritten } = await nodeWriteFd(this.#rid, p);
+      const { bytesWritten } = await this.#nodeWriteFd(this.#rid, p);
       return bytesWritten;
     } catch (error) {
       throw mapError(error);
