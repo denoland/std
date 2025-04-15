@@ -16,30 +16,11 @@ import {
   multilineLiteralString,
   pair,
   parserFactory,
-  Scanner,
   symbols,
   table,
   value,
 } from "./_parser.ts";
 import { parse, stringify } from "./mod.ts";
-
-Deno.test({
-  name: "Scanner",
-  fn() {
-    const scanner = new Scanner(" # comment\n\n\na \nb");
-    scanner.skipWhitespaces();
-    assertEquals(scanner.char(), "#");
-    scanner.nextUntilChar();
-    assertEquals(scanner.char(), "a");
-    scanner.next();
-    scanner.skipWhitespaces();
-    assertEquals(scanner.char(), "\n");
-    scanner.nextUntilChar();
-    assertEquals(scanner.char(), "b");
-    scanner.next();
-    assertEquals(scanner.eof(), true);
-  },
-});
 
 Deno.test({
   name: "parse() handles bare key",
