@@ -21,7 +21,6 @@ import { join } from "@std/path/unstable-join";
 import { greaterOrEqual, parse } from "@std/semver";
 import { zip } from "@std/collections/zip";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
-// deno-lint-ignore deno-style-guide/no-external-code
 import { createGraph } from "@deno/graph";
 
 type DenoJson = { version: string; exports: Record<string, string> };

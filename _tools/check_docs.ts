@@ -6,7 +6,6 @@
  *
  * TODO(lucacasonato): Add support for variables, interfaces, namespaces, and type aliases.
  */
-// deno-lint-ignore deno-style-guide/no-external-code
 import {
   type ClassConstructorDef,
   type ClassMethodDef,

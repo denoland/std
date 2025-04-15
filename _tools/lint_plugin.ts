@@ -59,6 +59,10 @@ export default {
     // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
     "no-external-code": {
       create(context) {
+        if (context.filename.includes("_tools")) {
+          // Tools are allowed to use external code
+          return {};
+        }
         return {
           ImportDeclaration(node) {
             const resolvedSpecifier = import.meta.resolve(node.source.value);

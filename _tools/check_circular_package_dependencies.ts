@@ -1,13 +1,11 @@
 // deno-lint-ignore-file no-console
 // Copyright 2018-2025 the Deno authors. MIT license.
-// deno-lint-ignore deno-style-guide/no-external-code
 import {
   createGraph,
   type ModuleGraphJson,
   type ModuleJson,
 } from "@deno/graph";
 import { resolveWorkspaceSpecifiers } from "./utils.ts";
-// deno-lint-ignore deno-style-guide/no-external-code
 import graphviz from "graphviz";
 import { parse } from "../semver/parse.ts";
 
