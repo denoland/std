@@ -3,6 +3,14 @@
 
 import { Scanner, toml } from "./_parser.ts";
 
+function createParseErrorMessage(scanner: Scanner, message: string) {
+  const string = scanner.source.slice(0, scanner.position);
+  const lines = string.split("\n");
+  const row = lines.length;
+  const column = lines.at(-1)?.length ?? 0;
+  return `Parse error on line ${row}, column ${column}: ${message}`;
+}
+
 /**
  * Parses a {@link https://toml.io | TOML} string into an object.
  *
@@ -22,34 +30,19 @@ import { Scanner, toml } from "./_parser.ts";
  * @param tomlString TOML string to be parsed.
  * @returns The parsed JS object.
  */
+
 export function parse(tomlString: string): Record<string, unknown> {
   const scanner = new Scanner(tomlString);
-
-  let parsed = null;
-  let err: Error | null = null;
   try {
-    parsed = toml(scanner);
-  } catch (e) {
-    err = e instanceof Error ? e : new Error("Invalid error type caught");
+    const result = toml(scanner);
+    if (result.ok && scanner.eof()) return result.body;
+    const message = `Unexpected character: "${scanner.char()}"`;
+    throw new SyntaxError(createParseErrorMessage(scanner, message));
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new SyntaxError(createParseErrorMessage(scanner, error.message));
+    }
+    const message = "Invalid error type caught";
+    throw new SyntaxError(createParseErrorMessage(scanner, message));
   }
-
-  if (err || !parsed || !parsed.ok || !scanner.eof()) {
-    const position = scanner.position();
-    const subStr = tomlString.slice(0, position);
-    const lines = subStr.split("\n");
-    const row = lines.length;
-    const column = (() => {
-      let count = subStr.length;
-      for (const line of lines) {
-        if (count <= line.length) break;
-        count -= line.length + 1;
-      }
-      return count;
-    })();
-    const message = `Parse error on line ${row}, column ${column}: ${
-      err ? err.message : `Unexpected character: "${scanner.char()}"`
-    }`;
-    throw new SyntaxError(message);
-  }
-  return parsed.body;
 }

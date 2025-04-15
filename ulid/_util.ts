@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 /** Type for a ULID generator function. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export type ULID = (seedTime?: number) => string;
 
 // These values should NEVER change. If
