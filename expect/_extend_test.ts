@@ -28,7 +28,7 @@ class Book {
   }
 }
 
-const areAuthorsEqual: Tester = (a: unknown, b: unknown) => {
+function areAuthorsEqual(a: unknown, b: unknown) {
   const isAAuthor = a instanceof Author;
   const isBAuthor = b instanceof Author;
 
@@ -39,7 +39,7 @@ const areAuthorsEqual: Tester = (a: unknown, b: unknown) => {
   } else {
     return false;
   }
-};
+}
 
 const areBooksEqual: Tester = function (
   this: MatcherContext,

@@ -56,6 +56,77 @@ class MyClass {
   );
 });
 
+Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+const foo = () => "bar";
+export const bar = () => "foo";
+    `,
+    [
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [13, 24],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [45, 56],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+    ],
+  );
+
+  // Good
+  assertLintPluginDiagnostics(
+    `
+function foo() {
+  const bar = () => "baz";
+
+  return "bar";
+}`,
+    [],
+  );
+});
+
+Deno.test("deno-style-guide/no-external-code", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics('import { walk } from "@std/fs/walk";', []);
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+import { bad } from "https://deno.land/malicious-muffin/bad.ts";
+import { bad } from "jsr:@malicious-muffin/bad";
+    `,
+    [{
+      id: "deno-style-guide/no-external-code",
+      fix: [],
+      range: [1, 65],
+      message: "External imports are not allowed outside of tools",
+      hint:
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
+    }, {
+      id: "deno-style-guide/no-external-code",
+      fix: [],
+      range: [66, 114],
+      message: "External imports are not allowed outside of tools",
+      hint:
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
+    }],
+  );
+});
+
 Deno.test("deno-style-guide/naming-convention", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {

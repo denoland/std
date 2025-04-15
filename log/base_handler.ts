@@ -17,8 +17,10 @@ export type { LevelName, LogLevel, LogRecord };
  * @returns A string representation of the log record.
  */
 export type FormatterFunction = (logRecord: LogRecord) => string;
-const DEFAULT_FORMATTER: FormatterFunction = ({ levelName, msg }) =>
-  `${levelName} ${msg}`;
+// deno-lint-ignore deno-style-guide/naming-convention
+function DEFAULT_FORMATTER(logRecord: LogRecord): string {
+  return `${logRecord.levelName} ${logRecord.msg}`;
+}
 
 /** Options for {@linkcode BaseHandler}. */
 export interface BaseHandlerOptions {

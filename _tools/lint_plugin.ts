@@ -56,6 +56,59 @@ export default {
         };
       },
     },
+    // https://docs.deno.com/runtime/contributing/style_guide/#top-level-functions-should-not-use-arrow-syntax
+    "no-top-level-arrow-syntax": {
+      create(context) {
+        return {
+          ArrowFunctionExpression(node) {
+            if (
+              node.parent.type === "VariableDeclarator" &&
+              node.parent.parent.type === "VariableDeclaration" &&
+              (node.parent.parent.parent.type === "Program" ||
+                node.parent.parent.parent.type === "ExportNamedDeclaration")
+            ) {
+              // TODO(iuioiua): add fix
+              context.report({
+                node,
+                range: node.range,
+                message: "Top-level functions should not use arrow syntax",
+                hint:
+                  "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+              });
+            }
+          },
+        };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
+    "no-external-code": {
+      create(context) {
+        if (context.filename.includes("_tools")) {
+          // Tools are allowed to use external code
+          return {};
+        }
+        return {
+          ImportDeclaration(node) {
+            const resolvedSpecifier = import.meta.resolve(node.source.value);
+            if (
+              resolvedSpecifier.startsWith("file:") ||
+              resolvedSpecifier.startsWith("jsr:@std") ||
+              resolvedSpecifier.startsWith("jsr:/@std") ||
+              resolvedSpecifier.startsWith("node:")
+            ) {
+              return;
+            }
+            context.report({
+              node,
+              range: node.source.range,
+              message: "External imports are not allowed outside of tools",
+              hint:
+                'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
+            });
+          },
+        };
+      },
+    },
     // https://docs.deno.com/runtime/contributing/style_guide/#naming-convention/
     "naming-convention": {
       create(context) {
