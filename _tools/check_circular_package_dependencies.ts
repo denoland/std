@@ -143,9 +143,7 @@ async function check(
   const deps = new Set<string>();
   for (const path of paths) {
     const entrypoint = new URL(`../${pkg}/${path}`, import.meta.url).href;
-    const graph = await createGraph(entrypoint, {
-      resolve: resolve,
-    });
+    const graph = await createGraph(entrypoint, { resolve });
 
     for (
       const dep of new Set(

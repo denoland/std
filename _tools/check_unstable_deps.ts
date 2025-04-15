@@ -55,9 +55,7 @@ for (const path of stableEntrypoints) {
     console.log(`Skip checking ${path}`);
     continue;
   }
-  const graph = await createGraph(path, {
-    resolve: resolve,
-  });
+  const graph = await createGraph(path, { resolve });
   const dependencySpecifiers = graph.modules.map((m) => m.specifier);
   const unstableDependencies = dependencySpecifiers.filter(isUnstableModule);
   if (unstableDependencies.length > 0) {
