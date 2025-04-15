@@ -27,12 +27,12 @@ Deno.test({
   name: "Scanner",
   fn() {
     const scanner = new Scanner(" # comment\n\n\na \nb");
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     assertEquals(scanner.char(), "#");
     scanner.nextUntilChar();
     assertEquals(scanner.char(), "a");
     scanner.next();
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     assertEquals(scanner.char(), "\n");
     scanner.nextUntilChar();
     assertEquals(scanner.char(), "b");

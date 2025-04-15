@@ -3,7 +3,7 @@
 
 import { unicodeWidth } from "../unicode_width.ts";
 import { fromFileUrl } from "../../path/mod.ts";
-import fc from "https://esm.sh/fast-check@3.8.0";
+import fc from "npm:fast-check@3.8.0";
 
 // Note: This test is optional. It requires the Rust code to be compiled locally
 Deno.test("fast-check equality with unicode_width Rust crate", async (t) => {
