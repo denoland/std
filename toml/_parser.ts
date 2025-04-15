@@ -205,6 +205,28 @@ function join<T>(
 ): ParserComponent<T[]> {
   const Separator = character(separator);
   return (scanner: Scanner): ParseResult<T[]> => {
+    const out: T[] = [];
+    const first = parser(scanner);
+    if (!first.ok) return success(out);
+    out.push(first.body);
+    while (!scanner.eof()) {
+      if (!Separator(scanner).ok) break;
+      const result = parser(scanner);
+      if (!result.ok) {
+        throw new SyntaxError(`Invalid token after "${separator}"`);
+      }
+      out.push(result.body);
+    }
+    return success(out);
+  };
+}
+
+function join1<T>(
+  parser: ParserComponent<T>,
+  separator: string,
+): ParserComponent<T[]> {
+  const Separator = character(separator);
+  return (scanner: Scanner): ParseResult<T[]> => {
     const first = parser(scanner);
     if (!first.ok) return failure();
     const out: T[] = [first.body];
@@ -523,7 +545,7 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
   return success(value);
 }
 
-export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
+export const dottedKey = join1(or([bareKey, basicString, literalString]), ".");
 
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
@@ -702,11 +724,7 @@ export function inlineTable(
     scanner.next(2);
     return success({});
   }
-  const pairs = surround(
-    "{",
-    join(pair, ","),
-    "}",
-  )(scanner);
+  const pairs = surround("{", join(pair, ","), "}")(scanner);
   if (!pairs.ok) return failure();
   let table = {};
   for (const pair of pairs.body) {
