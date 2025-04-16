@@ -446,6 +446,22 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
   // assertHasDefaultTags(document);
 }
 
+function assertHasDeprecationDesc(document: DocNodeWithJsDoc<DocNode>) {
+  const tags = document.jsDoc?.tags;
+  if (!tags) return;
+  for (const tag of tags) {
+    if (tag.kind !== "deprecated") continue;
+    if (tag.doc === undefined) {
+      diagnostics.push(
+        new DocumentError(
+          "@deprecated tag must have a description",
+          document,
+        ),
+      );
+    }
+  }
+}
+
 function resolve(specifier: string, referrer: string): string {
   if (specifier.startsWith("@std/")) {
     specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
@@ -469,19 +485,27 @@ async function checkDocs(specifier: string) {
       case "moduleDoc": {
         if (document.location.filename.endsWith("/mod.ts")) {
           assertModuleDoc(document);
+          assertHasDeprecationDesc(document);
         }
         break;
       }
       case "function": {
         assertFunctionDocs(document);
+        assertHasDeprecationDesc(document);
         break;
       }
       case "class": {
         assertClassDocs(document);
+        assertHasDeprecationDesc(document);
         break;
       }
       case "interface":
         assertInterfaceDocs(document);
+        assertHasDeprecationDesc(document);
+        break;
+      case "variable":
+        assertHasDeprecationDesc(document);
+        break;
     }
   }
 }
