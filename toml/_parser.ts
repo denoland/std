@@ -806,7 +806,7 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) return failure();
+  if (!blocks.ok) return success({});
   const body = blocks.body.reduce(deepAssign, {});
   return success(body);
 }
