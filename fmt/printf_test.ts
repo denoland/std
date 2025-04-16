@@ -7,7 +7,7 @@
 
 import { printf, sprintf } from "./printf.ts";
 import { assertEquals, assertThrows } from "@std/assert";
-import { assertSpyCall, spy } from "@std/testing/mock";
+import { restore, stub } from "@std/testing/mock";
 import * as c from "./colors.ts";
 
 Deno.test("sprintf() handles noVerb", function () {
@@ -786,10 +786,13 @@ Deno.test("sprintf() throws with d with sharp option", () => {
 });
 
 Deno.test("printf() prints the result synchronously", () => {
-  using writeSpy = spy(Deno.stdout, "writeSync");
-  printf("Hello %s", "world");
-
-  assertSpyCall(writeSpy, 0, {
-    args: [new TextEncoder().encode("Hello world")],
+  let called = false;
+  stub(Deno.stdout, "writeSync", (p) => {
+    assertEquals(new TextDecoder().decode(p), "Hello world");
+    called = true;
+    return p.length;
   });
+  printf("Hello %s", "world");
+  assertEquals(called, true);
+  restore();
 });
