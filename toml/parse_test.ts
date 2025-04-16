@@ -540,11 +540,6 @@ Deno.test({
       "line 2, column 10",
     );
     assertThrows(
-      () => parse(""),
-      SyntaxError,
-      "line 1, column 0",
-    );
-    assertThrows(
       () =>
         parserFactory((_s) => {
           throw "Custom parser";
@@ -650,6 +645,17 @@ withUnicodeChar1 = "\\u3042"
 withUnicodeChar2 = "Deno\\U01F995"
 `);
     assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "handles empty string",
+  fn() {
+    assertEquals(parse(""), {});
+    assertEquals(parse(" "), {});
+    assertEquals(parse("\t"), {});
+    assertEquals(parse("\r\n"), {});
+    assertEquals(parse("\n"), {});
   },
 });
 

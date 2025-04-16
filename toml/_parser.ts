@@ -776,8 +776,8 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) return failure();
   let body = {};
+  if (!blocks.ok) return success(body);
   for (const block of blocks.body) {
     switch (block.type) {
       case "Block": {
