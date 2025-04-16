@@ -251,9 +251,8 @@ function merge(
     if (!result.ok) return failure();
     let body = {};
     for (const record of result.body) {
-      if (typeof body === "object" && body !== null) {
-        // deno-lint-ignore no-explicit-any
-        body = deepMerge(body, record as Record<any, any>);
+      if (typeof record === "object" && record !== null) {
+        body = deepMerge(body, record);
       }
     }
     return success(body);
