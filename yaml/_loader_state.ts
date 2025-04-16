@@ -322,10 +322,13 @@ export class LoaderState {
 
     this.tagMap.set(handle, prefix);
   }
-  captureSegment(start: number, end: number, checkJson: boolean) {
-    let result: string;
+  captureSegment(
+    start: number,
+    end: number,
+    { checkJson }: { checkJson: boolean },
+  ) {
     if (start < end) {
-      result = this.input.slice(start, end);
+      const result = this.input.slice(start, end);
 
       if (checkJson) {
         for (
@@ -351,10 +354,8 @@ export class LoaderState {
     }
   }
   readBlockSequence(nodeIndent: number): boolean {
-    let line: number;
-    let following: number;
     let detected = false;
-    let ch: number;
+
     const tag = this.tag;
     const anchor = this.anchor;
     const result: unknown[] = [];
@@ -363,14 +364,14 @@ export class LoaderState {
       this.anchorMap.set(this.anchor, result);
     }
 
-    ch = this.peek();
+    let ch = this.peek();
 
     while (ch !== 0) {
       if (ch !== MINUS) {
         break;
       }
 
-      following = this.peek(1);
+      const following = this.peek(1);
 
       if (!isWhiteSpaceOrEOL(following)) {
         break;
@@ -387,7 +388,7 @@ export class LoaderState {
         }
       }
 
-      line = this.line;
+      const line = this.line;
       this.composeNode(nodeIndent, CONTEXT_BLOCK_IN, false, true);
       result.push(this.result);
       this.skipSeparationSpace(true, -1);
@@ -672,7 +673,7 @@ export class LoaderState {
       }
 
       if (hasPendingContent) {
-        this.captureSegment(captureStart, captureEnd, false);
+        this.captureSegment(captureStart, captureEnd, { checkJson: false });
         this.writeFoldedLines(this.line - line);
         captureStart = captureEnd = this.position;
         hasPendingContent = false;
@@ -685,7 +686,7 @@ export class LoaderState {
       ch = this.next();
     }
 
-    this.captureSegment(captureStart, captureEnd, false);
+    this.captureSegment(captureStart, captureEnd, { checkJson: false });
 
     if (this.result) {
       return true;
@@ -696,11 +697,7 @@ export class LoaderState {
     return false;
   }
   readSingleQuotedScalar(nodeIndent: number): boolean {
-    let ch;
-    let captureStart;
-    let captureEnd;
-
-    ch = this.peek();
+    let ch = this.peek();
 
     if (ch !== SINGLE_QUOTE) {
       return false;
@@ -709,11 +706,13 @@ export class LoaderState {
     this.kind = "scalar";
     this.result = "";
     this.position++;
-    captureStart = captureEnd = this.position;
+    let captureStart = this.position;
+    let captureEnd = this.position;
 
-    while ((ch = this.peek()) !== 0) {
+    ch = this.peek();
+    while (ch !== 0) {
       if (ch === SINGLE_QUOTE) {
-        this.captureSegment(captureStart, this.position, true);
+        this.captureSegment(captureStart, this.position, { checkJson: true });
         ch = this.next();
 
         if (ch === SINGLE_QUOTE) {
@@ -724,7 +723,7 @@ export class LoaderState {
           return true;
         }
       } else if (isEOL(ch)) {
-        this.captureSegment(captureStart, captureEnd, true);
+        this.captureSegment(captureStart, captureEnd, { checkJson: true });
         this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
         captureStart = captureEnd = this.position;
       } else if (
@@ -738,6 +737,7 @@ export class LoaderState {
         this.position++;
         captureEnd = this.position;
       }
+      ch = this.peek();
     }
 
     return this.throwError(
@@ -757,14 +757,15 @@ export class LoaderState {
     let captureEnd = this.position;
     let captureStart = this.position;
     let tmp: number;
-    while ((ch = this.peek()) !== 0) {
+    ch = this.peek();
+    while (ch !== 0) {
       if (ch === DOUBLE_QUOTE) {
-        this.captureSegment(captureStart, this.position, true);
+        this.captureSegment(captureStart, this.position, { checkJson: true });
         this.position++;
         return true;
       }
       if (ch === BACKSLASH) {
-        this.captureSegment(captureStart, this.position, true);
+        this.captureSegment(captureStart, this.position, { checkJson: true });
         ch = this.next();
 
         if (isEOL(ch)) {
@@ -799,7 +800,7 @@ export class LoaderState {
 
         captureStart = captureEnd = this.position;
       } else if (isEOL(ch)) {
-        this.captureSegment(captureStart, captureEnd, true);
+        this.captureSegment(captureStart, captureEnd, { checkJson: true });
         this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
         captureStart = captureEnd = this.position;
       } else if (
@@ -813,6 +814,7 @@ export class LoaderState {
         this.position++;
         captureEnd = this.position;
       }
+      ch = this.peek();
     }
 
     return this.throwError(
@@ -1088,7 +1090,7 @@ export class LoaderState {
         ch = this.next();
       }
 
-      this.captureSegment(captureStart, this.position, false);
+      this.captureSegment(captureStart, this.position, { checkJson: false });
     }
 
     return true;
@@ -1098,7 +1100,7 @@ export class LoaderState {
     const anchor = this.anchor;
     const result = {};
     const overridableKeys = new Set<string>();
-    let following: number;
+
     let allowCompact = false;
     let line: number;
     let pos: number;
@@ -1107,16 +1109,15 @@ export class LoaderState {
     let valueNode = null;
     let atExplicitKey = false;
     let detected = false;
-    let ch: number;
 
     if (this.anchor !== null && typeof this.anchor !== "undefined") {
       this.anchorMap.set(this.anchor, result);
     }
 
-    ch = this.peek();
+    let ch = this.peek();
 
     while (ch !== 0) {
-      following = this.peek(1);
+      const following = this.peek(1);
       line = this.line; // Save the current line.
       pos = this.position;
 
@@ -1134,7 +1135,9 @@ export class LoaderState {
               keyNode,
               null,
             );
-            keyTag = keyNode = valueNode = null;
+            keyTag = null;
+            keyNode = null;
+            valueNode = null;
           }
 
           detected = true;
@@ -1181,7 +1184,9 @@ export class LoaderState {
                 keyNode,
                 null,
               );
-              keyTag = keyNode = valueNode = null;
+              keyTag = null;
+              keyNode = null;
+              valueNode = null;
             }
 
             detected = true;
@@ -1277,14 +1282,12 @@ export class LoaderState {
     return detected;
   }
   readTagProperty(): boolean {
-    let position: number;
     let isVerbatim = false;
     let isNamed = false;
     let tagHandle = "";
     let tagName: string;
-    let ch: number;
 
-    ch = this.peek();
+    let ch = this.peek();
 
     if (ch !== EXCLAMATION) return false;
 
@@ -1307,7 +1310,7 @@ export class LoaderState {
       tagHandle = "!";
     }
 
-    position = this.position;
+    let position = this.position;
 
     if (isVerbatim) {
       do {
@@ -1437,8 +1440,6 @@ export class LoaderState {
     allowToSeek: boolean,
     allowCompact: boolean,
   ): boolean {
-    let allowBlockScalars: boolean;
-    let allowBlockCollections: boolean;
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
     let hasContent = false;
@@ -1451,9 +1452,11 @@ export class LoaderState {
     this.kind = null;
     this.result = null;
 
-    const allowBlockStyles = (allowBlockScalars =
-      allowBlockCollections =
-        CONTEXT_BLOCK_OUT === nodeContext || CONTEXT_BLOCK_IN === nodeContext);
+    const allowBlockScalars = CONTEXT_BLOCK_OUT === nodeContext ||
+      CONTEXT_BLOCK_IN === nodeContext;
+
+    let allowBlockCollections = allowBlockScalars;
+    const allowBlockStyles = allowBlockScalars;
 
     if (allowToSeek) {
       if (this.skipSeparationSpace(true, -1)) {
@@ -1598,18 +1601,16 @@ export class LoaderState {
 
   readDocument() {
     const documentStart = this.position;
-    let position: number;
-    let directiveName: string;
-    let directiveArgs: string[];
+
     let hasDirectives = false;
-    let ch: number;
 
     this.version = null;
     this.checkLineBreaks = false;
     this.tagMap = new Map();
     this.anchorMap = new Map();
 
-    while ((ch = this.peek()) !== 0) {
+    let ch = this.peek();
+    while (ch !== 0) {
       this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
@@ -1620,14 +1621,14 @@ export class LoaderState {
 
       hasDirectives = true;
       ch = this.next();
-      position = this.position;
+      let position = this.position;
 
       while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
         ch = this.next();
       }
 
-      directiveName = this.input.slice(position, this.position);
-      directiveArgs = [];
+      const directiveName = this.input.slice(position, this.position);
+      const directiveArgs = [];
 
       if (directiveName.length < 1) {
         return this.throwError(
@@ -1673,6 +1674,8 @@ export class LoaderState {
           );
           break;
       }
+
+      ch = this.peek();
     }
 
     this.skipSeparationSpace(true, -1);
