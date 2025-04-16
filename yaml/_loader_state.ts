@@ -1444,8 +1444,6 @@ export class LoaderState {
     let atNewLine = false;
     let hasContent = false;
     let type: Type<KindType>;
-    let flowIndent: number;
-    let blockIndent: number;
 
     this.tag = null;
     this.anchor = null;
@@ -1498,9 +1496,9 @@ export class LoaderState {
     if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
       const cond = CONTEXT_FLOW_IN === nodeContext ||
         CONTEXT_FLOW_OUT === nodeContext;
-      flowIndent = cond ? parentIndent : parentIndent + 1;
+      const flowIndent = cond ? parentIndent : parentIndent + 1;
 
-      blockIndent = this.position - this.lineStart;
+      const blockIndent = this.position - this.lineStart;
 
       if (indentStatus === 1) {
         if (
