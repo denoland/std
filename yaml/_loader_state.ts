@@ -669,7 +669,7 @@ export class LoaderState {
       }
 
       if (hasPendingContent) {
-        this.captureSegment(captureStart, captureEnd, { checkJson: false });
+        this.captureSegment(captureStart, captureEnd, false);
         this.writeFoldedLines(this.line - line);
         captureStart = captureEnd = this.position;
         hasPendingContent = false;
@@ -682,7 +682,7 @@ export class LoaderState {
       ch = this.next();
     }
 
-    this.captureSegment(captureStart, captureEnd, { checkJson: false });
+    this.captureSegment(captureStart, captureEnd, false);
 
     if (this.result) {
       return true;
@@ -1086,7 +1086,7 @@ export class LoaderState {
         ch = this.next();
       }
 
-      this.captureSegment(captureStart, this.position, { checkJson: false });
+      this.captureSegment(captureStart, this.position, false);
     }
 
     return true;
