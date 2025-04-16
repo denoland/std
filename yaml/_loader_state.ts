@@ -322,11 +322,7 @@ export class LoaderState {
 
     this.tagMap.set(handle, prefix);
   }
-  captureSegment(
-    start: number,
-    end: number,
-    { checkJson }: { checkJson: boolean },
-  ) {
+  captureSegment(start: number, end: number, checkJson: boolean) {
     if (start < end) {
       const result = this.input.slice(start, end);
 
@@ -712,7 +708,7 @@ export class LoaderState {
     ch = this.peek();
     while (ch !== 0) {
       if (ch === SINGLE_QUOTE) {
-        this.captureSegment(captureStart, this.position, { checkJson: true });
+        this.captureSegment(captureStart, this.position, true);
         ch = this.next();
 
         if (ch === SINGLE_QUOTE) {
@@ -723,7 +719,7 @@ export class LoaderState {
           return true;
         }
       } else if (isEOL(ch)) {
-        this.captureSegment(captureStart, captureEnd, { checkJson: true });
+        this.captureSegment(captureStart, captureEnd, true);
         this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
         captureStart = captureEnd = this.position;
       } else if (
@@ -760,12 +756,12 @@ export class LoaderState {
     ch = this.peek();
     while (ch !== 0) {
       if (ch === DOUBLE_QUOTE) {
-        this.captureSegment(captureStart, this.position, { checkJson: true });
+        this.captureSegment(captureStart, this.position, true);
         this.position++;
         return true;
       }
       if (ch === BACKSLASH) {
-        this.captureSegment(captureStart, this.position, { checkJson: true });
+        this.captureSegment(captureStart, this.position, true);
         ch = this.next();
 
         if (isEOL(ch)) {
@@ -800,7 +796,7 @@ export class LoaderState {
 
         captureStart = captureEnd = this.position;
       } else if (isEOL(ch)) {
-        this.captureSegment(captureStart, captureEnd, { checkJson: true });
+        this.captureSegment(captureStart, captureEnd, true);
         this.writeFoldedLines(this.skipSeparationSpace(false, nodeIndent));
         captureStart = captureEnd = this.position;
       } else if (
