@@ -3,48 +3,48 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-export const BOM = 0xfeff; /* BOM */
-export const TAB = 0x09; /* Tab */
-export const LINE_FEED = 0x0a; /* LF */
-export const CARRIAGE_RETURN = 0x0d; /* CR */
-export const SPACE = 0x20; /* Space */
-export const EXCLAMATION = 0x21; /* ! */
-export const DOUBLE_QUOTE = 0x22; /* " */
-export const SHARP = 0x23; /* # */
-export const PERCENT = 0x25; /* % */
-export const AMPERSAND = 0x26; /* & */
-export const SINGLE_QUOTE = 0x27; /* ' */
-export const ASTERISK = 0x2a; /* * */
-export const PLUS = 0x2b; /* + */
-export const COMMA = 0x2c; /* , */
-export const MINUS = 0x2d; /* - */
-export const DOT = 0x2e; /* . */
-export const COLON = 0x3a; /* : */
-export const SMALLER_THAN = 0x3c; /* < */
-export const GREATER_THAN = 0x3e; /* > */
-export const QUESTION = 0x3f; /* ? */
-export const COMMERCIAL_AT = 0x40; /* @ */
-export const LEFT_SQUARE_BRACKET = 0x5b; /* [ */
-export const BACKSLASH = 0x5c; /* \ */
-export const RIGHT_SQUARE_BRACKET = 0x5d; /* ] */
-export const GRAVE_ACCENT = 0x60; /* ` */
-export const LEFT_CURLY_BRACKET = 0x7b; /* { */
-export const VERTICAL_LINE = 0x7c; /* | */
-export const RIGHT_CURLY_BRACKET = 0x7d; /* } */
+export const BOM = "\uFEFF";
+export const TAB = "\t";
+export const LINE_FEED = "\n";
+export const CARRIAGE_RETURN = "\r";
+export const SPACE = " ";
+export const EXCLAMATION = "!";
+export const DOUBLE_QUOTE = '"';
+export const SHARP = "#";
+export const PERCENT = "%";
+export const AMPERSAND = "&";
+export const SINGLE_QUOTE = "'";
+export const ASTERISK = "*";
+export const PLUS = "+";
+export const COMMA = ",";
+export const MINUS = "-";
+export const DOT = ".";
+export const COLON = ":";
+export const SMALLER_THAN = "<";
+export const GREATER_THAN = ">";
+export const QUESTION = "?";
+export const COMMERCIAL_AT = "@";
+export const LEFT_SQUARE_BRACKET = "[";
+export const BACKSLASH = "\\";
+export const RIGHT_SQUARE_BRACKET = "]";
+export const GRAVE_ACCENT = "`";
+export const LEFT_CURLY_BRACKET = "{";
+export const VERTICAL_LINE = "|";
+export const RIGHT_CURLY_BRACKET = "}";
 
-export function isEOL(c: number): boolean {
+export function isEOL(c: string): boolean {
   return c === LINE_FEED || c === CARRIAGE_RETURN;
 }
 
-export function isWhiteSpace(c: number): boolean {
+export function isWhiteSpace(c: string): boolean {
   return c === TAB || c === SPACE;
 }
 
-export function isWhiteSpaceOrEOL(c: number): boolean {
+export function isWhiteSpaceOrEOL(c: string): boolean {
   return isWhiteSpace(c) || isEOL(c);
 }
 
-export function isFlowIndicator(c: number): boolean {
+export function isFlowIndicator(c: string): boolean {
   return (
     c === COMMA ||
     c === LEFT_SQUARE_BRACKET ||
