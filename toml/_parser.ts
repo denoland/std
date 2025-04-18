@@ -235,6 +235,7 @@ function kv<T>(
 ): ParserComponent<{ [key: string]: unknown }> {
   const Separator = character(separator);
   return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
+    const position = scanner.position;
     const key = keyParser(scanner);
     if (!key.ok) return failure();
     const sep = Separator(scanner);
@@ -243,9 +244,12 @@ function kv<T>(
     }
     const value = valueParser(scanner);
     if (!value.ok) {
-      throw new SyntaxError(
-        `Value of key/value pair is invalid data format`,
-      );
+      const lineEndIndex = scanner.source.indexOf("\n", scanner.position);
+      const endPosition = lineEndIndex > 0
+        ? lineEndIndex
+        : scanner.source.length;
+      const line = scanner.source.slice(position, endPosition);
+      throw new SyntaxError(`Cannot parse value on line '${line}'`);
     }
     return success(unflat(key.body, value.body));
   };
@@ -520,7 +524,7 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
 
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
-const BINARY_REGEXP = /0b[01_]+/y;
+const BINARY_REGEXP = /0b[01]+(?:_[01]+)*\b/y;
 export function binary(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(BINARY_REGEXP)?.[0];
@@ -531,7 +535,7 @@ export function binary(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const OCTAL_REGEXP = /0o[0-7_]+/y;
+const OCTAL_REGEXP = /0o[0-7]+(?:_[0-7]+)*\b/y;
 export function octal(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(OCTAL_REGEXP)?.[0];
@@ -542,7 +546,7 @@ export function octal(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const HEX_REGEXP = /0x[0-9a-f_]+/yi;
+const HEX_REGEXP = /0x[0-9a-f]+(?:_[0-9a-f]+)*\b/yi;
 export function hex(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(HEX_REGEXP)?.[0];
@@ -553,7 +557,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9_]+/y;
+const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*\b/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
@@ -564,7 +568,8 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   return success(int);
 }
 
-const FLOAT_REGEXP = /[+-]?[0-9_]+(?:\.[0-9_]+)?(?:e[+-]?[0-9_]+)?/yi;
+const FLOAT_REGEXP =
+  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(FLOAT_REGEXP)?.[0];
@@ -576,7 +581,7 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?/y;
+const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
   // example: 1979-05-27
@@ -591,7 +596,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   return success(date);
 }
 
-const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?/y;
+const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?\b/y;
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
 
