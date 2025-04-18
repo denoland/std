@@ -4,22 +4,26 @@ import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 
-const createHeader = (): string[] => [
-  "",
-  "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-    green(
-      bold("Expected"),
-    )
-  }`,
-  "",
-  "",
-];
+function createHeader(): string[] {
+  return [
+    "",
+    "",
+    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
+      green(
+        bold("Expected"),
+      )
+    }`,
+    "",
+    "",
+  ];
+}
 
-const added: (s: string) => string = (s: string): string =>
-  green(bold(stripAnsiCode(s)));
-const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripAnsiCode(s)));
+function added(s: string): string {
+  return green(bold(stripAnsiCode(s)));
+}
+function removed(s: string): string {
+  return red(bold(stripAnsiCode(s)));
+}
 
 Deno.test({
   name: "expect().toEqual() matches when values are equal",
