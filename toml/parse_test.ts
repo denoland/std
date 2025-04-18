@@ -241,9 +241,13 @@ Deno.test({
   fn() {
     const parse = parserFactory(binary);
     assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
+    assertEquals(parse("0b1101_0110"), 0b11010110);
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0b_11010110"));
+    assertThrows(() => parse("0b11010110_"));
+    assertThrows(() => parse("0b1101__0110"));
   },
 });
 Deno.test({
@@ -251,10 +255,15 @@ Deno.test({
   fn() {
     const parse = parserFactory(octal);
     assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
+    assertEquals(parse("0o0123_4567"), 0o01234567); //  0o01234567 = 342391
     assertEquals(parse("0o755"), 0o755); // 0o755 = 493
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("_0o755"));
+    assertThrows(() => parse("0o_755"));
+    assertThrows(() => parse("0o755_"));
+    assertThrows(() => parse("0o0123__4567"));
   },
 });
 Deno.test({
@@ -263,11 +272,15 @@ Deno.test({
     const parse = parserFactory(hex);
 
     assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
+    assertEquals(parse("0xDEAD_BEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
     assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
     assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0x_DEADBEEF"));
+    assertThrows(() => parse("0xDEADBEEF_"));
+    assertThrows(() => parse("0xDEAD__BEEF"));
   },
 });
 Deno.test({
@@ -281,6 +294,9 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("_123"));
+    assertThrows(() => parse("123_"));
+    assertThrows(() => parse("123__456"));
   },
 });
 
@@ -299,6 +315,15 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("X"));
     assertThrows(() => parse("e_+-"));
+    assertThrows(() => parse("_3.1415"));
+    assertThrows(() => parse("3_.1415"));
+    assertThrows(() => parse("3._1415"));
+    assertThrows(() => parse("3.1415_"));
+    assertThrows(() => parse("3.14__15"));
+    assertThrows(() => parse("_1e06"));
+    assertThrows(() => parse("1_e06"));
+    assertThrows(() => parse("1e_06"));
+    assertThrows(() => parse("1e06_"));
   },
 });
 

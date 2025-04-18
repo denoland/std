@@ -520,7 +520,7 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
 
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
-const BINARY_REGEXP = /0b[01_]+/y;
+const BINARY_REGEXP = /0b[01]+(?:_[01]+)*/y;
 export function binary(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(BINARY_REGEXP)?.[0];
@@ -531,7 +531,7 @@ export function binary(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const OCTAL_REGEXP = /0o[0-7_]+/y;
+const OCTAL_REGEXP = /0o[0-7]+(?:_[0-7]+)*/y;
 export function octal(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(OCTAL_REGEXP)?.[0];
@@ -542,7 +542,7 @@ export function octal(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const HEX_REGEXP = /0x[0-9a-f_]+/yi;
+const HEX_REGEXP = /0x[0-9a-f]+(?:_[0-9a-f]+)*/yi;
 export function hex(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(HEX_REGEXP)?.[0];
@@ -553,7 +553,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9_]+/y;
+const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
@@ -564,7 +564,8 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   return success(int);
 }
 
-const FLOAT_REGEXP = /[+-]?[0-9_]+(?:\.[0-9_]+)?(?:e[+-]?[0-9_]+)?/yi;
+const FLOAT_REGEXP =
+  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(FLOAT_REGEXP)?.[0];
