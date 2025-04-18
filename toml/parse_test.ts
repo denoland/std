@@ -1382,7 +1382,7 @@ foo = BAR
 `);
       },
       Error,
-      `invalid data format`,
+      "Parse error on line 2, column 6: Cannot parse value on line 'foo = BAR'",
     );
   },
 });
