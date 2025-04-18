@@ -5,22 +5,24 @@ import {
   bareKey,
   basicString,
   binary,
+  boolean,
   dateTime,
   deepAssignWithTable,
   dottedKey,
   float,
   hex,
+  infinity,
   inlineTable,
   integer,
   literalString,
   localTime,
   multilineBasicString,
   multilineLiteralString,
+  nan,
   octal,
   pair,
   parserFactory,
   Scanner,
-  symbols,
   table,
   value,
 } from "./_parser.ts";
@@ -181,14 +183,38 @@ Violets are\\tblue'''`),
 });
 
 Deno.test({
-  name: "parse() handles symbols",
+  name: "parse() handles boolean",
   fn() {
-    const parse = parserFactory(symbols);
+    const parse = parserFactory(boolean);
     assertEquals(parse("true"), true);
-    assertEquals(parse("nan"), NaN);
+    assertEquals(parse("false"), false);
+    assertThrows(() => parse("truetrue"));
+    assertThrows(() => parse("false "));
+  },
+});
+
+Deno.test({
+  name: "parse() handles infinity",
+  fn() {
+    const parse = parserFactory(infinity);
     assertEquals(parse("inf"), Infinity);
-    assertThrows(() => parse(""));
-    assertThrows(() => parse("_"));
+    assertEquals(parse("+inf"), Infinity);
+    assertEquals(parse("-inf"), -Infinity);
+    assertThrows(() => parse("infinf"));
+    assertThrows(() => parse("+inf "));
+    assertThrows(() => parse("-inf_"));
+  },
+});
+Deno.test({
+  name: "parse() handles nan",
+  fn() {
+    const parse = parserFactory(nan);
+    assertEquals(parse("nan"), NaN);
+    assertEquals(parse("+nan"), NaN);
+    assertEquals(parse("-nan"), NaN);
+    assertThrows(() => parse("nannan"));
+    assertThrows(() => parse("+nan "));
+    assertThrows(() => parse("-nan_"));
   },
 });
 

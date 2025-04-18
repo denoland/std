@@ -499,24 +499,41 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const SYMBOL_MAP = new Map<string, unknown>([
-  ["true", true],
-  ["false", false],
-  ["inf", Infinity],
-  ["+inf", Infinity],
-  ["-inf", -Infinity],
-  ["nan", NaN],
-  ["+nan", NaN],
-  ["-nan", NaN],
-]);
-const SYMBOL_REGEXP = /(?:true|false|(?:[+-]?inf)|(?:[+-]?nan))\b/y;
-export function symbols(scanner: Scanner): ParseResult<unknown> {
+const BOOLEAN_REGEXP = /(?:true|false)\b/y;
+export function boolean(scanner: Scanner): ParseResult<boolean> {
   scanner.skipWhitespaces();
-  const match = scanner.match(SYMBOL_REGEXP);
+  const match = scanner.match(BOOLEAN_REGEXP);
   if (!match) return failure();
   const string = match[0];
   scanner.next(string.length);
-  const value = SYMBOL_MAP.get(string);
+  const value = string === "true";
+  return success(value);
+}
+
+const INFINITY_MAP = new Map<string, number>([
+  ["inf", Infinity],
+  ["+inf", Infinity],
+  ["-inf", -Infinity],
+]);
+const INFINITY_REGEXP = /[+-]?inf\b/y;
+export function infinity(scanner: Scanner): ParseResult<number> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(INFINITY_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = INFINITY_MAP.get(string)!;
+  return success(value);
+}
+
+const NAN_REGEXP = /[+-]?nan\b/y;
+export function nan(scanner: Scanner): ParseResult<number> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(NAN_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = NaN;
   return success(value);
 }
 
@@ -654,7 +671,9 @@ export const value = or([
   multilineLiteralString,
   basicString,
   literalString,
-  symbols,
+  boolean,
+  infinity,
+  nan,
   dateTime,
   localTime,
   binary,
