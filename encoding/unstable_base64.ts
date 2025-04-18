@@ -120,6 +120,7 @@ export function encodeBase64(
  * );
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encodeIntoBase64(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,

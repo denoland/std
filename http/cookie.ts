@@ -324,6 +324,7 @@ export function setCookie(headers: Headers, cookie: Cookie) {
  * @param name Name of cookie
  * @param attributes Additional cookie attributes
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function deleteCookie(
   headers: Headers,
   name: string,

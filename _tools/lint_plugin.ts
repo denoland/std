@@ -240,5 +240,45 @@ export default {
         };
       },
     },
+    // https://docs.deno.com/runtime/contributing/style_guide/#prefer-%23-over-private-keyword
+    "exported-function-args-maximum": {
+      create(context) {
+        return {
+          ExportNamedDeclaration(node) {
+            const declaration = node.declaration;
+            if (declaration?.type !== "FunctionDeclaration") return;
+            const params = declaration.params;
+            const id = declaration.id;
+            if (params.length < 3) return;
+            if (params.length === 3) {
+              const param = params.at(-1)!;
+
+              switch (param.type) {
+                case "Identifier":
+                  if (param.name === "options") return;
+                  break;
+                case "AssignmentPattern": {
+                  if (param.right.type === "ObjectExpression") return;
+                  break;
+                }
+              }
+              return context.report({
+                node: id ?? declaration,
+                message:
+                  "Third argument of export function is not an options object.",
+                hint:
+                  "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+              });
+            }
+            context.report({
+              node: id ?? declaration,
+              message: "Exported function has more than three arguments.",
+              hint:
+                "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+            });
+          },
+        };
+      },
+    },
   },
 } satisfies Deno.lint.Plugin;

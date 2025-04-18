@@ -39,6 +39,7 @@ import { indexOfNeedle } from "./index_of_needle.ts";
  * ```
  * The search will start at the specified index in the source array.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function includesNeedle(
   source: Uint8Array,
   needle: Uint8Array,
