@@ -5,7 +5,7 @@ import {
   type ModuleGraphJson,
   type ModuleJson,
 } from "@deno/graph";
-import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import { resolve } from "./utils.ts";
 import graphviz from "graphviz";
 import { parse } from "../semver/parse.ts";
 
@@ -143,9 +143,7 @@ async function check(
   const deps = new Set<string>();
   for (const path of paths) {
     const entrypoint = new URL(`../${pkg}/${path}`, import.meta.url).href;
-    const graph = await createGraph(entrypoint, {
-      resolve: resolveWorkspaceSpecifiers,
-    });
+    const graph = await createGraph(entrypoint, { resolve });
 
     for (
       const dep of new Set(
