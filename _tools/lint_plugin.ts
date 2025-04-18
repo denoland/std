@@ -249,44 +249,33 @@ export default {
             if (declaration?.type !== "FunctionDeclaration") return;
             const params = declaration.params;
             const id = declaration.id;
-            switch (params.length) {
-              case 0:
-              case 1:
-              case 2:
-                break;
-              case 3: {
-                const param = params.at(-1)!;
-                switch (param.type) {
-                  case "Identifier":
-                    if (param.name === "options") return;
-                    break;
-                  case "AssignmentPattern": {
-                    const left = param.left;
-                    if (left.type == "Identifier" && left.name === "options") {
-                      return;
-                    }
-                    break;
-                  }
+            if (params.length < 3) return;
+            if (params.length === 3) {
+              const param = params.at(-1)!;
+
+              switch (param.type) {
+                case "Identifier":
+                  if (param.name === "options") return;
+                  break;
+                case "AssignmentPattern": {
+                  if (param.right.type === "ObjectExpression") return;
+                  break;
                 }
-
-                return context.report({
-                  node: id ?? declaration,
-                  message:
-                    "Third argument of export function is not an options object.",
-                  hint:
-                    "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
-                });
               }
-
-              default:
-                context.report({
-                  node: id ?? declaration,
-                  message: "Exported function has more than three arguments.",
-                  hint:
-                    "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
-                });
-                break;
+              return context.report({
+                node: id ?? declaration,
+                message:
+                  "Third argument of export function is not an options object.",
+                hint:
+                  "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+              });
             }
+            context.report({
+              node: id ?? declaration,
+              message: "Exported function has more than three arguments.",
+              hint:
+                "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+            });
           },
         };
       },
