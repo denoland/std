@@ -197,8 +197,13 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
 // Parser combinators and generators
 // ---------------------------------
 
-function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
-  return (scanner: Scanner): ParseResult<T> => {
+// deno-lint-ignore no-explicit-any
+function or<T extends readonly ParserComponent<any>[]>(
+  parsers: T,
+): ParserComponent<
+  ReturnType<T[number]> extends ParseResult<infer R> ? R : Failure
+> {
+  return (scanner: Scanner) => {
     for (const parse of parsers) {
       const result = parse(scanner);
       if (result.ok) return result;
