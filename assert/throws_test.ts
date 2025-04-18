@@ -68,6 +68,7 @@ Deno.test("assertThrows() matches thrown non-error value", () => {
 Deno.test("assertThrows() matches thrown error with given error class", () => {
   assertThrows(
     () => {
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("foo");
     },
     Error,
@@ -78,6 +79,7 @@ Deno.test("assertThrows() matches thrown error with given error class", () => {
 Deno.test("assertThrows() matches and returns thrown error value", () => {
   const error = assertThrows(
     () => {
+      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("foo");
     },
   );
@@ -134,6 +136,7 @@ Deno.test("assertThrows() accepts abstract class", () => {
 
   assertThrows(
     () => {
+      // deno-lint-ignore deno-style-guide/error-message
       throw new ConcreteError("failed");
     },
     AbstractError,

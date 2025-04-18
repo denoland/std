@@ -148,7 +148,7 @@ class Dumper {
       return `[${str}]`;
     } else if (typeof value === "object") {
       if (!value) {
-        throw new Error("should never reach");
+        throw new Error("Should never reach");
       }
       const str = Object.keys(value).map((key) => {
         return `${joinKeys([key])} = ${
@@ -158,7 +158,7 @@ class Dumper {
       return `{${str}}`;
     }
 
-    throw new Error("should never reach");
+    throw new Error("Should never reach");
   }
   #isSimplySerializable(value: unknown): boolean {
     return (

@@ -69,7 +69,7 @@ export function getOpenFsFlag(opt: OpenBooleanOptions): number {
   // combinations of (O_RDWR | O_TRUNC | O_APPEND) and
   // (O_WRONLY | O_TRUNC | O_APPEND) to open files are valid.
   if (opt.write && opt.append && opt.truncate) {
-    throw new TypeError("Invalid argument.");
+    throw new TypeError("Invalid argument");
   }
 
   let flag = O_RDONLY;

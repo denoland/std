@@ -76,7 +76,7 @@ export function slidingWindows<T>(
   if (
     !Number.isInteger(size) || !Number.isInteger(step) || size <= 0 || step <= 0
   ) {
-    throw new RangeError("Both size and step must be positive integer.");
+    throw new RangeError("Both size and step must be positive integer");
   }
 
   return Array.from(
