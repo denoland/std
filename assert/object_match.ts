@@ -47,7 +47,7 @@ export function assertObjectMatch(
   );
 }
 
-type loose = Record<PropertyKey, unknown>;
+type Loose = Record<PropertyKey, unknown>;
 
 function isObject(val: unknown): boolean {
   return typeof val === "object" && val !== null;
@@ -62,11 +62,11 @@ function defineProperty(target: object, key: PropertyKey, value: unknown) {
   });
 }
 
-function filter(a: loose, b: loose): loose {
-  const seen = new WeakMap<loose | unknown[], loose | unknown[]>();
+function filter(a: Loose, b: Loose): Loose {
+  const seen = new WeakMap<Loose | unknown[], Loose | unknown[]>();
   return filterObject(a, b);
 
-  function filterObject(a: loose, b: loose): loose {
+  function filterObject(a: Loose, b: Loose): Loose {
     // Prevent infinite loop with circular references with same filter
     const memo = seen.get(a);
     if (memo && (memo === b)) return a;
@@ -82,7 +82,7 @@ function filter(a: loose, b: loose): loose {
     }
 
     // Filter keys and symbols which are present in both actual and expected
-    const filtered = {} as loose;
+    const filtered = {} as Loose;
     const keysA = Reflect.ownKeys(a);
     const keysB = Reflect.ownKeys(b);
     const entries = keysA.filter((key) => keysB.includes(key))
@@ -102,7 +102,7 @@ function filter(a: loose, b: loose): loose {
         continue;
       }
 
-      const subset = (b as loose)[key];
+      const subset = (b as Loose)[key];
 
       // On array references, build a filtered array and filter nested objects inside
       if (Array.isArray(value) && Array.isArray(subset)) {
@@ -122,7 +122,7 @@ function filter(a: loose, b: loose): loose {
                 ([k, v]) => {
                   const v2 = subset.get(k);
                   if (isObject(v) && isObject(v2)) {
-                    return [k, filterObject(v as loose, v2 as loose)];
+                    return [k, filterObject(v as Loose, v2 as Loose)];
                   }
                   return [k, v];
                 },
@@ -141,7 +141,7 @@ function filter(a: loose, b: loose): loose {
         defineProperty(
           filtered,
           key,
-          filterObject(value as loose, subset as loose),
+          filterObject(value as Loose, subset as Loose),
         );
         continue;
       }
@@ -187,7 +187,7 @@ function filter(a: loose, b: loose): loose {
               .map(([k, v]) => {
                 const v2 = subset.get(k);
                 if (isObject(v) && isObject(v2)) {
-                  return [k, filterObject(v as loose, v2 as loose)];
+                  return [k, filterObject(v as Loose, v2 as Loose)];
                 }
 
                 return [k, v];
@@ -203,7 +203,7 @@ function filter(a: loose, b: loose): loose {
           continue;
         }
 
-        filtered.push(filterObject(value as loose, subset as loose));
+        filtered.push(filterObject(value as Loose, subset as Loose));
         continue;
       }
 

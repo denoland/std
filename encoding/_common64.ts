@@ -26,7 +26,7 @@ export type Base64Format = "Base64" | "Base64Url";
 
 /**
  * Calculate the output size needed to encode a given input size for
- * {@linkcode encodeRawBase64}.
+ * {@linkcode encodeIntoBase64}.
  *
  * @param originalSize The size of the input buffer.
  * @returns The size of the output buffer.

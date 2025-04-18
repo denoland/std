@@ -28,7 +28,7 @@ export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
 
 /**
  * Calculate the output size needed to encode a given input size for
- * {@linkcode encodeRawBase32}.
+ * {@linkcode encodeIntoBase32}.
  *
  * @param rawSize The size of the input buffer.
  * @returns The size of the output buffer.

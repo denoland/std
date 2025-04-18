@@ -312,3 +312,14 @@ Deno.test(
     assertEquals(entries, [[{ name: "Tūī" }, { favourite: true }]]);
   },
 );
+
+Deno.test(
+  "BidirectionalMap constructor accepts iterables of key-value pairs",
+  () => {
+    const bidiFromArr = new BidirectionalMap([
+      ...["zero", "one", "two"].entries(),
+    ]);
+    const bidiFromIter = new BidirectionalMap(["zero", "one", "two"].entries());
+    assertEquals(bidiFromArr, bidiFromIter);
+  },
+);
