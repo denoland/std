@@ -221,6 +221,13 @@ export class LoaderState {
     this.readIndent();
   }
 
+  skipWhitespaces() {
+    let ch = this.peek();
+    while (isWhiteSpace(ch)) {
+      ch = this.next();
+    }
+  }
+
   readIndent() {
     let char = this.peek();
     while (char === SPACE) {
@@ -526,9 +533,8 @@ export class LoaderState {
     let ch = this.peek();
 
     while (ch !== 0) {
-      while (isWhiteSpace(ch)) {
-        ch = this.next();
-      }
+      this.skipWhitespaces();
+      ch = this.peek();
 
       if (allowComments && ch === SHARP) {
         do {
@@ -988,9 +994,8 @@ export class LoaderState {
     }
 
     if (isWhiteSpace(ch)) {
-      do {
-        ch = this.next();
-      } while (isWhiteSpace(ch));
+      this.skipWhitespaces();
+      ch = this.peek();
 
       if (ch === SHARP) {
         do {
@@ -1156,9 +1161,8 @@ export class LoaderState {
         if (this.line === line) {
           ch = this.peek();
 
-          while (isWhiteSpace(ch)) {
-            ch = this.next();
-          }
+          this.skipWhitespaces();
+          ch = this.peek();
 
           if (ch === COLON) {
             ch = this.next();
@@ -1632,9 +1636,8 @@ export class LoaderState {
       }
 
       while (ch !== 0) {
-        while (isWhiteSpace(ch)) {
-          ch = this.next();
-        }
+        this.skipWhitespaces();
+        ch = this.peek();
 
         if (ch === SHARP) {
           do {
