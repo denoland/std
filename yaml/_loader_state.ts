@@ -221,6 +221,15 @@ export class LoaderState {
     this.readIndent();
   }
 
+  skipComment() {
+    let ch = this.peek();
+    if (ch !== SHARP) return;
+    ch = this.next();
+    while (ch !== 0 && !isEOL(ch)) {
+      ch = this.next();
+    }
+  }
+
   readIndent() {
     let char = this.peek();
     while (char === SPACE) {
@@ -530,10 +539,9 @@ export class LoaderState {
         ch = this.next();
       }
 
-      if (allowComments && ch === SHARP) {
-        do {
-          ch = this.next();
-        } while (ch !== LINE_FEED && ch !== CARRIAGE_RETURN && ch !== 0);
+      if (allowComments) {
+        this.skipComment();
+        ch = this.peek();
       }
 
       if (isEOL(ch)) {
@@ -992,11 +1000,8 @@ export class LoaderState {
         ch = this.next();
       } while (isWhiteSpace(ch));
 
-      if (ch === SHARP) {
-        do {
-          ch = this.next();
-        } while (!isEOL(ch) && ch !== 0);
-      }
+      this.skipComment();
+      ch = this.peek();
     }
 
     while (ch !== 0) {
@@ -1636,12 +1641,8 @@ export class LoaderState {
           ch = this.next();
         }
 
-        if (ch === SHARP) {
-          do {
-            ch = this.next();
-          } while (ch !== 0 && !isEOL(ch));
-          break;
-        }
+        this.skipComment();
+        ch = this.peek();
 
         if (isEOL(ch)) break;
 
