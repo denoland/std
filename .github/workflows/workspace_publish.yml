@@ -27,7 +27,7 @@ jobs:
         run: deno fmt --check
 
       - name: Test
-        run: deno task test --doc
+        run: deno task test
 
       - name: Publish to JSR
         run: deno publish

@@ -27,6 +27,7 @@ import { walk } from "@std/fs/walk";
 import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
 import { toFileUrl } from "@std/path/to-file-url";
+import { resolve } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -176,7 +177,7 @@ function assertHasParamTag(
   }
 }
 
-function assertSnippetsWork(
+function assertHasSnippets(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
   required = true,
@@ -239,7 +240,7 @@ function assertHasExampleTag(
       "@example tag must have a title",
       document,
     );
-    assertSnippetsWork(tag.doc, document);
+    assertHasSnippets(tag.doc, document);
   }
 }
 
@@ -279,7 +280,7 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
-  assertSnippetsWork(document.jsDoc.doc!, document, false);
+  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -323,7 +324,7 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertSnippetsWork(document.jsDoc.doc!, document, false);
+  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -415,7 +416,7 @@ function assertConstructorDocs(
  * - Code snippets that execute successfully.
  */
 function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
-  assertSnippetsWork(document.jsDoc.doc!, document);
+  assertHasSnippets(document.jsDoc.doc!, document);
 }
 
 /**
@@ -446,17 +447,20 @@ function assertInterfaceDocs(document: DocNodeWithJsDoc<DocNodeInterface>) {
   // assertHasDefaultTags(document);
 }
 
-function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/")) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
-    const parts = specifier.split("/");
-    if (parts.length === 2) {
-      specifier += "/mod.ts";
-    } else if (parts.length > 2) {
-      specifier += ".ts";
+function assertHasDeprecationDesc(document: DocNodeWithJsDoc<DocNode>) {
+  const tags = document.jsDoc?.tags;
+  if (!tags) return;
+  for (const tag of tags) {
+    if (tag.kind !== "deprecated") continue;
+    if (tag.doc === undefined) {
+      diagnostics.push(
+        new DocumentError(
+          "@deprecated tag must have a description",
+          document,
+        ),
+      );
     }
   }
-  return new URL(specifier, referrer).href;
 }
 
 async function checkDocs(specifier: string) {
@@ -469,19 +473,27 @@ async function checkDocs(specifier: string) {
       case "moduleDoc": {
         if (document.location.filename.endsWith("/mod.ts")) {
           assertModuleDoc(document);
+          assertHasDeprecationDesc(document);
         }
         break;
       }
       case "function": {
         assertFunctionDocs(document);
+        assertHasDeprecationDesc(document);
         break;
       }
       case "class": {
         assertClassDocs(document);
+        assertHasDeprecationDesc(document);
         break;
       }
       case "interface":
         assertInterfaceDocs(document);
+        assertHasDeprecationDesc(document);
+        break;
+      case "variable":
+        assertHasDeprecationDesc(document);
+        break;
     }
   }
 }

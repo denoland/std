@@ -89,6 +89,24 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
+type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
+
+function getUnit(max: number): Unit {
+  if (max < 2 ** 20) return "KiB";
+  if (max < 2 ** 30) return "MiB";
+  if (max < 2 ** 40) return "GiB";
+  if (max < 2 ** 50) return "TiB";
+  return "PiB";
+}
+
+const UNIT_RATE_MAP = new Map<Unit, number>([
+  ["KiB", 2 ** 10],
+  ["MiB", 2 ** 20],
+  ["GiB", 2 ** 30],
+  ["TiB", 2 ** 40],
+  ["PiB", 2 ** 50],
+]);
+
 /**
  * `ProgressBar` is a customisable class that reports updates to a
  * {@link WritableStream} on a 1s interval. Progress is communicated by calling
@@ -140,7 +158,7 @@ export interface ProgressBarOptions {
  * bar.end();
  */
 export class ProgressBar {
-  #unit: string;
+  #unit: Unit;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
   #id: number;
@@ -185,22 +203,8 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    if (this.#max < 2 ** 20) {
-      this.#unit = "KiB";
-      this.#rate = 2 ** 10;
-    } else if (this.#max < 2 ** 30) {
-      this.#unit = "MiB";
-      this.#rate = 2 ** 20;
-    } else if (this.#max < 2 ** 40) {
-      this.#unit = "GiB";
-      this.#rate = 2 ** 30;
-    } else if (this.#max < 2 ** 50) {
-      this.#unit = "TiB";
-      this.#rate = 2 ** 40;
-    } else {
-      this.#unit = "PiB";
-      this.#rate = 2 ** 50;
-    }
+    this.#unit = getUnit(max);
+    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
 
     const stream = new TextEncoderStream();
     stream.readable
