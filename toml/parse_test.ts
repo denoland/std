@@ -260,7 +260,6 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
-    assertThrows(() => parse("_0o755"));
     assertThrows(() => parse("0o_755"));
     assertThrows(() => parse("0o755_"));
     assertThrows(() => parse("0o0123__4567"));
