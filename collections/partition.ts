@@ -29,7 +29,7 @@
  */
 export function partition<T>(
   array: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): [T[], T[]];
 /**
  * Returns a tuple of two arrays with the first one containing all elements in
@@ -64,17 +64,18 @@ export function partition<T>(
  */
 export function partition<T, U extends T>(
   array: Iterable<T>,
-  predicate: (el: T) => el is U,
+  predicate: (el: T, index: number) => el is U,
 ): [U[], Exclude<T, U>[]];
 export function partition(
   array: Iterable<unknown>,
-  predicate: (el: unknown) => boolean,
+  predicate: (el: unknown, index: number) => boolean,
 ): [unknown[], unknown[]] {
   const matches: Array<unknown> = [];
   const rest: Array<unknown> = [];
+  let index = 0;
 
   for (const element of array) {
-    if (predicate(element)) {
+    if (predicate(element, index++)) {
       matches.push(element);
     } else {
       rest.push(element);
