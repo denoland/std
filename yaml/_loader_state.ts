@@ -1003,8 +1003,6 @@ export class LoaderState {
 
     if (isWhiteSpace(ch)) {
       this.skipWhitespaces();
-      ch = this.peek();
-
       this.skipComment();
       ch = this.peek();
     }
@@ -1642,8 +1640,6 @@ export class LoaderState {
 
       while (ch !== 0) {
         this.skipWhitespaces();
-        ch = this.peek();
-
         this.skipComment();
         ch = this.peek();
 
