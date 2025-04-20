@@ -23,12 +23,12 @@ alphabet.base64url
  * Options for encoding and decoding base64 strings.
  */
 export interface Base64Options {
-  /** The base 64 encoding alphabet. Defaults to "base64" */
+  /** The base64 alphabet. Defaults to "base64" */
   alphabet?: Base64Alphabet;
 }
 
 /**
- * The base 64 encoding alphabets.
+ * The base64 alphabets.
  */
 export type Base64Alphabet = "base64" | "base64url";
 
