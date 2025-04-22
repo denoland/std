@@ -45,7 +45,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @param entries An iterable of key-value pairs for the initial entries.
    */
-  constructor(entries?: readonly (readonly [K, V])[] | null) {
+  constructor(entries?: Iterable<readonly [K, V]> | null) {
     super();
     this.#reverseMap = new Map<V, K>();
     if (entries) {
