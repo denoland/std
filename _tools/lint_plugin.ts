@@ -24,7 +24,6 @@ function isConstantCase(string: string): boolean {
   return CONSTANT_CASE_REGEXP.test(string);
 }
 
-const LEADING_LOWERCASE_REGEXP = /^[a-z]/;
 const CONTRACTION_REGEXP = /\S'\S/;
 
 export default {
@@ -256,7 +255,7 @@ export default {
             const value = argument.value;
             if (typeof value !== "string") return;
 
-            if (value.match(LEADING_LOWERCASE_REGEXP)) {
+            if (value[0] !== value[0].toUpperCase()) {
               context.report({
                 node: argument,
                 message: "Error message starts with a lowercase.",
