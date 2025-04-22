@@ -9,6 +9,7 @@
     "./format": "./format.ts",
     "./is-leap": "./is_leap.ts",
     "./parse": "./parse.ts",
-    "./week-of-year": "./week_of_year.ts"
+    "./week-of-year": "./week_of_year.ts",
+    "./format-distance-to-now": "./format_distance_to_now.ts"
   }
 }
