@@ -43,7 +43,6 @@
     "docs"
   ],
   "lint": {
-    "plugins": ["./_tools/error_message_lint_plugin.ts"],
     "rules": {
       "tags": ["recommended", "jsr"],
       "include": [
