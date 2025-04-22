@@ -9,11 +9,32 @@ Deno.test("formats seconds ago", () => {
   assertEquals(result, "30 seconds ago");
 });
 
+Deno.test("formats seconds ago", () => {
+  const now = new Date();
+  const past = new Date(now.getTime() - 1 * 1000); // 1 seconds ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "1 second ago");
+});
+
+Deno.test("formats minute ago", () => {
+  const now = new Date();
+  const past = new Date(now.getTime() - 1 * 60 * 1000); // 1 minute ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "1 minute ago");
+});
+
 Deno.test("formats minutes ago", () => {
   const now = new Date();
   const past = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
   const result = formatDistanceToNow(past);
   assertEquals(result, "5 minutes ago");
+});
+
+Deno.test("formats hour ago", () => {
+  const now = new Date();
+  const past = new Date(now.getTime() - 1 * 60 * 60 * 1000); // 1 hour ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "1 hour ago");
 });
 
 Deno.test("formats hours ago", () => {
@@ -23,11 +44,25 @@ Deno.test("formats hours ago", () => {
   assertEquals(result, "2 hours ago");
 });
 
+Deno.test("formats day ago", () => {
+  const now = new Date();
+  const past = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "1 day ago");
+});
+
 Deno.test("formats days ago", () => {
   const now = new Date();
   const past = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // 3 days ago
   const result = formatDistanceToNow(past);
   assertEquals(result, "3 days ago");
+});
+
+Deno.test("formats week ago", () => {
+  const now = new Date();
+  const past = new Date(now.getTime() - 1 * 7 * 24 * 60 * 60 * 1000); // 1 week ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "1 week ago");
 });
 
 Deno.test("formats weeks ago", () => {
@@ -45,12 +80,20 @@ Deno.test("formats months ago", () => {
   assertEquals(result, "1 month ago");
 });
 
-Deno.test("formats years ago", () => {
+Deno.test("formats year ago", () => {
   const now = new Date();
   const past = new Date(now);
   past.setFullYear(now.getFullYear() - 1); // 1 year ago
   const result = formatDistanceToNow(past);
   assertEquals(result, "1 year ago");
+});
+
+Deno.test("formats years ago", () => {
+  const now = new Date();
+  const past = new Date(now);
+  past.setFullYear(now.getFullYear() - 2); // 2 years ago
+  const result = formatDistanceToNow(past);
+  assertEquals(result, "2 years ago");
 });
 
 Deno.test("formats just now", () => {
