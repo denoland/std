@@ -1,5 +1,7 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "jsr:@std/assert";
 import { formatDistanceToNow } from "./format_distance_to_now.ts";
+
 Deno.test("formats seconds ago", () => {
   const now = new Date();
   const past = new Date(now.getTime() - 30 * 1000); // 30 seconds ago

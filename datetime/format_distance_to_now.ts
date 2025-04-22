@@ -1,3 +1,4 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { difference } from "@std/datetime/difference";
 
 /**
