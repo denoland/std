@@ -51,6 +51,7 @@ import "../../collections/zip_test.ts";
 import "../../fs/_node_fs_file_test.ts";
 import "../../fs/unstable_chown_test.ts";
 import "../../fs/unstable_copy_file_test.ts";
+import "../../fs/unstable_create.ts";
 import "../../fs/unstable_link_test.ts";
 import "../../fs/unstable_make_temp_dir_test.ts";
 import "../../fs/unstable_make_temp_file_test.ts";

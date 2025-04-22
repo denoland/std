@@ -102,11 +102,11 @@ export interface SpinnerOptions {
  *
  * // You can also use the spinner with `Deno.stderr`
  * const spinner2 = new Spinner({ message: "Loading...", color: "yellow", output: Deno.stderr });
- * spinner.start();
+ * spinner2.start();
  *
  * setTimeout(() => {
- *  spinner.stop();
- *  console.error"Finished loading!");
+ *  spinner2.stop();
+ *  console.error("Finished loading!");
  * }, 3_000);
  * ```
  */

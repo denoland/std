@@ -115,6 +115,14 @@ export class Scanner {
   startsWith(searchString: string) {
     return this.#source.startsWith(searchString, this.#position);
   }
+
+  match(regExp: RegExp) {
+    if (!regExp.sticky) {
+      throw new Error(`RegExp ${regExp} does not have a sticky 'y' flag`);
+    }
+    regExp.lastIndex = this.#position;
+    return this.#source.match(regExp);
+  }
 }
 
 // -----------------------
@@ -251,9 +259,8 @@ function merge(
     if (!result.ok) return failure();
     let body = {};
     for (const record of result.body) {
-      if (typeof body === "object" && body !== null) {
-        // deno-lint-ignore no-explicit-any
-        body = deepMerge(body, record as Record<any, any>);
+      if (typeof record === "object" && record !== null) {
+        body = deepMerge(body, record);
       }
     }
     return success(body);
@@ -314,21 +321,12 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
-const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
-const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
-
+const BARE_KEY_REGEXP = /[A-Za-z0-9_-]+/y;
 export function bareKey(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
-  if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
-    return failure();
-  }
-  const acc: string[] = [];
-  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  const key = acc.join("");
+  const key = scanner.match(BARE_KEY_REGEXP)?.[0];
+  if (!key) return failure();
+  scanner.next(key.length);
   return success(key);
 }
 
@@ -356,10 +354,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
     case "U": {
       // Unicode character
       const codePointLen = scanner.char() === "u" ? 4 : 6;
-      const codePoint = parseInt(
-        "0x" + scanner.slice(1, 1 + codePointLen),
-        16,
-      );
+      const codePoint = parseInt("0x" + scanner.slice(1, 1 + codePointLen), 16);
       const str = String.fromCodePoint(codePoint);
       scanner.next(codePointLen + 1);
       return success(str);
@@ -525,148 +520,85 @@ export function symbols(scanner: Scanner): ParseResult<unknown> {
 
 export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
 
+const BINARY_REGEXP = /0b[01_]+/y;
+export function binary(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(BINARY_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 2);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const OCTAL_REGEXP = /0o[0-7_]+/y;
+export function octal(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(OCTAL_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 8);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const HEX_REGEXP = /0x[0-9a-f_]+/yi;
+export function hex(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(HEX_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 16);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const INTEGER_REGEXP = /[+-]?[0-9_]+/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
-
-  // Handle binary, octal, or hex numbers
-  const first2 = scanner.slice(0, 2);
-  if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
-    scanner.next(2);
-    const prefix = first2.toLowerCase();
-
-    // Determine allowed characters and base in one switch
-    let allowedChars: RegExp;
-    let base: number;
-    switch (prefix) {
-      case "0b":
-        allowedChars = /[01_]/; // Binary
-        base = 2;
-        break;
-      case "0o":
-        allowedChars = /[0-7_]/; // Octal
-        base = 8;
-        break;
-      case "0x":
-        allowedChars = /[0-9a-f_]/i; // Hex
-        base = 16;
-        break;
-      default:
-        return failure(); // Unreachable due to regex check
-    }
-
-    const acc = [];
-    // Collect valid characters
-    while (!scanner.eof()) {
-      const char = scanner.char();
-      if (!allowedChars.test(char)) break;
-      if (char === "_") {
-        scanner.next();
-        continue;
-      }
-      acc.push(char);
-      scanner.next();
-    }
-
-    if (!acc.length) return failure();
-
-    const numberStr = acc.join("");
-    const number = parseInt(numberStr, base);
-    return isNaN(number) ? failure() : success(number);
-  }
-
-  // Handle regular integers
-  const acc = [];
-  if (/[+-]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  while (!scanner.eof() && /[0-9_]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]!))) {
-    return failure();
-  }
-
-  const intStr = acc.filter((c) => c !== "_").join("");
-  const int = parseInt(intStr, 10);
+  const match = scanner.match(INTEGER_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.replaceAll("_", "");
+  const int = parseInt(value, 10);
   return success(int);
 }
 
+const FLOAT_REGEXP = /[+-]?[0-9_]+(?:\.[0-9_]+)?(?:e[+-]?[0-9_]+)?/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
-
-  // lookahead validation is needed for integer value is similar to float
-  let position = 0;
-  while (
-    scanner.char(position) &&
-    !END_OF_VALUE_REGEXP.test(scanner.char(position))
-  ) {
-    if (!FLOAT_REGEXP.test(scanner.char(position))) return failure();
-    position++;
-  }
-
-  const acc = [];
-  if (/[+-]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  if (acc.length === 0) return failure();
-  const float = parseFloat(acc.filter((char) => char !== "_").join(""));
+  const match = scanner.match(FLOAT_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.replaceAll("_", "");
+  const float = parseFloat(value);
   if (isNaN(float)) return failure();
-
   return success(float);
 }
 
+const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
-
-  let dateStr = scanner.slice(0, 10);
   // example: 1979-05-27
-  if (!/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return failure();
-  scanner.next(10);
-
-  const acc = [];
-  // example: 1979-05-27T00:32:00Z
-  while (/[ 0-9TZ.:+-]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  dateStr += acc.join("");
-  const date = new Date(dateStr.trim());
+  const match = scanner.match(DATE_TIME_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const date = new Date(match.trim());
   // invalid date
   if (isNaN(date.getTime())) {
-    throw new SyntaxError(`Invalid date string "${dateStr}"`);
+    throw new SyntaxError(`Invalid date string "${match}"`);
   }
-
   return success(date);
 }
 
+const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?/y;
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
 
-  let timeStr = scanner.slice(0, 8);
-  if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
-  scanner.next(8);
-
-  const acc = [];
-  if (scanner.char() !== ".") return success(timeStr);
-  acc.push(scanner.char());
-  scanner.next();
-
-  while (/[0-9]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  timeStr += acc.join("");
-  return success(timeStr);
+  const match = scanner.match(LOCAL_TIME_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  return success(match);
 }
 
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
@@ -723,6 +655,9 @@ export const value = or([
   symbols,
   dateTime,
   localTime,
+  binary,
+  octal,
+  hex,
   float,
   integer,
   arrayValue,
@@ -776,8 +711,8 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) return failure();
   let body = {};
+  if (!blocks.ok) return success(body);
   for (const block of blocks.body) {
     switch (block.type) {
       case "Block": {
