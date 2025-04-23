@@ -199,6 +199,10 @@ function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
   };
 }
 
+/** Join the parse results of the given parser into an array.
+ *
+ * If the parser fails at the first attempt, it will return an empty array.
+ */
 function join<T>(
   parser: ParserComponent<T>,
   separator: string,
@@ -221,6 +225,10 @@ function join<T>(
   };
 }
 
+/** Join the parse results of the given parser into an array.
+ *
+ * This requires the parser to succeed at least once.
+ */
 function join1<T>(
   parser: ParserComponent<T>,
   separator: string,
