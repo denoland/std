@@ -1059,7 +1059,7 @@ Deno.test("assertSpyCall() works with function", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1192,7 +1192,7 @@ Deno.test("assertSpyCall() works with method", () => {
         error: { msgIncludes: "x" },
       }),
     AssertionError,
-    "Spy call did not throw an error, a value was returned",
+    "Spy call did not throw an error, a value was returned.",
   );
   assertThrows(
     () => assertSpyCall(spyMethod, 2),
@@ -1276,7 +1276,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError"',
+    'Expected error to be instance of "OtherError", but was "ExampleError".',
   );
   assertThrows(
     () =>
@@ -1287,7 +1287,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error to be instance of "OtherError", but was "ExampleError"',
+    'Expected error to be instance of "OtherError", but was "ExampleError".',
   );
   assertThrows(
     () =>
@@ -1298,7 +1298,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   assertThrows(
     () =>
@@ -1309,7 +1309,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   assertThrows(
     () =>
@@ -1319,7 +1319,7 @@ Deno.test("assertSpyCall() works with error", () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   assertThrows(
     () =>
@@ -1327,7 +1327,7 @@ Deno.test("assertSpyCall() works with error", () => {
         returned: 7,
       }),
     AssertionError,
-    "Spy call did not return expected value, an error was thrown",
+    "Spy call did not return expected value, an error was thrown.",
   );
   assertThrows(
     () => assertSpyCall(spyFunc, 1),
@@ -1601,7 +1601,7 @@ Deno.test("assertSpyCallAsync() rejects on sync value", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, a value was returned",
+    "Spy call did not return a promise, a value was returned.",
   );
 });
 
@@ -1614,7 +1614,7 @@ Deno.test("assertSpyCallAsync() rejects on sync error", async () => {
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,
-    "Spy call did not return a promise, an error was thrown",
+    "Spy call did not return a promise, an error was thrown.",
   );
 });
 
@@ -1722,7 +1722,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   await assertRejects(
     () =>
@@ -1733,7 +1733,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   await assertRejects(
     () =>
@@ -1743,7 +1743,7 @@ Deno.test("assertSpyCallAsync() works with error", async () => {
         },
       }),
     AssertionError,
-    'Expected error message to include "x", but got "failed"',
+    'Expected error message to include "x", but got "failed".',
   );
   await assertRejects(
     () =>

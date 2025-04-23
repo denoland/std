@@ -252,6 +252,7 @@ new Error("Cannot parse input");
 new Error("Cannot parse input x");
 new Error('Cannot parse input "hello, world"');
 new Error("Cannot parse input x: value is empty");
+new AssertionError("Something went wrong.");
 
 // ignored
 const classes = { Error: Error }

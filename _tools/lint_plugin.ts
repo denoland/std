@@ -273,27 +273,30 @@ export default {
                 },
               });
             }
-            if (value.endsWith(".")) {
-              context.report({
-                node: argument,
-                message: "Error message ends with a period.",
-                hint:
-                  "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
-                fix(fixer) {
-                  const newValue = argument.raw.at(0) +
-                    value.slice(0, -1) +
-                    argument.raw.at(-1);
-                  return fixer.replaceText(argument, newValue);
-                },
-              });
-            }
-            if (value.includes(". ")) {
-              context.report({
-                node: argument,
-                message: "Error message contains periods.",
-                hint:
-                  "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
-              });
+            if (name !== "AssertionError") {
+              // AssertionError is allowed to have a period in the message
+              if (value.endsWith(".")) {
+                context.report({
+                  node: argument,
+                  message: "Error message ends with a period.",
+                  hint:
+                    "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+                  fix(fixer) {
+                    const newValue = argument.raw.at(0) +
+                      value.slice(0, -1) +
+                      argument.raw.at(-1);
+                    return fixer.replaceText(argument, newValue);
+                  },
+                });
+              }
+              if (value.includes(". ")) {
+                context.report({
+                  node: argument,
+                  message: "Error message contains periods.",
+                  hint:
+                    "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+                });
+              }
             }
             if (value.match(CONTRACTION_REGEXP)) {
               context.report({
