@@ -52,7 +52,7 @@ function suggestKebabName(name: string): string {
     .filter((word) => name.includes(word));
 
   // If "ignore" words are present, suggest a kebab case name with "ignore" word
-  // format perserved.
+  // format preserved.
   if (ignoreWords.length !== 0) {
     ignoreWords.sort((aWord, bWord) => bWord.length - aWord.length);
 
