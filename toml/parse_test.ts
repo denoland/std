@@ -1408,3 +1408,16 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "parse() handles empty inline table",
+  fn() {
+    const input = `[package.metadata.details]
+readme = { }`;
+    const expected = {
+      package: { metadata: { details: { readme: {} } } },
+    };
+    const actual = parse(input);
+    assertEquals(actual, expected);
+  },
+});
