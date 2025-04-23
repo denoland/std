@@ -34,13 +34,8 @@
   },
   "exclude": [
     ".git",
-    "crypto/_wasm/target",
-    "cov",
     "jsonc/testdata",
-    "front_matter/testdata",
-    "_tools/node_test_runner",
-    "coverage",
-    "docs"
+    "_tools/node_test_runner"
   ],
   "lint": {
     "rules": {

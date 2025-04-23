@@ -244,6 +244,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
           return context.digestAndDrop(length).buffer as ArrayBuffer;
         } else {
           throw new TypeError(
+            // deno-lint-ignore deno-style-guide/error-message
             "data must be a BufferSource or [Async]Iterable<BufferSource>",
           );
         }
@@ -281,6 +282,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
         return context.digestAndDrop(length).buffer as ArrayBuffer;
       }
       throw new TypeError(
+        // deno-lint-ignore deno-style-guide/error-message
         "data must be a BufferSource or Iterable<BufferSource>",
       );
     },

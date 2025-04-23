@@ -16,7 +16,7 @@
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeBase64(await Deno.readFile("./deno.lock"), "Base64"),
+ *   encodeBase64(await Deno.readFile("./deno.lock"), { alphabet: "base64" }),
  * );
  * ```
  *
@@ -29,7 +29,7 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  type Base64Format,
+  type Base64Alphabet,
   calcSizeBase64,
   decode,
   encode,
@@ -77,8 +77,8 @@ export class Base64EncoderStream<T extends "string" | "bytes">
    *
    * @param options The options for the base64 stream.
    */
-  constructor(options: { format?: Base64Format; output?: T } = {}) {
-    const abc = alphabet[options.format ?? "Base64"];
+  constructor(options: { alphabet?: Base64Alphabet; output?: T } = {}) {
+    const abc = alphabet[options.alphabet ?? "base64"];
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
       return (x) => decoder.decode(x) as Expect<T>;
@@ -113,7 +113,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
             calcSizeBase64(remainder),
           );
           let o = encode(output, i, 0, abc, padding);
-          if (options.format === "Base64Url") {
+          if (options.alphabet === "base64url") {
             const i = output.indexOf(padding, o - 2);
             if (i > 0) o = i;
           }
@@ -161,8 +161,8 @@ export class Base64DecoderStream<T extends "string" | "bytes">
    *
    * @param options The options for the base64 stream.
    */
-  constructor(options: { format?: Base64Format; input?: T } = {}) {
-    const abc = rAlphabet[options.format ?? "Base64"];
+  constructor(options: { alphabet?: Base64Alphabet; input?: T } = {}) {
+    const abc = rAlphabet[options.alphabet ?? "base64"];
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
       return (x) => encoder.encode(x as string) as Uint8Array_;
