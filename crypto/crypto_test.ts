@@ -1753,7 +1753,7 @@ for (const algorithm of DIGEST_ALGORITHM_NAMES) {
             );
           }
         } else {
-          throw new TypeError("Expected value has an unexpected type");
+          throw new TypeError("expected value has an unexpected type");
         }
       }
     }
