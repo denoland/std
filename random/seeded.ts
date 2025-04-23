@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
+import { Pcg32 } from "./_pcg32.ts";
 import type { Prng } from "./_types.ts";
 
 /**
@@ -27,15 +27,34 @@ import type { Prng } from "./_types.ts";
  * ```
  */
 export function randomSeeded(seed: bigint): Prng {
-  const pcg = fromSeed(seedFromU64(seed, 16));
-  return () => uint32ToFloat64(nextU32(pcg));
+  const pcg = Pcg32.seedFromU64(seed);
+  return () => pcg.nextUint32() / 2 ** 32;
 }
 
 /**
- * Convert a 32-bit unsigned integer to a float64 in the range `[0, 1)`.
- * This operation is lossless, i.e. it's always possible to get the original
- * value back by multiplying by 2 ** 32.
+ * Creates a pseudo-random number generator that generates random numbers in
+ * the range `[0, 1)`, based on the given seed. The algorithm used for
+ * generation is {@link https://www.pcg-random.org/download.html | PCG32}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param seed The seed used to initialize the random number generator's state.
+ * @returns A pseudo-random number generator function, which will generate
+ * different random numbers on each call.
+ *
+ * @example Usage
+ * ```ts
+ * import { randomSeeded53Bit } from "@std/random";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const prng = randomSeeded53Bit(1n);
+ *
+ * assertEquals(prng(), 0.49116444173310125);
+ * assertEquals(prng(), 0.06903754193160427);
+ * assertEquals(prng(), 0.16063206851777034);
+ * ```
  */
-function uint32ToFloat64(u32: number): number {
-  return u32 / 2 ** 32;
+export function randomSeeded53Bit(seed: bigint): Prng {
+  const pcg = Pcg32.seedFromU64(seed);
+  return () => pcg.nextFloat64();
 }

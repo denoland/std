@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { randomSeeded } from "./seeded.ts";
+import { randomSeeded, randomSeeded53Bit } from "./seeded.ts";
 import { assertAlmostEquals, assertEquals } from "@std/assert";
 
 Deno.test("randomSeeded() generates random numbers", () => {
@@ -10,8 +10,8 @@ Deno.test("randomSeeded() generates random numbers", () => {
   assertEquals(prng(), 0.7924694607499987);
 });
 
-Deno.test("randomSeeded() gives relatively uniform distribution of random numbers", async (t) => {
-  const prng = randomSeeded(1n);
+Deno.test("randomSeeded53Bit() gives relatively uniform distribution of random numbers", async (t) => {
+  const prng = randomSeeded53Bit(1n);
   const results = Array.from({ length: 1e4 }, prng);
 
   await t.step("all results are in [0, 1)", () => {
