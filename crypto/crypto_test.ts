@@ -333,7 +333,7 @@ Deno.test("digest() throws on invalid input", async () => {
   await assertRejects(
     async () => await stdCrypto.subtle.digest("BLAKE2B", {} as Iterable<never>),
     TypeError,
-    "Data must be a BufferSource or [Async]Iterable<BufferSource>",
+    "data must be a BufferSource or [Async]Iterable<BufferSource>",
   );
 
   await assertRejects(
@@ -363,7 +363,7 @@ Deno.test("digestSync() throws on invalid input", () => {
   assertThrows(
     () => stdCrypto.subtle.digestSync("BLAKE2B", {} as Iterable<never>),
     TypeError,
-    "Data must be a BufferSource or Iterable<BufferSource>",
+    "data must be a BufferSource or Iterable<BufferSource>",
   );
 
   assertThrows(
