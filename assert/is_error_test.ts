@@ -29,10 +29,8 @@ Deno.test("assertIsError() allows subclass of Error", () => {
 });
 
 Deno.test("assertIsError() allows custom error", () => {
-  // deno-lint-ignore deno-style-guide/error-message
   assertIsError(new CustomError("failed"), CustomError, "fail");
   assertThrows(
-    // deno-lint-ignore deno-style-guide/error-message
     () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
     AssertionError,
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
@@ -43,7 +41,6 @@ Deno.test("assertIsError() accepts abstract class", () => {
   abstract class AbstractError extends Error {}
   class ConcreteError extends AbstractError {}
 
-  // deno-lint-ignore deno-style-guide/error-message
   assertIsError(new ConcreteError("failed"), AbstractError, "fail");
 });
 
@@ -51,7 +48,6 @@ Deno.test("assertIsError() throws with message diff containing double quotes", (
   assertThrows(
     () =>
       assertIsError(
-        // deno-lint-ignore deno-style-guide/error-message
         new CustomError('error with "double quotes"'),
         CustomError,
         'doesn\'t include "this message"',
@@ -74,7 +70,6 @@ Deno.test("assertIsError() throws with custom message", () => {
   assertThrows(
     () =>
       assertIsError(
-        // deno-lint-ignore deno-style-guide/error-message
         new CustomError("failed"),
         AnotherCustomError,
         "fail",

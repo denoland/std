@@ -245,6 +245,9 @@ export default {
     // https://docs.deno.com/runtime/contributing/style_guide/#error-messages
     "error-message": {
       create(context) {
+        if (context.filename.endsWith("test.ts")) {
+          return {};
+        }
         return {
           NewExpression(node) {
             if (node.callee.type !== "Identifier") return;

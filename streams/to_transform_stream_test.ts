@@ -197,7 +197,6 @@ Deno.test({
     // deno-lint-ignore require-yield
     const transform = toTransformStream(function* (src) {
       src.getReader(); // lock the source stream to cause error at cancel
-      // deno-lint-ignore deno-style-guide/error-message
       throw new Error("foo");
     });
 

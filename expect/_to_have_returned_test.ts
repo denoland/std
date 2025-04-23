@@ -7,7 +7,6 @@ import { AssertionError, assertThrows } from "@std/assert";
 Deno.test("expect().toHaveReturned()", () => {
   const mockFn0 = fn();
   const mockFn1 = fn(() => {
-    // deno-lint-ignore deno-style-guide/error-message
     throw new Error("foo");
   });
 
@@ -35,7 +34,6 @@ Deno.test("expect().toHaveReturned() with custom error message", () => {
   const msg = "toHaveReturned custom error message";
   const mockFn0 = fn();
   const mockFn1 = fn(() => {
-    // deno-lint-ignore deno-style-guide/error-message
     throw new Error("foo");
   });
 

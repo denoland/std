@@ -30,7 +30,6 @@ Deno.test("ensureSymlink() rejects if file does not exist", async function () {
   await assertRejects(
     async () => {
       await Deno.stat(testFile).then(() => {
-        // deno-lint-ignore deno-style-guide/error-message
         throw new Error("test file should exist.");
       });
     },
@@ -52,7 +51,6 @@ Deno.test("ensureSymlinkSync() throws if file does not exist", function () {
 
   assertThrows(() => {
     Deno.statSync(testFile);
-    // deno-lint-ignore deno-style-guide/error-message
     throw new Error("test file should exist.");
   });
 

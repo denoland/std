@@ -34,7 +34,6 @@ Deno.test("deadline() throws when promise is rejected", async () => {
   const { signal } = controller;
   const p = delay(100, { signal })
     .catch(() => {})
-    // deno-lint-ignore deno-style-guide/error-message
     .then(() => Promise.reject(new Error("booom")));
   await assertRejects(
     async () => {

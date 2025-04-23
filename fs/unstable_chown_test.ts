@@ -23,7 +23,6 @@ function runId(
     } else if (option === "group") {
       id = spawn("id", ["-g"]);
     } else {
-      // deno-lint-ignore deno-style-guide/error-message
       return reject(new Error("Invalid option."));
     }
 

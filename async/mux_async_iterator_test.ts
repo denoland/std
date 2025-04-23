@@ -16,7 +16,6 @@ async function* gen456(): AsyncIterableIterator<number> {
 
 async function* genThrows(): AsyncIterableIterator<number> {
   yield 7;
-  // deno-lint-ignore deno-style-guide/error-message
   throw new Error("something went wrong");
 }
 
