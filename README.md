@@ -18,6 +18,7 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 - [Design documentation](.github/ARCHITECTURE.md#design)
 - [Contributing guidelines](.github/CONTRIBUTING.md)
 - [Frequently asked questions (FAQ)](./.github/FAQ.md)
+- [Test coverage explorer](https://std-coverage.deno.dev/)
 
 ## Releases
 

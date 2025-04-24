@@ -65,12 +65,12 @@ export class NodeFsFile implements FsFile {
 
   // deno-lint-ignore require-await no-unused-vars
   async lock(exclusive?: boolean): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented");
   }
 
   // deno-lint-ignore no-unused-vars
   lockSync(exclusive?: boolean): void {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented");
   }
 
   async read(p: Uint8Array): Promise<number | null> {
@@ -99,7 +99,7 @@ export class NodeFsFile implements FsFile {
 
   //deno-lint-ignore no-unused-vars
   setRaw(mode: boolean, options?: SetRawOptions): void {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented");
   }
 
   async stat(): Promise<FileInfo> {
@@ -174,11 +174,11 @@ export class NodeFsFile implements FsFile {
 
   // deno-lint-ignore require-await
   async unlock(): Promise<void> {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented");
   }
 
   unlockSync(): void {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented");
   }
 
   async utime(atime: number | Date, mtime: number | Date): Promise<void> {
