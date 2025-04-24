@@ -19,39 +19,38 @@ const EXCEPTIONS = [
   "@std/http",
 ];
 
-const allEntryPoints = await getEntrypoints();
+const entrypoints = await getEntrypoints();
 const unstablePackageNames = (await getPackagesDenoJsons())
   .filter(({ version }) => version.startsWith("0."))
   .map(({ name }) => name);
 
-let [unstableEntrypoints, stableEntrypoints2] = partition(
-  allEntryPoints,
+const [unstableEntrypoints, stableEntrypoints] = partition(
+  entrypoints,
   (entrypoint) =>
     unstablePackageNames.some((name) => entrypoint.startsWith(name)) ||
     entrypoint.includes("unstable-"),
 );
-unstableEntrypoints = unstableEntrypoints
+
+const unstableSpecifiers = unstableEntrypoints
   .map((entrypoint) => import.meta.resolve(entrypoint));
-stableEntrypoints2 = stableEntrypoints2
+const stableSpecifiers = stableEntrypoints
   .filter((entrypoint) => !EXCEPTIONS.includes(entrypoint))
   .map((entrypoint) => import.meta.resolve(entrypoint));
 
 let hasError = false;
-const graph = await createGraph(stableEntrypoints2, { resolve });
+const graph = await createGraph(stableSpecifiers, { resolve });
 for (const module of graph.modules) {
   if (module.dependencies === undefined) continue;
   for (const dependency of module.dependencies) {
     if (
-      unstableEntrypoints.some((entrypoint) =>
-        entrypoint === dependency.specifier
-      )
-    ) {
-      console.error(
-        `Stable module ${module.specifier} imports unstable module:`,
-        dependency,
-      );
-      hasError = true;
-    }
+      dependency.code?.specifier === undefined ||
+      !unstableSpecifiers.includes(dependency.code.specifier)
+    ) continue;
+    console.error(
+      `Stable module ${module.specifier} imports unstable module:`,
+      dependency.code.specifier,
+    );
+    hasError = true;
   }
 }
 
