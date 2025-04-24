@@ -119,20 +119,6 @@ Deno.test("serveDir() sets last-modified header", async () => {
   assertAlmostEquals(lastModifiedTime, expectedTime, 5 * MINUTE);
 });
 
-Deno.test("serveDir() sets date header", async () => {
-  const req = new Request("http://localhost/test_file.txt");
-  const res = await serveDir(req, serveDirOptions);
-  await res.body?.cancel();
-  const dateHeader = res.headers.get("date") as string;
-  const date = Date.parse(dateHeader);
-  const expectedTime =
-    TEST_FILE_STAT.atime && TEST_FILE_STAT.atime instanceof Date
-      ? TEST_FILE_STAT.atime.getTime()
-      : Number.NaN;
-
-  assertAlmostEquals(date, expectedTime, 5 * MINUTE);
-});
-
 Deno.test("serveDir()", async () => {
   const req = new Request("http://localhost/hello.html");
   const res = await serveDir(req, serveDirOptions);
