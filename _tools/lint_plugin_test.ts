@@ -56,6 +56,77 @@ class MyClass {
   );
 });
 
+Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+const foo = () => "bar";
+export const bar = () => "foo";
+    `,
+    [
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [13, 24],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+      {
+        id: "deno-style-guide/no-top-level-arrow-syntax",
+        range: [45, 56],
+        fix: [],
+        message: "Top-level functions should not use arrow syntax",
+        hint:
+          "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+      },
+    ],
+  );
+
+  // Good
+  assertLintPluginDiagnostics(
+    `
+function foo() {
+  const bar = () => "baz";
+
+  return "bar";
+}`,
+    [],
+  );
+});
+
+Deno.test("deno-style-guide/no-external-code", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics('import { walk } from "@std/fs/walk";', []);
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+import { bad } from "https://deno.land/malicious-muffin/bad.ts";
+import { bad } from "jsr:@malicious-muffin/bad";
+    `,
+    [{
+      id: "deno-style-guide/no-external-code",
+      fix: [],
+      range: [1, 65],
+      message: "External imports are not allowed outside of tools",
+      hint:
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
+    }, {
+      id: "deno-style-guide/no-external-code",
+      fix: [],
+      range: [66, 114],
+      message: "External imports are not allowed outside of tools",
+      hint:
+        'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
+    }],
+  );
+});
+
 Deno.test("deno-style-guide/naming-convention", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {
@@ -166,6 +237,75 @@ enum enumName {
         id: "deno-style-guide/naming-convention",
         message: "Interface name 'interfaceName' is not PascalCase.",
         range: [264, 277],
+      },
+    ],
+  );
+});
+
+Deno.test("deno-style-guide/error-message", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics(
+    `
+new Error("Cannot parse input");
+new Error("Cannot parse input x");
+new Error('Cannot parse input "hello, world"');
+new Error("Cannot parse input x: value is empty");
+new AssertionError("Something went wrong.");
+
+// ignored
+const classes = { Error: Error }
+new classes.Error();
+new Class("Cannot parse input");
+new Error(message);
+new WrongParamTypeForAnError(true);
+    `,
+    [],
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+new Error("cannot parse input");
+new TypeError("Cannot parse input.");
+new SyntaxError("Invalid input x");
+new RangeError("Cannot parse input x. value is empty")
+new CustomError("Can't parse input");
+
+    `,
+    [
+      {
+        fix: [{ range: [11, 31], text: '"Cannot parse input"' }],
+        hint:
+          "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message starts with a lowercase.",
+        range: [11, 31],
+      },
+      {
+        fix: [{ range: [48, 69], text: '"Cannot parse input"' }],
+        hint:
+          "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message ends with a period.",
+        range: [48, 69],
+      },
+      {
+        fix: [],
+        hint:
+          "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message contains periods.",
+        range: [123, 161],
+      },
+      {
+        fix: [],
+        hint:
+          "Use the full form in error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message uses contractions.",
+        range: [179, 198],
       },
     ],
   );

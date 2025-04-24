@@ -6,7 +6,6 @@ import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
-import { isTestFile } from "./utils.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
@@ -68,7 +67,10 @@ for await (
       .replaceAll("\\", "/");
 
     if (!modExportSpecifiers.has(relativeSpecifier)) {
-      if (isTestFile(filePath)) continue;
+      if (
+        filePath.endsWith("test.ts") &&
+        Deno.readTextFileSync(filePath).includes("Deno.test(")
+      ) continue;
 
       console.warn(
         `${
