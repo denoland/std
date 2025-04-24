@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { dirname } from "@std/path/dirname";
+
 /**
  * Copy bytes from the source array to the destination array and returns the
  * number of bytes copied.

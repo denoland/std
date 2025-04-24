@@ -8,64 +8,53 @@
  *
  * @module
  */
+import { getEntrypoints, getPackagesDenoJsons, resolve } from "./utils.ts";
+import { partition } from "@std/collections/partition";
+import { createGraph } from "@deno/graph";
 
 // These 2 paths are known to include unstable module (net/unstable_get_network_address.ts)
 // and should be ignored.
 const EXCEPTIONS = [
-  "std/http/file_server.ts",
-  "std/http/mod.ts",
+  "@std/http/file-server",
+  "@std/http",
 ];
 
-import denoJson from "../deno.json" with { type: "json" };
-import { join } from "@std/path/unstable-join";
-import { greaterOrEqual, parse } from "@std/semver";
-import { zip } from "@std/collections/zip";
-import { resolve } from "./utils.ts";
-import { createGraph } from "@deno/graph";
+const allEntryPoints = await getEntrypoints();
+const unstablePackageNames = (await getPackagesDenoJsons())
+  .filter(({ version }) => version.startsWith("0."))
+  .map(({ name }) => name);
 
-type DenoJson = { version: string; exports: Record<string, string> };
-function readDenoJson(path: string): Promise<DenoJson> {
-  return Deno.readTextFile(join(path, "deno.json")).then(JSON.parse);
-}
-const semver1 = parse("1.0.0");
-function isStable(version: string) {
-  return greaterOrEqual(parse(version), semver1);
-}
-
-const { workspace } = denoJson;
-const packages = zip(workspace, await Promise.all(workspace.map(readDenoJson)));
-const stablePackages = packages.filter(([_, { version }]) => isStable(version));
-const unstablePackagePaths = packages
-  .filter(([_, { version }]) => !isStable(version))
-  .map(([path]) => join("std", path));
-const stableEntrypoints = stablePackages.flatMap(([dir, { exports }]) =>
-  Object.values(exports)
-    .filter((path) => !path.includes("unstable_"))
-    .map((path) => new URL(`../${dir}/${path}`, import.meta.url).href)
+let [unstableEntrypoints, stableEntrypoints2] = partition(
+  allEntryPoints,
+  (entrypoint) =>
+    unstablePackageNames.some((name) => entrypoint.startsWith(name)) ||
+    entrypoint.includes("unstable-"),
 );
-
-function isUnstableModule(specifier: string) {
-  return unstablePackagePaths.some((path) => specifier.includes(path)) ||
-    specifier.includes("unstable_");
-}
+unstableEntrypoints = unstableEntrypoints
+  .map((entrypoint) => import.meta.resolve(entrypoint));
+stableEntrypoints2 = stableEntrypoints2
+  .filter((entrypoint) => !EXCEPTIONS.includes(entrypoint))
+  .map((entrypoint) => import.meta.resolve(entrypoint));
 
 let hasError = false;
-for (const path of stableEntrypoints) {
-  if (EXCEPTIONS.some((exception) => path.endsWith(exception))) {
-    console.log(`Skip checking ${path}`);
-    continue;
-  }
-  const graph = await createGraph(path, { resolve });
-  const dependencySpecifiers = graph.modules.map((m) => m.specifier);
-  const unstableDependencies = dependencySpecifiers.filter(isUnstableModule);
-  if (unstableDependencies.length > 0) {
-    console.error(
-      `Stable module ${path} imports unstable modules:`,
-      unstableDependencies,
-    );
-    hasError = true;
+const graph = await createGraph(stableEntrypoints2, { resolve });
+for (const module of graph.modules) {
+  if (module.dependencies === undefined) continue;
+  for (const dependency of module.dependencies) {
+    if (
+      unstableEntrypoints.some((entrypoint) =>
+        entrypoint === dependency.specifier
+      )
+    ) {
+      console.error(
+        `Stable module ${module.specifier} imports unstable module:`,
+        dependency,
+      );
+      hasError = true;
+    }
   }
 }
+
 if (hasError) {
   Deno.exit(1);
 }

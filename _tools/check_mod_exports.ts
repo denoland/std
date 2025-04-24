@@ -6,20 +6,18 @@ import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
+import { getEntrypoints } from "./utils.ts";
+import { fromFileUrl } from "@std/path/from-file-url";
 
-const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 let shouldFail = false;
 
-for await (
-  const { path: modFilePath } of walk(ROOT, {
-    includeDirs: true,
-    exts: ["ts"],
-    match: [/(\/|\\)mod\.ts$/],
-    maxDepth: 2,
-  })
-) {
+const MOD_FILE_PATHS = (await getEntrypoints())
+  .filter((entrypoint) => entrypoint.split("/").length === 2)
+  .map((entrypoint) => fromFileUrl(import.meta.resolve(entrypoint)));
+
+for (const modFilePath of MOD_FILE_PATHS) {
   const modSource = await Deno.readTextFile(modFilePath);
   const modSourceFile = ts.createSourceFile(
     modFilePath,

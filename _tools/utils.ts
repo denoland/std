@@ -1,23 +1,25 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import ROOT_DENO_JSON from "../deno.json" with { type: "json" };
-import ts from "npm:typescript";
-
 export interface DenoJson {
   name: string;
   version: string;
   exports: Record<string, string>;
+  workspace?: string[];
+}
+
+async function importJson(path: string): Promise<DenoJson> {
+  return (await import(path, { with: { type: "json" } })).default;
+}
+
+export async function getPackagesDenoJsons(): Promise<DenoJson[]> {
+  const { workspace } = await importJson("../deno.json");
+  return await Promise.all(
+    workspace!.map((path) => importJson(`../${path}/deno.json`)),
+  );
 }
 
 export async function getEntrypoints(): Promise<string[]> {
-  const { workspace } = ROOT_DENO_JSON;
-  const packagesDenoJsons = await Promise.all(workspace.map(async (path) => {
-    return (await import(`../${path}/deno.json`, { with: { type: "json" } }))
-      .default as DenoJson;
-  }));
-  return packagesDenoJsons.flatMap((denoJson) =>
-    Object.keys(denoJson.exports).map((mod) =>
-      mod === "." ? denoJson.name : `${denoJson.name}/${mod}`
-    )
+  return (await getPackagesDenoJsons()).flatMap(({ name, exports }) =>
+    Object.keys(exports).map((mod) => mod === "." ? name : name + mod.slice(1))
   );
 }
 
