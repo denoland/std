@@ -24,7 +24,7 @@ import {
   type TsTypeDef,
 } from "@deno/doc";
 import { distinctBy } from "@std/collections/distinct-by";
-import { resolve } from "./utils.ts";
+import { getEntrypoints, resolve } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
@@ -463,29 +463,6 @@ async function assertDocs(specifiers: string[]) {
   }
 }
 
-async function getWorkspaceExports(root: string): Promise<string[]> {
-  const { default: { workspace } } = await import(root, {
-    with: { type: "json" },
-  });
-
-  return (await Promise.all(
-    (workspace as string[])
-      .filter((w) => w !== "./log")
-      .flatMap(async (w) => {
-        const { default: { exports, name } } = await import(
-          `../${w}/deno.json`,
-          {
-            with: { type: "json" },
-          }
-        );
-        return Object.keys(exports).map((e) =>
-          import.meta.resolve(name + e.slice(1))
-        );
-      }),
-  )).flat()
-    .filter((e) => e.endsWith(".ts"));
-}
-
 async function checkDocs(specifiers: string[]) {
   const lintStatus = await new Deno.Command(Deno.execPath(), {
     args: ["doc", "--lint", ...specifiers],
@@ -518,6 +495,9 @@ async function checkDocs(specifiers: string[]) {
 }
 
 if (import.meta.main) {
-  const entryPointUrls = await getWorkspaceExports("../deno.json");
-  await checkDocs(entryPointUrls.flat());
+  const specifiers = (await getEntrypoints())
+    .filter((entrypoint) => entrypoint.startsWith("@std/log"))
+    .map((entrypoint) => import.meta.resolve(entrypoint))
+    .filter((specifier) => specifier.endsWith(".ts"));
+  await checkDocs(specifiers);
 }

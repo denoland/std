@@ -42,13 +42,11 @@ const graph = await createGraph(stableSpecifiers, { resolve });
 for (const module of graph.modules) {
   if (module.dependencies === undefined) continue;
   for (const dependency of module.dependencies) {
-    if (
-      dependency.code?.specifier === undefined ||
-      !unstableSpecifiers.includes(dependency.code.specifier)
-    ) continue;
+    if (dependency.code === undefined) continue;
+    const { specifier } = dependency.code;
+    if (!specifier || !unstableSpecifiers.includes(specifier)) continue;
     console.error(
-      `Stable module ${module.specifier} imports unstable module:`,
-      dependency.code.specifier,
+      `Stable module ${module.specifier} imports unstable module: ${specifier}`,
     );
     hasError = true;
   }

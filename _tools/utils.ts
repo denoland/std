@@ -12,15 +12,18 @@ async function importJson(path: string): Promise<DenoJson> {
 
 export async function getPackagesDenoJsons(): Promise<DenoJson[]> {
   const { workspace } = await importJson("../deno.json");
-  return await Promise.all(
+  return Promise.all(
     workspace!.map((path) => importJson(`../${path}/deno.json`)),
   );
 }
 
 export async function getEntrypoints(): Promise<string[]> {
-  return (await getPackagesDenoJsons()).flatMap(({ name, exports }) =>
-    Object.keys(exports).map((mod) => mod === "." ? name : name + mod.slice(1))
-  );
+  return (await getPackagesDenoJsons())
+    .flatMap(({ name, exports }) =>
+      Object.keys(exports).map((mod) =>
+        mod === "." ? name : name + mod.slice(1)
+      )
+    );
 }
 
 export function resolve(
