@@ -3,7 +3,7 @@
 [package]
 edition = "2021"
 name = "deno_std_wasm_crypto"
-repository = "https://github.com/denoland/deno_std"
+repository = "https://github.com/denoland/std"
 authors = ["the Deno authors"]
 license = "MIT"
 publish = false

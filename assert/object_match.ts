@@ -40,7 +40,7 @@ export function assertObjectMatch(
     // side effect: all the instances' constructor field is "Object" now.
     filter(actual, expected),
     // set (nested) instances' constructor field to be "Object" without changing expected value.
-    // see https://github.com/denoland/deno_std/pull/1419
+    // see https://github.com/denoland/std/pull/1419
     filter(expected, expected),
     msg,
   );
