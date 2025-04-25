@@ -310,7 +310,7 @@ export default {
         };
       },
     },
-    // https://docs.deno.com/runtime/contributing/style_guide/#prefer-%23-over-private-keyword
+    // https://docs.deno.com/runtime/contributing/style_guide/#exported-functions%3A-max-2-args%2C-put-the-rest-into-an-options-object
     "exported-function-args-maximum": {
       create(context) {
         return {
