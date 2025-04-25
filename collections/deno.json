@@ -47,6 +47,7 @@
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
     "./unstable-chunk": "./unstable_chunk.ts",
+    "./unstable-cycle": "./unstable_cycle.ts",
     "./unstable-drop-while": "./unstable_drop_while.ts",
     "./unstable-drop-last-while": "./unstable_drop_last_while.ts",
     "./unstable-intersect": "./unstable_intersect.ts",
@@ -58,7 +59,6 @@
     "./unstable-without-all": "./unstable_without_all.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
-    "./zip": "./zip.ts",
-    "./unstable-cycle": "./cycle.ts"
+    "./zip": "./zip.ts"
   }
 }

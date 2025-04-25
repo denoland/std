@@ -14,7 +14,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { cycle } from "@std/collections/cycle";
+ * import { cycle } from "@std/collections/unstable-cycle";
  * import { assertEquals } from "@std/assert";
  *
  * const cyclic = cycle([1, 2, 3]);
