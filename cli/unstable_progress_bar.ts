@@ -155,7 +155,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  *   await delay(Math.random() * 500);
  * }
  *
- * bar.end();
+ * await bar.end();
  */
 export class ProgressBar {
   /**
@@ -169,7 +169,7 @@ export class ProgressBar {
    *
    * // do stuff
    *
-   * progressBar.end()
+   * await progressBar.end()
    * ```
    */
   value: number;
@@ -184,7 +184,7 @@ export class ProgressBar {
    *
    * // do stuff
    *
-   * progressBar.end()
+   * await progressBar.end()
    * ```
    */
   max: number;
