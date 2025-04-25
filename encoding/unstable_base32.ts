@@ -6,11 +6,20 @@
  *
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32, type Uint8Array_ } from "@std/encoding/unstable-base32";
+ * import {
+ *   encodeBase32,
+ *   type Uint8Array_
+ * } from "@std/encoding/unstable-base32";
  *
- * assertEquals(encodeBase32("Hello World", "Base32"), "JBSWY3DPEBLW64TMMQ======");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32"),
+ *   encodeBase32("Hello World", { alphabet: "base32" }),
+ *   "JBSWY3DPEBLW64TMMQ======",
+ * );
+ * assertEquals(
+ *   encodeBase32(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base32" },
+ *   ),
  *   "JBSWY3DPEBLW64TMMQ======",
  * );
  * ```
@@ -25,14 +34,15 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  type Base32Format,
+  type Base32Alphabet,
+  type Base32Options,
   calcSizeBase32,
   decode,
   encode,
   padding,
   rAlphabet,
 } from "./_common32.ts";
-export { type Base32Format, calcSizeBase32 };
+export { type Base32Alphabet, type Base32Options, calcSizeBase32 };
 import { detach } from "./_common_detach.ts";
 
 /**
@@ -45,37 +55,59 @@ import { detach } from "./_common_detach.ts";
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to encode.
- * @param format The format to use for encoding.
+ * @param options The options to use for encoding.
  * @returns The base32 string representation of the input.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase32, type Uint8Array_ } from "@std/encoding/unstable-base32";
+ * import {
+ *   encodeBase32,
+ *   type Uint8Array_,
+ * } from "@std/encoding/unstable-base32";
  *
- * assertEquals(encodeBase32("Hello World", "Base32"), "JBSWY3DPEBLW64TMMQ======");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32"),
+ *   encodeBase32("Hello World", { alphabet: "base32" }),
+ *   "JBSWY3DPEBLW64TMMQ======",
+ * );
+ * assertEquals(
+ *   encodeBase32(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base32" },
+ *   ),
  *   "JBSWY3DPEBLW64TMMQ======",
  * );
  *
- * assertEquals(encodeBase32("Hello World", "Base32Hex"), "91IMOR3F41BMUSJCCG======");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32Hex"),
+ *   encodeBase32("Hello World", { alphabet: "base32hex" }),
+ *   "91IMOR3F41BMUSJCCG======",
+ * );
+ * assertEquals(
+ *   encodeBase32(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base32hex" },
+ *   ),
  *   "91IMOR3F41BMUSJCCG======",
  * );
  *
- * assertEquals(encodeBase32("Hello World", "Base32Crockford"), "91JPRV3F41BPYWKCCG======");
  * assertEquals(
- *   encodeBase32(new TextEncoder().encode("Hello World") as Uint8Array_, "Base32Crockford"),
+ *   encodeBase32("Hello World", { alphabet: "base32crockford" }),
+ *   "91JPRV3F41BPYWKCCG======",
+ * );
+ * assertEquals(
+ *   encodeBase32(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base32crockford" },
+ *   ),
  *   "91JPRV3F41BPYWKCCG======",
  * );
  * ```
  */
 export function encodeBase32(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: Base32Format = "Base32",
+  options: Base32Options = {},
 ): string {
+  options.alphabet ??= "base32";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
@@ -85,7 +117,7 @@ export function encodeBase32(
     input as Uint8Array_,
     calcSizeBase32((input as Uint8Array_).length),
   );
-  encode(output, i, 0, alphabet[format], padding);
+  encode(output, i, 0, alphabet[options.alphabet], padding);
   return new TextDecoder().decode(output);
 }
 
@@ -97,7 +129,7 @@ export function encodeBase32(
  *
  * @param input the source to encode.
  * @param output the buffer to write the encoded source to.
- * @param format the format to use for encoding.
+ * @param options the options to use for encoding.
  * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
@@ -114,20 +146,20 @@ export function encodeBase32(
  * const output = new Uint8Array(prefix.length + calcSizeBase32(input.length));
  *
  * const o = new TextEncoder().encodeInto(prefix, output).written;
- * encodeIntoBase32(input, output.subarray(o), "Base32");
+ * encodeIntoBase32(input, output.subarray(o), { alphabet: "base32" });
  * assertEquals(
  *   new TextDecoder().decode(output),
  *   "data:url/fake," +
- *     encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *     encodeBase32(await Deno.readFile("./deno.lock"), { alphabet: "base32" }),
  * );
  * ```
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encodeIntoBase32(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,
-  format: Base32Format = "Base32",
+  options: Base32Options = {},
 ): number {
+  options.alphabet ??= "base32";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
@@ -140,7 +172,7 @@ export function encodeIntoBase32(
   output = output.subarray(0, min);
   const i = min - (input as Uint8Array_).length;
   output.set(input as Uint8Array_, i);
-  return encode(output, i, 0, alphabet[format], padding);
+  return encode(output, i, 0, alphabet[options.alphabet], padding);
 }
 
 /**
@@ -152,7 +184,7 @@ export function encodeIntoBase32(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to decode.
- * @param format The format to use for decoding.
+ * @param options The options to use for decoding.
  * @returns The decoded {@linkcode Uint8Array<ArrayBuffer>}.
  *
  * @example Basic Usage
@@ -161,27 +193,31 @@ export function encodeIntoBase32(
  * import { decodeBase32 } from "@std/encoding/unstable-base32";
  *
  * assertEquals(
- *   decodeBase32("JBSWY3DPEBLW64TMMQ======", "Base32"),
+ *   decodeBase32("JBSWY3DPEBLW64TMMQ======", { alphabet: "base32"}),
  *   new TextEncoder().encode("Hello World"),
  * );
  *
  * assertEquals(
- *   decodeBase32("91IMOR3F41BMUSJCCG======", "Base32Hex"),
+ *   decodeBase32("91IMOR3F41BMUSJCCG======", { alphabet: "base32hex"}),
  *   new TextEncoder().encode("Hello World"),
  * );
  *
  * assertEquals(
- *   decodeBase32("91JPRV3F41BPYWKCCG======", "Base32Crockford"),
+ *   decodeBase32("91JPRV3F41BPYWKCCG======", { alphabet: "base32crockford"}),
  *   new TextEncoder().encode("Hello World"),
  * );
  * ```
  */
 export function decodeBase32(
   input: string | Uint8Array_,
-  format: Base32Format = "Base32",
+  options: Base32Options = {},
 ): Uint8Array_ {
+  options.alphabet ??= "base32";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
-  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
+  return input.subarray(
+    0,
+    decode(input, 0, 0, rAlphabet[options.alphabet], padding),
+  );
 }

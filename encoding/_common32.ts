@@ -4,27 +4,35 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
 export const padding = "=".charCodeAt(0);
-export const alphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new TextEncoder().encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
-  Base32Hex: new TextEncoder().encode("0123456789ABCDEFGHIJKLMNOPQRSTUV"),
-  Base32Crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
+export const alphabet: Record<Base32Alphabet, Uint8Array> = {
+  base32: new TextEncoder().encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"),
+  base32hex: new TextEncoder().encode("0123456789ABCDEFGHIJKLMNOPQRSTUV"),
+  base32crockford: new TextEncoder().encode("0123456789ABCDEFGHJKMNPQRSTVWXYZ"),
 };
-export const rAlphabet: Record<Base32Format, Uint8Array> = {
-  Base32: new Uint8Array(128).fill(32), // alphabet.Base32.length
-  Base32Hex: new Uint8Array(128).fill(32),
-  Base32Crockford: new Uint8Array(128).fill(32),
+export const rAlphabet: Record<Base32Alphabet, Uint8Array> = {
+  base32: new Uint8Array(128).fill(32), // alphabet.base32.length
+  base32hex: new Uint8Array(128).fill(32),
+  base32crockford: new Uint8Array(128).fill(32),
 };
-alphabet.Base32
-  .forEach((byte, i) => rAlphabet.Base32[byte] = i);
-alphabet.Base32Hex
-  .forEach((byte, i) => rAlphabet.Base32Hex[byte] = i);
-alphabet.Base32Crockford
-  .forEach((byte, i) => rAlphabet.Base32Crockford[byte] = i);
+alphabet.base32
+  .forEach((byte, i) => rAlphabet.base32[byte] = i);
+alphabet.base32hex
+  .forEach((byte, i) => rAlphabet.base32hex[byte] = i);
+alphabet.base32crockford
+  .forEach((byte, i) => rAlphabet.base32crockford[byte] = i);
 
 /**
- * The base 32 encoding formats.
+ * Options for encoding and decoding base32 strings.
  */
-export type Base32Format = "Base32" | "Base32Hex" | "Base32Crockford";
+export interface Base32Options {
+  /** The base32 alphabet. Defaults to "base32" */
+  alphabet?: Base32Alphabet;
+}
+
+/**
+ * The base32 alphabets.
+ */
+export type Base32Alphabet = "base32" | "base32hex" | "base32crockford";
 
 /**
  * Calculate the output size needed to encode a given input size for

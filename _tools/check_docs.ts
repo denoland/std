@@ -23,43 +23,12 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { walk } from "@std/fs/walk";
-import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
-import { toFileUrl } from "@std/path/to-file-url";
-import { resolve } from "./utils.ts";
+import { getEntrypoints, resolve } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
-
-const ROOT = new URL("../", import.meta.url);
-const ENTRY_POINT_URLS = [];
-for await (
-  const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
-) {
-  const { exports } = await Deno.readTextFile(path).then(JSON.parse);
-
-  if (!exports) continue;
-  for (const relativeFilePath of Object.values<string>(exports)) {
-    if (!relativeFilePath.endsWith(".ts")) continue;
-
-    const filePath = join(path, "..", relativeFilePath);
-
-    // Ignores 4 files in @std/log package
-    if (
-      /log[/\\](mod|levels|setup|rotating_file_handler)\.ts$/.test(filePath)
-    ) {
-      // deno-lint-ignore no-console
-      console.warn(
-        `Doc check for ${filePath} is ignored. Visit https://github.com/denoland/std/issues/6124 for more details.`,
-      );
-      continue;
-    }
-
-    ENTRY_POINT_URLS.push(toFileUrl(filePath).href);
-  }
-}
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
@@ -87,10 +56,6 @@ function assert(
   if (!condition) {
     diagnostics.push(new DocumentError(message, document));
   }
-}
-
-function isExported(document: DocNodeBase) {
-  return document.declarationKind === "export";
 }
 
 function isVoidOrPromiseVoid(returnType: TsTypeDef) {
@@ -463,10 +428,10 @@ function assertHasDeprecationDesc(document: DocNodeWithJsDoc<DocNode>) {
   }
 }
 
-async function checkDocs(specifier: string) {
-  const docs = (await doc([specifier], { resolve }))[specifier]!;
-  for (const d of docs.filter(isExported)) {
-    if (d.jsDoc === undefined) continue; // this is caught by other checks
+async function assertDocs(specifiers: string[]) {
+  const docs = await doc(specifiers, { resolve });
+  for (const d of Object.values(docs).flat()) {
+    if (d.jsDoc === undefined || d.declarationKind !== "export") continue; // this is caught by other checks
 
     const document = d as DocNodeWithJsDoc<DocNode>;
     switch (document.kind) {
@@ -498,39 +463,41 @@ async function checkDocs(specifier: string) {
   }
 }
 
-const lintStatus = await new Deno.Command(Deno.execPath(), {
-  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
-  stdin: "inherit",
-  stdout: "inherit",
-  stderr: "inherit",
-}).output();
-if (!lintStatus.success) {
-  // deno-lint-ignore no-console
-  console.error(
-    `%c[error] %c'deno doc --lint' failed`,
-    "color: red",
-    "",
-  );
-  Deno.exit(1);
-}
-
-for (const url of ENTRY_POINT_URLS) {
-  await checkDocs(url);
-}
-
-if (diagnostics.length > 0) {
-  const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
-  for (const error of errors) {
-    // deno-lint-ignore no-console
-    console.error(
-      `%c[error] %c${error.message} %cat ${error.cause}`,
-      "color: red",
-      "",
-      "color: gray",
-    );
+async function checkDocs(specifiers: string[]) {
+  const lintStatus = await new Deno.Command(Deno.execPath(), {
+    args: ["doc", "--lint", ...specifiers],
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  }).output();
+  if (!lintStatus.success) {
+    throw new Error(new TextDecoder().decode(lintStatus.stderr));
   }
 
-  // deno-lint-ignore no-console
-  console.log(`%c${errors.length} errors found`, "color: red");
-  Deno.exit(1);
+  await assertDocs(specifiers);
+
+  if (diagnostics.length > 0) {
+    const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
+    for (const error of errors) {
+      // deno-lint-ignore no-console
+      console.error(
+        `%c[error] %c${error.message} %cat ${error.cause}`,
+        "color: red",
+        "",
+        "color: gray",
+      );
+    }
+
+    // deno-lint-ignore no-console
+    console.log(`%c${errors.length} errors found`, "color: red");
+    Deno.exit(1);
+  }
+}
+
+if (import.meta.main) {
+  const specifiers = (await getEntrypoints())
+    .filter((entrypoint) => !entrypoint.startsWith("@std/log"))
+    .map((entrypoint) => import.meta.resolve(entrypoint))
+    .filter((specifier) => specifier.endsWith(".ts"));
+  await checkDocs(specifiers);
 }

@@ -242,6 +242,75 @@ enum enumName {
   );
 });
 
+Deno.test("deno-style-guide/error-message", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics(
+    `
+new Error("Cannot parse input");
+new Error("Cannot parse input x");
+new Error('Cannot parse input "hello, world"');
+new Error("Cannot parse input x: value is empty");
+new AssertionError("Something went wrong.");
+
+// ignored
+const classes = { Error: Error }
+new classes.Error();
+new Class("Cannot parse input");
+new Error(message);
+new WrongParamTypeForAnError(true);
+    `,
+    [],
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+new Error("cannot parse input");
+new TypeError("Cannot parse input.");
+new SyntaxError("Invalid input x");
+new RangeError("Cannot parse input x. value is empty")
+new CustomError("Can't parse input");
+
+    `,
+    [
+      {
+        fix: [{ range: [11, 31], text: '"Cannot parse input"' }],
+        hint:
+          "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message starts with a lowercase.",
+        range: [11, 31],
+      },
+      {
+        fix: [{ range: [48, 69], text: '"Cannot parse input"' }],
+        hint:
+          "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message ends with a period.",
+        range: [48, 69],
+      },
+      {
+        fix: [],
+        hint:
+          "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message contains periods.",
+        range: [123, 161],
+      },
+      {
+        fix: [],
+        hint:
+          "Use the full form in error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+        id: "deno-style-guide/error-message",
+        message: "Error message uses contractions.",
+        range: [179, 198],
+      },
+    ],
+  );
+});
+
 Deno.test("deno-style-guide/exported-function-args-maximum", {
   ignore: !Deno.version.deno.startsWith("2"),
 }, () => {
