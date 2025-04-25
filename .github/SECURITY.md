@@ -3,7 +3,7 @@
 ## Reporting a Vulnerability
 
 - Please
-  [report a vulnerability](https://github.com/denoland/deno_std/security/advisories/new)
+  [report a vulnerability](https://github.com/denoland/std/security/advisories/new)
   with sufficient information to reproduce the problem as quickly as possible,
   such as reproduction steps and `deno --version` output.
 - Please do not take advantage of the vulnerability or problem you have

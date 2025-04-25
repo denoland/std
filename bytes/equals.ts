@@ -55,7 +55,7 @@ function equals32Bit(a: Uint8Array, b: Uint8Array): boolean {
  * Byte length threshold for when to use 32-bit comparisons, based on
  * benchmarks.
  *
- * @see {@link https://github.com/denoland/deno_std/pull/4635}
+ * @see {@link https://github.com/denoland/std/pull/4635}
  */
 const THRESHOLD_32_BIT = 160;
 
