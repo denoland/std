@@ -1,10 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { crypto as stdCrypto } from "../crypto.ts";
-import { instantiateWithInstance } from "../_wasm/lib/deno_std_wasm_crypto.generated.mjs";
+import { __wbindgen_memory } from "../_wasm/lib/deno_std_wasm_crypto.internal.mjs";
 import { encodeHex } from "../../encoding/hex.ts";
 
-const memory = instantiateWithInstance().instance.exports
-  .memory as WebAssembly.Memory;
+const memory = __wbindgen_memory() as WebAssembly.Memory;
 
 const heapBytesInitial = memory.buffer.byteLength;
 
