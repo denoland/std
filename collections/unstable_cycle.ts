@@ -29,14 +29,7 @@
  * ```
  */
 export function* cycle<T>(iterable: Iterable<T>): Generator<T> {
-  let iterator = iterable[Symbol.iterator]();
-
   while (true) {
-    const result = iterator.next();
-    if (result.done) {
-      iterator = iterable[Symbol.iterator]();
-    } else {
-      yield result.value;
-    }
+    yield* iterable;
   }
 }
