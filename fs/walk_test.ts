@@ -153,7 +153,7 @@ Deno.test("walkSync() accepts skip option as regExps", () =>
     skip: [/x/, /y/],
   }));
 
-// https://github.com/denoland/deno_std/issues/1358
+// https://github.com/denoland/std/issues/1358
 Deno.test("walk() accepts followSymlinks option set to true", async () =>
   await assertWalkPaths(testdataDir, "symlink", [
     ".",
@@ -245,7 +245,7 @@ Deno.test("walkSync() throws Deno.errors.NotFound for non-existent root", () => 
   assertThrows(() => Array.from(walkSync(root)), Deno.errors.NotFound);
 });
 
-// https://github.com/denoland/deno_std/issues/1789
+// https://github.com/denoland/std/issues/1789
 Deno.test({
   name: "walk() walks unix socket",
   ignore: Deno.build.os === "windows",
@@ -271,7 +271,7 @@ Deno.test({
   },
 });
 
-// https://github.com/denoland/deno_std/issues/1789
+// https://github.com/denoland/std/issues/1789
 Deno.test({
   name: "walkSync() walks unix socket",
   ignore: Deno.build.os === "windows",

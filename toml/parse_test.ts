@@ -5,22 +5,24 @@ import {
   bareKey,
   basicString,
   binary,
+  boolean,
   dateTime,
   deepAssignWithTable,
   dottedKey,
   float,
   hex,
+  infinity,
   inlineTable,
   integer,
   literalString,
   localTime,
   multilineBasicString,
   multilineLiteralString,
+  nan,
   octal,
   pair,
   parserFactory,
   Scanner,
-  symbols,
   table,
   value,
 } from "./_parser.ts";
@@ -181,14 +183,38 @@ Violets are\\tblue'''`),
 });
 
 Deno.test({
-  name: "parse() handles symbols",
+  name: "parse() handles boolean",
   fn() {
-    const parse = parserFactory(symbols);
+    const parse = parserFactory(boolean);
     assertEquals(parse("true"), true);
-    assertEquals(parse("nan"), NaN);
+    assertEquals(parse("false"), false);
+    assertThrows(() => parse("truetrue"));
+    assertThrows(() => parse("false "));
+  },
+});
+
+Deno.test({
+  name: "parse() handles infinity",
+  fn() {
+    const parse = parserFactory(infinity);
     assertEquals(parse("inf"), Infinity);
-    assertThrows(() => parse(""));
-    assertThrows(() => parse("_"));
+    assertEquals(parse("+inf"), Infinity);
+    assertEquals(parse("-inf"), -Infinity);
+    assertThrows(() => parse("infinf"));
+    assertThrows(() => parse("+inf "));
+    assertThrows(() => parse("-inf_"));
+  },
+});
+Deno.test({
+  name: "parse() handles nan",
+  fn() {
+    const parse = parserFactory(nan);
+    assertEquals(parse("nan"), NaN);
+    assertEquals(parse("+nan"), NaN);
+    assertEquals(parse("-nan"), NaN);
+    assertThrows(() => parse("nannan"));
+    assertThrows(() => parse("+nan "));
+    assertThrows(() => parse("-nan_"));
   },
 });
 
@@ -241,9 +267,13 @@ Deno.test({
   fn() {
     const parse = parserFactory(binary);
     assertEquals(parse("0b11010110"), 0b11010110); // 0b11010110 = 214
+    assertEquals(parse("0b1101_0110"), 0b11010110);
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0b_11010110"));
+    assertThrows(() => parse("0b11010110_"));
+    assertThrows(() => parse("0b1101__0110"));
   },
 });
 Deno.test({
@@ -251,10 +281,14 @@ Deno.test({
   fn() {
     const parse = parserFactory(octal);
     assertEquals(parse("0o01234567"), 0o01234567); //  0o01234567 = 342391
+    assertEquals(parse("0o0123_4567"), 0o01234567); //  0o01234567 = 342391
     assertEquals(parse("0o755"), 0o755); // 0o755 = 493
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0o_755"));
+    assertThrows(() => parse("0o755_"));
+    assertThrows(() => parse("0o0123__4567"));
   },
 });
 Deno.test({
@@ -263,11 +297,15 @@ Deno.test({
     const parse = parserFactory(hex);
 
     assertEquals(parse("0xDEADBEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
+    assertEquals(parse("0xDEAD_BEEF"), 0xDEADBEEF); // 0xDEADBEEF = 3735928559
     assertEquals(parse("0xdeadbeef"), 0xdeadbeef); // 0xdeadbeef = 3735928559
     assertEquals(parse("0xdead_beef"), 0xdead_beef); // 0xdead_beef = 3735928559
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("0x_DEADBEEF"));
+    assertThrows(() => parse("0xDEADBEEF_"));
+    assertThrows(() => parse("0xDEAD__BEEF"));
   },
 });
 Deno.test({
@@ -281,6 +319,9 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
+    assertThrows(() => parse("_123"));
+    assertThrows(() => parse("123_"));
+    assertThrows(() => parse("123__456"));
   },
 });
 
@@ -299,6 +340,15 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("X"));
     assertThrows(() => parse("e_+-"));
+    assertThrows(() => parse("_3.1415"));
+    assertThrows(() => parse("3_.1415"));
+    assertThrows(() => parse("3._1415"));
+    assertThrows(() => parse("3.1415_"));
+    assertThrows(() => parse("3.14__15"));
+    assertThrows(() => parse("_1e06"));
+    assertThrows(() => parse("1_e06"));
+    assertThrows(() => parse("1e_06"));
+    assertThrows(() => parse("1e06_"));
   },
 });
 
@@ -1358,7 +1408,7 @@ foo = BAR
 `);
       },
       Error,
-      `invalid data format`,
+      "Parse error on line 2, column 6: Cannot parse value on line 'foo = BAR'",
     );
   },
 });
@@ -1382,5 +1432,18 @@ Deno.test({
       Error,
       "Parse error on line 1, column 3: Cannot parse the TOML: It contains invalid whitespace at position '3': `\\u3000`",
     );
+  },
+});
+
+Deno.test({
+  name: "parse() handles empty inline table",
+  fn() {
+    const input = `[package.metadata.details]
+readme = { }`;
+    const expected = {
+      package: { metadata: { details: { readme: {} } } },
+    };
+    const actual = parse(input);
+    assertEquals(actual, expected);
   },
 });

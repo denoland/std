@@ -1,6 +1,30 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+export interface DenoJson {
+  name: string;
+  version: string;
+  exports: Record<string, string>;
+  workspace?: string[];
+}
 
-import ts from "npm:typescript";
+async function importJson(path: string): Promise<DenoJson> {
+  return (await import(path, { with: { type: "json" } })).default;
+}
+
+export async function getPackagesDenoJsons(): Promise<DenoJson[]> {
+  const { workspace } = await importJson("../deno.json");
+  return Promise.all(
+    workspace!.map((path) => importJson(`../${path}/deno.json`)),
+  );
+}
+
+export async function getEntrypoints(): Promise<string[]> {
+  return (await getPackagesDenoJsons())
+    .flatMap(({ name, exports }) =>
+      Object.keys(exports).map((mod) =>
+        mod === "." ? name : name + mod.slice(1)
+      )
+    );
+}
 
 export function resolve(
   specifier: string,
@@ -9,38 +33,4 @@ export function resolve(
   return (specifier.startsWith("./") || specifier.startsWith("../"))
     ? new URL(specifier, referrer).href
     : import.meta.resolve(specifier);
-}
-
-/**
- * Checks whether a file is named `test.ts` and has no exports.
- * @param filePath
- * @returns true if file is named `test.ts` and has no exports, false otherwise
- */
-export function isTestFile(filePath: string): boolean {
-  if (!filePath.endsWith("test.ts")) return false;
-  const source = Deno.readTextFileSync(filePath);
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    source,
-    ts.ScriptTarget.Latest,
-  );
-
-  let result = true;
-
-  function visitNode(node: ts.Node) {
-    if (!result) return;
-    if (
-      ts.isExportSpecifier(node) ||
-      ts.isExportAssignment(node) ||
-      ts.isExportDeclaration(node) ||
-      node.kind === ts.SyntaxKind.ExportKeyword
-    ) {
-      result = false;
-    } else {
-      ts.forEachChild(node, visitNode);
-    }
-  }
-
-  visitNode(sourceFile);
-  return result;
 }

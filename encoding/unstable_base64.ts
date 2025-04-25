@@ -8,9 +8,12 @@
  * import { assertEquals } from "@std/assert";
  * import { encodeBase64, type Uint8Array_ } from "@std/encoding/unstable-base64";
  *
- * assertEquals(encodeBase64("Hello World", "Base64"), "SGVsbG8gV29ybGQ=");
+ * assertEquals(encodeBase64("Hello World", { alphabet: "base64" }), "SGVsbG8gV29ybGQ=");
  * assertEquals(
- *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64"),
+ *   encodeBase64(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base64" }
+ *   ),
  *   "SGVsbG8gV29ybGQ=",
  * );
  * ```
@@ -25,14 +28,15 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  type Base64Format,
+  type Base64Alphabet,
+  type Base64Options,
   calcSizeBase64,
   decode,
   encode,
   padding,
   rAlphabet,
 } from "./_common64.ts";
-export { type Base64Format, calcSizeBase64 };
+export { type Base64Alphabet, type Base64Options, calcSizeBase64 };
 import { detach } from "./_common_detach.ts";
 
 /**
@@ -45,31 +49,41 @@ import { detach } from "./_common_detach.ts";
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to encode.
- * @param format The format to use for encoding. Defaults to "Base64".
+ * @param options The options to use for encoding.
  * @returns The base64 string representation of the input.
  *
  * @example Basic Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { encodeBase64, type Uint8Array_ } from "@std/encoding/unstable-base64";
+ * import {
+ *   encodeBase64,
+ *   type Uint8Array_
+ * } from "@std/encoding/unstable-base64";
  *
- * assertEquals(encodeBase64("Hello World", "Base64"), "SGVsbG8gV29ybGQ=");
+ * assertEquals(encodeBase64("Hello World"), "SGVsbG8gV29ybGQ=");
  * assertEquals(
- *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64"),
+ *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_),
  *   "SGVsbG8gV29ybGQ=",
  * );
  *
- * assertEquals(encodeBase64("Hello World", "Base64Url"), "SGVsbG8gV29ybGQ");
  * assertEquals(
- *   encodeBase64(new TextEncoder().encode("Hello World") as Uint8Array_, "Base64Url"),
+ *   encodeBase64("Hello World", { alphabet: "base64url" }),
+ *   "SGVsbG8gV29ybGQ",
+ * );
+ * assertEquals(
+ *   encodeBase64(
+ *     new TextEncoder().encode("Hello World") as Uint8Array_,
+ *     { alphabet: "base64url" },
+ *   ),
  *   "SGVsbG8gV29ybGQ",
  * );
  * ```
  */
 export function encodeBase64(
   input: string | Uint8Array_ | ArrayBuffer,
-  format: Base64Format = "Base64",
+  options: Base64Options = {},
 ): string {
+  options.alphabet ??= "base64";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
@@ -79,8 +93,8 @@ export function encodeBase64(
     input as Uint8Array_,
     calcSizeBase64((input as Uint8Array_).length),
   );
-  let o = encode(output, i, 0, alphabet[format], padding);
-  if (format === "Base64Url") {
+  let o = encode(output, i, 0, alphabet[options.alphabet], padding);
+  if (options.alphabet === "base64url") {
     o = output.indexOf(padding, o - 2);
     if (o > 0) output = output.subarray(0, o);
   }
@@ -95,7 +109,7 @@ export function encodeBase64(
  *
  * @param input the source to encode.
  * @param output the buffer to write the encoded source to.
- * @param format the format to use for encoding.
+ * @param options the options to use for encoding.
  * @returns the number of bytes written to the buffer.
  *
  * @example Basic Usage
@@ -112,19 +126,23 @@ export function encodeBase64(
  * const output = new Uint8Array(prefix.length + calcSizeBase64(input.length));
  *
  * let o = new TextEncoder().encodeInto(prefix, output).written;
- * o += encodeIntoBase64(input, output.subarray(o), "Base64Url");
+ * o += encodeIntoBase64(input, output.subarray(o), { alphabet: "base64url" });
  * assertEquals(
  *   new TextDecoder().decode(output.subarray(0, o)),
  *   "data:url/fake," +
- *     encodeBase64(await Deno.readFile("./deno.lock"), "Base64Url"),
+ *     encodeBase64(
+ *       await Deno.readFile("./deno.lock"),
+ *       { alphabet: "base64url" },
+ *     ),
  * );
  * ```
  */
 export function encodeIntoBase64(
   input: string | Uint8Array_ | ArrayBuffer,
   output: Uint8Array_,
-  format: Base64Format = "Base64",
+  options: Base64Options = {},
 ): number {
+  options.alphabet ??= "base64";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   } else if (input instanceof ArrayBuffer) {
@@ -137,8 +155,8 @@ export function encodeIntoBase64(
   output = output.subarray(0, min);
   const i = min - (input as Uint8Array_).length;
   output.set(input as Uint8Array_, i);
-  const o = encode(output, i, 0, alphabet[format], padding);
-  if (format === "Base64Url") {
+  const o = encode(output, i, 0, alphabet[options.alphabet], padding);
+  if (options.alphabet === "base64url") {
     const i = output.indexOf(padding, o - 2);
     if (i > 0) return i;
   }
@@ -152,7 +170,7 @@ export function encodeIntoBase64(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The input source to decode.
- * @param format The format to use for decoding. Defaults to "Base64".
+ * @param options The options to use for decoding.
  * @returns The decoded {@linkcode Uint8Array<ArrayBuffer>}.
  *
  * @example Basic Usage
@@ -161,22 +179,26 @@ export function encodeIntoBase64(
  * import { decodeBase64 } from "@std/encoding/unstable-base64";
  *
  * assertEquals(
- *   decodeBase64("SGVsbG8gV29ybGQ=", "Base64"),
+ *   decodeBase64("SGVsbG8gV29ybGQ=", { alphabet: "base64" }),
  *   new TextEncoder().encode("Hello World"),
  * );
  *
  * assertEquals(
- *   decodeBase64("SGVsbG8gV29ybGQ", "Base64Url"),
+ *   decodeBase64("SGVsbG8gV29ybGQ", { alphabet: "base64url" }),
  *   new TextEncoder().encode("Hello World"),
  * );
  * ```
  */
 export function decodeBase64(
   input: string | Uint8Array_,
-  format: Base64Format = "Base64",
+  options: Base64Options = {},
 ): Uint8Array_ {
+  options.alphabet ??= "base64";
   if (typeof input === "string") {
     input = new TextEncoder().encode(input) as Uint8Array_;
   }
-  return input.subarray(0, decode(input, 0, 0, rAlphabet[format], padding));
+  return input.subarray(
+    0,
+    decode(input, 0, 0, rAlphabet[options.alphabet], padding),
+  );
 }

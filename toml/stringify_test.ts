@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
 
-// https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
+// https://github.com/denoland/std/issues/1067#issuecomment-907740319
 Deno.test({
   name: "stringify() handles object value contains '='",
   fn() {
@@ -92,12 +92,12 @@ Deno.test({
     assertThrows(
       () => stringify({ a: [[null]] }),
       Error,
-      "should never reach",
+      "Should never reach",
     );
     assertThrows(
       () => stringify({ a: [[undefined]] }),
       Error,
-      "should never reach",
+      "Should never reach",
     );
   },
 });

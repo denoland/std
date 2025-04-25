@@ -52,6 +52,10 @@ jobs:
         run: deno task test:browser
         if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
+      - name: Publish dry run
+        run: deno publish --dry-run
+        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
+
       - name: Generate lcov and html reports
         run: |
           deno task cov:lcov
@@ -71,10 +75,6 @@ jobs:
           root: coverage/html
           entrypoint: jsr:@std/http@1/file-server
         if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest' && github.event_name == 'push'
-
-      - name: Publish dry run
-        run: deno publish --dry-run
-        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
 
   test-node:
     runs-on: ${{ matrix.os }}
@@ -168,7 +168,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.77.2
+          rust-version: 1.85.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
