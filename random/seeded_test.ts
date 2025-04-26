@@ -1,5 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { randomSeeded, randomSeeded53Bit } from "./seeded.ts";
+import {
+  randomSeeded,
+  randomSeeded53Bit,
+  seededByteGenerator,
+} from "./seeded.ts";
 import { assertAlmostEquals, assertEquals } from "@std/assert";
 
 Deno.test("randomSeeded() generates random numbers", () => {
@@ -59,5 +63,13 @@ Deno.test("randomSeeded53Bit() gives relatively uniform distribution of random n
         assertAlmostEquals(average, 0.5, 0.05);
       }
     },
+  );
+});
+
+Deno.test("seededByteGenerator() generates bytes", () => {
+  const prng = seededByteGenerator(1n);
+  assertEquals(
+    prng(new Uint8Array(5)),
+    new Uint8Array([230, 11, 167, 51, 238]),
   );
 });

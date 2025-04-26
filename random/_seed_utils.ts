@@ -1,3 +1,4 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { INC, Pcg32 } from "./_pcg32.ts";
 
 // `n`, `rot`, and return val are all u32

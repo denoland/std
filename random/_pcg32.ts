@@ -13,24 +13,12 @@ const ROTATE = 59n; // 64 - 5
 const XSHIFT = 18n; // (5 + 32) / 2
 const SPARE = 27n; // 64 - 32 - 5
 
-// 0x1.0p-53
-const F64_MULT = 2 ** -53;
-// assert(1 / F64_MULT === Number.MAX_SAFE_INTEGER + 1)
+const b4 = new Uint8Array(4);
+const dv4 = new DataView(b4.buffer);
 
 abstract class Prng32 {
   /** Generates a pseudo-random 32-bit unsigned integer. */
   abstract nextUint32(): number;
-
-  #b = new Uint8Array(8);
-  #dv = new DataView(this.#b.buffer);
-
-  /** Generates a pseudo-random float64 in the range `[0, 1)`. */
-  nextFloat64(): number {
-    this.getRandomValues(this.#b);
-    const n53 = Number(this.#dv.getBigUint64(0, true) >> 11n);
-    // assert(n53 <= Number.MAX_SAFE_INTEGER)
-    return n53 * F64_MULT;
-  }
 
   /**
    * Mutates the provided `Uint8Array` with pseudo-random values.
@@ -39,15 +27,18 @@ abstract class Prng32 {
   getRandomValues<T extends Uint8Array>(bytes: T): T {
     const { byteLength, byteOffset } = bytes;
     const rem = byteLength % 4;
+    const cutoffLen = byteLength - rem;
 
     const dv = new DataView(bytes.buffer, byteOffset, byteLength);
-    for (let i = 0; i < byteLength - rem; i += 4) {
+    for (let i = 0; i < cutoffLen; i += 4) {
       dv.setUint32(i, this.nextUint32(), true);
     }
 
     if (rem !== 0) {
-      this.#dv.setUint32(0, this.nextUint32(), true);
-      bytes.set(this.#b.subarray(0, rem), byteLength - rem);
+      dv4.setUint32(0, this.nextUint32(), true);
+      for (let i = 0; i < rem; ++i) {
+        dv.setUint8(cutoffLen + i, b4[i]!);
+      }
     }
 
     return bytes;
@@ -96,7 +87,7 @@ export class Pcg32 extends Prng32 {
    * Creates a new `Pcg32` instance with entropy generated from the given
    * `seed`, treated as an unsigned 64-bit integer.
    */
-  static seedFromU64(seed: bigint): Pcg32 {
+  static seedFromUint64(seed: bigint): Pcg32 {
     return this.#fromSeed(seedBytesFromU64(seed, new Uint8Array(16)));
   }
 

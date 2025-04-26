@@ -5,6 +5,7 @@
     ".": "./mod.ts",
     "./between": "./between.ts",
     "./integer-between": "./integer_between.ts",
+    "./number-types": "./number_types.ts",
     "./sample": "./sample.ts",
     "./seeded": "./seeded.ts",
     "./shuffle": "./shuffle.ts"
