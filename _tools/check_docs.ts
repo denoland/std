@@ -52,7 +52,7 @@ function assert(
   condition: boolean,
   message: string,
   document: { location: Location },
-) {
+): asserts condition {
   if (!condition) {
     diagnostics.push(new DocumentError(message, document));
   }
@@ -77,18 +77,17 @@ function isVoid(returnType: TsTypeDef) {
 
 function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
-  if (tag === undefined) {
-    diagnostics.push(
-      new DocumentError("Symbol must have a @return or @returns tag", document),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      "@return tag must have a description",
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    "Symbol must have a @return or @returns tag",
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    "@return tag must have a description",
+    document,
+  );
 }
 
 /**
@@ -111,14 +110,11 @@ function assertHasParamDefinition(
     return false;
   });
 
-  if (!paramDoc) {
-    diagnostics.push(
-      new DocumentError(
-        `@param ${param.name} must have a corresponding named function parameter definition.`,
-        document,
-      ),
-    );
-  }
+  assert(
+    paramDoc !== undefined,
+    `@param ${param.name} must have a corresponding function parameter definition.`,
+    document,
+  );
 }
 
 function assertHasParamTag(
@@ -128,37 +124,29 @@ function assertHasParamTag(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "param" && tag.name === param
   );
-  if (!tag) {
-    diagnostics.push(
-      new DocumentError(`Symbol must have a @param tag for ${param}`, document),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      `@param tag for ${param} must have a description`,
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    `Symbol must have a @param tag for ${param}`,
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@param tag for ${param} must have a description`,
+    document,
+  );
 }
 
 function assertHasSnippets(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
-  required = true,
 ) {
   const snippets = doc.match(TS_SNIPPET);
-  if (snippets === null) {
-    if (required) {
-      diagnostics.push(
-        new DocumentError(
-          "@example tag must have a TypeScript code snippet",
-          document,
-        ),
-      );
-    }
-    return;
-  }
+  assert(
+    snippets !== null,
+    "@example tag must have a TypeScript code snippet",
+    document,
+  );
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
     // Trim the code block delimiters
@@ -179,17 +167,7 @@ function assertHasExampleTag(
   const exampleTags = document.jsDoc.tags?.filter((tag) =>
     tag.kind === "example"
   ) as JsDocTagDocRequired[];
-  const hasNoExampleTags = exampleTags === undefined ||
-    exampleTags.length === 0;
-  if (
-    hasNoExampleTags &&
-    !document.jsDoc.tags?.some((tag) => tag.kind === "private")
-  ) {
-    diagnostics.push(
-      new DocumentError("Symbol must have an @example tag", document),
-    );
-    return;
-  }
+  assert(exampleTags?.length > 0, "Symbol must have an @example tag", document);
   for (const tag of exampleTags) {
     assert(
       tag.doc !== undefined,
@@ -216,21 +194,17 @@ function assertHasTypeParamTags(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "template" && tag.name === typeParamName
   );
-  if (tag === undefined) {
-    diagnostics.push(
-      new DocumentError(
-        `Symbol must have a @typeParam tag for ${typeParamName}`,
-        document,
-      ),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      `@typeParam tag for ${typeParamName} must have a description`,
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    `Symbol must have a @typeParam tag for ${typeParamName}`,
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@typeParam tag for ${typeParamName} must have a description`,
+    document,
+  );
 }
 
 /**
@@ -245,7 +219,6 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
-  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -289,7 +262,6 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -299,41 +271,31 @@ function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
 
   for (const property of document.classDef.properties) {
     if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (property.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` fields in classes",
-          property,
-        ),
-      );
-      continue;
-    }
+    assert(
+      property.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` fields in classes",
+      property,
+    );
     assertClassPropertyDocs(
       property as DocNodeWithJsDoc<ClassPropertyDef>,
     );
   }
   for (const method of document.classDef.methods) {
     if (method.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (method.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` methods in classes",
-          method,
-        ),
-      );
-    }
+    assert(
+      method.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` methods in classes",
+      document,
+    );
     assertFunctionDocs(method as DocNodeWithJsDoc<ClassMethodDef>);
   }
   for (const constructor of document.classDef.constructors) {
     if (constructor.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (constructor.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` constructors in classes",
-          constructor,
-        ),
-      );
-    }
+    assert(
+      constructor.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` constructors in classes",
+      constructor,
+    );
     assertConstructorDocs(
       constructor as DocNodeWithJsDoc<ClassConstructorDef>,
     );
@@ -392,14 +354,11 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
 function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
   for (const prop of document.interfaceDef.properties) {
     if (!prop.optional) continue;
-    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
-      diagnostics.push(
-        new DocumentError(
-          "Optional interface properties should have default values",
-          document,
-        ),
-      );
-    }
+    assert(
+      prop.jsDoc?.tags?.find((tag) => tag.kind === "default") !== undefined,
+      "Optional interface properties should have default values",
+      document,
+    );
   }
 }
 
@@ -417,14 +376,11 @@ function assertHasDeprecationDesc(document: DocNodeWithJsDoc<DocNode>) {
   if (!tags) return;
   for (const tag of tags) {
     if (tag.kind !== "deprecated") continue;
-    if (tag.doc === undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "@deprecated tag must have a description",
-          document,
-        ),
-      );
-    }
+    assert(
+      tag.doc !== undefined,
+      "@deprecated tag must have a description",
+      document,
+    );
   }
 }
 
@@ -434,30 +390,26 @@ async function assertDocs(specifiers: string[]) {
     if (d.jsDoc === undefined || d.declarationKind !== "export") continue; // this is caught by other checks
 
     const document = d as DocNodeWithJsDoc<DocNode>;
+    assertHasDeprecationDesc(document);
     switch (document.kind) {
       case "moduleDoc": {
         if (document.location.filename.endsWith("/mod.ts")) {
           assertModuleDoc(document);
-          assertHasDeprecationDesc(document);
         }
         break;
       }
       case "function": {
         assertFunctionDocs(document);
-        assertHasDeprecationDesc(document);
         break;
       }
       case "class": {
         assertClassDocs(document);
-        assertHasDeprecationDesc(document);
         break;
       }
       case "interface":
         assertInterfaceDocs(document);
-        assertHasDeprecationDesc(document);
         break;
       case "variable":
-        assertHasDeprecationDesc(document);
         break;
     }
   }
