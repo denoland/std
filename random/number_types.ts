@@ -13,6 +13,9 @@ const FLOAT_64_MULTIPLIER = 2 ** -53;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @param byteGenerator A function that fills a `Uint8Array` with random bytes.
+ * @returns A float64 in the range `[0, 1)`.
+ *
  * @example With a seeded byte generator
  * ```ts
  * import { nextFloat64, byteGeneratorSeeded } from "@std/random";
