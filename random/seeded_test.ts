@@ -1,9 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import {
-  randomSeeded,
-  randomSeeded53Bit,
-  seededByteGenerator,
-} from "./seeded.ts";
+import { nextFloat64 } from "./number_types.ts";
+import { byteGeneratorSeeded, type Prng, randomSeeded } from "./seeded.ts";
 import { assertAlmostEquals, assertEquals } from "@std/assert";
 
 Deno.test("randomSeeded() generates random numbers", () => {
@@ -14,7 +11,12 @@ Deno.test("randomSeeded() generates random numbers", () => {
   assertEquals(prng(), 0.7924694607499987);
 });
 
-Deno.test("randomSeeded53Bit() gives relatively uniform distribution of random numbers", async (t) => {
+Deno.test("byteGeneratorSeeded() with nextFloat64() gives relatively uniform distribution of random numbers", async (t) => {
+  function randomSeeded53Bit(seed: bigint): Prng {
+    const byteGenerator = byteGeneratorSeeded(seed);
+    return () => nextFloat64(byteGenerator);
+  }
+
   const prng = randomSeeded53Bit(1n);
   const results = Array.from({ length: 1e4 }, prng);
 
@@ -66,8 +68,8 @@ Deno.test("randomSeeded53Bit() gives relatively uniform distribution of random n
   );
 });
 
-Deno.test("seededByteGenerator() generates bytes", () => {
-  const prng = seededByteGenerator(1n);
+Deno.test("byteGeneratorSeeded() generates bytes", () => {
+  const prng = byteGeneratorSeeded(1n);
   assertEquals(
     prng(new Uint8Array(5)),
     new Uint8Array([230, 11, 167, 51, 238]),

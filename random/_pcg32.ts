@@ -1,12 +1,10 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
-import { rotateRightU32, seedBytesFromU64 } from "./_seed_utils.ts";
-
 /** Multiplier for the PCG32 algorithm. */
 const MUL = 6364136223846793005n;
 /** Initial increment for the PCG32 algorithm. Only used during seeding. */
-export const INC = 11634580027462260723n;
+const INC = 11634580027462260723n;
 
 // Constants are for 64-bit state, 32-bit output
 const ROTATE = 59n; // 64 - 5
@@ -45,6 +43,12 @@ abstract class Prng32 {
   }
 }
 
+/**
+ * Internal PCG32 implementation, used by both the public seeded random
+ * function and the seed generation algorithm.
+ *
+ * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_pcg/src/pcg64.rs#L140-L153
+ */
 export class Pcg32 extends Prng32 {
   state: bigint;
   inc: bigint;
@@ -55,32 +59,27 @@ export class Pcg32 extends Prng32 {
     this.inc = inc;
   }
 
-  /**
-   * Internal PCG32 implementation, used by both the public seeded random
-   * function and the seed generation algorithm.
-   *
-   * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_pcg/src/pcg64.rs#L140-L153
-   *
-   * `pcg.state` is internally advanced by the function.
-   *
-   * @param pcg The state and increment values to use for the PCG32 algorithm.
-   * @returns The next pseudo-random 32-bit integer.
-   */
+  /** @returns The next pseudo-random 32-bit integer. */
   nextUint32(): number {
     const state = this.state;
     this.step();
     // Output function XSH RR: xorshift high (bits), followed by a random rotate
     const rot = state >> ROTATE;
     const xsh = BigInt.asUintN(32, (state >> XSHIFT ^ state) >> SPARE);
-    return Number(rotateRightU32(xsh, rot));
+    return Number(this.#rotateRightUint32(xsh, rot));
   }
 
-  /**
-   * Mutates `pcg` by advancing `pcg.state`.
-   */
+  /** Mutates `pcg` by advancing `pcg.state`. */
   step(): this {
     this.state = BigInt.asUintN(64, this.state * MUL + (this.inc | 1n));
     return this;
+  }
+
+  // `n`, `rot`, and return val are all u32
+  #rotateRightUint32(n: bigint, rot: bigint): bigint {
+    const left = BigInt.asUintN(32, n << (-rot & 31n));
+    const right = n >> rot;
+    return left | right;
   }
 
   /**
@@ -88,7 +87,7 @@ export class Pcg32 extends Prng32 {
    * `seed`, treated as an unsigned 64-bit integer.
    */
   static seedFromUint64(seed: bigint): Pcg32 {
-    return this.#fromSeed(seedBytesFromU64(seed, new Uint8Array(16)));
+    return this.#fromSeed(seedBytesFromUint64(seed, new Uint8Array(16)));
   }
 
   /**
@@ -112,4 +111,19 @@ export class Pcg32 extends Prng32 {
     pcg.step();
     return pcg;
   }
+}
+
+/**
+ * Write entropy generated from a scalar bigint seed into the provided Uint8Array, for use as a seed.
+ * Modified from https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
+ */
+export function seedBytesFromUint64(
+  u64: bigint,
+  bytes: Uint8Array,
+): Uint8Array {
+  return new Pcg32(BigInt.asUintN(64, u64), INC)
+    // We advance the state first (to get away from the input value,
+    // in case it has low Hamming Weight).
+    .step()
+    .getRandomValues(bytes);
 }
