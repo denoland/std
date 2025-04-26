@@ -409,8 +409,6 @@ async function assertDocs(specifiers: string[]) {
       case "interface":
         assertInterfaceDocs(document);
         break;
-      case "variable":
-        break;
     }
   }
 }
