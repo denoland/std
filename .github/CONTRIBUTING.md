@@ -125,8 +125,7 @@ Where applicable, documentation for public symbols should contain, in order:
    [Example code snippets](#example-code-snippets) below for further guidance.
 
 See the source code within
-[`@std/bytes`](https://github.com/denoland/deno_std/tree/main/bytes) for
-examples.
+[`@std/bytes`](https://github.com/denoland/std/tree/main/bytes) for examples.
 
 Once the documentation for a given package is written, add the package's entry
 point(s) (usually just `mod.ts`) to the `ENTRY_POINTS` array in the
@@ -147,8 +146,8 @@ Module files, or `mod.ts` files, should have the following:
    documentation.
 
 See the source code for
-[`@std/bytes/mod.ts`](https://github.com/denoland/deno_std/blob/main/bytes/mod.ts)
-as an example.
+[`@std/bytes/mod.ts`](https://github.com/denoland/std/blob/main/bytes/mod.ts) as
+an example.
 
 ### Example code snippets
 

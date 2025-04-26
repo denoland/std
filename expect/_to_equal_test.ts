@@ -221,7 +221,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
   expect({ foo: 1, bar: undefined }).not.toEqual({ foo: undefined });
 });
 
-// https://github.com/denoland/deno_std/issues/4244
+// https://github.com/denoland/std/issues/4244
 Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {
