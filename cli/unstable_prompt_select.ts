@@ -4,14 +4,18 @@
 export interface PromptSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
+
+  /** The number of lines to be visible at once */
+  visibleLines?: number;
+
+  /** The string to indicate the selected item */
+  indicator?: string;
 }
 
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
-const INDICATOR = "❯";
-const PADDING = " ".repeat(INDICATOR.length);
 
 const input = Deno.stdin;
 const output = Deno.stdout;
@@ -34,7 +38,14 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ```ts ignore
  * import { promptSelect } from "@std/cli/prompt-select";
  *
- * const browser = promptSelect("Please select a browser:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browser = promptSelect("What country are you from?", [
+ *   "Brazil",
+ *   "United States",
+ *   "Japan",
+ *   "China",
+ *   "Canada",
+ *   "Spain",
+ * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
 export function promptSelect(
@@ -44,8 +55,22 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
+  const SAFE_PADDING = 3;
+  let {
+    // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
+    // and we use the last line to display the "..."
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      values.length,
+    ),
+    indicator = "❯",
+  } = options;
+  const PADDING = " ".repeat(indicator.length);
+
   const length = values.length;
   let selectedIndex = 0;
+  let showIndex = 0;
+  let offset = 0;
 
   input.setRaw(true);
   output.writeSync(HIDE_CURSOR);
@@ -55,9 +80,14 @@ export function promptSelect(
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
-    for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : PADDING;
+    const chunk = values.slice(offset, visibleLines + offset);
+    for (const [index, value] of chunk.entries()) {
+      const start = index === showIndex ? indicator : PADDING;
       output.writeSync(encoder.encode(`${start} ${value}\r\n`));
+    }
+    const moreContent = visibleLines + offset < length;
+    if (moreContent) {
+      output.writeSync(encoder.encode("...\r\n"));
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -67,20 +97,49 @@ export function promptSelect(
       case ETX:
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
-      case ARROW_UP:
-        selectedIndex = (selectedIndex - 1 + length) % length;
+      case ARROW_UP: {
+        const atTop = selectedIndex === 0;
+        selectedIndex = atTop ? length - 1 : selectedIndex - 1;
+        if (atTop) {
+          offset = Math.max(length - visibleLines, 0);
+          showIndex = Math.min(visibleLines - 1, length - 1);
+        } else if (showIndex > 0) {
+          showIndex--;
+        } else {
+          offset = Math.max(offset - 1, 0);
+        }
         break;
-      case ARROW_DOWN:
-        selectedIndex = (selectedIndex + 1) % length;
+      }
+      case ARROW_DOWN: {
+        const atBottom = selectedIndex === length - 1;
+        selectedIndex = atBottom ? 0 : selectedIndex + 1;
+        if (atBottom) {
+          offset = 0;
+          showIndex = 0;
+        } else if (showIndex < visibleLines - 1) {
+          showIndex++;
+        } else {
+          offset++;
+        }
         break;
+      }
       case CR:
         break loop;
     }
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      visibleLines,
+    );
+    // if we print the "...\r\n" we need to clear an additional line
+    output.writeSync(
+      encoder.encode(`\x1b[${visibleLines + (moreContent ? 2 : 1)}A`),
+    );
+    output.writeSync(CLR_ALL);
   }
 
   if (options.clear) {
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
     output.writeSync(CLR_ALL);
   }
 
