@@ -1,4 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
 import type { ByteGenerator } from "./_types.ts";
 
 const b8 = new Uint8Array(8);

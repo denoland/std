@@ -23,11 +23,11 @@ abstract class Prng32 {
    * @returns The same `Uint8Array`, now populated with random values.
    */
   getRandomValues<T extends Uint8Array>(bytes: T): T {
-    const { byteLength, byteOffset } = bytes;
+    const { buffer, byteLength, byteOffset } = bytes;
     const rem = byteLength % 4;
     const cutoffLen = byteLength - rem;
 
-    const dv = new DataView(bytes.buffer, byteOffset, byteLength);
+    const dv = new DataView(buffer, byteOffset, byteLength);
     for (let i = 0; i < cutoffLen; i += 4) {
       dv.setUint32(i, this.nextUint32(), true);
     }
