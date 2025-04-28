@@ -31,7 +31,6 @@
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
 export * from "./associate_with.ts";
-export * from "./binary_search.ts";
 export * from "./chunk.ts";
 export * from "./deep_merge.ts";
 export * from "./distinct.ts";

@@ -21,7 +21,7 @@
  *
  * @example Usage
  * ```ts
- * import { binarySearch } from "@std/collections/binary-search";
+ * import { binarySearch } from "@std/collections/unstable-binary-search";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(binarySearch([0, 1], 0), 0);
