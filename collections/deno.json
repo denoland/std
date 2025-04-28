@@ -6,6 +6,7 @@
     "./aggregate-groups": "./aggregate_groups.ts",
     "./associate-by": "./associate_by.ts",
     "./associate-with": "./associate_with.ts",
+    "./binary-search": "./binary_search.ts",
     "./chunk": "./chunk.ts",
     "./deep-merge": "./deep_merge.ts",
     "./distinct": "./distinct.ts",
