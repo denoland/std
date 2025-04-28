@@ -82,8 +82,8 @@ function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
     "Symbol must have a @return or @returns tag",
     document,
   );
+  if (tag === undefined) return;
   assert(
-    // @ts-ignore doc is defined
     tag.doc !== undefined,
     "@return tag must have a description",
     document,
@@ -129,6 +129,7 @@ function assertHasParamTag(
     `Symbol must have a @param tag for ${param}`,
     document,
   );
+  if (tag === undefined) return;
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
@@ -147,6 +148,7 @@ function assertHasSnippets(
     "@example tag must have a TypeScript code snippet",
     document,
   );
+  if (snippets === null) return;
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
     // Trim the code block delimiters
