@@ -4,12 +4,15 @@ import { AssertionError } from "./assertion_error.ts";
 import { stripAnsiCode } from "@std/internal/styles";
 
 /**
- * A check to be applied against the error:
+ * A predicate to be checked against the error:
  * - If a string is supplied, this must be present in the error's `message` property.
  * - If a RegExp is supplied, this must match against the error's `message` property.
  * - If a predicate function is provided, this must return `true` for the error.
  */
-export type ErrorCheck<E extends Error> = string | RegExp | ((e: E) => boolean);
+export type ErrorPredicate<E extends Error> =
+  | string
+  | RegExp
+  | ((e: E) => boolean);
 
 /**
  * Make an assertion that `error` is an `Error`.
@@ -31,14 +34,14 @@ export type ErrorCheck<E extends Error> = string | RegExp | ((e: E) => boolean);
  * @typeParam E The type of the error to assert.
  * @param error The error to assert.
  * @param ErrorClass The optional error class to assert.
- * @param check The optional string or RegExp to assert in the error message.
+ * @param predicate An optional string or RegExp to match against the error message, or a callback that should return `true` for the error.
  * @param msg The optional message to display if the assertion fails.
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
   // deno-lint-ignore no-explicit-any
   ErrorClass?: abstract new (...args: any[]) => E,
-  check?: ErrorCheck<E>,
+  predicate?: ErrorPredicate<E>,
   msg?: string,
 ): asserts error is E {
   const msgSuffix = msg ? `: ${msg}` : ".";
@@ -54,25 +57,25 @@ export function assertIsError<E extends Error = Error>(
     throw new AssertionError(msg);
   }
   let msgCheck;
-  if (typeof check === "string") {
+  if (typeof predicate === "string") {
     msgCheck = stripAnsiCode(error.message).includes(
-      stripAnsiCode(check),
+      stripAnsiCode(predicate),
     );
-  } else if (check instanceof RegExp) {
-    msgCheck = check.test(stripAnsiCode(error.message));
-  } else if (typeof check === "function") {
-    msgCheck = check(error as E);
+  } else if (predicate instanceof RegExp) {
+    msgCheck = predicate.test(stripAnsiCode(error.message));
+  } else if (typeof predicate === "function") {
+    msgCheck = predicate(error as E);
     if (!msgCheck) {
       msg = `Error failed the check${msgSuffix}`;
       throw new AssertionError(msg);
     }
   }
 
-  if (check && !msgCheck) {
+  if (predicate && !msgCheck) {
     msg = `Expected error message to ${
-      check instanceof RegExp
-        ? `match ${check}`
-        : `include ${JSON.stringify(check)}`
+      predicate instanceof RegExp
+        ? `match ${predicate}`
+        : `include ${JSON.stringify(predicate)}`
     }, but got ${JSON.stringify(error?.message)}${msgSuffix}`;
     throw new AssertionError(msg);
   }

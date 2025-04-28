@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { assertIsError, type ErrorCheck } from "./unstable_is_error.ts";
+import { assertIsError, type ErrorPredicate } from "./unstable_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -45,7 +45,7 @@ export function assertThrows(
  * @typeParam E The error class to assert.
  * @param fn The function to execute.
  * @param ErrorClass The error class to assert.
- * @param check A string that should be included in the error message, or a callback that should return `true` for the error.
+ * @param predicate An optional string or RegExp to match against the error message, or a callback that should return `true` for the error.
  * @param msg The optional message to display if the assertion fails.
  * @returns The error that was thrown.
  */
@@ -53,7 +53,7 @@ export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
   ErrorClass: abstract new (...args: any[]) => E,
-  check?: ErrorCheck<E>,
+  predicate?: ErrorPredicate<E>,
   msg?: string,
 ): E;
 export function assertThrows<E extends Error = Error>(
@@ -62,7 +62,7 @@ export function assertThrows<E extends Error = Error>(
     // deno-lint-ignore no-explicit-any
     | (abstract new (...args: any[]) => E)
     | string,
-  check?: ErrorCheck<E>,
+  predicate?: ErrorPredicate<E>,
   msg?: string,
 ): E | Error | unknown {
   // deno-lint-ignore no-explicit-any
@@ -77,7 +77,7 @@ export function assertThrows<E extends Error = Error>(
     ) {
       ErrorClass = errorClassOrMsg;
     } else {
-      msg = check as string;
+      msg = predicate as string;
     }
   } else {
     msg = errorClassOrMsg;
@@ -94,7 +94,7 @@ export function assertThrows<E extends Error = Error>(
       assertIsError(
         error,
         ErrorClass,
-        check,
+        predicate,
         msg,
       );
     }
