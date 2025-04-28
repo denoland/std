@@ -2,7 +2,12 @@
 // This module is browser compatible.
 
 /**
- * A binary search that accounts for non-exact matches.
+ * Binary search within a sorted array, allowing for non-exact matches.
+ *
+ * Binary searching may be preferable to `Array#findIndex` if the array is
+ * large and performance is at a premium, or if information about the insertion
+ * index is needed upon non-exact matches (`Array#findIndex` simply returns
+ * `-1` in such cases).
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -15,9 +20,6 @@
  *   the index of the first match found (which may not be the first sequentially) is returned.
  * - Otherwise, the [bitwise complement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_NOT)
  *   of `needle`'s insertion index if it were added to `haystack` in sorted order.
- *
- * Return value semantics are the same as C#'s [`Array.BinarySearch`](https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch#system-array-binarysearch(system-array-system-object))
- * and Java's [`Arrays.binarySearch`](https://docs.oracle.com/javase/8/docs/api/java/util/Arrays.html#binarySearch-int:A-int-).
  *
  * @example Usage
  * ```ts
