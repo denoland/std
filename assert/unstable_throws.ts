@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { assertIsError } from "./is_error.ts";
+import { assertIsError, type ErrorCheck } from "./unstable_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
 
 /**
@@ -45,7 +45,7 @@ export function assertThrows(
  * @typeParam E The error class to assert.
  * @param fn The function to execute.
  * @param ErrorClass The error class to assert.
- * @param msgIncludes The string that should be included in the error message.
+ * @param check A string that should be included in the error message, or a callback that should return `true` for the error.
  * @param msg The optional message to display if the assertion fails.
  * @returns The error that was thrown.
  */
@@ -53,7 +53,7 @@ export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
   ErrorClass: abstract new (...args: any[]) => E,
-  msgIncludes?: string,
+  check?: ErrorCheck<E>,
   msg?: string,
 ): E;
 export function assertThrows<E extends Error = Error>(
@@ -62,12 +62,11 @@ export function assertThrows<E extends Error = Error>(
     // deno-lint-ignore no-explicit-any
     | (abstract new (...args: any[]) => E)
     | string,
-  msgIncludesOrMsg?: string,
+  check?: ErrorCheck<E>,
   msg?: string,
 ): E | Error | unknown {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
-  let msgIncludes: string | undefined;
   let err;
 
   if (typeof errorClassOrMsg !== "string") {
@@ -77,9 +76,8 @@ export function assertThrows<E extends Error = Error>(
       errorClassOrMsg?.prototype === Error.prototype
     ) {
       ErrorClass = errorClassOrMsg;
-      msgIncludes = msgIncludesOrMsg;
     } else {
-      msg = msgIncludesOrMsg;
+      msg = check as string;
     }
   } else {
     msg = errorClassOrMsg;
@@ -96,7 +94,7 @@ export function assertThrows<E extends Error = Error>(
       assertIsError(
         error,
         ErrorClass,
-        msgIncludes,
+        check,
         msg,
       );
     }

@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { assert, assertEquals, AssertionError, assertRejects } from "./mod.ts";
+import { assert, assertEquals, AssertionError } from "./mod.ts";
+import { assertRejects } from "./unstable_rejects.ts";
 
 Deno.test("assertRejects() with return type", async () => {
   await assertRejects(() => {
@@ -145,5 +146,53 @@ Deno.test("assertRejects() throws with custom message", async () => {
       ),
     AssertionError,
     "Expected function to reject: CUSTOM MESSAGE",
+  );
+});
+
+Deno.test("assertRejects() with regex", () => {
+  assertRejects(
+    () => Promise.reject(new Error("HELLO WORLD!")),
+    Error,
+    /hello world/i,
+  );
+
+  assertRejects(
+    async () => {
+      await assertRejects(
+        () => Promise.reject(new Error("HELLO WORLD!")),
+        Error,
+        /^hello world$/i,
+      );
+    },
+    AssertionError,
+    "Expected error message to match /^hello world$/i",
+  );
+});
+
+Deno.test("assertRejects() with custom error check", () => {
+  class CustomError extends Error {
+    readonly code: number;
+    constructor(code: number) {
+      super();
+      this.code = code;
+    }
+  }
+
+  assertRejects(
+    () => Promise.reject(new CustomError(-1)),
+    CustomError,
+    (e) => e.code === -1,
+  );
+
+  assertRejects(
+    async () => {
+      await assertRejects(
+        () => Promise.reject(new CustomError(-1)),
+        CustomError,
+        (e) => e.code === -2,
+      );
+    },
+    AssertionError,
+    "Error failed the check.",
   );
 });

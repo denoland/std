@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { AssertionError, assertIsError, assertThrows } from "./mod.ts";
+import { AssertionError, assertThrows } from "./mod.ts";
+import { assertIsError } from "./unstable_is_error.ts";
 
 class CustomError extends Error {}
 class AnotherCustomError extends Error {}
@@ -62,7 +63,7 @@ Deno.test("assertIsError() throws when given value doesn't match regex ", () => 
   assertThrows(
     () => assertIsError(new AssertionError("Regex test"), Error, /egg/),
     Error,
-    `Expected error message to include /egg/, but got "Regex test"`,
+    `Expected error message to match /egg/, but got "Regex test"`,
   );
 });
 
@@ -77,5 +78,33 @@ Deno.test("assertIsError() throws with custom message", () => {
       ),
     AssertionError,
     'Expected error to be instance of "AnotherCustomError", but was "CustomError": CUSTOM MESSAGE',
+  );
+});
+
+Deno.test("assertIsError() with custom error check", () => {
+  class CustomError extends Error {
+    readonly code: number;
+    constructor(code: number) {
+      super();
+      this.code = code;
+    }
+  }
+
+  assertIsError(
+    new CustomError(-1),
+    CustomError,
+    (e) => e.code === -1,
+  );
+
+  assertThrows(
+    () => {
+      assertIsError(
+        new CustomError(-1),
+        CustomError,
+        (e) => e.code === -2,
+      );
+    },
+    AssertionError,
+    "Error failed the check.",
   );
 });

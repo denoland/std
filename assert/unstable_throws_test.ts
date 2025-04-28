@@ -1,11 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import {
-  assert,
-  assertEquals,
-  AssertionError,
-  assertThrows,
-  fail,
-} from "./mod.ts";
+import { assert, assertEquals, AssertionError, fail } from "./mod.ts";
+import { assertThrows } from "./unstable_throws.ts";
 
 Deno.test("assertThrows() throws when thrown error class does not match expected", () => {
   assertThrows(
@@ -169,5 +164,61 @@ Deno.test("assertThrows() throws with custom message and no error class", () => 
     },
     AssertionError,
     "Expected function to throw: CUSTOM MESSAGE",
+  );
+});
+
+Deno.test("assertThrows() with regex", () => {
+  assertThrows(
+    () => {
+      throw new Error("HELLO WORLD!");
+    },
+    Error,
+    /hello world/i,
+  );
+
+  assertThrows(
+    () => {
+      assertThrows(
+        () => {
+          throw new Error("HELLO WORLD!");
+        },
+        Error,
+        /^hello world$/i,
+      );
+    },
+    AssertionError,
+    "Expected error message to match /^hello world$/i",
+  );
+});
+
+Deno.test("assertThrows() with custom error check", () => {
+  class CustomError extends Error {
+    readonly code: number;
+    constructor(code: number) {
+      super();
+      this.code = code;
+    }
+  }
+
+  assertThrows(
+    () => {
+      throw new CustomError(-1);
+    },
+    CustomError,
+    (e) => e.code === -1,
+  );
+
+  assertThrows(
+    () => {
+      assertThrows(
+        () => {
+          throw new CustomError(-1);
+        },
+        CustomError,
+        (e) => e.code === -2,
+      );
+    },
+    AssertionError,
+    "Error failed the check.",
   );
 });

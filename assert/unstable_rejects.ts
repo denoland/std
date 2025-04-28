@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
+import { assertIsError, type ErrorCheck } from "./unstable_is_error.ts";
 import { AssertionError } from "./assertion_error.ts";
-import { assertIsError } from "./is_error.ts";
 
 /**
  * Executes a function which returns a promise, expecting it to reject.
@@ -42,7 +42,7 @@ export function assertRejects(
  * @typeParam E The error class to assert.
  * @param fn The function to execute.
  * @param ErrorClass The error class to assert.
- * @param msgIncludes The string that should be included in the error message.
+ * @param check A string that should be included in the error message, or a callback that should return `true` for the error.
  * @param msg The optional message to display if the assertion fails.
  * @returns The promise which resolves to the thrown error.
  */
@@ -50,7 +50,7 @@ export function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
   // deno-lint-ignore no-explicit-any
   ErrorClass: abstract new (...args: any[]) => E,
-  msgIncludes?: string,
+  check?: ErrorCheck<E>,
   msg?: string,
 ): Promise<E>;
 export async function assertRejects<E extends Error = Error>(
@@ -59,12 +59,11 @@ export async function assertRejects<E extends Error = Error>(
     // deno-lint-ignore no-explicit-any
     | (abstract new (...args: any[]) => E)
     | string,
-  msgIncludesOrMsg?: string,
+  check?: ErrorCheck<E>,
   msg?: string,
 ): Promise<E | Error | unknown> {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (abstract new (...args: any[]) => E) | undefined;
-  let msgIncludes: string | undefined;
   let err;
 
   if (typeof errorClassOrMsg !== "string") {
@@ -74,7 +73,8 @@ export async function assertRejects<E extends Error = Error>(
       errorClassOrMsg.prototype === Error.prototype
     ) {
       ErrorClass = errorClassOrMsg;
-      msgIncludes = msgIncludesOrMsg;
+    } else {
+      msg = check as string;
     }
   } else {
     msg = errorClassOrMsg;
@@ -107,7 +107,7 @@ export async function assertRejects<E extends Error = Error>(
       assertIsError(
         error,
         ErrorClass,
-        msgIncludes,
+        check,
         msg,
       );
     }
