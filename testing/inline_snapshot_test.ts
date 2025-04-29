@@ -137,6 +137,46 @@ Deno.test("no format", async (t) => {
   }
 });
 
+Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () => {
+  const tempDir = await Deno.makeTempDir();
+  const countTestFile = join(tempDir, "count_test.ts");
+  try {
+    await Deno.writeTextFile(
+      countTestFile,
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+ \n \r \n\r \r\n 
+Deno.test("format", async (t) => {
+  /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot(t, "hello world", "", { format: false });
+});`,
+    );
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "test",
+        "--no-lock",
+        "--allow-read",
+        "--allow-write",
+        "--allow-run",
+        tempDir,
+        "--",
+        "--update",
+      ],
+    });
+    await command.output();
+
+    assertEquals(
+      await Deno.readTextFile(countTestFile),
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+ \n \r \n\r \r\n 
+Deno.test("format", async (t) => {
+  /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot(t, "hello world", \`"hello world"\`, { format: false });
+});`,
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
 Deno.test("createAssertInlineSnapshot()", (t) => {
   const assertMonochromeInlineSnapshot = createAssertInlineSnapshot<string>({
     serializer: stripAnsiCode,

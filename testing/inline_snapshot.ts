@@ -60,21 +60,21 @@ function makeSnapshotUpdater(
       "update-snapshot": {
         create(context) {
           const src = context.sourceCode.text;
-          const lineBreaks = [...src.matchAll(/\n/g)].map((m) => m.index);
+          const lineBreaks = [...src.matchAll(/\n|\r\n?/g)].map((m) => m.index);
+          const locationToSnapshot: Record<number, string> = {};
+          for (
+            const [lineColumn, snapshot] of Object.entries(lineColumnToSnapshot)
+          ) {
+            const [lineNumber, columnNumber] = lineColumn.split(":")
+              .map(Number);
+            const location = (lineBreaks[lineNumber! - 2] ?? 0) + columnNumber!;
+            locationToSnapshot[location] = snapshot;
+          }
 
           return {
-            "CallExpression"(
-              node: Deno.lint.CallExpression,
-            ) {
-              const callStart = node.range[0];
-
-              const lineIndex = lineBreaks.findLastIndex((n) => n < callStart);
-              // 1-indexed
-              const lineNumber = lineIndex + 2;
-              const columnNumber = callStart - (lineBreaks[lineIndex] ?? 0);
-
-              const snapshot =
-                lineColumnToSnapshot[`${lineNumber}:${columnNumber}`];
+            // Fetching all functions lets us support createAssertInlineSnapshot
+            "CallExpression"(node: Deno.lint.CallExpression) {
+              const snapshot = locationToSnapshot[node.range[0]];
               const argument = node.arguments[2];
               if (snapshot === undefined || argument === undefined) return;
 
