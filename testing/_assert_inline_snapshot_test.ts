@@ -5,6 +5,7 @@ import { assertEquals } from "@std/assert";
 import {
   assertInlineSnapshot,
   createAssertInlineSnapshot,
+  LINT_SUPPORTED,
 } from "./_assert_inline_snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
@@ -85,6 +86,8 @@ Deno.test("assertInlineSnapshot()", (t) => {
 });
 
 Deno.test("assertInlineSnapshot() formats", async () => {
+  if (!LINT_SUPPORTED) return;
+
   const tempDir = await Deno.makeTempDir();
   const formatTestFile = join(tempDir, "format_test.ts");
   const noFormatTestFile = join(tempDir, "no_format_test.ts");
@@ -138,6 +141,8 @@ Deno.test("no format", async (t) => {
 });
 
 Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () => {
+  if (!LINT_SUPPORTED) return;
+
   const tempDir = await Deno.makeTempDir();
   const countTestFile = join(tempDir, "count_test.ts");
   try {

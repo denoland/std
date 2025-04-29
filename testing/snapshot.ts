@@ -38,12 +38,12 @@
  * // example_test.ts
  * import { assertInlineSnapshot } from "@std/testing/snapshot";
  *
- * Deno.test("isInlineSnapshotMatch", async function (t): Promise<void> {
+ * Deno.test("isInlineSnapshotMatch", function (t): void {
  *   const a = {
  *     hello: "world!",
  *     example: 123,
  *   };
- *   await assertInlineSnapshot(
+ *   assertInlineSnapshot(
  *     t,
  *     a,
  *     `{
@@ -179,6 +179,7 @@ import {
   type SnapshotMode,
   type SnapshotOptions,
 } from "./_assert_snapshot.ts";
+import { serialize } from "./_snapshot_utils.ts";
 
 export {
   assertInlineSnapshot,
@@ -186,6 +187,7 @@ export {
   createAssertInlineSnapshot,
   createAssertSnapshot,
   type InlineSnapshotOptions,
+  serialize,
   type SnapshotMode,
   type SnapshotOptions,
 };

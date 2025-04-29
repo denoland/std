@@ -17,6 +17,9 @@ import {
   serialize,
 } from "./_snapshot_utils.ts";
 
+// TODO (WWRS): Remove this when we drop support for Deno 1.x
+export const LINT_SUPPORTED = !Deno.version.deno.startsWith("1.");
+
 /** The options for {@linkcode assertInlineSnapshot}. */
 
 export interface InlineSnapshotOptions<T = unknown>
@@ -136,6 +139,12 @@ class AssertInlineSnapshotContext {
     const snapshotsUpdated = Object.keys(this.#lineColumnToSnapshot).length;
     if (snapshotsUpdated === 0) return;
 
+    if (!LINT_SUPPORTED) {
+      throw new Error(
+        "Deno versions before 2.2.0 do not support Deno.lint, which is required to update inline snapshots",
+      );
+    }
+
     const testFilePath = fromFileUrl(this.#testFileUrl);
     ensureFileSync(testFilePath);
     const file = Deno.readTextFileSync(testFilePath);
@@ -237,8 +246,8 @@ class AssertInlineSnapshotContext {
  * ```ts
  * import { assertInlineSnapshot } from "@std/testing/snapshot";
  *
- * Deno.test("snapshot", async (t) => {
- *   await assertInlineSnapshot<number>(t, 2, `2`);
+ * Deno.test("snapshot", (t) => {
+ *   assertInlineSnapshot<number>(t, 2, `2`);
  * });
  * ```
  * @typeParam T The type of the snapshot
@@ -263,8 +272,8 @@ export function assertInlineSnapshot<T>(
  * ```ts
  * import { assertInlineSnapshot } from "@std/testing/snapshot";
  *
- * Deno.test("snapshot", async (t) => {
- *   await assertInlineSnapshot<number>(t, 2, `2`);
+ * Deno.test("snapshot", (t) => {
+ *   assertInlineSnapshot<number>(t, 2, `2`);
  * });
  * ```
  * @typeParam T The type of the snapshot
@@ -354,8 +363,8 @@ export function assertInlineSnapshot(
  *   format: false
  * });
  *
- * Deno.test("a snapshot test case", async (t) => {
- *   await assertInlineSnapshot(
+ * Deno.test("a snapshot test case", (t) => {
+ *   assertInlineSnapshot(
  *     t,
  *     { foo: "Hello", bar: "World" },
  *     `CREATE`
