@@ -21,17 +21,21 @@
  */
 export function format(v: unknown): string {
   // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
+  const { Deno, process } = globalThis as any;
+  const options = {
+    depth: Infinity,
+    sorted: true,
+    trailingComma: true,
+    compact: false,
+    iterableLimit: Infinity,
+    // getters should be true in assertEquals.
+    getters: true,
+    strAbbreviateSize: Infinity,
+  };
+
   return typeof Deno?.inspect === "function"
-    ? Deno.inspect(v, {
-      depth: Infinity,
-      sorted: true,
-      trailingComma: true,
-      compact: false,
-      iterableLimit: Infinity,
-      // getters should be true in assertEquals.
-      getters: true,
-      strAbbreviateSize: Infinity,
-    })
+    ? Deno.inspect(v, options)
+    : typeof process?.getBuiltinModule === "function"
+    ? process.getBuiltinModule("node:util").inspect(v, options)
     : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
 }

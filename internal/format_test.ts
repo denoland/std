@@ -103,15 +103,82 @@ Deno.test("format() doesn't truncate long strings in object", () => {
   );
 });
 
-Deno.test("format() has fallback to String if Deno.inspect is not available", () => {
+Deno.test("format() has fallback to util.inspect if Deno.inspect is not available", async (t) => {
   // Simulates the environment where Deno.inspect is not available
   const inspect = Deno.inspect;
   // deno-lint-ignore no-explicit-any
   delete (Deno as any).inspect;
   try {
+    assertEquals(format([..."abcd"]), `[\n  'a',\n  'b',\n  'c',\n  'd',\n]`);
+    assertEquals(format({ a: 1, b: 2 }), `{\n  a: 1,\n  b: 2,\n}`);
+    await t.step("format() sorts properties", () =>
+      assertEquals(
+        format({ b: 2, a: 1 }),
+        format({ a: 1, b: 2 }),
+      ));
+
+    await t.step("format() wraps Object with getters", () =>
+      assertEquals(
+        format(Object.defineProperty({}, "a", {
+          enumerable: true,
+          get() {
+            return 1;
+          },
+        })),
+        `{
+  a: [Getter: 1],
+}`,
+      ));
+
+    await t.step("format() wraps nested small objects", () =>
+      assertEquals(
+        stripAnsiCode(format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
+        `[
+  {
+    x: {
+      a: 1,
+      b: 2,
+    },
+    y: [
+      'a',
+      'b',
+    ],
+  },
+]`,
+      ));
+
+    // Grouping is disabled.
+    await t.step("format() disables grouping", () =>
+      assertEquals(
+        stripAnsiCode(format(["i", "i", "i", "i", "i", "i", "i"])),
+        `[
+  'i',
+  'i',
+  'i',
+  'i',
+  'i',
+  'i',
+  'i',
+]`,
+      ));
+  } finally {
+    Deno.inspect = inspect;
+  }
+});
+
+Deno.test("format() has fallback to String if util.inspect and Deno.inspect are not available", () => {
+  // Simulates the environment where Deno.inspect and util.inspect are not available
+  const inspect = Deno.inspect;
+  // deno-lint-ignore no-explicit-any
+  delete (Deno as any).inspect;
+  // deno-lint-ignore no-explicit-any
+  const { process } = globalThis as any;
+  const getBuiltinModule = process.getBuiltinModule;
+  try {
     assertEquals(format([..."abcd"]), `"a,b,c,d"`);
     assertEquals(format({ a: 1, b: 2 }), `"[object Object]"`);
   } finally {
     Deno.inspect = inspect;
+    process.getBuiltinModule = getBuiltinModule;
   }
 });
