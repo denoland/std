@@ -140,6 +140,7 @@ Deno.test("no format", async (t) => {
   }
 });
 
+// TODO(WWRS): Add \u2028 and \u2029 once Deno counts them as line breaks
 Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () => {
   if (!LINT_SUPPORTED) return;
 

@@ -6,7 +6,6 @@ import { fromFileUrl } from "@std/path/from-file-url";
 import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
 import { toFileUrl } from "@std/path/to-file-url";
-import { ensureFileSync } from "@std/fs/ensure-file";
 import { AssertionError } from "@std/assert/assertion-error";
 import { equal } from "@std/assert/equal";
 import {
@@ -66,13 +65,18 @@ function makeSnapshotUpdater(
       "update-snapshot": {
         create(context) {
           const src = context.sourceCode.text;
-          const lineBreaks = [...src.matchAll(/\n|\r\n?/g)].map((m) => m.index);
+          // TODO(WWRS): Add \u2028 and \u2029 once Deno counts them as line breaks
+          const lineBreaks = [...src.matchAll(/\n|\r\n?/g)]
+            .map((m) => m.index);
           const locationToSnapshot: Record<number, string> = {};
           for (
             const [lineColumn, snapshot] of Object.entries(lineColumnToSnapshot)
           ) {
             const [lineNumber, columnNumber] = lineColumn.split(":")
               .map(Number);
+            // Since lineNumber is 1-indexed, subtract 1 to convert to 0-indexed.
+            // Then fetch the line break before this line, which is the (n-1)th break,
+            // or 0 if this is the top line (index 0).
             const location = (lineBreaks[lineNumber! - 2] ?? 0) + columnNumber!;
             locationToSnapshot[location] = snapshot;
           }
@@ -146,7 +150,6 @@ class AssertInlineSnapshotContext {
     }
 
     const testFilePath = fromFileUrl(this.#testFileUrl);
-    ensureFileSync(testFilePath);
     const file = Deno.readTextFileSync(testFilePath);
     const pluginRunResults = Deno.lint.runPlugin(
       makeSnapshotUpdater(this.#lineColumnToSnapshot),
