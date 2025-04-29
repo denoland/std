@@ -28,26 +28,55 @@ export interface InlineSnapshotOptions<T = unknown>
   format?: boolean;
 }
 
+interface ErrorLocation {
+  lineNumber: number;
+  columnNumber: number;
+}
+
+interface SnapshotUpdateRequest {
+  lineNumber: number;
+  columnNumber: number;
+  actualSnapshot: string;
+}
+
+// See https://v8.dev/docs/stack-trace-api
+type V8Error = typeof Error & {
+  prepareStackTrace(error: Error, structuredStackTrace: CallSite[]): unknown;
+};
+
+// See https://v8.dev/docs/stack-trace-api
+interface CallSite {
+  isEval(): boolean;
+  getLineNumber(): number | null;
+  getColumnNumber(): number | null;
+}
+
 function makeSnapshotUpdater(
-  indexToSnapshot: (string | undefined)[],
+  lineColumnToSnapshot: Record<string, string>,
 ): Deno.lint.Plugin {
   return {
     name: "snapshot-updater-plugin",
     rules: {
       "update-snapshot": {
         create(context) {
-          let index = 0;
+          const src = context.sourceCode.text;
+          const lineBreaks = [...src.matchAll(/\n/g)].map((m) => m.index);
+
           return {
-            'CallExpression[callee.name="assertInlineSnapshot"]'(
+            "CallExpression"(
               node: Deno.lint.CallExpression,
             ) {
-              const snapshot = indexToSnapshot[index];
-              const argument = node.arguments[2];
-              index += 1;
+              const callStart = node.range[0];
 
-              if (snapshot === undefined || argument === undefined) {
-                return;
-              }
+              const lineIndex = lineBreaks.findLastIndex((n) => n < callStart);
+              // 1-indexed
+              const lineNumber = lineIndex + 2;
+              const columnNumber = callStart - (lineBreaks[lineIndex] ?? 0);
+
+              const snapshot =
+                lineColumnToSnapshot[`${lineNumber}:${columnNumber}`];
+              const argument = node.arguments[2];
+              if (snapshot === undefined || argument === undefined) return;
 
               context.report({
                 node,
@@ -89,8 +118,7 @@ class AssertInlineSnapshotContext {
   }
 
   #teardownRegistered = false;
-  #indexToSnapshot: (string | undefined)[] = [];
-  #snapshotsRegistered = 0;
+  #lineColumnToSnapshot: Record<string, string> = {};
   #testFileUrl: URL;
   #format: boolean | undefined | "error" = undefined;
 
@@ -102,17 +130,14 @@ class AssertInlineSnapshotContext {
    * Write updates to the snapshot file and log statistics.
    */
   #teardown = () => {
-    if (this.#snapshotsRegistered === 0) return;
-    const snapshotsUpdated =
-      this.#indexToSnapshot.filter((s) => s !== undefined).length;
+    const snapshotsUpdated = Object.keys(this.#lineColumnToSnapshot).length;
     if (snapshotsUpdated === 0) return;
 
     const testFilePath = fromFileUrl(this.#testFileUrl);
     ensureFileSync(testFilePath);
     const file = Deno.readTextFileSync(testFilePath);
-
     const pluginRunResults = Deno.lint.runPlugin(
-      makeSnapshotUpdater(this.#indexToSnapshot),
+      makeSnapshotUpdater(this.#lineColumnToSnapshot),
       "dummy.ts",
       file,
     );
@@ -153,7 +178,7 @@ class AssertInlineSnapshotContext {
       }
     } else if (this.#format === "error") {
       throw new Error(
-        "assertInlineSnapshot was called with incompatible format options. Snapshots were added but the file was not formatted.",
+        "Found incompatible format options in assertInlineSnapshot, did not format file",
       );
     }
 
@@ -173,39 +198,21 @@ class AssertInlineSnapshotContext {
    * This method can safely be called more than once and will only register the teardown
    * function once in a context.
    */
-  async registerTeardown() {
+  registerTeardown() {
     if (!this.#teardownRegistered) {
-      for (const perm of ["read", "write"] as const) {
-        const permission = await Deno.permissions.query({
-          name: perm,
-          path: this.#testFileUrl,
-        });
-        if (permission.state !== "granted") {
-          throw new Deno.errors.PermissionDenied(
-            `Missing ${perm} access to snapshot file (${this.#testFileUrl}). This is required because assertInlineSnapshot is trying to update snapshots. Please pass the --allow-${perm} flag.`,
-          );
-        }
-      }
       globalThis.addEventListener("unload", this.#teardown);
       this.#teardownRegistered = true;
     }
   }
 
   /**
-   * Gets the number of snapshots which have been created and increments the count by 1.
-   */
-  getCount() {
-    const count = this.#snapshotsRegistered;
-    this.#snapshotsRegistered++;
-    return count;
-  }
-
-  /**
    * Creates a snapshot by index. Updates will be written to the test file when all
    * tests have run.
    */
-  createSnapshot(index: number, snapshot: string, format: boolean | undefined) {
-    this.#indexToSnapshot[index] = snapshot;
+  createSnapshot(request: SnapshotUpdateRequest, format: boolean | undefined) {
+    this
+      .#lineColumnToSnapshot[`${request.lineNumber}:${request.columnNumber}`] =
+        request.actualSnapshot;
 
     if (format === undefined) format = true;
 
@@ -237,12 +244,12 @@ class AssertInlineSnapshotContext {
  * @param expectedSnapshot The expected snapshot, or \`CREATE\` to create
  * @param options The options
  */
-export async function assertInlineSnapshot<T>(
+export function assertInlineSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
   expectedSnapshot: string,
   options?: InlineSnapshotOptions<T>,
-): Promise<void>;
+): void;
 /**
  * Make an assertion that `actual` matches `expectedSnapshot`. If they do not match,
  * then throw.
@@ -263,24 +270,22 @@ export async function assertInlineSnapshot<T>(
  * @param expectedSnapshot The expected snapshot, or \`CREATE\` to create
  * @param message The optional assertion message
  */
-export async function assertInlineSnapshot<T>(
+export function assertInlineSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
   expectedSnapshot: string,
   message?: string,
-): Promise<void>;
-export async function assertInlineSnapshot(
+): void;
+export function assertInlineSnapshot(
   context: Deno.TestContext,
   actual: unknown,
   expectedSnapshot: string,
   msgOrOpts?: string | InlineSnapshotOptions<unknown>,
-): Promise<void> {
+): void {
   const options = getOptions(msgOrOpts);
   const assertInlineSnapshotContext = AssertInlineSnapshotContext.fromContext(
     context,
   );
-  const index = assertInlineSnapshotContext.getCount();
-
   const serializer = options.serializer ?? serialize;
   const actualSnapshot = serializer(actual);
   // TODO(WWRS): dedent expectedSnapshot to allow snapshots to look nicer
@@ -290,12 +295,41 @@ export async function assertInlineSnapshot(
   }
 
   if (getIsUpdate(options)) {
-    await assertInlineSnapshotContext.registerTeardown();
-    assertInlineSnapshotContext.createSnapshot(
-      index,
-      actualSnapshot,
-      options.format,
-    );
+    assertInlineSnapshotContext.registerTeardown();
+
+    const origPrepareStackTrace = (Error as V8Error).prepareStackTrace;
+    try {
+      const stackCatcher = { stack: null as SnapshotUpdateRequest | null };
+      (Error as V8Error).prepareStackTrace = (
+        _err: Error,
+        stack: CallSite[],
+      ): SnapshotUpdateRequest | null => {
+        const callerStackFrame = stack[0];
+        if (!callerStackFrame || callerStackFrame.isEval()) return null;
+
+        const lineNumber = callerStackFrame.getLineNumber();
+        const columnNumber = callerStackFrame.getColumnNumber();
+        if (lineNumber === null || columnNumber === null) return null;
+
+        return {
+          lineNumber,
+          columnNumber,
+          actualSnapshot,
+        };
+      };
+      // Capture the stack that comes after this function.
+      Error.captureStackTrace(stackCatcher, assertInlineSnapshot);
+      // Forcibly access the stack, and note it down
+      const request = stackCatcher.stack;
+      if (request !== null) {
+        assertInlineSnapshotContext.createSnapshot(
+          request,
+          options.format,
+        );
+      }
+    } finally {
+      (Error as V8Error).prepareStackTrace = origPrepareStackTrace;
+    }
   } else {
     throw new AssertionError(
       getSnapshotNotMatchMessage(actualSnapshot, expectedSnapshot, options),
@@ -335,7 +369,7 @@ export function createAssertInlineSnapshot<T>(
   options: InlineSnapshotOptions<T>,
   baseAssertSnapshot: typeof assertInlineSnapshot = assertInlineSnapshot,
 ): typeof assertInlineSnapshot {
-  return async function (
+  return function (
     context: Deno.TestContext,
     actual: T,
     expectedSnapshot: string,
@@ -350,6 +384,6 @@ export function createAssertInlineSnapshot<T>(
         : messageOrOptions),
     };
 
-    await baseAssertSnapshot(context, actual, expectedSnapshot, mergedOptions);
+    baseAssertSnapshot(context, actual, expectedSnapshot, mergedOptions);
   };
 }

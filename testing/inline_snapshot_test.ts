@@ -9,7 +9,7 @@ import {
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
-  "snapshot.ts",
+  "inline_snapshot.ts",
 ));
 
 class TestClass {
@@ -29,8 +29,8 @@ map.set("Hello", "World!");
 map.set(() => "Hello", "World!");
 map.set(1, 2);
 
-Deno.test("assertInlineSnapshot()", async (t) => {
-  await assertInlineSnapshot(
+Deno.test("assertInlineSnapshot()", (t) => {
+  assertInlineSnapshot(
     t,
     { a: 1, b: 2 },
     `{
@@ -38,7 +38,7 @@ Deno.test("assertInlineSnapshot()", async (t) => {
   b: 2,
 }`,
   );
-  await assertInlineSnapshot(
+  assertInlineSnapshot(
     t,
     new TestClass(),
     `TestClass {
@@ -46,7 +46,7 @@ Deno.test("assertInlineSnapshot()", async (t) => {
   b: 2,
 }`,
   );
-  await assertInlineSnapshot(
+  assertInlineSnapshot(
     t,
     map,
     `Map(3) {
@@ -55,7 +55,7 @@ Deno.test("assertInlineSnapshot()", async (t) => {
   [Function (anonymous)] => "World!",
 }`,
   );
-  await assertInlineSnapshot(
+  assertInlineSnapshot(
     t,
     new Set([1, 2, 3]),
     `Set(3) {
@@ -64,15 +64,15 @@ Deno.test("assertInlineSnapshot()", async (t) => {
   3,
 }`,
   );
-  await assertInlineSnapshot(
+  assertInlineSnapshot(
     t,
     { fn() {} },
     `{
   fn: [Function: fn],
 }`,
   );
-  await assertInlineSnapshot(t, function fn() {}, `[Function: fn]`);
-  await assertInlineSnapshot(
+  assertInlineSnapshot(t, function fn() {}, `[Function: fn]`);
+  assertInlineSnapshot(
     t,
     [1, 2, 3],
     `[
@@ -81,7 +81,7 @@ Deno.test("assertInlineSnapshot()", async (t) => {
   3,
 ]`,
   );
-  await assertInlineSnapshot(t, "hello world", `"hello world"`);
+  assertInlineSnapshot(t, "hello world", `"hello world"`);
 });
 
 Deno.test("assertInlineSnapshot() formats", async () => {
@@ -93,14 +93,14 @@ Deno.test("assertInlineSnapshot() formats", async () => {
       formatTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
 Deno.test("format", async (t) => {
-  await assertInlineSnapshot( t, "hello world", \`CREATE\` );
+  assertInlineSnapshot( t, "hello world", "" );
 });`,
     );
     await Deno.writeTextFile(
       noFormatTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
 Deno.test("no format", async (t) => {
-  await assertInlineSnapshot( t, "hello world", \`CREATE\`, { format: false } );
+  assertInlineSnapshot( t, "hello world", "", { format: false } );
 });`,
     );
 
@@ -112,6 +112,8 @@ Deno.test("no format", async (t) => {
         "--allow-write",
         "--allow-run",
         tempDir,
+        "--",
+        "--update",
       ],
     });
     await command.output();
@@ -120,14 +122,14 @@ Deno.test("no format", async (t) => {
       await Deno.readTextFile(formatTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
 Deno.test("format", async (t) => {
-  await assertInlineSnapshot(t, "hello world", \`"hello world"\`);
+  assertInlineSnapshot(t, "hello world", \`"hello world"\`);
 });\n`,
     );
     assertEquals(
       await Deno.readTextFile(noFormatTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
 Deno.test("no format", async (t) => {
-  await assertInlineSnapshot( t, "hello world", \`"hello world"\`, { format: false } );
+  assertInlineSnapshot( t, "hello world", \`"hello world"\`, { format: false } );
 });`,
     );
   } finally {
@@ -135,11 +137,11 @@ Deno.test("no format", async (t) => {
   }
 });
 
-Deno.test("createAssertInlineSnapshot()", async (t) => {
+Deno.test("createAssertInlineSnapshot()", (t) => {
   const assertMonochromeInlineSnapshot = createAssertInlineSnapshot<string>({
     serializer: stripAnsiCode,
   });
-  await assertMonochromeInlineSnapshot(
+  assertMonochromeInlineSnapshot(
     t,
     "\x1b[32mThis green text has had its colors stripped\x1b[39m",
     `This green text has had its colors stripped`,
