@@ -3,15 +3,15 @@ import { stripAnsiCode } from "@std/fmt/colors";
 import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
   assert,
-  assertEquals,
   assertInstanceOf,
   AssertionError,
   assertRejects,
   assertStringIncludes,
   fail,
 } from "@std/assert";
-import { assertSnapshot, createAssertSnapshot, serialize } from "./snapshot.ts";
+import { assertSnapshot, createAssertSnapshot } from "./snapshot.ts";
 import { ensureDir } from "../fs/ensure_dir.ts";
+import { serialize } from "./_snapshot_utils.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),

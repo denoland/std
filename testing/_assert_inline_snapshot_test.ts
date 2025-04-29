@@ -5,11 +5,11 @@ import { assertEquals } from "@std/assert";
 import {
   assertInlineSnapshot,
   createAssertInlineSnapshot,
-} from "./inline_snapshot.ts";
+} from "./_assert_inline_snapshot.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
-  "inline_snapshot.ts",
+  "snapshot.ts",
 ));
 
 class TestClass {
