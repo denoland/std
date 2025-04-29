@@ -1,3 +1,6 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
+
 import type { SnapshotOptions } from "./snapshot.ts";
 import { fromFileUrl } from "@std/path/from-file-url";
 import { parse } from "@std/path/parse";

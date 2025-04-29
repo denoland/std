@@ -1,3 +1,4 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { fromFileUrl } from "@std/path/from-file-url";
 import { parse } from "@std/path/parse";
 import { resolve } from "@std/path/resolve";
