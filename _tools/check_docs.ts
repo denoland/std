@@ -32,7 +32,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
-  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
+  /from "@std\/(assert(\/[a-z-]+)?|expect(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 
@@ -156,7 +156,7 @@ function assertHasSnippets(
     if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
-        "Snippet must contain assertion from '@std/assert'",
+        "Snippet must contain assertion from `@std/assert`, `@std/expect` or `@std/testing`",
         document,
       );
     }
@@ -170,6 +170,7 @@ function assertHasExampleTag(
     tag.kind === "example"
   ) as JsDocTagDocRequired[];
   assert(exampleTags?.length > 0, "Symbol must have an @example tag", document);
+  if (exampleTags === undefined) return;
   for (const tag of exampleTags) {
     assert(
       tag.doc !== undefined,
@@ -415,15 +416,15 @@ async function assertDocs(specifiers: string[]) {
   }
 }
 
-async function checkDocs(specifiers: string[]) {
-  const lintStatus = await new Deno.Command(Deno.execPath(), {
+export async function checkDocs(specifiers: string[]) {
+  const { success, stderr } = await new Deno.Command(Deno.execPath(), {
     args: ["doc", "--lint", ...specifiers],
     stdin: "inherit",
     stdout: "inherit",
-    stderr: "inherit",
+    stderr: "piped",
   }).output();
-  if (!lintStatus.success) {
-    throw new Error(new TextDecoder().decode(lintStatus.stderr));
+  if (!success) {
+    throw new Error(new TextDecoder().decode(stderr));
   }
 
   await assertDocs(specifiers);
