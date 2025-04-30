@@ -282,7 +282,7 @@ export class BinarySearchTree<T> extends StableBinarySearchTree<T> {
    *
    * @example Finding values in the tree
    * ```ts
-   * import { BinarySearchTree } from "@std/data-structures";
+   * import { BinarySearchTree } from "@std/data-structures/unstable-binary-search-tree";
    * import { assertEquals } from "@std/assert";
    *
    * const tree = BinarySearchTree.from<number>([42]);
@@ -309,7 +309,7 @@ export class BinarySearchTree<T> extends StableBinarySearchTree<T> {
    *
    * @example Finding values in the tree
    * ```ts
-   * import { BinarySearchTree } from "@std/data-structures";
+   * import { BinarySearchTree } from "@std/data-structures/unstable-binary-search-tree";
    * import { assertEquals } from "@std/assert";
    *
    * const tree = BinarySearchTree.from<number>([42]);
@@ -336,7 +336,7 @@ export class BinarySearchTree<T> extends StableBinarySearchTree<T> {
    *
    * @example Finding values in the tree
    * ```ts
-   * import { BinarySearchTree } from "@std/data-structures";
+   * import { BinarySearchTree } from "@std/data-structures/unstable-binary-search-tree";
    * import { assertEquals } from "@std/assert";
    *
    * const tree = BinarySearchTree.from<number>([42]);
@@ -363,7 +363,7 @@ export class BinarySearchTree<T> extends StableBinarySearchTree<T> {
    *
    * @example Finding values in the tree
    * ```ts
-   * import { BinarySearchTree } from "@std/data-structures";
+   * import { BinarySearchTree } from "@std/data-structures/unstable-binary-search-tree";
    * import { assertEquals } from "@std/assert";
    *
    * const tree = BinarySearchTree.from<number>([42]);
