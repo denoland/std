@@ -32,7 +32,7 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
 
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
-  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
+  /from "@std\/(assert(\/[a-z-]+)?|expect(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 
