@@ -8,6 +8,7 @@ import {
   stripAnsiCode,
   yellow,
 } from "@std/internal/styles";
+import { dedent } from "@std/text/unstable-dedent";
 
 function createHeader(): string[] {
   return [
@@ -227,4 +228,92 @@ Deno.test({
     assertEquals(data, data);
     assertEquals(new Set(data), new Set(data));
   },
+});
+
+Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) => {
+  const a = Array.from({ length: 10_000 }, (_, i) => i);
+  const b = [...a];
+  b[5_000] = -1;
+
+  await t.step("array", () => {
+    assertThrows(
+      () => assertEquals(a, b),
+      AssertionError,
+      dedent`
+            [
+              ... 4998 unchanged lines ...
+              4998,
+              4999,
+        -     5000,
+        +     -1,
+              5001,
+              5002,
+              ... 4997 unchanged lines ...
+            ]
+      `,
+    );
+  });
+
+  await t.step("object", () => {
+    assertThrows(
+      () =>
+        assertEquals(
+          Object.fromEntries(a.entries()),
+          Object.fromEntries(b.entries()),
+        ),
+      AssertionError,
+      dedent`
+            {
+              ... 4446 unchanged lines ...
+              "50": 50,
+              "500": 500,
+        -     "5000": 5000,
+        +     "5000": -1,
+              "5001": 5001,
+              "5002": 5002,
+              ... 5549 unchanged lines ...
+            }
+      `,
+    );
+  });
+
+  await t.step("string", () => {
+    assertThrows(
+      () => assertEquals(a.join("\n"), b.join("\n")),
+      AssertionError,
+      dedent`
+            0\\n
+            ... 4997 unchanged lines ...
+            4998\\n
+            4999\\n
+        -   5000\\n
+        +   -1\\n
+            5001\\n
+            5002\\n
+            ... 4996 unchanged lines ...
+            9999
+      `,
+    );
+  });
+
+  await t.step("Set", () => {
+    assertThrows(
+      () => assertEquals(new Set(a), new Set(b)),
+      AssertionError,
+      dedent`
+            Set(10000) {
+        +     -1,
+              0,
+              1,
+              ... 4444 unchanged lines ...
+              50,
+              500,
+        -     5000,
+              5001,
+              5002,
+              ... 5549 unchanged lines ...
+            }
+      `,
+    );
+  });
 });
