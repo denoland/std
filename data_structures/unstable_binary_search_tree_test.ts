@@ -3,7 +3,9 @@ import { assertEquals } from "../assert/equals.ts";
 import { BinarySearchTree } from "./unstable_binary_search_tree.ts";
 
 Deno.test("BinarySearchTree.ceiling()", () => {
-  const tree = BinarySearchTree.from([4, 2, 1, 3, 6, 5, 7]);
+  const tree: BinarySearchTree<number> = BinarySearchTree.from(
+    [4, 2, 1, 3, 6, 5, 7],
+  );
   assertEquals(tree.ceiling(0.5), 1);
   assertEquals(tree.ceiling(1), 1);
   assertEquals(tree.ceiling(1.5), 2);
@@ -14,7 +16,9 @@ Deno.test("BinarySearchTree.ceiling()", () => {
 });
 
 Deno.test("BinarySearchTree.floor()", () => {
-  const tree = BinarySearchTree.from([4, 2, 1, 3, 6, 5, 7]);
+  const tree: BinarySearchTree<number> = BinarySearchTree.from(
+    [4, 2, 1, 3, 6, 5, 7],
+  );
   assertEquals(tree.floor(0.5), null);
   assertEquals(tree.floor(1), 1);
   assertEquals(tree.floor(1.5), 1);
@@ -25,7 +29,9 @@ Deno.test("BinarySearchTree.floor()", () => {
 });
 
 Deno.test("BinarySearchTree.higher()", () => {
-  const tree = BinarySearchTree.from([4, 2, 1, 3, 6, 5, 7]);
+  const tree: BinarySearchTree<number> = BinarySearchTree.from(
+    [4, 2, 1, 3, 6, 5, 7],
+  );
   assertEquals(tree.higher(0.5), 1);
   assertEquals(tree.higher(1), 2);
   assertEquals(tree.higher(1.5), 2);
@@ -36,7 +42,9 @@ Deno.test("BinarySearchTree.higher()", () => {
 });
 
 Deno.test("BinarySearchTree.lower()", () => {
-  const tree = BinarySearchTree.from([4, 2, 1, 3, 6, 5, 7]);
+  const tree: BinarySearchTree<number> = BinarySearchTree.from(
+    [4, 2, 1, 3, 6, 5, 7],
+  );
   assertEquals(tree.lower(0.5), null);
   assertEquals(tree.lower(1), null);
   assertEquals(tree.lower(1.5), 1);
