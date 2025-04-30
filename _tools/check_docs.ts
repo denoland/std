@@ -415,7 +415,7 @@ async function assertDocs(specifiers: string[]) {
   }
 }
 
-async function checkDocs(specifiers: string[]) {
+export async function checkDocs(specifiers: string[]) {
   const lintStatus = await new Deno.Command(Deno.execPath(), {
     args: ["doc", "--lint", ...specifiers],
     stdin: "inherit",
