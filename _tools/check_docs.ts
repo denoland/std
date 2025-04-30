@@ -156,7 +156,7 @@ function assertHasSnippets(
     if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
-        "Snippet must contain assertion from `@std/assert` or `@std/expect`",
+        "Snippet must contain assertion from `@std/assert`, `@std/expect` or `@std/testing`",
         document,
       );
     }
