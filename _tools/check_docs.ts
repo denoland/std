@@ -416,14 +416,14 @@ async function assertDocs(specifiers: string[]) {
 }
 
 export async function checkDocs(specifiers: string[]) {
-  const lintStatus = await new Deno.Command(Deno.execPath(), {
+  const { success, stderr } = await new Deno.Command(Deno.execPath(), {
     args: ["doc", "--lint", ...specifiers],
     stdin: "inherit",
     stdout: "inherit",
-    stderr: "inherit",
+    stderr: "piped",
   }).output();
-  if (!lintStatus.success) {
-    throw new Error(new TextDecoder().decode(lintStatus.stderr));
+  if (!success) {
+    throw new Error(new TextDecoder().decode(stderr));
   }
 
   await assertDocs(specifiers);
