@@ -170,6 +170,7 @@ function assertHasExampleTag(
     tag.kind === "example"
   ) as JsDocTagDocRequired[];
   assert(exampleTags?.length > 0, "Symbol must have an @example tag", document);
+  if (exampleTags === undefined) return;
   for (const tag of exampleTags) {
     assert(
       tag.doc !== undefined,
