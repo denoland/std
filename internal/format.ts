@@ -21,12 +21,23 @@
  */
 export function format(v: unknown): string {
   // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
+  const { Deno, process } = globalThis as any;
+
   return typeof Deno?.inspect === "function"
     ? Deno.inspect(v, {
       depth: Infinity,
       sorted: true,
       trailingComma: true,
+      compact: false,
+      iterableLimit: Infinity,
+      // getters should be true in assertEquals.
+      getters: true,
+      strAbbreviateSize: Infinity,
+    })
+    : typeof process?.getBuiltinModule === "function"
+    ? process.getBuiltinModule("node:util").inspect(v, {
+      depth: Infinity,
+      sorted: true,
       compact: false,
       iterableLimit: Infinity,
       // getters should be true in assertEquals.

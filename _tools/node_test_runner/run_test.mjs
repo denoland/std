@@ -73,7 +73,10 @@ import "../../fs/unstable_lstat_test.ts";
 import "../../fs/unstable_chmod_test.ts";
 import "../../fs/unstable_umask_test.ts";
 import "../../fs/unstable_utime_test.ts";
+import "../../internal/format_test.ts";
 
 for (const testDef of testDefinitions) {
-  test(testDef.name, testDef.fn);
+  test(testDef.name, (t) =>
+    testDef.fn({ step: (name, fn) => t.test(name, fn) })
+  );
 }
