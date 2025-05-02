@@ -75,5 +75,9 @@ import "../../fs/unstable_umask_test.ts";
 import "../../fs/unstable_utime_test.ts";
 
 for (const testDef of testDefinitions) {
-  test(testDef.name, testDef.fn);
+  if (testDef.ignore) {
+    test.skip(testDef.name, testDef.fn);
+  } else {
+    test(testDef.name, testDef.fn);
+  }
 }

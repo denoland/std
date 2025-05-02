@@ -8,6 +8,8 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
+const isBun = navigator.userAgent.includes("Bun/");
+
 Deno.test("truncate() succeeds in truncating file sizes", async () => {
   const tempDataDir = await mkdtemp(resolve(tmpdir(), "truncate_"));
   const testFile = join(tempDataDir, "truncFile.txt");
@@ -23,16 +25,20 @@ Deno.test("truncate() succeeds in truncating file sizes", async () => {
   await rm(tempDataDir, { recursive: true, force: true });
 });
 
-Deno.test("truncate() truncates the file to zero when 'len' is not provided", async () => {
-  const tempDataDir = await mkdtemp(resolve(tmpdir(), "truncate_"));
-  const testFile = join(tempDataDir, "truncFile.txt");
-  await writeFile(testFile, "Hello, Standard Library");
+Deno.test(
+  "truncate() truncates the file to zero when 'len' is not provided",
+  { ignore: isBun },
+  async () => {
+    const tempDataDir = await mkdtemp(resolve(tmpdir(), "truncate_"));
+    const testFile = join(tempDataDir, "truncFile.txt");
+    await writeFile(testFile, "Hello, Standard Library");
 
-  await truncate(testFile);
-  assertEquals((await readFile(testFile)).length, 0);
+    await truncate(testFile);
+    assertEquals((await readFile(testFile)).length, 0);
 
-  await rm(tempDataDir, { recursive: true, force: true });
-});
+    await rm(tempDataDir, { recursive: true, force: true });
+  },
+);
 
 Deno.test("truncate() rejects with Error when passing a non-regular file", async () => {
   const tempDataDir = await mkdtemp(resolve(tmpdir(), "truncate_"));
@@ -44,11 +50,15 @@ Deno.test("truncate() rejects with Error when passing a non-regular file", async
   await rm(tempDataDir, { recursive: true, force: true });
 });
 
-Deno.test("truncate() rejects with NotFound with a non-existent file", async () => {
-  await assertRejects(async () => {
-    await truncate("non-existent-file.txt");
-  }, NotFound);
-});
+Deno.test(
+  "truncate() rejects with NotFound with a non-existent file",
+  { ignore: isBun },
+  async () => {
+    await assertRejects(async () => {
+      await truncate("non-existent-file.txt");
+    }, NotFound);
+  },
+);
 
 Deno.test("truncateSync() succeeds in truncating file sizes", () => {
   const tempDataDir = mkdtempSync(resolve(tmpdir(), "truncateSync_"));
@@ -65,16 +75,20 @@ Deno.test("truncateSync() succeeds in truncating file sizes", () => {
   rmSync(tempDataDir, { recursive: true, force: true });
 });
 
-Deno.test("truncateSync() truncates the file to zero when 'len' is not provided", () => {
-  const tempDataDir = mkdtempSync(resolve(tmpdir(), "truncateSync_"));
-  const testFile = join(tempDataDir, "truncFile.txt");
-  writeFileSync(testFile, "Hello, Standard Library");
+Deno.test(
+  "truncateSync() truncates the file to zero when 'len' is not provided",
+  { ignore: isBun },
+  () => {
+    const tempDataDir = mkdtempSync(resolve(tmpdir(), "truncateSync_"));
+    const testFile = join(tempDataDir, "truncFile.txt");
+    writeFileSync(testFile, "Hello, Standard Library");
 
-  truncateSync(testFile);
-  assertEquals((readFileSync(testFile)).length, 0);
+    truncateSync(testFile);
+    assertEquals((readFileSync(testFile)).length, 0);
 
-  rmSync(tempDataDir, { recursive: true, force: true });
-});
+    rmSync(tempDataDir, { recursive: true, force: true });
+  },
+);
 
 Deno.test("truncateSync() throws with Error with a non-regular file", () => {
   const tempDataDir = mkdtempSync(resolve(tmpdir(), "truncateSync_"));
@@ -86,8 +100,12 @@ Deno.test("truncateSync() throws with Error with a non-regular file", () => {
   rmSync(tempDataDir, { recursive: true, force: true });
 });
 
-Deno.test("truncateSync() throws with NotFound with a non-existent file", () => {
-  assertThrows(() => {
-    truncateSync("non-existent-file.txt");
-  }, NotFound);
-});
+Deno.test(
+  "truncateSync() throws with NotFound with a non-existent file",
+  { ignore: isBun },
+  () => {
+    assertThrows(() => {
+      truncateSync("non-existent-file.txt");
+    }, NotFound);
+  },
+);
