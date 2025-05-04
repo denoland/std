@@ -196,6 +196,8 @@ class Dumper {
         return `${this.#declaration(keys)}inf`;
       case -Infinity:
         return `${this.#declaration(keys)}-inf`;
+      case NaN:
+        return `${this.#declaration(keys)}nan`;
       default:
         return `${this.#declaration(keys)}${value}`;
     }
