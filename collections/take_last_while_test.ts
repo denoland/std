@@ -55,3 +55,11 @@ Deno.test("takeLastWhile() returns the same array when all elements match the pr
 
   assertEquals(actual, [1, 2, 3, 4]);
 });
+
+Deno.test("takeLastWhile() passes the index to the predicate", () => {
+  const arr = [1, 2, 3, 4];
+
+  const actual = takeLastWhile(arr, (_, index) => index > 1);
+
+  assertEquals(actual, [3, 4]);
+});

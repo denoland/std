@@ -31,12 +31,12 @@
  */
 export function takeWhile<T>(
   array: readonly T[],
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
   let offset = 0;
   const length = array.length;
 
-  while (length > offset && predicate(array[offset] as T)) {
+  while (length > offset && predicate(array[offset] as T, offset)) {
     offset++;
   }
 
