@@ -123,7 +123,7 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ matrix.node }}
+          bun-version: ${{ matrix.bun }}
 
       - name: Run tests
         run: deno task test:bun
