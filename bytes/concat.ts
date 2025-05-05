@@ -21,7 +21,7 @@ export type { Uint8Array_ };
  * assertEquals(concat([a, b]), new Uint8Array([0, 1, 2, 3, 4, 5]));
  * ```
  */
-export function concat(buffers: Uint8Array[]): Uint8Array_ {
+export function concat(buffers: readonly Uint8Array[]): Uint8Array_ {
   let length = 0;
   for (const buffer of buffers) {
     length += buffer.length;
