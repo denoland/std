@@ -1,5 +1,4 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
 
 /**
  * Lint plugin that enforces the
@@ -258,7 +257,7 @@ export default {
             const value = argument.value;
             if (typeof value !== "string") return;
 
-            if (value[0] !== value[0].toUpperCase()) {
+            if (value[0] !== value[0]!.toUpperCase()) {
               context.report({
                 node: argument,
                 message: "Error message starts with a lowercase.",
@@ -266,7 +265,7 @@ export default {
                   "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
                 fix(fixer) {
                   const newValue = argument.raw.at(0) +
-                    value[0].toUpperCase() +
+                    value[0]!.toUpperCase() +
                     value.slice(1) +
                     argument.raw.at(-1);
                   return fixer.replaceText(argument, newValue);
