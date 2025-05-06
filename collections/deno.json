@@ -46,6 +46,7 @@
     "./take-last-while": "./take_last_while.ts",
     "./take-while": "./take_while.ts",
     "./union": "./union.ts",
+    "./unstable-binary-search": "./unstable_binary_search.ts",
     "./unstable-chunk": "./unstable_chunk.ts",
     "./unstable-cycle": "./unstable_cycle.ts",
     "./unstable-drop-while": "./unstable_drop_while.ts",
