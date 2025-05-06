@@ -5,7 +5,7 @@
  * Returns an array that drops all elements in the given iterable until the
  * last element that does not match the given predicate.
  *
- * @typeParam T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input iterable.
  *
  * @param iterable The iterable to drop elements from.
  * @param predicate The function to test each element for a condition.
