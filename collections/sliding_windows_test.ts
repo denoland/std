@@ -144,24 +144,24 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], NaN],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is NaN",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: NaN }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is NaN",
     );
     slidingWindowsThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], "invalid"],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is invalid",
     );
     slidingWindowsThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], 3, { step: "invalid" }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is invalid",
     );
   },
 });
@@ -172,22 +172,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 0.5],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is 0.5",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0.5 }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is 0.5",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 1.5],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is 1.5",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 1.5 }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is 1.5",
     );
   },
 });
@@ -198,22 +198,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 0],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is 0",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0 }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is 0",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], -1],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is -1",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: -1 }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is -1",
     );
   },
 });
@@ -224,22 +224,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], Number.NEGATIVE_INFINITY],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is -Infinity",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.NEGATIVE_INFINITY }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is -Infinity",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], Number.POSITIVE_INFINITY],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: size must be a positive integer, current value is Infinity",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.POSITIVE_INFINITY }],
       RangeError,
-      "Both size and step must be positive integer",
+      "Cannot create sliding windows: step must be a positive integer, current value is Infinity",
     );
   },
 });
