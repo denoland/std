@@ -16,7 +16,7 @@
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   encodeBase32(await Deno.readFile("./deno.lock"), { alphabet: "base32" }),
  * );
  * ```
  *
@@ -29,7 +29,7 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 import {
   alphabet,
-  type Base32Format,
+  type Base32Alphabet,
   calcSizeBase32,
   decode,
   encode,
@@ -63,7 +63,7 @@ const decoder = new TextDecoder();
  *
  * assertEquals(
  *   await toText(readable),
- *   encodeBase32(await Deno.readFile("./deno.lock"), "Base32"),
+ *   encodeBase32(await Deno.readFile("./deno.lock"), { alphabet: "base32" }),
  * );
  * ```
  */
@@ -77,8 +77,8 @@ export class Base32EncoderStream<T extends "string" | "bytes">
    *
    * @param options The options of the base32 stream.
    */
-  constructor(options: { format?: Base32Format; output?: T } = {}) {
-    const abc = alphabet[options.format ?? "Base32"];
+  constructor(options: { alphabet?: Base32Alphabet; output?: T } = {}) {
+    const abc = alphabet[options.alphabet ?? "base32"];
     const decode = function (): (input: Uint8Array_) => Expect<T> {
       if (options.output === "bytes") return (x) => x as Expect<T>;
       return (x) => decoder.decode(x) as Expect<T>;
@@ -159,8 +159,8 @@ export class Base32DecoderStream<T extends "string" | "bytes">
    *
    * @param options The options of the base32 stream.
    */
-  constructor(options: { format?: Base32Format; input?: T } = {}) {
-    const abc = rAlphabet[options.format ?? "Base32"];
+  constructor(options: { alphabet?: Base32Alphabet; input?: T } = {}) {
+    const abc = rAlphabet[options.alphabet ?? "base32"];
     const encode = function (): (input: Expect<T>) => Uint8Array_ {
       if (options.input === "bytes") return (x) => x as Uint8Array_;
       return (x) => encoder.encode(x as string) as Uint8Array_;

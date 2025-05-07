@@ -24,6 +24,8 @@ function isConstantCase(string: string): boolean {
   return CONSTANT_CASE_REGEXP.test(string);
 }
 
+const CONTRACTION_REGEXP = /\S'\S/;
+
 export default {
   name: "deno-style-guide",
   rules: {
@@ -51,6 +53,59 @@ export default {
               message: "Property uses `private` keyword",
               hint:
                 "Use private field (`#`) instead of the `private` keyword. E.g. Use `#foo` instead of `private foo`.",
+            });
+          },
+        };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#top-level-functions-should-not-use-arrow-syntax
+    "no-top-level-arrow-syntax": {
+      create(context) {
+        return {
+          ArrowFunctionExpression(node) {
+            if (
+              node.parent.type === "VariableDeclarator" &&
+              node.parent.parent.type === "VariableDeclaration" &&
+              (node.parent.parent.parent.type === "Program" ||
+                node.parent.parent.parent.type === "ExportNamedDeclaration")
+            ) {
+              // TODO(iuioiua): add fix
+              context.report({
+                node,
+                range: node.range,
+                message: "Top-level functions should not use arrow syntax",
+                hint:
+                  "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
+              });
+            }
+          },
+        };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
+    "no-external-code": {
+      create(context) {
+        if (context.filename.includes("_tools")) {
+          // Tools are allowed to use external code
+          return {};
+        }
+        return {
+          ImportDeclaration(node) {
+            const resolvedSpecifier = import.meta.resolve(node.source.value);
+            if (
+              resolvedSpecifier.startsWith("file:") ||
+              resolvedSpecifier.startsWith("jsr:@std") ||
+              resolvedSpecifier.startsWith("jsr:/@std") ||
+              resolvedSpecifier.startsWith("node:")
+            ) {
+              return;
+            }
+            context.report({
+              node,
+              range: node.source.range,
+              message: "External imports are not allowed outside of tools",
+              hint:
+                'Use code from within `@std` instead of external code. E.g. Use `import { foo } from "@std/foo"` instead of `import { foo } from "https://deno.land/x/foo/mod.ts"`.',
             });
           },
         };
@@ -182,6 +237,74 @@ export default {
                     `Variable name '${name}' is not camelCase, PascalCase, or CONSTANT_CASE.`,
                 });
               }
+            }
+          },
+        };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#error-messages
+    "error-message": {
+      create(context) {
+        if (context.filename.endsWith("test.ts")) {
+          return {};
+        }
+        return {
+          NewExpression(node) {
+            if (node.callee.type !== "Identifier") return;
+            const name = node.callee.name;
+            if (!name.endsWith("Error")) return;
+            const argument = node.arguments[0];
+            if (argument?.type !== "Literal") return;
+            const value = argument.value;
+            if (typeof value !== "string") return;
+
+            if (value[0] !== value[0].toUpperCase()) {
+              context.report({
+                node: argument,
+                message: "Error message starts with a lowercase.",
+                hint:
+                  "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+                fix(fixer) {
+                  const newValue = argument.raw.at(0) +
+                    value[0].toUpperCase() +
+                    value.slice(1) +
+                    argument.raw.at(-1);
+                  return fixer.replaceText(argument, newValue);
+                },
+              });
+            }
+            if (name !== "AssertionError") {
+              // AssertionError is allowed to have a period in the message
+              if (value.endsWith(".")) {
+                context.report({
+                  node: argument,
+                  message: "Error message ends with a period.",
+                  hint:
+                    "Remove the period at the end of the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+                  fix(fixer) {
+                    const newValue = argument.raw.at(0) +
+                      value.slice(0, -1) +
+                      argument.raw.at(-1);
+                    return fixer.replaceText(argument, newValue);
+                  },
+                });
+              }
+              if (value.includes(". ")) {
+                context.report({
+                  node: argument,
+                  message: "Error message contains periods.",
+                  hint:
+                    "Remove periods in error message and use a colon for addition information. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+                });
+              }
+            }
+            if (value.match(CONTRACTION_REGEXP)) {
+              context.report({
+                node: argument,
+                message: "Error message uses contractions.",
+                hint:
+                  "Use the full form in error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
+              });
             }
           },
         };

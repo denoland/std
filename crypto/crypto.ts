@@ -110,9 +110,10 @@
  * @module
  */
 import {
+  digest,
   DIGEST_ALGORITHM_NAMES,
   type DigestAlgorithmName,
-  instantiateWasm,
+  DigestContext,
 } from "./_wasm/mod.ts";
 
 export { DIGEST_ALGORITHM_NAMES, type DigestAlgorithmName };
@@ -230,8 +231,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
             data as Iterable<BufferSource>,
           );
         } else if (isAsyncIterable(data)) {
-          const wasmCrypto = instantiateWasm();
-          const context = new wasmCrypto.DigestContext(name);
+          const context = new DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
             const chunkBytes = toUint8Array(chunk);
             if (!chunkBytes) {
@@ -244,6 +244,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
           return context.digestAndDrop(length).buffer as ArrayBuffer;
         } else {
           throw new TypeError(
+            // deno-lint-ignore deno-style-guide/error-message
             "data must be a BufferSource or [Async]Iterable<BufferSource>",
           );
         }
@@ -262,13 +263,12 @@ const stdCrypto: StdCrypto = ((x) => x)({
       const { name, length } = normalizeAlgorithm(algorithm);
       assertValidDigestLength(length);
 
-      const wasmCrypto = instantiateWasm();
       if (isBufferSource(data)) {
         const bytes = toUint8Array(data)!;
-        return wasmCrypto.digest(name, bytes, length).buffer as ArrayBuffer;
+        return digest(name, bytes, length).buffer as ArrayBuffer;
       }
       if (isIterable(data)) {
-        const context = new wasmCrypto.DigestContext(name);
+        const context = new DigestContext(name);
         for (const chunk of data) {
           const chunkBytes = toUint8Array(chunk);
           if (!chunkBytes) {
@@ -281,6 +281,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
         return context.digestAndDrop(length).buffer as ArrayBuffer;
       }
       throw new TypeError(
+        // deno-lint-ignore deno-style-guide/error-message
         "data must be a BufferSource or Iterable<BufferSource>",
       );
     },

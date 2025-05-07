@@ -149,24 +149,24 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], NaN],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: NaN }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], "invalid"],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], 3, { step: "invalid" }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
   },
 });
@@ -177,22 +177,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 0.5],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0.5 }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 1.5],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 1.5 }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
   },
 });
@@ -203,22 +203,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 0],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0 }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], -1],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: -1 }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
   },
 });
@@ -229,22 +229,22 @@ Deno.test({
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], Number.NEGATIVE_INFINITY],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.NEGATIVE_INFINITY }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], Number.POSITIVE_INFINITY],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
     slidingWindowsThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.POSITIVE_INFINITY }],
       RangeError,
-      "Both size and step must be positive integer.",
+      "Both size and step must be positive integer",
     );
   },
 });

@@ -544,7 +544,7 @@ Deno.test("BinarySearchTree handles README example", () => {
   ]);
 });
 
-Deno.test("BinarySearchTree.max() handles null ", () => {
+Deno.test("BinarySearchTree.max() handles null", () => {
   const tree = BinarySearchTree.from([1]);
   assert(!tree.isEmpty());
   tree.clear();

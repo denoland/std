@@ -36,7 +36,7 @@ Deno.test("concat() handles multiple Uint8Array", () => {
 });
 
 Deno.test("concat() handles an array of Uint8Array", () => {
-  const a = [
+  const a: readonly Uint8Array[] = [
     new Uint8Array([0, 1, 2, 3]),
     new Uint8Array([4, 5, 6]),
     new Uint8Array([7, 8, 9]),
