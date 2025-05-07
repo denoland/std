@@ -4,18 +4,13 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { slidingWindows } from "./sliding_windows.ts";
 
 function slidingWindowsTest<T>(
-  input: [
-    collection: T[],
-    size: number,
-    config?: { step?: number; partial?: boolean },
-  ],
+  input: Parameters<typeof slidingWindows>,
   expected: T[][],
   message?: string,
 ) {
   const actual = slidingWindows(...input);
   assertEquals(actual, expected, message);
 }
-
 function slidingWindowsThrowsTest<T>(
   input: [
     collection: T[],
@@ -293,4 +288,69 @@ Deno.test({
       Array(1),
     ]);
   },
+});
+
+Deno.test("slidingWindows() handles a generator", () => {
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+    yield 5;
+  }
+  function* emptyGen() {}
+  slidingWindowsTest([gen(), 5], [[1, 2, 3, 4, 5]]);
+  slidingWindowsTest([gen(), 3], [[1, 2, 3], [2, 3, 4], [3, 4, 5]]);
+  slidingWindowsTest([gen(), 1], [[1], [2], [3], [4], [5]]);
+  slidingWindowsTest([gen(), 3, { partial: true }], [
+    [1, 2, 3],
+    [2, 3, 4],
+    [3, 4, 5],
+    [4, 5],
+    [5],
+  ]);
+  slidingWindowsTest([gen(), 3, { step: 2 }], [[1, 2, 3], [3, 4, 5]]);
+  slidingWindowsTest([gen(), 1, { step: 2, partial: true }], [[1], [3], [5]]);
+
+  slidingWindowsTest([emptyGen(), 3], []);
+});
+
+Deno.test("slidingWindows() handles a string", () => {
+  const str = "12345";
+  slidingWindowsTest([str, 5], [["1", "2", "3", "4", "5"]]);
+  slidingWindowsTest([str, 3], [["1", "2", "3"], ["2", "3", "4"], [
+    "3",
+    "4",
+    "5",
+  ]]);
+  slidingWindowsTest([str, 1], [["1"], ["2"], ["3"], ["4"], ["5"]]);
+});
+
+Deno.test("slidingWindows() handles a Set", () => {
+  const set = new Set([1, 2, 3, 4, 5]);
+  slidingWindowsTest([set, 5], [[1, 2, 3, 4, 5]]);
+  slidingWindowsTest([set, 3], [[1, 2, 3], [2, 3, 4], [3, 4, 5]]);
+  slidingWindowsTest([set, 1], [[1], [2], [3], [4], [5]]);
+});
+
+Deno.test("slidingWindows() handles a Map", () => {
+  const map = new Map([
+    ["a", 1],
+    ["b", 2],
+    ["c", 3],
+    ["d", 4],
+    ["e", 5],
+  ]);
+  slidingWindowsTest([map, 3], [
+    [["a", 1], ["b", 2], ["c", 3]],
+    [["b", 2], ["c", 3], ["d", 4]],
+    [["c", 3], ["d", 4], ["e", 5]],
+  ]);
+  slidingWindowsTest([map, 1], [
+    [["a", 1]],
+    [["b", 2]],
+    [["c", 3]],
+    [["d", 4]],
+    [["e", 5]],
+  ]);
 });
