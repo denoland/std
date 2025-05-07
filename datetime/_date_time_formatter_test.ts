@@ -437,6 +437,19 @@ Deno.test("dateStringToDateTimeFormatParts()", async (t) => {
   });
 });
 
+Deno.test("dateStringToDateTimeFormatParts() throws on unsupported type", () => {
+  assertThrows(
+    () =>
+      dateStringToDateTimeFormatParts(
+        "2020",
+        // deno-lint-ignore no-explicit-any
+        [{ type: "testUnsupportedType" as any, value: 0 }],
+      ),
+    Error,
+    "Cannot format the date, the value (0) of the type (testUnsupportedType) is given",
+  );
+});
+
 Deno.test("dateStringToDateTimeFormatParts() throws on unsupported values", () => {
   const testValue = "testUnsupportedValue";
   const partTypes = [
