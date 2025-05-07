@@ -58,30 +58,6 @@ export default {
         };
       },
     },
-    // https://docs.deno.com/runtime/contributing/style_guide/#top-level-functions-should-not-use-arrow-syntax
-    "no-top-level-arrow-syntax": {
-      create(context) {
-        return {
-          ArrowFunctionExpression(node) {
-            if (
-              node.parent.type === "VariableDeclarator" &&
-              node.parent.parent.type === "VariableDeclaration" &&
-              (node.parent.parent.parent.type === "Program" ||
-                node.parent.parent.parent.type === "ExportNamedDeclaration")
-            ) {
-              // TODO(iuioiua): add fix
-              context.report({
-                node,
-                range: node.range,
-                message: "Top-level functions should not use arrow syntax",
-                hint:
-                  "Use function declaration instead of arrow function. E.g. Use `function foo() {}` instead of `const foo = () => {}`.",
-              });
-            }
-          },
-        };
-      },
-    },
     // https://docs.deno.com/runtime/contributing/style_guide/#do-not-depend-on-external-code.
     "no-external-code": {
       create(context) {
