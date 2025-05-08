@@ -142,64 +142,6 @@ Deno.test({
   },
 });
 
-Deno.test("intersect() doesn't mutate the input", () => {
-  const arrayA = [1, 2, 3];
-  const arrayB = [3, 4, 5];
-  intersect(arrayA, arrayB);
-  assertEquals(arrayA, [1, 2, 3]);
-  assertEquals(arrayB, [3, 4, 5]);
-});
-
-Deno.test("intersect() returns empty array when one side is empty", () => {
-  const firstEmpty = intersect([], [1, 2, 3]);
-  const secondEmpty = intersect([1, 2, 3], []);
-  assertEquals(firstEmpty, []);
-  assertEquals(secondEmpty, []);
-});
-
-Deno.test("intersect() handles one or more items in intersection", () => {
-  const one = intersect(["a", "b"], ["b", "c"]);
-  const two = intersect(["a", "b", "c", "d"], ["c", "d", "e", "f"]);
-  assertEquals(one, ["b"]);
-  assertEquals(two, ["c", "d"]);
-});
-
-Deno.test("intersect() removes duplicates", () => {
-  const duplicates = intersect(["a", "b", "c", "b"], ["b", "c"]);
-  const moreDuplicates = intersect(["a", "b"], ["b", "b", "c", "c"]);
-  assertEquals(duplicates, ["b", "c"]);
-  assertEquals(moreDuplicates, ["b"]);
-});
-
-Deno.test("intersect() handles more than two inputs", () => {
-  assertEquals(
-    intersect(
-      ["a", "b"],
-      ["b", "c"],
-      ["s", "b"],
-      ["b", "b"],
-    ),
-    ["b"],
-  );
-  assertEquals(
-    intersect(
-      [1],
-      [1],
-      [2],
-    ),
-    [],
-  );
-
-  assertEquals(
-    intersect(
-      [true, false],
-      [true, false],
-      [true],
-    ),
-    [true],
-  );
-});
-
 // If you are using sets using {@linkcode Set.prototype.intersection} directly is more efficient.
 Deno.test("intersect() handles sets", () => {
   const a = new Set([1, 2, 3, 4]);
@@ -233,7 +175,7 @@ Deno.test("intersect() handles iterables with no mutation", () => {
   assert(b.has(3));
 });
 
-Deno.test("(unstable) intersect() handles generators", () => {
+Deno.test("intersect() handles generators", () => {
   function* gen() {
     yield 1;
     yield 2;

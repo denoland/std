@@ -15,7 +15,7 @@ function chunkTest<I>(
 const testArray = [1, 2, 3, 4, 5, 6];
 
 Deno.test({
-  name: "chunk() handles no mutation",
+  name: "chunk() does not mutate the input",
   fn() {
     const array = [1, 2, 3, 4];
     chunk(array, 2);
@@ -117,94 +117,6 @@ Deno.test({
     chunkTest(
       [["foo"], 1],
       [["foo"]],
-    );
-  },
-});
-
-Deno.test("chunk() does not mutate the input", () => {
-  const array = [1, 2, 3, 4];
-  chunk(array, 2);
-  assertEquals(array, [1, 2, 3, 4], "Input array should not be mutated");
-});
-
-Deno.test("chunk() throws on non naturals", () => {
-  assertThrows(
-    () => chunk([], +.5),
-    RangeError,
-    "Expected size to be an integer greater than 0 but found 0.5",
-  );
-  assertThrows(
-    () => chunk([], -4.7),
-    RangeError,
-    "Expected size to be an integer greater than 0 but found -4.7",
-  );
-  assertThrows(
-    () => chunk([], -2),
-    RangeError,
-    "Expected size to be an integer greater than 0 but found -2",
-  );
-  assertThrows(
-    () => chunk([], +0),
-    RangeError,
-    "Expected size to be an integer greater than 0 but found 0",
-  );
-  assertThrows(
-    () => chunk([], -0),
-    RangeError,
-    "Expected size to be an integer greater than 0 but found 0",
-  );
-});
-
-Deno.test("chunk() returns empty array when input is empty", () => {
-  const actual = chunk([], 1);
-  assertEquals(actual, [], "Empty input should return empty array");
-});
-
-Deno.test({
-  name: "chunk() handles single element chunks",
-  fn() {
-    assertEquals(chunk([1, 2, 3, 4, 5, 6], 1), [[1], [2], [3], [4], [5], [6]]);
-    assertEquals(chunk(["foo"], 1), [["foo"]]);
-    assertEquals(chunk([null], 1), [[null]]);
-    assertEquals(chunk([undefined], 1), [[undefined]]);
-  },
-});
-
-Deno.test("chunk() handles n chunks fitting", () => {
-  assertEquals(
-    chunk([1, 2, 3, 4, 5, 6], 2),
-    [[1, 2], [3, 4], [5, 6]],
-    "size=2",
-  );
-  assertEquals(chunk([1, 2, 3, 4, 5, 6], 3), [[1, 2, 3], [4, 5, 6]], "size=3");
-});
-
-Deno.test("handles n chunks not fitting", () => {
-  assertEquals(
-    chunk([1, 2, 3, 4, 5, 6], 4),
-    [[1, 2, 3, 4], [5, 6]],
-    "size 4 with 6 elements should return 2 chunks with 4 and 2 elements",
-  );
-  assertEquals(
-    chunk([1, 2, 3, 4, 5, 6], 5),
-    [[1, 2, 3, 4, 5], [6]],
-    "size 5 with 6 elements should return 2 chunks with 5 and 1 elements",
-  );
-});
-
-Deno.test("chunk() handles n chunks larger than input length", () => {
-  assertEquals(
-    chunk([1, 2, 3, 4, 5, 6], 10),
-    [[1, 2, 3, 4, 5, 6]],
-  );
-});
-
-Deno.test({
-  name: "chunk() handles chunks equal to length",
-  fn() {
-    assertEquals(
-      chunk([1, 2, 3, 4, 5, 6], 6),
-      [[1, 2, 3, 4, 5, 6]],
     );
   },
 });

@@ -63,7 +63,7 @@ Deno.test({
   },
 });
 
-Deno.test("(unstable) withoutAll() handles generators", () => {
+Deno.test("withoutAll() handles generators", () => {
   function* genInput() {
     yield 1;
     yield 2;

@@ -4,6 +4,9 @@
 /**
  * Returns an array excluding all given values from an iterable.
  *
+ * Note: If both inputs are {@linkcode Set}s, and you want the difference as a
+ * {@linkcode Set}, you could use {@linkcode Set.prototype.difference} instead.
+ *
  * @typeParam T The type of the elements in the iterable.
  *
  * @param iterable The iterable to exclude values from.
@@ -11,10 +14,6 @@
  *
  * @returns An array containing all elements from iterables except the
  * ones that are in the values iterable.
- *
- * @remarks
- * If both inputs are a {@linkcode Set}, and you want the difference as a
- * {@linkcode Set}, you could use {@linkcode Set.prototype.difference} instead.
  *
  * @example Basic usage
  * ```ts

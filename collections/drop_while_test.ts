@@ -84,13 +84,13 @@ Deno.test("dropWhile() handles a generator", () => {
   assertEquals(actual, [4, 5, 6]);
 });
 
-Deno.test("(unstable) dropWhile() handles a Set", () => {
+Deno.test("dropWhile() handles a Set", () => {
   const set = new Set([1, 2, 3, 4, 5, 6]);
   const actual = dropWhile(set, (i) => i !== 4);
   assertEquals(actual, [4, 5, 6]);
 });
 
-Deno.test("(unstable) dropWhile() handles a Map", () => {
+Deno.test("dropWhile() handles a Map", () => {
   const map = new Map([
     ["a", 1],
     ["b", 2],
