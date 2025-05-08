@@ -15,12 +15,6 @@ export type SortByOptions = {
 };
 
 /**
- * Types that can be compared with other values of the same type
- * using comparison operators.
- */
-export type Comparable = number | string | bigint | Date;
-
-/**
  * Returns all elements in the given collection, sorted by their result using
  * the given selector. The selector function is called only once for each
  * element. Ascending or descending order can be specified through the `order`
@@ -121,12 +115,16 @@ export type Comparable = number | string | bigint | Date;
  * ]);
  * ```
  */
-export function sortBy<T, U extends Comparable>(
+export function sortBy<T>(
   iterator: Iterable<T>,
-  selector: (el: T) => U,
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
   options?: SortByOptions,
 ): T[] {
-  const array: { value: T; selected: U }[] = [];
+  const array: { value: T; selected: string | number | bigint | Date }[] = [];
 
   for (const item of iterator) {
     array.push({ value: item, selected: selector(item) });
