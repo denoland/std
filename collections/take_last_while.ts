@@ -2,16 +2,16 @@
 // This module is browser compatible.
 
 /**
- * Returns all elements in the given array after the last element that does not
+ * Returns all elements in the given iterable after the last element that does not
  * match the given predicate.
  *
- * @typeParam T The type of the array elements.
+ * @typeParam T The type of the iterable elements.
  *
- * @param array The array to take elements from.
+ * @param iterable The iterable to take elements from.
  * @param predicate The predicate function to determine if an element should be
  * included.
  *
- * @returns A new array containing all elements after the last element that does
+ * @returns An array containing all elements after the last element that does
  * not match the predicate.
  *
  * @example Basic usage
@@ -20,18 +20,28 @@
  * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4, 5, 6];
- *
  * const result = takeLastWhile(numbers, (number) => number > 4);
- *
  * assertEquals(result, [5, 6]);
  * ```
  */
 export function takeLastWhile<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T[] {
-  let offset = array.length;
-  while (0 < offset && predicate(array[offset - 1] as T)) offset--;
-
-  return array.slice(offset, array.length);
+  if (Array.isArray(iterable)) {
+    let offset = iterable.length;
+    while (0 < offset && predicate(iterable[offset - 1] as T)) {
+      offset--;
+    }
+    return iterable.slice(offset);
+  }
+  const result: T[] = [];
+  for (const el of iterable) {
+    if (predicate(el)) {
+      result.push(el);
+    } else {
+      result.length = 0;
+    }
+  }
+  return result;
 }
