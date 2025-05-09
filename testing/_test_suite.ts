@@ -1,14 +1,13 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { getAssertionState } from "@std/internal/assertion-state";
-import { AssertionError } from "@std/assert/assertion-error";
+import { getAssertionCounter } from "@std/expect/assertion-counter";
 
 export const globalSanitizersState = {
   sanitizeExit: undefined as boolean | undefined,
   sanitizeOps: undefined as boolean | undefined,
   sanitizeResources: undefined as boolean | undefined,
 };
-const assertionState = getAssertionState();
+const assertionCounter = getAssertionCounter();
 
 /** The options for creating a test suite with the describe function. */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
@@ -429,19 +428,6 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       await fn.call(context, t);
     }
 
-    if (assertionState.checkAssertionErrorState()) {
-      throw new AssertionError(
-        "Expected at least one assertion to be called but received none",
-      );
-    }
-
-    if (assertionState.checkAssertionCountSatisfied()) {
-      throw new AssertionError(
-        `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
-          `but received ${assertionState.assertionTriggeredCount}`,
-      );
-    }
-
-    assertionState.resetAssertionState();
+    assertionCounter.validateAndReset();
   }
 }

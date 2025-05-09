@@ -3,6 +3,7 @@
   "version": "1.0.15",
   "exports": {
     ".": "./mod.ts",
+    "./assertion-counter": "./assertion_counter.ts",
     "./expect": "./expect.ts",
     "./fn": "./fn.ts"
   }

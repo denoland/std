@@ -18,7 +18,7 @@ import {
   assertions,
   emitAssertionTrigger,
   hasAssertions,
-} from "./_assertions.ts";
+} from "./assertion_counter.ts";
 import {
   addCustomEqualityTesters,
   getCustomEqualityTesters,
