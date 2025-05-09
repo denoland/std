@@ -2,15 +2,15 @@
 // This module is browser compatible.
 
 /**
- * Returns a new array that drops all elements in the given collection until the
+ * Returns an array that drops all elements in the given iterable until the
  * first element that does not match the given predicate.
  *
- * @typeParam T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input iterable.
  *
- * @param array The array to drop elements from.
+ * @param iterable The iterable to drop elements from.
  * @param predicate The function to test each element for a condition.
  *
- * @returns A new array that drops all elements until the first element that
+ * @returns An array that drops all elements until the first element that
  * does not match the given predicate.
  *
  * @example Basic usage
@@ -25,15 +25,23 @@
  * ```
  */
 export function dropWhile<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T[] {
-  let offset = 0;
-  const length = array.length;
-
-  while (length > offset && predicate(array[offset] as T)) {
-    offset++;
+  if (Array.isArray(iterable)) {
+    const idx = iterable.findIndex((el) => !predicate(el));
+    if (idx === -1) {
+      return [];
+    }
+    return iterable.slice(idx);
   }
-
-  return array.slice(offset, length);
+  const array: T[] = [];
+  let found = false;
+  for (const item of iterable) {
+    if (found || !predicate(item)) {
+      found = true;
+      array.push(item);
+    }
+  }
+  return array;
 }
