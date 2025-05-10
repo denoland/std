@@ -315,10 +315,8 @@ export default {
       create(context) {
         return {
           ExportNamedDeclaration(node) {
-            const declaration = node.declaration;
-            if (declaration?.type !== "FunctionDeclaration") return;
-            const params = declaration.params;
-            const id = declaration.id;
+            if (node.declaration?.type !== "FunctionDeclaration") return;
+            const { params, id } = node.declaration;
             if (params.length < 3) return;
             if (params.length === 3) {
               const param = params.at(-1)!;
