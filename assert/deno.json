@@ -30,6 +30,12 @@
     "./equal": "./equal.ts",
     "./fail": "./fail.ts",
     "./unimplemented": "./unimplemented.ts",
+    "./unstable-is-error": "./unstable_is_error.ts",
+    "./unstable-is-error-test": "./unstable_is_error_test.ts",
+    "./unstable-rejects": "./unstable_rejects.ts",
+    "./unstable-rejects-test": "./unstable_rejects_test.ts",
+    "./unstable-throws": "./unstable_throws.ts",
+    "./unstable-throws-test": "./unstable_throws_test.ts",
     "./unreachable": "./unreachable.ts"
   }
 }
