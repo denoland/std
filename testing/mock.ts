@@ -1052,6 +1052,7 @@ export function stub<
     ...args: GetParametersFromProp<Self, Prop>
   ) => GetReturnFromProp<Self, Prop>,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function stub<
   Self,
   Args extends unknown[],
@@ -1256,6 +1257,7 @@ function getSpyCall<
  * @param callIndex The index of the call to check
  * @param expected The expected spy call.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertSpyCall<
   Self,
   Args extends unknown[],
@@ -1355,6 +1357,7 @@ export function assertSpyCall<
  * @param callIndex The index of the call to check
  * @param expected The expected spy call.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function assertSpyCallAsync<
   Self,
   Args extends unknown[],
@@ -1456,6 +1459,7 @@ export async function assertSpyCallAsync<
  * @param expected The expected argument.
  * @returns The actual argument.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertSpyCallArg<
   Self,
   Args extends unknown[],
@@ -1590,6 +1594,7 @@ export function assertSpyCallArgs<
   argsEnd: number,
   expected: ExpectedArgs,
 ): ExpectedArgs;
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertSpyCallArgs<
   ExpectedArgs extends unknown[],
   Args extends unknown[],

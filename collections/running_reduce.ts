@@ -26,6 +26,7 @@
  * assertEquals(sumSteps, [1, 3, 6, 10, 15]);
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function runningReduce<T, O>(
   array: readonly T[],
   reducer: (accumulator: O, current: T, currentIndex: number) => O,

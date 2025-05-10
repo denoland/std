@@ -21,6 +21,7 @@ import { AssertionError } from "./assertion_error.ts";
  * @param expected The expected value to compare.
  * @param msg The optional message to display if the assertion fails.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertGreater<T>(actual: T, expected: T, msg?: string) {
   if (actual > expected) return;
 
