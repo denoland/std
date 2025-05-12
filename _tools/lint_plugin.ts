@@ -8,6 +8,7 @@
 
 import { toCamelCase, toPascalCase } from "@std/text";
 import { toFileUrl } from "@std/path/to-file-url";
+import { resolve } from "@std/path/resolve";
 
 const PASCAL_CASE_REGEXP = /^_?(?:[A-Z][a-z0-9]*)*_?$/;
 const UPPER_CASE_ONLY = /^_?[A-Z]{2,}$/;
@@ -314,7 +315,7 @@ export default {
     // https://docs.deno.com/runtime/contributing/style_guide/#exported-functions%3A-max-2-args%2C-put-the-rest-into-an-options-object
     "exported-function-args-maximum": {
       create(context) {
-        const url = toFileUrl(context.filename);
+        const url = toFileUrl(resolve(context.filename));
         if (url.href.includes("/assert/")) {
           // assert module generally don't follow this rule
           return {};
@@ -343,7 +344,7 @@ export default {
               return context.report({
                 node: id ?? declaration,
                 message:
-                  "Third argument of export function is not an options object.",
+                  "Third argument of export function is not an options object or function.",
                 hint:
                   "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
               });

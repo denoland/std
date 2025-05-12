@@ -11,7 +11,7 @@ function assertLintPluginDiagnostics(
 ) {
   const actualDiagnostics = Deno.lint.runPlugin(
     lintPlugin,
-    "main.ts", // Dummy filename, file doesn't need to exist.
+    "/main.ts", // Dummy filename, file doesn't need to exist.
     source,
   );
   assertEquals(actualDiagnostics, expectedDiagnostics);
@@ -353,7 +353,8 @@ export function foo(bar: unknown, baz: unknown, bat: unknown, options: Record<st
         hint:
           "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
         id: "deno-style-guide/exported-function-args-maximum",
-        message: "Third argument of export function is not an options object.",
+        message:
+          "Third argument of export function is not an options object or function.",
         range: [17, 20],
       },
       {
