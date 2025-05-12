@@ -317,8 +317,11 @@ export default {
       create(context) {
         const url = toFileUrl(resolve(context.filename));
 
-        // assert module generally don't follow this rule
+        // assertions and testing utils generally don't follow this rule
         if (url.href.includes("/assert/")) return {};
+        if (url.href.includes("/testing/mock.ts")) return {};
+        if (url.href.includes("/testing/snapshot.ts")) return {};
+
         // exports from private utils don't need to follow this rule
         if (url.href.includes("/_")) return {};
         // internal exports don't need to follow this rule
