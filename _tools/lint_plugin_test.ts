@@ -11,7 +11,7 @@ function assertLintPluginDiagnostics(
 ) {
   const actualDiagnostics = Deno.lint.runPlugin(
     lintPlugin,
-    "/main.ts", // Dummy filename, file doesn't need to exist.
+    "main.ts", // Dummy filename, file doesn't need to exist.
     source,
   );
   assertEquals(actualDiagnostics, expectedDiagnostics);

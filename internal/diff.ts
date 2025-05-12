@@ -108,7 +108,6 @@ export function assertFp(value: unknown): asserts value is FarthestPoint {
  * );
  * ```
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function backTrace<T>(
   A: T[],
   B: T[],
@@ -185,7 +184,6 @@ export function backTrace<T>(
  * );
  * ```
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createFp(
   k: number,
   M: number,

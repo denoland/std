@@ -1052,7 +1052,6 @@ export function stub<
     ...args: GetParametersFromProp<Self, Prop>
   ) => GetReturnFromProp<Self, Prop>,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function stub<
   Self,
   Args extends unknown[],

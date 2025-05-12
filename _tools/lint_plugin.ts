@@ -316,14 +316,16 @@ export default {
     "exported-function-args-maximum": {
       create(context) {
         const url = toFileUrl(resolve(context.filename));
-        if (url.href.includes("/assert/")) {
-          // assert module generally don't follow this rule
-          return {};
-        }
-        if (url.href.includes("/_")) {
-          // exports from private utils don't need to follow this rule
-          return {};
-        }
+
+        // assert module generally don't follow this rule
+        if (url.href.includes("/assert/")) return {};
+        // exports from private utils don't need to follow this rule
+        if (url.href.includes("/_")) return {};
+        // internal exports don't need to follow this rule
+        if (url.href.includes("/internal/")) return {};
+        // bytes API generally don't follow this rule
+        if (url.href.includes("/bytes/")) return {};
+
         return {
           ExportNamedDeclaration(node) {
             if (node.declaration?.type !== "FunctionDeclaration") return;
@@ -335,6 +337,10 @@ export default {
               switch (param.type) {
                 case "Identifier":
                   if (param.name === "options") return;
+                  if (
+                    param.typeAnnotation?.typeAnnotation?.type ===
+                      "TSFunctionType"
+                  ) return;
                   break;
                 case "AssignmentPattern": {
                   if (param.right.type === "ObjectExpression") return;
