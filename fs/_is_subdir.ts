@@ -15,7 +15,6 @@ import { toPathString } from "./_to_path_string.ts";
  *
  * @returns `true` if `src` is a sub-directory of `dest`, `false` otherwise.
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function isSubdir(
   src: string | URL,
   dest: string | URL,

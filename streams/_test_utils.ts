@@ -8,7 +8,6 @@ import { assert, assertEquals } from "@std/assert";
  * @param inputs Source input data
  * @param outputs Expected output data
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function testTransformStream<T, U>(
   transform: TransformStream<T, U>,
   inputs: Iterable<T> | AsyncIterable<T>,

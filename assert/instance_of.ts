@@ -25,7 +25,6 @@ export type GetConstructorType<T extends AnyConstructor> = InstanceType<T>;
  * @param expectedType The expected class constructor.
  * @param msg The optional message to display if the assertion fails.
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertInstanceOf<
   // deno-lint-ignore no-explicit-any
   T extends abstract new (...args: any[]) => any,

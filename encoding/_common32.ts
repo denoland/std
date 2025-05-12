@@ -53,7 +53,6 @@ export function calcSizeBase32(rawSize: number): number {
   return ((rawSize + 4) / 5 | 0) * 8;
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encode(
   buffer: Uint8Array_,
   i: number,
@@ -129,7 +128,6 @@ export function encode(
   return o;
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function decode(
   buffer: Uint8Array_,
   i: number,

@@ -3,7 +3,6 @@ import { assertEquals, assertRejects } from "@std/assert";
 import type { ConcatenatedJsonParseStream } from "./concatenated_json_parse_stream.ts";
 import type { JsonParseStream } from "./parse_stream.ts";
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function assertValidParse(
   transform: typeof ConcatenatedJsonParseStream | typeof JsonParseStream,
   chunks: string[],
@@ -15,7 +14,6 @@ export async function assertValidParse(
   assertEquals(res, expect);
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function assertInvalidParse(
   transform: typeof ConcatenatedJsonParseStream | typeof JsonParseStream,
   chunks: string[],

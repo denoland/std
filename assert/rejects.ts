@@ -53,7 +53,6 @@ export function assertRejects<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function assertRejects<E extends Error = Error>(
   fn: () => PromiseLike<unknown>,
   errorClassOrMsg?:

@@ -29,7 +29,6 @@ import { AssertionError } from "./assertion_error.ts";
  * default is one hundred thousandth of a percent of the expected value.
  * @param msg The optional message to include in the error.
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertAlmostEquals(
   actual: number,
   expected: number,

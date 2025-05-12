@@ -60,7 +60,6 @@ export function calcEncodingSize(x: CborType): number {
   return size + calcHeaderSize(pairs);
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encode(
   input: CborType,
   output: Uint8Array,

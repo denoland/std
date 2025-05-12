@@ -18,7 +18,6 @@ import { AssertionError } from "./assertion_error.ts";
  * @param expected The expected value to not match.
  * @param msg The optional message to display if the assertion fails.
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertNotMatch(
   actual: string,
   expected: RegExp,

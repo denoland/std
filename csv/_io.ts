@@ -56,7 +56,6 @@ export interface LineReader {
   isEOF(): boolean;
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function parseRecord(
   fullLine: string,
   reader: LineReader,
@@ -202,7 +201,6 @@ export async function parseRecord(
   return result;
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createBareQuoteErrorMessage(
   zeroBasedRecordStartLine: number,
   zeroBasedLine: number,
@@ -214,7 +212,6 @@ export function createBareQuoteErrorMessage(
     zeroBasedColumn + 1
   }: bare " in non-quoted-field`;
 }
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createQuoteErrorMessage(
   zeroBasedRecordStartLine: number,
   zeroBasedLine: number,
@@ -227,7 +224,6 @@ export function createQuoteErrorMessage(
   }: extraneous or missing " in quoted-field`;
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function convertRowToObject(
   row: readonly string[],
   headers: readonly string[],

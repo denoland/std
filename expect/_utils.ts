@@ -85,7 +85,6 @@ function entries(obj: any) {
 }
 
 // Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L173
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function iterableEquality(
   // deno-lint-ignore no-explicit-any
   a: any,
@@ -236,7 +235,6 @@ export function iterableEquality(
 }
 
 // Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L341
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function subsetEquality(
   object: unknown,
   subset: unknown,

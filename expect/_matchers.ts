@@ -75,7 +75,6 @@ export function toStrictEqual(
   }
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toBeCloseTo(
   context: MatcherContext,
   expected: number,
@@ -375,7 +374,6 @@ export function toHaveLength(
   }
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toHaveProperty(
   context: MatcherContext,
   propName: string | string[],
@@ -743,7 +741,6 @@ export function toHaveBeenLastCalledWith(
   }
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toHaveBeenNthCalledWith(
   context: MatcherContext,
   nth: number,
@@ -927,7 +924,6 @@ export function toHaveLastReturnedWith(
   }
 }
 
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toHaveNthReturnedWith(
   context: MatcherContext,
   nth: number,

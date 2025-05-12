@@ -7,6 +7,7 @@
  */
 
 import { toCamelCase, toPascalCase } from "@std/text";
+import { toFileUrl } from "@std/path/to-file-url";
 
 const PASCAL_CASE_REGEXP = /^_?(?:[A-Z][a-z0-9]*)*_?$/;
 const UPPER_CASE_ONLY = /^_?[A-Z]{2,}$/;
@@ -313,6 +314,15 @@ export default {
     // https://docs.deno.com/runtime/contributing/style_guide/#exported-functions%3A-max-2-args%2C-put-the-rest-into-an-options-object
     "exported-function-args-maximum": {
       create(context) {
+        const url = toFileUrl(context.filename);
+        if (url.href.includes("/assert/")) {
+          // assert module generally don't follow this rule
+          return {};
+        }
+        if (url.href.includes("/_")) {
+          // exports from private utils don't need to follow this rule
+          return {};
+        }
         return {
           ExportNamedDeclaration(node) {
             if (node.declaration?.type !== "FunctionDeclaration") return;

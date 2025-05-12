@@ -27,7 +27,6 @@ export type ArrayLikeArg<T> = ArrayLike<T> & object;
  * @param expected The array-like object to check for.
  * @param msg The optional message to display if the assertion fails.
  */
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
   expected: ArrayLikeArg<T>,
