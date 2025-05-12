@@ -26,6 +26,19 @@ export class AssertionState {
       assertionTriggered: false,
       assertionTriggeredCount: 0,
     };
+
+    // If any checks were registered, `validateAndReset` should have been called
+    // to reset and deregister the checks
+    globalThis.addEventListener("unload", () => {
+      if (
+        this.#state.assertionCheck ||
+        this.#state.assertionCount !== undefined
+      ) {
+        throw new Error(
+          "AssertionCounter was not cleaned up: If tests are not otherwise failing, ensure `expect.hasAssertion` and `expect.assertions` are only run in bdd tests",
+        );
+      }
+    });
   }
 
   /**
