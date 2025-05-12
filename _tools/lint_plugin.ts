@@ -320,6 +320,7 @@ export default {
         // assertions and testing utils generally don't follow this rule
         if (url.href.includes("/assert/")) return {};
         if (url.href.includes("/testing/mock.ts")) return {};
+        if (url.href.includes("/testing/unstable_stub.ts")) return {};
         if (url.href.includes("/testing/snapshot.ts")) return {};
 
         // exports from private utils don't need to follow this rule
@@ -340,9 +341,15 @@ export default {
               switch (param.type) {
                 case "Identifier":
                   if (param.name === "options") return;
+                  // Function as 3rd argument is valid (e.g. pooledMap)
                   if (
                     param.typeAnnotation?.typeAnnotation?.type ===
                       "TSFunctionType"
+                  ) return;
+                  // attributes: Pick<T, "foo" | "bar"> as 3rd argument is valid
+                  if (
+                    param.typeAnnotation?.typeAnnotation?.typeName?.name ===
+                      "Pick"
                   ) return;
                   break;
                 case "AssignmentPattern": {
@@ -350,6 +357,7 @@ export default {
                   break;
                 }
               }
+
               return context.report({
                 node: id ?? declaration,
                 message:
