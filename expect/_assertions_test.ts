@@ -2,6 +2,7 @@
 
 import * as path from "@std/path";
 import { assertStringIncludes } from "@std/assert";
+import { stripAnsiCode } from "@std/internal/styles";
 
 Deno.test("expect.hasAssertions() API", async () => {
   const tempDirPath = await Deno.makeTempDir({
@@ -49,7 +50,7 @@ test("test suite should pass", () => {
       args: ["test", "--no-lock", tempDirPath],
     });
     const { stdout } = await command.output();
-    const errorMessage = new TextDecoder().decode(stdout);
+    const errorMessage = stripAnsiCode(new TextDecoder().decode(stdout));
 
     assertStringIncludes(
       errorMessage,
@@ -120,7 +121,7 @@ it("should throw an error", () => {
       args: ["test", "--no-lock", tempDirPath],
     });
     const { stdout } = await command.output();
-    const errorMessage = new TextDecoder().decode(stdout);
+    const errorMessage = stripAnsiCode(new TextDecoder().decode(stdout));
 
     assertStringIncludes(errorMessage, "should pass ... ok");
     assertStringIncludes(errorMessage, "should throw error ... FAILED");
@@ -168,7 +169,7 @@ it("should pass", () => {
       args: ["test", "--no-lock", tempDirPath],
     });
     const { stdout } = await command.output();
-    const errorMessage = new TextDecoder().decode(stdout);
+    const errorMessage = stripAnsiCode(new TextDecoder().decode(stdout));
 
     assertStringIncludes(errorMessage, "should fail ... FAILED");
     // Previously "should fail" failing caused "should pass" to fail

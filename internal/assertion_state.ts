@@ -27,8 +27,9 @@ export class AssertionState {
       assertionTriggeredCount: 0,
     };
 
-    // If any checks were registered, `validateAndReset` should have been called
-    // to reset and deregister the checks
+    // If any checks were registered, after the test suite runs the checks,
+    // `resetAssertionState` should also have been called. If it was not,
+    // then the test suite did not run the checks.
     globalThis.addEventListener("unload", () => {
       if (
         this.#state.assertionCheck ||

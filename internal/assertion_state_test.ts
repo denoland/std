@@ -2,6 +2,7 @@
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { AssertionState } from "./assertion_state.ts";
+import { stripAnsiCode } from "./styles.ts";
 
 Deno.test("AssertionState checkAssertionErrorState pass", () => {
   const assertionState = new AssertionState();
@@ -49,7 +50,7 @@ Deno.test("AssertionState throws if not cleaned up", async () => {
     ],
   });
   const { stderr } = await command.output();
-  const errorMessage = new TextDecoder().decode(stderr);
+  const errorMessage = stripAnsiCode(new TextDecoder().decode(stderr));
   // TODO(WWRS): Test for the expected message when Deno displays it instead of "Uncaught null"
   assertStringIncludes(errorMessage, "error: Uncaught");
 });
