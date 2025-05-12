@@ -335,6 +335,12 @@ export function foo(bar: unknown, baz: unknown) {
 }
 export function foo(bar: unknown, baz: unknown, options: Record<string, unknown>) {
 }
+// function as last argument is allowed
+export function foo(bar: unknown, baz: unknown, bat: () => unknown) {
+}
+// Pick<T> is usually an object
+export function foo(bar: unknown, baz: unknown, bat: Pick<SomeType, "foo">) {
+}
     `,
     [],
   );
