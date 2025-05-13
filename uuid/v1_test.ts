@@ -69,7 +69,7 @@ Deno.test("generate() throws when create more than 10M uuids/sec", () => {
       generate({ nsecs: 10001 });
     },
     Error,
-    "Can't create more than 10M uuids/sec",
+    "Cannot create more than 10M uuids/sec",
   );
 });
 

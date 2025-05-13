@@ -24,9 +24,13 @@ const inputOutput: [string | ArrayBuffer, string, string][] = [
 
 Deno.test("encodeBase64()", () => {
   for (const [input, base64, base64url] of inputOutput) {
-    assertEquals(encodeBase64(input.slice(0), "Base64"), base64, "Base64");
     assertEquals(
-      encodeBase64(input.slice(0), "Base64Url"),
+      encodeBase64(input.slice(0), { alphabet: "base64" }),
+      base64,
+      "Base64",
+    );
+    assertEquals(
+      encodeBase64(input.slice(0), { alphabet: "base64url" }),
       base64url,
       "Base64Url",
     );
@@ -41,12 +45,16 @@ Deno.test("encodeBase64() subarray", () => {
     buffer.set(new Uint8Array(input), 10 - input.byteLength);
 
     assertEquals(
-      encodeBase64(buffer.slice().subarray(10 - input.byteLength), "Base64"),
+      encodeBase64(buffer.slice().subarray(10 - input.byteLength), {
+        alphabet: "base64",
+      }),
       base64,
       "Base64",
     );
     assertEquals(
-      encodeBase64(buffer.slice().subarray(10 - input.byteLength), "Base64Url"),
+      encodeBase64(buffer.slice().subarray(10 - input.byteLength), {
+        alphabet: "base64url",
+      }),
       base64url,
       "Base64Url",
     );
@@ -59,9 +67,9 @@ Deno.test("encodeBase64Into()", () => {
     if (typeof input === "string") continue;
 
     for (
-      const [output, format] of [
-        [concat([prefix, new TextEncoder().encode(base64)]), "Base64"],
-        [concat([prefix, new TextEncoder().encode(base64url)]), "Base64Url"],
+      const [output, alphabet] of [
+        [concat([prefix, new TextEncoder().encode(base64)]), "base64"],
+        [concat([prefix, new TextEncoder().encode(base64url)]), "base64url"],
       ] as const
     ) {
       const buffer = new Uint8Array(
@@ -72,9 +80,9 @@ Deno.test("encodeBase64Into()", () => {
       const o = prefix.length + encodeIntoBase64(
         input,
         buffer.subarray(prefix.length),
-        format,
+        { alphabet },
       );
-      assertEquals(buffer.subarray(0, o), output, format);
+      assertEquals(buffer.subarray(0, o), output, alphabet);
     }
   }
 });
@@ -84,7 +92,7 @@ Deno.test("encodeBase64Into() with too small buffer", () => {
   for (const [input] of inputOutput) {
     if (typeof input === "string" || input.byteLength === 0) continue;
 
-    for (const format of ["Base64", "Base64Url"] as const) {
+    for (const alphabet of ["base64", "base64url"] as const) {
       const buffer = new Uint8Array(
         prefix.length + calcSizeBase64(input.byteLength) - 2,
       );
@@ -95,11 +103,11 @@ Deno.test("encodeBase64Into() with too small buffer", () => {
           encodeIntoBase64(
             input,
             buffer.subarray(prefix.length),
-            format,
+            { alphabet },
           ),
         RangeError,
         "Cannot encode input as base64: Output too small",
-        format,
+        alphabet,
       );
     }
   }
@@ -110,8 +118,16 @@ Deno.test("decodeBase64()", () => {
     if (input instanceof ArrayBuffer) continue;
     const output = new TextEncoder().encode(input);
 
-    assertEquals(decodeBase64(base64, "Base64"), output, "Base64");
-    assertEquals(decodeBase64(base64url, "Base64Url"), output, "Base64Url");
+    assertEquals(
+      decodeBase64(base64, { alphabet: "base64" }),
+      output,
+      "Base64",
+    );
+    assertEquals(
+      decodeBase64(base64url, { alphabet: "base64url" }),
+      output,
+      "Base64Url",
+    );
   }
 });
 
@@ -121,16 +137,16 @@ Deno.test("decodeBase64() invalid char after padding", () => {
     if (base64[base64.length - 2] !== "=") continue;
 
     for (
-      const [input, format] of [
-        [base64.substring(-1) + ".", "Base64"],
-        [base64url.substring(-1) + ".", "Base64Url"],
+      const [input, alphabet] of [
+        [base64.substring(-1) + ".", "base64"],
+        [base64url.substring(-1) + ".", "base64url"],
       ] as const
     ) {
       assertThrows(
-        () => decodeBase64(input, format),
+        () => decodeBase64(input, { alphabet }),
         TypeError,
         "Cannot decode input as base64: Invalid character (.)",
-        format,
+        alphabet,
       );
     }
   }
@@ -141,22 +157,22 @@ Deno.test("decodeBase64() invalid length", () => {
     if (input instanceof ArrayBuffer) continue;
 
     for (
-      const [input, format] of [
-        [base64.replaceAll("=", "b") + "a", "Base64"],
+      const [input, alphabet] of [
+        [base64.replaceAll("=", "b") + "a", "base64"],
         [
           base64
             .replaceAll("+", "-")
             .replaceAll("/", "_")
             .replaceAll("=", "b") + "a",
-          "Base64Url",
+          "base64url",
         ],
       ] as const
     ) {
       assertThrows(
-        () => decodeBase64(input, format),
+        () => decodeBase64(input, { alphabet }),
         RangeError,
         `Length (${input.length}), excluding padding, must not have a remainder of 1 when divided by 4`,
-        format,
+        alphabet,
       );
     }
   }
@@ -167,16 +183,16 @@ Deno.test("decodeBase64() invalid char", () => {
     if (input instanceof ArrayBuffer) continue;
 
     for (
-      const [input, format] of [
-        [".".repeat(4) + base64, "Base64"],
-        [".".repeat(4) + base64url, "Base64Url"],
+      const [input, alphabet] of [
+        [".".repeat(4) + base64, "base64"],
+        [".".repeat(4) + base64url, "base64url"],
       ] as const
     ) {
       assertThrows(
-        () => decodeBase64(input, format),
+        () => decodeBase64(input, { alphabet }),
         TypeError,
         "Cannot decode input as base64: Invalid character (.)",
-        format,
+        alphabet,
       );
     }
   }

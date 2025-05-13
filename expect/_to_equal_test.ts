@@ -4,22 +4,26 @@ import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 
-const createHeader = (): string[] => [
-  "",
-  "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-    green(
-      bold("Expected"),
-    )
-  }`,
-  "",
-  "",
-];
+function createHeader(): string[] {
+  return [
+    "",
+    "",
+    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
+      green(
+        bold("Expected"),
+      )
+    }`,
+    "",
+    "",
+  ];
+}
 
-const added: (s: string) => string = (s: string): string =>
-  green(bold(stripAnsiCode(s)));
-const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripAnsiCode(s)));
+function added(s: string): string {
+  return green(bold(stripAnsiCode(s)));
+}
+function removed(s: string): string {
+  return red(bold(stripAnsiCode(s)));
+}
 
 Deno.test({
   name: "expect().toEqual() matches when values are equal",
@@ -217,7 +221,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
   expect({ foo: 1, bar: undefined }).not.toEqual({ foo: undefined });
 });
 
-// https://github.com/denoland/deno_std/issues/4244
+// https://github.com/denoland/std/issues/4244
 Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {

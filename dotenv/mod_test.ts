@@ -29,6 +29,24 @@ Deno.test("load() handles non-existent .env files", async () => {
   assertEquals({}, loadSync(loadOptions));
 });
 
+Deno.test("load() handles URL as path for .env files", async () => {
+  const conf = loadSync({
+    envPath: new URL(
+      path.toFileUrl(path.join(testdataDir, ".env")),
+      import.meta.url,
+    ),
+  });
+  assertEquals(conf.GREETING, "hello world", "loaded from .env");
+
+  const asyncConf = await load({
+    envPath: new URL(
+      path.toFileUrl(path.join(testdataDir, ".env")),
+      import.meta.url,
+    ),
+  });
+  assertEquals(asyncConf.GREETING, "hello world", "loaded from .env");
+});
+
 Deno.test("load() handles comprised .env and .env.defaults", async () => {
   const conf = loadSync(testOptions);
   assertEquals(conf.GREETING, "hello world", "loaded from .env");

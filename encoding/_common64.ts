@@ -4,25 +4,33 @@ import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
 export const padding = "=".charCodeAt(0);
-export const alphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new TextEncoder()
+export const alphabet: Record<Base64Alphabet, Uint8Array> = {
+  base64: new TextEncoder()
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
-  Base64Url: new TextEncoder()
+  base64url: new TextEncoder()
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
 };
-export const rAlphabet: Record<Base64Format, Uint8Array> = {
-  Base64: new Uint8Array(128).fill(64), // alphabet.Base64.length
-  Base64Url: new Uint8Array(128).fill(64),
+export const rAlphabet: Record<Base64Alphabet, Uint8Array> = {
+  base64: new Uint8Array(128).fill(64), // alphabet.base64.length
+  base64url: new Uint8Array(128).fill(64),
 };
-alphabet.Base64
-  .forEach((byte, i) => rAlphabet.Base64[byte] = i);
-alphabet.Base64Url
-  .forEach((byte, i) => rAlphabet.Base64Url[byte] = i);
+alphabet.base64
+  .forEach((byte, i) => rAlphabet.base64[byte] = i);
+alphabet.base64url
+  .forEach((byte, i) => rAlphabet.base64url[byte] = i);
 
 /**
- * The base 64 encoding formats.
+ * Options for encoding and decoding base64 strings.
  */
-export type Base64Format = "Base64" | "Base64Url";
+export interface Base64Options {
+  /** The base64 alphabet. Defaults to "base64" */
+  alphabet?: Base64Alphabet;
+}
+
+/**
+ * The base64 alphabets.
+ */
+export type Base64Alphabet = "base64" | "base64url";
 
 /**
  * Calculate the output size needed to encode a given input size for
