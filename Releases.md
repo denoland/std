@@ -36,7 +36,7 @@
 
 #### @std/fmt 1.0.8 (patch)
 
-- docs(fmt): clarify runtime compatiblity (#6648)
+- docs(fmt): clarify runtime compatibility (#6648)
 
 #### @std/html 1.0.4 (patch)
 
