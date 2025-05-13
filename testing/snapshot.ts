@@ -195,7 +195,7 @@ const SNAPSHOT_EXT = "snap";
 export type SnapshotMode = "assert" | "update";
 
 /** The options for {@linkcode assertSnapshot}. */
-export interface SnapshotOptions<T = unknown> {
+export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
    * This can be relative to the test directory or an absolute path.
@@ -232,7 +232,7 @@ export interface SnapshotOptions<T = unknown> {
    * Function to use when serializing the snapshot. The default is {@linkcode serialize}.
    */
   serializer?: (actual: T) => string;
-}
+};
 
 class AssertSnapshotContext {
   static contexts = new Map<string, AssertSnapshotContext>();
