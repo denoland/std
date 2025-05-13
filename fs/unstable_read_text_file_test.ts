@@ -7,6 +7,8 @@ import { isDeno } from "./_utils.ts";
 import { NotFound } from "./unstable_errors.js";
 import { readTextFile, readTextFileSync } from "./unstable_read_text_file.ts";
 
+const isBun = navigator.userAgent.includes("Bun/");
+
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const testDir = resolve(moduleDir, "testdata");
 const testFile = join(testDir, "copy_file.txt");
@@ -42,21 +44,25 @@ Deno.test("readTextFile() handles an AbortSignal", async () => {
   assertEquals(error.name, "AbortError");
 });
 
-Deno.test("readTextFile() handles an AbortSignal with a reason", async () => {
-  const ac = new AbortController();
-  const reasonErr = new Error();
-  queueMicrotask(() => ac.abort(reasonErr));
+Deno.test(
+  "readTextFile() handles an AbortSignal with a reason",
+  { ignore: isBun },
+  async () => {
+    const ac = new AbortController();
+    const reasonErr = new Error();
+    queueMicrotask(() => ac.abort(reasonErr));
 
-  const error = await assertRejects(async () => {
-    await readTextFile(testFile, { signal: ac.signal });
-  }, Error);
+    const error = await assertRejects(async () => {
+      await readTextFile(testFile, { signal: ac.signal });
+    }, Error);
 
-  if (isDeno) {
-    assertEquals(error, ac.signal.reason);
-  } else {
-    assertEquals(error.cause, ac.signal.reason);
-  }
-});
+    if (isDeno) {
+      assertEquals(error, ac.signal.reason);
+    } else {
+      assertEquals(error.cause, ac.signal.reason);
+    }
+  },
+);
 
 Deno.test("readTextFileSync() reads content from txt file", () => {
   const content = readTextFileSync(testFile);

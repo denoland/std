@@ -310,3 +310,67 @@ new CustomError("Can't parse input");
     ],
   );
 });
+
+Deno.test("deno-style-guide/exported-function-args-maximum", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics(
+    `
+function foo() {
+}
+function foo(bar: unknown) {
+}
+function foo(bar: unknown, baz: unknown) {
+}
+function foo(bar: unknown, baz: unknown, options: Record<string, unknown>) {
+}
+function foo(bar: unknown, baz: unknown, bat: unknown, bay: unknown) {
+}
+export function foo() {
+}
+export function foo(bar: unknown) {
+}
+export function foo(bar: unknown, baz: unknown) {
+}
+export function foo(bar: unknown, baz: unknown, options: Record<string, unknown>) {
+}
+// function as last argument is allowed
+export function foo(bar: unknown, baz: unknown, bat: () => unknown) {
+}
+// Pick<T> is usually an object
+export function foo(bar: unknown, baz: unknown, bat: Pick<SomeType, "foo">) {
+}
+    `,
+    [],
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+export function foo(bar: unknown, baz: unknown, bat: unknown) {
+}
+export function foo(bar: unknown, baz: unknown, bat: unknown, options: Record<string, unknown>) {
+}
+`,
+    [
+      {
+        fix: [],
+        hint:
+          "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+        id: "deno-style-guide/exported-function-args-maximum",
+        message:
+          "Third argument of export function is not an options object or function.",
+        range: [17, 20],
+      },
+      {
+        fix: [],
+        hint:
+          "Export functions can have 0-2 required arguments, plus (if necessary) an options object (so max 3 total).",
+        id: "deno-style-guide/exported-function-args-maximum",
+        message: "Exported function has more than three arguments.",
+        range: [83, 86],
+      },
+    ],
+  );
+});
