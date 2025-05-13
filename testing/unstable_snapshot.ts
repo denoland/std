@@ -13,14 +13,15 @@ import {
   getIsUpdate,
   getOptions,
   getSnapshotNotMatchMessage,
+  LINT_SUPPORTED,
   serialize,
 } from "./_snapshot_utils.ts";
 
-// TODO (WWRS): Remove this when we drop support for Deno 1.x
-export const LINT_SUPPORTED = !Deno.version.deno.startsWith("1.");
-
-/** The options for {@linkcode assertInlineSnapshot}. */
-
+/**
+ * The options for {@linkcode assertInlineSnapshot}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface InlineSnapshotOptions<T = unknown>
   extends Pick<SnapshotOptions<T>, "mode" | "msg" | "serializer"> {
   /**
@@ -245,9 +246,11 @@ class AssertInlineSnapshotContext {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
- * import { assertInlineSnapshot } from "@std/testing/snapshot";
+ * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * Deno.test("snapshot", (t) => {
  *   assertInlineSnapshot<number>(t, 2, `2`);
@@ -271,9 +274,11 @@ export function assertInlineSnapshot<T>(
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
- * import { assertInlineSnapshot } from "@std/testing/snapshot";
+ * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * Deno.test("snapshot", (t) => {
  *   assertInlineSnapshot<number>(t, 2, `2`);
@@ -357,9 +362,11 @@ export function assertInlineSnapshot(
  *
  * The specified option becomes the default for returned {@linkcode assertInlineSnapshot}
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
- * import { createAssertInlineSnapshot } from "@std/testing/snapshot";
+ * import { createAssertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * const assertInlineSnapshot = createAssertInlineSnapshot({
  *   // Never format the test file after writing new snapshots

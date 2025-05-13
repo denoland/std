@@ -5,12 +5,12 @@ import { assertEquals } from "@std/assert";
 import {
   assertInlineSnapshot,
   createAssertInlineSnapshot,
-  LINT_SUPPORTED,
-} from "./_assert_inline_snapshot.ts";
+} from "./unstable_snapshot.ts";
+import { LINT_SUPPORTED } from "./_snapshot_utils.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
-  "snapshot.ts",
+  "unstable_snapshot.ts",
 ));
 
 class TestClass {
@@ -150,7 +150,7 @@ Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () =>
     await Deno.writeTextFile(
       countTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
- \n \r \n\r \r\n 
+ \n \r \n\r \r\n
 Deno.test("format", async (t) => {
   /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot(t, "hello world", "", { format: false });
 });`,
@@ -173,7 +173,7 @@ Deno.test("format", async (t) => {
     assertEquals(
       await Deno.readTextFile(countTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
- \n \r \n\r \r\n 
+ \n \r \n\r \r\n
 Deno.test("format", async (t) => {
   /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot(t, "hello world", \`"hello world"\`, { format: false });
 });`,
