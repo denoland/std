@@ -1,3 +1,67 @@
+### 2025.05.13
+
+#### @std/async 1.0.13 (patch)
+
+- fix(async): `abortable` should prevent uncaught error when promise is rejected
+  (#6312)
+
+#### @std/bytes 1.0.6 (patch)
+
+- fix(bytes): allow to concat() readonly arrays of bytes arrays (#6639)
+
+#### @std/collections 1.1.0 (minor)
+
+- feat(collections): stabilize `Iterable` input for `chunk`, `dropLastWhile`,
+  `dropWhile`, `intersect`, `sample`, `slidingWindows`, `sortBy`,
+  `takeLastWhile`, `takeWhile`, and `withoutAll` (#6644)
+- feat(collections/unstable): add cycle iterator utility (#6386)
+
+#### @std/crypto 1.0.5 (patch)
+
+- chore(crypto): update `crypto/_wasm` and `wasmbuild` task (#6611)
+
+#### @std/data-structures 1.0.8 (patch)
+
+- feat(data-structures/unstable): add `BinarySearchTree` methods `ceiling`,
+  `floor`, `higher`, `lower` (#6544)
+
+#### @std/dotenv 0.225.4 (patch)
+
+- feat(dotenv): add URL as envPath type (#6621)
+
+#### @std/expect 1.0.16 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/fmt 1.0.8 (patch)
+
+- docs(fmt): clarify runtime compatibility (#6648)
+
+#### @std/html 1.0.4 (patch)
+
+- fix(html/unstable): add missing range
+  (`unstable_is_valid_custom_element_name`) (#6634)
+
+#### @std/http 1.0.16 (patch)
+
+- fix(http): don't set the Date header in file_server.ts responses (use the
+  default Date header value) (#6610)
+
+#### @std/internal 1.0.7 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/testing 1.0.12 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/toml 1.0.6 (patch)
+
+- fix(toml): should use lowercase value for nan (#6638)
+
 ### 2025.04.24
 
 #### @std/assert 1.0.13 (patch)
