@@ -249,7 +249,7 @@ class AssertInlineSnapshotContext {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * Deno.test("snapshot", (t) => {
@@ -277,7 +277,7 @@ export function assertInlineSnapshot<T>(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * Deno.test("snapshot", (t) => {
@@ -365,7 +365,7 @@ export function assertInlineSnapshot(
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { createAssertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * const assertInlineSnapshot = createAssertInlineSnapshot({
