@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
 
-// https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
+// https://github.com/denoland/std/issues/1067#issuecomment-907740319
 Deno.test({
   name: "stringify() handles object value contains '='",
   fn() {
@@ -187,9 +187,9 @@ reg = "/foo[bar]/"
 sf1 = inf
 sf2 = inf
 sf3 = -inf
-sf4 = NaN
-sf5 = NaN
-sf6 = NaN
+sf4 = nan
+sf5 = nan
+sf6 = nan
 data = [["gamma","delta"],[1,2]]
 hosts = ["alpha","omega"]
 bool = true

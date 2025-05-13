@@ -35,7 +35,7 @@ export interface LoadOptions {
    *
    * @default {"./.env"}
    */
-  envPath?: string | null;
+  envPath?: string | URL | null;
 
   /**
    * Set to `true` to export all `.env` variables to the current processes
@@ -227,7 +227,7 @@ export async function load(
 }
 
 function parseFileSync(
-  filepath: string,
+  filepath: string | URL,
 ): Record<string, string> {
   try {
     return parse(Deno.readTextFileSync(filepath));
@@ -238,7 +238,7 @@ function parseFileSync(
 }
 
 async function parseFile(
-  filepath: string,
+  filepath: string | URL,
 ): Promise<Record<string, string>> {
   try {
     return parse(await Deno.readTextFile(filepath));

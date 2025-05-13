@@ -1461,3 +1461,25 @@ readme = { }`;
     assertEquals(actual, expected);
   },
 });
+
+Deno.test({
+  name: "parse() handles NaN and inf",
+  fn() {
+    assertEquals(parse("value = nan").value, NaN);
+    assertEquals(parse("value = +nan").value, NaN);
+    assertEquals(parse("value = -nan").value, NaN);
+    assertEquals(parse("value = inf").value, Infinity);
+    assertEquals(parse("value = +inf").value, Infinity);
+    assertEquals(parse("value = -inf").value, -Infinity);
+    assertThrows(() => parse("value = NaN").value);
+    assertThrows(() => parse("value = +NaN").value);
+    assertThrows(() => parse("value = -NaN").value);
+    assertThrows(() => parse("value = Inf").value);
+    assertThrows(() => parse("value = +Inf").value);
+    assertThrows(() => parse("value = -Inf").value);
+    assertThrows(() => parse("value = nannan"));
+    assertThrows(() => parse("value = -nan_"));
+    assertThrows(() => parse("value = infinf"));
+    assertThrows(() => parse("value = -inf_"));
+  },
+});
