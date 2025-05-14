@@ -26,6 +26,6 @@ import { join as windowsJoin } from "./windows/join.ts";
  * @param paths Paths to be joined and normalized.
  * @returns The joined and normalized path.
  */
-export function join(...paths: string[]): string {
-  return isWindows ? windowsJoin(...paths) : posixJoin(...paths);
+export function join(path: string | URL, ...paths: string[]): string {
+  return isWindows ? windowsJoin(path, ...paths) : posixJoin(path, ...paths);
 }
