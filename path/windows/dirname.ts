@@ -9,6 +9,7 @@ import {
   isPosixPathSeparator,
   isWindowsDeviceRoot,
 } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the directory path of a `path`.
@@ -18,17 +19,17 @@ import {
  * import { dirname } from "@std/path/windows/dirname";
  * import { assertEquals } from "@std/assert";
  *
- * const dir = dirname("C:\\foo\\bar\\baz.ext");
- * assertEquals(dir, "C:\\foo\\bar");
+ * assertEquals(dirname("C:\\foo\\bar\\baz.ext"), "C:\\foo\\bar");
+ * assertEquals(dirname(new URL("file:///C:/foo/bar/baz.ext")), "C:\\foo\\bar");
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `dirname` from `@std/path/windows/unstable-dirname`.
  *
  * @param path The path to get the directory from.
  * @returns The directory path.
  */
-export function dirname(path: string): string {
+export function dirname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertArg(path);
 
   const len = path.length;

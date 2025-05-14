@@ -15,13 +15,12 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(dirname("C:\\home\\user\\Documents\\image.png"), "C:\\home\\user\\Documents");
+ *   assertEquals(dirname(new URL("file:///C:/home/user/Documents/image.png")), "C:\\home\\user\\Documents");
  * } else {
  *   assertEquals(dirname("/home/user/Documents/image.png"), "/home/user/Documents");
+ *   assertEquals(dirname(new URL("file:///home/user/Documents/image.png")), "/home/user/Documents");
  * }
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `dirname` from `@std/path/unstable-dirname`.
  *
  * @param path Path to extract the directory from.
  * @returns The directory path.

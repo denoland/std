@@ -18,13 +18,12 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(normalize("C:\\foo\\bar\\..\\baz\\quux"), "C:\\foo\\baz\\quux");
+ *   assertEquals(normalize(new URL("file:///C:/foo/bar/../baz/quux")), "C:\\foo\\baz\\quux");
  * } else {
  *   assertEquals(normalize("/foo/bar/../baz/quux"), "/foo/baz/quux");
+ *   assertEquals(normalize(new URL("file:///foo/bar/../baz/quux")), "/foo/baz/quux");
  * }
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `normalize` from `@std/path/unstable-normalize`.
  *
  * @param path Path to be normalized
  * @returns The normalized path.
