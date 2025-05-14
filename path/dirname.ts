@@ -25,6 +25,6 @@ import { dirname as windowsDirname } from "./windows/dirname.ts";
  * @param path Path to extract the directory from.
  * @returns The directory path.
  */
-export function dirname(path: string): string {
+export function dirname(path: string | URL): string {
   return isWindows ? windowsDirname(path) : posixDirname(path);
 }

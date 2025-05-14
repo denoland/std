@@ -30,7 +30,7 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  *
  * @returns The basename of the path.
  */
-export function basename(path: string, suffix = ""): string {
+export function basename(path: string | URL, suffix = ""): string {
   return isWindows
     ? windowsBasename(path, suffix)
     : posixBasename(path, suffix);

@@ -24,6 +24,6 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * @param path Path with extension.
  * @returns The file extension. E.g. returns `.ts` for `file.ts`.
  */
-export function extname(path: string): string {
+export function extname(path: string | URL): string {
   return isWindows ? windowsExtname(path) : posixExtname(path);
 }

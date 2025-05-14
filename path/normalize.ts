@@ -28,6 +28,6 @@ import { normalize as windowsNormalize } from "./windows/normalize.ts";
  * @param path Path to be normalized
  * @returns The normalized path.
  */
-export function normalize(path: string): string {
+export function normalize(path: string | URL): string {
   return isWindows ? windowsNormalize(path) : posixNormalize(path);
 }
