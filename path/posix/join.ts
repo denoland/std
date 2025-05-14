@@ -30,7 +30,7 @@ import { normalize } from "./normalize.ts";
  * assertEquals(url.href, "https://deno.land/std/path/mod.ts");
  * ```
  *
- * @param path
+ * @param path The path to join. This can be string or file URL.
  * @param paths The paths to join.
  * @returns The joined path.
  */

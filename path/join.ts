@@ -22,6 +22,7 @@ import { join as windowsJoin } from "./windows/join.ts";
  * }
  * ```
  *
+ * @param path The path to join. This can be string or file URL.
  * @param paths Paths to be joined and normalized.
  * @returns The joined and normalized path.
  */
