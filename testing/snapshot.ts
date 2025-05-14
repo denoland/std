@@ -38,13 +38,12 @@
  * // example_test.ts
  * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
- * Deno.test("isInlineSnapshotMatch", function (t): void {
+ * Deno.test("isInlineSnapshotMatch", function (): void {
  *   const a = {
  *     hello: "world!",
  *     example: 123,
  *   };
  *   assertInlineSnapshot(
- *     t,
  *     a,
  *     `{
  *   hello: "world!",
