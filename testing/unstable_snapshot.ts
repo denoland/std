@@ -283,14 +283,13 @@ export function assertInlineSnapshot(
  * import { createAssertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * const assertInlineSnapshot = createAssertInlineSnapshot({
- *   // Never format the test file after writing new snapshots
- *   format: false
+ *   serializer: JSON.stringify,
  * });
  *
  * Deno.test("a snapshot test case", () => {
  *   assertInlineSnapshot(
- *     { foo: "Hello", bar: "World" },
- *     `CREATE`
+ *     { foo: "Hello", bar: undefined },
+ *     `{"foo":"Hello"}`
  *   );
  * })
  * ```
