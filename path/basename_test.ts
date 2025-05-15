@@ -5,8 +5,6 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { basename } from "./basename.ts";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
-import { basename as posixUnstableBasename } from "./posix/unstable_basename.ts";
-import { basename as windowsUnstableBasename } from "./windows/unstable_basename.ts";
 
 // Test suite from "GNU core utilities"
 // https://github.com/coreutils/coreutils/blob/master/tests/misc/basename.pl
@@ -136,14 +134,14 @@ Deno.test("posix.basename()", function () {
   );
 });
 
-Deno.test("posix (unstable) basename() throws with non-file URL", () => {
+Deno.test("posix.basename() throws with non-file URL", () => {
   assertThrows(
-    () => posixUnstableBasename(new URL("https://deno.land/")),
+    () => posix.basename(new URL("https://deno.land/")),
     TypeError,
     'URL must be a file URL: received "https:"',
   );
   for (const [[name, suffix], expected] of POSIX_URL_TESTSUITE) {
-    assertEquals(posixUnstableBasename(name, suffix), expected);
+    assertEquals(posix.basename(name, suffix), expected);
   }
 });
 
@@ -165,13 +163,13 @@ Deno.test("windows.basename()", function () {
   }
 });
 
-Deno.test("windows (unstable) basename() throws with non-file URL", () => {
+Deno.test("windows.basename() throws with non-file URL", () => {
   for (const [[name, suffix], expected] of WIN_URL_TESTSUITE) {
-    assertEquals(windowsUnstableBasename(name, suffix), expected);
+    assertEquals(windows.basename(name, suffix), expected);
   }
 
   assertThrows(
-    () => windowsUnstableBasename(new URL("https://deno.land/")),
+    () => windows.basename(new URL("https://deno.land/")),
     TypeError,
     'URL must be a file URL: received "https:"',
   );
