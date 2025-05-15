@@ -13,6 +13,15 @@
 export type Prng = typeof Math.random;
 
 /**
+ * A pseudo-random number generator implementing the same contract as
+ * `crypto.getRandomValues`, i.e. taking a `Uint8Array` and mutating it by
+ * filling it with random bytes, returning the mutated `Uint8Array` instance.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type ByteGenerator = (bytes: Uint8Array) => Uint8Array;
+
+/**
  * Options for random number generation.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
