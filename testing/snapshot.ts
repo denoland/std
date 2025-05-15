@@ -69,7 +69,7 @@
  * ```sh
  * deno test --allow-all -- --update
  * ```
- * 
+ *
  * In addition, `assertInlineSnapshot` defaults to formatting the test file after
  * updating snapshots. To stop this, pass command `--no-format`:
  *
