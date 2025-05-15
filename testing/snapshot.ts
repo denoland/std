@@ -54,7 +54,7 @@
  * ```
  *
  * If the snapshot of the passed `actual` does not match the expected snapshot,
- * `assertSnapshot` and `assetInlineSnapshot` will throw an `AssertionError`,
+ * `assertSnapshot` and `assertInlineSnapshot` will throw an `AssertionError`,
  * causing the test to fail.
  *
  * ## Updating Snapshots:
@@ -68,6 +68,13 @@
  *
  * ```sh
  * deno test --allow-all -- --update
+ * ```
+ * 
+ * In addition, `assertInlineSnapshot` defaults to formatting the test file after
+ * updating snapshots. To stop this, pass command `--no-format`:
+ *
+ * ```sh
+ * deno test --allow-all -- --update --no-format
  * ```
  *
  * ## Permissions:
@@ -85,7 +92,7 @@
  * permissions. However, creating snapshots requires `--allow-read` and
  * `--allow-write` on any test files for which new snapshots will be added.
  * Additionally, `--allow-run` is required if any files will be formatted (which is
- * the default if not specified in the options).
+ * the default if `--no-format` is not specified).
  *
  * ## Options:
  *
