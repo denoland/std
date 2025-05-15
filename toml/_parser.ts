@@ -18,6 +18,10 @@ type ParseResult<T> = Success<T> | Failure;
 
 type ParserComponent<T = unknown> = (scanner: Scanner) => ParseResult<T>;
 
+type Block = {
+  type: "Block";
+  value: Record<string, unknown>;
+};
 type Table = {
   type: "Table";
   keys: string[];
@@ -26,10 +30,6 @@ type Table = {
 type TableArray = {
   type: "TableArray";
   keys: string[];
-  value: Record<string, unknown>;
-};
-type Block = {
-  type: "Block";
   value: Record<string, unknown>;
 };
 
@@ -143,11 +143,14 @@ function failure(): Failure {
  *
  * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
  */
-export function unflat<T extends Record<string, unknown>>(
+export function unflat(
   keys: string[],
-  values: unknown,
-): T {
-  return keys.reduceRight((acc, key) => ({ [key]: acc }), values) as T;
+  values: unknown = {},
+): Record<string, unknown> {
+  return keys.reduceRight(
+    (acc, key) => ({ [key]: acc }),
+    values,
+  ) as Record<string, unknown>;
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -751,7 +754,9 @@ export const value = or([
 
 export const pair = kv(dottedKey, "=", value);
 
-export function block(scanner: Scanner): ParseResult<Block> {
+export function block(
+  scanner: Scanner,
+): ParseResult<Block> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
@@ -775,7 +780,9 @@ export function table(scanner: Scanner): ParseResult<Table> {
 
 export const tableArrayHeader = surround("[[", dottedKey, "]]");
 
-export function tableArray(scanner: Scanner): ParseResult<TableArray> {
+export function tableArray(
+  scanner: Scanner,
+): ParseResult<TableArray> {
   scanner.nextUntilChar();
   const header = tableArrayHeader(scanner);
   if (!header.ok) return failure();
