@@ -167,8 +167,8 @@ function getTargetValue(target: Record<string, unknown>, keys: string[]) {
   return target[key];
 }
 
-function deepAssignTable<T extends Record<string, unknown>>(
-  target: T,
+function deepAssignTable(
+  target: Record<string, unknown>,
   table: Table,
 ) {
   const { keys, type, value } = table;
@@ -189,8 +189,8 @@ function deepAssignTable<T extends Record<string, unknown>>(
   throw new Error("Unexpected assign");
 }
 
-function deepAssignTableArray<T extends Record<string, unknown>>(
-  target: T,
+function deepAssignTableArray(
+  target: Record<string, unknown>,
   table: TableArray,
 ) {
   const { type, keys, value } = table;
@@ -210,17 +210,17 @@ function deepAssignTableArray<T extends Record<string, unknown>>(
   throw new Error("Unexpected assign");
 }
 
-export function deepAssign<T extends Record<string, unknown>>(
-  target: T,
+export function deepAssign(
+  target: Record<string, unknown>,
   body: Block | Table | TableArray,
 ) {
   switch (body.type) {
     case "Block":
       return deepMerge(target, body.value);
     case "Table":
-      return deepAssignTable<T>(target, body);
+      return deepAssignTable(target, body);
     case "TableArray":
-      return deepAssignTableArray<T>(target, body);
+      return deepAssignTableArray(target, body);
   }
 }
 
