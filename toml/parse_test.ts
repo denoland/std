@@ -473,7 +473,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles deepAssignWithTable",
+  name: "(private) deepAssign() works correctly",
   fn() {
     const source = {
       foo: {
@@ -524,7 +524,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles deepAssignWithTable / TableArray",
+  name: "(private) deepAssign() handles Table and TableArray correctly",
   fn() {
     const source = {
       foo: {},
@@ -1331,7 +1331,7 @@ A multiline string with a #
 
 str3 = '''
 "# not a comment"
-	# this is a real tab on purpose 
+	# this is a real tab on purpose
 # not a comment
 ''' # comment
 
@@ -1350,7 +1350,7 @@ is_not_node = true # comment
 name = "Tom's Obvious, Minimal Language"
 objectives = [ # Comment
  "easy to read", # Comment
- "minimal config file", 
+ "minimal config file",
  "#not a comment" # comment
 ] # comment
 `);
