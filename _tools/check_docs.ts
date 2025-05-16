@@ -23,46 +23,16 @@ import {
   type Location,
   type TsTypeDef,
 } from "@deno/doc";
-import { walk } from "@std/fs/walk";
-import { join } from "@std/path/join";
 import { distinctBy } from "@std/collections/distinct-by";
-import { toFileUrl } from "@std/path/to-file-url";
+import { getEntrypoints, resolve } from "./utils.ts";
 
 type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
-const ROOT = new URL("../", import.meta.url);
-const ENTRY_POINT_URLS = [];
-for await (
-  const { path } of walk(ROOT, { exts: [".json"], match: [/deno.json$/] })
-) {
-  const { exports } = await Deno.readTextFile(path).then(JSON.parse);
-
-  if (!exports) continue;
-  for (const relativeFilePath of Object.values<string>(exports)) {
-    if (!relativeFilePath.endsWith(".ts")) continue;
-
-    const filePath = join(path, "..", relativeFilePath);
-
-    // Ignores 4 files in @std/log package
-    if (
-      /log[/\\](mod|levels|setup|rotating_file_handler)\.ts$/.test(filePath)
-    ) {
-      // deno-lint-ignore no-console
-      console.warn(
-        `Doc check for ${filePath} is ignored. Visit https://github.com/denoland/std/issues/6124 for more details.`,
-      );
-      continue;
-    }
-
-    ENTRY_POINT_URLS.push(toFileUrl(filePath).href);
-  }
-}
-
 const TS_SNIPPET = /```ts[\s\S]*?```/g;
 const ASSERTION_IMPORT =
-  /from "@std\/(assert(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
+  /from "@std\/(assert(\/[a-z-]+)?|expect(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
 
@@ -82,14 +52,10 @@ function assert(
   condition: boolean,
   message: string,
   document: { location: Location },
-) {
+): asserts condition {
   if (!condition) {
     diagnostics.push(new DocumentError(message, document));
   }
-}
-
-function isExported(document: DocNodeBase) {
-  return document.declarationKind === "export";
 }
 
 function isVoidOrPromiseVoid(returnType: TsTypeDef) {
@@ -111,18 +77,17 @@ function isVoid(returnType: TsTypeDef) {
 
 function assertHasReturnTag(document: { jsDoc: JsDoc; location: Location }) {
   const tag = document.jsDoc.tags?.find((tag) => tag.kind === "return");
-  if (tag === undefined) {
-    diagnostics.push(
-      new DocumentError("Symbol must have a @return or @returns tag", document),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      "@return tag must have a description",
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    "Symbol must have a @return or @returns tag",
+    document,
+  );
+  if (tag === undefined) return;
+  assert(
+    tag.doc !== undefined,
+    "@return tag must have a description",
+    document,
+  );
 }
 
 /**
@@ -145,14 +110,11 @@ function assertHasParamDefinition(
     return false;
   });
 
-  if (!paramDoc) {
-    diagnostics.push(
-      new DocumentError(
-        `@param ${param.name} must have a corresponding named function parameter definition.`,
-        document,
-      ),
-    );
-  }
+  assert(
+    paramDoc !== undefined,
+    `@param ${param.name} must have a corresponding function parameter definition.`,
+    document,
+  );
 }
 
 function assertHasParamTag(
@@ -162,37 +124,31 @@ function assertHasParamTag(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "param" && tag.name === param
   );
-  if (!tag) {
-    diagnostics.push(
-      new DocumentError(`Symbol must have a @param tag for ${param}`, document),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      `@param tag for ${param} must have a description`,
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    `Symbol must have a @param tag for ${param}`,
+    document,
+  );
+  if (tag === undefined) return;
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@param tag for ${param} must have a description`,
+    document,
+  );
 }
 
 function assertHasSnippets(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
-  required = true,
 ) {
   const snippets = doc.match(TS_SNIPPET);
-  if (snippets === null) {
-    if (required) {
-      diagnostics.push(
-        new DocumentError(
-          "@example tag must have a TypeScript code snippet",
-          document,
-        ),
-      );
-    }
-    return;
-  }
+  assert(
+    snippets !== null,
+    "@example tag must have a TypeScript code snippet",
+    document,
+  );
+  if (snippets === null) return;
   for (let snippet of snippets) {
     const delim = snippet.split(NEWLINE)[0];
     // Trim the code block delimiters
@@ -200,7 +156,7 @@ function assertHasSnippets(
     if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
         snippet.match(ASSERTION_IMPORT) !== null,
-        "Snippet must contain assertion from '@std/assert'",
+        "Snippet must contain assertion from `@std/assert`, `@std/expect` or `@std/testing`",
         document,
       );
     }
@@ -213,17 +169,8 @@ function assertHasExampleTag(
   const exampleTags = document.jsDoc.tags?.filter((tag) =>
     tag.kind === "example"
   ) as JsDocTagDocRequired[];
-  const hasNoExampleTags = exampleTags === undefined ||
-    exampleTags.length === 0;
-  if (
-    hasNoExampleTags &&
-    !document.jsDoc.tags?.some((tag) => tag.kind === "private")
-  ) {
-    diagnostics.push(
-      new DocumentError("Symbol must have an @example tag", document),
-    );
-    return;
-  }
+  assert(exampleTags?.length > 0, "Symbol must have an @example tag", document);
+  if (exampleTags === undefined) return;
   for (const tag of exampleTags) {
     assert(
       tag.doc !== undefined,
@@ -250,21 +197,17 @@ function assertHasTypeParamTags(
   const tag = document.jsDoc.tags?.find((tag) =>
     tag.kind === "template" && tag.name === typeParamName
   );
-  if (tag === undefined) {
-    diagnostics.push(
-      new DocumentError(
-        `Symbol must have a @typeParam tag for ${typeParamName}`,
-        document,
-      ),
-    );
-  } else {
-    assert(
-      // @ts-ignore doc is defined
-      tag.doc !== undefined,
-      `@typeParam tag for ${typeParamName} must have a description`,
-      document,
-    );
-  }
+  assert(
+    tag !== undefined,
+    `Symbol must have a @typeParam tag for ${typeParamName}`,
+    document,
+  );
+  assert(
+    // @ts-ignore doc is defined
+    tag.doc !== undefined,
+    `@typeParam tag for ${typeParamName} must have a description`,
+    document,
+  );
 }
 
 /**
@@ -279,7 +222,6 @@ function assertHasTypeParamTags(
 function assertFunctionDocs(
   document: DocNodeWithJsDoc<DocNodeFunction | ClassMethodDef>,
 ) {
-  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const param of document.functionDef.params) {
     if (param.kind === "identifier") {
       assertHasParamTag(document, param.name);
@@ -323,7 +265,6 @@ function assertFunctionDocs(
  * - Documentation on all properties, methods, and constructors.
  */
 function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
-  assertHasSnippets(document.jsDoc.doc!, document, false);
   for (const typeParam of document.classDef.typeParams) {
     assertHasTypeParamTags(document, typeParam.name);
   }
@@ -333,41 +274,31 @@ function assertClassDocs(document: DocNodeWithJsDoc<DocNodeClass>) {
 
   for (const property of document.classDef.properties) {
     if (property.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (property.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` fields in classes",
-          property,
-        ),
-      );
-      continue;
-    }
+    assert(
+      property.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` fields in classes",
+      property,
+    );
     assertClassPropertyDocs(
       property as DocNodeWithJsDoc<ClassPropertyDef>,
     );
   }
   for (const method of document.classDef.methods) {
     if (method.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (method.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` methods in classes",
-          method,
-        ),
-      );
-    }
+    assert(
+      method.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` methods in classes",
+      document,
+    );
     assertFunctionDocs(method as DocNodeWithJsDoc<ClassMethodDef>);
   }
   for (const constructor of document.classDef.constructors) {
     if (constructor.jsDoc === undefined) continue; // this is caught by `deno doc --lint`
-    if (constructor.accessibility !== undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "Do not use `public`, `protected`, or `private` constructors in classes",
-          constructor,
-        ),
-      );
-    }
+    assert(
+      constructor.accessibility === undefined,
+      "Do not use `public`, `protected`, or `private` constructors in classes",
+      constructor,
+    );
     assertConstructorDocs(
       constructor as DocNodeWithJsDoc<ClassConstructorDef>,
     );
@@ -426,14 +357,11 @@ function assertModuleDoc(document: DocNodeWithJsDoc<DocNodeModuleDoc>) {
 function assertHasDefaultTags(document: DocNodeWithJsDoc<DocNodeInterface>) {
   for (const prop of document.interfaceDef.properties) {
     if (!prop.optional) continue;
-    if (!prop.jsDoc?.tags?.find((tag) => tag.kind === "default")) {
-      diagnostics.push(
-        new DocumentError(
-          "Optional interface properties should have default values",
-          document,
-        ),
-      );
-    }
+    assert(
+      prop.jsDoc?.tags?.find((tag) => tag.kind === "default") !== undefined,
+      "Optional interface properties should have default values",
+      document,
+    );
   }
 }
 
@@ -451,98 +379,78 @@ function assertHasDeprecationDesc(document: DocNodeWithJsDoc<DocNode>) {
   if (!tags) return;
   for (const tag of tags) {
     if (tag.kind !== "deprecated") continue;
-    if (tag.doc === undefined) {
-      diagnostics.push(
-        new DocumentError(
-          "@deprecated tag must have a description",
-          document,
-        ),
-      );
-    }
+    assert(
+      tag.doc !== undefined,
+      "@deprecated tag must have a description",
+      document,
+    );
   }
 }
 
-function resolve(specifier: string, referrer: string): string {
-  if (specifier.startsWith("@std/")) {
-    specifier = specifier.replace("@std/", "../").replaceAll("-", "_");
-    const parts = specifier.split("/");
-    if (parts.length === 2) {
-      specifier += "/mod.ts";
-    } else if (parts.length > 2) {
-      specifier += ".ts";
-    }
-  }
-  return new URL(specifier, referrer).href;
-}
-
-async function checkDocs(specifier: string) {
-  const docs = (await doc([specifier], { resolve }))[specifier]!;
-  for (const d of docs.filter(isExported)) {
-    if (d.jsDoc === undefined) continue; // this is caught by other checks
+async function assertDocs(specifiers: string[]) {
+  const docs = await doc(specifiers, { resolve });
+  for (const d of Object.values(docs).flat()) {
+    if (d.jsDoc === undefined || d.declarationKind !== "export") continue; // this is caught by other checks
 
     const document = d as DocNodeWithJsDoc<DocNode>;
+    assertHasDeprecationDesc(document);
     switch (document.kind) {
       case "moduleDoc": {
         if (document.location.filename.endsWith("/mod.ts")) {
           assertModuleDoc(document);
-          assertHasDeprecationDesc(document);
         }
         break;
       }
       case "function": {
         assertFunctionDocs(document);
-        assertHasDeprecationDesc(document);
         break;
       }
       case "class": {
         assertClassDocs(document);
-        assertHasDeprecationDesc(document);
         break;
       }
       case "interface":
         assertInterfaceDocs(document);
-        assertHasDeprecationDesc(document);
-        break;
-      case "variable":
-        assertHasDeprecationDesc(document);
         break;
     }
   }
 }
 
-const lintStatus = await new Deno.Command(Deno.execPath(), {
-  args: ["doc", "--lint", ...ENTRY_POINT_URLS],
-  stdin: "inherit",
-  stdout: "inherit",
-  stderr: "inherit",
-}).output();
-if (!lintStatus.success) {
-  // deno-lint-ignore no-console
-  console.error(
-    `%c[error] %c'deno doc --lint' failed`,
-    "color: red",
-    "",
-  );
-  Deno.exit(1);
-}
-
-for (const url of ENTRY_POINT_URLS) {
-  await checkDocs(url);
-}
-
-if (diagnostics.length > 0) {
-  const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
-  for (const error of errors) {
-    // deno-lint-ignore no-console
-    console.error(
-      `%c[error] %c${error.message} %cat ${error.cause}`,
-      "color: red",
-      "",
-      "color: gray",
-    );
+export async function checkDocs(specifiers: string[]) {
+  const { success, stderr } = await new Deno.Command(Deno.execPath(), {
+    args: ["doc", "--lint", ...specifiers],
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "piped",
+  }).output();
+  if (!success) {
+    throw new Error(new TextDecoder().decode(stderr));
   }
 
-  // deno-lint-ignore no-console
-  console.log(`%c${errors.length} errors found`, "color: red");
-  Deno.exit(1);
+  await assertDocs(specifiers);
+
+  if (diagnostics.length > 0) {
+    const errors = distinctBy(diagnostics, (e) => e.message + e.cause);
+    for (const error of errors) {
+      // deno-lint-ignore no-console
+      console.error(
+        `%c[error] %c${error.message} %cat ${error.cause}`,
+        "color: red",
+        "",
+        "color: gray",
+      );
+    }
+
+    // deno-lint-ignore no-console
+    console.log(`%c${errors.length} errors found`, "color: red");
+    Deno.exit(1);
+  }
+}
+
+if (import.meta.main) {
+  const specifiers = (await getEntrypoints())
+    .filter((entrypoint) => !entrypoint.startsWith("@std/log"))
+    .map((entrypoint) => import.meta.resolve(entrypoint))
+    .filter((specifier) => specifier.endsWith(".ts"));
+  await checkDocs(specifiers);
 }

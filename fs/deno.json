@@ -1,6 +1,6 @@
 {
   "name": "@std/fs",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "exports": {
     ".": "./mod.ts",
     "./copy": "./copy.ts",
@@ -16,6 +16,7 @@
     "./unstable-chmod": "./unstable_chmod.ts",
     "./unstable-chown": "./unstable_chown.ts",
     "./unstable-copy-file": "./unstable_copy_file.ts",
+    "./unstable-create": "./unstable_create.ts",
     "./unstable-link": "./unstable_link.ts",
     "./unstable-lstat": "./unstable_lstat.ts",
     "./unstable-make-temp-dir": "./unstable_make_temp_dir.ts",

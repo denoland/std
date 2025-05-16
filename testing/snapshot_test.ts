@@ -740,7 +740,7 @@ Deno.test(
   }),
 );
 
-// Regression test for https://github.com/denoland/deno_std/issues/2140
+// Regression test for https://github.com/denoland/std/issues/2140
 // Long strings should not be truncated with ellipsis
 Deno.test("assertSnapshot() - regression #2140", async (t) => {
   await assertSnapshot(t, {
@@ -758,7 +758,7 @@ Deno.test("assertSnapshot() - regression #2140", async (t) => {
   });
 });
 
-// Regression test for https://github.com/denoland/deno_std/issues/2144
+// Regression test for https://github.com/denoland/std/issues/2144
 // Empty arrays should be compacted
 Deno.test("assertSnapshot() - regression #2144", async (t) => {
   const config = {
@@ -828,7 +828,7 @@ Deno.test("createAssertSnapshot()", async (t) => {
   });
 });
 
-// Regression test for https://github.com/denoland/deno_std/issues/5155
+// Regression test for https://github.com/denoland/std/issues/5155
 // Asserting snapshots in update mode without required write permissions
 Deno.test(
   "assertSnapshot() - regression #5155",
