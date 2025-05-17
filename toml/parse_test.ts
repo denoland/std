@@ -7,7 +7,7 @@ import {
   binary,
   boolean,
   dateTime,
-  deepAssignWithTable,
+  deepAssign,
   dottedKey,
   float,
   hex,
@@ -242,7 +242,7 @@ fizz.buzz = true
 `.trim()),
       {
         type: "Table",
-        key: ["foo", "bar"],
+        keys: ["foo", "bar"],
         value: {
           baz: true,
           fizz: {
@@ -253,7 +253,7 @@ fizz.buzz = true
     );
     assertEquals(parse(`[only.header]`), {
       type: "Table",
-      key: ["only", "header"],
+      keys: ["only", "header"],
       value: {},
     });
     assertThrows(() => parse(""));
@@ -473,7 +473,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles deepAssignWithTable",
+  name: "(private) deepAssign() works correctly",
   fn() {
     const source = {
       foo: {
@@ -491,11 +491,11 @@ Deno.test({
       },
     };
 
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "Table",
-        key: ["foo", "items", "profile", "email", "x"],
+        keys: ["foo", "items", "profile", "email", "x"],
         value: { main: "mail@example.com" },
       },
     );
@@ -524,18 +524,18 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles deepAssignWithTable / TableArray",
+  name: "(private) deepAssign() handles Table and TableArray correctly",
   fn() {
     const source = {
       foo: {},
       bar: null,
     };
 
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "TableArray",
-        key: ["foo", "items"],
+        keys: ["foo", "items"],
         value: { email: "mail@example.com" },
       },
     );
@@ -552,11 +552,11 @@ Deno.test({
         bar: null,
       },
     );
-    deepAssignWithTable(
+    deepAssign(
       source,
       {
         type: "TableArray",
-        key: ["foo", "items"],
+        keys: ["foo", "items"],
         value: { email: "sub@example.com" },
       },
     );
@@ -579,11 +579,11 @@ Deno.test({
 
     assertThrows(
       () =>
-        deepAssignWithTable(
+        deepAssign(
           source,
           {
             type: "TableArray",
-            key: [],
+            keys: [],
             value: { email: "sub@example.com" },
           },
         ),
@@ -593,11 +593,25 @@ Deno.test({
 
     assertThrows(
       () =>
-        deepAssignWithTable(
+        deepAssign(
           source,
           {
             type: "TableArray",
-            key: ["bar", "items"],
+            keys: ["bar", "items"],
+            value: { email: "mail@example.com" },
+          },
+        ),
+      Error,
+      "Unexpected assign",
+    );
+
+    assertThrows(
+      () =>
+        deepAssign(
+          source,
+          {
+            type: "Table",
+            keys: ["bar", "items"],
             value: { email: "mail@example.com" },
           },
         ),
