@@ -56,7 +56,7 @@ export interface ProgressBarOptions {
   /**
    * The total size expected to receive.
    */
-  max: number;
+  max?: number;
   /**
    * The length that the progress bar should be, in characters.
    * @default {50}
@@ -182,10 +182,11 @@ export class ProgressBar {
    */
   constructor(
     writable: WritableStream<Uint8Array>,
-    options: ProgressBarOptions,
+    options: ProgressBarOptions = {},
   ) {
     const {
       value = 0,
+      max = 1,
       barLength = 50,
       fillChar = "#",
       emptyChar = "-",
@@ -194,7 +195,7 @@ export class ProgressBar {
       keepOpen = true,
     } = options;
     this.#value = value;
-    this.#max = options.max;
+    this.#max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
@@ -202,7 +203,7 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    this.#unit = getUnit(options.max);
+    this.#unit = getUnit(max);
     this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
 
     const stream = new TextEncoderStream();
