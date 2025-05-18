@@ -446,7 +446,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
   if (scanner.char() !== '"') return failure();
   scanner.next();
-  const acc = [];
+  const acc: string[] = [];
   while (scanner.char() !== '"' && !scanner.eof()) {
     if (scanner.char() === "\n") {
       throw new SyntaxError("Single-line string cannot contain EOL");
