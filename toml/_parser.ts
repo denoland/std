@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { deepMerge } from "@std/collections/deep-merge";
+import { TOMLArray, TOMLTable, TOMLValue } from "./types";
 
 // ---------------------------
 // Interfaces and base classes
@@ -16,21 +17,21 @@ interface Failure {
 }
 type ParseResult<T> = Success<T> | Failure;
 
-type ParserComponent<T = unknown> = (scanner: Scanner) => ParseResult<T>;
+type ParserComponent<T = TOMLValue> = (scanner: Scanner) => ParseResult<T>;
 
 type Block = {
   type: "Block";
-  value: Record<string, unknown>;
+  value: TOMLTable;
 };
 type Table = {
   type: "Table";
   keys: string[];
-  value: Record<string, unknown>;
+  value: TOMLTable;
 };
 type TableArray = {
   type: "TableArray";
   keys: string[];
-  value: Record<string, unknown>;
+  value: TOMLTable;
 };
 
 export class Scanner {
@@ -131,18 +132,21 @@ export class Scanner {
 // Utilities
 // -----------------------
 
-function success<T>(body: T): Success<T> {
+function success<T extends TOMLValue|void>(body: T): Success<T> {
   return { ok: true, body };
 }
 function failure(): Failure {
   return { ok: false };
 }
 
+type DeepStringRecord<T> = {[Key: string]: DeepStringRecord<T>|T};
 /**
  * Creates a nested object from the keys and values.
  *
  * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
  */
+export function unflat<T>(keys: string[], values: T): DeepStringRecord<T>;
+export function unflat(keys: string[]): Record<string, unknown>;
 export function unflat(
   keys: string[],
   values: unknown = {},
@@ -157,7 +161,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function getTargetValue(target: Record<string, unknown>, keys: string[]) {
+function getTargetValue<T>(target: Record<string, T>, keys: string[]) {
   const key = keys[0];
   if (!key) {
     throw new Error(
@@ -167,8 +171,8 @@ function getTargetValue(target: Record<string, unknown>, keys: string[]) {
   return target[key];
 }
 
-function deepAssignTable(
-  target: Record<string, unknown>,
+function deepAssignTable<T extends Record<string, unknown>>(
+  target: T,
   table: Table,
 ) {
   const { keys, type, value } = table;
@@ -189,8 +193,8 @@ function deepAssignTable(
   throw new Error("Unexpected assign");
 }
 
-function deepAssignTableArray(
-  target: Record<string, unknown>,
+function deepAssignTableArray<T extends Record<string, unknown>>(
+  target: T,
   table: TableArray,
 ) {
   const { type, keys, value } = table;
@@ -229,25 +233,25 @@ export function deepAssign(
 // ---------------------------------
 
 // deno-lint-ignore no-explicit-any
-function or<T extends readonly ParserComponent<any>[]>(
+function or<T extends readonly ParserComponent<TOMLValue>[]>(
   parsers: T,
 ): ParserComponent<
   ReturnType<T[number]> extends ParseResult<infer R> ? R : Failure
 > {
-  return (scanner: Scanner) => {
+  return ((scanner: Scanner) => {
     for (const parse of parsers) {
       const result = parse(scanner);
       if (result.ok) return result;
     }
     return failure();
-  };
+  }) as unknown as any;
 }
 
 /** Join the parse results of the given parser into an array.
  *
  * If the parser fails at the first attempt, it will return an empty array.
  */
-function join<T>(
+function join<T extends TOMLValue>(
   parser: ParserComponent<T>,
   separator: string,
 ): ParserComponent<T[]> {
@@ -273,7 +277,7 @@ function join<T>(
  *
  * This requires the parser to succeed at least once.
  */
-function join1<T>(
+function join1<T extends TOMLValue>(
   parser: ParserComponent<T>,
   separator: string,
 ): ParserComponent<T[]> {
@@ -294,13 +298,13 @@ function join1<T>(
   };
 }
 
-function kv<T>(
+function kv<T extends TOMLValue>(
   keyParser: ParserComponent<string[]>,
   separator: string,
   valueParser: ParserComponent<T>,
-): ParserComponent<{ [key: string]: unknown }> {
+): ParserComponent<TOMLTable> {
   const Separator = character(separator);
-  return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
+  return (scanner: Scanner): ParseResult<TOMLTable> => {
     const position = scanner.position;
     const key = keyParser(scanner);
     if (!key.ok) return failure();
@@ -322,12 +326,12 @@ function kv<T>(
 }
 
 function merge(
-  parser: ParserComponent<unknown[]>,
-): ParserComponent<Record<string, unknown>> {
-  return (scanner: Scanner): ParseResult<Record<string, unknown>> => {
+  parser: ParserComponent<TOMLValue[]>,
+): ParserComponent<TOMLTable> {
+  return (scanner: Scanner): ParseResult<TOMLTable> => {
     const result = parser(scanner);
     if (!result.ok) return failure();
-    let body = {};
+    let body: TOMLTable = {};
     for (const record of result.body) {
       if (typeof record === "object" && record !== null) {
         body = deepMerge(body, record);
@@ -337,7 +341,7 @@ function merge(
   };
 }
 
-function repeat<T>(
+function repeat<T extends TOMLValue>(
   parser: ParserComponent<T>,
 ): ParserComponent<T[]> {
   return (scanner: Scanner) => {
@@ -353,7 +357,7 @@ function repeat<T>(
   };
 }
 
-function surround<T>(
+function surround<T extends TOMLValue>(
   left: string,
   parser: ParserComponent<T>,
   right: string,
@@ -691,13 +695,13 @@ export function localTime(scanner: Scanner): ParseResult<string> {
   return success(match);
 }
 
-export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
+export function arrayValue(scanner: Scanner): ParseResult<TOMLArray> {
   scanner.skipWhitespaces();
 
   if (scanner.char() !== "[") return failure();
   scanner.next();
 
-  const array: unknown[] = [];
+  const array: TOMLValue[] = [];
   while (!scanner.eof()) {
     scanner.nextUntilChar();
     const result = value(scanner);
@@ -718,7 +722,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
 
 export function inlineTable(
   scanner: Scanner,
-): ParseResult<Record<string, unknown>> {
+): ParseResult<TOMLTable> {
   scanner.nextUntilChar();
   if (scanner.char(1) === "}") {
     scanner.next(2);
@@ -759,7 +763,7 @@ export function block(
 ): ParseResult<Block> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
-  if (result.ok) return success({ type: "Block", value: result.body });
+  if (result.ok) return success({ type: "Block" as const, value: result.body });
   return failure();
 }
 
@@ -772,7 +776,7 @@ export function table(scanner: Scanner): ParseResult<Table> {
   scanner.nextUntilChar();
   const b = block(scanner);
   return success({
-    type: "Table",
+    type: "Table" as const,
     keys: header.body,
     value: b.ok ? b.body.value : {},
   });
@@ -789,7 +793,7 @@ export function tableArray(
   scanner.nextUntilChar();
   const b = block(scanner);
   return success({
-    type: "TableArray",
+    type: "TableArray" as const,
     keys: header.body,
     value: b.ok ? b.body.value : {},
   });
@@ -797,10 +801,10 @@ export function tableArray(
 
 export function toml(
   scanner: Scanner,
-): ParseResult<Record<string, unknown>> {
+): ParseResult<TOMLTable> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
   if (!blocks.ok) return success({});
-  const body = blocks.body.reduce(deepAssign, {});
+  const body = blocks.body.reduce(deepAssign, {}) as TOMLTable;
   return success(body);
 }
 
@@ -812,7 +816,7 @@ function createParseErrorMessage(scanner: Scanner, message: string) {
   return `Parse error on line ${row}, column ${column}: ${message}`;
 }
 
-export function parserFactory<T>(parser: ParserComponent<T>) {
+export function parserFactory<T extends TOMLValue>(parser: ParserComponent<T>) {
   return (tomlString: string): T => {
     const scanner = new Scanner(tomlString);
     try {
