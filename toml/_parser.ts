@@ -34,9 +34,9 @@ type TableArray = {
 };
 
 export class Scanner {
-  #whitespace = /[ \t]/;
+  readonly #whitespace = /[ \t]/;
+  readonly #source: string;
   #position = 0;
-  #source: string;
 
   constructor(source: string) {
     this.#source = source;
