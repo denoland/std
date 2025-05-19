@@ -241,14 +241,30 @@ Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) =
       AssertionError,
       dedent`
             [
-              ... 4998 unchanged lines ...
+              ... 4990 unchanged lines ...
+              4990,
+              4991,
+              4992,
+              4993,
+              4994,
+              4995,
+              4996,
+              4997,
               4998,
               4999,
         -     5000,
         +     -1,
               5001,
               5002,
-              ... 4997 unchanged lines ...
+              5003,
+              5004,
+              5005,
+              5006,
+              5007,
+              5008,
+              5009,
+              5010,
+              ... 4989 unchanged lines ...
             ]
       `,
     );
@@ -264,14 +280,30 @@ Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) =
       AssertionError,
       dedent`
             {
-              ... 4446 unchanged lines ...
+              ... 4438 unchanged lines ...
+              "4993": 4993,
+              "4994": 4994,
+              "4995": 4995,
+              "4996": 4996,
+              "4997": 4997,
+              "4998": 4998,
+              "4999": 4999,
+              "5": 5,
               "50": 50,
               "500": 500,
         -     "5000": 5000,
         +     "5000": -1,
               "5001": 5001,
               "5002": 5002,
-              ... 5549 unchanged lines ...
+              "5003": 5003,
+              "5004": 5004,
+              "5005": 5005,
+              "5006": 5006,
+              "5007": 5007,
+              "5008": 5008,
+              "5009": 5009,
+              "501": 501,
+              ... 5541 unchanged lines ...
             }
       `,
     );
@@ -283,14 +315,30 @@ Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) =
       AssertionError,
       dedent`
             0\\n
-            ... 4997 unchanged lines ...
+            ... 4989 unchanged lines ...
+            4990\\n
+            4991\\n
+            4992\\n
+            4993\\n
+            4994\\n
+            4995\\n
+            4996\\n
+            4997\\n
             4998\\n
             4999\\n
         -   5000\\n
         +   -1\\n
             5001\\n
             5002\\n
-            ... 4996 unchanged lines ...
+            5003\\n
+            5004\\n
+            5005\\n
+            5006\\n
+            5007\\n
+            5008\\n
+            5009\\n
+            5010\\n
+            ... 4988 unchanged lines ...
             9999
       `,
     );
@@ -305,14 +353,100 @@ Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) =
         +     -1,
               0,
               1,
-              ... 4444 unchanged lines ...
+              10,
+              100,
+              1000,
+              1001,
+              1002,
+              1003,
+              1004,
+              1005,
+              ... 4428 unchanged lines ...
+              4993,
+              4994,
+              4995,
+              4996,
+              4997,
+              4998,
+              4999,
+              5,
               50,
               500,
         -     5000,
               5001,
               5002,
-              ... 5549 unchanged lines ...
+              5003,
+              5004,
+              5005,
+              5006,
+              5007,
+              5008,
+              5009,
+              501,
+              ... 5541 unchanged lines ...
             }
+      `,
+    );
+  });
+
+  await t.step("diff near start", () => {
+    const a = Array.from({ length: 10_000 }, (_, i) => i);
+    const b = [...a];
+    b[3] = -1;
+
+    assertThrows(
+      () => assertEquals(a, b),
+      AssertionError,
+      dedent`
+            [
+              0,
+              1,
+              2,
+        -     3,
+        +     -1,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              ... 9986 unchanged lines ...
+            ]
+      `,
+    );
+  });
+
+  await t.step("diff near end", () => {
+    const a = Array.from({ length: 10_000 }, (_, i) => i);
+    const b = [...a];
+    b[9996] = -1;
+
+    assertThrows(
+      () => assertEquals(a, b),
+      AssertionError,
+      dedent`
+            [
+              ... 9986 unchanged lines ...
+              9986,
+              9987,
+              9988,
+              9989,
+              9990,
+              9991,
+              9992,
+              9993,
+              9994,
+              9995,
+        -     9996,
+        +     -1,
+              9997,
+              9998,
+              9999,
+            ]
       `,
     );
   });

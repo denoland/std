@@ -71,6 +71,65 @@ export function createSign(diffType: DiffType): string {
   }
 }
 
+function getMinTruncationLength() {
+  const ENV_PERM_STATUS = globalThis.Deno?.permissions.querySync?.({
+    name: "env",
+    variable: "DIFF_CONTEXT_LENGTH",
+  })
+    .state ?? "granted";
+  const specifiedTruncationContextLength = ENV_PERM_STATUS === "granted"
+    ? Deno.env.get("DIFF_CONTEXT_LENGTH") ?? null
+    : null;
+
+  const truncationContextLength = parseInt(
+    specifiedTruncationContextLength ?? "10",
+  );
+  return Number.isNaN(truncationContextLength)
+    ? 0
+    : truncationContextLength < 1
+    ? Infinity
+    : truncationContextLength;
+}
+
+function resolveBuildMessageTruncationOptions(): BuildMessageTruncationOptions {
+  const truncationContextLength = getMinTruncationLength();
+  const truncationSpanLength = truncationContextLength * 2;
+  const minTruncationLength = truncationContextLength * 10;
+
+  return {
+    minTruncationLength,
+    truncationSpanLength,
+    truncationContextLength,
+    truncationExtremityLength: 1,
+  };
+}
+
+const buildMessageTruncationOptions = resolveBuildMessageTruncationOptions();
+
+/** Currently, explicitly passing these options is only used for testing. */
+type BuildMessageTruncationOptions = {
+  /**
+   * Minimum number of total diff result lines to enable truncation.
+   * @default {100}
+   */
+  minTruncationLength: number;
+  /**
+   * Length of an individual common span in lines to trigger truncation.
+   * @default {20}
+   */
+  truncationSpanLength: number;
+  /**
+   * Length of context in lines either side of a truncated span in a truncated diff.
+   * @default {10}
+   */
+  truncationContextLength: number;
+  /**
+   * Length of context in lines to show at very start and end of a truncated diff.
+   * @default {1}
+   */
+  truncationExtremityLength: number;
+};
+
 /** Options for {@linkcode buildMessage}. */
 export interface BuildMessageOptions {
   /**
@@ -78,26 +137,6 @@ export interface BuildMessageOptions {
    * @default {false}
    */
   stringDiff?: boolean;
-  /**
-   * Minimum number of total diff result lines to enable truncation.
-   * @default {100}
-   */
-  minTruncationLength?: number;
-  /**
-   * Length of an individual common span in lines to trigger truncation.
-   * @default {10}
-   */
-  truncationSpanLength?: number;
-  /**
-   * Length of context in lines either side of a truncated span in a truncated diff.
-   * @default {2}
-   */
-  truncationContextLength?: number;
-  /**
-   * Length of context in lines to show at very start and end of a truncated diff.
-   * @default {1}
-   */
-  truncationExtremityLength?: number;
 }
 
 /**
@@ -130,8 +169,10 @@ export interface BuildMessageOptions {
 export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
   options: BuildMessageOptions = {},
+  truncationOptions?: BuildMessageTruncationOptions,
 ): string[] {
-  diffResult = consolidateDiff(diffResult, options);
+  truncationOptions ??= buildMessageTruncationOptions;
+  diffResult = truncateDiff(diffResult, options, truncationOptions);
   const { stringDiff = false } = options;
   const messages = [
     "",
@@ -159,13 +200,12 @@ export function buildMessage(
   return messages;
 }
 
-export function consolidateDiff(
+export function truncateDiff(
   diffResult: ReadonlyArray<DiffResult<string>>,
   options: BuildMessageOptions,
+  truncationOptions: BuildMessageTruncationOptions,
 ): ReadonlyArray<DiffResult<string>> {
-  const { minTruncationLength = 100 } = options;
-
-  if (diffResult.length < minTruncationLength) {
+  if (diffResult.length < truncationOptions.minTruncationLength) {
     return diffResult;
   }
 
@@ -183,6 +223,7 @@ export function consolidateDiff(
           commons,
           commons.length === i ? "start" : "none",
           options,
+          truncationOptions,
         ),
       );
       commons.length = 0;
@@ -190,7 +231,9 @@ export function consolidateDiff(
     }
   }
 
-  messages.push(...consolidateCommon(commons, "end", options));
+  messages.push(
+    ...consolidateCommon(commons, "end", options, truncationOptions),
+  );
 
   return messages;
 }
@@ -199,13 +242,15 @@ export function consolidateCommon(
   commons: ReadonlyArray<CommonDiffResult<string>>,
   extremity: "start" | "end" | "none",
   options: BuildMessageOptions,
+  truncationOptions: BuildMessageTruncationOptions,
 ): ReadonlyArray<CommonDiffResult<string>> {
+  const { stringDiff } = options;
   const {
-    truncationSpanLength = 10,
-    truncationContextLength = 2,
-    truncationExtremityLength = 1,
-    stringDiff,
-  } = options;
+    truncationSpanLength,
+    truncationContextLength,
+    truncationExtremityLength,
+  } = truncationOptions;
+
   const isStart = extremity === "start";
   const isEnd = extremity === "end";
 

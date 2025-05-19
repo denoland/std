@@ -4,9 +4,9 @@ import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
 import {
   buildMessage,
   consolidateCommon,
-  consolidateDiff,
   createColor,
   createSign,
+  truncateDiff,
 } from "./build_message.ts";
 
 Deno.test("buildMessage()", async (t) => {
@@ -33,26 +33,32 @@ Deno.test("buildMessage()", async (t) => {
 
   await t.step("truncated", () => {
     assertEquals(
-      buildMessage([
-        { type: "added", value: "foo" },
-        { type: "common", value: "bar 1" },
-        { type: "common", value: "bar 2" },
-        { type: "common", value: "bar 3" },
-        { type: "common", value: "bar 4" },
-        { type: "common", value: "bar 5" },
-        { type: "added", value: "foo" },
-        { type: "common", value: "bar 1" },
-        { type: "common", value: "bar 2" },
-        { type: "common", value: "bar 3" },
-        { type: "common", value: "bar 4" },
-        { type: "common", value: "bar 5" },
-        { type: "common", value: "bar 6" },
-        { type: "removed", value: "baz" },
-        { type: "common", value: "bar" },
-      ], {
-        minTruncationLength: 0,
-        truncationSpanLength: 5,
-      }),
+      buildMessage(
+        [
+          { type: "added", value: "foo" },
+          { type: "common", value: "bar 1" },
+          { type: "common", value: "bar 2" },
+          { type: "common", value: "bar 3" },
+          { type: "common", value: "bar 4" },
+          { type: "common", value: "bar 5" },
+          { type: "added", value: "foo" },
+          { type: "common", value: "bar 1" },
+          { type: "common", value: "bar 2" },
+          { type: "common", value: "bar 3" },
+          { type: "common", value: "bar 4" },
+          { type: "common", value: "bar 5" },
+          { type: "common", value: "bar 6" },
+          { type: "removed", value: "baz" },
+          { type: "common", value: "bar" },
+        ],
+        {},
+        {
+          minTruncationLength: 0,
+          truncationSpanLength: 5,
+          truncationContextLength: 2,
+          truncationExtremityLength: 1,
+        },
+      ),
       [
         ...prelude,
         green(bold("+   foo")),
@@ -94,19 +100,25 @@ Deno.test("createSign()", () => {
 
 Deno.test("consolidateDiff()", () => {
   assertEquals(
-    consolidateDiff([
-      { type: "added", value: "foo" },
-      { type: "common", value: "[" },
-      { type: "common", value: '  "bar-->",' },
-      { type: "common", value: '  "bar",' },
-      { type: "common", value: '  "bar",' },
-      { type: "common", value: '  "<--bar",' },
-      { type: "common", value: "]" },
-      { type: "removed", value: "foo" },
-    ], {
-      minTruncationLength: 0,
-      truncationSpanLength: 5,
-    }),
+    truncateDiff(
+      [
+        { type: "added", value: "foo" },
+        { type: "common", value: "[" },
+        { type: "common", value: '  "bar-->",' },
+        { type: "common", value: '  "bar",' },
+        { type: "common", value: '  "bar",' },
+        { type: "common", value: '  "<--bar",' },
+        { type: "common", value: "]" },
+        { type: "removed", value: "foo" },
+      ],
+      {},
+      {
+        minTruncationLength: 0,
+        truncationSpanLength: 5,
+        truncationContextLength: 2,
+        truncationExtremityLength: 1,
+      },
+    ),
     [
       { type: "added", value: "foo" },
       { type: "common", value: "[" },
@@ -132,9 +144,12 @@ Deno.test("consolidateCommon()", () => {
         { type: "common", value: "]" },
       ],
       "none",
+      {},
       {
         minTruncationLength: 0,
         truncationSpanLength: 5,
+        truncationContextLength: 2,
+        truncationExtremityLength: 1,
       },
     ),
     [
