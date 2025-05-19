@@ -14,17 +14,16 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(extname("C:\\home\\user\\Documents\\image.png"), ".png");
+ *   assertEquals(extname(new URL("file:///C:/home/user/Documents/image.png")), ".png");
  * } else {
  *   assertEquals(extname("/home/user/Documents/image.png"), ".png");
+ *   assertEquals(extname(new URL("file:///home/user/Documents/image.png")), ".png");
  * }
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `extname` from `@std/path/unstable-extname`.
  *
  * @param path Path with extension.
  * @returns The file extension. E.g. returns `.ts` for `file.ts`.
  */
-export function extname(path: string): string {
+export function extname(path: string | URL): string {
   return isWindows ? windowsExtname(path) : posixExtname(path);
 }

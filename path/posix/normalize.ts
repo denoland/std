@@ -4,6 +4,7 @@
 import { assertArg } from "../_common/normalize.ts";
 import { normalizeString } from "../_common/normalize_string.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
@@ -15,8 +16,8 @@ import { isPosixPathSeparator } from "./_util.ts";
  * import { normalize } from "@std/path/posix/normalize";
  * import { assertEquals } from "@std/assert";
  *
- * const path = normalize("/foo/bar//baz/asdf/quux/..");
- * assertEquals(path, "/foo/bar/baz/asdf");
+ * assertEquals(normalize("/foo/bar//baz/asdf/quux/.."), "/foo/bar/baz/asdf");
+ * assertEquals(normalize(new URL("file:///foo/bar//baz/asdf/quux/..")), "/foo/bar/baz/asdf/");
  * ```
  *
  * @example Working with URLs
@@ -37,13 +38,13 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(url.href, "https://deno.land/std/async/retry.ts");
  * ```
  *
- * Note: If you are working with file URLs,
- * use the new version of `normalize` from `@std/path/posix/unstable-normalize`.
- *
  * @param path The path to normalize.
  * @returns The normalized path.
  */
-export function normalize(path: string): string {
+export function normalize(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertArg(path);
 
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
