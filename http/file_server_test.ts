@@ -177,7 +177,7 @@ Deno.test("serveDir() serves directory index", async () => {
   const page = await res.text();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, '<a href=".">home</a>/');
+  assertStringIncludes(page, '<a href=".">home</a>');
   assertStringIncludes(page, '<a href="./hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="./tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
@@ -198,7 +198,12 @@ Deno.test("serveDir() serves directory index with entry to the parent directory"
   assertEquals(res.status, 200);
   assertStringIncludes(
     page,
-    '<a href="../../">home</a>/<a href="../">nested-subdirs</a>/<a href=".">subdir</a>/',
+    `<a href="../../">home</a>
+        /
+          <a href="../">nested-subdirs</a>
+        /
+          <a href=".">subdir</a>
+        /`,
   );
   assertStringIncludes(page, '<a href="..">../</a>');
   assertStringIncludes(page, '<a href="./test_file.txt">test_file.txt</a>');
