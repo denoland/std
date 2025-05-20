@@ -6,6 +6,7 @@ import {
   lastPathSegment,
   stripSuffix,
 } from "../_common/basename.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
@@ -21,6 +22,8 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("/home/user/Documents/"), "Documents");
  * assertEquals(basename("/home/user/Documents/image.png"), "image.png");
  * assertEquals(basename("/home/user/Documents/image.png", ".png"), "image");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
+ * assertEquals(basename(new URL("file:///home/user/Documents/image.png"), ".png"), "image");
  * ```
  *
  * @example Working with URLs
@@ -40,14 +43,14 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(basename("https://deno.land/std/path/mod.ts#header"), "mod.ts#header");
  * ```
  *
- * Note: If you are working with file URLs,
- * use the new version of `basename` from `@std/path/posix/unstable-basename`.
- *
  * @param path The path to extract the name from.
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
  */
-export function basename(path: string, suffix = ""): string {
+export function basename(path: string | URL, suffix = ""): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertArgs(path, suffix);
 
   const lastSegment = lastPathSegment(path, isPosixPathSeparator);

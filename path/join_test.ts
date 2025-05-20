@@ -3,8 +3,6 @@ import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { join } from "./join.ts";
-import { join as posixUnstableJoin } from "./posix/unstable_join.ts";
-import { join as windowsUnstableJoin } from "./windows/unstable_join.ts";
 
 const backslashRE = /\\/g;
 
@@ -135,12 +133,10 @@ Deno.test("posix.join()", function () {
     const actual = posix.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
-});
 
-Deno.test("posix.(unstable-)join()", function () {
   joinUrlTests.forEach(function (p) {
     const _p = p[0];
-    const actual = posixUnstableJoin.apply(null, _p);
+    const actual = posix.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });
@@ -156,12 +152,10 @@ Deno.test("windows.join()", function () {
     const actual = windows.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
-});
 
-Deno.test("windows.(unstable-)join()", function () {
   joinUrlTests.forEach(function (p) {
     const _p = p[0];
-    const actual = windowsUnstableJoin.apply(null, _p).replace(
+    const actual = windows.join.apply(null, _p).replace(
       backslashRE,
       "/",
     );
@@ -169,7 +163,7 @@ Deno.test("windows.(unstable-)join()", function () {
   });
   windowsJoinUrlTests.forEach(function (p) {
     const _p = p[0];
-    const actual = windowsUnstableJoin.apply(null, _p);
+    const actual = windows.join.apply(null, _p);
     assertEquals(actual, p[1]);
   });
 });
