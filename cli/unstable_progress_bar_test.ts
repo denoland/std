@@ -85,29 +85,6 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
   }
 });
 
-Deno.test("ProgressBar() passes correct values to formatter", async () => {
-  const { readable, writable } = new TransformStream();
-  let lastTime: undefined | number = undefined;
-  let lastValue: undefined | number = undefined;
-  const bar = new ProgressBar({
-    writable,
-    max: 10 * 1000,
-    keepOpen: false,
-    fmt(x) {
-      if (lastTime != undefined) assertEquals(x.previousTime, lastTime);
-      if (lastValue != undefined) assertEquals(x.previousValue, lastValue);
-      lastTime = x.time;
-      lastValue = x.value;
-      return "";
-    },
-  });
-
-  for await (const a of getData(10, 1000)) bar.add(a.length);
-  bar.stop();
-
-  await new Response(readable).bytes();
-});
-
 Deno.test("ProgressBar() uses correct unit type", async () => {
   const units = ["KiB", "MiB", "GiB", "TiB", "PiB"];
   let i = 0;

@@ -25,17 +25,9 @@ export interface ProgressBarFormatter {
    */
   time: number;
   /**
-   * The duration passed to the last call.
-   */
-  previousTime: number;
-  /**
    * The current value the progress bar is sitting at.
    */
   value: number;
-  /**
-   * The value passed to the last call.
-   */
-  previousValue: number;
   /**
    * The max value expected to receive.
    */
@@ -167,8 +159,6 @@ export class ProgressBar {
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
 
   #value: number;
   #max: number;
@@ -215,8 +205,6 @@ export class ProgressBar {
     this.#writer = stream.writable.getWriter();
     this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
-    this.#lastTime = this.#startTime;
-    this.#lastValue = this.#value;
   }
 
   async #print(): Promise<void> {
@@ -239,13 +227,9 @@ export class ProgressBar {
       },
       progressBar: `[${fillChars}${emptyChars}]`,
       time: currentTime - this.#startTime,
-      previousTime: this.#lastTime - this.#startTime,
       value: this.#value,
-      previousValue: this.#lastValue,
       max: this.#max,
     };
-    this.#lastTime = currentTime;
-    this.#lastValue = this.#value;
     await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
       .catch(() => {});
   }
