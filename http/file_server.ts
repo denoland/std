@@ -431,10 +431,7 @@ function html(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): string {
-  return strings.reduce(
-    (result, str, i) => result + str + (values[i] ?? ""),
-    "",
-  );
+  return String.raw({ raw: strings }, ...values);
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
