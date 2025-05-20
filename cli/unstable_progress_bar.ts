@@ -138,7 +138,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  *   await writer.write(buffer);
  * }
  *
- * await bar.end();
+ * await bar.stop();
  * await writer.close();
  * ```
  *
@@ -159,7 +159,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  *   await delay(Math.random() * 500);
  * }
  *
- * await bar.end();
+ * await bar.stop();
  */
 export class ProgressBar {
   /**
@@ -168,12 +168,12 @@ export class ProgressBar {
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
    *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 10 });
-   * progressBar.value += 1
+   * const progressBar = new ProgressBar({ max : 10 });
+   * progressBar.value += 1;
    *
    * // do stuff
    *
-   * await progressBar.end()
+   * await progressBar.stop();
    * ```
    */
   value: number;
@@ -183,12 +183,12 @@ export class ProgressBar {
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
    *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max : 1 });
-   * progressBar.max = 100
+   * const progressBar = new ProgressBar({ max : 1 });
+   * progressBar.max = 100;
    *
    * // do stuff
    *
-   * await progressBar.end()
+   * await progressBar.stop();
    * ```
    */
   max: number;
@@ -286,8 +286,8 @@ export class ProgressBar {
    * ```ts ignore
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
    *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
-   * await progressBar.end()
+   * const progressBar = new ProgressBar({ max: 100 });
+   * await progressBar.stop()
    * ```
    */
   async stop(): Promise<void> {
