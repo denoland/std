@@ -38,19 +38,23 @@ Deno.test("AssertionState checkAssertionErrorState fail", () => {
   }
 });
 
-Deno.test("AssertionState throws if not cleaned up", async () => {
-  const command = new Deno.Command(Deno.execPath(), {
-    args: [
-      "eval",
-      `
-        import { AssertionState } from "@std/internal/assertion-state";
-        const assertionState = new AssertionState();
-        assertionState.setAssertionCount(0);
-      `,
-    ],
-  });
-  const { stderr } = await command.output();
-  const errorMessage = stripAnsiCode(new TextDecoder().decode(stderr));
-  // TODO(WWRS): Test for the expected message when Deno displays it instead of "Uncaught null"
-  assertStringIncludes(errorMessage, "error: Uncaught");
+Deno.test({
+  name: "AssertionState throws if not cleaned up",
+  ignore: !Deno.Command,
+  fn: async () => {
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "eval",
+        `
+          import { AssertionState } from "@std/internal/assertion-state";
+          const assertionState = new AssertionState();
+          assertionState.setAssertionCount(0);
+        `,
+      ],
+    });
+    const { stderr } = await command.output();
+    const errorMessage = stripAnsiCode(new TextDecoder().decode(stderr));
+    // TODO(WWRS): Test for the expected message when Deno displays it instead of "Uncaught null"
+    assertStringIncludes(errorMessage, "error: Uncaught");
+  },
 });
