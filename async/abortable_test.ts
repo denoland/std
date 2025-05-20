@@ -206,3 +206,13 @@ Deno.test("abortable.AsyncIterable() behaves just like original when return is c
   );
   assertEquals(await abortableIterator.next(), await normalIterator.next());
 });
+
+Deno.test("abortable() does not throw when the signal is already aborted and the promise is already rejected", async () => {
+  const promise = Promise.reject(new Error("Rejected"));
+  const signal = AbortSignal.abort();
+  await assertRejects(
+    () => abortable(promise, signal),
+    DOMException,
+    "The signal has been aborted",
+  );
+});

@@ -1,3 +1,174 @@
+### 2025.05.13
+
+#### @std/async 1.0.13 (patch)
+
+- fix(async): `abortable` should prevent uncaught error when promise is rejected
+  (#6312)
+
+#### @std/bytes 1.0.6 (patch)
+
+- fix(bytes): allow to concat() readonly arrays of bytes arrays (#6639)
+
+#### @std/collections 1.1.0 (minor)
+
+- feat(collections): stabilize `Iterable` input for `chunk`, `dropLastWhile`,
+  `dropWhile`, `intersect`, `sample`, `slidingWindows`, `sortBy`,
+  `takeLastWhile`, `takeWhile`, and `withoutAll` (#6644)
+- feat(collections/unstable): add cycle iterator utility (#6386)
+
+#### @std/crypto 1.0.5 (patch)
+
+- chore(crypto): update `crypto/_wasm` and `wasmbuild` task (#6611)
+
+#### @std/data-structures 1.0.8 (patch)
+
+- feat(data-structures/unstable): add `BinarySearchTree` methods `ceiling`,
+  `floor`, `higher`, `lower` (#6544)
+
+#### @std/dotenv 0.225.4 (patch)
+
+- feat(dotenv): add URL as envPath type (#6621)
+
+#### @std/expect 1.0.16 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/fmt 1.0.8 (patch)
+
+- docs(fmt): clarify runtime compatibility (#6648)
+
+#### @std/html 1.0.4 (patch)
+
+- fix(html/unstable): add missing range
+  (`unstable_is_valid_custom_element_name`) (#6634)
+
+#### @std/http 1.0.16 (patch)
+
+- fix(http): don't set the Date header in file_server.ts responses (use the
+  default Date header value) (#6610)
+
+#### @std/internal 1.0.7 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/testing 1.0.12 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/toml 1.0.6 (patch)
+
+- fix(toml): should use lowercase value for nan (#6638)
+
+### 2025.04.24
+
+#### @std/assert 1.0.13 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/cbor 0.1.8 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/cli 1.0.17 (patch)
+
+- feat(cli/unstable): add `visibleLines` and `indicator` options. `promptSelect`
+  simulates scrolling when the list is larger than `visibleLines` (#6523)
+- docs(cli/unstable): fix Spinner example typo (#6595)
+
+#### @std/collections 1.0.11 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/csv 1.0.6 (patch)
+
+- docs(csv): add many more examples to `mod.ts` (#6571)
+
+#### @std/data-structures 1.0.7 (patch)
+
+- feat(data-structures/unstable): BidirectionalMap constructor accept iterables
+  of key-value pairs (#6598)
+- fix(data-structures/unstable): BidirectionalMap differentiate extant
+  `undefined` from missing values (#6606)
+
+#### @std/encoding 1.0.10 (patch)
+
+- BREAKING(encoding/unstable): base64/32 functions to match
+  proposal-arraybuffer-base64 API (#6608)
+- docs(encoding): add many more examples to `mod.ts` (#6570)
+- docs(encoding): fix links in calcSize function docs (#6557)
+
+#### @std/fmt 1.0.7 (patch)
+
+- test(fmt): reduce unnecessary output during test run (#6596)
+
+#### @std/fs 1.0.17 (patch)
+
+- feat(fs/unstable): add create and createSync (#6600)
+- feat(fs/unstable): add open, openSync, and FsFile class (#6524)
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/http 1.0.15 (patch)
+
+- chore(http): do not request to example.com in doc testing (#6576)
+
+#### @std/ini 1.0.0-rc.8 (prerelease)
+
+- fix(ini): fix quoted value bug (#6572)
+- refactor(ini): remove `IniMap` (#6515)
+
+#### @std/json 1.0.2 (patch)
+
+- docs(json): update link to NDJSON (#6560)
+
+#### @std/jsonc 1.0.2 (patch)
+
+- test(jsonc): move `node-jsonc-parser` out of separate `testdata` folder
+  (#6618)
+
+#### @std/path 1.0.9 (patch)
+
+- docs(path): add many more examples to `mod.ts` (#6569)
+
+#### @std/text 1.0.13 (patch)
+
+- BREAKING(text/unstable): fix dedent export path (#6573)
+
+#### @std/toml 1.0.5 (patch)
+
+- fix(toml): fix empty inline table bug (#6587)
+- fix(toml): fix handling of leading and trailing underscores in number literals
+  (#6605)
+- fix(toml): fix empty string handling (#6585)
+- perf(toml): add `Scanner` `match()` method, capturing numbers and bare key
+  patterns using sticky regexp (#6538)
+- refactor(toml): split `symbol` parser (#6563)
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+- refactor(toml): fix object check in 'merge' util (#6582)
+- refactor(toml): cleanup `parserFactory()` (#6567)
+- refactor(toml): add `Scanner` `skipWhitespaces()` method (#6564)
+- refactor(toml): rewrite `unflat()` (#6555)
+- test(toml): move `stringify()` tests to `stringify_test.ts` (#6586)
+
+#### @std/uuid 1.0.7 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/yaml 1.0.6 (patch)
+
+- refactor(yaml): declare-on-use variables (#6594)
+- refactor(yaml): add `skipWhitespaces()` method (#6603)
+- refactor(yaml): add `skipComment()` method (#6588)
+- refactor(yaml): remove `throwError()` util method (#6593)
+
 ### 2025.04.08
 
 #### @std/cli 1.0.16 (patch)

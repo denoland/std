@@ -1,72 +1,36 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-
-import ts from "npm:typescript";
-
-const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
-  .workspace as string[];
-// deno-lint-ignore no-explicit-any
-const denoConfig = {} as Record<string, any>;
-for (const workspace of workspaces) {
-  const { default: config } = await import("../" + workspace + "/deno.json", {
-    with: { type: "json" },
-  });
-  denoConfig[config.name.replace("@std/", "")] = config;
+export interface DenoJson {
+  name: string;
+  version: string;
+  exports: Record<string, string>;
+  workspace?: string[];
 }
 
-export function resolveWorkspaceSpecifiers(
+async function importJson(path: string): Promise<DenoJson> {
+  return (await import(path, { with: { type: "json" } })).default;
+}
+
+export async function getPackagesDenoJsons(): Promise<DenoJson[]> {
+  const { workspace } = await importJson("../deno.json");
+  return Promise.all(
+    workspace!.map((path) => importJson(`../${path}/deno.json`)),
+  );
+}
+
+export async function getEntrypoints(): Promise<string[]> {
+  return (await getPackagesDenoJsons())
+    .flatMap(({ name, exports }) =>
+      Object.keys(exports).map((mod) =>
+        mod === "." ? name : name + mod.slice(1)
+      )
+    );
+}
+
+export function resolve(
   specifier: string,
   referrer: string,
 ) {
-  if (specifier.startsWith("../") || specifier.startsWith("./")) {
-    return new URL(specifier, referrer).href;
-  } else if (specifier.startsWith("@std/")) {
-    let [_std, pkg, exp] = specifier.split("/");
-    if (exp === undefined) {
-      exp = ".";
-    } else {
-      exp = "./" + exp;
-    }
-    const pkgPath = "../" + pkg!.replaceAll("-", "_") + "/";
-    const config = denoConfig[pkg!];
-    if (typeof config.exports === "string") {
-      return new URL(pkgPath + config.exports, import.meta.url).href;
-    }
-    return new URL(pkgPath + config.exports[exp], import.meta.url).href;
-  } else {
-    return new URL(specifier).href;
-  }
-}
-
-/**
- * Checks whether a file is named `test.ts` and has no exports.
- * @param filePath
- * @returns true if file is named `test.ts` and has no exports, false otherwise
- */
-export function isTestFile(filePath: string): boolean {
-  if (!filePath.endsWith("test.ts")) return false;
-  const source = Deno.readTextFileSync(filePath);
-  const sourceFile = ts.createSourceFile(
-    filePath,
-    source,
-    ts.ScriptTarget.Latest,
-  );
-
-  let result = true;
-
-  function visitNode(node: ts.Node) {
-    if (!result) return;
-    if (
-      ts.isExportSpecifier(node) ||
-      ts.isExportAssignment(node) ||
-      ts.isExportDeclaration(node) ||
-      node.kind === ts.SyntaxKind.ExportKeyword
-    ) {
-      result = false;
-    } else {
-      ts.forEachChild(node, visitNode);
-    }
-  }
-
-  visitNode(sourceFile);
-  return result;
+  return (specifier.startsWith("./") || specifier.startsWith("../"))
+    ? new URL(specifier, referrer).href
+    : import.meta.resolve(specifier);
 }

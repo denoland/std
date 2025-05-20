@@ -527,6 +527,7 @@ function itDefinition<T>(...args: ItArgs<T>): ItDefinition<T> {
 }
 
 /** Registers an individual test case. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface it {
   <T>(...args: ItArgs<T>): void;
 
@@ -599,20 +600,24 @@ export function it<T>(...args: ItArgs<T>) {
           TestSuiteInternal.runningCount--;
         }
 
-        if (assertionState.checkAssertionErrorState()) {
-          throw new AssertionError(
-            "Expected at least one assertion to be called but received none",
-          );
-        }
+        try {
+          if (assertionState.checkAssertionErrorState()) {
+            throw new AssertionError(
+              "Expected at least one assertion to be called but received none",
+            );
+          }
 
-        if (assertionState.checkAssertionCountSatisfied()) {
-          throw new AssertionError(
-            `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
-              `but received ${assertionState.assertionTriggeredCount}`,
-          );
+          if (assertionState.checkAssertionCountSatisfied()) {
+            throw new AssertionError(
+              `Expected exactly ${assertionState.assertionCount} ${
+                assertionState.assertionCount === 1 ? "assertion" : "assertions"
+              } to be called, ` +
+                `but received ${assertionState.assertionTriggeredCount}`,
+            );
+          }
+        } finally {
+          assertionState.resetAssertionState();
         }
-
-        assertionState.resetAssertionState();
       },
     };
     if (ignore !== undefined) {
@@ -1142,6 +1147,7 @@ function describeDefinition<T>(
 }
 
 /** Registers a test suite. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface describe {
   <T>(...args: DescribeArgs<T>): TestSuite<T>;
 

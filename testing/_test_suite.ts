@@ -346,6 +346,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         fn: async (t) => {
           if (permissions) {
             throw new Error(
+              // deno-lint-ignore deno-style-guide/error-message
               "permissions option not available for nested tests",
             );
           }
@@ -428,19 +429,23 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       await fn.call(context, t);
     }
 
-    if (assertionState.checkAssertionErrorState()) {
-      throw new AssertionError(
-        "Expected at least one assertion to be called but received none",
-      );
-    }
+    try {
+      if (assertionState.checkAssertionErrorState()) {
+        throw new AssertionError(
+          "Expected at least one assertion to be called but received none",
+        );
+      }
 
-    if (assertionState.checkAssertionCountSatisfied()) {
-      throw new AssertionError(
-        `Expected at least ${assertionState.assertionCount} assertion to be called, ` +
-          `but received ${assertionState.assertionTriggeredCount}`,
-      );
+      if (assertionState.checkAssertionCountSatisfied()) {
+        throw new AssertionError(
+          `Expected exactly ${assertionState.assertionCount} ${
+            assertionState.assertionCount === 1 ? "assertion" : "assertions"
+          } to be called, ` +
+            `but received ${assertionState.assertionTriggeredCount}`,
+        );
+      }
+    } finally {
+      assertionState.resetAssertionState();
     }
-
-    assertionState.resetAssertionState();
   }
 }

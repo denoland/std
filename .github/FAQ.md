@@ -111,11 +111,11 @@ This is possible thanks to JSR being immutable. For more information, see JSR's
 
 It's most likely API has been moved, removed or renamed. These changes are
 always noted in, and most easily found in the
-[release notes](https://github.com/denoland/deno_std/releases). To find how an
-API's been modified, search for your API in the **Find a release** search bar.
+[release notes](https://github.com/denoland/std/releases). To find how an API's
+been modified, search for your API in the **Find a release** search bar.
 
 If you still cannot find the API you're looking for, please
-[open an issue](https://github.com/denoland/deno_std/issues/new?assignees=&labels=bug%2C+needs+triage&projects=&template=bug_report.md&title=).
+[open an issue](https://github.com/denoland/std/issues/new?assignees=&labels=bug%2C+needs+triage&projects=&template=bug_report.md&title=).
 
 ## How can I contribute to the Standard Library?
 

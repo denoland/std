@@ -29,7 +29,7 @@ Deno.test("invert() handles nested input", () => {
   // @ts-expect-error - testing invalid input
   invertTest({ a: "x", b: Object }, {
     "x": "a",
-    "function Object() { [native code] }": "b",
+    [Object.toString()]: "b",
   });
   // @ts-expect-error - testing invalid input
   invertTest({ a: "x", b: ["y", "z"] }, { "x": "a", "y,z": "b" });
