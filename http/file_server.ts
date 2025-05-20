@@ -521,9 +521,8 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         } else {
           link = "../".repeat(depth);
         }
-        return html`
-          <a href="${link}">${escape(path)}</a>
-        `;
+        // deno-fmt-ignore
+        return html`<a href="${link}">${escape(path)}</a>`;
       })
       .join("/")}/
           </h1>

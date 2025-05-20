@@ -198,12 +198,7 @@ Deno.test("serveDir() serves directory index with entry to the parent directory"
   assertEquals(res.status, 200);
   assertStringIncludes(
     page,
-    `<a href="../../">home</a>
-        /
-          <a href="../">nested-subdirs</a>
-        /
-          <a href=".">subdir</a>
-        /`,
+    '<a href="../../">home</a>/<a href="../">nested-subdirs</a>/<a href=".">subdir</a>/',
   );
   assertStringIncludes(page, '<a href="..">../</a>');
   assertStringIncludes(page, '<a href="./test_file.txt">test_file.txt</a>');
