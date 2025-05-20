@@ -177,7 +177,7 @@ Deno.test("serveDir() serves directory index", async () => {
   const page = await res.text();
 
   assertEquals(res.status, 200);
-  assertStringIncludes(page, '<a href=".">home</a>');
+  assertStringIncludes(page, '<a href=".">home</a>/');
   assertStringIncludes(page, '<a href="./hello.html">hello.html</a>');
   assertStringIncludes(page, '<a href="./tls/">tls/</a>');
   assertStringIncludes(page, "%2525A.txt");
