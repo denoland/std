@@ -274,7 +274,7 @@ export class ProgressBar {
    * await progressBar.end()
    * ```
    */
-  async end(): Promise<void> {
+  async stop(): Promise<void> {
     clearInterval(this.#id);
     await this.#print()
       .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
