@@ -1,5 +1,4 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-// This module is browser compatible.
 
 /**
  * The properties provided to the fmt function upon every visual update.
@@ -48,6 +47,11 @@ export interface ProgressBarFormatter {
  * {@link ProgressBarStream}.
  */
 export interface ProgressBarOptions {
+  /**
+   * The {@link WritableStream} that will receive the progress bar reports.
+   * @default {Deno.stderr.writable}
+   */
+  writable?: WritableStream<Uint8Array>;
   /**
    * The offset size of the input if progress is resuming part way through.
    * @default {0}
@@ -127,7 +131,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * }();
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
- * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * const bar = new ProgressBar({ max: 100_000 });
  *
  * for await (const buffer of gen) {
  *   bar.value += buffer.length;
@@ -143,7 +147,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
- * const bar = new ProgressBar(Deno.stdout.writable, {
+ * const bar = new ProgressBar({
  *   max: 100,
  *   fmt(x) {
  *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
@@ -205,14 +209,13 @@ export class ProgressBar {
   /**
    * Constructs a new instance.
    *
-   * @param writable The {@link WritableStream} that will receive the progress bar reports.
    * @param options The options to configure various settings of the progress bar.
    */
   constructor(
-    writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
     const {
+      writable = Deno.stderr.writable,
       value = 0,
       max,
       barLength = 50,
