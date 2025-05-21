@@ -17,9 +17,7 @@ function assertLintPluginDiagnostics(
   assertEquals(actualDiagnostics, expectedDiagnostics);
 }
 
-Deno.test("deno-style-guide/prefer-private-field", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/prefer-private-field", () => {
   // Good
   assertLintPluginDiagnostics(
     `
@@ -56,9 +54,7 @@ class MyClass {
   );
 });
 
-Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/no-top-level-arrow-syntax", () => {
   // Bad
   assertLintPluginDiagnostics(
     `
@@ -97,9 +93,7 @@ function foo() {
   );
 });
 
-Deno.test("deno-style-guide/no-external-code", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/no-external-code", () => {
   // Good
   assertLintPluginDiagnostics('import { walk } from "@std/fs/walk";', []);
 
@@ -127,9 +121,7 @@ import { bad } from "jsr:@malicious-muffin/bad";
   );
 });
 
-Deno.test("deno-style-guide/naming-convention", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/naming-convention", () => {
   // Good
   assertLintPluginDiagnostics(
     `
@@ -242,9 +234,7 @@ enum enumName {
   );
 });
 
-Deno.test("deno-style-guide/error-message", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/error-message", () => {
   // Good
   assertLintPluginDiagnostics(
     `
@@ -311,9 +301,7 @@ new CustomError("Can't parse input");
   );
 });
 
-Deno.test("deno-style-guide/exported-function-args-maximum", {
-  ignore: !Deno.version.deno.startsWith("2"),
-}, () => {
+Deno.test("deno-style-guide/exported-function-args-maximum", () => {
   // Good
   assertLintPluginDiagnostics(
     `
