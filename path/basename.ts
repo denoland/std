@@ -18,20 +18,19 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(basename("C:\\user\\Documents\\image.png"), "image.png");
+ *   assertEquals(basename(new URL("file:///C:/user/Documents/image.png")), "image.png");
  * } else {
  *   assertEquals(basename("/home/user/Documents/image.png"), "image.png");
+ *   assertEquals(basename(new URL("file:///home/user/Documents/image.png")), "image.png");
  * }
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `basename` from `@std/path/unstable-basename`.
  *
  * @param path Path to extract the name from.
  * @param suffix Suffix to remove from extracted name.
  *
  * @returns The basename of the path.
  */
-export function basename(path: string, suffix = ""): string {
+export function basename(path: string | URL, suffix = ""): string {
   return isWindows
     ? windowsBasename(path, suffix)
     : posixBasename(path, suffix);

@@ -62,3 +62,44 @@ Deno.test({
     );
   },
 });
+
+Deno.test("withoutAll() handles generators", () => {
+  function* genInput() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+  }
+  function* genExcluded() {
+    yield 2;
+    yield 3;
+  }
+  const result = withoutAll(genInput(), genExcluded());
+  assertEquals(result, [1, 4]);
+});
+
+Deno.test("withoutAll() handles iterators", () => {
+  const input = new Set([1, 2, 3, 4]);
+  const excluded = new Set([2, 3]);
+  const result = withoutAll(input.values(), excluded.values());
+  assertEquals(result, [1, 4]);
+});
+
+Deno.test("withoutAll() handles a mix of inputs", () => {
+  const a = [1, 2, 3, 4];
+  const b = new Set([2, 3, 5]);
+  assertEquals(withoutAll(a, b), [1, 4], "Array and Set");
+  assertEquals(withoutAll(b, a), [5], "Set and Array");
+});
+
+Deno.test("withoutAll() handles allows excluded to be a superset of types", () => {
+  const a = [1, 2, 3, 4];
+  const b = [1, "other", 3, 4];
+  assertEquals(withoutAll(a, b), [2]);
+});
+
+Deno.test("withoutAll() works with sets", () => {
+  const a = new Set([1, 2, 3, 4]);
+  const b = new Set([2, 3]);
+  assertEquals(withoutAll(a, b), [1, 4]);
+});

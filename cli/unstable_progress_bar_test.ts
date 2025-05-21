@@ -15,10 +15,10 @@ async function* getData(
 
 Deno.test("ProgressBar() outputs default result", async () => {
   const { readable, writable } = new TransformStream();
-  const bar = new ProgressBar(writable, { max: 10 * 1000 });
+  const bar = new ProgressBar({ writable, max: 10 * 1000 });
 
-  for await (const a of getData(10, 1000)) bar.add(a.length);
-  bar.end().then(() => writable.close());
+  for await (const a of getData(10, 1000)) bar.value += a.length;
+  bar.stop().then(() => writable.close());
 
   for await (const buffer of readable) {
     if (buffer.length == 1) {
@@ -64,23 +64,20 @@ Deno.test("ProgressBar() outputs default result", async () => {
 
 Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => {
   const { readable, writable } = new TransformStream();
-  const bar = new ProgressBar(writable, { max: 10 * 1000 });
+  const bar = new ProgressBar({ writable, max: 10 * 1000 });
 
-  for await (const a of getData(10, 1000)) bar.add(a.length);
-  bar.end();
+  for await (const a of getData(10, 1000)) bar.value += a.length;
+  bar.stop();
 
   await readable.cancel();
 });
 
 Deno.test("ProgressBar() can remove itself when finished", async () => {
   const { readable, writable } = new TransformStream();
-  const bar = new ProgressBar(writable, {
-    max: 10 * 1000,
-    clear: true,
-  });
+  const bar = new ProgressBar({ writable, max: 10 * 1000, clear: true });
 
-  for await (const a of getData(10, 1000)) bar.add(a.length);
-  bar.end()
+  for await (const a of getData(10, 1000)) bar.value += a.length;
+  bar.stop()
     .then(() => writable.close());
 
   for await (const buffer of readable) {
@@ -92,7 +89,8 @@ Deno.test("ProgressBar() passes correct values to formatter", async () => {
   const { readable, writable } = new TransformStream();
   let lastTime: undefined | number = undefined;
   let lastValue: undefined | number = undefined;
-  const bar = new ProgressBar(writable, {
+  const bar = new ProgressBar({
+    writable,
     max: 10 * 1000,
     keepOpen: false,
     fmt(x) {
@@ -104,8 +102,8 @@ Deno.test("ProgressBar() passes correct values to formatter", async () => {
     },
   });
 
-  for await (const a of getData(10, 1000)) bar.add(a.length);
-  bar.end();
+  for await (const a of getData(10, 1000)) bar.value += a.length;
+  bar.stop();
 
   await new Response(readable).bytes();
 });
@@ -115,7 +113,8 @@ Deno.test("ProgressBar() uses correct unit type", async () => {
   let i = 0;
   for (const unit of units) {
     const { readable, writable } = new TransformStream();
-    const bar = new ProgressBar(writable, {
+    const bar = new ProgressBar({
+      writable,
       max: 2 ** (10 * ++i),
       keepOpen: false,
     });
@@ -125,6 +124,6 @@ Deno.test("ProgressBar() uses correct unit type", async () => {
       assertEquals(decoder.decode(buffer.subarray(-5, -2)), unit);
       break;
     }
-    bar.end();
+    bar.stop();
   }
 });
