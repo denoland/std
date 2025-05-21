@@ -1,7 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { formatUnitFraction } from "./_unit.ts";
-
 /**
  * The properties provided to the fmt function upon every visual update.
  */
@@ -94,6 +92,24 @@ export interface ProgressBarOptions {
    */
   keepOpen?: boolean;
 }
+
+type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
+
+function getUnit(max: number): Unit {
+  if (max < 2 ** 20) return "KiB";
+  if (max < 2 ** 30) return "MiB";
+  if (max < 2 ** 40) return "GiB";
+  if (max < 2 ** 50) return "TiB";
+  return "PiB";
+}
+
+const UNIT_RATE_MAP = new Map<Unit, number>([
+  ["KiB", 2 ** 10],
+  ["MiB", 2 ** 20],
+  ["GiB", 2 ** 30],
+  ["TiB", 2 ** 40],
+  ["PiB", 2 ** 50],
+]);
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
@@ -192,12 +208,17 @@ export class ProgressBar {
    */
   set max(value: number) {
     this.#max = value;
+    this.#unit = getUnit(this.#max);
+    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+
     this.#print();
   }
   get max(): number {
     return this.#max;
   }
 
+  #unit: Unit;
+  #rate: number;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
@@ -237,6 +258,9 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
+    this.#unit = getUnit(options.max);
+    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+
     const stream = new TextEncoderStream();
     stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
@@ -265,7 +289,9 @@ export class ProgressBar {
         return `[${minutes}:${seconds}]`;
       },
       styledData: (fractions = 2): string => {
-        return `[${formatUnitFraction(this.value, this.max, fractions)}]`;
+        const currentValue = (this.value / this.#rate).toFixed(fractions);
+        const maxValue = (this.max / this.#rate).toFixed(fractions);
+        return `[${currentValue}/${maxValue} ${this.#unit}]`;
       },
       progressBar: `[${fillChars}${emptyChars}]`,
       time: currentTime - this.#startTime,
