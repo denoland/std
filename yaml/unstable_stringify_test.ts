@@ -851,3 +851,18 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "stringify() handles quotingType",
+  fn() {
+    const object = { url: "https://example.com" };
+    assertEquals(
+      stringify(object, { quotingType: '"' }),
+      `url: "https://example.com"\n`,
+    );
+    assertEquals(
+      stringify(object, { quotingType: "'" }),
+      `url: 'https://example.com'\n`,
+    );
+  },
+});
