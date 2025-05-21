@@ -192,7 +192,7 @@ export class ProgressBar {
   /**
    * The maximum progress that is expected.
    *
-   * @param max Max to set.
+   * @param value Max to set.
    *
    * @example Usage
    * ```ts no-assert
