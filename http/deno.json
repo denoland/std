@@ -13,6 +13,7 @@
     "./status": "./status.ts",
     "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
     "./user-agent": "./user_agent.ts",
-    "./unstable-route": "./unstable_route.ts"
+    "./unstable-route": "./unstable_route.ts",
+    "./unstable-file-server": "./unstable_file_server.ts"
   }
 }
