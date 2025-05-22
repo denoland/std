@@ -11,7 +11,9 @@ import { parse } from "@std/semver/parse";
  * specified minimum version, `false` otherwise.
  */
 export function isDenoVersionGreaterOrEqual(minVersion: string): boolean {
-  return greaterOrEqual(parse(Deno.version.deno), parse(minVersion));
+  // deno-lint-ignore no-explicit-any
+  return (Deno.version as any) &&
+    greaterOrEqual(parse(Deno.version.deno), parse(minVersion));
 }
 
 export const IS_LINT_PLUGIN_SUPPORTED = isDenoVersionGreaterOrEqual("2.2.0");
