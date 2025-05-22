@@ -1,77 +1,5 @@
 #!/usr/bin/env -S deno serve --allow-read
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-
-/**
- * This module is a CLI for serving static files on multiple threads.
- *
- * @example Start the server
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server
- * ```
- *
- * @example Using `deno serve` arguments
- *
- * This module is executed using `deno serve`, which means you can use all the
- * arguments that are available for `deno serve` in addition to the
- * arguments that are available for this module. For `deno serve` arguments,
- * enter `deno serve --help` or check out the
- * {@link https://docs.deno.com/runtime/reference/cli/serve/#options-cert | documentation}.
- *
- * ```sh
- * deno serve --help
- * ```
- *
- * `deno serve` arguments must be passed before the module name and module
- * arguments after.
- *
- * ```sh
- * deno serve --allow-read --parallel jsr:@std/http/unstable-file-server --no-dir-listing
- * ```
- *
- * @example Disable directory listing
- *
- * By setting the `--no-dir-listing` flag.
- *
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server --no-dir-listing
- * ```
- *
- * @example Disable showing dotfiles
- *
- * By setting the `--no-dotfiles` flag.
- *
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server --no-dotfiles
- * ```
- *
- * @example Enable CORS
- *
- * By setting the `--cors` flag.
- *
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server --cors
- * ```
- *
- * @example Enable verbose mode
- *
- * By setting the `--verbose` flag.
- *
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server --verbose
- * ```
- *
- * @example Set custom headers
- *
- * By setting the `--header` flag.
- *
- * ```sh
- * deno serve --allow-read jsr:@std/http/unstable-file-server --header=Content-Type:text/plain
- * ```
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @module
- */
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import {
   serveDir,
@@ -165,6 +93,75 @@ if (import.meta.main) {
   main();
 }
 
+/**
+ * The default export containing the fetch handler for the file server.
+ *
+ * @example Start the server
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server
+ * ```
+ *
+ * @example Using `deno serve` arguments
+ *
+ * This module is executed using `deno serve`, which means you can use all the
+ * arguments that are available for `deno serve` in addition to the
+ * arguments that are available for this module. For `deno serve` arguments,
+ * enter `deno serve --help` or check out the
+ * {@link https://docs.deno.com/runtime/reference/cli/serve/#options-cert | documentation}.
+ *
+ * ```sh
+ * deno serve --help
+ * ```
+ *
+ * `deno serve` arguments must be passed before the module name and module
+ * arguments after.
+ *
+ * ```sh
+ * deno serve --allow-read --parallel jsr:@std/http/unstable-file-server --no-dir-listing
+ * ```
+ *
+ * @example Disable directory listing
+ *
+ * By setting the `--no-dir-listing` flag.
+ *
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server --no-dir-listing
+ * ```
+ *
+ * @example Disable showing dotfiles
+ *
+ * By setting the `--no-dotfiles` flag.
+ *
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server --no-dotfiles
+ * ```
+ *
+ * @example Enable CORS
+ *
+ * By setting the `--cors` flag.
+ *
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server --cors
+ * ```
+ *
+ * @example Enable verbose mode
+ *
+ * By setting the `--verbose` flag.
+ *
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server --verbose
+ * ```
+ *
+ * @example Set custom headers
+ *
+ * By setting the `--header` flag.
+ *
+ * ```sh
+ * deno serve --allow-read jsr:@std/http/unstable-file-server --header=Content-Type:text/plain
+ * ```
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export default {
   fetch: handler,
 } as Deno.ServeDefaultExport;
