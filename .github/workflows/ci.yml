@@ -20,7 +20,7 @@ jobs:
       matrix:
         deno:
           - lts
-          - v2.x
+          - vx.x.x
           - canary
         os:
           - ubuntu-latest

@@ -19,7 +19,8 @@ import {
 import { isDenoVersionGreaterOrEqual } from "../internal/_support.ts";
 
 // In Deno 2.2.2 or earlier, the `rename` function has an issue on Windows.
-const RENAME_HAS_ISSUE = !isDenoVersionGreaterOrEqual("2.2.3") &&
+const RENAME_HAS_ISSUE = Deno.version &&
+  !isDenoVersionGreaterOrEqual("2.2.3") &&
   platform() === "win32";
 
 /** Tests if the original file/directory is missing since the file is renamed.
