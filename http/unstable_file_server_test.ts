@@ -1039,7 +1039,7 @@ Deno.test(async function serveFileHeadRequest() {
   assertEquals(res.headers.get("content-length"), "10034");
 });
 
-Deno.test.ignore(
+Deno.test(
   "`deno serve -R @std/http/unstable-file-server` works",
   async () => {
     const port = getAvailablePort();
