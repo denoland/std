@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { greaterOrEqual } from "@std/semver/greater-or-equal";
-import { parse } from "@std/semver/parse";
+import { greaterOrEqual } from "../semver/greater_or_equal.ts";
+import { parse } from "../semver/parse.ts";
 
 /**
  * Checks if the current Deno version is greater than or equal to the specified
