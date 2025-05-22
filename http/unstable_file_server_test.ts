@@ -1056,7 +1056,7 @@ Deno.test.ignore(
       stdout: "piped",
       stderr: "piped",
     }).spawn();
-    const output = await readUntilMatch(child.stderr, "Listening");
+    await readUntilMatch(child.stderr, "Listening");
     const response = await fetch(`http://localhost:${port}`);
     assertEquals(response.status, 200);
     assertEquals(await response.text(), TEST_FILE_TEXT);
