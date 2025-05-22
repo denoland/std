@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         deno:
-          - v1.x
+          - lts
           - v2.x
           - canary
         os:

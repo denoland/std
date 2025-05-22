@@ -6,7 +6,7 @@ import {
   assertInlineSnapshot,
   createAssertInlineSnapshot,
 } from "./unstable_snapshot.ts";
-import { LINT_SUPPORTED } from "./_snapshot_utils.ts";
+import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
@@ -80,7 +80,7 @@ Deno.test("assertInlineSnapshot()", () => {
 });
 
 Deno.test("assertInlineSnapshot() formats", async () => {
-  if (!LINT_SUPPORTED) return;
+  if (!IS_LINT_PLUGIN_SUPPORTED) return;
 
   const fileContents =
     `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
@@ -143,7 +143,7 @@ Deno.test("format test", async () => {
 });
 
 Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () => {
-  if (!LINT_SUPPORTED) return;
+  if (!IS_LINT_PLUGIN_SUPPORTED) return;
 
   const tempDir = await Deno.makeTempDir();
   const countTestFile = join(tempDir, "count_test.ts");

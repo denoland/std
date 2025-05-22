@@ -2,6 +2,7 @@
 // @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
 
 import { assertEquals } from "@std/assert/equals";
+import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
 import lintPlugin from "./lint_plugin.ts";
 
 function assertLintPluginDiagnostics(
@@ -18,7 +19,7 @@ function assertLintPluginDiagnostics(
 }
 
 Deno.test("deno-style-guide/prefer-private-field", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Good
   assertLintPluginDiagnostics(
@@ -57,7 +58,7 @@ class MyClass {
 });
 
 Deno.test("deno-style-guide/no-top-level-arrow-syntax", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Bad
   assertLintPluginDiagnostics(
@@ -98,7 +99,7 @@ function foo() {
 });
 
 Deno.test("deno-style-guide/no-external-code", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Good
   assertLintPluginDiagnostics('import { walk } from "@std/fs/walk";', []);
@@ -128,7 +129,7 @@ import { bad } from "jsr:@malicious-muffin/bad";
 });
 
 Deno.test("deno-style-guide/naming-convention", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Good
   assertLintPluginDiagnostics(
@@ -243,7 +244,7 @@ enum enumName {
 });
 
 Deno.test("deno-style-guide/error-message", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Good
   assertLintPluginDiagnostics(
@@ -312,7 +313,7 @@ new CustomError("Can't parse input");
 });
 
 Deno.test("deno-style-guide/exported-function-args-maximum", {
-  ignore: !Deno.version.deno.startsWith("2"),
+  ignore: !IS_LINT_PLUGIN_SUPPORTED,
 }, () => {
   // Good
   assertLintPluginDiagnostics(

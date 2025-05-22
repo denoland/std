@@ -9,9 +9,9 @@ import {
   getIsUpdate,
   getOptions,
   getSnapshotNotMatchMessage,
-  LINT_SUPPORTED,
   serialize,
 } from "./_snapshot_utils.ts";
+import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
 
 /**
  * The options for {@linkcode assertInlineSnapshot}.
@@ -95,7 +95,7 @@ const updateRequests: SnapshotUpdateRequest[] = [];
 function updateSnapshots() {
   if (updateRequests.length === 0) return;
 
-  if (!LINT_SUPPORTED) {
+  if (!IS_LINT_PLUGIN_SUPPORTED) {
     throw new Error(
       "Deno versions before 2.2.0 do not support Deno.lint, which is required to update inline snapshots",
     );

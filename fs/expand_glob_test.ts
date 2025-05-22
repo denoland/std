@@ -12,7 +12,7 @@ import {
   type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
-import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
+import { IS_DENO_2 } from "../internal/_support.ts";
 
 async function expandGlobArray(
   globString: string,

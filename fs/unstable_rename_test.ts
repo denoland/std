@@ -1,7 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
-import { lessOrEqual, parse as parseSemver } from "@std/semver";
 import { rename, renameSync } from "./unstable_rename.ts";
 import { NotFound } from "./unstable_errors.js";
 import { mkdir, mkdtemp, open, rm, stat, symlink } from "node:fs/promises";
@@ -17,11 +16,10 @@ import {
   statSync,
   symlinkSync,
 } from "node:fs";
+import { isDenoVersionGreaterOrEqual } from "../internal/_support.ts";
 
 // In Deno 2.2.2 or earlier, the `rename` function has an issue on Windows.
-const RENAME_HAS_ISSUE = Deno.version &&
-  parseSemver(Deno.version.deno).build?.length === 0 && // not canary
-  lessOrEqual(parseSemver(Deno.version.deno), parseSemver("2.2.2")) &&
+const RENAME_HAS_ISSUE = !isDenoVersionGreaterOrEqual("2.2.3") &&
   platform() === "win32";
 
 /** Tests if the original file/directory is missing since the file is renamed.

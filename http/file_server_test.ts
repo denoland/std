@@ -22,7 +22,7 @@ import denoConfig from "./deno.json" with { type: "json" };
 import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
-import { lessThan, parse as parseSemver } from "@std/semver";
+import { isDenoVersionGreaterOrEqual } from "../internal/_support.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -33,11 +33,9 @@ const serveDirOptions: ServeDirOptions = {
   showDotfiles: true,
   enableCors: true,
 };
-const denoVersion = parseSemver(Deno.version.deno);
-const isCanary = denoVersion.build ? denoVersion.build.length > 0 : false;
 // FileInfo.mode is not available on Windows before Deno 2.1.0
 const fsModeUnavailable = Deno.build.os === "windows" &&
-  lessThan(denoVersion, parseSemver("2.1.0")) && !isCanary;
+  !isDenoVersionGreaterOrEqual("2.1.0");
 
 const TEST_FILE_PATH = join(testdataDir, "test_file.txt");
 const TEST_FILE_STAT = await Deno.stat(TEST_FILE_PATH);
