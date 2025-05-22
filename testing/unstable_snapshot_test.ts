@@ -6,7 +6,7 @@ import {
   assertInlineSnapshot,
   createAssertInlineSnapshot,
 } from "./unstable_snapshot.ts";
-import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
+import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/support.ts";
 
 const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),

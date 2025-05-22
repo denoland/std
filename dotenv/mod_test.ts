@@ -8,7 +8,7 @@ import {
 } from "@std/assert";
 import { load, type LoadOptions, loadSync } from "./mod.ts";
 import * as path from "@std/path";
-import { IS_DENO_2 } from "../internal/_support.ts";
+import { IS_DENO_2 } from "../internal/support.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");

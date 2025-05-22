@@ -3,7 +3,7 @@ import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
-import { IS_DENO_2 } from "../internal/_support.ts";
+import { IS_DENO_2 } from "../internal/support.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata", "ensure_dir");

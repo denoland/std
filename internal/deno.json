@@ -9,6 +9,7 @@
     "./diff": "./diff.ts",
     "./format": "./format.ts",
     "./styles": "./styles.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./support": "./support.ts"
   }
 }

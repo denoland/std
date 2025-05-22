@@ -2,7 +2,7 @@
 // @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
 
 import { assertEquals } from "@std/assert/equals";
-import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
+import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/support.ts";
 import lintPlugin from "./lint_plugin.ts";
 
 function assertLintPluginDiagnostics(

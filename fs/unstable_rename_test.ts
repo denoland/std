@@ -16,7 +16,7 @@ import {
   statSync,
   symlinkSync,
 } from "node:fs";
-import { isDenoVersionGreaterOrEqual } from "../internal/_support.ts";
+import { isDenoVersionGreaterOrEqual } from "../internal/support.ts";
 
 // In Deno 2.2.2 or earlier, the `rename` function has an issue on Windows.
 const RENAME_HAS_ISSUE = Deno.version &&

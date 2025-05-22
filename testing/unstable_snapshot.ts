@@ -11,7 +11,7 @@ import {
   getSnapshotNotMatchMessage,
   serialize,
 } from "./_snapshot_utils.ts";
-import { IS_LINT_PLUGIN_SUPPORTED } from "../internal/_support.ts";
+import { IS_LINT_PLUGIN_SUPPORTED } from "@std/internal/support";
 
 /**
  * The options for {@linkcode assertInlineSnapshot}.
