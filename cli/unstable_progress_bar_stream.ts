@@ -29,19 +29,6 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
   /**
    * Constructs a new instance.
    *
-   * @example Basic Usage
-   * ```ts no-assert
-   * import { ProgressBarStream } from "@std/cli/unstable-progress-bar-stream";
-   *
-   * const response = await fetch("https://example.com/");
-   * const max = Number(response.headers.get("content-length"));
-   * let readable = response.body
-   * if (max) {
-   *   readable = readable
-   *     ?.pipeThrough(new ProgressBarStream({ max })) ?? null;
-   * }
-   * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
-   * ```
    * @param options The options to configure various settings of the progress bar.
    */
   constructor(
