@@ -853,15 +853,15 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() handles quotingType",
+  name: "stringify() handles quoteStyle",
   fn() {
     const object = { url: "https://example.com" };
     assertEquals(
-      stringify(object, { quotingType: '"' }),
+      stringify(object, { quoteStyle: '"' }),
       `url: "https://example.com"\n`,
     );
     assertEquals(
-      stringify(object, { quotingType: "'" }),
+      stringify(object, { quoteStyle: "'" }),
       `url: 'https://example.com'\n`,
     );
   },

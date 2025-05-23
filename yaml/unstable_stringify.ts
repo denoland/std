@@ -92,7 +92,7 @@ export type StringifyOptions = {
    *
    * @default {`'`}}
    */
-  quotingType?: "'" | '"';
+  quoteStyle?: "'" | '"';
 };
 
 /**

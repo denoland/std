@@ -186,7 +186,7 @@ function chooseScalarStyle(
   indentPerLevel: number,
   lineWidth: number,
   implicitTypes: Type<"scalar", unknown>[],
-  quotingType: "'" | '"',
+  quoteStyle: "'" | '"',
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -240,7 +240,7 @@ function chooseScalarStyle(
     // e.g. the string 'true' vs. the boolean true.
     return plain && !implicitTypes.some((type) => type.resolve(string))
       ? STYLE_PLAIN
-      : quotingType === "'"
+      : quoteStyle === "'"
       ? STYLE_SINGLE
       : STYLE_DOUBLE;
   }
@@ -452,7 +452,7 @@ export interface DumperStateOptions {
    * If you specify single quotes, double quotes will still be used
    * for non-printable characters. (default: "'")
    */
-  quotingType?: "'" | '"';
+  quoteStyle?: "'" | '"';
 }
 
 export class DumperState {
@@ -470,7 +470,7 @@ export class DumperState {
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: Map<string, StyleVariant> = new Map();
-  quotingType: "'" | '"';
+  quoteStyle: "'" | '"';
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -484,7 +484,7 @@ export class DumperState {
     useAnchors = true,
     compatMode = true,
     condenseFlow = false,
-    quotingType = "'",
+    quoteStyle: quoteStyle = "'",
   }: DumperStateOptions) {
     this.indent = Math.max(1, indent);
     this.arrayIndent = arrayIndent;
@@ -496,7 +496,7 @@ export class DumperState {
     this.useAnchors = useAnchors;
     this.compatMode = compatMode;
     this.condenseFlow = condenseFlow;
-    this.quotingType = quotingType;
+    this.quoteStyle = quoteStyle;
     this.implicitTypes = schema.implicitTypes;
     this.explicitTypes = schema.explicitTypes;
   }
@@ -544,7 +544,7 @@ export class DumperState {
       this.indent,
       lineWidth,
       this.implicitTypes,
-      this.quotingType,
+      this.quoteStyle,
     );
     switch (scalarStyle) {
       case STYLE_PLAIN:
