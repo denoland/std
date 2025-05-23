@@ -162,8 +162,12 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * await bar.stop();
  */
 export class ProgressBar {
+  #value: number;
   /**
    * The current progress that has been completed.
+   *
+   * @param value Value to set.
+   *
    * @example Usage
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
@@ -176,9 +180,20 @@ export class ProgressBar {
    * await progressBar.stop();
    * ```
    */
-  value: number;
+  set value(value: number) {
+    this.#value = value;
+    this.#print();
+  }
+  get value(): number {
+    return this.#value;
+  }
+
+  #max: number;
   /**
    * The maximum progress that is expected.
+   *
+   * @param value Max to set.
+   *
    * @example Usage
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
@@ -191,7 +206,16 @@ export class ProgressBar {
    * await progressBar.stop();
    * ```
    */
-  max: number;
+  set max(value: number) {
+    this.#max = value;
+    this.#unit = getUnit(this.#max);
+    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+
+    this.#print();
+  }
+  get max(): number {
+    return this.#max;
+  }
 
   #unit: Unit;
   #rate: number;
@@ -226,8 +250,8 @@ export class ProgressBar {
       fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
       keepOpen = true,
     } = options;
-    this.value = value;
-    this.max = max;
+    this.#value = value;
+    this.#max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
@@ -243,10 +267,13 @@ export class ProgressBar {
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 1000);
+
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.value;
+
+    this.#id = setInterval(() => this.#print(), 1000);
+    this.#print();
   }
 
   async #print(): Promise<void> {
@@ -293,8 +320,7 @@ export class ProgressBar {
    */
   async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#print()
-      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
+    await this.#writer.write(this.#clear ? "\r\u001b[K" : "\n")
       .then(() => this.#writer.close())
       .then(() => this.#pipePromise)
       .catch(() => {});
