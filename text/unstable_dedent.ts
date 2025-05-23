@@ -62,12 +62,11 @@ export function dedent(
   input: TemplateStringsArray | string,
   ...values: unknown[]
 ): string {
-  const inputString = typeof input === "string"
-    ? input
-    : String.raw({ raw: input }, ...values);
-  const ignoreFirstUnindented = !inputString.startsWith("\n");
-  const trimmedInput = inputString.replace(/^\n/, "").trimEnd();
-  const lines = trimmedInput.split("\n");
+  // Substitute nonempty placeholder so multiline substitutions do not affect indent width.
+  const joinedTemplate = typeof input === "string" ? input : input.join("x");
+  const ignoreFirstUnindented = !joinedTemplate.startsWith("\n");
+  const trimmedTemplate = joinedTemplate.replace(/^\n/, "").trimEnd();
+  const lines = trimmedTemplate.split("\n");
 
   let minIndentWidth: number | undefined = undefined;
   for (let i = 0; i < lines.length; i++) {
@@ -86,6 +85,11 @@ export function dedent(
       minIndentWidth = indentWidth;
     }
   }
+
+  const inputString = typeof input === "string"
+    ? input
+    : String.raw({ raw: input }, ...values);
+  const trimmedInput = inputString.replace(/^\n/, "").trimEnd();
 
   // No lines to indent
   if (minIndentWidth === undefined || minIndentWidth === 0) {
