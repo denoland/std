@@ -56,6 +56,9 @@ function getSymlinkOption(
  * // Ensures the link `./folder/targetFile.link.dat` exists and points to `./folder/targetFile.dat`
  * await ensureSymlink("./targetFile.dat", "./folder/targetFile.link.dat");
  * ```
+ *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export async function ensureSymlink(
   target: string | URL,
@@ -134,6 +137,9 @@ export async function ensureSymlink(
  * // Ensures the link `./folder/targetFile.link.dat` exists and points to `./folder/targetFile.dat`
  * ensureSymlinkSync("./targetFile.dat", "./folder/targetFile.link.dat");
  * ```
+ *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export function ensureSymlinkSync(
   target: string | URL,

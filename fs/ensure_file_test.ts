@@ -2,7 +2,6 @@
 import { assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
-import { IS_DENO_2 } from "../internal/support.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -133,12 +132,8 @@ Deno.test({
     // ensureFile fails because this test doesn't have write permissions,
     // but don't swallow that error.
     await assertRejects(
-      async () => await ensureFile(testFile),
-      IS_DENO_2
-        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-        // deno-lint-ignore no-explicit-any
-        ? (Deno as any).errors.NotCapable
-        : Deno.errors.PermissionDenied,
+      () => ensureFile(testFile),
+      Deno.errors.NotCapable,
     );
   },
 });
@@ -154,11 +149,7 @@ Deno.test({
     // but don't swallow that error.
     assertThrows(
       () => ensureFileSync(testFile),
-      IS_DENO_2
-        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-        // deno-lint-ignore no-explicit-any
-        ? (Deno as any).errors.NotCapable
-        : Deno.errors.PermissionDenied,
+      Deno.errors.NotCapable,
     );
   },
 });

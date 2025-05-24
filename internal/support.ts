@@ -34,8 +34,3 @@ export function isDenoVersionGreaterOrEqual(minVersion: string): boolean {
 export const IS_LINT_PLUGIN_SUPPORTED: boolean = isDenoVersionGreaterOrEqual(
   "2.2.0",
 );
-
-/**
- * Whether the current Deno version is 2.0.0 or greater.
- */
-export const IS_DENO_2: boolean = isDenoVersionGreaterOrEqual("2.0.0");
