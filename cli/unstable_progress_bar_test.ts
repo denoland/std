@@ -121,7 +121,7 @@ Deno.test("ProgressBar() uses correct unit type", async () => {
 
     const decoder = new TextDecoder();
     for await (const buffer of readable) {
-      assertEquals(decoder.decode(buffer.subarray(-5, -2)), unit);
+      assertEquals(decoder.decode(buffer.subarray(-4, -1)), unit);
       break;
     }
     bar.stop();
