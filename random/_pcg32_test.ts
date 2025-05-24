@@ -127,14 +127,14 @@ Deno.test("nextUint32() generates random 32-bit integers", () => {
     2362354238,
   ];
 
-  const pgc = Pcg32.seedFromUint64(0n);
+  const pgc = new Pcg32(0n);
   for (const sample of rustRandSamples) {
     assertEquals(pgc.nextUint32(), sample);
   }
 });
 
 Deno.test("getRandomValues() writes bytes", () => {
-  const pgc = Pcg32.seedFromUint64(0n);
+  const pgc = new Pcg32(0n);
 
   const a = new Uint8Array(10);
   const b = a.subarray(3, 8);
@@ -172,7 +172,7 @@ Deno.test("nextFloat64() generates the same random numbers as rust rand crate", 
     0.4625920669083482,
   ];
 
-  const pgc = Pcg32.seedFromUint64(0n);
+  const pgc = new Pcg32(0n);
   for (const sample of rustRandSamples) {
     assertEquals(nextFloat64(pgc.getRandomValues.bind(pgc)), sample);
   }
@@ -195,7 +195,7 @@ Deno.test("getRandomValues() can be used to generate the same arbitrary numeric 
      */
     const rustRandSamples = [3, 215, 211, 62, 155, 133, 142, 14, 192, 62];
 
-    const pgc = Pcg32.seedFromUint64(0n);
+    const pgc = new Pcg32(0n);
     for (const sample of rustRandSamples) {
       const b = pgc.getRandomValues(new Uint8Array(1));
       assertEquals(b[0], sample);
@@ -229,7 +229,7 @@ Deno.test("getRandomValues() can be used to generate the same arbitrary numeric 
       8533317468786625891n,
     ];
 
-    const pgc = Pcg32.seedFromUint64(0n);
+    const pgc = new Pcg32(0n);
     for (const sample of rustRandSamples) {
       const b = pgc.getRandomValues(new Uint8Array(8));
       assertEquals(new DataView(b.buffer).getBigInt64(0, true), sample);

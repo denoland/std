@@ -11,7 +11,7 @@ export function seedBytesFromUint64(
   u64: bigint,
   bytes: Uint8Array,
 ): Uint8Array {
-  return new Pcg32({ state: u64, inc: INITIAL_INCREMENT })
+  return new Pcg32({ state: u64, increment: INITIAL_INCREMENT })
     // We advance the state first (to get away from the input value,
     // in case it has low Hamming Weight).
     .step()

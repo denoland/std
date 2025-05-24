@@ -57,38 +57,59 @@ export class Pcg32 extends Prng32 {
   get state() {
     return this.#state[0]!;
   }
-  set state(val) {
+  protected set state(val) {
     this.#state[0] = val;
   }
-  get inc() {
+  get increment() {
     return this.#state[1]!;
   }
-  set inc(val) {
-    this.#state[1] = val;
+  protected set increment(val) {
+    // https://www.pcg-random.org/posts/critiquing-pcg-streams.html#changing-the-increment
+    // > Increments have just one rule: they must be odd.
+    // We OR the increment with 1 upon setting to ensure this.
+    this.#state[1] = val | 1n;
   }
 
-  constructor({ state, inc }: { state: bigint; inc: bigint }) {
+  /**
+   * Creates a new `Pcg32` instance with entropy generated from the seed.
+   * @param seed A 64-bit unsigned integer used to seed the generator.
+   */
+  constructor(seed: bigint);
+  /**
+   * Creates a new `Pcg32` instance with the given `state` and `increment` values.
+   * @param state The current state of the generator.
+   * @param increment The increment value used in the generator.
+   *
+   * > [!NOTE]
+   * > It is typically better to use the constructor that takes a single `seed` value.
+   * > However, this constructor can be useful for resuming from a saved state.
+   */
+  constructor({ state, increment }: { state: bigint; increment: bigint });
+  constructor(arg: bigint | { state: bigint; increment: bigint }) {
+    if (typeof arg === "bigint") {
+      return Pcg32.#seedFromUint64(arg);
+    }
+
     super();
-    this.state = state;
-    this.inc = inc;
+    this.state = arg.state;
+    this.increment = arg.increment;
   }
 
   /** @returns The next pseudo-random 32-bit integer. */
   nextUint32(): number {
-    const state = this.state;
-    this.step();
     // Output function XSH RR: xorshift high (bits), followed by a random rotate
-    const rot = state >> Pcg32.ROTATE;
+    const rot = this.state >> Pcg32.ROTATE;
     const xsh = BigInt.asUintN(
       32,
-      (state >> Pcg32.XSHIFT ^ state) >> Pcg32.SPARE,
+      (this.state >> Pcg32.XSHIFT ^ this.state) >> Pcg32.SPARE,
     );
+    this.step();
     return Number(this.#rotateRightUint32(xsh, rot));
   }
 
   /** Mutates `pcg` by advancing `pcg.state`. */
   step(): this {
-    this.state = this.state * Pcg32.MULTIPLIER + (this.inc | 1n);
+    this.state = this.state * Pcg32.MULTIPLIER + this.increment;
     return this;
   }
 
@@ -99,11 +120,7 @@ export class Pcg32 extends Prng32 {
     return left | right;
   }
 
-  /**
-   * Creates a new `Pcg32` instance with entropy generated from the given
-   * `seed`, treated as an unsigned 64-bit integer.
-   */
-  static seedFromUint64(seed: bigint): Pcg32 {
+  static #seedFromUint64(seed: bigint): Pcg32 {
     return this.#fromSeed(seedBytesFromUint64(seed, new Uint8Array(16)));
   }
 
@@ -114,15 +131,15 @@ export class Pcg32 extends Prng32 {
     const d = new DataView(seed.buffer);
     return this.#fromStateIncr(
       d.getBigUint64(0, true),
-      d.getBigUint64(8, true) | 1n,
+      d.getBigUint64(8, true),
     );
   }
 
   /**
    * Modified from https://github.com/rust-random/rand/blob/f7bbcca/rand_pcg/src/pcg64.rs#L99-L105
    */
-  static #fromStateIncr(state: bigint, inc: bigint): Pcg32 {
+  static #fromStateIncr(state: bigint, increment: bigint): Pcg32 {
     // Move state away from initial value
-    return new Pcg32({ state: state + inc, inc }).step();
+    return new Pcg32({ state: state + increment, increment }).step();
   }
 }

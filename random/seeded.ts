@@ -28,7 +28,7 @@ export type { ByteGenerator, Prng } from "./_types.ts";
  * ```
  */
 export function randomSeeded(seed: bigint): Prng {
-  const pcg = Pcg32.seedFromUint64(seed);
+  const pcg = new Pcg32(seed);
   return () => pcg.nextUint32() / 2 ** 32;
 }
 
@@ -53,6 +53,6 @@ export function randomSeeded(seed: bigint): Prng {
  * ```
  */
 export function byteGeneratorSeeded(seed: bigint): ByteGenerator {
-  const pcg = Pcg32.seedFromUint64(seed);
+  const pcg = new Pcg32(seed);
   return pcg.getRandomValues.bind(pcg);
 }
