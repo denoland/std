@@ -1,14 +1,15 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assert, assertEquals } from "@std/assert";
-import { Pcg32, seedBytesFromUint64 } from "./_pcg32.ts";
+import { Pcg32 } from "./_pcg32.ts";
+import { seedBytesFromUint64 } from "./_seed_bytes_from_uint64.ts";
 import { nextFloat64 } from "./number_types.ts";
 
 Deno.test("seedBytesFromUint64() generates seeds from bigints", async (t) => {
   await t.step("first 10 16-bit seeds are same as rand crate", async (t) => {
     /**
      * Expected results obtained by copying the Rust code from
-     * https://github.com/rust-random/rand/blob/f7bbccaedf6c63b02855b90b003c9b1a4d1fd1cb/rand_core/src/lib.rs#L359-L388
+     * https://github.com/rust-random/rand/blob/f7bbcca/rand_core/src/lib.rs#L359-L388
      * but directly returning `seed` instead of `Self::from_seed(seed)`
      */
     // deno-fmt-ignore

@@ -19,7 +19,7 @@ export type Prng = typeof Math.random;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type ByteGenerator = (bytes: Uint8Array) => Uint8Array;
+export type ByteGenerator = <T extends Uint8Array>(bytes: T) => T;
 
 /**
  * Options for random number generation.
