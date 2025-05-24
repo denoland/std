@@ -1,12 +1,13 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { fromSeed, nextU32, seedFromU64 } from "./_pcg32.ts";
-import type { Prng } from "./_types.ts";
+import { Pcg32 } from "./_pcg32.ts";
+import type { ByteGenerator, Prng } from "./_types.ts";
+export type { ByteGenerator, Prng } from "./_types.ts";
 
 /**
  * Creates a pseudo-random number generator that generates random numbers in
- * the range `[0, 1)`, based on the given seed. The algorithm used for
- * generation is {@link https://www.pcg-random.org/download.html | PCG32}.
+ * the range `[0, 1)`, based on the given seed, with 32 bits of entropy.
+ * The algorithm used for generation is {@link https://www.pcg-random.org/download.html | PCG32}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -27,15 +28,31 @@ import type { Prng } from "./_types.ts";
  * ```
  */
 export function randomSeeded(seed: bigint): Prng {
-  const pcg = fromSeed(seedFromU64(seed, 16));
-  return () => uint32ToFloat64(nextU32(pcg));
+  const pcg = new Pcg32(seed);
+  return () => pcg.nextUint32() / 2 ** 32;
 }
 
 /**
- * Convert a 32-bit unsigned integer to a float64 in the range `[0, 1)`.
- * This operation is lossless, i.e. it's always possible to get the original
- * value back by multiplying by 2 ** 32.
+ * Creates a pseudo-random byte generator that populates `Uint8Array`s,
+ * based on the given seed. The algorithm used for generation is
+ * {@link https://www.pcg-random.org/download.html | PCG32}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param seed The seed used to initialize the random number generator's state.
+ * @returns A pseudo-random byte generator function, which will generate
+ * different bytes on each call.
+ *
+ * @example Usage
+ * ```ts
+ * import { byteGeneratorSeeded } from "@std/random";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const byteGenerator = byteGeneratorSeeded(1n);
+ * assertEquals(byteGenerator(new Uint8Array(5)), new Uint8Array([230, 11, 167, 51, 238]));
+ * ```
  */
-function uint32ToFloat64(u32: number): number {
-  return u32 / 2 ** 32;
+export function byteGeneratorSeeded(seed: bigint): ByteGenerator {
+  const pcg = new Pcg32(seed);
+  return pcg.getRandomValues.bind(pcg);
 }
