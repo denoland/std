@@ -5,6 +5,8 @@
 [![ci](https://github.com/denoland/std/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/std/actions/workflows/ci.yml)
 
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
+Supports up to the
+[current Deno LTS version](https://docs.deno.com/runtime/fundamentals/stability_and_releases/#long-term-support-(lts)).
 
 > [!IMPORTANT]
 > Newer versions of the Standard Library are now hosted on

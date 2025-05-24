@@ -58,6 +58,8 @@ export interface LoadOptions {
  *
  * @param options Options for loading the environment variables.
  * @returns The parsed environment variables.
+ * @throws {Deno.errors.NotCapable} If the required `--allow-env` permission is
+ * not granted.
  */
 export function loadSync(
   options: LoadOptions = {},

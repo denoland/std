@@ -25,6 +25,9 @@ import { toPathString } from "./_to_path_string.ts";
  *
  * await ensureFile("./folder/targetFile.dat");
  * ```
+ *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export async function ensureFile(filePath: string | URL): Promise<void> {
   try {
@@ -72,6 +75,9 @@ export async function ensureFile(filePath: string | URL): Promise<void> {
  *
  * ensureFileSync("./folder/targetFile.dat");
  * ```
+ *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export function ensureFileSync(filePath: string | URL): void {
   try {
