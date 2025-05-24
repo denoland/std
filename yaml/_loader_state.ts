@@ -67,31 +67,31 @@ export interface LoaderStateOptions {
   onWarning?(error: Error): void;
 }
 
-const ESCAPED_HEX_LENGTHS = new Map<number, number>([
-  [0x78, 2], // x
-  [0x75, 4], // u
-  [0x55, 8], // U
+const ESCAPED_HEX_LENGTHS = new Map<string, number>([
+  ["x", 2],
+  ["u", 4],
+  ["U", 8],
 ]);
 
-const SIMPLE_ESCAPE_SEQUENCES = new Map<number, string>([
-  [0x30, "\x00"], // 0
-  [0x61, "\x07"], // a
-  [0x62, "\x08"], // b
-  [0x74, "\x09"], // t
-  [0x09, "\x09"], // Tab
-  [0x6e, "\x0A"], // n
-  [0x76, "\x0B"], // v
-  [0x66, "\x0C"], // f
-  [0x72, "\x0D"], // r
-  [0x65, "\x1B"], // e
-  [0x20, " "], // Space
-  [0x22, '"'], // "
-  [0x2f, "/"], // /
-  [0x5c, "\\"], // \
-  [0x4e, "\x85"], // N
-  [0x5f, "\xA0"], // _
-  [0x4c, "\u2028"], // L
-  [0x50, "\u2029"], // P
+const SIMPLE_ESCAPE_SEQUENCES = new Map<string, string>([
+  ["0", "\x00"],
+  ["a", "\x07"],
+  ["b", "\x08"],
+  ["t", "\x09"],
+  ["\t", "\x09"],
+  ["n", "\x0A"],
+  ["v", "\x0B"],
+  ["f", "\x0C"],
+  ["r", "\x0D"],
+  ["e", "\x1B"],
+  [" ", " "],
+  ['"', '"'],
+  ["/", "/"],
+  ["\\", "\\"],
+  ["N", "\x85"],
+  ["_", "\xA0"],
+  ["L", "\u2028"],
+  ["P", "\u2029"],
 ]);
 
 /**
@@ -232,7 +232,7 @@ export class LoaderState {
     let ch = this.peek();
     if (ch !== SHARP) return;
     ch = this.next();
-    while (ch !== 0 && !isEOL(ch)) {
+    while (ch !== "\x00" && !isEOL(ch)) {
       ch = this.next();
     }
   }
@@ -246,7 +246,7 @@ export class LoaderState {
   }
 
   peek(offset = 0) {
-    return this.input.charCodeAt(this.position + offset);
+    return this.input[this.position + offset] ?? "\x00";
   }
   next() {
     this.position += 1;
@@ -374,7 +374,7 @@ export class LoaderState {
 
     let ch = this.peek();
 
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       if (ch !== MINUS) {
         break;
       }
@@ -403,7 +403,9 @@ export class LoaderState {
 
       ch = this.peek();
 
-      if ((this.line === line || this.lineIndent > nodeIndent) && ch !== 0) {
+      if (
+        (this.line === line || this.lineIndent > nodeIndent) && ch !== "\x00"
+      ) {
         throw this.#createError(
           "Cannot read block sequence: bad indentation of a sequence entry",
         );
@@ -538,7 +540,7 @@ export class LoaderState {
     let lineBreaks = 0;
     let ch = this.peek();
 
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       this.skipWhitespaces();
       ch = this.peek();
 
@@ -583,7 +585,7 @@ export class LoaderState {
     ) {
       ch = this.peek(3);
 
-      if (ch === 0 || isWhiteSpaceOrEOL(ch)) {
+      if (ch === "\x00" || isWhiteSpaceOrEOL(ch)) {
         return true;
       }
     }
@@ -620,7 +622,7 @@ export class LoaderState {
       return false;
     }
 
-    let following: number;
+    let following: string;
     if (ch === QUESTION || ch === MINUS) {
       following = this.peek(1);
 
@@ -638,7 +640,7 @@ export class LoaderState {
     let captureStart = this.position;
     let hasPendingContent = false;
     let line = 0;
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       if (ch === COLON) {
         following = this.peek(1);
 
@@ -716,7 +718,7 @@ export class LoaderState {
     let captureEnd = this.position;
 
     ch = this.peek();
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       if (ch === SINGLE_QUOTE) {
         this.captureSegment(captureStart, this.position, true);
         ch = this.next();
@@ -764,7 +766,7 @@ export class LoaderState {
     let captureStart = this.position;
     let tmp: number;
     ch = this.peek();
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       if (ch === DOUBLE_QUOTE) {
         this.captureSegment(captureStart, this.position, true);
         this.position++;
@@ -776,7 +778,10 @@ export class LoaderState {
 
         if (isEOL(ch)) {
           this.skipSeparationSpace(false, nodeIndent);
-        } else if (ch < 256 && SIMPLE_ESCAPE_SEQUENCES.has(ch)) {
+        } else if (
+          ch.charCodeAt(0) < 256 &&
+          SIMPLE_ESCAPE_SEQUENCES.has(ch)
+        ) {
           this.result += SIMPLE_ESCAPE_SEQUENCES.get(ch);
           this.position++;
         } else if ((tmp = ESCAPED_HEX_LENGTHS.get(ch) ?? 0) > 0) {
@@ -786,7 +791,7 @@ export class LoaderState {
           for (; hexLength > 0; hexLength--) {
             ch = this.next();
 
-            if ((tmp = hexCharCodeToNumber(ch)) >= 0) {
+            if ((tmp = hexCharCodeToNumber(ch.charCodeAt(0))) >= 0) {
               hexResult = (hexResult << 4) + tmp;
             } else {
               throw this.#createError(
@@ -829,7 +834,7 @@ export class LoaderState {
   }
   readFlowCollection(nodeIndent: number): boolean {
     let ch = this.peek();
-    let terminator: number;
+    let terminator: string;
     let isMapping = true;
     let result = {};
     if (ch === LEFT_SQUARE_BRACKET) {
@@ -856,10 +861,10 @@ export class LoaderState {
     let keyTag: string | null = null;
     let isExplicitPair = false;
     let isPair = false;
-    let following = 0;
+    let following = "";
     let line = 0;
     const overridableKeys = new Set<string>();
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       this.skipSeparationSpace(true, nodeIndent);
 
       ch = this.peek();
@@ -970,7 +975,7 @@ export class LoaderState {
     this.result = "";
 
     let tmp = 0;
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       ch = this.next();
 
       if (ch === PLUS || ch === MINUS) {
@@ -981,7 +986,7 @@ export class LoaderState {
             "Cannot read block: chomping mode identifier repeated",
           );
         }
-      } else if ((tmp = decimalCharCodeToNumber(ch)) >= 0) {
+      } else if ((tmp = decimalCharCodeToNumber(ch.charCodeAt(0))) >= 0) {
         if (tmp === 0) {
           throw this.#createError(
             "Cannot read block: indentation width must be greater than 0",
@@ -1005,7 +1010,7 @@ export class LoaderState {
       ch = this.peek();
     }
 
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       this.readLineBreak();
       this.lineIndent = 0;
 
@@ -1086,7 +1091,7 @@ export class LoaderState {
       emptyLines = 0;
       const captureStart = this.position;
 
-      while (!isEOL(ch) && ch !== 0) {
+      while (!isEOL(ch) && ch !== "\x00") {
         ch = this.next();
       }
 
@@ -1100,7 +1105,6 @@ export class LoaderState {
     const anchor = this.anchor;
     const result = {};
     const overridableKeys = new Set<string>();
-
     let allowCompact = false;
     let line: number;
     let pos: number;
@@ -1116,7 +1120,7 @@ export class LoaderState {
 
     let ch = this.peek();
 
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       const following = this.peek(1);
       line = this.line; // Save the current line.
       pos = this.position;
@@ -1246,7 +1250,7 @@ export class LoaderState {
         ch = this.peek();
       }
 
-      if (this.lineIndent > nodeIndent && ch !== 0) {
+      if (this.lineIndent > nodeIndent && ch !== "\x00") {
         throw this.#createError(
           "Cannot read block: bad indentation of a mapping entry",
         );
@@ -1314,7 +1318,7 @@ export class LoaderState {
     if (isVerbatim) {
       do {
         ch = this.next();
-      } while (ch !== 0 && ch !== GREATER_THAN);
+      } while (ch !== "\x00" && ch !== GREATER_THAN);
 
       if (this.position < this.length) {
         tagName = this.input.slice(position, this.position);
@@ -1325,7 +1329,7 @@ export class LoaderState {
         );
       }
     } else {
-      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+      while (ch !== "\x00" && !isWhiteSpaceOrEOL(ch)) {
         if (ch === EXCLAMATION) {
           if (!isNamed) {
             tagHandle = this.input.slice(position - 1, this.position + 1);
@@ -1391,7 +1395,9 @@ export class LoaderState {
     ch = this.next();
 
     const position = this.position;
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+    while (
+      ch !== "\x00" && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)
+    ) {
       ch = this.next();
     }
 
@@ -1411,7 +1417,9 @@ export class LoaderState {
 
     const position = this.position;
 
-    while (ch !== 0 && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)) {
+    while (
+      ch !== "\x00" && !isWhiteSpaceOrEOL(ch) && !isFlowIndicator(ch)
+    ) {
       ch = this.next();
     }
 
@@ -1607,7 +1615,7 @@ export class LoaderState {
     this.anchorMap = new Map();
 
     let ch = this.peek();
-    while (ch !== 0) {
+    while (ch !== "\x00") {
       this.skipSeparationSpace(true, -1);
 
       ch = this.peek();
@@ -1620,7 +1628,7 @@ export class LoaderState {
       ch = this.next();
       let position = this.position;
 
-      while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+      while (ch !== "\x00" && !isWhiteSpaceOrEOL(ch)) {
         ch = this.next();
       }
 
@@ -1633,7 +1641,7 @@ export class LoaderState {
         );
       }
 
-      while (ch !== 0) {
+      while (ch !== "\x00") {
         this.skipWhitespaces();
         this.skipComment();
         ch = this.peek();
@@ -1642,14 +1650,14 @@ export class LoaderState {
 
         position = this.position;
 
-        while (ch !== 0 && !isWhiteSpaceOrEOL(ch)) {
+        while (ch !== "\x00" && !isWhiteSpaceOrEOL(ch)) {
           ch = this.next();
         }
 
         directiveArgs.push(this.input.slice(position, this.position));
       }
 
-      if (ch !== 0) this.readLineBreak();
+      if (ch !== "\x00") this.readLineBreak();
 
       switch (directiveName) {
         case "YAML":
