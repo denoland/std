@@ -5,10 +5,10 @@
  */
 export interface ProgressBarFormatter {
   /**
-   * A function that returns a formatted version of the duration.
+   * A formatted version of the duration.
    * `[mm:ss]`
    */
-  styledTime: () => string;
+  styledTime: string;
   /**
    * A function that returns a formatted version of the data received.
    * `[0.40/97.66 KiB]`
@@ -223,7 +223,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
+      fmt = (x) => `${x.styledTime} ${x.progressBar} ${x.styledData()} `,
       keepOpen = true,
     } = options;
     this.value = value;
@@ -257,7 +257,7 @@ export class ProgressBar {
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
     const formatter: ProgressBarFormatter = {
-      styledTime() {
+      get styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
         return `[${minutes}:${seconds}]`;
