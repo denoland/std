@@ -21,7 +21,7 @@ Deno.test("ProgressBar() outputs default result", async () => {
   const bar = new ProgressBar({ writable, max: 10 * 1000 });
   for (let index = 0; index < 10; index++) {
     bar.value += 1000;
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
   bar.stop().then(() => writable.close());
 
@@ -36,15 +36,15 @@ Deno.test("ProgressBar() outputs default result", async () => {
     "\r\u001b[K[00:00] [###################################---------------] [6.84/9.77 KiB] ",
     "\r\u001b[K[00:00] [########################################----------] [7.81/9.77 KiB] ",
     "\r\u001b[K[00:00] [#############################################-----] [8.79/9.77 KiB] ",
-    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
+    "\r\u001b[K[00:01] [##################################################] [9.77/9.77 KiB] ",
     "\n",
   ];
 
-  let index = 0;
+  const actual = [];
   for await (const buffer of readable) {
-    const actual = decoder.decode(buffer);
-    assertEquals(actual, expected[index++]);
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() outputs passing time", async () => {
@@ -61,19 +61,19 @@ Deno.test("ProgressBar() outputs passing time", async () => {
     "\n",
   ];
 
-  let index = 0;
+  const actual = [];
   for await (const buffer of readable) {
-    const actual = decoder.decode(buffer);
-    assertEquals(actual, expected[index++]);
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() change max", async () => {
   const { readable, writable } = new TransformStream();
 
   const bar = new ProgressBar({ writable, max: 2 ** 10 });
-  await new Promise((resolve) => setTimeout(resolve, 100));
   bar.max = 2 ** 20;
+  await new Promise((resolve) => setTimeout(resolve, 100));
   bar.stop().then(() => writable.close());
 
   const expected = [
@@ -107,6 +107,7 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
   const bar = new ProgressBar({ writable, max: 10 * 1000, clear: true });
   for (let index = 0; index < 10; index++) {
     bar.value += 1000;
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
   bar.stop().then(() => writable.close());
 
@@ -121,15 +122,15 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
     "\r\u001b[K[00:00] [###################################---------------] [6.84/9.77 KiB] ",
     "\r\u001b[K[00:00] [########################################----------] [7.81/9.77 KiB] ",
     "\r\u001b[K[00:00] [#############################################-----] [8.79/9.77 KiB] ",
-    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
+    "\r\u001b[K[00:01] [##################################################] [9.77/9.77 KiB] ",
     "\r\x1b[K",
   ];
 
-  let index = 0;
+  const actual = [];
   for await (const buffer of readable) {
-    const actual = decoder.decode(buffer);
-    assertEquals(actual, expected[index++]);
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() passes correct values to formatter", async () => {

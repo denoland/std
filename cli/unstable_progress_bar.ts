@@ -162,7 +162,9 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * await bar.stop();
  */
 export class ProgressBar {
-  #value: number;
+  #hasUpdate = true;
+
+  #value: number = 0;
   /**
    * The current progress that has been completed.
    *
@@ -181,14 +183,15 @@ export class ProgressBar {
    * ```
    */
   set value(value: number) {
+    if (this.#value === value) return;
     this.#value = value;
-    this.#print();
+    this.#hasUpdate = true;
   }
   get value(): number {
     return this.#value;
   }
 
-  #max: number;
+  #max: number = 0;
   /**
    * The maximum progress that is expected.
    *
@@ -207,18 +210,18 @@ export class ProgressBar {
    * ```
    */
   set max(value: number) {
+    if (this.#max === value) return;
     this.#max = value;
     this.#unit = getUnit(this.#max);
     this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
-
-    this.#print();
+    this.#hasUpdate = true;
   }
   get max(): number {
     return this.#max;
   }
 
-  #unit: Unit;
-  #rate: number;
+  #unit: Unit = "KiB";
+  #rate: number = 2 ** 10;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
@@ -235,9 +238,7 @@ export class ProgressBar {
    *
    * @param options The options to configure various settings of the progress bar.
    */
-  constructor(
-    options: ProgressBarOptions,
-  ) {
+  constructor(options: ProgressBarOptions) {
     const {
       writable = Deno.stderr.writable,
       value = 0,
@@ -249,17 +250,14 @@ export class ProgressBar {
       fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
       keepOpen = true,
     } = options;
-    this.#value = value;
-    this.#max = max;
+    this.value = value;
+    this.max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
     this.#clear = clear;
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
-
-    this.#unit = getUnit(options.max);
-    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
 
     const stream = new TextEncoderStream();
     stream.readable
@@ -271,12 +269,16 @@ export class ProgressBar {
     this.#lastTime = this.#startTime;
     this.#lastValue = this.value;
 
-    this.#id = setInterval(() => this.#print(), 1000);
+    this.#id = setInterval(() => this.#print(), 100);
     this.#print();
   }
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
+
+    const delta = currentTime - this.#lastTime;
+    if (delta < 1000 && !this.#hasUpdate) return;
+    this.#hasUpdate = false;
 
     const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
