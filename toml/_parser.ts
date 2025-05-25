@@ -685,7 +685,6 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
   }
-
   return success(date);
 }
 
