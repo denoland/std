@@ -649,6 +649,13 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
   if (!match) return failure();
   scanner.next(match.length);
   const value = match.replaceAll("_", "");
+  const hasSign = match[0] === "+" || match[0] === "-";
+  const firstDigitLocation = hasSign ? 1 : 0;
+  if (
+    match[firstDigitLocation] === "0" && match.length > (firstDigitLocation + 1)
+  ) {
+    return failure();
+  }
   const int = parseInt(value, 10);
   return success(int);
 }
@@ -678,6 +685,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
   }
+
   return success(date);
 }
 
