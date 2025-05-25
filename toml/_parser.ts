@@ -642,20 +642,13 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*\b/y;
+const INTEGER_REGEXP = /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)\b/y
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
   if (!match) return failure();
   scanner.next(match.length);
   const value = match.replaceAll("_", "");
-  const hasSign = match[0] === "+" || match[0] === "-";
-  const firstDigitLocation = hasSign ? 1 : 0;
-  if (
-    match[firstDigitLocation] === "0" && match.length > (firstDigitLocation + 1)
-  ) {
-    return failure();
-  }
   const int = parseInt(value, 10);
   return success(int);
 }
