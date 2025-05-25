@@ -238,3 +238,8 @@ Deno.test("ProgressBar() uses correct unit type", async (t) => {
     bar.stop();
   });
 });
+
+Deno.test("ProgressBar() does not leak resources when immediately stopped", async () => {
+  const progressBar = new ProgressBar({ max: 10 });
+  await progressBar.stop();
+});

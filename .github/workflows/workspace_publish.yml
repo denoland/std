@@ -22,6 +22,7 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: canary
+          cache: true
 
       - name: Format
         run: deno fmt --check
