@@ -569,7 +569,7 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const BOOLEAN_REGEXP = /(?:true|false)\b/y;
+const BOOLEAN_REGEXP = /(?:true|false)/y;
 export function boolean(scanner: Scanner): ParseResult<boolean> {
   scanner.skipWhitespaces();
   const match = scanner.match(BOOLEAN_REGEXP);
@@ -585,7 +585,7 @@ const INFINITY_MAP = new Map<string, number>([
   ["+inf", Infinity],
   ["-inf", -Infinity],
 ]);
-const INFINITY_REGEXP = /[+-]?inf\b/y;
+const INFINITY_REGEXP = /[+-]?inf/y;
 export function infinity(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(INFINITY_REGEXP);
@@ -596,7 +596,7 @@ export function infinity(scanner: Scanner): ParseResult<number> {
   return success(value);
 }
 
-const NAN_REGEXP = /[+-]?nan\b/y;
+const NAN_REGEXP = /[+-]?nan/y;
 export function nan(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(NAN_REGEXP);
@@ -609,7 +609,7 @@ export function nan(scanner: Scanner): ParseResult<number> {
 
 export const dottedKey = join1(or([bareKey, basicString, literalString]), ".");
 
-const BINARY_REGEXP = /0b[01]+(?:_[01]+)*\b/y;
+const BINARY_REGEXP = /0b[01]+(?:_[01]+)*/y;
 export function binary(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(BINARY_REGEXP)?.[0];
@@ -620,7 +620,7 @@ export function binary(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const OCTAL_REGEXP = /0o[0-7]+(?:_[0-7]+)*\b/y;
+const OCTAL_REGEXP = /0o[0-7]+(?:_[0-7]+)*/y;
 export function octal(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(OCTAL_REGEXP)?.[0];
@@ -631,7 +631,7 @@ export function octal(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const HEX_REGEXP = /0x[0-9a-f]+(?:_[0-9a-f]+)*\b/yi;
+const HEX_REGEXP = /0x[0-9a-f]+(?:_[0-9a-f]+)*/yi;
 export function hex(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(HEX_REGEXP)?.[0];
@@ -642,7 +642,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*\b/y;
+const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
@@ -654,7 +654,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 }
 
 const FLOAT_REGEXP =
-  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
+  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(FLOAT_REGEXP)?.[0];
@@ -666,14 +666,16 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
+class DateTime extends Date {}
+
+const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
   // example: 1979-05-27
   const match = scanner.match(DATE_TIME_REGEXP)?.[0];
   if (!match) return failure();
   scanner.next(match.length);
-  const date = new Date(match.trim());
+  const date = new DateTime(match.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
@@ -681,7 +683,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   return success(date);
 }
 
-const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?\b/y;
+const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?/y;
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
 
