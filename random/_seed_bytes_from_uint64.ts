@@ -1,3 +1,4 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { Pcg32 } from "./_pcg32.ts";
 
 /** Initial increment for the PCG32 algorithm. Only used during seeding. */
