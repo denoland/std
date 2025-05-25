@@ -13,6 +13,8 @@ async function* getData(
   }
 }
 
+const decoder = new TextDecoder();
+
 Deno.test("ProgressBar() outputs default result", async () => {
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 10 * 1000 });
@@ -20,46 +22,16 @@ Deno.test("ProgressBar() outputs default result", async () => {
   for await (const a of getData(10, 1000)) bar.value += a.length;
   bar.stop().then(() => writable.close());
 
+  const expected = [
+    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
+    "\n",
+  ];
+
+  const actual: string[] = [];
   for await (const buffer of readable) {
-    if (buffer.length == 1) {
-      assertEquals(buffer[0], 10);
-      continue;
-    }
-    assertEquals(buffer.subarray(0, 4), Uint8Array.from([13, 27, 91, 75]));
-    let i = 4;
-    // Check Time
-    assertEquals(buffer[i++], 91); // [
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(buffer[i++], 58); // :
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(buffer[i++], 93); // ]
-    assertEquals(buffer[i++], 32); // ' '
-    // Check Progress Bar
-    assertEquals(buffer[i++], 91); // []
-    for (let j = 0; j < 50; ++j, ++i) {
-      assertEquals(buffer[i] === 35 || buffer[i] === 45, true); // '#' || '-'
-    }
-    assertEquals(buffer[i++], 93); // ]
-    assertEquals(buffer[i++], 32); // ' '
-    // Check Amount
-    assertEquals(buffer[i++], 91); // [
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(buffer[i++], 46); // .
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(buffer[i++], 47); // /
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0.9
-    assertEquals(buffer[i++], 46); // .
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(48 <= buffer[i] && buffer[i++] <= 58, true); // 0-9
-    assertEquals(buffer[i++], 32); // ' '
-    assertEquals(buffer[i++], 75); // K
-    assertEquals(buffer[i++], 105); // i
-    assertEquals(buffer[i++], 66); // B
-    assertEquals(buffer[i++], 93); // ]
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => {
@@ -77,12 +49,18 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
   const bar = new ProgressBar({ writable, max: 10 * 1000, clear: true });
 
   for await (const a of getData(10, 1000)) bar.value += a.length;
-  bar.stop()
-    .then(() => writable.close());
+  bar.stop().then(() => writable.close());
 
+  const expected = [
+    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
+    "\r\u001b[K",
+  ];
+
+  const actual: string[] = [];
   for await (const buffer of readable) {
-    assertEquals(buffer.subarray(0, 4), Uint8Array.from([13, 27, 91, 75]));
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() passes correct values to formatter", async () => {
