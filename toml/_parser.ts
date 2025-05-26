@@ -666,8 +666,6 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-class DateTime extends Date {}
-
 const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
@@ -675,7 +673,7 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   const match = scanner.match(DATE_TIME_REGEXP)?.[0];
   if (!match) return failure();
   scanner.next(match.length);
-  const date = new DateTime(match.trim());
+  const date = new Date(match.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
