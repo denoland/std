@@ -23,7 +23,19 @@ const numberTypes = [
 ] as const;
 
 export function mockLittleEndian(littleEndian: boolean) {
-  const stack = new DisposableStack();
+  // partial `DisposableStack` polyfill
+  const stack = {
+    disposables: [] as (() => void)[],
+    defer(fn: () => void) {
+      this.disposables.push(fn);
+    },
+    [Symbol.dispose]() {
+      for (const dispose of this.disposables) {
+        dispose();
+      }
+    },
+  };
+
   const originalLittleEndian = platform.littleEndian;
 
   stack.defer(() => {
