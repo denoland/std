@@ -12,10 +12,10 @@ Deno.test("randomSeeded() generates random numbers", () => {
   assertEquals(prng(), 0.7924694607499987);
 });
 
-Deno.test("byteGeneratorSeeded() with nextFloat64() gives relatively uniform distribution of random numbers", async (t) => {
+Deno.test("getRandomValuesSeeded() with nextFloat64() gives relatively uniform distribution of random numbers", async (t) => {
   function randomSeeded53Bit(seed: bigint): Prng {
-    const byteGenerator = getRandomValuesSeeded(seed);
-    return () => nextFloat64(byteGenerator);
+    const getRandomValues = getRandomValuesSeeded(seed);
+    return () => nextFloat64(getRandomValues);
   }
 
   const prng = randomSeeded53Bit(1n);
@@ -69,7 +69,7 @@ Deno.test("byteGeneratorSeeded() with nextFloat64() gives relatively uniform dis
   );
 });
 
-Deno.test("byteGeneratorSeeded() generates bytes", () => {
+Deno.test("getRandomValuesSeeded() generates bytes", () => {
   const prng = getRandomValuesSeeded(1n);
   assertEquals(
     prng(new Uint8Array(5)),

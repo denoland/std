@@ -30,8 +30,8 @@ export function mockLittleEndian(littleEndian: boolean) {
       this.disposables.push(fn);
     },
     [Symbol.dispose]() {
-      for (const dispose of this.disposables) {
-        dispose();
+      for (let i = this.disposables.length - 1; i >= 0; --i) {
+        this.disposables[i]!();
       }
     },
   };

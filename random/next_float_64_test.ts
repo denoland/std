@@ -6,11 +6,11 @@ import {
 import { nextFloat64 } from "./next_float_64.ts";
 import { assertEquals, assertGreaterOrEqual, assertLess } from "@std/assert";
 
-Deno.test("nextFloat64() gets floats from a seeded byte generator", () => {
-  const byteGenerator = getRandomValuesSeeded(1n);
-  assertEquals(nextFloat64(byteGenerator), 0.49116444173310125);
-  assertEquals(nextFloat64(byteGenerator), 0.06903754193160427);
-  assertEquals(nextFloat64(byteGenerator), 0.16063206851777034);
+Deno.test("nextFloat64() gets floats from a seeded value generator", () => {
+  const getRandomValues = getRandomValuesSeeded(1n);
+  assertEquals(nextFloat64(getRandomValues), 0.49116444173310125);
+  assertEquals(nextFloat64(getRandomValues), 0.06903754193160427);
+  assertEquals(nextFloat64(getRandomValues), 0.16063206851777034);
 });
 
 Deno.test("nextFloat64() gets floats that are always in the [0, 1) range", () => {
