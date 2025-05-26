@@ -93,15 +93,7 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
-
-function getUnit(max: number): Unit {
-  if (max < 2 ** 20) return "KiB";
-  if (max < 2 ** 30) return "MiB";
-  if (max < 2 ** 40) return "GiB";
-  if (max < 2 ** 50) return "TiB";
-  return "PiB";
-}
+type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB" | "EiB" | "ZiB" | "YiB";
 
 const UNIT_RATE_MAP = new Map<Unit, number>([
   ["KiB", 2 ** 10],
@@ -109,7 +101,19 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
   ["GiB", 2 ** 30],
   ["TiB", 2 ** 40],
   ["PiB", 2 ** 50],
+  ["EiB", 2 ** 60],
+  ["ZiB", 2 ** 70],
+  ["YiB", 2 ** 80],
 ]);
+
+function getUnitEntry(max: number): [Unit, number] {
+  let result: [Unit, number] = ["KiB", 2 ** 10];
+  for (const entry of UNIT_RATE_MAP) {
+    if (entry[1] > max) break;
+    result = entry;
+  }
+  return result;
+}
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
@@ -235,8 +239,10 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    this.#unit = getUnit(options.max);
-    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+    const [unit, rate] = getUnitEntry(options.max);
+
+    this.#unit = unit;
+    this.#rate = rate;
 
     const stream = new TextEncoderStream();
     this.#pipePromise = stream.readable
