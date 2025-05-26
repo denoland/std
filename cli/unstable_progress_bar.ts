@@ -249,10 +249,12 @@ export class ProgressBar {
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.value;
+
+    this.#id = setInterval(() => this.#print(), 1000);
+    this.#print();
   }
 
   async #print(): Promise<void> {
@@ -299,10 +301,17 @@ export class ProgressBar {
    */
   async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#print()
-      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
-      .then(() => this.#writer.close())
-      .then(() => this.#pipePromise)
-      .catch(() => {});
+    try {
+      if (this.#clear) {
+        await this.#writer.write("\r\u001b[K");
+      } else {
+        await this.#print();
+        await this.#writer.write("\n");
+      }
+      await this.#writer.close();
+      await this.#pipePromise;
+    } catch {
+      // ignore
+    }
   }
 }
