@@ -173,6 +173,86 @@ function needIndentIndicator(string: string): boolean {
   return LEADING_SPACE_REGEXP.test(string);
 }
 
+// Determines which scalar styles are possible and returns the preferred style.
+// lineWidth = -1 => no limit.
+// Pre-conditions: str.length > 0.
+// Post-conditions:
+//  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
+//  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
+//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth !== -1).
+function chooseScalarStyle(
+  string: string,
+  singleLineOnly: boolean,
+  indentPerLevel: number,
+  lineWidth: number,
+  implicitTypes: Type<"scalar", unknown>[],
+  quoteStyle: "'" | '"',
+): number {
+  const shouldTrackWidth = lineWidth !== -1;
+  let hasLineBreak = false;
+  let hasFoldableLine = false; // only checked if shouldTrackWidth
+  let previousLineBreak = -1; // count the first line correctly
+  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+    !isWhiteSpace(string.charCodeAt(string.length - 1));
+
+  let char: number;
+  let i: number;
+  if (singleLineOnly) {
+    // Case: no block styles.
+    // Check for disallowed characters to rule out plain and single.
+    for (i = 0; i < string.length; i++) {
+      char = string.charCodeAt(i);
+      if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+      plain = plain && isPlainSafe(char);
+    }
+  } else {
+    // Case: block styles permitted.
+    for (i = 0; i < string.length; i++) {
+      char = string.charCodeAt(i);
+      if (char === LINE_FEED) {
+        hasLineBreak = true;
+        // Check if any line can be folded.
+        if (shouldTrackWidth) {
+          hasFoldableLine = hasFoldableLine ||
+            // Foldable line = too long, and not more-indented.
+            (i - previousLineBreak - 1 > lineWidth &&
+              string[previousLineBreak + 1] !== " ");
+          previousLineBreak = i;
+        }
+      } else if (!isPrintable(char)) {
+        return STYLE_DOUBLE;
+      }
+      plain = plain && isPlainSafe(char);
+    }
+    // in case the end is missing a \n
+    hasFoldableLine = hasFoldableLine ||
+      (shouldTrackWidth &&
+        i - previousLineBreak - 1 > lineWidth &&
+        string[previousLineBreak + 1] !== " ");
+  }
+  // Although every style can represent \n without escaping, prefer block styles
+  // for multiline, since they're more readable and they don't add empty lines.
+  // Also prefer folding a super-long line.
+  if (!hasLineBreak && !hasFoldableLine) {
+    // Strings interpretable as another type have to be quoted;
+    // e.g. the string 'true' vs. the boolean true.
+    return plain && !implicitTypes.some((type) => type.resolve(string))
+      ? STYLE_PLAIN
+      : quoteStyle === "'"
+      ? STYLE_SINGLE
+      : STYLE_DOUBLE;
+  }
+  // Edge case: block indentation indicator can only have one digit.
+  if (indentPerLevel > 9 && needIndentIndicator(string)) {
+    return STYLE_DOUBLE;
+  }
+  // At this point we know block styles are valid.
+  // Prefer literal style unless we want to fold.
+  return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
+}
+
 // Greedy line breaking.
 // Picks the longest line under the limit each time,
 // otherwise settles for the shortest line over the limit.
@@ -367,6 +447,12 @@ export interface DumperStateOptions {
    * as spaces are %-encoded. (default: false).
    */
   condenseFlow?: boolean;
+  /**
+   * Strings will be quoted using this quoting style.
+   * If you specify single quotes, double quotes will still be used
+   * for non-printable characters. (default: "'")
+   */
+  quoteStyle?: "'" | '"';
 }
 
 export class DumperState {
@@ -384,6 +470,7 @@ export class DumperState {
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: Map<string, StyleVariant> = new Map();
+  quoteStyle: "'" | '"';
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -397,6 +484,7 @@ export class DumperState {
     useAnchors = true,
     compatMode = true,
     condenseFlow = false,
+    quoteStyle = "'",
   }: DumperStateOptions) {
     this.indent = Math.max(1, indent);
     this.arrayIndent = arrayIndent;
@@ -410,81 +498,7 @@ export class DumperState {
     this.condenseFlow = condenseFlow;
     this.implicitTypes = schema.implicitTypes;
     this.explicitTypes = schema.explicitTypes;
-  }
-
-  // Determines which scalar styles are possible and returns the preferred style.
-  // lineWidth = -1 => no limit.
-  // Pre-conditions: str.length > 0.
-  // Post-conditions:
-  //  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
-  //  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
-  //  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth !== -1).
-  protected chooseScalarStyle(
-    string: string,
-    singleLineOnly: boolean,
-    lineWidth: number,
-  ): number {
-    const shouldTrackWidth = lineWidth !== -1;
-    let hasLineBreak = false;
-    let hasFoldableLine = false; // only checked if shouldTrackWidth
-    let previousLineBreak = -1; // count the first line correctly
-    let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
-      !isWhiteSpace(string.charCodeAt(string.length - 1));
-
-    let char: number;
-    let i: number;
-    if (singleLineOnly) {
-      // Case: no block styles.
-      // Check for disallowed characters to rule out plain and single.
-      for (i = 0; i < string.length; i++) {
-        char = string.charCodeAt(i);
-        if (!isPrintable(char)) {
-          return STYLE_DOUBLE;
-        }
-        plain = plain && isPlainSafe(char);
-      }
-    } else {
-      // Case: block styles permitted.
-      for (i = 0; i < string.length; i++) {
-        char = string.charCodeAt(i);
-        if (char === LINE_FEED) {
-          hasLineBreak = true;
-          // Check if any line can be folded.
-          if (shouldTrackWidth) {
-            hasFoldableLine = hasFoldableLine ||
-              // Foldable line = too long, and not more-indented.
-              (i - previousLineBreak - 1 > lineWidth &&
-                string[previousLineBreak + 1] !== " ");
-            previousLineBreak = i;
-          }
-        } else if (!isPrintable(char)) {
-          return STYLE_DOUBLE;
-        }
-        plain = plain && isPlainSafe(char);
-      }
-      // in case the end is missing a \n
-      hasFoldableLine = hasFoldableLine ||
-        (shouldTrackWidth &&
-          i - previousLineBreak - 1 > lineWidth &&
-          string[previousLineBreak + 1] !== " ");
-    }
-    // Although every style can represent \n without escaping, prefer block styles
-    // for multiline, since they're more readable and they don't add empty lines.
-    // Also prefer folding a super-long line.
-    if (!hasLineBreak && !hasFoldableLine) {
-      // Strings interpretable as another type have to be quoted;
-      // e.g. the string 'true' vs. the boolean true.
-      return plain && !this.implicitTypes.some((type) => type.resolve(string))
-        ? STYLE_PLAIN
-        : STYLE_SINGLE;
-    }
-    // Edge case: block indentation indicator can only have one digit.
-    if (this.indent > 9 && needIndentIndicator(string)) {
-      return STYLE_DOUBLE;
-    }
-    // At this point we know block styles are valid.
-    // Prefer literal style unless we want to fold.
-    return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
+    this.quoteStyle = quoteStyle;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
@@ -524,10 +538,13 @@ export class DumperState {
       // No block styles in flow mode.
       (this.flowLevel > -1 && level >= this.flowLevel);
 
-    const scalarStyle = this.chooseScalarStyle(
+    const scalarStyle = chooseScalarStyle(
       string,
       singleLineOnly,
+      this.indent,
       lineWidth,
+      this.implicitTypes,
+      this.quoteStyle,
     );
     switch (scalarStyle) {
       case STYLE_PLAIN:

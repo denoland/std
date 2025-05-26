@@ -4,12 +4,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { DumperState } from "./_unstable_dumper_state.ts";
-import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
-import type { StyleVariant } from "./_type.ts";
+import { DumperState } from "./_dumper_state.ts";
+import { SCHEMA_MAP } from "./_schema.ts";
 import type { StringifyOptions as StableStringifyOptions } from "./stringify.ts";
-
-export type { SchemaType, StyleVariant };
 
 /** Options for {@linkcode stringify}. */
 export type StringifyOptions = StableStringifyOptions & {
@@ -18,7 +15,7 @@ export type StringifyOptions = StableStringifyOptions & {
    * If you specify single quotes, double quotes will still be used
    * for non-printable characters.
    *
-   * @default {`'`}}
+   * @default {`'`}
    */
   quoteStyle?: "'" | '"';
 };
