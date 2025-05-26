@@ -295,9 +295,17 @@ export class ProgressBar {
    */
   async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#writer.write(this.#clear ? "\r\u001b[K" : "\n")
-      .then(() => this.#writer.close())
-      .then(() => this.#pipePromise)
-      .catch(() => {});
+    try {
+      if (this.#clear) {
+        await this.#writer.write("\r\u001b[K");
+      } else {
+        await this.#print();
+        await this.#writer.write("\n");
+      }
+      await this.#writer.close();
+      await this.#pipePromise;
+    } catch {
+      // ignore
+    }
   }
 }
