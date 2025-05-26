@@ -12,14 +12,19 @@
  */
 export type Prng = typeof Math.random;
 
+/** An integer typed array */
+export type IntegerTypedArray = ReturnType<typeof crypto.getRandomValues>;
+
 /**
  * A pseudo-random number generator implementing the same contract as
- * `crypto.getRandomValues`, i.e. taking a `Uint8Array` and mutating it by
- * filling it with random bytes, returning the mutated `Uint8Array` instance.
+ * `crypto.getRandomValues`, i.e. taking a typed array and mutating it by
+ * filling it with random bytes, returning the mutated typed array instance.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type ByteGenerator = <T extends Uint8Array>(bytes: T) => T;
+export type RandomValueGenerator<
+  T extends IntegerTypedArray = IntegerTypedArray,
+> = (bytes: T) => T;
 
 /**
  * Options for random number generation.

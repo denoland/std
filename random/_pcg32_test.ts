@@ -1,9 +1,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertNotEquals } from "@std/assert";
 import { Pcg32 } from "./_pcg32.ts";
 import { seedBytesFromUint64 } from "./_seed_bytes_from_uint64.ts";
-import { nextFloat64 } from "./number_types.ts";
+import { nextFloat64 } from "./next_float64.ts";
+import { mockLittleEndian } from "./_test_utils.ts";
+import { platform } from "./_platform.ts";
 
 Deno.test("seedBytesFromUint64() generates seeds from bigints", async (t) => {
   await t.step("first 10 16-bit seeds are same as rand crate", async (t) => {
@@ -127,22 +129,69 @@ Deno.test("nextUint32() generates random 32-bit integers", () => {
     2362354238,
   ];
 
-  const pgc = new Pcg32(0n);
+  const pcg = new Pcg32(0n);
   for (const sample of rustRandSamples) {
-    assertEquals(pgc.nextUint32(), sample);
+    assertEquals(pcg.nextUint32(), sample);
   }
 });
 
 Deno.test("getRandomValues() writes bytes", () => {
-  const pgc = new Pcg32(0n);
+  const pcg = new Pcg32(0n);
 
   const a = new Uint8Array(10);
   const b = a.subarray(3, 8);
-  const c = pgc.getRandomValues(b);
+  const c = pcg.getRandomValues(b);
 
   assert(b === c);
   assertEquals(Array.from(b), [3, 217, 205, 17, 215]);
   assertEquals(Array.from(a), [0, 0, 0, 3, 217, 205, 17, 215, 0, 0]);
+});
+
+Deno.test("getRandomValues() gives correct results for multi-byte typed arrays in both endiannesses", async (t) => {
+  for (
+    const numberType of [
+      "Int8",
+      "Int16",
+      "Int32",
+      "BigInt64",
+      "Uint8",
+      "Uint16",
+      "Uint32",
+      "BigUint64",
+    ] as const
+  ) {
+    await t.step(numberType, () => {
+      const platformLittleEndian = platform.littleEndian;
+
+      const length = 10;
+      const TypedArray =
+        globalThis[`${numberType}Array`] as BigInt64ArrayConstructor;
+      const { BYTES_PER_ELEMENT } = TypedArray;
+
+      const native = new Pcg32(0n).getRandomValues(new TypedArray(length));
+      const u8 = new Pcg32(0n).getRandomValues(
+        new Uint8Array(length * BYTES_PER_ELEMENT),
+      );
+      const dv = new DataView(u8.buffer);
+      const fromDv = TypedArray.from({ length }, (_, i) => {
+        return dv[`get${numberType}`](i * BYTES_PER_ELEMENT, true) as bigint;
+      });
+
+      assertEquals(native, fromDv);
+
+      for (const littleEndian of [false, true]) {
+        using _ = mockLittleEndian(littleEndian);
+        const TypedArray =
+          globalThis[`${numberType}Array`] as BigInt64ArrayConstructor;
+        const mocked = new Pcg32(0n).getRandomValues(new TypedArray(length));
+
+        assertEquals(mocked, native);
+        if (BYTES_PER_ELEMENT > 1 && littleEndian !== platformLittleEndian) {
+          assertNotEquals(u8, new Uint8Array(mocked.buffer));
+        }
+      }
+    });
+  }
 });
 
 Deno.test("nextFloat64() generates the same random numbers as rust rand crate", () => {
@@ -172,9 +221,9 @@ Deno.test("nextFloat64() generates the same random numbers as rust rand crate", 
     0.4625920669083482,
   ];
 
-  const pgc = new Pcg32(0n);
+  const pcg = new Pcg32(0n);
   for (const sample of rustRandSamples) {
-    assertEquals(nextFloat64(pgc.getRandomValues.bind(pgc)), sample);
+    assertEquals(nextFloat64(pcg.getRandomValues.bind(pcg)), sample);
   }
 });
 
@@ -195,9 +244,9 @@ Deno.test("getRandomValues() can be used to generate the same arbitrary numeric 
      */
     const rustRandSamples = [3, 215, 211, 62, 155, 133, 142, 14, 192, 62];
 
-    const pgc = new Pcg32(0n);
+    const pcg = new Pcg32(0n);
     for (const sample of rustRandSamples) {
-      const b = pgc.getRandomValues(new Uint8Array(1));
+      const b = pcg.getRandomValues(new Uint8Array(1));
       assertEquals(b[0], sample);
     }
   });
@@ -229,9 +278,9 @@ Deno.test("getRandomValues() can be used to generate the same arbitrary numeric 
       8533317468786625891n,
     ];
 
-    const pgc = new Pcg32(0n);
+    const pcg = new Pcg32(0n);
     for (const sample of rustRandSamples) {
-      const b = pgc.getRandomValues(new Uint8Array(8));
+      const b = pcg.getRandomValues(new Uint8Array(8));
       assertEquals(new DataView(b.buffer).getBigInt64(0, true), sample);
     }
   });

@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { nextFloat64 } from "./number_types.ts";
-import { byteGeneratorSeeded, type Prng, randomSeeded } from "./seeded.ts";
+import { getRandomValuesSeeded } from "./get_random_values_seeded.ts";
+import { nextFloat64 } from "./next_float64.ts";
+import { type Prng, randomSeeded } from "./seeded.ts";
 import { assertAlmostEquals, assertEquals } from "@std/assert";
 
 Deno.test("randomSeeded() generates random numbers", () => {
@@ -13,7 +14,7 @@ Deno.test("randomSeeded() generates random numbers", () => {
 
 Deno.test("byteGeneratorSeeded() with nextFloat64() gives relatively uniform distribution of random numbers", async (t) => {
   function randomSeeded53Bit(seed: bigint): Prng {
-    const byteGenerator = byteGeneratorSeeded(seed);
+    const byteGenerator = getRandomValuesSeeded(seed);
     return () => nextFloat64(byteGenerator);
   }
 
@@ -69,7 +70,7 @@ Deno.test("byteGeneratorSeeded() with nextFloat64() gives relatively uniform dis
 });
 
 Deno.test("byteGeneratorSeeded() generates bytes", () => {
-  const prng = byteGeneratorSeeded(1n);
+  const prng = getRandomValuesSeeded(1n);
   assertEquals(
     prng(new Uint8Array(5)),
     new Uint8Array([230, 11, 167, 51, 238]),

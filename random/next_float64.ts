@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import type { ByteGenerator } from "./_types.ts";
+import type { RandomValueGenerator } from "./_types.ts";
 
 const b8 = new Uint8Array(8);
 const dv8 = new DataView(b8.buffer);
@@ -38,7 +38,7 @@ const FLOAT_64_MULTIPLIER = 2 ** -53;
  * assertLess(val, 1);
  * ```
  */
-export function nextFloat64(byteGenerator: ByteGenerator): number {
+export function nextFloat64(byteGenerator: RandomValueGenerator): number {
   byteGenerator(b8);
   const int53 = Number(dv8.getBigUint64(0, true) >> 11n);
   // assert(int53 <= Number.MAX_SAFE_INTEGER)

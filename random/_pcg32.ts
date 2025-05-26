@@ -1,7 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
+import { platform } from "./_platform.ts";
 import { seedBytesFromUint64 } from "./_seed_bytes_from_uint64.ts";
+import type { IntegerTypedArray } from "./_types.ts";
 
 const b4 = new Uint8Array(4);
 const dv4 = new DataView(b4.buffer);
@@ -11,11 +13,11 @@ abstract class Prng32 {
   abstract nextUint32(): number;
 
   /**
-   * Mutates the provided `Uint8Array` with pseudo-random values.
-   * @returns The same `Uint8Array`, now populated with random values.
+   * Mutates the provided typed array with pseudo-random values.
+   * @returns The same typed array, now populated with random values.
    */
-  getRandomValues<T extends Uint8Array>(bytes: T): T {
-    const { buffer, byteLength, byteOffset } = bytes;
+  getRandomValues<T extends IntegerTypedArray>(arr: T): T {
+    const { buffer, byteLength, byteOffset } = arr;
     const rem = byteLength % 4;
     const cutoffLen = byteLength - rem;
 
@@ -31,7 +33,18 @@ abstract class Prng32 {
       }
     }
 
-    return bytes;
+    if (arr.BYTES_PER_ELEMENT !== 1 && !platform.littleEndian) {
+      const bits = arr.BYTES_PER_ELEMENT * 8;
+      const name = bits > 32
+        ? `BigUint${bits as 64}` as const
+        : `Uint${bits as 16 | 32}` as const;
+      for (let i = 0; i < arr.length; ++i) {
+        const idx = i * arr.BYTES_PER_ELEMENT;
+        dv[`set${name}`](idx, dv[`get${name}`](idx, true) as never, false);
+      }
+    }
+
+    return arr;
   }
 }
 

@@ -4,8 +4,9 @@
   "exports": {
     ".": "./mod.ts",
     "./between": "./between.ts",
+    "./get-random-values-seeded": "./get_random_values_seeded.ts",
     "./integer-between": "./integer_between.ts",
-    "./number-types": "./number_types.ts",
+    "./next-float64": "./next_float64.ts",
     "./sample": "./sample.ts",
     "./seeded": "./seeded.ts",
     "./shuffle": "./shuffle.ts"
