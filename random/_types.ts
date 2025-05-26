@@ -13,7 +13,16 @@
 export type Prng = typeof Math.random;
 
 /** An integer typed array */
-export type IntegerTypedArray = ReturnType<typeof crypto.getRandomValues>;
+export type IntegerTypedArray =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | BigInt64Array
+  | BigUint64Array;
 
 /**
  * A pseudo-random number generator implementing the same contract as
@@ -22,7 +31,7 @@ export type IntegerTypedArray = ReturnType<typeof crypto.getRandomValues>;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type RandomValueGenerator = typeof crypto.getRandomValues;
+export type RandomValueGenerator = <T extends IntegerTypedArray>(array: T) => T;
 
 /**
  * Options for random number generation.
