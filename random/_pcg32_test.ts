@@ -3,7 +3,7 @@
 import { assert, assertEquals, assertNotEquals } from "@std/assert";
 import { Pcg32 } from "./_pcg32.ts";
 import { seedBytesFromUint64 } from "./_seed_bytes_from_uint64.ts";
-import { nextFloat64 } from "./next_float64.ts";
+import { nextFloat64 } from "./next_float_64.ts";
 import { mockLittleEndian } from "./_test_utils.ts";
 import { platform } from "./_platform.ts";
 

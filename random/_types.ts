@@ -22,9 +22,7 @@ export type IntegerTypedArray = ReturnType<typeof crypto.getRandomValues>;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type RandomValueGenerator<
-  T extends IntegerTypedArray = IntegerTypedArray,
-> = (bytes: T) => T;
+export type RandomValueGenerator = typeof crypto.getRandomValues;
 
 /**
  * Options for random number generation.
