@@ -150,7 +150,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * const bar = new ProgressBar({
  *   max: 100,
  *   fmt(x) {
- *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
+ *     return `[${x.styledTime()}] [${x.progressBar}] [${x.value}/${x.max} files]`;
  *   },
  * });
  *
