@@ -208,8 +208,8 @@ export class ProgressBar {
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
+  #previousTime: number;
+  #previousValue: number;
   #barLength: number;
   #fillChar: string;
   #emptyChar: string;
@@ -256,14 +256,14 @@ export class ProgressBar {
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
     this.#startTime = performance.now();
-    this.#lastTime = this.#startTime;
-    this.#lastValue = this.value;
+    this.#previousTime = 0;
+    this.#previousValue = this.value;
 
     this.#id = setInterval(() => this.#print(), 1000);
     this.#print();
   }
   #createFormatterObject() {
-    const currentTime = performance.now();
+    const time = performance.now() - this.#startTime;
 
     const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
@@ -281,10 +281,10 @@ export class ProgressBar {
         return `${currentValue}/${maxValue} ${this.#unit}`;
       },
       progressBar: `${fillChars}${emptyChars}`,
-      time: currentTime - this.#startTime,
-      previousTime: this.#lastTime - this.#startTime,
+      time,
+      previousTime: this.#previousTime,
       value: this.value,
-      previousValue: this.#lastValue,
+      previousValue: this.#previousValue,
       max: this.max,
     };
   }
@@ -296,8 +296,8 @@ export class ProgressBar {
     } catch {
       // ignore
     }
-    this.#lastTime = formatter.time;
-    this.#lastValue = formatter.value;
+    this.#previousTime = formatter.time;
+    this.#previousValue = formatter.value;
   }
 
   /**
