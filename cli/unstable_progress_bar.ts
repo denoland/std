@@ -289,15 +289,15 @@ export class ProgressBar {
     };
   }
   async #print(): Promise<void> {
+    const formatter = this.#createFormatterObject();
+    const output = this.#fmt(formatter);
     try {
-      const formatter = this.#createFormatterObject();
-      const output = this.#fmt(formatter);
       await this.#writer.write(LINE_CLEAR + output);
-      this.#lastTime = formatter.time;
-      this.#lastValue = formatter.value;
     } catch {
       // ignore
     }
+    this.#lastTime = formatter.time;
+    this.#lastValue = formatter.value;
   }
 
   /**
