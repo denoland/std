@@ -315,12 +315,17 @@ Deno.test({
     assertEquals(parse("+123"), 123);
     assertEquals(parse("-123"), -123);
     assertEquals(parse("123_456"), 123456);
+    assertEquals(parse("0"), 0);
     assertThrows(() => parse(""));
     assertThrows(() => parse("+Z"));
     assertThrows(() => parse("0x"));
     assertThrows(() => parse("_123"));
     assertThrows(() => parse("123_"));
     assertThrows(() => parse("123__456"));
+    assertThrows(() => parse("01"));
+    assertThrows(() => parse("00"));
+    assertThrows(() => parse("-01"));
+    assertThrows(() => parse("+0_2"));
   },
 });
 

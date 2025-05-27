@@ -6,18 +6,18 @@
 export interface ProgressBarFormatter {
   /**
    * A function that returns a formatted version of the duration.
-   * `[mm:ss]`
+   * `mm:ss`
    */
   styledTime: () => string;
   /**
    * A function that returns a formatted version of the data received.
-   * `[0.40/97.66 KiB]`
+   * `0.40/97.66 KiB`
    * @param fractions The number of decimal places the values should have.
    */
   styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
-   * Default Style: `[###-------]`
+   * Default Style: `###-------`
    */
   progressBar: string;
   /**
@@ -93,15 +93,7 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
-
-function getUnit(max: number): Unit {
-  if (max < 2 ** 20) return "KiB";
-  if (max < 2 ** 30) return "MiB";
-  if (max < 2 ** 40) return "GiB";
-  if (max < 2 ** 50) return "TiB";
-  return "PiB";
-}
+type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB" | "EiB" | "ZiB" | "YiB";
 
 const UNIT_RATE_MAP = new Map<Unit, number>([
   ["KiB", 2 ** 10],
@@ -109,7 +101,19 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
   ["GiB", 2 ** 30],
   ["TiB", 2 ** 40],
   ["PiB", 2 ** 50],
+  ["EiB", 2 ** 60],
+  ["ZiB", 2 ** 70],
+  ["YiB", 2 ** 80],
 ]);
+
+function getUnitEntry(max: number): [Unit, number] {
+  let result: [Unit, number] = ["KiB", 2 ** 10];
+  for (const entry of UNIT_RATE_MAP) {
+    if (entry[1] > max) break;
+    result = entry;
+  }
+  return result;
+}
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
@@ -150,7 +154,7 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * const bar = new ProgressBar({
  *   max: 100,
  *   fmt(x) {
- *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
+ *     return `[${x.styledTime()}] [${x.progressBar}] [${x.value}/${x.max} files]`;
  *   },
  * });
  *
@@ -212,8 +216,9 @@ export class ProgressBar {
   set max(value: number) {
     if (this.#max === value) return;
     this.#max = value;
-    this.#unit = getUnit(this.#max);
-    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+    const [unit, rate] = getUnitEntry(this.#max);
+    this.#unit = unit;
+    this.#rate = rate;
     this.#hasUpdate = true;
   }
   get max(): number {
@@ -248,7 +253,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
+      fmt = (x) => `[${x.styledTime()}] [${x.progressBar}] [${x.styledData()}]`,
       keepOpen = true,
     } = options;
     this.value = value;
@@ -260,12 +265,16 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
+    const [unit, rate] = getUnitEntry(options.max);
+
+    this.#unit = unit;
+    this.#rate = rate;
+
     const stream = new TextEncoderStream();
     this.#pipePromise = stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-
     this.#startTime = performance.now();
     this.#lastTime = this.#startTime;
     this.#lastValue = this.value;
@@ -289,14 +298,14 @@ export class ProgressBar {
       styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `[${minutes}:${seconds}]`;
+        return `${minutes}:${seconds}`;
       },
       styledData: (fractions = 2): string => {
         const currentValue = (this.value / this.#rate).toFixed(fractions);
         const maxValue = (this.max / this.#rate).toFixed(fractions);
-        return `[${currentValue}/${maxValue} ${this.#unit}]`;
+        return `${currentValue}/${maxValue} ${this.#unit}`;
       },
-      progressBar: `[${fillChars}${emptyChars}]`,
+      progressBar: `${fillChars}${emptyChars}`,
       time: currentTime - this.#startTime,
       previousTime: this.#lastTime - this.#startTime,
       value: this.value,
@@ -322,9 +331,17 @@ export class ProgressBar {
    */
   async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#writer.write(this.#clear ? "\r\u001b[K" : "\n")
-      .then(() => this.#writer.close())
-      .then(() => this.#pipePromise)
-      .catch(() => {});
+    try {
+      if (this.#clear) {
+        await this.#writer.write("\r\u001b[K");
+      } else {
+        await this.#print();
+        await this.#writer.write("\n");
+      }
+      await this.#writer.close();
+      await this.#pipePromise;
+    } catch {
+      // ignore
+    }
   }
 }
