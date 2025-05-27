@@ -294,7 +294,7 @@ export class ProgressBar {
       const output = this.#fmt(formatter);
       await this.#writer.write(LINE_CLEAR + output);
       this.#lastTime = formatter.time;
-      this.#lastValue = this.value;
+      this.#lastValue = formatter.value;
     } catch {
       // ignore
     }
