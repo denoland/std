@@ -53,7 +53,7 @@ export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
         bar = new ProgressBar(options);
       },
       transform(chunk, controller) {
-        bar?.add(chunk.length);
+        if (bar) bar.value += chunk.length;
         controller.enqueue(chunk);
       },
       flush(_controller) {

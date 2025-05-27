@@ -6,18 +6,18 @@
 export interface ProgressBarFormatter {
   /**
    * A function that returns a formatted version of the duration.
-   * `[mm:ss]`
+   * `mm:ss`
    */
   styledTime: () => string;
   /**
    * A function that returns a formatted version of the data received.
-   * `[0.40/97.66 KiB]`
+   * `0.40/97.66 KiB`
    * @param fractions The number of decimal places the values should have.
    */
   styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
-   * Default Style: `[###-------]`
+   * Default Style: `###-------`
    */
   progressBar: string;
   /**
@@ -85,15 +85,7 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
-
-function getUnit(max: number): Unit {
-  if (max < 2 ** 20) return "KiB";
-  if (max < 2 ** 30) return "MiB";
-  if (max < 2 ** 40) return "GiB";
-  if (max < 2 ** 50) return "TiB";
-  return "PiB";
-}
+type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB" | "EiB" | "ZiB" | "YiB";
 
 const UNIT_RATE_MAP = new Map<Unit, number>([
   ["KiB", 2 ** 10],
@@ -101,12 +93,24 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
   ["GiB", 2 ** 30],
   ["TiB", 2 ** 40],
   ["PiB", 2 ** 50],
+  ["EiB", 2 ** 60],
+  ["ZiB", 2 ** 70],
+  ["YiB", 2 ** 80],
 ]);
+
+function getUnitEntry(max: number): [Unit, number] {
+  let result: [Unit, number] = ["KiB", 2 ** 10];
+  for (const entry of UNIT_RATE_MAP) {
+    if (entry[1] > max) break;
+    result = entry;
+  }
+  return result;
+}
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
- * {@link WritableStream} on a 1s interval. Progress is communicated by calling
- * the `ProgressBar.add(x: number)` method.
+ * {@link WritableStream} on a 1s interval. Progress is communicated by using
+ * the `ProgressBar.value` property.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -126,11 +130,11 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * const bar = new ProgressBar({ max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   bar.add(buffer.length);
+ *   bar.value += buffer.length;
  *   await writer.write(buffer);
  * }
  *
- * await bar.end();
+ * await bar.stop();
  * await writer.close();
  * ```
  *
@@ -142,32 +146,61 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * const bar = new ProgressBar({
  *   max: 100,
  *   fmt(x) {
- *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
+ *     return `[${x.styledTime()}] [${x.progressBar}] [${x.value}/${x.max} files]`;
  *   },
  * });
  *
  * for (const x of Array(100)) {
- *   bar.add(1);
+ *   bar.value += 1;
  *   await delay(Math.random() * 500);
  * }
  *
- * bar.end();
+ * await bar.stop();
  */
 export class ProgressBar {
+  /**
+   * The current progress that has been completed.
+   * @example Usage
+   * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar({ max : 10 });
+   * progressBar.value += 1;
+   *
+   * // do stuff
+   *
+   * await progressBar.stop();
+   * ```
+   */
+  value: number;
+  /**
+   * The maximum progress that is expected.
+   * @example Usage
+   * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar({ max : 1 });
+   * progressBar.max = 100;
+   *
+   * // do stuff
+   *
+   * await progressBar.stop();
+   * ```
+   */
+  max: number;
+
   #unit: Unit;
   #rate: number;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
-
-  #value: number;
-  #max: number;
   #barLength: number;
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
   #fmt: (fmt: ProgressBarFormatter) => string;
   #keepOpen: boolean;
+  #pipePromise: Promise<void>;
   /**
    * Constructs a new instance.
    *
@@ -179,15 +212,16 @@ export class ProgressBar {
     const {
       writable = Deno.stderr.writable,
       value = 0,
+      max,
       barLength = 50,
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
+      fmt = (x) => `[${x.styledTime()}] [${x.progressBar}] [${x.styledData()}]`,
       keepOpen = true,
     } = options;
-    this.#value = value;
-    this.#max = options.max;
+    this.value = value;
+    this.max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
@@ -195,22 +229,26 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    this.#unit = getUnit(options.max);
-    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
+    const [unit, rate] = getUnitEntry(options.max);
+
+    this.#unit = unit;
+    this.#rate = rate;
 
     const stream = new TextEncoderStream();
-    stream.readable
+    this.#pipePromise = stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-    this.#id = setInterval(() => this.#print(), 1000);
     this.#startTime = performance.now();
+
+    this.#id = setInterval(() => this.#print(), 1000);
+    this.#print();
   }
 
   async #print(): Promise<void> {
     const currentTime = performance.now();
 
-    const size = this.#value / this.#max * this.#barLength | 0;
+    const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
@@ -218,36 +256,20 @@ export class ProgressBar {
       styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `[${minutes}:${seconds}]`;
+        return `${minutes}:${seconds}`;
       },
       styledData: (fractions = 2): string => {
-        const currentValue = (this.#value / this.#rate).toFixed(fractions);
-        const maxValue = (this.#max / this.#rate).toFixed(fractions);
-        return `[${currentValue}/${maxValue} ${this.#unit}]`;
+        const currentValue = (this.value / this.#rate).toFixed(fractions);
+        const maxValue = (this.max / this.#rate).toFixed(fractions);
+        return `${currentValue}/${maxValue} ${this.#unit}`;
       },
-      progressBar: `[${fillChars}${emptyChars}]`,
+      progressBar: `${fillChars}${emptyChars}`,
       time: currentTime - this.#startTime,
-      value: this.#value,
-      max: this.#max,
+      value: this.value,
+      max: this.max,
     };
     await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
       .catch(() => {});
-  }
-
-  /**
-   * Increments the progress by `x`.
-   *
-   * @example Usage
-   * ```ts ignore
-   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
-   *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
-   * progressBar.add(10);
-   * ```
-   * @param x The amount of progress that has been made.
-   */
-  add(x: number): void {
-    this.#value += x;
   }
 
   /**
@@ -257,15 +279,23 @@ export class ProgressBar {
    * ```ts ignore
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
    *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
-   * await progressBar.end()
+   * const progressBar = new ProgressBar({ max: 100 });
+   * await progressBar.stop()
    * ```
    */
   async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#print()
-      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
-      .then(() => this.#writer.close())
-      .catch(() => {});
+    try {
+      if (this.#clear) {
+        await this.#writer.write("\r\u001b[K");
+      } else {
+        await this.#print();
+        await this.#writer.write("\n");
+      }
+      await this.#writer.close();
+      await this.#pipePromise;
+    } catch {
+      // ignore
+    }
   }
 }

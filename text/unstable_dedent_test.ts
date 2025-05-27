@@ -69,3 +69,12 @@ Deno.test("dedent() handles one line", () => {
     "one line",
   );
 });
+
+Deno.test("dedent() handles multiline substitution", () => {
+  const outer = dedent`
+    1
+    ${"2\n3"}
+    4
+`;
+  assertEquals(outer, "1\n2\n3\n4");
+});
