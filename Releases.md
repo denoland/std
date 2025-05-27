@@ -1,3 +1,74 @@
+### 2025.05.27
+
+#### @std/cli 1.0.18 (patch)
+
+- BREAKING(cli/unstable): make `ProgressBarFormatter.styledTime` a getter
+  (#6677)
+- BREAKING(cli/unstable): change custom formatter rule (#6678)
+- BREAKING(cli/unstable): make `ProgressBar` `value` and `max` properties
+  public, remove add method (#6430)
+- BREAKING(cli/unstable): make `ProgressBar` `writable` optional (#6409)
+- BREAKING(cli/unstable): rename `ProgressBar` `end()` method to `stop()`
+  (#6406)
+- fix(cli/unstable): fix resource leak of ProgressBar (#6675)
+- refactor(cli/unstable): string based `ProgressBar` tests (#6679)
+- refactor(cli/unstable): print initial `ProgressBar` (#6676)
+- refactor(cli/unstable): generalize units (#6680)
+
+#### @std/collections 1.1.1 (patch)
+
+- feat(collections/unstable): add non-exact binary search function (#6628)
+
+#### @std/datetime 0.225.5 (patch)
+
+- refactor(datetime): simplify month difference (#6662)
+
+#### @std/dotenv 0.225.5 (patch)
+
+- fix(dotenv): prevent prototype pollution during parsing (#6661)
+
+#### @std/http 1.0.17 (patch)
+
+- refactor(http): format file server HTML (#6659)
+- chore(http): remove unused `_mock_conn.ts` (#6654)
+
+#### @std/internal 1.0.8 (patch)
+
+- fix(internal): support AssertionState cleanup in node and bun (#6655)
+
+#### @std/path 1.1.0 (minor)
+
+- feat(path): add support of URL input for basename, dirname, extname, join, and
+  normalize (#6651)
+
+#### @std/random 0.1.1 (patch)
+
+- feat(random/unstable): allow generating seeded random bytes and 53-bit-entropy
+  floats in [0, 1) (add `getRandomValuesSeeded` and `nextFloat64`) (#6626)
+
+#### @std/testing 1.0.13 (patch)
+
+- feat(testing/unstable): add `assertInlineSnapshot()` (#6530)
+
+#### @std/text 1.0.14 (patch)
+
+- fix(text/unstable): make dedent match reference for multiline substitutions
+  (#6667)
+
+#### @std/toml 1.0.7 (patch)
+
+- fix(toml): leading zero errors (#6681)
+- refactor(toml): move `_parser.ts` tests to separate file (#6653)
+- refactor(toml): rewrite `deepAssignWithTable` (#6580)
+
+#### @std/uuid 1.0.8 (patch)
+
+- docs(uuid): update module docs to mention UUIDv7 (#6683)
+
+#### @std/yaml 1.0.7 (patch)
+
+- feat(yaml/unstable): support `quoteStyle` (#6666)
+
 ### 2025.05.13
 
 #### @std/async 1.0.13 (patch)
