@@ -23,7 +23,8 @@ Deno.test("ProgressBar() outputs default result", async () => {
   bar.stop().then(() => writable.close());
 
   const expected = [
-    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:00] [##################################################] [9.77/9.77 KiB]",
     "\n",
   ];
 
@@ -52,8 +53,8 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
   bar.stop().then(() => writable.close());
 
   const expected = [
-    "\r\u001b[K[00:00] [##################################################] [9.77/9.77 KiB] ",
-    "\r\u001b[K",
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K",
   ];
 
   const actual: string[] = [];
