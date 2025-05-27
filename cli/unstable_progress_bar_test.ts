@@ -82,11 +82,11 @@ Deno.test("ProgressBar() change max", async () => {
     "\n",
   ];
 
-  let index = 0;
+  const actual = [];
   for await (const buffer of readable) {
-    const actual = decoder.decode(buffer);
-    assertEquals(actual, expected[index++]);
+    actual.push(decoder.decode(buffer));
   }
+  assertEquals(actual, expected);
 });
 
 Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => {
