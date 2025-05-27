@@ -115,6 +115,12 @@ function getUnitEntry(max: number): [Unit, number] {
   return result;
 }
 
+const LINE_CLEAR = "\r\u001b[K";
+
+function defaultFormatter(x: ProgressBarFormatter) {
+  return `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`;
+}
+
 /**
  * `ProgressBar` is a customisable class that reports updates to a
  * {@link WritableStream} on a 1s interval. Progress is communicated by using
@@ -227,7 +233,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`,
+      fmt = defaultFormatter,
       keepOpen = true,
     } = options;
     this.value = value;
@@ -256,15 +262,14 @@ export class ProgressBar {
     this.#id = setInterval(() => this.#print(), 1000);
     this.#print();
   }
-
-  async #print(): Promise<void> {
+  #createFormatterObject() {
     const currentTime = performance.now();
 
     const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
-    const formatter: ProgressBarFormatter = {
+    return {
       get styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
@@ -282,10 +287,17 @@ export class ProgressBar {
       previousValue: this.#lastValue,
       max: this.max,
     };
-    this.#lastTime = currentTime;
-    this.#lastValue = this.value;
-    await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
-      .catch(() => {});
+  }
+  async #print(): Promise<void> {
+    try {
+      const formatter = this.#createFormatterObject();
+      const output = this.#fmt(formatter);
+      await this.#writer.write(LINE_CLEAR + output);
+      this.#lastTime = formatter.time;
+      this.#lastValue = this.value;
+    } catch {
+      // ignore
+    }
   }
 
   /**
@@ -303,7 +315,7 @@ export class ProgressBar {
     clearInterval(this.#id);
     try {
       if (this.#clear) {
-        await this.#writer.write("\r\u001b[K");
+        await this.#writer.write(LINE_CLEAR);
       } else {
         await this.#print();
         await this.#writer.write("\n");
