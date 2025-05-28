@@ -2,7 +2,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import {
   serveDir as stableServeDir,
-  ServeDirOptions as StableServeDirOptions,
+  type ServeDirOptions as StableServeDirOptions,
 } from "./file_server.ts";
 export { serveFile, type ServeFileOptions } from "./file_server.ts";
 
@@ -42,7 +42,7 @@ export { serveFile, type ServeFileOptions } from "./file_server.ts";
  * @param opts Additional options.
  * @returns A response for the request.
  */
-export async function serveDir(
+export function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {

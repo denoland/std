@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { serveDir, ServeDirOptions } from "./unstable_file_server.ts";
+import { serveDir, type ServeDirOptions } from "./unstable_file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "@std/path";
 import { assertEquals } from "@std/assert";
 
