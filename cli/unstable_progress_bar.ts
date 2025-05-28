@@ -172,8 +172,14 @@ function defaultFormatter(x: ProgressBarFormatter) {
  * await bar.stop();
  */
 export class ProgressBar {
+  #hasUpdate = true;
+
+  #value: number = 0;
   /**
    * The current progress that has been completed.
+   *
+   * @param value Value to set.
+   *
    * @example Usage
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
@@ -186,9 +192,21 @@ export class ProgressBar {
    * await progressBar.stop();
    * ```
    */
-  value: number;
+  set value(value: number) {
+    if (this.#value === value) return;
+    this.#value = value;
+    this.#hasUpdate = true;
+  }
+  get value(): number {
+    return this.#value;
+  }
+
+  #max: number = 0;
   /**
    * The maximum progress that is expected.
+   *
+   * @param value Max to set.
+   *
    * @example Usage
    * ```ts no-assert
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
@@ -201,10 +219,20 @@ export class ProgressBar {
    * await progressBar.stop();
    * ```
    */
-  max: number;
+  set max(value: number) {
+    if (this.#max === value) return;
+    this.#max = value;
+    const [unit, rate] = getUnitEntry(this.#max);
+    this.#unit = unit;
+    this.#rate = rate;
+    this.#hasUpdate = true;
+  }
+  get max(): number {
+    return this.#max;
+  }
 
-  #unit: Unit;
-  #rate: number;
+  #unit: Unit = "KiB";
+  #rate: number = 2 ** 10;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
@@ -222,9 +250,7 @@ export class ProgressBar {
    *
    * @param options The options to configure various settings of the progress bar.
    */
-  constructor(
-    options: ProgressBarOptions,
-  ) {
+  constructor(options: ProgressBarOptions) {
     const {
       writable = Deno.stderr.writable,
       value = 0,
@@ -259,11 +285,15 @@ export class ProgressBar {
     this.#previousTime = 0;
     this.#previousValue = this.value;
 
-    this.#id = setInterval(() => this.#print(), 1000);
+    this.#id = setInterval(() => this.#print(), 100);
     this.#print();
   }
   #createFormatterObject() {
     const time = performance.now() - this.#startTime;
+
+    const delta = currentTime - this.#lastTime;
+    if (delta < 1000 && !this.#hasUpdate) return;
+    this.#hasUpdate = false;
 
     const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
