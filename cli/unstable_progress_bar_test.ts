@@ -2,18 +2,34 @@
 
 import { assertEquals } from "@std/assert";
 import { ProgressBar } from "./unstable_progress_bar.ts";
+import { FakeTime } from "@std/testing/time";
 
 const decoder = new TextDecoder();
 
 Deno.test("ProgressBar() outputs default result", async () => {
+  using fakeTime = new FakeTime();
+
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 10 * 1000 });
-  bar.value += 10 * 1000;
+  for (let index = 0; index < 10; index++) {
+    bar.value += 1000;
+    fakeTime.tick(1000);
+  }
   bar.stop().then(() => writable.close());
 
   const expected = [
     "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
-    "\r\x1b[K[00:00] [##################################################] [9.77/9.77 KiB]",
+    "\r\x1b[K[00:01] [#####---------------------------------------------] [0.98/9.77 KiB]",
+    "\r\x1b[K[00:02] [##########----------------------------------------] [1.95/9.77 KiB]",
+    "\r\x1b[K[00:03] [###############-----------------------------------] [2.93/9.77 KiB]",
+    "\r\x1b[K[00:04] [####################------------------------------] [3.91/9.77 KiB]",
+    "\r\x1b[K[00:05] [#########################-------------------------] [4.88/9.77 KiB]",
+    "\r\x1b[K[00:06] [##############################--------------------] [5.86/9.77 KiB]",
+    "\r\x1b[K[00:07] [###################################---------------] [6.84/9.77 KiB]",
+    "\r\x1b[K[00:08] [########################################----------] [7.81/9.77 KiB]",
+    "\r\x1b[K[00:09] [#############################################-----] [8.79/9.77 KiB]",
+    "\r\x1b[K[00:10] [##################################################] [9.77/9.77 KiB]",
+    "\r\x1b[K[00:10] [##################################################] [9.77/9.77 KiB]",
     "\n",
   ];
 
@@ -25,15 +41,17 @@ Deno.test("ProgressBar() outputs default result", async () => {
 });
 
 Deno.test("ProgressBar() prints every second", async () => {
+  using fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 10 * 1000 });
-  await new Promise((a) => setTimeout(a, 3000));
+  fakeTime.tick(3000);
   bar.stop().then(() => writable.close());
 
   const expected = [
     "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
     "\r\x1b[K[00:01] [--------------------------------------------------] [0.00/9.77 KiB]",
     "\r\x1b[K[00:02] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:03] [--------------------------------------------------] [0.00/9.77 KiB]",
     "\r\x1b[K[00:03] [--------------------------------------------------] [0.00/9.77 KiB]",
     "\n",
   ];
@@ -46,6 +64,7 @@ Deno.test("ProgressBar() prints every second", async () => {
 });
 
 Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 10 * 1000 });
   bar.stop();
@@ -53,6 +72,7 @@ Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => 
 });
 
 Deno.test("ProgressBar() can remove itself when finished", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 10 * 1000, clear: true });
   bar.stop().then(() => writable.close());
@@ -70,6 +90,7 @@ Deno.test("ProgressBar() can remove itself when finished", async () => {
 });
 
 Deno.test("ProgressBar() passes correct values to formatter", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   let lastTime: undefined | number = undefined;
   let lastValue: undefined | number = undefined;
