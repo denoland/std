@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -21,6 +21,8 @@
 
 export * from "./between.ts";
 export * from "./integer_between.ts";
+export * from "./get_random_values_seeded.ts";
+export * from "./next_float_64.ts";
 export * from "./sample.ts";
 export * from "./seeded.ts";
 export * from "./shuffle.ts";

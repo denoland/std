@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright 2020 Keith Cirkel. All rights reserved. MIT license.
 // Copyright 2023 Skye "MierenManz". All rights reserved. MIT license.
 /**
@@ -27,6 +27,9 @@
 
 // This implementation is a port of https://deno.land/x/varint@v2.0.0 by @keithamus
 // This module is browser compatible.
+
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 
 /**
  * The maximum value of an unsigned 64-bit integer.
@@ -212,11 +215,12 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
  * assertEquals(encodeVarint(42n, buf), [new Uint8Array([42]), 1]);
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function encodeVarint(
   num: bigint | number,
   buf: Uint8Array = new Uint8Array(MaxVarintLen64),
   offset = 0,
-): [Uint8Array, number] {
+): [Uint8Array_, number] {
   num = BigInt(num);
   if (num < 0n) {
     throw new RangeError(

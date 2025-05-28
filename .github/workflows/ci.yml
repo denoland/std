@@ -13,6 +13,8 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    permissions:
+      id-token: write # Required for deployctl
     strategy:
       fail-fast: false
       matrix:
@@ -33,9 +35,12 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
+          cache: true
 
       - name: Run tests
-        run: deno task test
+        run: |
+          deno task test --coverage --clean
+          deno task test:with-unsafe-proto
 
       - name: Run timezone-dependent tests
         run: |
@@ -48,8 +53,14 @@ jobs:
         run: deno task test:browser
         if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
-      - name: Generate lcov
-        run: deno task cov:gen
+      - name: Publish dry run
+        run: deno publish --dry-run
+        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
+
+      - name: Generate lcov and html reports
+        run: |
+          deno task cov:lcov
+          deno task cov:html
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5
@@ -58,9 +69,13 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
 
-      - name: Publish dry run
-        run: deno publish --dry-run
-        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
+      - name: Upload coverage to Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: std-coverage
+          root: coverage/html
+          entrypoint: jsr:@std/http@1/file-server
+        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest' && github.event_name == 'push'
 
   test-node:
     runs-on: ${{ matrix.os }}
@@ -79,17 +94,44 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-      - run: npm install
-        working-directory: _tools/node_test_runner
-
       - name: Run tests
         run: deno task test:node
+
+  test-bun:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        bun:
+          - latest
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          cache: true
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun }}
+
+      - name: Run tests
+        run: deno task test:bun
 
   lint:
     runs-on: ${{ matrix.os }}
@@ -110,6 +152,7 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: canary
+          cache: true
 
       - name: Format
         run: deno fmt --check
@@ -151,13 +194,15 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         if: success() && steps.source.outputs.modified == 'true'
+        with:
+          cache: true
 
       - name: Set up Rust
         uses: hecrj/setup-rust-action@v2
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in _wasm/rust-toolchain.toml of the module folder
-          rust-version: 1.77.2
+          rust-version: 1.85.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

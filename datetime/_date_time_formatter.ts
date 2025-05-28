@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 function digits(value: string | number, count = 2): string {
@@ -295,7 +295,7 @@ export class DateTimeFormatter {
           const value = utc
             ? date.getUTCMilliseconds()
             : date.getMilliseconds();
-          string += digits(value, Number(part.value));
+          string += digits(value, 3).slice(0, Number(part.value));
           break;
         }
         // FIXME(bartlomieju)
@@ -325,17 +325,19 @@ export class DateTimeFormatter {
 
     for (const part of this.#formatParts) {
       const type = part.type;
-
+      let length = 0;
       let value = "";
       switch (part.type) {
         case "year": {
           switch (part.value) {
             case "numeric": {
-              value = /^\d{1,4}/.exec(string)?.[0] as string;
+              value = /^\d{4}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "2-digit": {
-              value = /^\d{1,2}/.exec(string)?.[0] as string;
+              value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             default:
@@ -349,22 +351,27 @@ export class DateTimeFormatter {
           switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "narrow": {
               value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "short": {
               value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "long": {
               value = /^[a-zA-Z]+/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             default:
@@ -378,10 +385,12 @@ export class DateTimeFormatter {
           switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             default:
@@ -395,6 +404,7 @@ export class DateTimeFormatter {
           switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
+              length = value?.length;
               if (part.hour12 && parseInt(value) > 12) {
                 // TODO(iuioiua): Replace with throwing an error
                 // deno-lint-ignore no-console
@@ -406,6 +416,7 @@ export class DateTimeFormatter {
             }
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               if (part.hour12 && parseInt(value) > 12) {
                 // TODO(iuioiua): Replace with throwing an error
                 // deno-lint-ignore no-console
@@ -427,10 +438,12 @@ export class DateTimeFormatter {
           switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             default:
@@ -444,10 +457,12 @@ export class DateTimeFormatter {
           switch (part.value) {
             case "numeric": {
               value = /^\d{1,2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             case "2-digit": {
               value = /^\d{2}/.exec(string)?.[0] as string;
+              length = value?.length;
               break;
             }
             default:
@@ -460,24 +475,40 @@ export class DateTimeFormatter {
         case "fractionalSecond": {
           value = new RegExp(`^\\d{${part.value}}`).exec(string)
             ?.[0] as string;
+          length = value?.length;
           break;
         }
         case "timeZoneName": {
           value = part.value as string;
+          length = value?.length;
           break;
         }
         case "dayPeriod": {
           value = /^[AP](?:\.M\.|M\.?)/i.exec(string)?.[0] as string;
           switch (value.toUpperCase()) {
             case "AM":
+              value = "AM";
+              length = 2;
+              break;
             case "AM.":
+              value = "AM";
+              length = 3;
+              break;
             case "A.M.":
               value = "AM";
+              length = 4;
               break;
             case "PM":
+              value = "PM";
+              length = 2;
+              break;
             case "PM.":
+              value = "PM";
+              length = 3;
+              break;
             case "P.M.":
               value = "PM";
+              length = 4;
               break;
             default:
               throw new Error(`DayPeriod '${value}' is not supported.`);
@@ -491,6 +522,7 @@ export class DateTimeFormatter {
             );
           }
           value = part.value as string;
+          length = value?.length;
           break;
         }
 
@@ -512,7 +544,7 @@ export class DateTimeFormatter {
       }
       parts.push({ type, value });
 
-      string = string.slice(value.length);
+      string = string.slice(length);
     }
 
     if (string.length) {

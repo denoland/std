@@ -52,6 +52,7 @@ jobs:
             fmt(/unstable)?
             front-matter(/unstable)?
             fs(/unstable)?
+            functions(/unstable)?
             html(/unstable)?
             http(/unstable)?
             ini(/unstable)?
@@ -59,7 +60,6 @@ jobs:
             io(/unstable)?
             json(/unstable)?
             jsonc(/unstable)?
-            kv(/unstable)?
             log(/unstable)?
             media-types(/unstable)?
             msgpack(/unstable)?

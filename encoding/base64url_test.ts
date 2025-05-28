@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { decodeBase64Url, encodeBase64Url } from "./base64url.ts";
@@ -50,7 +50,7 @@ Deno.test("decodeBase64Url() throws on invalid input", () => {
     assertThrows(
       () => decodeBase64Url(invalidb64url),
       TypeError,
-      "invalid character",
+      "Cannot decode input as base64: Invalid character",
     );
   }
 });
@@ -66,8 +66,8 @@ Deno.test("decodeBase64Url() throws on illegal base64url string", () => {
   for (const illegalBase64url of testsetIllegalBase64url) {
     assertThrows(
       () => decodeBase64Url(illegalBase64url),
-      TypeError,
-      "Illegal base64url string",
+      RangeError,
+      `Length (${illegalBase64url.length}), excluding padding, must not have a remainder of 1 when divided by 4`,
     );
   }
 });

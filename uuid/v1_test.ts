@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { generate, validate } from "./v1.ts";
 
@@ -69,6 +69,31 @@ Deno.test("generate() throws when create more than 10M uuids/sec", () => {
       generate({ nsecs: 10001 });
     },
     Error,
-    "Can't create more than 10M uuids/sec",
+    "Cannot create more than 10M uuids/sec",
   );
 });
+
+Deno.test("generate() uses random bytes from rng option", async () => {
+  const modUrl = new URL("v1.ts", import.meta.url);
+  // Eval in a new worker to avoid globally cached _nodeId and _clockseq values
+  const u = await evalInWorker(`(await import("${modUrl}")).generate({
+    rng() { return [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0x11, 0x11]; }
+  })`) as string;
+
+  // Checks the above rng is used for random bits
+  assert(u.endsWith("9111-0123456789ab"));
+});
+
+/** Evaluate the given expression in a new worker.
+ * This is used for avoiding the globally cached values. */
+function evalInWorker(expr: string) {
+  return new Promise((resolve) => {
+    const worker = new Worker(
+      `data:text/javascript,postMessage(${expr})`,
+      { type: "module" },
+    );
+    worker.addEventListener("message", ({ data }) => {
+      resolve(data);
+    });
+  });
+}

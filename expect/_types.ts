@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 export interface MatcherContext {
@@ -177,7 +177,10 @@ export interface Expected<IsAsync = false> {
   toBeCalledWith(...expected: unknown[]): void;
 
   /**
-   * Asserts that the value is close to the specified number within a tolerance.
+   * Asserts that a given numerical value is approximately equal to an
+   * expected number within a certain margin of error
+   * (tolerance). Useful when comparing floating-point numbers, which
+   * may be represented internally with precision errors.
    *
    * @example Usage
    * ```ts
@@ -189,7 +192,8 @@ export interface Expected<IsAsync = false> {
    * ```
    *
    * @param candidate The candidate number.
-   * @param tolerance The tolerance value (optional).
+   * @param tolerance The number of significant decimal digits to
+   *   consider when comparing the values (optional, default 2).
    */
   toBeCloseTo(candidate: number, tolerance?: number): void;
 

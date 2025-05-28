@@ -1,9 +1,10 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { CHAR_DOT } from "../_common/constants.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Return the extension of the `path` with leading period.
@@ -16,6 +17,9 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(extname("/home/user/Documents/file.ts"), ".ts");
  * assertEquals(extname("/home/user/Documents/"), "");
  * assertEquals(extname("/home/user/Documents/image.png"), ".png");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts?a=b")), ".ts");
+ * assertEquals(extname(new URL("file:///home/user/Documents/file.ts#header")), ".ts");
  * ```
  *
  * @example Working with URLs
@@ -34,13 +38,13 @@ import { isPosixPathSeparator } from "./_util.ts";
  * assertEquals(extname("https://deno.land/std/path/mod.ts#header"), ".ts#header");
  * ```
  *
- * Note: If you are working with file URLs,
- * use the new version of `extname` from `@std/path/posix/unstable-extname`.
- *
  * @param path The path to get the extension from.
  * @returns The extension (ex. for `file.ts` returns `.ts`).
  */
-export function extname(path: string): string {
+export function extname(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertPath(path);
 
   let startDot = -1;

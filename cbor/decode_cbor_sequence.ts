@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { decode } from "./_common_decode.ts";
 import type { CborType } from "./types.ts";
@@ -20,7 +20,7 @@ import type { CborType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
+ * import { type CborType, decodeCborSequence, encodeCborSequence } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -30,6 +30,8 @@ import type { CborType } from "./types.ts";
  *   -1,
  *   null,
  *   Uint8Array.from([0, 1, 2, 3]),
+ *   new Date(),
+ *   new Map<CborType, CborType>([[1, 2], ['3', 4], [[5], { a: 6 }]]),
  * ];
  *
  * const encodedMessage = encodeCborSequence(rawMessage);
@@ -38,13 +40,18 @@ import type { CborType } from "./types.ts";
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value The value to decode of type CBOR-sequence-encoded
+ * @param input The value to decode of type CBOR-sequence-encoded
  * {@link Uint8Array}.
  * @returns A {@link CborType} array representing the decoded data.
  */
-export function decodeCborSequence(value: Uint8Array): CborType[] {
+
+export function decodeCborSequence(input: Uint8Array): CborType[] {
   const output: CborType[] = [];
-  const source = Array.from(value).reverse();
-  while (source.length) output.push(decode(source));
+  let offset = 0;
+  while (offset < input.length) {
+    const x = decode(input, offset);
+    output.push(x[0]);
+    offset = x[1];
+  }
   return output;
 }

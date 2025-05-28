@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
@@ -119,10 +119,10 @@ export function equal(a: unknown, b: unknown): boolean {
         return compareTypedArrays(a as TypedArray, b as TypedArray);
       }
       if (a instanceof WeakMap) {
-        throw new TypeError("cannot compare WeakMap instances");
+        throw new TypeError("Cannot compare WeakMap instances");
       }
       if (a instanceof WeakSet) {
-        throw new TypeError("cannot compare WeakSet instances");
+        throw new TypeError("Cannot compare WeakSet instances");
       }
       if (a instanceof WeakRef) {
         return compare(a.deref(), (b as WeakRef<WeakKey>).deref());

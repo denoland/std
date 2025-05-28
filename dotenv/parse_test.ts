@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
@@ -275,4 +275,12 @@ Deno.test("parse() expands variables", () => {
     "single quoted!==double quoted",
     "variables within and without brackets expanded",
   );
+});
+
+Deno.test("parse() result is not affected by extended Object.prototype", () => {
+  // deno-lint-ignore no-explicit-any
+  (Object.prototype as any).foo = 1;
+  const result = parse("bar=1");
+  assertEquals(result.foo, undefined);
+  assertEquals(result.bar, "1");
 });

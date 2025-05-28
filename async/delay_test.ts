@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { delay } from "./delay.ts";
 import {
   assert,
@@ -106,7 +106,7 @@ Deno.test("delay() handles already aborted signal", async () => {
   assertIsDefaultAbortReason(cause);
 });
 
-Deno.test("delay() handles persitent option", async () => {
+Deno.test("delay() handles persistent option", async () => {
   using unrefTimer = stub(Deno, "unrefTimer");
   await delay(100, { persistent: false });
   assertSpyCalls(unrefTimer, 1);

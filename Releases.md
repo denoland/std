@@ -1,3 +1,755 @@
+### 2025.05.27
+
+#### @std/cli 1.0.18 (patch)
+
+- BREAKING(cli/unstable): make `ProgressBarFormatter.styledTime` a getter
+  (#6677)
+- BREAKING(cli/unstable): change custom formatter rule (#6678)
+- BREAKING(cli/unstable): make `ProgressBar` `value` and `max` properties
+  public, remove add method (#6430)
+- BREAKING(cli/unstable): make `ProgressBar` `writable` optional (#6409)
+- BREAKING(cli/unstable): rename `ProgressBar` `end()` method to `stop()`
+  (#6406)
+- fix(cli/unstable): fix resource leak of ProgressBar (#6675)
+- refactor(cli/unstable): string based `ProgressBar` tests (#6679)
+- refactor(cli/unstable): print initial `ProgressBar` (#6676)
+- refactor(cli/unstable): generalize units (#6680)
+
+#### @std/collections 1.1.1 (patch)
+
+- feat(collections/unstable): add non-exact binary search function (#6628)
+
+#### @std/datetime 0.225.5 (patch)
+
+- refactor(datetime): simplify month difference (#6662)
+
+#### @std/dotenv 0.225.5 (patch)
+
+- fix(dotenv): prevent prototype pollution during parsing (#6661)
+
+#### @std/http 1.0.17 (patch)
+
+- refactor(http): format file server HTML (#6659)
+- chore(http): remove unused `_mock_conn.ts` (#6654)
+
+#### @std/internal 1.0.8 (patch)
+
+- fix(internal): support AssertionState cleanup in node and bun (#6655)
+
+#### @std/path 1.1.0 (minor)
+
+- feat(path): add support of URL input for basename, dirname, extname, join, and
+  normalize (#6651)
+
+#### @std/random 0.1.1 (patch)
+
+- feat(random/unstable): allow generating seeded random bytes and 53-bit-entropy
+  floats in [0, 1) (add `getRandomValuesSeeded` and `nextFloat64`) (#6626)
+
+#### @std/testing 1.0.13 (patch)
+
+- feat(testing/unstable): add `assertInlineSnapshot()` (#6530)
+
+#### @std/text 1.0.14 (patch)
+
+- fix(text/unstable): make dedent match reference for multiline substitutions
+  (#6667)
+
+#### @std/toml 1.0.7 (patch)
+
+- fix(toml): leading zero errors (#6681)
+- refactor(toml): move `_parser.ts` tests to separate file (#6653)
+- refactor(toml): rewrite `deepAssignWithTable` (#6580)
+
+#### @std/uuid 1.0.8 (patch)
+
+- docs(uuid): update module docs to mention UUIDv7 (#6683)
+
+#### @std/yaml 1.0.7 (patch)
+
+- feat(yaml/unstable): support `quoteStyle` (#6666)
+
+### 2025.05.13
+
+#### @std/async 1.0.13 (patch)
+
+- fix(async): `abortable` should prevent uncaught error when promise is rejected
+  (#6312)
+
+#### @std/bytes 1.0.6 (patch)
+
+- fix(bytes): allow to concat() readonly arrays of bytes arrays (#6639)
+
+#### @std/collections 1.1.0 (minor)
+
+- feat(collections): stabilize `Iterable` input for `chunk`, `dropLastWhile`,
+  `dropWhile`, `intersect`, `sample`, `slidingWindows`, `sortBy`,
+  `takeLastWhile`, `takeWhile`, and `withoutAll` (#6644)
+- feat(collections/unstable): add cycle iterator utility (#6386)
+
+#### @std/crypto 1.0.5 (patch)
+
+- chore(crypto): update `crypto/_wasm` and `wasmbuild` task (#6611)
+
+#### @std/data-structures 1.0.8 (patch)
+
+- feat(data-structures/unstable): add `BinarySearchTree` methods `ceiling`,
+  `floor`, `higher`, `lower` (#6544)
+
+#### @std/dotenv 0.225.4 (patch)
+
+- feat(dotenv): add URL as envPath type (#6621)
+
+#### @std/expect 1.0.16 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/fmt 1.0.8 (patch)
+
+- docs(fmt): clarify runtime compatibility (#6648)
+
+#### @std/html 1.0.4 (patch)
+
+- fix(html/unstable): add missing range
+  (`unstable_is_valid_custom_element_name`) (#6634)
+
+#### @std/http 1.0.16 (patch)
+
+- fix(http): don't set the Date header in file_server.ts responses (use the
+  default Date header value) (#6610)
+
+#### @std/internal 1.0.7 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/testing 1.0.12 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/toml 1.0.6 (patch)
+
+- fix(toml): should use lowercase value for nan (#6638)
+
+### 2025.04.24
+
+#### @std/assert 1.0.13 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/cbor 0.1.8 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/cli 1.0.17 (patch)
+
+- feat(cli/unstable): add `visibleLines` and `indicator` options. `promptSelect`
+  simulates scrolling when the list is larger than `visibleLines` (#6523)
+- docs(cli/unstable): fix Spinner example typo (#6595)
+
+#### @std/collections 1.0.11 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/csv 1.0.6 (patch)
+
+- docs(csv): add many more examples to `mod.ts` (#6571)
+
+#### @std/data-structures 1.0.7 (patch)
+
+- feat(data-structures/unstable): BidirectionalMap constructor accept iterables
+  of key-value pairs (#6598)
+- fix(data-structures/unstable): BidirectionalMap differentiate extant
+  `undefined` from missing values (#6606)
+
+#### @std/encoding 1.0.10 (patch)
+
+- BREAKING(encoding/unstable): base64/32 functions to match
+  proposal-arraybuffer-base64 API (#6608)
+- docs(encoding): add many more examples to `mod.ts` (#6570)
+- docs(encoding): fix links in calcSize function docs (#6557)
+
+#### @std/fmt 1.0.7 (patch)
+
+- test(fmt): reduce unnecessary output during test run (#6596)
+
+#### @std/fs 1.0.17 (patch)
+
+- feat(fs/unstable): add create and createSync (#6600)
+- feat(fs/unstable): add open, openSync, and FsFile class (#6524)
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/http 1.0.15 (patch)
+
+- chore(http): do not request to example.com in doc testing (#6576)
+
+#### @std/ini 1.0.0-rc.8 (prerelease)
+
+- fix(ini): fix quoted value bug (#6572)
+- refactor(ini): remove `IniMap` (#6515)
+
+#### @std/json 1.0.2 (patch)
+
+- docs(json): update link to NDJSON (#6560)
+
+#### @std/jsonc 1.0.2 (patch)
+
+- test(jsonc): move `node-jsonc-parser` out of separate `testdata` folder
+  (#6618)
+
+#### @std/path 1.0.9 (patch)
+
+- docs(path): add many more examples to `mod.ts` (#6569)
+
+#### @std/text 1.0.13 (patch)
+
+- BREAKING(text/unstable): fix dedent export path (#6573)
+
+#### @std/toml 1.0.5 (patch)
+
+- fix(toml): fix empty inline table bug (#6587)
+- fix(toml): fix handling of leading and trailing underscores in number literals
+  (#6605)
+- fix(toml): fix empty string handling (#6585)
+- perf(toml): add `Scanner` `match()` method, capturing numbers and bare key
+  patterns using sticky regexp (#6538)
+- refactor(toml): split `symbol` parser (#6563)
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+- refactor(toml): fix object check in 'merge' util (#6582)
+- refactor(toml): cleanup `parserFactory()` (#6567)
+- refactor(toml): add `Scanner` `skipWhitespaces()` method (#6564)
+- refactor(toml): rewrite `unflat()` (#6555)
+- test(toml): move `stringify()` tests to `stringify_test.ts` (#6586)
+
+#### @std/uuid 1.0.7 (patch)
+
+- refactor(assert,cbor,collections,fs,toml,uuid): align error messages to the
+  style guide, add `error-message` Deno Style Guide linter plugin (#6553)
+
+#### @std/yaml 1.0.6 (patch)
+
+- refactor(yaml): declare-on-use variables (#6594)
+- refactor(yaml): add `skipWhitespaces()` method (#6603)
+- refactor(yaml): add `skipComment()` method (#6588)
+- refactor(yaml): remove `throwError()` util method (#6593)
+
+### 2025.04.08
+
+#### @std/cli 1.0.16 (patch)
+
+- refactor(cli/unstable): add `ProgressBar` `Unit` type (#6506)
+- chore(cli,http): fix typechecking errors (#6521)
+
+#### @std/datetime 0.225.4 (patch)
+
+- fix(datetime): fix formatting of `fractionalSecond`, fix parsing of `yy` and
+  `yyyy`, test each part type in dateTimeFormatter.format (#6516)
+
+#### @std/encoding 1.0.9 (patch)
+
+- BREAKING(encoding/unstable): replace `encodeRaw` with `encodeInto` & remove
+  `decodeRaw` (#6513)
+- feat(encoding/unstable): add Uint8Array support to decodeBase64, 32, and hex
+  (#6508)
+
+#### @std/expect 1.0.15 (patch)
+
+- fix(expect): include diff when `expect.toMatchObject` throws (#6525)
+
+#### @std/fs 1.0.16 (patch)
+
+- feat(fs/unstable): add chown and chownSync (#6552)
+- feat(fs/unstable): add readDirSync (#6381)
+
+#### @std/http 1.0.14 (patch)
+
+- fix(http): use relative urls in file server dirlisting (#6537)
+- chore(cli,http): fix typechecking errors (#6521)
+
+#### @std/ini 1.0.0-rc.7 (prerelease)
+
+- fix(ini): replace `isRecord()` with `isPlainObject()` (#6517)
+- refactor(ini): simplify `parse()` (#6512)
+- refactor(ini): simplify `stringify()` (#6514)
+- refactor(ini): remove `IniMap.prototype.#cleanFormatting()` (#6511)
+- test(ini): refactor ini tests (#6549)
+- test(ini): add line break and whitespace tests (#6519)
+
+#### @std/semver 1.0.5 (patch)
+
+- chore(semver): remove `MIN` constant (#6526)
+
+#### @std/testing 1.0.11 (patch)
+
+- refactor(testing): add instructions to update snapshots (#6543)
+
+#### @std/toml 1.0.4 (patch)
+
+- refactor(toml): improve `integer()` function (#6533)
+- refactor(toml): add `Scanner` `startsWith()` method (#6532)
+- refactor(toml): improve `Scanner` `next()` method (#6534)
+
+### 2025.03.25
+
+#### @std/assert 1.0.12 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/async 1.0.12 (patch)
+
+- test(async): fix flaky waitFor test (#6467)
+- test(async): use FakeTime in pooledMap testing (#6468)
+
+#### @std/cache 0.2.0 (minor)
+
+- BREAKING(cache/unstable): configurable cache ejection of thrown or rejected
+  values, change cache type (#6417) (#6419)
+
+#### @std/cbor 0.1.7 (patch)
+
+- feat(cbor): add support for bignums (#6458)
+- fix(cbor): bug in preallocating space for string encoding (#6459)
+
+#### @std/cli 1.0.15 (patch)
+
+- BREAKING(cli/unstable): remove trailing whitespaces from
+  `ProgressBarFormatter` properties (#6502)
+- refactor(cli/unstable): make `ProgressBar.#print()` better readable (#6503)
+- refactor(cli/unstable): replace `ProgressBar` `#options` property with actual
+  properties (#6497)
+
+#### @std/encoding 1.0.8 (patch)
+
+- BREAKING(encoding/unstable): merge Base32Hex(Encoder|Decoder)Stream to
+  Base32(Encoder|Decoder)Stream (#6452)
+- BREAKING(encoding/unstable): merge base32 variations, add format option to
+  encodeBase32 and decodeBase32 (#6471)
+- BREAKING(encoding/unstable): merge Base64Url(Encoder|Decoder)Stream to
+  Base64(Encoder|Decoder)Stream (#6451)
+- feat(encoding/unstable): add options argument to hex streaming & performance
+  (#6453)
+- feat(encoding/unstable): add encode/decodeRawHex and rewrite underlying code
+  (#6480)
+- feat(encoding/unstable): add format option to encodeBase64 and decodeBase64
+  (#6457)
+- fix(encoding): decoding base64 with invalid bytes >= 128 (#6477)
+- fix(encoding/unstable): encodeBase32 missing default option for format (#6476)
+- perf(encoding): improve hex encode/decode performance (#6499)
+- perf(encoding): improve base32 encode/decode performance (#6479)
+- perf(encoding): improve base64 encode/decode performance (#6461)
+- refactor(encoding): align error messages (#6504)
+- chore(encoding): extract streaming textEncoder/Decoder (#6505)
+- chore(encoding): remove reductant JSDoc in base64 stream (#6478)
+
+#### @std/expect 1.0.14 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/front-matter 1.0.9 (patch)
+
+- fix(front-matter): handle BOM when recognizing format (#6507)
+- fix(front-matter): handle empty frontMatter data (#6481)
+- refactor(front-matter): inline `recognize()` (#6466)
+- test(front-matter): simplify asserts (#6475)
+- test(front-matter): remove double tests in `any_test.ts` (#6474)
+- test(front-matter): inline test data (#6465)
+
+#### @std/fs 1.0.15 (patch)
+
+- feat(fs/unstable): add makeTempFile and makeTempFileSync (#6469)
+- feat(fs/unstable): add writeTextFile and writeTextFileSync (#6463)
+- feat(fs/unstable): add writeFile and writeFileSync (#6444)
+
+#### @std/ini 1.0.0-rc.6 (prerelease)
+
+- refactor(ini): limit INI value type to possible allowed INI values. (#6495)
+
+#### @std/internal 1.0.6 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/testing 1.0.10 (patch)
+
+- fix(assert,expect,internal,testing): improve handling of escaped chars in
+  diff_str (#6485)
+
+#### @std/text 1.0.12 (patch)
+
+- feat(text/unstable): add dedent (#6500)
+
+#### @std/toml 1.0.3 (patch)
+
+- fix(toml): handle hexadecimal, octal, and binary numbers (#6496)
+- test(toml): inline test data (#6473)
+
+#### @std/uuid 1.0.6 (patch)
+
+- feat(uuid/unstable): implement support for UUID V6 (#6415)
+
+#### @std/webgpu 0.224.8 (patch)
+
+- chore(webgpu): ignore createTextureWithData() test case on windows (#6493)
+
+### 2025.03.04
+
+#### @std/async 1.0.11 (patch)
+
+- test(async/unstable): add `retry()` tests (#6423)
+- test(async): fix flaky `pooledMap()` test (#6412)
+- test(async/unstable): fix flaky `waitFor()` test (#6413)
+
+#### @std/cli 1.0.14 (patch)
+
+- fix(cli/unstable): update interval in ProgressBar (#6402)
+- refactor(cli/unstable): clean up `start` end `stop` methods of `Spinner`, add
+  test cases for multiple start/stop calls (#6420)
+- test(cli): fix flaky spinner test (#6404)
+- test(cli/unstable): make `ProgressBar` tests run faster (#6411)
+
+#### @std/fmt 1.0.6 (patch)
+
+- docs(fmt): fix `printf` module doc (#6424)
+
+#### @std/front-matter 1.0.8 (patch)
+
+- perf(front-matter): remove regexp `m` flags, reduce unnecessary string
+  operations (#6393)
+- refactor(front-matter): cleanup `_shared.ts` (#6418)
+
+#### @std/fs 1.0.14 (patch)
+
+- feat(fs/unstable): add `remove` and `removeSync` api. (#6438)
+- feat(fs/unstable): add umask (#6454)
+- feat(fs/unstable): add utime and utimeSync (#6446)
+- feat(fs/unstable): add mkdir and mkdirSync (#6436)
+- feat(fs/unstable): add `copyFile` and `copyFileSync` (#6425)
+- feat(fs/unstable): add truncate and truncateSync (#6416)
+- feat(fs/unstable): add readTextFileSync and readTextFile (#6405)
+- fix(fs/unstable): fix node.js test runner, fix readTextFile and copyFile in
+  Node.js (#6441)
+- test(fs/unstable): remove windows specific paths and fix ci (#6448)
+- test(fs/unstable): add test case for reading text file with BOM (#6431)
+
+#### @std/tar 0.1.6 (patch)
+
+- BREAKING(tar/unstable): fix handling of mode, uid, and gid (#6440)
+
+#### @std/text 1.0.11 (patch)
+
+- feat(text/unstable): add `reverse` function (#6410)
+
+#### @std/uuid 1.0.5 (patch)
+
+- fix(uuid): handle `rng` correctly in uuid v1 (#6432)
+
+### 2025.02.14a
+
+#### @std/front-matter 1.0.7 (patch)
+
+- refactor(front-matter): use relative path for importing module in the same
+  package (#6401)
+
+#### @std/fs 1.0.13 (patch)
+
+- docs(fs): add missing docs (#6400)
+
+### 2025.02.14
+
+#### @std/cli 1.0.13 (patch)
+
+- feat(cli/unstable): introduce `new ProgressBar()` & `new ProgressBarStream()`
+  (#6378)
+
+#### @std/front-matter 1.0.6 (patch)
+
+- refactor(front-matter): call `extract()` functions in `any.ts` (#6390)
+
+#### @std/fs 1.0.12 (patch)
+
+- feat(fs/unstable): add renameSync (#6396)
+- feat(fs/unstable): add readFile and readFileSync (#6394)
+- feat(fs/unstable): add makeTempDir and makeTempDirSync (#6391)
+- feat(fs/unstable): add rename (#6379)
+
+#### @std/semver 1.0.4 (patch)
+
+- refactor(semver): clean up `parseRange`, add missing tests (#6362)
+
+### 2025.01.31
+
+#### @std/bytes 1.0.5 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/cli 1.0.12 (patch)
+
+- feat(cli/unstable): support stderr on spinner (#6350)
+
+#### @std/crypto 1.0.4 (patch)
+
+- docs(crypto): clarify doc comment (#6368)
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/encoding 1.0.7 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/expect 1.0.13 (patch)
+
+- test(expect): check error message of `.toBeCloseTo()` (#6296)
+
+#### @std/fmt 1.0.5 (patch)
+
+- fix(fmt): make printf working with colors. (#6360)
+
+#### @std/fs 1.0.11 (patch)
+
+- feat(fs/unstable): add readLink and readLinkSync (#6373)
+- feat(fs/unstable): add link and linkSync (#6369)
+- feat(fs/unstable): add realPath and realPathSync (#6366)
+
+#### @std/http 1.0.13 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/io 0.225.2 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/log 0.224.14 (patch)
+
+- docs(log): mention potential deprecation of @std/log (#6364)
+
+#### @std/msgpack 1.0.3 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/streams 1.0.9 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+#### @std/tar 0.1.5 (patch)
+
+- refactor(bytes,crypto,encoding,http,io,msgpack,streams,tar): make Uint8Array
+  usages compatible with TS 5.7 (#6372)
+
+### 2025.01.22
+
+#### @std/assert 1.0.11 (patch)
+
+- fix(assert): handle `__proto__` correctly in `assertObjectMatch` (#6342)
+
+#### @std/async 1.0.10 (patch)
+
+- feat(async/unstable): add `waitFor` function to wait for condition to be true
+  (#6230)
+
+#### @std/cbor 0.1.6 (patch)
+
+- fix(cbor): incorrect decoding with subarrays (#6344)
+
+#### @std/cli 1.0.11 (patch)
+
+- fix(cli): handle overflow in `promptSecret` (#6318)
+
+#### @std/collections 1.0.10 (patch)
+
+- docs(collections): add the word "unique" to `distinctBy` JSDoc for grepping
+  purposes (#6336)
+
+#### @std/csv 1.0.5 (patch)
+
+- test(csv): unstable stringify tests (#6337)
+
+#### @std/expect 1.0.12 (patch)
+
+- docs(expect): fix typo on objectContaining example (#6357)
+
+#### @std/fs 1.0.10 (patch)
+
+- feat(fs/unstable): add symlink and symlinkSync (#6352)
+- feat(fs/unstable): add chmod and chmodSync (#6343)
+- feat(fs/unstable): add readDir (#6338)
+
+#### @std/io 0.225.1 (patch)
+
+- fix(io): fix readAllSync for the case when read source is slow (#6355)
+
+### 2025.01.10
+
+#### @std/cbor 0.1.5 (patch)
+
+- perf(cbor): improve decodeCbor & decodeCborSequence performance (#6323)
+- perf(cbor): encodeCbor & encodeCborSequence (#6311)
+
+#### @std/cli 1.0.10 (patch)
+
+- docs(cli): add examples of parseArgs (#6283)
+
+#### @std/data-structures 1.0.6 (patch)
+
+- fix(data-structures): ensure size consistency in RedBlackTree.from (#6307)
+
+#### @std/datetime 0.225.3 (patch)
+
+- fix(datetime): correct parsing of day period (#6313)
+- docs(datetime): remove outdated mention of `utc` option (#6301)
+
+#### @std/expect 1.0.11 (patch)
+
+- fix(expect): consistent `toBeCloseTo` assertion messages (#6291)
+- docs(expect,text): remove no-eval directives that appear to be unnecessary
+  (#6333)
+- docs(expect): correct minor typo (#6329)
+- docs(expect): clarify the tolerance in `toBeCloseTo` (#6292)
+
+#### @std/fmt 1.0.4 (patch)
+
+- fix(fmt): add correct pluralization to fmt/duration when using style: full
+  (#6295)
+- refactor(fmt): cleanup duration `format()` and utils (#6309)
+- test(fmt): add invalid duration `style` option test (#6310)
+
+#### @std/fs 1.0.9 (patch)
+
+- feat(fs/unstable): add statSync and lstatSync (#6300)
+- test(fs): do not write files in source tree during test (#6236)
+
+#### @std/log 0.224.13 (patch)
+
+- test(log): re-enable doc tests for `FileHandler` (#6321)
+
+#### @std/testing 1.0.9 (patch)
+
+- docs(testing): clarify beforeAll in describe vs. outside (#6294)
+
+#### @std/text 1.0.10 (patch)
+
+- docs(expect,text): remove no-eval directives that appear to be unnecessary
+  (#6333)
+
+### 2024.12.20
+
+#### @std/fs 1.0.8 (patch)
+
+- feat(fs/unstable): add `fs.lstat` (#6276)
+
+#### @std/testing 1.0.8 (patch)
+
+- feat(testing/unstable): add API for configuring global sanitizer state (#6282)
+
+### 2024.12.18
+
+#### @std/assert 1.0.10 (patch)
+
+- fix(assert): fix formatting for `assertNotEquals` error messages (#6246)
+
+#### @std/cbor 0.1.4 (patch)
+
+- feat(cbor): add encoding/decoding for `new Map()` instance (#6252)
+
+#### @std/cli 1.0.9 (patch)
+
+- feat(cli/unstable): add `promptMultipleSelect()` (#6223)
+- fix(cli/unstable): `promptMultipleSelect()` add `isTerminal()` check (#6263)
+- fix(cli/unstable): `promptSelect()` add `isTerminal()` check (#6264)
+- docs(cli): remove `parseArgs()` console logs from examples (#6268)
+- test(cli): add `promptSecret()` empty mask option test (#6273)
+- test(cli/unstable): add `promptSelect()` ETX test (#6267)
+- test(cli/unstable): add `promptMultipleSelect()` ETX test (#6266)
+- test(cli): add tests for `promptSecret()` (#6256)
+- test(cli/unstable): clean up `promptSelect()` tests (#6253)
+- test(cli/unstable): rewrite `Spinner` tests using stub (#6254)
+
+#### @std/data-structures 1.0.5 (patch)
+
+- fix(data-structures): ensure size consistency in BinarySearchTree.from (#6272)
+
+#### @std/encoding 1.0.6 (patch)
+
+- feat(encoding/unstable): Crockford base32 unstable support (#6238)
+
+#### @std/expect 1.0.10 (patch)
+
+- fix(expect): fix `expect.arrayContaining` bug (#6271)
+- fix(expect): always show custom message (#6217)
+- docs(expect): suggest using top-level code instead of beforeAll (#6240)
+
+#### @std/fs 1.0.7 (patch)
+
+- feat(fs/unstable): add `fs.stat` (#6258)
+- docs(fs/unstable): use `stat` function in `stat` example (#6275)
+
+#### @std/log 0.224.12 (patch)
+
+- docs(log): fix level name assertion in LogRecord example (#6269)
+
+#### @std/regexp 1.0.1 (patch)
+
+- fix(regexp): escape leading digit (#6208)
+
+#### @std/testing 1.0.7 (patch)
+
+- fix(testing): stop code execution in `describe.ignore` (#6237)
+
+### 2024.12.06
+
+#### @std/assert 1.0.9 (patch)
+
+- docs(assert): note the thrown diff in object_match.ts (#6227)
+- docs(assert): fix English in mod.ts (#6226)
+- docs(assert): add note and example for Blob comparison (#6210)
+
+#### @std/cbor 0.1.3 (patch)
+
+- perf(cbor): for encoding numbers, bigints, and dates (#6214)
+
+#### @std/cli 1.0.8 (patch)
+
+- feat(cli/unstable): export `/unstable-prompt-select` (#6212)
+- fix(cli/unstable): hide cursor while showing the selection with
+  `promptSelect()` (#6221)
+- refactor(cli): rewrite `promptSelect()` clear commands (#6215)
+
+#### @std/dotenv 0.225.3 (patch)
+
+- fix(dotenv): handle multiline variables on Windows (#6216)
+
+#### @std/expect 1.0.9 (patch)
+
+- fix(expect): fix error messages for `toMatchObject` (#6228)
+
+#### @std/http 1.0.12 (patch)
+
+- BREAKING(http/unstable): switch `params` and `info` args in `Handler` in
+  `route()` for more conveniency (#6094)
+- fix(http): handle HEAD requests in serveFile (#6218)
+
+#### @std/testing 1.0.6 (patch)
+
+- fix(testing): add missing methods to `test` alias of `it` (#6222)
+
+#### @std/text 1.0.9 (patch)
+
+- fix(text): use locale-independent letter case methods (#6204)
+
 ### 2024.11.25
 
 #### @std/cli 1.0.7 (patch)
@@ -10,7 +762,7 @@
 
 ### 2024.11.22
 
-### @std/archive
+#### @std/archive
 
 - BREAKING(archive): remove std/archive package (#6185)
 

@@ -1,18 +1,79 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { IniMap, type ReviverFunction } from "./_ini_map.ts";
-export type { ReviverFunction };
+/** Function for replacing INI values with JavaScript values. */
+export type ReviverFunction = (
+  key: string,
+  value: string,
+  section?: string,
+) => unknown;
+
+const SECTION_REGEXP = /^\[(?<name>.*\S.*)]$/;
+const KEY_VALUE_REGEXP = /^(?<key>.*?)\s*=\s*(?<value>.*?)$/;
+
+/** Detect supported comment styles. */
+function isComment(input: string): boolean {
+  return (
+    input.startsWith("#") ||
+    input.startsWith(";") ||
+    input.startsWith("//")
+  );
+}
+
+/** Detect a section start. */
+function isSection(input: string, lineNumber: number): boolean {
+  if (input.startsWith("[")) {
+    if (input.endsWith("]")) {
+      return true;
+    }
+    throw new SyntaxError(
+      `Unexpected end of INI section at line ${lineNumber}`,
+    );
+  }
+  return false;
+}
+
+function* readTextLines(text: string): Generator<string> {
+  let line = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    switch (char) {
+      case "\n":
+        yield line;
+        line = "";
+        break;
+      case "\r":
+        yield line;
+        line = "";
+        if (text[i + 1] === "\n") i += 1;
+        break;
+      default:
+        line += char;
+        break;
+    }
+  }
+  yield line;
+}
 
 /** Options for {@linkcode parse}. */
-// deno-lint-ignore no-explicit-any
-export interface ParseOptions<T = any> {
+export interface ParseOptions {
   /**
    * Provide custom parsing of the value in a key/value pair. Similar to the
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver | reviver}
    * function in {@linkcode JSON.parse}.
    */
-  reviver?: ReviverFunction<T>;
+  reviver?: ReviverFunction;
+}
+
+const QUOTED_VALUE_REGEXP = /^"(?<value>.*)"$/;
+function defaultReviver(_key: string, value: string, _section?: string) {
+  if (value === "null") return null;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  const match = value.match(QUOTED_VALUE_REGEXP);
+  if (match) return match.groups?.value as string;
+  if (!isNaN(+value)) return +value;
+  return value;
 }
 
 /**
@@ -80,10 +141,71 @@ export interface ParseOptions<T = any> {
  * @typeParam T The type of the value
  * @return The parsed object
  */
-// deno-lint-ignore no-explicit-any
-export function parse<T = any>(
+export function parse<T extends object>(
   text: string,
-  options?: ParseOptions<T>,
-): Record<string, T | Record<string, T>> {
-  return IniMap.from(text, options).toObject();
+  options: ParseOptions = {},
+): T {
+  if (typeof text !== "string") {
+    throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
+  }
+
+  const { reviver = defaultReviver } = options;
+
+  const root = {} as T;
+  let object: object = root;
+  let sectionName: string | undefined;
+
+  let lineNumber = 0;
+  for (let line of readTextLines(text)) {
+    line = line.trim();
+    lineNumber += 1;
+
+    // skip empty lines
+    if (line === "") continue;
+
+    // skip comment
+    if (isComment(line)) continue;
+
+    if (isSection(line, lineNumber)) {
+      sectionName = SECTION_REGEXP.exec(line)?.groups?.name;
+      if (!sectionName) {
+        throw new SyntaxError(
+          `Unexpected empty section name at line ${lineNumber}`,
+        );
+      }
+
+      object = {};
+      Object.defineProperty(root, sectionName, {
+        value: object,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+
+      continue;
+    }
+
+    const groups = KEY_VALUE_REGEXP.exec(line)?.groups;
+
+    if (!groups) {
+      throw new SyntaxError(
+        `Unexpected token ${line[0]} in INI at line ${lineNumber}`,
+      );
+    }
+
+    const { key, value } = groups as { key: string; value: string };
+    if (!key.length) {
+      throw new SyntaxError(`Unexpected empty key name at line ${lineNumber}`);
+    }
+
+    const val = reviver(key, value, sectionName);
+    Object.defineProperty(object, key, {
+      value: val,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
+
+  return root;
 }

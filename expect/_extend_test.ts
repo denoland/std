@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import type { Async, Expected, MatcherContext, Tester } from "./_types.ts";
@@ -28,7 +28,7 @@ class Book {
   }
 }
 
-const areAuthorsEqual: Tester = (a: unknown, b: unknown) => {
+function areAuthorsEqual(a: unknown, b: unknown) {
   const isAAuthor = a instanceof Author;
   const isBAuthor = b instanceof Author;
 
@@ -39,7 +39,7 @@ const areAuthorsEqual: Tester = (a: unknown, b: unknown) => {
   } else {
     return false;
   }
-};
+}
 
 const areBooksEqual: Tester = function (
   this: MatcherContext,

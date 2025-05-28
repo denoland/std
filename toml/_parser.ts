@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { deepMerge } from "@std/collections/deep-merge";
@@ -18,16 +18,18 @@ type ParseResult<T> = Success<T> | Failure;
 
 type ParserComponent<T = unknown> = (scanner: Scanner) => ParseResult<T>;
 
-type BlockParseResultBody = {
+type Block = {
   type: "Block";
   value: Record<string, unknown>;
-} | {
+};
+type Table = {
   type: "Table";
-  key: string[];
+  keys: string[];
   value: Record<string, unknown>;
-} | {
+};
+type TableArray = {
   type: "TableArray";
-  key: string[];
+  keys: string[];
   value: Record<string, unknown>;
 };
 
@@ -38,6 +40,13 @@ export class Scanner {
 
   constructor(source: string) {
     this.#source = source;
+  }
+
+  get position() {
+    return this.#position;
+  }
+  get source() {
+    return this.#source;
   }
 
   /**
@@ -60,41 +69,13 @@ export class Scanner {
   /**
    * Move position to next
    */
-  next(count?: number) {
-    if (typeof count === "number") {
-      for (let i = 0; i < count; i++) {
-        this.#position++;
-      }
-    } else {
-      this.#position++;
-    }
+  next(count: number = 1) {
+    this.#position += count;
   }
 
-  /**
-   * Move position until current char is not a whitespace, EOL, or comment.
-   * @param options.inline - skip only whitespaces
-   */
-  nextUntilChar(
-    options: { inline?: boolean; comment?: boolean } = { comment: true },
-  ) {
-    if (options.inline) {
-      while (this.#whitespace.test(this.char()) && !this.eof()) {
-        this.next();
-      }
-    } else {
-      while (!this.eof()) {
-        const char = this.char();
-        if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
-          this.next();
-        } else if (options.comment && this.char() === "#") {
-          // entering comment
-          while (!this.isCurrentCharEOL() && !this.eof()) {
-            this.next();
-          }
-        } else {
-          break;
-        }
-      }
+  skipWhitespaces() {
+    while (this.#whitespace.test(this.char()) && !this.eof()) {
+      this.next();
     }
     // Invalid if current char is other kinds of whitespace
     if (!this.isCurrentCharEOL() && /\s/.test(this.char())) {
@@ -106,22 +87,43 @@ export class Scanner {
     }
   }
 
+  nextUntilChar(options: { skipComments?: boolean } = { skipComments: true }) {
+    while (!this.eof()) {
+      const char = this.char();
+      if (this.#whitespace.test(char) || this.isCurrentCharEOL()) {
+        this.next();
+      } else if (options.skipComments && this.char() === "#") {
+        // entering comment
+        while (!this.isCurrentCharEOL() && !this.eof()) {
+          this.next();
+        }
+      } else {
+        break;
+      }
+    }
+  }
+
   /**
    * Position reached EOF or not
    */
   eof() {
-    return this.position() >= this.#source.length;
-  }
-
-  /**
-   * Get current position
-   */
-  position() {
-    return this.#position;
+    return this.#position >= this.#source.length;
   }
 
   isCurrentCharEOL() {
-    return this.char() === "\n" || this.slice(0, 2) === "\r\n";
+    return this.char() === "\n" || this.startsWith("\r\n");
+  }
+
+  startsWith(searchString: string) {
+    return this.#source.startsWith(searchString, this.#position);
+  }
+
+  match(regExp: RegExp) {
+    if (!regExp.sticky) {
+      throw new Error(`RegExp ${regExp} does not have a sticky 'y' flag`);
+    }
+    regExp.lastIndex = this.#position;
+    return this.#source.match(regExp);
   }
 }
 
@@ -136,59 +138,89 @@ function failure(): Failure {
   return { ok: false };
 }
 
+/**
+ * Creates a nested object from the keys and values.
+ *
+ * e.g. `unflat(["a", "b", "c"], 1)` returns `{ a: { b: { c: 1 } } }`
+ */
 export function unflat(
   keys: string[],
   values: unknown = {},
-  cObj?: unknown,
 ): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  if (keys.length === 0) {
-    return cObj as Record<string, unknown>;
-  }
-  if (!cObj) cObj = values;
-  const key: string | undefined = keys[keys.length - 1];
-  if (typeof key === "string") out[key] = cObj;
-  return unflat(keys.slice(0, -1), values, out);
+  return keys.reduceRight(
+    (acc, key) => ({ [key]: acc }),
+    values,
+  ) as Record<string, unknown>;
 }
-export function deepAssignWithTable(target: Record<string, unknown>, table: {
-  type: "Table" | "TableArray";
-  key: string[];
-  value: Record<string, unknown>;
-}) {
-  if (table.key.length === 0 || table.key[0] == null) {
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getTargetValue(target: Record<string, unknown>, keys: string[]) {
+  const key = keys[0];
+  if (!key) {
     throw new Error(
       "Cannot parse the TOML: key length is not a positive number",
     );
   }
-  const value = target[table.key[0]];
+  return target[key];
+}
 
-  if (typeof value === "undefined") {
-    Object.assign(
-      target,
-      unflat(
-        table.key,
-        table.type === "Table" ? table.value : [table.value],
-      ),
-    );
-  } else if (Array.isArray(value)) {
-    if (table.type === "TableArray" && table.key.length === 1) {
-      value.push(table.value);
-    } else {
-      const last = value[value.length - 1];
-      deepAssignWithTable(last, {
-        type: table.type,
-        key: table.key.slice(1),
-        value: table.value,
-      });
-    }
-  } else if (typeof value === "object" && value !== null) {
-    deepAssignWithTable(value as Record<string, unknown>, {
-      type: table.type,
-      key: table.key.slice(1),
-      value: table.value,
-    });
-  } else {
-    throw new Error("Unexpected assign");
+function deepAssignTable(
+  target: Record<string, unknown>,
+  table: Table,
+) {
+  const { keys, type, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, value));
+  }
+  if (Array.isArray(currentValue)) {
+    const last = currentValue.at(-1);
+    deepAssign(last, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+function deepAssignTableArray(
+  target: Record<string, unknown>,
+  table: TableArray,
+) {
+  const { type, keys, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, [value]));
+  }
+  if (Array.isArray(currentValue)) {
+    currentValue.push(value);
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+export function deepAssign(
+  target: Record<string, unknown>,
+  body: Block | Table | TableArray,
+) {
+  switch (body.type) {
+    case "Block":
+      return deepMerge(target, body.value);
+    case "Table":
+      return deepAssignTable(target, body);
+    case "TableArray":
+      return deepAssignTableArray(target, body);
   }
 }
 
@@ -196,8 +228,13 @@ export function deepAssignWithTable(target: Record<string, unknown>, table: {
 // Parser combinators and generators
 // ---------------------------------
 
-function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
-  return (scanner: Scanner): ParseResult<T> => {
+// deno-lint-ignore no-explicit-any
+function or<T extends readonly ParserComponent<any>[]>(
+  parsers: T,
+): ParserComponent<
+  ReturnType<T[number]> extends ParseResult<infer R> ? R : Failure
+> {
+  return (scanner: Scanner) => {
     for (const parse of parsers) {
       const result = parse(scanner);
       if (result.ok) return result;
@@ -206,7 +243,37 @@ function or<T>(parsers: ParserComponent<T>[]): ParserComponent<T> {
   };
 }
 
+/** Join the parse results of the given parser into an array.
+ *
+ * If the parser fails at the first attempt, it will return an empty array.
+ */
 function join<T>(
+  parser: ParserComponent<T>,
+  separator: string,
+): ParserComponent<T[]> {
+  const Separator = character(separator);
+  return (scanner: Scanner): ParseResult<T[]> => {
+    const out: T[] = [];
+    const first = parser(scanner);
+    if (!first.ok) return success(out);
+    out.push(first.body);
+    while (!scanner.eof()) {
+      if (!Separator(scanner).ok) break;
+      const result = parser(scanner);
+      if (!result.ok) {
+        throw new SyntaxError(`Invalid token after "${separator}"`);
+      }
+      out.push(result.body);
+    }
+    return success(out);
+  };
+}
+
+/** Join the parse results of the given parser into an array.
+ *
+ * This requires the parser to succeed at least once.
+ */
+function join1<T>(
   parser: ParserComponent<T>,
   separator: string,
 ): ParserComponent<T[]> {
@@ -234,6 +301,7 @@ function kv<T>(
 ): ParserComponent<{ [key: string]: unknown }> {
   const Separator = character(separator);
   return (scanner: Scanner): ParseResult<{ [key: string]: unknown }> => {
+    const position = scanner.position;
     const key = keyParser(scanner);
     if (!key.ok) return failure();
     const sep = Separator(scanner);
@@ -242,9 +310,12 @@ function kv<T>(
     }
     const value = valueParser(scanner);
     if (!value.ok) {
-      throw new SyntaxError(
-        `Value of key/value pair is invalid data format`,
-      );
+      const lineEndIndex = scanner.source.indexOf("\n", scanner.position);
+      const endPosition = lineEndIndex > 0
+        ? lineEndIndex
+        : scanner.source.length;
+      const line = scanner.source.slice(position, endPosition);
+      throw new SyntaxError(`Cannot parse value on line '${line}'`);
     }
     return success(unflat(key.body, value.body));
   };
@@ -258,9 +329,8 @@ function merge(
     if (!result.ok) return failure();
     let body = {};
     for (const record of result.body) {
-      if (typeof body === "object" && body !== null) {
-        // deno-lint-ignore no-explicit-any
-        body = deepMerge(body, record as Record<any, any>);
+      if (typeof record === "object" && record !== null) {
+        body = deepMerge(body, record);
       }
     }
     return success(body);
@@ -309,10 +379,10 @@ function surround<T>(
 
 function character(str: string) {
   return (scanner: Scanner): ParseResult<void> => {
-    scanner.nextUntilChar({ inline: true });
-    if (scanner.slice(0, str.length) !== str) return failure();
+    scanner.skipWhitespaces();
+    if (!scanner.startsWith(str)) return failure();
     scanner.next(str.length);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     return success(undefined);
   };
 }
@@ -321,21 +391,12 @@ function character(str: string) {
 // Parser components
 // -----------------------
 
-const BARE_KEY_REGEXP = /[A-Za-z0-9_-]/;
-const FLOAT_REGEXP = /[0-9_\.e+\-]/i;
-const END_OF_VALUE_REGEXP = /[ \t\r\n#,}\]]/;
-
+const BARE_KEY_REGEXP = /[A-Za-z0-9_-]+/y;
 export function bareKey(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
-  if (!scanner.char() || !BARE_KEY_REGEXP.test(scanner.char())) {
-    return failure();
-  }
-  const acc: string[] = [];
-  while (scanner.char() && BARE_KEY_REGEXP.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  const key = acc.join("");
+  scanner.skipWhitespaces();
+  const key = scanner.match(BARE_KEY_REGEXP)?.[0];
+  if (!key) return failure();
+  scanner.next(key.length);
   return success(key);
 }
 
@@ -363,10 +424,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
     case "U": {
       // Unicode character
       const codePointLen = scanner.char() === "u" ? 4 : 6;
-      const codePoint = parseInt(
-        "0x" + scanner.slice(1, 1 + codePointLen),
-        16,
-      );
+      const codePoint = parseInt("0x" + scanner.slice(1, 1 + codePointLen), 16);
       const str = String.fromCodePoint(codePoint);
       scanner.next(codePointLen + 1);
       return success(str);
@@ -385,7 +443,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
 }
 
 export function basicString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== '"') return failure();
   scanner.next();
   const acc = [];
@@ -411,7 +469,7 @@ export function basicString(scanner: Scanner): ParseResult<string> {
 }
 
 export function literalString(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
   if (scanner.char() !== "'") return failure();
   scanner.next();
   const acc: string[] = [];
@@ -434,26 +492,26 @@ export function literalString(scanner: Scanner): ParseResult<string> {
 export function multilineBasicString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== '"""') return failure();
+  scanner.skipWhitespaces();
+  if (!scanner.startsWith('"""')) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== '"""' && !scanner.eof()) {
+  while (!scanner.startsWith('"""') && !scanner.eof()) {
     // line ending backslash
-    if (scanner.slice(0, 2) === "\\\n") {
+    if (scanner.startsWith("\\\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
-    } else if (scanner.slice(0, 3) === "\\\r\n") {
+    } else if (scanner.startsWith("\\\r\n")) {
       scanner.next();
-      scanner.nextUntilChar({ comment: false });
+      scanner.nextUntilChar({ skipComments: false });
       continue;
     }
     const escapedChar = escapeSequence(scanner);
@@ -482,18 +540,18 @@ export function multilineBasicString(
 export function multilineLiteralString(
   scanner: Scanner,
 ): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
-  if (scanner.slice(0, 3) !== "'''") return failure();
+  scanner.skipWhitespaces();
+  if (!scanner.startsWith("'''")) return failure();
   scanner.next(3);
   if (scanner.char() === "\n") {
     // The first newline (LF) is trimmed
     scanner.next();
-  } else if (scanner.slice(0, 2) === "\r\n") {
+  } else if (scanner.startsWith("\r\n")) {
     // The first newline (CRLF) is trimmed
     scanner.next(2);
   }
   const acc: string[] = [];
-  while (scanner.slice(0, 3) !== "'''" && !scanner.eof()) {
+  while (!scanner.startsWith("'''") && !scanner.eof()) {
     acc.push(scanner.char());
     scanner.next();
   }
@@ -511,139 +569,130 @@ export function multilineLiteralString(
   return success(acc.join(""));
 }
 
-const symbolPairs: [string, unknown][] = [
-  ["true", true],
-  ["false", false],
-  ["inf", Infinity],
-  ["+inf", Infinity],
-  ["-inf", -Infinity],
-  ["nan", NaN],
-  ["+nan", NaN],
-  ["-nan", NaN],
-];
-export function symbols(scanner: Scanner): ParseResult<unknown> {
-  scanner.nextUntilChar({ inline: true });
-  const found = symbolPairs.find(([str]) =>
-    scanner.slice(0, str.length) === str
-  );
-  if (!found) return failure();
-  const [str, value] = found;
-  scanner.next(str.length);
+const BOOLEAN_REGEXP = /(?:true|false)\b/y;
+export function boolean(scanner: Scanner): ParseResult<boolean> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(BOOLEAN_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = string === "true";
   return success(value);
 }
 
-export const dottedKey = join(or([bareKey, basicString, literalString]), ".");
+const INFINITY_MAP = new Map<string, number>([
+  ["inf", Infinity],
+  ["+inf", Infinity],
+  ["-inf", -Infinity],
+]);
+const INFINITY_REGEXP = /[+-]?inf\b/y;
+export function infinity(scanner: Scanner): ParseResult<number> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(INFINITY_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = INFINITY_MAP.get(string)!;
+  return success(value);
+}
 
+const NAN_REGEXP = /[+-]?nan\b/y;
+export function nan(scanner: Scanner): ParseResult<number> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(NAN_REGEXP);
+  if (!match) return failure();
+  const string = match[0];
+  scanner.next(string.length);
+  const value = NaN;
+  return success(value);
+}
+
+export const dottedKey = join1(or([bareKey, basicString, literalString]), ".");
+
+const BINARY_REGEXP = /0b[01]+(?:_[01]+)*\b/y;
+export function binary(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(BINARY_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 2);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const OCTAL_REGEXP = /0o[0-7]+(?:_[0-7]+)*\b/y;
+export function octal(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(OCTAL_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 8);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const HEX_REGEXP = /0x[0-9a-f]+(?:_[0-9a-f]+)*\b/yi;
+export function hex(scanner: Scanner): ParseResult<number | string> {
+  scanner.skipWhitespaces();
+  const match = scanner.match(HEX_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.slice(2).replaceAll("_", "");
+  const number = parseInt(value, 16);
+  return isNaN(number) ? failure() : success(number);
+}
+
+const INTEGER_REGEXP = /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)\b/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
-  scanner.nextUntilChar({ inline: true });
-
-  // If binary / octal / hex
-  const first2 = scanner.slice(0, 2);
-  if (first2.length === 2 && /0(?:x|o|b)/i.test(first2)) {
-    scanner.next(2);
-    const acc = [first2];
-    while (/[0-9a-f_]/i.test(scanner.char()) && !scanner.eof()) {
-      acc.push(scanner.char());
-      scanner.next();
-    }
-    if (acc.length === 1) return failure();
-    return success(acc.join(""));
-  }
-
-  const acc = [];
-  if (/[+-]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  while (/[0-9_]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  if (acc.length === 0 || (acc.length === 1 && /[+-]/.test(acc[0]!))) {
-    return failure();
-  }
-
-  const int = parseInt(acc.filter((char) => char !== "_").join(""));
+  scanner.skipWhitespaces();
+  const match = scanner.match(INTEGER_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.replaceAll("_", "");
+  const int = parseInt(value, 10);
   return success(int);
 }
 
+const FLOAT_REGEXP =
+  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
 export function float(scanner: Scanner): ParseResult<number> {
-  scanner.nextUntilChar({ inline: true });
-
-  // lookahead validation is needed for integer value is similar to float
-  let position = 0;
-  while (
-    scanner.char(position) &&
-    !END_OF_VALUE_REGEXP.test(scanner.char(position))
-  ) {
-    if (!FLOAT_REGEXP.test(scanner.char(position))) return failure();
-    position++;
-  }
-
-  const acc = [];
-  if (/[+-]/.test(scanner.char())) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  while (FLOAT_REGEXP.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-
-  if (acc.length === 0) return failure();
-  const float = parseFloat(acc.filter((char) => char !== "_").join(""));
+  scanner.skipWhitespaces();
+  const match = scanner.match(FLOAT_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const value = match.replaceAll("_", "");
+  const float = parseFloat(value);
   if (isNaN(float)) return failure();
-
   return success(float);
 }
 
+const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
-  scanner.nextUntilChar({ inline: true });
-
-  let dateStr = scanner.slice(0, 10);
+  scanner.skipWhitespaces();
   // example: 1979-05-27
-  if (!/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return failure();
-  scanner.next(10);
-
-  const acc = [];
-  // example: 1979-05-27T00:32:00Z
-  while (/[ 0-9TZ.:+-]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  dateStr += acc.join("");
-  const date = new Date(dateStr.trim());
+  const match = scanner.match(DATE_TIME_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  const date = new Date(match.trim());
   // invalid date
   if (isNaN(date.getTime())) {
-    throw new SyntaxError(`Invalid date string "${dateStr}"`);
+    throw new SyntaxError(`Invalid date string "${match}"`);
   }
-
   return success(date);
 }
 
+const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?\b/y;
 export function localTime(scanner: Scanner): ParseResult<string> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
-  let timeStr = scanner.slice(0, 8);
-  if (!/^(\d{2}):(\d{2}):(\d{2})/.test(timeStr)) return failure();
-  scanner.next(8);
-
-  const acc = [];
-  if (scanner.char() !== ".") return success(timeStr);
-  acc.push(scanner.char());
-  scanner.next();
-
-  while (/[0-9]/.test(scanner.char()) && !scanner.eof()) {
-    acc.push(scanner.char());
-    scanner.next();
-  }
-  timeStr += acc.join("");
-  return success(timeStr);
+  const match = scanner.match(LOCAL_TIME_REGEXP)?.[0];
+  if (!match) return failure();
+  scanner.next(match.length);
+  return success(match);
 }
 
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
-  scanner.nextUntilChar({ inline: true });
+  scanner.skipWhitespaces();
 
   if (scanner.char() !== "[") return failure();
   scanner.next();
@@ -654,7 +703,7 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
     const result = value(scanner);
     if (!result.ok) break;
     array.push(result.body);
-    scanner.nextUntilChar({ inline: true });
+    scanner.skipWhitespaces();
     // may have a next item, but trailing comma is allowed at array
     if (scanner.char() !== ",") break;
     scanner.next();
@@ -675,11 +724,7 @@ export function inlineTable(
     scanner.next(2);
     return success({});
   }
-  const pairs = surround(
-    "{",
-    join(pair, ","),
-    "}",
-  )(scanner);
+  const pairs = surround("{", join(pair, ","), "}")(scanner);
   if (!pairs.ok) return failure();
   let table = {};
   for (const pair of pairs.body) {
@@ -693,9 +738,14 @@ export const value = or([
   multilineLiteralString,
   basicString,
   literalString,
-  symbols,
+  boolean,
+  infinity,
+  nan,
   dateTime,
   localTime,
+  binary,
+  octal,
+  hex,
   float,
   integer,
   arrayValue,
@@ -706,7 +756,7 @@ export const pair = kv(dottedKey, "=", value);
 
 export function block(
   scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+): ParseResult<Block> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
@@ -715,7 +765,7 @@ export function block(
 
 export const tableHeader = surround("[", dottedKey, "]");
 
-export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
+export function table(scanner: Scanner): ParseResult<Table> {
   scanner.nextUntilChar();
   const header = tableHeader(scanner);
   if (!header.ok) return failure();
@@ -723,7 +773,7 @@ export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   const b = block(scanner);
   return success({
     type: "Table",
-    key: header.body,
+    keys: header.body,
     value: b.ok ? b.body.value : {},
   });
 }
@@ -732,7 +782,7 @@ export const tableArrayHeader = surround("[[", dottedKey, "]]");
 
 export function tableArray(
   scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+): ParseResult<TableArray> {
   scanner.nextUntilChar();
   const header = tableArrayHeader(scanner);
   if (!header.ok) return failure();
@@ -740,7 +790,7 @@ export function tableArray(
   const b = block(scanner);
   return success({
     type: "TableArray",
-    key: header.body,
+    keys: header.body,
     value: b.ok ? b.body.value : {},
   });
 }
@@ -749,57 +799,33 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) return failure();
-  let body = {};
-  for (const block of blocks.body) {
-    switch (block.type) {
-      case "Block": {
-        body = deepMerge(body, block.value);
-        break;
-      }
-      case "Table": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-      case "TableArray": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-    }
-  }
+  if (!blocks.ok) return success({});
+  const body = blocks.body.reduce(deepAssign, {});
   return success(body);
+}
+
+function createParseErrorMessage(scanner: Scanner, message: string) {
+  const string = scanner.source.slice(0, scanner.position);
+  const lines = string.split("\n");
+  const row = lines.length;
+  const column = lines.at(-1)?.length ?? 0;
+  return `Parse error on line ${row}, column ${column}: ${message}`;
 }
 
 export function parserFactory<T>(parser: ParserComponent<T>) {
   return (tomlString: string): T => {
     const scanner = new Scanner(tomlString);
-
-    let parsed: ParseResult<T> | null = null;
-    let err: Error | null = null;
     try {
-      parsed = parser(scanner);
-    } catch (e) {
-      err = e instanceof Error ? e : new Error("Invalid error type caught");
+      const result = parser(scanner);
+      if (result.ok && scanner.eof()) return result.body;
+      const message = `Unexpected character: "${scanner.char()}"`;
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new SyntaxError(createParseErrorMessage(scanner, error.message));
+      }
+      const message = "Invalid error type caught";
+      throw new SyntaxError(createParseErrorMessage(scanner, message));
     }
-
-    if (err || !parsed || !parsed.ok || !scanner.eof()) {
-      const position = scanner.position();
-      const subStr = tomlString.slice(0, position);
-      const lines = subStr.split("\n");
-      const row = lines.length;
-      const column = (() => {
-        let count = subStr.length;
-        for (const line of lines) {
-          if (count <= line.length) break;
-          count -= line.length + 1;
-        }
-        return count;
-      })();
-      const message = `Parse error on line ${row}, column ${column}: ${
-        err ? err.message : `Unexpected character: "${scanner.char()}"`
-      }`;
-      throw new SyntaxError(message);
-    }
-    return parsed.body;
   };
 }

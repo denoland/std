@@ -1,25 +1,34 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { delay } from "./delay.ts";
 import { pooledMap } from "./pool.ts";
 import {
-  assert,
   assertEquals,
+  assertGreaterOrEqual,
+  assertLess,
   assertRejects,
   assertStringIncludes,
 } from "@std/assert";
+import { FakeTime } from "@std/testing/time";
 
 Deno.test("pooledMap()", async () => {
-  const start = new Date();
+  using time = new FakeTime();
+
+  const start = Date.now();
   const results = pooledMap(
     2,
     [1, 2, 3],
-    (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 300)),
   );
+  for (const _ of Array(7)) {
+    time.tick(100);
+    await time.runMicrotasks();
+  }
   const array = await Array.fromAsync(results);
   assertEquals(array, [1, 2, 3]);
-  const diff = new Date().getTime() - start.getTime();
-  assert(diff >= 200);
-  assert(diff < 300);
+  const diff = Date.now() - start;
+
+  assertGreaterOrEqual(diff, 600);
+  assertLess(diff, 900);
 });
 
 Deno.test("pooledMap() handles errors", async () => {

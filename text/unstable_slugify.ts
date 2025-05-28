@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 const wordSegmenter = new Intl.Segmenter("en-US", { granularity: "word" });
@@ -86,7 +86,7 @@ export const NON_ASCII = /[^0-9a-zA-Z\-]/g;
  * ```
  *
  * @example With transliteration using a third-party library
- * ```ts no-eval no-assert
+ * ```ts no-assert
  * import { NON_ASCII, slugify } from "@std/text/unstable-slugify";
  * // example third-party transliteration library
  * import transliterate from "npm:any-ascii";

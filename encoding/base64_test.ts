@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { decodeBase64, encodeBase64 } from "./base64.ts";
@@ -33,7 +33,7 @@ Deno.test("encodeBase64() encodes binary", () => {
 
 Deno.test("encodeBase64() encodes binary buffer", () => {
   for (const [input, output] of testsetBinary) {
-    assertEquals(encodeBase64(input.buffer), output);
+    assertEquals(encodeBase64(input.buffer as ArrayBuffer), output);
   }
 });
 

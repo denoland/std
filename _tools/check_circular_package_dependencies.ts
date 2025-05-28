@@ -1,11 +1,11 @@
 // deno-lint-ignore-file no-console
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import {
   createGraph,
   type ModuleGraphJson,
   type ModuleJson,
 } from "@deno/graph";
-import { resolveWorkspaceSpecifiers } from "./utils.ts";
+import { getPackagesDenoJsons, resolve } from "./utils.ts";
 import graphviz from "graphviz";
 import { parse } from "../semver/parse.ts";
 
@@ -34,92 +34,12 @@ type Dep = {
   set: Set<string>;
   state: DepState;
 };
-type Mod =
-  | "assert"
-  | "async"
-  | "bytes"
-  | "cache"
-  | "cbor"
-  | "cli"
-  | "collections"
-  | "crypto"
-  | "csv"
-  | "data_structures"
-  | "datetime"
-  | "dotenv"
-  | "encoding"
-  | "expect"
-  | "fmt"
-  | "front_matter"
-  | "fs"
-  | "html"
-  | "http"
-  | "ini"
-  | "internal"
-  | "io"
-  | "json"
-  | "jsonc"
-  | "log"
-  | "media_types"
-  | "msgpack"
-  | "net"
-  | "path"
-  | "random"
-  | "regexp"
-  | "semver"
-  | "streams"
-  | "tar"
-  | "testing"
-  | "text"
-  | "toml"
-  | "ulid"
-  | "uuid"
-  | "webgpu"
-  | "yaml";
 
-const ENTRYPOINTS: Record<Mod, string[]> = {
-  assert: ["mod.ts"],
-  async: ["mod.ts"],
-  bytes: ["mod.ts"],
-  cache: ["mod.ts"],
-  cbor: ["mod.ts"],
-  cli: ["mod.ts"],
-  collections: ["mod.ts"],
-  crypto: ["mod.ts"],
-  csv: ["mod.ts"],
-  "data_structures": ["mod.ts"],
-  datetime: ["mod.ts"],
-  dotenv: ["mod.ts"],
-  encoding: ["mod.ts"],
-  expect: ["mod.ts"],
-  fmt: ["bytes.ts", "colors.ts", "duration.ts", "printf.ts"],
-  "front_matter": ["mod.ts"],
-  fs: ["mod.ts"],
-  html: ["mod.ts"],
-  http: ["mod.ts"],
-  ini: ["mod.ts"],
-  internal: ["mod.ts"],
-  io: ["mod.ts"],
-  json: ["mod.ts"],
-  jsonc: ["mod.ts"],
-  log: ["mod.ts"],
-  "media_types": ["mod.ts"],
-  msgpack: ["mod.ts"],
-  net: ["mod.ts"],
-  path: ["mod.ts"],
-  random: ["mod.ts"],
-  regexp: ["mod.ts"],
-  semver: ["mod.ts"],
-  streams: ["mod.ts"],
-  tar: ["mod.ts"],
-  testing: ["bdd.ts", "mock.ts", "snapshot.ts", "time.ts", "types.ts"],
-  text: ["mod.ts"],
-  toml: ["mod.ts"],
-  ulid: ["mod.ts"],
-  uuid: ["mod.ts"],
-  webgpu: ["mod.ts"],
-  yaml: ["mod.ts"],
-};
+const packagesDenoJsons = await getPackagesDenoJsons();
+const ENTRYPOINTS = Object.fromEntries(packagesDenoJsons.map((pkg) => {
+  const entrypoints = Object.values(pkg.exports);
+  return [pkg.name.replace("@std/", "").replace("-", "_"), entrypoints];
+})) as Record<string, string[]>;
 
 const root = new URL("../", import.meta.url).href;
 const deps: Record<string, Dep> = {};
@@ -143,9 +63,7 @@ async function check(
   const deps = new Set<string>();
   for (const path of paths) {
     const entrypoint = new URL(`../${pkg}/${path}`, import.meta.url).href;
-    const graph = await createGraph(entrypoint, {
-      resolve: resolveWorkspaceSpecifiers,
-    });
+    const graph = await createGraph(entrypoint, { resolve });
 
     for (
       const dep of new Set(
@@ -254,12 +172,12 @@ if (Deno.args.includes("--graph")) {
 } else if (Deno.args.includes("--all-imports")) {
   for (const [mod, entrypoints] of Object.entries(ENTRYPOINTS)) {
     for (const path of entrypoints) {
-      if (path === "mod.ts") {
+      if (path === "./mod.ts") {
         console.log(`import "jsr:@std/${mod.replaceAll("_", "-")}";`);
       } else {
         console.log(
           `import "jsr:@std/${mod.replaceAll("_", "-")}/${
-            path.replace(".ts", "").replaceAll("_", "-")
+            path.slice(2).replace(".ts", "").replaceAll("_", "-")
           }";`,
         );
       }

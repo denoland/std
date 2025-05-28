@@ -10,12 +10,13 @@ cli/testdata/unicode_width_crate/target
 
 # coverage
 coverage/
-cov.lcov
-codecov
-codecov.SHA256SUM
-codecov.SHA256SUM.sig
 
 # misc files
 .DS_Store
 .idea
 .vim
+_tmp/
+!_tmp/.keep
+
+# tsconfig for bun
+/tsconfig.json

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
@@ -52,5 +52,20 @@ Deno.test("expect().toHaveBeenNthCalledWith() throw when n is not a positive int
     },
     Error,
     "nth must be greater than 0: received 0",
+  );
+});
+
+Deno.test("expect().toHaveBeenNthCalledWith() with custom error message", () => {
+  const msg = "toHaveBeenNthCalledWith custom error message";
+  const mockFn = fn();
+
+  mockFn(1, 2, 3);
+  mockFn(4, 5, 6);
+  mockFn(7, 8, 9);
+
+  expect(() => expect(mockFn, msg).not.toHaveBeenNthCalledWith(1, 1, 2, 3))
+    .toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(mockFn, msg).toHaveBeenNthCalledWith(1, 4, 5, 6)).toThrow(
+    new RegExp(`^${msg}`),
   );
 });

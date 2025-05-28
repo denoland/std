@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -60,6 +60,7 @@
  * );
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toTransformStream<I, O>(
   transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,
   writableStrategy?: QueuingStrategy<I>,

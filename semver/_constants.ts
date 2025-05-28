@@ -1,17 +1,6 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { Comparator, SemVer } from "./types.ts";
-
-/**
- * The minimum valid SemVer object. Equivalent to `0.0.0`.
- */
-export const MIN: SemVer = {
-  major: 0,
-  minor: 0,
-  patch: 0,
-  prerelease: [],
-  build: [],
-};
 
 /**
  * ANY is a sentinel value used by some range calculations. It is not a valid

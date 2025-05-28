@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
@@ -27,7 +27,7 @@ export function createColor(
   diffType: DiffType,
   /**
    * TODO(@littledivy): Remove this when we can detect true color terminals. See
-   * https://github.com/denoland/deno_std/issues/2575.
+   * https://github.com/denoland/std/issues/2575.
    */
   background = false,
 ): (s: string) => string {

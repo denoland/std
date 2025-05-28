@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright @dsherret and dsherret/conditional-type-checks contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any ban-types
 
@@ -33,7 +33,11 @@ import {
 // IsExact
 {
   class _Class<T> {
-    declare private _prop: T;
+    prop: T;
+
+    constructor(prop: T) {
+      this.prop = prop;
+    }
   }
 
   // matching
@@ -277,17 +281,17 @@ import {
 
 // AssertTrue
 {
-  type test = AssertTrue<IsNever<never>>;
+  type Test = AssertTrue<IsNever<never>>;
 }
 
 // AssertFalse
 {
-  type test = AssertFalse<IsNever<string>>;
+  type Test = AssertFalse<IsNever<string>>;
 }
 
 // Assert
 {
-  type test =
+  type Test =
     | Assert<Has<string | number, number>, true>
     | Assert<Has<string | number, Date>, false>;
 }

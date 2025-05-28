@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 // Bare keys may only contain ASCII letters,
@@ -148,7 +148,7 @@ class Dumper {
       return `[${str}]`;
     } else if (typeof value === "object") {
       if (!value) {
-        throw new Error("should never reach");
+        throw new Error("Should never reach");
       }
       const str = Object.keys(value).map((key) => {
         return `${joinKeys([key])} = ${
@@ -158,7 +158,7 @@ class Dumper {
       return `{${str}}`;
     }
 
-    throw new Error("should never reach");
+    throw new Error("Should never reach");
   }
   #isSimplySerializable(value: unknown): boolean {
     return (
@@ -191,6 +191,9 @@ class Dumper {
     return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
   #numberDeclaration(keys: string[], value: number): string {
+    if (Number.isNaN(value)) {
+      return `${this.#declaration(keys)}nan`;
+    }
     switch (value) {
       case Infinity:
         return `${this.#declaration(keys)}inf`;

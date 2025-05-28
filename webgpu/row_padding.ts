@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /** Return value for {@linkcode getRowPadding}. */
@@ -70,6 +70,7 @@ export function getRowPadding(width: number): Padding {
  * @param height The height of the output buffer.
  * @returns The resliced buffer.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function resliceBufferWithPadding(
   buffer: Uint8Array,
   width: number,

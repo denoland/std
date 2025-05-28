@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
 import { parse } from "./parse.ts";
@@ -39,6 +39,14 @@ Deno.test({
       new Date(2019, 0, 3, 21, 33),
     );
     assertEquals(
+      parse("01-03-2019 09:33 PM.", "MM-dd-yyyy HH:mm a"),
+      new Date(2019, 0, 3, 21, 33),
+    );
+    assertEquals(
+      parse("01-03-2019 09:33 P.M.", "MM-dd-yyyy HH:mm a"),
+      new Date(2019, 0, 3, 21, 33),
+    );
+    assertEquals(
       parse("16:34 03-01-2019", "HH:mm dd-MM-yyyy"),
       new Date(2019, 0, 3, 16, 34),
     );
@@ -60,6 +68,14 @@ Deno.test({
     );
     assertEquals(
       parse("2019-01-03", "yyyy-MM-dd"),
+      new Date(2019, 0, 3),
+    );
+    assertEquals(
+      parse("19-01-03", "yy-MM-dd"),
+      new Date(2019, 0, 3),
+    );
+    assertEquals(
+      parse("3-1-19", "d-M-yy"),
       new Date(2019, 0, 3),
     );
   },
@@ -128,6 +144,12 @@ Deno.test("parse(): The date is 2021-12-31", () => {
   assertEquals(
     parse("31", "dd"),
     new Date(2021, 11, 31),
+  );
+
+  // Ensure 2021-02-29 (which does not exist) is not an intermediate result
+  assertEquals(
+    parse("29-02-2020", "dd-MM-yyyy"),
+    new Date(2020, 1, 29),
   );
 });
 

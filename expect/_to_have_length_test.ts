@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "@std/assert";
@@ -23,4 +23,16 @@ Deno.test("expect().toHaveLength()", () => {
   assertThrows(() => {
     expect("abc").not.toHaveLength(3);
   }, AssertionError);
+});
+
+Deno.test("expect().toHaveLength() with custom error message", () => {
+  const msg = "toHaveLength Custom Error";
+
+  expect(() => {
+    expect([1, 2, 3], msg).toHaveLength(4);
+  }).toThrow(new RegExp(`^${msg}`));
+
+  expect(() => {
+    expect("abc", msg).not.toHaveLength(3);
+  }).toThrow(new RegExp(`^${msg}`));
 });

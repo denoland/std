@@ -1,16 +1,16 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
  * Returns all distinct elements that appear at least once in each of the given
- * arrays.
+ * iterables.
  *
- * @typeParam T The type of the elements in the input arrays.
+ * @typeParam T The type of the elements in the input iterables.
  *
- * @param arrays The arrays to intersect.
+ * @param iterables The iterables to intersect.
  *
  * @returns An array of distinct elements that appear at least once in each of
- * the given arrays.
+ * the given iterables.
  *
  * @example Basic usage
  * ```ts
@@ -24,12 +24,13 @@
  * assertEquals(commonInterests, ["Cooking", "Music"]);
  * ```
  */
-export function intersect<T>(...arrays: (readonly T[])[]): T[] {
-  const [array, ...otherArrays] = arrays;
-  let set = new Set(array);
-  for (const array of otherArrays) {
-    set = set.intersection(new Set(array));
-    if (set.size === 0) break;
+export function intersect<T>(...iterables: Iterable<T>[]): T[] {
+  const [iterable, ...otherIterables] = iterables;
+  let set = new Set(iterable);
+  if (set.size === 0) return [];
+  for (const iterable of otherIterables) {
+    set = set.intersection(new Set(iterable));
+    if (set.size === 0) return [];
   }
   return [...set];
 }

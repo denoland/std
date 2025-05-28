@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 import { getLevelByName, getLevelName, LogLevels } from "./levels.ts";
 import type { LevelName, LogLevel } from "./levels.ts";
@@ -200,7 +200,7 @@ export class LogRecord {
    *   loggerName: "example",
    * });
    *
-   * assertEquals(record.loggerName, "example");
+   * assertEquals(record.levelName, "INFO");
    * ```
    */
   readonly levelName: string;

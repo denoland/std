@@ -1,7 +1,13 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { IniMap, type ReplacerFunction } from "./_ini_map.ts";
+/** Function for replacing JavaScript values with INI string values. */
+export type ReplacerFunction = (
+  key: string,
+  // deno-lint-ignore no-explicit-any
+  value: any,
+  section?: string,
+) => string;
 
 /** Options for {@linkcode stringify}. */
 export interface StringifyOptions {
@@ -26,7 +32,19 @@ export interface StringifyOptions {
   replacer?: ReplacerFunction;
 }
 
-export type { ReplacerFunction };
+function isPlainObject(object: unknown): object is object {
+  return Object.prototype.toString.call(object) === "[object Object]";
+}
+
+function sort([_a, valA]: [string, unknown], [_b, valB]: [string, unknown]) {
+  if (isPlainObject(valA)) return 1;
+  if (isPlainObject(valB)) return -1;
+  return 0;
+}
+
+function defaultReplacer(_key: string, value: unknown, _section?: string) {
+  return `${value}`;
+}
 
 /**
  * Compile an object into an INI config string. Provide formatting options to modify the output.
@@ -87,9 +105,31 @@ export type { ReplacerFunction };
  * @returns The INI string
  */
 export function stringify(
-  // deno-lint-ignore no-explicit-any
-  object: any,
-  options?: StringifyOptions,
+  object: object,
+  options: StringifyOptions = {},
 ): string {
-  return IniMap.from(object, options).toString(options?.replacer);
+  const {
+    replacer = defaultReplacer,
+    pretty = false,
+    lineBreak = "\n",
+  } = options;
+  const assignment = pretty ? " = " : "=";
+
+  const entries = Object.entries(object).sort(sort);
+
+  const lines = [];
+  for (const [key, value] of entries) {
+    if (isPlainObject(value)) {
+      const sectionName = key;
+      lines.push(`[${sectionName}]`);
+      for (const [key, val] of Object.entries(value)) {
+        const line = `${key}${assignment}${replacer(key, val, sectionName)}`;
+        lines.push(line);
+      }
+    } else {
+      const line = `${key}${assignment}${replacer(key, value)}`;
+      lines.push(line);
+    }
+  }
+  return lines.join(lineBreak);
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import {
   assert,
   assertEquals,
@@ -392,6 +392,7 @@ Deno.test("BinarySearchTree.from() handles default ascend comparator", () => {
   let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
+  assertEquals(tree.size, originalTree.size);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
@@ -443,6 +444,7 @@ Deno.test("BinarySearchTree.from() handles descend comparator", () => {
   let tree: BinarySearchTree<number> = BinarySearchTree.from(originalTree);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
+  assertEquals(tree.size, originalTree.size);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
   assertEquals([...tree.lvlValues()], [...originalTree.lvlValues()]);
 
@@ -542,7 +544,7 @@ Deno.test("BinarySearchTree handles README example", () => {
   ]);
 });
 
-Deno.test("BinarySearchTree.max() handles null ", () => {
+Deno.test("BinarySearchTree.max() handles null", () => {
   const tree = BinarySearchTree.from([1]);
   assert(!tree.isEmpty());
   tree.clear();

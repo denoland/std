@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { invert, type InvertResult } from "./invert.ts";
@@ -24,14 +24,17 @@ Deno.test("invert() handles duplicate values", () => {
 });
 
 Deno.test("invert() handles nested input", () => {
-  // @ts-ignore - testing invalid input
+  // @ts-expect-error - testing invalid input
   invertTest({ a: { b: "c" } }, { "[object Object]": "a" });
-  // @ts-ignore - testing invalid input
-  invertTest({ a: "x", b: () => {} }, { "x": "a", "()=>{}": "b" });
-  // @ts-ignore - testing invalid input
+  // @ts-expect-error - testing invalid input
+  invertTest({ a: "x", b: Object }, {
+    "x": "a",
+    [Object.toString()]: "b",
+  });
+  // @ts-expect-error - testing invalid input
   invertTest({ a: "x", b: ["y", "z"] }, { "x": "a", "y,z": "b" });
-  // @ts-ignore - testing invalid input
+  // @ts-expect-error - testing invalid input
   invertTest({ a: "x", b: null }, { "x": "a", "null": "b" });
-  // @ts-ignore - testing invalid input
+  // @ts-expect-error - testing invalid input
   invertTest({ a: "x", b: undefined }, { "x": "a", "undefined": "b" });
 });

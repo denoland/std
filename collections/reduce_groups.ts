@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { mapValues } from "./map_values.ts";
@@ -36,6 +36,7 @@ import { mapValues } from "./map_values.ts";
  * });
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function reduceGroups<T, A>(
   record: Readonly<Record<string, ReadonlyArray<T>>>,
   reducer: (accumulator: A, current: T) => A,

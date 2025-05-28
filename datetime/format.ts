@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { DateTimeFormatter } from "./_date_time_formatter.ts";
@@ -61,7 +61,7 @@ export interface FormatOptions {
  *
  * @example UTC formatting
  *
- * Enable UTC formatting by setting the `utc` option to `true`.
+ * Enable UTC formatting by setting the `timeZone` option to `"UTC"`.
  *
  * ```ts ignore
  * import { format } from "@std/datetime/format";

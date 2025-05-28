@@ -1,13 +1,15 @@
 {
   "name": "@std/testing",
-  "version": "1.0.5",
+  "version": "1.0.13",
   "exports": {
     "./bdd": "./bdd.ts",
     "./mock": "./mock.ts",
     "./snapshot": "./snapshot.ts",
     "./time": "./time.ts",
     "./types": "./types.ts",
-    "./unstable-types": "./unstable_types.ts",
-    "./unstable-stub": "./unstable_stub.ts"
+    "./unstable-bdd": "./unstable_bdd.ts",
+    "./unstable-snapshot": "./unstable_snapshot.ts",
+    "./unstable-stub": "./unstable_stub.ts",
+    "./unstable-types": "./unstable_types.ts"
   }
 }

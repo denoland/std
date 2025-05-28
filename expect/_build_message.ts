@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { buildMessage } from "@std/internal/build-message";
 import { diff } from "@std/internal/diff";
@@ -18,14 +18,14 @@ function isString(value: unknown): value is string {
 export function buildEqualErrorMessage<T>(
   actual: T,
   expected: T,
-  options: EqualErrorMessageOptions,
+  options: EqualErrorMessageOptions = {},
 ): string {
-  const { formatter = format, msg } = options ?? {};
-  const msgSuffix = msg ? `: ${msg}` : ".";
+  const { formatter = format, msg } = options;
+  const msgPrefix = msg ? `${msg}: ` : "";
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
 
-  let message = `Values are not equal${msgSuffix}`;
+  let message = `${msgPrefix}Values are not equal.`;
 
   const stringDiff = isString(actual) && isString(expected);
   const diffResult = stringDiff
@@ -40,12 +40,12 @@ export function buildEqualErrorMessage<T>(
 export function buildNotEqualErrorMessage<T>(
   actual: T,
   expected: T,
-  options: EqualErrorMessageOptions,
+  options: EqualErrorMessageOptions = {},
 ): string {
-  const { msg } = options ?? {};
-  const actualString = String(actual);
-  const expectedString = String(expected);
+  const { formatter = format, msg } = options;
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
 
-  const msgSuffix = msg ? `: ${msg}` : ".";
-  return `Expected actual: ${actualString} not to be: ${expectedString}${msgSuffix}`;
+  const msgPrefix = msg ? `${msg}: ` : "";
+  return `${msgPrefix}Expected actual: ${actualString} not to be: ${expectedString}.`;
 }

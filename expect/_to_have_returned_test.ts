@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
@@ -28,4 +28,27 @@ Deno.test("expect().toHaveReturned()", () => {
   assertThrows(() => {
     expect(mockFn0).not.toHaveReturned();
   }, AssertionError);
+});
+
+Deno.test("expect().toHaveReturned() with custom error message", () => {
+  const msg = "toHaveReturned custom error message";
+  const mockFn0 = fn();
+  const mockFn1 = fn(() => {
+    throw new Error("foo");
+  });
+
+  mockFn0();
+  try {
+    mockFn1();
+  } catch {
+    // ignore
+  }
+
+  expect(() => expect(mockFn1, msg).toHaveReturned()).toThrow(
+    new RegExp(`${msg}`),
+  );
+
+  expect(() => expect(mockFn0, msg).not.toHaveReturned()).toThrow(
+    new RegExp(`${msg}`),
+  );
 });

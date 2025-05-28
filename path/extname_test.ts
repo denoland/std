@@ -1,11 +1,9 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
-import { extname as posixUnstableExtname } from "./posix/unstable_extname.ts";
-import { extname as windowsUnstableExtname } from "./windows/unstable_extname.ts";
 
 const slashRE = /\//g;
 
@@ -72,11 +70,11 @@ Deno.test("posix.extname()", function () {
   assertEquals(posix.extname("file.\\\\"), ".\\\\");
 
   assertEquals(
-    posixUnstableExtname(new URL("file:///home/user/Documents/image.png")),
+    posix.extname(new URL("file:///home/user/Documents/image.png")),
     ".png",
   );
   assertEquals(
-    posixUnstableExtname(new URL("file:///home/user/Documents")),
+    posix.extname(new URL("file:///home/user/Documents")),
     "",
   );
 });
@@ -100,11 +98,11 @@ Deno.test("windows.extname()", function () {
   assertEquals(windows.extname("file.\\\\"), ".");
 
   assertEquals(
-    windowsUnstableExtname(new URL("file:///C:/home/user/Documents/image.png")),
+    windows.extname(new URL("file:///C:/home/user/Documents/image.png")),
     ".png",
   );
   assertEquals(
-    windowsUnstableExtname(new URL("file:///C:/home/user/Documents")),
+    windows.extname(new URL("file:///C:/home/user/Documents")),
     "",
   );
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 // For future forward-compatibility with regexp `v` flag, `RESERVED_CHARS` is
@@ -93,5 +93,5 @@ export function escape(str: string): string {
   return str.replaceAll(
     RX_REGEXP_ESCAPE,
     (m) => RESERVED_CHARS[m as keyof typeof RESERVED_CHARS],
-  );
+  ).replace(/^[0-9a-zA-Z]/, (m) => `\\x${m.codePointAt(0)!.toString(16)}`);
 }

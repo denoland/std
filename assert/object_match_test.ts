@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { AssertionError, assertObjectMatch, assertThrows } from "./mod.ts";
 
 const sym = Symbol("foo");
@@ -9,11 +9,11 @@ const d = { corge: c, grault: c };
 const e = { foo: true } as { [key: string]: unknown };
 e.bar = e;
 const f = { [sym]: true, bar: false };
-interface r {
+interface R {
   foo: boolean;
   bar: boolean;
 }
-const g: r = { foo: true, bar: false };
+const g: R = { foo: true, bar: false };
 const h = { foo: [1, 2, 3], bar: true };
 const i = { foo: [a, e], bar: true };
 const j = { foo: [[1, 2, 3]], bar: true };
@@ -413,3 +413,23 @@ Deno.test("assertObjectMatch() prints inputs correctly", () => {
     }`,
   );
 });
+
+Deno.test(
+  "assertObjectMatch() should be able to test target object's own `__proto__`",
+  () => {
+    const objectA = { ["__proto__"]: { polluted: true } };
+    const objectB = { ["__proto__"]: { polluted: true } };
+    const objectC = { ["__proto__"]: { polluted: false } };
+    assertObjectMatch(objectA, objectB);
+    assertThrows(
+      () => assertObjectMatch(objectA, objectC),
+      AssertionError,
+      `    {
+      ['__proto__']: {
+-       polluted: true,
++       polluted: false,
+      },
+    }`,
+    );
+  },
+);

@@ -1,37 +1,38 @@
 // deno-lint-ignore-file no-console
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { walk } from "../fs/walk.ts";
 import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
 import ts from "npm:typescript";
+import { getEntrypoints } from "./utils.ts";
+import { fromFileUrl } from "@std/path/from-file-url";
 
-const ROOT = new URL("../", import.meta.url);
 const FAIL_FAST = Deno.args.includes("--fail-fast");
 
 let shouldFail = false;
 
-for await (
-  const { path: modFilePath } of walk(ROOT, {
-    includeDirs: true,
-    exts: ["ts"],
-    match: [/mod\.ts$/],
-    maxDepth: 2,
-  })
-) {
-  const source = await Deno.readTextFile(modFilePath);
-  const sourceFile = ts.createSourceFile(
+const MOD_FILE_PATHS = (await getEntrypoints())
+  .filter((entrypoint) => entrypoint.split("/").length === 2)
+  .map((entrypoint) => fromFileUrl(import.meta.resolve(entrypoint)));
+
+for (const modFilePath of MOD_FILE_PATHS) {
+  const modSource = await Deno.readTextFile(modFilePath);
+  const modSourceFile = ts.createSourceFile(
     modFilePath,
-    source,
+    modSource,
     ts.ScriptTarget.Latest,
   );
-  const exportSpecifiers = new Set();
-  sourceFile.forEachChild((node) => {
-    if (!ts.isExportDeclaration(node)) return;
-    if (!node.moduleSpecifier) return;
-    if (!ts.isStringLiteral(node.moduleSpecifier)) return;
-    exportSpecifiers.add(node.moduleSpecifier.text);
+  const modExportSpecifiers = new Set();
+  modSourceFile.forEachChild((node) => {
+    if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      modExportSpecifiers.add(node.moduleSpecifier.text);
+    }
   });
 
   for await (
@@ -50,9 +51,10 @@ for await (
         /uuid(\/|\\)v3\.ts$/,
         /uuid(\/|\\)v4\.ts$/,
         /uuid(\/|\\)v5\.ts$/,
+        /uuid(\/|\\)v6\.ts$/,
         /uuid(\/|\\)v7\.ts$/,
-        /yaml(\/|\\)schema\.ts$/,
-        /test\.ts$/,
+        /_test\.ts$/,
+        /_bench\.ts$/,
         /\.d\.ts$/,
         /(\/|\\)_/,
         /mod\.ts$/,
@@ -61,7 +63,13 @@ for await (
   ) {
     const relativeSpecifier = relative(modFilePath, filePath).slice(1)
       .replaceAll("\\", "/");
-    if (!exportSpecifiers.has(relativeSpecifier)) {
+
+    if (!modExportSpecifiers.has(relativeSpecifier)) {
+      if (
+        filePath.endsWith("test.ts") &&
+        Deno.readTextFileSync(filePath).includes("Deno.test(")
+      ) continue;
+
       console.warn(
         `${
           colors.yellow("Warn")

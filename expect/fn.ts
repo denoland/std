@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // deno-lint-ignore-file no-explicit-any ban-types
@@ -6,7 +6,7 @@
 /**
  * This module contains a function to mock functions for testing and assertions.
  *
- * ```ts
+ * ```ts no-assert
  * import { fn, expect } from "@std/expect";
  *
  * Deno.test("example", () => {

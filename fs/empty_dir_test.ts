@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import {
   assertEquals,
   assertRejects,
@@ -8,10 +8,9 @@ import {
 import * as path from "@std/path";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 
-const testdataDir = path.join(import.meta.dirname!, "testdata");
-
 Deno.test("emptyDir() creates a new dir if it does not exist", async function () {
-  const testDir = path.join(testdataDir, "empty_dir_test_1");
+  const tempDirPath = await Deno.makeTempDir({ prefix: "deno_std_empty_dir_" });
+  const testDir = path.join(tempDirPath, "empty_dir_test_1");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which not exist. then it will create new one
   await emptyDir(testNestDir);
@@ -21,13 +20,16 @@ Deno.test("emptyDir() creates a new dir if it does not exist", async function ()
     const stat = await Deno.stat(testNestDir);
     assertEquals(stat.isDirectory, true);
   } finally {
-    // remove the test dir
-    await Deno.remove(testDir, { recursive: true });
+    // Cleanup and remove test directories.
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("emptyDirSync() creates a new dir if it does not exist", function () {
-  const testDir = path.join(testdataDir, "empty_dir_test_2");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_empty_dir_sync_",
+  });
+  const testDir = path.join(tempDirPath, "empty_dir_test_2");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which does not exist, then it will a create new one.
   emptyDirSync(testNestDir);
@@ -37,13 +39,14 @@ Deno.test("emptyDirSync() creates a new dir if it does not exist", function () {
     const stat = Deno.statSync(testNestDir);
     assertEquals(stat.isDirectory, true);
   } finally {
-    // remove the test dir
-    Deno.removeSync(testDir, { recursive: true });
+    // Cleanup and remove test directories.
+    Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("emptyDir() empties nested dirs and files", async function () {
-  const testDir = path.join(testdataDir, "empty_dir_test_3");
+  const tempDirPath = await Deno.makeTempDir({ prefix: "deno_std_empty_dir_" });
+  const testDir = path.join(tempDirPath, "empty_dir_test_3");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
   await emptyDir(testNestDir);
@@ -80,13 +83,16 @@ Deno.test("emptyDir() empties nested dirs and files", async function () {
       },
     );
   } finally {
-    // remote test dir
-    await Deno.remove(testDir, { recursive: true });
+    // Cleanup and remove test directory.
+    await Deno.remove(tempDirPath, { recursive: true });
   }
 });
 
 Deno.test("emptyDirSync() empties nested dirs and files", function () {
-  const testDir = path.join(testdataDir, "empty_dir_test_4");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_empty_dir_sync_",
+  });
+  const testDir = path.join(tempDirPath, "empty_dir_test_4");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
   emptyDirSync(testNestDir);
@@ -119,11 +125,14 @@ Deno.test("emptyDirSync() empties nested dirs and files", function () {
       Deno.statSync(testDirFile);
     });
   } finally {
-    // remote test dir
-    Deno.removeSync(testDir, { recursive: true });
+    // Cleanup and remove test directory.
+    Deno.removeSync(tempDirPath, { recursive: true });
   }
 });
 
+// Testing the permissions of emptyDir and emptyDirSync functions in a script
+// that is running inside a Deno child process.
+const testdataDir = path.join(import.meta.dirname!, "testdata");
 interface Scenes {
   read: boolean; // --allow-read
   write: boolean; // --allow-write
@@ -191,9 +200,11 @@ for (const s of scenes) {
   Deno.test(`${title} permission`, async function (): Promise<
     void
   > {
-    const testfolder = path.join(testdataDir, "testfolder");
-
+    const tempDirPath = await Deno.makeTempDir({
+      prefix: "deno_std_empty_dir_permissions_",
+    });
     try {
+      const testfolder = path.join(tempDirPath, "testfolder");
       await Deno.mkdir(testfolder);
 
       await Deno.writeTextFile(
@@ -224,6 +235,10 @@ for (const s of scenes) {
           ),
         );
 
+        // Passing the testfolder path as an argument to empty_dir.ts and
+        // empty_dir_sync.ts scripts.
+        args.push(testfolder);
+
         const command = new Deno.Command(Deno.execPath(), {
           args,
           stderr: "inherit",
@@ -233,13 +248,13 @@ for (const s of scenes) {
       } catch (err) {
         // deno-lint-ignore no-console
         console.log(err);
-        await Deno.remove(testfolder, { recursive: true });
+        await Deno.remove(tempDirPath, { recursive: true });
         throw err;
       }
     } finally {
       // Make the test rerunnable
       // Otherwise it would throw an error due to mkdir fail.
-      await Deno.remove(testfolder, { recursive: true });
+      await Deno.remove(tempDirPath, { recursive: true });
       // done
     }
   });

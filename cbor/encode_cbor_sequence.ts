@@ -1,7 +1,6 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
-import { concat } from "@std/bytes/concat";
-import { encodeCbor } from "./encode_cbor.ts";
+import { calcEncodingSize, encode } from "./_common_encode.ts";
 import type { CborType } from "./types.ts";
 
 /**
@@ -12,7 +11,7 @@ import type { CborType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { decodeCborSequence, encodeCborSequence } from "@std/cbor";
+ * import { type CborType, decodeCborSequence, encodeCborSequence } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -22,6 +21,8 @@ import type { CborType } from "./types.ts";
  *   -1,
  *   null,
  *   Uint8Array.from([0, 1, 2, 3]),
+ *   new Date(),
+ *   new Map<CborType, CborType>([[1, 2], ['3', 4], [[5], { a: 6 }]]),
  * ];
  *
  * const encodedMessage = encodeCborSequence(rawMessage);
@@ -34,7 +35,12 @@ import type { CborType } from "./types.ts";
  * @returns A {@link Uint8Array} representing the encoded data.
  */
 export function encodeCborSequence(values: CborType[]): Uint8Array {
-  const output: Uint8Array[] = [];
-  for (const value of values) output.push(encodeCbor(value));
-  return concat(output);
+  let o = 0;
+  for (const value of values) o += calcEncodingSize(value);
+  const output = new Uint8Array(o);
+
+  o = 0;
+  for (const value of values) o = encode(value, output, o);
+  if (o !== output.length) return output.subarray(0, o);
+  return output;
 }

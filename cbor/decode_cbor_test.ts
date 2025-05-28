@@ -1,10 +1,11 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { random } from "./_common_test.ts";
 import { decodeCbor } from "./decode_cbor.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborTag } from "./tag.ts";
+import type { CborType } from "./types.ts";
 
 Deno.test("decodeCbor() decoding undefined", () => {
   assertEquals(decodeCbor(encodeCbor(undefined)), undefined);
@@ -111,6 +112,55 @@ Deno.test("decodeCbor() decoding Dates", () => {
   assertEquals(decodeCbor(encodeCbor(date)), date);
 });
 
+Deno.test("decodeCbor() decoding bignums", () => {
+  let num = 2n ** 64n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+
+  num = -(2n ** 64n) - 1n;
+  assertEquals(decodeCbor(encodeCbor(num)), num);
+});
+
+Deno.test("decodeCbor() decoding Map<CborType, CborType>", () => {
+  const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+});
+
+Deno.test("decodeCbor() decoding Maps", () => {
+  let pairs = random(0, 24);
+  let map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(24, 2 ** 8);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(2 ** 8, 2 ** 16);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  pairs = random(2 ** 16, 2 ** 17);
+  map = new Map(
+    new Array(pairs)
+      .fill(0)
+      .map((_, i) => [i, i]),
+  );
+  assertEquals(decodeCbor(encodeCbor(map)), map);
+
+  // Can't test the next bracket up due to JavaScript limitations.
+});
+
 Deno.test("decodeCbor() decoding arrays", () => {
   let array = new Array(random(0, 24)).fill(0).map((_) => random(0, 2 ** 32));
   assertEquals(decodeCbor(encodeCbor(array)), array);
@@ -155,7 +205,7 @@ Deno.test("decodeCbor() decoding objects", () => {
 
 Deno.test("decodeCbor() decoding CborTag()", () => {
   const tag = new CborTag(
-    2,
+    4,
     new Uint8Array(random(0, 24)).map((_) => random(0, 256)),
   );
   assertEquals(decodeCbor(encodeCbor(tag)), tag);
@@ -652,4 +702,168 @@ Deno.test("decodeCbor() rejecting majorType 7 due to additional information", ()
     RangeError,
     "Cannot decode value (0b111_11110)",
   );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 2 & 3 due to invalid tagContent", () => {
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(2, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
+  );
+  assertThrows(
+    () => decodeCbor(encodeCbor(new CborTag(3, "a string is invalid"))),
+    TypeError,
+    'Invalid TagItem: Expected a "byte string"',
+  );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 259 due to additional information", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11100,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11100)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11101,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11101)",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11110,
+          ...new Array(random(0, 64)).fill(0).map((_) => random(0, 256)),
+        ]),
+      );
+    },
+    RangeError,
+    "Cannot decode value (0b101_11110)",
+  );
+});
+
+Deno.test("decodeCbor() rejecting TagNumber 259 due to maps having invalid keys", () => {
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_00010,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+});
+
+Deno.test("decodeCbor() rejecting tagNumber 259 due to invalid indefinite length maps", () => {
+  assertThrows(
+    () => {
+      decodeCbor(Uint8Array.from([217, 1, 3, 0b101_11111]));
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+          0b011_00001,
+          48,
+          0b000_00001,
+          0b111_11111,
+        ]),
+      );
+    },
+    TypeError,
+    "A Map cannot have duplicate keys: Key (0) already exists",
+  );
+  assertThrows(
+    () => {
+      decodeCbor(
+        Uint8Array.from([
+          217,
+          1,
+          3,
+          0b101_11111,
+          0b011_00001,
+          48,
+          0b000_00000,
+        ]),
+      );
+    },
+    RangeError,
+    "More bytes were expected",
+  );
+});
+
+Deno.test("decodeCbor() correctly decoding with subarrays", () => {
+  let encodedData = encodeCbor(0);
+  let buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 0);
+
+  encodedData = encodeCbor(24);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 24);
+
+  encodedData = encodeCbor(2 ** 8);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2 ** 8);
+
+  encodedData = encodeCbor(2 ** 16);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2 ** 16);
+
+  encodedData = encodeCbor(2 ** 32);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 2n ** 32n);
+
+  encodedData = encodeCbor(3.14);
+  buffer = new Uint8Array(encodedData.length + 7);
+  buffer.set(encodedData, 7);
+  assertEquals(decodeCbor(buffer.subarray(7)), 3.14);
 });

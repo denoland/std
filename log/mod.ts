@@ -1,8 +1,12 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 /**
- * Logging library with the support for terminal and file outputs. Also provides
+ * Logging library with support for terminal and file outputs. Also provides
  * interfaces for building custom loggers.
+ *
+ * > [!IMPORTANT]
+ * > @std/log is [likely to be removed in the future](https://github.com/denoland/std/issues/6124).
+ * > Consider using [Open Telemetry](https://docs.deno.com/runtime/fundamentals/open_telemetry/).
  *
  * ## Loggers
  *

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert/equals";
 import { isValidCustomElementName } from "./unstable_is_valid_custom_element_name.ts";
 
@@ -47,5 +47,6 @@ Deno.test("isValidCustomElementName()", async (t) => {
   await t.step("handles large variety of names", () => {
     assertEquals(isValidCustomElementName("math-α"), true);
     assertEquals(isValidCustomElementName("emotion-😍"), true);
+    assertEquals(isValidCustomElementName("hieroglyph-𓀀"), true);
   });
 });

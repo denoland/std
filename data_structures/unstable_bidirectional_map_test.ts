@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assert, assertEquals } from "@std/assert";
 import { BidirectionalMap } from "./unstable_bidirectional_map.ts";
 
@@ -310,5 +310,75 @@ Deno.test(
     assertEquals(map.getReverse(value)!.name, "Tūī");
     const entries = Array.from(map.entries());
     assertEquals(entries, [[{ name: "Tūī" }, { favourite: true }]]);
+  },
+);
+
+Deno.test(
+  "BidirectionalMap constructor accepts iterables of key-value pairs",
+  () => {
+    const bidiFromArr = new BidirectionalMap([
+      ...["zero", "one", "two"].entries(),
+    ]);
+    const bidiFromIter = new BidirectionalMap(["zero", "one", "two"].entries());
+    assertEquals(bidiFromArr, bidiFromIter);
+  },
+);
+
+Deno.test(
+  "BidirectionalMap differentiates extant `undefined` from missing values, consistently with `Map`",
+  async (t) => {
+    let bidi: BidirectionalMap<number | undefined, number | undefined>;
+
+    await t.step("delete", () => {
+      bidi = new BidirectionalMap([[0, undefined]]);
+      assertEquals(bidi.delete(0), true);
+      assertEquals(bidi.delete(0), false);
+      assertEquals(bidi.delete(1), false);
+    });
+
+    await t.step("deleteReverse", () => {
+      bidi = new BidirectionalMap([[undefined, 0]]);
+      assertEquals(bidi.deleteReverse(0), true);
+      assertEquals(bidi.deleteReverse(0), false);
+      assertEquals(bidi.deleteReverse(1), false);
+    });
+
+    await t.step("has", () => {
+      bidi = new BidirectionalMap([[undefined, undefined]]);
+      assertEquals(bidi.has(undefined), true);
+      bidi.set(1, undefined);
+      // gets removed due to `undefined` value (reverse key) being overwritten
+      assertEquals(bidi.has(undefined), false);
+    });
+
+    await t.step("hasReverse", () => {
+      bidi = new BidirectionalMap([[undefined, undefined]]);
+      assertEquals(bidi.hasReverse(undefined), true);
+      bidi.set(undefined, 1);
+      // gets removed due to `undefined` key being overwritten
+      assertEquals(bidi.hasReverse(undefined), false);
+    });
+
+    await t.step("set", () => {
+      bidi = new BidirectionalMap([[undefined, undefined]]);
+      bidi.set(undefined, 1);
+      assertEquals([...bidi], [[undefined, 1]]);
+
+      bidi = new BidirectionalMap([[undefined, undefined]]);
+      bidi.set(1, undefined);
+      assertEquals([...bidi], [[1, undefined]]);
+
+      bidi = new BidirectionalMap([]);
+      bidi.set(undefined, undefined);
+      assertEquals([...bidi], [[undefined, undefined]]);
+
+      bidi = new BidirectionalMap([]);
+      bidi.set(undefined, 1);
+      assertEquals([...bidi], [[undefined, 1]]);
+
+      bidi = new BidirectionalMap([]);
+      bidi.set(1, undefined);
+      assertEquals([...bidi], [[1, undefined]]);
+    });
   },
 );

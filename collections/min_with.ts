@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -32,7 +32,7 @@ export function minWith<T>(
   let isFirst = true;
 
   for (const current of array) {
-    if (isFirst || comparator(current, <T> min) < 0) {
+    if (isFirst || comparator(current, min as T) < 0) {
       min = current;
       isFirst = false;
     }

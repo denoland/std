@@ -1,18 +1,24 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 /** Options for {@linkcode promptSelect}. */
 export interface PromptSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
+
+  /** The number of lines to be visible at once */
+  visibleLines?: number;
+
+  /** The string to indicate the selected item */
+  indicator?: string;
 }
 
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
-const INDICATOR = "❯";
-const PADDING = " ".repeat(INDICATOR.length);
 
+const input = Deno.stdin;
+const output = Deno.stdout;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -32,51 +38,113 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ```ts ignore
  * import { promptSelect } from "@std/cli/prompt-select";
  *
- * const browser = promptSelect("Please select a browser:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browser = promptSelect("What country are you from?", [
+ *   "Brazil",
+ *   "United States",
+ *   "Japan",
+ *   "China",
+ *   "Canada",
+ *   "Spain",
+ * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
 export function promptSelect(
   message: string,
   values: string[],
-  { clear }: PromptSelectOptions = {},
+  options: PromptSelectOptions = {},
 ): string | null {
+  if (!input.isTerminal()) return null;
+
+  const SAFE_PADDING = 3;
+  let {
+    // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
+    // and we use the last line to display the "..."
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      values.length,
+    ),
+    indicator = "❯",
+  } = options;
+  const PADDING = " ".repeat(indicator.length);
+
   const length = values.length;
   let selectedIndex = 0;
+  let showIndex = 0;
+  let offset = 0;
 
-  Deno.stdin.setRaw(true);
-  Deno.stdout.writeSync(HIDE_CURSOR);
+  input.setRaw(true);
+  output.writeSync(HIDE_CURSOR);
+
   const buffer = new Uint8Array(4);
+
   loop:
   while (true) {
-    Deno.stdout.writeSync(encoder.encode(`${message}\r\n`));
-    for (const [index, value] of values.entries()) {
-      const start = index === selectedIndex ? INDICATOR : PADDING;
-      Deno.stdout.writeSync(encoder.encode(`${start} ${value}\r\n`));
+    output.writeSync(encoder.encode(`${message}\r\n`));
+    const chunk = values.slice(offset, visibleLines + offset);
+    for (const [index, value] of chunk.entries()) {
+      const start = index === showIndex ? indicator : PADDING;
+      output.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
-    const n = Deno.stdin.readSync(buffer);
+    const moreContent = visibleLines + offset < length;
+    if (moreContent) {
+      output.writeSync(encoder.encode("...\r\n"));
+    }
+    const n = input.readSync(buffer);
     if (n === null || n === 0) break;
-    const input = decoder.decode(buffer.slice(0, n));
+    const string = decoder.decode(buffer.slice(0, n));
 
-    switch (input) {
+    switch (string) {
       case ETX:
-        Deno.stdout.writeSync(SHOW_CURSOR);
+        output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
-      case ARROW_UP:
-        selectedIndex = (selectedIndex - 1 + length) % length;
+      case ARROW_UP: {
+        const atTop = selectedIndex === 0;
+        selectedIndex = atTop ? length - 1 : selectedIndex - 1;
+        if (atTop) {
+          offset = Math.max(length - visibleLines, 0);
+          showIndex = Math.min(visibleLines - 1, length - 1);
+        } else if (showIndex > 0) {
+          showIndex--;
+        } else {
+          offset = Math.max(offset - 1, 0);
+        }
         break;
-      case ARROW_DOWN:
-        selectedIndex = (selectedIndex + 1) % length;
+      }
+      case ARROW_DOWN: {
+        const atBottom = selectedIndex === length - 1;
+        selectedIndex = atBottom ? 0 : selectedIndex + 1;
+        if (atBottom) {
+          offset = 0;
+          showIndex = 0;
+        } else if (showIndex < visibleLines - 1) {
+          showIndex++;
+        } else {
+          offset++;
+        }
         break;
+      }
       case CR:
         break loop;
     }
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      visibleLines,
+    );
+    // if we print the "...\r\n" we need to clear an additional line
+    output.writeSync(
+      encoder.encode(`\x1b[${visibleLines + (moreContent ? 2 : 1)}A`),
+    );
+    output.writeSync(CLR_ALL);
   }
-  if (clear) {
-    Deno.stdout.writeSync(encoder.encode(`\x1b[${length + 1}A`));
-    Deno.stdout.writeSync(CLR_ALL);
+
+  if (options.clear) {
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
+    output.writeSync(CLR_ALL);
   }
-  Deno.stdout.writeSync(SHOW_CURSOR);
-  Deno.stdin.setRaw(false);
+
+  output.writeSync(SHOW_CURSOR);
+  input.setRaw(false);
+
   return values[selectedIndex] ?? null;
 }

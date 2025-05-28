@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 // This file is copied from `std/assert`.
 
@@ -30,6 +30,6 @@ export function assertNotEquals<T>(
     return;
   }
 
-  const message = buildNotEqualErrorMessage(actual, expected, options);
+  const message = buildNotEqualErrorMessage(actual, expected, options ?? {});
   throw new AssertionError(message);
 }

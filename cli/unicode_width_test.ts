@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { unicodeWidth } from "./unicode_width.ts";
 import { assertEquals } from "@std/assert";
@@ -40,7 +40,7 @@ Deno.test("unicodeWidth()", async (t) => {
     // Note: Returns 4 for the below case, following the upstream crate
     // `unicode_width`. Another possibility might be returning 2, which is what
     // `npm:string-width` returns.
-    // See discussion at https://github.com/denoland/deno_std/pull/3297#discussion_r1166289430
+    // See discussion at https://github.com/denoland/std/pull/3297#discussion_r1166289430
     assertEquals(unicodeWidth("👩‍🔬"), 4); // Woman Scientist
   });
 

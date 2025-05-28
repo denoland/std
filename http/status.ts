@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -18,7 +18,7 @@
  * ```
  *
  * @example Checking the status code type
- * ```ts
+ * ```ts ignore
  * import { isErrorStatus } from "@std/http/status";
  *
  * const res = await fetch("https://example.com/");

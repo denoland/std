@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { type Route, route } from "./unstable_route.ts";
 import { assertEquals } from "../assert/equals.ts";
@@ -10,8 +10,7 @@ const routes: Route[] = [
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    handler: (_request, _info, params) =>
-      new Response(params?.pathname.groups.id),
+    handler: (_request, params) => new Response(params?.pathname.groups.id),
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),

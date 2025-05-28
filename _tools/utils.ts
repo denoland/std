@@ -1,36 +1,36 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-
-const workspaces = JSON.parse(await Deno.readTextFile("deno.json"))
-  .workspace as string[];
-// deno-lint-ignore no-explicit-any
-const denoConfig = {} as Record<string, any>;
-for (const workspace of workspaces) {
-  const { default: config } = await import("../" + workspace + "/deno.json", {
-    with: { type: "json" },
-  });
-  denoConfig[config.name.replace("@std/", "")] = config;
+// Copyright 2018-2025 the Deno authors. MIT license.
+export interface DenoJson {
+  name: string;
+  version: string;
+  exports: Record<string, string>;
+  workspace?: string[];
 }
 
-export function resolveWorkspaceSpecifiers(
+async function importJson(path: string): Promise<DenoJson> {
+  return (await import(path, { with: { type: "json" } })).default;
+}
+
+export async function getPackagesDenoJsons(): Promise<DenoJson[]> {
+  const { workspace } = await importJson("../deno.json");
+  return Promise.all(
+    workspace!.map((path) => importJson(`../${path}/deno.json`)),
+  );
+}
+
+export async function getEntrypoints(): Promise<string[]> {
+  return (await getPackagesDenoJsons())
+    .flatMap(({ name, exports }) =>
+      Object.keys(exports).map((mod) =>
+        mod === "." ? name : name + mod.slice(1)
+      )
+    );
+}
+
+export function resolve(
   specifier: string,
   referrer: string,
 ) {
-  if (specifier.startsWith("../") || specifier.startsWith("./")) {
-    return new URL(specifier, referrer).href;
-  } else if (specifier.startsWith("@std/")) {
-    let [_std, pkg, exp] = specifier.split("/");
-    if (exp === undefined) {
-      exp = ".";
-    } else {
-      exp = "./" + exp;
-    }
-    const pkgPath = "../" + pkg!.replaceAll("-", "_") + "/";
-    const config = denoConfig[pkg!];
-    if (typeof config.exports === "string") {
-      return new URL(pkgPath + config.exports, import.meta.url).href;
-    }
-    return new URL(pkgPath + config.exports[exp], import.meta.url).href;
-  } else {
-    return new URL(specifier).href;
-  }
+  return (specifier.startsWith("./") || specifier.startsWith("../"))
+    ? new URL(specifier, referrer).href
+    : import.meta.resolve(specifier);
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { fn } from "./fn.ts";
@@ -18,4 +18,18 @@ Deno.test("expect().toHaveBeenCalledTimes()", () => {
   assertThrows(() => {
     expect(mockFn).not.toHaveBeenCalledTimes(1);
   }, AssertionError);
+});
+
+Deno.test("expect().toHaveBeenCalledTimes() with custom error message", () => {
+  const msg = "toHaveBeenCalledTimes Custom Error";
+  const mockFn = fn();
+  mockFn();
+
+  expect(() => expect(mockFn, msg).toHaveBeenCalledTimes(2)).toThrow(
+    new RegExp(`^${msg}`),
+  );
+
+  expect(() => expect(mockFn, msg).not.toHaveBeenCalledTimes(1)).toThrow(
+    new RegExp(`^${msg}`),
+  );
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -6,10 +6,10 @@
  * expiration policies.
  *
  * ```ts
- * import { memoize, LruCache } from "@std/cache";
+ * import { memoize, LruCache, type MemoizationCacheResult } from "@std/cache";
  * import { assertEquals } from "@std/assert";
  *
- * const cache = new LruCache<unknown, bigint>(1000);
+ * const cache = new LruCache<string, MemoizationCacheResult<bigint>>(1000);
  *
  * // fibonacci function, which is very slow for n > ~30 if not memoized
  * const fib = memoize((n: bigint): bigint => {

@@ -1,6 +1,7 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertExists } from "@std/assert";
+// Copyright 2018-2025 the Deno authors. MIT license.
+import { assertEquals, assertExists, assertThrows } from "@std/assert";
 import { format } from "./duration.ts";
+import type { FormatOptions } from "./duration.ts";
 
 Deno.test({
   name: "format() handles duration since epoch",
@@ -32,7 +33,7 @@ Deno.test({
   fn() {
     assertEquals(
       format(99674, { style: "full" }),
-      "0 days, 0 hours, 1 minutes, 39 seconds, 674 milliseconds, 0 microseconds, 0 nanoseconds",
+      "0 days, 0 hours, 1 minute, 39 seconds, 674 milliseconds, 0 microseconds, 0 nanoseconds",
     );
   },
 });
@@ -62,7 +63,7 @@ Deno.test({
   fn() {
     assertEquals(
       format(99674, { style: "full", ignoreZero: true }),
-      "1 minutes, 39 seconds, 674 milliseconds",
+      "1 minute, 39 seconds, 674 milliseconds",
     );
   },
 });
@@ -88,5 +89,17 @@ Deno.test({
   name: "format() handles duration rounding error",
   fn() {
     assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
+  },
+});
+
+Deno.test({
+  name: "format() throws on invalid style option",
+  fn() {
+    assertThrows(
+      () =>
+        format(16.342, { style: "invalid" as keyof FormatOptions["style"] }),
+      TypeError,
+      'style must be "narrow", "full", or "digital"!',
+    );
   },
 });

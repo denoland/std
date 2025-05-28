@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "@std/assert";
@@ -98,5 +98,15 @@ Deno.test("expect().toThrow()", () => {
     },
     AssertionError,
     'Expected error message to include /\\d/, but got "hello world".',
+  );
+});
+
+Deno.test("expect().toThrow() with custom error message", () => {
+  const msg = "toThrow custom error message";
+
+  assertThrows(
+    () => expect(() => {}, msg).toThrow(),
+    AssertionError,
+    'toThrow custom error message: Expected "error" to be an Error object.',
   );
 });

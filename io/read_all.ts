@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { concat } from "@std/bytes/concat";
@@ -62,14 +62,13 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
 export function readAllSync(reader: ReaderSync): Uint8Array {
   const chunks: Uint8Array[] = [];
   while (true) {
-    const chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
+    let chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
     const n = reader.readSync(chunk);
     if (n === null) {
       break;
     }
     if (n < DEFAULT_CHUNK_SIZE) {
-      chunks.push(chunk.subarray(0, n));
-      break;
+      chunk = chunk.subarray(0, n);
     }
     chunks.push(chunk);
   }

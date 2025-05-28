@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import { abortable } from "./abortable.ts";
 
@@ -205,4 +205,14 @@ Deno.test("abortable.AsyncIterable() behaves just like original when return is c
     await normalIterator.return(321),
   );
   assertEquals(await abortableIterator.next(), await normalIterator.next());
+});
+
+Deno.test("abortable() does not throw when the signal is already aborted and the promise is already rejected", async () => {
+  const promise = Promise.reject(new Error("Rejected"));
+  const signal = AbortSignal.abort();
+  await assertRejects(
+    () => abortable(promise, signal),
+    DOMException,
+    "The signal has been aborted",
+  );
 });

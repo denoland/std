@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
@@ -375,6 +375,7 @@ Deno.test("RedBlackTree.from() handles default ascend comparator", () => {
   const originalTree: RedBlackTree<number> = new RedBlackTree();
   for (const value of values) originalTree.insert(value);
   let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
+  assertEquals(originalTree.size, tree.size);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);
@@ -434,6 +435,7 @@ Deno.test("RedBlackTree.from() handles descend comparator", () => {
   const originalTree: RedBlackTree<number> = new RedBlackTree(descend);
   for (const value of values) originalTree.insert(value);
   let tree: RedBlackTree<number> = RedBlackTree.from(originalTree);
+  assertEquals(originalTree.size, tree.size);
   assertEquals([...originalTree], expected);
   assertEquals([...tree], expected);
   assertEquals([...tree.nlrValues()], [...originalTree.nlrValues()]);

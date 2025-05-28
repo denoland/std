@@ -1,10 +1,11 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
 import { random } from "./_common_test.ts";
 import { encodeCbor } from "./encode_cbor.ts";
 import { CborTag } from "./tag.ts";
+import type { CborType } from "./types.ts";
 
 Deno.test("encodeCbor() encoding undefined", () => {
   assertEquals(
@@ -187,6 +188,16 @@ Deno.test("encodeCbor() encoding strings", () => {
   // Can't test the next bracket up due to JavaScript limitations.
 });
 
+Deno.test("encodeCbor() correctly preallocates enough space for strings", () => {
+  const input = "\uD83D\uDCA9";
+  const binary = new TextEncoder().encode(input);
+  assert(input.length !== binary.length);
+  assertEquals(
+    encodeCbor(input),
+    new Uint8Array([0b011_00100, ...binary]),
+  );
+});
+
 Deno.test("encodeCbor() encoding Uint8Arrays", () => {
   let bytes = new Uint8Array(random(0, 24));
   assertEquals(
@@ -233,6 +244,110 @@ Deno.test("encodeCbor() encoding Dates", () => {
     encodeCbor(date),
     new Uint8Array([0b110_00001, ...encodeCbor(date.getTime() / 1000)]),
   );
+});
+
+Deno.test("encodeCbor() encoding bignums as Uint byte string", () => {
+  const num = 2n ** 64n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00010, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
+  );
+});
+
+Deno.test("encodeCbor() encoding bignums as Int byte string", () => {
+  const num = -(2n ** 64n) - 1n;
+  assertEquals(
+    encodeCbor(num),
+    new Uint8Array([0b110_00011, 0b010_01001, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
+  );
+});
+
+Deno.test("encodeCbor() encoding Map<CborType, CborType>", () => {
+  const map = new Map<CborType, CborType>([[1, 2], ["3", 4], [[5], { a: 6 }]]);
+  assertEquals(
+    encodeCbor(map),
+    Uint8Array.from([
+      217,
+      1,
+      3,
+      0b101_00000 + 3,
+      ...Array.from(map
+        .entries())
+        .map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)])
+        .flat(),
+    ]),
+  );
+});
+
+Deno.test("encodeCbor() encoding Maps", () => {
+  let pairs = random(0, 24);
+  let entries: [number, number][] = new Array(pairs)
+    .fill(0)
+    .map((_, i) => [i, i]);
+  assertEquals(
+    encodeCbor(new Map(entries)),
+    Uint8Array.from([
+      217,
+      1,
+      3,
+      0b101_00000 + pairs,
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)]).flat(),
+    ]),
+  );
+
+  pairs = random(24, 2 ** 8);
+  entries = new Array(pairs)
+    .fill(0)
+    .map((_, i) => [i, i]);
+  assertEquals(
+    encodeCbor(new Map(entries)),
+    Uint8Array.from([
+      217,
+      1,
+      3,
+      0b101_11000,
+      pairs,
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)]).flat(),
+    ]),
+  );
+
+  pairs = random(2 ** 8, 2 ** 16);
+  entries = new Array(pairs)
+    .fill(0)
+    .map((_, i) => [i, i]);
+  assertEquals(
+    encodeCbor(new Map(entries)),
+    Uint8Array.from([
+      217,
+      1,
+      3,
+      0b101_11001,
+      pairs >> 8 & 0xFF,
+      pairs & 0xFF,
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)]).flat(),
+    ]),
+  );
+
+  pairs = random(2 ** 16, 2 ** 17);
+  entries = new Array(pairs)
+    .fill(0)
+    .map((_, i) => [i, i]);
+  assertEquals(
+    encodeCbor(new Map(entries)),
+    Uint8Array.from([
+      217,
+      1,
+      3,
+      0b101_11010,
+      pairs >> 24 & 0xFF,
+      pairs >> 16 & 0xFF,
+      pairs >> 8 & 0xFF,
+      pairs & 0xFF,
+      ...entries.map(([k, v]) => [...encodeCbor(k), ...encodeCbor(v)]).flat(),
+    ]),
+  );
+
+  // Can't test the next bracket up due to JavaScript limitations.
 });
 
 Deno.test("encodeCbor() encoding arrays", () => {
@@ -351,29 +466,7 @@ Deno.test("encodeCbor() rejecting numbers as Int", () => {
       encodeCbor(num);
     },
     RangeError,
-    `Cannot encode number: It (${num}) exceeds -2 ** 64 - 1`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Uint", () => {
-  const num = 2n ** 65n;
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds 2 ** 64 - 1`,
-  );
-});
-
-Deno.test("encodeCbor() rejecting bigints as Int", () => {
-  const num = -(2n ** 65n);
-  assertThrows(
-    () => {
-      encodeCbor(num);
-    },
-    RangeError,
-    `Cannot encode bigint: It (${num}) exceeds -2 ** 64 - 1`,
+    `Cannot encode number: It (${num}) exceeds -(2 ** 64) - 1`,
   );
 });
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
@@ -8,8 +8,11 @@ const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("ensureLink() rejects if src and dest do not exist", async function () {
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_link_",
+  });
   const srcDir = path.join(testdataDir, "ensure_link_1");
-  const destDir = path.join(testdataDir, "ensure_link_1_2");
+  const destDir = path.join(tempDirPath, "ensure_link_1_2");
   const testFile = path.join(srcDir, "test.txt");
   const linkFile = path.join(destDir, "link.txt");
 
@@ -19,11 +22,14 @@ Deno.test("ensureLink() rejects if src and dest do not exist", async function ()
     },
   );
 
-  await Deno.remove(destDir, { recursive: true });
+  await Deno.remove(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureLinkSync() throws if src and dest do not exist", function () {
-  const testDir = path.join(testdataDir, "ensure_link_2");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_link_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_link_2");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
 
@@ -31,11 +37,14 @@ Deno.test("ensureLinkSync() throws if src and dest do not exist", function () {
     ensureLinkSync(testFile, linkFile);
   });
 
-  Deno.removeSync(testDir, { recursive: true });
+  Deno.removeSync(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureLink() ensures dest links to the src", async function () {
-  const testDir = path.join(testdataDir, "ensure_link_3");
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_link_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_link_3");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
 
@@ -70,11 +79,14 @@ Deno.test("ensureLink() ensures dest links to the src", async function () {
   assertEquals(testFileContent2, "abc");
   assertEquals(testFileContent2, linkFileContent2);
 
-  await Deno.remove(testDir, { recursive: true });
+  await Deno.remove(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureLinkSync() ensures dest links to the src", function () {
-  const testDir = path.join(testdataDir, "ensure_link_4");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_link_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_link_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
 
@@ -118,12 +130,15 @@ Deno.test("ensureLinkSync() ensures dest links to the src", function () {
   assertEquals(testFileContent2, "abc");
   assertEquals(testFileContent2, linkFileContent2);
 
-  Deno.removeSync(testDir, { recursive: true });
+  Deno.removeSync(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureLink() rejects if link does not exist", async function () {
-  const testDir = path.join(testdataDir, "ensure_link_origin_3");
-  const linkDir = path.join(testdataDir, "ensure_link_link_3");
+  const tempDirPath = await Deno.makeTempDir({
+    prefix: "deno_std_ensure_link_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_link_origin_3");
+  const linkDir = path.join(tempDirPath, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");
 
   await Deno.mkdir(testDir, { recursive: true });
@@ -137,12 +152,15 @@ Deno.test("ensureLink() rejects if link does not exist", async function () {
     // "Access is denied. (os error 5)" // throw in CI
   );
 
-  await Deno.remove(testDir, { recursive: true });
+  await Deno.remove(tempDirPath, { recursive: true });
 });
 
 Deno.test("ensureLinkSync() throws if link does not exist", function () {
-  const testDir = path.join(testdataDir, "ensure_link_origin_3");
-  const linkDir = path.join(testdataDir, "ensure_link_link_3");
+  const tempDirPath = Deno.makeTempDirSync({
+    prefix: "deno_std_ensure_link_sync_",
+  });
+  const testDir = path.join(tempDirPath, "ensure_link_origin_3");
+  const linkDir = path.join(tempDirPath, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");
 
   Deno.mkdirSync(testDir, { recursive: true });
@@ -156,5 +174,5 @@ Deno.test("ensureLinkSync() throws if link does not exist", function () {
     // "Access is denied. (os error 5)" // throw in CI
   );
 
-  Deno.removeSync(testDir, { recursive: true });
+  Deno.removeSync(tempDirPath, { recursive: true });
 });

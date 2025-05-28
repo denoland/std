@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "@std/assert";
@@ -35,4 +35,10 @@ Deno.test("expect().toBeTruthy()", () => {
   assertThrows(() => {
     expect({}).not.toBeTruthy();
   }, AssertionError);
+});
+
+Deno.test("expect().toBeTruthy() with custom error message message", () => {
+  const msg = "toBeTruthy Custom Error";
+  expect(() => expect(0, msg).toBeTruthy()).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect({}, msg).not.toBeTruthy()).toThrow(new RegExp(`^${msg}`));
 });

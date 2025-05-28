@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { parseMediaType } from "./parse_media_type.ts";
@@ -8,6 +8,7 @@ import type { db } from "./_db.ts";
 import { typeByExtension } from "./type_by_extension.ts";
 
 /** MIME-types database. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export type DB = typeof db;
 /** Maps content types to their corresponding file extensions. */
 export type ContentTypeToExtension = {

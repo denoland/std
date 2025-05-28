@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 import { equals } from "./equals.ts";
 import { assert, assertEquals, assertNotEquals } from "@std/assert";
 
@@ -59,7 +59,7 @@ Deno.test("equals() handles randomized testing", () => {
   }
 });
 
-// https://github.com/denoland/deno_std/issues/3603
+// https://github.com/denoland/std/issues/3603
 Deno.test("equals() works with .subarray()", () => {
   const a = new Uint8Array(1001).subarray(1);
   const b = new Uint8Array(1000);

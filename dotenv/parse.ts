@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 type LineParseResult = {
   key: string;
@@ -74,7 +74,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  * @returns The parsed object.
  */
 export function parse(text: string): Record<string, string> {
-  const env: Record<string, string> = {};
+  const env: Record<string, string> = Object.create(null);
 
   let match;
   const keysForExpandCheck = [];

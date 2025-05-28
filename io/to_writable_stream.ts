@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { writeAll } from "./write_all.ts";
@@ -6,6 +6,7 @@ import type { Writer } from "./types.ts";
 import { isCloser } from "./_common.ts";
 
 /** Options for {@linkcode toWritableStream}. */
+// deno-lint-ignore deno-style-guide/naming-convention
 export interface toWritableStreamOptions {
   /**
    * If the `writer` is also a `Closer`, automatically close the `writer`

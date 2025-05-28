@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { concat } from "@std/bytes";
@@ -204,47 +204,32 @@ Deno.test("parsePath()", async () => {
 Deno.test("validTarStreamOptions()", () => {
   assertValidTarStreamOptions({});
 
-  assertValidTarStreamOptions({ mode: 0 });
+  assertValidTarStreamOptions({ mode: 0o0 });
   assertThrows(
-    () => assertValidTarStreamOptions({ mode: 8 }),
+    () => assertValidTarStreamOptions({ mode: 0o1111111 }),
     TypeError,
-    "Invalid Mode provided",
-  );
-  assertThrows(
-    () => assertValidTarStreamOptions({ mode: 1111111 }),
-    TypeError,
-    "Invalid Mode provided",
+    "Cannot add to the tar archive: Invalid Mode provided",
   );
 
-  assertValidTarStreamOptions({ uid: 0 });
+  assertValidTarStreamOptions({ uid: 0o0 });
   assertThrows(
-    () => assertValidTarStreamOptions({ uid: 8 }),
+    () => assertValidTarStreamOptions({ uid: 0o1111111 }),
     TypeError,
-    "Invalid UID provided",
-  );
-  assertThrows(
-    () => assertValidTarStreamOptions({ uid: 1111111 }),
-    TypeError,
-    "Invalid UID provided",
+    "Cannot add to the tar archive: Invalid UID provided",
   );
 
-  assertValidTarStreamOptions({ gid: 0 });
+  assertValidTarStreamOptions({ gid: 0o0 });
   assertThrows(
-    () => assertValidTarStreamOptions({ gid: 8 }),
+    () => assertValidTarStreamOptions({ gid: 0o1111111 }),
     TypeError,
-    "Invalid GID provided",
-  );
-  assertThrows(
-    () => assertValidTarStreamOptions({ gid: 1111111 }),
-    TypeError,
-    "Invalid GID provided",
+    "Cannot add to the tar archive: Invalid GID provided",
   );
 
-  assertValidTarStreamOptions({ mtime: 0 });
+  assertValidTarStreamOptions({ mtime: 0o0 });
   assertThrows(
     () => assertValidTarStreamOptions({ mtime: NaN }),
     TypeError,
-    "Invalid MTime provided",
+    "Cannot add to the tar archive: Invalid MTime provided",
   );
   assertValidTarStreamOptions({
     mtime: Math.floor(new Date().getTime() / 1000),
@@ -252,7 +237,7 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ mtime: new Date().getTime() }),
     TypeError,
-    "Invalid MTime provided",
+    "Cannot add to the tar archive: Invalid MTime provided",
   );
 
   assertValidTarStreamOptions({ uname: "" });
@@ -260,12 +245,12 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ uname: "å-abcdef" }),
     TypeError,
-    "Invalid UName provided",
+    "Cannot add to the tar archive: Invalid UName provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ uname: "a".repeat(100) }),
     TypeError,
-    "Invalid UName provided",
+    "Cannot add to the tar archive: Invalid UName provided",
   );
 
   assertValidTarStreamOptions({ gname: "" });
@@ -273,12 +258,12 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ gname: "å-abcdef" }),
     TypeError,
-    "Invalid GName provided",
+    "Cannot add to the tar archive: Invalid GName provided",
   );
   assertThrows(
     () => assertValidTarStreamOptions({ gname: "a".repeat(100) }),
     TypeError,
-    "Invalid GName provided",
+    "Cannot add to the tar archive: Invalid GName provided",
   );
 
   assertValidTarStreamOptions({ devmajor: "" });
@@ -286,7 +271,7 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ devmajor: "123456789" }),
     TypeError,
-    "Invalid DevMajor provided",
+    "Cannot add to the tar archive: Invalid DevMajor provided",
   );
 
   assertValidTarStreamOptions({ devminor: "" });
@@ -294,19 +279,19 @@ Deno.test("validTarStreamOptions()", () => {
   assertThrows(
     () => assertValidTarStreamOptions({ devminor: "123456789" }),
     TypeError,
-    "Invalid DevMinor provided",
+    "Cannot add to the tar archive: Invalid DevMinor provided",
   );
 });
 
 Deno.test("TarStream() with invalid options", async () => {
   const readable = ReadableStream.from<TarStreamInput>([
-    { type: "directory", path: "potato", options: { mode: 9 } },
+    { type: "directory", path: "potato", options: { mode: 0o1111111 } },
   ]).pipeThrough(new TarStream());
 
   await assertRejects(
     () => Array.fromAsync(readable),
     TypeError,
-    "Invalid Mode provided",
+    "Cannot add to the tar archive: Invalid Mode provided",
   );
 });
 

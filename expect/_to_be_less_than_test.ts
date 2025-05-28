@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { expect } from "./expect.ts";
 import { AssertionError, assertThrows } from "@std/assert";
@@ -19,4 +19,13 @@ Deno.test("expect().toBeLessThan()", () => {
   assertThrows(() => {
     expect(9).not.toBeLessThan(10);
   }, AssertionError);
+});
+
+Deno.test("expect().toBeLessThan() with custom error message", () => {
+  const msg = "toBeLessThan Custom Error";
+
+  expect(() => expect(10, msg).toBeLessThan(10)).toThrow(new RegExp(`^${msg}`));
+  expect(() => expect(9, msg).not.toBeLessThan(10)).toThrow(
+    new RegExp(`^${msg}`),
+  );
 });

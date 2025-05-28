@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -21,6 +21,7 @@ export type ReleaseType =
 export type Operator =
   | undefined
   | "="
+  // Note: `!=` operator type does not exist in npm:semver
   | "!="
   | ">"
   | ">="

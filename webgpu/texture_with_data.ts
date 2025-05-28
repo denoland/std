@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { describeTextureFormat } from "./describe_texture_format.ts";
 
@@ -120,6 +120,7 @@ function textureMipLevelSize(
  * @param data The data to write to the texture.
  * @returns The newly created texture.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createTextureWithData(
   device: GPUDevice,
   descriptor: GPUTextureDescriptor,

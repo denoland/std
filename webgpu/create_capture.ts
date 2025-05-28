@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { getRowPadding } from "./row_padding.ts";
 
@@ -70,6 +70,7 @@ export interface CreateCapture {
  * @param height The height of the capture texture.
  * @returns The texture to render to and buffer to read from.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createCapture(
   device: GPUDevice,
   width: number,

@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -545,7 +545,7 @@ expect.assertions = assertions as (num: number) => void;
  * import { expect } from "@std/expect";
  *
  * Deno.test("example", () => {
- *   expect({ bar: 'baz' }).toEqual(expect.objectContaining({ bar: 'bar'}));
+ *   expect({ bar: 'baz' }).toEqual(expect.objectContaining({ bar: 'baz'}));
  *   expect({ bar: 'baz' }).not.toEqual(expect.objectContaining({ foo: 'bar'}));
  * });
  * ```
@@ -608,7 +608,7 @@ expect.not = {
  * The last module added is the first module tested.
  *
  * @example
- * ```ts no-eval
+ * ```ts
  * import { expect } from "@std/expect";
  * import serializerAnsi from "npm:jest-snapshot-serializer-ansi";
  *

@@ -1,25 +1,29 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 import { AssertionError, assertThrows } from "@std/assert";
 import { expect } from "./expect.ts";
 
-const createHeader = (): string[] => [
-  "",
-  "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-    green(
-      bold("Expected"),
-    )
-  }`,
-  "",
-  "",
-];
+function createHeader(): string[] {
+  return [
+    "",
+    "",
+    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
+      green(
+        bold("Expected"),
+      )
+    }`,
+    "",
+    "",
+  ];
+}
 
-const added: (s: string) => string = (s: string): string =>
-  green(bold(stripAnsiCode(s)));
-const removed: (s: string) => string = (s: string): string =>
-  red(bold(stripAnsiCode(s)));
+function added(s: string): string {
+  return green(bold(stripAnsiCode(s)));
+}
+function removed(s: string): string {
+  return red(bold(stripAnsiCode(s)));
+}
 
 Deno.test({
   name: "expect().toEqual() matches when values are equal",
@@ -142,7 +146,7 @@ Deno.test({
       () => expect(1, "CUSTOM MESSAGE").toEqual(2),
       AssertionError,
       [
-        "Values are not equal: CUSTOM MESSAGE",
+        "CUSTOM MESSAGE: Values are not equal.",
         ...createHeader(),
         removed(`-   ${yellow("1")}`),
         added(`+   ${yellow("2")}`),
@@ -217,7 +221,7 @@ Deno.test("expect().toEqual() does not throw when a key with undfined value exis
   expect({ foo: 1, bar: undefined }).not.toEqual({ foo: undefined });
 });
 
-// https://github.com/denoland/deno_std/issues/4244
+// https://github.com/denoland/std/issues/4244
 Deno.test("expect().toEqual() align to jest test cases", () => {
   function create() {
     class Person {
@@ -302,4 +306,10 @@ Deno.test("expect().toEqual() handles iterators", () => {
   const iter1 = Iterator.from([1, 2, 3]);
   iter1.foo = 1;
   expect(iter0).not.toEqual(iter1);
+});
+
+Deno.test("expect.toEqual with custom message", () => {
+  expect(() => expect(42, "toEqual Custom Message").toEqual(43)).toThrow(
+    /^toEqual Custom Message:/,
+  );
 });

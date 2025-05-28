@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { CborArrayDecodedStream } from "./_array_decoded_stream.ts";
 import type { CborByteDecodedStream } from "./_byte_decoded_stream.ts";
@@ -29,9 +29,14 @@ export type CborPrimitiveType =
  * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
  * {@link decodeCborSequence}.
  */
-export type CborType = CborPrimitiveType | CborTag<CborType> | CborType[] | {
-  [k: string]: CborType;
-};
+export type CborType =
+  | CborPrimitiveType
+  | CborTag<CborType>
+  | Map<CborType, CborType>
+  | CborType[]
+  | {
+    [k: string]: CborType;
+  };
 
 /**
  * Specifies the encodable value types for the {@link CborSequenceEncoderStream}

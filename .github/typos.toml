@@ -16,5 +16,7 @@ extend-exclude = [
   "media_types/vendor",
   "http/testdata",
   "http/user_agent.ts",
-  "ulid/*.ts"
+  "jsonc/testdata",
+  "ulid/*.ts",
+  "crypto/_wasm"
 ]

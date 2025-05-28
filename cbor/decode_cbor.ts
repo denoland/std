@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { decode } from "./_common_decode.ts";
 import type { CborType } from "./types.ts";
@@ -21,7 +21,7 @@ import type { CborType } from "./types.ts";
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { decodeCbor, encodeCbor } from "@std/cbor";
+ * import { type CborType, decodeCbor, encodeCbor } from "@std/cbor";
  *
  * const rawMessage = [
  *   "Hello World",
@@ -31,6 +31,8 @@ import type { CborType } from "./types.ts";
  *   -1,
  *   null,
  *   Uint8Array.from([0, 1, 2, 3]),
+ *   new Date(),
+ *   new Map<CborType, CborType>([[1, 2], ['3', 4], [[5], { a: 6 }]]),
  * ];
  *
  * const encodedMessage = encodeCbor(rawMessage);
@@ -40,11 +42,10 @@ import type { CborType } from "./types.ts";
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param value The value to decode of type CBOR-encoded {@link Uint8Array}.
+ * @param input The value to decode of type CBOR-encoded {@link Uint8Array}.
  * @returns A {@link CborType} representing the decoded data.
  */
-export function decodeCbor(value: Uint8Array): CborType {
-  if (!value.length) throw RangeError("Cannot decode empty Uint8Array");
-  const source = Array.from(value).reverse();
-  return decode(source);
+export function decodeCbor(input: Uint8Array): CborType {
+  if (!input.length) throw new RangeError("Cannot decode empty Uint8Array");
+  return decode(input, 0)[0];
 }

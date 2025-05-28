@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects } from "@std/assert";
 import { toBytes } from "@std/streams/unstable-to-bytes";
@@ -18,9 +18,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
       type: "directory",
       path: "./potato",
       options: {
-        mode: 111111,
-        uid: 12,
-        gid: 21,
+        mode: 0o111111,
+        uid: 0o12,
+        gid: 0o21,
         mtime: seconds,
         uname: "potato",
         gname: "cake",
@@ -46,9 +46,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
   }
   assertEquals(headers, [{
     name: "./potato",
-    mode: 111111,
-    uid: 12,
-    gid: 21,
+    mode: 0o111111,
+    uid: 0o12,
+    gid: 0o21,
     mtime: seconds,
     uname: "potato",
     gname: "cake",
@@ -62,9 +62,9 @@ Deno.test("expandTarArchiveCheckingHeaders", async () => {
     prefix: "",
   }, {
     name: "./text.txt",
-    mode: 644,
-    uid: 0,
-    gid: 0,
+    mode: 0o644,
+    uid: 0o0,
+    gid: 0o0,
     mtime: seconds,
     uname: "",
     gname: "",
@@ -97,7 +97,7 @@ Deno.test("expandTarArchiveCheckingBodies", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  let buffer = new Uint8Array();
+  let buffer: Uint8Array = new Uint8Array();
   for await (const item of readable) {
     if (item.readable) buffer = await toBytes(item.readable);
   }
@@ -122,7 +122,7 @@ Deno.test("UntarStream() with size equals to multiple of 512", async () => {
     .pipeThrough(new TarStream())
     .pipeThrough(new UntarStream());
 
-  let buffer = new Uint8Array();
+  let buffer: Uint8Array = new Uint8Array();
   for await (const entry of readable) {
     if (entry.readable) buffer = await toBytes(entry.readable);
   }

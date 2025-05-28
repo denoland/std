@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { JsonValue } from "./types.ts";
@@ -13,7 +13,7 @@ function isBlankSpace(str: string) {
  * Parse each chunk as JSON.
  *
  * This can be used to parse {@link https://jsonlines.org/ | JSON lines},
- * {@link http://ndjson.org/ | NDJSON} and
+ * {@link https://en.wikipedia.org/wiki/JSON_streaming#Newline-delimited_JSON | NDJSON} and
  * {@link https://www.rfc-editor.org/rfc/rfc7464.html | JSON Text Sequences}.
  * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *

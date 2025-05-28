@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -45,7 +45,7 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    *
    * @param entries An iterable of key-value pairs for the initial entries.
    */
-  constructor(entries?: readonly (readonly [K, V])[] | null) {
+  constructor(entries?: Iterable<readonly [K, V]> | null) {
     super();
     this.#reverseMap = new Map<V, K>();
     if (entries) {
@@ -95,13 +95,11 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    * ```
    */
   override set(key: K, value: V): this {
-    const oldValue = super.get(key);
-    if (oldValue !== undefined) {
-      this.#reverseMap.delete(oldValue);
+    if (super.has(key)) {
+      this.#reverseMap.delete(super.get(key)!);
     }
-    const oldKey = this.#reverseMap.get(value);
-    if (oldKey !== undefined) {
-      super.delete(oldKey);
+    if (this.#reverseMap.has(value)) {
+      super.delete(this.#reverseMap.get(value)!);
     }
     super.set(key, value);
     this.#reverseMap.set(value, key);
@@ -151,8 +149,8 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    * ```
    */
   override delete(key: K): boolean {
-    const value = super.get(key);
-    if (value === undefined) return false;
+    if (!super.has(key)) return false;
+    const value = super.get(key)!;
     return super.delete(key) && this.#reverseMap.delete(value);
   }
 
@@ -179,8 +177,8 @@ export class BidirectionalMap<K, V> extends Map<K, V> {
    * ```
    */
   deleteReverse(value: V): boolean {
-    const key = this.#reverseMap.get(value);
-    if (key === undefined) return false;
+    if (!this.#reverseMap.has(value)) return false;
+    const key = this.#reverseMap.get(value)!;
     return super.delete(key) && this.#reverseMap.delete(value);
   }
 

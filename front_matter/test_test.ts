@@ -1,14 +1,8 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assert, assertThrows } from "@std/assert";
-import {
-  resolveTestDataPath,
-  runTestInvalidInputTests,
-  runTestValidInputTests,
-} from "./_test_utils.ts";
+import { assert, assertFalse, assertThrows } from "@std/assert";
+
 import { type Format, test } from "./test.ts";
-
-// GENERAL TESTS //
 
 Deno.test("test() tests for unknown format", () => {
   assertThrows(
@@ -18,43 +12,86 @@ Deno.test("test() tests for unknown format", () => {
   );
 });
 
-// YAML //
-
 Deno.test("test() handles valid yaml input", () => {
-  runTestValidInputTests("yaml", test);
+  assert(test("---yaml\nname = 'deno'\n---\n"));
+  assert(test("= yaml =\nname = 'deno'\n= yaml =\n"));
+  assert(test("= yaml =\nname = 'deno'\n= yaml =\ndeno is awesome\n"));
+  assert(test("---\nname: deno\n---\n"));
 });
 
 Deno.test("test() handles invalid yaml input", () => {
-  runTestInvalidInputTests("yaml", test);
+  assert(!test(""));
+  assert(!test("---"));
+  assert(!test("---yaml"));
+  assert(!test("= yaml ="));
+  assert(!test("---\n"));
+  assert(!test("---yaml\n"));
+  assert(!test("= yaml =\n"));
+  assert(!test("---\nasdasdasd"));
 });
 
 Deno.test({
   name: "test() handles yaml text between horizontal rules",
-  async fn() {
-    const str = await Deno.readTextFile(
-      resolveTestDataPath("./horizontal_rules.md"),
-    );
+  fn() {
+    const str = `# Project title
+
+---
+
+This is a test for issue #2595
+
+- **Author:** The Deno Authors
+- **Version:** 0.1.0
+- **License:** MIT
+
+---
+
+MIT License`;
 
     assert(!test(str));
   },
 });
 
-// JSON //
-
 Deno.test("test() handles valid json input", () => {
-  runTestValidInputTests("json", test);
+  assert(test("---json\nname = 'deno'\n---\n"));
+  assert(test("= json =\nname = 'deno'\n= json =\n"));
+  assert(test("= json =\nname = 'deno'\n= json =\ndeno is awesome\n"));
 });
 
 Deno.test("test() handles invalid json input", () => {
-  runTestInvalidInputTests("json", test);
+  assert(!test(""));
+  assert(!test("---"));
+  assert(!test("---json"));
+  assert(!test("= json ="));
+  assert(!test("---\n"));
+  assert(!test("---json\n"));
+  assert(!test("= json =\n"));
+  assert(!test("---\nasdasdasd"));
 });
 
-// TOML //
-
 Deno.test("test() handles valid toml input", () => {
-  runTestValidInputTests("toml", test);
+  assert(test("---toml\nname = 'deno'\n---\n"));
+  assert(test("= toml =\nname = 'deno'\n= toml =\n"));
+  assert(test("= toml =\nname = 'deno'\n= toml =\ndeno is awesome\n"));
 });
 
 Deno.test("test() handles invalid toml input", () => {
-  runTestInvalidInputTests("toml", test);
+  assert(!test(""));
+  assert(!test("---"));
+  assert(!test("---toml"));
+  assert(!test("= toml ="));
+  assert(!test("---\n"));
+  assert(!test("---toml\n"));
+  assert(!test("= toml =\n"));
+  assert(!test("---\nasdasdasd"));
+});
+
+Deno.test("test() handles wrong format", () => {
+  const result = test(
+    `---json
+{"title": "Three dashes followed by format marks the spot"}
+---
+`,
+    ["yaml"],
+  );
+  assertFalse(result);
 });

@@ -1,10 +1,10 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
  * Generators and validators for
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html | RFC 9562} UUIDs for
- * versions v1, v3, v4 and v5.
+ * versions v1, v3, v4, v5, v6 and v7.
  *
  * Use the built-in
  * {@linkcode https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID | crypto.randomUUID()}
