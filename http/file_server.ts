@@ -585,13 +585,6 @@ export interface ServeDirOptions {
    */
   showIndex?: boolean;
   /**
-   * Also serves `.html` files without the need for specifying the extension.
-   * For example `foo.html` could be accessed through both `/foo` and `/foo.html`.
-   *
-   * @default {false}
-   */
-  cleanUrls?: boolean;
-  /**
    * Enable CORS via the
    * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin | Access-Control-Allow-Origin}
    * header.
@@ -702,7 +695,7 @@ async function createServeDirResponse(
   const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
-  const cleanUrls = opts.cleanUrls ?? false;
+  const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
   const showDotfiles = opts.showDotfiles || false;
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
