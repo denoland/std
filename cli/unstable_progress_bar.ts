@@ -115,6 +115,12 @@ function getUnitEntry(max: number): [Unit, number] {
   return result;
 }
 
+const LINE_CLEAR = "\r\u001b[K";
+
+function defaultFormatter(x: ProgressBarFormatter) {
+  return `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`;
+}
+
 /**
  * `ProgressBar` is a customisable class that reports updates to a
  * {@link WritableStream} on a 1s interval. Progress is communicated by using
@@ -202,8 +208,8 @@ export class ProgressBar {
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
+  #previousTime: number;
+  #previousValue: number;
   #barLength: number;
   #fillChar: string;
   #emptyChar: string;
@@ -227,7 +233,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`,
+      fmt = defaultFormatter,
       keepOpen = true,
     } = options;
     this.value = value;
@@ -250,21 +256,20 @@ export class ProgressBar {
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
     this.#startTime = performance.now();
-    this.#lastTime = this.#startTime;
-    this.#lastValue = this.value;
+    this.#previousTime = 0;
+    this.#previousValue = this.value;
 
     this.#id = setInterval(() => this.#print(), 1000);
     this.#print();
   }
-
-  async #print(): Promise<void> {
-    const currentTime = performance.now();
+  #createFormatterObject() {
+    const time = performance.now() - this.#startTime;
 
     const size = this.value / this.max * this.#barLength | 0;
     const fillChars = this.#fillChar.repeat(size);
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
-    const formatter: ProgressBarFormatter = {
+    return {
       get styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
@@ -276,16 +281,23 @@ export class ProgressBar {
         return `${currentValue}/${maxValue} ${this.#unit}`;
       },
       progressBar: `${fillChars}${emptyChars}`,
-      time: currentTime - this.#startTime,
-      previousTime: this.#lastTime - this.#startTime,
+      time,
+      previousTime: this.#previousTime,
       value: this.value,
-      previousValue: this.#lastValue,
+      previousValue: this.#previousValue,
       max: this.max,
     };
-    this.#lastTime = currentTime;
-    this.#lastValue = this.value;
-    await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
-      .catch(() => {});
+  }
+  async #print(): Promise<void> {
+    const formatter = this.#createFormatterObject();
+    const output = this.#fmt(formatter);
+    try {
+      await this.#writer.write(LINE_CLEAR + output);
+    } catch {
+      // ignore
+    }
+    this.#previousTime = formatter.time;
+    this.#previousValue = formatter.value;
   }
 
   /**
@@ -303,7 +315,7 @@ export class ProgressBar {
     clearInterval(this.#id);
     try {
       if (this.#clear) {
-        await this.#writer.write("\r\u001b[K");
+        await this.#writer.write(LINE_CLEAR);
       } else {
         await this.#print();
         await this.#writer.write("\n");
