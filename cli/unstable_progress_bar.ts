@@ -1,5 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+import { formatUnitFraction } from "./_unit.ts";
+
 /**
  * The properties provided to the fmt function upon every visual update.
  */
@@ -9,12 +11,6 @@ export interface ProgressBarFormatter {
    * `mm:ss`
    */
   styledTime: string;
-  /**
-   * A function that returns a formatted version of the data received.
-   * `0.40/97.66 KiB`
-   * @param fractions The number of decimal places the values should have.
-   */
-  styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
    * Default Style: `###-------`
@@ -93,32 +89,11 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB" | "EiB" | "ZiB" | "YiB";
-
-const UNIT_RATE_MAP = new Map<Unit, number>([
-  ["KiB", 2 ** 10],
-  ["MiB", 2 ** 20],
-  ["GiB", 2 ** 30],
-  ["TiB", 2 ** 40],
-  ["PiB", 2 ** 50],
-  ["EiB", 2 ** 60],
-  ["ZiB", 2 ** 70],
-  ["YiB", 2 ** 80],
-]);
-
-function getUnitEntry(max: number): [Unit, number] {
-  let result: [Unit, number] = ["KiB", 2 ** 10];
-  for (const entry of UNIT_RATE_MAP) {
-    if (entry[1] > max) break;
-    result = entry;
-  }
-  return result;
-}
-
 const LINE_CLEAR = "\r\u001b[K";
 
 function defaultFormatter(x: ProgressBarFormatter) {
-  return `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`;
+  const unitString = formatUnitFraction(x.value, x.max);
+  return `[${x.styledTime}] [${x.progressBar}] [${unitString}]`;
 }
 
 /**
@@ -203,8 +178,6 @@ export class ProgressBar {
    */
   max: number;
 
-  #unit: Unit;
-  #rate: number;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
@@ -245,11 +218,6 @@ export class ProgressBar {
     this.#fmt = fmt;
     this.#keepOpen = keepOpen;
 
-    const [unit, rate] = getUnitEntry(options.max);
-
-    this.#unit = unit;
-    this.#rate = rate;
-
     const stream = new TextEncoderStream();
     this.#pipePromise = stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
@@ -274,11 +242,6 @@ export class ProgressBar {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
         return `${minutes}:${seconds}`;
-      },
-      styledData: (fractions = 2): string => {
-        const currentValue = (this.value / this.#rate).toFixed(fractions);
-        const maxValue = (this.max / this.#rate).toFixed(fractions);
-        return `${currentValue}/${maxValue} ${this.#unit}`;
       },
       progressBar: `${fillChars}${emptyChars}`,
       time,
