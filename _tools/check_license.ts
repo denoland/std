@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { checkLicense, type Config } from "jsr:@kt3k/license-checker@3.3.1";
+import { checkLicense, type Config } from "license-checker";
 
 export const LICENSE = "Copyright 2018-2025 the Deno authors. MIT license.";
 
