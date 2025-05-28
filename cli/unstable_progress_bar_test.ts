@@ -111,3 +111,57 @@ Deno.test("ProgressBar() does not leak resources when immediately stopped", asyn
   const progressBar = new ProgressBar({ max: 10 });
   await progressBar.stop();
 });
+
+Deno.test("ProgressBar() handles value < 0", async () => {
+  const { readable, writable } = new TransformStream();
+  const bar = new ProgressBar({ writable, max: 2 ** 10, value: -1 });
+  bar.stop().then(() => writable.close());
+
+  const expected = [
+    "\r\x1b[K[00:00] [--------------------------------------------------] [-0.00/1.00 KiB]",
+    "\r\x1b[K[00:00] [--------------------------------------------------] [-0.00/1.00 KiB]",
+    "\n",
+  ];
+
+  const actual: string[] = [];
+  for await (const buffer of readable) {
+    actual.push(decoder.decode(buffer));
+  }
+  assertEquals(actual, expected);
+});
+
+Deno.test("ProgressBar() handles max < 0", async () => {
+  const { readable, writable } = new TransformStream();
+  const bar = new ProgressBar({ writable, max: -1 });
+  bar.stop().then(() => writable.close());
+
+  const expected = [
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/-0.00 KiB]",
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/-0.00 KiB]",
+    "\n",
+  ];
+
+  const actual: string[] = [];
+  for await (const buffer of readable) {
+    actual.push(decoder.decode(buffer));
+  }
+  assertEquals(actual, expected);
+});
+
+Deno.test("ProgressBar() handles value > max", async () => {
+  const { readable, writable } = new TransformStream();
+  const bar = new ProgressBar({ writable, max: 2 ** 10, value: 2 ** 10 + 1 });
+  bar.stop().then(() => writable.close());
+
+  const expected = [
+    "\r\x1b[K[00:00] [##################################################] [1.00/1.00 KiB]",
+    "\r\x1b[K[00:00] [##################################################] [1.00/1.00 KiB]",
+    "\n",
+  ];
+
+  const actual: string[] = [];
+  for await (const buffer of readable) {
+    actual.push(decoder.decode(buffer));
+  }
+  assertEquals(actual, expected);
+});
