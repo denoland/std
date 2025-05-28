@@ -38,6 +38,7 @@ import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { exists } from "@std/fs/exists";
 import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
 import {
@@ -733,10 +734,7 @@ async function createServeDirResponse(
   // If cleanUrls is enabled, automatically append ".html" if not present
   // and it does not shadow another existing file or directory
   let fsPath = join(target, normalizedPath);
-  if (
-    cleanUrls && !fsPath.endsWith(".html") &&
-    !(await Deno.stat(fsPath).then(() => true).catch(() => false))
-  ) {
+  if (cleanUrls && !fsPath.endsWith(".html") && !(await exists(fsPath))) {
     fsPath += ".html";
   }
   const fileInfo = await Deno.stat(fsPath);
