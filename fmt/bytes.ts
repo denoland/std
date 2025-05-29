@@ -71,6 +71,56 @@ export interface FormatOptions {
   maximumFractionDigits?: number;
 }
 
+const BINARY_UNITS = [
+  "B",
+  "kiB",
+  "MiB",
+  "GiB",
+  "TiB",
+  "PiB",
+  "EiB",
+  "ZiB",
+  "YiB",
+];
+
+const DECIMAL_UNITS = [
+  "B",
+  "kB",
+  "MB",
+  "GB",
+  "TB",
+  "PB",
+  "EB",
+  "ZB",
+  "YB",
+];
+
+const BINARY_BIT_UNITS = [
+  "b",
+  "kibit",
+  "Mibit",
+  "Gibit",
+  "Tibit",
+  "Pibit",
+  "Eibit",
+  "Zibit",
+  "Yibit",
+];
+
+const DECIMAL_BIT_UNITS = [
+  "b",
+  "kbit",
+  "Mbit",
+  "Gbit",
+  "Tbit",
+  "Pbit",
+  "Ebit",
+  "Zbit",
+  "Ybit",
+];
+
+const LOG_1024 = Math.log(1024);
+
 /**
  * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
@@ -126,47 +176,37 @@ export function format(
     throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);
   }
 
-  const UNITS_FIRSTLETTER = (options.bits ? "b" : "B") + "kMGTPEZY";
+  const { bits = false, binary = false, signed = false, locale } = options;
 
-  if (options.signed && num === 0) {
-    return ` 0 ${UNITS_FIRSTLETTER[0]}`;
+  let prefix = "";
+  if (num < 0) {
+    prefix = "-";
+    num = Math.abs(num);
+  } else if (signed) {
+    prefix = num === 0 ? " " : "+";
   }
 
-  const prefix = num < 0 ? "-" : (options.signed ? "+" : "");
-  num = Math.abs(num);
+  const divisor = binary ? 1024 : 1000;
+
+  const units = binary
+    ? bits ? BINARY_BIT_UNITS : BINARY_UNITS
+    : bits
+    ? DECIMAL_BIT_UNITS
+    : DECIMAL_UNITS;
+
+  let exponent = 0;
+  if (num >= divisor) {
+    const logValue = binary ? Math.log(num) / LOG_1024 : Math.log10(num) / 3;
+    exponent = Math.min(Math.floor(logValue), units.length - 1);
+    num /= divisor ** exponent;
+  }
+  const unit = units[exponent];
 
   const localeOptions = getLocaleOptions(options);
+  if (!localeOptions) num = Number(num.toPrecision(3));
+  const numberString = toLocaleString(num, locale, localeOptions);
 
-  if (num < 1) {
-    const numberString = toLocaleString(num, options.locale, localeOptions);
-    return prefix + numberString + " " + UNITS_FIRSTLETTER[0];
-  }
-
-  const exponent = Math.min(
-    Math.floor(
-      options.binary ? Math.log(num) / Math.log(1024) : Math.log10(num) / 3,
-    ),
-    UNITS_FIRSTLETTER.length - 1,
-  );
-  num /= Math.pow(options.binary ? 1024 : 1000, exponent);
-
-  if (!localeOptions) {
-    num = Number(num.toPrecision(3));
-  }
-
-  const numberString = toLocaleString(
-    num,
-    options.locale,
-    localeOptions,
-  );
-
-  let unit = UNITS_FIRSTLETTER[exponent];
-  if (exponent > 0) {
-    unit += options.binary ? "i" : "";
-    unit += options.bits ? "bit" : "B";
-  }
-
-  return prefix + numberString + " " + unit;
+  return `${prefix}${numberString} ${unit}`;
 }
 
 function getLocaleOptions(
