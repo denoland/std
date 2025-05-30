@@ -71,61 +71,232 @@ export interface FormatOptions {
   maximumFractionDigits?: number;
 }
 
-const BINARY_UNITS = [
-  "B",
-  "kiB",
-  "MiB",
-  "GiB",
-  "TiB",
-  "PiB",
-  "EiB",
-  "ZiB",
-  "YiB",
-];
+type UnitEntry = {
+  short: string;
+  altShort?: string; // non-standard abbreviation
+  magnitude: number;
+};
 
-const DECIMAL_UNITS = [
-  "B",
-  "kB",
-  "MB",
-  "GB",
-  "TB",
-  "PB",
-  "EB",
-  "ZB",
-  "YB",
-];
+const BINARY_BYTE_UNITS = new Map<string, UnitEntry>([
+  ["byte", { short: "B", magnitude: 1 }],
+  [
+    "kibibyte",
+    {
+      short: "KiB",
+      altShort: "kiB", // non-standard byte abbreviation (lowercase K)
+      magnitude: 2 ** 10,
+    },
+  ],
+  ["mebibyte", { short: "MiB", magnitude: 2 ** 20 }],
+  ["gibibyte", { short: "GiB", magnitude: 2 ** 30 }],
+  ["tebibyte", { short: "TiB", magnitude: 2 ** 40 }],
+  ["pebibyte", { short: "PiB", magnitude: 2 ** 50 }],
+  ["exbibyte", { short: "EiB", magnitude: 2 ** 60 }],
+  ["zebibyte", { short: "ZiB", magnitude: 2 ** 70 }],
+  ["yobibyte", { short: "YiB", magnitude: 2 ** 80 }],
+]);
 
-const BINARY_BIT_UNITS = [
-  "b",
-  "kibit",
-  "Mibit",
-  "Gibit",
-  "Tibit",
-  "Pibit",
-  "Eibit",
-  "Zibit",
-  "Yibit",
-];
+const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
+  ["byte", { short: "b", magnitude: 1 }],
+  [
+    "kibibyte",
+    {
+      short: "Kib",
+      altShort: "kibit",
+      magnitude: 2 ** 10,
+    },
+  ],
+  [
+    "mebibyte",
+    {
+      short: "Mib",
+      altShort: "Mibit",
+      magnitude: 2 ** 20,
+    },
+  ],
+  [
+    "gibibyte",
+    {
+      short: "Gib",
+      altShort: "Gibit",
+      magnitude: 2 ** 30,
+    },
+  ],
+  [
+    "tebibyte",
+    {
+      short: "Tib",
+      altShort: "Tibit",
+      magnitude: 2 ** 40,
+    },
+  ],
+  [
+    "pebibyte",
+    {
+      short: "Pib",
+      altShort: "Pibit",
+      magnitude: 2 ** 50,
+    },
+  ],
+  [
+    "exbibyte",
+    {
+      short: "Eib",
+      altShort: "Eibit",
+      magnitude: 2 ** 60,
+    },
+  ],
+  [
+    "zebibyte",
+    {
+      short: "Zib",
+      altShort: "Zibit",
+      magnitude: 2 ** 70,
+    },
+  ],
+  [
+    "yobibyte",
+    {
+      short: "Yib",
+      altShort: "Yibit",
+      magnitude: 2 ** 80,
+    },
+  ],
+]);
 
-const DECIMAL_BIT_UNITS = [
-  "b",
-  "kbit",
-  "Mbit",
-  "Gbit",
-  "Tbit",
-  "Pbit",
-  "Ebit",
-  "Zbit",
-  "Ybit",
-];
+const DECIMAL_BYTE_UNITS = new Map<string, UnitEntry>([
+  ["byte", { short: "B", magnitude: 1 }],
+  [
+    "kilobyte",
+    {
+      short: "kB",
+      magnitude: 10 ** 3,
+    },
+  ],
+  [
+    "megabyte",
+    {
+      short: "MB",
+      magnitude: 10 ** 6,
+    },
+  ],
+  [
+    "gigabyte",
+    {
+      short: "GB",
+      magnitude: 10 ** 9,
+    },
+  ],
+  [
+    "terabyte",
+    {
+      short: "TB",
+      magnitude: 10 ** 12,
+    },
+  ],
+  [
+    "petabyte",
+    {
+      short: "PB",
+      magnitude: 10 ** 15,
+    },
+  ],
+  [
+    "exabyte",
+    {
+      short: "EB",
+      magnitude: 10 ** 18,
+    },
+  ],
+  [
+    "zettabyte",
+    {
+      short: "ZB",
+      magnitude: 10 ** 21,
+    },
+  ],
+  [
+    "yottabyte",
+    {
+      short: "YB",
+      magnitude: 10 ** 24,
+    },
+  ],
+]);
 
-const LOG_1024 = Math.log(1024);
+const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
+  ["byte", { short: "b", magnitude: 1 }],
+  [
+    "kilobyte",
+    {
+      short: "kb",
+      altShort: "kbit",
+      magnitude: 10 ** 3,
+    },
+  ],
+  [
+    "megabyte",
+    {
+      short: "Mb",
+      altShort: "Mbit",
+      magnitude: 10 ** 6,
+    },
+  ],
+  [
+    "gigabyte",
+    {
+      short: "Gb",
+      altShort: "Gbit",
+      magnitude: 10 ** 9,
+    },
+  ],
+  [
+    "terabyte",
+    {
+      short: "Tb",
+      altShort: "Tbit",
+      magnitude: 10 ** 12,
+    },
+  ],
+  [
+    "petabyte",
+    {
+      short: "Pb",
+      altShort: "Pbit",
+      magnitude: 10 ** 15,
+    },
+  ],
+  [
+    "exabyte",
+    {
+      short: "Eb",
+      altShort: "Ebit",
+      magnitude: 10 ** 18,
+    },
+  ],
+  [
+    "zettabyte",
+    {
+      short: "Zb",
+      altShort: "Zbit",
+      magnitude: 10 ** 21,
+    },
+  ],
+  [
+    "yottabyte",
+    {
+      short: "Yb",
+      altShort: "Ybit",
+      magnitude: 10 ** 24,
+    },
+  ],
+]);
 
 /**
  * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
- * A utility for displaying file sizes for humans.
+ * A utility for displaying file magnitudes for humans.
  *
  * @param num The bytes value to format
  * @param options The options for formatting
@@ -186,26 +357,26 @@ export function format(
     prefix = num === 0 ? " " : "+";
   }
 
-  const divisor = binary ? 1024 : 1000;
-
   const units = binary
-    ? bits ? BINARY_BIT_UNITS : BINARY_UNITS
+    ? bits ? BINARY_BIT_UNITS : BINARY_BYTE_UNITS
     : bits
     ? DECIMAL_BIT_UNITS
-    : DECIMAL_UNITS;
+    : DECIMAL_BYTE_UNITS;
 
-  let exponent = 0;
-  if (num >= divisor) {
-    const logValue = binary ? Math.log(num) / LOG_1024 : Math.log10(num) / 3;
-    exponent = Math.min(Math.floor(logValue), units.length - 1);
-    num /= divisor ** exponent;
+  const values = units.values();
+  let unitValue = values.next().value!;
+  for (const entry of values) {
+    const { magnitude } = entry;
+    if (magnitude > num) break;
+    unitValue = entry;
   }
-  const unit = units[exponent];
+  num /= unitValue.magnitude;
 
   const localeOptions = getLocaleOptions(options);
   if (!localeOptions) num = Number(num.toPrecision(3));
   const numberString = toLocaleString(num, locale, localeOptions);
 
+  const unit = unitValue.altShort ?? unitValue.short;
   return `${prefix}${numberString} ${unit}`;
 }
 
