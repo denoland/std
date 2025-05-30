@@ -259,7 +259,7 @@ export class ProgressBar {
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
-    this.#startTime = performance.now();
+    this.#startTime = Date.now();
     this.#previousTime = 0;
     this.#previousValue = this.value;
 
@@ -267,7 +267,7 @@ export class ProgressBar {
     this.#print();
   }
   #createFormatterObject() {
-    const time = performance.now() - this.#startTime;
+    const time = Date.now() - this.#startTime;
 
     const ratio = clamp(this.value / this.max, 0, 1);
     const size = Math.trunc(ratio * this.#barLength);

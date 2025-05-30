@@ -76,3 +76,10 @@ Deno.test("getRandomValuesSeeded() generates bytes", () => {
     new Uint8Array([230, 11, 167, 51, 238]),
   );
 });
+
+Deno.test("getRandomValuesSeeded() fixed results for some seeds https://github.com/denoland/std/issues/6688", () => {
+  const seed = 6552010792480112863n;
+  const prng = randomSeeded(seed);
+
+  assertEquals(prng(), 0.6705842935480177);
+});
