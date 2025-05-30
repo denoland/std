@@ -5,11 +5,6 @@
  */
 export interface ProgressBarFormatter {
   /**
-   * A formatted version of the duration.
-   * `mm:ss`
-   */
-  styledTime: string;
-  /**
    * A function that returns a formatted version of the data received.
    * `0.40/97.66 KiB`
    * @param fractions The number of decimal places the values should have.
@@ -117,8 +112,19 @@ function getUnitEntry(max: number): [Unit, number] {
 
 const LINE_CLEAR = "\r\u001b[K";
 
-function defaultFormatter(x: ProgressBarFormatter) {
-  return `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`;
+// HACK (Intl as any) until https://github.com/microsoft/TypeScript/issues/60608 is closed
+// deno-lint-ignore no-explicit-any
+const timeFormatter = new (Intl as any).DurationFormat(undefined, {
+  minutes: "2-digit",
+  seconds: "2-digit",
+  fractionalDigits: 0,
+});
+
+function defaultFormatter(
+  { time, progressBar, styledData }: ProgressBarFormatter,
+) {
+  const timeString = timeFormatter.format({ milliseconds: time });
+  return `[${timeString}] [${progressBar}] [${styledData()}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -275,11 +281,6 @@ export class ProgressBar {
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
     return {
-      get styledTime() {
-        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
-        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `${minutes}:${seconds}`;
-      },
       styledData: (fractions = 2): string => {
         const currentValue = (this.value / this.#rate).toFixed(fractions);
         const maxValue = (this.max / this.#rate).toFixed(fractions);
