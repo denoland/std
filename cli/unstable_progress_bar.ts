@@ -127,6 +127,10 @@ function defaultFormatter(
   return `[${timeString}] [${progressBar}] [${styledData()}]`;
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
 /**
  * `ProgressBar` is a customisable class that reports updates to a
  * {@link WritableStream} on a 1s interval. Progress is communicated by using
@@ -271,7 +275,8 @@ export class ProgressBar {
   #createFormatterObject() {
     const time = Date.now() - this.#startTime;
 
-    const size = this.value / this.max * this.#barLength | 0;
+    const ratio = clamp(this.value / this.max, 0, 1);
+    const size = Math.trunc(ratio * this.#barLength);
     const fillChars = this.#fillChar.repeat(size);
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
