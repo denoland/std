@@ -138,7 +138,7 @@ function getUnit(value: number, units: Unit[]): Unit | undefined {
  * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
- * A utility for displaying file magnitudes for humans.
+ * A utility for displaying file sizes for humans.
  *
  * @param num The bytes value to format
  * @param options The options for formatting
