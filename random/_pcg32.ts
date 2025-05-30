@@ -144,7 +144,7 @@ export class Pcg32 extends Prng32 {
     const d = new DataView(seed.buffer);
     return this.#fromStateIncr(
       d.getBigUint64(0, true),
-      d.getBigUint64(8, true),
+      d.getBigUint64(8, true) | 1n,
     );
   }
 
