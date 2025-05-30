@@ -65,237 +65,68 @@ export interface FormatOptions {
    */
   maximumFractionDigits?: number;
 }
-
-type UnitEntry = {
+interface Unit {
+  longName: string;
   short: string;
-  altShort?: string; // non-standard abbreviation
+  altShort?: string;
   magnitude: number;
-};
+}
 
-const BINARY_BYTE_UNITS = new Map<string, UnitEntry>([
-  ["byte", { short: "B", magnitude: 1 }],
-  [
-    "kibibyte",
-    {
-      short: "KiB",
-      altShort: "kiB", // non-standard byte abbreviation (lowercase K)
-      magnitude: 2 ** 10,
-    },
-  ],
-  ["mebibyte", { short: "MiB", magnitude: 2 ** 20 }],
-  ["gibibyte", { short: "GiB", magnitude: 2 ** 30 }],
-  ["tebibyte", { short: "TiB", magnitude: 2 ** 40 }],
-  ["pebibyte", { short: "PiB", magnitude: 2 ** 50 }],
-  ["exbibyte", { short: "EiB", magnitude: 2 ** 60 }],
-  ["zebibyte", { short: "ZiB", magnitude: 2 ** 70 }],
-  ["yobibyte", { short: "YiB", magnitude: 2 ** 80 }],
-]);
+const BINARY_BYTE_UNITS: Unit[] = [
+  { longName: "byte", short: "B", magnitude: 1 },
+  { longName: "kibibyte", short: "KiB", altShort: "kiB", magnitude: 2 ** 10 },
+  { longName: "mebibyte", short: "MiB", magnitude: 2 ** 20 },
+  { longName: "gibibyte", short: "GiB", magnitude: 2 ** 30 },
+  { longName: "tebibyte", short: "TiB", magnitude: 2 ** 40 },
+  { longName: "pebibyte", short: "PiB", magnitude: 2 ** 50 },
+  { longName: "exbibyte", short: "EiB", magnitude: 2 ** 60 },
+  { longName: "zebibyte", short: "ZiB", magnitude: 2 ** 70 },
+  { longName: "yobibyte", short: "YiB", magnitude: 2 ** 80 },
+];
 
-const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
-  ["bit", { short: "b", magnitude: 1 }],
-  [
-    "kibibit",
-    {
-      short: "Kib",
-      altShort: "kibit",
-      magnitude: 2 ** 10,
-    },
-  ],
-  [
-    "mebibit",
-    {
-      short: "Mib",
-      altShort: "Mibit",
-      magnitude: 2 ** 20,
-    },
-  ],
-  [
-    "gibibit",
-    {
-      short: "Gib",
-      altShort: "Gibit",
-      magnitude: 2 ** 30,
-    },
-  ],
-  [
-    "tebibit",
-    {
-      short: "Tib",
-      altShort: "Tibit",
-      magnitude: 2 ** 40,
-    },
-  ],
-  [
-    "pebibit",
-    {
-      short: "Pib",
-      altShort: "Pibit",
-      magnitude: 2 ** 50,
-    },
-  ],
-  [
-    "exbibit",
-    {
-      short: "Eib",
-      altShort: "Eibit",
-      magnitude: 2 ** 60,
-    },
-  ],
-  [
-    "zebibit",
-    {
-      short: "Zib",
-      altShort: "Zibit",
-      magnitude: 2 ** 70,
-    },
-  ],
-  [
-    "yobibit",
-    {
-      short: "Yib",
-      altShort: "Yibit",
-      magnitude: 2 ** 80,
-    },
-  ],
-]);
+const BINARY_BIT_UNITS: Unit[] = [
+  { longName: "bit", short: "b", magnitude: 1 },
+  { longName: "kibibit", short: "Kib", altShort: "kibit", magnitude: 2 ** 10 },
+  { longName: "mebibit", short: "Mib", altShort: "Mibit", magnitude: 2 ** 20 },
+  { longName: "gibibit", short: "Gib", altShort: "Gibit", magnitude: 2 ** 30 },
+  { longName: "tebibit", short: "Tib", altShort: "Tibit", magnitude: 2 ** 40 },
+  { longName: "pebibit", short: "Pib", altShort: "Pibit", magnitude: 2 ** 50 },
+  { longName: "exbibit", short: "Eib", altShort: "Eibit", magnitude: 2 ** 60 },
+  { longName: "zebibit", short: "Zib", altShort: "Zibit", magnitude: 2 ** 70 },
+  { longName: "yobibit", short: "Yib", altShort: "Yibit", magnitude: 2 ** 80 },
+];
 
-const DECIMAL_BYTE_UNITS = new Map<string, UnitEntry>([
-  ["byte", { short: "B", magnitude: 1 }],
-  [
-    "kilobyte",
-    {
-      short: "kB",
-      magnitude: 10 ** 3,
-    },
-  ],
-  [
-    "megabyte",
-    {
-      short: "MB",
-      magnitude: 10 ** 6,
-    },
-  ],
-  [
-    "gigabyte",
-    {
-      short: "GB",
-      magnitude: 10 ** 9,
-    },
-  ],
-  [
-    "terabyte",
-    {
-      short: "TB",
-      magnitude: 10 ** 12,
-    },
-  ],
-  [
-    "petabyte",
-    {
-      short: "PB",
-      magnitude: 10 ** 15,
-    },
-  ],
-  [
-    "exabyte",
-    {
-      short: "EB",
-      magnitude: 10 ** 18,
-    },
-  ],
-  [
-    "zettabyte",
-    {
-      short: "ZB",
-      magnitude: 10 ** 21,
-    },
-  ],
-  [
-    "yottabyte",
-    {
-      short: "YB",
-      magnitude: 10 ** 24,
-    },
-  ],
-]);
+const DECIMAL_BYTE_UNITS: Unit[] = [
+  { longName: "byte", short: "B", magnitude: 1 },
+  { longName: "kilobyte", short: "kB", magnitude: 10 ** 3 },
+  { longName: "megabyte", short: "MB", magnitude: 10 ** 6 },
+  { longName: "gigabyte", short: "GB", magnitude: 10 ** 9 },
+  { longName: "terabyte", short: "TB", magnitude: 10 ** 12 },
+  { longName: "petabyte", short: "PB", magnitude: 10 ** 15 },
+  { longName: "exabyte", short: "EB", magnitude: 10 ** 18 },
+  { longName: "zettabyte", short: "ZB", magnitude: 10 ** 21 },
+  { longName: "yottabyte", short: "YB", magnitude: 10 ** 24 },
+];
 
-const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
-  ["bit", { short: "b", magnitude: 1 }],
-  [
-    "kilobit",
-    {
-      short: "kb",
-      altShort: "kbit",
-      magnitude: 10 ** 3,
-    },
-  ],
-  [
-    "megabit",
-    {
-      short: "Mb",
-      altShort: "Mbit",
-      magnitude: 10 ** 6,
-    },
-  ],
-  [
-    "gigabit",
-    {
-      short: "Gb",
-      altShort: "Gbit",
-      magnitude: 10 ** 9,
-    },
-  ],
-  [
-    "terabit",
-    {
-      short: "Tb",
-      altShort: "Tbit",
-      magnitude: 10 ** 12,
-    },
-  ],
-  [
-    "petabit",
-    {
-      short: "Pb",
-      altShort: "Pbit",
-      magnitude: 10 ** 15,
-    },
-  ],
-  [
-    "exabit",
-    {
-      short: "Eb",
-      altShort: "Ebit",
-      magnitude: 10 ** 18,
-    },
-  ],
-  [
-    "zettabit",
-    {
-      short: "Zb",
-      altShort: "Zbit",
-      magnitude: 10 ** 21,
-    },
-  ],
-  [
-    "yottabit",
-    {
-      short: "Yb",
-      altShort: "Ybit",
-      magnitude: 10 ** 24,
-    },
-  ],
-]);
-
+const DECIMAL_BIT_UNITS: Unit[] = [
+  { longName: "bit", short: "b", magnitude: 1 },
+  { longName: "kilobit", short: "kb", altShort: "kbit", magnitude: 10 ** 3 },
+  { longName: "megabit", short: "Mb", altShort: "Mbit", magnitude: 10 ** 6 },
+  { longName: "gigabit", short: "Gb", altShort: "Gbit", magnitude: 10 ** 9 },
+  { longName: "terabit", short: "Tb", altShort: "Tbit", magnitude: 10 ** 12 },
+  { longName: "petabit", short: "Pb", altShort: "Pbit", magnitude: 10 ** 15 },
+  { longName: "exabit", short: "Eb", altShort: "Ebit", magnitude: 10 ** 18 },
+  { longName: "zettabit", short: "Zb", altShort: "Zbit", magnitude: 10 ** 21 },
+  { longName: "yottabit", short: "Yb", altShort: "Ybit", magnitude: 10 ** 24 },
+];
 /**
  * Iterates through the `units` map and selects the unit whose `magnitude` is the largest
  * without exceeding the provided `value`.
  * @returns The unit entry with the highest magnitude less than or equal to the input value.
  */
-function getUnitEntry(value: number, units: Map<string, UnitEntry>) {
-  const values = units.values();
-  let unitValue = values.next().value!;
-  for (const entry of values) {
+function getUnit(value: number, units: Unit[]): Unit | undefined {
+  let unitValue = units[0];
+  for (const entry of units) {
     const { magnitude } = entry;
     if (magnitude > value) break;
     unitValue = entry;
@@ -374,9 +205,9 @@ export function format(
     ? DECIMAL_BIT_UNITS
     : DECIMAL_BYTE_UNITS;
 
-  const entry = getUnitEntry(num, units);
-
-  num /= entry.magnitude;
+  const unit = getUnit(num, units);
+  if (!unit) throw new Error(`No unit for number '${num}' found`);
+  num /= unit.magnitude;
 
   const formatOptions = {
     minimumFractionDigits: options.minimumFractionDigits,
@@ -385,8 +216,8 @@ export function format(
 
   const numberString = toLocaleString(num, locale, formatOptions);
 
-  const unit = entry.altShort ?? entry.short;
-  return `${prefix}${numberString} ${unit}`;
+  const name = unit.altShort ?? unit.short;
+  return `${prefix}${numberString} ${name}`;
 }
 
 /**
