@@ -4,14 +4,18 @@
 export interface PromptMultipleSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
+
+  /** The number of lines to be visible at once */
+  visibleLines?: number;
+
+  /** The string to indicate the selected item */
+  indicator?: string;
 }
 
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
-const INDICATOR = "❯";
-const PADDING = " ".repeat(INDICATOR.length);
 
 const CHECKED = "◉";
 const UNCHECKED = "◯";
@@ -47,26 +51,56 @@ export function promptMultipleSelect(
 ): string[] | null {
   if (!input.isTerminal()) return null;
 
-  const { clear } = options;
+  const SAFE_PADDING = 4;
+  let {
+    // Deno.consoleSize().rows - 3 because we need to output the message, the up arrow, the terminal line and the down arrow
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      values.length,
+    ),
+    indicator = "❯",
+  } = options;
+  const PADDING = " ".repeat(indicator.length);
+  const ARROW_PADDING = " ".repeat(indicator.length + 1);
 
   const length = values.length;
   let selectedIndex = 0;
   const selectedIndexes = new Set<number>();
+  let showIndex = 0;
+  let offset = 0;
 
   input.setRaw(true);
   output.writeSync(HIDE_CURSOR);
 
   const buffer = new Uint8Array(4);
 
+  let hasUpArrow = false;
+
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
-    for (const [index, value] of values.entries()) {
-      const selected = index === selectedIndex;
-      const start = selected ? INDICATOR : PADDING;
-      const checked = selectedIndexes.has(index);
+    const chunk = values.slice(offset, visibleLines + offset);
+
+    const hasDownArrow = visibleLines + offset < length;
+
+    if (offset !== 0) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}↑\r\n`),
+      );
+    }
+
+    for (const [index, value] of chunk.entries()) {
+      const realIndex = offset + index;
+      const start = index === showIndex ? indicator : PADDING;
+      const checked = selectedIndexes.has(realIndex);
       const state = checked ? CHECKED : UNCHECKED;
       output.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
+    }
+
+    if (hasDownArrow) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}↓\r\n`),
+      );
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -76,12 +110,32 @@ export function promptMultipleSelect(
       case ETX:
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
-      case ARROW_UP:
-        selectedIndex = (selectedIndex - 1 + length) % length;
+      case ARROW_UP: {
+        const atTop = selectedIndex === 0;
+        selectedIndex = atTop ? length - 1 : selectedIndex - 1;
+        if (atTop) {
+          offset = Math.max(length - visibleLines, 0);
+          showIndex = Math.min(visibleLines - 1, length - 1);
+        } else if (showIndex > 0) {
+          showIndex--;
+        } else {
+          offset = Math.max(offset - 1, 0);
+        }
         break;
-      case ARROW_DOWN:
-        selectedIndex = (selectedIndex + 1) % length;
+      }
+      case ARROW_DOWN: {
+        const atBottom = selectedIndex === length - 1;
+        selectedIndex = atBottom ? 0 : selectedIndex + 1;
+        if (atBottom) {
+          offset = 0;
+          showIndex = 0;
+        } else if (showIndex < visibleLines - 1) {
+          showIndex++;
+        } else {
+          offset++;
+        }
         break;
+      }
       case CR:
         break loop;
       case " ":
@@ -92,11 +146,29 @@ export function promptMultipleSelect(
         }
         break;
     }
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      visibleLines,
+    );
+
+    output.writeSync(
+      encoder.encode(
+        `\x1b[${
+          1 + // message
+          (hasUpArrow ? 1 : 0) +
+          visibleLines +
+          (hasDownArrow ? 1 : 0)
+        }A`,
+      ),
+    );
+
+    output.writeSync(CLEAR_ALL);
+    hasUpArrow = offset !== 0;
   }
 
-  if (clear) {
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+  if (options.clear) {
+    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
     output.writeSync(CLEAR_ALL);
   }
 

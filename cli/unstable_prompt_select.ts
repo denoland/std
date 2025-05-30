@@ -22,7 +22,7 @@ const output = Deno.stdout;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
+const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
@@ -156,13 +156,13 @@ export function promptSelect(
       ),
     );
 
-    output.writeSync(CLR_ALL);
+    output.writeSync(CLEAR_ALL);
     hasUpArrow = offset !== 0;
   }
 
   if (options.clear) {
     output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
-    output.writeSync(CLR_ALL);
+    output.writeSync(CLEAR_ALL);
   }
 
   output.writeSync(SHOW_CURSOR);
