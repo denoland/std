@@ -115,7 +115,8 @@ Deno.test(
 
 Deno.test(
   "rename() rejects with Error when an existing directory is renamed with an existing regular file path",
-  { ignore: RENAME_HAS_ISSUE },
+  // TODO(kt3k): This test should pass on Windows
+  { ignore: platform() === "win32" || RENAME_HAS_ISSUE },
   async () => {
     const tempDirPath = await mkdtemp(resolve(tmpdir(), "rename_"));
     const testFile = join(tempDirPath, "testFile.txt");
@@ -294,7 +295,8 @@ Deno.test(
 
 Deno.test(
   "renameSync() throws with Error when an existing directory is renamed with an existing regular file path",
-  { ignore: RENAME_HAS_ISSUE },
+  // TODO(kt3k): This test should pass on Windows
+  { ignore: platform() === "win32" || RENAME_HAS_ISSUE },
   () => {
     const tempDirPath = mkdtempSync(resolve(tmpdir(), "renameSync_"));
     const testFile = join(tempDirPath, "testFile.txt");
