@@ -65,6 +65,7 @@ export function promptSelect(
     indicator = "❯",
   } = options;
   const PADDING = " ".repeat(indicator.length);
+  const ARROW_PADDING = " ".repeat(indicator.length + 1);
 
   const length = values.length;
   let selectedIndex = 0;
@@ -80,8 +81,6 @@ export function promptSelect(
 
   loop:
   while (true) {
-    const arrowPadding = " ".repeat(indicator.length + 1);
-
     output.writeSync(encoder.encode(`${message}\r\n`));
     const chunk = values.slice(offset, visibleLines + offset);
 
@@ -89,7 +88,7 @@ export function promptSelect(
 
     if (offset !== 0) {
       output.writeSync(
-        encoder.encode(`${arrowPadding}↑\r\n`),
+        encoder.encode(`${ARROW_PADDING}↑\r\n`),
       );
     }
 
@@ -100,7 +99,7 @@ export function promptSelect(
 
     if (hasDownArrow) {
       output.writeSync(
-        encoder.encode(`${arrowPadding}↓\r\n`),
+        encoder.encode(`${ARROW_PADDING}↓\r\n`),
       );
     }
     const n = input.readSync(buffer);
