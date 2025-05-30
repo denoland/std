@@ -66,58 +66,58 @@ export interface FormatOptions {
   maximumFractionDigits?: number;
 }
 interface Unit {
-  longName: string;
+  long: string;
   short: string;
   altShort?: string;
   magnitude: number;
 }
 
 const BINARY_BYTE_UNITS: Unit[] = [
-  { longName: "byte", short: "B", magnitude: 1 },
-  { longName: "kibibyte", short: "KiB", altShort: "kiB", magnitude: 2 ** 10 },
-  { longName: "mebibyte", short: "MiB", magnitude: 2 ** 20 },
-  { longName: "gibibyte", short: "GiB", magnitude: 2 ** 30 },
-  { longName: "tebibyte", short: "TiB", magnitude: 2 ** 40 },
-  { longName: "pebibyte", short: "PiB", magnitude: 2 ** 50 },
-  { longName: "exbibyte", short: "EiB", magnitude: 2 ** 60 },
-  { longName: "zebibyte", short: "ZiB", magnitude: 2 ** 70 },
-  { longName: "yobibyte", short: "YiB", magnitude: 2 ** 80 },
+  { long: "byte", short: "B", magnitude: 1 },
+  { long: "kibibyte", short: "KiB", altShort: "kiB", magnitude: 2 ** 10 },
+  { long: "mebibyte", short: "MiB", magnitude: 2 ** 20 },
+  { long: "gibibyte", short: "GiB", magnitude: 2 ** 30 },
+  { long: "tebibyte", short: "TiB", magnitude: 2 ** 40 },
+  { long: "pebibyte", short: "PiB", magnitude: 2 ** 50 },
+  { long: "exbibyte", short: "EiB", magnitude: 2 ** 60 },
+  { long: "zebibyte", short: "ZiB", magnitude: 2 ** 70 },
+  { long: "yobibyte", short: "YiB", magnitude: 2 ** 80 },
 ];
 
 const BINARY_BIT_UNITS: Unit[] = [
-  { longName: "bit", short: "b", magnitude: 1 },
-  { longName: "kibibit", short: "Kib", altShort: "kibit", magnitude: 2 ** 10 },
-  { longName: "mebibit", short: "Mib", altShort: "Mibit", magnitude: 2 ** 20 },
-  { longName: "gibibit", short: "Gib", altShort: "Gibit", magnitude: 2 ** 30 },
-  { longName: "tebibit", short: "Tib", altShort: "Tibit", magnitude: 2 ** 40 },
-  { longName: "pebibit", short: "Pib", altShort: "Pibit", magnitude: 2 ** 50 },
-  { longName: "exbibit", short: "Eib", altShort: "Eibit", magnitude: 2 ** 60 },
-  { longName: "zebibit", short: "Zib", altShort: "Zibit", magnitude: 2 ** 70 },
-  { longName: "yobibit", short: "Yib", altShort: "Yibit", magnitude: 2 ** 80 },
+  { long: "bit", short: "b", magnitude: 1 },
+  { long: "kibibit", short: "Kib", altShort: "kibit", magnitude: 2 ** 10 },
+  { long: "mebibit", short: "Mib", altShort: "Mibit", magnitude: 2 ** 20 },
+  { long: "gibibit", short: "Gib", altShort: "Gibit", magnitude: 2 ** 30 },
+  { long: "tebibit", short: "Tib", altShort: "Tibit", magnitude: 2 ** 40 },
+  { long: "pebibit", short: "Pib", altShort: "Pibit", magnitude: 2 ** 50 },
+  { long: "exbibit", short: "Eib", altShort: "Eibit", magnitude: 2 ** 60 },
+  { long: "zebibit", short: "Zib", altShort: "Zibit", magnitude: 2 ** 70 },
+  { long: "yobibit", short: "Yib", altShort: "Yibit", magnitude: 2 ** 80 },
 ];
 
 const DECIMAL_BYTE_UNITS: Unit[] = [
-  { longName: "byte", short: "B", magnitude: 1 },
-  { longName: "kilobyte", short: "kB", magnitude: 10 ** 3 },
-  { longName: "megabyte", short: "MB", magnitude: 10 ** 6 },
-  { longName: "gigabyte", short: "GB", magnitude: 10 ** 9 },
-  { longName: "terabyte", short: "TB", magnitude: 10 ** 12 },
-  { longName: "petabyte", short: "PB", magnitude: 10 ** 15 },
-  { longName: "exabyte", short: "EB", magnitude: 10 ** 18 },
-  { longName: "zettabyte", short: "ZB", magnitude: 10 ** 21 },
-  { longName: "yottabyte", short: "YB", magnitude: 10 ** 24 },
+  { long: "byte", short: "B", magnitude: 1 },
+  { long: "kilobyte", short: "kB", magnitude: 10 ** 3 },
+  { long: "megabyte", short: "MB", magnitude: 10 ** 6 },
+  { long: "gigabyte", short: "GB", magnitude: 10 ** 9 },
+  { long: "terabyte", short: "TB", magnitude: 10 ** 12 },
+  { long: "petabyte", short: "PB", magnitude: 10 ** 15 },
+  { long: "exabyte", short: "EB", magnitude: 10 ** 18 },
+  { long: "zettabyte", short: "ZB", magnitude: 10 ** 21 },
+  { long: "yottabyte", short: "YB", magnitude: 10 ** 24 },
 ];
 
 const DECIMAL_BIT_UNITS: Unit[] = [
-  { longName: "bit", short: "b", magnitude: 1 },
-  { longName: "kilobit", short: "kb", altShort: "kbit", magnitude: 10 ** 3 },
-  { longName: "megabit", short: "Mb", altShort: "Mbit", magnitude: 10 ** 6 },
-  { longName: "gigabit", short: "Gb", altShort: "Gbit", magnitude: 10 ** 9 },
-  { longName: "terabit", short: "Tb", altShort: "Tbit", magnitude: 10 ** 12 },
-  { longName: "petabit", short: "Pb", altShort: "Pbit", magnitude: 10 ** 15 },
-  { longName: "exabit", short: "Eb", altShort: "Ebit", magnitude: 10 ** 18 },
-  { longName: "zettabit", short: "Zb", altShort: "Zbit", magnitude: 10 ** 21 },
-  { longName: "yottabit", short: "Yb", altShort: "Ybit", magnitude: 10 ** 24 },
+  { long: "bit", short: "b", magnitude: 1 },
+  { long: "kilobit", short: "kb", altShort: "kbit", magnitude: 10 ** 3 },
+  { long: "megabit", short: "Mb", altShort: "Mbit", magnitude: 10 ** 6 },
+  { long: "gigabit", short: "Gb", altShort: "Gbit", magnitude: 10 ** 9 },
+  { long: "terabit", short: "Tb", altShort: "Tbit", magnitude: 10 ** 12 },
+  { long: "petabit", short: "Pb", altShort: "Pbit", magnitude: 10 ** 15 },
+  { long: "exabit", short: "Eb", altShort: "Ebit", magnitude: 10 ** 18 },
+  { long: "zettabit", short: "Zb", altShort: "Zbit", magnitude: 10 ** 21 },
+  { long: "yottabit", short: "Yb", altShort: "Ybit", magnitude: 10 ** 24 },
 ];
 /**
  * Iterates through the `units` map and selects the unit whose `magnitude` is the largest
