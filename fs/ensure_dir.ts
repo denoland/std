@@ -23,6 +23,8 @@ import { getFileInfoType } from "./_get_file_info_type.ts";
  *
  * await ensureDir("./bar");
  * ```
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export async function ensureDir(dir: string | URL) {
   try {
@@ -71,6 +73,9 @@ export async function ensureDir(dir: string | URL) {
  *
  * ensureDirSync("./bar");
  * ```
+ *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-write` permission
+ * is not granted.
  */
 export function ensureDirSync(dir: string | URL) {
   try {
