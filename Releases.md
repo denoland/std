@@ -1,3 +1,20 @@
+### 2025.05.30
+
+#### @std/cli 1.0.19 (patch)
+
+- fix(cli/unstable): clamp `ratio` (#6690)
+- refactor(cli/unstable): use `Date.now()` internally and use `FakeTime` for
+  testing (#6686)
+- refactor(cli/unstable): refactor `print()` (#6687)
+
+#### @std/fs 1.0.18 (patch)
+
+- chore(fs/unstable): ignore some rename and renameSync tests on windows (#6695)
+
+#### @std/random 0.1.2 (patch)
+
+- fix(random/unstable): fixed results for some seeds (#6689)
+
 ### 2025.05.27
 
 #### @std/cli 1.0.18 (patch)
