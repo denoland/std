@@ -20,11 +20,6 @@
  * @module
  */
 
-type LocaleOptions = {
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
-};
-
 /** Options for {@linkcode format}. */
 export interface FormatOptions {
   /**
@@ -293,6 +288,22 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
 ]);
 
 /**
+ * Iterates through the `units` map and selects the unit whose `magnitude` is the largest
+ * without exceeding the provided `value`.
+ * @returns The unit entry with the highest magnitude less than or equal to the input value.
+ */
+function getUnitEntry(value: number, units: Map<string, UnitEntry>) {
+  const values = units.values();
+  let unitValue = values.next().value!;
+  for (const entry of values) {
+    const { magnitude } = entry;
+    if (magnitude > value) break;
+    unitValue = entry;
+  }
+  return unitValue;
+}
+
+/**
  * Convert bytes to a human-readable string: 1337 → 1.34 kB
  *
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
@@ -363,40 +374,19 @@ export function format(
     ? DECIMAL_BIT_UNITS
     : DECIMAL_BYTE_UNITS;
 
-  const values = units.values();
-  let unitValue = values.next().value!;
-  for (const entry of values) {
-    const { magnitude } = entry;
-    if (magnitude > num) break;
-    unitValue = entry;
-  }
-  num /= unitValue.magnitude;
+  const entry = getUnitEntry(num, units);
 
-  const localeOptions = getLocaleOptions(options);
-  if (!localeOptions) num = Number(num.toPrecision(3));
-  const numberString = toLocaleString(num, locale, localeOptions);
+  num /= entry.magnitude;
 
-  const unit = unitValue.altShort ?? unitValue.short;
+  const formatOptions = {
+    minimumFractionDigits: options.minimumFractionDigits,
+    maximumFractionDigits: options.maximumFractionDigits,
+  };
+
+  const numberString = toLocaleString(num, locale, formatOptions);
+
+  const unit = entry.altShort ?? entry.short;
   return `${prefix}${numberString} ${unit}`;
-}
-
-function getLocaleOptions(
-  { maximumFractionDigits, minimumFractionDigits }: FormatOptions,
-): LocaleOptions | undefined {
-  if (
-    maximumFractionDigits === undefined && minimumFractionDigits === undefined
-  ) {
-    return;
-  }
-
-  const ret: LocaleOptions = {};
-  if (maximumFractionDigits !== undefined) {
-    ret.maximumFractionDigits = maximumFractionDigits;
-  }
-  if (minimumFractionDigits !== undefined) {
-    ret.minimumFractionDigits = minimumFractionDigits;
-  }
-  return ret;
 }
 
 /**
@@ -408,13 +398,21 @@ function getLocaleOptions(
 function toLocaleString(
   num: number,
   locale: boolean | string | string[] | undefined,
-  options: LocaleOptions | undefined,
+  options: Intl.NumberFormatOptions,
 ): string {
+  // filter out undefined values
+  options = Object.fromEntries(
+    Object.entries(options).filter(([_, value]) => value !== undefined),
+  );
+
+  const hasPrecision = Object.keys(options).length;
+  if (!hasPrecision) num = Number(num.toPrecision(3));
+
   if (typeof locale === "string" || Array.isArray(locale)) {
     return num.toLocaleString(locale, options);
-  } else if (locale === true || options !== undefined) {
+  }
+  if (locale === true || hasPrecision) {
     return num.toLocaleString(undefined, options);
   }
-
   return num.toString();
 }
