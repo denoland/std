@@ -92,9 +92,9 @@ const BINARY_BYTE_UNITS = new Map<string, UnitEntry>([
 ]);
 
 const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
-  ["byte", { short: "b", magnitude: 1 }],
+  ["bit", { short: "b", magnitude: 1 }],
   [
-    "kibibyte",
+    "kibibit",
     {
       short: "Kib",
       altShort: "kibit",
@@ -102,7 +102,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "mebibyte",
+    "mebibit",
     {
       short: "Mib",
       altShort: "Mibit",
@@ -110,7 +110,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "gibibyte",
+    "gibibit",
     {
       short: "Gib",
       altShort: "Gibit",
@@ -118,7 +118,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "tebibyte",
+    "tebibit",
     {
       short: "Tib",
       altShort: "Tibit",
@@ -126,7 +126,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "pebibyte",
+    "pebibit",
     {
       short: "Pib",
       altShort: "Pibit",
@@ -134,7 +134,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "exbibyte",
+    "exbibit",
     {
       short: "Eib",
       altShort: "Eibit",
@@ -142,7 +142,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "zebibyte",
+    "zebibit",
     {
       short: "Zib",
       altShort: "Zibit",
@@ -150,7 +150,7 @@ const BINARY_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "yobibyte",
+    "yobibit",
     {
       short: "Yib",
       altShort: "Yibit",
@@ -220,9 +220,9 @@ const DECIMAL_BYTE_UNITS = new Map<string, UnitEntry>([
 ]);
 
 const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
-  ["byte", { short: "b", magnitude: 1 }],
+  ["bit", { short: "b", magnitude: 1 }],
   [
-    "kilobyte",
+    "kilobit",
     {
       short: "kb",
       altShort: "kbit",
@@ -230,7 +230,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "megabyte",
+    "megabit",
     {
       short: "Mb",
       altShort: "Mbit",
@@ -238,7 +238,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "gigabyte",
+    "gigabit",
     {
       short: "Gb",
       altShort: "Gbit",
@@ -246,7 +246,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "terabyte",
+    "terabit",
     {
       short: "Tb",
       altShort: "Tbit",
@@ -254,7 +254,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "petabyte",
+    "petabit",
     {
       short: "Pb",
       altShort: "Pbit",
@@ -262,7 +262,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "exabyte",
+    "exabit",
     {
       short: "Eb",
       altShort: "Ebit",
@@ -270,7 +270,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "zettabyte",
+    "zettabit",
     {
       short: "Zb",
       altShort: "Zbit",
@@ -278,7 +278,7 @@ const DECIMAL_BIT_UNITS = new Map<string, UnitEntry>([
     },
   ],
   [
-    "yottabyte",
+    "yottabit",
     {
       short: "Yb",
       altShort: "Ybit",
