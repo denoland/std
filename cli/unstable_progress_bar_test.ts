@@ -141,6 +141,7 @@ Deno.test("ProgressBar() does not leak resources when immediately stopped", asyn
 });
 
 Deno.test("ProgressBar() handles value < 0", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 2 ** 10, value: -1 });
   bar.stop().then(() => writable.close());
@@ -159,6 +160,7 @@ Deno.test("ProgressBar() handles value < 0", async () => {
 });
 
 Deno.test("ProgressBar() handles max < 0", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: -1 });
   bar.stop().then(() => writable.close());
@@ -177,6 +179,7 @@ Deno.test("ProgressBar() handles max < 0", async () => {
 });
 
 Deno.test("ProgressBar() handles value > max", async () => {
+  using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
   const bar = new ProgressBar({ writable, max: 2 ** 10, value: 2 ** 10 + 1 });
   bar.stop().then(() => writable.close());
