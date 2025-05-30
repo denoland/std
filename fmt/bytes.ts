@@ -20,6 +20,11 @@
  * @module
  */
 
+type LocaleOptions = {
+  minimumFractionDigits?: number | undefined;
+  maximumFractionDigits?: number | undefined;
+};
+
 /** Options for {@linkcode format}. */
 export interface FormatOptions {
   /**
@@ -209,7 +214,7 @@ export function format(
   if (!unit) throw new Error(`No unit for number '${num}' found`);
   num /= unit.magnitude;
 
-  const formatOptions = {
+  const formatOptions: LocaleOptions = {
     minimumFractionDigits: options.minimumFractionDigits,
     maximumFractionDigits: options.maximumFractionDigits,
   };
@@ -229,7 +234,7 @@ export function format(
 function toLocaleString(
   num: number,
   locale: boolean | string | string[] | undefined,
-  options: Intl.NumberFormatOptions,
+  options: LocaleOptions,
 ): string {
   // filter out undefined values
   options = Object.fromEntries(
