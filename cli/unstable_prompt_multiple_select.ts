@@ -17,6 +17,9 @@ const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 
+const ARROW_UP_CHAR = "↑";
+const ARROW_DOWN_CHAR = "↓";
+
 const CHECKED = "◉";
 const UNCHECKED = "◯";
 
@@ -85,7 +88,7 @@ export function promptMultipleSelect(
 
     if (offset !== 0) {
       output.writeSync(
-        encoder.encode(`${ARROW_PADDING}↑\r\n`),
+        encoder.encode(`${ARROW_PADDING}${ARROW_UP_CHAR}\r\n`),
       );
     }
 
@@ -99,7 +102,7 @@ export function promptMultipleSelect(
 
     if (hasDownArrow) {
       output.writeSync(
-        encoder.encode(`${ARROW_PADDING}↓\r\n`),
+        encoder.encode(`${ARROW_PADDING}${ARROW_DOWN_CHAR}\r\n`),
       );
     }
     const n = input.readSync(buffer);
