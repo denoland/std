@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-const wordSegmenter = new Intl.Segmenter("en-US", { granularity: "word" });
+const wordSegmenter = new Intl.Segmenter("und", { granularity: "word" });
 
 /** Options for {@linkcode slugify}. */
 export type SlugifyOptions = {
