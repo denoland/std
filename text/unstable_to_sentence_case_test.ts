@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { toSentenceCase } from "./unstable_to_sentence_case.ts";
+import { toTitleCase } from "./unstable_to_title_case.ts";
 import { stubLocaleCaseFunctions } from "./_test_util.ts";
 
 Deno.test("toSentenceCase() converts a string to title case", () => {
@@ -14,9 +15,18 @@ Deno.test("toSentenceCase() respects special title-case mappings", () => {
   assertEquals(toSentenceCase(input), expected);
 });
 
-Deno.test("toSentenceCase() works with wrapping punctuation", () => {
-  const input = "“hello world”";
-  assertEquals(toSentenceCase(input), "“Hello world”");
+Deno.test("toSentenceCase() works with punctuation", () => {
+  const input = "“hello, world!”";
+  assertEquals(toSentenceCase(input), "“Hello, world!”");
+});
+
+Deno.test("toSentenceCase() works the same as toTitleCase() filtering words on index == 0", () => {
+  const str = "hello world";
+
+  assertEquals(
+    toSentenceCase(str),
+    toTitleCase(str, { filter: (_, i) => i === 0 }),
+  );
 });
 
 Deno.test("toSentenceCase() can be customized with options", async (t) => {
