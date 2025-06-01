@@ -1,25 +1,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { titleCaseSegments } from "./_title_case_util.ts";
+import { resolveOptions, titleCaseWord } from "./_title_case_util.ts";
+import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
+export type { BaseTitleCaseOptions };
 
 /** Options for {@linkcode toSentenceCase} */
-export type SentenceCaseOptions = {
-  /**
-   * Uses localized case formatting. If it is set to `true`, uses default
-   * locale on the system. If it's set to a specific locale, uses that locale.
-   *
-   * @default {false}
-   */
-  locale?: boolean | NonNullable<Intl.LocalesArgument>;
-  /**
-   * If `true`, lowercases the rest of the words in the string, even if they
-   * are already capitalized. If `false`, keeps the original casing of the
-   * rest of the words in the string.
-   *
-   * @default {true}
-   */
-  force?: boolean;
-};
+export interface SentenceCaseOptions extends BaseTitleCaseOptions {}
 
 /**
  * Converts a string into Sentence Case.
@@ -42,5 +28,18 @@ export function toSentenceCase(
   input: string,
   options?: SentenceCaseOptions,
 ): string {
-  return [...titleCaseSegments(input, options, true)].join("");
+  const opts = resolveOptions(options);
+
+  let out = "";
+  for (const s of opts.segmenter.segment(input)) {
+    if (s.isWordLike) {
+      const rest = input.slice(s.index + s.segment.length);
+      return out + titleCaseWord(s.segment, opts) +
+        (opts.force ? rest.toLocaleLowerCase(opts.locale) : rest);
+    } else {
+      out += s.segment;
+    }
+  }
+
+  return out;
 }

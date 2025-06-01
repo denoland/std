@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { titleCaseSegments } from "./_title_case_util.ts";
+import { resolveOptions, titleCaseWord } from "./_title_case_util.ts";
+import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
+export type { BaseTitleCaseOptions };
 
 /**
  * A function that filters words in the string. If a word returns `false` from this function, it will not be title-cased.
@@ -16,22 +18,7 @@ export type WordFilter = (
 ) => boolean;
 
 /** Options for {@linkcode toTitleCase} */
-export type TitleCaseOptions = {
-  /**
-   * Uses localized case formatting. If it is set to `true`, uses default
-   * locale on the system. If it's set to a specific locale, uses that locale.
-   *
-   * @default {false}
-   */
-  locale?: boolean | NonNullable<Intl.LocalesArgument>;
-  /**
-   * If `true`, lowercases the rest of the words in the string, even if they
-   * are already capitalized. If `false`, keeps the original casing of the
-   * rest of the words in the string.
-   *
-   * @default {true}
-   */
-  force?: boolean;
+export interface TitleCaseOptions extends BaseTitleCaseOptions {
   /**
    * A function that filters words in the string. If a word returns `false`
    * from this function, it will not be title-cased.
@@ -42,7 +29,7 @@ export type TitleCaseOptions = {
    * @default {() => true} (no filtering)
    */
   filter?: WordFilter | readonly string[];
-};
+}
 
 /**
  * Converts a string into Title Case.
@@ -62,5 +49,35 @@ export type TitleCaseOptions = {
  * ```
  */
 export function toTitleCase(input: string, options?: TitleCaseOptions): string {
-  return [...titleCaseSegments(input, options, false)].join("");
+  const opts = resolveOptions(options);
+  // [3.13.2 Default Case Conversion `toTitlecase`](https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-3/#G34078)
+  // toTitlecase(X): Find the word boundaries in X according to Unicode Standard Annex #29, “Unicode Text Segmentation.”
+  const segments = [...opts.segmenter.segment(input)];
+  const words = segments.filter((x) => x.isWordLike);
+  let out = "";
+  let i = 0;
+
+  const _filter = options?.filter ?? (() => true);
+  const filter = typeof _filter === "function"
+    ? _filter
+    : excludeStopWords(_filter);
+
+  for (const s of segments) {
+    if (s.isWordLike) {
+      out += filter(s, i++, words)
+        ? titleCaseWord(s.segment, opts)
+        : opts.force
+        ? s.segment.toLocaleLowerCase(opts.locale)
+        : s.segment;
+    } else {
+      out += s.segment;
+    }
+  }
+
+  return out;
+}
+
+function excludeStopWords(stopWords: readonly string[]): WordFilter {
+  const words = new Set(stopWords);
+  return (s, i, w) => i === 0 || i === w.length - 1 || !words.has(s.segment);
 }
