@@ -99,7 +99,7 @@ Deno.test("ProgressBar() passes correct values to formatter", async () => {
     writable,
     max: 10 * 1000,
     keepOpen: false,
-    fmt(x) {
+    formatter(x) {
       called = true;
       if (lastTime != undefined) assertEquals(x.previousTime, lastTime);
       if (lastValue != undefined) assertEquals(x.previousValue, lastValue);
