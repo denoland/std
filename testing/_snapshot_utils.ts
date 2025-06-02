@@ -99,6 +99,3 @@ export function getSnapshotNotMatchMessage(
     `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
   return getErrorMessage(message, options);
 }
-
-// TODO (WWRS): Remove this when we drop support for Deno 1.x
-export const LINT_SUPPORTED = !Deno.version.deno.startsWith("1.");

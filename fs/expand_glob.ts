@@ -109,6 +109,9 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * @returns An async iterator that yields each walk entry matching the glob
  * pattern.
  *
+ * @throws {Deno.errors.NotCapable} If the required `--allow-read` permission
+ * is not granted.
+ *
  * @example Basic usage
  *
  * File structure:
