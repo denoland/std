@@ -671,7 +671,6 @@ const DATE_TIME_REGEXP =
   /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
-  // example: 1979-05-27
   const match = scanner.match(DATE_TIME_REGEXP);
   if (!match) return failure();
   const string = match[0];
@@ -680,12 +679,10 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   // special case if month is February
   if (groups.month == "02") {
     const days = parseInt(groups.day);
-    // more than 29 days
     if (days > 29) {
       throw new SyntaxError(`Invalid date string "${match}"`);
     }
     const year = parseInt(groups.year);
-    // more than 28 days and is not leap year
     if (days > 28 && !isLeap(year)) {
       throw new SyntaxError(`Invalid date string "${match}"`);
     }
