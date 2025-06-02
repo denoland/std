@@ -2,7 +2,15 @@
 // This module is browser compatible.
 
 import { deepMerge } from "@std/collections/deep-merge";
-import { isLeap } from "@std/datetime";
+
+/**
+ * Copy of `import { isLeap } from "@std/datetime";` because `@std/datetime` is unstable and cannot be impoted.
+ */
+function isLeap(yearNumber: number): boolean {
+  return (
+    (yearNumber % 4 === 0 && yearNumber % 100 !== 0) || yearNumber % 400 === 0
+  );
+}
 
 // ---------------------------
 // Interfaces and base classes
