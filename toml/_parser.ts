@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { deepMerge } from "@std/collections/deep-merge";
+import { isLeap } from "@std/datetime";
 
 // ---------------------------
 // Interfaces and base classes
@@ -666,27 +667,30 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
+const DATE_TIME_REGEXP =
+  /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
   // example: 1979-05-27
-  const match = scanner.match(DATE_TIME_REGEXP)?.[0];
+  const match = scanner.match(DATE_TIME_REGEXP);
   if (!match) return failure();
-  scanner.next(match.length);
-  //special case if month is February
-  if (match.substring(5, 7) == "02") {
-    const days = parseInt(match.substring(8, 10));
-    const year = parseInt(match.substring(0, 4));
-    //more than 29 days
+  const string = match[0];
+  scanner.next(string.length);
+  const groups = match.groups as { year: string; month: string; day: string };
+  // special case if month is February
+  if (groups.month == "02") {
+    const days = parseInt(groups.day);
+    const year = parseInt(groups.year);
+    // more than 29 days
     if (days > 29) {
       throw new SyntaxError(`Invalid date string "${match}"`);
     }
-    //more than 28 days and is not leap year
-    if (days > 28 && (year % 4 != 0 || year % 100 == 0 && year % 400 != 0)) {
+    // more than 28 days and is not leap year
+    if (days > 28 && !isLeap(year)) {
       throw new SyntaxError(`Invalid date string "${match}"`);
     }
   }
-  const date = new Date(match.trim());
+  const date = new Date(string.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
