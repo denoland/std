@@ -9,6 +9,8 @@ export { serveFile, type ServeFileOptions } from "./file_server.ts";
 /**
  * Serves the files under the given directory root (opts.fsRoot).
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts ignore
  * import { serveDir } from "@std/http/file-server";
