@@ -4,7 +4,7 @@
 import { deepMerge } from "@std/collections/deep-merge";
 
 /**
- * Copy of `import { isLeap } from "@std/datetime";` because `@std/datetime` is unstable and cannot be impoted.
+ * Copy of `import { isLeap } from "@std/datetime";` because it cannot be impoted as long as it is unstable.
  */
 function isLeap(yearNumber: number): boolean {
   return (
