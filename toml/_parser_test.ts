@@ -395,6 +395,10 @@ Deno.test({
     assertThrows(() => parse(""));
     assertThrows(() => parse("X"));
     assertThrows(() => parse("0000-00-00"));
+    assertThrows(() => parse("2100-02-29"));
+    assertThrows(() => parse("1988-02-30"));
+    assertThrows(() => parse("1988-02-30T15:15:15Z"));
+    assertThrows(() => parse("2100-02-29T15:15:15Z"));
   },
 });
 

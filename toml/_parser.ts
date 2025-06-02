@@ -673,6 +673,19 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   const match = scanner.match(DATE_TIME_REGEXP)?.[0];
   if (!match) return failure();
   scanner.next(match.length);
+  //special case if month is February
+  if (match.substring(5, 7) == "02") {
+    const days = parseInt(match.substring(8, 10));
+    const year = parseInt(match.substring(0, 4));
+    //more than 29 days
+    if (days > 29) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+    //more than 28 days and is not leap year
+    if (days > 28 && (year % 4 != 0 || year % 100 == 0 && year % 400 != 0)) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+  }
   const date = new Date(match.trim());
   // invalid date
   if (isNaN(date.getTime())) {
