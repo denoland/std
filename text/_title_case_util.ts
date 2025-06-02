@@ -1,6 +1,10 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 import _titleCaseMapping from "./title_case_mapping.json" with { type: "json" };
+const titleCaseMapping = Object.assign(
+  Object.create(null) as Partial<Record<string, string>>,
+  _titleCaseMapping,
+);
 
 /** Base options for title-case functions */
 export interface BaseTitleCaseOptions {
@@ -12,19 +16,14 @@ export interface BaseTitleCaseOptions {
    */
   locale?: boolean | NonNullable<Intl.LocalesArgument>;
   /**
-   * If `true`, lowercases the rest of the words in the string, even if they
-   * are already capitalized. If `false`, keeps the original casing of the
-   * rest of the words in the string.
+   * If `true`, lowercases the rest of the characters in the string, even if
+   * they were previously capitalized. If `false`, keeps the original casing of
+   * the rest of the characters in the string.
    *
    * @default {true}
    */
   force?: boolean;
 }
-
-const titleCaseMapping = Object.assign(
-  Object.create(null) as Partial<Record<string, string>>,
-  _titleCaseMapping,
-);
 
 const defaultTitleCaseOptions: Required<BaseTitleCaseOptions> = {
   locale: false,
