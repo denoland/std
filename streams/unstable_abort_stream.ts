@@ -12,7 +12,7 @@
  * @example Usage
  * ```ts
  * import { AbortStream } from "@std/streams/unstable-abort-stream";
- * import { assertRejects } from "@std/assert/assertRejects";
+ * import { assertRejects } from "@std/assert/rejects";
  *
  * const controller = new AbortController();
  * controller.abort(new Error("STOP"));
