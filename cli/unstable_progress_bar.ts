@@ -196,7 +196,7 @@ export class ProgressBar {
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
-  formatter: (formatter: ProgressBarFormatter) => string;
+  #formatter: (formatter: ProgressBarFormatter) => string;
   #keepOpen: boolean;
   #pipePromise: Promise<void>;
   /**
@@ -224,7 +224,7 @@ export class ProgressBar {
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
     this.#clear = clear;
-    this.formatter = formatter;
+    this.#formatter = formatter;
     this.#keepOpen = keepOpen;
 
     const stream = new TextEncoderStream();
@@ -266,7 +266,7 @@ export class ProgressBar {
   }
   async #print(): Promise<void> {
     const formatter = this.#createFormatterObject();
-    const output = this.formatter(formatter);
+    const output = this.#formatter(formatter);
     try {
       await this.#writer.write(LINE_CLEAR + output);
     } catch {
