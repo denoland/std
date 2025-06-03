@@ -2,15 +2,15 @@
 // This module is browser compatible.
 
 /**
- * Returns a new array that drops all elements in the given collection until the
+ * Returns an array that drops all elements in the given iterable until the
  * last element that does not match the given predicate.
  *
- * @typeParam T The type of the elements in the input array.
+ * @typeParam T The type of the elements in the input iterable.
  *
- * @param array The array to drop elements from.
+ * @param iterable The iterable to drop elements from.
  * @param predicate The function to test each element for a condition.
  *
- * @returns A new array that drops all elements until the last element that does
+ * @returns An array that drops all elements until the last element that does
  * not match the given predicate.
  *
  * @example Basic usage
@@ -26,11 +26,13 @@
  * ```
  */
 export function dropLastWhile<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
   predicate: (el: T) => boolean,
 ): T[] {
-  let offset = array.length;
-  while (0 < offset && predicate(array[offset - 1] as T)) offset--;
-
-  return array.slice(0, offset);
+  const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
+  let offset = array.length - 1;
+  while (offset >= 0 && predicate(array[offset]!)) {
+    offset--;
+  }
+  return array.slice(0, offset + 1);
 }

@@ -110,6 +110,8 @@ export function difference(
 
   const differences: DifferenceFormat = {};
 
+  let months = null;
+
   for (const uniqueUnit of uniqueUnits) {
     switch (uniqueUnit) {
       case "milliseconds":
@@ -131,19 +133,16 @@ export function difference(
         differences.weeks = Math.floor(differenceInMs / WEEK);
         break;
       case "months":
-        differences.months = calculateMonthsDifference(from, to);
+        if (months === null) months = calculateMonthsDifference(from, to);
+        differences.months = months;
         break;
       case "quarters":
-        differences.quarters = Math.floor(
-          (differences.months !== undefined && differences.months / 3) ||
-            calculateMonthsDifference(from, to) / 3,
-        );
+        if (months === null) months = calculateMonthsDifference(from, to);
+        differences.quarters = Math.floor(months / 3);
         break;
       case "years":
-        differences.years = Math.floor(
-          (differences.months !== undefined && differences.months / 12) ||
-            calculateMonthsDifference(from, to) / 12,
-        );
+        if (months === null) months = calculateMonthsDifference(from, to);
+        differences.years = Math.floor(months / 12);
         break;
     }
   }

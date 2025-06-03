@@ -15,17 +15,17 @@ import { join as windowsJoin } from "./windows/join.ts";
  *
  * if (Deno.build.os === "windows") {
  *   assertEquals(join("C:\\foo", "bar", "baz\\quux", "garply", ".."), "C:\\foo\\bar\\baz\\quux");
+ *   assertEquals(join(new URL("file:///C:/foo"), "bar", "baz/asdf", "quux", ".."), "C:\\foo\\bar\\baz\\asdf");
  * } else {
  *   assertEquals(join("/foo", "bar", "baz/quux", "garply", ".."), "/foo/bar/baz/quux");
+ *   assertEquals(join(new URL("file:///foo"), "bar", "baz/asdf", "quux", ".."), "/foo/bar/baz/asdf");
  * }
  * ```
  *
- * Note: If you are working with file URLs,
- * use the new version of `join` from `@std/path/unstable-join`.
- *
+ * @param path The path to join. This can be string or file URL.
  * @param paths Paths to be joined and normalized.
  * @returns The joined and normalized path.
  */
-export function join(...paths: string[]): string {
-  return isWindows ? windowsJoin(...paths) : posixJoin(...paths);
+export function join(path: string | URL, ...paths: string[]): string {
+  return isWindows ? windowsJoin(path, ...paths) : posixJoin(path, ...paths);
 }

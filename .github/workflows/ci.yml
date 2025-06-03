@@ -35,6 +35,7 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno }}
+          cache: true
 
       - name: Run tests
         run: |
@@ -93,6 +94,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -119,11 +122,13 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: ${{ matrix.node }}
+          bun-version: ${{ matrix.bun }}
 
       - name: Run tests
         run: deno task test:bun
@@ -147,6 +152,7 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: canary
+          cache: true
 
       - name: Format
         run: deno fmt --check
@@ -188,6 +194,8 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         if: success() && steps.source.outputs.modified == 'true'
+        with:
+          cache: true
 
       - name: Set up Rust
         uses: hecrj/setup-rust-action@v2
