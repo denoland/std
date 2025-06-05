@@ -660,8 +660,11 @@ Deno.test("promptMultipleSelect() check return types", () => {
     | ("safari" | "chrome" | "firefox")[]
     | null;
 
-  promptMultipleSelect("Please select a browsers:", [...browsers, 'edge']) satisfies
-    | ("safari" | "chrome" | "firefox"| 'edge')[]
+  promptMultipleSelect("Please select a browsers:", [
+    ...browsers,
+    "edge",
+  ]) satisfies
+    | ("safari" | "chrome" | "firefox" | "edge")[]
     | null;
 
   const selectItems = ["safari", "chrome", "firefox"];

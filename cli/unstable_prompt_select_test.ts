@@ -834,11 +834,11 @@ Deno.test("promptSelect() check return types", () => {
     | "firefox"
     | null;
 
-  promptSelect("Please select a browser:", [...browsers, 'edge']) satisfies
+  promptSelect("Please select a browser:", [...browsers, "edge"]) satisfies
     | "safari"
     | "chrome"
     | "firefox"
-    | 'edge'
+    | "edge"
     | null;
 
   const selectItems = ["safari", "chrome", "firefox"];
