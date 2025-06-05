@@ -816,3 +816,33 @@ Deno.test("promptSelect() handles ETX", () => {
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptSelect() check return types", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => false);
+
+  promptSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]) satisfies "safari" | "chrome" | "firefox" | null;
+
+  const browsers = ["safari", "chrome", "firefox"] as const;
+  promptSelect("Please select a browser:", browsers) satisfies
+    | "safari"
+    | "chrome"
+    | "firefox"
+    | null;
+
+  promptSelect("Please select a browser:", [...browsers, 'edge']) satisfies
+    | "safari"
+    | "chrome"
+    | "firefox"
+    | 'edge'
+    | null;
+
+  const selectItems = ["safari", "chrome", "firefox"];
+  promptSelect("Please select a browser:", selectItems) satisfies string | null;
+
+  restore();
+});

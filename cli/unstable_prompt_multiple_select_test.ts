@@ -644,3 +644,30 @@ Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is fal
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptMultipleSelect() check return types", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => false);
+
+  promptMultipleSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]) satisfies ("safari" | "chrome" | "firefox")[] | null;
+
+  const browsers = ["safari", "chrome", "firefox"] as const;
+  promptMultipleSelect("Please select a browsers:", browsers) satisfies
+    | ("safari" | "chrome" | "firefox")[]
+    | null;
+
+  promptMultipleSelect("Please select a browsers:", [...browsers, 'edge']) satisfies
+    | ("safari" | "chrome" | "firefox"| 'edge')[]
+    | null;
+
+  const selectItems = ["safari", "chrome", "firefox"];
+  promptMultipleSelect("Please select a browsers:", selectItems) satisfies
+    | string[]
+    | null;
+
+  restore();
+});

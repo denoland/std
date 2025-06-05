@@ -48,11 +48,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
-export function promptSelect(
+export function promptSelect<T extends string>(
   message: string,
-  values: string[],
+  values: readonly T[],
   options: PromptSelectOptions = {},
-): string | null {
+): T | null {
   if (!input.isTerminal()) return null;
 
   const SAFE_PADDING = 3;

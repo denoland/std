@@ -40,11 +40,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
  * ```
  */
-export function promptMultipleSelect(
+export function promptMultipleSelect<T extends string>(
   message: string,
-  values: string[],
+  values: readonly T[],
   options: PromptMultipleSelectOptions = {},
-): string[] | null {
+): T[] | null {
   if (!input.isTerminal()) return null;
 
   const { clear } = options;
@@ -103,5 +103,5 @@ export function promptMultipleSelect(
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 
-  return [...selectedIndexes].map((it) => values[it] as string);
+  return [...selectedIndexes].map((it) => values[it] as string) as T[];
 }
