@@ -82,10 +82,16 @@ Deno.test("writeFile() handles 'create' when writing to a file", async () => {
   const encoder = new TextEncoder();
   const data = encoder.encode("Hello");
 
-  // Rejects with NotFound when file does not initally exist.
-  await assertRejects(async () => {
-    await writeFile(testFile, data, { create: false });
-  }, NotFound);
+  // Rejects with NotFound/Error when file does not initally exist.
+  if (platform() === "win32") {
+    await assertRejects(async () => {
+      await writeFile(testFile, data, { create: false });
+    }, Error);
+  } else {
+    await assertRejects(async () => {
+      await writeFile(testFile, data, { create: false });
+    }, NotFound);
+  }
 
   // Creates a file that does not initially exist. (This is default behavior).
   await writeFile(testFile, data, { create: true });
@@ -331,10 +337,16 @@ Deno.test("writeFileSync() handles 'create' when writing to a file", () => {
   const encoder = new TextEncoder();
   const data = encoder.encode("Hello");
 
-  // Throws with NotFound when file does not initally exist.
-  assertThrows(() => {
-    writeFileSync(testFile, data, { create: false });
-  }, NotFound);
+  // Throws with NotFound/Error when file does not initally exist.
+  if (platform() === "win32") {
+    assertThrows(() => {
+      writeFileSync(testFile, data, { create: false });
+    }, Error);
+  } else {
+    assertThrows(() => {
+      writeFileSync(testFile, data, { create: false });
+    }, NotFound);
+  }
 
   // Creates a file that does not initially exist. (This is default behavior).
   writeFileSync(testFile, data, { create: true });
