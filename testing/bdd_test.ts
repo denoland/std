@@ -555,6 +555,14 @@ Deno.test("it()", async (t) => {
           }),
       );
 
+      await t.step(
+        "minimum options (todo)",
+        async () =>
+          await assertMinimumOptions((fn) => {
+            it.todo({ name: "example", fn });
+          }),
+      );
+
       await t.step("all options", async () =>
         await assertAllOptions((fn) => {
           assertEquals(
@@ -1199,6 +1207,17 @@ Deno.test("describe()", async (t) => {
         async () =>
           await assertMinimumOptions((fns) => {
             const suite = describe.skip({ name: "example" });
+            assert(suite && typeof suite.symbol === "symbol");
+            it({ suite, name: "a", fn: fns[0] });
+            it({ suite, name: "b", fn: fns[1] });
+          }),
+      );
+
+      await t.step(
+        "minimum options (todo)",
+        async () =>
+          await assertMinimumOptions((fns) => {
+            const suite = describe.todo({ name: "example" });
             assert(suite && typeof suite.symbol === "symbol");
             it({ suite, name: "a", fn: fns[0] });
             it({ suite, name: "b", fn: fns[1] });
@@ -1957,7 +1976,7 @@ Deno.test("describe()", async (t) => {
   });
 
   await t.step(
-    "mutiple hook calls",
+    "multiple hook calls",
     async () => {
       using test = stub(Deno, "test");
       const context = new TestContext("example");
