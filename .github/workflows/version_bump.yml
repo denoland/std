@@ -14,6 +14,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
+        with:
+          cache: true
 
       - name: Run version bump
         run: |

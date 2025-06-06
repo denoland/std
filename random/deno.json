@@ -1,10 +1,12 @@
 {
   "name": "@std/random",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "exports": {
     ".": "./mod.ts",
     "./between": "./between.ts",
+    "./get-random-values-seeded": "./get_random_values_seeded.ts",
     "./integer-between": "./integer_between.ts",
+    "./next-float-64": "./next_float_64.ts",
     "./sample": "./sample.ts",
     "./seeded": "./seeded.ts",
     "./shuffle": "./shuffle.ts"

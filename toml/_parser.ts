@@ -3,6 +3,15 @@
 
 import { deepMerge } from "@std/collections/deep-merge";
 
+/**
+ * Copy of `import { isLeap } from "@std/datetime";` because it cannot be impoted as long as it is unstable.
+ */
+function isLeap(yearNumber: number): boolean {
+  return (
+    (yearNumber % 4 === 0 && yearNumber % 100 !== 0) || yearNumber % 400 === 0
+  );
+}
+
 // ---------------------------
 // Interfaces and base classes
 // ---------------------------
@@ -642,7 +651,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*\b/y;
+const INTEGER_REGEXP = /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)\b/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
@@ -654,7 +663,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 }
 
 const FLOAT_REGEXP =
-  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
+  /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(FLOAT_REGEXP)?.[0];
@@ -666,14 +675,27 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
+const DATE_TIME_REGEXP =
+  /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
-  // example: 1979-05-27
-  const match = scanner.match(DATE_TIME_REGEXP)?.[0];
+  const match = scanner.match(DATE_TIME_REGEXP);
   if (!match) return failure();
-  scanner.next(match.length);
-  const date = new Date(match.trim());
+  const string = match[0];
+  scanner.next(string.length);
+  const groups = match.groups as { year: string; month: string; day: string };
+  // special case if month is February
+  if (groups.month == "02") {
+    const days = parseInt(groups.day);
+    if (days > 29) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+    const year = parseInt(groups.year);
+    if (days > 28 && !isLeap(year)) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+  }
+  const date = new Date(string.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
