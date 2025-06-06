@@ -5,6 +5,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
+import { stringify as unstableStringify } from "./unstable_stringify.ts";
 import { compare, parse } from "@std/semver";
 
 Deno.test({
@@ -848,6 +849,21 @@ Deno.test({
     assertEquals(
       stringify([a, a]),
       "- !<tag:yaml.org,2002:binary> AAAA\n- !<tag:yaml.org,2002:binary> AAAA\n",
+    );
+  },
+});
+
+Deno.test({
+  name: "(unstable) stringify() handles quoteStyle",
+  fn() {
+    const object = { url: "https://example.com" };
+    assertEquals(
+      unstableStringify(object, { quoteStyle: '"' }),
+      `url: "https://example.com"\n`,
+    );
+    assertEquals(
+      unstableStringify(object, { quoteStyle: "'" }),
+      `url: 'https://example.com'\n`,
     );
   },
 });
