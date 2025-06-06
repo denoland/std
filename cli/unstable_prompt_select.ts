@@ -17,12 +17,15 @@ const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 
+const ARROW_UP_CHAR = "↑";
+const ARROW_DOWN_CHAR = "↓";
+
 const input = Deno.stdin;
 const output = Deno.stdout;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
+const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
@@ -55,10 +58,9 @@ export function promptSelect(
 ): string | null {
   if (!input.isTerminal()) return null;
 
-  const SAFE_PADDING = 3;
+  const SAFE_PADDING = 4;
   let {
-    // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
-    // and we use the last line to display the "..."
+    // Deno.consoleSize().rows - 3 because we need to output the message, the up arrow, the terminal line and the down arrow
     visibleLines = Math.min(
       Deno.consoleSize().rows - SAFE_PADDING,
       values.length,
@@ -66,6 +68,7 @@ export function promptSelect(
     indicator = "❯",
   } = options;
   const PADDING = " ".repeat(indicator.length);
+  const ARROW_PADDING = " ".repeat(indicator.length + 1);
 
   const length = values.length;
   let selectedIndex = 0;
@@ -77,17 +80,30 @@ export function promptSelect(
 
   const buffer = new Uint8Array(4);
 
+  let hasUpArrow = false;
+
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
     const chunk = values.slice(offset, visibleLines + offset);
+
+    const hasDownArrow = visibleLines + offset < length;
+
+    if (offset !== 0) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}${ARROW_UP_CHAR}\r\n`),
+      );
+    }
+
     for (const [index, value] of chunk.entries()) {
       const start = index === showIndex ? indicator : PADDING;
       output.writeSync(encoder.encode(`${start} ${value}\r\n`));
     }
-    const moreContent = visibleLines + offset < length;
-    if (moreContent) {
-      output.writeSync(encoder.encode("...\r\n"));
+
+    if (hasDownArrow) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}${ARROW_DOWN_CHAR}\r\n`),
+      );
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -131,16 +147,25 @@ export function promptSelect(
       Deno.consoleSize().rows - SAFE_PADDING,
       visibleLines,
     );
-    // if we print the "...\r\n" we need to clear an additional line
+
     output.writeSync(
-      encoder.encode(`\x1b[${visibleLines + (moreContent ? 2 : 1)}A`),
+      encoder.encode(
+        `\x1b[${
+          1 + // message
+          (hasUpArrow ? 1 : 0) +
+          visibleLines +
+          (hasDownArrow ? 1 : 0)
+        }A`,
+      ),
     );
-    output.writeSync(CLR_ALL);
+
+    output.writeSync(CLEAR_ALL);
+    hasUpArrow = offset !== 0;
   }
 
   if (options.clear) {
     output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
-    output.writeSync(CLR_ALL);
+    output.writeSync(CLEAR_ALL);
   }
 
   output.writeSync(SHOW_CURSOR);
