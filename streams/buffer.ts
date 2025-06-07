@@ -322,7 +322,7 @@ export class Buffer {
       return;
     }
     if (n < 0 || n > this.length) {
-      throw new Error(
+      throw new RangeError(
         `Buffer truncation value "${n}" is not between 0 and ${this.length}`,
       );
     }
@@ -383,7 +383,7 @@ export class Buffer {
       // don't spend all our time copying.
       copy(this.#buf.subarray(this.#off), this.#buf);
     } else if (c + n > MAX_SIZE) {
-      throw new Error(
+      throw new RangeError(
         `The buffer cannot grow beyond the maximum size of ${MAX_SIZE}`,
       );
     } else {
@@ -424,7 +424,7 @@ export class Buffer {
    */
   grow(n: number) {
     if (n < 0) {
-      throw new Error(
+      throw new RangeError(
         `Cannot grow buffer as growth must be positive: received ${n}`,
       );
     }
