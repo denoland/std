@@ -6,7 +6,7 @@
  * to a reference snapshot, which is stored alongside the test file in the
  * `__snapshots__` directory.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -34,7 +34,7 @@
  * The `assertInlineSnapshot` function will create a snapshot of a value and compare it
  * to a reference snapshot, which is stored in the test file.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts
  * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
@@ -100,7 +100,7 @@
  * options object.
  *
  * ```ts
- * // example_test.ts
+ * // example_test.ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
@@ -137,7 +137,7 @@
  * It is possible to "extend" an `assertSnapshot` or `assertInlineSnapshot` function which
  * has been configured with default options.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  * import { stripAnsiCode } from "@std/fmt/colors";
