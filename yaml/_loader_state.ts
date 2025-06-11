@@ -397,7 +397,12 @@ export class LoaderState {
       }
 
       const line = this.line;
-      this.composeNode(nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      this.composeNode({
+        parentIndent: nodeIndent,
+        nodeContext: CONTEXT_BLOCK_IN,
+        allowToSeek: false,
+        allowCompact: true,
+      });
       result.push(this.result);
       this.skipSeparationSpace(true, -1);
 
@@ -892,7 +897,12 @@ export class LoaderState {
       }
 
       line = this.line;
-      this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
+      this.composeNode({
+        parentIndent: nodeIndent,
+        nodeContext: CONTEXT_FLOW_IN,
+        allowToSeek: false,
+        allowCompact: true,
+      });
       keyTag = this.tag || null;
       keyNode = this.result;
       this.skipSeparationSpace(true, nodeIndent);
@@ -903,7 +913,12 @@ export class LoaderState {
         isPair = true;
         ch = this.next();
         this.skipSeparationSpace(true, nodeIndent);
-        this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
+        this.composeNode({
+          parentIndent: nodeIndent,
+          nodeContext: CONTEXT_FLOW_IN,
+          allowToSeek: false,
+          allowCompact: true,
+        });
         valueNode = this.result;
       }
 
@@ -1159,7 +1174,14 @@ export class LoaderState {
         //
         // Implicit notation case. Flow-style node as the key first, then ":", and the value.
         //
-      } else if (this.composeNode(flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+      } else if (
+        this.composeNode({
+          parentIndent: flowIndent,
+          nodeContext: CONTEXT_FLOW_OUT,
+          allowToSeek: false,
+          allowCompact: true,
+        })
+      ) {
         if (this.line === line) {
           ch = this.peek();
 
@@ -1220,7 +1242,12 @@ export class LoaderState {
       //
       if (this.line === line || this.lineIndent > nodeIndent) {
         if (
-          this.composeNode(nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
+          this.composeNode({
+            parentIndent: nodeIndent,
+            nodeContext: CONTEXT_BLOCK_OUT,
+            allowToSeek: true,
+            allowCompact,
+          })
         ) {
           if (atExplicitKey) {
             keyNode = this.result;
@@ -1434,10 +1461,12 @@ export class LoaderState {
   }
 
   composeNode(
-    parentIndent: number,
-    nodeContext: number,
-    allowToSeek: boolean,
-    allowCompact: boolean,
+    { parentIndent, nodeContext, allowToSeek, allowCompact }: {
+      parentIndent: number;
+      nodeContext: number;
+      allowToSeek: boolean;
+      allowCompact: boolean;
+    },
   ): boolean {
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
@@ -1684,7 +1713,12 @@ export class LoaderState {
       );
     }
 
-    this.composeNode(this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    this.composeNode({
+      parentIndent: this.lineIndent - 1,
+      nodeContext: CONTEXT_BLOCK_OUT,
+      allowToSeek: false,
+      allowCompact: true,
+    });
     this.skipSeparationSpace(true, -1);
 
     if (
