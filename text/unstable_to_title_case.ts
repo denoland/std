@@ -5,30 +5,36 @@ import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
 export type { BaseTitleCaseOptions };
 
 /**
- * A function that filters words in the string. If a word returns `false` from this function, it will not be title-cased.
+ * A function that filters words in the string. If a word returns `true` from this function, it will not be title-cased.
  * @param value The word to be filtered.
  * @param index The index of the word in the array.
  * @param array The array of words.
- * @returns `true` if the word should be title-cased, `false` otherwise.
+ * @returns `true` if the word should be excluded from title casing, `false` otherwise.
  */
-export type WordFilter = (
+export type ExcludeWordFilter = (
   value: Intl.SegmentData,
   index: number,
   array: Intl.SegmentData[],
 ) => boolean;
 
+/**
+ * A filter function or array of stop words to exclude them from title casing,
+ * or multiple filter functions and stop word arrays to combine for filtering.
+ */
+export type ExcludeWordConfig =
+  | ExcludeWordFilter
+  | readonly string[]
+  | (ExcludeWordFilter | readonly string[])[];
+
 /** Options for {@linkcode toTitleCase} */
 export interface TitleCaseOptions extends BaseTitleCaseOptions {
   /**
-   * A function that filters words in the string. If a word returns `false`
-   * from this function, it will not be title-cased.
+   * A filter function or array of stop words to exclude them from title casing,
+   * or multiple filter functions and stop word arrays to combine for filtering.
    *
-   * Alternatively, you can pass an array of strings to filter out specific
-   * words.
-   *
-   * @default {() => true} (no filtering)
+   * @default {() => false} (no filtering)
    */
-  filter?: WordFilter | readonly string[];
+  exclude?: ExcludeWordConfig;
 }
 
 /**
@@ -54,17 +60,13 @@ export function toTitleCase(input: string, options?: TitleCaseOptions): string {
   // toTitlecase(X): Find the word boundaries in X according to Unicode Standard Annex #29, “Unicode Text Segmentation.”
   const segments = [...opts.segmenter.segment(input)];
   const words = segments.filter((x) => x.isWordLike);
+  const exclude = toExcludeFilter(options?.exclude);
   let out = "";
   let i = 0;
 
-  const _filter = options?.filter ?? (() => true);
-  const filter = typeof _filter === "function"
-    ? _filter
-    : excludeStopWords(_filter);
-
   for (const s of segments) {
     if (s.isWordLike) {
-      out += filter(s, i++, words)
+      out += !exclude(s, i++, words)
         ? titleCaseWord(s.segment, opts)
         : opts.force
         ? s.segment.toLocaleLowerCase(opts.locale)
@@ -77,7 +79,27 @@ export function toTitleCase(input: string, options?: TitleCaseOptions): string {
   return out;
 }
 
-function excludeStopWords(stopWords: readonly string[]): WordFilter {
+function excludeStopWords(stopWords: readonly string[]): ExcludeWordFilter {
   const words = new Set(stopWords);
-  return (s, i, w) => i === 0 || i === w.length - 1 || !words.has(s.segment);
+  return (s, i, w) => i !== 0 && i !== w.length - 1 && words.has(s.segment);
+}
+
+function toExcludeFilter(exclude?: ExcludeWordConfig): ExcludeWordFilter {
+  if (exclude == null) return () => false;
+  if (typeof exclude === "function") return exclude;
+  if (isStrings(exclude)) return excludeStopWords(exclude);
+
+  const filters = exclude
+    .map((x) => typeof x === "function" ? x : excludeStopWords(x));
+
+  return (s, i, w) => {
+    for (const filter of filters) {
+      if (filter(s, i, w)) return true;
+    }
+    return false;
+  };
+}
+
+function isStrings(x: readonly unknown[]): x is readonly string[] {
+  return typeof x[0] === "string";
 }

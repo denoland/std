@@ -25,7 +25,7 @@ Deno.test("toSentenceCase() works the same as toTitleCase() filtering words on i
 
   assertEquals(
     toSentenceCase(str),
-    toTitleCase(str, { filter: (_, i) => i === 0 }),
+    toTitleCase(str, { exclude: (_, i) => i > 0 }),
   );
 });
 

@@ -1,6 +1,10 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertGreater } from "@std/assert";
-import { toTitleCase, type WordFilter } from "./unstable_to_title_case.ts";
+import { toTitleCase } from "./unstable_to_title_case.ts";
+import type {
+  ExcludeWordConfig,
+  ExcludeWordFilter,
+} from "./unstable_to_title_case.ts";
 import { stubLocaleCaseFunctions } from "./_test_util.ts";
 
 Deno.test("toTitleCase() converts a string to title case", () => {
@@ -61,22 +65,36 @@ Deno.test("toTitleCase() can be customized with options", async (t) => {
     });
   });
 
-  await t.step("`filter`", async (t) => {
+  await t.step("`exclude`", async (t) => {
     await t.step("with array of stop words", () => {
-      const filter = ["this", "is", "the", "for"];
+      const exclude = ["this", "is", "the", "for"];
       const input = "this is what the title case function is for";
       // first and last words are always capitalized
       const expected = "This is What the Title Case Function is For";
 
-      assertEquals(toTitleCase(input, { filter }), expected);
+      assertEquals(toTitleCase(input, { exclude }), expected);
     });
 
     await t.step("with custom filter function", () => {
-      const filter: WordFilter = ({ segment }) => segment.length > 3;
+      const exclude: ExcludeWordFilter = ({ segment }) => segment.length <= 3;
       const input = "here are some words that are longer than three letters";
       const expected = "Here are Some Words That are Longer Than Three Letters";
 
-      assertEquals(toTitleCase(input, { filter }), expected);
+      assertEquals(toTitleCase(input, { exclude }), expected);
+    });
+
+    await t.step("with multiple filters", () => {
+      const exclude: ExcludeWordConfig = [
+        ({ segment }) => /[\p{Lu}\p{Lt}]/u.test(segment),
+        ["this", "and"],
+      ];
+
+      const input =
+        "this title contains camelCase, PascalCase, and UPPERCASE words";
+      const expected =
+        "This Title Contains camelCase, PascalCase, and UPPERCASE Words";
+
+      assertEquals(toTitleCase(input, { exclude, force: false }), expected);
     });
   });
 });
