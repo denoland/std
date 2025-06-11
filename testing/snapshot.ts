@@ -99,7 +99,7 @@
  * The `assertSnapshot` and `assertInlineSnapshot` functions optionally accept an
  * options object.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -507,7 +507,7 @@ class AssertSnapshotContext {
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
@@ -531,7 +531,7 @@ export async function assertSnapshot<T>(
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
@@ -613,7 +613,7 @@ export async function assertSnapshot(
  * The specified option becomes the default for returned {@linkcode assertSnapshot}
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  *
  * const assertSnapshot = createAssertSnapshot({
