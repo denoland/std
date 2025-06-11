@@ -2,8 +2,8 @@
 // This module is browser compatible.
 
 /**
- * A transform stream that accepts an optional {@linkcode AbortSignal} to easily
- * abort a stream pipeThrough.
+ * A transform stream that accepts a {@linkcode AbortSignal} to easily abort a
+ * stream pipeThrough.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -35,18 +35,14 @@ export class AbortStream<T> extends TransformStream<T, T> {
   /**
    * Constructs a new instance.
    *
-   * @param signal The optional {@linkcode AbortSignal}.
+   * @param signal The {@linkcode AbortSignal}.
    */
-  constructor(signal?: AbortSignal) {
-    super(
-      signal
-        ? {
-          transform(chunk, controller) {
-            if (signal.aborted) controller.error(signal.reason);
-            else controller.enqueue(chunk);
-          },
-        }
-        : {},
-    );
+  constructor(signal: AbortSignal) {
+    super({
+      transform(chunk, controller) {
+        if (signal.aborted) controller.error(signal.reason);
+        else controller.enqueue(chunk);
+      },
+    });
   }
 }

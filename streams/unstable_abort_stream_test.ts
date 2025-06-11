@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertRejects } from "@std/assert";
 import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
 import { AbortStream } from "./unstable_abort_stream.ts";
 
@@ -28,15 +28,4 @@ Deno.test("AbortStream", async () => {
   setTimeout(() => controller.abort(), 75);
 
   await assertRejects(() => promise);
-});
-
-Deno.test("AbortStream no signal", async () => {
-  const buffer = await new Response(
-    (await Deno.open("./deno.json"))
-      .readable
-      .pipeThrough(new AbortStream()),
-  )
-    .bytes();
-
-  assertEquals(buffer.length, (await Deno.stat("./deno.json")).size);
 });
