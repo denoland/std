@@ -97,4 +97,9 @@ Deno.test("toTitleCase() can be customized with options", async (t) => {
       assertEquals(toTitleCase(input, { exclude, force: false }), expected);
     });
   });
+
+  await t.step("context sensitivity", () => {
+    assertEquals(toTitleCase("ΩΣ"), "Ως");
+    assertEquals(toTitleCase("ΩΣΣ"), "Ωσς");
+  });
 });

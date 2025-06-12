@@ -54,16 +54,21 @@ function localeOptionToLocalesArgument(
 
 export function titleCaseWord(word: string, opts: ResolvedOptions): string {
   // For each word boundary, find the first cased character F following the word boundary. If F exists, map F to Titlecase_Mapping(F)
-  // https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-3/#G34000
-  // A character C is defined to be cased if and only if C has the Lowercase or Uppercase property or has a General_Category value of Titlecase_Letter.
-  const match = /[\p{Lowercase}\p{Uppercase}\p{Titlecase_Letter}]/u.exec(word);
+  const match = /[\p{Cased}]/u.exec(word);
   if (match == null) return word;
 
-  const rest = word.slice(match.index + match[0].length);
-  return word.slice(0, match.index) + titleCaseChar(match[0], opts.locale) +
-    (opts.force ? rest.toLocaleLowerCase(opts.locale) : rest);
+  const before = word.slice(0, match.index);
+  const cased = word.slice(match.index);
+  const first = titleCaseChar(cased, opts.locale);
+  const _rest = opts.force ? cased.toLocaleLowerCase(opts.locale) : cased;
+  const rest = _rest.slice(_rest[Symbol.iterator]().next().value?.length ?? 0);
+
+  return before + first + rest;
 }
 
-function titleCaseChar(char: string, locale: Intl.LocalesArgument): string {
-  return titleCaseMapping[char] ?? char.toLocaleUpperCase(locale);
+function titleCaseChar(word: string, locale: Intl.LocalesArgument): string {
+  // assert(word.length);
+  const [char] = word;
+  return titleCaseMapping[char!] ??
+    word.toLocaleUpperCase(locale)[Symbol.iterator]().next().value ?? "";
 }
