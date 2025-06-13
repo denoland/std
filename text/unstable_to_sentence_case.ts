@@ -10,6 +10,12 @@ export interface SentenceCaseOptions extends BaseTitleCaseOptions {}
 /**
  * Converts a string into Sentence Case.
  *
+ * > [!NOTE]
+ * > This function preserves punctuation and does not insert spaces or other
+ * > characters where none exist in the input (e.g. it doesn't split up
+ * > `camelCase` words). This is in contrast to some other `to{X}Case`
+ * > functions, such as `toSnakeCase`.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The string that is going to be converted into Sentence Case
@@ -23,12 +29,6 @@ export interface SentenceCaseOptions extends BaseTitleCaseOptions {}
  *
  * assertEquals(toSentenceCase("deno is awesome"), "Deno is awesome");
  * ```
- *
- * > [!NOTE]
- * > This function preserves punctuation and does not insert spaces or other
- * > characters where none exist in the input (e.g. it doesn't split up
- * > `camelCase` words). This is in contrast to some other `to{X}Case`
- * > functions, such as `toSnakeCase`.
  */
 export function toSentenceCase(
   input: string,

@@ -40,6 +40,12 @@ export interface TitleCaseOptions extends BaseTitleCaseOptions {
 /**
  * Converts a string into Title Case.
  *
+ * > [!NOTE]
+ * > This function preserves punctuation and does not insert spaces or other
+ * > characters where none exist in the input (e.g. it doesn't split up
+ * > `camelCase` words). This is in contrast to some other `to{X}Case`
+ * > functions, such as `toSnakeCase`.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param input The string that is going to be converted into Title Case
@@ -53,12 +59,6 @@ export interface TitleCaseOptions extends BaseTitleCaseOptions {
  *
  * assertEquals(toTitleCase("deno is awesome"), "Deno Is Awesome");
  * ```
- *
- * > [!NOTE]
- * > This function preserves punctuation and does not insert spaces or other
- * > characters where none exist in the input (e.g. it doesn't split up
- * > `camelCase` words). This is in contrast to some other `to{X}Case`
- * > functions, such as `toSnakeCase`.
  */
 export function toTitleCase(input: string, options?: TitleCaseOptions): string {
   const opts = resolveOptions(options);
