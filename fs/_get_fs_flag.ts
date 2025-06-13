@@ -30,7 +30,7 @@ export function getWriteFsFlag(opt: WriteBooleanOptions): number {
   // the file exists on Windows. This makes the `WriteBooleanOption`,
   // `{ create: true }`, the default option. Passing `{ create: false }` will
   // throw an Error.
-  let flag = platform() !== "win32"? O_WRONLY : O_CREAT | O_WRONLY;
+  let flag = platform() !== "win32" ? O_WRONLY : O_CREAT | O_WRONLY;
 
   if (platform() === "win32" && !opt.create) {
     flag ^= O_CREAT;
