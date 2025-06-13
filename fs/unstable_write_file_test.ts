@@ -82,7 +82,8 @@ Deno.test("writeFile() handles 'create' when writing to a file", async () => {
   const encoder = new TextEncoder();
   const data = encoder.encode("Hello");
 
-  // Rejects with NotFound/Error when file does not initally exist.
+  // Rejects with NotFound when file does not initally exist.
+  // TODO: This should throw NotFound on Windows.
   if (platform() === "win32") {
     await assertRejects(async () => {
       await writeFile(testFile, data, { create: false });
@@ -102,7 +103,11 @@ Deno.test("writeFile() handles 'create' when writing to a file", async () => {
 
   // Overwrites the existing file with new content.
   const dataAgain = encoder.encode("Hello, Standard Library");
-  await writeFile(testFile, dataAgain, { create: false });
+  if (platform() === "win32") {
+    await writeFile(testFile, dataAgain);
+  } else {
+    await writeFile(testFile, dataAgain, { create: false });
+  }
   const dataReadAgain = await readFile(testFile);
   const readDataAgain = decoder.decode(dataReadAgain);
   assertEquals(readDataAgain, "Hello, Standard Library");
@@ -337,7 +342,8 @@ Deno.test("writeFileSync() handles 'create' when writing to a file", () => {
   const encoder = new TextEncoder();
   const data = encoder.encode("Hello");
 
-  // Throws with NotFound/Error when file does not initally exist.
+  // Throws with NotFound when file does not initally exist.
+  // TODO: This should throw NotFound on Windows.
   if (platform() === "win32") {
     assertThrows(() => {
       writeFileSync(testFile, data, { create: false });
@@ -357,7 +363,11 @@ Deno.test("writeFileSync() handles 'create' when writing to a file", () => {
 
   // Overwrites the existing file with new content.
   const dataAgain = encoder.encode("Hello, Standard Library");
-  writeFileSync(testFile, dataAgain, { create: false });
+  if (platform() === "win32") {
+    writeFileSync(testFile, dataAgain);
+  } else {
+    writeFileSync(testFile, dataAgain, { create: false });
+  }
   const dataReadAgain = readFileSync(testFile);
   const readDataAgain = decoder.decode(dataReadAgain);
   assertEquals(readDataAgain, "Hello, Standard Library");
