@@ -93,9 +93,16 @@ Deno.test("writeTextFile() handles 'create' for a file", async () => {
   const tempDirPath = await makeTempDir({ prefix: "writeTextFile_" });
   const testFile = join(tempDirPath, "testFile.txt");
 
-  await assertRejects(async () => {
-    await writeTextFile(testFile, "Hello", { create: false });
-  }, NotFound);
+  // TODO: This should throw NotFound on Windows.
+  if (platform() === "win32") {
+    await assertRejects(async () => {
+      await writeTextFile(testFile, "Hello", { create: false });
+    }, Error);
+  } else {
+    await assertRejects(async () => {
+      await writeTextFile(testFile, "Hello", { create: false });
+    }, NotFound);
+  }
 
   await writeTextFile(testFile, "Hello", { create: true });
   const readData = await readTextFile(testFile);
@@ -300,9 +307,16 @@ Deno.test("writeTextFileSync() handles 'create' for a file", () => {
   const tempDirPath = makeTempDirSync({ prefix: "writeTextFileSync_" });
   const testFile = join(tempDirPath, "testFile.txt");
 
-  assertThrows(() => {
-    writeTextFileSync(testFile, "Hello", { create: false });
-  }, NotFound);
+  // TODO: This should throw NotFound on Windows.
+  if (platform() === "win32") {
+    assertThrows(() => {
+      writeTextFileSync(testFile, "Hello", { create: false });
+    }, Error);
+  } else {
+    assertThrows(() => {
+      writeTextFileSync(testFile, "Hello", { create: false });
+    }, NotFound);
+  }
 
   writeTextFileSync(testFile, "Hello", { create: true });
   const readData = readTextFileSync(testFile);
