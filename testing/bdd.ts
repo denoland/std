@@ -730,25 +730,6 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
 };
 
 /**
- * Register a test case that is not yet implemented.
- *
- * @example Usage
- * ```ts
- * import { describe, it } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert";
- *
- * describe("example", () => {
- *   it.todo("should pass");
- * });
- * ```
- *
- * @param args The test case
- */
-it.todo = function itTodo<T>(...args: ItArgs<T>): void {
-  it.ignore(...args);
-};
-
-/**
  * Alias of {@linkcode it}
  *
  * Registers an individual test case.
@@ -843,25 +824,6 @@ test.ignore = function itIgnore<T>(...args: ItArgs<T>): void {
  */
 test.skip = function itSkip<T>(...args: ItArgs<T>): void {
   it.ignore(...args);
-};
-
-/**
- * Register a test case that is not yet implemented.
- *
- * @example Usage
- * ```ts
- * import { describe, test } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert";
- *
- * describe("example", () => {
- *   test.todo("should pass");
- * });
- * ```
- *
- * @param args The test case
- */
-test.todo = function itTodo<T>(...args: ItArgs<T>): void {
-  it.todo(...args);
 };
 
 function addHook<T>(
@@ -1329,25 +1291,6 @@ describe.ignore = function describeIgnore<T>(
  * @param args The test suite body
  */
 describe.skip = function describeSkip<T>(
-  ...args: DescribeArgs<T>
-): TestSuite<T> {
-  return describe.ignore(...args);
-};
-
-/**
- * Register a test suite that is not yet implemented.
- *
- * @example Usage
- * ```ts
- * import { describe, it, beforeAll } from "@std/testing/bdd";
- * import { assertEquals } from "@std/assert";
- *
- * describe.todo("example");
- * ```
- *
- * @param args The test suite body
- */
-describe.todo = function describeTodo<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
   return describe.ignore(...args);

@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
+import { describe, it } from "./unstable_bdd.ts";
+import { assertMinimumDescribeOptions, assertMinimumItOptions } from "./_test_helpers.ts";
 
 Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", async () => {
   {
@@ -35,4 +37,27 @@ Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", a
     }).output();
     assertEquals(output.code, 42);
   }
+});
+
+Deno.test("describe.todo()", async (t) => {
+  await t.step(
+    "minimum options (todo)",
+    async () =>
+      await assertMinimumDescribeOptions((fns) => {
+        const suite = describe.todo({ name: "example" });
+        assert(suite && typeof suite.symbol === "symbol");
+        it({ suite, name: "a", fn: fns[0] });
+        it({ suite, name: "b", fn: fns[1] });
+      }),
+  );
+});
+
+Deno.test("it.todo()", async (t) => {
+  await t.step(
+    "minimum options (todo)",
+    async () =>
+      await assertMinimumItOptions((fn) => {
+        it.todo({ name: "example", fn });
+      }),
+  );
 });
