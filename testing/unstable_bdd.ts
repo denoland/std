@@ -2,8 +2,13 @@
 
 import { globalSanitizersState } from "./_test_suite.ts";
 import type { DescribeArgs, ItArgs, TestSuite } from "./bdd.ts";
-import { describe, test, it } from "./bdd.ts";
+import { describe as describe_, it as it_, test as test_ } from "./bdd.ts";
 
+const describe = describe_ as typeof describe_ & describe;
+const it = it_ as typeof it_ & it;
+const test = test_ as typeof test_ & test;
+
+// deno-lint-ignore deno-style-guide/naming-convention
 interface describe {
   /**
    * Register a test case that is not yet implemented. Alias of `.ignore()`.
@@ -11,10 +16,12 @@ interface describe {
   todo<T>(...args: DescribeArgs<T>): TestSuite<T>;
 }
 
+// deno-lint-ignore deno-style-guide/naming-convention
 interface it {
   todo<T>(...args: ItArgs<T>): void;
 }
 
+// deno-lint-ignore deno-style-guide/naming-convention
 interface test {
   todo<T>(...args: ItArgs<T>): void;
 }
@@ -62,7 +69,6 @@ describe.todo = function describeTodo<T>(
   return describe.ignore(...args);
 };
 
-
 /**
  * Register a test case that is not yet implemented.
  *
@@ -101,8 +107,4 @@ test.todo = function itTodo<T>(...args: ItArgs<T>): void {
   it.todo(...args);
 };
 
-export {
-  describe,
-  test,
-  it,
-};
+export { describe, it, test };

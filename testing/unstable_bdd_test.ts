@@ -2,7 +2,10 @@
 
 import { assert, assertEquals } from "@std/assert";
 import { describe, it } from "./unstable_bdd.ts";
-import { assertMinimumDescribeOptions, assertMinimumItOptions } from "./_test_helpers.ts";
+import {
+  assertMinimumDescribeOptions,
+  assertMinimumItOptions,
+} from "./_test_helpers.ts";
 
 Deno.test("configureGlobalSanitizers() modifies the test sanitizers globally", async () => {
   {
