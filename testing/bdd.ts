@@ -542,11 +542,6 @@ export interface it {
    * `.ignore()`.
    */
   skip<T>(...args: ItArgs<T>): void;
-
-  /**
-   * Register a test case that is not yet implemented. Alias of `.ignore()`.
-   */
-  todo<T>(...args: ItArgs<T>): void;
 }
 
 /**
