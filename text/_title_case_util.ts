@@ -76,12 +76,12 @@ function resolveLocaleOption(
   return locale === false
     ? "und"
     : locale === true
-      ? defaultLocale()
-      : Array.isArray(locale)
-        // https://tc39.es/ecma402/#sec-transform-case
-        // `TransformCase` always uses the first locale in the list, even if not supported by the implementation.
-        ? locale[0]?.toString() ?? defaultLocale()
-        : locale.toString();
+    ? defaultLocale()
+    : Array.isArray(locale)
+    // https://tc39.es/ecma402/#sec-transform-case
+    // `TransformCase` always uses the first locale in the list, even if not supported by the implementation.
+    ? locale[0]?.toString() ?? defaultLocale()
+    : locale.toString();
 }
 
 // https://tc39.es/ecma402/#sec-defaultlocale
@@ -179,7 +179,9 @@ function _titleCaseSegment(s: string, opts: ResolvedOptions): string {
 
 function titleCaseGrapheme(grapheme: string, locale: Intl.Locale): string {
   const [char] = grapheme;
-  return titleCaseChar(char!, locale) + grapheme.slice(char!.length);
+  return titleCaseChar(char!, locale) +
+    // Invariant: Lower-casing of grapheme tail never changes depending on surrounding chars (true as of Unicode 16.0.0).
+    grapheme.slice(char!.length).toLocaleLowerCase(locale);
 }
 
 // Invariant: Title casing of a char never changes depending on following chars (true as of Unicode 16.0.0).
