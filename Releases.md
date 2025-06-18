@@ -1,3 +1,38 @@
+### 2025.06.12
+
+#### @std/cli 1.0.20 (patch)
+
+- fix(cli/unstable): `Spinner` print on `start()` (#6706)
+- refactor(cli/unstable): move unit related stuff to separate file (#6693)
+
+#### @std/http 1.0.18 (patch)
+
+- feat(http/unstable): add `cleanUrls` option to `serveDir` (#6231)
+
+#### @std/streams 1.0.10 (patch)
+
+- feat(streams/unstable): add `AbortStream` (#6708)
+- refactor(streams): throw `RangeError` within `Buffer` methods (#6714)
+
+#### @std/testing 1.0.14 (patch)
+
+- test(testing): ignore doc test of snapshot docs (#6718)
+
+#### @std/toml 1.0.8 (patch)
+
+- fix(toml): february edge cases in datetime (#6704)
+- fix(toml): leading zeroes in float (#6703)
+- refactor(toml): use RegExp groups for month validation (#6705)
+
+#### @std/uuid 1.0.9 (patch)
+
+- fix(uuid): support for UUID v7 validation (#6709)
+
+#### @std/yaml 1.0.8 (patch)
+
+- feat(yaml/unstable): export `unstable_stringify.ts` (#6702)
+- refactor(yaml): move `composeNode()` params in an object (#6658)
+
 ### 2025.05.30
 
 #### @std/cli 1.0.19 (patch)

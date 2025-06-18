@@ -134,6 +134,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
       "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K⠸\x1b[0m ",
       "\r\x1b[K",
     ];
 
