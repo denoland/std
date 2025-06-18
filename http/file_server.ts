@@ -38,6 +38,7 @@ import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { exists } from "@std/fs/exists";
 import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
 import {
@@ -695,6 +696,7 @@ async function createServeDirResponse(
   const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
+  const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
   const showDotfiles = opts.showDotfiles || false;
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
@@ -728,7 +730,13 @@ async function createServeDirResponse(
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  const fsPath = join(target, normalizedPath);
+  // Resolve path
+  // If cleanUrls is enabled, automatically append ".html" if not present
+  // and it does not shadow another existing file or directory
+  let fsPath = join(target, normalizedPath);
+  if (cleanUrls && !fsPath.endsWith(".html") && !(await exists(fsPath))) {
+    fsPath += ".html";
+  }
   const fileInfo = await Deno.stat(fsPath);
 
   // For files, remove the trailing slash from the path.
