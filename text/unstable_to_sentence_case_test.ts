@@ -2,7 +2,7 @@
 import { assertEquals } from "@std/assert";
 import { toSentenceCase } from "./unstable_to_sentence_case.ts";
 import { toTitleCase } from "./unstable_to_title_case.ts";
-import { stubLocaleCaseFunctions } from "./_test_util.ts";
+import { stubIntlFunctions } from "./_test_util.ts";
 
 Deno.test("toSentenceCase() converts a string to title case", () => {
   const input = "hello world";
@@ -30,19 +30,25 @@ Deno.test("toSentenceCase() works the same as toTitleCase() filtering words on i
 });
 
 Deno.test("toSentenceCase() can be customized with options", async (t) => {
-  await t.step("`force`", async (t) => {
+  await t.step("`trailingCase`", async (t) => {
     const input = "HELLO wOrLd";
 
-    await t.step("defaults to `true`", () => {
+    await t.step('defaults to "lower"', () => {
       assertEquals(toSentenceCase(input), "Hello world");
     });
 
-    await t.step("explicitly passing `true`", () => {
-      assertEquals(toSentenceCase(input, { force: true }), "Hello world");
+    await t.step('explicitly passing "lower"', () => {
+      assertEquals(
+        toSentenceCase(input, { trailingCase: "lower" }),
+        "Hello world",
+      );
     });
 
-    await t.step("disabled by passing `false`", () => {
-      assertEquals(toSentenceCase(input, { force: false }), "HELLO wOrLd");
+    await t.step('enabled by passing "unchanged"', () => {
+      assertEquals(
+        toSentenceCase(input, { trailingCase: "unchanged" }),
+        "HELLO wOrLd",
+      );
     });
   });
 
@@ -50,17 +56,17 @@ Deno.test("toSentenceCase() can be customized with options", async (t) => {
     const input = "irrIgation";
 
     await t.step('defaults to `false`, using locale-agnostic "und"', () => {
-      using _ = stubLocaleCaseFunctions("tr-TR");
+      using _ = stubIntlFunctions("tr-TR");
       assertEquals(toSentenceCase(input), "Irrigation");
     });
 
     await t.step("`true` uses system-default locale", () => {
-      using _ = stubLocaleCaseFunctions("tr-TR");
+      using _ = stubIntlFunctions("tr-TR");
       assertEquals(toSentenceCase(input, { locale: true }), "İrrıgation");
     });
 
     await t.step("supports passing a specific locale", () => {
-      using _ = stubLocaleCaseFunctions("en-US");
+      using _ = stubIntlFunctions("en-US");
       assertEquals(toSentenceCase(input, { locale: "tr-TR" }), "İrrıgation");
     });
   });

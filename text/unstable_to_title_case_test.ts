@@ -5,17 +5,30 @@ import type {
   ExcludeWordConfig,
   ExcludeWordFilter,
 } from "./unstable_to_title_case.ts";
-import { stubLocaleCaseFunctions } from "./_test_util.ts";
+import { stubIntlFunctions } from "./_test_util.ts";
 
-Deno.test("toTitleCase() converts a string to title case", () => {
+Deno.test("toTitleCase() converts a string to title case", async (t) => {
   const input = "hello world";
   assertEquals(toTitleCase(input), "Hello World");
+
+  await t.step("context sensitivity", () => {
+    assertEquals(toTitleCase("ΩΣ"), "Ως");
+    assertEquals(toTitleCase("ΩΣΣ"), "Ωσς");
+  });
 });
 
-Deno.test("toTitleCase() respects special title-case mappings", () => {
-  const input = "ﬆrange ﬂoating aﬃrmation";
-  const expected = "Strange Floating Aﬃrmation";
-  assertEquals(toTitleCase(input), expected);
+Deno.test("toTitleCase() respects special title-case mappings", async (t) => {
+  await t.step("ligatures", () => {
+    const input = "ﬆrange ﬂoating aﬃrmation";
+    const expected = "Strange Floating Aﬃrmation";
+    assertEquals(toTitleCase(input), expected);
+  });
+
+  // https://gist.github.com/srl295/1d9603ecfbcae55a08b04e9cd925d349
+  await t.step("Georgian", () => {
+    const amdeni = "ამდენი";
+    assertEquals(toTitleCase(amdeni), amdeni); // unchanged
+  });
 });
 
 Deno.test("toTitleCase() works with punctuation", () => {
@@ -30,19 +43,25 @@ Deno.test("toTitleCase() works with non-BMP code points", () => {
 });
 
 Deno.test("toTitleCase() can be customized with options", async (t) => {
-  await t.step("`force`", async (t) => {
+  await t.step("`trailingCase`", async (t) => {
     const input = "HELLO wOrLd";
 
-    await t.step("defaults to `true`", () => {
+    await t.step('defaults to "lower"', () => {
       assertEquals(toTitleCase(input), "Hello World");
     });
 
-    await t.step("explicitly passing `true`", () => {
-      assertEquals(toTitleCase(input, { force: true }), "Hello World");
+    await t.step('explicitly passing "lower"', () => {
+      assertEquals(
+        toTitleCase(input, { trailingCase: "lower" }),
+        "Hello World",
+      );
     });
 
-    await t.step("disabled by passing `false`", () => {
-      assertEquals(toTitleCase(input, { force: false }), "HELLO WOrLd");
+    await t.step('enabled by passing "unchanged"', () => {
+      assertEquals(
+        toTitleCase(input, { trailingCase: "unchanged" }),
+        "HELLO WOrLd",
+      );
     });
   });
 
@@ -50,17 +69,17 @@ Deno.test("toTitleCase() can be customized with options", async (t) => {
     const input = "irrIgation";
 
     await t.step('defaults to `false`, using locale-agnostic "und"', () => {
-      using _ = stubLocaleCaseFunctions("tr-TR");
+      using _ = stubIntlFunctions("tr-TR");
       assertEquals(toTitleCase(input), "Irrigation");
     });
 
     await t.step("`true` uses system-default locale", () => {
-      using _ = stubLocaleCaseFunctions("tr-TR");
+      using _ = stubIntlFunctions("tr-TR");
       assertEquals(toTitleCase(input, { locale: true }), "İrrıgation");
     });
 
     await t.step("supports passing a specific locale", () => {
-      using _ = stubLocaleCaseFunctions("en-US");
+      using _ = stubIntlFunctions("en-US");
       assertEquals(toTitleCase(input, { locale: "tr-TR" }), "İrrıgation");
     });
   });
@@ -94,12 +113,10 @@ Deno.test("toTitleCase() can be customized with options", async (t) => {
       const expected =
         "This Title Contains camelCase, PascalCase, and UPPERCASE Words";
 
-      assertEquals(toTitleCase(input, { exclude, force: false }), expected);
+      assertEquals(
+        toTitleCase(input, { exclude, trailingCase: "unchanged" }),
+        expected,
+      );
     });
-  });
-
-  await t.step("context sensitivity", () => {
-    assertEquals(toTitleCase("ΩΣ"), "Ως");
-    assertEquals(toTitleCase("ΩΣΣ"), "Ωσς");
   });
 });

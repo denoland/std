@@ -7,23 +7,52 @@ export function generateRandomString(min: number, max: number): string {
     .join("");
 }
 
-export function stubLocaleCaseFunctions(
-  defaultLocale: NonNullable<Intl.LocalesArgument>,
-) {
+export function stubIntlFunctions(defaultLocale: string) {
   const fnNames = ["toLocaleLowerCase", "toLocaleUpperCase"] as const;
-  const stubs = fnNames.map((fnName) => {
+  const stubs: { [Symbol.dispose](): void }[] = fnNames.map((fnName) => {
     const fn = String.prototype[fnName];
     const stubbed: typeof fn = function (this: string, locale) {
       return fn.call(this, locale ?? defaultLocale);
     };
     return stub(String.prototype, fnName, stubbed);
   });
+  stubs.push(
+    stubProperty(navigator, "language", defaultLocale),
+  );
 
   return {
     [Symbol.dispose]() {
       for (const stub of stubs) {
         stub[Symbol.dispose]();
       }
+    },
+  };
+}
+
+function stubProperty<O, P extends keyof O>(
+  obj: O,
+  prop: P,
+  value: O[P],
+) {
+  const originalValue = obj[prop];
+  const descriptor = {
+    ...Object.getOwnPropertyDescriptor(obj, prop),
+    configurable: true,
+  };
+  Object.defineProperty(obj, prop, {
+    ...descriptor,
+    get() {
+      return value;
+    },
+  });
+  return {
+    [Symbol.dispose]() {
+      Object.defineProperty(obj, prop, {
+        ...descriptor,
+        get() {
+          return originalValue;
+        },
+      });
     },
   };
 }

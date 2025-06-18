@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { resolveOptions, titleCaseWord } from "./_title_case_util.ts";
+import { resolveOptions, titleCaseSegment } from "./_title_case_util.ts";
 import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
 export type { BaseTitleCaseOptions };
 
@@ -64,7 +64,7 @@ export function toTitleCase(input: string, options?: TitleCaseOptions): string {
   const opts = resolveOptions(options);
   // [3.13.2 Default Case Conversion `toTitlecase`](https://www.unicode.org/versions/Unicode16.0.0/core-spec/chapter-3/#G34078)
   // toTitlecase(X): Find the word boundaries in X according to Unicode Standard Annex #29, “Unicode Text Segmentation.”
-  const segments = [...opts.segmenter.segment(input)];
+  const segments = [...opts.words.segment(input)];
   const words = segments.filter((x) => x.isWordLike);
   const exclude = toExcludeFilter(options?.exclude);
   let out = "";
@@ -73,8 +73,8 @@ export function toTitleCase(input: string, options?: TitleCaseOptions): string {
   for (const s of segments) {
     if (s.isWordLike) {
       out += !exclude(s, i++, words)
-        ? titleCaseWord(s.segment, opts)
-        : opts.force
+        ? titleCaseSegment(s.segment, opts)
+        : opts.trailingCase === "lower"
         ? s.segment.toLocaleLowerCase(opts.locale)
         : s.segment;
     } else {
