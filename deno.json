@@ -7,7 +7,7 @@
     "noUncheckedIndexedAccess": true
   },
   "importMap": "./import_map.json",
-  "unstable": ["webgpu", "unsafe-proto"],
+  "unstable": ["webgpu", "unsafe-proto", "fs"],
   "tasks": {
     "test": "deno test --allow-all --parallel --trace-leaks --coverage --doc --clean",
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | grep -v media_types/vendor/update.ts | xargs deno check --config browser-compat.tsconfig.json",
