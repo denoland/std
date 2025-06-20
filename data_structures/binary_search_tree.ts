@@ -93,6 +93,7 @@ type Direction = "left" | "right";
 export class BinarySearchTree<T> implements Iterable<T> {
   #root: BinarySearchNode<T> | null = null;
   #size = 0;
+  #callback: ((node: BinarySearchNode<T>) => void) | null = null;
   #compare: (a: T, b: T) => number;
 
   /**
@@ -104,12 +105,18 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @param compare A custom comparison function to sort the values in the tree.
    * By default, the values are sorted in ascending order.
    */
-  constructor(compare: (a: T, b: T) => number = ascend) {
+  constructor(compare: (a: T, b: T) => number = ascend, callback?: (node: BinarySearchNode<T>) => void) {
     if (typeof compare !== "function") {
       throw new TypeError(
         "Cannot construct a BinarySearchTree: the 'compare' parameter is not a function, did you mean to call BinarySearchTree.from?",
       );
     }
+    if (callback && typeof callback !== "function") {
+      throw new TypeError(
+        "Cannot construct a BinarySearchTree: the 'callback' parameter is not a function.",
+      );
+    }
+    this.#callback = callback || null;
     this.#compare = compare;
   }
 
@@ -353,6 +360,10 @@ export class BinarySearchTree<T> implements Iterable<T> {
     }
     replacement[direction] = node;
     node.parent = replacement;
+    if (this.#callback) {
+      this.#callback(node);
+      this.#callback(replacement);
+    }
   }
 
   #insertNode(
@@ -374,6 +385,14 @@ export class BinarySearchTree<T> implements Iterable<T> {
         } else {
           node[direction] = new Node(node, value);
           this.#size++;
+          if (this.#callback) {
+            this.#callback(node);
+            let parentNode = node.parent;
+            while (parentNode) {
+              this.#callback(parentNode);
+              parentNode = parentNode.parent;
+            }
+          }
           return node[direction];
         }
       }
@@ -410,7 +429,21 @@ export class BinarySearchTree<T> implements Iterable<T> {
     }
 
     this.#size--;
+    if (this.#callback) {
+      let parentNode = flaggedNode.parent;
+      while (parentNode) {
+        this.#callback(parentNode);
+        parentNode = parentNode.parent;
+      }
+    }
     return flaggedNode;
+  }
+
+  /**
+   * Get the root node of the binary search tree.
+   */
+  getRoot(): BinarySearchNode<T> | null {
+    return this.#root;
   }
 
   /**

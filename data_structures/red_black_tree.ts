@@ -3,6 +3,7 @@
 
 import { ascend } from "./comparators.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
+import { BinarySearchNode } from "./_binary_search_node.ts";
 import { type Direction, RedBlackNode } from "./_red_black_node.ts";
 import { internals } from "./_binary_search_tree_internals.ts";
 
@@ -107,13 +108,18 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    *
    * @param compare A custom comparison function for the values. The default comparison function sorts by ascending order.
    */
-  constructor(compare: (a: T, b: T) => number = ascend) {
+  constructor(compare: (a: T, b: T) => number = ascend, callback?: (node: BinarySearchNode<T>) => void) {
     if (typeof compare !== "function") {
       throw new TypeError(
         "Cannot construct a RedBlackTree: the 'compare' parameter is not a function, did you mean to call RedBlackTree.from?",
       );
     }
-    super(compare);
+    if (callback && typeof callback !== "function") {
+      throw new TypeError(
+        "Cannot construct a BinarySearchTree: the 'callback' parameter is not a function.",
+      );
+    }
+    super(compare, callback);
   }
 
   /**
