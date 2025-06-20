@@ -432,7 +432,12 @@ function html(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): string {
-  return String.raw({ raw: strings }, ...values);
+  let out = "";
+  for (let i = 0; i < strings.length; ++i) {
+    out += strings[i];
+    if (i < values.length) out += values[i] ?? "";
+  }
+  return out;
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
