@@ -55,14 +55,12 @@ jobs:
         run: deno publish --dry-run
         if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
 
-      - name: Generate lcov and html reports
-        run: deno task cov:lcov
-
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
+          files: ./coverage/lcov.info
           name: ${{ matrix.os }}-${{ matrix.deno }}
 
       - name: Upload coverage to Deploy
