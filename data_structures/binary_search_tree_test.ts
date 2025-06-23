@@ -5,7 +5,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
-import type { BSTNode } from "./bst_node.ts";
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 
@@ -21,7 +21,7 @@ interface Container {
   stSize: number;
 }
 
-function callback(n: BSTNode<Container>) {
+function callback(n: BinarySearchTreeNode<Container>) {
   let totalSize = 1;
   totalSize += n.left?.value.stSize || 0;
   totalSize += n.right?.value.stSize || 0;

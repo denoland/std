@@ -3,7 +3,7 @@
 
 import { ascend } from "./comparators.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
-import type { BSTNode } from "./bst_node.ts";
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
 import { type Direction, RedBlackNode } from "./_red_black_node.ts";
 import { internals } from "./_binary_search_tree_internals.ts";
 
@@ -111,7 +111,7 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
    */
   constructor(
     compare: (a: T, b: T) => number = ascend,
-    callback?: (node: BSTNode<T>) => void,
+    callback?: (node: BinarySearchTreeNode<T>) => void,
   ) {
     if (typeof compare !== "function") {
       throw new TypeError(

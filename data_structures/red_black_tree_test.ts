@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
-import type { BSTNode } from "./bst_node.ts";
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 import { MyMath } from "./_test_utils.ts";
@@ -259,7 +259,7 @@ Deno.test("RedBlackTree works as exepcted with descend comparator", () => {
   }
 });
 
-function callback(n: BSTNode<Container>) {
+function callback(n: BinarySearchTreeNode<Container>) {
   let totalSize = 1;
   totalSize += n.left?.value.stSize || 0;
   totalSize += n.right?.value.stSize || 0;

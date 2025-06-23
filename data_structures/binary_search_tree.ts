@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { ascend } from "./comparators.ts";
-import type { BSTNode } from "./bst_node.ts";
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 import { internals } from "./_binary_search_tree_internals.ts";
 
@@ -94,7 +94,7 @@ type Direction = "left" | "right";
 export class BinarySearchTree<T> implements Iterable<T> {
   #root: BinarySearchNode<T> | null = null;
   #size = 0;
-  #callback: ((node: BSTNode<T>) => void) | null = null;
+  #callback: ((node: BinarySearchTreeNode<T>) => void) | null = null;
   #compare: (a: T, b: T) => number;
 
   /**
@@ -111,7 +111,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   constructor(
     compare: (a: T, b: T) => number = ascend,
-    callback?: (node: BSTNode<T>) => void,
+    callback?: (node: BinarySearchTreeNode<T>) => void,
   ) {
     if (typeof compare !== "function") {
       throw new TypeError(
@@ -463,7 +463,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    *
    * @returns A reference to the root node of the binary search tree, or null if the tree is empty.
    */
-  getRoot(): BSTNode<T> | null {
+  getRoot(): BinarySearchTreeNode<T> | null {
     return this.#root;
   }
 

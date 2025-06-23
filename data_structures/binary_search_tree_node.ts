@@ -2,14 +2,21 @@
 // This module is browser compatible.
 
 /**
- * A generic Binary Search Tree (BST) node class.
+ * A generic Binary Search Tree (BST) node interface.
+ * It is implemented by the internal node classes of the binary search tree and
+ * red black tree.
  *
- * @example Creating a new BSTNode.
+ * @example Getting a reference to a BinarySearchTreeNode<T>.
  * ```ts
- * import { BSTNode } from "@std/data-structures";
+ * import { BinarySearchTree<T> } from "@std/data-structures";
  * import { assertEquals } from "@std/assert";
  *
- * const node = new BSTNode<number>(null, 42);
+ * const tree = new BinarySearchTree<number>();
+ * 
+ * assertEquals(tree.insert(42), true);
+ * 
+ * const root = tree.getRoot();
+ * 
  * assertEquals(node.value, 42);
  * assertEquals(node.left, null);
  * assertEquals(node.right, null);
@@ -18,7 +25,7 @@
  *
  * @typeparam T The type of the values stored in the binary tree.
  */
-export class BSTNode<T> {
+export interface BinarySearchTreeNode<T> {
   /**
    * The left child node, or null if there is no left child.
    *
@@ -38,7 +45,7 @@ export class BSTNode<T> {
    * assertEquals(leftChild?.value, 21);
    * ```
    */
-  left: BSTNode<T> | null;
+  left: BinarySearchTreeNode<T> | null;
 
   /**
    * The right child node, or null if there is no right child.
@@ -59,7 +66,7 @@ export class BSTNode<T> {
    * assertEquals(leftChild?.value, 42);
    * ```
    */
-  right: BSTNode<T> | null;
+  right: BinarySearchTreeNode<T> | null;
 
   /**
    * The parent of this node, or null if there is no parent.
@@ -80,7 +87,7 @@ export class BSTNode<T> {
    * assertEquals(leftChild?.parent?.value, 42);
    * ```
    */
-  parent: BSTNode<T> | null;
+  parent: BinarySearchTreeNode<T> | null;
 
   /**
    * The value stored at this node.
@@ -98,16 +105,4 @@ export class BSTNode<T> {
    * ```
    */
   value: T;
-
-  /**
-   * Creates a new BSTNode.
-   * @param parent The parent node, or null if this is the root node.
-   * @param value The value of the node.
-   */
-  constructor(parent: BSTNode<T> | null, value: T) {
-    this.left = null;
-    this.right = null;
-    this.parent = parent;
-    this.value = value;
-  }
 }
