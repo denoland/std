@@ -8,5 +8,4 @@ export class MyMath {
 export interface Container {
   id: number;
   values: number[];
-  st_size: number;
 }

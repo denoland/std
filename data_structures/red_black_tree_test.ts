@@ -4,7 +4,13 @@ import { BinarySearchNode } from "./_binary_search_node.ts";
 import { RedBlackNode } from "./_red_black_node.ts";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
-import { type Container, MyMath } from "./_test_utils.ts";
+import { MyMath } from "./_test_utils.ts";
+
+export interface Container {
+  id: number;
+  values: number[];
+  stSize: number;
+}
 
 Deno.test("RedBlackTree throws if compare is not a function", () => {
   assertThrows(
@@ -256,9 +262,9 @@ Deno.test("RedBlackTree works as exepcted with descend comparator", () => {
 
 function callback(n: BinarySearchNode<Container>) {
   let total_size = 1;
-  total_size += n.left?.value.st_size || 0;
-  total_size += n.right?.value.st_size || 0;
-  n.value.st_size = total_size;
+  total_size += n.left?.value.stSize || 0;
+  total_size += n.right?.value.stSize || 0;
+  n.value.stSize = total_size;
 }
 
 Deno.test("RedBlackTree works with object items", () => {
@@ -269,24 +275,24 @@ Deno.test("RedBlackTree works with object items", () => {
   const ids: number[] = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   for (const [i, id] of ids.entries()) {
-    const newContainer: Container = { id, values: [], st_size: 1 };
+    const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(tree.find(newContainer), null);
     assertEquals(tree.insert(newContainer), true);
     newContainer.values.push(i - 1, i, i + 1);
-    assertStrictEquals(tree.find({ id, values: [], st_size: 1 }), newContainer);
+    assertStrictEquals(tree.find({ id, values: [], stSize: 1 }), newContainer);
     assertEquals(tree.size, i + 1);
-    assertEquals(tree.getRoot()?.value.st_size, i + 1);
+    assertEquals(tree.getRoot()?.value.stSize, i + 1);
     assertEquals(tree.isEmpty(), false);
   }
   for (const [i, id] of ids.entries()) {
-    const newContainer: Container = { id, values: [], st_size: 1 };
+    const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(
       tree.find({ id } as Container)?.id,
       id,
     );
     assertEquals(tree.insert(newContainer), false);
     assertEquals(
-      tree.find({ id, values: [], st_size: 1 })?.id,
+      tree.find({ id, values: [], stSize: 1 })?.id,
       id,
     );
     assertEquals(tree.size, ids.length);
@@ -305,19 +311,19 @@ Deno.test("RedBlackTree works with object items", () => {
     assertEquals(tree.size, ids.length - i);
     assertEquals(tree.isEmpty(), false);
     assertEquals(
-      tree.find({ id, values: [], st_size: 1 })?.id,
+      tree.find({ id, values: [], stSize: 1 })?.id,
       id,
     );
 
-    assertEquals(tree.remove({ id, values: [], st_size: 1 }), true);
-    assertEquals(tree.getRoot()?.value.st_size || 0, ids.length - i - 1);
+    assertEquals(tree.remove({ id, values: [], stSize: 1 }), true);
+    assertEquals(tree.getRoot()?.value.stSize || 0, ids.length - i - 1);
     expected.splice(expected.indexOf(id), 1);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id, values: [], st_size: 1 }), null);
+    assertEquals(tree.find({ id, values: [], stSize: 1 }), null);
 
-    assertEquals(tree.remove({ id, values: [], st_size: 1 }), false);
+    assertEquals(tree.remove({ id, values: [], stSize: 1 }), false);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id, values: [], st_size: 1 }), null);
+    assertEquals(tree.find({ id, values: [], stSize: 1 }), null);
   }
   assertEquals(tree.size, 0);
   assertEquals(tree.isEmpty(), true);

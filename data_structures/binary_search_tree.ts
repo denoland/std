@@ -104,8 +104,14 @@ export class BinarySearchTree<T> implements Iterable<T> {
    *
    * @param compare A custom comparison function to sort the values in the tree.
    * By default, the values are sorted in ascending order.
+   * @param callback An optional callback function that is called whenever a change
+   * is made in the subtree of a node. This is guaranteed to be called in order from
+   * leaves to the root.
    */
-  constructor(compare: (a: T, b: T) => number = ascend, callback?: (node: BinarySearchNode<T>) => void) {
+  constructor(
+    compare: (a: T, b: T) => number = ascend,
+    callback?: (node: BinarySearchNode<T>) => void,
+  ) {
     if (typeof compare !== "function") {
       throw new TypeError(
         "Cannot construct a BinarySearchTree: the 'compare' parameter is not a function, did you mean to call BinarySearchTree.from?",
