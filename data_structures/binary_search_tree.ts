@@ -448,8 +448,22 @@ export class BinarySearchTree<T> implements Iterable<T> {
 
   /**
    * Get the root node of the binary search tree.
+   *
+   * @example Getting the root node of the tree
+   * ```ts
+   * import { BinarySearchTree } from "@std/data-structures";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const tree = new BinarySearchTree<number>();
+   *
+   * assertEquals(tree.insert(42), true);
+   * let root = tree.getRoot();
+   * assertEquals(root?.value, 42);
+   * ```
+   *
+   * @returns A reference to the root node of the binary search tree, or null if the tree is empty.
    */
-  getRoot(): BinarySearchNode<T> | null {
+  getRoot(): BSTNode<T> | null {
     return this.#root;
   }
 

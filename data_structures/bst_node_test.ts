@@ -1,4 +1,6 @@
-// Copyright 2025 the Deno authors. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
+
 import { assertStrictEquals } from "@std/assert";
 import { BSTNode } from "./bst_node.ts";
 
