@@ -94,7 +94,7 @@ type Direction = "left" | "right";
 export class BinarySearchTree<T> implements Iterable<T> {
   #root: BinarySearchNode<T> | null = null;
   #size = 0;
-  #callback: ((node: BinarySearchNode<T>) => void) | null = null;
+  #callback: ((node: BSTNode<T>) => void) | null = null;
   #compare: (a: T, b: T) => number;
 
   /**
