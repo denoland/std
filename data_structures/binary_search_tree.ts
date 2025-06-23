@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { ascend } from "./comparators.ts";
+import type { BSTNode } from "./bst_node.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 import { internals } from "./_binary_search_tree_internals.ts";
 
@@ -110,7 +111,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
    */
   constructor(
     compare: (a: T, b: T) => number = ascend,
-    callback?: (node: BinarySearchNode<T>) => void,
+    callback?: (node: BSTNode<T>) => void,
   ) {
     if (typeof compare !== "function") {
       throw new TypeError(
@@ -119,7 +120,7 @@ export class BinarySearchTree<T> implements Iterable<T> {
     }
     if (callback && typeof callback !== "function") {
       throw new TypeError(
-        "Cannot construct a BinarySearchTree: the 'callback' parameter is not a function.",
+        "Cannot construct a BinarySearchTree: the 'callback' parameter is not a function",
       );
     }
     this.#callback = callback || null;

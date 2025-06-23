@@ -5,7 +5,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
-import { BinarySearchNode } from "./_binary_search_node.ts";
+import type { BSTNode } from "./bst_node.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 
@@ -21,11 +21,11 @@ interface Container {
   stSize: number;
 }
 
-function callback(n: BinarySearchNode<Container>) {
-  let total_size = 1;
-  total_size += n.left?.value.stSize || 0;
-  total_size += n.right?.value.stSize || 0;
-  n.value.stSize = total_size;
+function callback(n: BSTNode<Container>) {
+  let totalSize = 1;
+  totalSize += n.left?.value.stSize || 0;
+  totalSize += n.right?.value.stSize || 0;
+  n.value.stSize = totalSize;
 }
 
 Deno.test("BinarySearchTree throws if compare is not a function", () => {
@@ -294,7 +294,7 @@ Deno.test("BinarySearchTree contains objects", () => {
     assertEquals(tree.getRoot()?.value.stSize, i + 1);
   }
   assertEquals(tree.getRoot()?.value.stSize, ids.length);
-  for (const [i, id] of ids.entries()) {
+  for (const [_i, id] of ids.entries()) {
     const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(
       tree.find({ id } as Container)?.id,

@@ -1,7 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
-import { BinarySearchNode } from "./_binary_search_node.ts";
-import { RedBlackNode } from "./_red_black_node.ts";
+import type { BSTNode } from "./bst_node.ts";
 import { RedBlackTree } from "./red_black_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 import { MyMath } from "./_test_utils.ts";
@@ -260,11 +259,11 @@ Deno.test("RedBlackTree works as exepcted with descend comparator", () => {
   }
 });
 
-function callback(n: BinarySearchNode<Container>) {
-  let total_size = 1;
-  total_size += n.left?.value.stSize || 0;
-  total_size += n.right?.value.stSize || 0;
-  n.value.stSize = total_size;
+function callback(n: BSTNode<Container>) {
+  let totalSize = 1;
+  totalSize += n.left?.value.stSize || 0;
+  totalSize += n.right?.value.stSize || 0;
+  n.value.stSize = totalSize;
 }
 
 Deno.test("RedBlackTree works with object items", () => {
@@ -284,7 +283,7 @@ Deno.test("RedBlackTree works with object items", () => {
     assertEquals(tree.getRoot()?.value.stSize, i + 1);
     assertEquals(tree.isEmpty(), false);
   }
-  for (const [i, id] of ids.entries()) {
+  for (const [_i, id] of ids.entries()) {
     const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(
       tree.find({ id } as Container)?.id,
