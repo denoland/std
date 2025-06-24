@@ -78,3 +78,58 @@ Deno.test("dedent() handles multiline substitution", () => {
 `;
   assertEquals(outer, "1\n2\n3\n4");
 });
+
+Deno.test("dedent() handles blank lines correctly", async (t) => {
+  const blankLineTests = [
+    {
+      name: "single-space indent, empty newline",
+      source: "\n a\n\n b\n",
+    },
+    {
+      name: "multi-space indent, empty newline",
+      source: "\n  a\n\n  b\n",
+    },
+    {
+      name: "single-space indent, single-space newline",
+      source: "\n a\n \n b\n",
+    },
+    {
+      name: "multi-space indent, single-space newline",
+      source: "\n  a\n \n  b\n",
+    },
+    {
+      name: "single-space indent, multi-space newline",
+      source: "\n a\n  \n b\n",
+    },
+    {
+      name: "multi-space indent, multi-space newline",
+      source: "\n  a\n  \n  b\n",
+    },
+  ];
+
+  for (const { name, source } of blankLineTests) {
+    await t.step(name, () => {
+      const result = eval(`dedent\`${source}\``);
+      assertEquals(result, "a\n\nb");
+    });
+
+    await t.step(name.replaceAll("space", "tab"), () => {
+      const result = eval(`dedent\`${source.replaceAll(" ", "\t")}\``);
+      assertEquals(result, "a\n\nb");
+    });
+
+    // CRLF actually doesn't change the output, as literal CRLFs in template literals in JS files are read as `\n`
+    // (this behavior is in the JS spec, not library behavior).
+    await t.step(`${name} (with CRLF)`, () => {
+      const result = eval(`dedent\`${source.replaceAll("\n", "\r\n")}\``);
+      assertEquals(result, "a\n\nb");
+    });
+
+    await t.step(`${name.replaceAll("space", "tab")} (with CRLF)`, () => {
+      const result = eval(
+        `dedent\`${source.replaceAll(" ", "\t").replaceAll("\n", "\r\n")}\``,
+      );
+      assertEquals(result, "a\n\nb");
+    });
+  }
+});

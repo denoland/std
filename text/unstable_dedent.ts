@@ -70,10 +70,10 @@ export function dedent(
 
   let minIndentWidth: number | undefined = undefined;
   for (let i = 0; i < lines.length; i++) {
-    const indentMatch = lines[i]!.match(/^(\s*)\S/);
+    const indentMatch = lines[i]!.match(/^([ \t]*)[^ \t]/);
 
     // Skip empty lines
-    if (indentMatch === null) {
+    if (!indentMatch) {
       continue;
     }
 
@@ -96,8 +96,11 @@ export function dedent(
     return trimmedInput;
   }
 
-  const minIndentRegex = new RegExp(`^\\s{${minIndentWidth}}`, "gm");
+  const minIndentRegex = new RegExp(
+    String.raw`^[ \t]{${minIndentWidth}}`,
+    "gm",
+  );
   return trimmedInput
     .replaceAll(minIndentRegex, "")
-    .replaceAll(/^\s+$/gm, "");
+    .replaceAll(/^[ \t]+$/gm, "");
 }
