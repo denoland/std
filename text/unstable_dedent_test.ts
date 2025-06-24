@@ -103,9 +103,11 @@ Deno.test("dedent() handles blank lines correctly", async (t) => {
 
                 await t.step(testName, () => {
                   const source = [
+                    "",
                     `${space.repeat(indent)}a`,
                     space.repeat(between),
                     `${space.repeat(indent)}b`,
+                    "",
                   ].join(lineEnding);
 
                   const result = globalThis.eval(`dedent\`${source}\``);
@@ -119,9 +121,11 @@ Deno.test("dedent() handles blank lines correctly", async (t) => {
                   `${testName} preserves added first-line indent`,
                   () => {
                     const source = [
+                      "",
                       `${space.repeat(indent + 1)}a`,
                       space.repeat(between),
                       `${space.repeat(indent)}b`,
+                      "",
                     ].join(lineEnding);
 
                     const result = globalThis.eval(`dedent\`${source}\``);
@@ -133,9 +137,11 @@ Deno.test("dedent() handles blank lines correctly", async (t) => {
                   `${testName} preserves added last-line indent`,
                   () => {
                     const source = [
+                      "",
                       `${space.repeat(indent)}a`,
                       space.repeat(between),
                       `${space.repeat(indent + 1)}b`,
+                      "",
                     ].join(lineEnding);
 
                     const result = globalThis.eval(`dedent\`${source}\``);
