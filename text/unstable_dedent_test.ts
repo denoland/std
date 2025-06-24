@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { dedent } from "./unstable_dedent.ts";
 import { assertEquals } from "@std/assert";
+import { stub } from "@std/testing/mock";
 
 Deno.test("dedent() handles example 1", () => {
   assertEquals(
@@ -80,56 +81,41 @@ Deno.test("dedent() handles multiline substitution", () => {
 });
 
 Deno.test("dedent() handles blank lines correctly", async (t) => {
-  const blankLineTests = [
-    {
-      name: "single-space indent, empty newline",
-      source: "\n a\n\n b\n",
-    },
-    {
-      name: "multi-space indent, empty newline",
-      source: "\n  a\n\n  b\n",
-    },
-    {
-      name: "single-space indent, single-space newline",
-      source: "\n a\n \n b\n",
-    },
-    {
-      name: "multi-space indent, single-space newline",
-      source: "\n  a\n \n  b\n",
-    },
-    {
-      name: "single-space indent, multi-space newline",
-      source: "\n a\n  \n b\n",
-    },
-    {
-      name: "multi-space indent, multi-space newline",
-      source: "\n  a\n  \n  b\n",
-    },
-  ];
-
-  for (const { name, source } of blankLineTests) {
-    await t.step(name, () => {
-      const result = eval(`dedent\`${source}\``);
-      assertEquals(result, "a\n\nb");
-    });
-
-    await t.step(name.replaceAll("space", "tab"), () => {
-      const result = eval(`dedent\`${source.replaceAll(" ", "\t")}\``);
-      assertEquals(result, "a\n\nb");
-    });
-
+  for (const lineEnding of ["\n", "\r\n"]) {
     // CRLF actually doesn't change the output, as literal CRLFs in template literals in JS files are read as `\n`
     // (this behavior is in the JS spec, not library behavior).
-    await t.step(`${name} (with CRLF)`, () => {
-      const result = eval(`dedent\`${source.replaceAll("\n", "\r\n")}\``);
-      assertEquals(result, "a\n\nb");
-    });
+    await t.step(
+      `${lineEnding === "\n" ? "LF" : "CRLF"} line ending`,
+      async (t) => {
+        for (const space of [" ", "\t"]) {
+          const spaceName = space === " " ? "space" : "tab";
+          await t.step(`${spaceName}s`, async (t) => {
+            for (const indent of [0, 1, 2]) {
+              for (const between of [0, 1, 2]) {
+                const source = [
+                  `${space.repeat(indent)}a`,
+                  space.repeat(between),
+                  `${space.repeat(indent)}b`,
+                ].join(lineEnding);
 
-    await t.step(`${name.replaceAll("space", "tab")} (with CRLF)`, () => {
-      const result = eval(
-        `dedent\`${source.replaceAll(" ", "\t").replaceAll("\n", "\r\n")}\``,
-      );
-      assertEquals(result, "a\n\nb");
-    });
+                // these cases won't fully dedent, which is probably correct behavior (?)
+                if (indent === 0 && between !== 0) continue;
+
+                const testName =
+                  `${indent}-${spaceName} indent with ${between} ${spaceName}s between`;
+
+                await t.step(testName, () => {
+                  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
+                  using _ = stub(globalThis, "dedent", dedent);
+
+                  const result = globalThis.eval(`dedent\`${source}\``);
+                  assertEquals(result, "a\n\nb");
+                });
+              }
+            }
+          });
+        }
+      },
+    );
   }
 });
