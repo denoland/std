@@ -38,7 +38,9 @@ jobs:
           cache: true
 
       - name: Run tests
-        run: deno task test
+        run: |
+          deno task test
+          deno task test:with-unsafe-proto
 
       - name: Run timezone-dependent tests
         run: |
