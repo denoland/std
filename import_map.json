@@ -12,7 +12,7 @@
     "@std/bytes": "jsr:@std/bytes@^1.0.6",
     "@std/cache": "jsr:@std/cache@^0.2.0",
     "@std/cbor": "jsr:@std/cbor@^0.1.8",
-    "@std/cli": "jsr:@std/cli@^1.0.19",
+    "@std/cli": "jsr:@std/cli@^1.0.20",
     "@std/collections": "jsr:@std/collections@^1.1.1",
     "@std/crypto": "jsr:@std/crypto@^1.0.5",
     "@std/csv": "jsr:@std/csv@^1.0.6",
@@ -25,7 +25,7 @@
     "@std/front-matter": "jsr:@std/front-matter@^1.0.9",
     "@std/fs": "jsr:@std/fs@^1.0.18",
     "@std/html": "jsr:@std/html@^1.0.4",
-    "@std/http": "jsr:@std/http@^1.0.17",
+    "@std/http": "jsr:@std/http@^1.0.18",
     "@std/ini": "jsr:@std/ini@^1.0.0-rc.8",
     "@std/internal": "jsr:@std/internal@^1.0.8",
     "@std/io": "jsr:@std/io@^0.225.2",
@@ -39,14 +39,14 @@
     "@std/regexp": "jsr:@std/regexp@^1.0.1",
     "@std/random": "jsr:@std/random@^0.1.2",
     "@std/semver": "jsr:@std/semver@^1.0.5",
-    "@std/streams": "jsr:@std/streams@^1.0.9",
+    "@std/streams": "jsr:@std/streams@^1.0.10",
     "@std/tar": "jsr:@std/tar@^0.1.6",
-    "@std/testing": "jsr:@std/testing@^1.0.13",
+    "@std/testing": "jsr:@std/testing@^1.0.14",
     "@std/text": "jsr:@std/text@^1.0.14",
-    "@std/toml": "jsr:@std/toml@^1.0.7",
+    "@std/toml": "jsr:@std/toml@^1.0.8",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
-    "@std/uuid": "jsr:@std/uuid@^1.0.8",
+    "@std/uuid": "jsr:@std/uuid@^1.0.9",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.8",
-    "@std/yaml": "jsr:@std/yaml@^1.0.7"
+    "@std/yaml": "jsr:@std/yaml@^1.0.8"
   }
 }
