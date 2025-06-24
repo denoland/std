@@ -7,7 +7,7 @@
     "noUncheckedIndexedAccess": true
   },
   "importMap": "./import_map.json",
-  "unstable": ["webgpu", "unsafe-proto", "fs"],
+  "unstable": ["webgpu", "fs"],
   "tasks": {
     "test": "deno test --allow-all --parallel --trace-leaks --coverage --doc --clean",
     "test:with-unsafe-proto": "deno test --unstable-unsafe-proto --allow-all --parallel --trace-leaks --coverage --doc --clean",
