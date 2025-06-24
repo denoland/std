@@ -81,6 +81,9 @@ Deno.test("dedent() handles multiline substitution", () => {
 });
 
 Deno.test("dedent() handles blank lines correctly", async (t) => {
+  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
+  using _ = stub(globalThis, "dedent", dedent);
+
   for (const lineEnding of ["\n", "\r\n"]) {
     // CRLF actually doesn't change the output, as literal CRLFs in template literals in JS files are read as `\n`
     // (this behavior is in the JS spec, not library behavior).
@@ -92,25 +95,53 @@ Deno.test("dedent() handles blank lines correctly", async (t) => {
           await t.step(`${spaceName}s`, async (t) => {
             for (const indent of [0, 1, 2]) {
               for (const between of [0, 1, 2]) {
-                const source = [
-                  `${space.repeat(indent)}a`,
-                  space.repeat(between),
-                  `${space.repeat(indent)}b`,
-                ].join(lineEnding);
-
-                // these cases won't fully dedent, which is probably correct behavior (?)
+                // these cases won't fully dedent, which is probably (??) fine
                 if (indent === 0 && between !== 0) continue;
 
                 const testName =
                   `${indent}-${spaceName} indent with ${between} ${spaceName}s between`;
 
                 await t.step(testName, () => {
-                  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
-                  using _ = stub(globalThis, "dedent", dedent);
+                  const source = [
+                    `${space.repeat(indent)}a`,
+                    space.repeat(between),
+                    `${space.repeat(indent)}b`,
+                  ].join(lineEnding);
 
                   const result = globalThis.eval(`dedent\`${source}\``);
                   assertEquals(result, "a\n\nb");
                 });
+
+                // these cases will strip the first-line/last-line indents, which is probably (??) fine
+                if (indent === 0) continue;
+
+                await t.step(
+                  `${testName} preserves added first-line indent`,
+                  () => {
+                    const source = [
+                      `${space.repeat(indent + 1)}a`,
+                      space.repeat(between),
+                      `${space.repeat(indent)}b`,
+                    ].join(lineEnding);
+
+                    const result = globalThis.eval(`dedent\`${source}\``);
+                    assertEquals(result, `${space}a\n\nb`);
+                  },
+                );
+
+                await t.step(
+                  `${testName} preserves added last-line indent`,
+                  () => {
+                    const source = [
+                      `${space.repeat(indent)}a`,
+                      space.repeat(between),
+                      `${space.repeat(indent + 1)}b`,
+                    ].join(lineEnding);
+
+                    const result = globalThis.eval(`dedent\`${source}\``);
+                    assertEquals(result, `a\n\n${space}b`);
+                  },
+                );
               }
             }
           });
