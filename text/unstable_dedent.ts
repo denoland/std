@@ -1,6 +1,16 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+const WHITE_SPACE = String.raw`\t\v\f\ufeff\p{Space_Separator}`;
+const INDENT_REGEXP = new RegExp(
+  String.raw`^([${WHITE_SPACE}]*)[^${WHITE_SPACE}]`,
+  "u",
+);
+const WHITE_SPACE_ONLY_LINE_REGEXP = new RegExp(
+  String.raw`^[${WHITE_SPACE}]+$`,
+  "mu",
+);
+
 /**
  * Removes indentation from multiline strings.
  *
@@ -70,7 +80,7 @@ export function dedent(
 
   let minIndentWidth: number | undefined = undefined;
   for (let i = 0; i < lines.length; i++) {
-    const indentMatch = lines[i]!.match(/^([ \t]*)[^ \t]/);
+    const indentMatch = lines[i]!.match(INDENT_REGEXP);
 
     // Skip empty lines
     if (!indentMatch) {
@@ -97,10 +107,16 @@ export function dedent(
   }
 
   const minIndentRegex = new RegExp(
-    String.raw`^[ \t]{${minIndentWidth}}`,
-    "gm",
+    String.raw`^[${WHITE_SPACE}]{${minIndentWidth}}`,
+    "gmu",
   );
   return trimmedInput
     .replaceAll(minIndentRegex, "")
-    .replaceAll(/^[ \t]+$/gm, "");
+    .replaceAll(
+      new RegExp(
+        WHITE_SPACE_ONLY_LINE_REGEXP,
+        WHITE_SPACE_ONLY_LINE_REGEXP.flags + "g",
+      ),
+      "",
+    );
 }
