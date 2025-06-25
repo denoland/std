@@ -84,7 +84,9 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - latest
+          # TODO(kt3k): change this back to latest when the issue below resolved
+          # https://github.com/nodejs/node/issues/58826
+          - 24.2.0
         os:
           - ubuntu-latest
 
