@@ -6,6 +6,10 @@ export interface PromptMultipleSelectOptions {
   clear?: boolean;
 }
 
+/**
+ * Value for {@linkcode promptMultipleSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ **/
 export type PromptEntry<V> = V extends undefined ? string
   : { title: string; value: V };
 
