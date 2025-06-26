@@ -15,7 +15,11 @@ export interface PromptMultipleSelectOptions {
 export type PromptEntry<V = undefined> = V extends undefined ? string
   : PromptEntryWithValue<V>;
 
-/** A {@linkcode PromptEntry} with an underlying value. */
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
 export interface PromptEntryWithValue<V> {
   /** The title for this entry. */
   title: string;
@@ -45,6 +49,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
