@@ -6,6 +6,9 @@ export interface PromptMultipleSelectOptions {
   clear?: boolean;
 }
 
+export type PromptEntry<V> = V extends undefined ? string
+  : { title: string; value: V };
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
@@ -40,11 +43,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
  * ```
  */
-export function promptMultipleSelect(
+export function promptMultipleSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptMultipleSelectOptions = {},
-): string[] | null {
+): PromptEntry<V>[] | null {
   if (!input.isTerminal()) return null;
 
   const { clear } = options;
@@ -66,7 +69,13 @@ export function promptMultipleSelect(
       const start = selected ? INDICATOR : PADDING;
       const checked = selectedIndexes.has(index);
       const state = checked ? CHECKED : UNCHECKED;
-      output.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${state} ${
+            typeof value === "string" ? value : value.title
+          }\r\n`,
+        ),
+      );
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -103,5 +112,5 @@ export function promptMultipleSelect(
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 
-  return [...selectedIndexes].map((it) => values[it] as string);
+  return [...selectedIndexes].map((it) => values[it]!);
 }

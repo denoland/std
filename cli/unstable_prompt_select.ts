@@ -12,6 +12,9 @@ export interface PromptSelectOptions {
   indicator?: string;
 }
 
+export type PromptEntry<V> = V extends undefined ? string
+  : { title: string; value: V };
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
@@ -48,11 +51,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
-export function promptSelect(
+export function promptSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptSelectOptions = {},
-): string | null {
+): PromptEntry<V> | null {
   if (!input.isTerminal()) return null;
 
   const SAFE_PADDING = 3;
@@ -80,10 +83,14 @@ export function promptSelect(
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
-    const chunk = values.slice(offset, visibleLines + offset);
+    const chunk: PromptEntry<V>[] = values.slice(offset, visibleLines + offset);
     for (const [index, value] of chunk.entries()) {
       const start = index === showIndex ? indicator : PADDING;
-      output.writeSync(encoder.encode(`${start} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${typeof value === "string" ? value : value.title}\r\n`,
+        ),
+      );
     }
     const moreContent = visibleLines + offset < length;
     if (moreContent) {
