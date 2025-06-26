@@ -10,6 +10,7 @@ const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
+const DELETE = "\u007F";
 const INDICATOR = "❯";
 const PADDING = " ".repeat(INDICATOR.length);
 
@@ -49,7 +50,8 @@ export function promptMultipleSelect(
 
   const { clear } = options;
 
-  const length = values.length;
+  const indexedValues = values.map((value, index) => ({ value, index }));
+  let length = values.length;
   let selectedIndex = 0;
   const selectedIndexes = new Set<number>();
 
@@ -58,10 +60,20 @@ export function promptMultipleSelect(
 
   const buffer = new Uint8Array(4);
 
+  let searchBuffer = "";
+
   loop:
   while (true) {
-    output.writeSync(encoder.encode(`${message}\r\n`));
-    for (const [index, value] of values.entries()) {
+    output.writeSync(encoder.encode(`${message + (searchBuffer ? ` (filter: ${searchBuffer})` : "")}\r\n`));
+    const filteredChunks = indexedValues.filter((item) => {
+      if (searchBuffer === "") {
+        return true;
+      } else {
+        return item.value.toLowerCase().includes(searchBuffer.toLowerCase());
+      }
+    });
+    length = filteredChunks.length;
+    for (const { value, index } of filteredChunks.values()) {
       const selected = index === selectedIndex;
       const start = selected ? INDICATOR : PADDING;
       const checked = selectedIndexes.has(index);
@@ -77,10 +89,18 @@ export function promptMultipleSelect(
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
       case ARROW_UP:
-        selectedIndex = (selectedIndex - 1 + length) % length;
+        if (selectedIndex === 0) {
+          selectedIndex = filteredChunks.at(-1)!.index;
+        } else {
+          selectedIndex = filteredChunks.find((_, i) => i == (selectedIndex - 1))!.index;
+        }
         break;
       case ARROW_DOWN:
-        selectedIndex = (selectedIndex + 1) % length;
+        if (selectedIndex === filteredChunks.at(-1)!.index) {
+          selectedIndex = 0;
+        } else {
+          selectedIndex = filteredChunks.find((_, i) => i == (selectedIndex + 1))!.index;
+        }
         break;
       case CR:
         break loop;
@@ -91,8 +111,18 @@ export function promptMultipleSelect(
           selectedIndexes.add(selectedIndex);
         }
         break;
+      case DELETE:
+        selectedIndex = 0;
+        searchBuffer = searchBuffer.slice(0, -1);
+        break;
+      default:
+        selectedIndex = 0;
+        searchBuffer += string;
+        break;
     }
+
     output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+    output.writeSync(CLEAR_ALL);
   }
 
   if (clear) {
