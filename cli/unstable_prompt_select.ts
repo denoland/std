@@ -82,7 +82,11 @@ export function promptSelect(
 
   loop:
   while (true) {
-    output.writeSync(encoder.encode(`${message + (searchBuffer ? ` (filter: ${searchBuffer})` : "")}\r\n`));
+    output.writeSync(
+      encoder.encode(
+        `${message + (searchBuffer ? ` (filter: ${searchBuffer})` : "")}\r\n`,
+      ),
+    );
     const filteredChunks = values.filter((item) => {
       if (searchBuffer === "") {
         return true;

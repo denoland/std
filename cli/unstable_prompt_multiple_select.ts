@@ -64,7 +64,11 @@ export function promptMultipleSelect(
 
   loop:
   while (true) {
-    output.writeSync(encoder.encode(`${message + (searchBuffer ? ` (filter: ${searchBuffer})` : "")}\r\n`));
+    output.writeSync(
+      encoder.encode(
+        `${message + (searchBuffer ? ` (filter: ${searchBuffer})` : "")}\r\n`,
+      ),
+    );
     const filteredChunks = indexedValues.filter((item) => {
       if (searchBuffer === "") {
         return true;
@@ -92,14 +96,18 @@ export function promptMultipleSelect(
         if (selectedIndex === 0) {
           selectedIndex = filteredChunks.at(-1)!.index;
         } else {
-          selectedIndex = filteredChunks.find((_, i) => i == (selectedIndex - 1))!.index;
+          selectedIndex = filteredChunks.find((_, i) =>
+            i == (selectedIndex - 1)
+          )!.index;
         }
         break;
       case ARROW_DOWN:
         if (selectedIndex === filteredChunks.at(-1)!.index) {
           selectedIndex = 0;
         } else {
-          selectedIndex = filteredChunks.find((_, i) => i == (selectedIndex + 1))!.index;
+          selectedIndex = filteredChunks.find((_, i) =>
+            i == (selectedIndex + 1)
+          )!.index;
         }
         break;
       case CR:
