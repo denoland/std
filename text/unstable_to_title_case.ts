@@ -3,6 +3,7 @@
 import { resolveOptions, titleCaseSegment } from "./_title_case_util.ts";
 import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
 export type { BaseTitleCaseOptions };
+export type { TrailingCase } from "./_title_case_util.ts";
 
 /**
  * A function that filters words in the string. If a word returns `true` from this function, it will not be title-cased.
