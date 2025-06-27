@@ -80,6 +80,25 @@ Deno.test("dedent() handles multiline substitution", () => {
   assertEquals(outer, "1\n2\n3\n4");
 });
 
+Deno.test("dedent() handles mixed tabs and spaces", async (t) => {
+  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
+  using _ = stub(globalThis, "dedent", dedent);
+
+  await t.step("with partial common prefix", () => {
+    assertEquals(
+      globalThis.eval(`dedent\`\n  a\n \tb\n\``),
+      " a\n\tb",
+    );
+  });
+
+  await t.step("with no common prefix", () => {
+    assertEquals(
+      globalThis.eval(`dedent\`\n\t a\n \tb\n\``),
+      "\t a\n \tb",
+    );
+  });
+});
+
 Deno.test("dedent() handles blank lines correctly", async (t) => {
   // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
   using _ = stub(globalThis, "dedent", dedent);
