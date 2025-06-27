@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { FileInfo } from "./unstable_types.ts";
-import { isWindows } from "./_utils.ts";
+import { isWindows } from "../internal/_os.ts";
 
 export function toFileInfo(s: import("node:fs").Stats): FileInfo {
   return {
