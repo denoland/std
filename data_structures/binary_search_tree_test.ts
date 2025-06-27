@@ -5,6 +5,7 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "@std/assert";
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { ascend, descend } from "./comparators.ts";
 
@@ -17,6 +18,14 @@ class MyMath {
 interface Container {
   id: number;
   values: number[];
+  stSize: number;
+}
+
+function callback(n: BinarySearchTreeNode<Container>) {
+  let totalSize = 1;
+  totalSize += n.left?.value.stSize || 0;
+  totalSize += n.right?.value.stSize || 0;
+  n.value.stSize = totalSize;
 }
 
 Deno.test("BinarySearchTree throws if compare is not a function", () => {
@@ -271,28 +280,30 @@ Deno.test("BinarySearchTree contains objects", () => {
   const tree: BinarySearchTree<Container> = new BinarySearchTree((
     a: Container,
     b: Container,
-  ) => ascend(a.id, b.id));
+  ) => ascend(a.id, b.id), callback);
   const ids = [-10, 9, -1, 100, 1, 0, -100, 10, -9];
 
   for (const [i, id] of ids.entries()) {
-    const newContainer: Container = { id, values: [] };
+    const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(tree.find(newContainer), null);
     assertEquals(tree.insert(newContainer), true);
     newContainer.values.push(i - 1, i, i + 1);
-    assertStrictEquals(tree.find({ id, values: [] }), newContainer);
+    assertStrictEquals(tree.find({ id, values: [], stSize: 1 }), newContainer);
     assertEquals(tree.size, i + 1);
     assertEquals(tree.isEmpty(), false);
+    assertEquals(tree.getRoot()?.value.stSize, i + 1);
   }
-  for (const [i, id] of ids.entries()) {
-    const newContainer: Container = { id, values: [] };
+  assertEquals(tree.getRoot()?.value.stSize, ids.length);
+  for (const [_i, id] of ids.entries()) {
+    const newContainer: Container = { id, values: [], stSize: 1 };
     assertEquals(
-      tree.find({ id } as Container),
-      { id, values: [i - 1, i, i + 1] },
+      tree.find({ id } as Container)?.id,
+      id,
     );
     assertEquals(tree.insert(newContainer), false);
     assertEquals(
-      tree.find({ id, values: [] }),
-      { id, values: [i - 1, i, i + 1] },
+      tree.find({ id, values: [], stSize: 1 })?.id,
+      id,
     );
     assertEquals(tree.size, ids.length);
     assertEquals(tree.isEmpty(), false);
@@ -310,18 +321,19 @@ Deno.test("BinarySearchTree contains objects", () => {
     assertEquals(tree.size, ids.length - i);
     assertEquals(tree.isEmpty(), false);
     assertEquals(
-      tree.find({ id, values: [] }),
-      { id, values: [i - 1, i, i + 1] },
+      tree.find({ id, values: [], stSize: 1 })?.id,
+      id,
     );
 
-    assertEquals(tree.remove({ id, values: [] }), true);
+    assertEquals(tree.remove({ id, values: [], stSize: 1 }), true);
+    assertEquals(tree.getRoot()?.value.stSize || 0, ids.length - i - 1);
     expected.splice(expected.indexOf(id), 1);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id, values: [] }), null);
+    assertEquals(tree.find({ id, values: [], stSize: 1 }), null);
 
-    assertEquals(tree.remove({ id, values: [] }), false);
+    assertEquals(tree.remove({ id, values: [], stSize: 1 }), false);
     assertEquals([...tree].map((container) => container.id), expected);
-    assertEquals(tree.find({ id, values: [] }), null);
+    assertEquals(tree.find({ id, values: [], stSize: 1 }), null);
   }
   assertEquals(tree.size, 0);
   assertEquals(tree.isEmpty(), true);
