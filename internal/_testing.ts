@@ -5,27 +5,39 @@ export function stubProperty<O, P extends keyof O>(
   prop: P,
   value: O[P],
 ): Disposable {
-  const originalValue = obj[prop];
-  const originalDescriptor = Object.getOwnPropertyDescriptor(obj, prop);
-  const descriptor = originalDescriptor == null
-    ? { configurable: true }
-    : originalDescriptor;
+  const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
 
-  const descriptorWithValue = (value: O[P]) => ({
+  if (descriptor == null) {
+    Object.defineProperty(obj, prop, { value, configurable: true });
+    return {
+      [Symbol.dispose]() {
+        delete obj[prop];
+      },
+    };
+  }
+
+  if (!descriptor.configurable && !descriptor.writable) {
+    throw new TypeError(
+      `Cannot stub property "${
+        String(prop)
+      }" because it is not configurable or writable.`,
+    );
+  }
+
+  Object.defineProperty(obj, prop, {
     ...descriptor,
-    ...(originalDescriptor != null && Object.hasOwn(originalDescriptor, "value")
-      ? { value }
-      : {
+    ...(Object.hasOwn(descriptor, "get") || Object.hasOwn(descriptor, "set")
+      ? {
         get() {
           return value;
         },
-      }),
+      }
+      : { value }),
   });
 
-  Object.defineProperty(obj, prop, descriptorWithValue(value));
   return {
     [Symbol.dispose]() {
-      Object.defineProperty(obj, prop, descriptorWithValue(originalValue));
+      Object.defineProperty(obj, prop, descriptor);
     },
   };
 }
