@@ -4,7 +4,7 @@ import { resolve } from "@std/path/resolve";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, type PathType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
-import { isWindows } from "../internal/_os.ts";
+import { isWindows } from "@std/internal/os";
 
 function resolveSymlinkTarget(target: string | URL, linkName: string | URL) {
   if (typeof target !== "string") return target; // URL is always absolute path

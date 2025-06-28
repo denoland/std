@@ -12,7 +12,7 @@ import {
   createWalkEntrySync,
   type WalkEntry,
 } from "./_create_walk_entry.ts";
-import { isWindows } from "../internal/_os.ts";
+import { isWindows } from "@std/internal/os";
 
 export type { GlobOptions, WalkEntry };
 
