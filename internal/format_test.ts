@@ -2,6 +2,7 @@
 import { green, red, stripAnsiCode } from "./styles.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { format } from "./format.ts";
+import { disposableStack, stubProperty } from "./_testing.ts";
 
 Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(
@@ -103,15 +104,49 @@ Deno.test("format() doesn't truncate long strings in object", () => {
   );
 });
 
-Deno.test("format() has fallback to String if Deno.inspect is not available", () => {
-  // Simulates the environment where Deno.inspect is not available
-  const inspect = Deno.inspect;
+Deno.test("format() has fallback if Deno.inspect is not available", async (t) => {
   // deno-lint-ignore no-explicit-any
-  delete (Deno as any).inspect;
-  try {
-    assertEquals(format([..."abcd"]), `"a,b,c,d"`);
-    assertEquals(format({ a: 1, b: 2 }), `"[object Object]"`);
-  } finally {
-    Deno.inspect = inspect;
-  }
+  const global = globalThis as any;
+
+  await t.step("`Deno` not available, falling back to node:util", () => {
+    using _ = stubProperty(global, "Deno", undefined);
+
+    assertEquals(format([..."abcd"]), "[\n  'a',\n  'b',\n  'c',\n  'd',\n]");
+    assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
+    assertEquals(format(false), "false");
+  });
+
+  await t.step("`Deno` and `process` both not available", () => {
+    // denstack-lint-ignore no-explicit-any
+    using stack = disposableStack();
+    stack.use(stubProperty(global, "Deno", undefined));
+    stack.use(stubProperty(global, "process", undefined));
+
+    assertEquals(format([..."abcd"]), '[\n  "a",\n  "b",\n  "c",\n  "d"\n]');
+    assertEquals(format({ a: 1, b: 2 }), '{\n  "a": 1,\n  "b": 2\n}');
+    assertEquals(format(1), "1");
+    assertEquals(format("1"), '"1"');
+    assertEquals(format(1n), "1n");
+    assertEquals(format("1n"), '"1n"');
+    assertEquals(format(true), "true");
+    assertEquals(format("true"), '"true"');
+    assertEquals(format(undefined), "undefined");
+    assertEquals(format("undefined"), '"undefined"');
+    assertEquals(format(Symbol("x")), "Symbol(x)");
+    assertEquals(format(new Map()), "[object Map]");
+
+    // deno-lint-ignore no-explicit-any
+    const badlyBehavedObject: any = {
+      toString() {
+        throw new Error("This object cannot be stringified");
+      },
+      get [Symbol.toStringTag]() {
+        throw new Error("This object cannot be stringified");
+      },
+    };
+
+    badlyBehavedObject.self = badlyBehavedObject;
+
+    assertEquals(format(badlyBehavedObject), `[[Unable to format value]]`);
+  });
 });
