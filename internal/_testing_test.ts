@@ -2,12 +2,13 @@
 import { assertEquals } from "@std/assert/equals";
 import { stubProperty } from "./_testing.ts";
 
-Deno.test("stubProperty() stubs properties and returns them to their original values", async (t) => {
+Deno.test("stubProperty() stubs properties and returns them to their original values", () => {
   const prop = "foo";
   const originalValue = "bar";
   const stubbedValue = "baz";
 
-  const descriptors: (PropertyDescriptor | undefined)[] = [
+  const descriptors: (TypedPropertyDescriptor<string> | undefined)[] = [
+    undefined,
     {
       get: () => originalValue,
       configurable: true,
@@ -19,45 +20,51 @@ Deno.test("stubProperty() stubs properties and returns them to their original va
     { value: originalValue, writable: true, configurable: true },
     { value: originalValue, writable: true, configurable: false },
     { value: originalValue, writable: false, configurable: true },
-    undefined,
   ];
 
-  class Val {
-    [prop] = originalValue;
-  }
-  class Get {
-    get [prop]() {
-      return originalValue;
-    }
-  }
+  const Empty = () => class Empty {};
+  const Val = () =>
+    class Val {
+      [prop] = originalValue;
+    };
+  const Get = () =>
+    class Get {
+      get [prop]() {
+        return originalValue;
+      }
+    };
 
   const objCreators: (() => { [prop]?: string })[] = [
     () => ({}),
     () => ({ [prop]: originalValue }),
-    () => new Val(),
-    () => new Get(),
+    () => new (Val())(),
+    () => new (Get())(),
+    () => new (Empty())(),
+    () => Val().prototype,
+    () => Get().prototype,
+    () => Empty().prototype,
     () => Object.create({ [prop]: originalValue }),
   ];
 
   for (const getObj of objCreators) {
     for (const descriptor of descriptors) {
       const obj = getObj();
-      await t.step(JSON.stringify({ obj, descriptor }) ?? "undefined", () => {
-        if (descriptor != null) Object.defineProperty(obj, prop, descriptor);
-        const descriptorBefore = Object.getOwnPropertyDescriptor(obj, prop);
-        const valBefore = obj[prop];
+      if (descriptor != null) Object.defineProperty(obj, prop, descriptor);
 
-        {
-          using _ = stubProperty(obj, prop, stubbedValue);
+      const initialDescriptor = Object.getOwnPropertyDescriptor(obj, prop);
+      const initialValue = obj[prop];
 
-          assertEquals(obj[prop], stubbedValue);
-        }
-        assertEquals(obj[prop], valBefore);
-        assertEquals(
-          Object.getOwnPropertyDescriptor(obj, prop),
-          descriptorBefore,
-        );
-      });
+      {
+        using _ = stubProperty(obj, prop, stubbedValue);
+
+        assertEquals(obj[prop], stubbedValue);
+      }
+
+      assertEquals(obj[prop], initialValue);
+      assertEquals(
+        Object.getOwnPropertyDescriptor(obj, prop),
+        initialDescriptor,
+      );
     }
   }
 });
