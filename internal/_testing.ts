@@ -1,17 +1,27 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-export function stubProperty<O, P extends keyof O>(
-  obj: O,
-  prop: P,
-  value: O[P],
+/**
+ * Stubs a property on an object, retaining the attributes of the original property descriptor as far as possible.
+ *
+ * @typeParam Self The type of the object to stub a property of.
+ * @typeParam Prop The property of the instance to stub.
+ * @param self The object to stub the property on.
+ * @param property The property to stub.
+ * @param value The value to stub the property with.
+ * @returns A disposable that restores the original property when disposed.
+ */
+export function stubProperty<Self, Prop extends keyof Self>(
+  self: Self,
+  property: Prop,
+  value: Self[Prop],
 ): Disposable {
-  const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+  const descriptor = Object.getOwnPropertyDescriptor(self, property);
 
   if (descriptor == null) {
-    Object.defineProperty(obj, prop, { value, configurable: true });
+    Object.defineProperty(self, property, { value, configurable: true });
     return {
       [Symbol.dispose]() {
-        delete obj[prop];
+        delete self[property];
       },
     };
   }
@@ -19,25 +29,21 @@ export function stubProperty<O, P extends keyof O>(
   if (!descriptor.configurable && !descriptor.writable) {
     throw new TypeError(
       `Cannot stub property "${
-        String(prop)
+        String(property)
       }" because it is not configurable or writable.`,
     );
   }
 
-  Object.defineProperty(obj, prop, {
+  Object.defineProperty(self, property, {
     ...descriptor,
     ...(Object.hasOwn(descriptor, "get") || Object.hasOwn(descriptor, "set")
-      ? {
-        get() {
-          return value;
-        },
-      }
+      ? { get: () => value }
       : { value }),
   });
 
   return {
     [Symbol.dispose]() {
-      Object.defineProperty(obj, prop, descriptor);
+      Object.defineProperty(self, property, descriptor);
     },
   };
 }
