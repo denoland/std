@@ -6,6 +6,27 @@ export interface PromptMultipleSelectOptions {
   clear?: boolean;
 }
 
+/**
+ * Value for {@linkcode promptMultipleSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
+ */
+export type PromptEntry<V = undefined> = V extends undefined ? string
+  : PromptEntryWithValue<V>;
+
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
+export interface PromptEntryWithValue<V> {
+  /** The title for this entry. */
+  title: string;
+  /** The underlying value representing this entry. */
+  value: V;
+}
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
@@ -28,6 +49,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
@@ -40,11 +62,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
  * ```
  */
-export function promptMultipleSelect(
+export function promptMultipleSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptMultipleSelectOptions = {},
-): string[] | null {
+): PromptEntry<V>[] | null {
   if (!input.isTerminal()) return null;
 
   const { clear } = options;
@@ -66,7 +88,13 @@ export function promptMultipleSelect(
       const start = selected ? INDICATOR : PADDING;
       const checked = selectedIndexes.has(index);
       const state = checked ? CHECKED : UNCHECKED;
-      output.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${state} ${
+            typeof value === "string" ? value : value.title
+          }\r\n`,
+        ),
+      );
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -103,5 +131,5 @@ export function promptMultipleSelect(
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 
-  return [...selectedIndexes].map((it) => values[it] as string);
+  return [...selectedIndexes].map((it) => values[it]!);
 }
