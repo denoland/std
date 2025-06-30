@@ -8,6 +8,7 @@
     "./diff-str": "./diff_str.ts",
     "./diff": "./diff.ts",
     "./format": "./format.ts",
+    "./os": "./os.ts",
     "./styles": "./styles.ts",
     "./types": "./types.ts"
   }
