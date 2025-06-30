@@ -108,16 +108,22 @@ Deno.test("format() has fallback if Deno.inspect is not available", async (t) =>
   // deno-lint-ignore no-explicit-any
   const global = globalThis as any;
 
-  await t.step("`Deno` not available, falling back to node:util", () => {
+  await t.step("`Deno` unavailable, fallback to node:util", () => {
     using _ = stubProperty(global, "Deno", undefined);
 
     assertEquals(format([..."abcd"]), "[\n  'a',\n  'b',\n  'c',\n  'd',\n]");
     assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
     assertEquals(format(false), "false");
+
+    assertThrows(
+      // @ts-expect-error different types
+      () => assertEquals(1, "1"),
+      Error,
+      `${red("-   1")}\n${green("+   '1'")}`,
+    );
   });
 
-  await t.step("`Deno` and `process` both not available", () => {
-    // denstack-lint-ignore no-explicit-any
+  await t.step("`Deno` and `process` both unavailable", () => {
     using stack = disposableStack();
     stack.use(stubProperty(global, "Deno", undefined));
     stack.use(stubProperty(global, "process", undefined));
@@ -135,8 +141,7 @@ Deno.test("format() has fallback if Deno.inspect is not available", async (t) =>
     assertEquals(format(Symbol("x")), "Symbol(x)");
     assertEquals(format(new Map()), "[object Map]");
 
-    // deno-lint-ignore no-explicit-any
-    const badlyBehavedObject: any = {
+    const badlyBehavedObject: Record<string, unknown> = {
       toString() {
         throw new Error("This object cannot be stringified");
       },
@@ -148,5 +153,12 @@ Deno.test("format() has fallback if Deno.inspect is not available", async (t) =>
     badlyBehavedObject.self = badlyBehavedObject;
 
     assertEquals(format(badlyBehavedObject), `[[Unable to format value]]`);
+
+    assertThrows(
+      // @ts-expect-error different types
+      () => assertEquals(1, "1"),
+      Error,
+      `${red("-   1")}\n${green('+   "1"')}`,
+    );
   });
 });
