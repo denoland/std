@@ -1,6 +1,20 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+/** An inspect function conforming to the shape of `Deno.inspect` and `node:util`'s `inspect` */
+export type InspectFn = (
+  v: unknown,
+  options: {
+    depth: number;
+    sorted: boolean;
+    trailingComma: boolean;
+    compact: boolean;
+    iterableLimit: number;
+    getters: boolean;
+    strAbbreviateSize: number;
+  },
+) => string;
+
 /**
  * Converts the input into a string. Objects, Sets and Maps are sorted so as to
  * make tests less flaky.
@@ -23,7 +37,7 @@ export function format(v: unknown): string {
   // deno-lint-ignore no-explicit-any
   const { Deno, process } = globalThis as any;
 
-  const inspect: typeof globalThis.Deno.inspect | undefined = Deno?.inspect ??
+  const inspect: InspectFn | undefined = Deno?.inspect ??
     process?.getBuiltinModule?.("node:util")?.inspect;
 
   return typeof inspect === "function"

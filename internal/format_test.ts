@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { green, red, stripAnsiCode } from "./styles.ts";
 import { assertEquals, assertThrows } from "@std/assert";
-import { format } from "./format.ts";
+import { format, type InspectFn } from "./format.ts";
 import { disposableStack, stubProperty } from "./_testing.ts";
 
 Deno.test("format() generates correct diffs for strings", () => {
@@ -108,19 +108,23 @@ Deno.test("format() has fallback if Deno.inspect is not available", async (t) =>
   // deno-lint-ignore no-explicit-any
   const global = globalThis as any;
 
-  await t.step("`Deno` unavailable, fallback to node:util", () => {
-    using _ = stubProperty(global, "Deno", undefined);
+  await t.step({
+    name: "`Deno` unavailable, fallback to node:util",
+    ignore: parseInt(globalThis.Deno?.version.deno) < 2,
+    fn() {
+      using _ = stubProperty(global, "Deno", undefined);
 
-    assertEquals(format([..."abcd"]), "[\n  'a',\n  'b',\n  'c',\n  'd',\n]");
-    assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
-    assertEquals(format(false), "false");
+      assertEquals(format([..."abcd"]), "[\n  'a',\n  'b',\n  'c',\n  'd',\n]");
+      assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
+      assertEquals(format(false), "false");
 
-    assertThrows(
-      // @ts-expect-error different types
-      () => assertEquals(1, "1"),
-      Error,
-      `${red("-   1")}\n${green("+   '1'")}`,
-    );
+      assertThrows(
+        // @ts-expect-error different types
+        () => assertEquals(1, "1"),
+        Error,
+        `${red("-   1")}\n${green("+   '1'")}`,
+      );
+    },
   });
 
   await t.step("`Deno` and `process` both unavailable", () => {
@@ -161,4 +165,10 @@ Deno.test("format() has fallback if Deno.inspect is not available", async (t) =>
       `${red("-   1")}\n${green('+   "1"')}`,
     );
   });
+});
+
+Deno.test("InspectFn has type conforming to Deno.inspect", () => {
+  // Type checking can only be done in test file, as production types need to work with browser TS libs,
+  // where `Deno` is unavailable.
+  const _: Parameters<InspectFn>[1] = {} as Required<Deno.InspectOptions>;
 });
