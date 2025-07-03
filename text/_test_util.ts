@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { stub } from "@std/testing/mock";
+import { stubProperty } from "../internal/_testing.ts";
 
 export function generateRandomString(min: number, max: number): string {
   return Array.from({ length: Math.floor(Math.random() * (max - min) + min) })
@@ -25,34 +26,6 @@ export function stubIntlFunctions(defaultLocale: string) {
       for (const stub of stubs) {
         stub[Symbol.dispose]();
       }
-    },
-  };
-}
-
-function stubProperty<O, P extends keyof O>(
-  obj: O,
-  prop: P,
-  value: O[P],
-) {
-  const originalValue = obj[prop];
-  const descriptor = {
-    ...Object.getOwnPropertyDescriptor(obj, prop),
-    configurable: true,
-  };
-  Object.defineProperty(obj, prop, {
-    ...descriptor,
-    get() {
-      return value;
-    },
-  });
-  return {
-    [Symbol.dispose]() {
-      Object.defineProperty(obj, prop, {
-        ...descriptor,
-        get() {
-          return originalValue;
-        },
-      });
     },
   };
 }
