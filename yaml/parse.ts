@@ -4,7 +4,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { isEOL } from "./_chars.ts";
+import { BOM, isEOL } from "./_chars.ts";
 import { LoaderState } from "./_loader_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 
@@ -37,14 +37,11 @@ function sanitizeInput(input: string) {
 
   if (input.length > 0) {
     // Add trailing `\n` if not exists
-    if (!isEOL(input.charCodeAt(input.length - 1))) input += "\n";
+    if (!isEOL(input.at(-1)!)) input += "\n";
 
     // Strip BOM
-    if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
+    if (input.at(0) === BOM) input = input.slice(1);
   }
-
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
 
   return input;
 }
