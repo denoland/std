@@ -17,8 +17,8 @@ const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 
-const ARROW_UP_CHAR = "↑";
-const ARROW_DOWN_CHAR = "↓";
+const MORE_CONTENT_BEFORE_INDICATOR = "...";
+const MORE_CONTENT_AFTER_INDICATOR = "...";
 
 const input = Deno.stdin;
 const output = Deno.stdout;
@@ -91,7 +91,7 @@ export function promptSelect(
 
     if (offset !== 0) {
       output.writeSync(
-        encoder.encode(`${ARROW_PADDING}${ARROW_UP_CHAR}\r\n`),
+        encoder.encode(`${ARROW_PADDING}${MORE_CONTENT_BEFORE_INDICATOR}\r\n`),
       );
     }
 
@@ -102,7 +102,7 @@ export function promptSelect(
 
     if (hasDownArrow) {
       output.writeSync(
-        encoder.encode(`${ARROW_PADDING}${ARROW_DOWN_CHAR}\r\n`),
+        encoder.encode(`${ARROW_PADDING}${MORE_CONTENT_AFTER_INDICATOR}\r\n`),
       );
     }
     const n = input.readSync(buffer);
