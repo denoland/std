@@ -79,7 +79,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  *
  * const browsers = promptMultipleSelect(
  *   "Select your favorite numbers below 100:",
- *   [...Array(100).keys()],
+ *   [...Array(100).keys()].map(String),
  *   { clear: true, visibleLines: 5, indicator: "→" },
  * );
  * ```
