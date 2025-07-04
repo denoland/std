@@ -73,6 +73,26 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * );
  * ```
  *
+ * @example With title and value
+ * ```ts ignore
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
+ *
+ * const browsers = promptMultipleSelect(
+ *   "Please select browsers:",
+ *   [{
+ *     title: "safari",
+ *     value: 1,
+ *   }, {
+ *     title: "chrome",
+ *     value: 2,
+ *   }, {
+ *     title: "firefox",
+ *     value: 3,
+ *   }],
+ *   { clear: true },
+ * );
+ * ```
+ *
  * @example With multiple options
  * ```ts ignore
  * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
