@@ -44,7 +44,22 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ```ts ignore
  * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
  *
- * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browsers = promptMultipleSelect(
+ *   "Please select browsers:",
+ *   ["safari", "chrome", "firefox"],
+ *   { clear: true },
+ * );
+ * ```
+ *
+ * @example With multiple options
+ * ```ts ignore
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
+ *
+ * const browsers = promptMultipleSelect(
+ *   "Select your favorite numbers below 100:",
+ *   [...Array(100).keys()],
+ *   { clear: true, visibleLines: 5, indicator: "→" },
+ * );
  * ```
  */
 export function promptMultipleSelect(

@@ -37,9 +37,20 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * @param options The options for the prompt.
  * @returns The string that was entered or `null` if stdin is not a TTY.
  *
- * @example Usage
+ * @example Basic usage
  * ```ts ignore
- * import { promptSelect } from "@std/cli/prompt-select";
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
+ *
+ * const browser = promptSelect("Please select browser", [
+ *   "Chrome",
+ *   "Firefox",
+ *   "Safari",
+ * ], { clear: true });
+ * ```
+ *
+ * @example With multiple options
+ * ```ts ignore
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
  *
  * const browser = promptSelect("What country are you from?", [
  *   "Brazil",
