@@ -50,12 +50,12 @@ Deno.test("promptSelect() handles CR", () => {
   );
 
   const browser = promptSelect("Please select a browser:", [
-    { title: "safari", value: 1 },
-    { title: "chrome", value: 2 },
-    { title: "firefox", value: 3 },
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browser, { title: "safari", value: 1 });
+  assertEquals(browser, { label: "safari", value: 1 });
   assertEquals(expectedOutput, actualOutput);
   restore();
 });

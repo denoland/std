@@ -27,8 +27,8 @@ export type PromptEntry<V = undefined> = V extends undefined ? string
  * @typeParam V The value of the underlying Entry.
  */
 export interface PromptEntryWithValue<V> {
-  /** The title for this entry. */
-  title: string;
+  /** The label for this entry. */
+  label: string;
   /** The underlying value representing this entry. */
   value: V;
 }
@@ -152,7 +152,7 @@ export function promptSelect<V = undefined>(
       const start = index === showIndex ? indicator : PADDING;
       output.writeSync(
         encoder.encode(
-          `${start} ${typeof value === "string" ? value : value.title}\r\n`,
+          `${start} ${typeof value === "string" ? value : value.label}\r\n`,
         ),
       );
     }

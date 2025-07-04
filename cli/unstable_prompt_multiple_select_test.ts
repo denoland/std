@@ -114,12 +114,12 @@ Deno.test("promptMultipleSelect() handles selection", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    { title: "safari", value: 1 },
-    { title: "chrome", value: 2 },
-    { title: "firefox", value: 3 },
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browsers, [{ title: "safari", value: 1 }]);
+  assertEquals(browsers, [{ label: "safari", value: 1 }]);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
@@ -204,15 +204,15 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    { title: "safari", value: 1 },
-    { title: "chrome", value: 2 },
-    { title: "firefox", value: 3 },
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
   assertEquals(browsers, [
-    { title: "safari", value: 1 },
-    { title: "chrome", value: 2 },
-    { title: "firefox", value: 3 },
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
   assertEquals(expectedOutput, actualOutput);
   restore();
@@ -284,12 +284,12 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    { title: "safari", value: 1 },
-    { title: "chrome", value: 2 },
-    { title: "firefox", value: 3 },
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browsers, [{ title: "firefox", value: 3 }]);
+  assertEquals(browsers, [{ label: "firefox", value: 3 }]);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });

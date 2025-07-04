@@ -27,8 +27,8 @@ export type PromptEntry<V = undefined> = V extends undefined ? string
  * @typeParam V The value of the underlying Entry.
  */
 export interface PromptEntryWithValue<V> {
-  /** The title for this entry. */
-  title: string;
+  /** The label for this entry. */
+  label: string;
   /** The underlying value representing this entry. */
   value: V;
 }
@@ -157,7 +157,7 @@ export function promptMultipleSelect<V = undefined>(
       output.writeSync(
         encoder.encode(
           `${start} ${state} ${
-            typeof value === "string" ? value : value.title
+            typeof value === "string" ? value : value.label
           }\r\n`,
         ),
       );
