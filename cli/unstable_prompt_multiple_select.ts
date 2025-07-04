@@ -12,6 +12,27 @@ export interface PromptMultipleSelectOptions {
   indicator?: string;
 }
 
+/**
+ * Value for {@linkcode promptMultipleSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
+ */
+export type PromptEntry<V = undefined> = V extends undefined ? string
+  : PromptEntryWithValue<V>;
+
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
+export interface PromptEntryWithValue<V> {
+  /** The title for this entry. */
+  title: string;
+  /** The underlying value representing this entry. */
+  value: V;
+}
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
@@ -35,6 +56,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
@@ -51,22 +73,42 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * );
  * ```
  *
+ * @example With title and value
+ * ```ts ignore
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
+ *
+ * const browsers = promptMultipleSelect(
+ *   "Please select browsers:",
+ *   [{
+ *     title: "safari",
+ *     value: 1,
+ *   }, {
+ *     title: "chrome",
+ *     value: 2,
+ *   }, {
+ *     title: "firefox",
+ *     value: 3,
+ *   }],
+ *   { clear: true },
+ * );
+ * ```
+ *
  * @example With multiple options
  * ```ts ignore
  * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
  *
  * const browsers = promptMultipleSelect(
  *   "Select your favorite numbers below 100:",
- *   [...Array(100).keys()],
+ *   [...Array(100).keys()].map(String),
  *   { clear: true, visibleLines: 5, indicator: "→" },
  * );
  * ```
  */
-export function promptMultipleSelect(
+export function promptMultipleSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptMultipleSelectOptions = {},
-): string[] | null {
+): PromptEntry<V>[] | null {
   if (!input.isTerminal()) return null;
 
   const SAFE_PADDING = 4;
@@ -112,7 +154,13 @@ export function promptMultipleSelect(
       const start = index === showIndex ? indicator : PADDING;
       const checked = selectedIndexes.has(realIndex);
       const state = checked ? CHECKED : UNCHECKED;
-      output.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${state} ${
+            typeof value === "string" ? value : value.title
+          }\r\n`,
+        ),
+      );
     }
 
     if (hasDownArrow) {
@@ -193,5 +241,5 @@ export function promptMultipleSelect(
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 
-  return [...selectedIndexes].map((it) => values[it] as string);
+  return [...selectedIndexes].map((it) => values[it]!);
 }

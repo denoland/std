@@ -12,6 +12,27 @@ export interface PromptSelectOptions {
   indicator?: string;
 }
 
+/**
+ * Value for {@linkcode promptSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
+ */
+export type PromptEntry<V = undefined> = V extends undefined ? string
+  : PromptEntryWithValue<V>;
+
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
+export interface PromptEntryWithValue<V> {
+  /** The title for this entry. */
+  title: string;
+  /** The underlying value representing this entry. */
+  value: V;
+}
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
@@ -32,6 +53,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
@@ -48,6 +70,26 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ], { clear: true });
  * ```
  *
+ * @example With title and value
+ * ```ts ignore
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
+ *
+ * const browsers = promptSelect(
+ *   "Please select browsers:",
+ *   [{
+ *     title: "safari",
+ *     value: 1,
+ *   }, {
+ *     title: "chrome",
+ *     value: 2,
+ *   }, {
+ *     title: "firefox",
+ *     value: 3,
+ *   }],
+ *   { clear: true },
+ * );
+ * ```
+ *
  * @example With multiple options
  * ```ts ignore
  * import { promptSelect } from "@std/cli/unstable-prompt-select";
@@ -62,11 +104,11 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
-export function promptSelect(
+export function promptSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptSelectOptions = {},
-): string | null {
+): PromptEntry<V> | null {
   if (!input.isTerminal()) return null;
 
   const SAFE_PADDING = 4;
@@ -96,7 +138,7 @@ export function promptSelect(
   loop:
   while (true) {
     output.writeSync(encoder.encode(`${message}\r\n`));
-    const chunk = values.slice(offset, visibleLines + offset);
+    const chunk: PromptEntry<V>[] = values.slice(offset, visibleLines + offset);
 
     const hasDownArrow = visibleLines + offset < length;
 
@@ -108,7 +150,11 @@ export function promptSelect(
 
     for (const [index, value] of chunk.entries()) {
       const start = index === showIndex ? indicator : PADDING;
-      output.writeSync(encoder.encode(`${start} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${typeof value === "string" ? value : value.title}\r\n`,
+        ),
+      );
     }
 
     if (hasDownArrow) {
