@@ -353,6 +353,7 @@ export class Ansi {
 }
 
 export const enum CursorStyle {
+  Default = 0,
   BlinkingBlock = 1,
   SteadyBlock = 2,
   BlinkingUnderline = 3,
