@@ -67,7 +67,7 @@ export class D2Array<T> implements Iterable<T[]> {
    *   [false, false, false],
    *   [false, false, false],
    * ], false);
-   * assertEquals(arr, [
+   * assertEquals(arr.raw, [
    *   [false, false, false],
    *   [false, false, false],
    *   [false, false, false],
