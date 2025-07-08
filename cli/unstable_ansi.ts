@@ -347,8 +347,7 @@ export class Ansi {
    * bottom line of the scrollable region.
    */
   static setScrollableRegion(x = 1, y?: number): string {
-    y ??= Deno.consoleSize().rows;
-    return `\x1b[${x};${y}r`;
+    return `\x1b[${x}${y == undefined ? "" : `;${y}`}r`;
   }
 }
 
