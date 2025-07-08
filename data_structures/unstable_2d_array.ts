@@ -28,10 +28,55 @@ import { assert } from "@std/assert";
  * @typeparam T The type of the values stored in the 2d array.
  */
 export class D2Array<T> implements Iterable<T[]> {
+  /** The initial value used when initializing or resizing the array */
   initialValue: T;
+  /** The raw underlying value */
   raw: T[][];
 
+  /**
+   * Create a new blank 2d array with the provided value as init value
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>(3, 3, false);
+   * assertEquals(arr, [
+   *   [false, false, false],
+   *   [false, false, false],
+   *   [false, false, false],
+   * ]);
+   * ```
+   *
+   * @param width The width of the 2d array
+   * @param height The height of the 2d array
+   * @param initialValue The value to use to initialize the 2d array, also used when resizing
+   */
   constructor(width: number, height: number, initialValue: T);
+  /**
+   * Create a new 2d array from an existing array
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>([
+   *   [false, false, false],
+   *   [false, false, false],
+   *   [false, false, false],
+   * ], false);
+   * assertEquals(arr, [
+   *   [false, false, false],
+   *   [false, false, false],
+   *   [false, false, false],
+   * ]);
+   * ```
+   *
+   * @param value The array to use
+   * @param initialValue The value to use when resizing
+   */
   constructor(value: readonly T[][], initialValue: T);
   constructor(
     widthOrValue: number | (readonly T[][]),
