@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { D2Array } from "./unstable_2d_array.ts";
 
 Deno.test("D2Array constructor - width/height overload", () => {

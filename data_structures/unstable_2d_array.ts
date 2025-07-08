@@ -19,6 +19,10 @@ import { assert } from "@std/assert";
  * assertEquals(arr.raw[0][0], true);
  *
  * arr.insert(0, 0, new D2Array<boolean>(2, 2, true)); // set all values from 0,0 to 1,1 to true
+ *
+ * for (const row of arr) {
+ *   console.log(row);
+ * }
  * ```
  *
  * @typeparam T The type of the values stored in the 2d array.
@@ -29,7 +33,11 @@ export class D2Array<T> implements Iterable<T[]> {
 
   constructor(width: number, height: number, initialValue: T);
   constructor(value: readonly T[][], initialValue: T);
-  constructor(widthOrValue: number | (readonly T[][]), heightOrInitialValue: number | T, initialValue?: T) {
+  constructor(
+    widthOrValue: number | (readonly T[][]),
+    heightOrInitialValue: number | T,
+    initialValue?: T,
+  ) {
     if (Array.isArray(widthOrValue)) {
       assert((widthOrValue.length) > 0, "Height must be greater than 0");
       assert((widthOrValue[0].length) > 0, "Width must be greater than 0");
@@ -40,15 +48,19 @@ export class D2Array<T> implements Iterable<T[]> {
         this.raw.push(widthOrValue[i]!.slice());
       }
 
-
       this.initialValue = heightOrInitialValue as T;
     } else {
       assert((widthOrValue as number) > 0, "Width must be greater than 0");
-      assert((heightOrInitialValue as number) > 0, "Height must be greater than 0");
+      assert(
+        (heightOrInitialValue as number) > 0,
+        "Height must be greater than 0",
+      );
 
-      this.raw = Array.from({ length: heightOrInitialValue as number }, () => Array(widthOrValue as number).fill((initialValue as number)));
+      this.raw = Array.from(
+        { length: heightOrInitialValue as number },
+        () => Array(widthOrValue as number).fill(initialValue as number),
+      );
       this.initialValue = initialValue!;
-
     }
   }
 
@@ -74,16 +86,21 @@ export class D2Array<T> implements Iterable<T[]> {
    * @param width the amount of elements to take on the X axis
    * @param height the amount of elements to take on the X axis
    */
-  slice(x: number = 0, y: number = 0, width?: number, height?: number): D2Array<T> {
-    const actualHeight = Math.min(height ?? this.raw.length, this.raw.length);
-    const actualWidth = Math.min(width ?? this.raw[0]!.length, this.raw[0]!.length);
+  slice(
+    x: number = 0,
+    y: number = 0,
+    width?: number,
+    height?: number,
+  ): D2Array<T> {
+    const actualHeight = Math.min(height ?? Infinity, this.raw.length - y);
+    const actualWidth = Math.min(width ?? Infinity, this.raw[0]!.length - x);
 
     assert((actualWidth as number) > 0, "Width must be greater than 0");
     assert((actualHeight as number) > 0, "Height must be greater than 0");
 
     const out: T[][] = [];
 
-    for (let i = y; i < actualHeight; i++) {
+    for (let i = y; i < y + actualHeight; i++) {
       const row = this.raw[i]!;
       out.push(row.slice(x, x + actualWidth));
     }
@@ -134,14 +151,21 @@ export class D2Array<T> implements Iterable<T[]> {
         }
       } else {
         for (let i = 0; i < this.raw.length; i++) {
-          this.raw[i]!.push(...Array(width - this.raw[i]!.length).fill(this.initialValue));
+          this.raw[i]!.push(
+            ...Array(width - this.raw[i]!.length).fill(this.initialValue),
+          );
         }
       }
 
       if (height <= this.raw.length) {
         this.raw = this.raw.slice(0, height);
       } else {
-        this.raw.push(...Array.from({ length: height - this.raw.length }, () => Array(this.raw[0]!.length).fill(this.initialValue)));
+        this.raw.push(
+          ...Array.from(
+            { length: height - this.raw.length },
+            () => Array(this.raw[0]!.length).fill(this.initialValue),
+          ),
+        );
       }
     }
   }
@@ -176,11 +200,11 @@ export class D2Array<T> implements Iterable<T[]> {
       value = value.raw;
     }
 
-    for (let i = y; i < Math.min(this.raw.length, value.length); i++) {
+    for (let i = y; i < Math.min(this.raw.length, y + value.length); i++) {
       const thisRow = this.raw[i]!;
       const valueRow = value[i - y]!;
 
-      for (let j = x; j < Math.min(thisRow.length, valueRow.length); j++) {
+      for (let j = x; j < Math.min(thisRow.length, x + valueRow.length); j++) {
         thisRow[j] = valueRow[j - x]!;
       }
     }
