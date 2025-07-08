@@ -3,8 +3,8 @@
 /**
  * Ansi is a class with static methods and properties that returns various Ansi
  * Escape Sequences. This class is not an exhaustive list of what is possible
- * with Ansi Escape Sequences, nor does it guarentee that every code will work
- * in every terminal. The only way to guarentee that only one code will work in
+ * with Ansi Escape Sequences, nor does it guarantee that every code will work
+ * in every terminal. The only way to guarantee that only one code will work in
  * a particular terminal, is to check for yourself. Calling these methods and
  * properties does not automatically change the terminal settings. Only once
  * they are passed to stdout or stderr will they take effect.
@@ -59,7 +59,7 @@ export class Ansi {
 
   /**
    * Causes content on the current line to shrink down to a single column,
-   * essentally reverting the effects of {@linkcode Ansi.doubleHeightTop},
+   * essentially reverting the effects of {@linkcode Ansi.doubleHeightTop},
    * {@linkcode Ansi.doubleHeightBottom}, or {@linkcode Ansi.doubleWidth}.
    *
    * @example Usage
@@ -141,7 +141,7 @@ export class Ansi {
   /**
    * This is a full reset of the terminal, reverting it back to its original
    * default settings, clearing the screen, resetting modes, colors, character
-   * sets and more. Essentally making the terminal behave as if it were just
+   * sets and more. Essentially making the terminal behave as if it were just
    * started by the user. This command is very disruptive to the user. Also see
    * {@linkcode Ansi.softReset}.
    *
@@ -160,8 +160,8 @@ export class Ansi {
   }
 
   /**
-   * This command resets many settings to their inital state without fully
-   * reinitalising the terminal like {@linkcode Ansi.hardReset}. It preserves
+   * This command resets many settings to their initial state without fully
+   * reinitialising the terminal like {@linkcode Ansi.hardReset}. It preserves
    * things like cursor position and display content, but clears modes,
    * character sets, etc. Should probably be called when exiting the program.
    *
@@ -861,7 +861,7 @@ export class Ansi {
 }
 
 /**
- * CurorStyle is a const enum used to set the value in
+ * CursorStyle is a const enum used to set the value in
  * {@linkcode Ansi.setCursorStyle}.
  *
  * @example Usage
