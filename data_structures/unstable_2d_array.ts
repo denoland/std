@@ -12,11 +12,11 @@ import { assert } from "@std/assert";
  * import { assertEquals } from "@std/assert";
  *
  * const arr = new D2Array<boolean>(3, 3, false);
- * arr.raw[0][0] = true; // set the top left to true
+ * arr.raw[0]![0] = true; // set the top left to true
  * const slice = arr.slice(0, 0, 2, 2);
  * assertEquals(slice.width, 2);
  * assertEquals(slice.height, 2);
- * assertEquals(arr.raw[0][0], true);
+ * assertEquals(arr.raw[0]![0], true);
  *
  * arr.insert(0, 0, new D2Array<boolean>(2, 2, true)); // set all values from 0,0 to 1,1 to true
  *
@@ -42,7 +42,7 @@ export class D2Array<T> implements Iterable<T[]> {
    * import { assertEquals } from "@std/assert";
    *
    * const arr = new D2Array<boolean>(3, 3, false);
-   * assertEquals(arr, [
+   * assertEquals(arr.raw, [
    *   [false, false, false],
    *   [false, false, false],
    *   [false, false, false],
@@ -119,11 +119,11 @@ export class D2Array<T> implements Iterable<T[]> {
    * import { assertEquals } from "@std/assert";
    *
    * const arr = new D2Array<boolean>(3, 3, false);
-   * arr.raw[0][0] = true; // set the top left to true
+   * arr.raw[0]![0] = true; // set the top left to true
    * const slice = arr.slice(0, 0, 2, 2);
    * assertEquals(slice.width, 2);
    * assertEquals(slice.height, 2);
-   * assertEquals(arr.raw[0][0], true);
+   * assertEquals(arr.raw[0]![0], true);
    * ```
    *
    * @param x 0-based index at which to start on the X axis (0 is left-most)
@@ -163,11 +163,11 @@ export class D2Array<T> implements Iterable<T[]> {
    * import { assertEquals } from "@std/assert";
    *
    * const arr = new D2Array<boolean>(3, 3, false);
-   * arr.raw[0][0] = true; // set the top left to true
+   * arr.raw[0]![0] = true; // set the top left to true
    * arr.resize(2, 2);
    * assertEquals(arr.width, 2);
    * assertEquals(arr.height, 2);
-   * assertEquals(arr.raw[0][0], true);
+   * assertEquals(arr.raw[0]![0], true);
    * ```
    *
    * @param width the new width of the 2d array.
