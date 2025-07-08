@@ -265,6 +265,9 @@ export class D2Array<T> implements Iterable<T[]> {
     return this.raw.length;
   }
 
+  /**
+   * Iterate over the underlying raw array
+   */
   [Symbol.iterator](): Iterator<T[]> {
     return this.raw[Symbol.iterator]();
   }
