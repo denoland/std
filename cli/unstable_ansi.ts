@@ -13,13 +13,17 @@ export class Ansi {
   static get doubleHeightTop(): string {
     return "\x1b#3";
   }
+
   /**
    * Causes content on the current line to enlarge, showing only the bottom
-   * half of the characters with each character taking up two columns. Can be used in combination with {@linkcode Ansi.doubleHeightTop} on the previous line to make text appear twice as big.
+   * half of the characters with each character taking up two columns. Can be
+   * used in combination with {@linkcode Ansi.doubleHeightTop} on the previous
+   * line to make text appear twice as big.
    */
   static get doubleHeightBottom(): string {
     return "\x1b#4";
   }
+
   /**
    * Causes content on the current line to shrink down to a single column,
    * essentally reverting the effects of {@linkcode Ansi.doubleHeightTop}, {@linkcode Ansi.doubleHeightBottom}, or {@linkcode Ansi.doubleWidth}.
@@ -27,6 +31,7 @@ export class Ansi {
   static get singleWidth(): string {
     return "\x1b#5";
   }
+
   /**
    * Causes content on the current line to stretch out, with each character
    * taking up two columns. Can be reverted with {@linkcode Ansi.singleWidth}
@@ -34,6 +39,7 @@ export class Ansi {
   static get doubleWidth(): string {
     return "\x1b#6";
   }
+
   /**
    * Saves current cursor position that can later be restored with
    * {@linkcode Ansi.restoreCursorPosition}.
@@ -41,6 +47,7 @@ export class Ansi {
   static get saveCursorPosition(): string {
     return "\x1b7";
   }
+
   /**
    * Restores cursor position that was earlier saved with
    * {@linkcode Ansi.saveCursorPosition}.
@@ -48,12 +55,7 @@ export class Ansi {
   static get restoreCursorPosition(): string {
     return "\x1b8";
   }
-  static get keypadApplicationMode(): string {
-    return "\x1b=";
-  }
-  static get keypadNormalMode(): string {
-    return "\x1b>";
-  }
+
   /**
    * This is a full reset of the terminal, reverting it back to its original
    * default settings, clearing the screen, resetting modes, colors, character
@@ -64,6 +66,7 @@ export class Ansi {
   static get hardReset(): string {
     return "\x1bc";
   }
+
   /**
    * This command resets many settings to their inital state without fully
    * reinitalising the terminal like {@linkcode Ansi.hardReset}. It preserves
@@ -73,6 +76,7 @@ export class Ansi {
   static get softReset(): string {
     return "\x1b[!p";
   }
+
   /**
    * Inserts `x` spaces at the cursor position. Shifting existing line content
    * to the right. Cursor position does not change. Characters that exit the
@@ -81,6 +85,22 @@ export class Ansi {
   static insertSpace(x = 1): string {
     return `\x1b[${x}@`;
   }
+
+  /**
+   * Deletes `x` characters at cursor position and to the right. Shifting line
+   * content left.
+   */
+  static deleteCharacters(x = 1): string {
+    return `\x1b[${x}P`;
+  }
+
+  /**
+   * Erases `x` characters at cursor position and to the right.
+   */
+  static eraseCharacters(x = 1): string {
+    return `\x1b[${x}X`;
+  }
+
   /**
    * Inserts `x` lines at cursor position. Shifting current line and below
    * down. Cursor position does not change. Characters that exit the display
@@ -89,50 +109,21 @@ export class Ansi {
   static insertLines(x = 1): string {
     return `\x1b[${x}L`;
   }
+
   /**
    * Deletes `x` lines at cursor position. Shifting below lines up.
    */
   static deleteLines(x = 1): string {
     return `\x1b[${x}M`;
   }
-  /**
-   * Deletes `x` characters at cursor position and to the right. Shifting line
-   * content left.
-   */
-  static deleteCharacters(x = 1): string {
-    return `\x1b[${x}P`;
-  }
+
   /**
    * Moves cursor position up `x` lines or up to the top margin.
    */
   static moveCursorUp(x = 1): string {
     return `\x1b[${x}A`;
   }
-  /**
-   * Moves cursor position down `x` lines or up to the bottom margin.
-   */
-  static moveCursorDown(x = 1): string {
-    return `\x1b[${x}B`;
-  }
-  /**
-   * Moves cursor position `x` columns right or up to the right margin.
-   */
-  static moveCursorRight(x = 1): string {
-    return `\x1b[${x}C`;
-  }
-  /**
-   * Moves cursor position `x` columns left or up to the left margin.
-   */
-  static moveCursorLeft(x = 1): string {
-    return `\x1b[${x}D`;
-  }
-  /**
-   * Moves cursor position `x` lines down or up to the bottom margin, and to
-   * the beginning of that line.
-   */
-  static moveCursorDownStart(x = 1): string {
-    return `\x1b[${x}E`;
-  }
+
   /**
    * Moves cursor position `x` lines up or up to the top of the margin, and to
    * the beginning of that line.
@@ -140,6 +131,50 @@ export class Ansi {
   static moveCursorUpStart(x = 1): string {
     return `\x1b[${x}F`;
   }
+
+  /**
+   * Moves cursor position down `x` lines or up to the bottom margin.
+   */
+  static moveCursorDown(x = 1): string {
+    return `\x1b[${x}B`;
+  }
+
+  /**
+   * Moves cursor position `x` lines down or up to the bottom margin, and to
+   * the beginning of that line.
+   */
+  static moveCursorDownStart(x = 1): string {
+    return `\x1b[${x}E`;
+  }
+
+  /**
+   * Moves cursor position `x` columns right or up to the right margin.
+   */
+  static moveCursorRight(x = 1): string {
+    return `\x1b[${x}C`;
+  }
+
+  /**
+   * Moves cursor position `x` tab stops right or up to the right margin.
+   */
+  static moveCursorRightTab(x = 1): string {
+    return `\x1b[${x}I`;
+  }
+
+  /**
+   * Moves cursor position `x` columns left or up to the left margin.
+   */
+  static moveCursorLeft(x = 1): string {
+    return `\x1b[${x}D`;
+  }
+
+  /**
+   * Moves cursor position `x` tab stops left or up to the left margin.
+   */
+  static moveCursorLeftTab(x = 1): string {
+    return `\x1b[${x}Z`;
+  }
+
   /**
    * Sets cursor position to column `x` or up to the sides of the margins.
    * Columns begin at `1` not `0`.
@@ -147,6 +182,7 @@ export class Ansi {
   static setCursorColumn(x = 1): string {
     return `\x1b[${x}G`;
   }
+
   /**
    * Sets cursor position to line `x` or down to the bottom of the margin.
    * Lines begin at `1` not `0`.
@@ -154,6 +190,7 @@ export class Ansi {
   static setCursorLine(x = 1): string {
     return `\x1b[${x}d`;
   }
+
   /**
    * Sets cursor position to `x` line and `y` column or up to the margin. Lines
    * and columns begin at `1` not `0`.
@@ -161,18 +198,28 @@ export class Ansi {
   static setCursorPosition(x = 1, y = 1): string {
     return `\x1b[${x};${y}H`;
   }
+
   /**
-   * Moves cursor position `x` tab stops right or up to the right margin.
+   * Erases line content to the right of cursor position.
    */
-  static moveCursorRightTab(x = 1): string {
-    return `\x1b[${x}I`;
+  static get eraseLineAfterCursor(): string {
+    return "\x1b[0K";
   }
+
   /**
-   * Moves cursor position `x` tab stops left or up to the left margin.
+   * Erases line content to the left of cursor position.
    */
-  static moveCursorLeftTab(x = 1): string {
-    return `\x1b[${x}Z`;
+  static get eraseLineBeforeCursor(): string {
+    return "\x1b[1K";
   }
+
+  /**
+   * Erases entire line content.
+   */
+  static get eraseLine(): string {
+    return "\x1b[2K";
+  }
+
   /**
    * Erases content of lines below cursor position and content to the right on
    * the same line as cursor.
@@ -180,6 +227,7 @@ export class Ansi {
   static get eraseDisplayAfterCursor(): string {
     return "\x1b[0J";
   }
+
   /**
    * Erases content of lines above cursor position and content to the left on
    * the same line as cursor.
@@ -187,36 +235,14 @@ export class Ansi {
   static get eraseDisplayBeforeCursor(): string {
     return "\x1b[1J";
   }
+
   /**
    * Erases all content.
    */
   static get eraseDisplay(): string {
     return "\x1b[2J";
   }
-  /**
-   * Erases line content to the right of cursor position.
-   */
-  static get eraseLineAfterCursor(): string {
-    return "\x1b[0K";
-  }
-  /**
-   * Erases line content to the left of cursor position.
-   */
-  static get eraseLineBeforeCursor(): string {
-    return "\x1b[1K";
-  }
-  /**
-   * Erases entire line content.
-   */
-  static get eraseLine(): string {
-    return "\x1b[2K";
-  }
-  /**
-   * Erases `x` characters at cursor position and to the right.
-   */
-  static eraseCharacters(x = 1): string {
-    return `\x1b[${x}X`;
-  }
+
   /**
    * Shifts content within the scrollable region up `x` lines, inserting blank
    * lines at the bottom of the scrollable region.
@@ -224,6 +250,7 @@ export class Ansi {
   static shiftUpAndInsert(x = 1): string {
     return `\x1b[${x}S`;
   }
+
   /**
    * Shifts content within the scrollable region down `x` lines, inserting
    * blank lines at the top of the scrollable region.
@@ -231,12 +258,14 @@ export class Ansi {
   static shiftDownAndInsert(x = 1): string {
     return `\x1b[${x}T`;
   }
+
   /**
    * Repeats last graphic character printed `x` times at cursor position.
    */
   static repeatLastCharacter(x = 1): string {
     return `\x1b[${x}b`;
   }
+
   /**
    * Causes existing characters to the right of the cursor position to shift
    * right as new characters are written. Opposite of
@@ -245,6 +274,7 @@ export class Ansi {
   static get insertMode(): string {
     return "\x1b[4h";
   }
+
   /**
    * Causes existing characters to be overwritten at the cursor position by new
    * characters. See also {@linkcode Ansi.insertMode}.
@@ -252,6 +282,7 @@ export class Ansi {
   static get replaceMode(): string {
     return "\x1b[4l";
   }
+
   /**
    * Causes top and bottom margins to shrink to scrollable region (See
    * {@linkcode Ansi.setScrollableRegion}) preventing the cursor from moving
@@ -260,6 +291,7 @@ export class Ansi {
   static get enableOriginMode(): string {
     return "\x1b[?6h";
   }
+
   /**
    * Causes the top and bottom margins to enlarge to the user's display. See
    * {@linkcode Ansi.enableOriginMode}.
@@ -267,6 +299,7 @@ export class Ansi {
   static get disableOriginMode(): string {
     return "\x1b[?6l";
   }
+
   /**
    * Causes cursor to automatically move to the next line when it hits the
    * end of the current line to continue writing. See also
@@ -275,6 +308,7 @@ export class Ansi {
   static get enableAutoWrap(): string {
     return "\x1b[?7h";
   }
+
   /**
    * Causes cursor to remain on the same line when it hits the end of the
    * current line. See also {@linkcode Ansi.enableAutoWrap}.
@@ -282,12 +316,14 @@ export class Ansi {
   static get disableAutoWrap(): string {
     return "\x1b[?7l";
   }
+
   /**
    * Sets the cursor animation style.
    */
   static setCursorStyle(x: CursorStyle): string {
     return `\x1b[${x} q`;
   }
+
   /**
    * Causes cursor position to be visible to the user. See also
    * {@linkcode Ansi.hideCursor}.
@@ -295,6 +331,7 @@ export class Ansi {
   static get showCursor(): string {
     return "\x1b[?25h";
   }
+
   /**
    * Causes cursor position to be hidden from the user. See also
    * {@linkcode Ansi.showCursor}.
@@ -302,6 +339,7 @@ export class Ansi {
   static get hideCursor(): string {
     return "\x1b[?25l";
   }
+
   /**
    * Sets the scrollable region of the display. Allowing either or both the top
    * and bottom lines to not have their content moved when the scrolling region
