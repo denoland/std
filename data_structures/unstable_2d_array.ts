@@ -220,7 +220,7 @@ export class D2Array<T> implements Iterable<T[]> {
     return this.raw.length;
   }
 
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Iterator<T[]> {
     return this.raw[Symbol.iterator]();
   }
 }
