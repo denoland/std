@@ -27,6 +27,8 @@ export class Ansi {
    * combination with {@linkcode Ansi.doubleHeightBottom} on the next line to
    * make text appear twice as big.
    *
+   * @returns string The ANSI escape code for double-height top.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -45,6 +47,8 @@ export class Ansi {
    * used in combination with {@linkcode Ansi.doubleHeightTop} on the previous
    * line to make text appear twice as big.
    *
+   * @returns string The ANSI escape code for double-height bottom.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -61,6 +65,8 @@ export class Ansi {
    * Causes content on the current line to shrink down to a single column,
    * essentially reverting the effects of {@linkcode Ansi.doubleHeightTop},
    * {@linkcode Ansi.doubleHeightBottom}, or {@linkcode Ansi.doubleWidth}.
+   *
+   * @returns string The ANSI escape code for single-width.
    *
    * @example Usage
    * ```ts ignore
@@ -85,6 +91,8 @@ export class Ansi {
    * Causes content on the current line to stretch out, with each character
    * taking up two columns. Can be reverted with {@linkcode Ansi.singleWidth}.
    *
+   * @returns string The ANSI escape code for double-width.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -99,6 +107,8 @@ export class Ansi {
   /**
    * Saves current cursor position that can later be restored with
    * {@linkcode Ansi.restoreCursorPosition}.
+   *
+   * @returns string The ANSI escape code for saving cursor position.
    *
    * @example Usage
    * ```ts ignore
@@ -120,6 +130,8 @@ export class Ansi {
   /**
    * Restores cursor position that was earlier saved with
    * {@linkcode Ansi.saveCursorPosition}.
+   *
+   * @returns string The ANSI escape code for restoring cursor position.
    *
    * @example Usage
    * ```ts ignore
@@ -145,6 +157,8 @@ export class Ansi {
    * started by the user. This command is very disruptive to the user. Also see
    * {@linkcode Ansi.softReset}.
    *
+   * @returns string The ANSI escape code for hard resetting the terminal.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -161,9 +175,11 @@ export class Ansi {
 
   /**
    * This command resets many settings to their initial state without fully
-   * reinitialising the terminal like {@linkcode Ansi.hardReset}. It preserves
+   * reinitializing the terminal like {@linkcode Ansi.hardReset}. It preserves
    * things like cursor position and display content, but clears modes,
    * character sets, etc. Should probably be called when exiting the program.
+   *
+   * @returns string The ANSI escape code for soft resetting the terminal.
    *
    * @example Usage
    * ```ts ignore
@@ -183,6 +199,9 @@ export class Ansi {
    * Inserts `x` spaces at the cursor position. Shifting existing line content
    * to the right. Cursor position does not change. Characters that exit the
    * display are discarded.
+   *
+   * @param x The number of spaces to insert.
+   * @returns string The ANSI escape code for inserting spaces.
    *
    * @example Usage
    * ```ts ignore
@@ -206,6 +225,9 @@ export class Ansi {
    * Deletes `x` characters at cursor position and to the right. Shifting line
    * content left.
    *
+   * @param x The number of characters to delete.
+   * @returns string The ANSI escape code for deleting characters.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -226,6 +248,9 @@ export class Ansi {
 
   /**
    * Erases `x` characters at cursor position and to the right.
+   *
+   * @param x The number of characters to erase.
+   * @returns string The ANSI escape code for erasing characters.
    *
    * @example Usage
    * ```ts ignore
@@ -251,6 +276,9 @@ export class Ansi {
    * down. Cursor position does not change. Characters that exit the display
    * are discarded.
    *
+   * @param x The number of lines to insert.
+   * @returns string The ANSI escape code for inserting lines.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -272,6 +300,9 @@ export class Ansi {
   /**
    * Deletes `x` lines at cursor position. Shifting below lines up.
    *
+   * @param x The number of lines to delete.
+   * @returns string The ANSI escape code for deleting lines.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -291,6 +322,9 @@ export class Ansi {
   /**
    * Moves cursor position up `x` lines or up to the top margin.
    *
+   * @param x The number of lines to move up.
+   * @returns string The ANSI escape code for moving the cursor up.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -309,6 +343,10 @@ export class Ansi {
    * Moves cursor position `x` lines up or up to the top of the margin, and to
    * the beginning of that line.
    *
+   * @param x The number of lines to move up.
+   * @returns string The ANSI escape code for moving the cursor up and to the
+   * beginning of the line.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -325,6 +363,9 @@ export class Ansi {
 
   /**
    * Moves cursor position down `x` lines or up to the bottom margin.
+   *
+   * @param x The number of lines to move down.
+   * @returns string The ANSI escape code for moving the cursor down.
    *
    * @example Usage
    * ```ts ignore
@@ -351,6 +392,10 @@ export class Ansi {
    * Moves cursor position `x` lines down or up to the bottom margin, and to
    * the beginning of that line.
    *
+   * @param x The number of lines to move down.
+   * @returns string The ANSI escape code for moving the cursor down and to the
+   * beginning of the line.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -374,6 +419,9 @@ export class Ansi {
   /**
    * Moves cursor position `x` columns right or up to the right margin.
    *
+   * @param x The number of columns to move right.
+   * @returns string The ANSI escape code for moving the cursor right.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -388,6 +436,10 @@ export class Ansi {
   /**
    * Moves cursor position `x` tab stops right or up to the right margin.
    *
+   * @param x The number of tab stops to move right.
+   * @returns string The ANSI escape code for moving the cursor right every tab
+   * stop.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -401,6 +453,9 @@ export class Ansi {
 
   /**
    * Moves cursor position `x` columns left or up to the left margin.
+   *
+   * @param x The number of columns to move left.
+   * @returns string The ANSI escape code for moving the cursor left.
    *
    * @example Usage
    * ```ts ignore
@@ -420,6 +475,10 @@ export class Ansi {
   /**
    * Moves cursor position `x` tab stops left or up to the left margin.
    *
+   * @param x The number of tab stops to move left.
+   * @returns string The ANSI escape code for moving the cursor left every tab
+   * stop.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -429,6 +488,7 @@ export class Ansi {
    *     Ansi.moveCursorLeftTab() +
    *     "Hello World!",
    * );
+   * ```
    */
   static moveCursorLeftTab(x = 1): string {
     return `\x1b[${x}Z`;
@@ -437,6 +497,9 @@ export class Ansi {
   /**
    * Sets cursor position to column `x` or up to the sides of the margins.
    * Columns begin at `1` not `0`.
+   *
+   * @param x The column to move to.
+   * @returns string The ANSI escape code for setting the cursor column.
    *
    * @example Usage
    * ```ts ignore
@@ -460,6 +523,9 @@ export class Ansi {
    * Sets cursor position to line `x` or down to the bottom of the margin.
    * Lines begin at `1` not `0`.
    *
+   * @param x The line to move to.
+   * @returns string The ANSI escape code for setting the cursor line.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -474,6 +540,10 @@ export class Ansi {
   /**
    * Sets cursor position to `x` line and `y` column or up to the margin. Lines
    * and columns begin at `1` not `0`.
+   *
+   * @param x The line to move to.
+   * @param y The column to move to.
+   * @returns string The ANSI escape code for setting the cursor position.
    *
    * @example Usage
    * ```ts ignore
@@ -492,6 +562,9 @@ export class Ansi {
 
   /**
    * Erases line content to the right of cursor position.
+   *
+   * @returns string The ANSI escape code for erasing the line content to the
+   * right of the cursor.
    *
    * @example Usage
    * ```ts ignore
@@ -514,6 +587,9 @@ export class Ansi {
   /**
    * Erases line content to the left of cursor position.
    *
+   * @returns string The ANSI escape code for erasing the line content to the
+   * left of the cursor.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -535,6 +611,8 @@ export class Ansi {
   /**
    * Erases entire line content.
    *
+   * @returns string The ANSI escape code for erasing the entire line content.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -552,6 +630,9 @@ export class Ansi {
   /**
    * Erases content of lines below cursor position and content to the right on
    * the same line as cursor.
+   *
+   * @returns string The ANSI escape code for erasing the content after the
+   * cursor.
    *
    * @example Usage
    * ```ts ignore
@@ -575,6 +656,9 @@ export class Ansi {
    * Erases content of lines above cursor position and content to the left on
    * the same line as cursor.
    *
+   * @returns string The ANSI escape code for erasing the content before the
+   * cursor.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -596,6 +680,8 @@ export class Ansi {
   /**
    * Erases all content.
    *
+   * @returns string The ANSI escape code for erasing the entire display.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -614,6 +700,9 @@ export class Ansi {
    * Shifts content within the scrollable region up `x` lines, inserting blank
    * lines at the bottom of the scrollable region.
    *
+   * @param x The number of lines content should be shifted up.
+   * @returns string The ANSI escape code for shifting content up.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -629,6 +718,9 @@ export class Ansi {
    * Shifts content within the scrollable region down `x` lines, inserting
    * blank lines at the top of the scrollable region.
    *
+   * @param x The number of lines content should be shifted down.
+   * @returns string The ANSI escape code for shifting content down.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -642,6 +734,10 @@ export class Ansi {
 
   /**
    * Repeats last graphic character printed `x` times at cursor position.
+   *
+   * @param x The number of times the last character printed should be repeated.
+   * @returns string The ANSI escape code for repeating the last printed
+   * character.
    *
    * @example Usage
    * ```ts ignore
@@ -658,6 +754,8 @@ export class Ansi {
    * Causes existing characters to the right of the cursor position to shift
    * right as new characters are written. Opposite of
    * {@linkcode Ansi.replaceMode}.
+   *
+   * @returns string The ANSI escape code for entering insert mode.
    *
    * @example Usage
    * ```ts ignore
@@ -682,6 +780,8 @@ export class Ansi {
   /**
    * Causes existing characters to be overwritten at the cursor position by new
    * characters. See also {@linkcode Ansi.insertMode}.
+   *
+   * @returns string The ANSI escape code for entering replace mode.
    *
    * @example Usage
    * ```ts ignore
@@ -708,6 +808,8 @@ export class Ansi {
    * {@linkcode Ansi.setScrollableRegion}) preventing the cursor from moving
    * to the lines outside it.
    *
+   * @returns string The ANSI escape code for enabling origin mode.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -731,6 +833,8 @@ export class Ansi {
   /**
    * Causes the top and bottom margins to enlarge to the user's display. See
    * {@linkcode Ansi.enableOriginMode}.
+   *
+   * @returns string The ANSI escape code for disabling origin mode.
    *
    * @example Usage
    * ```ts ignore
@@ -764,6 +868,8 @@ export class Ansi {
    * end of the current line to continue writing. See also
    * {@linkcode Ansi.disableAutoWrap}.
    *
+   * @returns string The ANSI escape code to enable auto-wrap.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -779,6 +885,8 @@ export class Ansi {
    * Causes cursor to remain on the same line when it hits the end of the
    * current line. See also {@linkcode Ansi.enableAutoWrap}.
    *
+   * @returns string The ANSI escape code to disable auto-wrap.
+   *
    * @example Usage
    * ```ts ignore
    * import { Ansi } from "@std/cli/unstable_ansi";
@@ -792,6 +900,9 @@ export class Ansi {
 
   /**
    * Sets the cursor animation style.
+   *
+   * @param x The cursor style to set.
+   * @returns string The ANSI escape code to set the cursor style.
    *
    * @example Usage
    * ```ts ignore
@@ -808,6 +919,8 @@ export class Ansi {
    * Causes cursor position to be visible to the user. See also
    * {@linkcode Ansi.hideCursor}.
    *
+   * @returns string The ANSI escape code to show the cursor.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -816,6 +929,7 @@ export class Ansi {
    * console.log(Ansi.hideCursor);
    * await delay(5000);
    * console.log(Ansi.showCursor);
+   * ```
    */
   static get showCursor(): string {
     return "\x1b[?25h";
@@ -825,6 +939,8 @@ export class Ansi {
    * Causes cursor position to be hidden from the user. See also
    * {@linkcode Ansi.showCursor}.
    *
+   * @returns string The ANSI escape code to hide the cursor.
+   *
    * @example Usage
    * ```ts ignore
    * import { delay } from "@std/async/delay";
@@ -833,6 +949,7 @@ export class Ansi {
    * console.log(Ansi.hideCursor);
    * await delay(5000);
    * console.log(Ansi.showCursor);
+   * ```
    */
   static get hideCursor(): string {
     return "\x1b[?25l";
@@ -843,6 +960,10 @@ export class Ansi {
    * and bottom lines to not have their content moved when the scrolling region
    * is updated. `x` is the top line of the scrollable region. `y` is the
    * bottom line of the scrollable region.
+   *
+   * @param x The top line of the scrollable region.
+   * @param y The bottom line of the scrollable region.
+   * @returns string The ANSI escape code to set the scrollable region.
    *
    * @example Usage
    * ```ts ignore
