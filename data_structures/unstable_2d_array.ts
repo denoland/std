@@ -28,9 +28,33 @@ import { assert } from "@std/assert";
  * @typeparam T The type of the values stored in the 2d array.
  */
 export class D2Array<T> implements Iterable<T[]> {
-  /** The initial value used when initializing or resizing the array */
+  /** The initial value used when initializing or resizing the array
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>(3, 3, false);
+   * assertEquals(arr.initialValue, false);
+   * ```
+   */
   initialValue: T;
-  /** The raw underlying value */
+  /** The raw underlying value
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>(3, 3, false);
+   * assertEquals(arr.raw, [
+   *   [false, false, false],
+   *   [false, false, false],
+   *   [false, false, false],
+   * ]);
+   * ```
+   */
   raw: T[][];
 
   /**
@@ -78,6 +102,14 @@ export class D2Array<T> implements Iterable<T[]> {
    * @param initialValue The value to use when resizing
    */
   constructor(value: readonly T[][], initialValue: T);
+  /** implementation
+   * TODO(kt3k): Remove this jsdoc when the issue below is resolved.
+   * https://github.com/denoland/deno/issues/30037
+   *
+   * @param widthOrValue The width of the 2d array, or the array to use
+   * @param heightOrInitialValue The height of the 2d array, or the initial value to use
+   * @param initialValue The initial value to use when resizing the
+   */
   constructor(
     widthOrValue: number | (readonly T[][]),
     heightOrInitialValue: number | T,
@@ -130,6 +162,7 @@ export class D2Array<T> implements Iterable<T[]> {
    * @param y 0-based index at which to start on the Y axis (0 is top-most)
    * @param width the amount of elements to take on the X axis
    * @param height the amount of elements to take on the X axis
+   * @returns A new {@linkcode D2Array} containing the sliced values.
    */
   slice(
     x: number = 0,
@@ -220,7 +253,7 @@ export class D2Array<T> implements Iterable<T[]> {
    * If the inserted 2d array is greater than the 2d array this method is called on,
    * the inserted value will be trimmed to fit the current 2d array.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { D2Array } from "@std/data-structures/unstable-2d-array";
    * import { assertEquals } from "@std/assert";
@@ -255,18 +288,57 @@ export class D2Array<T> implements Iterable<T[]> {
     }
   }
 
-  /** The width of the 2d array. */
+  /**
+   * The width of the 2d array.
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>(3, 4, false);
+   * assertEquals(arr.width, 3);
+   * ```
+   *
+   * @returns The width of the 2d array.
+   */
   get width(): number {
     return this.raw[0]!.length;
   }
 
-  /** The height of the 2d array. */
+  /**
+   * The height of the 2d array.
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const arr = new D2Array<boolean>(3, 4, false);
+   * assertEquals(arr.height, 4);
+   * ```
+   *
+   * @returns The height of the 2d array.
+   */
   get height(): number {
     return this.raw.length;
   }
 
   /**
    * Iterate over the underlying raw array
+   *
+   * @example Usage
+   * ```ts
+   * import { D2Array } from "@std/data-structures/unstable-2d-array";
+   * import { assertEquals } from "@std/assert";
+   * const arr = new D2Array<boolean>(3, 3, false);
+   *
+   * for (const row of arr) {
+   *   assertEquals(row.length, 3);
+   * }
+   * ```
+   *
+   * @returns An iterator over the rows of the 2d array.
    */
   [Symbol.iterator](): Iterator<T[]> {
     return this.raw[Symbol.iterator]();
