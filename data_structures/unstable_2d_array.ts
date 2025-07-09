@@ -113,7 +113,7 @@ export class D2Array<T> implements Iterable<T[]> {
    * Slice the 2D array. Like slice on a normal array, this will create a new D2Array.
    * If no arguments are specified, it will slice the entire D2Array.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { D2Array } from "@std/data-structures/unstable-2d-array";
    * import { assertEquals } from "@std/assert";
@@ -157,7 +157,7 @@ export class D2Array<T> implements Iterable<T[]> {
    * Resize the 2D array.
    * The origin for the resize is the top left corner, or rather the first element.
    *
-   * @example
+   * @example Usage
    * ```ts
    * import { D2Array } from "@std/data-structures/unstable-2d-array";
    * import { assertEquals } from "@std/assert";
