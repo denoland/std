@@ -14,8 +14,9 @@ const getRows = "Deno" in globalThis
 const write = "Deno" in globalThis
   ? (() => {
     const encoder = new TextEncoder();
-    // deno-lint-ignore no-explicit-any
-    return (x: string) => (globalThis as any).stderr.write(encoder.encode(x));
+    return (x: string) =>
+      // deno-lint-ignore no-explicit-any
+      (globalThis as any).Deno.stderr.write(encoder.encode(x));
   })()
   // deno-lint-ignore no-explicit-any
   : (x: string) => (globalThis as any).process.stderr.write(x);
