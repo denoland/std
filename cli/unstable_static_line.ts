@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { Ansi } from "./unstable_ansi.ts";
+import * as Ansi from "./unstable_ansi.ts";
 
 let nextID = 0;
 const linesAtTop: number[] = [];
