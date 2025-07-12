@@ -17,6 +17,10 @@ Deno.test("stubProperty() stubs properties and returns them to their original va
       get: () => ORIGINAL_VALUE,
       configurable: true,
     },
+    {
+      set: () => {},
+      configurable: true,
+    },
     { value: ORIGINAL_VALUE, writable: true, configurable: true },
     { value: ORIGINAL_VALUE, writable: true, configurable: false },
     { value: ORIGINAL_VALUE, writable: false, configurable: true },
@@ -71,65 +75,6 @@ Deno.test("stubProperty() stubs properties and returns them to their original va
       );
     }
   }
-});
-
-Deno.test("stubProperty() runs setters", () => {
-  const obj = new (class {
-    #bar: string | -1 = -1;
-    set foo(value: string) {
-      this.#bar = value;
-    }
-    get foo(): string | -1 {
-      return this.#bar;
-    }
-  })();
-
-  {
-    using _ = stubProperty(obj, "foo", "baz");
-    assertEquals(obj.foo, "baz");
-  }
-
-  assertEquals(obj.foo, -1);
-
-  obj.foo = "bar";
-  {
-    using _ = stubProperty(obj, "foo", "baz");
-    assertEquals(obj.foo, "baz");
-  }
-  assertEquals(obj.foo, "bar");
-});
-
-Deno.test("stubProperty() sets and resets the property descriptor directly if no setter exists", () => {
-  const obj = {
-    get foo(): string | -1 {
-      return -1;
-    },
-  };
-
-  {
-    using _ = stubProperty(obj, "foo", "baz");
-    assertEquals(obj.foo, "baz");
-  }
-
-  assertEquals(obj.foo, -1);
-});
-
-Deno.test("stubProperty() sets and resets the property descriptor directly if the setter throws", () => {
-  const obj = {
-    set foo(_value: string) {
-      throw new Error("!");
-    },
-    get foo(): string | -1 {
-      return -1;
-    },
-  };
-
-  {
-    using _ = stubProperty(obj, "foo", "baz");
-    assertEquals(obj.foo, "baz");
-  }
-
-  assertEquals(obj.foo, -1);
 });
 
 Deno.test("stubProperty() throws if property is not configurable or writable", () => {

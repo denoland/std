@@ -49,28 +49,16 @@ export function stubProperty<Self, Prop extends keyof Self>(
     );
   }
 
-  try {
-    const original = self[property];
-    // Attempt to set the property value directly, running any setters if they exist.
-    self[property] = value;
+  Object.defineProperty(self, property, {
+    ...descriptor,
+    ...(isAccessorDescriptor(descriptor) ? { get: () => value } : { value }),
+  });
 
-    return {
-      [Symbol.dispose]() {
-        self[property] = original;
-      },
-    };
-  } catch {
-    Object.defineProperty(self, property, {
-      ...descriptor,
-      ...(isAccessorDescriptor(descriptor) ? { get: () => value } : { value }),
-    });
-
-    return {
-      [Symbol.dispose]() {
-        Object.defineProperty(self, property, descriptor);
-      },
-    };
-  }
+  return {
+    [Symbol.dispose]() {
+      Object.defineProperty(self, property, descriptor);
+    },
+  };
 }
 
 function isAccessorDescriptor(descriptor: PropertyDescriptor) {
