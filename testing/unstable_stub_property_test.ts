@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // deno-lint-ignore-file deno-style-guide/naming-convention
 import { assertEquals } from "@std/assert/equals";
-import { stubProperty } from "./_testing.ts";
+import { stubProperty } from "./unstable_stub_property.ts";
 import { assertThrows } from "@std/assert/throws";
 
 const PROP = "foo";

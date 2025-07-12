@@ -2,7 +2,8 @@
 import { green, red, stripAnsiCode } from "./styles.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { format, type InspectFn } from "./format.ts";
-import { disposableStack, stubProperty } from "./_testing.ts";
+import { disposableStack } from "./_testing.ts";
+import { stubProperty } from "@std/testing/unstable-stub-property";
 
 Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(
