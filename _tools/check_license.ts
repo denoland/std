@@ -7,6 +7,8 @@ export const LICENSE = "Copyright 2018-2025 the Deno authors. MIT license.";
 const json: Config = {
   config: [["**/*.{mjs,js,ts,rs}", LICENSE]],
   "ignore": [
+    "_tools/node_test_runner/node_modules",
+    "_tools\\node_test_runner/node_modules",
     "cli/testdata/",
     "cli\\testdata\\",
     "dotenv/testdata/",
