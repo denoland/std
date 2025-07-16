@@ -78,11 +78,17 @@ interface describe {
 
 // deno-lint-ignore deno-style-guide/naming-convention
 interface it {
+  /**
+   * Register a test case that is not yet implemented. Alias of `.ignore()`.
+   */
   todo<T>(...args: ItArgs<T>): void;
 }
 
 // deno-lint-ignore deno-style-guide/naming-convention
 interface test {
+  /**
+   * Register a test case that is not yet implemented. Alias of `.ignore()`.
+   */
   todo<T>(...args: ItArgs<T>): void;
 }
 
