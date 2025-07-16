@@ -4,8 +4,68 @@ import { globalSanitizersState } from "./_test_suite.ts";
 import type { DescribeArgs, ItArgs, TestSuite } from "./bdd.ts";
 import { describe as describe_, it as it_, test as test_ } from "./bdd.ts";
 
+/**
+ * Registers a test suite.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the test suite body.
+ * @param args The test suite body.
+ * @returns The test suite
+ */
 const describe = describe_ as typeof describe_ & describe;
+
+/**
+ * Registers an individual test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { describe, it } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * describe("example", () => {
+ *   it("should pass", () => {
+ *     // test case
+ *     assertEquals(2 + 2, 4);
+ *   });
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
 const it = it_ as typeof it_ & it;
+
+/**
+ * Alias of {@linkcode it}
+ *
+ * Registers an individual test case.
+ *
+ * @example Usage
+ * ```ts
+ * import { test } from "@std/testing/bdd";
+ * import { assertEquals } from "@std/assert";
+ *
+ * test("a test case", () => {
+ *   // test case
+ *   assertEquals(2 + 2, 4);
+ * });
+ * ```
+ *
+ * @typeParam T The self type of the function to implement the test case
+ * @param args The test case
+ */
 const test = test_ as typeof test_ & test;
 
 // deno-lint-ignore deno-style-guide/naming-convention
