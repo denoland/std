@@ -118,7 +118,7 @@ export const doubleWidth = "\x1b#6";
  * );
  * ```
  */
-export const saveCursorPosition = "\x1b7";
+export const saveCursorPosition = "\x1b[s";
 
 /**
  * Restores cursor position that was earlier saved with
@@ -139,7 +139,7 @@ export const saveCursorPosition = "\x1b7";
  * );
  * ```
  */
-export const restoreCursorPosition = "\x1b8";
+export const restoreCursorPosition = "\x1b[u";
 
 /**
  * This is a full reset of the terminal, reverting it back to its original
