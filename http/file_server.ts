@@ -517,20 +517,22 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       <body>
         <main>
           <h1>
-            Index of ${headerPaths
-              .map((path, index) => {
-                if (path === "") return "";
-                const depth = headerPaths.length - index - 1;
-                let link;
-                if (depth == 0) {
-                  link = ".";
-                } else {
-                  link = "../".repeat(depth);
-                }
-                // deno-fmt-ignore
-                return html`<a href="${link}">${escape(path)}</a>`;
-              })
-              .join("/")}/
+            Index of ${
+    headerPaths
+      .map((path, index) => {
+        if (path === "") return "";
+        const depth = headerPaths.length - index - 1;
+        let link;
+        if (depth == 0) {
+          link = ".";
+        } else {
+          link = "../".repeat(depth);
+        }
+        // deno-fmt-ignore
+        return html`<a href="${link}">${escape(path)}</a>`;
+      })
+      .join("/")
+  }/
           </h1>
           <table>
             <thead>
@@ -540,10 +542,11 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                 <th>Name</th>
               </tr>
             </thead>
-            ${entries
-              .map(
-                (entry) =>
-                  html`
+            ${
+    entries
+      .map(
+        (entry) =>
+          html`
                     <tr>
                       <td class="mode">
                         ${entry.mode}
@@ -556,8 +559,9 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                       </td>
                     </tr>
                   `,
-              )
-              .join("")}
+      )
+      .join("")
+  }
           </table>
         </main>
       </body>
