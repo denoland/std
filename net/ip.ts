@@ -42,7 +42,7 @@ export function isIPv4(addr: string): boolean {
  * @param addr IPv6 address in a string format (e.g., "2001:db8::1").
  * @returns A boolean indicating if the string is a valid IPv6 address
 
- * @example Check if the address is a IPv4
+ * @example Check if the address is a IPv6
  * ```ts no-assert ignore
  * import { isIPv6 } from "@std/net/ip"
  * import { assert, assertFalse } from "@std/assert"
