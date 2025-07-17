@@ -124,7 +124,7 @@ export function configureGlobalSanitizers(
  *
  * @example Usage
  * ```ts
- * import { describe, it, beforeAll } from "@std/testing/unstable-bdd";
+ * import { describe } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
  * describe.todo("example");
