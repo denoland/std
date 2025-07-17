@@ -49,8 +49,8 @@ Deno.test("describe.todo()", async (t) => {
       await assertMinimumDescribeOptions((fns) => {
         const suite = describe.todo({ name: "example" });
         assert(suite && typeof suite.symbol === "symbol");
-        it({ suite, name: "a", fn: fns[0] });
-        it({ suite, name: "b", fn: fns[1] });
+        it({ suite, name: "a", fn: fns });
+        it({ suite, name: "b", fn: fns });
       }),
   );
 });
@@ -60,7 +60,7 @@ Deno.test("it.todo()", async (t) => {
     "minimum options (todo)",
     async () =>
       await assertMinimumItOptions((fn) => {
-        it.todo({ name: "example", fn });
+        it.todo({ name: "example", fn: fn[0] });
       }),
   );
 });

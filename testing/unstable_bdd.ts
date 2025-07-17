@@ -68,6 +68,7 @@ const it = it_ as typeof it_ & it;
  */
 const test = test_ as typeof test_ & test;
 
+/** Registers a test suite. */
 // deno-lint-ignore deno-style-guide/naming-convention
 interface describe {
   /**
@@ -76,6 +77,7 @@ interface describe {
   todo<T>(...args: DescribeArgs<T>): TestSuite<T>;
 }
 
+/** Registers an individual test case. */
 // deno-lint-ignore deno-style-guide/naming-convention
 interface it {
   /**
@@ -84,6 +86,7 @@ interface it {
   todo<T>(...args: ItArgs<T>): void;
 }
 
+/** Registers an individual test case. */
 // deno-lint-ignore deno-style-guide/naming-convention
 interface test {
   /**
