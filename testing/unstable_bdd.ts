@@ -124,7 +124,7 @@ export function configureGlobalSanitizers(
  *
  * @example Usage
  * ```ts
- * import { describe, it, beforeAll } from "@std/testing/bdd";
+ * import { describe, it, beforeAll } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
  * describe.todo("example");
@@ -143,7 +143,7 @@ describe.todo = function describeTodo<T>(
  *
  * @example Usage
  * ```ts
- * import { describe, it } from "@std/testing/bdd";
+ * import { describe, it } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
@@ -162,7 +162,7 @@ it.todo = function itTodo<T>(...args: ItArgs<T>): void {
  *
  * @example Usage
  * ```ts
- * import { describe, test } from "@std/testing/bdd";
+ * import { describe, test } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
  * describe("example", () => {
