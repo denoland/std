@@ -321,6 +321,7 @@ export default {
         if (url.href.includes("/assert/")) return {};
         if (url.href.includes("/testing/mock.ts")) return {};
         if (url.href.includes("/testing/unstable_stub.ts")) return {};
+        if (url.href.includes("/testing/unstable_stub_property.ts")) return {};
         if (url.href.includes("/testing/snapshot.ts")) return {};
         if (url.href.includes("/testing/unstable_snapshot.ts")) return {};
 
