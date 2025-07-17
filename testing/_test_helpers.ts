@@ -61,7 +61,50 @@ class TestContext implements Deno.TestContext {
   }
 }
 
-async function assertDescribeOptions<T>(
+async function assertDescribeOptions(
+  expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
+  cb: (fns: readonly [Spy, Spy]) => void,
+) {
+  using test = stub(Deno, "test");
+  const fns = [spy(), spy()] as const;
+  try {
+    cb(fns);
+
+    assertSpyCall(test, 0);
+    const call = test.calls[0];
+    const options = call?.args[0] as Deno.TestDefinition;
+    assertEquals(
+      Object.keys(options).sort(),
+      ["name", "fn", ...Object.keys(expectedOptions)].sort(),
+    );
+    assertObjectMatch(options, {
+      name: "example",
+      ...expectedOptions,
+    });
+
+    assertSpyCalls(fns[0], 0);
+    assertSpyCalls(fns[1], 0);
+
+    const context = new TestContext("example");
+    const result = options.fn(context);
+
+    assertStrictEquals(Promise.resolve(result), result);
+    assertEquals(await result, undefined);
+    assertSpyCalls(context.spies.step, 0);
+    assertSpyCalls(fns[0], 0);
+    assertSpyCalls(fns[1], 0);
+  } finally {
+    TestSuiteInternal.reset();
+  }
+}
+
+export async function assertMinimumDescribeOptions(
+  cb: (fn: readonly [Spy, Spy]) => void,
+) {
+  await assertDescribeOptions({ ignore: true }, cb);
+}
+
+async function assertItOptions(
   expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
   cb: (fn: Spy) => void,
 ) {
@@ -93,60 +136,6 @@ async function assertDescribeOptions<T>(
       args: [context],
       returned: undefined,
     });
-  } finally {
-    TestSuiteInternal.reset();
-  }
-}
-
-export async function assertMinimumDescribeOptions(
-  cb: (fn: Spy) => void,
-) {
-  await assertDescribeOptions({}, cb);
-}
-
-async function assertItOptions(
-  expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
-  cb: (fns: readonly [Spy, Spy]) => void,
-) {
-  using test = stub(Deno, "test");
-  const fns = [spy(), spy()] as const;
-  try {
-    cb(fns);
-
-    assertSpyCall(test, 0);
-    const call = test.calls[0];
-    const options = call?.args[0] as Deno.TestDefinition;
-    assertEquals(
-      Object.keys(options).sort(),
-      ["name", "fn", ...Object.keys(expectedOptions)].sort(),
-    );
-    assertObjectMatch(options, {
-      name: "example",
-      ...expectedOptions,
-    });
-
-    assertSpyCalls(fns[0], 0);
-    assertSpyCalls(fns[1], 0);
-
-    const context = new TestContext("example");
-    const result = options.fn(context);
-    assertStrictEquals(Promise.resolve(result), result);
-    assertEquals(await result, undefined);
-    assertSpyCalls(context.spies.step, 2);
-
-    let fn = fns[0];
-    assertSpyCall(fn, 0, {
-      self: {},
-      args: [context.steps[0]],
-      returned: undefined,
-    });
-
-    fn = fns[1];
-    assertSpyCall(fn, 0, {
-      self: {},
-      args: [context.steps[1]],
-      returned: undefined,
-    });
     assertSpyCalls(fn, 1);
   } finally {
     TestSuiteInternal.reset();
@@ -154,7 +143,7 @@ async function assertItOptions(
 }
 
 export async function assertMinimumItOptions(
-  cb: (fns: readonly [Spy, Spy]) => void,
+  cb: (fn: Spy) => void,
 ) {
-  await assertItOptions({}, cb);
+  await assertItOptions({ ignore: true }, cb);
 }
