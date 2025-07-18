@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "./_os.ts";
+import { isWindows } from "@std/internal/os";
 import { fromFileUrl as posixFromFileUrl } from "./posix/from_file_url.ts";
 import { fromFileUrl as windowsFromFileUrl } from "./windows/from_file_url.ts";
 

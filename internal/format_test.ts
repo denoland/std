@@ -1,7 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { green, red, stripAnsiCode } from "./styles.ts";
 import { assertEquals, assertThrows } from "@std/assert";
-import { format } from "./format.ts";
+import { format, type InspectFn } from "./format.ts";
+import { disposableStack } from "./_testing.ts";
+import { stubProperty } from "@std/testing/unstable-stub-property";
 
 Deno.test("format() generates correct diffs for strings", () => {
   assertThrows(
@@ -103,15 +105,71 @@ Deno.test("format() doesn't truncate long strings in object", () => {
   );
 });
 
-Deno.test("format() has fallback to String if Deno.inspect is not available", () => {
-  // Simulates the environment where Deno.inspect is not available
-  const inspect = Deno.inspect;
+Deno.test("format() has fallback if Deno.inspect is not available", async (t) => {
   // deno-lint-ignore no-explicit-any
-  delete (Deno as any).inspect;
-  try {
-    assertEquals(format([..."abcd"]), `"a,b,c,d"`);
-    assertEquals(format({ a: 1, b: 2 }), `"[object Object]"`);
-  } finally {
-    Deno.inspect = inspect;
-  }
+  const global = globalThis as any;
+
+  await t.step({
+    name: "`Deno` unavailable, fallback to node:util",
+    ignore: parseInt(globalThis.Deno?.version.deno) < 2,
+    fn() {
+      using _ = stubProperty(global, "Deno", undefined);
+
+      assertEquals(format([..."abcd"]), "[\n  'a',\n  'b',\n  'c',\n  'd',\n]");
+      assertEquals(format({ a: 1, b: 2 }), "{\n  a: 1,\n  b: 2,\n}");
+      assertEquals(format(false), "false");
+
+      assertThrows(
+        // @ts-expect-error different types
+        () => assertEquals(1, "1"),
+        Error,
+        `${red("-   1")}\n${green("+   '1'")}`,
+      );
+    },
+  });
+
+  await t.step("`Deno` and `process` both unavailable", () => {
+    using stack = disposableStack();
+    stack.use(stubProperty(global, "Deno", undefined));
+    stack.use(stubProperty(global, "process", undefined));
+
+    assertEquals(format([..."abcd"]), '[\n  "a",\n  "b",\n  "c",\n  "d"\n]');
+    assertEquals(format({ a: 1, b: 2 }), '{\n  "a": 1,\n  "b": 2\n}');
+    assertEquals(format(1), "1");
+    assertEquals(format("1"), '"1"');
+    assertEquals(format(1n), "1n");
+    assertEquals(format("1n"), '"1n"');
+    assertEquals(format(true), "true");
+    assertEquals(format("true"), '"true"');
+    assertEquals(format(undefined), "undefined");
+    assertEquals(format("undefined"), '"undefined"');
+    assertEquals(format(Symbol("x")), "Symbol(x)");
+    assertEquals(format(new Map()), "[object Map]");
+
+    const badlyBehavedObject: Record<string, unknown> = {
+      toString() {
+        throw new Error("This object cannot be stringified");
+      },
+      get [Symbol.toStringTag]() {
+        throw new Error("This object cannot be stringified");
+      },
+    };
+
+    badlyBehavedObject.self = badlyBehavedObject;
+
+    assertEquals(format(badlyBehavedObject), `[[Unable to format value]]`);
+
+    assertThrows(
+      // @ts-expect-error different types
+      () => assertEquals(1, "1"),
+      Error,
+      `${red("-   1")}\n${green('+   "1"')}`,
+    );
+  });
+});
+
+Deno.test("InspectFn has type conforming to Deno.inspect", () => {
+  // Type checking can only be done in test file, as production types need to work with browser TS libs,
+  // where `Deno` is unavailable.
+  const _: Parameters<InspectFn>[1] = {} as Required<Deno.InspectOptions>;
 });

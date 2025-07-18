@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import { isWindows } from "./_os.ts";
+import { isWindows } from "@std/internal/os";
 import { joinGlobs as posixJoinGlobs } from "./posix/join_globs.ts";
 import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 
