@@ -8,7 +8,7 @@
  *
  * @example Check if the address is a IPv4
  * ```ts
- * import { isIPv4 } from "@std/net/unstable_ip"
+ * import { isIPv4 } from "@std/net/unstable-ip"
  * import { assert, assertFalse } from "@std/assert"
  *
  * const correctIp = "192.168.0.1"
@@ -35,7 +35,7 @@ export function isIPv4(addr: string): boolean {
 
  * @example Check if the address is a IPv6
  * ```ts
- * import { isIPv6 } from "@std/net/unstable_ip"
+ * import { isIPv6 } from "@std/net/unstable-ip"
  * import { assert, assertFalse } from "@std/assert"
  *
  * const correctIp = "2001::db8:0:1"
