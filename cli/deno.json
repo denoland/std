@@ -5,6 +5,7 @@
     ".": "./mod.ts",
     "./parse-args": "./parse_args.ts",
     "./prompt-secret": "./prompt_secret.ts",
+    "./unstable-ansi": "./unstable_ansi.ts",
     "./unstable-progress-bar": "./unstable_progress_bar.ts",
     "./unstable-progress-bar-stream": "./unstable_progress_bar_stream.ts",
     "./unstable-prompt-select": "./unstable_prompt_select.ts",
