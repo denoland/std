@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./get-available-port": "./get_available_port.ts",
+    "./unstable-ip": "./unstable_ip.ts",
     "./get-network-address": "./unstable_get_network_address.ts",
     "./unstable-get-network-address": "./unstable_get_network_address.ts"
   }
