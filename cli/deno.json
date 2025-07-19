@@ -5,11 +5,13 @@
     ".": "./mod.ts",
     "./parse-args": "./parse_args.ts",
     "./prompt-secret": "./prompt_secret.ts",
+    "./unstable-ansi": "./unstable_ansi.ts",
     "./unstable-progress-bar": "./unstable_progress_bar.ts",
     "./unstable-progress-bar-stream": "./unstable_progress_bar_stream.ts",
     "./unstable-prompt-select": "./unstable_prompt_select.ts",
     "./unstable-prompt-multiple-select": "./unstable_prompt_multiple_select.ts",
     "./unstable-spinner": "./unstable_spinner.ts",
+    "./unstable-static-line": "./unstable_static_line.ts",
     "./unicode-width": "./unicode_width.ts"
   }
 }
