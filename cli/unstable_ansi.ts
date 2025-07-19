@@ -15,10 +15,10 @@
  *
  * @example Basic Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.doubleHeightTop + "Hello World!");
- * console.log(Ansi.doubleHeightBottom + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_TOP + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_BOTTOM + "Hello World!");
  * ```
  *
  * @module
@@ -27,160 +27,160 @@
 /**
  * Causes content on the current line to enlarge, showing only the top half
  * of characters with each character taking up two columns. Can be used in
- * combination with {@linkcode Ansi.doubleHeightBottom} on the next line to
+ * combination with {@linkcode DOUBLE_HEIGHT_BOTTOM} on the next line to
  * make text appear twice as big.
  *
- * @returns string The ANSI escape code for double-height top.
+ * @returns The ANSI escape code for double-height top.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.doubleHeightTop + "Hello World!");
- * console.log(Ansi.doubleHeightBottom + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_TOP + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_BOTTOM + "Hello World!");
  * ```
  */
-export const doubleHeightTop = "\x1b#3";
+export const DOUBLE_HEIGHT_TOP = "\x1b#3";
 
 /**
  * Causes content on the current line to enlarge, showing only the bottom
  * half of the characters with each character taking up two columns. Can be
- * used in combination with {@linkcode Ansi.doubleHeightTop} on the previous
+ * used in combination with {@linkcode DOUBLE_HEIGHT_TOP} on the previous
  * line to make text appear twice as big.
  *
- * @returns string The ANSI escape code for double-height bottom.
+ * @returns The ANSI escape code for double-height bottom.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.doubleHeightTop + "Hello World!");
- * console.log(Ansi.doubleHeightBottom + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_TOP + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_BOTTOM + "Hello World!");
  * ```
  */
-export const doubleHeightBottom = "\x1b#4";
+export const DOUBLE_HEIGHT_BOTTOM = "\x1b#4";
 
 /**
  * Causes content on the current line to shrink down to a single column,
- * essentially reverting the effects of {@linkcode Ansi.doubleHeightTop},
- * {@linkcode Ansi.doubleHeightBottom}, or {@linkcode Ansi.doubleWidth}.
+ * essentially reverting the effects of {@linkcode DOUBLE_HEIGHT_TOP},
+ * {@linkcode DOUBLE_HEIGHT_BOTTOM}, or {@linkcode DOUBLE_WIDTH}.
  *
- * @returns string The ANSI escape code for single-width.
+ * @returns The ANSI escape code for single-width.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.doubleHeightTop + "Hello World!");
- * console.log(Ansi.doubleHeightBottom + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_TOP + "Hello World!");
+ * console.log(Ansi.DOUBLE_HEIGHT_BOTTOM + "Hello World!");
  * await delay(1000);
  * console.log(
  *   Ansi.moveCursorUpStart(2) +
  *     Ansi.deleteLines(1) +
- *     Ansi.singleWidth,
+ *     Ansi.SINGLE_WIDTH,
  * );
  * ```
  */
-export const singleWidth = "\x1b#5";
+export const SINGLE_WIDTH = "\x1b#5";
 
 /**
  * Causes content on the current line to stretch out, with each character
- * taking up two columns. Can be reverted with {@linkcode Ansi.singleWidth}.
+ * taking up two columns. Can be reverted with {@linkcode SINGLE_WIDTH}.
  *
- * @returns string The ANSI escape code for double-width.
+ * @returns The ANSI escape code for double-width.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.doubleWidth + "Hello World!");
+ * console.log(Ansi.DOUBLE_WIDTH + "Hello World!");
  * ```
  */
-export const doubleWidth = "\x1b#6";
+export const DOUBLE_WIDTH = "\x1b#6";
 
 /**
  * Saves current cursor position that can later be restored with
- * {@linkcode Ansi.restoreCursorPosition}.
+ * {@linkcode RESTORE_CURSOR_POSITION}.
  *
- * @returns string The ANSI escape code for saving cursor position.
+ * @returns The ANSI escape code for saving cursor position.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.saveCursorPosition +
+ *   Ansi.SAVE_CURSOR_POSITION +
  *     Ansi.setCursorPosition(Deno.consoleSize().rows, 1) +
- *     Ansi.eraseLine +
+ *     Ansi.ERASE_LINE +
  *     "Hello World!" +
- *     Ansi.restoreCursorPosition,
+ *     Ansi.RESTORE_CURSOR_POSITION,
  * );
  * ```
  */
-export const saveCursorPosition = "\x1b7";
+export const SAVE_CURSOR_POSITION = "\x1b7";
 
 /**
  * Restores cursor position that was earlier saved with
- * {@linkcode Ansi.saveCursorPosition}.
+ * {@linkcode SAVE_CURSOR_POSITION}.
  *
- * @returns string The ANSI escape code for restoring cursor position.
+ * @returns The ANSI escape code for restoring cursor position.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.saveCursorPosition +
+ *   Ansi.SAVE_CURSOR_POSITION +
  *     Ansi.setCursorPosition(Deno.consoleSize().rows) +
- *     Ansi.eraseLine +
+ *     Ansi.ERASE_LINE +
  *     "Hello World!" +
- *     Ansi.restoreCursorPosition,
+ *     Ansi.RESTORE_CURSOR_POSITION,
  * );
  * ```
  */
-export const restoreCursorPosition = "\x1b8";
+export const RESTORE_CURSOR_POSITION = "\x1b8";
 
 /**
  * This is a full reset of the terminal, reverting it back to its original
  * default settings, clearing the screen, resetting modes, colors, character
  * sets and more. Essentially making the terminal behave as if it were just
  * started by the user. This command is very disruptive to the user. Also see
- * {@linkcode Ansi.softReset}.
+ * {@linkcode SOFT_RESET}.
  *
- * @returns string The ANSI escape code for hard resetting the terminal.
+ * @returns The ANSI escape code for hard resetting the terminal.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.hideCursor);
+ * console.log(Ansi.HIDE_CURSOR);
  * await delay(5000);
- * console.log(Ansi.hardReset);
+ * console.log(Ansi.HARD_RESET);
  * ```
  */
-export const hardReset = "\x1bc";
+export const HARD_RESET = "\x1bc";
 
 /**
  * This command resets many settings to their initial state without fully
- * reinitializing the terminal like {@linkcode Ansi.hardReset}. It preserves
+ * reinitializing the terminal like {@linkcode HARD_RESET}. It preserves
  * things like cursor position and display content, but clears modes,
  * character sets, etc. Should probably be called when exiting the program.
  *
- * @returns string The ANSI escape code for soft resetting the terminal.
+ * @returns The ANSI escape code for soft resetting the terminal.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.hideCursor);
+ * console.log(Ansi.HIDE_CURSOR);
  * await delay(5000);
- * console.log(Ansi.softReset);
+ * console.log(Ansi.SOFT_RESET);
  * ```
  */
-export const softReset = "\x1b[!p";
+export const SOFT_RESET = "\x1b[!p";
 
 /**
  * Inserts `x` spaces at the cursor position. Shifting existing line content
@@ -188,12 +188,12 @@ export const softReset = "\x1b[!p";
  * display are discarded.
  *
  * @param x The number of spaces to insert.
- * @returns string The ANSI escape code for inserting spaces.
+ * @returns The ANSI escape code for inserting spaces.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
@@ -213,12 +213,12 @@ export function insertSpace(x = 1): string {
  * content left.
  *
  * @param x The number of characters to delete.
- * @returns string The ANSI escape code for deleting characters.
+ * @returns The ANSI escape code for deleting characters.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
@@ -237,12 +237,12 @@ export function deleteCharacters(x = 1): string {
  * Erases `x` characters at cursor position and to the right.
  *
  * @param x The number of characters to erase.
- * @returns string The ANSI escape code for erasing characters.
+ * @returns The ANSI escape code for erasing characters.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
@@ -264,12 +264,12 @@ export function eraseCharacters(x = 1): string {
  * are discarded.
  *
  * @param x The number of lines to insert.
- * @returns string The ANSI escape code for inserting lines.
+ * @returns The ANSI escape code for inserting lines.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -288,12 +288,12 @@ export function insertLines(x = 1): string {
  * Deletes `x` lines at cursor position. Shifting below lines up.
  *
  * @param x The number of lines to delete.
- * @returns string The ANSI escape code for deleting lines.
+ * @returns The ANSI escape code for deleting lines.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -310,12 +310,12 @@ export function deleteLines(x = 1): string {
  * Moves cursor position up `x` lines or up to the top margin.
  *
  * @param x The number of lines to move up.
- * @returns string The ANSI escape code for moving the cursor up.
+ * @returns The ANSI escape code for moving the cursor up.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -331,13 +331,13 @@ export function moveCursorUp(x = 1): string {
  * the beginning of that line.
  *
  * @param x The number of lines to move up.
- * @returns string The ANSI escape code for moving the cursor up and to the
+ * @returns The ANSI escape code for moving the cursor up and to the
  * beginning of the line.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -352,12 +352,12 @@ export function moveCursorUpStart(x = 1): string {
  * Moves cursor position down `x` lines or up to the bottom margin.
  *
  * @param x The number of lines to move down.
- * @returns string The ANSI escape code for moving the cursor down.
+ * @returns The ANSI escape code for moving the cursor down.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -366,7 +366,7 @@ export function moveCursorUpStart(x = 1): string {
  *     "Goodbye" +
  *     Ansi.moveCursorDown() +
  *     Ansi.setCursorColumn() +
- *     Ansi.eraseLine +
+ *     Ansi.ERASE_LINE +
  *     "Bob!",
  * );
  * ```
@@ -380,13 +380,13 @@ export function moveCursorDown(x = 1): string {
  * the beginning of that line.
  *
  * @param x The number of lines to move down.
- * @returns string The ANSI escape code for moving the cursor down and to the
+ * @returns The ANSI escape code for moving the cursor down and to the
  * beginning of the line.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello\nWorld!");
  * await delay(1000);
@@ -394,7 +394,7 @@ export function moveCursorDown(x = 1): string {
  *   Ansi.moveCursorUpStart(2) +
  *     "Goodbye" +
  *     Ansi.moveCursorDownStart() +
- *     Ansi.eraseLine +
+ *     Ansi.ERASE_LINE +
  *     "Bob!",
  * );
  * ```
@@ -407,11 +407,11 @@ export function moveCursorDownStart(x = 1): string {
  * Moves cursor position `x` columns right or up to the right margin.
  *
  * @param x The number of columns to move right.
- * @returns string The ANSI escape code for moving the cursor right.
+ * @returns The ANSI escape code for moving the cursor right.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.moveCursorRight(2) + "Hello World!");
  * ```
@@ -424,12 +424,12 @@ export function moveCursorRight(x = 1): string {
  * Moves cursor position `x` tab stops right or up to the right margin.
  *
  * @param x The number of tab stops to move right.
- * @returns string The ANSI escape code for moving the cursor right every tab
+ * @returns The ANSI escape code for moving the cursor right every tab
  * stop.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.moveCursorRightTab() + "Hello World!");
  * ```
@@ -442,11 +442,11 @@ export function moveCursorRightTab(x = 1): string {
  * Moves cursor position `x` columns left or up to the left margin.
  *
  * @param x The number of columns to move left.
- * @returns string The ANSI escape code for moving the cursor left.
+ * @returns The ANSI escape code for moving the cursor left.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
  *   Ansi.moveCursorRight(4) +
@@ -463,12 +463,12 @@ export function moveCursorLeft(x = 1): string {
  * Moves cursor position `x` tab stops left or up to the left margin.
  *
  * @param x The number of tab stops to move left.
- * @returns string The ANSI escape code for moving the cursor left every tab
+ * @returns The ANSI escape code for moving the cursor left every tab
  * stop.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
  *   Ansi.moveCursorRightTab(2) +
@@ -486,12 +486,12 @@ export function moveCursorLeftTab(x = 1): string {
  * Columns begin at `1` not `0`.
  *
  * @param x The column to move to.
- * @returns string The ANSI escape code for setting the cursor column.
+ * @returns The ANSI escape code for setting the cursor column.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
@@ -511,13 +511,13 @@ export function setCursorColumn(x = 1): string {
  * Lines begin at `1` not `0`.
  *
  * @param x The line to move to.
- * @returns string The ANSI escape code for setting the cursor line.
+ * @returns The ANSI escape code for setting the cursor line.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.setCursorLine() + Ansi.eraseLine + "Hello World!");
+ * console.log(Ansi.setCursorLine() + Ansi.ERASE_LINE + "Hello World!");
  * ```
  */
 export function setCursorLine(x = 1): string {
@@ -530,15 +530,15 @@ export function setCursorLine(x = 1): string {
  *
  * @param x The line to move to.
  * @param y The column to move to.
- * @returns string The ANSI escape code for setting the cursor position.
+ * @returns The ANSI escape code for setting the cursor position.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
  *   Ansi.setCursorPosition(5, 2) +
- *   Ansi.eraseLine +
+ *   Ansi.ERASE_LINE +
  *   "Hello World!",
  * );
  * ```
@@ -550,137 +550,137 @@ export function setCursorPosition(x = 1, y = 1): string {
 /**
  * Erases line content to the right of cursor position.
  *
- * @returns string The ANSI escape code for erasing the line content to the
+ * @returns The ANSI escape code for erasing the line content to the
  * right of the cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
  *   Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
- *     Ansi.eraseLineAfterCursor,
+ *     Ansi.ERASE_LINE_AFTER_CURSOR,
  * );
  * ```
  */
-export const eraseLineAfterCursor = "\x1b[0K";
+export const ERASE_LINE_AFTER_CURSOR = "\x1b[0K";
 
 /**
  * Erases line content to the left of cursor position.
  *
- * @returns string The ANSI escape code for erasing the line content to the
+ * @returns The ANSI escape code for erasing the line content to the
  * left of the cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
  *   Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
- *     Ansi.eraseLineBeforeCursor,
+ *     Ansi.ERASE_LINE_BEFORE_CURSOR,
  * );
  * ```
  */
-export const eraseLineBeforeCursor = "\x1b[1K";
+export const ERASE_LINE_BEFORE_CURSOR = "\x1b[1K";
 
 /**
  * Erases entire line content.
  *
- * @returns string The ANSI escape code for erasing the entire line content.
+ * @returns The ANSI escape code for erasing the entire line content.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
- * console.log(Ansi.moveCursorUp() + Ansi.eraseLine);
+ * console.log(Ansi.moveCursorUp() + Ansi.ERASE_LINE);
  * ```
  */
-export const eraseLine = "\x1b[2K";
+export const ERASE_LINE = "\x1b[2K";
 
 /**
  * Erases content of lines below cursor position and content to the right on
  * the same line as cursor.
  *
- * @returns string The ANSI escape code for erasing the content after the
+ * @returns The ANSI escape code for erasing the content after the
  * cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
  *   Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
- *     Ansi.eraseDisplayAfterCursor,
+ *     Ansi.ERASE_DISPLAY_AFTER_CURSOR,
  * );
  * ```
  */
-export const eraseDisplayAfterCursor = "\x1b[0J";
+export const ERASE_DISPLAY_AFTER_CURSOR = "\x1b[0J";
 
 /**
  * Erases content of lines above cursor position and content to the left on
  * the same line as cursor.
  *
- * @returns string The ANSI escape code for erasing the content before the
+ * @returns The ANSI escape code for erasing the content before the
  * cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
  *   Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
- *     Ansi.eraseDisplayBeforeCursor,
+ *     Ansi.ERASE_DISPLAY_BEFORE_CURSOR,
  * );
  * ```
  */
-export const eraseDisplayBeforeCursor = "\x1b[1J";
+export const ERASE_DISPLAY_BEFORE_CURSOR = "\x1b[1J";
 
 /**
  * Erases all content.
  *
- * @returns string The ANSI escape code for erasing the entire display.
+ * @returns The ANSI escape code for erasing the entire display.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
- * console.log(Ansi.eraseDisplay);
+ * console.log(Ansi.ERASE_DISPLAY);
  * ```
  */
-export const eraseDisplay = "\x1b[2J";
+export const ERASE_DISPLAY = "\x1b[2J";
 
 /**
  * Shifts content within the scrollable region up `x` lines, inserting blank
  * lines at the bottom of the scrollable region.
  *
  * @param x The number of lines content should be shifted up.
- * @returns string The ANSI escape code for shifting content up.
+ * @returns The ANSI escape code for shifting content up.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.shiftUpAndInsert());
  * ```
@@ -694,11 +694,11 @@ export function shiftUpAndInsert(x = 1): string {
  * blank lines at the top of the scrollable region.
  *
  * @param x The number of lines content should be shifted down.
- * @returns string The ANSI escape code for shifting content down.
+ * @returns The ANSI escape code for shifting content down.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.shiftDownAndInsert(3));
  * ```
@@ -711,12 +711,12 @@ export function shiftDownAndInsert(x = 1): string {
  * Repeats last graphic character printed `x` times at cursor position.
  *
  * @param x The number of times the last character printed should be repeated.
- * @returns string The ANSI escape code for repeating the last printed
+ * @returns The ANSI escape code for repeating the last printed
  * character.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!" + Ansi.repeatLastCharacter(4));
  * ```
@@ -728,148 +728,148 @@ export function repeatLastCharacter(x = 1): string {
 /**
  * Causes existing characters to the right of the cursor position to shift
  * right as new characters are written. Opposite of
- * {@linkcode Ansi.replaceMode}.
+ * {@linkcode REPLACE_MODE}.
  *
- * @returns string The ANSI escape code for entering insert mode.
+ * @returns The ANSI escape code for entering insert mode.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
- *   Ansi.insertMode +
+ *   Ansi.INSERT_MODE +
  *     Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
  *     "and Goodbye " +
- *     Ansi.replaceMode,
+ *     Ansi.REPLACE_MODE,
  * );
  * ```
  */
-export const insertMode = "\x1b[4h";
+export const INSERT_MODE = "\x1b[4h";
 
 /**
  * Causes existing characters to be overwritten at the cursor position by new
- * characters. See also {@linkcode Ansi.insertMode}.
+ * characters. See also {@linkcode INSERT_MODE}.
  *
- * @returns string The ANSI escape code for entering replace mode.
+ * @returns The ANSI escape code for entering replace mode.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!");
  * await delay(1000);
  * console.log(
- *   Ansi.insertMode +
+ *   Ansi.INSERT_MODE +
  *     Ansi.moveCursorUp() +
  *     Ansi.setCursorColumn(7) +
  *     "and Goodbye " +
- *     Ansi.replaceMode,
+ *     Ansi.REPLACE_MODE,
  * );
  * ```
  */
-export const replaceMode = "\x1b[4l";
+export const REPLACE_MODE = "\x1b[4l";
 
 /**
  * Causes top and bottom margins to shrink to scrollable region (See
- * {@linkcode Ansi.setScrollableRegion}) preventing the cursor from moving
+ * {@linkcode setScrollableRegion}) preventing the cursor from moving
  * to the lines outside it.
  *
- * @returns string The ANSI escape code for enabling origin mode.
+ * @returns The ANSI escape code for enabling origin mode.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.eraseDisplay +
+ *   Ansi.ERASE_DISPLAY +
  *     Ansi.setCursorPosition() +
  *     "Hello World" +
  *     Ansi.setScrollableRegion(2) +
- *     Ansi.enableOriginMode,
+ *     Ansi.ENABLE_ORIGIN_MODE,
  * );
  * await delay(1000);
  * console.log(Ansi.setCursorPosition() + "Bye World!");
  * ```
  */
-export const enableOriginMode = "\x1b[?6h";
+export const ENABLE_ORIGIN_MODE = "\x1b[?6h";
 
 /**
  * Causes the top and bottom margins to enlarge to the user's display. See
- * {@linkcode Ansi.enableOriginMode}.
+ * {@linkcode ENABLE_ORIGIN_MODE}.
  *
- * @returns string The ANSI escape code for disabling origin mode.
+ * @returns The ANSI escape code for disabling origin mode.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.eraseDisplay +
+ *   Ansi.ERASE_DISPLAY +
  *     Ansi.setCursorPosition() +
  *     "Hello World" +
  *     Ansi.setScrollableRegion(2) +
- *     Ansi.enableOriginMode,
+ *     Ansi.ENABLE_ORIGIN_MODE,
  * );
  * await delay(1000);
  * console.log(Ansi.setCursorPosition() + "Bye World!");
  * await delay(1000);
  * console.log(
- *   Ansi.disableOriginMode +
+ *   Ansi.DISABLE_ORIGIN_MODE +
  *     Ansi.setCursorPosition() +
- *     Ansi.eraseLine +
+ *     Ansi.ERASE_LINE +
  *     "Hi World!",
  * );
  * ```
  */
-export const disableOriginMode = "\x1b[?6l";
+export const DISABLE_ORIGIN_MODE = "\x1b[?6l";
 
 /**
  * Causes cursor to automatically move to the next line when it hits the
  * end of the current line to continue writing. See also
- * {@linkcode Ansi.disableAutoWrap}.
+ * {@linkcode DISABLE_AUTO_WRAP}.
  *
- * @returns string The ANSI escape code to enable auto-wrap.
+ * @returns The ANSI escape code to enable auto-wrap.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.enableAutoWrap + "A" + "h".repeat(500));
+ * console.log(Ansi.ENABLE_AUTO_WRAP + "A" + "h".repeat(500));
  * ```
  */
-export const enableAutoWrap = "\x1b[?7h";
+export const ENABLE_AUTO_WRAP = "\x1b[?7h";
 
 /**
  * Causes cursor to remain on the same line when it hits the end of the
- * current line. See also {@linkcode Ansi.enableAutoWrap}.
+ * current line. See also {@linkcode ENABLE_AUTO_WRAP}.
  *
- * @returns string The ANSI escape code to disable auto-wrap.
+ * @returns The ANSI escape code to disable auto-wrap.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.disableAutoWrap + "A" + "h".repeat(500));
+ * console.log(Ansi.DISABLE_AUTO_WRAP + "A" + "h".repeat(500));
  * ```
  */
-export const disableAutoWrap = "\x1b[?7l";
+export const DISABLE_AUTO_WRAP = "\x1b[?7l";
 
 /**
  * Sets the cursor animation style.
  *
  * @param x The cursor style to set.
- * @returns string The ANSI escape code to set the cursor style.
+ * @returns The ANSI escape code to set the cursor style.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.setCursorStyle(Ansi.CursorStyle.BlinkingUnderline));
  * ```
@@ -880,39 +880,39 @@ export function setCursorStyle(x: CursorStyle): string {
 
 /**
  * Causes cursor position to be visible to the user. See also
- * {@linkcode Ansi.hideCursor}.
+ * {@linkcode HIDE_CURSOR}.
  *
- * @returns string The ANSI escape code to show the cursor.
+ * @returns The ANSI escape code to show the cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.hideCursor);
+ * console.log(Ansi.HIDE_CURSOR);
  * await delay(5000);
- * console.log(Ansi.showCursor);
+ * console.log(Ansi.SHOW_CURSOR);
  * ```
  */
-export const showCursor = "\x1b[?25h";
+export const SHOW_CURSOR = "\x1b[?25h";
 
 /**
  * Causes cursor position to be hidden from the user. See also
- * {@linkcode Ansi.showCursor}.
+ * {@linkcode SHOW_CURSOR}.
  *
- * @returns string The ANSI escape code to hide the cursor.
+ * @returns The ANSI escape code to hide the cursor.
  *
  * @example Usage
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
- * console.log(Ansi.hideCursor);
+ * console.log(Ansi.HIDE_CURSOR);
  * await delay(5000);
- * console.log(Ansi.showCursor);
+ * console.log(Ansi.SHOW_CURSOR);
  * ```
  */
-export const hideCursor = "\x1b[?25l";
+export const HIDE_CURSOR = "\x1b[?25l";
 
 /**
  * Sets the scrollable region of the display. Allowing either or both the top
@@ -922,14 +922,14 @@ export const hideCursor = "\x1b[?25l";
  *
  * @param x The top line of the scrollable region.
  * @param y The bottom line of the scrollable region.
- * @returns string The ANSI escape code to set the scrollable region.
+ * @returns The ANSI escape code to set the scrollable region.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.eraseDisplay +
+ *   Ansi.ERASE_DISPLAY +
  *     Ansi.setScrollableRegion(3, 10),
  * );
  * setInterval(() => console.log(Math.random()), 1000);
@@ -941,11 +941,11 @@ export function setScrollableRegion(x = 1, y?: number): string {
 
 /**
  * CursorStyle is a export const enum used to set the value in
- * {@linkcode Ansi.setCursorStyle}.
+ * {@linkcode setCursorStyle}.
  *
  * @example Usage
  * ```ts ignore
- * import * as Ansi from "@std/cli/unstable_ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.setCursorStyle(Ansi.CursorStyle.BlinkingUnderline));
  * ```
