@@ -100,46 +100,60 @@ export const SINGLE_WIDTH = "\x1b#5";
 export const DOUBLE_WIDTH = "\x1b#6";
 
 /**
- * Saves current cursor position that can later be restored with
- * {@linkcode RESTORE_CURSOR_POSITION}.
+ * Saves:
+ * - cursor position
+ * - graphic rendition
+ * - character set shift state
+ * - state of wrap flag {@linkcode ENABLE_AUTO_WRAP}
+ * - state of origin mode {@linkcode ENABLE_ORIGIN_MODE}
+ * - selective eraser
  *
- * @returns The ANSI escape code for saving cursor position.
+ * Can be restored with {@linkcode RESTORE_CURSOR}.
+ *
+ * @returns The ANSI escape code for saving cursor.
  *
  * @example Usage
  * ```ts ignore
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.SAVE_CURSOR_POSITION +
+ *   Ansi.SAVE_CURSOR +
  *     Ansi.setCursorPosition(Deno.consoleSize().rows, 1) +
  *     Ansi.ERASE_LINE +
  *     "Hello World!" +
- *     Ansi.RESTORE_CURSOR_POSITION,
+ *     Ansi.RESTORE_CURSOR,
  * );
  * ```
  */
-export const SAVE_CURSOR_POSITION = "\x1b7";
+export const SAVE_CURSOR = "\x1b7";
 
 /**
- * Restores cursor position that was earlier saved with
- * {@linkcode SAVE_CURSOR_POSITION}.
+ * Restores:
+ * - cursor position
+ * - graphic rendition
+ * - character set shift state
+ * - state of wrap flag {@linkcode ENABLE_AUTO_WRAP}
+ * - state of origin mode {@linkcode ENABLE_ORIGIN_MODE}
+ * - selective eraser
  *
- * @returns The ANSI escape code for restoring cursor position.
+ * Can be saved with {@linkcode SAVE_CURSOR}.
+ *
+ * @returns The ANSI escape code for restoring cursor.
  *
  * @example Usage
  * ```ts ignore
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
- *   Ansi.SAVE_CURSOR_POSITION +
+ *   Ansi.SAVE_CURSOR +
  *     Ansi.setCursorPosition(Deno.consoleSize().rows) +
  *     Ansi.ERASE_LINE +
  *     "Hello World!" +
- *     Ansi.RESTORE_CURSOR_POSITION,
+ *     Ansi.RESTORE_CURSOR,
  * );
  * ```
  */
-export const RESTORE_CURSOR_POSITION = "\x1b8";
+export const RESTORE_CURSOR = "\x1b8";
 
 /**
  * This is a full reset of the terminal, reverting it back to its original
