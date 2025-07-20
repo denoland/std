@@ -138,9 +138,12 @@ export class StaticLine {
     await write(
       Ansi.SAVE_CURSOR_POSITION +
         (this.#atTop
-          ? Ansi.setScrollableRegion(index + 1, top + 1) +
-            Ansi.shiftUpAndInsert()
-          : (linesAtBottom.length
+          ? (top - index
+            ? Ansi.setScrollableRegion(index + 1, top + 1) +
+              Ansi.shiftUpAndInsert()
+            : Ansi.setCursorPosition(index + 1) +
+              Ansi.ERASE_LINE)
+          : (rows - index - bottom
             ? Ansi.setScrollableRegion(
               bottom,
               rows - index,
