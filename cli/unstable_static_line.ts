@@ -92,6 +92,7 @@ export class StaticLine {
     if (this.#released) throw new ReferenceError("Line has been released");
     await write(
       Ansi.SAVE_CURSOR_POSITION +
+        Ansi.DISABLE_ORIGIN_MODE +
         Ansi.DISABLE_AUTO_WRAP +
         Ansi.setCursorPosition(
           this.#atTop
@@ -100,7 +101,6 @@ export class StaticLine {
         ) +
         Ansi.ERASE_LINE +
         line +
-        Ansi.ENABLE_AUTO_WRAP +
         Ansi.RESTORE_CURSOR_POSITION,
     );
   }
