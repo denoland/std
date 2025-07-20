@@ -50,17 +50,16 @@ export class StaticLine {
   /**
    * Constructs a new instance.
    *
-   * @param atTop Whether the line should be at the top or bottom of the
-   * terminal.
+   * @param on What side of the terminal the line should be on.
    */
-  constructor(atTop = false) {
-    this.#atTop = atTop;
-    this.#lines = atTop ? linesAtTop : linesAtBottom;
+  constructor(on: "top" | "bottom" = "bottom") {
+    this.#atTop = on === "top";
+    this.#lines = this.#atTop ? linesAtTop : linesAtBottom;
     this.#lines.push(this.#id);
     const top = linesAtTop.length + 1;
     const bottom = getRows() - linesAtBottom.length;
     write(
-      (atTop ? "" : Ansi.shiftUpAndInsert()) +
+      (this.#atTop ? "" : Ansi.shiftUpAndInsert()) +
         Ansi.setScrollableRegion(top, bottom) +
         Ansi.setCursorPosition(bottom),
     );
