@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // deno-lint-ignore-file no-explicit-any
 import { platform } from "./_platform.ts";
+import { disposableStack } from "../internal/_testing.ts";
 
 /**
  * ```ts
@@ -24,17 +25,7 @@ const numberTypes = [
 
 export function mockLittleEndian(littleEndian: boolean) {
   // partial `DisposableStack` polyfill
-  const stack = {
-    disposables: [] as (() => void)[],
-    defer(fn: () => void) {
-      this.disposables.push(fn);
-    },
-    [Symbol.dispose]() {
-      for (let i = this.disposables.length - 1; i >= 0; --i) {
-        this.disposables[i]!();
-      }
-    },
-  };
+  const stack = disposableStack();
 
   const originalLittleEndian = platform.littleEndian;
 

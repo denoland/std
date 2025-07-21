@@ -1,6 +1,6 @@
 {
   "name": "@std/internal",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "exports": {
     ".": "./mod.ts",
     "./assertion-state": "./assertion_state.ts",
@@ -8,6 +8,7 @@
     "./diff-str": "./diff_str.ts",
     "./diff": "./diff.ts",
     "./format": "./format.ts",
+    "./os": "./os.ts",
     "./styles": "./styles.ts",
     "./types": "./types.ts"
   }

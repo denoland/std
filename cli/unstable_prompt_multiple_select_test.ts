@@ -2,14 +2,15 @@
 
 import { assertEquals } from "@std/assert/equals";
 import { promptMultipleSelect } from "./unstable_prompt_multiple_select.ts";
-import { stub } from "@std/testing/mock";
+import { restore, stub } from "@std/testing/mock";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 Deno.test("promptMultipleSelect() handles enter", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -23,7 +24,7 @@ Deno.test("promptMultipleSelect() handles enter", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -39,7 +40,7 @@ Deno.test("promptMultipleSelect() handles enter", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -58,11 +59,13 @@ Deno.test("promptMultipleSelect() handles enter", () => {
 
   assertEquals(browsers, []);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles selection", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -82,7 +85,7 @@ Deno.test("promptMultipleSelect() handles selection", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -99,7 +102,7 @@ Deno.test("promptMultipleSelect() handles selection", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -111,18 +114,20 @@ Deno.test("promptMultipleSelect() handles selection", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    "safari",
-    "chrome",
-    "firefox",
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browsers, ["safari"]);
+  assertEquals(browsers, [{ label: "safari", value: 1 }]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles multiple selection", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -156,6 +161,7 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
     "❯ ◯ firefox\r\n",
     "\x1b[4A",
     "\x1b[J",
+
     "Please select browsers:\r\n",
     "  ◉ safari\r\n",
     "  ◉ chrome\r\n",
@@ -165,7 +171,7 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -186,7 +192,7 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -198,18 +204,24 @@ Deno.test("promptMultipleSelect() handles multiple selection", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    "safari",
-    "chrome",
-    "firefox",
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browsers, ["safari", "chrome", "firefox"]);
+  assertEquals(browsers, [
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
+  ]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles arrow down", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -231,6 +243,7 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
     "❯ ◯ firefox\r\n",
     "\x1b[4A",
     "\x1b[J",
+
     "Please select browsers:\r\n",
     "  ◯ safari\r\n",
     "  ◯ chrome\r\n",
@@ -240,7 +253,7 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -259,7 +272,7 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -271,18 +284,20 @@ Deno.test("promptMultipleSelect() handles arrow down", () => {
   );
 
   const browsers = promptMultipleSelect("Please select browsers:", [
-    "safari",
-    "chrome",
-    "firefox",
+    { label: "safari", value: 1 },
+    { label: "chrome", value: 2 },
+    { label: "firefox", value: 3 },
   ]);
 
-  assertEquals(browsers, ["firefox"]);
+  assertEquals(browsers, [{ label: "firefox", value: 3 }]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles arrow up", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -308,12 +323,13 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
     "❯ ◉ safari\r\n",
     "  ◯ chrome\r\n",
     "  ◯ firefox\r\n",
+
     "\x1b[?25h",
   ];
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -332,7 +348,7 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -351,11 +367,13 @@ Deno.test("promptMultipleSelect() handles arrow up", () => {
 
   assertEquals(browsers, ["safari"]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles up index overflow", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -380,7 +398,7 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -398,7 +416,7 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -417,11 +435,13 @@ Deno.test("promptMultipleSelect() handles up index overflow", () => {
 
   assertEquals(browsers, ["firefox"]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles down index overflow", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -443,6 +463,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
     "❯ ◯ firefox\r\n",
     "\x1b[4A",
     "\x1b[J",
+
     "Please select browsers:\r\n",
     "❯ ◯ safari\r\n",
     "  ◯ chrome\r\n",
@@ -459,7 +480,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -479,7 +500,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -498,11 +519,109 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
 
   assertEquals(browsers, ["safari"]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() scrolls down and display lines correctly", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "  ...\r\n",
+    "\x1b[5A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "  ◯ safari\r\n",
+    "❯ ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "  ...\r\n",
+    "\x1b[5A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "  ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "❯ ◯ firefox\r\n",
+    "  ...\r\n",
+    "\x1b[5A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "  ...\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "❯ ◯ brave\r\n",
+    "\x1b[5A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "  ...\r\n",
+    "\x1b[5A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◉ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "  ...\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\u001B[B",
+    "\u001B[B",
+    "\u001B[B",
+    "\u001B[B",
+    " ",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browser = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+    "brave",
+  ], { visibleLines: 3 });
+
+  assertEquals(browser, ["safari"]);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles clear option", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   const expectedOutput = [
     "\x1b[?25l",
@@ -523,7 +642,7 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -540,7 +659,7 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
     "\r",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -559,14 +678,16 @@ Deno.test("promptMultipleSelect() handles clear option", () => {
 
   assertEquals(browsers, ["safari"]);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
 Deno.test("promptMultipleSelect() handles ETX", () => {
-  using _setRawStub = stub(Deno.stdin, "setRaw");
-  using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
 
   let called = false;
-  using _exitStub = stub(
+  stub(
     Deno,
     "exit",
     (() => {
@@ -585,7 +706,7 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
 
   const actualOutput: string[] = [];
 
-  using _writeSyncStub = stub(
+  stub(
     Deno.stdout,
     "writeSync",
     (data: Uint8Array) => {
@@ -601,7 +722,7 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
     "\x03",
   ];
 
-  using _readSyncStub = stub(
+  stub(
     Deno.stdin,
     "readSync",
     (data: Uint8Array) => {
@@ -620,35 +741,33 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
 
   assertEquals(called, true);
   assertEquals(expectedOutput, actualOutput);
+  restore();
 });
 
-Deno.test(
-  "promptMultipleSelect() returns null if Deno.stdin.isTerminal() is false",
-  { ignore: true },
-  () => {
-    using _setRawStub = stub(Deno.stdin, "setRaw");
-    using _isTerminalStub = stub(Deno.stdin, "isTerminal", () => true);
+Deno.test("promptMultipleSelect() returns null if Deno.stdin.isTerminal() is false", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => false);
 
-    const expectedOutput: string[] = [];
+  const expectedOutput: string[] = [];
 
-    const actualOutput: string[] = [];
+  const actualOutput: string[] = [];
 
-    using _writeSyncStub = stub(
-      Deno.stdout,
-      "writeSync",
-      (data: Uint8Array) => {
-        const output = decoder.decode(data);
-        actualOutput.push(output);
-        return data.length;
-      },
-    );
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
 
-    const browsers = promptMultipleSelect("Please select browsers:", [
-      "safari",
-      "chrome",
-      "firefox",
-    ]);
-    assertEquals(browsers, null);
-    assertEquals(expectedOutput, actualOutput);
-  },
-);
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+  assertEquals(browsers, null);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});

@@ -4,15 +4,43 @@
 export interface PromptMultipleSelectOptions {
   /** Clear the lines after the user's input. */
   clear?: boolean;
+
+  /** The number of lines to be visible at once */
+  visibleLines?: number;
+
+  /** The string to indicate the selected item */
+  indicator?: string;
+}
+
+/**
+ * Value for {@linkcode promptMultipleSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
+ */
+export type PromptEntry<V = undefined> = V extends undefined ? string
+  : PromptEntryWithValue<V>;
+
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
+export interface PromptEntryWithValue<V> {
+  /** The label for this entry. */
+  label: string;
+  /** The underlying value representing this entry. */
+  value: V;
 }
 
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
+
 const DELETE = "\u007F";
-const INDICATOR = "❯";
-const PADDING = " ".repeat(INDICATOR.length);
+const MORE_CONTENT_BEFORE_INDICATOR = "...";
+const MORE_CONTENT_AFTER_INDICATOR = "...";
 
 const CHECKED = "◉";
 const UNCHECKED = "◯";
@@ -29,6 +57,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
@@ -38,22 +67,71 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ```ts ignore
  * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
  *
- * const browsers = promptMultipleSelect("Please select browsers:", ["safari", "chrome", "firefox"], { clear: true });
+ * const browsers = promptMultipleSelect(
+ *   "Please select browsers:",
+ *   ["safari", "chrome", "firefox"],
+ *   { clear: true },
+ * );
+ * ```
+ *
+ * @example With title and value
+ * ```ts ignore
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
+ *
+ * const browsers = promptMultipleSelect(
+ *   "Please select browsers:",
+ *   [{
+ *     title: "safari",
+ *     value: 1,
+ *   }, {
+ *     title: "chrome",
+ *     value: 2,
+ *   }, {
+ *     title: "firefox",
+ *     value: 3,
+ *   }],
+ *   { clear: true },
+ * );
+ * ```
+ *
+ * @example With multiple options
+ * ```ts ignore
+ * import { promptMultipleSelect } from "@std/cli/unstable-prompt-multiple-select";
+ *
+ * const browsers = promptMultipleSelect(
+ *   "Select your favorite numbers below 100:",
+ *   [...Array(100).keys()].map(String),
+ *   { clear: true, visibleLines: 5, indicator: "→" },
+ * );
  * ```
  */
-export function promptMultipleSelect(
+export function promptMultipleSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptMultipleSelectOptions = {},
-): string[] | null {
+): PromptEntry<V>[] | null {
   if (!input.isTerminal()) return null;
 
-  const { clear } = options;
+  const SAFE_PADDING = 4;
+  let {
+    // Deno.consoleSize().rows - 3 because we need to output the message, the up arrow, the terminal line and the down arrow
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      values.length,
+    ),
+    indicator = "❯",
+  } = options;
+  const PADDING = " ".repeat(indicator.length);
+  const ARROW_PADDING = " ".repeat(indicator.length + 1);
 
-  const indexedValues = values.map((value, index) => ({ value, index }));
-  let length = values.length;
-  let selectedIndex = 0;
-  const selectedIndexes = new Set<number>();
+  const indexedValues = values.map((value, absoluteIndex) => ({
+    value,
+    absoluteIndex,
+  }));
+  let activeIndex = 0;
+  const selectedAbsoluteIndexes = new Set<number>();
+  let offset = 0;
+  let clearLength = values.length + 1;
 
   input.setRaw(true);
   output.writeSync(HIDE_CURSOR);
@@ -73,16 +151,39 @@ export function promptMultipleSelect(
       if (searchBuffer === "") {
         return true;
       } else {
-        return item.value.toLowerCase().includes(searchBuffer.toLowerCase());
+        return (typeof item.value === "string" ? item.value : item.value.label)
+          .toLowerCase().includes(searchBuffer.toLowerCase());
       }
     });
-    length = filteredChunks.length;
-    for (const { value, index } of filteredChunks.values()) {
-      const selected = index === selectedIndex;
-      const start = selected ? INDICATOR : PADDING;
-      const checked = selectedIndexes.has(index);
+    const visibleChunks = filteredChunks.slice(offset, visibleLines + offset);
+    const length = visibleChunks.length;
+
+    const hasUpArrow = offset !== 0;
+    const hasDownArrow = (length + offset) < filteredChunks.length;
+
+    if (hasUpArrow) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}${MORE_CONTENT_BEFORE_INDICATOR}\r\n`),
+      );
+    }
+
+    for (const [index, { absoluteIndex, value }] of visibleChunks.entries()) {
+      const start = index === (activeIndex - offset) ? indicator : PADDING;
+      const checked = selectedAbsoluteIndexes.has(absoluteIndex);
       const state = checked ? CHECKED : UNCHECKED;
-      output.writeSync(encoder.encode(`${start} ${state} ${value}\r\n`));
+      output.writeSync(
+        encoder.encode(
+          `${start} ${state} ${
+            typeof value === "string" ? value : value.label
+          }\r\n`,
+        ),
+      );
+    }
+
+    if (hasDownArrow) {
+      output.writeSync(
+        encoder.encode(`${ARROW_PADDING}${MORE_CONTENT_AFTER_INDICATOR}\r\n`),
+      );
     }
     const n = input.readSync(buffer);
     if (n === null || n === 0) break;
@@ -93,53 +194,68 @@ export function promptMultipleSelect(
         output.writeSync(SHOW_CURSOR);
         return Deno.exit(0);
       case ARROW_UP:
-        if (selectedIndex === 0) {
-          selectedIndex = filteredChunks.at(-1)!.index;
+        if (activeIndex === 0) {
+          activeIndex = filteredChunks.length - 1;
+          offset = Math.max(filteredChunks.length - visibleLines, 0);
         } else {
-          selectedIndex = filteredChunks.find((_, i) =>
-            i == (selectedIndex - 1)
-          )!.index;
+          activeIndex--;
+          offset = Math.max(offset - 1, 0);
         }
         break;
       case ARROW_DOWN:
-        if (selectedIndex === filteredChunks.at(-1)!.index) {
-          selectedIndex = 0;
+        if (activeIndex === (filteredChunks.length - 1)) {
+          activeIndex = 0;
+          offset = 0;
         } else {
-          selectedIndex = filteredChunks.find((_, i) =>
-            i == (selectedIndex + 1)
-          )!.index;
+          activeIndex++;
+
+          if (activeIndex >= visibleLines) {
+            offset++;
+          }
         }
         break;
       case CR:
         break loop;
-      case " ":
-        if (selectedIndexes.has(selectedIndex)) {
-          selectedIndexes.delete(selectedIndex);
+      case " ": {
+        const absoluteIndex = filteredChunks[activeIndex]!.absoluteIndex;
+        if (selectedAbsoluteIndexes.has(absoluteIndex)) {
+          selectedAbsoluteIndexes.delete(absoluteIndex);
         } else {
-          selectedIndexes.add(selectedIndex);
+          selectedAbsoluteIndexes.add(absoluteIndex);
         }
         break;
+      }
       case DELETE:
-        selectedIndex = 0;
+        activeIndex = 0;
         searchBuffer = searchBuffer.slice(0, -1);
         break;
       default:
-        selectedIndex = 0;
+        activeIndex = 0;
         searchBuffer += string;
         break;
     }
 
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+    visibleLines = Math.min(
+      Deno.consoleSize().rows - SAFE_PADDING,
+      visibleLines,
+    );
+
+    clearLength = 1 + // message
+      (hasUpArrow ? 1 : 0) +
+      length +
+      (hasDownArrow ? 1 : 0);
+
+    output.writeSync(encoder.encode(`\x1b[${clearLength}A`));
     output.writeSync(CLEAR_ALL);
   }
 
-  if (clear) {
-    output.writeSync(encoder.encode(`\x1b[${length + 1}A`));
+  if (options.clear) {
+    output.writeSync(encoder.encode(`\x1b[${clearLength}A`));
     output.writeSync(CLEAR_ALL);
   }
 
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 
-  return [...selectedIndexes].map((it) => values[it] as string);
+  return [...selectedAbsoluteIndexes].map((it) => values[it]!);
 }

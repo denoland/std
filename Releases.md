@@ -1,3 +1,32 @@
+### 2025.07.01
+
+#### @std/collections 1.1.2 (patch)
+
+- chore(collections): add browser compatibility declaration to `unstable-cycle`
+  module (#6720)
+
+#### @std/fs 1.0.19 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/http 1.0.19 (patch)
+
+- perf(http): increase performance of HTML rendering (#6727)
+
+#### @std/internal 1.0.9 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/path 1.1.1 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/text 1.0.15 (patch)
+
+- feat(text/unstable): add `longestCommonPrefix` (#6734)
+- feat(text/unstable): add `toTitleCase()` and `toSentenceCase()` (#6701)
+- fix(text/unstable): `dedent()` correct blank line handling (#6738)
+
 ### 2025.06.12
 
 #### @std/cli 1.0.20 (patch)

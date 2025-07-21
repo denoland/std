@@ -95,7 +95,7 @@ function filter(a: Loose, b: Loose): Loose {
     }
 
     for (const [key, value] of entries) {
-      // On regexp references, keep value as it to avoid loosing pattern and flags
+      // On regexp references, keep value as it to avoid losing pattern and flags
       if (value instanceof RegExp) {
         defineProperty(filtered, key, value);
         continue;
@@ -165,7 +165,7 @@ function filter(a: Loose, b: Loose): Loose {
       const value = a[i];
       const subset = b[i];
 
-      // On regexp references, keep value as it to avoid loosing pattern and flags
+      // On regexp references, keep value as it to avoid losing pattern and flags
       if (value instanceof RegExp) {
         filtered.push(value);
         continue;

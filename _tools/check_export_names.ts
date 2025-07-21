@@ -24,6 +24,7 @@ const IGNORE_KEBAB_CASE_WORDS = [
   "v5",
   "v6",
   "v7",
+  "2d",
 ];
 
 function isExportInKebabCase(name: string): boolean {
