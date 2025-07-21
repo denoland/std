@@ -814,3 +814,19 @@ Deno.test("FakeTime regression test for issue #5499", async () => {
   await t.runMicrotasks();
   assertEquals(state, "rejected");
 });
+
+Deno.test("FakeTime throws custom error message if first argument to setTimeout/setInterval is string", () => {
+  using _ = new FakeTime();
+  assertThrows(
+    // @ts-ignore in environments that don't allow string in TS types
+    () => void setTimeout('console.log("oops");'),
+    TimeError,
+    "FakeTime does not support non-function callbacks to setTimeout",
+  );
+  assertThrows(
+    // @ts-ignore in environments that don't allow string in TS types
+    () => void setInterval('console.log("oops");'),
+    TimeError,
+    "FakeTime does not support non-function callbacks to setInterval",
+  );
+});
