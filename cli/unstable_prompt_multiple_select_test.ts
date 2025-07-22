@@ -522,7 +522,7 @@ Deno.test("promptMultipleSelect() handles down index overflow", () => {
   restore();
 });
 
-Deno.test("promptSelect() scrolls down and display lines correctly", () => {
+Deno.test("promptMultipleSelect() scrolls down and display lines correctly", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
   stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
@@ -740,6 +740,326 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
   ]);
 
   assertEquals(called, true);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() supports search by typing", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers: (filter: f)\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[3A",
+    "\x1b[J",
+    "Please select browsers: (filter: f)\r\n",
+    "  ◯ safari\r\n",
+    "❯ ◯ firefox\r\n",
+    "\x1b[3A",
+    "\x1b[J",
+    "Please select browsers: (filter: f)\r\n",
+    "  ◯ safari\r\n",
+    "❯ ◉ firefox\r\n",
+    "\x1b[3A",
+    "\x1b[J",
+    "Please select browsers: (filter: fa)\r\n",
+    "❯ ◯ safari\r\n",
+    "\x1b[2A",
+    "\x1b[J",
+    "Please select browsers: (filter: f)\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◉ firefox\r\n",
+    "\x1b[3A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◉ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers: (filter: z)\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "f",
+    "\u001B[B", // Arrow down
+    " ",
+    "a",
+    "\u007F", // Backspace
+    "\u007F", // Backspace
+    "z",
+    "\r", // Enter
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(expectedOutput, actualOutput);
+  assertEquals(browsers, ["firefox"]);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() handles search", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers: (filter: c)\r\n",
+    "❯ ◯ chrome\r\n",
+    "\x1b[2A",
+    "\x1b[J",
+    "Please select browsers: (filter: ch)\r\n",
+    "❯ ◯ chrome\r\n",
+    "\x1b[2A",
+    "\x1b[J",
+    "Please select browsers: (filter: ch)\r\n",
+    "❯ ◉ chrome\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "c",
+    "h",
+    " ",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browsers, ["chrome"]);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() handles search backspace", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers: (filter: f)\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[3A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◉ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "f",
+    "\x7f",
+    " ",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browsers, ["safari"]);
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});
+
+Deno.test("promptMultipleSelect() handles search no matches", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[4A",
+    "\x1b[J",
+    "Please select browsers: (filter: x)\r\n",
+    "❯ ◯ firefox\r\n",
+    "\x1b[2A",
+    "\x1b[J",
+    "Please select browsers: (filter: xy)\r\n",
+    "\x1b[1A",
+    "\x1b[J",
+    "Please select browsers: (filter: xyz)\r\n",
+    "\x1b[1A",
+    "\x1b[J",
+    "Please select browsers: (filter: xy)\r\n",
+    "\x1b[1A",
+    "\x1b[J",
+    "Please select browsers: (filter: x)\r\n",
+    "❯ ◯ firefox\r\n",
+    "\x1b[2A",
+    "\x1b[J",
+    "Please select browsers:\r\n",
+    "❯ ◯ safari\r\n",
+    "  ◯ chrome\r\n",
+    "  ◯ firefox\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "x",
+    "y",
+    "z",
+    "\x7f",
+    "\x7f",
+    "\x7f",
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browsers = promptMultipleSelect("Please select browsers:", [
+    "safari",
+    "chrome",
+    "firefox",
+  ]);
+
+  assertEquals(browsers, []);
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
