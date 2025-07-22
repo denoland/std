@@ -91,7 +91,7 @@ export class StaticLine {
   async write(line: string): Promise<void> {
     if (this.#released) throw new ReferenceError("Line has been released");
     await write(
-      Ansi.SAVE_CURSOR_POSITION +
+      Ansi.SAVE_CURSOR +
         Ansi.DISABLE_ORIGIN_MODE +
         Ansi.DISABLE_AUTO_WRAP +
         Ansi.setCursorPosition(
@@ -101,7 +101,7 @@ export class StaticLine {
         ) +
         Ansi.ERASE_LINE +
         line +
-        Ansi.RESTORE_CURSOR_POSITION,
+        Ansi.RESTORE_CURSOR,
     );
   }
 
@@ -136,7 +136,7 @@ export class StaticLine {
     const top = linesAtTop.length + 1;
     const bottom = rows - linesAtBottom.length;
     await write(
-      Ansi.SAVE_CURSOR_POSITION +
+      Ansi.SAVE_CURSOR +
         (this.#atTop
           ? (top - index
             ? Ansi.setScrollableRegion(index + 1, top + 1) +
@@ -152,7 +152,7 @@ export class StaticLine {
             : Ansi.setCursorPosition(rows) +
               Ansi.ERASE_LINE)) +
         Ansi.setScrollableRegion(top, bottom) +
-        Ansi.RESTORE_CURSOR_POSITION,
+        Ansi.RESTORE_CURSOR,
     );
   }
 }
