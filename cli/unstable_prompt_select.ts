@@ -128,8 +128,7 @@ export function promptSelect<V = undefined>(
     }) => {
       switch (str) {
         case ETX:
-          etx();
-          break;
+          return etx();
         case ARROW_UP:
           up();
           break;

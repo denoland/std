@@ -128,10 +128,7 @@ export function promptMultipleSelect<V = undefined>(
     }) => {
       switch (str) {
         case ETX:
-          Deno.stdout.writeSync(new TextEncoder().encode("foo\n"));
-          etx();
-          Deno.stdout.writeSync(new TextEncoder().encode("foo\n"));
-          break;
+          return etx();
         case ARROW_UP:
           up();
           break;

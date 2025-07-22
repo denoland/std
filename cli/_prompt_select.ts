@@ -1,3 +1,5 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
 import type { PromptEntry } from "./unstable_prompt_select.ts";
 
 const SAFE_PADDING = 4;
@@ -27,7 +29,7 @@ export function handlePromptSelect<V>(
     down(): void;
     remove(): void;
     inputStr(): void;
-  }) => boolean,
+  }) => boolean | "return",
 ) {
   const indexedValues = values.map((value, absoluteIndex) => ({
     value,
@@ -108,11 +110,13 @@ export function handlePromptSelect<V>(
     if (n === null || n === 0) break;
     const string = decoder.decode(buffer.slice(0, n));
 
-    if (
-      handleInput(string, filteredChunks[activeIndex]?.absoluteIndex, {
+    const processedInput = handleInput(
+      string,
+      filteredChunks[activeIndex]?.absoluteIndex,
+      {
         etx: () => {
           output.writeSync(SHOW_CURSOR);
-          Deno.exit(0);
+          return Deno.exit(0);
         },
         up: () => {
           if (activeIndex === 0) {
@@ -143,8 +147,12 @@ export function handlePromptSelect<V>(
           activeIndex = 0;
           searchBuffer += string;
         },
-      })
-    ) {
+      },
+    );
+
+    if (processedInput === "return") {
+      return;
+    } else if (processedInput) {
       break;
     }
 
