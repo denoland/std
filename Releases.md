@@ -9,7 +9,7 @@
   (#6741)
 - feat(cli/unstable): valued prompt items (#6742)
 - feat(cli/unstable): add `visibleLines` and `indicator` options to
-  `promptMultpleSelect`, and show `...` above the options when appropriate
+  `promptMultipleSelect`, and show `...` above the options when appropriate
   (#6699)
 - refactor(cli/unstable): dedupe logic between promptSelect and
   promptMultipleSelect (#6769)
