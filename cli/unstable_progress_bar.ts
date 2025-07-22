@@ -87,7 +87,7 @@ export interface ProgressBarOptions {
    * A function that creates the style of the progress bar.
    * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
-  fmt?: (fmt: ProgressBarFormatter) => string;
+  formatter?: (formatter: ProgressBarFormatter) => string;
   /**
    * Whether the writable should be kept open when progress bar stops.
    * @default {true}
@@ -97,8 +97,8 @@ export interface ProgressBarOptions {
 
 const LINE_CLEAR = "\r\u001b[K";
 
-function defaultFormatter(x: ProgressBarFormatter) {
-  return `[${x.styledTime}] [${x.progressBar}] [${x.styledData()}]`;
+function defaultFormatter(formatter: ProgressBarFormatter) {
+  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -143,8 +143,8 @@ function clamp(value: number, min: number, max: number) {
  *
  * const bar = new ProgressBar({
  *   max: 100,
- *   fmt(x) {
- *     return `[${x.styledTime()}] [${x.progressBar}] [${x.value}/${x.max} files]`;
+ *   formatter(formatter) {
+ *     return `[${formatter.styledTime()}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
  *   },
  * });
  *
@@ -196,7 +196,7 @@ export class ProgressBar {
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
-  #fmt: (fmt: ProgressBarFormatter) => string;
+  #formatter: (formatter: ProgressBarFormatter) => string;
   #keepOpen: boolean;
   #pipePromise: Promise<void>;
   /**
@@ -215,7 +215,7 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = defaultFormatter,
+      formatter = defaultFormatter,
       keepOpen = true,
     } = options;
     this.value = value;
@@ -224,7 +224,7 @@ export class ProgressBar {
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
     this.#clear = clear;
-    this.#fmt = fmt;
+    this.#formatter = formatter;
     this.#keepOpen = keepOpen;
 
     const stream = new TextEncoderStream();
@@ -266,7 +266,7 @@ export class ProgressBar {
   }
   async #print(): Promise<void> {
     const formatter = this.#createFormatterObject();
-    const output = this.#fmt(formatter);
+    const output = this.#formatter(formatter);
     try {
       await this.#writer.write(LINE_CLEAR + output);
     } catch {
