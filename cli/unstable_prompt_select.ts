@@ -78,13 +78,13 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * const browsers = promptSelect(
  *   "Please select browsers:",
  *   [{
- *     title: "safari",
+ *     label: "safari",
  *     value: 1,
  *   }, {
- *     title: "chrome",
+ *     label: "chrome",
  *     value: 2,
  *   }, {
- *     title: "firefox",
+ *     label: "firefox",
  *     value: 3,
  *   }],
  *   { clear: true },
