@@ -16,6 +16,15 @@ const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
+/**
+ * @param message The prompt message to show to the user.
+ * @param indicator The string to indicate the selected item.
+ * @param values The values for the prompt.
+ * @param clear Whether to clear the lines after the user's input.
+ * @param visibleLinesInit The initial number of lines to be visible at once.
+ * @param valueChange A function that is called when the value changes.
+ * @param handleInput A function that handles the input from the user. If it returns false, the prompt will continue. If it returns true, the prompt will exit with clean ups of terminal state (Use this for finalizing the selection). If it returns "return", the prompt will exit immediately without clean ups of terminal state (Use this for exiting the program).
+ */
 export function handlePromptSelect<V>(
   message: string,
   indicator: string,
@@ -24,7 +33,7 @@ export function handlePromptSelect<V>(
   visibleLinesInit: number | undefined,
   valueChange: (active: boolean, absoluteIndex: number) => string | void,
   handleInput: (str: string, absoluteIndex: number | undefined, actions: {
-    etx(): never;
+    etx(): "return";
     up(): void;
     down(): void;
     remove(): void;
@@ -116,7 +125,8 @@ export function handlePromptSelect<V>(
       {
         etx: () => {
           output.writeSync(SHOW_CURSOR);
-          return Deno.exit(0);
+          Deno.exit(0);
+          return "return";
         },
         up: () => {
           if (activeIndex === 0) {
