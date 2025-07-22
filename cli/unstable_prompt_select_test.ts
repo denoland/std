@@ -820,7 +820,7 @@ Deno.test("promptSelect() handles ETX", () => {
   restore();
 });
 
-Deno.test("promptSelect() handles search", () => {
+Deno.test("promptSelect() supports search by typing", () => {
   stub(Deno.stdin, "setRaw");
   stub(Deno.stdin, "isTerminal", () => true);
   stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));

@@ -57,6 +57,8 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * Also supports filtering of the options by typing.
+ *
  * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
