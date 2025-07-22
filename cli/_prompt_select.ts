@@ -15,14 +15,18 @@ const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
 export function handlePromptSelect<V>(
-  message: string, indicator: string, values: PromptEntry<V>[], clear: boolean | undefined, visibleLinesInit: number | undefined,
+  message: string,
+  indicator: string,
+  values: PromptEntry<V>[],
+  clear: boolean | undefined,
+  visibleLinesInit: number | undefined,
   valueChange: (active: boolean, absoluteIndex: number) => string | void,
   handleInput: (str: string, absoluteIndex: number | undefined, actions: {
-    etx(): never,
-    up(): void,
-    down(): void,
-    remove(): void,
-    inputStr(): void,
+    etx(): never;
+    up(): void;
+    down(): void;
+    remove(): void;
+    inputStr(): void;
   }) => boolean,
 ) {
   const indexedValues = values.map((value, absoluteIndex) => ({
@@ -58,9 +62,7 @@ export function handlePromptSelect<V>(
       if (searchBuffer === "") {
         return true;
       } else {
-        return (typeof item.value === "string"
-          ? item.value
-          : item.value.label)
+        return (typeof item.value === "string" ? item.value : item.value.label)
           .toLowerCase().includes(searchBuffer.toLowerCase());
       }
     });
@@ -76,20 +78,23 @@ export function handlePromptSelect<V>(
       );
     }
 
-    for (const [
-      index, {
-        absoluteIndex,
-        value
-      }
-    ] of visibleChunks.entries()) {
+    for (
+      const [
+        index,
+        {
+          absoluteIndex,
+          value,
+        },
+      ] of visibleChunks.entries()
+    ) {
       const active = index === (activeIndex - offset);
       const start = active ? indicator : PADDING;
       const maybePrefix = valueChange(active, absoluteIndex);
       output.writeSync(
         encoder.encode(
-          `${start}${maybePrefix
-            ? ` ${maybePrefix}`
-            : ""} ${typeof value === "string" ? value : value.label}\r\n`,
+          `${start}${maybePrefix ? ` ${maybePrefix}` : ""} ${
+            typeof value === "string" ? value : value.label
+          }\r\n`,
         ),
       );
     }
@@ -103,41 +108,43 @@ export function handlePromptSelect<V>(
     if (n === null || n === 0) break;
     const string = decoder.decode(buffer.slice(0, n));
 
-    if (handleInput(string, filteredChunks[activeIndex]?.absoluteIndex, {
-      etx: () => {
-        output.writeSync(SHOW_CURSOR);
-        Deno.exit(0);
-      },
-      up: () => {
-        if (activeIndex === 0) {
-          activeIndex = filteredChunks.length - 1;
-          offset = Math.max(filteredChunks.length - visibleLines, 0);
-        } else {
-          activeIndex--;
-          offset = Math.max(offset - 1, 0);
-        }
-      },
-      down: () => {
-        if (activeIndex === (filteredChunks.length - 1)) {
-          activeIndex = 0;
-          offset = 0;
-        } else {
-          activeIndex++;
-
-          if (activeIndex >= visibleLines) {
-            offset++;
+    if (
+      handleInput(string, filteredChunks[activeIndex]?.absoluteIndex, {
+        etx: () => {
+          output.writeSync(SHOW_CURSOR);
+          Deno.exit(0);
+        },
+        up: () => {
+          if (activeIndex === 0) {
+            activeIndex = filteredChunks.length - 1;
+            offset = Math.max(filteredChunks.length - visibleLines, 0);
+          } else {
+            activeIndex--;
+            offset = Math.max(offset - 1, 0);
           }
-        }
-      },
-      remove: () => {
-        activeIndex = 0;
-        searchBuffer = searchBuffer.slice(0, -1);
-      },
-      inputStr: () => {
-        activeIndex = 0;
-        searchBuffer += string;
-      }
-    })) {
+        },
+        down: () => {
+          if (activeIndex === (filteredChunks.length - 1)) {
+            activeIndex = 0;
+            offset = 0;
+          } else {
+            activeIndex++;
+
+            if (activeIndex >= visibleLines) {
+              offset++;
+            }
+          }
+        },
+        remove: () => {
+          activeIndex = 0;
+          searchBuffer = searchBuffer.slice(0, -1);
+        },
+        inputStr: () => {
+          activeIndex = 0;
+          searchBuffer += string;
+        },
+      })
+    ) {
       break;
     }
 
@@ -163,4 +170,3 @@ export function handlePromptSelect<V>(
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
 }
-

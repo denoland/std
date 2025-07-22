@@ -114,11 +114,17 @@ export function promptMultipleSelect<V = undefined>(
     options.indicator ?? "❯",
     values,
     options.clear,
-    options.visibleLines,(_active, absoluteIndex) => {
+    options.visibleLines,
+    (_active, absoluteIndex) => {
       const checked = selectedAbsoluteIndexes.has(absoluteIndex);
       return checked ? CHECKED : UNCHECKED;
-    }, (str, absoluteIndex, {
-      etx, up, down, remove, inputStr,
+    },
+    (str, absoluteIndex, {
+      etx,
+      up,
+      down,
+      remove,
+      inputStr,
     }) => {
       switch (str) {
         case ETX:
@@ -153,8 +159,8 @@ export function promptMultipleSelect<V = undefined>(
       }
 
       return false;
-    });
-
+    },
+  );
 
   return [...selectedAbsoluteIndexes].map((it) => values[it]!);
 }

@@ -113,36 +113,43 @@ export function promptSelect<V = undefined>(
     options.indicator ?? "❯",
     values,
     options.clear,
-    options.visibleLines,(active, absoluteIndex) => {
-    if (active) {
-      selectedIndex = absoluteIndex;
-    }
-  }, (str, _absoluteIndex, {
-    etx, up, down, remove, inputStr,
-  }) => {
-    switch (str) {
-      case ETX:
-        etx();
-        break;
-      case ARROW_UP:
-        up();
-        break;
-      case ARROW_DOWN:
-        down();
-        break;
-      case CR:
-      case " ":
-        return true;
-      case DELETE:
-        remove();
-        break;
-      default:
-        inputStr();
-        break;
-    }
+    options.visibleLines,
+    (active, absoluteIndex) => {
+      if (active) {
+        selectedIndex = absoluteIndex;
+      }
+    },
+    (str, _absoluteIndex, {
+      etx,
+      up,
+      down,
+      remove,
+      inputStr,
+    }) => {
+      switch (str) {
+        case ETX:
+          etx();
+          break;
+        case ARROW_UP:
+          up();
+          break;
+        case ARROW_DOWN:
+          down();
+          break;
+        case CR:
+        case " ":
+          return true;
+        case DELETE:
+          remove();
+          break;
+        default:
+          inputStr();
+          break;
+      }
 
-    return false;
-  });
+      return false;
+    },
+  );
 
   return values[selectedIndex] ?? null;
 }
