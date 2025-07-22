@@ -1,3 +1,43 @@
+### 2025.07.22
+
+#### @std/cli 1.0.21 (patch)
+
+- BREAKING(cli/unstable): rename `fmt` of `ProgressBarOption` to `formatter`
+  (#6707)
+- feat(cli/unstable): introduce Ansi module (#6756)
+- feat(cli/unstable): add search to promptSelect and promptMultipleSelect
+  (#6741)
+- feat(cli/unstable): valued prompt items (#6742)
+- feat(cli/unstable): add `visibleLines` and `indicator` options to
+  `promptMultpleSelect`, and show `...` above the options when appropriate
+  (#6699)
+- refactor(cli/unstable): dedupe logic between promptSelect and
+  promptMultipleSelect (#6769)
+- refactor(cli/unstable): rename `title` to `label` for valued prompt items
+  (#6751)
+
+#### @std/data-structures 1.0.9 (patch)
+
+- feat(data-structures/unstable): 2d array (#6754)
+
+#### @std/http 1.0.20 (patch)
+
+- fix(http): respect colors and other `Deno.inspect` options when logging
+  `UserAgent`s (#6763)
+
+#### @std/internal 1.0.10 (patch)
+
+- fix(internal): fix inspect fallbacks for formatting diffs (#6747)
+
+#### @std/testing 1.0.15 (patch)
+
+- feat(testing/unstable): add `stubProperty` function (#6761)
+- fix(testing): align types for fake timeout/interval signatures (#6767)
+
+#### @std/yaml 1.0.9 (patch)
+
+- refactor(yaml): remove `version` property, separate directive handling (#6657)
+
 ### 2025.07.01
 
 #### @std/collections 1.1.2 (patch)
