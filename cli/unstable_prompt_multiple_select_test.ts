@@ -692,7 +692,6 @@ Deno.test("promptMultipleSelect() handles ETX", () => {
     "exit",
     (() => {
       called = true;
-      return "return";
     }) as never,
   );
 
