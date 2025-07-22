@@ -10,6 +10,7 @@
     "./unstable-bdd": "./unstable_bdd.ts",
     "./unstable-snapshot": "./unstable_snapshot.ts",
     "./unstable-stub": "./unstable_stub.ts",
+    "./unstable-stub-property": "./unstable_stub_property.ts",
     "./unstable-types": "./unstable_types.ts"
   }
 }
