@@ -3,11 +3,12 @@
 import type { Uint8Array_ } from "./_types.ts";
 export type { Uint8Array_ };
 
+const encoder = new TextEncoder();
 export const padding = "=".charCodeAt(0);
 export const alphabet: Record<Base64Alphabet, Uint8Array> = {
-  base64: new TextEncoder()
+  base64: encoder
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"),
-  base64url: new TextEncoder()
+  base64url: encoder
     .encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"),
 };
 export const rAlphabet: Record<Base64Alphabet, Uint8Array> = {
@@ -18,6 +19,9 @@ alphabet.base64
   .forEach((byte, i) => rAlphabet.base64[byte] = i);
 alphabet.base64url
   .forEach((byte, i) => rAlphabet.base64url[byte] = i);
+
+const WHITE_SPACE = new Uint8Array(256);
+for (const byte of encoder.encode("\t\n\f\r ")) WHITE_SPACE[byte] = 1;
 
 /**
  * Options for encoding and decoding base64 strings.
@@ -87,6 +91,28 @@ export function encode(
   return o;
 }
 
+function removeWhiteSpace(buffer: Uint8Array_) {
+  const length = buffer.length;
+
+  const indices: number[] = [];
+
+  for (let i = 0; i < length; ++i) {
+    if (WHITE_SPACE[buffer[i]!]) indices.push(i);
+  }
+
+  for (let i = 0; i < indices.length; ++i) {
+    const index = indices[i]!;
+    const start = index + 1;
+    const end = i === indices.length - 1 ? length : indices[i + 1]!;
+
+    buffer.set(buffer.subarray(start, end), index - i);
+  }
+
+  return buffer.subarray(0, length - indices.length);
+}
+
+class RetriableError extends Error {}
+
 export function decode(
   buffer: Uint8Array_,
   i: number,
@@ -94,10 +120,41 @@ export function decode(
   alphabet: Uint8Array,
   padding: number,
 ): number {
+  try {
+    return _decode(buffer, i, o, alphabet, padding, true);
+  } catch (e) {
+    if (!(e instanceof RetriableError)) throw e;
+    return _decode(removeWhiteSpace(buffer), i, o, alphabet, padding, false);
+  }
+}
+
+function _decode(
+  buffer: Uint8Array_,
+  i: number,
+  o: number,
+  alphabet: Uint8Array,
+  padding: number,
+  firstPass: boolean,
+) {
+  const getHextet = (i: number): number => {
+    const char = buffer[i]!;
+    const hextet = alphabet[char] ?? 64;
+    if (hextet === 64) { // alphabet.Base64.length
+      if (firstPass && WHITE_SPACE[char]) throw new RetriableError();
+      throw new TypeError(
+        `Cannot decode input as base64: Invalid character (${
+          String.fromCharCode(char)
+        })`,
+      );
+    }
+    return hextet;
+  };
+
   for (let x = buffer.length - 2; x < buffer.length; ++x) {
     if (buffer[x] === padding) {
       for (let y = x + 1; y < buffer.length; ++y) {
         if (buffer[y] !== padding) {
+          if (firstPass && WHITE_SPACE[buffer[y]!]) throw new RetriableError();
           throw new TypeError(
             `Cannot decode input as base64: Invalid character (${
               String.fromCharCode(buffer[y]!)
@@ -110,6 +167,7 @@ export function decode(
     }
   }
   if ((buffer.length - o) % 4 === 1) {
+    if (firstPass) throw new RetriableError();
     throw new RangeError(
       `Cannot decode input as base64: Length (${
         buffer.length - o
@@ -119,41 +177,29 @@ export function decode(
 
   i += 3;
   for (; i < buffer.length; i += 4) {
-    const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
-      (getByte(buffer[i - 2]!, alphabet) << 12) |
-      (getByte(buffer[i - 1]!, alphabet) << 6) |
-      getByte(buffer[i]!, alphabet);
+    const x = (getHextet(i - 3) << 18) |
+      (getHextet(i - 2) << 12) |
+      (getHextet(i - 1) << 6) |
+      getHextet(i);
     buffer[o++] = x >> 16;
     buffer[o++] = x >> 8 & 0xFF;
     buffer[o++] = x & 0xFF;
   }
   switch (i) {
     case buffer.length + 1: {
-      const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
-        (getByte(buffer[i - 2]!, alphabet) << 12);
+      const x = (getHextet(i - 3) << 18) |
+        (getHextet(i - 2) << 12);
       buffer[o++] = x >> 16;
       break;
     }
     case buffer.length: {
-      const x = (getByte(buffer[i - 3]!, alphabet) << 18) |
-        (getByte(buffer[i - 2]!, alphabet) << 12) |
-        (getByte(buffer[i - 1]!, alphabet) << 6);
+      const x = (getHextet(i - 3) << 18) |
+        (getHextet(i - 2) << 12) |
+        (getHextet(i - 1) << 6);
       buffer[o++] = x >> 16;
       buffer[o++] = x >> 8 & 0xFF;
       break;
     }
   }
   return o;
-}
-
-function getByte(char: number, alphabet: Uint8Array): number {
-  const byte = alphabet[char] ?? 64;
-  if (byte === 64) { // alphabet.Base64.length
-    throw new TypeError(
-      `Cannot decode input as base64: Invalid character (${
-        String.fromCharCode(char)
-      })`,
-    );
-  }
-  return byte;
 }
