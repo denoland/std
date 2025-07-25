@@ -91,7 +91,7 @@ export function encode(
   return o;
 }
 
-function removeWhiteSpace(buffer: Uint8Array_) {
+export function removeWhiteSpace(buffer: Uint8Array_) {
   const length = buffer.length;
 
   const indices: number[] = [];
@@ -121,26 +121,27 @@ export function decode(
   padding: number,
 ): number {
   try {
-    return _decode(buffer, i, o, alphabet, padding, true);
+    return decodeChunk(buffer, i, o, alphabet, padding, true);
   } catch (e) {
     if (!(e instanceof RetriableError)) throw e;
-    return _decode(removeWhiteSpace(buffer), i, o, alphabet, padding, false);
+    buffer = removeWhiteSpace(buffer);
+    return decodeChunk(buffer, i, o, alphabet, padding, false);
   }
 }
 
-function _decode(
+export function decodeChunk(
   buffer: Uint8Array_,
   i: number,
   o: number,
   alphabet: Uint8Array,
   padding: number,
-  firstPass: boolean,
+  retryWs: boolean,
 ) {
   const getHextet = (i: number): number => {
     const char = buffer[i]!;
     const hextet = alphabet[char] ?? 64;
     if (hextet === 64) { // alphabet.Base64.length
-      if (firstPass && WHITE_SPACE[char]) throw new RetriableError();
+      if (retryWs && WHITE_SPACE[char]) throw new RetriableError();
       throw new TypeError(
         `Cannot decode input as base64: Invalid character (${
           String.fromCharCode(char)
@@ -154,7 +155,7 @@ function _decode(
     if (buffer[x] === padding) {
       for (let y = x + 1; y < buffer.length; ++y) {
         if (buffer[y] !== padding) {
-          if (firstPass && WHITE_SPACE[buffer[y]!]) throw new RetriableError();
+          if (retryWs && WHITE_SPACE[buffer[y]!]) throw new RetriableError();
           throw new TypeError(
             `Cannot decode input as base64: Invalid character (${
               String.fromCharCode(buffer[y]!)
@@ -167,7 +168,7 @@ function _decode(
     }
   }
   if ((buffer.length - o) % 4 === 1) {
-    if (firstPass) throw new RetriableError();
+    if (retryWs) throw new RetriableError();
     throw new RangeError(
       `Cannot decode input as base64: Length (${
         buffer.length - o
