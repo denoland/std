@@ -103,7 +103,7 @@ export function removeWhiteSpace(buffer: Uint8Array_) {
   for (let i = 0; i < indices.length; ++i) {
     const index = indices[i]!;
     const start = index + 1;
-    const end = i === indices.length - 1 ? length : indices[i + 1]!;
+    const end = indices[i + 1] ?? length;
 
     buffer.set(buffer.subarray(start, end), index - i);
   }
@@ -140,15 +140,15 @@ export function decodeChunk(
   const getHextet = (i: number): number => {
     const char = buffer[i]!;
     const hextet = alphabet[char] ?? 64;
-    if (hextet === 64) { // alphabet.Base64.length
-      if (retryWs && WHITE_SPACE[char]) throw new RetriableError();
-      throw new TypeError(
-        `Cannot decode input as base64: Invalid character (${
-          String.fromCharCode(char)
-        })`,
-      );
-    }
-    return hextet;
+    // alphabet.Base64.length
+    if (hextet !== 64) return hextet;
+
+    if (retryWs && WHITE_SPACE[char]) throw new RetriableError();
+    throw new TypeError(
+      `Cannot decode input as base64: Invalid character (${
+        String.fromCharCode(char)
+      })`,
+    );
   };
 
   for (let x = buffer.length - 2; x < buffer.length; ++x) {
