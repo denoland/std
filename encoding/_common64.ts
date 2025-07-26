@@ -137,6 +137,10 @@ export function decodeChunk(
   padding: number,
   retryWs: boolean,
 ) {
+  if (retryWs && buffer.length > 0 && (WHITE_SPACE[buffer.at(-1)!])) {
+    throw new RetriableError();
+  }
+
   const getHextet = (i: number): number => {
     const char = buffer[i]!;
     const hextet = alphabet[char] ?? 64;
