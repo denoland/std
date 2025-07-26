@@ -76,3 +76,16 @@ Deno.test("Base64DecoderStream() with raw format", async () => {
     );
   }
 });
+
+Deno.test("Base64DecoderStream() allows white space", async () => {
+  const text = await Deno.readTextFile("./deno.lock");
+
+  const encoded = encodeBase64(text).replaceAll(/.{76}/g, `$&\r\n`);
+
+  const stream = new Blob([encoded]).stream()
+    .pipeThrough(new FixedChunkStream(1021))
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new Base64DecoderStream());
+
+  assertEquals(await toText(stream), text);
+});
