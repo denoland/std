@@ -8,6 +8,7 @@ import {
   assertStrictEquals,
 } from "@std/assert";
 import { assertSpyCalls, stub } from "@std/testing/mock";
+import { FakeTime } from "@std/testing/time";
 
 // https://dom.spec.whatwg.org/#interface-AbortSignal
 function assertIsDefaultAbortReason(reason: unknown) {
@@ -136,4 +137,56 @@ Deno.test({
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test({
+  name: "delay() doesn't resolve early with `ms` argument > 0x7fffffff",
+  async fn(t) {
+    for (
+      const bigNum of [
+        0x7fffffff,
+        0x80000000,
+        Number.MAX_SAFE_INTEGER,
+        Infinity,
+      ]
+    ) {
+      await t.step(`delay(${bigNum})`, async () => {
+        const result = await Promise.race(
+          [1, bigNum].map((n) => delay(n).then(() => n)),
+        );
+        assertEquals(result, 1);
+      });
+    }
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+async function advanceUntilComplete<T>(
+  time: FakeTime,
+  tickMs: number,
+  task: () => Promise<T>,
+): Promise<T> {
+  let done = false;
+
+  const result = (async () => {
+    try {
+      return await task();
+    } finally {
+      done = true;
+    }
+  })();
+
+  while (!done) await time.tickAsync(tickMs);
+
+  return result;
+}
+
+Deno.test({
+  name: "delay() runs to completion with `ms` argument > 0x7fffffff",
+  async fn() {
+    using time = new FakeTime(0);
+    await advanceUntilComplete(time, 2 ** 30, () => delay(2 ** 32));
+    assertEquals(time.now, 2 ** 32);
+  },
 });
