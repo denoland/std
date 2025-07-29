@@ -313,6 +313,20 @@ Deno.test("TarStream() with mismatching sizes", async () => {
   );
 });
 
+Deno.test("TarStream() with empty buffers", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "file",
+      path: "potato",
+      size: text.length,
+      readable: ReadableStream.from([new Uint8Array(), text, new Uint8Array()]),
+    },
+  ]).pipeThrough(new TarStream());
+
+  assertEquals((await new Response(readable).bytes()).length % 512, 0);
+});
+
 Deno.test("parsePath() with too long path", async () => {
   const readable = ReadableStream.from<TarStreamInput>([{
     type: "directory",
