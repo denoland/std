@@ -1,3 +1,13 @@
+### 2025.07.29
+
+#### @std/async 1.0.14 (patch)
+
+- fix(async): allow delay timeout of arbitrary length (#6775)
+
+#### @std/tar 0.1.7 (patch)
+
+- fix(tar): receiving empty buffers (#6777)
+
 ### 2025.07.22
 
 #### @std/cli 1.0.21 (patch)
