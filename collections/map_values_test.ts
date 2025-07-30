@@ -13,10 +13,10 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "mapValues() handles no mutation",
+  name: "mapValues() does not mutate its input",
   fn() {
     const object = { a: 5, b: true };
-    mapValues(object, (it) => it ?? "nothing");
+    mapValues(object, () => 999);
 
     assertEquals(object, { a: 5, b: true });
   },
