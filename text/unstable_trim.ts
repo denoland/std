@@ -4,12 +4,10 @@ import { escape } from "@std/regexp/escape";
 
 /**
  * A pattern that can be used to trim characters from an input string.
- * - If `string`, trim all characters in the pattern string.
- * - If `Iterable<string>`, trim all substrings equal to any item.
+ * - If `Iterable<string>`, trim all substrings equal to any member (e.g. chars of string).
  * - If `RegExp`, trim all substrings that match the regex.
  */
 export type TrimPattern =
-  | string
   | Iterable<string>
   | RegExp;
 
@@ -55,12 +53,21 @@ export function trim(
  * const result = trimStart("\ufeffhello world", "\ufeff");
  * assertEquals(result, "hello world");
  * ```
+ *
+ * @example Remove leading "https://" from a URL
+ * ```ts
+ * import { trimStart } from "@std/text/unstable-trim";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimStart("https://example.com", ["https://"]);
+ * assertEquals(result, "example.com");
+ * ```
  */
 export function trimStart(
   str: string,
   pattern: TrimPattern,
 ): string {
-  return str.replace(regExpFromTrimPattern`^${pattern}`, "");
+  return trimUntilDone(str, regExpFromTrimPattern`^${pattern}`);
 }
 
 /**
@@ -77,7 +84,7 @@ export function trimStart(
  * import { trimEnd } from "@std/text/unstable-trim";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimEnd("file contents\r\n\n", ["\n", "\r\n"]);
+ * const result = trimEnd("file contents\n", "\r\n");
  * assertEquals(result, "file contents");
  * ```
  */
@@ -85,7 +92,14 @@ export function trimEnd(
   str: string,
   pattern: TrimPattern,
 ): string {
-  return str.replace(regExpFromTrimPattern`${pattern}$`, "");
+  return trimUntilDone(str, regExpFromTrimPattern`${pattern}$`);
+}
+
+function trimUntilDone(str: string, regex: RegExp): string {
+  let current = str;
+  let next;
+  while ((next = current.replace(regex, "")) !== current) current = next;
+  return current;
 }
 
 function regExpFromTrimPattern(t: TemplateStringsArray, pattern: TrimPattern) {
@@ -99,7 +113,8 @@ function regExpFromTrimPattern(t: TemplateStringsArray, pattern: TrimPattern) {
     flags: "",
   };
 
-  source = `${t[0]!}(?:${source})+${t[1]!}`;
+  source = `${t[0]!}(?:${source})${t[1]!}`;
+  // remove any stateful flags to avoid `lastIndex` issues
   flags = flags.replace(/[gy]+/g, "");
 
   return new RegExp(source, flags);
