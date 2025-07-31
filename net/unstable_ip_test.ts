@@ -31,6 +31,8 @@ Deno.test("isIPv6()", () => {
     { addr: "::", expected: true },
     { addr: "::1", expected: true },
     { addr: "2003:3333:4444:5555:6666:7777:192.168.0.1", expected: true },
+    { addr: "ab::cd:192.168.0.1", expected: true },
+    { addr: "::192.168.0.1", expected: true },
 
     { addr: "2001:db8:3333:4444:5555:6666:7777:gggg", expected: false },
     { addr: "2003:3333:4444:5555:6666:7777:192.168.0.256", expected: false },
