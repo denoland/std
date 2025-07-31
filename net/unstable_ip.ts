@@ -3,6 +3,8 @@
 /**
  * Validates whether a given string is a valid IPv4 address.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param addr IPv4 address in a string format (e.g., "192.168.0.1").
  * @returns A boolean indicating if the string is a valid IPv4 address.
  *
@@ -30,9 +32,11 @@ export function isIPv4(addr: string): boolean {
 /**
  * Validates whether a given string is a IPv6 address.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param addr IPv6 address in a string format (e.g., "2001:db8::1").
  * @returns A boolean indicating if the string is a valid IPv6 address.
-
+ *
  * @example Check if the address is a IPv6
  * ```ts
  * import { isIPv6 } from "@std/net/unstable-ip"
