@@ -1,5 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 
 /**
@@ -162,10 +164,9 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
  * ```
  */
-export class TarStream
-  implements TransformStream<TarStreamInput, Uint8Array<ArrayBuffer>> {
+export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
   #encoder = new TextEncoder();
-  #readable: ReadableStream<Uint8Array<ArrayBuffer>>;
+  #readable: ReadableStream<Uint8Array_>;
   #writable: WritableStream<TarStreamInput>;
   /**
    * Constructs a new instance.
@@ -224,16 +225,16 @@ export class TarStream
         );
         controller.enqueue(slice);
       },
-    }) as unknown as ReadableStream<Uint8Array<ArrayBuffer>>;
+    }) as unknown as ReadableStream<Uint8Array_>;
   }
 
-  #parsePathInto(path: string, buffer: Uint8Array<ArrayBuffer>): void {
+  #parsePathInto(path: string, buffer: Uint8Array_): void {
     parsePath(this.#encoder.encodeInto(path, buffer).written, buffer);
   }
 
   #parseHeaderInto(
     input: TarStreamInput,
-    buffer: Uint8Array<ArrayBuffer>,
+    buffer: Uint8Array_,
   ): void {
     input.options ??= {};
     input.options.mode ??= input.type === "file" ? 0o644 : 0o755;
@@ -315,9 +316,9 @@ export class TarStream
   async *#tar(
     readable: ReadableStream<TarStreamInput>,
   ): AsyncGenerator<
-    Uint8Array<ArrayBuffer>,
+    Uint8Array_,
     undefined,
-    Uint8Array<ArrayBuffer>
+    Uint8Array_
   > {
     let buffer = yield new Uint8Array(0); // Prime the generator
     let offset = buffer.byteOffset;
@@ -391,7 +392,7 @@ export class TarStream
    *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
    * ```
    */
-  get readable(): ReadableStream<Uint8Array<ArrayBuffer>> {
+  get readable(): ReadableStream<Uint8Array_> {
     return this.#readable;
   }
 
@@ -528,7 +529,7 @@ export function assertValidTarStreamOptions(options: TarStreamOptions): void {
   }
 }
 
-function parsePath(size: number, buffer: Uint8Array<ArrayBuffer>): void {
+function parsePath(size: number, buffer: Uint8Array_): void {
   if (size <= 100) return;
   if (size > 256) {
     throw new RangeError(
@@ -617,7 +618,7 @@ export function assertValidPath(path: string): void {
   parsePath(new TextEncoder().encodeInto(path, buffer).written, buffer);
 }
 
-function parseOctalInto(x: number, buffer: Uint8Array<ArrayBuffer>): void {
+function parseOctalInto(x: number, buffer: Uint8Array_): void {
   for (let i = buffer.length - 1; i >= 0; --i) {
     buffer[i] = x % 8 + 48;
     x = x / 8 | 0;
