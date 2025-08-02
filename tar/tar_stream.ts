@@ -209,7 +209,8 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
           const size = value.byteLength;
           return controller.byobRequest!.respondWithNewView(
             new Uint8Array(
-              value.buffer.transfer(offset + length),
+              // deno-lint-ignore no-explicit-any
+              (value.buffer as any).transfer(offset + length),
               offset,
               size,
             ),
@@ -219,7 +220,8 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
         const slice = value.slice(length);
         controller.byobRequest!.respondWithNewView(
           new Uint8Array(
-            value.buffer.transfer(offset + length),
+            // deno-lint-ignore no-explicit-any
+            (value.buffer as any).transfer(offset + length),
             offset,
           ),
         );
