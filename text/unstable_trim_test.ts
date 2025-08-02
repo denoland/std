@@ -1,24 +1,25 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
-import { trim, trimEnd, trimStart } from "./unstable_trim.ts";
+import { trimBy, trimEndBy, trimStartBy } from "./unstable_trim_by.ts";
 
 Deno.test("trim()", async (t) => {
   await t.step("empty patterns - no-op", () => {
-    assertEquals(trimStart("abc", ""), "abc");
-    assertEquals(trimStart("abc", [""]), "abc");
-    assertEquals(trimStart("abc", /(?:)/), "abc");
+    assertEquals(trimStartBy("abc", []), "abc");
+    assertEquals(trimStartBy("abc", [""]), "abc");
+    assertEquals(trimStartBy("abc", new Set()), "abc");
+    assertEquals(trimStartBy("abc", /(?:)/), "abc");
   });
 
   await t.step("trims both prefixes and suffixes", () => {
-    assertEquals(trim("/pathname/", "/"), "pathname");
+    assertEquals(trimBy("/pathname/", ["/"]), "pathname");
   });
 
   await t.step("trims both prefixes and suffixes by regex pattern", () => {
-    assertEquals(trim("abc", /[abc]/), "");
-    assertEquals(trim("xbx", /[abc]/), "xbx");
+    assertEquals(trimBy("abc", /[abc]/), "");
+    assertEquals(trimBy("xbx", /[abc]/), "xbx");
 
     assertEquals(
-      trim("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
+      trimBy("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
       "Seguro que no",
     );
   });
@@ -26,30 +27,30 @@ Deno.test("trim()", async (t) => {
 
 Deno.test("trimStart()", async (t) => {
   await t.step("trims a prefix", () => {
-    assertEquals(trimStart("/pathname/", "/"), "pathname/");
+    assertEquals(trimStartBy("/pathname/", ["/"]), "pathname/");
   });
 
   await t.step("prefix is based on iterated members of input", async (t) => {
     await t.step("chars of string", () => {
       assertEquals(
-        trimStart("https://sth.example.com", "https://"),
+        trimStartBy("https://sth.example.com", new Set("https://")),
         ".example.com",
       );
     });
     await t.step("strings of string[]", () => {
       assertEquals(
-        trimStart("https://sth.example.com", ["https://"]),
+        trimStartBy("https://sth.example.com", ["https://"]),
         "sth.example.com",
       );
     });
   });
 
   await t.step("trims prefixes by regex pattern", () => {
-    assertEquals(trimStart("abc", /[ab]/), "c");
-    assertEquals(trimStart("xbc", /[ab]/), "xbc");
+    assertEquals(trimStartBy("abc", /[ab]/), "c");
+    assertEquals(trimStartBy("xbc", /[ab]/), "xbc");
 
     assertEquals(
-      trimStart("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
+      trimStartBy("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
       "Seguro que no?!",
     );
   });
@@ -57,15 +58,15 @@ Deno.test("trimStart()", async (t) => {
 
 Deno.test("trimEnd()", async (t) => {
   await t.step("trims a suffix", () => {
-    assertEquals(trimEnd("/pathname/", "/"), "/pathname");
+    assertEquals(trimEndBy("/pathname/", ["/"]), "/pathname");
   });
 
   await t.step("trims suffixes by regex pattern", () => {
-    assertEquals(trimEnd("abc", /[bc]/), "a");
-    assertEquals(trimEnd("abx", /[bc]/), "abx");
+    assertEquals(trimEndBy("abc", /[bc]/), "a");
+    assertEquals(trimEndBy("abx", /[bc]/), "abx");
 
     assertEquals(
-      trimEnd("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
+      trimEndBy("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u),
       "¡¿Seguro que no",
     );
   });

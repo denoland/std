@@ -8,7 +8,7 @@ import { escape } from "@std/regexp/escape";
  * - If `RegExp`, trim all substrings that match the regex.
  */
 export type TrimPattern =
-  | Iterable<string>
+  | Iterable<string> & object
   | RegExp;
 
 /**
@@ -22,18 +22,18 @@ export type TrimPattern =
  *
  * @example Strip non-word characters from start and end of a string
  * ```ts
- * import { trim } from "@std/text/unstable-trim";
+ * import { trimBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trim("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u);
+ * const result = trimBy("¡¿Seguro que no?!", /[^\p{L}\p{M}\p{N}]/u);
  * assertEquals(result, "Seguro que no");
  * ```
  */
-export function trim(
+export function trimBy(
   str: string,
   pattern: TrimPattern,
 ): string {
-  return trimStart(trimEnd(str, pattern), pattern);
+  return trimStartBy(trimEndBy(str, pattern), pattern);
 }
 
 /**
@@ -47,23 +47,23 @@ export function trim(
  *
  * @example Remove leading byte-order marks
  * ```ts
- * import { trimStart } from "@std/text/unstable-trim";
+ * import { trimStartBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimStart("\ufeffhello world", "\ufeff");
+ * const result = trimStartBy("\ufeffhello world", ["\ufeff"]);
  * assertEquals(result, "hello world");
  * ```
  *
  * @example Remove leading "https://" from a URL
  * ```ts
- * import { trimStart } from "@std/text/unstable-trim";
+ * import { trimStartBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimStart("https://example.com", ["https://"]);
+ * const result = trimStartBy("https://example.com", ["https://"]);
  * assertEquals(result, "example.com");
  * ```
  */
-export function trimStart(
+export function trimStartBy(
   str: string,
   pattern: TrimPattern,
 ): string {
@@ -81,14 +81,14 @@ export function trimStart(
  *
  * @example Remove trailing line endings
  * ```ts
- * import { trimEnd } from "@std/text/unstable-trim";
+ * import { trimEndBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimEnd("file contents\n", "\r\n");
+ * const result = trimEndBy("file contents\n", ["\r", "\n"]);
  * assertEquals(result, "file contents");
  * ```
  */
-export function trimEnd(
+export function trimEndBy(
   str: string,
   pattern: TrimPattern,
 ): string {
@@ -105,7 +105,7 @@ function trimUntilDone(str: string, regex: RegExp): string {
 function regExpFromTrimPattern(t: TemplateStringsArray, pattern: TrimPattern) {
   let { source, flags } = pattern instanceof RegExp ? pattern : {
     source: `${
-      [...new Set(pattern)]
+      [...pattern]
         .sort((a, b) => b.length - a.length)
         .map(escape)
         .join("|")
