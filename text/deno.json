@@ -10,6 +10,7 @@
     "./unstable-longest-common-prefix": "./unstable_longest_common_prefix.ts",
     "./unstable-reverse": "./unstable_reverse.ts",
     "./unstable-slugify": "./unstable_slugify.ts",
+    "./unstable-trim-by": "./unstable_trim_by.ts",
     "./to-camel-case": "./to_camel_case.ts",
     "./unstable-to-constant-case": "./unstable_to_constant_case.ts",
     "./to-kebab-case": "./to_kebab_case.ts",
