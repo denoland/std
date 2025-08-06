@@ -272,3 +272,169 @@ Deno.test(
     assertMatch(messages21[1]!, /^\s+at file:.*\d+:\d+$/);
   },
 );
+
+Deno.test("Logger addContext(), removeContext(), clearContext(), and getContext()", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("contextTest", "DEBUG", { handlers: [handler] });
+
+  assertEquals(logger.getContext(), {});
+
+  logger.addContext("userId", "12345");
+  logger.addContext("requestId", "req-abc-123");
+
+  const expectedContext = { userId: "12345", requestId: "req-abc-123" };
+  assertEquals(logger.getContext(), expectedContext);
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, expectedContext);
+  assertEquals(record?.msg, "Test message");
+
+  logger.removeContext("userId");
+  logger.info("After removal");
+  const recordAfterRemoval = handler.records[1];
+  assertEquals(recordAfterRemoval?.context, { requestId: "req-abc-123" });
+
+  logger.clearContext();
+  assertEquals(logger.getContext(), {});
+
+  logger.info("After clear");
+  const recordAfterClear = handler.records[2];
+  assertEquals(recordAfterClear?.context, {});
+});
+
+Deno.test("Logger context isolates between logger instances", () => {
+  const handler1 = new TestHandler("DEBUG");
+  const handler2 = new TestHandler("DEBUG");
+
+  const logger1 = new Logger("logger1", "DEBUG", { handlers: [handler1] });
+  const logger2 = new Logger("logger2", "DEBUG", { handlers: [handler2] });
+
+  logger1.addContext("instance", "logger1");
+  logger2.addContext("instance", "logger2");
+
+  logger1.info("Message from logger1");
+  logger2.info("Message from logger2");
+
+  const record1 = handler1.records[0];
+  const record2 = handler2.records[0];
+
+  assertEquals(record1?.context, { instance: "logger1" });
+  assertEquals(record2?.context, { instance: "logger2" });
+});
+
+Deno.test("Logger context supports complex data types", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("complexTest", "DEBUG", { handlers: [handler] });
+
+  const contextData = {
+    string: "value",
+    number: 42,
+    boolean: true,
+    null: null,
+    object: { nested: "value" },
+    array: [1, 2, 3],
+  };
+
+  logger.addContext("string", contextData.string);
+  logger.addContext("number", contextData.number);
+  logger.addContext("boolean", contextData.boolean);
+  logger.addContext("null", contextData.null);
+  logger.addContext("object", contextData.object);
+  logger.addContext("array", contextData.array);
+
+  logger.info("Complex context test");
+  const record = handler.records[0];
+
+  assertEquals(record?.context, contextData);
+});
+
+Deno.test("Logger context returns immutable copies", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("immutableTest", "DEBUG", { handlers: [handler] });
+
+  logger.addContext("original", "value");
+
+  const contextCopy = logger.getContext();
+
+  contextCopy.modified = "external";
+  delete contextCopy.original;
+
+  assertEquals(logger.getContext(), { original: "value" });
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, { original: "value" });
+
+  record!.context.recordModified = "external";
+
+  logger.info("Second message");
+  const recordAfterModification = handler.records[1];
+  assertEquals(recordAfterModification?.context, { original: "value" });
+  assert(!("recordModified" in recordAfterModification!.context));
+});
+
+Deno.test("Logger addContext() supports undefined values", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("undefinedTest", "DEBUG", { handlers: [handler] });
+
+  logger.addContext("undefinedKey", undefined);
+  logger.addContext("normalKey", "value");
+
+  const expectedContext = { undefinedKey: undefined, normalKey: "value" };
+  assertEquals(logger.getContext(), expectedContext);
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, expectedContext);
+});
+
+Deno.test("Logger addContext() overwrites existing keys", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("overwriteTest", "DEBUG", { handlers: [handler] });
+
+  logger.addContext("key", "original");
+  assertEquals(logger.getContext(), { key: "original" });
+
+  logger.addContext("key", "modified");
+  assertEquals(logger.getContext(), { key: "modified" });
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, { key: "modified" });
+});
+
+Deno.test("Logger removeContext() handles non-existent keys", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("removeTest", "DEBUG", { handlers: [handler] });
+
+  logger.addContext("existing", "value");
+
+  logger.removeContext("nonExistent");
+
+  assertEquals(logger.getContext(), { existing: "value" });
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, { existing: "value" });
+});
+
+Deno.test("Logger clearContext() handles multiple operations", () => {
+  const handler = new TestHandler("DEBUG");
+  const logger = new Logger("clearTest", "DEBUG", { handlers: [handler] });
+
+  logger.addContext("key1", "value1");
+  logger.clearContext();
+  assertEquals(logger.getContext(), {});
+
+  logger.addContext("key2", "value2");
+  logger.clearContext();
+  assertEquals(logger.getContext(), {});
+
+  logger.clearContext();
+  assertEquals(logger.getContext(), {});
+
+  logger.info("Test message");
+  const record = handler.records[0];
+  assertEquals(record?.context, {});
+});
