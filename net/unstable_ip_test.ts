@@ -117,6 +117,7 @@ Deno.test("matchSubnets - invalid inputs", () => {
   assertEquals(matchSubnets("invalid-ip", ["192.168.1.0/24"]), false);
   assertEquals(matchSubnets("192.168.1.10", ["invalid-subnet"]), false);
   assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/33"]), false);
+  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/AA"]), false);
   assertEquals(matchSubnets("2001:db8::1", ["2001:db8::/129"]), false);
 });
 

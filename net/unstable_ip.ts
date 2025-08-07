@@ -169,7 +169,7 @@ function isValidIP(ip: string): boolean {
 function matchIPv4Subnet(
   ip: string,
   subnetIP: string,
-  prefixLength: number,
+  prefixLength: number
 ): boolean {
   if (prefixLength < 0 || prefixLength > 32) {
     return false;
@@ -189,11 +189,13 @@ function matchIPv4Subnet(
 
   const mask = (0xffffffff << (32 - prefixLength)) >>> 0;
 
-  const ipInt = (ipBytes[0]! << 24) |
+  const ipInt =
+    (ipBytes[0]! << 24) |
     (ipBytes[1]! << 16) |
     (ipBytes[2]! << 8) |
     ipBytes[3]!;
-  const subnetInt = (subnetBytes[0]! << 24) |
+  const subnetInt =
+    (subnetBytes[0]! << 24) |
     (subnetBytes[1]! << 16) |
     (subnetBytes[2]! << 8) |
     subnetBytes[3]!;
@@ -204,7 +206,7 @@ function matchIPv4Subnet(
 function matchIPv6Subnet(
   ip: string,
   subnetIP: string,
-  prefixLength: number,
+  prefixLength: number
 ): boolean {
   if (prefixLength < 0 || prefixLength > 128) {
     return false;
@@ -247,10 +249,6 @@ function matchIPv6Subnet(
 }
 
 function expandIPv6(ip: string): string | null {
-  if (!isIPv6(ip)) {
-    return null;
-  }
-
   if (ip.includes(".")) {
     const parts = ip.split(":");
     const ipv4Part = parts.pop();
