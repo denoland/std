@@ -1,6 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { isIPv4, isIPv6, matchSubnets } from "./unstable_ip.ts";
+import {
+  isIPv4,
+  isIPv6,
+  matchIPv4Subnet,
+  matchIPv6Subnet,
+  matchSubnets,
+} from "./unstable_ip.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test("isIPv4()", () => {
@@ -47,93 +53,107 @@ Deno.test("isIPv6()", () => {
   }
 });
 
-Deno.test("matchSubnets - IPv4 exact match", () => {
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.10"]), true);
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.11"]), false);
-});
-
-Deno.test("matchSubnets - IPv4 subnet match", () => {
-  // Test /24 subnet
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/24"]), true);
-  assertEquals(matchSubnets("192.168.1.255", ["192.168.1.0/24"]), true);
-  assertEquals(matchSubnets("192.168.2.10", ["192.168.1.0/24"]), false);
-
-  // Test /16 subnet
-  assertEquals(matchSubnets("192.168.100.10", ["192.168.0.0/16"]), true);
-  assertEquals(matchSubnets("192.169.1.10", ["192.168.0.0/16"]), false);
-
-  // Test /8 subnet
-  assertEquals(matchSubnets("192.100.100.100", ["192.0.0.0/8"]), true);
-  assertEquals(matchSubnets("193.1.1.1", ["192.0.0.0/8"]), false);
-});
-
-Deno.test("matchSubnets - IPv6 exact match", () => {
-  assertEquals(matchSubnets("2001:db8::1", ["2001:db8::1"]), true);
-  assertEquals(matchSubnets("2001:db8::1", ["2001:db8::2"]), false);
-  assertEquals(matchSubnets("::1", ["::1"]), true);
-});
-
-Deno.test("matchSubnets - IPv6 subnet match", () => {
-  // Test /64 subnet
-  assertEquals(matchSubnets("2001:db8::1", ["2001:db8::/64"]), true);
-  assertEquals(matchSubnets("2001:db8::ffff", ["2001:db8::/64"]), true);
-  assertEquals(matchSubnets("2001:db9::1", ["2001:db8::/64"]), false);
-
-  // Test /32 subnet
-  assertEquals(matchSubnets("2001:db8:1234::1", ["2001:db8::/32"]), true);
-  assertEquals(matchSubnets("2001:db9::1", ["2001:db8::/32"]), false);
-
-  // Test /128 (exact match)
-  assertEquals(matchSubnets("2001:db8::1", ["2001:db8::1/128"]), true);
-  assertEquals(matchSubnets("2001:db8::2", ["2001:db8::1/128"]), false);
-});
-
-Deno.test("matchSubnets - multiple subnets", () => {
-  const subnets = [
+Deno.test("matchSubnets()", () => {
+  const mixed = [
     "192.168.1.0/24",
     "10.0.0.0/8",
     "2001:db8::/32",
     "172.16.0.100", // exact IP
   ];
 
-  assertEquals(matchSubnets("192.168.1.50", subnets), true);
-  assertEquals(matchSubnets("10.5.5.5", subnets), true);
-  assertEquals(matchSubnets("2001:db8:1234::1", subnets), true);
-  assertEquals(matchSubnets("172.16.0.100", subnets), true);
-  assertEquals(matchSubnets("172.16.0.101", subnets), false);
-  assertEquals(matchSubnets("8.8.8.8", subnets), false);
+  const list = [
+    // Multiple and mixed subnets
+    { addr: "192.168.1.50", subnets: mixed, expected: true },
+    { addr: "10.5.5.5", subnets: mixed, expected: true },
+    { addr: "172.16.0.100", subnets: mixed, expected: true },
+    { addr: "172.16.0.101", subnets: mixed, expected: false },
+    { addr: "8.8.8.8", subnets: mixed, expected: false },
+    { addr: "2001:db8:1234::1", subnets: mixed, expected: true },
+    { addr: "2001:db9::1", subnets: mixed, expected: false },
+
+    // Invalid inputs
+    { addr: "invalid-ip", subnets: ["192.168.1.0/24"], expected: false },
+    { addr: "192.168.1.10", subnets: ["invalid-subnet"], expected: false },
+    { addr: "192.168.1.10", subnets: ["192.168.1.0/33"], expected: false },
+    { addr: "192.168.1.10", subnets: ["192.168.1.0/AA"], expected: false },
+    { addr: "192.168.1.10", subnets: ["192.168.1.0/"], expected: false },
+    { addr: "2001:db8::1", subnets: ["2001:db8::/129"], expected: false },
+    { addr: "2001:db8::1", subnets: ["2001:db8::/"], expected: false },
+    { addr: "192.168.1.10", subnets: [], expected: false },
+  ];
+
+  for (const { addr, subnets, expected } of list) {
+    assertEquals(matchSubnets(addr, subnets), expected);
+  }
 });
 
-Deno.test("matchSubnets - mixed IPv4 and IPv6", () => {
-  const subnets = ["192.168.1.0/24", "2001:db8::/64"];
+Deno.test("matchIPv4Subnet()", () => {
+  const list: Array<{ addr: string; subnet: string; expected: boolean }> = [
+    { addr: "192.168.1.10", subnet: "192.168.1.0/24", expected: true },
+    { addr: "192.168.1.11", subnet: "/32", expected: false },
+    { addr: "192.168.1", subnet: "192.168.1/32", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/33", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/0", expected: true },
+  ];
 
-  assertEquals(matchSubnets("192.168.1.10", subnets), true);
-  assertEquals(matchSubnets("2001:db8::1", subnets), true);
-  assertEquals(matchSubnets("10.0.0.1", subnets), false);
-  assertEquals(matchSubnets("2001:db9::1", subnets), false);
+  for (const { addr, subnet, expected } of list) {
+    assertEquals(matchIPv4Subnet(addr, subnet), expected);
+  }
 });
 
-Deno.test("matchSubnets - invalid inputs", () => {
-  assertEquals(matchSubnets("invalid-ip", ["192.168.1.0/24"]), false);
-  assertEquals(matchSubnets("192.168.1.10", ["invalid-subnet"]), false);
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/33"]), false);
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/AA"]), false);
-  assertEquals(matchSubnets("2001:db8::1", ["2001:db8::/129"]), false);
-});
+Deno.test("matchIPv6Subnet()", () => {
+  const list = [
+    // Basic functionality
+    { addr: "2001:db8::1", subnet: "2001:db8::/64", expected: true },
 
-Deno.test("matchSubnets - edge cases", () => {
-  // Empty subnets array
-  assertEquals(matchSubnets("192.168.1.10", []), false);
+    // Invalid prefix lengths
+    { addr: "2001:db8::1", subnet: "2001:db8::/129", expected: false },
+    { addr: "2001:db8::1", subnet: "/129", expected: false },
+    { addr: "2001:db8::1", subnet: "2001:db8::/", expected: false },
 
-  // /0 subnet (all IPs)
-  assertEquals(matchSubnets("192.168.1.10", ["0.0.0.0/0"]), true);
-  assertEquals(matchSubnets("8.8.8.8", ["0.0.0.0/0"]), true);
+    // Invalid address formats
+    { addr: "2001:db8", subnet: "2001:db8::/64", expected: false },
+    { addr: "2001:db8::1", subnet: "2001:db8", expected: false },
 
-  // IPv6 /0 subnet
-  assertEquals(matchSubnets("2001:db8::1", ["::/0"]), true);
-  assertEquals(matchSubnets("fe80::1", ["::/0"]), true);
+    // expandIPv6 edge cases
+    { addr: "2001:db8::192.168.1", subnet: "2001:db8::/64", expected: false },
+    { addr: "gggg::1", subnet: "2001:db8::/64", expected: false },
+    { addr: "invalid", subnet: "2001:db8::/64", expected: false },
 
-  // /32 for IPv4 (exact match)
-  assertEquals(matchSubnets("192.168.1.10", ["192.168.1.10/32"]), true);
-  assertEquals(matchSubnets("192.168.1.11", ["192.168.1.10/32"]), false);
+    // Zero prefix (matches all)
+    { addr: "2001:db8::1", subnet: "::/0", expected: true },
+
+    // Remaining bits test
+    { addr: "2001:db8::1", subnet: "2001:db8::/121", expected: true },
+
+    // Additional coverage cases
+    { addr: "2001:db8::", subnet: "2001:db8::/64", expected: true },
+    { addr: "::", subnet: "::/128", expected: true },
+
+    // Additional edge cases
+    { addr: "2001:db8::1", subnet: "2001:db8::1/-1", expected: false },
+    { addr: "2001:db8::1", subnet: "2001:db8::1/abc", expected: false },
+
+    //IPv6 with embedded IPv4
+    {
+      addr: "2001:db8::ffff:192.168.1.1.1",
+      subnet: "2001:db8::/64",
+      expected: false,
+    },
+    {
+      addr: "2001:db8::ffff:192.168.1",
+      subnet: "2001:db8::/64",
+      expected: false,
+    },
+    {
+      addr: "::ffff:192.168.1.1:",
+      subnet: "::ffff:0.0.0.0/128",
+      expected: false,
+    },
+  ];
+
+  for (const { addr, subnet, expected } of list) {
+    assertEquals(matchIPv6Subnet(addr, subnet), expected);
+  }
 });

@@ -130,18 +130,12 @@ function matchSubnet(addr: string, subnet: string): boolean {
 
   // Parse subnet into IP address and prefix length
   const [subnetIP, prefixLengthStr] = subnet.split("/");
-  if (subnetIP === undefined || prefixLengthStr === undefined) {
-    return false;
-  }
-
-  // Validate that the subnet IP is a valid IPv4 or IPv6 address
-  if (!isValidIP(subnetIP)) {
-    return false;
-  }
-
-  // Parse and validate the prefix length
-  const prefix = parseInt(prefixLengthStr, 10);
-  if (isNaN(prefix)) {
+  if (
+    !subnetIP ||
+    subnetIP === "" ||
+    !prefixLengthStr ||
+    prefixLengthStr === ""
+  ) {
     return false;
   }
 
@@ -156,9 +150,9 @@ function matchSubnet(addr: string, subnet: string): boolean {
 
   // Delegate to the appropriate subnet matching function
   if (ipIsV4) {
-    return matchIPv4Subnet(addr, subnetIP, prefix);
+    return matchIPv4Subnet(addr, subnet);
   } else {
-    return matchIPv6Subnet(addr, subnetIP, prefix);
+    return matchIPv6Subnet(addr, subnet);
   }
 }
 
@@ -166,28 +160,58 @@ function isValidIP(ip: string): boolean {
   return isIPv4(ip) || isIPv6(ip);
 }
 
-function matchIPv4Subnet(
-  ip: string,
-  subnetIP: string,
-  prefixLength: number,
-): boolean {
-  if (prefixLength < 0 || prefixLength > 32) {
+/**
+ * Checks if an IPv4 address matches a subnet or specific IPv4 address.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param addr The IP address to check (IPv4)
+ * @param subnet The subnet in CIDR notation (e.g., "192.168.1.0/24") or a specific IP address
+ * @returns true if the IP address matches the subnet or IP, false otherwise
+ * @example Check if the address is a IPv6
+ *
+ * ```ts
+ * import { matchIPv4Subnet } from "@std/net/unstable-ip"
+ * import { assert, assertFalse } from "@std/assert"
+ *
+ * assert(matchIPv4Subnet("192.168.1.10", "192.168.1.0/24"));
+ * assertFalse(matchIPv4Subnet("192.168.2.10", "192.168.1.0/24"));
+ * ```
+ */
+export function matchIPv4Subnet(addr: string, subnet: string): boolean {
+  const [subnetIP, prefixLengthStr] = subnet.split("/");
+
+  const prefix = parseInt(prefixLengthStr!, 10);
+  if (isNaN(prefix)) {
+    return false;
+  }
+
+  if (
+    !subnetIP ||
+    subnetIP === "" ||
+    !prefixLengthStr ||
+    prefixLengthStr === ""
+  ) {
+    return false;
+  }
+
+  if (prefix < 0 || prefix > 32) {
     return false;
   }
 
   // Special case: /0 matches all IPv4 addresses
-  if (prefixLength === 0) {
+  if (prefix === 0) {
     return true;
   }
 
-  const ipBytes = ip.split(".").map(Number);
+  const ipBytes = addr.split(".").map(Number);
   const subnetBytes = subnetIP.split(".").map(Number);
 
   if (ipBytes.length !== 4 || subnetBytes.length !== 4) {
     return false;
   }
 
-  const mask = (0xffffffff << (32 - prefixLength)) >>> 0;
+  const mask = (0xffffffff << (32 - prefix)) >>> 0;
 
   const ipInt = (ipBytes[0]! << 24) |
     (ipBytes[1]! << 16) |
@@ -201,20 +225,50 @@ function matchIPv4Subnet(
   return ((ipInt >>> 0) & mask) === ((subnetInt >>> 0) & mask);
 }
 
-function matchIPv6Subnet(
-  ip: string,
-  subnetIP: string,
-  prefixLength: number,
-): boolean {
-  if (prefixLength < 0 || prefixLength > 128) {
+/**
+ * Checks if an IPv6 address matches a subnet or specific IPv6 address.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param addr The IP address to check (IPv6)
+ * @param subnet The subnet in CIDR notation (e.g., "2001:db8::/64") or a specific IP address
+ * @returns true if the IP address matches the subnet or IP, false otherwise
+ * @example Check if the address is a IPv6
+ *
+ * ```ts
+ * import { matchIPv6Subnet } from "@std/net/unstable-ip"
+ * import { assert, assertFalse } from "@std/assert"
+ *
+ * assert(matchIPv6Subnet("2001:db8::ffff", "2001:db8::/64"));
+ * assertFalse(matchIPv6Subnet("2001:db9::1", "2001:db8::/64"));
+ * ```
+ */
+export function matchIPv6Subnet(addr: string, subnet: string): boolean {
+  const [subnetIP, prefixLengthStr] = subnet.split("/");
+
+  const prefix = parseInt(prefixLengthStr!, 10);
+  if (isNaN(prefix)) {
     return false;
   }
 
-  if (prefixLength === 0) {
+  if (
+    !subnetIP ||
+    subnetIP === "" ||
+    !prefixLengthStr ||
+    prefixLengthStr === ""
+  ) {
+    return false;
+  }
+
+  if (prefix < 0 || prefix > 128) {
+    return false;
+  }
+
+  if (prefix === 0) {
     return true;
   }
 
-  const ipExpanded = expandIPv6(ip);
+  const ipExpanded = expandIPv6(addr);
   const subnetExpanded = expandIPv6(subnetIP);
 
   if (!ipExpanded || !subnetExpanded) {
@@ -224,8 +278,8 @@ function matchIPv6Subnet(
   const ipBytes = ipv6ToBytes(ipExpanded);
   const subnetBytes = ipv6ToBytes(subnetExpanded);
 
-  const fullBytes = Math.floor(prefixLength / 8);
-  const remainingBits = prefixLength % 8;
+  const fullBytes = Math.floor(prefix / 8);
+  const remainingBits = prefix % 8;
 
   for (let i = 0; i < fullBytes; i++) {
     if (ipBytes[i] !== subnetBytes[i]) {
@@ -233,27 +287,24 @@ function matchIPv6Subnet(
     }
   }
 
-  if (remainingBits > 0 && fullBytes < 16) {
+  if (remainingBits > 0) {
     const mask = 0xff << (8 - remainingBits);
-    const ipByte = ipBytes[fullBytes];
-    const subnetByte = subnetBytes[fullBytes];
-    if (ipByte === undefined || subnetByte === undefined) {
-      return false;
-    }
+    const ipByte = ipBytes[fullBytes]!;
+    const subnetByte = subnetBytes[fullBytes]!;
     return (ipByte & mask) === (subnetByte & mask);
   }
 
   return true;
 }
 
-function expandIPv6(ip: string): string | null {
-  if (ip.includes(".")) {
-    const parts = ip.split(":");
+function expandIPv6(addr: string): string | null {
+  if (addr.includes(".")) {
+    const parts = addr.split(":");
     const ipv4Part = parts.pop();
     if (!ipv4Part) {
       return null;
     }
-    const ipv4Bytes = ipv4Part.split(".").map(Number);
+    const ipv4Bytes = ipv4Part!.split(".").map(Number);
     if (ipv4Bytes.length !== 4) {
       return null;
     }
@@ -261,10 +312,10 @@ function expandIPv6(ip: string): string | null {
       ((ipv4Bytes[0]! << 8) | ipv4Bytes[1]!).toString(16).padStart(4, "0") +
       ":" +
       ((ipv4Bytes[2]! << 8) | ipv4Bytes[3]!).toString(16).padStart(4, "0");
-    ip = parts.join(":") + ":" + ipv4Hex;
+    addr = parts.join(":") + ":" + ipv4Hex;
   }
 
-  let expanded = ip;
+  let expanded = addr;
 
   // Handle ::
   if (expanded.includes("::")) {
