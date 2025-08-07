@@ -518,19 +518,19 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <main>
           <h1>
             Index of ${headerPaths
-              .map((path, index) => {
-                if (path === "") return "";
-                const depth = headerPaths.length - index - 1;
-                let link;
-                if (depth == 0) {
-                  link = ".";
-                } else {
-                  link = "../".repeat(depth);
-                }
-                // deno-fmt-ignore
-                return html`<a href="${link}">${escape(path)}</a>`;
-              })
-              .join("/")}/
+      .map((path, index) => {
+        if (path === "") return "";
+        const depth = headerPaths.length - index - 1;
+        let link;
+        if (depth == 0) {
+          link = ".";
+        } else {
+          link = "../".repeat(depth);
+        }
+        // deno-fmt-ignore
+        return html`<a href="${link}">${escape(path)}</a>`;
+      })
+      .join("/")}/
           </h1>
           <table>
             <thead>
@@ -541,23 +541,23 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
               </tr>
             </thead>
             ${entries
-              .map(
-                (entry) =>
-                  html`
-                    <tr>
-                      <td class="mode">
-                        ${entry.mode}
-                      </td>
-                      <td class="size">
-                        ${entry.size}
-                      </td>
-                      <td>
-                        <a href="${escape(entry.url)}">${escape(entry.name)}</a>
-                      </td>
-                    </tr>
-                  `,
-              )
-              .join("")}
+      .map(
+        (entry) =>
+          html`
+            <tr>
+              <td class="mode">
+                ${entry.mode}
+              </td>
+              <td class="size">
+                ${entry.size}
+              </td>
+              <td>
+                <a href="${escape(entry.url)}">${escape(entry.name)}</a>
+              </td>
+            </tr>
+          `,
+      )
+      .join("")}
           </table>
         </main>
       </body>

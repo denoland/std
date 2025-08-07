@@ -23,13 +23,10 @@
 export function isIPv4(addr: string): boolean {
   const octets = addr.split(".");
 
-  return (
-    octets.length === 4 &&
-    octets.every((octet) => {
-      const n = Number(octet);
-      return n >= 0 && n <= 255 && !isNaN(n);
-    })
-  );
+  return octets.length === 4 && octets.every((octet) => {
+    const n = Number(octet);
+    return n >= 0 && n <= 255 && !isNaN(n);
+  });
 }
 
 /**
@@ -78,13 +75,10 @@ export function isIPv6(addr: string): boolean {
     hextets.splice(idx, 0, "");
   }
 
-  return (
-    hextets.length === 8 &&
-    hextets.every((hextet) => {
-      const n = hextet === "" ? 0 : parseInt(hextet, 16);
-      return n >= 0 && n <= 65535 && !isNaN(n);
-    })
-  );
+  return hextets.length === 8 && hextets.every((hextet) => {
+    const n = hextet === "" ? 0 : parseInt(hextet, 16);
+    return n >= 0 && n <= 65535 && !isNaN(n);
+  });
 }
 
 /**
