@@ -23,10 +23,13 @@
 export function isIPv4(addr: string): boolean {
   const octets = addr.split(".");
 
-  return octets.length === 4 && octets.every((octet) => {
-    const n = Number(octet);
-    return n >= 0 && n <= 255 && !isNaN(n);
-  });
+  return (
+    octets.length === 4 &&
+    octets.every((octet) => {
+      const n = Number(octet);
+      return n >= 0 && n <= 255 && !isNaN(n);
+    })
+  );
 }
 
 /**
@@ -75,10 +78,13 @@ export function isIPv6(addr: string): boolean {
     hextets.splice(idx, 0, "");
   }
 
-  return hextets.length === 8 && hextets.every((hextet) => {
-    const n = hextet === "" ? 0 : parseInt(hextet, 16);
-    return n >= 0 && n <= 65535 && !isNaN(n);
-  });
+  return (
+    hextets.length === 8 &&
+    hextets.every((hextet) => {
+      const n = hextet === "" ? 0 : parseInt(hextet, 16);
+      return n >= 0 && n <= 65535 && !isNaN(n);
+    })
+  );
 }
 
 /**
@@ -93,13 +99,13 @@ export function isIPv6(addr: string): boolean {
  *
  * ```ts
  * import { matchSubnets } from "@std/net/unstable-ip"
- * import { assert } from "@std/assert"
+ * import { assert, assertFalse } from "@std/assert"
  *
- * assertEquals(matchSubnets("192.168.1.10", ["192.168.1.0/24"]), true);
- * assertEquals(matchSubnets("192.168.2.10", ["192.168.1.0/24"]), false);
+ * assert(matchSubnets("192.168.1.10", ["192.168.1.0/24"]));
+ * assertFalse(matchSubnets("192.168.2.10", ["192.168.1.0/24"]));
  *
- * assertEquals(matchSubnets("2001:db8::ffff", ["2001:db8::/64"]), true);
- * assertEquals(matchSubnets("2001:db9::1", ["2001:db8::/64"]), false);
+ * assert(matchSubnets("2001:db8::ffff", ["2001:db8::/64"]));
+ * assertFalse(matchSubnets("2001:db9::1", ["2001:db8::/64"]));
  * ```
  */
 export function matchSubnets(addr: string, subnetOrIps: string[]): boolean {
@@ -163,7 +169,7 @@ function isValidIP(ip: string): boolean {
 function matchIPv4Subnet(
   ip: string,
   subnetIP: string,
-  prefixLength: number,
+  prefixLength: number
 ): boolean {
   if (prefixLength < 0 || prefixLength > 32) {
     return false;
@@ -183,11 +189,13 @@ function matchIPv4Subnet(
 
   const mask = (0xffffffff << (32 - prefixLength)) >>> 0;
 
-  const ipInt = (ipBytes[0]! << 24) |
+  const ipInt =
+    (ipBytes[0]! << 24) |
     (ipBytes[1]! << 16) |
     (ipBytes[2]! << 8) |
     ipBytes[3]!;
-  const subnetInt = (subnetBytes[0]! << 24) |
+  const subnetInt =
+    (subnetBytes[0]! << 24) |
     (subnetBytes[1]! << 16) |
     (subnetBytes[2]! << 8) |
     subnetBytes[3]!;
@@ -198,7 +206,7 @@ function matchIPv4Subnet(
 function matchIPv6Subnet(
   ip: string,
   subnetIP: string,
-  prefixLength: number,
+  prefixLength: number
 ): boolean {
   if (prefixLength < 0 || prefixLength > 128) {
     return false;
