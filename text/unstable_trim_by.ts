@@ -4,11 +4,13 @@ import { escape } from "@std/regexp/escape";
 
 /**
  * A pattern that can be used to trim characters from an input string.
- * - If `Iterable<string>`, trim all substrings equal to any member (e.g. chars of string).
+ * - If `string`, trim all substrings equal to the string.
+ * - If `Iterable<string>`, trim all substrings equal to any member.
  * - If `RegExp`, trim all substrings that match the regex.
  */
 export type TrimPattern =
-  | Iterable<string> & object
+  | string
+  | Iterable<string>
   | RegExp;
 
 /**
@@ -105,7 +107,7 @@ function trimUntilDone(str: string, regex: RegExp): string {
 function regExpFromTrimPattern(t: TemplateStringsArray, pattern: TrimPattern) {
   let { source, flags } = pattern instanceof RegExp ? pattern : {
     source: `${
-      [...pattern]
+      typeof pattern === "string" ? escape(pattern) : [...pattern]
         .sort((a, b) => b.length - a.length)
         .map(escape)
         .join("|")

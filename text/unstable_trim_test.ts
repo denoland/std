@@ -4,6 +4,7 @@ import { trimBy, trimEndBy, trimStartBy } from "./unstable_trim_by.ts";
 
 Deno.test("trim()", async (t) => {
   await t.step("empty patterns - no-op", () => {
+    assertEquals(trimStartBy("abc", ""), "abc");
     assertEquals(trimStartBy("abc", []), "abc");
     assertEquals(trimStartBy("abc", [""]), "abc");
     assertEquals(trimStartBy("abc", new Set()), "abc");
@@ -11,6 +12,7 @@ Deno.test("trim()", async (t) => {
   });
 
   await t.step("trims both prefixes and suffixes", () => {
+    assertEquals(trimBy("/pathname/", "/"), "pathname");
     assertEquals(trimBy("/pathname/", ["/"]), "pathname");
   });
 
@@ -27,6 +29,7 @@ Deno.test("trim()", async (t) => {
 
 Deno.test("trimStart()", async (t) => {
   await t.step("trims a prefix", () => {
+    assertEquals(trimStartBy("/pathname/", "/"), "pathname/");
     assertEquals(trimStartBy("/pathname/", ["/"]), "pathname/");
   });
 
@@ -35,6 +38,12 @@ Deno.test("trimStart()", async (t) => {
       assertEquals(
         trimStartBy("https://sth.example.com", new Set("https://")),
         ".example.com",
+      );
+    });
+    await t.step("scalar string", () => {
+      assertEquals(
+        trimStartBy("https://sth.example.com", "https://"),
+        "sth.example.com",
       );
     });
     await t.step("strings of string[]", () => {
@@ -58,6 +67,7 @@ Deno.test("trimStart()", async (t) => {
 
 Deno.test("trimEnd()", async (t) => {
   await t.step("trims a suffix", () => {
+    assertEquals(trimEndBy("/pathname/", "/"), "/pathname");
     assertEquals(trimEndBy("/pathname/", ["/"]), "/pathname");
   });
 
