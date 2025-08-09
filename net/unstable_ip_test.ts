@@ -88,7 +88,7 @@ Deno.test("matchSubnets()", () => {
 });
 
 Deno.test("matchIPv4Subnet()", () => {
-  const list: Array<{ addr: string; subnet: string; expected: boolean }> = [
+  const list = [
     { addr: "192.168.1.10", subnet: "192.168.1.0/24", expected: true },
     { addr: "192.168.1.11", subnet: "/32", expected: false },
     { addr: "192.168.1", subnet: "192.168.1/32", expected: false },
