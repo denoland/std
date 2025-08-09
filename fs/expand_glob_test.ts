@@ -454,7 +454,7 @@ Deno.test("expandGlob() finds directory with escaped brackets", async function (
   );
   assertEquals(
     await expandGlobArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
-    ["a[b]c/foo"],
+    [join("a[b]c", "foo")],
   );
 });
 
@@ -465,6 +465,6 @@ Deno.test("expandGlobSync() finds directory with escaped brackets", function () 
   );
   assertEquals(
     expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
-    ["a[b]c/foo"],
+    [join("a[b]c", "foo")],
   );
 });
