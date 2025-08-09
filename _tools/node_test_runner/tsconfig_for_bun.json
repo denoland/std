@@ -7,6 +7,7 @@
       "@std/internal/diff": ["./internal/diff.ts"],
       "@std/internal/diff-str": ["./internal/diff_str.ts"],
       "@std/internal/format": ["./internal/format.ts"],
+      "@std/internal/os": ["./internal/os.ts"],
       "@std/internal/styles": ["./internal/styles.ts"],
       "@std/path": ["./path/mod.ts"],
       "@std/semver": ["./semver/mod.ts"]

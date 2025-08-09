@@ -1,5 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+import { handlePromptSelect } from "./_prompt_select.ts";
+
 /** Options for {@linkcode promptSelect}. */
 export interface PromptSelectOptions {
   /** Clear the lines after the user's input. */
@@ -12,31 +14,80 @@ export interface PromptSelectOptions {
   indicator?: string;
 }
 
+/**
+ * Value for {@linkcode promptSelect}.
+ * If an object, it must have a title and a value, else it can just be a string.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
+ */
+export type PromptEntry<V = undefined> = V extends undefined ? string
+  : PromptEntryWithValue<V>;
+
+/**
+ * A {@linkcode PromptEntry} with an underlying value.
+ *
+ * @typeParam V The value of the underlying Entry.
+ */
+export interface PromptEntryWithValue<V> {
+  /** The label for this entry. */
+  label: string;
+  /** The underlying value representing this entry. */
+  value: V;
+}
+
 const ETX = "\x03";
 const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
+const DELETE = "\u007F";
 
 const input = Deno.stdin;
-const output = Deno.stdout;
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-const CLR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
-const HIDE_CURSOR = encoder.encode("\x1b[?25l");
-const SHOW_CURSOR = encoder.encode("\x1b[?25h");
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
+ * Also supports filtering of the options by typing.
+ *
+ * @typeParam V The value of the underlying Entry, if any.
  * @param message The prompt message to show to the user.
  * @param values The values for the prompt.
  * @param options The options for the prompt.
  * @returns The string that was entered or `null` if stdin is not a TTY.
  *
- * @example Usage
+ * @example Basic usage
  * ```ts ignore
- * import { promptSelect } from "@std/cli/prompt-select";
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
+ *
+ * const browser = promptSelect("Please select browser", [
+ *   "Chrome",
+ *   "Firefox",
+ *   "Safari",
+ * ], { clear: true });
+ * ```
+ *
+ * @example With title and value
+ * ```ts ignore
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
+ *
+ * const browsers = promptSelect(
+ *   "Please select browsers:",
+ *   [{
+ *     label: "safari",
+ *     value: 1,
+ *   }, {
+ *     label: "chrome",
+ *     value: 2,
+ *   }, {
+ *     label: "firefox",
+ *     value: 3,
+ *   }],
+ *   { clear: true },
+ * );
+ * ```
+ *
+ * @example With multiple options
+ * ```ts ignore
+ * import { promptSelect } from "@std/cli/unstable-prompt-select";
  *
  * const browser = promptSelect("What country are you from?", [
  *   "Brazil",
@@ -48,103 +99,56 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * ], { clear: true, visibleLines: 3, indicator: "*" });
  * ```
  */
-export function promptSelect(
+export function promptSelect<V = undefined>(
   message: string,
-  values: string[],
+  values: PromptEntry<V>[],
   options: PromptSelectOptions = {},
-): string | null {
+): PromptEntry<V> | null {
   if (!input.isTerminal()) return null;
 
-  const SAFE_PADDING = 3;
-  let {
-    // Deno.consoleSize().rows - 3 because we need to output the message, the terminal line
-    // and we use the last line to display the "..."
-    visibleLines = Math.min(
-      Deno.consoleSize().rows - SAFE_PADDING,
-      values.length,
-    ),
-    indicator = "❯",
-  } = options;
-  const PADDING = " ".repeat(indicator.length);
-
-  const length = values.length;
   let selectedIndex = 0;
-  let showIndex = 0;
-  let offset = 0;
 
-  input.setRaw(true);
-  output.writeSync(HIDE_CURSOR);
-
-  const buffer = new Uint8Array(4);
-
-  loop:
-  while (true) {
-    output.writeSync(encoder.encode(`${message}\r\n`));
-    const chunk = values.slice(offset, visibleLines + offset);
-    for (const [index, value] of chunk.entries()) {
-      const start = index === showIndex ? indicator : PADDING;
-      output.writeSync(encoder.encode(`${start} ${value}\r\n`));
-    }
-    const moreContent = visibleLines + offset < length;
-    if (moreContent) {
-      output.writeSync(encoder.encode("...\r\n"));
-    }
-    const n = input.readSync(buffer);
-    if (n === null || n === 0) break;
-    const string = decoder.decode(buffer.slice(0, n));
-
-    switch (string) {
-      case ETX:
-        output.writeSync(SHOW_CURSOR);
-        return Deno.exit(0);
-      case ARROW_UP: {
-        const atTop = selectedIndex === 0;
-        selectedIndex = atTop ? length - 1 : selectedIndex - 1;
-        if (atTop) {
-          offset = Math.max(length - visibleLines, 0);
-          showIndex = Math.min(visibleLines - 1, length - 1);
-        } else if (showIndex > 0) {
-          showIndex--;
-        } else {
-          offset = Math.max(offset - 1, 0);
-        }
-        break;
+  handlePromptSelect(
+    message,
+    options.indicator ?? "❯",
+    values,
+    options.clear,
+    options.visibleLines,
+    (active, absoluteIndex) => {
+      if (active) {
+        selectedIndex = absoluteIndex;
       }
-      case ARROW_DOWN: {
-        const atBottom = selectedIndex === length - 1;
-        selectedIndex = atBottom ? 0 : selectedIndex + 1;
-        if (atBottom) {
-          offset = 0;
-          showIndex = 0;
-        } else if (showIndex < visibleLines - 1) {
-          showIndex++;
-        } else {
-          offset++;
-        }
-        break;
+    },
+    (str, _absoluteIndex, {
+      etx,
+      up,
+      down,
+      remove,
+      inputStr,
+    }) => {
+      switch (str) {
+        case ETX:
+          return etx();
+        case ARROW_UP:
+          up();
+          break;
+        case ARROW_DOWN:
+          down();
+          break;
+        case CR:
+        case " ":
+          return true;
+        case DELETE:
+          remove();
+          break;
+        default:
+          inputStr();
+          break;
       }
-      case CR:
-        break loop;
-    }
 
-    visibleLines = Math.min(
-      Deno.consoleSize().rows - SAFE_PADDING,
-      visibleLines,
-    );
-    // if we print the "...\r\n" we need to clear an additional line
-    output.writeSync(
-      encoder.encode(`\x1b[${visibleLines + (moreContent ? 2 : 1)}A`),
-    );
-    output.writeSync(CLR_ALL);
-  }
-
-  if (options.clear) {
-    output.writeSync(encoder.encode(`\x1b[${visibleLines + 1}A`));
-    output.writeSync(CLR_ALL);
-  }
-
-  output.writeSync(SHOW_CURSOR);
-  input.setRaw(false);
+      return false;
+    },
+  );
 
   return values[selectedIndex] ?? null;
 }

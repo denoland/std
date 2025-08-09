@@ -1,3 +1,82 @@
+### 2025.07.29
+
+#### @std/async 1.0.14 (patch)
+
+- fix(async): allow delay timeout of arbitrary length (#6775)
+
+#### @std/tar 0.1.7 (patch)
+
+- fix(tar): receiving empty buffers (#6777)
+
+### 2025.07.22
+
+#### @std/cli 1.0.21 (patch)
+
+- BREAKING(cli/unstable): rename `fmt` of `ProgressBarOption` to `formatter`
+  (#6707)
+- feat(cli/unstable): introduce Ansi module (#6756)
+- feat(cli/unstable): add search to promptSelect and promptMultipleSelect
+  (#6741)
+- feat(cli/unstable): valued prompt items (#6742)
+- feat(cli/unstable): add `visibleLines` and `indicator` options to
+  `promptMultipleSelect`, and show `...` above the options when appropriate
+  (#6699)
+- refactor(cli/unstable): dedupe logic between promptSelect and
+  promptMultipleSelect (#6769)
+- refactor(cli/unstable): rename `title` to `label` for valued prompt items
+  (#6751)
+
+#### @std/data-structures 1.0.9 (patch)
+
+- feat(data-structures/unstable): 2d array (#6754)
+
+#### @std/http 1.0.20 (patch)
+
+- fix(http): respect colors and other `Deno.inspect` options when logging
+  `UserAgent`s (#6763)
+
+#### @std/internal 1.0.10 (patch)
+
+- fix(internal): fix inspect fallbacks for formatting diffs (#6747)
+
+#### @std/testing 1.0.15 (patch)
+
+- feat(testing/unstable): add `stubProperty` function (#6761)
+- fix(testing): align types for fake timeout/interval signatures (#6767)
+
+#### @std/yaml 1.0.9 (patch)
+
+- refactor(yaml): remove `version` property, separate directive handling (#6657)
+
+### 2025.07.01
+
+#### @std/collections 1.1.2 (patch)
+
+- chore(collections): add browser compatibility declaration to `unstable-cycle`
+  module (#6720)
+
+#### @std/fs 1.0.19 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/http 1.0.19 (patch)
+
+- perf(http): increase performance of HTML rendering (#6727)
+
+#### @std/internal 1.0.9 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/path 1.1.1 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/text 1.0.15 (patch)
+
+- feat(text/unstable): add `longestCommonPrefix` (#6734)
+- feat(text/unstable): add `toTitleCase()` and `toSentenceCase()` (#6701)
+- fix(text/unstable): `dedent()` correct blank line handling (#6738)
+
 ### 2025.06.12
 
 #### @std/cli 1.0.20 (patch)

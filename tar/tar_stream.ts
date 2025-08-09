@@ -253,8 +253,10 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
         if ("size" in chunk) {
           let size = 0;
           for await (const value of chunk.readable) {
-            size += value.length;
-            yield value;
+            if (value.length) {
+              size += value.length;
+              yield value;
+            }
           }
           if (chunk.size !== size) {
             throw new RangeError(

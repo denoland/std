@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { isWindows } from "./_os.ts";
+import { isWindows } from "@std/internal/os";
 import { relative as posixRelative } from "./posix/relative.ts";
 import { relative as windowsRelative } from "./windows/relative.ts";
 
