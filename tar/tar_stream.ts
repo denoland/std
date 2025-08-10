@@ -187,45 +187,34 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
       async pull(controller) {
         const offset = controller.byobRequest!.view!.byteOffset;
         const length = controller.byobRequest!.view!.byteLength;
-
-        const { done, value } = await gen.next(
-          new Uint8Array(
-            controller.byobRequest!.view!.buffer as ArrayBuffer,
-            offset,
-            length,
-          ),
+        const buffer = new Uint8Array(
+          controller.byobRequest!.view!.buffer as ArrayBuffer,
+          offset,
+          length,
         );
-        if (done) {
-          controller.close();
-          return controller.byobRequest!.respond(0);
-        }
 
-        // Buffer size is same
-        if (value.buffer.byteLength === length) {
-          return controller.byobRequest!.respondWithNewView(value);
+        try {
+          const { done, value } = await gen.next(buffer);
+          if (done) {
+            controller.close();
+            return controller.byobRequest!.respond(0);
+          }
+
+          // Buffer was passed to readable of file contents.
+          if (buffer.buffer.detached) {
+            return controller.byobRequest!.respondWithNewView(value);
+          }
+          // Buffer was filled out in place.
+          if (buffer.buffer === value.buffer) {
+            return controller.byobRequest!.respond(value.length);
+          }
+          // New buffer was returned as provided buffer was too small to work with.
+          buffer.set(value.subarray(0, length));
+          controller.byobRequest!.respond(length);
+          controller.enqueue(value.subarray(length));
+        } catch (e) {
+          controller.error(e);
         }
-        // Buffer shrank
-        if (value.buffer.byteLength < length) {
-          const size = value.byteLength;
-          return controller.byobRequest!.respondWithNewView(
-            new Uint8Array(
-              // deno-lint-ignore no-explicit-any
-              (value.buffer as any).transfer(offset + length),
-              offset,
-              size,
-            ),
-          );
-        }
-        // Buffer grew
-        const slice = value.slice(length);
-        controller.byobRequest!.respondWithNewView(
-          new Uint8Array(
-            // deno-lint-ignore no-explicit-any
-            (value.buffer as any).transfer(offset + length),
-            offset,
-          ),
-        );
-        controller.enqueue(slice);
       },
     }) as unknown as ReadableStream<Uint8Array_>;
   }
@@ -323,28 +312,33 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
     Uint8Array_
   > {
     let buffer = yield new Uint8Array(0); // Prime the generator
-    let offset = buffer.byteOffset;
     for await (const input of readable) {
-      if (buffer.length < 512) {
-        buffer = new Uint8Array(offset + 512).subarray(offset);
-      }
-
+      if (buffer.length < 512) buffer = new Uint8Array(512);
       this.#parseHeaderInto(input, buffer);
       buffer = yield buffer.subarray(0, 512);
-      offset = buffer.byteOffset;
+
       if (input.type === "directory") continue;
 
       let size = 0;
       const reader = toByteStream(input.readable).getReader({ mode: "byob" });
-
       while (true) {
-        const { done, value } = await reader.read(buffer);
-        if (done) break;
-        size += value.length;
-        if (value.length) {
-          buffer = yield value;
-          offset = buffer.byteOffset;
+        const offset = buffer.byteOffset;
+        const length = buffer.byteLength;
+        const { done, value } = await reader
+          .read(buffer, { min: buffer.length });
+        // value can only be "undefined" if reader was cancalled.
+        if (value == undefined) {
+          throw new Error("ReadableStream was unexpectedly cancelled");
         }
+        size += value.length;
+        if (done) {
+          // value.length might not be zero when done is true
+          buffer = value.length
+            ? yield value
+            : new Uint8Array(value.buffer, offset, length);
+          break;
+        }
+        buffer = yield value;
       }
       reader.releaseLock();
 
@@ -354,12 +348,20 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
         );
       }
       if (size % 512) {
-        buffer = yield new Uint8Array(offset + 512 - size % 512)
-          .subarray(offset);
+        let x = 512 - size % 512;
+        while (x > 0) {
+          buffer = buffer.subarray(0, x).fill(0);
+          x -= buffer.length;
+          buffer = yield buffer;
+        }
       }
     }
-    if (buffer.length < 1024) yield new Uint8Array(1024);
-    else yield buffer.subarray(0, 1024).fill(0);
+    let x = 1024;
+    while (x > 0) {
+      buffer = buffer.subarray(0, x).fill(0);
+      x -= buffer.length;
+      buffer = yield buffer;
+    }
   }
 
   /**
