@@ -201,7 +201,8 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
           }
 
           // Buffer was passed to readable of file contents.
-          if (buffer.buffer.detached) {
+          // deno-lint-ignore no-explicit-any
+          if ((buffer.buffer as any).detached) {
             return controller.byobRequest!.respondWithNewView(value);
           }
           // Buffer was filled out in place.
