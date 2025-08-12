@@ -108,3 +108,29 @@ Deno.test({
     assert(!isGlob("abc/\\?.js"));
   },
 });
+
+// ref https://github.com/denoland/std/pull/6764
+Deno.test("isGlob works the input with large number of open brackets", async () => {
+  const { promise, resolve, reject } = Promise.withResolvers<void>();
+  const timer = setTimeout(() => {
+    reject(new Error("isGlob() did not finish in time"));
+  }, 1000);
+  const worker = new Worker(
+    `
+      data:text/javascript,
+      import { isGlob } from "@std/path";
+      import { assert } from "@std/assert";
+      assert(!isGlob("[".repeat(1_000_000) + "x"));
+      assert(!isGlob("{".repeat(1_000_000) + "x"));
+      assert(!isGlob("(".repeat(1_000_000) + "x"));
+      postMessage(true);`,
+    { type: "module" },
+  );
+  worker.onmessage = () => {
+    worker.terminate();
+    clearTimeout(timer);
+    resolve();
+  };
+
+  await promise;
+});
