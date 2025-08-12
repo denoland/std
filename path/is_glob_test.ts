@@ -112,7 +112,7 @@ Deno.test({
 
 // ref https://github.com/denoland/std/pull/6764
 Deno.test(
-  "isGlob works with the input what includes large number of open brackets",
+  "isGlob works with the input that includes large number of open brackets",
   async () => {
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
