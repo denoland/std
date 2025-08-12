@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assert } from "@std/assert";
 import { isGlob } from "./is_glob.ts";
+import { disposableStack } from "../internal/_testing.ts";
 
 Deno.test({
   name: "isGlob()",
@@ -112,12 +113,11 @@ Deno.test({
 // ref https://github.com/denoland/std/pull/6764
 Deno.test(
   "isGlob works with the input what includes large number of open brackets",
-  { ignore: Deno.build.os === "linux" }, // ignore on linux
   async () => {
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
       reject(new Error("isGlob() did not finish in time"));
-    }, 1000);
+    }, 3000);
     const worker = new Worker(
       `
       data:text/javascript,
@@ -129,8 +129,9 @@ Deno.test(
       postMessage(true);`,
       { type: "module" },
     );
+    using disposable = disposableStack();
+    disposable.defer(() => worker.terminate());
     worker.onmessage = () => {
-      worker.terminate();
       clearTimeout(timer);
       resolve();
     };
