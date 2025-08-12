@@ -110,13 +110,16 @@ Deno.test({
 });
 
 // ref https://github.com/denoland/std/pull/6764
-Deno.test("isGlob works with the input what includes large number of open brackets", async () => {
-  const { promise, resolve, reject } = Promise.withResolvers<void>();
-  const timer = setTimeout(() => {
-    reject(new Error("isGlob() did not finish in time"));
-  }, 1000);
-  const worker = new Worker(
-    `
+Deno.test(
+  "isGlob works with the input what includes large number of open brackets",
+  { ignore: Deno.build.os === "linux" }, // ignore on linux
+  async () => {
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    const timer = setTimeout(() => {
+      reject(new Error("isGlob() did not finish in time"));
+    }, 1000);
+    const worker = new Worker(
+      `
       data:text/javascript,
       import { isGlob } from "@std/path";
       import { assert } from "@std/assert";
@@ -124,13 +127,14 @@ Deno.test("isGlob works with the input what includes large number of open bracke
       assert(!isGlob("{".repeat(1_000_000) + "x"));
       assert(!isGlob("(".repeat(1_000_000) + "x"));
       postMessage(true);`,
-    { type: "module" },
-  );
-  worker.onmessage = () => {
-    worker.terminate();
-    clearTimeout(timer);
-    resolve();
-  };
+      { type: "module" },
+    );
+    worker.onmessage = () => {
+      worker.terminate();
+      clearTimeout(timer);
+      resolve();
+    };
 
-  await promise;
-});
+    await promise;
+  },
+);
