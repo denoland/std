@@ -22,6 +22,24 @@ export type TrimPattern =
  * @param pattern The pattern to trim
  * @returns The trimmed input string
  *
+ * @example Remove slashes from start and end of a path
+ * ```ts
+ * import { trimBy } from "@std/text/unstable-trim-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimBy("/path/to/file/", "/");
+ * assertEquals(result, "path/to/file");
+ * ```
+ *
+ * @example Remove leading and trailing line breaks
+ * ```ts
+ * import { trimBy } from "@std/text/unstable-trim-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimBy("\r\nHello, World!\r\n", ["\n", "\r"]);
+ * assertEquals(result, "Hello, World!");
+ * ```
+ *
  * @example Strip non-word characters from start and end of a string
  * ```ts
  * import { trimBy } from "@std/text/unstable-trim-by";
@@ -52,17 +70,26 @@ export function trimBy(
  * import { trimStartBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimStartBy("\ufeffhello world", ["\ufeff"]);
+ * const result = trimStartBy("\ufeffhello world", "\ufeff");
  * assertEquals(result, "hello world");
  * ```
  *
- * @example Remove leading "https://" from a URL
+ * @example Remove leading "http://" or "https://" from a URL
  * ```ts
  * import { trimStartBy } from "@std/text/unstable-trim-by";
  * import { assertEquals } from "@std/assert";
  *
- * const result = trimStartBy("https://example.com", ["https://"]);
+ * const result = trimStartBy("https://example.com", ["http://", "https://"]);
  * assertEquals(result, "example.com");
+ * ```
+ *
+ * @example Remove leading numbers from a string
+ * ```ts
+ * import { trimStartBy } from "@std/text/unstable-trim-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimStartBy("123abc456", /[0-9]+/);
+ * assertEquals(result, "abc456");
  * ```
  */
 export function trimStartBy(
@@ -81,6 +108,15 @@ export function trimStartBy(
  * @param pattern The pattern to trim
  * @returns The trimmed input string
  *
+ * @example Remove trailing period from a string
+ * ```ts
+ * import { trimEndBy } from "@std/text/unstable-trim-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimEndBy("Hello, World.", ".");
+ * assertEquals(result, "Hello, World");
+ * ```
+ *
  * @example Remove trailing line endings
  * ```ts
  * import { trimEndBy } from "@std/text/unstable-trim-by";
@@ -88,6 +124,15 @@ export function trimStartBy(
  *
  * const result = trimEndBy("file contents\n", ["\r", "\n"]);
  * assertEquals(result, "file contents");
+ * ```
+ *
+ * @example Remove trailing whitespace characters
+ * ```ts
+ * import { trimEndBy } from "@std/text/unstable-trim-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const result = trimEndBy("  Hello, World!  ", /\s+/);
+ * assertEquals(result, "  Hello, World!");
  * ```
  */
 export function trimEndBy(
