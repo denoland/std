@@ -31,10 +31,11 @@ import {
   alphabet,
   type Base64Alphabet,
   calcSizeBase64,
-  decode,
+  decodeChunk,
   encode,
   padding,
   rAlphabet,
+  removeWhiteSpace,
 } from "./_common64.ts";
 import { detach } from "./_common_detach.ts";
 
@@ -171,30 +172,32 @@ export class Base64DecoderStream<T extends "string" | "bytes">
     let remainder = 0;
     super({
       transform(chunk, controller) {
-        let output = encode(chunk);
+        let output = removeWhiteSpace(encode(chunk));
         if (remainder) {
           output = detach(output, remainder + output.length)[0];
           output.set(push.subarray(0, remainder));
         }
         remainder = output.length % 4;
         if (remainder) push.set(output.subarray(-remainder));
-        const o = decode(
+        const o = decodeChunk(
           output.subarray(0, -remainder || undefined),
           0,
           0,
           abc,
           padding,
+          false,
         );
         controller.enqueue(output.subarray(0, o));
       },
       flush(controller) {
         if (remainder) {
-          const o = decode(
+          const o = decodeChunk(
             push.subarray(0, remainder),
             0,
             0,
             abc,
             padding,
+            false,
           );
           controller.enqueue(push.subarray(0, o));
         }
