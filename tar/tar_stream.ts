@@ -646,14 +646,14 @@ export function assertValidPath(path: string): void {
 function parseOctalInto(x: number, buffer: Uint8Array_): void {
   for (let i = buffer.length - 1; i >= 0; --i) {
     buffer[i] = x % 8 + 48;
-    x = x / 8 | 0;
+    x = Math.floor(x / 8);
   }
 }
 
 function octalLength(x: number): number {
   let i = 0;
-  while (!x) {
-    x = x / 8 | 0;
+  while (x) {
+    x = Math.floor(x / 8);
     ++i;
   }
   return i;
