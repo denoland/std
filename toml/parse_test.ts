@@ -857,7 +857,6 @@ Deno.test({
   },
 });
 
-
 Deno.test({
   name: "parse() doesn't pollute prototype with __proto__",
   async fn() {
