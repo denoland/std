@@ -30,6 +30,10 @@
 
 - feat(text/unstable): add `trimBy` functions (#6778)
 
+#### @std/toml 1.0.9 (patch)
+
+- fix(toml): prevent prototype pollution by table key
+
 ### 2025.07.29
 
 #### @std/async 1.0.14 (patch)

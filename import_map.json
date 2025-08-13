@@ -43,7 +43,7 @@
     "@std/tar": "jsr:@std/tar@^0.1.7",
     "@std/testing": "jsr:@std/testing@^1.0.15",
     "@std/text": "jsr:@std/text@^1.0.16",
-    "@std/toml": "jsr:@std/toml@^1.0.8",
+    "@std/toml": "jsr:@std/toml@^1.0.9",
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@std/uuid": "jsr:@std/uuid@^1.0.9",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.8",
