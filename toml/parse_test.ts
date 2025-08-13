@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import { assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import { parse } from "./mod.ts";
 
 Deno.test({
@@ -854,5 +854,29 @@ Deno.test({
     assertThrows(() => parse("value = -nan_"));
     assertThrows(() => parse("value = infinf"));
     assertThrows(() => parse("value = -inf_"));
+  },
+});
+
+
+Deno.test({
+  name: "parse() doesn't pollute prototype with __proto__",
+  async fn() {
+    const testCode = `
+      import { parse } from "${import.meta.resolve("./parse.ts")}";
+      import { assertEquals } from "@std/assert";
+      parse('[__proto__.isAdmin]');
+      assertEquals({}.isAdmin, undefined, "Prototype pollution detected");
+      parse('[[__proto__.arrayTable]]\\npolluted = true');
+      assertEquals({}.arrayTable, undefined, "Prototype pollution detected");
+      parse('[foo]\\n[foo.__proto__.bar]');
+      assertEquals({}.bar, undefined, "Prototype pollution detected");
+    `;
+    const command = new Deno.Command(Deno.execPath(), {
+      stdout: "inherit",
+      stderr: "inherit",
+      args: ["eval", "--no-lock", "--unstable-unsafe-proto", testCode],
+    });
+    const { success } = await command.output();
+    assert(success);
   },
 });

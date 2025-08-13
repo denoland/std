@@ -154,7 +154,7 @@ function failure(): Failure {
  */
 export function unflat(
   keys: string[],
-  values: unknown = {},
+  values: unknown = { __proto__: null },
 ): Record<string, unknown> {
   return keys.reduceRight(
     (acc, key) => ({ [key]: acc }),
@@ -336,7 +336,7 @@ function merge(
   return (scanner: Scanner): ParseResult<Record<string, unknown>> => {
     const result = parser(scanner);
     if (!result.ok) return failure();
-    let body = {};
+    let body = { __proto__: null };
     for (const record of result.body) {
       if (typeof record === "object" && record !== null) {
         body = deepMerge(body, record);
@@ -744,11 +744,11 @@ export function inlineTable(
   scanner.nextUntilChar();
   if (scanner.char(1) === "}") {
     scanner.next(2);
-    return success({});
+    return success({ __proto__: null });
   }
   const pairs = surround("{", join(pair, ","), "}")(scanner);
   if (!pairs.ok) return failure();
-  let table = {};
+  let table = { __proto__: null } as Record<string, unknown>;
   for (const pair of pairs.body) {
     table = deepMerge(table, pair);
   }
@@ -796,7 +796,7 @@ export function table(scanner: Scanner): ParseResult<Table> {
   return success({
     type: "Table",
     keys: header.body,
-    value: b.ok ? b.body.value : {},
+    value: b.ok ? b.body.value : { __proto__: null },
   });
 }
 
@@ -813,7 +813,7 @@ export function tableArray(
   return success({
     type: "TableArray",
     keys: header.body,
-    value: b.ok ? b.body.value : {},
+    value: b.ok ? b.body.value : { __proto__: null },
   });
 }
 
@@ -821,8 +821,8 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  if (!blocks.ok) return success({});
-  const body = blocks.body.reduce(deepAssign, {});
+  if (!blocks.ok) return success({ __proto__: null });
+  const body = blocks.body.reduce(deepAssign, { __proto__: null });
   return success(body);
 }
 
