@@ -480,19 +480,22 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
  * ```
  */
 export function assertValidTarStreamOptions(options: TarStreamOptions): void {
-  if (options.mode && (options.mode.toString(8).length > 6)) {
-    throw new TypeError("Cannot add to the tar archive: Invalid Mode provided");
+  if (options.mode && (options.mode < 0 || octalLength(options.mode) > 6)) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid Mode provided",
+    );
   }
-  if (options.uid && (options.uid.toString(8).length > 6)) {
-    throw new TypeError("Cannot add to the tar archive: Invalid UID provided");
+  if (options.uid && (options.uid < 0 || octalLength(options.uid) > 6)) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid UID provided",
+    );
   }
-  if (options.gid && (options.gid.toString(8).length > 6)) {
+  if (options.gid && (options.gid < 0 || octalLength(options.gid) > 6)) {
     throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
   }
   if (
-    options.mtime != undefined &&
-    (options.mtime.toString(8).length > 11 ||
-      options.mtime.toString() === "NaN")
+    options.mtime &&
+    (octalLength(options.mtime) > 11 || Number, isNaN(options.mtime))
   ) {
     throw new TypeError(
       "Cannot add to the tar archive: Invalid MTime provided",
@@ -628,4 +631,13 @@ function parseOctalInto(x: number, buffer: Uint8Array_): void {
     buffer[i] = x % 8 + 48;
     x = x / 8 | 0;
   }
+}
+
+function octalLength(x: number): number {
+  let i = 0;
+  while (!x) {
+    x = x / 8 | 0;
+    ++i;
+  }
+  return i;
 }
