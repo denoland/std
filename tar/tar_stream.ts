@@ -480,22 +480,39 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
  * ```
  */
 export function assertValidTarStreamOptions(options: TarStreamOptions): void {
-  if (options.mode && (options.mode < 0 || octalLength(options.mode) > 6)) {
+  if (
+    options.mode != undefined &&
+    (Number.isNaN(options.mode) ||
+      options.mode < 0 ||
+      octalLength(options.mode) > 6)
+  ) {
     throw new TypeError(
       "Cannot add to the tar archive: Invalid Mode provided",
     );
   }
-  if (options.uid && (options.uid < 0 || octalLength(options.uid) > 6)) {
+  if (
+    options.uid != undefined &&
+    (Number.isNaN(options.uid) ||
+      options.uid < 0 ||
+      octalLength(options.uid) > 6)
+  ) {
     throw new TypeError(
       "Cannot add to the tar archive: Invalid UID provided",
     );
   }
-  if (options.gid && (options.gid < 0 || octalLength(options.gid) > 6)) {
+  if (
+    options.gid != undefined &&
+    (Number.isNaN(options.gid) ||
+      options.gid < 0 ||
+      octalLength(options.gid) > 6)
+  ) {
     throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
   }
   if (
-    options.mtime &&
-    (octalLength(options.mtime) > 11 || Number, isNaN(options.mtime))
+    options.mtime != undefined &&
+    (Number.isNaN(options.mtime) ||
+      options.mtime < 0 ||
+      octalLength(options.mtime) > 11)
   ) {
     throw new TypeError(
       "Cannot add to the tar archive: Invalid MTime provided",
