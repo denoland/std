@@ -327,16 +327,14 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
         const length = buffer.byteLength;
         const { done, value } = await reader
           .read(buffer, { min: buffer.length });
-        // value can only be "undefined" if reader was cancalled.
-        if (value == undefined) {
-          throw new Error("ReadableStream was unexpectedly cancelled");
-        }
-        size += value.length;
+        // value can only be "undefined" if we call reader.cancel().
+        // All other premature endings will result in .read throwing.
+        size += value!.length;
         if (done) {
           // value.length might not be zero when done is true
-          buffer = value.length
-            ? yield value
-            : new Uint8Array(value.buffer, offset, length);
+          buffer = value!.length
+            ? yield value!
+            : new Uint8Array(value!.buffer, offset, length);
           break;
         }
         buffer = yield value;
