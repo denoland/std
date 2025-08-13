@@ -1,3 +1,35 @@
+### 2025.08.13
+
+#### @std/assert 1.0.14 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/collections 1.1.3 (patch)
+
+- test(collections): fix mapValues mutation test so it actually tests mutation
+  (#6780)
+
+#### @std/expect 1.0.17 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/net 1.0.5 (patch)
+
+- feat(net/unstable): add ip utilities (#6765)
+
+#### @std/path 1.1.2 (patch)
+
+- fix(path): improve regex in `isGlob` (#6764)
+
+#### @std/streams 1.0.11 (patch)
+
+- refactor(streams/unstable): toByteStream to make use of autoAllocateChunkSize
+  (#6781)
+
+#### @std/text 1.0.16 (patch)
+
+- feat(text/unstable): add `trimBy` functions (#6778)
+
 ### 2025.07.29
 
 #### @std/async 1.0.14 (patch)
