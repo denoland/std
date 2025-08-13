@@ -856,3 +856,17 @@ Deno.test({
     assertThrows(() => parse("value = -inf_"));
   },
 });
+
+Deno.test({
+  name: "parse() handles nested table arrays",
+  fn() {
+    const content = `
+[[table]]
+foo = "foo"
+[[table.children]]
+bar = "bar"`;
+
+    const expected = { table: [{ foo: "foo", children: [{ bar: "bar" }] }] };
+    assertEquals(parse(content), expected);
+  },
+});
