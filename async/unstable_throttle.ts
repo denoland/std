@@ -1,6 +1,16 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+/** Options for {@linkcode throttle} */
+export type ThrottleOptions = {
+  /**
+   * If `true`, the most recent call will always be executed once the given timeframe elapses with no further calls.
+   * Otherwise, the most recent call may not be executed if it was throttled due to a previous call.
+   * @default {false}
+   */
+  ensureLastCall?: boolean;
+};
+
 /**
  * A throttled function that will be executed at most once during the
  * specified `timeframe` in milliseconds.
@@ -36,46 +46,52 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  *
  * @example Usage
  * ```ts
- * import { throttle } from "./unstable_throttle.ts"
- * import { retry } from "@std/async/retry"
- * import { assert } from "@std/assert"
+ * import { throttle } from "@std/async/unstable-throttle";
+ * import { retry } from "@std/async/retry";
+ * import { assert } from "@std/assert";
  *
  * let called = 0;
  * const requestReceived = Promise.withResolvers<void>();
  * await using server = Deno.serve({ port: 0 }, () => {
  *   requestReceived.resolve();
- *   return new Response(`${called++}`)
+ *   return new Response(`${called++}`);
  * });
  *
  * // A throttled function will be executed at most once during a specified ms timeframe
- * const timeframe = 100
+ * const timeframe = 100;
  * const func = throttle<[string]>((url) => fetch(url).then(r => r.body?.cancel()), timeframe);
  * for (let i = 0; i < 10; i++) {
  *   func(`http://localhost:${server.addr.port}/api`);
  * }
  *
- * await retry(() => assert(!func.throttling))
+ * await retry(() => assert(!func.throttling));
  * await requestReceived.promise;
- * assert(called === 1)
- * assert(!Number.isNaN(func.lastExecution))
+ * assert(called === 1);
+ * assert(!Number.isNaN(func.lastExecution));
  * ```
  *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to throttle.
  * @param timeframe The timeframe in milliseconds in which the function should be called at most once.
+ * @param options Additional options.
  * @returns The throttled function.
  */
 // deno-lint-ignore no-explicit-any
 export function throttle<T extends Array<any>>(
   fn: (this: ThrottledFunction<T>, ...args: T) => void,
   timeframe: number,
+  options?: ThrottleOptions,
 ): ThrottledFunction<T> {
+  const ensureLast = Boolean(options?.ensureLastCall);
+  let timeout = -1;
+
   let lastExecution = NaN;
   let flush: (() => void) | null = null;
 
   const throttled = ((...args: T) => {
     flush = () => {
       try {
+        clearTimeout(timeout);
         fn.call(throttled, ...args);
       } finally {
         lastExecution = Date.now();
@@ -83,6 +99,9 @@ export function throttle<T extends Array<any>>(
       }
     };
     if (throttled.throttling) {
+      if (ensureLast) {
+        timeout = setTimeout(() => flush?.(), timeframe);
+      }
       return;
     }
     flush?.();
@@ -93,7 +112,6 @@ export function throttle<T extends Array<any>>(
   };
 
   throttled.flush = () => {
-    lastExecution = NaN;
     flush?.();
     throttled.clear();
   };
