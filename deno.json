@@ -36,6 +36,7 @@
   "exclude": [
     ".git",
     "jsonc/testdata",
+    "toml/testdata",
     "_tools/node_test_runner"
   ],
   "lint": {
