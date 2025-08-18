@@ -858,6 +858,20 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() handles nested table arrays",
+  fn() {
+    const content = `
+[[table]]
+foo = "foo"
+[[table.children]]
+bar = "bar"`;
+
+    const expected = { table: [{ foo: "foo", children: [{ bar: "bar" }] }] };
+    assertEquals(parse(content), expected);
+  },
+});
+
+Deno.test({
   name: "parse() doesn't pollute prototype with __proto__",
   async fn() {
     const testCode = `
