@@ -48,14 +48,20 @@ export function timingSafeEqual(
   a: ArrayBufferView | ArrayBufferLike | DataView,
   b: ArrayBufferView | ArrayBufferLike | DataView,
 ): boolean {
-  if (a.byteLength !== b.byteLength) return false;
   const dataViewA = toDataView(a);
   const dataViewB = toDataView(b);
-  const length = a.byteLength;
+  const lengthA = a.byteLength;
+  const lengthB = b.byteLength;
+
+  const lengthDiff = lengthA ^ lengthB;
+  const lengthMax = Math.max(lengthA, lengthB);
+
   let out = 0;
   let i = -1;
-  while (++i < length) {
-    out |= dataViewA.getUint8(i) ^ dataViewB.getUint8(i);
+  while (++i < lengthMax) {
+    const dataA = i < lengthA ? dataViewA.getUint8(i) : 0;
+    const dataB = i < lengthB ? dataViewB.getUint8(i) : 0;
+    out |= dataA ^ dataB;
   }
-  return out === 0;
+  return (out | lengthDiff) === 0;
 }
