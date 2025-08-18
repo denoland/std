@@ -1,5 +1,57 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
+import { toByteStream } from "@std/streams/unstable-to-byte-stream";
+
+/**
+ * The options that can go along with a file or directory.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TarStreamOptions {
+  /**
+   * An octal literal.
+   * Defaults to 0o755 for directories and 0o644 for files.
+   */
+  mode?: number;
+  /**
+   * An octal literal.
+   * @default {0o0}
+   */
+  uid?: number;
+  /**
+   * An octal literal.
+   * @default {0o0}
+   */
+  gid?: number;
+  /**
+   * A number of seconds since the start of epoch. Avoid negative values.
+   * Defaults to the current time in seconds.
+   */
+  mtime?: number;
+  /**
+   * An ASCII string. Should be used in preference of uid.
+   * @default {''}
+   */
+  uname?: string;
+  /**
+   * An ASCII string. Should be used in preference of gid.
+   * @default {''}
+   */
+  gname?: string;
+  /**
+   * The major number for character device.
+   * @default {''}
+   */
+  devmajor?: string;
+  /**
+   * The minor number for block device entry.
+   * @default {''}
+   */
+  devminor?: string;
+}
+
 /**
  * The interface required to provide a file.
  *
@@ -55,58 +107,6 @@ export interface TarStreamDir {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type TarStreamInput = TarStreamFile | TarStreamDir;
-
-type TarStreamInputInternal =
-  & (Omit<TarStreamFile, "path"> | Omit<TarStreamDir, "path">)
-  & { path: [Uint8Array, Uint8Array] };
-
-/**
- * The options that can go along with a file or directory.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface TarStreamOptions {
-  /**
-   * An octal literal.
-   * Defaults to 0o755 for directories and 0o644 for files.
-   */
-  mode?: number;
-  /**
-   * An octal literal.
-   * @default {0o0}
-   */
-  uid?: number;
-  /**
-   * An octal literal.
-   * @default {0o0}
-   */
-  gid?: number;
-  /**
-   * A number of seconds since the start of epoch. Avoid negative values.
-   * Defaults to the current time in seconds.
-   */
-  mtime?: number;
-  /**
-   * An ASCII string. Should be used in preference of uid.
-   * @default {''}
-   */
-  uname?: string;
-  /**
-   * An ASCII string. Should be used in preference of gid.
-   * @default {''}
-   */
-  gname?: string;
-  /**
-   * The major number for character device.
-   * @default {''}
-   */
-  devmajor?: string;
-  /**
-   * The minor number for block device entry.
-   * @default {''}
-   */
-  devminor?: string;
-}
 
 const SLASH_CODE_POINT = "/".charCodeAt(0);
 
@@ -164,137 +164,203 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
  * ```
  */
-
-export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
-  #readable: ReadableStream<Uint8Array>;
+export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
+  #encoder = new TextEncoder();
+  #readable: ReadableStream<Uint8Array_>;
   #writable: WritableStream<TarStreamInput>;
+  /**
+   * Constructs a new instance.
+   */
   constructor() {
     const { readable, writable } = new TransformStream<
       TarStreamInput,
-      TarStreamInputInternal
-    >({
-      transform(chunk, controller) {
-        if (chunk.options) {
-          try {
-            assertValidTarStreamOptions(chunk.options);
-          } catch (e) {
-            return controller.error(e);
-          }
-        }
-
-        if (
-          "size" in chunk &&
-          (chunk.size < 0 || 8 ** 12 < chunk.size ||
-            chunk.size.toString() === "NaN")
-        ) {
-          return controller.error(
-            new RangeError(
-              "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
-            ),
-          );
-        }
-
-        const path = parsePath(chunk.path);
-
-        controller.enqueue({ ...chunk, path });
-      },
-    });
+      TarStreamInput
+    >();
     this.#writable = writable;
-    const gen = async function* () {
-      const encoder = new TextEncoder();
-      for await (const chunk of readable) {
-        const [prefix, name] = chunk.path;
-        const typeflag = "size" in chunk ? "0" : "5";
-        const header = new Uint8Array(512);
-        const size = "size" in chunk ? chunk.size : 0;
-        const options: Required<TarStreamOptions> = {
-          mode: typeflag === "5" ? 0o755 : 0o644,
-          uid: 0o0,
-          gid: 0o0,
-          mtime: Math.floor(Date.now() / 1000),
-          uname: "",
-          gname: "",
-          devmajor: "",
-          devminor: "",
-          ...chunk.options,
-        };
-
-        header.set(name); // name
-        header.set(
-          encoder.encode(
-            options.mode.toString(8).padStart(6, "0") + " \0" + // mode
-              options.uid.toString(8).padStart(6, "0") + " \0" + //uid
-              options.gid.toString(8).padStart(6, "0") + " \0" + // gid
-              size.toString(8).padStart(size < 8 ** 11 ? 11 : 12, "0") +
-              (size < 8 ** 11 ? " " : "") + // size
-              options.mtime.toString(8).padStart(11, "0") + " " + // mtime
-              " ".repeat(8) + // checksum | To be updated later
-              typeflag + // typeflag
-              "\0".repeat(100) + // linkname
-              "ustar\0" + // magic
-              "00" + // version
-              options.uname.padEnd(32, "\0") + // uname
-              options.gname.padEnd(32, "\0") + // gname
-              options.devmajor.padStart(8, "\0") + // devmajor
-              options.devminor.padStart(8, "\0"), // devminor
-          ),
-          100,
-        );
-        header.set(prefix, 345); // prefix
-        // Update Checksum
-        header.set(
-          encoder.encode(
-            header.reduce((x, y) => x + y).toString(8).padStart(6, "0") + "\0",
-          ),
-          148,
-        );
-        yield header;
-
-        if ("size" in chunk) {
-          let size = 0;
-          for await (const value of chunk.readable) {
-            if (value.length) {
-              size += value.length;
-              yield value;
-            }
-          }
-          if (chunk.size !== size) {
-            throw new RangeError(
-              `Cannot add to the tar archive: The provided size (${chunk.size}) did not match bytes read from provided readable (${size})`,
-            );
-          }
-          if (chunk.size % 512) {
-            yield new Uint8Array(512 - size % 512);
-          }
-        }
-      }
-      yield new Uint8Array(1024);
-    }();
+    const gen = this.#tar(readable);
     this.#readable = new ReadableStream({
       type: "bytes",
+      autoAllocateChunkSize: 512,
+      async start(_controller) {
+        await gen.next(); // Prime the generator
+      },
       async pull(controller) {
-        const { done, value } = await gen.next();
-        if (done) {
-          controller.close();
-          return controller.byobRequest?.respond(0);
-        }
-        if (controller.byobRequest?.view) {
-          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
+        const offset = controller.byobRequest!.view!.byteOffset;
+        const length = controller.byobRequest!.view!.byteLength;
+        const buffer = new Uint8Array(
+          controller.byobRequest!.view!.buffer as ArrayBuffer,
+          offset,
+          length,
+        );
 
-          const size = buffer.length;
-          if (size < value.length) {
-            buffer.set(value.slice(0, size));
-            controller.byobRequest.respond(size);
-            controller.enqueue(value.slice(size));
-          } else {
-            buffer.set(value);
-            controller.byobRequest.respond(value.length);
+        try {
+          const { done, value } = await gen.next(buffer);
+          if (done) {
+            controller.close();
+            return controller.byobRequest!.respond(0);
           }
-        } else {
-          controller.enqueue(value);
+
+          // Buffer was passed to readable of file contents.
+          // deno-lint-ignore no-explicit-any
+          if ((buffer.buffer as any).detached) {
+            return controller.byobRequest!.respondWithNewView(value);
+          }
+          // Buffer was filled out in place.
+          if (buffer.buffer === value.buffer) {
+            return controller.byobRequest!.respond(value.length);
+          }
+          // New buffer was returned as provided buffer was too small to work with.
+          buffer.set(value.subarray(0, length));
+          controller.byobRequest!.respond(length);
+          controller.enqueue(value.subarray(length));
+        } catch (e) {
+          controller.error(e);
         }
       },
-    });
+    }) as unknown as ReadableStream<Uint8Array_>;
+  }
+
+  #parsePathInto(path: string, buffer: Uint8Array_): void {
+    parsePath(this.#encoder.encodeInto(path, buffer).written, buffer);
+  }
+
+  #parseHeaderInto(
+    input: TarStreamInput,
+    buffer: Uint8Array_,
+  ): void {
+    input.options ??= {};
+    input.options.mode ??= input.type === "file" ? 0o644 : 0o755;
+    input.options.uid ??= 0o0;
+    input.options.gid ??= 0o0;
+    input.options.mtime ??= Math.floor(Date.now() / 1000);
+    input.options.uname ??= "";
+    input.options.gname ??= "";
+    input.options.devmajor ??= "";
+    input.options.devminor ??= "";
+    assertValidTarStreamOptions(input.options);
+    if (
+      input.type === "file" &&
+      (input.size < 0 || 8 ** 12 < input.size || Number.isNaN(input.size))
+    ) {
+      throw new RangeError(
+        "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
+      );
+    }
+
+    // name (100) & prefix (155)
+    this.#parsePathInto(input.path, buffer);
+    // mode (8)
+    parseOctalInto(input.options.mode, buffer.subarray(100, 106));
+    buffer[106] = 32;
+    buffer[107] = 0;
+    // uid (8)
+    parseOctalInto(input.options.uid, buffer.subarray(108, 114));
+    buffer[114] = 32;
+    buffer[115] = 0;
+    // gid (8)
+    parseOctalInto(input.options.gid, buffer.subarray(116, 122));
+    buffer[122] = 32;
+    buffer[123] = 0;
+    // size (12)
+    const size = input.type === "file" ? input.size : 0;
+    buffer[135] = 32;
+    parseOctalInto(size, buffer.subarray(124, 135 + +(8 ** 11 < size)));
+    // mtime (12)
+    parseOctalInto(input.options.mtime, buffer.subarray(136, 147));
+    buffer[147] = 32;
+    // checksum (8)
+    buffer.fill(32, 148, 156);
+    // typeflag (1)
+    buffer[156] = input.type === "file" ? 48 : 53;
+    // linkname (100)
+    buffer.fill(0, 157, 257);
+    // magic (6)
+    buffer[257] = 117;
+    buffer[258] = 115;
+    buffer[259] = 116;
+    buffer[260] = 97;
+    buffer[261] = 114;
+    buffer[262] = 0;
+    // version (2)
+    buffer.fill(48, 263, 265);
+    // uname (32)
+    this.#encoder
+      .encodeInto(input.options.uname, buffer.subarray(265, 297).fill(0));
+    // gname (32)
+    this.#encoder
+      .encodeInto(input.options.gname, buffer.subarray(297, 329).fill(0));
+    // devmajor (8)
+    this.#encoder
+      .encodeInto(input.options.devmajor, buffer.subarray(329, 337).fill(0));
+    // devminor (8)
+    this.#encoder
+      .encodeInto(input.options.devminor, buffer.subarray(337, 345).fill(0));
+    // pad (12)
+    buffer.fill(0, 500, 512);
+    // Update checksum
+    parseOctalInto(
+      buffer.subarray(0, 512).reduce((x, y) => x + y),
+      buffer.subarray(148, 154),
+    );
+    buffer[154] = 0;
+  }
+
+  async *#tar(
+    readable: ReadableStream<TarStreamInput>,
+  ): AsyncGenerator<
+    Uint8Array_,
+    undefined,
+    Uint8Array_
+  > {
+    let buffer = yield new Uint8Array(0); // Prime the generator
+    for await (const input of readable) {
+      if (buffer.length < 512) buffer = new Uint8Array(512);
+      this.#parseHeaderInto(input, buffer);
+      buffer = yield buffer.subarray(0, 512);
+
+      if (input.type === "directory") continue;
+
+      let size = 0;
+      const reader = toByteStream(input.readable).getReader({ mode: "byob" });
+      while (true) {
+        const offset = buffer.byteOffset;
+        const length = buffer.byteLength;
+        const { done, value } = await reader
+          .read(buffer, { min: buffer.length });
+        // value can only be "undefined" if we call reader.cancel().
+        // All other premature endings will result in .read throwing.
+        size += value!.length;
+        if (done) {
+          // value.length might not be zero when done is true
+          buffer = value!.length
+            ? yield value!
+            : new Uint8Array(value!.buffer, offset, length);
+          break;
+        }
+        buffer = yield value;
+      }
+      reader.releaseLock();
+
+      if (input.size !== size) {
+        throw new RangeError(
+          `Cannot add to the tar archive: The provided size (${input.size}) did not match bytes read from provided readable (${size})`,
+        );
+      }
+      if (size % 512) {
+        let x = 512 - size % 512;
+        while (x > 0) {
+          buffer = buffer.subarray(0, x).fill(0);
+          x -= buffer.length;
+          buffer = yield buffer;
+        }
+      }
+    }
+    let x = 1024;
+    while (x > 0) {
+      buffer = buffer.subarray(0, x).fill(0);
+      x -= buffer.length;
+      buffer = yield buffer;
+    }
   }
 
   /**
@@ -329,7 +395,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
    *   .pipeTo((await Deno.create('./out.tar.gz')).writable)
    * ```
    */
-  get readable(): ReadableStream<Uint8Array> {
+  get readable(): ReadableStream<Uint8Array_> {
     return this.#readable;
   }
 
@@ -370,50 +436,156 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array> {
   }
 }
 
-function parsePath(
-  path: string,
-): [Uint8Array, Uint8Array] {
-  const name = new TextEncoder().encode(path);
-  if (name.length <= 100) {
-    return [new Uint8Array(0), name];
+/**
+ * Asserts that the options provided are valid for a {@linkcode TarStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param options The TarStreamOptions
+ *
+ * @example Usage
+ * ```ts no-assert ignore
+ * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/tar";
+ *
+ *  const paths = (await Array.fromAsync(Deno.readDir('./')))
+ *   .filter(entry => entry.isFile)
+ *   .map(entry => entry.name);
+ *
+ * await Deno.mkdir('./out/', { recursive: true })
+ * await ReadableStream.from(paths)
+ *   .pipeThrough(new TransformStream<string, TarStreamInput>({
+ *     async transform(path, controller) {
+ *       const stats = await Deno.stat(path);
+ *       const options = { mtime: stats.mtime?.getTime()! / 1000 };
+ *       try {
+ *         // Filter out any paths that would have an invalid options provided.
+ *         assertValidTarStreamOptions(options);
+ *         controller.enqueue({
+ *           type: "file",
+ *           path,
+ *           size: stats.size,
+ *           readable: (await Deno.open(path)).readable,
+ *           options,
+ *         });
+ *       } catch (error) {
+ *         console.error(error);
+ *       }
+ *     },
+ *   }))
+ *   .pipeThrough(new TarStream())
+ *   .pipeThrough(new CompressionStream('gzip'))
+ *   .pipeTo((await Deno.create('./out/archive.tar.gz')).writable);
+ * ```
+ */
+export function assertValidTarStreamOptions(options: TarStreamOptions): void {
+  if (
+    options.mode != undefined &&
+    (Number.isNaN(options.mode) ||
+      options.mode < 0 ||
+      octalLength(options.mode) > 6)
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid Mode provided",
+    );
   }
+  if (
+    options.uid != undefined &&
+    (Number.isNaN(options.uid) ||
+      options.uid < 0 ||
+      octalLength(options.uid) > 6)
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid UID provided",
+    );
+  }
+  if (
+    options.gid != undefined &&
+    (Number.isNaN(options.gid) ||
+      options.gid < 0 ||
+      octalLength(options.gid) > 6)
+  ) {
+    throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
+  }
+  if (
+    options.mtime != undefined &&
+    (Number.isNaN(options.mtime) ||
+      options.mtime < 0 ||
+      octalLength(options.mtime) > 11)
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid MTime provided",
+    );
+  }
+  if (
+    options.uname &&
+    // deno-lint-ignore no-control-regex
+    (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid UName provided",
+    );
+  }
+  if (
+    options.gname &&
+    // deno-lint-ignore no-control-regex
+    (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid GName provided",
+    );
+  }
+  if (
+    options.devmajor &&
+    (options.devmajor.length > 8)
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid DevMajor provided",
+    );
+  }
+  if (
+    options.devminor &&
+    (options.devminor.length > 8)
+  ) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid DevMinor provided",
+    );
+  }
+}
 
-  if (name.length > 256) {
+function parsePath(size: number, buffer: Uint8Array_): void {
+  if (size <= 100) return;
+  if (size > 256) {
     throw new RangeError(
-      `Cannot parse the path as the path length cannot exceed 256 bytes: The path length is ${name.length}`,
+      `Cannot parse the path as the path length cannot exceed 256 bytes: The path length is ${size}`,
     );
   }
 
-  // If length of last part is > 100, then there's no possible answer to split the path
-  let suitableSlashPos = Math.max(0, name.lastIndexOf(SLASH_CODE_POINT)); // always holds position of '/'
-  if (name.length - suitableSlashPos > 100) {
+  const sub = buffer.subarray(0, size);
+  let slashPos = Math.max(0, sub.lastIndexOf(SLASH_CODE_POINT));
+  if (size - slashPos > 100) {
     throw new RangeError(
-      `Cannot parse the path as the filename cannot exceed 100 bytes: The filename length is ${
-        name.length - suitableSlashPos
+      `Cannot parse the path as the file cannot exceed 100 bytes: The filename length is ${
+        size - slashPos
       }`,
     );
   }
 
-  for (
-    let nextPos = suitableSlashPos;
-    nextPos > 0;
-    suitableSlashPos = nextPos
-  ) {
-    // disclaimer: '/' won't appear at pos 0, so nextPos always be > 0 or = -1
-    nextPos = name.lastIndexOf(SLASH_CODE_POINT, suitableSlashPos - 1);
-    // disclaimer: since name.length > 100 in this case, if nextPos = -1, name.length - nextPos will also > 100
-    if (name.length - nextPos > 100) {
-      break;
-    }
+  for (let pos = slashPos; pos > 0; slashPos = pos) {
+    pos = sub.lastIndexOf(SLASH_CODE_POINT, slashPos - 1);
+    if (size - pos > 100) break;
   }
 
-  const prefix = name.slice(0, suitableSlashPos);
+  const prefix = sub.subarray(0, slashPos);
   if (prefix.length > 155) {
     throw new TypeError(
       "Cannot parse the path as the path needs to be split-able on a forward slash separator into [155, 100] bytes respectively",
     );
   }
-  return [prefix, name.slice(suitableSlashPos + 1)];
+  buffer.set(prefix, 345);
+  buffer.subarray(345 + prefix.length, 500).fill(0);
+  const name = sub.subarray(slashPos + 1);
+  buffer.set(name);
+  buffer.subarray(name.length, 100).fill(0);
 }
 
 /**
@@ -464,102 +636,23 @@ function parsePath(
  *   .pipeTo((await Deno.create('./out/archive.tar.gz')).writable);
  * ```
  */
-export function assertValidPath(path: string) {
-  parsePath(path);
+export function assertValidPath(path: string): void {
+  const buffer = new Uint8Array(512);
+  parsePath(new TextEncoder().encodeInto(path, buffer).written, buffer);
 }
 
-/**
- * Asserts that the options provided are valid for a {@linkcode TarStream}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @param options The TarStreamOptions
- *
- * @example Usage
- * ```ts no-assert ignore
- * import { assertValidTarStreamOptions, TarStream, type TarStreamInput } from "@std/tar";
- *
- *  const paths = (await Array.fromAsync(Deno.readDir('./')))
- *   .filter(entry => entry.isFile)
- *   .map(entry => entry.name);
- *
- * await Deno.mkdir('./out/', { recursive: true })
- * await ReadableStream.from(paths)
- *   .pipeThrough(new TransformStream<string, TarStreamInput>({
- *     async transform(path, controller) {
- *       const stats = await Deno.stat(path);
- *       const options = { mtime: stats.mtime?.getTime()! / 1000 };
- *       try {
- *         // Filter out any paths that would have an invalid options provided.
- *         assertValidTarStreamOptions(options);
- *         controller.enqueue({
- *           type: "file",
- *           path,
- *           size: stats.size,
- *           readable: (await Deno.open(path)).readable,
- *           options,
- *         });
- *       } catch (error) {
- *         console.error(error);
- *       }
- *     },
- *   }))
- *   .pipeThrough(new TarStream())
- *   .pipeThrough(new CompressionStream('gzip'))
- *   .pipeTo((await Deno.create('./out/archive.tar.gz')).writable);
- * ```
- */
-export function assertValidTarStreamOptions(options: TarStreamOptions) {
-  if (options.mode && (options.mode.toString(8).length > 6)) {
-    throw new TypeError("Cannot add to the tar archive: Invalid Mode provided");
+function parseOctalInto(x: number, buffer: Uint8Array_): void {
+  for (let i = buffer.length - 1; i >= 0; --i) {
+    buffer[i] = x % 8 + 48;
+    x = Math.floor(x / 8);
   }
-  if (options.uid && (options.uid.toString(8).length > 6)) {
-    throw new TypeError("Cannot add to the tar archive: Invalid UID provided");
+}
+
+function octalLength(x: number): number {
+  let i = 0;
+  while (x) {
+    x = Math.floor(x / 8);
+    ++i;
   }
-  if (options.gid && (options.gid.toString(8).length > 6)) {
-    throw new TypeError("Cannot add to the tar archive: Invalid GID provided");
-  }
-  if (
-    options.mtime != undefined &&
-    (options.mtime.toString(8).length > 11 ||
-      options.mtime.toString() === "NaN")
-  ) {
-    throw new TypeError(
-      "Cannot add to the tar archive: Invalid MTime provided",
-    );
-  }
-  if (
-    options.uname &&
-    // deno-lint-ignore no-control-regex
-    (options.uname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.uname))
-  ) {
-    throw new TypeError(
-      "Cannot add to the tar archive: Invalid UName provided",
-    );
-  }
-  if (
-    options.gname &&
-    // deno-lint-ignore no-control-regex
-    (options.gname.length > 32 - 1 || !/^[\x00-\x7F]*$/.test(options.gname))
-  ) {
-    throw new TypeError(
-      "Cannot add to the tar archive: Invalid GName provided",
-    );
-  }
-  if (
-    options.devmajor &&
-    (options.devmajor.length > 8)
-  ) {
-    throw new TypeError(
-      "Cannot add to the tar archive: Invalid DevMajor provided",
-    );
-  }
-  if (
-    options.devminor &&
-    (options.devminor.length > 8)
-  ) {
-    throw new TypeError(
-      "Cannot add to the tar archive: Invalid DevMinor provided",
-    );
-  }
+  return i;
 }
