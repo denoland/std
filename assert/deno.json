@@ -1,6 +1,6 @@
 {
   "name": "@std/assert",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "exports": {
     ".": "./mod.ts",
     "./assert": "./assert.ts",
