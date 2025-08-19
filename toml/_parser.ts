@@ -209,7 +209,16 @@ function deepAssignTableArray(
     return Object.assign(target, unflat(keys, [value]));
   }
   if (Array.isArray(currentValue)) {
-    currentValue.push(value);
+    if (table.keys.length === 1) {
+      currentValue.push(value);
+    } else {
+      const last = currentValue.at(-1);
+      deepAssign(last, {
+        type: table.type,
+        keys: table.keys.slice(1),
+        value: table.value,
+      });
+    }
     return target;
   }
   if (isObject(currentValue)) {
