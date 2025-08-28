@@ -303,7 +303,7 @@ export async function* expandGlob(
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift()!;
-    fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
+    fixedRoot = joinGlobs([fixedRoot, unescapeGlobSegment(seg)], globOptions);
   }
 
   let fixedRootInfo: WalkEntry;
@@ -460,7 +460,7 @@ export function* expandGlobSync(
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift()!;
-    fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
+    fixedRoot = joinGlobs([fixedRoot, unescapeGlobSegment(seg)], globOptions);
   }
 
   let fixedRootInfo: WalkEntry;
@@ -531,4 +531,9 @@ export function* expandGlobSync(
     );
   }
   yield* currentMatches;
+}
+
+const globEscapeChar = Deno.build.os === "windows" ? "`" : `\\`;
+function unescapeGlobSegment(segment: string): string {
+  return segment.replaceAll(globEscapeChar, "");
 }
