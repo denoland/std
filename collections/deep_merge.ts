@@ -208,6 +208,7 @@ export function deepMerge<
     arrays: "merge";
     sets: "merge";
     maps: "merge";
+    undefineds: "replace";
   },
 >(
   record: Readonly<T>,
@@ -224,6 +225,7 @@ function deepMergeInternal<
     arrays: "merge";
     sets: "merge";
     maps: "merge";
+    undefineds: "replace";
   },
 >(
   record: Readonly<T>,
@@ -231,7 +233,6 @@ function deepMergeInternal<
   seen: Set<NonNullable<unknown>>,
   options?: Readonly<Options>,
 ) {
-  // Extract options
   // Clone left operand to avoid performing mutations in-place
   type Result = DeepMerge<T, U, Options>;
   const result: Partial<Result> = {};
@@ -252,7 +253,10 @@ function deepMergeInternal<
 
     const a = record[key] as ResultMember;
 
-    if (!Object.hasOwn(other, key)) {
+    if (
+      !Object.hasOwn(other, key) ||
+      (other[key] === undefined && options?.undefineds === "ignore")
+    ) {
       result[key] = a;
 
       continue;
@@ -285,6 +289,7 @@ function mergeObjects(
     arrays: "merge",
     sets: "merge",
     maps: "merge",
+    undefineds: "replace",
   },
 ): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
@@ -387,6 +392,18 @@ export type DeepMergeOptions = {
    * @default {"merge"}
    */
   sets?: MergingStrategy;
+
+  /**
+   * How to handle comparisons between non-`undefined` values and `undefined`.
+   *
+   * - If `"replace"`, the value in `other` is always chosen.
+   * - If `"ignore"`, the value in `other` is only chosen if not `undefined`.
+   *
+   * In both cases, a value of `undefined` is chosen over an omitted value.
+   *
+   * @default {"replace"}
+   */
+  undefineds?: "replace" | "ignore";
 };
 
 /**
