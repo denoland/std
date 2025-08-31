@@ -15,28 +15,45 @@ export type EscapeJsOptions = {
  *
  * The data must be JSON-serializable (plain object, array, string, number (excluding `NaN`/infinities), boolean, or null).
  *
- * The output remains fully JSON-compatible, but it additionally escapes characters and sequences that are problematic
- * in JavaScript contexts, including within `<script>` tags.
+ * The output is fully JSON-compatible, with additional escaping of sequences that can be problematic within `<script>` tags.
  *
  * @param data The data to escape.
  * @param options Options for escaping.
  * @returns The escaped string.
  *
- * @example Usage
+ * @example Escaping a string
  * ```ts
  * import { escapeJs } from "@std/html/unstable-escape-js";
  * import { assertEquals } from "@std/assert";
- * // Example data to escape
+ * const input = "\u2028\u2029</script>";
+ * assertEquals(escapeJs(input), '"\\u2028\\u2029\\u003c/script>"');
+ * ```
+ *
+ * @example Escaping an object
+ * ```ts
+ * import { escapeJs } from "@std/html/unstable-escape-js";
+ * import { assertEquals } from "@std/assert";
  * const input = {
- *   foo: "</script>",
- *   bar: "<SCRIPT>",
- *   baz: "<!-- ",
- *   quux: "\u2028\u2029<>",
+ *   "<SCRIPT>": "</script>",
+ *   "<!--": "\u2028\u2029<>",
  * };
  * assertEquals(
  *  escapeJs(input),
- *  String.raw`{"foo":"\u003c/script>","bar":"\u003cSCRIPT>","baz":"\u003c!-- ","quux":"\u2028\u2029<>"}`,
+ *  '{"\\u003cSCRIPT>":"\\u003c/script>","\\u003c!--":"\\u2028\\u2029<>"}',
  * );
+ * ```
+ *
+ * @example Interpolating arbitrary data in a script tag
+ * ```ts no-assert ignore
+ * // might be nested arbitrarily deeply
+ * declare const data: string | number | Record<string, string> | Record<string, Record<string, string>>;
+ * const scriptHtml = `<script>window.handleData(${escapeJs(data)})</script>`;
+ * ```
+ *
+ * @example Interpolating into a JSON script (e.g. importmap)
+ * ```ts no-assert ignore
+ * const importMap = { imports: { zod: 'https://esm.sh/v131/zod@3.21.4' } };
+ * const importMapHtml = `<script type="importmap">${escapeJs(importMap)}</script>`;
  * ```
  */
 export function escapeJs(data: unknown, options: EscapeJsOptions = {}): string {
