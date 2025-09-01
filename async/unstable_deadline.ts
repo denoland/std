@@ -7,9 +7,9 @@ import { abortable } from "./abortable.ts";
 export interface DeadlineOptions {
   /** Signal used to abort the deadline. */
   signal?: AbortSignal;
-  /** 
-   * Allow the deadline to be infinite. 
-   * 
+  /**
+   * Allow the deadline to be infinite.
+   *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   allowInfinity?: boolean;
@@ -21,7 +21,7 @@ export interface DeadlineOptions {
  *
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
- * 
+ *
  * @throws {DOMException & { name: "TimeoutError" }} If the provided duration
  * runs out before resolving.
  * @throws {DOMException & { name: "AbortError" }} If the optional signal is
