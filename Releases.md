@@ -1,3 +1,26 @@
+### 2025.09.04
+
+#### @std/cli 1.0.22 (patch)
+
+- fix(cli/unstable): update typing of ProgressBarStream for TS 5.9 (#6811)
+
+#### @std/net 1.0.6 (patch)
+
+- feat(net/unstable): add matchSubnets on @std/net (#6786)
+
+#### @std/streams 1.0.12 (patch)
+
+- deprecation(streams/unstable): AbortStream (#6799)
+
+#### @std/tar 0.1.8 (patch)
+
+- refactor(tar): clean up TarStream (#6783)
+- test(tar): improve TarStream's tests (#6793)
+
+#### @std/toml 1.0.10 (patch)
+
+- fix(toml): nested table arrays (#6794)
+
 ### 2025.08.13
 
 #### @std/assert 1.0.14 (patch)
