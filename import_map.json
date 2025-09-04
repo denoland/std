@@ -12,7 +12,7 @@
     "@std/bytes": "jsr:@std/bytes@^1.0.6",
     "@std/cache": "jsr:@std/cache@^0.2.0",
     "@std/cbor": "jsr:@std/cbor@^0.1.8",
-    "@std/cli": "jsr:@std/cli@^1.0.21",
+    "@std/cli": "jsr:@std/cli@^1.0.22",
     "@std/collections": "jsr:@std/collections@^1.1.3",
     "@std/crypto": "jsr:@std/crypto@^1.0.5",
     "@std/csv": "jsr:@std/csv@^1.0.6",

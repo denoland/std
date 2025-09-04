@@ -1,5 +1,9 @@
 ### 2025.09.04
 
+#### @std/cli 1.0.22 (patch)
+
+- fix(cli/unstable): update typing of ProgressBarStream for TS 5.9 (#6811)
+
 #### @std/net 1.0.6 (patch)
 
 - feat(net/unstable): add matchSubnets on @std/net (#6786)
