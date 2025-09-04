@@ -5,6 +5,10 @@ import {
   type ProgressBarOptions,
 } from "./unstable_progress_bar.ts";
 
+import type { Uint8Array_ } from "./_types.ts";
+
+export type { Uint8Array_ };
+
 /**
  * `ProgressBarStream` is a {@link TransformStream} class that reports updates
  * to a separate {@link WritableStream} on a 1s interval.
@@ -25,7 +29,8 @@ import {
  * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
  * ```
  */
-export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
+export class ProgressBarStream
+  extends TransformStream<Uint8Array_, Uint8Array_> {
   /**
    * Constructs a new instance.
    *
