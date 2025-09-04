@@ -2,6 +2,7 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { type Args, parseArgs, type ParseOptions } from "./parse_args.ts";
 import { assertType, type IsExact } from "@std/testing/types";
+import { assertSpyCalls, spy } from "@std/testing/mock";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("parseArgs() handles true boolean flag", function () {
@@ -1688,6 +1689,38 @@ Deno.test("parseArgs() handles types of collect args with known and unknown args
       }
     >
   >(true);
+});
+
+// https://github.com/denoland/std/issues/6773
+Deno.test("parseArgs() does not call unknown() when collecting known args", () => {
+  const opts: ParseOptions = {
+    collect: ["foo"],
+    unknown: (_arg) => {
+    },
+  };
+  const spyOnOpts = spy(opts, "unknown");
+  try {
+    parseArgs(["--foo=bar"], opts);
+    assertSpyCalls(spyOnOpts, 0);
+  } finally {
+    spyOnOpts.restore();
+  }
+});
+
+Deno.test("parseArgs() calls unknown() for uncollected args", () => {
+  const opts: ParseOptions = {
+    collect: ["baz", "bar"],
+    unknown: (_arg) => {
+    },
+  };
+
+  const spyOnOpts = spy(opts, "unknown");
+  try {
+    parseArgs(["--foo=bar", "--qux=baz"], opts);
+    assertSpyCalls(spyOnOpts, 2);
+  } finally {
+    spyOnOpts.restore();
+  }
 });
 
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
