@@ -15,6 +15,7 @@
  */
 
 import { encodeBase64 as base64Encode } from "@std/encoding/base64";
+import type { Uint8Array_ } from "./_types.ts";
 
 /**
  * Just the part of {@linkcode Deno.FileInfo} that is required to calculate an `ETag`,
@@ -58,7 +59,7 @@ function isFileInfo(value: unknown): value is FileInfo {
 }
 
 async function calcEntity(
-  entity: string | Uint8Array,
+  entity: string | Uint8Array_,
   { algorithm = DEFAULT_ALGORITHM }: ETagOptions,
 ) {
   // a short circuit for zero length entities
@@ -116,7 +117,7 @@ async function calcFileInfo(
  * @returns The calculated ETag.
  */
 export async function eTag(
-  entity: string | Uint8Array,
+  entity: string | Uint8Array_,
   options?: ETagOptions,
 ): Promise<string>;
 /**
@@ -149,7 +150,7 @@ export async function eTag(
   options?: ETagOptions,
 ): Promise<string | undefined>;
 export async function eTag(
-  entity: string | Uint8Array | FileInfo,
+  entity: string | Uint8Array_ | FileInfo,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);

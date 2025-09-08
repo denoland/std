@@ -67,9 +67,9 @@ Deno.test(
           "SHA-384",
           (async function* () {
             yield new Uint16Array();
-            yield inputPieces[0] as Uint8Array;
+            yield inputPieces[0] as Uint8Array<ArrayBuffer>;
             yield new ArrayBuffer(0);
-            yield inputPieces[1] as Uint8Array;
+            yield inputPieces[1] as Uint8Array<ArrayBuffer>;
           })(),
         ),
       ),
