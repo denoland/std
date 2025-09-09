@@ -31,7 +31,7 @@ export type IntegerTypedArray =
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type RandomValueGenerator = <T extends IntegerTypedArray>(array: T) => T;
+export type RandomValueGenerator = typeof crypto.getRandomValues;
 
 /**
  * Options for random number generation.
