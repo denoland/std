@@ -37,6 +37,6 @@ export function toLines(
   options?: StreamPipeOptions,
 ): ReadableStream<string> {
   return readable
-    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TextDecoderStream() as TransformStream<Uint8Array, string>)
     .pipeThrough(new TextLineStream(), options);
 }

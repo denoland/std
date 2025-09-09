@@ -58,7 +58,7 @@ function isFileInfo(value: unknown): value is FileInfo {
 }
 
 async function calcEntity(
-  entity: string | Uint8Array,
+  entity: string | ReturnType<TextEncoder["encode"]>,
   { algorithm = DEFAULT_ALGORITHM }: ETagOptions,
 ) {
   // a short circuit for zero length entities
@@ -116,7 +116,7 @@ async function calcFileInfo(
  * @returns The calculated ETag.
  */
 export async function eTag(
-  entity: string | Uint8Array,
+  entity: string | ReturnType<TextEncoder["encode"]>,
   options?: ETagOptions,
 ): Promise<string>;
 /**
@@ -149,7 +149,7 @@ export async function eTag(
   options?: ETagOptions,
 ): Promise<string | undefined>;
 export async function eTag(
-  entity: string | Uint8Array | FileInfo,
+  entity: string | ReturnType<TextEncoder["encode"]> | FileInfo,
   options: ETagOptions = {},
 ): Promise<string | undefined> {
   const weak = options.weak ?? isFileInfo(entity);
