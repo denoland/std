@@ -41,7 +41,7 @@ export type IntegerTypedArray =
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type RandomValueGenerator = <T extends IntegerTypedArray>(arr: T) => T;
+export type RandomValueGenerator = <T extends IntegerTypedArray>(array: T) => T;
 
 /**
  * Options for random number generation.
