@@ -76,7 +76,6 @@
     "./io",
     "./json",
     "./jsonc",
-    "./log",
     "./media_types",
     "./msgpack",
     "./net",
