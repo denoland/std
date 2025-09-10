@@ -100,6 +100,7 @@ export function throttle<T extends Array<any>>(
     };
     if (throttled.throttling) {
       if (ensureLast) {
+        clearTimeout(timeout);
         timeout = setTimeout(() => flush?.(), timeframe);
       }
       return;
