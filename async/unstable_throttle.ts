@@ -85,7 +85,7 @@ export function throttle<T extends Array<any>>(
   const ensureLast = Boolean(options?.ensureLastCall);
   let timeout = -1;
 
-  let lastExecution = NaN;
+  let lastExecution = -Infinity;
   let flush: (() => void) | null = null;
 
   const throttled = ((...args: T) => {
@@ -109,7 +109,7 @@ export function throttle<T extends Array<any>>(
   }) as ThrottledFunction<T>;
 
   throttled.clear = () => {
-    lastExecution = NaN;
+    lastExecution = -Infinity;
   };
 
   throttled.flush = () => {

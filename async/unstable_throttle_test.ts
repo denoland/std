@@ -14,7 +14,7 @@ Deno.test("throttle() handles called", async () => {
   let called = 0;
   const t = throttle(() => called++, 100);
   assertEquals(t.throttling, false);
-  assertEquals(t.lastExecution, NaN);
+  assertEquals(t.lastExecution, -Infinity);
   t();
   const { lastExecution } = t;
   t();
@@ -41,11 +41,11 @@ Deno.test("throttle() handles cancelled", () => {
   t();
   assertEquals(called, 1);
   assertEquals(t.throttling, true);
-  assertNotEquals(t.lastExecution, NaN);
+  assertNotEquals(t.lastExecution, -Infinity);
   t.clear();
   assertEquals(called, 1);
   assertEquals(t.throttling, false);
-  assertEquals(t.lastExecution, NaN);
+  assertEquals(t.lastExecution, -Infinity);
 });
 
 Deno.test("throttle() handles flush", () => {
@@ -61,13 +61,13 @@ Deno.test("throttle() handles flush", () => {
   assertEquals(called, 1);
   assertEquals(arg, "foo");
   assertEquals(t.throttling, true);
-  assertNotEquals(t.lastExecution, NaN);
+  assertNotEquals(t.lastExecution, -Infinity);
   for (const _ of [1, 2]) {
     t.flush();
     assertEquals(called, 2);
     assertEquals(arg, "baz");
     assertEquals(t.throttling, false);
-    assertEquals(t.lastExecution, NaN);
+    assertEquals(t.lastExecution, -Infinity);
   }
 });
 
