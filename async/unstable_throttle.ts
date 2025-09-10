@@ -114,7 +114,6 @@ export function throttle<T extends Array<any>>(
 
   throttled.flush = () => {
     flush?.();
-    throttled.clear();
   };
 
   Object.defineProperties(throttled, {

@@ -49,6 +49,8 @@ Deno.test("throttle() handles cancelled", () => {
 });
 
 Deno.test("throttle() handles flush", () => {
+  using time = new FakeTime(0);
+
   let called = 0;
   let arg = "";
   const t = throttle((_arg) => {
@@ -61,14 +63,31 @@ Deno.test("throttle() handles flush", () => {
   assertEquals(called, 1);
   assertEquals(arg, "foo");
   assertEquals(t.throttling, true);
-  assertNotEquals(t.lastExecution, -Infinity);
-  for (const _ of [1, 2]) {
-    t.flush();
-    assertEquals(called, 2);
-    assertEquals(arg, "baz");
-    assertEquals(t.throttling, false);
-    assertEquals(t.lastExecution, -Infinity);
-  }
+  assertEquals(t.lastExecution, 0);
+
+  time.tick(42);
+  // flush last value "baz"
+  t.flush();
+  assertEquals(t.throttling, true);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
+
+  time.tick(100);
+  // no-op, still throttling
+  t.flush();
+  assertEquals(t.throttling, true);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
+
+  time.tick(1);
+  // no-op, no longer throttling
+  t.flush();
+  assertEquals(t.throttling, false);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
 });
 
 Deno.test("throttle() handles params and context", async () => {
