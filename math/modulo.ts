@@ -1,0 +1,29 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * Computes the modulo of a number.
+ *
+ * @param num The number to be reduced
+ * @param modulus The modulus
+ * @returns The reduced number
+ *
+ * @example Usage
+ * ```ts
+ * import { modulo } from "@std/math/modulo";
+ * import { assertEquals } from "@std/assert";
+ * import { integerRange } from "@std/math/integer-range";
+ *
+ * // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
+ * for (const n of integerRange(-3, 3, { includeEnd: true })) {
+ *  const val = n * 12 + 5
+ *  assertEquals(modulo(val, 12), 5);
+ * }
+ * ```
+ */
+export function modulo(num: number, modulus: number): number {
+  if (!Number.isFinite(num)) return NaN;
+  if (modulus === Infinity || modulus === -Infinity) return num;
+  if (num === 0) return num;
+  return ((num % modulus) + modulus) % modulus;
+}
