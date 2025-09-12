@@ -116,3 +116,11 @@ Deno.test("takeLastWhile() gets from last matching element from a generator", ()
   const actual = takeLastWhile(gen(), (i) => i !== 2 && i !== 4);
   assertEquals(actual, [5, 6]);
 });
+
+Deno.test("takeLastWhile() passes the index to the predicate", () => {
+  const arr = [1, 2, 3, 4];
+
+  const actual = takeLastWhile(arr, (_, index) => index > 1);
+
+  assertEquals(actual, [3, 4]);
+});

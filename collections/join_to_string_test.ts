@@ -144,3 +144,14 @@ Deno.test({
     assertEquals(out, "result: Kim and others are winners");
   },
 });
+
+Deno.test({
+  name: "joinToString() passes index to selector",
+  fn() {
+    const arr = ["Kim", "Anna", "Tim"];
+
+    const out = joinToString(arr, (it, index) => it + index);
+
+    assertEquals(out, "Kim0,Anna1,Tim2");
+  },
+});
