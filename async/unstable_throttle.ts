@@ -19,7 +19,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
   (...args: T): void;
   /**
    * Clears the throttling state.
-   * {@linkcode ThrottledFunction.lastExecution} will be reset to `NaN` and
+   * {@linkcode ThrottledFunction.lastExecution} will be reset to `-Infinity` and
    * {@linkcode ThrottledFunction.throttling} will be reset to `false`.
    */
   clear(): void;
@@ -33,7 +33,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
   readonly throttling: boolean;
   /**
    * Returns the timestamp of the last execution of the throttled function.
-   * It is set to `NaN` if it has not been called yet.
+   * It is set to `-Infinity` if it has not been called yet, or reset is called after the last call.
    */
   readonly lastExecution: number;
 }
@@ -67,7 +67,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * await retry(() => assert(!func.throttling));
  * await requestReceived.promise;
  * assert(called === 1);
- * assert(!Number.isNaN(func.lastExecution));
+ * assert(func.lastExecution > 0);
  * ```
  *
  * @typeParam T The arguments of the provided function.
