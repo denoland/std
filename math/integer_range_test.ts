@@ -10,6 +10,11 @@ Deno.test("integerRange()", async (t) => {
     assertEquals([...range], []);
   });
 
+  await t.step("only include end (start defaulting to `0`)", () => {
+    const range = integerRange(5);
+    assertEquals([...range], [0, 1, 2, 3, 4]);
+  });
+
   await t.step("`step`", () => {
     assertEquals([...integerRange(1, 5, { step: 2 })], [1, 3]);
   });
@@ -34,13 +39,9 @@ Deno.test("integerRange()", async (t) => {
   });
 
   await t.step("`start` == `end`", () => {
-    assertEquals([...integerRange(0, 0)], [0]);
-    assertEquals([
-      ...integerRange(0, 0, { includeStart: true, includeEnd: true }),
-    ], [0]);
-    assertEquals([
-      ...integerRange(0, 0, { includeStart: false, includeEnd: true }),
-    ], [0]);
+    assertEquals([...integerRange(0, 0)], []);
+    assertEquals([...integerRange(0, 0, { includeEnd: true })], [0]);
+    assertEquals([...integerRange(0, 0, { includeStart: false })], []);
 
     // if _both_ are false, nothing is yielded
     assertEquals([
@@ -69,5 +70,18 @@ Deno.test("integerRange()", async (t) => {
       RangeError,
       "`step` must not be zero",
     );
+  });
+
+  await t.step("`includeEnd` with `step`", () => {
+    assertEquals([...integerRange(0, 2, { step: 2 })], [0]);
+    assertEquals([...integerRange(0, 2, { step: 2, includeEnd: true })], [
+      0,
+      2,
+    ]);
+    assertEquals([...integerRange(0, 3, { step: 2 })], [0, 2]);
+    assertEquals([...integerRange(0, 3, { step: 2, includeEnd: true })], [
+      0,
+      2,
+    ]);
   });
 });
