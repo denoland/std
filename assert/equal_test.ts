@@ -490,3 +490,22 @@ Deno.test("equal() with typed arrays", async (t) => {
     });
   });
 });
+
+Deno.test("equal() with ArrayBuffer", async (t) => {
+  await t.step("ArrayBuffer", async (t) => {
+    await t.step("equal", () => {
+      assert(equal(
+        new Uint8Array([1, 2, 3]).buffer,
+        new Uint8Array([1, 2, 3]).buffer,
+      ));
+    });
+  });
+  await t.step("ArrayBuffer", async (t) => {
+    await t.step("not equal", () => {
+      assertFalse(equal(
+        new Uint8Array([1, 2, 3]).buffer,
+        new Uint8Array([1, 2, 4]).buffer,
+      ));
+    });
+  });
+});
