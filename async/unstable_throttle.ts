@@ -15,8 +15,8 @@ export type ThrottleOptions = {
  * A throttled function that will be executed at most once during the
  * specified `timeframe` in milliseconds.
  */
-export interface ThrottledFunction<T extends Array<unknown>> {
-  (...args: T): void;
+export interface ThrottledFunction<T extends Array<unknown>, R = void> {
+  (...args: T): R extends Promise<unknown> ? Promise<void> : void;
   /**
    * Clears the throttling state.
    * {@linkcode ThrottledFunction.lastExecution} will be reset to `-Infinity` and
@@ -26,7 +26,7 @@ export interface ThrottledFunction<T extends Array<unknown>> {
   /**
    * Execute the last throttled call (if any) and clears the throttling state.
    */
-  flush(): void;
+  flush(): R extends Promise<unknown> ? Promise<void> : void;
   /**
    * Returns a boolean indicating whether the function is currently being throttled.
    */
@@ -70,56 +70,102 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * assert(func.lastExecution > 0);
  * ```
  *
+ * @example Using a dynamic timeframe
+ * ```ts
+ * import { throttle } from "@std/async/unstable-throttle";
+ * import { delay } from "./delay.ts";
+ * import { assertEquals } from "@std/assert";
+ *
+ * let timesCalled = 0;
+ * const fn = throttle(async (ms: number) => {
+ *  await delay(ms);
+ *  ++timesCalled;
+ * }, (previousExecution) => previousExecution * 2);
+ * await fn(50); // takes ~50ms to execute, after which it will be throttled for 50ms * 2 = 100ms
+ * assertEquals(timesCalled, 1);
+ * await delay(50);
+ * await fn(50);
+ * assertEquals(timesCalled, 1); // still throttled
+ * await delay(30);
+ * await fn(50);
+ * assertEquals(timesCalled, 1); // still throttled
+ * await delay(30);
+ * await fn(50);
+ * assertEquals(timesCalled, 2); // not throttled this time
+ * ```
+ *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to throttle.
- * @param timeframe The timeframe in milliseconds in which the function should be called at most once.
+ * @param timeframe The timeframe in milliseconds in which the function should be called at most once. If a callback function is supplied, it will be called with the duration of the previous execution and should return the next timeframe to use in milliseconds.
  * @param options Additional options.
  * @returns The throttled function.
  */
 // deno-lint-ignore no-explicit-any
-export function throttle<T extends Array<any>>(
-  fn: (this: ThrottledFunction<T>, ...args: T) => void,
-  timeframe: number,
+export function throttle<T extends Array<any>, R = void>(
+  fn: (this: ThrottledFunction<T, R>, ...args: T) => R,
+  timeframe: number | ((previousExecution: number) => number),
   options?: ThrottleOptions,
-): ThrottledFunction<T> {
+): ThrottledFunction<T, R> {
   const ensureLast = Boolean(options?.ensureLastCall);
   let timeout = -1;
 
   let lastExecution = -Infinity;
-  let flush: (() => void) | null = null;
+  let flush: (() => void | Promise<void>) | null = null;
+
+  let tf = typeof timeframe === "function" ? 0 : timeframe;
 
   const throttled = ((...args: T) => {
     flush = () => {
+      const start = Date.now();
+      let result: unknown;
       try {
         clearTimeout(timeout);
-        fn.call(throttled, ...args);
+        result = fn.call(throttled, ...args);
       } finally {
         lastExecution = Date.now();
+        if (isPromiseLike(result)) {
+          result = result.finally(() => {
+            lastExecution = Date.now();
+            if (typeof timeframe === "function") {
+              tf = timeframe(lastExecution - start);
+            }
+          });
+        } else {
+          // lastExecution = Date.now();
+          if (typeof timeframe === "function") {
+            tf = timeframe(lastExecution - start);
+          }
+        }
         flush = null;
       }
+      if (isPromiseLike(result)) return result.then(() => {});
     };
     if (throttled.throttling) {
       if (ensureLast) {
         clearTimeout(timeout);
-        timeout = setTimeout(() => flush?.(), timeframe);
+        timeout = setTimeout(() => flush?.(), tf);
       }
       return;
     }
-    flush?.();
-  }) as ThrottledFunction<T>;
+    return flush?.();
+  }) as ThrottledFunction<T, R>;
 
   throttled.clear = () => {
     lastExecution = -Infinity;
   };
 
   throttled.flush = () => {
-    flush?.();
+    return flush?.() as ReturnType<ThrottledFunction<T, R>["flush"]>;
   };
 
   Object.defineProperties(throttled, {
-    throttling: { get: () => Date.now() - lastExecution <= timeframe },
+    throttling: { get: () => Date.now() - lastExecution <= tf },
     lastExecution: { get: () => lastExecution },
   });
 
   return throttled;
+}
+
+function isPromiseLike(obj: unknown): obj is Promise<unknown> {
+  return typeof (obj as Promise<unknown>)?.then === "function";
 }
