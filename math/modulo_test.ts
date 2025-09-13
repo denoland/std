@@ -31,4 +31,70 @@ Deno.test("modulo()", async (t) => {
     assert(Object.is(modulo(0, 5), 0));
     assert(Object.is(modulo(-0, 5), -0));
   });
+
+  await t.step("parity with python `%` operator (floored modulo)", () => {
+    /**
+     * ```python
+     * def modulo(a, b):
+     *   try: return a % b
+     *   except: return float("nan")
+     * [(a, b, modulo(a, b)) for a in range(-3, 4) for b in range(-3, 4)]
+     * ```
+     */
+    const cases: [a: number, b: number, result: number][] = [
+      [-3, -3, 0],
+      [-3, -2, -1],
+      [-3, -1, 0],
+      [-3, 0, NaN],
+      [-3, 1, 0],
+      [-3, 2, 1],
+      [-3, 3, 0],
+      [-2, -3, -2],
+      [-2, -2, 0],
+      [-2, -1, 0],
+      [-2, 0, NaN],
+      [-2, 1, 0],
+      [-2, 2, 0],
+      [-2, 3, 1],
+      [-1, -3, -1],
+      [-1, -2, -1],
+      [-1, -1, 0],
+      [-1, 0, NaN],
+      [-1, 1, 0],
+      [-1, 2, 1],
+      [-1, 3, 2],
+      [0, -3, 0],
+      [0, -2, 0],
+      [0, -1, 0],
+      [0, 0, NaN],
+      [0, 1, 0],
+      [0, 2, 0],
+      [0, 3, 0],
+      [1, -3, -2],
+      [1, -2, -1],
+      [1, -1, 0],
+      [1, 0, NaN],
+      [1, 1, 0],
+      [1, 2, 1],
+      [1, 3, 1],
+      [2, -3, -1],
+      [2, -2, 0],
+      [2, -1, 0],
+      [2, 0, NaN],
+      [2, 1, 0],
+      [2, 2, 0],
+      [2, 3, 2],
+      [3, -3, 0],
+      [3, -2, -1],
+      [3, -1, 0],
+      [3, 0, NaN],
+      [3, 1, 0],
+      [3, 2, 1],
+      [3, 3, 0],
+    ];
+
+    for (const [a, b, result] of cases) {
+      assertEquals(modulo(a, b), result, `modulo(${a}, ${b}) == ${result}`);
+    }
+  });
 });

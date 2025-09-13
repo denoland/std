@@ -21,7 +21,9 @@
  * ```
  */
 export function modulo(num: number, modulus: number): number {
-  if (!Number.isFinite(num) || Number.isNaN(modulus)) return NaN;
+  if (!Number.isFinite(num) || Number.isNaN(modulus) || modulus === 0) {
+    return NaN;
+  }
   if (!Number.isFinite(modulus) || num === 0) return num;
   return ((num % modulus) + modulus) % modulus;
 }
