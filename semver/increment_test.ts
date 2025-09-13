@@ -974,6 +974,13 @@ Deno.test("increment()", async (t) => {
       "1.2.3-0",
     ],
     [
+      { major: 1, minor: 2, patch: 3, prerelease: ["pr", 0], build: [] },
+      "pre",
+      "", // empty prerelease is the same as undefined
+      undefined,
+      "1.2.3-pr.1",
+    ],
+    [
       { major: 1, minor: 2, patch: 3, prerelease: [], build: [] },
       "pre",
       "pr.123", // test specifying a specific prerelease number
