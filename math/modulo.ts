@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Computes the modulo of a number.
+ * Computes the floored modulo of a number.
  *
  * @param num The number to be reduced
  * @param modulus The modulus
@@ -24,6 +24,9 @@ export function modulo(num: number, modulus: number): number {
   if (!Number.isFinite(num) || Number.isNaN(modulus) || modulus === 0) {
     return NaN;
   }
-  if (!Number.isFinite(modulus) || num === 0) return num;
-  return ((num % modulus) + modulus) % modulus;
+  if (num === 0) return modulus < 0 ? -0 : 0;
+  if (modulus === Infinity) return num < 0 ? Infinity : num;
+  if (modulus === -Infinity) return num > 0 ? -Infinity : num;
+
+  return (num % modulus + modulus) % modulus;
 }
