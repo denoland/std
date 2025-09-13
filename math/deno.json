@@ -4,7 +4,6 @@
   "exports": {
     ".": "./mod.ts",
     "./clamp": "./clamp.ts",
-    "./integer-range": "./integer_range.ts",
     "./modulo": "./modulo.ts",
     "./round-to": "./round_to.ts"
   }

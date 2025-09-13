@@ -12,18 +12,16 @@
  * ```ts
  * import { modulo } from "@std/math/modulo";
  * import { assertEquals } from "@std/assert";
- * import { IntegerRange } from "@std/math/integer-range";
  *
  * // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
- * for (const n of new IntegerRange(-3, 3, { includeEnd: true })) {
+ * for (let n = -3; n <= 3; ++n) {
  *  const val = n * 12 + 5
  *  assertEquals(modulo(val, 12), 5);
  * }
  * ```
  */
 export function modulo(num: number, modulus: number): number {
-  if (!Number.isFinite(num)) return NaN;
-  if (modulus === Infinity || modulus === -Infinity) return num;
-  if (num === 0) return num;
+  if (!Number.isFinite(num) || Number.isNaN(modulus)) return NaN;
+  if (!Number.isFinite(modulus) || num === 0) return num;
   return ((num % modulus) + modulus) % modulus;
 }

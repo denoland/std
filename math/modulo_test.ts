@@ -1,11 +1,10 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { modulo } from "./modulo.ts";
 import { assert, assertEquals } from "@std/assert";
-import { IntegerRange } from "./integer_range.ts";
 
 Deno.test("modulo()", async (t) => {
   await t.step("basic functionality", async (t) => {
-    for (const n of new IntegerRange(-3, 3, { includeEnd: true })) {
+    for (let n = -3; n <= 3; ++n) {
       const val = n * 12 + 5;
       await t.step(`modulo(${val}, 12) == 5`, () => {
         assertEquals(modulo(val, 12), 5);
