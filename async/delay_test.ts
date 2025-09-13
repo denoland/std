@@ -131,15 +131,16 @@ Deno.test({
   name: "delay() handles persistent option with error",
   async fn() {
     using unrefTimer = stub(Deno, "unrefTimer", () => {
-      throw new Error("Error!");
+      throw new TypeError("Error!");
     });
-    try {
-      await delay(100, { persistent: false });
-    } catch (e) {
-      assert(e instanceof Error);
-      assertEquals(e.message, "Error!");
-      assertSpyCalls(unrefTimer, 1);
-    }
+
+    await assertRejects(
+      () => delay(100, { persistent: false }),
+      TypeError,
+      "Error!",
+    );
+
+    assertSpyCalls(unrefTimer, 1);
   },
   sanitizeResources: false,
   sanitizeOps: false,
