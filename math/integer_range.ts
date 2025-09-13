@@ -1,20 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-/**
- * Options for {@linkcode integerRange}.
- */
+/** Options for {@linkcode IntegerRange}. */
 export type IntegerRangeOptions = {
-  /**
-   * The step between each number in the range.
-   * @default {1}
-   */
-  step?: number;
-  /**
-   * Whether to include the start value in the range.
-   * @default {true}
-   */
-  includeStart?: boolean;
   /**
    * Whether to include the end value in the range.
    * @default {false}
@@ -23,88 +11,163 @@ export type IntegerRangeOptions = {
 };
 
 /**
- * Creates a generator that yields integers in a range from `start` to `end`.
+ * An iterable that yields integers in a range.
  *
- * Using the default options, yielded numbers are in the interval `[start, end)` with step size `1`.
+ * Using the default options, yielded numbers are in the interval `[start, end)`.
  *
- * @param start The start of the range (inclusive by default)
+ * @param start The start of the range (inclusive)
  * @param end The end of the range (exclusive by default)
  * @param options Options for the range
- * @returns A generator yielding integers in the specified range
  *
  * @example Usage
  * ```ts
- * import { integerRange } from "@std/math/integer-range";
+ * import { IntegerRange } from "@std/math/integer-range";
  * import { assertEquals } from "@std/assert";
- * assertEquals([...integerRange(1, 5)], [1, 2, 3, 4]);
- * assertEquals([...integerRange(1, 5, { step: 2 })], [1, 3]);
- * assertEquals(
- * 	[...integerRange(1, 5, { includeStart: false, includeEnd: true })],
- * 	[2, 3, 4, 5],
- * );
- * assertEquals([...integerRange(5, 1)], []);
- * assertEquals([...integerRange(5, 1, { step: -1 })], [5, 4, 3, 2]);
+ * assertEquals([...new IntegerRange(1, 5)], [1, 2, 3, 4]);
  * ```
  */
-export function integerRange(
-  start: number,
-  end: number,
-  options?: IntegerRangeOptions,
-): Generator<number, undefined, undefined>;
+export class IntegerRange {
+  /**
+   * The start of the range.
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * const range = new IntegerRange(1, 5);
+   * assertEquals(range.start, 1);
+   * ```
+   */
+  readonly start: number;
+  /**
+   * The end of the range.
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * const range = new IntegerRange(1, 5);
+   * assertEquals(range.end, 5);
+   * ```
+   */
+  readonly end: number;
+  /**
+   * Whether the end of the range is inclusive.
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * const range = new IntegerRange(1, 5);
+   * assertEquals(range.includeEnd, false);
+   * ```
+   */
+  readonly includeEnd: boolean;
 
-/**
- * Creates a generator that yields integers in a range from 0 to `end`.
- *
- * Using the default options, yielded numbers are in the interval `[0, end)` with step size `1`.
- *
- * @param end The end of the range (exclusive by default)
- * @param options Options for the range
- * @returns A generator yielding integers in the specified range
- *
- * @example Usage
- * ```ts
- * import { integerRange } from "@std/math/integer-range";
- * import { assertEquals } from "@std/assert";
- * assertEquals([...integerRange(5)], [0, 1, 2, 3, 4]);
- * ```
- */
-export function integerRange(
-  end: number,
-  options?: IntegerRangeOptions,
-): Generator<number, undefined, undefined>;
-// deno-lint-ignore deno-style-guide/exported-function-args-maximum
-export function* integerRange(
-  startOrEnd: number,
-  endOrOptions?: number | IntegerRangeOptions,
-  maybeOptions?: IntegerRangeOptions,
-): Generator<number, undefined, undefined> {
-  const hasStart = typeof endOrOptions === "number";
-  const [start, end, options] = [
-    hasStart ? startOrEnd : 0,
-    hasStart ? endOrOptions : startOrEnd,
-    hasStart ? maybeOptions : endOrOptions,
-  ];
+  /**
+   * Creates an iterable that yields integers in a range from `start` to `end`.
+   *
+   * Using the default options, yielded numbers are in the interval `[start, end)`.
+   *
+   * @param start The start of the range (inclusive)
+   * @param end The end of the range (exclusive by default)
+   * @param options Options for the range
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * assertEquals([...new IntegerRange(1, 5)], [1, 2, 3, 4]);
+   * ```
+   */
+  constructor(
+    start: number,
+    end: number,
+    options?: IntegerRangeOptions,
+  );
+  /**
+   * Creates an iterable that yields integers in a range from `0` to `end`.
+   *
+   * Using the default options, yielded numbers are in the interval `[0, end)`.
+   *
+   * @param end The end of the range (exclusive by default)
+   * @param options Options for the range
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * assertEquals([...new IntegerRange(5)], [0, 1, 2, 3, 4]);
+   * ```
+   */
+  constructor(end: number, options?: IntegerRangeOptions);
+  constructor(
+    startOrEnd: number,
+    endOrOptions?: number | IntegerRangeOptions,
+    maybeOptions?: IntegerRangeOptions,
+  ) {
+    const hasStart = typeof endOrOptions === "number";
+    this.start = hasStart ? startOrEnd : 0;
+    this.end = hasStart ? endOrOptions : startOrEnd;
+    const options = hasStart ? maybeOptions : endOrOptions;
+    this.includeEnd = options?.includeEnd ?? false;
 
-  const { step = 1, includeStart = true, includeEnd = false } = options ?? {};
-  if (step === 0) throw new RangeError("`step` must not be zero");
-  for (const [k, v] of Object.entries({ start, end, step })) {
-    if (!Number.isSafeInteger(v)) {
-      throw new RangeError(`\`${k}\` must be a safe integer`);
+    for (const k of ["start", "end"] as const) {
+      if (!Number.isSafeInteger(this[k])) {
+        throw new RangeError(`\`${k}\` must be a safe integer`);
+      }
     }
   }
 
-  if (start === end && !(includeStart && includeEnd)) return;
+  /**
+   * Generates numbers in the range with the default step size of 1.
+   *
+   * @returns A generator yielding numbers in the specified range with step size 1.
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * assertEquals([...new IntegerRange(1, 5)], [1, 2, 3, 4]);
+   * assertEquals([...new IntegerRange(1, 5, { includeEnd: true })], [1, 2, 3, 4, 5]);
+   * assertEquals([...new IntegerRange(5, 1)], []);
+   * ```
+   */
+  *[Symbol.iterator](): Generator<number, undefined, undefined> {
+    yield* this.step(1);
+  }
 
-  const limitsSign = Math.sign(end - start);
-  const stepSign = Math.sign(step);
-  if (limitsSign !== 0 && limitsSign !== stepSign) return;
+  /**
+   * Generates numbers in the range with the specified step size.
+   *
+   * @param step The step size between yielded numbers.
+   * @returns A generator yielding numbers in the specified range with the given step size.
+   *
+   * @example Usage
+   * ```ts
+   * import { IntegerRange } from "@std/math/integer-range";
+   * import { assertEquals } from "@std/assert";
+   * assertEquals([...new IntegerRange(1, 5).step(2)], [1, 3]);
+   * assertEquals([...new IntegerRange(1, 5, { includeEnd: true }).step(2)], [1, 3, 5]);
+   * assertEquals([...new IntegerRange(5, 1).step(-1)], [5, 4, 3, 2]);
+   * ```
+   */
+  *step(step: number): Generator<number, undefined, undefined> {
+    if (!Number.isSafeInteger(step) || step === 0) {
+      throw new RangeError("`step` must be a safe, non-zero integer");
+    }
 
-  if (includeStart) yield start;
+    const { start, end, includeEnd } = this;
+    if (start === end && !includeEnd) return;
 
-  let i = 0;
-  const delta = Math.abs(step);
-  const maxDelta = Math.abs(end - start);
-  for (i += delta; i < maxDelta; i += delta) yield start + (i * stepSign);
+    const limitsSign = Math.sign(end - start);
+    const stepSign = Math.sign(step);
+    if (limitsSign !== 0 && limitsSign !== stepSign) return;
 
-  if (includeEnd && (i * stepSign) + start === end) yield end;
+    let i = 0;
+    const delta = Math.abs(step);
+    const maxDelta = Math.abs(end - start);
+    for (; i < maxDelta; i += delta) yield start + (i * stepSign);
+    if (includeEnd && i === maxDelta) yield end;
+  }
 }

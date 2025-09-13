@@ -7,10 +7,10 @@
  * ```ts
  * import { modulo } from "@std/math/modulo";
  * import { assertEquals } from "@std/assert";
- * import { integerRange } from "@std/math/integer-range";
+ * import { IntegerRange } from "@std/math/integer-range";
  *
  * // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
- * for (const n of integerRange(-3, 3, { includeEnd: true })) {
+ * for (const n of new IntegerRange(-3, 3, { includeEnd: true })) {
  *  const val = n * 12 + 5
  *  assertEquals(modulo(val, 12), 5);
  * }
