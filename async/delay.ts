@@ -65,6 +65,7 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
         Deno.unrefTimer(+i);
       } catch (error) {
         if (!(error instanceof ReferenceError)) {
+          clearTimeout(+i);
           throw error;
         }
         // deno-lint-ignore no-console
