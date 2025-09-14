@@ -13,9 +13,9 @@
  * import { modulo } from "@std/math/modulo";
  * import { assertEquals } from "@std/assert";
  *
- * // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
  * for (let n = -3; n <= 3; ++n) {
- *  const val = n * 12 + 5
+ *  const val = n * 12 + 5;
+ *  // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
  *  assertEquals(modulo(val, 12), 5);
  * }
  * ```

@@ -15,7 +15,7 @@ export type RoundingOptions = {
 /**
  * Round a number to a specified number of digits.
  *
- * @param n The number to be rounded
+ * @param num The number to be rounded
  * @param digits The number of digits to round to
  * @param options Options for rounding
  * @returns The rounded number
@@ -25,13 +25,14 @@ export type RoundingOptions = {
  * import { roundTo } from "@std/math/round-to";
  * import { assertEquals } from "@std/assert";
  * assertEquals(roundTo(Math.PI, 2), 3.14);
- * assertEquals(roundTo(Math.PI, 3, { strategy: "ceil" }), 3.142);
+ * assertEquals(roundTo(Math.PI, 2, { strategy: "ceil" }), 3.15);
+ * assertEquals(roundTo(Math.PI, 3), 3.142);
  * assertEquals(roundTo(Math.PI, 3, { strategy: "floor" }), 3.141);
  * assertEquals(roundTo(-Math.PI, 3, { strategy: "trunc" }), -3.141);
  * ```
  */
 export function roundTo(
-  n: number,
+  num: number,
   digits: number,
   options?: RoundingOptions,
 ): number {
@@ -41,5 +42,5 @@ export function roundTo(
 
   const { strategy = "round" } = options ?? {};
   const factor = 10 ** digits;
-  return Math[strategy](n * factor) / factor;
+  return Math[strategy](num * factor) / factor;
 }
