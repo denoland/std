@@ -185,7 +185,10 @@ export function parsePrerelease(prerelease: string) {
 }
 
 export function parseBuild(buildmetadata: string) {
-  return buildmetadata.split(".").filter(Boolean);
+  return buildmetadata
+    .split(".")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export function parseNumber(input: string, errorMessage: string) {

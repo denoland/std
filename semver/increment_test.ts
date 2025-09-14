@@ -984,7 +984,7 @@ Deno.test("increment()", async (t) => {
       { major: 1, minor: 2, patch: 3, prerelease: ["pr", 0], build: [] },
       "pre",
       " ", // prerelease with whitepsace is the same as undefined or empty
-      undefined,
+      " ",
       "1.2.3-pr.1",
     ],
     [
