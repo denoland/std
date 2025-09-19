@@ -8,6 +8,8 @@ import { remove, removeSync } from "./unstable_remove.ts";
 import { platform } from "node:os";
 import { spawn } from "node:child_process";
 
+const isBun = navigator.userAgent.includes("Bun/");
+
 type IdResult = {
   id: string;
   code: number;
@@ -64,7 +66,7 @@ async function getUidAndGid(): Promise<{ uid: number; gid: number }> {
 
 Deno.test({
   name: "chown() changes user and group ids",
-  ignore: platform() === "win32",
+  ignore: platform() === "win32" || isBun,
   fn: async () => {
     const { uid, gid } = await getUidAndGid();
     const tempFile = await makeTempFile({ prefix: "chown_" });
@@ -78,7 +80,7 @@ Deno.test({
 
 Deno.test({
   name: "chown() handles `null` id arguments",
-  ignore: platform() === "win32",
+  ignore: platform() === "win32" || isBun,
   fn: async () => {
     const { uid, gid } = await getUidAndGid();
     const tempFile = await makeTempFile({ prefix: "chown_" });
@@ -115,7 +117,7 @@ Deno.test({
 
 Deno.test({
   name: "chownSync() changes user and group ids",
-  ignore: platform() === "win32",
+  ignore: platform() === "win32" || isBun,
   fn: async () => {
     const { uid, gid } = await getUidAndGid();
     const tempFile = makeTempFileSync({ prefix: "chownSync_ " });
@@ -130,7 +132,7 @@ Deno.test({
 
 Deno.test({
   name: "chownSync() handles `null` id arguments",
-  ignore: platform() === "win32",
+  ignore: platform() === "win32" || isBun,
   fn: async () => {
     const { uid, gid } = await getUidAndGid();
     const tempFile = makeTempFileSync({ prefix: "chownSync_" });

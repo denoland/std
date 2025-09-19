@@ -74,7 +74,7 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
  * @returns The parsed object.
  */
 export function parse(text: string): Record<string, string> {
-  const env: Record<string, string> = {};
+  const env: Record<string, string> = Object.create(null);
 
   let match;
   const keysForExpandCheck = [];

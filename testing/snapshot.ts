@@ -6,7 +6,7 @@
  * to a reference snapshot, which is stored alongside the test file in the
  * `__snapshots__` directory.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
@@ -31,9 +31,31 @@
  * `;
  * ```
  *
- * Calling `assertSnapshot` in a test will throw an `AssertionError`, causing the
- * test to fail, if the snapshot created during the test does not match the one in
- * the snapshot file.
+ * The `assertInlineSnapshot` function will create a snapshot of a value and compare it
+ * to a reference snapshot, which is stored in the test file.
+ *
+ * ```ts ignore
+ * // example_test.ts
+ * import { assertInlineSnapshot } from "@std/testing/unstable-snapshot";
+ *
+ * Deno.test("isInlineSnapshotMatch", function (): void {
+ *   const a = {
+ *     hello: "world!",
+ *     example: 123,
+ *   };
+ *   assertInlineSnapshot(
+ *     a,
+ *     `{
+ *   hello: "world!",
+ *   example: 123,
+ * }`
+ *   );
+ * });
+ * ```
+ *
+ * If the snapshot of the passed `actual` does not match the expected snapshot,
+ * `assertSnapshot` and `assertInlineSnapshot` will throw an `AssertionError`,
+ * causing the test to fail.
  *
  * ## Updating Snapshots:
  *
@@ -42,16 +64,22 @@
  * by running the snapshot tests in update mode. Tests can be run in update mode by
  * passing the `--update` or `-u` flag as an argument when running the test. When
  * this flag is passed, then any snapshots which do not match will be updated.
+ * When this flag is not passed, tests missing snapshots will fail.
  *
  * ```sh
  * deno test --allow-all -- --update
  * ```
  *
- * Additionally, new snapshots will only be created when this flag is present.
+ * In addition, `assertInlineSnapshot` defaults to formatting the test file after
+ * updating snapshots. To stop this, pass command `--no-format`:
+ *
+ * ```sh
+ * deno test --allow-all -- --update --no-format
+ * ```
  *
  * ## Permissions:
  *
- * When running snapshot tests, the `--allow-read` permission must be enabled, or
+ * When running `assertSnapshot`, the `--allow-read` permission must be enabled, or
  * else any calls to `assertSnapshot` will fail due to insufficient permissions.
  * Additionally, when updating snapshots, the `--allow-write` permission must also
  * be enabled, as this is required in order to update snapshot files.
@@ -60,12 +88,19 @@
  * snapshot files. As such, the allow list for `--allow-read` and `--allow-write`
  * can be limited to only include existing snapshot files, if so desired.
  *
+ * If no snapshots are created, `assertInlineSnapshot` does not require any
+ * permissions. However, creating snapshots requires `--allow-read` and
+ * `--allow-write` on any test files for which new snapshots will be added.
+ * Additionally, `--allow-run` is required if any files will be formatted (which is
+ * the default if `--no-format` is not specified).
+ *
  * ## Options:
  *
- * The `assertSnapshot` function optionally accepts an options object.
+ * The `assertSnapshot` and `assertInlineSnapshot` functions optionally accept an
+ * options object.
  *
- * ```ts
- * // example_test.ts
+ * ```ts ignore
+ * // example_test.ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("isSnapshotMatch", async function (t): Promise<void> {
@@ -79,26 +114,30 @@
  * });
  * ```
  *
- * You can also configure default options for `assertSnapshot`.
+ * You can also configure default options for `assertSnapshot` and `assertInlineSnapshot`.
  *
  * ```ts
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
+ * import { createAssertInlineSnapshot } from "@std/testing/unstable-snapshot";
  *
  * const assertSnapshot = createAssertSnapshot({
  *   // options
  * });
+ * const assertInlineSnapshot = createAssertInlineSnapshot({
+ *   // options
+ * });
  * ```
  *
- * When configuring default options like this, the resulting `assertSnapshot`
- * function will function the same as the default function exported from the
- * snapshot module. If passed an optional options object, this will take precedence
+ * When configuring default options like this, the resulting `assertSnapshot` or
+ * `assertInlineSnapshot` function will function the same as the default function exported
+ * from thesnapshot module. If passed an optional options object, this will take precedence
  * over the default options, where the value provided for an option differs.
  *
- * It is possible to "extend" an `assertSnapshot` function which has been
- * configured with default options.
+ * It is possible to "extend" an `assertSnapshot` or `assertInlineSnapshot` function which
+ * has been configured with default options.
  *
- * ```ts
+ * ```ts ignore
  * // example_test.ts
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  * import { stripAnsiCode } from "@std/fmt/colors";
@@ -144,9 +183,16 @@ import { ensureFile, ensureFileSync } from "@std/fs/ensure-file";
 import { assert } from "@std/assert/assert";
 import { AssertionError } from "@std/assert/assertion-error";
 import { equal } from "@std/assert/equal";
-import { diff } from "@std/internal/diff";
-import { diffStr } from "@std/internal/diff-str";
-import { buildMessage } from "@std/internal/build-message";
+import {
+  escapeStringForJs,
+  getErrorMessage,
+  getIsUpdate,
+  getOptions,
+  getSnapshotNotMatchMessage,
+  serialize,
+} from "./_snapshot_utils.ts";
+
+export { serialize };
 
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
@@ -193,75 +239,6 @@ export type SnapshotOptions<T = unknown> = {
    */
   serializer?: (actual: T) => string;
 };
-
-function getErrorMessage(message: string, options: SnapshotOptions) {
-  return typeof options.msg === "string" ? options.msg : message;
-}
-
-/**
- * Default serializer for `assertSnapshot`.
- *
- * @example Usage
- * ```ts
- * import { serialize } from "@std/testing/snapshot";
- * import { assertEquals } from "@std/assert";
- *
- * assertEquals(serialize({ foo: 42 }), "{\n  foo: 42,\n}")
- * ```
- *
- * @param actual The value to serialize
- * @returns The serialized string
- */
-export function serialize(actual: unknown): string {
-  return Deno.inspect(actual, {
-    depth: Infinity,
-    sorted: true,
-    trailingComma: true,
-    compact: false,
-    iterableLimit: Infinity,
-    strAbbreviateSize: Infinity,
-    breakLength: Infinity,
-    escapeSequences: false,
-  }).replaceAll("\r", "\\r");
-}
-
-/**
- * Converts a string to a valid JavaScript string which can be wrapped in backticks.
- *
- * @example
- *
- * "special characters (\ ` $) will be escaped" -> "special characters (\\ \` \$) will be escaped"
- */
-function escapeStringForJs(str: string) {
-  return str
-    .replace(/\\/g, "\\\\")
-    .replace(/`/g, "\\`")
-    .replace(/\$/g, "\\$");
-}
-
-let _mode: SnapshotMode;
-/**
- * Get the snapshot mode.
- */
-function getMode(options: SnapshotOptions) {
-  if (options.mode) {
-    return options.mode;
-  } else if (_mode) {
-    return _mode;
-  } else {
-    _mode = Deno.args.some((arg) => arg === "--update" || arg === "-u")
-      ? "update"
-      : "assert";
-    return _mode;
-  }
-}
-
-/**
- * Return `true` when snapshot mode is `update`.
- */
-function getIsUpdate(options: SnapshotOptions) {
-  return getMode(options) === "update";
-}
 
 class AssertSnapshotContext {
   static contexts = new Map<string, AssertSnapshotContext>();
@@ -530,7 +507,7 @@ class AssertSnapshotContext {
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
@@ -554,7 +531,7 @@ export async function assertSnapshot<T>(
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { assertSnapshot } from "@std/testing/snapshot";
  *
  * Deno.test("snapshot", async (t) => {
@@ -577,7 +554,7 @@ export async function assertSnapshot(
   actual: unknown,
   msgOrOpts?: string | SnapshotOptions<unknown>,
 ) {
-  const options = getOptions();
+  const options = getOptions(msgOrOpts);
   const assertSnapshotContext = AssertSnapshotContext.fromOptions(
     context,
     options,
@@ -585,52 +562,38 @@ export async function assertSnapshot(
   const testName = getTestName(context, options);
   const count = assertSnapshotContext.getCount(testName);
   const name = `${testName} ${count}`;
-  const snapshot = await assertSnapshotContext.getSnapshot(
+  const expectedSnapshot = await assertSnapshotContext.getSnapshot(
     name,
     options,
   );
 
   assertSnapshotContext.pushSnapshotToUpdateQueue(name);
-  const _serialize = options.serializer || serialize;
-  const _actual = _serialize(actual);
+  const serializer = options.serializer ?? serialize;
+  const actualSnapshot = serializer(actual);
   if (getIsUpdate(options)) {
     await assertSnapshotContext.registerTeardown();
-    if (!equal(_actual, snapshot)) {
-      assertSnapshotContext.updateSnapshot(name, _actual);
+    if (!equal(actualSnapshot, expectedSnapshot)) {
+      assertSnapshotContext.updateSnapshot(name, actualSnapshot);
     }
   } else {
     if (
       !assertSnapshotContext.hasSnapshot(name) ||
-      typeof snapshot === "undefined"
+      typeof expectedSnapshot === "undefined"
     ) {
       throw new AssertionError(
         getErrorMessage(`Missing snapshot: ${name}`, options),
       );
     }
-    if (equal(_actual, snapshot)) {
+
+    if (equal(actualSnapshot, expectedSnapshot)) {
       return;
     }
-    const stringDiff = !_actual.includes("\n");
-    const diffResult = stringDiff
-      ? diffStr(_actual, snapshot)
-      : diff(_actual.split("\n"), snapshot.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-    const message =
-      `Snapshot does not match:\n${diffMsg}\nTo update snapshots, run\n    deno test --allow-read --allow-write [files]... -- --update\n`;
+
     throw new AssertionError(
-      getErrorMessage(message, options),
+      getSnapshotNotMatchMessage(actualSnapshot, expectedSnapshot, options),
     );
   }
 
-  function getOptions(): SnapshotOptions {
-    if (typeof msgOrOpts === "object" && msgOrOpts !== null) {
-      return msgOrOpts;
-    }
-
-    return {
-      msg: msgOrOpts!,
-    };
-  }
   function getTestName(
     context: Deno.TestContext,
     options?: SnapshotOptions,
@@ -650,7 +613,7 @@ export async function assertSnapshot(
  * The specified option becomes the default for returned {@linkcode assertSnapshot}
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { createAssertSnapshot } from "@std/testing/snapshot";
  *
  * const assertSnapshot = createAssertSnapshot({
@@ -675,7 +638,7 @@ export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,
   baseAssertSnapshot: typeof assertSnapshot = assertSnapshot,
 ): typeof assertSnapshot {
-  return async function _assertSnapshot(
+  return async function (
     context: Deno.TestContext,
     actual: T,
     messageOrOptions?: string | SnapshotOptions<T>,

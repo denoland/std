@@ -19,6 +19,8 @@ import { rm } from "node:fs/promises";
 import { platform } from "node:os";
 import { join } from "node:path";
 
+const isBun = navigator.userAgent.includes("Bun/");
+
 function assertMissing(path: string | URL) {
   if (pathExists(path)) {
     throw new Error("File: ${path} exists");
@@ -177,53 +179,61 @@ Deno.test("writeFile() handles an AbortSignal", async () => {
   await rm(tempDirPath, { recursive: true, force: true });
 });
 
-Deno.test("writeFile() handles an AbortSignal with a reason", async () => {
-  const ac = new AbortController();
-  const reasonErr = new Error();
-  queueMicrotask(() => ac.abort(reasonErr));
+Deno.test(
+  "writeFile() handles an AbortSignal with a reason",
+  { ignore: isBun },
+  async () => {
+    const ac = new AbortController();
+    const reasonErr = new Error();
+    queueMicrotask(() => ac.abort(reasonErr));
 
-  const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
-  const testFile = join(tempDirPath, "testFile.txt");
+    const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
+    const testFile = join(tempDirPath, "testFile.txt");
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode("Hello");
+    const encoder = new TextEncoder();
+    const data = encoder.encode("Hello");
 
-  const error = await assertRejects(async () => {
-    await writeFile(testFile, data, { signal: ac.signal });
-  }, Error);
+    const error = await assertRejects(async () => {
+      await writeFile(testFile, data, { signal: ac.signal });
+    }, Error);
 
-  if (isDeno) {
-    assertEquals(error, ac.signal.reason);
-  } else {
-    assertEquals(error.cause, ac.signal.reason);
-  }
-
-  await rm(tempDirPath, { recursive: true, force: true });
-});
-
-Deno.test("writeFile() handles an AbortSignal with a primitive value", async () => {
-  const ac = new AbortController();
-  const reasonErr = "This is a primitive string";
-  queueMicrotask(() => ac.abort(reasonErr));
-
-  const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
-  const testFile = join(tempDirPath, "testFile.txt");
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode("Hello");
-
-  try {
-    await writeFile(testFile, data, { signal: ac.signal });
-  } catch (error) {
     if (isDeno) {
       assertEquals(error, ac.signal.reason);
     } else {
-      const errorValue = error as Error;
-      assertEquals(errorValue.cause, ac.signal.reason);
+      assertEquals(error.cause, ac.signal.reason);
     }
+
     await rm(tempDirPath, { recursive: true, force: true });
-  }
-});
+  },
+);
+
+Deno.test(
+  "writeFile() handles an AbortSignal with a primitive value",
+  { ignore: isBun },
+  async () => {
+    const ac = new AbortController();
+    const reasonErr = "This is a primitive string";
+    queueMicrotask(() => ac.abort(reasonErr));
+
+    const tempDirPath = await makeTempDir({ prefix: "writeFile_" });
+    const testFile = join(tempDirPath, "testFile.txt");
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode("Hello");
+
+    try {
+      await writeFile(testFile, data, { signal: ac.signal });
+    } catch (error) {
+      if (isDeno) {
+        assertEquals(error, ac.signal.reason);
+      } else {
+        const errorValue = error as Error;
+        assertEquals(errorValue.cause, ac.signal.reason);
+      }
+      await rm(tempDirPath, { recursive: true, force: true });
+    }
+  },
+);
 
 Deno.test("writeFile() writes to a file successfully with an attached AbortSignal", async () => {
   const ac = new AbortController();

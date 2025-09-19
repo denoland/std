@@ -8,11 +8,12 @@
  */
 
 import { walk } from "../fs/walk.ts";
-import { COPYRIGHT } from "./check_licence.ts";
+import { LICENSE } from "./check_license.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const SKIP = [/(test|bench|\/_|\\_|testdata|version.ts)/];
 const DECLARATION = "// This module is browser compatible.";
+const COPYRIGHT = `// ${LICENSE}`;
 
 async function isBrowserCompatible(filePath: string): Promise<boolean> {
   return (await new Deno.Command(Deno.execPath(), {

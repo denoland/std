@@ -20,18 +20,16 @@ export type SortByOptions = {
  * element. Ascending or descending order can be specified through the `order`
  * option. By default, the elements are sorted in ascending order.
  *
- * Note: If you want to process any iterable, use the new version of
- * `sortBy` from `@std/collections/unstable-sort-by`.
+ * @typeParam T The type of the iterator elements.
+ * @typeParam U The type of the selected values.
  *
- * @typeParam T The type of the array elements.
- *
- * @param array The array to sort.
+ * @param iterator The iterator to sort.
  * @param selector The selector function to get the value to sort by.
  * @param options The options for sorting.
  *
  * @returns A new array containing all elements sorted by the selector.
  *
- * @example Usage
+ * @example Usage with numbers
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -57,27 +55,8 @@ export type SortByOptions = {
  *   { name: "John", age: 23 },
  * ]);
  * ```
- */
-export function sortBy<T>(
-  array: readonly T[],
-  selector: (el: T) => number,
-  options?: SortByOptions,
-): T[];
-/**
- * Returns all elements in the given collection, sorted by their result using
- * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified through the `order`
- * option. By default, the elements are sorted in ascending order.
  *
- * @typeParam T The type of the array elements.
- *
- * @param array The array to sort.
- * @param selector The selector function to get the value to sort by.
- * @param options The options for sorting.
- *
- * @returns A new array containing all elements sorted by the selector.
- *
- * @example Usage
+ * @example Usage with strings
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -95,27 +74,8 @@ export function sortBy<T>(
  *   { name: "Kim" },
  * ]);
  * ```
- */
-export function sortBy<T>(
-  array: readonly T[],
-  selector: (el: T) => string,
-  options?: SortByOptions,
-): T[];
-/**
- * Returns all elements in the given collection, sorted by their result using
- * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified through the `order`
- * option. By default, the elements are sorted in ascending order.
  *
- * @typeParam T The type of the array elements.
- *
- * @param array The array to sort.
- * @param selector The selector function to get the value to sort by.
- * @param options The options for sorting.
- *
- * @returns A new array containing all elements sorted by the selector.
- *
- * @example Usage
+ * @example Usage with bigints
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -134,28 +94,8 @@ export function sortBy<T>(
  *   { name: "Kim", age: 42n },
  * ]);
  * ```
- */
-
-export function sortBy<T>(
-  array: readonly T[],
-  selector: (el: T) => bigint,
-  options?: SortByOptions,
-): T[];
-/**
- * Returns all elements in the given collection, sorted by their result using
- * the given selector. The selector function is called only once for each
- * element. Ascending or descending order can be specified through the `order`
- * option. By default, the elements are sorted in ascending order.
  *
- * @typeParam T The type of the array elements.
- *
- * @param array The array to sort.
- * @param selector The selector function to get the value to sort by.
- * @param options The options for sorting.
- *
- * @returns A new array containing all elements sorted by the selector.
- *
- * @example Usage
+ * @example Usage with Date objects
  * ```ts
  * import { sortBy } from "@std/collections/sort-by";
  * import { assertEquals } from "@std/assert";
@@ -176,12 +116,7 @@ export function sortBy<T>(
  * ```
  */
 export function sortBy<T>(
-  array: readonly T[],
-  selector: (el: T) => Date,
-  options?: SortByOptions,
-): T[];
-export function sortBy<T>(
-  array: readonly T[],
+  iterator: Iterable<T>,
   selector:
     | ((el: T) => number)
     | ((el: T) => string)
@@ -189,31 +124,22 @@ export function sortBy<T>(
     | ((el: T) => Date),
   options?: SortByOptions,
 ): T[] {
-  const len = array.length;
-  const indexes = new Array<number>(len);
-  const selectors = new Array<ReturnType<typeof selector> | null>(len);
-  const order = options?.order ?? "asc";
+  const array: { value: T; selected: string | number | bigint | Date }[] = [];
 
-  array.forEach((element, index) => {
-    indexes[index] = index;
-    const selected = selector(element);
-    selectors[index] = Number.isNaN(selected) ? null : selected;
-  });
-
-  indexes.sort((ai, bi) => {
-    let a = selectors[ai]!;
-    let b = selectors[bi]!;
-    if (order === "desc") {
-      [a, b] = [b, a];
-    }
-    if (a === null) return 1;
-    if (b === null) return -1;
-    return a > b ? 1 : a < b ? -1 : 0;
-  });
-
-  for (let i = 0; i < len; i++) {
-    (indexes as unknown as T[])[i] = array[indexes[i]!] as T;
+  for (const item of iterator) {
+    array.push({ value: item, selected: selector(item) });
   }
 
-  return indexes as unknown as T[];
+  array.sort((oa, ob) => {
+    const a = oa.selected;
+    const b = ob.selected;
+    const order = options?.order === "desc" ? -1 : 1;
+
+    if (Number.isNaN(a)) return order;
+    if (Number.isNaN(b)) return -order;
+
+    return order * (a > b ? 1 : a < b ? -1 : 0);
+  });
+
+  return array.map((item) => item.value);
 }

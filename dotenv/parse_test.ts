@@ -276,3 +276,11 @@ Deno.test("parse() expands variables", () => {
     "variables within and without brackets expanded",
   );
 });
+
+Deno.test("parse() result is not affected by extended Object.prototype", () => {
+  // deno-lint-ignore no-explicit-any
+  (Object.prototype as any).foo = 1;
+  const result = parse("bar=1");
+  assertEquals(result.foo, undefined);
+  assertEquals(result.bar, "1");
+});

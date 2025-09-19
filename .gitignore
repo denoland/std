@@ -17,3 +17,6 @@ coverage/
 .vim
 _tmp/
 !_tmp/.keep
+
+# tsconfig for bun
+/tsconfig.json

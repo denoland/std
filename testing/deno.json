@@ -1,6 +1,6 @@
 {
   "name": "@std/testing",
-  "version": "1.0.11",
+  "version": "1.0.15",
   "exports": {
     "./bdd": "./bdd.ts",
     "./mock": "./mock.ts",
@@ -8,7 +8,9 @@
     "./time": "./time.ts",
     "./types": "./types.ts",
     "./unstable-bdd": "./unstable_bdd.ts",
+    "./unstable-snapshot": "./unstable_snapshot.ts",
     "./unstable-stub": "./unstable_stub.ts",
+    "./unstable-stub-property": "./unstable_stub_property.ts",
     "./unstable-types": "./unstable_types.ts"
   }
 }

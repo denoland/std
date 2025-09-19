@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 const readTestFile = join(testdataDir, "copy_file.txt");
+const isBun = navigator.userAgent.includes("Bun/");
 
 Deno.test("FsFile object writes to a newly created file", async () => {
   const tempDirPath = await makeTempDir({ prefix: "FsFile_write_" });
@@ -126,39 +127,47 @@ Deno.test("FsFile object returns the 'stat' of the file handle", async () => {
   fh.close();
 });
 
-Deno.test("FsFile object handles a ReadableStream", async () => {
-  const fh = await open(readTestFile);
-  assert(fh.readable instanceof ReadableStream);
-  const chunks = [];
-  for await (const chunk of fh.readable) {
-    chunks.push(chunk);
-  }
-  assertEquals(chunks.length, 1);
-  if (chunks[0] != null) {
-    assertEquals(chunks[0].byteLength, 3);
-  }
-});
+Deno.test(
+  "FsFile object handles a ReadableStream",
+  { ignore: isBun },
+  async () => {
+    const fh = await open(readTestFile);
+    assert(fh.readable instanceof ReadableStream);
+    const chunks = [];
+    for await (const chunk of fh.readable) {
+      chunks.push(chunk);
+    }
+    assertEquals(chunks.length, 1);
+    if (chunks[0] != null) {
+      assertEquals(chunks[0].byteLength, 3);
+    }
+  },
+);
 
-Deno.test("FsFile object handles a WritableStream", async () => {
-  const tempDirPath = await makeTempDir({ prefix: "FsFile_WritableStream_" });
-  const testFile = join(tempDirPath, "testFile.txt");
-  const fh = await open(testFile, { create: true, write: true });
-  assert(fh.writable instanceof WritableStream);
-  const rs = new ReadableStream({
-    start(controller) {
-      const encoder = new TextEncoder();
-      controller.enqueue(encoder.encode("Hello,"));
-      controller.enqueue(encoder.encode(" Standard"));
-      controller.enqueue(encoder.encode(" Library"));
-      controller.close();
-    },
-  });
-  await rs.pipeTo(fh.writable);
-  const readText = await readTextFile(testFile);
-  assertEquals(readText, "Hello, Standard Library");
+Deno.test(
+  "FsFile object handles a WritableStream",
+  { ignore: isBun },
+  async () => {
+    const tempDirPath = await makeTempDir({ prefix: "FsFile_WritableStream_" });
+    const testFile = join(tempDirPath, "testFile.txt");
+    const fh = await open(testFile, { create: true, write: true });
+    assert(fh.writable instanceof WritableStream);
+    const rs = new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode("Hello,"));
+        controller.enqueue(encoder.encode(" Standard"));
+        controller.enqueue(encoder.encode(" Library"));
+        controller.close();
+      },
+    });
+    await rs.pipeTo(fh.writable);
+    const readText = await readTextFile(testFile);
+    assertEquals(readText, "Hello, Standard Library");
 
-  await remove(tempDirPath, { recursive: true });
-});
+    await remove(tempDirPath, { recursive: true });
+  },
+);
 
 Deno.test("FsFile object changes access and modification times with utime", async () => {
   const tempFile = await makeTempFile({ prefix: "FsFile_utime_" });
@@ -232,28 +241,32 @@ Deno.test("FsFile object synchronously reads from an existing file", () => {
   fh.close();
 });
 
-Deno.test("FsFile object synchronously truncates a file to zero", () => {
-  const tempDirPath = makeTempDirSync({ prefix: "FsFile_truncateSync_" });
-  const testFile = join(tempDirPath, "testFile.txt");
-  let fh = openSync(testFile, { read: true, write: true, create: true });
+Deno.test(
+  "FsFile object synchronously truncates a file to zero",
+  { ignore: isBun },
+  () => {
+    const tempDirPath = makeTempDirSync({ prefix: "FsFile_truncateSync_" });
+    const testFile = join(tempDirPath, "testFile.txt");
+    let fh = openSync(testFile, { read: true, write: true, create: true });
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode("Hello, Standard Library");
-  const writeBytes = fh.writeSync(data);
-  assertEquals(writeBytes, 23);
-  fh.close();
+    const encoder = new TextEncoder();
+    const data = encoder.encode("Hello, Standard Library");
+    const writeBytes = fh.writeSync(data);
+    assertEquals(writeBytes, 23);
+    fh.close();
 
-  fh = openSync(testFile, { read: true, write: true });
-  fh.truncateSync();
+    fh = openSync(testFile, { read: true, write: true });
+    fh.truncateSync();
 
-  const buf = new Uint8Array(10);
-  const readBytes = fh.readSync(buf);
-  // Reading a 0 byte file should return null at EOF.
-  assertEquals(readBytes, null);
-  fh.close();
+    const buf = new Uint8Array(10);
+    const readBytes = fh.readSync(buf);
+    // Reading a 0 byte file should return null at EOF.
+    assertEquals(readBytes, null);
+    fh.close();
 
-  removeSync(tempDirPath, { recursive: true });
-});
+    removeSync(tempDirPath, { recursive: true });
+  },
+);
 
 Deno.test("FsFile object synchronously truncates files to multiple sizes", () => {
   const tempDirPath = makeTempDirSync({ prefix: "FsFile_truncateSync_" });

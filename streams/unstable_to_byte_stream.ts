@@ -1,6 +1,8 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { Uint8Array_ } from "./_types.ts";
+
 /**
  * The function takes a `ReadableStream<Uint8Array>` and wraps it in a BYOB
  * stream if it doesn't already support it.
@@ -38,6 +40,7 @@ export function toByteStream(
     const reader = readable.getReader();
     return new ReadableStream({
       type: "bytes",
+      autoAllocateChunkSize: 1024,
       async pull(controller) {
         const value = await async function () {
           while (true) {
@@ -49,22 +52,23 @@ export function toByteStream(
 
         if (value == undefined) {
           controller.close();
-          return controller.byobRequest?.respond(0);
+          return controller.byobRequest!.respond(0);
         }
 
-        if (controller.byobRequest?.view) {
-          const buffer = new Uint8Array(controller.byobRequest.view.buffer);
-          const offset = controller.byobRequest.view.byteOffset;
-          const size = buffer.length - offset;
-          if (value.length > size) {
-            buffer.set(value.slice(0, size), offset);
-            controller.byobRequest.respond(size);
-            controller.enqueue(value.slice(size));
-          } else {
-            buffer.set(value, offset);
-            controller.byobRequest.respond(value.length);
-          }
-        } else controller.enqueue(value);
+        const buffer = new Uint8Array(
+          controller.byobRequest!.view!.buffer,
+          controller.byobRequest!.view!.byteOffset,
+          controller.byobRequest!.view!.byteLength,
+        );
+        const size = buffer.length;
+        if (value.length > size) {
+          buffer.set(value.subarray(0, size));
+          controller.byobRequest!.respond(size);
+          controller.enqueue(value.subarray(size) as Uint8Array_);
+        } else {
+          buffer.set(value);
+          controller.byobRequest!.respond(value.length);
+        }
       },
       async cancel(reason) {
         await reader.cancel(reason);

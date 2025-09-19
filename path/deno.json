@@ -1,6 +1,6 @@
 {
   "name": "@std/path",
-  "version": "1.0.9",
+  "version": "1.1.2",
   "exports": {
     ".": "./mod.ts",
     "./basename": "./basename.ts",
@@ -38,21 +38,11 @@
     "./posix/resolve": "./posix/resolve.ts",
     "./posix/to-file-url": "./posix/to_file_url.ts",
     "./posix/to-namespaced-path": "./posix/to_namespaced_path.ts",
-    "./posix/unstable-basename": "./posix/unstable_basename.ts",
-    "./posix/unstable-dirname": "./posix/unstable_dirname.ts",
-    "./posix/unstable-extname": "./posix/unstable_extname.ts",
-    "./posix/unstable-join": "./posix/unstable_join.ts",
-    "./posix/unstable-normalize": "./posix/unstable_normalize.ts",
     "./relative": "./relative.ts",
     "./resolve": "./resolve.ts",
     "./to-file-url": "./to_file_url.ts",
     "./to-namespaced-path": "./to_namespaced_path.ts",
     "./types": "./types.ts",
-    "./unstable-basename": "./unstable_basename.ts",
-    "./unstable-dirname": "./unstable_dirname.ts",
-    "./unstable-extname": "./unstable_extname.ts",
-    "./unstable-join": "./unstable_join.ts",
-    "./unstable-normalize": "./unstable_normalize.ts",
     "./windows": "./windows/mod.ts",
     "./windows/basename": "./windows/basename.ts",
     "./windows/common": "./windows/common.ts",
@@ -72,11 +62,6 @@
     "./windows/relative": "./windows/relative.ts",
     "./windows/resolve": "./windows/resolve.ts",
     "./windows/to-file-url": "./windows/to_file_url.ts",
-    "./windows/to-namespaced-path": "./windows/to_namespaced_path.ts",
-    "./windows/unstable-basename": "./windows/unstable_basename.ts",
-    "./windows/unstable-dirname": "./windows/unstable_dirname.ts",
-    "./windows/unstable-extname": "./windows/unstable_extname.ts",
-    "./windows/unstable-join": "./windows/unstable_join.ts",
-    "./windows/unstable-normalize": "./windows/unstable_normalize.ts"
+    "./windows/to-namespaced-path": "./windows/to_namespaced_path.ts"
   }
 }

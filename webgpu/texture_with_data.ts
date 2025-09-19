@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { describeTextureFormat } from "./describe_texture_format.ts";
+import type { Uint8Array_ } from "./_types.ts";
 
 function textureDimensionArrayLayerCount(
   texture: GPUTextureDescriptor,
@@ -120,10 +121,11 @@ function textureMipLevelSize(
  * @param data The data to write to the texture.
  * @returns The newly created texture.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createTextureWithData(
   device: GPUDevice,
   descriptor: GPUTextureDescriptor,
-  data: Uint8Array,
+  data: Uint8Array_,
 ): GPUTexture {
   descriptor.usage |= GPUTextureUsage.COPY_DST;
 

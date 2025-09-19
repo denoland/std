@@ -70,6 +70,7 @@ export function getRowPadding(width: number): Padding {
  * @param height The height of the output buffer.
  * @returns The resliced buffer.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function resliceBufferWithPadding(
   buffer: Uint8Array,
   width: number,

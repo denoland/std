@@ -193,7 +193,6 @@ export class LoaderState {
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
 
-  version: string | null;
   checkLineBreaks = false;
   tagMap = new Map();
   anchorMap = new Map();
@@ -216,7 +215,6 @@ export class LoaderState {
     this.implicitTypes = schema.implicitTypes;
     this.typeMap = schema.typeMap;
     this.length = input.length;
-    this.version = null;
 
     this.readIndent();
   }
@@ -268,13 +266,7 @@ export class LoaderState {
     this.onWarning?.(error);
   }
 
-  yamlDirectiveHandler(...args: string[]) {
-    if (this.version !== null) {
-      throw this.#createError(
-        "Cannot handle YAML directive: duplication of %YAML directive",
-      );
-    }
-
+  yamlDirectiveHandler(args: string[]): string | null {
     if (args.length !== 1) {
       throw this.#createError(
         "Cannot handle YAML directive: YAML directive accepts exactly one argument",
@@ -295,16 +287,15 @@ export class LoaderState {
         "Cannot handle YAML directive: unacceptable YAML version",
       );
     }
-
-    this.version = args[0] ?? null;
     this.checkLineBreaks = minor < 2;
     if (minor !== 1 && minor !== 2) {
-      return this.dispatchWarning(
+      this.dispatchWarning(
         "Cannot handle YAML directive: unsupported YAML version",
       );
     }
+    return args[0] ?? null;
   }
-  tagDirectiveHandler(...args: string[]) {
+  tagDirectiveHandler(args: string[]) {
     if (args.length !== 2) {
       throw this.#createError(
         `Cannot handle tag directive: directive accepts exactly two arguments, received ${args.length}`,
@@ -397,7 +388,12 @@ export class LoaderState {
       }
 
       const line = this.line;
-      this.composeNode(nodeIndent, CONTEXT_BLOCK_IN, false, true);
+      this.composeNode({
+        parentIndent: nodeIndent,
+        nodeContext: CONTEXT_BLOCK_IN,
+        allowToSeek: false,
+        allowCompact: true,
+      });
       result.push(this.result);
       this.skipSeparationSpace(true, -1);
 
@@ -892,7 +888,12 @@ export class LoaderState {
       }
 
       line = this.line;
-      this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
+      this.composeNode({
+        parentIndent: nodeIndent,
+        nodeContext: CONTEXT_FLOW_IN,
+        allowToSeek: false,
+        allowCompact: true,
+      });
       keyTag = this.tag || null;
       keyNode = this.result;
       this.skipSeparationSpace(true, nodeIndent);
@@ -903,7 +904,12 @@ export class LoaderState {
         isPair = true;
         ch = this.next();
         this.skipSeparationSpace(true, nodeIndent);
-        this.composeNode(nodeIndent, CONTEXT_FLOW_IN, false, true);
+        this.composeNode({
+          parentIndent: nodeIndent,
+          nodeContext: CONTEXT_FLOW_IN,
+          allowToSeek: false,
+          allowCompact: true,
+        });
         valueNode = this.result;
       }
 
@@ -1159,7 +1165,14 @@ export class LoaderState {
         //
         // Implicit notation case. Flow-style node as the key first, then ":", and the value.
         //
-      } else if (this.composeNode(flowIndent, CONTEXT_FLOW_OUT, false, true)) {
+      } else if (
+        this.composeNode({
+          parentIndent: flowIndent,
+          nodeContext: CONTEXT_FLOW_OUT,
+          allowToSeek: false,
+          allowCompact: true,
+        })
+      ) {
         if (this.line === line) {
           ch = this.peek();
 
@@ -1220,7 +1233,12 @@ export class LoaderState {
       //
       if (this.line === line || this.lineIndent > nodeIndent) {
         if (
-          this.composeNode(nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
+          this.composeNode({
+            parentIndent: nodeIndent,
+            nodeContext: CONTEXT_BLOCK_OUT,
+            allowToSeek: true,
+            allowCompact,
+          })
         ) {
           if (atExplicitKey) {
             keyNode = this.result;
@@ -1434,10 +1452,12 @@ export class LoaderState {
   }
 
   composeNode(
-    parentIndent: number,
-    nodeContext: number,
-    allowToSeek: boolean,
-    allowCompact: boolean,
+    { parentIndent, nodeContext, allowToSeek, allowCompact }: {
+      parentIndent: number;
+      nodeContext: number;
+      allowToSeek: boolean;
+      allowCompact: boolean;
+    },
   ): boolean {
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
@@ -1596,15 +1616,9 @@ export class LoaderState {
     return this.tag !== null || this.anchor !== null || hasContent;
   }
 
-  readDocument() {
-    const documentStart = this.position;
-
+  readDirectives() {
     let hasDirectives = false;
-
-    this.version = null;
-    this.checkLineBreaks = false;
-    this.tagMap = new Map();
-    this.anchorMap = new Map();
+    let version = null;
 
     let ch = this.peek();
     while (ch !== 0) {
@@ -1653,20 +1667,34 @@ export class LoaderState {
 
       switch (directiveName) {
         case "YAML":
-          this.yamlDirectiveHandler(...directiveArgs);
+          if (version !== null) {
+            throw this.#createError(
+              "Cannot handle YAML directive: duplication of %YAML directive",
+            );
+          }
+          version = this.yamlDirectiveHandler(directiveArgs);
           break;
         case "TAG":
-          this.tagDirectiveHandler(...directiveArgs);
+          this.tagDirectiveHandler(directiveArgs);
           break;
         default:
-          this.dispatchWarning(
-            `unknown document directive "${directiveName}"`,
-          );
+          this.dispatchWarning(`unknown document directive "${directiveName}"`);
           break;
       }
 
       ch = this.peek();
     }
+    return hasDirectives;
+  }
+
+  readDocument() {
+    const documentStart = this.position;
+
+    this.checkLineBreaks = false;
+    this.tagMap = new Map();
+    this.anchorMap = new Map();
+
+    const hasDirectives = this.readDirectives();
 
     this.skipSeparationSpace(true, -1);
 
@@ -1684,7 +1712,12 @@ export class LoaderState {
       );
     }
 
-    this.composeNode(this.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    this.composeNode({
+      parentIndent: this.lineIndent - 1,
+      nodeContext: CONTEXT_BLOCK_OUT,
+      allowToSeek: false,
+      allowCompact: true,
+    });
     this.skipSeparationSpace(true, -1);
 
     if (

@@ -1690,6 +1690,29 @@ Deno.test("parseArgs() handles types of collect args with known and unknown args
   >(true);
 });
 
+// https://github.com/denoland/std/issues/6773
+Deno.test("parseArgs() does not call unknown() when collecting known args", () => {
+  let called = 0;
+
+  parseArgs(["--foo=bar"], {
+    collect: ["foo"],
+    unknown: () => called++,
+  });
+
+  assertEquals(called, 0);
+});
+
+Deno.test("parseArgs() calls unknown() for uncollected args", () => {
+  let called = 0;
+
+  parseArgs(["--foo=bar", "--qux=baz"], {
+    collect: ["baz", "bar"],
+    unknown: () => called++,
+  });
+
+  assertEquals(called, 2);
+});
+
 /** -------------------------- NEGATABLE OPTIONS --------------------------- */
 
 Deno.test("parseArgs() handles types of negatable args", function () {

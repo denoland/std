@@ -709,6 +709,7 @@ export function parseArgs<
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
       !aliasMap.has(key) &&
+      !collectSet.has(key) &&
       !(allBools && FLAG_NAME_REGEXP.test(arg)) &&
       unknownFn?.(arg, key, value) === false
     ) {

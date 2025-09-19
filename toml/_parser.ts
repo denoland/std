@@ -3,6 +3,15 @@
 
 import { deepMerge } from "@std/collections/deep-merge";
 
+/**
+ * Copy of `import { isLeap } from "@std/datetime";` because it cannot be impoted as long as it is unstable.
+ */
+function isLeap(yearNumber: number): boolean {
+  return (
+    (yearNumber % 4 === 0 && yearNumber % 100 !== 0) || yearNumber % 400 === 0
+  );
+}
+
 // ---------------------------
 // Interfaces and base classes
 // ---------------------------
@@ -18,16 +27,18 @@ type ParseResult<T> = Success<T> | Failure;
 
 type ParserComponent<T = unknown> = (scanner: Scanner) => ParseResult<T>;
 
-type BlockParseResultBody = {
+type Block = {
   type: "Block";
   value: Record<string, unknown>;
-} | {
+};
+type Table = {
   type: "Table";
-  key: string[];
+  keys: string[];
   value: Record<string, unknown>;
-} | {
+};
+type TableArray = {
   type: "TableArray";
-  key: string[];
+  keys: string[];
   value: Record<string, unknown>;
 };
 
@@ -143,7 +154,7 @@ function failure(): Failure {
  */
 export function unflat(
   keys: string[],
-  values: unknown = {},
+  values: unknown = { __proto__: null },
 ): Record<string, unknown> {
   return keys.reduceRight(
     (acc, key) => ({ [key]: acc }),
@@ -151,45 +162,83 @@ export function unflat(
   ) as Record<string, unknown>;
 }
 
-export function deepAssignWithTable(target: Record<string, unknown>, table: {
-  type: "Table" | "TableArray";
-  key: string[];
-  value: Record<string, unknown>;
-}) {
-  if (table.key.length === 0 || table.key[0] == null) {
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getTargetValue(target: Record<string, unknown>, keys: string[]) {
+  const key = keys[0];
+  if (!key) {
     throw new Error(
       "Cannot parse the TOML: key length is not a positive number",
     );
   }
-  const value = target[table.key[0]];
+  return target[key];
+}
 
-  if (typeof value === "undefined") {
-    Object.assign(
-      target,
-      unflat(
-        table.key,
-        table.type === "Table" ? table.value : [table.value],
-      ),
-    );
-  } else if (Array.isArray(value)) {
-    if (table.type === "TableArray" && table.key.length === 1) {
-      value.push(table.value);
+function deepAssignTable(
+  target: Record<string, unknown>,
+  table: Table,
+) {
+  const { keys, type, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, value));
+  }
+  if (Array.isArray(currentValue)) {
+    const last = currentValue.at(-1);
+    deepAssign(last, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+function deepAssignTableArray(
+  target: Record<string, unknown>,
+  table: TableArray,
+) {
+  const { type, keys, value } = table;
+  const currentValue = getTargetValue(target, keys);
+
+  if (currentValue === undefined) {
+    return Object.assign(target, unflat(keys, [value]));
+  }
+  if (Array.isArray(currentValue)) {
+    if (table.keys.length === 1) {
+      currentValue.push(value);
     } else {
-      const last = value[value.length - 1];
-      deepAssignWithTable(last, {
+      const last = currentValue.at(-1);
+      deepAssign(last, {
         type: table.type,
-        key: table.key.slice(1),
+        keys: table.keys.slice(1),
         value: table.value,
       });
     }
-  } else if (typeof value === "object" && value !== null) {
-    deepAssignWithTable(value as Record<string, unknown>, {
-      type: table.type,
-      key: table.key.slice(1),
-      value: table.value,
-    });
-  } else {
-    throw new Error("Unexpected assign");
+    return target;
+  }
+  if (isObject(currentValue)) {
+    deepAssign(currentValue, { type, keys: keys.slice(1), value });
+    return target;
+  }
+  throw new Error("Unexpected assign");
+}
+
+export function deepAssign(
+  target: Record<string, unknown>,
+  body: Block | Table | TableArray,
+) {
+  switch (body.type) {
+    case "Block":
+      return deepMerge(target, body.value);
+    case "Table":
+      return deepAssignTable(target, body);
+    case "TableArray":
+      return deepAssignTableArray(target, body);
   }
 }
 
@@ -296,7 +345,7 @@ function merge(
   return (scanner: Scanner): ParseResult<Record<string, unknown>> => {
     const result = parser(scanner);
     if (!result.ok) return failure();
-    let body = {};
+    let body = { __proto__: null };
     for (const record of result.body) {
       if (typeof record === "object" && record !== null) {
         body = deepMerge(body, record);
@@ -611,7 +660,7 @@ export function hex(scanner: Scanner): ParseResult<number | string> {
   return isNaN(number) ? failure() : success(number);
 }
 
-const INTEGER_REGEXP = /[+-]?[0-9]+(?:_[0-9]+)*\b/y;
+const INTEGER_REGEXP = /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)\b/y;
 export function integer(scanner: Scanner): ParseResult<number | string> {
   scanner.skipWhitespaces();
   const match = scanner.match(INTEGER_REGEXP)?.[0];
@@ -623,7 +672,7 @@ export function integer(scanner: Scanner): ParseResult<number | string> {
 }
 
 const FLOAT_REGEXP =
-  /[+-]?[0-9]+(?:_[0-9]+)*(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
+  /[+-]?(?:0|[1-9][0-9]*(?:_[0-9]+)*)(?:\.[0-9]+(?:_[0-9]+)*)?(?:e[+-]?[0-9]+(?:_[0-9]+)*)?\b/yi;
 export function float(scanner: Scanner): ParseResult<number> {
   scanner.skipWhitespaces();
   const match = scanner.match(FLOAT_REGEXP)?.[0];
@@ -635,14 +684,27 @@ export function float(scanner: Scanner): ParseResult<number> {
   return success(float);
 }
 
-const DATE_TIME_REGEXP = /\d{4}-\d{2}-\d{2}(?:[ 0-9TZ.:+-]+)?\b/y;
+const DATE_TIME_REGEXP =
+  /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})(?:[ 0-9TZ.:+-]+)?\b/y;
 export function dateTime(scanner: Scanner): ParseResult<Date> {
   scanner.skipWhitespaces();
-  // example: 1979-05-27
-  const match = scanner.match(DATE_TIME_REGEXP)?.[0];
+  const match = scanner.match(DATE_TIME_REGEXP);
   if (!match) return failure();
-  scanner.next(match.length);
-  const date = new Date(match.trim());
+  const string = match[0];
+  scanner.next(string.length);
+  const groups = match.groups as { year: string; month: string; day: string };
+  // special case if month is February
+  if (groups.month == "02") {
+    const days = parseInt(groups.day);
+    if (days > 29) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+    const year = parseInt(groups.year);
+    if (days > 28 && !isLeap(year)) {
+      throw new SyntaxError(`Invalid date string "${match}"`);
+    }
+  }
+  const date = new Date(string.trim());
   // invalid date
   if (isNaN(date.getTime())) {
     throw new SyntaxError(`Invalid date string "${match}"`);
@@ -691,11 +753,11 @@ export function inlineTable(
   scanner.nextUntilChar();
   if (scanner.char(1) === "}") {
     scanner.next(2);
-    return success({});
+    return success({ __proto__: null });
   }
   const pairs = surround("{", join(pair, ","), "}")(scanner);
   if (!pairs.ok) return failure();
-  let table = {};
+  let table = { __proto__: null } as Record<string, unknown>;
   for (const pair of pairs.body) {
     table = deepMerge(table, pair);
   }
@@ -725,7 +787,7 @@ export const pair = kv(dottedKey, "=", value);
 
 export function block(
   scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+): ParseResult<Block> {
   scanner.nextUntilChar();
   const result = merge(repeat(pair))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
@@ -734,7 +796,7 @@ export function block(
 
 export const tableHeader = surround("[", dottedKey, "]");
 
-export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
+export function table(scanner: Scanner): ParseResult<Table> {
   scanner.nextUntilChar();
   const header = tableHeader(scanner);
   if (!header.ok) return failure();
@@ -742,8 +804,8 @@ export function table(scanner: Scanner): ParseResult<BlockParseResultBody> {
   const b = block(scanner);
   return success({
     type: "Table",
-    key: header.body,
-    value: b.ok ? b.body.value : {},
+    keys: header.body,
+    value: b.ok ? b.body.value : { __proto__: null },
   });
 }
 
@@ -751,7 +813,7 @@ export const tableArrayHeader = surround("[[", dottedKey, "]]");
 
 export function tableArray(
   scanner: Scanner,
-): ParseResult<BlockParseResultBody> {
+): ParseResult<TableArray> {
   scanner.nextUntilChar();
   const header = tableArrayHeader(scanner);
   if (!header.ok) return failure();
@@ -759,8 +821,8 @@ export function tableArray(
   const b = block(scanner);
   return success({
     type: "TableArray",
-    key: header.body,
-    value: b.ok ? b.body.value : {},
+    keys: header.body,
+    value: b.ok ? b.body.value : { __proto__: null },
   });
 }
 
@@ -768,24 +830,8 @@ export function toml(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
   const blocks = repeat(or([block, tableArray, table]))(scanner);
-  let body = {};
-  if (!blocks.ok) return success(body);
-  for (const block of blocks.body) {
-    switch (block.type) {
-      case "Block": {
-        body = deepMerge(body, block.value);
-        break;
-      }
-      case "Table": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-      case "TableArray": {
-        deepAssignWithTable(body, block);
-        break;
-      }
-    }
-  }
+  if (!blocks.ok) return success({ __proto__: null });
+  const body = blocks.body.reduce(deepAssign, { __proto__: null });
   return success(body);
 }
 

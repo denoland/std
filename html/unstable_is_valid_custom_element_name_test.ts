@@ -47,5 +47,6 @@ Deno.test("isValidCustomElementName()", async (t) => {
   await t.step("handles large variety of names", () => {
     assertEquals(isValidCustomElementName("math-α"), true);
     assertEquals(isValidCustomElementName("emotion-😍"), true);
+    assertEquals(isValidCustomElementName("hieroglyph-𓀀"), true);
   });
 });

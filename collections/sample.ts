@@ -2,22 +2,13 @@
 // This module is browser compatible.
 
 /**
- * Produces a random number between the inclusive `lower` and `upper` bounds.
- */
-function randomInteger(lower: number, upper: number): number {
-  return lower + Math.floor(Math.random() * (upper - lower + 1));
-}
-
-/**
- * Returns a random element from the given array.
+ * Returns a random element from the given iterable.
  *
- * @typeParam T The type of the elements in the array.
- * @typeParam O The type of the accumulator.
+ * @typeParam T The type of the elements in the iterable.
  *
- * @param array The array to sample from.
+ * @param iterable The iterable to sample from.
  *
- * @returns A random element from the given array, or `undefined` if the array
- * is empty.
+ * @returns A random element from the given iterable, or `undefined` if the iterable has no elements.
  *
  * @example Basic usage
  * ```ts
@@ -30,7 +21,17 @@ function randomInteger(lower: number, upper: number): number {
  * assertArrayIncludes(numbers, [random]);
  * ```
  */
-export function sample<T>(array: readonly T[]): T | undefined {
-  const length = array.length;
-  return length ? array[randomInteger(0, length - 1)] : undefined;
+export function sample<T>(iterable: Iterable<T>): T | undefined {
+  let array: readonly T[];
+  if (Array.isArray(iterable)) {
+    array = iterable;
+  } else {
+    array = Array.from(iterable);
+  }
+  const length: number = array.length;
+  if (length === 0) {
+    return undefined;
+  }
+  const randomIndex = Math.floor(Math.random() * length);
+  return array[randomIndex];
 }

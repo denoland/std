@@ -38,6 +38,7 @@ import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { exists } from "@std/fs/exists";
 import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
 import {
@@ -427,11 +428,23 @@ function createBaseHeaders(): Headers {
   });
 }
 
+function html(
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): string {
+  let out = "";
+  for (let i = 0; i < strings.length; ++i) {
+    out += strings[i];
+    if (i < values.length) out += values[i] ?? "";
+  }
+  return out;
+}
+
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   const splitDirname = dirname.split("/").filter((path) => Boolean(path));
   const headerPaths = ["home", ...splitDirname];
 
-  return `
+  return html`
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -440,85 +453,84 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <title>Deno File Server</title>
         <style>
+        :root {
+          --background-color: #fafafa;
+          --color: rgba(0, 0, 0, 0.87);
+        }
+        @media (prefers-color-scheme: dark) {
           :root {
-            --background-color: #fafafa;
-            --color: rgba(0, 0, 0, 0.87);
-          }
-          @media (prefers-color-scheme: dark) {
-            :root {
-              --background-color: #292929;
-              --color: #fff;
-            }
-            thead {
-              color: #7f7f7f;
-            }
-          }
-          @media (min-width: 960px) {
-            main {
-              max-width: 960px;
-            }
-            body {
-              padding-left: 32px;
-              padding-right: 32px;
-            }
-          }
-          @media (min-width: 600px) {
-            main {
-              padding-left: 24px;
-              padding-right: 24px;
-            }
-          }
-          body {
-            background: var(--background-color);
-            color: var(--color);
-            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-            font-weight: 400;
-            line-height: 1.43;
-            font-size: 0.875rem;
-          }
-          a {
-            color: #2196f3;
-            text-decoration: none;
-          }
-          a:hover {
-            text-decoration: underline;
+            --background-color: #292929;
+            --color: #fff;
           }
           thead {
-            text-align: left;
+            color: #7f7f7f;
           }
-          thead th {
-            padding-bottom: 12px;
+        }
+        @media (min-width: 960px) {
+          main {
+            max-width: 960px;
           }
-          table td {
-            padding: 6px 36px 6px 0px;
+          body {
+            padding-left: 32px;
+            padding-right: 32px;
           }
-          .size {
-            text-align: right;
-            padding: 6px 12px 6px 24px;
+        }
+        @media (min-width: 600px) {
+          main {
+            padding-left: 24px;
+            padding-right: 24px;
           }
-          .mode {
-            font-family: monospace, monospace;
-          }
+        }
+        body {
+          background: var(--background-color);
+          color: var(--color);
+          font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+          font-weight: 400;
+          line-height: 1.43;
+          font-size: 0.875rem;
+        }
+        a {
+          color: #2196f3;
+          text-decoration: none;
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+        thead {
+          text-align: left;
+        }
+        thead th {
+          padding-bottom: 12px;
+        }
+        table td {
+          padding: 6px 36px 6px 0px;
+        }
+        .size {
+          text-align: right;
+          padding: 6px 12px 6px 24px;
+        }
+        .mode {
+          font-family: monospace, monospace;
+        }
         </style>
       </head>
       <body>
         <main>
-          <h1>Index of
-          ${
-    headerPaths
-      .map((path, index) => {
-        if (path === "") return "";
-        const depth = headerPaths.length - index - 1;
-        let link;
-        if (depth == 0) {
-          link = ".";
-        } else {
-          link = "../".repeat(depth);
-        }
-        return `<a href="${link}">${escape(path)}</a>`;
-      })
-      .join("/")
-  }/
+          <h1>
+            Index of ${headerPaths
+              .map((path, index) => {
+                if (path === "") return "";
+                const depth = headerPaths.length - index - 1;
+                let link;
+                if (depth == 0) {
+                  link = ".";
+                } else {
+                  link = "../".repeat(depth);
+                }
+                // deno-fmt-ignore
+                return html`<a href="${link}">${escape(path)}</a>`;
+              })
+              .join("/")}/
           </h1>
           <table>
             <thead>
@@ -528,25 +540,24 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                 <th>Name</th>
               </tr>
             </thead>
-            ${
-    entries
-      .map(
-        (entry) => `
-                  <tr>
-                    <td class="mode">
-                      ${entry.mode}
-                    </td>
-                    <td class="size">
-                      ${entry.size}
-                    </td>
-                    <td>
-                      <a href="${escape(entry.url)}">${escape(entry.name)}</a>
-                    </td>
-                  </tr>
-                `,
-      )
-      .join("")
-  }
+            ${entries
+              .map(
+                (entry) =>
+                  html`
+                    <tr>
+                      <td class="mode">
+                        ${entry.mode}
+                      </td>
+                      <td class="size">
+                        ${entry.size}
+                      </td>
+                      <td>
+                        <a href="${escape(entry.url)}">${escape(entry.name)}</a>
+                      </td>
+                    </tr>
+                  `,
+              )
+              .join("")}
           </table>
         </main>
       </body>
@@ -690,6 +701,7 @@ async function createServeDirResponse(
   const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
+  const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
   const showDotfiles = opts.showDotfiles || false;
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
@@ -723,7 +735,13 @@ async function createServeDirResponse(
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  const fsPath = join(target, normalizedPath);
+  // Resolve path
+  // If cleanUrls is enabled, automatically append ".html" if not present
+  // and it does not shadow another existing file or directory
+  let fsPath = join(target, normalizedPath);
+  if (cleanUrls && !fsPath.endsWith(".html") && !(await exists(fsPath))) {
+    fsPath += ".html";
+  }
   const fileInfo = await Deno.stat(fsPath);
 
   // For files, remove the trailing slash from the path.

@@ -5,6 +5,7 @@ import { assertArg } from "../_common/normalize.ts";
 import { CHAR_COLON } from "../_common/constants.ts";
 import { normalizeString } from "../_common/normalize_string.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
+import { fromFileUrl } from "./from_file_url.ts";
 
 /**
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
@@ -16,17 +17,17 @@ import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
  * import { normalize } from "@std/path/windows/normalize";
  * import { assertEquals } from "@std/assert";
  *
- * const normalized = normalize("C:\\foo\\..\\bar");
- * assertEquals(normalized, "C:\\bar");
+ * assertEquals(normalize("C:\\foo\\..\\bar"), "C:\\bar");
+ * assertEquals(normalize(new URL("file:///C:/foo/../bar")), "C:\\bar");
  * ```
- *
- * Note: If you are working with file URLs,
- * use the new version of `normalize` from `@std/path/windows/unstable-normalize`.
  *
  * @param path The path to normalize
  * @returns The normalized path
  */
-export function normalize(path: string): string {
+export function normalize(path: string | URL): string {
+  if (path instanceof URL) {
+    path = fromFileUrl(path);
+  }
   assertArg(path);
 
   const len = path.length;

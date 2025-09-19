@@ -5,7 +5,7 @@ import { walk } from "../fs/walk.ts";
 import { relative } from "../path/relative.ts";
 import { dirname } from "../path/dirname.ts";
 import * as colors from "../fmt/colors.ts";
-import ts from "npm:typescript";
+import ts from "npm:typescript@5.8.3";
 import { getEntrypoints } from "./utils.ts";
 import { fromFileUrl } from "@std/path/from-file-url";
 

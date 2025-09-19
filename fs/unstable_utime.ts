@@ -32,6 +32,7 @@ import { mapError } from "./_map_error.ts";
  * @param atime The new access time
  * @param mtime The new modification time
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export async function utime(
   path: string | URL,
   atime: number | Date,
@@ -78,6 +79,7 @@ export async function utime(
  * @param atime The new access time
  * @param mtime The new modification time
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function utimeSync(
   path: string | URL,
   atime: number | Date,

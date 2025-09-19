@@ -1,11 +1,12 @@
 {
   "name": "@std/http",
-  "version": "1.0.15",
+  "version": "1.0.20",
   "exports": {
     ".": "./mod.ts",
     "./cookie": "./cookie.ts",
     "./etag": "./etag.ts",
     "./file-server": "./file_server.ts",
+    "./unstable-file-server": "./unstable_file_server.ts",
     "./unstable-header": "./unstable_header.ts",
     "./unstable-method": "./unstable_method.ts",
     "./negotiation": "./negotiation.ts",

@@ -449,7 +449,6 @@ export async function checkDocs(specifiers: string[]) {
 
 if (import.meta.main) {
   const specifiers = (await getEntrypoints())
-    .filter((entrypoint) => !entrypoint.startsWith("@std/log"))
     .map((entrypoint) => import.meta.resolve(entrypoint))
     .filter((specifier) => specifier.endsWith(".ts"));
   await checkDocs(specifiers);

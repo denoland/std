@@ -1,3 +1,328 @@
+### 2025.09.04
+
+#### @std/cli 1.0.22 (patch)
+
+- fix(cli/unstable): update typing of ProgressBarStream for TS 5.9 (#6811)
+
+#### @std/net 1.0.6 (patch)
+
+- feat(net/unstable): add matchSubnets on @std/net (#6786)
+
+#### @std/streams 1.0.12 (patch)
+
+- deprecation(streams/unstable): AbortStream (#6799)
+
+#### @std/tar 0.1.8 (patch)
+
+- refactor(tar): clean up TarStream (#6783)
+- test(tar): improve TarStream's tests (#6793)
+
+#### @std/toml 1.0.10 (patch)
+
+- fix(toml): nested table arrays (#6794)
+
+### 2025.08.13
+
+#### @std/assert 1.0.14 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/collections 1.1.3 (patch)
+
+- test(collections): fix mapValues mutation test so it actually tests mutation
+  (#6780)
+
+#### @std/expect 1.0.17 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/net 1.0.5 (patch)
+
+- feat(net/unstable): add ip utilities (#6765)
+
+#### @std/path 1.1.2 (patch)
+
+- fix(path): improve regex in `isGlob` (#6764)
+
+#### @std/streams 1.0.11 (patch)
+
+- refactor(streams/unstable): toByteStream to make use of autoAllocateChunkSize
+  (#6781)
+
+#### @std/text 1.0.16 (patch)
+
+- feat(text/unstable): add `trimBy` functions (#6778)
+
+#### @std/toml 1.0.9 (patch)
+
+- fix(toml): prevent prototype pollution by table key
+
+### 2025.07.29
+
+#### @std/async 1.0.14 (patch)
+
+- fix(async): allow delay timeout of arbitrary length (#6775)
+
+#### @std/tar 0.1.7 (patch)
+
+- fix(tar): receiving empty buffers (#6777)
+
+### 2025.07.22
+
+#### @std/cli 1.0.21 (patch)
+
+- BREAKING(cli/unstable): rename `fmt` of `ProgressBarOption` to `formatter`
+  (#6707)
+- feat(cli/unstable): introduce Ansi module (#6756)
+- feat(cli/unstable): add search to promptSelect and promptMultipleSelect
+  (#6741)
+- feat(cli/unstable): valued prompt items (#6742)
+- feat(cli/unstable): add `visibleLines` and `indicator` options to
+  `promptMultipleSelect`, and show `...` above the options when appropriate
+  (#6699)
+- refactor(cli/unstable): dedupe logic between promptSelect and
+  promptMultipleSelect (#6769)
+- refactor(cli/unstable): rename `title` to `label` for valued prompt items
+  (#6751)
+
+#### @std/data-structures 1.0.9 (patch)
+
+- feat(data-structures/unstable): 2d array (#6754)
+
+#### @std/http 1.0.20 (patch)
+
+- fix(http): respect colors and other `Deno.inspect` options when logging
+  `UserAgent`s (#6763)
+
+#### @std/internal 1.0.10 (patch)
+
+- fix(internal): fix inspect fallbacks for formatting diffs (#6747)
+
+#### @std/testing 1.0.15 (patch)
+
+- feat(testing/unstable): add `stubProperty` function (#6761)
+- fix(testing): align types for fake timeout/interval signatures (#6767)
+
+#### @std/yaml 1.0.9 (patch)
+
+- refactor(yaml): remove `version` property, separate directive handling (#6657)
+
+### 2025.07.01
+
+#### @std/collections 1.1.2 (patch)
+
+- chore(collections): add browser compatibility declaration to `unstable-cycle`
+  module (#6720)
+
+#### @std/fs 1.0.19 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/http 1.0.19 (patch)
+
+- perf(http): increase performance of HTML rendering (#6727)
+
+#### @std/internal 1.0.9 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/path 1.1.1 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/text 1.0.15 (patch)
+
+- feat(text/unstable): add `longestCommonPrefix` (#6734)
+- feat(text/unstable): add `toTitleCase()` and `toSentenceCase()` (#6701)
+- fix(text/unstable): `dedent()` correct blank line handling (#6738)
+
+### 2025.06.12
+
+#### @std/cli 1.0.20 (patch)
+
+- fix(cli/unstable): `Spinner` print on `start()` (#6706)
+- refactor(cli/unstable): move unit related stuff to separate file (#6693)
+
+#### @std/http 1.0.18 (patch)
+
+- feat(http/unstable): add `cleanUrls` option to `serveDir` (#6231)
+
+#### @std/streams 1.0.10 (patch)
+
+- feat(streams/unstable): add `AbortStream` (#6708)
+- refactor(streams): throw `RangeError` within `Buffer` methods (#6714)
+
+#### @std/testing 1.0.14 (patch)
+
+- test(testing): ignore doc test of snapshot docs (#6718)
+
+#### @std/toml 1.0.8 (patch)
+
+- fix(toml): february edge cases in datetime (#6704)
+- fix(toml): leading zeroes in float (#6703)
+- refactor(toml): use RegExp groups for month validation (#6705)
+
+#### @std/uuid 1.0.9 (patch)
+
+- fix(uuid): support for UUID v7 validation (#6709)
+
+#### @std/yaml 1.0.8 (patch)
+
+- feat(yaml/unstable): export `unstable_stringify.ts` (#6702)
+- refactor(yaml): move `composeNode()` params in an object (#6658)
+
+### 2025.05.30
+
+#### @std/cli 1.0.19 (patch)
+
+- fix(cli/unstable): clamp `ratio` (#6690)
+- refactor(cli/unstable): use `Date.now()` internally and use `FakeTime` for
+  testing (#6686)
+- refactor(cli/unstable): refactor `print()` (#6687)
+
+#### @std/fs 1.0.18 (patch)
+
+- chore(fs/unstable): ignore some rename and renameSync tests on windows (#6695)
+
+#### @std/random 0.1.2 (patch)
+
+- fix(random/unstable): fixed results for some seeds (#6689)
+
+### 2025.05.27
+
+#### @std/cli 1.0.18 (patch)
+
+- BREAKING(cli/unstable): make `ProgressBarFormatter.styledTime` a getter
+  (#6677)
+- BREAKING(cli/unstable): change custom formatter rule (#6678)
+- BREAKING(cli/unstable): make `ProgressBar` `value` and `max` properties
+  public, remove add method (#6430)
+- BREAKING(cli/unstable): make `ProgressBar` `writable` optional (#6409)
+- BREAKING(cli/unstable): rename `ProgressBar` `end()` method to `stop()`
+  (#6406)
+- fix(cli/unstable): fix resource leak of ProgressBar (#6675)
+- refactor(cli/unstable): string based `ProgressBar` tests (#6679)
+- refactor(cli/unstable): print initial `ProgressBar` (#6676)
+- refactor(cli/unstable): generalize units (#6680)
+
+#### @std/collections 1.1.1 (patch)
+
+- feat(collections/unstable): add non-exact binary search function (#6628)
+
+#### @std/datetime 0.225.5 (patch)
+
+- refactor(datetime): simplify month difference (#6662)
+
+#### @std/dotenv 0.225.5 (patch)
+
+- fix(dotenv): prevent prototype pollution during parsing (#6661)
+
+#### @std/http 1.0.17 (patch)
+
+- refactor(http): format file server HTML (#6659)
+- chore(http): remove unused `_mock_conn.ts` (#6654)
+
+#### @std/internal 1.0.8 (patch)
+
+- fix(internal): support AssertionState cleanup in node and bun (#6655)
+
+#### @std/path 1.1.0 (minor)
+
+- feat(path): add support of URL input for basename, dirname, extname, join, and
+  normalize (#6651)
+
+#### @std/random 0.1.1 (patch)
+
+- feat(random/unstable): allow generating seeded random bytes and 53-bit-entropy
+  floats in [0, 1) (add `getRandomValuesSeeded` and `nextFloat64`) (#6626)
+
+#### @std/testing 1.0.13 (patch)
+
+- feat(testing/unstable): add `assertInlineSnapshot()` (#6530)
+
+#### @std/text 1.0.14 (patch)
+
+- fix(text/unstable): make dedent match reference for multiline substitutions
+  (#6667)
+
+#### @std/toml 1.0.7 (patch)
+
+- fix(toml): leading zero errors (#6681)
+- refactor(toml): move `_parser.ts` tests to separate file (#6653)
+- refactor(toml): rewrite `deepAssignWithTable` (#6580)
+
+#### @std/uuid 1.0.8 (patch)
+
+- docs(uuid): update module docs to mention UUIDv7 (#6683)
+
+#### @std/yaml 1.0.7 (patch)
+
+- feat(yaml/unstable): support `quoteStyle` (#6666)
+
+### 2025.05.13
+
+#### @std/async 1.0.13 (patch)
+
+- fix(async): `abortable` should prevent uncaught error when promise is rejected
+  (#6312)
+
+#### @std/bytes 1.0.6 (patch)
+
+- fix(bytes): allow to concat() readonly arrays of bytes arrays (#6639)
+
+#### @std/collections 1.1.0 (minor)
+
+- feat(collections): stabilize `Iterable` input for `chunk`, `dropLastWhile`,
+  `dropWhile`, `intersect`, `sample`, `slidingWindows`, `sortBy`,
+  `takeLastWhile`, `takeWhile`, and `withoutAll` (#6644)
+- feat(collections/unstable): add cycle iterator utility (#6386)
+
+#### @std/crypto 1.0.5 (patch)
+
+- chore(crypto): update `crypto/_wasm` and `wasmbuild` task (#6611)
+
+#### @std/data-structures 1.0.8 (patch)
+
+- feat(data-structures/unstable): add `BinarySearchTree` methods `ceiling`,
+  `floor`, `higher`, `lower` (#6544)
+
+#### @std/dotenv 0.225.4 (patch)
+
+- feat(dotenv): add URL as envPath type (#6621)
+
+#### @std/expect 1.0.16 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/fmt 1.0.8 (patch)
+
+- docs(fmt): clarify runtime compatibility (#6648)
+
+#### @std/html 1.0.4 (patch)
+
+- fix(html/unstable): add missing range
+  (`unstable_is_valid_custom_element_name`) (#6634)
+
+#### @std/http 1.0.16 (patch)
+
+- fix(http): don't set the Date header in file_server.ts responses (use the
+  default Date header value) (#6610)
+
+#### @std/internal 1.0.7 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/testing 1.0.12 (patch)
+
+- fix(expect,testing,internal): throw if `expect.hasAssertion` and
+  `expect.assertions` are not checked (#6646)
+
+#### @std/toml 1.0.6 (patch)
+
+- fix(toml): should use lowercase value for nan (#6638)
+
 ### 2025.04.24
 
 #### @std/assert 1.0.13 (patch)

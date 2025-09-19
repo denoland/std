@@ -1,6 +1,6 @@
 {
   "name": "@std/bytes",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "exports": {
     ".": "./mod.ts",
     "./concat": "./concat.ts",

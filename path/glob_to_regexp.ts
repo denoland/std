@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import type { GlobOptions } from "./_common/glob_to_reg_exp.ts";
-import { isWindows } from "./_os.ts";
+import { isWindows } from "@std/internal/os";
 
 import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
 import {

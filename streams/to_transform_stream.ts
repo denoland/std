@@ -60,6 +60,7 @@
  * );
  * ```
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function toTransformStream<I, O>(
   transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,
   writableStrategy?: QueuingStrategy<I>,

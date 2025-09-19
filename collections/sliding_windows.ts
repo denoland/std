@@ -20,8 +20,8 @@ export interface SlidingWindowsOptions {
 }
 
 /**
- * Generates sliding views of the given array of the given size and returns a
- * new array containing all of them.
+ * Generates sliding views of the given iterable of the given size and returns an
+ * array containing all of them.
  *
  * If step is set, each window will start that many elements after the last
  * window's start. (Default: 1)
@@ -31,11 +31,11 @@ export interface SlidingWindowsOptions {
  *
  * @typeParam T The type of the array elements.
  *
- * @param array The array to generate sliding windows from.
+ * @param iterable The iterable to generate sliding windows from.
  * @param size The size of the sliding windows.
  * @param options The options for generating sliding windows.
  *
- * @returns A new array containing all sliding windows of the given size.
+ * @returns An array containing all sliding windows of the given size.
  *
  * @example Usage
  * ```ts
@@ -67,20 +67,33 @@ export interface SlidingWindowsOptions {
  * ```
  */
 export function slidingWindows<T>(
-  array: readonly T[],
+  iterable: Iterable<T>,
   size: number,
   options: SlidingWindowsOptions = {},
 ): T[][] {
   const { step = 1, partial = false } = options;
-
-  if (
-    !Number.isInteger(size) || !Number.isInteger(step) || size <= 0 || step <= 0
-  ) {
-    throw new RangeError("Both size and step must be positive integer");
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new RangeError(
+      `Cannot create sliding windows: size must be a positive integer, current value is ${size}`,
+    );
   }
-
-  return Array.from(
-    { length: Math.floor((array.length - (partial ? 1 : size)) / step + 1) },
-    (_, i) => array.slice(i * step, i * step + size),
-  );
+  if (!Number.isInteger(step) || step <= 0) {
+    throw new RangeError(
+      `Cannot create sliding windows: step must be a positive integer, current value is ${step}`,
+    );
+  }
+  const array = Array.isArray(iterable) ? iterable : Array.from(iterable);
+  const len = array.length;
+  const result: T[][] = [];
+  for (let i = 0; i <= len; i += step) {
+    let last = i + size;
+    if (last > len) {
+      last = len;
+    }
+    const window: T[] = array.slice(i, last);
+    if ((partial && window.length) || window.length === size) {
+      result.push(window);
+    }
+  }
+  return result;
 }

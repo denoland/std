@@ -70,6 +70,7 @@ export interface CreateCapture {
  * @param height The height of the capture texture.
  * @returns The texture to render to and buffer to read from.
  */
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
 export function createCapture(
   device: GPUDevice,
   width: number,
