@@ -1,5 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
+import { DIFF_CONTEXT_LENGTH } from "@std/internal/build-message";
 import {
   bold,
   gray,
@@ -9,6 +10,8 @@ import {
   yellow,
 } from "@std/internal/styles";
 import { dedent } from "@std/text/unstable-dedent";
+import { stub } from "@std/testing/mock";
+import { disposableStack } from "../internal/_testing.ts";
 
 function createHeader(): string[] {
   return [
@@ -230,173 +233,200 @@ Deno.test({
   },
 });
 
-Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) => {
-  const a = Array.from({ length: 10_000 }, (_, i) => i);
+function assertDiffMessage(a: unknown, b: unknown, expected: string) {
+  const err = assertThrows(() => assertEquals(a, b), AssertionError);
+  // TODO(lionel-rowe): re-spell `fullExpectedMessage` indentation once https://github.com/denoland/std/issues/6830
+  // is fixed
+  const fullExpectedMessage = dedent`
+        Values are not equal.
+
+
+            [Diff] Actual / Expected
+
+
+        ${expected}
+  `;
+  assertEquals(
+    // TODO(lionel-rowe): compare full messages without trimming once https://github.com/denoland/std/issues/6830 and
+    // https://github.com/denoland/std/issues/6831 are fixed
+    stripAnsiCode(err.message).trimEnd(),
+    fullExpectedMessage,
+  );
+}
+
+Deno.test(`assertEquals() truncates unchanged lines of large diffs when "${DIFF_CONTEXT_LENGTH}" is set`, async (t) => {
+  using stack = disposableStack();
+  stack.use(stub(Deno.permissions, "querySync", (x) => {
+    if (x.name === "env") return { state: "granted" } as Deno.PermissionStatus;
+    throw new Error(`Unexpected permission descriptor: ${x.name}`);
+  }));
+  stack.use(stub(Deno.env, "get", (key) => {
+    if (key === DIFF_CONTEXT_LENGTH) return "10";
+    throw new Error(`Unexpected env var key: ${key}`);
+  }));
+
+  const a = Array.from({ length: 1000 }, (_, i) => i);
   const b = [...a];
-  b[5_000] = -1;
+  b[500] = -1;
 
   await t.step("array", () => {
-    assertThrows(
-      () => assertEquals(a, b),
-      AssertionError,
+    assertDiffMessage(
+      a,
+      b,
       dedent`
             [
-              ... 4990 unchanged lines ...
-              4990,
-              4991,
-              4992,
-              4993,
-              4994,
-              4995,
-              4996,
-              4997,
-              4998,
-              4999,
-        -     5000,
+              ... 490 unchanged lines ...
+              490,
+              491,
+              492,
+              493,
+              494,
+              495,
+              496,
+              497,
+              498,
+              499,
+        -     500,
         +     -1,
-              5001,
-              5002,
-              5003,
-              5004,
-              5005,
-              5006,
-              5007,
-              5008,
-              5009,
-              5010,
-              ... 4989 unchanged lines ...
+              501,
+              502,
+              503,
+              504,
+              505,
+              506,
+              507,
+              508,
+              509,
+              510,
+              ... 489 unchanged lines ...
             ]
       `,
     );
   });
 
   await t.step("object", () => {
-    assertThrows(
-      () =>
-        assertEquals(
-          Object.fromEntries(a.entries()),
-          Object.fromEntries(b.entries()),
-        ),
-      AssertionError,
+    assertDiffMessage(
+      Object.fromEntries(a.entries()),
+      Object.fromEntries(b.entries()),
       dedent`
             {
-              ... 4438 unchanged lines ...
-              "4993": 4993,
-              "4994": 4994,
-              "4995": 4995,
-              "4996": 4996,
-              "4997": 4997,
-              "4998": 4998,
-              "4999": 4999,
+              ... 437 unchanged lines ...
+              "492": 492,
+              "493": 493,
+              "494": 494,
+              "495": 495,
+              "496": 496,
+              "497": 497,
+              "498": 498,
+              "499": 499,
               "5": 5,
               "50": 50,
-              "500": 500,
-        -     "5000": 5000,
-        +     "5000": -1,
-              "5001": 5001,
-              "5002": 5002,
-              "5003": 5003,
-              "5004": 5004,
-              "5005": 5005,
-              "5006": 5006,
-              "5007": 5007,
-              "5008": 5008,
-              "5009": 5009,
+        -     "500": 500,
+        +     "500": -1,
               "501": 501,
-              ... 5541 unchanged lines ...
+              "502": 502,
+              "503": 503,
+              "504": 504,
+              "505": 505,
+              "506": 506,
+              "507": 507,
+              "508": 508,
+              "509": 509,
+              "51": 51,
+              ... 542 unchanged lines ...
             }
       `,
     );
   });
 
   await t.step("string", () => {
-    assertThrows(
-      () => assertEquals(a.join("\n"), b.join("\n")),
-      AssertionError,
+    assertDiffMessage(
+      a.join("\n"),
+      b.join("\n"),
       dedent`
             0\\n
-            ... 4989 unchanged lines ...
-            4990\\n
-            4991\\n
-            4992\\n
-            4993\\n
-            4994\\n
-            4995\\n
-            4996\\n
-            4997\\n
-            4998\\n
-            4999\\n
-        -   5000\\n
+            ... 489 unchanged lines ...
+            490\\n
+            491\\n
+            492\\n
+            493\\n
+            494\\n
+            495\\n
+            496\\n
+            497\\n
+            498\\n
+            499\\n
+        -   500\\n
         +   -1\\n
-            5001\\n
-            5002\\n
-            5003\\n
-            5004\\n
-            5005\\n
-            5006\\n
-            5007\\n
-            5008\\n
-            5009\\n
-            5010\\n
-            ... 4988 unchanged lines ...
-            9999
+            501\\n
+            502\\n
+            503\\n
+            504\\n
+            505\\n
+            506\\n
+            507\\n
+            508\\n
+            509\\n
+            510\\n
+            ... 488 unchanged lines ...
+            999
       `,
     );
   });
 
   await t.step("Set", () => {
-    assertThrows(
-      () => assertEquals(new Set(a), new Set(b)),
-      AssertionError,
+    assertDiffMessage(
+      new Set(a),
+      new Set(b),
       dedent`
-            Set(10000) {
+            Set(1000) {
         +     -1,
               0,
               1,
               10,
               100,
-              1000,
-              1001,
-              1002,
-              1003,
-              1004,
-              1005,
-              ... 4428 unchanged lines ...
-              4993,
-              4994,
-              4995,
-              4996,
-              4997,
-              4998,
-              4999,
+              101,
+              102,
+              103,
+              104,
+              105,
+              106,
+              ... 427 unchanged lines ...
+              492,
+              493,
+              494,
+              495,
+              496,
+              497,
+              498,
+              499,
               5,
               50,
-              500,
-        -     5000,
-              5001,
-              5002,
-              5003,
-              5004,
-              5005,
-              5006,
-              5007,
-              5008,
-              5009,
+        -     500,
               501,
-              ... 5541 unchanged lines ...
+              502,
+              503,
+              504,
+              505,
+              506,
+              507,
+              508,
+              509,
+              51,
+              ... 542 unchanged lines ...
             }
       `,
     );
   });
 
   await t.step("diff near start", () => {
-    const a = Array.from({ length: 10_000 }, (_, i) => i);
+    const a = Array.from({ length: 1000 }, (_, i) => i);
     const b = [...a];
     b[3] = -1;
 
-    assertThrows(
-      () => assertEquals(a, b),
-      AssertionError,
+    assertDiffMessage(
+      a,
+      b,
       dedent`
             [
               0,
@@ -414,38 +444,38 @@ Deno.test("assertEquals() truncates unchanged lines of large diffs", async (t) =
               11,
               12,
               13,
-              ... 9986 unchanged lines ...
+              ... 986 unchanged lines ...
             ]
       `,
     );
   });
 
   await t.step("diff near end", () => {
-    const a = Array.from({ length: 10_000 }, (_, i) => i);
+    const a = Array.from({ length: 1000 }, (_, i) => i);
     const b = [...a];
-    b[9996] = -1;
+    b[996] = -1;
 
-    assertThrows(
-      () => assertEquals(a, b),
-      AssertionError,
+    assertDiffMessage(
+      a,
+      b,
       dedent`
             [
-              ... 9986 unchanged lines ...
-              9986,
-              9987,
-              9988,
-              9989,
-              9990,
-              9991,
-              9992,
-              9993,
-              9994,
-              9995,
-        -     9996,
+              ... 986 unchanged lines ...
+              986,
+              987,
+              988,
+              989,
+              990,
+              991,
+              992,
+              993,
+              994,
+              995,
+        -     996,
         +     -1,
-              9997,
-              9998,
-              9999,
+              997,
+              998,
+              999,
             ]
       `,
     );

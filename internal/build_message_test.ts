@@ -1,13 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
-import {
-  buildMessage,
-  consolidateCommon,
-  createColor,
-  createSign,
-  truncateDiff,
-} from "./build_message.ts";
+import { buildMessage, createColor, createSign } from "./build_message.ts";
 
 Deno.test("buildMessage()", async (t) => {
   const prelude = [
@@ -52,12 +46,7 @@ Deno.test("buildMessage()", async (t) => {
           { type: "common", value: "bar" },
         ],
         {},
-        {
-          minTruncationLength: 0,
-          truncationSpanLength: 5,
-          truncationContextLength: 2,
-          truncationExtremityLength: 1,
-        },
+        2,
       ),
       [
         ...prelude,
@@ -96,68 +85,4 @@ Deno.test("createSign()", () => {
   assertEquals(createSign("common"), "    ");
   // deno-lint-ignore no-explicit-any
   assertEquals(createSign("unknown" as any), "    ");
-});
-
-Deno.test("consolidateDiff()", () => {
-  assertEquals(
-    truncateDiff(
-      [
-        { type: "added", value: "foo" },
-        { type: "common", value: "[" },
-        { type: "common", value: '  "bar-->",' },
-        { type: "common", value: '  "bar",' },
-        { type: "common", value: '  "bar",' },
-        { type: "common", value: '  "<--bar",' },
-        { type: "common", value: "]" },
-        { type: "removed", value: "foo" },
-      ],
-      {},
-      {
-        minTruncationLength: 0,
-        truncationSpanLength: 5,
-        truncationContextLength: 2,
-        truncationExtremityLength: 1,
-      },
-    ),
-    [
-      { type: "added", value: "foo" },
-      { type: "common", value: "[" },
-      { type: "common", value: '  "bar-->",' },
-      { type: "truncation", value: "  ... 2 unchanged lines ..." },
-      { type: "common", value: '  "<--bar",' },
-      { type: "common", value: "]" },
-      { type: "removed", value: "foo" },
-    ],
-  );
-});
-
-Deno.test("consolidateCommon()", () => {
-  assertEquals(
-    consolidateCommon(
-      [
-        { type: "common", value: "[" },
-        { type: "common", value: '  "bar-->",' },
-        { type: "common", value: '  "bar",' },
-        { type: "common", value: '  "bar",' },
-        { type: "common", value: '  "bar",' },
-        { type: "common", value: '  "<--bar",' },
-        { type: "common", value: "]" },
-      ],
-      "none",
-      {},
-      {
-        minTruncationLength: 0,
-        truncationSpanLength: 5,
-        truncationContextLength: 2,
-        truncationExtremityLength: 1,
-      },
-    ),
-    [
-      { type: "common", value: "[" },
-      { type: "common", value: '  "bar-->",' },
-      { type: "truncation", value: "  ... 3 unchanged lines ..." },
-      { type: "common", value: '  "<--bar",' },
-      { type: "common", value: "]" },
-    ],
-  );
 });

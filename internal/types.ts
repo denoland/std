@@ -10,11 +10,19 @@ export type DiffType = DiffResult<unknown>["type"];
  */
 export type DiffResult<T> = ChangedDiffResult<T> | CommonDiffResult<T>;
 
+/**
+ * Represents the result of a common diff operation.
+ * @typeParam T The type of the value in the diff result.
+ */
 export type CommonDiffResult<T> = {
   type: "common" | "truncation";
   value: T;
 };
 
+/**
+ * Represents the result of a changed diff operation.
+ * @typeParam T The type of the value in the diff result.
+ */
 export type ChangedDiffResult<T> = {
   type: "removed" | "added";
   value: T;

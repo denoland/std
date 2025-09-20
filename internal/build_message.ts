@@ -1,8 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { truncateDiff } from "./_truncate_build_message.ts";
 import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
-import type { CommonDiffResult, DiffResult, DiffType } from "./types.ts";
+import type { DiffResult, DiffType } from "./types.ts";
 
 /**
  * Colors the output of assertion diffs.
@@ -71,64 +72,38 @@ export function createSign(diffType: DiffType): string {
   }
 }
 
-function getMinTruncationLength() {
-  const ENV_PERM_STATUS = globalThis.Deno?.permissions.querySync?.({
-    name: "env",
-    variable: "DIFF_CONTEXT_LENGTH",
-  })
-    .state ?? "granted";
-  const specifiedTruncationContextLength = ENV_PERM_STATUS === "granted"
-    ? Deno.env.get("DIFF_CONTEXT_LENGTH") ?? null
+/** The environment variable used for setting diff context length. */
+export const DIFF_CONTEXT_LENGTH = "DIFF_CONTEXT_LENGTH";
+function getTruncationEnvVar() {
+  // deno-lint-ignore no-explicit-any
+  const { Deno, process } = globalThis as any;
+
+  if (typeof Deno === "object") {
+    const permissionStatus = Deno.permissions.querySync({
+      name: "env",
+      variable: DIFF_CONTEXT_LENGTH,
+    }).state ?? "granted";
+
+    return permissionStatus === "granted"
+      ? Deno.env.get(DIFF_CONTEXT_LENGTH) ?? null
+      : null;
+  }
+  const nodeEnv = process?.getBuiltinModule?.("node:process")?.env as
+    | Partial<Record<string, string>>
+    | undefined;
+  return typeof nodeEnv === "object"
+    ? nodeEnv[DIFF_CONTEXT_LENGTH] ?? null
     : null;
-
-  const truncationContextLength = parseInt(
-    specifiedTruncationContextLength ?? "10",
-  );
-  return Number.isNaN(truncationContextLength)
-    ? 0
-    : truncationContextLength < 1
-    ? Infinity
-    : truncationContextLength;
 }
 
-function resolveBuildMessageTruncationOptions(): BuildMessageTruncationOptions {
-  const truncationContextLength = getMinTruncationLength();
-  const truncationSpanLength = truncationContextLength * 2;
-  const minTruncationLength = truncationContextLength * 10;
-
-  return {
-    minTruncationLength,
-    truncationSpanLength,
-    truncationContextLength,
-    truncationExtremityLength: 1,
-  };
+function getTruncationContextLengthFromEnv() {
+  const envVar = getTruncationEnvVar();
+  if (envVar == null) return null;
+  const truncationContextLength = parseInt(envVar);
+  return Number.isFinite(truncationContextLength) && truncationContextLength > 0
+    ? truncationContextLength
+    : null;
 }
-
-const buildMessageTruncationOptions = resolveBuildMessageTruncationOptions();
-
-/** Currently, explicitly passing these options is only used for testing. */
-type BuildMessageTruncationOptions = {
-  /**
-   * Minimum number of total diff result lines to enable truncation.
-   * @default {100}
-   */
-  minTruncationLength: number;
-  /**
-   * Length of an individual common span in lines to trigger truncation.
-   * @default {20}
-   */
-  truncationSpanLength: number;
-  /**
-   * Length of context in lines either side of a truncated span in a truncated diff.
-   * @default {10}
-   */
-  truncationContextLength: number;
-  /**
-   * Length of context in lines to show at very start and end of a truncated diff.
-   * @default {1}
-   */
-  truncationExtremityLength: number;
-};
 
 /** Options for {@linkcode buildMessage}. */
 export interface BuildMessageOptions {
@@ -144,6 +119,7 @@ export interface BuildMessageOptions {
  *
  * @param diffResult The diff result array.
  * @param options Optional parameters for customizing the message.
+ * @param contextLength Truncation context length. Explicitly passing `contextLength` is currently only used for testing.
  *
  * @returns An array of strings representing the built message.
  *
@@ -151,9 +127,7 @@ export interface BuildMessageOptions {
  * ```ts no-assert
  * import { diffStr, buildMessage } from "@std/internal";
  *
- * const diffResult = diffStr("Hello, world!", "Hello, world");
- *
- * console.log(buildMessage(diffResult));
+ * diffStr("Hello, world!", "Hello, world");
  * // [
  * //   "",
  * //   "",
@@ -169,10 +143,17 @@ export interface BuildMessageOptions {
 export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
   options: BuildMessageOptions = {},
-  truncationOptions?: BuildMessageTruncationOptions,
+  contextLength: number | null = null,
 ): string[] {
-  truncationOptions ??= buildMessageTruncationOptions;
-  diffResult = truncateDiff(diffResult, options, truncationOptions);
+  contextLength ??= getTruncationContextLengthFromEnv();
+  if (contextLength != null) {
+    diffResult = truncateDiff(
+      diffResult,
+      options.stringDiff ?? false,
+      contextLength,
+    );
+  }
+
   const { stringDiff = false } = options;
   const messages = [
     "",
@@ -198,107 +179,4 @@ export function buildMessage(
   });
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages), "");
   return messages;
-}
-
-export function truncateDiff(
-  diffResult: ReadonlyArray<DiffResult<string>>,
-  options: BuildMessageOptions,
-  truncationOptions: BuildMessageTruncationOptions,
-): ReadonlyArray<DiffResult<string>> {
-  if (diffResult.length < truncationOptions.minTruncationLength) {
-    return diffResult;
-  }
-
-  const messages: DiffResult<string>[] = [];
-  const commons: CommonDiffResult<string>[] = [];
-
-  for (let i = 0; i < diffResult.length; ++i) {
-    const result = diffResult[i]!;
-
-    if (result.type === "common") {
-      commons.push(result as typeof result & { type: typeof result.type });
-    } else {
-      messages.push(
-        ...consolidateCommon(
-          commons,
-          commons.length === i ? "start" : "none",
-          options,
-          truncationOptions,
-        ),
-      );
-      commons.length = 0;
-      messages.push(result);
-    }
-  }
-
-  messages.push(
-    ...consolidateCommon(commons, "end", options, truncationOptions),
-  );
-
-  return messages;
-}
-
-export function consolidateCommon(
-  commons: ReadonlyArray<CommonDiffResult<string>>,
-  extremity: "start" | "end" | "none",
-  options: BuildMessageOptions,
-  truncationOptions: BuildMessageTruncationOptions,
-): ReadonlyArray<CommonDiffResult<string>> {
-  const { stringDiff } = options;
-  const {
-    truncationSpanLength,
-    truncationContextLength,
-    truncationExtremityLength,
-  } = truncationOptions;
-
-  const isStart = extremity === "start";
-  const isEnd = extremity === "end";
-
-  const startTruncationLength = isStart
-    ? truncationExtremityLength
-    : truncationContextLength;
-  const endTruncationLength = isEnd
-    ? truncationExtremityLength
-    : truncationContextLength;
-
-  if (commons.length <= truncationSpanLength) return commons;
-
-  const [before, after] = [
-    commons[startTruncationLength - 1]!.value,
-    commons[commons.length - endTruncationLength]!.value,
-  ];
-
-  const indent = isStart
-    ? getIndent(after)
-    : isEnd
-    ? getIndent(before)
-    : commonIndent(before, after);
-
-  return [
-    ...commons.slice(0, startTruncationLength),
-    {
-      type: "truncation",
-      value: `${indent}... ${
-        commons.length - startTruncationLength - endTruncationLength
-      } unchanged lines ...${stringDiff ? "\n" : ""}`,
-    },
-    ...commons.slice(-endTruncationLength),
-  ];
-}
-
-function commonIndent(line1: string, line2: string): string {
-  const [indent1, indent2] = [line1, line2].map(getIndent);
-  return !indent1 || !indent2
-    ? ""
-    : indent1 === indent2
-    ? indent1
-    : indent1.startsWith(indent2)
-    ? indent1.slice(0, indent2.length)
-    : indent2.startsWith(indent1)
-    ? indent2.slice(0, indent1.length)
-    : "";
-}
-
-function getIndent(line: string): string {
-  return line.match(/^\s+/g)?.[0] ?? "";
 }
