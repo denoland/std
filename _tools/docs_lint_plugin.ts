@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 function isInternalFile(filename: string): boolean {
-  return filename.split("/").some((part) => part.startsWith("_"));
+  return filename.split(/[\\/]+/).some((part) => part.startsWith("_"));
 }
 
 export default {
