@@ -11,6 +11,7 @@ import {
 } from "./_io.ts";
 import { codePointLength } from "./_shared.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { ParseResult, RecordWithColumn };
 
 const BYTE_ORDER_MARK = "\ufeff";

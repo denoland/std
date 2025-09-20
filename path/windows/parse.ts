@@ -6,6 +6,7 @@ import type { ParsedPath } from "../types.ts";
 import { assertPath } from "../_common/assert_path.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { ParsedPath } from "../types.ts";
 
 /**

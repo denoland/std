@@ -6,6 +6,7 @@ import { isWindows } from "@std/internal/os";
 import { joinGlobs as posixJoinGlobs } from "./posix/join_globs.ts";
 import { joinGlobs as windowsJoinGlobs } from "./windows/join_globs.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions };
 
 /**

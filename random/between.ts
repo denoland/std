@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 import type { Prng, RandomOptions } from "./_types.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Prng, RandomOptions };
 
 /**
