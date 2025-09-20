@@ -1,6 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import type { Uint8Array_ } from "./_types.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Uint8Array_ };
 import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 

@@ -2,6 +2,7 @@
 // This module is browser compatible.
 import type { Prng, RandomOptions } from "./_types.ts";
 import { randomBetween } from "./between.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Prng, RandomOptions };
 
 /**

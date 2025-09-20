@@ -8,6 +8,7 @@ import { DumperState } from "./_dumper_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 import type { StyleVariant } from "./_type.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { SchemaType, StyleVariant };
 
 /** Options for {@linkcode stringify}. */

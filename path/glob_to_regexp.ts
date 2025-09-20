@@ -9,6 +9,7 @@ import {
   globToRegExp as windowsGlobToRegExp,
 } from "./windows/glob_to_regexp.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions };
 
 /**

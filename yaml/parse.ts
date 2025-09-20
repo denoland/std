@@ -8,6 +8,7 @@ import { isEOL } from "./_chars.ts";
 import { LoaderState } from "./_loader_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { SchemaType };
 
 /** Options for {@linkcode parse}. */

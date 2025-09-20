@@ -2,6 +2,7 @@
 
 import { EXTRACT_REGEXP_MAP, type Format } from "./_formats.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Format };
 
 /**

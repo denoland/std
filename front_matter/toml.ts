@@ -6,6 +6,7 @@ import { parse } from "@std/toml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_TOML_REGEXP } from "./_formats.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Extract };
 
 /**

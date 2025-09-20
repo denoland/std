@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { MemoizationCache } from "./memoize.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { MemoizationCache };
 
 /**

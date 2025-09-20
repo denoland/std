@@ -2,6 +2,7 @@
 // This module is browser compatible.
 import { Pcg32 } from "./_pcg32.ts";
 import type { RandomValueGenerator } from "./_types.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { IntegerTypedArray, RandomValueGenerator } from "./_types.ts";
 
 /**

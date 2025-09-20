@@ -51,7 +51,7 @@
         "no-console"
       ]
     },
-    "plugins": ["./_tools/lint_plugin.ts"]
+    "plugins": ["./_tools/lint_plugin.ts", "./_tools/docs_lint_plugin.ts"]
   },
   "workspace": [
     "./assert",

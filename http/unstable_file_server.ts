@@ -4,6 +4,7 @@ import {
   serveDir as stableServeDir,
   type ServeDirOptions as StableServeDirOptions,
 } from "./file_server.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export { serveFile, type ServeFileOptions } from "./file_server.ts";
 
 /**

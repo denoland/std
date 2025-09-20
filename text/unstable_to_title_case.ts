@@ -2,7 +2,9 @@
 // This module is browser compatible.
 import { resolveOptions, titleCaseSegment } from "./_title_case_util.ts";
 import type { BaseTitleCaseOptions } from "./_title_case_util.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { BaseTitleCaseOptions };
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { TrailingCase } from "./_title_case_util.ts";
 
 /**

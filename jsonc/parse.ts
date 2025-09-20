@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { JsonValue } from "@std/json/types";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { JsonValue };
 
 /**

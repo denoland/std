@@ -7,6 +7,7 @@ import {
 
 import type { Uint8Array_ } from "./_types.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Uint8Array_ };
 
 /**

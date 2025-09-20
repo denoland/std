@@ -6,6 +6,7 @@ import { join } from "./join.ts";
 import { SEPARATOR } from "./constants.ts";
 import { normalizeGlob } from "./normalize_glob.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions };
 
 /**

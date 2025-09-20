@@ -2,6 +2,7 @@
 // This module is browser compatible.
 import { Pcg32 } from "./_pcg32.ts";
 import type { Prng } from "./_types.ts";
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Prng } from "./_types.ts";
 
 /**

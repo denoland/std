@@ -7,6 +7,7 @@ import { stripTrailingSeparators } from "../_common/strip_trailing_separators.ts
 import { assertPath } from "../_common/assert_path.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { ParsedPath } from "../types.ts";
 
 /**

@@ -6,6 +6,7 @@ import { parse, type ParseOptions } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Extract };
 
 /**

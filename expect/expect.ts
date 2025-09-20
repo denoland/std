@@ -64,6 +64,7 @@ import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { SnapshotPlugin, Tester } from "./_types.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
 const matchers: Record<MatcherKey, Matcher> = {

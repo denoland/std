@@ -5,6 +5,7 @@ import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { normalize } from "./normalize.ts";
 import { SEPARATOR_PATTERN } from "./constants.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions };
 
 /**
