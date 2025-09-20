@@ -127,16 +127,26 @@ interface DueNode {
 
 let time: FakeTime | undefined = undefined;
 
-function fakeSetTimeout(
-  // deno-lint-ignore no-explicit-any
-  callback: (...args: any[]) => void,
+function assertIsCallbackFunction(
+  callback: unknown,
+  fnName: "setTimeout" | "setInterval",
+): asserts callback is (...args: unknown[]) => void {
+  if (typeof callback !== "function") {
+    throw new TimeError(
+      `FakeTime does not support non-function callbacks to ${fnName}`,
+    );
+  }
+}
+
+const fakeSetTimeout: typeof globalThis.setTimeout = function (
+  callback,
   delay = 0,
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-): number {
+  ...args
+) {
+  assertIsCallbackFunction(callback, "setTimeout");
   if (!time) throw new TimeError("Cannot set timeout: time is not faked");
   return setTimer(callback, delay, args, false);
-}
+};
 
 function fakeClearTimeout(id?: unknown) {
   if (!time) throw new TimeError("Cannot clear timeout: time is not faked");
@@ -145,16 +155,15 @@ function fakeClearTimeout(id?: unknown) {
   }
 }
 
-function fakeSetInterval(
-  // deno-lint-ignore no-explicit-any
-  callback: (...args: any[]) => unknown,
+const fakeSetInterval: typeof globalThis.setInterval = function (
+  callback,
   delay = 0,
-  // deno-lint-ignore no-explicit-any
-  ...args: any[]
-): number {
+  ...args
+) {
+  assertIsCallbackFunction(callback, "setInterval");
   if (!time) throw new TimeError("Cannot set interval: time is not faked");
   return setTimer(callback, delay, args, true);
-}
+};
 
 function fakeClearInterval(id?: unknown) {
   if (!time) throw new TimeError("Cannot clear interval: time is not faked");

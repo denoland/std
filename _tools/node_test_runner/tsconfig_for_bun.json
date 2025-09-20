@@ -3,13 +3,14 @@
     "paths": {
       "@std/assert": ["./assert/mod.ts"],
       "@std/assert/greater-or-equal": ["./assert/greater_or_equal.ts"],
-      "@std/path": ["./path/mod.ts"],
-      "@std/internal/format": ["./internal/format.ts"],
-      "@std/internal/styles": ["./internal/styles.ts"],
       "@std/internal/build-message": ["./internal/build_message.ts"],
       "@std/internal/diff": ["./internal/diff.ts"],
       "@std/internal/diff-str": ["./internal/diff_str.ts"],
-      "@std/semver": ["./semver/mod.ts"],
+      "@std/internal/format": ["./internal/format.ts"],
+      "@std/internal/os": ["./internal/os.ts"],
+      "@std/internal/styles": ["./internal/styles.ts"],
+      "@std/path": ["./path/mod.ts"],
+      "@std/semver": ["./semver/mod.ts"]
     }
   }
 }

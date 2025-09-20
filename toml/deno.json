@@ -1,6 +1,6 @@
 {
   "name": "@std/toml",
-  "version": "1.0.6",
+  "version": "1.0.10",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",

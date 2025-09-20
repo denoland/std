@@ -1,5 +1,16 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
+import { longestCommonPrefix } from "./unstable_longest_common_prefix.ts";
+
+const WHITE_SPACE = String.raw`\t\v\f\ufeff\p{Space_Separator}`;
+const INDENT_REGEXP = new RegExp(
+  String.raw`^[${WHITE_SPACE}]+`,
+  "u",
+);
+const WHITE_SPACE_ONLY_LINE_REGEXP = new RegExp(
+  String.raw`^[${WHITE_SPACE}]+$`,
+  "mu",
+);
 
 /**
  * Removes indentation from multiline strings.
@@ -62,38 +73,36 @@ export function dedent(
   input: TemplateStringsArray | string,
   ...values: unknown[]
 ): string {
+  // Substitute nonempty placeholder so multiline substitutions do not affect indent width.
+  const joinedTemplate = typeof input === "string" ? input : input.join("x");
+  const ignoreFirstUnindented = !joinedTemplate.startsWith("\n");
+  const trimmedTemplate = joinedTemplate.replace(/^\n/, "").trimEnd();
+  const lines = trimmedTemplate.split("\n");
+
+  const linesToCheck = lines.slice(
+    ignoreFirstUnindented && !INDENT_REGEXP.test(lines[0] ?? "") ? 1 : 0,
+  )
+    .filter((l) => l.length > 0 && !WHITE_SPACE_ONLY_LINE_REGEXP.test(l));
+
+  const commonPrefix = longestCommonPrefix(linesToCheck);
+  const indent = commonPrefix.match(INDENT_REGEXP)?.[0];
+
   const inputString = typeof input === "string"
     ? input
     : String.raw({ raw: input }, ...values);
-  const ignoreFirstUnindented = !inputString.startsWith("\n");
   const trimmedInput = inputString.replace(/^\n/, "").trimEnd();
-  const lines = trimmedInput.split("\n");
-
-  let minIndentWidth: number | undefined = undefined;
-  for (let i = 0; i < lines.length; i++) {
-    const indentMatch = lines[i]!.match(/^(\s*)\S/);
-
-    // Skip empty lines
-    if (indentMatch === null) {
-      continue;
-    }
-
-    const indentWidth = indentMatch[1]!.length;
-    if (ignoreFirstUnindented && i === 0 && indentWidth === 0) {
-      continue;
-    }
-    if (minIndentWidth === undefined || indentWidth < minIndentWidth) {
-      minIndentWidth = indentWidth;
-    }
-  }
 
   // No lines to indent
-  if (minIndentWidth === undefined || minIndentWidth === 0) {
-    return trimmedInput;
-  }
+  if (!indent) return trimmedInput;
 
-  const minIndentRegex = new RegExp(`^\\s{${minIndentWidth}}`, "gm");
+  const minIndentRegex = new RegExp(String.raw`^${indent}`, "gmu");
   return trimmedInput
     .replaceAll(minIndentRegex, "")
-    .replaceAll(/^\s+$/gm, "");
+    .replaceAll(
+      new RegExp(
+        WHITE_SPACE_ONLY_LINE_REGEXP,
+        WHITE_SPACE_ONLY_LINE_REGEXP.flags + "g",
+      ),
+      "",
+    );
 }

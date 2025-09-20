@@ -12,11 +12,9 @@ import {
   createWalkEntrySync,
   type WalkEntry,
 } from "./_create_walk_entry.ts";
+import { isWindows } from "@std/internal/os";
 
 export type { GlobOptions, WalkEntry };
-
-// deno-lint-ignore no-explicit-any
-const isWindows = (globalThis as any).Deno?.build.os === "windows";
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */
 export interface ExpandGlobOptions extends Omit<GlobOptions, "os"> {

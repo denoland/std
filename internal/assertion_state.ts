@@ -27,19 +27,36 @@ export class AssertionState {
       assertionTriggeredCount: 0,
     };
 
+    if (typeof globalThis?.addEventListener === "function") {
+      globalThis.addEventListener("unload", () => {
+        this.#ensureCleanedUp();
+      });
+    } else if (
+      // deno-lint-ignore no-explicit-any
+      typeof (globalThis as any)?.process?.on === "function"
+    ) {
+      // deno-lint-ignore no-explicit-any
+      (globalThis as any).process.on("exit", () => {
+        this.#ensureCleanedUp();
+      });
+    } else {
+      // deno-lint-ignore no-console
+      console.warn("AssertionCounter cleanup step was not registered");
+    }
+  }
+
+  #ensureCleanedUp() {
     // If any checks were registered, after the test suite runs the checks,
     // `resetAssertionState` should also have been called. If it was not,
     // then the test suite did not run the checks.
-    globalThis.addEventListener("unload", () => {
-      if (
-        this.#state.assertionCheck ||
-        this.#state.assertionCount !== undefined
-      ) {
-        throw new Error(
-          "AssertionCounter was not cleaned up: If tests are not otherwise failing, ensure `expect.hasAssertion` and `expect.assertions` are only run in bdd tests",
-        );
-      }
-    });
+    if (
+      this.#state.assertionCheck ||
+      this.#state.assertionCount !== undefined
+    ) {
+      throw new Error(
+        "AssertionCounter was not cleaned up: If tests are not otherwise failing, ensure `expect.hasAssertion` and `expect.assertions` are only run in bdd tests",
+      );
+    }
   }
 
   /**

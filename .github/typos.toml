@@ -17,6 +17,7 @@ extend-exclude = [
   "http/testdata",
   "http/user_agent.ts",
   "jsonc/testdata",
+  "toml/testdata",
   "ulid/*.ts",
   "crypto/_wasm"
 ]

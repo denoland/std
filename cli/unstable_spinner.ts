@@ -239,6 +239,7 @@ export class Spinner {
     };
 
     this.#intervalId = setInterval(updateFrame, this.#interval);
+    updateFrame();
   }
 
   /**

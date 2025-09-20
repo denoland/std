@@ -1,6 +1,6 @@
 {
   "name": "@std/datetime",
-  "version": "0.225.4",
+  "version": "0.225.5",
   "exports": {
     ".": "./mod.ts",
     "./constants": "./constants.ts",

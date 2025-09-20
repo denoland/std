@@ -187,6 +187,7 @@ function chooseScalarStyle(
   indentPerLevel: number,
   lineWidth: number,
   implicitTypes: Type<"scalar", unknown>[],
+  quoteStyle: "'" | '"',
 ): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false;
@@ -240,7 +241,9 @@ function chooseScalarStyle(
     // e.g. the string 'true' vs. the boolean true.
     return plain && !implicitTypes.some((type) => type.resolve(string))
       ? STYLE_PLAIN
-      : STYLE_SINGLE;
+      : quoteStyle === "'"
+      ? STYLE_SINGLE
+      : STYLE_DOUBLE;
   }
   // Edge case: block indentation indicator can only have one digit.
   if (indentPerLevel > 9 && needIndentIndicator(string)) {
@@ -445,6 +448,12 @@ export interface DumperStateOptions {
    * as spaces are %-encoded. (default: false).
    */
   condenseFlow?: boolean;
+  /**
+   * Strings will be quoted using this quoting style.
+   * If you specify single quotes, double quotes will still be used
+   * for non-printable characters. (default: "'")
+   */
+  quoteStyle?: "'" | '"';
 }
 
 export class DumperState {
@@ -462,6 +471,7 @@ export class DumperState {
   duplicates: unknown[] = [];
   usedDuplicates: Set<unknown> = new Set();
   styleMap: Map<string, StyleVariant> = new Map();
+  quoteStyle: "'" | '"';
 
   constructor({
     schema = DEFAULT_SCHEMA,
@@ -475,6 +485,7 @@ export class DumperState {
     useAnchors = true,
     compatMode = true,
     condenseFlow = false,
+    quoteStyle = "'",
   }: DumperStateOptions) {
     this.indent = Math.max(1, indent);
     this.arrayIndent = arrayIndent;
@@ -488,6 +499,7 @@ export class DumperState {
     this.condenseFlow = condenseFlow;
     this.implicitTypes = schema.implicitTypes;
     this.explicitTypes = schema.explicitTypes;
+    this.quoteStyle = quoteStyle;
   }
 
   // Note: line breaking/folding is implemented for only the folded style.
@@ -533,6 +545,7 @@ export class DumperState {
       this.indent,
       lineWidth,
       this.implicitTypes,
+      this.quoteStyle,
     );
     switch (scalarStyle) {
       case STYLE_PLAIN:

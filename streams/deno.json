@@ -1,8 +1,9 @@
 {
   "name": "@std/streams",
-  "version": "1.0.9",
+  "version": "1.0.12",
   "exports": {
     ".": "./mod.ts",
+    "./unstable-abort-stream": "./unstable_abort_stream.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
     "./concat-readable-streams": "./concat_readable_streams.ts",

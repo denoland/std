@@ -24,6 +24,7 @@ Deno.test("version() detects the RFC version of a UUID", () => {
   assertEquals(version("a981a0c2-68b1-35dc-bcfc-296e52ab01ec"), 3);
   assertEquals(version("90123e1c-7512-523e-bb28-76fab9f2f73d"), 5);
   assertEquals(version("1efed817-4119-6c50-974a-e638d7b30e9e"), 6);
+  assertEquals(version("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"), 7);
   assertThrows(() => version(""));
   assertThrows(() => version("not a UUID"));
   assertThrows(() => version("00000000000000000000000000000000"));

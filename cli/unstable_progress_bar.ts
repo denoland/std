@@ -1,24 +1,25 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-// This module is browser compatible.
+
+import { formatUnitFraction } from "./_unit.ts";
 
 /**
  * The properties provided to the fmt function upon every visual update.
  */
 export interface ProgressBarFormatter {
   /**
-   * A function that returns a formatted version of the duration.
-   * `[mm:ss]`
+   * A formatted version of the duration.
+   * `mm:ss`
    */
-  styledTime: () => string;
+  styledTime: string;
   /**
    * A function that returns a formatted version of the data received.
-   * `[0.40/97.66 KiB]`
+   * `0.40/97.66 KiB`
    * @param fractions The number of decimal places the values should have.
    */
   styledData: (fractions?: number) => string;
   /**
    * The progress bar string.
-   * Default Style: `[###-------]`
+   * Default Style: `###-------`
    */
   progressBar: string;
   /**
@@ -48,6 +49,11 @@ export interface ProgressBarFormatter {
  * {@link ProgressBarStream}.
  */
 export interface ProgressBarOptions {
+  /**
+   * The {@link WritableStream} that will receive the progress bar reports.
+   * @default {Deno.stderr.writable}
+   */
+  writable?: WritableStream<Uint8Array>;
   /**
    * The offset size of the input if progress is resuming part way through.
    * @default {0}
@@ -81,7 +87,7 @@ export interface ProgressBarOptions {
    * A function that creates the style of the progress bar.
    * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
-  fmt?: (fmt: ProgressBarFormatter) => string;
+  formatter?: (formatter: ProgressBarFormatter) => string;
   /**
    * Whether the writable should be kept open when progress bar stops.
    * @default {true}
@@ -89,28 +95,20 @@ export interface ProgressBarOptions {
   keepOpen?: boolean;
 }
 
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB";
+const LINE_CLEAR = "\r\u001b[K";
 
-function getUnit(max: number): Unit {
-  if (max < 2 ** 20) return "KiB";
-  if (max < 2 ** 30) return "MiB";
-  if (max < 2 ** 40) return "GiB";
-  if (max < 2 ** 50) return "TiB";
-  return "PiB";
+function defaultFormatter(formatter: ProgressBarFormatter) {
+  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
 }
 
-const UNIT_RATE_MAP = new Map<Unit, number>([
-  ["KiB", 2 ** 10],
-  ["MiB", 2 ** 20],
-  ["GiB", 2 ** 30],
-  ["TiB", 2 ** 40],
-  ["PiB", 2 ** 50],
-]);
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
 
 /**
  * `ProgressBar` is a customisable class that reports updates to a
- * {@link WritableStream} on a 1s interval. Progress is communicated by calling
- * the `ProgressBar.add(x: number)` method.
+ * {@link WritableStream} on a 1s interval. Progress is communicated by using
+ * the `ProgressBar.value` property.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -127,14 +125,14 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * }();
  * const writer = (await Deno.create("./_tmp/output.txt")).writable.getWriter();
  *
- * const bar = new ProgressBar(Deno.stdout.writable, { max: 100_000 });
+ * const bar = new ProgressBar({ max: 100_000 });
  *
  * for await (const buffer of gen) {
- *   bar.add(buffer.length);
+ *   bar.value += buffer.length;
  *   await writer.write(buffer);
  * }
  *
- * await bar.end();
+ * await bar.stop();
  * await writer.close();
  * ```
  *
@@ -143,124 +141,139 @@ const UNIT_RATE_MAP = new Map<Unit, number>([
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
- * const bar = new ProgressBar(Deno.stdout.writable, {
+ * const bar = new ProgressBar({
  *   max: 100,
- *   fmt(x) {
- *     return `${x.styledTime()}${x.progressBar}[${x.value}/${x.max} files]`;
+ *   formatter(formatter) {
+ *     return `[${formatter.styledTime()}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
  *   },
  * });
  *
  * for (const x of Array(100)) {
- *   bar.add(1);
+ *   bar.value += 1;
  *   await delay(Math.random() * 500);
  * }
  *
- * bar.end();
+ * await bar.stop();
  */
 export class ProgressBar {
-  #unit: Unit;
-  #rate: number;
+  /**
+   * The current progress that has been completed.
+   * @example Usage
+   * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar({ max : 10 });
+   * progressBar.value += 1;
+   *
+   * // do stuff
+   *
+   * await progressBar.stop();
+   * ```
+   */
+  value: number;
+  /**
+   * The maximum progress that is expected.
+   * @example Usage
+   * ```ts no-assert
+   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
+   *
+   * const progressBar = new ProgressBar({ max : 1 });
+   * progressBar.max = 100;
+   *
+   * // do stuff
+   *
+   * await progressBar.stop();
+   * ```
+   */
+  max: number;
+
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
-  #lastTime: number;
-  #lastValue: number;
-
-  #value: number;
-  #max: number;
+  #previousTime: number;
+  #previousValue: number;
   #barLength: number;
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
-  #fmt: (fmt: ProgressBarFormatter) => string;
+  #formatter: (formatter: ProgressBarFormatter) => string;
   #keepOpen: boolean;
+  #pipePromise: Promise<void>;
   /**
    * Constructs a new instance.
    *
-   * @param writable The {@link WritableStream} that will receive the progress bar reports.
    * @param options The options to configure various settings of the progress bar.
    */
   constructor(
-    writable: WritableStream<Uint8Array>,
     options: ProgressBarOptions,
   ) {
     const {
+      writable = Deno.stderr.writable,
       value = 0,
+      max,
       barLength = 50,
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = (x) => `${x.styledTime()} ${x.progressBar} ${x.styledData()} `,
+      formatter = defaultFormatter,
       keepOpen = true,
     } = options;
-    this.#value = value;
-    this.#max = options.max;
+    this.value = value;
+    this.max = max;
     this.#barLength = barLength;
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
     this.#clear = clear;
-    this.#fmt = fmt;
+    this.#formatter = formatter;
     this.#keepOpen = keepOpen;
 
-    this.#unit = getUnit(options.max);
-    this.#rate = UNIT_RATE_MAP.get(this.#unit)!;
-
     const stream = new TextEncoderStream();
-    stream.readable
+    this.#pipePromise = stream.readable
       .pipeTo(writable, { preventClose: this.#keepOpen })
       .catch(() => clearInterval(this.#id));
     this.#writer = stream.writable.getWriter();
+    this.#startTime = Date.now();
+    this.#previousTime = 0;
+    this.#previousValue = this.value;
+
     this.#id = setInterval(() => this.#print(), 1000);
-    this.#startTime = performance.now();
-    this.#lastTime = this.#startTime;
-    this.#lastValue = this.#value;
+    this.#print();
   }
+  #createFormatterObject() {
+    const time = Date.now() - this.#startTime;
 
-  async #print(): Promise<void> {
-    const currentTime = performance.now();
-
-    const size = this.#value / this.#max * this.#barLength | 0;
+    const ratio = clamp(this.value / this.max, 0, 1);
+    const size = Math.trunc(ratio * this.#barLength);
     const fillChars = this.#fillChar.repeat(size);
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
-    const formatter: ProgressBarFormatter = {
-      styledTime() {
+    return {
+      get styledTime() {
         const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `[${minutes}:${seconds}]`;
+        return `${minutes}:${seconds}`;
       },
-      styledData: (fractions = 2): string => {
-        const currentValue = (this.#value / this.#rate).toFixed(fractions);
-        const maxValue = (this.#max / this.#rate).toFixed(fractions);
-        return `[${currentValue}/${maxValue} ${this.#unit}]`;
+      styledData() {
+        return formatUnitFraction(this.value, this.max);
       },
-      progressBar: `[${fillChars}${emptyChars}]`,
-      time: currentTime - this.#startTime,
-      previousTime: this.#lastTime - this.#startTime,
-      value: this.#value,
-      previousValue: this.#lastValue,
-      max: this.#max,
+      progressBar: `${fillChars}${emptyChars}`,
+      time,
+      previousTime: this.#previousTime,
+      value: this.value,
+      previousValue: this.#previousValue,
+      max: this.max,
     };
-    this.#lastTime = currentTime;
-    this.#lastValue = this.#value;
-    await this.#writer.write("\r\u001b[K" + this.#fmt(formatter))
-      .catch(() => {});
   }
-
-  /**
-   * Increments the progress by `x`.
-   *
-   * @example Usage
-   * ```ts ignore
-   * import { ProgressBar } from "@std/cli/unstable-progress-bar";
-   *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
-   * progressBar.add(10);
-   * ```
-   * @param x The amount of progress that has been made.
-   */
-  add(x: number): void {
-    this.#value += x;
+  async #print(): Promise<void> {
+    const formatter = this.#createFormatterObject();
+    const output = this.#formatter(formatter);
+    try {
+      await this.#writer.write(LINE_CLEAR + output);
+    } catch {
+      // ignore
+    }
+    this.#previousTime = formatter.time;
+    this.#previousValue = formatter.value;
   }
 
   /**
@@ -270,15 +283,23 @@ export class ProgressBar {
    * ```ts ignore
    * import { ProgressBar } from "@std/cli/unstable-progress-bar";
    *
-   * const progressBar = new ProgressBar(Deno.stdout.writable, { max: 100 });
-   * await progressBar.end()
+   * const progressBar = new ProgressBar({ max: 100 });
+   * await progressBar.stop()
    * ```
    */
-  async end(): Promise<void> {
+  async stop(): Promise<void> {
     clearInterval(this.#id);
-    await this.#print()
-      .then(() => this.#writer.write(this.#clear ? "\r\u001b[K" : "\n"))
-      .then(() => this.#writer.close())
-      .catch(() => {});
+    try {
+      if (this.#clear) {
+        await this.#writer.write(LINE_CLEAR);
+      } else {
+        await this.#print();
+        await this.#writer.write("\n");
+      }
+      await this.#writer.close();
+      await this.#pipePromise;
+    } catch {
+      // ignore
+    }
   }
 }

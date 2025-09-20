@@ -12,6 +12,9 @@ export interface DelayOptions {
   persistent?: boolean;
 }
 
+// Make type available in browser environments; we catch the `ReferenceError` below
+declare const Deno: { unrefTimer(id: number): void };
+
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
@@ -48,21 +51,21 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   if (signal?.aborted) return Promise.reject(signal.reason);
   return new Promise((resolve, reject) => {
     const abort = () => {
-      clearTimeout(i);
+      clearTimeout(+i);
       reject(signal?.reason);
     };
     const done = () => {
       signal?.removeEventListener("abort", abort);
       resolve();
     };
-    const i = setTimeout(done, ms);
+    const i = setArbitraryLengthTimeout(done, ms);
     signal?.addEventListener("abort", abort, { once: true });
     if (persistent === false) {
       try {
-        // @ts-ignore For browser compatibility
-        Deno.unrefTimer(i);
+        Deno.unrefTimer(+i);
       } catch (error) {
         if (!(error instanceof ReferenceError)) {
+          clearTimeout(+i);
           throw error;
         }
         // deno-lint-ignore no-console
@@ -70,4 +73,27 @@ export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
       }
     }
   });
+}
+
+const I32_MAX = 2 ** 31 - 1;
+
+function setArbitraryLengthTimeout(
+  callback: () => void,
+  delay: number,
+): { valueOf(): number } {
+  // ensure non-negative integer (but > I32_MAX is OK, even if Infinity)
+  let currentDelay = delay = Math.trunc(Math.max(delay, 0) || 0);
+  const start = Date.now();
+  let timeoutId: number;
+
+  const queueTimeout = () => {
+    currentDelay = delay - (Date.now() - start);
+    timeoutId = currentDelay > I32_MAX
+      ? setTimeout(queueTimeout, I32_MAX)
+      : setTimeout(callback, currentDelay);
+  };
+
+  queueTimeout();
+
+  return { valueOf: () => timeoutId };
 }

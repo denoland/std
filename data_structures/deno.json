@@ -1,6 +1,6 @@
 {
   "name": "@std/data-structures",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "exports": {
     ".": "./mod.ts",
     "./unstable-bidirectional-map": "./unstable_bidirectional_map.ts",
@@ -8,6 +8,7 @@
     "./binary-search-tree": "./binary_search_tree.ts",
     "./unstable-binary-search-tree": "./unstable_binary_search_tree.ts",
     "./comparators": "./comparators.ts",
-    "./red-black-tree": "./red_black_tree.ts"
+    "./red-black-tree": "./red_black_tree.ts",
+    "./unstable-2d-array": "./unstable_2d_array.ts"
   }
 }
