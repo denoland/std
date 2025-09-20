@@ -6,10 +6,17 @@ import { diffStr } from "@std/internal/diff-str";
 import { format } from "@std/internal/format";
 import { red } from "@std/internal/styles";
 import { AssertionError } from "./assertion_error.ts";
+// deno-lint-ignore no-unused-vars
+import type { DIFF_CONTEXT_LENGTH } from "@std/internal/build-message";
 
 /**
  * Make an assertion that `actual` and `expected` are strictly equal, using
  * {@linkcode Object.is} for equality comparison. If not, then throw.
+ *
+ * The {@linkcode DIFF_CONTEXT_LENGTH} environment variable can be set to
+ * enable truncation of long diffs, in which case its value should be a
+ * positive integer representing the number of unchanged context lines to show
+ * around each changed part of the diff. By default, diffs are not truncated.
  *
  * @example Usage
  * ```ts ignore

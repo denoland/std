@@ -7,6 +7,8 @@ import { diffStr } from "@std/internal/diff-str";
 import { format } from "@std/internal/format";
 
 import { AssertionError } from "./assertion_error.ts";
+// deno-lint-ignore no-unused-vars
+import type { DIFF_CONTEXT_LENGTH } from "@std/internal/build-message";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
@@ -18,6 +20,11 @@ import { AssertionError } from "./assertion_error.ts";
  * Note: When comparing `Blob` objects, you should first convert them to
  * `Uint8Array` using the `Blob.bytes()` method and then compare their
  * contents.
+ *
+ * The {@linkcode DIFF_CONTEXT_LENGTH} environment variable can be set to
+ * enable truncation of long diffs, in which case its value should be a
+ * positive integer representing the number of unchanged context lines to show
+ * around each changed part of the diff. By default, diffs are not truncated.
  *
  * @example Usage
  * ```ts ignore
