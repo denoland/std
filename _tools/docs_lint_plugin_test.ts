@@ -3,7 +3,9 @@
 import docsLintPlugin from "./docs_lint_plugin.ts";
 import { assertEquals } from "@std/assert/equals";
 
-Deno.test("deno-std-docs/exported-symbol-documented", () => {
+Deno.test("deno-std-docs/exported-symbol-documented", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
   // Good
   const diagnostics1 = Deno.lint.runPlugin(
     docsLintPlugin,
