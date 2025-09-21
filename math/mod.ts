@@ -12,7 +12,7 @@
  *  const val = n * 12 + 5;
  *  // 5 o'clock is always 5 o'clock, no matter how many twelve-hour cycles you add or remove
  *  assertEquals(modulo(val, 12), 5);
- *  assertEquals(clamp(val, [0, 11]), n === 0 ? 5 : n > 0 ? 11 : 0);
+ *  assertEquals(clamp(val, 0, 11), n === 0 ? 5 : n > 0 ? 11 : 0);
  * }
  * ```
  *

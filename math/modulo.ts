@@ -21,12 +21,11 @@
  * ```
  */
 export function modulo(num: number, modulus: number): number {
-  if (!Number.isFinite(num) || Number.isNaN(modulus) || modulus === 0) {
-    return NaN;
+  num %= modulus;
+  if (num === 0) {
+    num = modulus < 0 ? -0 : 0;
+  } else if ((num < 0) !== (modulus < 0)) {
+    num += modulus;
   }
-  if (num === 0) return modulus < 0 ? -0 : 0;
-  if (modulus === Infinity) return num < 0 ? Infinity : num;
-  if (modulus === -Infinity) return num > 0 ? -Infinity : num;
-
-  return (num % modulus + modulus) % modulus;
+  return num;
 }

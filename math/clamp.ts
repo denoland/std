@@ -5,20 +5,21 @@
  * Clamp a number within the inclusive [min, max] range.
  *
  * @param num The number to be clamped
- * @param limits The inclusive [min, max] range
+ * @param min The minimum value
+ * @param max The maximum value
  * @returns The clamped number
  *
  * @example Usage
  * ```ts
  * import { clamp } from "@std/math/clamp";
  * import { assertEquals } from "@std/assert";
- * assertEquals(clamp(5, [1, 10]), 5);
- * assertEquals(clamp(-5, [1, 10]), 1);
- * assertEquals(clamp(15, [1, 10]), 10);
+ * assertEquals(clamp(5, 1, 10), 5);
+ * assertEquals(clamp(-5, 1, 10), 1);
+ * assertEquals(clamp(15, 1, 10), 10);
  * ```
  */
-export function clamp(num: number, limits: [min: number, max: number]): number {
-  const [min, max] = limits;
+// deno-lint-ignore deno-style-guide/exported-function-args-maximum
+export function clamp(num: number, min: number, max: number): number {
   if (min > max) {
     throw new RangeError("`min` must be less than or equal to `max`");
   }
