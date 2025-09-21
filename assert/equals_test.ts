@@ -261,7 +261,7 @@ Deno.test(`assertEquals() truncates unchanged lines of large diffs when "${DIFF_
     throw new Error(`Unexpected permission descriptor: ${x.name}`);
   }));
   stack.use(stub(Deno.env, "get", (key) => {
-    if (key === DIFF_CONTEXT_LENGTH) return "10";
+    if (key === DIFF_CONTEXT_LENGTH) return (10).toString();
     throw new Error(`Unexpected env var key: ${key}`);
   }));
 

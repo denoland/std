@@ -98,9 +98,10 @@ function getTruncationEnvVar() {
 
 function getTruncationContextLengthFromEnv() {
   const envVar = getTruncationEnvVar();
-  if (envVar == null) return null;
+  if (!envVar) return null;
   const truncationContextLength = parseInt(envVar);
-  return Number.isFinite(truncationContextLength) && truncationContextLength > 0
+  return Number.isFinite(truncationContextLength) &&
+      truncationContextLength >= 0
     ? truncationContextLength
     : null;
 }

@@ -41,22 +41,16 @@ export function consolidateCommon(
   stringDiff: boolean,
   contextLength: number,
 ): ReadonlyArray<CommonDiffResult<string>> {
-  const spanLength = contextLength * 2 + 1;
-  const extremityLength = 1;
+  const beforeLength = location === "start" ? 1 : contextLength;
+  const afterLength = location === "end" ? 1 : contextLength;
 
-  const startTruncationLength = location === "start"
-    ? extremityLength
-    : contextLength;
-  const endTruncationLength = location === "end"
-    ? extremityLength
-    : contextLength;
+  const omitLength = commons.length - beforeLength - afterLength;
 
-  if (commons.length <= spanLength) return commons;
+  if (omitLength <= 1) return commons;
 
-  const [before, after] = [
-    commons[startTruncationLength - 1]!.value,
-    commons[commons.length - endTruncationLength]!.value,
-  ];
+  const before = commons[beforeLength - 1]?.value ?? "";
+  const after = commons[commons.length - afterLength]?.value ?? before;
+  const lineEnd = stringDiff ? "\n" : "";
 
   const indent = location === "start"
     ? getIndent(after)
@@ -64,28 +58,22 @@ export function consolidateCommon(
     ? getIndent(before)
     : commonIndent(before, after);
 
+  const value = `${indent}... ${omitLength} unchanged lines ...${lineEnd}`;
+
   return [
-    ...commons.slice(0, startTruncationLength),
-    {
-      type: "truncation",
-      value: `${indent}... ${
-        commons.length - startTruncationLength - endTruncationLength
-      } unchanged lines ...${stringDiff ? "\n" : ""}`,
-    },
-    ...commons.slice(-endTruncationLength),
+    ...commons.slice(0, beforeLength),
+    { type: "truncation", value },
+    ...commons.slice(commons.length - afterLength),
   ];
 }
 
 function commonIndent(line1: string, line2: string): string {
-  const [indent1, indent2] = [line1, line2].map(getIndent);
-  return !indent1 || !indent2
-    ? ""
-    : indent1 === indent2
-    ? indent1
-    : indent1.startsWith(indent2)
-    ? indent1.slice(0, indent2.length)
+  const indent1 = getIndent(line1);
+  const indent2 = getIndent(line2);
+  return indent1.startsWith(indent2)
+    ? indent2
     : indent2.startsWith(indent1)
-    ? indent2.slice(0, indent1.length)
+    ? indent1
     : "";
 }
 
