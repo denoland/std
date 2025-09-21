@@ -2,6 +2,8 @@
 import { assertEquals } from "@std/assert";
 import { bgGreen, bgRed, bold, gray, green, red, white } from "@std/fmt/colors";
 import { buildMessage, createColor, createSign } from "./build_message.ts";
+import { truncateDiff } from "@std/internal/truncate-build-message";
+import type { DiffResult } from "@std/internal/types";
 
 Deno.test("buildMessage()", async (t) => {
   const prelude = [
@@ -46,7 +48,8 @@ Deno.test("buildMessage()", async (t) => {
           { type: "common", value: "bar" },
         ],
         {},
-        2,
+        (diffResult: ReadonlyArray<DiffResult<string>>, stringDiff: boolean) =>
+          truncateDiff(diffResult, stringDiff, 2),
       ),
       [
         ...prelude,

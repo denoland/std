@@ -1,7 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { truncateDiff } from "./_truncate_build_message.ts";
 import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
 import type { DiffResult, DiffType } from "./types.ts";
 
@@ -72,40 +71,6 @@ export function createSign(diffType: DiffType): string {
   }
 }
 
-/** The environment variable used for setting diff context length. */
-export const DIFF_CONTEXT_LENGTH = "DIFF_CONTEXT_LENGTH";
-function getTruncationEnvVar() {
-  // deno-lint-ignore no-explicit-any
-  const { Deno, process } = globalThis as any;
-
-  if (typeof Deno === "object") {
-    const permissionStatus = Deno.permissions.querySync({
-      name: "env",
-      variable: DIFF_CONTEXT_LENGTH,
-    }).state ?? "granted";
-
-    return permissionStatus === "granted"
-      ? Deno.env.get(DIFF_CONTEXT_LENGTH) ?? null
-      : null;
-  }
-  const nodeEnv = process?.getBuiltinModule?.("node:process")?.env as
-    | Partial<Record<string, string>>
-    | undefined;
-  return typeof nodeEnv === "object"
-    ? nodeEnv[DIFF_CONTEXT_LENGTH] ?? null
-    : null;
-}
-
-function getTruncationContextLengthFromEnv() {
-  const envVar = getTruncationEnvVar();
-  if (!envVar) return null;
-  const truncationContextLength = parseInt(envVar);
-  return Number.isFinite(truncationContextLength) &&
-      truncationContextLength >= 0
-    ? truncationContextLength
-    : null;
-}
-
 /** Options for {@linkcode buildMessage}. */
 export interface BuildMessageOptions {
   /**
@@ -120,7 +85,7 @@ export interface BuildMessageOptions {
  *
  * @param diffResult The diff result array.
  * @param options Optional parameters for customizing the message.
- * @param contextLength Truncation context length. Explicitly passing `contextLength` is currently only used for testing.
+ * @param truncateDiff Function to truncate the diff (default is no truncation).
  *
  * @returns An array of strings representing the built message.
  *
@@ -144,15 +109,14 @@ export interface BuildMessageOptions {
 export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
   options: BuildMessageOptions = {},
-  contextLength: number | null = null,
+  truncateDiff?: (
+    diffResult: ReadonlyArray<DiffResult<string>>,
+    stringDiff: boolean,
+    contextLength?: number | null,
+  ) => ReadonlyArray<DiffResult<string>>,
 ): string[] {
-  contextLength ??= getTruncationContextLengthFromEnv();
-  if (contextLength != null) {
-    diffResult = truncateDiff(
-      diffResult,
-      options.stringDiff ?? false,
-      contextLength,
-    );
+  if (truncateDiff != null) {
+    diffResult = truncateDiff(diffResult, options.stringDiff ?? false);
   }
 
   const { stringDiff = false } = options;
