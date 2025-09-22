@@ -89,8 +89,8 @@ function setArbitraryLengthTimeout(
   const queueTimeout = () => {
     currentDelay = delay - (Date.now() - start);
     timeoutId = currentDelay > I32_MAX
-      ? setTimeout(queueTimeout, I32_MAX)
-      : setTimeout(callback, currentDelay);
+      ? Number(setTimeout(queueTimeout, I32_MAX))
+      : Number(setTimeout(callback, currentDelay));
   };
 
   queueTimeout();
