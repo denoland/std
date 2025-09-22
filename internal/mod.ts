@@ -43,4 +43,5 @@ export * from "./diff_str.ts";
 export * from "./format.ts";
 export * from "./os.ts";
 export * from "./styles.ts";
+export * from "./truncate_build_message.ts";
 export * from "./types.ts";
