@@ -118,16 +118,18 @@ export type SortByOptions = {
 export function sortBy<T>(
   iterator: Iterable<T>,
   selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => string)
+    | ((el: T, index: number) => bigint)
+    | ((el: T, index: number) => Date),
   options?: SortByOptions,
 ): T[] {
   const array: { value: T; selected: string | number | bigint | Date }[] = [];
 
+  let index = 0;
   for (const item of iterator) {
-    array.push({ value: item, selected: selector(item) });
+    array.push({ value: item, selected: selector(item, index) });
+    index++;
   }
 
   array.sort((oa, ob) => {
