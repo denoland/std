@@ -4,6 +4,7 @@
 import { DEFAULT_BUFFER_SIZE } from "./_constants.ts";
 import type { Reader, ReaderSync } from "./types.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Reader, ReaderSync };
 
 /**

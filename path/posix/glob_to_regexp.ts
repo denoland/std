@@ -7,6 +7,7 @@ import {
   type GlobOptions,
 } from "../_common/glob_to_reg_exp.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions };
 
 const constants: GlobConstants = {

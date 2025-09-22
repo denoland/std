@@ -5,6 +5,7 @@ import { extractFrontMatter } from "./_shared.ts";
 import { EXTRACT_JSON_REGEXP } from "./_formats.ts";
 import type { Extract } from "./types.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Extract };
 
 /**
