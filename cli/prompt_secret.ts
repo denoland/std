@@ -1,7 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-const input = Deno.stdin;
-const output = Deno.stdout;
+import { isWindows } from "@std/internal/os";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const LF = "\n".charCodeAt(0); // ^J - Enter on Linux
@@ -12,9 +11,7 @@ const CLR = encoder.encode("\r\u001b[K"); // Clear the current line
 const MOVE_LINE_UP = encoder.encode("\r\u001b[1F"); // Move to previous line
 
 // The `cbreak` option is not supported on Windows
-const setRawOptions = Deno.build.os === "windows"
-  ? undefined
-  : { cbreak: true };
+const setRawOptions = isWindows ? undefined : { cbreak: true };
 
 /** Options for {@linkcode promptSecret}. */
 export type PromptSecretOptions = {
@@ -47,6 +44,8 @@ export function promptSecret(
   message = "Secret",
   options?: PromptSecretOptions,
 ): string | null {
+  const input = Deno.stdin;
+  const output = Deno.stdout;
   const { mask = "*", clear } = options ?? {};
 
   if (!input.isTerminal()) {
@@ -90,7 +89,7 @@ export function promptSecret(
 
   output.writeSync(encoder.encode(message));
 
-  Deno.stdin.setRaw(true, setRawOptions);
+  input.setRaw(true, setRawOptions);
   try {
     return readLineFromStdinSync(callback);
   } finally {
@@ -99,7 +98,7 @@ export function promptSecret(
     } else {
       output.writeSync(encoder.encode("\n"));
     }
-    Deno.stdin.setRaw(false);
+    input.setRaw(false);
   }
 }
 
@@ -112,7 +111,7 @@ function readLineFromStdinSync(callback?: (n: number) => void): string {
   const buf = [];
 
   while (true) {
-    const n = input.readSync(c);
+    const n = Deno.stdin.readSync(c);
     if (n === null || n === 0) {
       break;
     }
