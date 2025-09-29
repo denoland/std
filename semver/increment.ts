@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { parseBuild } from "./_shared.ts";
+import { parseBuild, parsePrerelease } from "./_shared.ts";
 import type { ReleaseType, SemVer } from "./types.ts";
 
 function bumpPrereleaseNumber(prerelease: ReadonlyArray<string | number> = []) {
@@ -24,15 +24,33 @@ function bumpPrereleaseNumber(prerelease: ReadonlyArray<string | number> = []) {
 function bumpPrerelease(
   prerelease: ReadonlyArray<string | number> = [],
   identifier: string | undefined,
-) {
-  let values = bumpPrereleaseNumber(prerelease);
-  if (!identifier) return values;
-  // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-  // 1.2.0-beta.foobar or 1.2.0-beta bumps to 1.2.0-beta.0
-  if (values[0] !== identifier || isNaN(values[1] as number)) {
-    values = [identifier, 0];
+): (string | number)[] {
+  const prereleaseValues = bumpPrereleaseNumber(prerelease);
+
+  // If the identifier is not provided, return the bumped prerelease
+  if (!identifier) return prereleaseValues;
+
+  const identifierValues = parsePrerelease(identifier);
+
+  // If identifier was provided but is empty, return the bumped prerelease
+  if (!identifierValues[0]) return prereleaseValues;
+
+  // If the prerelease label is being changed
+  // or if the current version lacks a prerelease number
+  // or if the new prerelease specifies a specific number
+  if (
+    prereleaseValues[0] !== identifierValues[0] ||
+    isNaN(prereleaseValues[1] as number) ||
+    !isNaN(identifierValues[1] as number)
+  ) {
+    // If any of the above conditions are true use the new identifiers prerelease or 0 for the number
+    return [
+      identifierValues[0],
+      identifierValues[1] ?? 0,
+    ];
+  } else {
+    return prereleaseValues;
   }
-  return values;
 }
 
 /** Options for {@linkcode increment}. */
