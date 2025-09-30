@@ -14,6 +14,7 @@ import {
 } from "./_create_walk_entry.ts";
 import { isWindows } from "@std/internal/os";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { GlobOptions, WalkEntry };
 
 /** Options for {@linkcode expandGlob} and {@linkcode expandGlobSync}. */

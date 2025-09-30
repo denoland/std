@@ -7,6 +7,7 @@ import { extract as extractJson } from "./json.ts";
 import type { Extract } from "./types.ts";
 import { RECOGNIZE_REGEXP_MAP } from "./_formats.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { Extract };
 
 /**

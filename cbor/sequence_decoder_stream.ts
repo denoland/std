@@ -9,6 +9,7 @@ import { CborTextDecodedStream } from "./_text_decoded_stream.ts";
 import { CborTag } from "./tag.ts";
 import type { CborMapStreamOutput, CborStreamOutput } from "./types.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export {
   CborArrayDecodedStream,
   CborByteDecodedStream,
