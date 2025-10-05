@@ -46,8 +46,8 @@ import { undefinedType } from "./_type/undefined.ts";
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
-type ImplicitType = Type<"scalar">;
-type ExplicitType = Type<KindType>;
+export type ImplicitType = Type<"scalar">;
+export type ExplicitType = Type<KindType>;
 
 export type TypeMap = Record<
   KindType | "fallback",
@@ -161,3 +161,19 @@ export const SCHEMA_MAP = new Map<SchemaType, Schema>([
   ["json", JSON_SCHEMA],
   ["extended", EXTENDED_SCHEMA],
 ]);
+
+export function getSchema(
+  schema: SchemaType = "default",
+  types?: ImplicitType[],
+): Schema {
+  const schemaObj = SCHEMA_MAP.get(schema)!;
+
+  if (!types) {
+    return schemaObj;
+  }
+
+  return createSchema({
+    implicitTypes: [...types, ...schemaObj.implicitTypes],
+    explicitTypes: [...schemaObj.explicitTypes],
+  });
+}

@@ -21,13 +21,20 @@ export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 
 // deno-lint-ignore no-explicit-any
 export interface Type<K extends KindType, D = any> {
+  /** Tag to identify the type */
   tag: string;
+  /** Kind of type */
   kind: K;
+  /** Cast the type. Used to stringify */
   predicate?: (data: unknown) => data is D;
+  /** Function to represent data. Used to stringify */
   represent?: RepresentFn<D> | Record<string, RepresentFn<D>>;
+  /** Default style for the type. Used to stringify */
   defaultStyle?: StyleVariant;
+  /** Function to test whether data can be resolved by this type. Used to parse */
   // deno-lint-ignore no-explicit-any
   resolve: (data: any) => boolean;
+  /** Function to construct data from string. Used to parse */
   // deno-lint-ignore no-explicit-any
   construct: (data: any) => D;
 }

@@ -6,9 +6,9 @@
 
 import { isEOL } from "./_chars.ts";
 import { LoaderState } from "./_loader_state.ts";
-import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
+import { getSchema, type ImplicitType, type SchemaType } from "./_schema.ts";
 
-export type { SchemaType };
+export type { ImplicitType, SchemaType };
 
 /** Options for {@linkcode parse}. */
 export interface ParseOptions {
@@ -30,6 +30,11 @@ export interface ParseOptions {
    * {@linkcode Error} as its only argument.
    */
   onWarning?(error: Error): void;
+
+  /**
+   * Extra types to be added to the schema.
+   */
+  extraTypes?: ImplicitType[];
 }
 
 function sanitizeInput(input: string) {
@@ -79,7 +84,7 @@ export function parse(
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!)!,
+    schema: getSchema(options.schema, options.extraTypes),
   });
   const documentGenerator = state.readDocuments();
   const document = documentGenerator.next().value;
@@ -122,7 +127,7 @@ export function parseAll(content: string, options: ParseOptions = {}): unknown {
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!)!,
+    schema: getSchema(options.schema, options.extraTypes),
   });
   return [...state.readDocuments()];
 }
