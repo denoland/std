@@ -2,7 +2,7 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import * as path from "@std/path";
-import { decode, encode } from "./mod.ts";
+import { decode, DecodeStream, encode, EncodeStream } from "./mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -225,4 +225,72 @@ Deno.test("encode() accepts `as const` data", () => {
   void (() => {
     encode(data);
   });
+});
+
+Deno.test("EncodeStream encodes a single value", async () => {
+  const input = ReadableStream.from(["Hi!"]);
+  const encoded = input.pipeThrough(new EncodeStream());
+
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of encoded) {
+    chunks.push(chunk);
+  }
+
+  assertEquals(chunks.length, 1);
+  assertEquals(decode(chunks[0]!), "Hi!");
+});
+
+Deno.test("EncodeStream encodes multiple values", async () => {
+  const input = ReadableStream.from([42, "hello", true]);
+  const encoded = input.pipeThrough(new EncodeStream());
+
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of encoded) {
+    chunks.push(chunk);
+  }
+
+  assertEquals(chunks.length, 3);
+  assertEquals(decode(chunks[0]!), 42);
+  assertEquals(decode(chunks[1]!), "hello");
+  assertEquals(decode(chunks[2]!), true);
+});
+
+Deno.test("EncodeStream handles complex types", async () => {
+  const input = ReadableStream.from([[1, 2, 3], { "a": 1 }]);
+  const encoded = input.pipeThrough(new EncodeStream());
+
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of encoded) {
+    chunks.push(chunk);
+  }
+
+  assertEquals(chunks.length, 2);
+  assertEquals(decode(chunks[0]!), [1, 2, 3]);
+  assertEquals(decode(chunks[1]!), { "a": 1 });
+});
+
+Deno.test("EncodeStream handles empty stream", async () => {
+  const input = ReadableStream.from([]);
+  const encoded = input.pipeThrough(new EncodeStream());
+
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of encoded) {
+    chunks.push(chunk);
+  }
+
+  assertEquals(chunks.length, 0);
+});
+
+Deno.test("EncodeStream round-trip with DecodeStream", async () => {
+  const values = [42, "hello", true, [1, 2, 3], { "a": 1 }];
+  const input = ReadableStream.from(values);
+  const encoded = input.pipeThrough(new EncodeStream());
+  const decoded = encoded.pipeThrough(new DecodeStream());
+
+  const result = [];
+  for await (const value of decoded) {
+    result.push(value);
+  }
+
+  assertEquals(result, values);
 });

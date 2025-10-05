@@ -37,6 +37,75 @@ export function decode(data: Uint8Array): ValueType {
   return value;
 }
 
+/**
+ * A TransformStream that decodes {@link https://msgpack.org/ | MessagePack} binary data.
+ *
+ * Transforms a stream of Uint8Array chunks into a stream of decoded values.
+ * Handles messages that may be split across multiple chunks.
+ *
+ * @example Usage
+ * ```ts
+ * import { DecodeStream } from "@std/msgpack/decode";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const encoded = ReadableStream.from([
+ *   Uint8Array.of(163, 72, 105, 33), // "Hi!"
+ *   Uint8Array.of(42), // 42
+ * ]);
+ *
+ * const results = await Array.fromAsync(encoded.pipeThrough(new DecodeStream()));
+ * assertEquals(results, ["Hi!", 42]);
+ * ```
+ */
+export class DecodeStream extends TransformStream<Uint8Array, ValueType> {
+  constructor() {
+    let buffer = new Uint8Array(0);
+
+    super({
+      transform(chunk, controller) {
+        // Append chunk to buffer
+        const newBuffer = new Uint8Array(buffer.length + chunk.length);
+        newBuffer.set(buffer);
+        newBuffer.set(chunk, buffer.length);
+        buffer = newBuffer;
+
+        // Decode as many complete messages as possible
+        while (buffer.length > 0) {
+          const pointer = { consumed: 0 };
+          const dataView = new DataView(
+            buffer.buffer,
+            buffer.byteOffset,
+            buffer.byteLength,
+          );
+
+          try {
+            const decoded = decodeSlice(buffer, dataView, pointer);
+            buffer = buffer.subarray(pointer.consumed);
+            controller.enqueue(decoded);
+          } catch (error) {
+            // If incomplete data, wait for more chunks
+            if (
+              error instanceof EvalError &&
+              error.message.includes("prematurely")
+            ) {
+              break;
+            }
+            throw error;
+          }
+        }
+      },
+
+      flush() {
+        if (buffer.length > 0) {
+          throw new EvalError(
+            "Stream ended with incomplete MessagePack data",
+          );
+        }
+      },
+    });
+  }
+}
+
 function decodeString(
   uint8: Uint8Array,
   size: number,

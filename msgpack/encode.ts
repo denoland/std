@@ -69,6 +69,40 @@ export function encode(object: ValueType): Uint8Array_ {
   return concat(byteParts);
 }
 
+/**
+ * A TransformStream that encodes values to {@link https://msgpack.org/ | MessagePack} binary format.
+ *
+ * Transforms a stream of values into a stream of encoded Uint8Array chunks.
+ * Each input value is encoded to a separate MessagePack binary chunk.
+ *
+ * @example Usage
+ * ```ts
+ * import { EncodeStream } from "@std/msgpack/encode";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const values = ReadableStream.from([
+ *   "Hi!",
+ *   42,
+ *   { foo: "bar" },
+ * ]);
+ *
+ * const results = await Array.fromAsync(values.pipeThrough(new EncodeStream()));
+ * assertEquals(results.length, 3);
+ * assertEquals(results[0], Uint8Array.of(0xa3, 0x48, 0x69, 0x21)); // "Hi!"
+ * assertEquals(results[1], Uint8Array.of(0x2a)); // 42
+ * assertEquals(results[2], Uint8Array.of(0x81, 0xa3, 0x66, 0x6f, 0x6f, 0xa3, 0x62, 0x61, 0x72)); // { foo: "bar" }
+ * ```
+ */
+export class EncodeStream extends TransformStream<ValueType, Uint8Array> {
+  constructor() {
+    super({
+      transform(value, controller) {
+        controller.enqueue(encode(value));
+      },
+    });
+  }
+}
+
 function encodeFloat64(num: number) {
   const dataView = new DataView(new ArrayBuffer(9));
   dataView.setFloat64(1, num);

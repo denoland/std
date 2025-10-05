@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { decode } from "./decode.ts";
+import { decode, DecodeStream } from "./decode.ts";
 
 Deno.test("decode() handles positive fixint", () => {
   for (let i = 0; i <= 0x7f; i++) {
@@ -233,4 +233,81 @@ Deno.test("decode() throws when the key of the map is of invalid type", () => {
     EvalError,
     "Cannot decode a key of a map: The type of key is invalid, keys must be a number or a string",
   );
+});
+
+Deno.test("DecodeStream decodes a single value from stream", async () => {
+  const encoded = Uint8Array.of(163, 72, 105, 33); // "Hi!"
+  const stream = ReadableStream.from([encoded]);
+  const decoded = stream.pipeThrough(new DecodeStream());
+
+  const reader = decoded.getReader();
+  const { value, done } = await reader.read();
+
+  assertEquals(value, "Hi!");
+  assertEquals(done, false);
+
+  const end = await reader.read();
+  assertEquals(end.done, true);
+});
+
+Deno.test("DecodeStream decodes multiple values from stream", async () => {
+  // Three values: 42, "hello", true
+  const encoded1 = Uint8Array.of(42); // positive fixint
+  const encoded2 = Uint8Array.of(0xA5, 104, 101, 108, 108, 111); // "hello"
+  const encoded3 = Uint8Array.of(0xc3); // true
+
+  const stream = ReadableStream.from([encoded1, encoded2, encoded3]);
+  const decoded = stream.pipeThrough(new DecodeStream());
+
+  const values = [];
+  for await (const value of decoded) {
+    values.push(value);
+  }
+
+  assertEquals(values, [42, "hello", true]);
+});
+
+Deno.test("DecodeStream handles complex types", async () => {
+  // Array [1, 2, 3] and map {"a": 1}
+  const encodedArray = Uint8Array.of(0x93, 1, 2, 3); // fixarray with 3 elements
+  const encodedMap = Uint8Array.of(0x81, 0xA1, 97, 1); // fixmap with 1 entry: "a" -> 1
+
+  const stream = ReadableStream.from([encodedArray, encodedMap]);
+  const decoded = stream.pipeThrough(new DecodeStream());
+
+  const values = [];
+  for await (const value of decoded) {
+    values.push(value);
+  }
+
+  assertEquals(values, [[1, 2, 3], { "a": 1 }]);
+});
+
+Deno.test("DecodeStream handles empty stream", async () => {
+  const stream = ReadableStream.from([]);
+  const decoded = stream.pipeThrough(new DecodeStream());
+
+  const values = [];
+  for await (const value of decoded) {
+    values.push(value);
+  }
+
+  assertEquals(values, []);
+});
+
+Deno.test("DecodeStream handles chunked data", async () => {
+  // Single message split across multiple chunks
+  const fullMessage = Uint8Array.of(0xA5, 104, 101, 108, 108, 111); // "hello"
+  const chunk1 = fullMessage.subarray(0, 3);
+  const chunk2 = fullMessage.subarray(3);
+
+  const stream = ReadableStream.from([chunk1, chunk2]);
+  const decoded = stream.pipeThrough(new DecodeStream());
+
+  const values = [];
+  for await (const value of decoded) {
+    values.push(value);
+  }
+
+  assertEquals(values, ["hello"]);
 });
