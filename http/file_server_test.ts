@@ -879,6 +879,17 @@ Deno.test("serveFile() etag value falls back to DENO_DEPLOYMENT_ID if fileInfo.m
   assert(success);
 });
 
+Deno.test("serveFile() sends custom headers", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt");
+  const res = await serveFile(req, TEST_FILE_PATH, {
+    headers: ["X-Extra: extra header"],
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("X-Extra"), "extra header");
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+});
+
 Deno.test("serveDir() without options serves files in current directory", async () => {
   const req = new Request("http://localhost/http/testdata/hello.html");
   const res = await serveDir(req);
