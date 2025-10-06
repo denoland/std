@@ -33,6 +33,8 @@ function bumpPrerelease(
   let newIdentifiers = parsePrerelease(newPrerelease);
 
   if (newIdentifiers.every((id) => typeof id === "string")) {
+    // When the give prerelease has no number and are all included in the existing prerelease
+    // it should just bump the number
     if (
       newIdentifiers.every((id, i) => id === bumpedPrerelease[i]) &&
       typeof bumpedPrerelease[newIdentifiers.length] === "number"
