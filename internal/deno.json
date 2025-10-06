@@ -10,6 +10,7 @@
     "./format": "./format.ts",
     "./os": "./os.ts",
     "./styles": "./styles.ts",
+    "./truncate-build-message": "./truncate_build_message.ts",
     "./types": "./types.ts"
   }
 }

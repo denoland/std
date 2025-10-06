@@ -1,16 +1,15 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { equal } from "./equal.ts";
-import { buildMessage } from "@std/internal/build-message";
-import { diff } from "@std/internal/diff";
-import { diffStr } from "@std/internal/diff-str";
-import { format } from "@std/internal/format";
-
-import { AssertionError } from "./assertion_error.ts";
+import { assertEquals as _assertEquals } from "./equals.ts";
+import { truncateDiff } from "@std/internal/truncate-build-message";
+// deno-lint-ignore no-unused-vars
+import type { DIFF_CONTEXT_LENGTH } from "@std/internal/truncate-build-message";
 
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
@@ -18,6 +17,11 @@ import { AssertionError } from "./assertion_error.ts";
  * Note: When comparing `Blob` objects, you should first convert them to
  * `Uint8Array` using the `Blob.bytes()` method and then compare their
  * contents.
+ *
+ * The {@linkcode DIFF_CONTEXT_LENGTH} environment variable can be set to
+ * enable truncation of long diffs, in which case its value should be a
+ * positive integer representing the number of unchanged context lines to show
+ * around each changed part of the diff. By default, diffs are not truncated.
  *
  * @example Usage
  * ```ts ignore
@@ -46,21 +50,7 @@ export function assertEquals<T>(
   expected: T,
   msg?: string,
 ) {
-  if (equal(actual, expected)) {
-    return;
-  }
-  const msgSuffix = msg ? `: ${msg}` : ".";
-  let message = `Values are not equal${msgSuffix}`;
-
-  const actualString = format(actual);
-  const expectedString = format(expected);
-  const stringDiff = (typeof actual === "string") &&
-    (typeof expected === "string");
-  const diffResult = stringDiff
-    ? diffStr(actual as string, expected as string)
-    : diff(actualString.split("\n"), expectedString.split("\n"));
-  const diffMsg = buildMessage(diffResult, { stringDiff }, arguments[3])
-    .join("\n");
-  message = `${message}\n${diffMsg}`;
-  throw new AssertionError(message);
+  const args: Parameters<typeof _assertEquals> = [actual, expected, msg];
+  // @ts-expect-error extra arg
+  _assertEquals(...args, truncateDiff);
 }
