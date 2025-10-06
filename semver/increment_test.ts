@@ -974,20 +974,6 @@ Deno.test("increment()", async (t) => {
       "1.2.3-0",
     ],
     [
-      { major: 1, minor: 2, patch: 3, prerelease: ["pr", 0], build: [] },
-      "pre",
-      "", // empty prerelease is the same as undefined
-      undefined,
-      "1.2.3-pr.1",
-    ],
-    [
-      { major: 1, minor: 2, patch: 3, prerelease: ["pr", 0], build: [] },
-      "pre",
-      " ", // prerelease with whitepsace is the same as undefined or empty
-      " ",
-      "1.2.3-pr.1",
-    ],
-    [
       { major: 1, minor: 2, patch: 3, prerelease: [], build: [] },
       "pre",
       "pr.123", // test specifying a specific prerelease number
@@ -1007,6 +993,34 @@ Deno.test("increment()", async (t) => {
       "pr.11", // when switching prereleases, if the number is specified, use it
       undefined,
       "1.2.3-pr.11",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz",
+      undefined,
+      "1.2.3-pr.xyz.0",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz.3",
+      undefined,
+      "1.2.3-pr.xyz.3",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz.5.foo",
+      undefined,
+      "1.2.3-pr.xyz.5.foo",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "alpha.1.foo",
+      undefined,
+      "1.2.3-alpha.1.foo",
     ],
   ];
 

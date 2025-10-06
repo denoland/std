@@ -173,7 +173,6 @@ const NUMERIC_IDENTIFIER_REGEXP = new RegExp(`^${NUMERIC_IDENTIFIER}$`);
 export function parsePrerelease(prerelease: string) {
   return prerelease
     .split(".")
-    .map((s) => s.trim())
     .filter(Boolean)
     .map((id: string) => {
       if (NUMERIC_IDENTIFIER_REGEXP.test(id)) {
@@ -185,10 +184,7 @@ export function parsePrerelease(prerelease: string) {
 }
 
 export function parseBuild(buildmetadata: string) {
-  return buildmetadata
-    .split(".")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  return buildmetadata.split(".").filter(Boolean);
 }
 
 export function parseNumber(input: string, errorMessage: string) {
