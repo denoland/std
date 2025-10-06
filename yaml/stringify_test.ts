@@ -4,8 +4,11 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { type ImplicitType, stringify } from "./stringify.ts";
-import { stringify as unstableStringify } from "./unstable_stringify.ts";
+import { stringify } from "./stringify.ts";
+import {
+  type ImplicitType,
+  stringify as unstableStringify,
+} from "./unstable_stringify.ts";
 import { compare, parse } from "@std/semver";
 
 Deno.test({
@@ -869,7 +872,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "stringify() handles custom types",
+  name: "unstableStringify() handles custom types",
   fn() {
     const foo: ImplicitType = {
       tag: "tag:custom:smile",
@@ -881,7 +884,7 @@ Deno.test({
     };
 
     assertEquals(
-      stringify({
+      unstableStringify({
         title: "🙂",
         tags: ["🙂", "bar"],
       }, { extraTypes: [foo] }),

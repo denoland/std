@@ -46,6 +46,10 @@ import { undefinedType } from "./_type/undefined.ts";
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
+/**
+ * A type that can be implicitly resolved (i.e. without using a tag) when
+ * loading a YAML document.
+ */
 export type ImplicitType = Type<"scalar">;
 export type ExplicitType = Type<KindType>;
 

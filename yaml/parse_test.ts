@@ -3,7 +3,8 @@
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { type ImplicitType, parse, parseAll } from "./parse.ts";
+import { parse, parseAll } from "./parse.ts";
+import { type ImplicitType, parse as unstableParse } from "./unstable_parse.ts";
 import {
   assert,
   assertEquals,
@@ -493,7 +494,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "parse() handles custom types",
+  name: "unstableParse() handles custom types",
   fn() {
     const foo: ImplicitType = {
       tag: "tag:custom:smile",
@@ -505,7 +506,7 @@ Deno.test({
     };
 
     assertEquals(
-      parse(
+      unstableParse(
         `
 title: =)
 tags:

@@ -5,8 +5,11 @@
 // This module is browser compatible.
 
 import { DumperState } from "./_dumper_state.ts";
-import { SCHEMA_MAP } from "./_schema.ts";
+import { getSchema, type ImplicitType, type SchemaType } from "./_schema.ts";
 import type { StringifyOptions as StableStringifyOptions } from "./stringify.ts";
+import type { KindType, RepresentFn, Type } from "./_type.ts";
+
+export type { ImplicitType, KindType, RepresentFn, SchemaType, Type };
 
 /** Options for {@linkcode stringify}. */
 export type StringifyOptions = StableStringifyOptions & {
@@ -18,6 +21,11 @@ export type StringifyOptions = StableStringifyOptions & {
    * @default {`'`}
    */
   quoteStyle?: "'" | '"';
+
+  /**
+   * Extra types to be added to the schema.
+   */
+  extraTypes?: ImplicitType[];
 };
 
 /**
@@ -45,7 +53,7 @@ export function stringify(
 ): string {
   const state = new DumperState({
     ...options,
-    schema: SCHEMA_MAP.get(options.schema!)!,
+    schema: getSchema(options.schema, options.extraTypes),
   });
   return state.stringify(data);
 }

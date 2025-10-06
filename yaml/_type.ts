@@ -4,6 +4,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+/**
+ * The kind of YAML node.
+ */
 export type KindType = "sequence" | "scalar" | "mapping";
 /**
  * The style variation for `styles` option of {@linkcode stringify}
@@ -17,8 +20,14 @@ export type StyleVariant =
   | "octal"
   | "hexadecimal";
 
+/**
+ * Function to convert data to a string for YAML serialization.
+ */
 export type RepresentFn<D> = (data: D, style?: StyleVariant) => string;
 
+/**
+ * A type definition for a YAML node.
+ */
 // deno-lint-ignore no-explicit-any
 export interface Type<K extends KindType, D = any> {
   /** Tag to identify the type */

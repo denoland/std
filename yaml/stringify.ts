@@ -5,10 +5,10 @@
 // This module is browser compatible.
 
 import { DumperState } from "./_dumper_state.ts";
-import { getSchema, type ImplicitType, type SchemaType } from "./_schema.ts";
+import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
 import type { StyleVariant } from "./_type.ts";
 
-export type { ImplicitType, SchemaType, StyleVariant };
+export type { SchemaType, StyleVariant };
 
 /** Options for {@linkcode stringify}. */
 export type StringifyOptions = {
@@ -85,10 +85,6 @@ export type StringifyOptions = {
    * @default {false}
    */
   condenseFlow?: boolean;
-  /**
-   * Extra types to be added to the schema.
-   */
-  extraTypes?: ImplicitType[];
 };
 
 /**
@@ -116,7 +112,7 @@ export function stringify(
 ): string {
   const state = new DumperState({
     ...options,
-    schema: getSchema(options.schema, options.extraTypes),
+    schema: SCHEMA_MAP.get(options.schema!)!,
   });
   return state.stringify(data);
 }
