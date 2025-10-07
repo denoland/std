@@ -1,3 +1,66 @@
+### 2025.10.07
+
+#### @std/assert 1.0.15 (patch)
+
+- feat(assert/unstable,internal): truncate big diffs (#6835)
+- fix(assert): add support for checking ArrayBuffer equality (#6821)
+
+#### @std/async 1.0.15 (patch)
+
+- feat(async/unstable): add `ensureLastCall` option for `throttle` (#6800)
+- fix(async/unstable): fix handling of async predicate in waitFor (#6839)
+- fix(async): convert setTimeout return values to Number (fixing type error when
+  used with Node.js) (#6833)
+- fix(async): pass numeric value of `delay` timer to `unrefTimer` when
+  `persistent=false` (#6822)
+
+#### @std/cli 1.0.23 (patch)
+
+- fix(cli): improve Node compatibility by removing top-level Deno API usage
+  (#6837)
+- fix(cli): ensure unknown() is not called for collect args (parseArgs) (#6813)
+
+#### @std/html 1.0.5 (patch)
+
+- feat(html/unstable): add escapeJs and escapeCss functions (#6782)
+
+#### @std/http 1.0.21 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/internal 1.1.0 (minor)
+
+- feat(assert/unstable,internal): truncate big diffs (#6835)
+
+#### @std/random 0.1.3 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/semver 1.0.6 (patch)
+
+- fix(semver): allow users to set prerelease number during increment (#6825)
+
+#### @std/streams 1.0.13 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/tar 0.1.9 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/testing 1.0.16 (patch)
+
+- feat(testing/unstable): add `it.todo` `test.todo` and `describe.todo` API
+  (#6712)
+
+#### @std/toml 1.0.11 (patch)
+
+- test(toml): test with the official toml-test suite (#6798)
+
+#### @std/webgpu 0.224.9 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
 ### 2025.09.04
 
 #### @std/cli 1.0.22 (patch)
