@@ -1,5 +1,11 @@
 ### 2025.10.07
 
+#### @std/internal 1.0.12 (patch)
+
+- fix(internal): fix error in module reference (#6845)
+
+### 2025.10.07
+
 #### @std/assert 1.0.15 (patch)
 
 - feat(assert/unstable): truncate big diffs (#6835)
