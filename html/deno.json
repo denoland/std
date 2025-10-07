@@ -1,6 +1,6 @@
 {
   "name": "@std/html",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "exports": {
     ".": "./mod.ts",
     "./entities": "./entities.ts",
