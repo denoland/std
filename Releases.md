@@ -2,7 +2,7 @@
 
 #### @std/assert 1.0.15 (patch)
 
-- feat(assert/unstable,internal): truncate big diffs (#6835)
+- feat(assert/unstable): truncate big diffs (#6835)
 - fix(assert): add support for checking ArrayBuffer equality (#6821)
 
 #### @std/async 1.0.15 (patch)
@@ -28,9 +28,9 @@
 
 - fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
 
-#### @std/internal 1.1.0 (minor)
+#### @std/internal 1.0.11 (patch)
 
-- feat(assert/unstable,internal): truncate big diffs (#6835)
+- chore(internal): support truncating of big diffs (#6835)
 
 #### @std/random 0.1.3 (patch)
 
