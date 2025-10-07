@@ -1,5 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
-import type { CommonDiffResult, DiffResult } from "@std/internal/types";
+import type { CommonDiffResult, DiffResult } from "./types.ts";
 
 /** The environment variable used for setting diff context length. */
 export const DIFF_CONTEXT_LENGTH = "DIFF_CONTEXT_LENGTH";
