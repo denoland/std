@@ -6,6 +6,7 @@ import type { ParsedPath } from "./types.ts";
 import { parse as posixParse } from "./posix/parse.ts";
 import { parse as windowsParse } from "./windows/parse.ts";
 
+// deno-lint-ignore deno-std-docs/exported-symbol-documented
 export type { ParsedPath } from "./types.ts";
 
 /**
