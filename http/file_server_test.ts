@@ -24,11 +24,21 @@ import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
-import { serveDir as unstableServeDir } from "./unstable_file_server.ts";
+import {
+  serveDir as unstableServeDir,
+  ServeDirOptions as UnstableServeDirOptions,
+} from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 const serveDirOptions: ServeDirOptions = {
+  quiet: true,
+  fsRoot: testdataDir,
+  showDirListing: true,
+  showDotfiles: true,
+  enableCors: true,
+};
+const unstableServeDirOptions: UnstableServeDirOptions = {
   quiet: true,
   fsRoot: testdataDir,
   showDirListing: true,
@@ -1156,7 +1166,7 @@ Deno.test(async function serveFileHeadRequest() {
 Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
   const req = new Request("http://localhost/hello");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions,
+    ...unstableServeDirOptions,
     cleanUrls: true,
   });
   const downloadedFile = await res.text();
@@ -1170,7 +1180,7 @@ Deno.test("(unstable) serveDir() serves files without the need of html extension
 Deno.test("(unstable) serveDir() does not shadow existing files and directory if cleanUrls=true", async () => {
   const req = new Request("http://localhost/test_clean_urls");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions,
+    ...unstableServeDirOptions,
     cleanUrls: true,
   });
 

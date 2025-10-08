@@ -49,11 +49,16 @@ export function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  return stableServeDir(req, opts);
+  const headers = opts.headers
+    ? Array.from(opts.headers.entries()).map(([k, v]) => `${k}: ${v}`)
+    : [];
+
+  return stableServeDir(req, { ...opts, headers });
 }
 
 /** Interface for serveDir options. */
-export interface ServeDirOptions extends StableServeDirOptions {
+export interface ServeDirOptions
+  extends Omit<StableServeDirOptions, "headers"> {
   /**
    * Also serves `.html` files without the need for specifying the extension.
    * For example `foo.html` could be accessed through both `/foo` and `/foo.html`.
