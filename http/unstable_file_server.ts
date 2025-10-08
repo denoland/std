@@ -3,8 +3,9 @@
 import {
   serveDir as stableServeDir,
   type ServeDirOptions as StableServeDirOptions,
+  serveFile as stableServeFile,
+  type ServeFileOptions as StableServeFileOptions,
 } from "./file_server.ts";
-export { serveFile, type ServeFileOptions } from "./file_server.ts";
 
 /**
  * Serves the files under the given directory root (opts.fsRoot).
@@ -60,4 +61,50 @@ export interface ServeDirOptions extends StableServeDirOptions {
    * @default {false}
    */
   cleanUrls?: boolean;
+
+  /** Headers to add to each response
+   *
+   * @default {[]}
+   */
+  headers?: Headers;
+}
+
+/** Interface for serveFile options. */
+export interface ServeFileOptions extends StableServeFileOptions {
+  /** Headers to add to each response
+   *
+   * @default {[]}
+   */
+  headers?: Headers;
+}
+
+/**
+ * Resolves a {@linkcode Response} with the requested file as the body.
+ *
+ * @example Usage
+ * ```ts ignore
+ * import { serveFile } from "@std/http/file-server";
+ *
+ * Deno.serve((req) => {
+ *   return serveFile(req, "README.md");
+ * });
+ * ```
+ *
+ * @param req The server request context used to cleanup the file handle.
+ * @param filePath Path of the file to serve.
+ * @param options Additional options.
+ * @returns A response for the request.
+ */
+export async function serveFile(
+  req: Request,
+  filePath: string,
+  options?: ServeFileOptions,
+): Promise<Response> {
+  const response = await stableServeFile(req, filePath, options);
+
+  for (const [name, value] of options?.headers ?? []) {
+    response.headers.append(name, value);
+  }
+
+  return response;
 }

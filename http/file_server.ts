@@ -155,12 +155,6 @@ export interface ServeFileOptions {
    * `filePath`.
    */
   fileInfo?: Deno.FileInfo;
-
-  /** Headers to add to each response
-   *
-   * @default {[]}
-   */
-  headers?: string[];
 }
 
 /**
@@ -208,15 +202,6 @@ export async function serveFile(
   }
 
   const headers = createBaseHeaders();
-
-  if (options?.headers) {
-    for (const header of options.headers) {
-      const headerSplit = header.split(":");
-      const name = headerSplit[0]!;
-      const value = headerSplit.slice(1).join(":");
-      headers.append(name, value);
-    }
-  }
 
   const etag = fileInfo.mtime
     ? await eTag(fileInfo, { algorithm })
