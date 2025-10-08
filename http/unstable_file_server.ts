@@ -86,6 +86,8 @@ export interface ServeFileOptions extends StableServeFileOptions {
 /**
  * Resolves a {@linkcode Response} with the requested file as the body.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts ignore
  * import { serveFile } from "@std/http/file-server";
