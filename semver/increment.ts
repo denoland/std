@@ -1,6 +1,6 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-import { parseBuild } from "./_shared.ts";
+import { parseBuild, parsePrerelease } from "./_shared.ts";
 import type { ReleaseType, SemVer } from "./types.ts";
 
 function bumpPrereleaseNumber(prerelease: ReadonlyArray<string | number> = []) {
@@ -22,22 +22,34 @@ function bumpPrereleaseNumber(prerelease: ReadonlyArray<string | number> = []) {
 }
 
 function bumpPrerelease(
-  prerelease: ReadonlyArray<string | number> = [],
-  identifier: string | undefined,
-) {
-  let values = bumpPrereleaseNumber(prerelease);
-  if (!identifier) return values;
-  // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
-  // 1.2.0-beta.foobar or 1.2.0-beta bumps to 1.2.0-beta.0
-  if (values[0] !== identifier || isNaN(values[1] as number)) {
-    values = [identifier, 0];
+  currentPrerelease: ReadonlyArray<string | number> = [],
+  newPrerelease: string | undefined,
+): (string | number)[] {
+  const bumpedPrerelease = bumpPrereleaseNumber(currentPrerelease);
+
+  // If the identifier is not provided, return the bumped prerelease
+  if (!newPrerelease) return bumpedPrerelease;
+
+  let newIdentifiers = parsePrerelease(newPrerelease);
+
+  if (newIdentifiers.every((id) => typeof id === "string")) {
+    // When the give prerelease has no number and are all included in the existing prerelease
+    // it should just bump the number
+    if (
+      newIdentifiers.every((id, i) => id === bumpedPrerelease[i]) &&
+      typeof bumpedPrerelease[newIdentifiers.length] === "number"
+    ) {
+      return bumpedPrerelease;
+    }
+    newIdentifiers = [...newIdentifiers, 0];
   }
-  return values;
+
+  return newIdentifiers;
 }
 
 /** Options for {@linkcode increment}. */
 export interface IncrementOptions {
-  /** The pre-release metadata of the new version. */
+  /** The pre-release of the new version. */
   prerelease?: string;
   /** The build metadata of the new version. */
   build?: string;
@@ -54,11 +66,13 @@ export interface IncrementOptions {
  * the input version is already a prerelease it will simply increment the prerelease
  * metadata.
  *
- * If a prerelease identifier is specified without a number then a number will be added.
+ * If a `prerelease` option is specified without a number then a number will be added.
  * For example `pre` will result in `pre.0`. If the existing version already has a
  * prerelease with a number and its the same prerelease identifier then the number
  * will be incremented. If the identifier differs from the new identifier then the new
  * identifier is applied and the number is reset to `0`.
+ *
+ * If a prerelease is specified with a number then that exact prerelease will be used.
  *
  * If the input version has build metadata it will be preserved on the resulting version
  * unless a new build parameter is specified. Specifying `""` will unset existing build
@@ -75,8 +89,9 @@ export interface IncrementOptions {
  * assertEquals(increment(version, "patch"), parse("1.2.4"));
  * assertEquals(increment(version, "prerelease"), parse("1.2.4-0"));
  *
- * const prerelease = parse("1.2.3-beta.0");
- * assertEquals(increment(prerelease, "prerelease"), parse("1.2.3-beta.1"));
+ * assertEquals(increment(parse("1.2.3-beta.0"), "prerelease"), parse("1.2.3-beta.1"));
+ * assertEquals(increment(parse("1.2.3-beta.3"), "prerelease", { prerelease: "rc" }), parse("1.2.3-rc.0"));
+ * assertEquals(increment(parse("1.2.3-beta.3"), "prerelease", { prerelease: "rc.1" }), parse("1.2.3-rc.1"));
  * ```
  *
  * @param version The version to increment

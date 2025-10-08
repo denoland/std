@@ -1,6 +1,6 @@
 {
   "name": "@std/webgpu",
-  "version": "0.224.8",
+  "version": "0.224.9",
   "exports": {
     ".": "./mod.ts",
     "./create-capture": "./create_capture.ts",

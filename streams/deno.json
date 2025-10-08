@@ -1,6 +1,6 @@
 {
   "name": "@std/streams",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "exports": {
     ".": "./mod.ts",
     "./unstable-abort-stream": "./unstable_abort_stream.ts",
