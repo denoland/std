@@ -26,7 +26,7 @@ import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
 import {
   serveDir as unstableServeDir,
-  ServeDirOptions as UnstableServeDirOptions,
+  type ServeDirOptions as UnstableServeDirOptions,
 } from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
