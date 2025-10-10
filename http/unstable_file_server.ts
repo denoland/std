@@ -57,8 +57,7 @@ export function serveDir(
 }
 
 /** Interface for serveDir options. */
-export interface ServeDirOptions
-  extends Omit<StableServeDirOptions, "headers"> {
+export interface ServeDirOptions extends StableServeDirOptions {
   /**
    * Also serves `.html` files without the need for specifying the extension.
    * For example `foo.html` could be accessed through both `/foo` and `/foo.html`.
@@ -66,12 +65,6 @@ export interface ServeDirOptions
    * @default {false}
    */
   cleanUrls?: boolean;
-
-  /** Headers to add to each response
-   *
-   * @default {[]}
-   */
-  headers?: Headers;
 }
 
 /** Interface for serveFile options. */
@@ -80,7 +73,7 @@ export interface ServeFileOptions extends StableServeFileOptions {
    *
    * @default {[]}
    */
-  headers?: Headers;
+  headers?: string[];
 }
 
 /**
@@ -109,8 +102,13 @@ export async function serveFile(
 ): Promise<Response> {
   const response = await stableServeFile(req, filePath, options);
 
-  for (const [name, value] of options?.headers ?? []) {
-    response.headers.append(name, value);
+  if (options?.headers) {
+    for (const header of options.headers) {
+      const headerSplit = header.split(":");
+      const name = headerSplit[0]!;
+      const value = headerSplit.slice(1).join(":");
+      response.headers.append(name, value);
+    }
   }
 
   return response;

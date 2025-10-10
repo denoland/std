@@ -1191,7 +1191,7 @@ Deno.test("(unstable) serveDir() does not shadow existing files and directory if
 Deno.test("(unstable) serveFile() sends custom headers", async () => {
   const req = new Request("http://localhost/testdata/test_file.txt");
   const res = await unstableServeFile(req, TEST_FILE_PATH, {
-    headers: new Headers([["X-Extra", "extra header"]]),
+    headers: ["X-Extra: extra header"],
   });
 
   assertEquals(res.status, 200);
