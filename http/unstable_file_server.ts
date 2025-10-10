@@ -49,11 +49,7 @@ export function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  const headers = opts.headers
-    ? Array.from(opts.headers.entries()).map(([k, v]) => `${k}: ${v}`)
-    : [];
-
-  return stableServeDir(req, { ...opts, headers });
+  return stableServeDir(req, opts);
 }
 
 /** Interface for serveDir options. */
