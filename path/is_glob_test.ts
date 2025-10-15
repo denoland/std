@@ -91,7 +91,10 @@ Deno.test({
     assert(isGlob("a/b/c/[a-z].js"));
     assert(isGlob("abc/(aaa|bbb).js"));
     assert(isGlob("abc/*.js"));
+    assert(isGlob("abc/{a}.js"));
     assert(isGlob("abc/{a,b}.js"));
+    assert(isGlob("abc/@(a).js"));
+    assert(isGlob("abc/@(a|b).js"));
     assert(isGlob("abc/{a..z..2}.js"));
     assert(isGlob("abc/{a..z}.js"));
 
