@@ -539,10 +539,10 @@ function unescapeGlobSegment(segment: string): string {
   let result = "";
   let lastIndex = 0;
   for (let i = 0; i < segment.length; i++) {
-    const char = segment[i]!;
-    if (char === globEscapeChar && i + 1 < segment.length) {
-      const nextChar = segment[i + 1]!;
-      if (globMetachars.includes(nextChar)) {
+    const char = segment[i];
+    if (char === globEscapeChar) {
+      const nextChar = segment[i + 1];
+      if (nextChar && globMetachars.includes(nextChar)) {
         // append the slice before the escape char, then the metachar
         result += segment.slice(lastIndex, i) + nextChar;
         i++; // skip next char since we already processed it
