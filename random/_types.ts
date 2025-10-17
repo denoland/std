@@ -2,6 +2,16 @@
 // This module is browser compatible.
 
 /**
+ * Proxy type of {@code Uint8Array<ArrayBuffer>} or {@code Uint8Array} in TypeScript 5.7 or below respectively.
+ *
+ * This type is internal utility type and should not be used directly.
+ *
+ * @internal @private
+ */
+
+export type Uint8Array_ = ReturnType<Uint8Array["slice"]>;
+
+/**
  * A pseudo-random number generator implementing the same contract as
  * `Math.random`, i.e. taking zero arguments and returning a random number in
  * the range `[0, 1)`. The behavior of a function that accepts a `Prng` an
@@ -14,15 +24,15 @@ export type Prng = typeof Math.random;
 
 /** An integer typed array */
 export type IntegerTypedArray =
-  | Int8Array
-  | Int16Array
-  | Int32Array
-  | Uint8Array
-  | Uint16Array
-  | Uint32Array
-  | Uint8ClampedArray
-  | BigInt64Array
-  | BigUint64Array;
+  | ReturnType<Int8Array["slice"]>
+  | ReturnType<Int16Array["slice"]>
+  | ReturnType<Int32Array["slice"]>
+  | ReturnType<Uint8Array["slice"]>
+  | ReturnType<Uint16Array["slice"]>
+  | ReturnType<Uint32Array["slice"]>
+  | ReturnType<Uint8ClampedArray["slice"]>
+  | ReturnType<BigInt64Array["slice"]>
+  | ReturnType<BigUint64Array["slice"]>;
 
 /**
  * A pseudo-random number generator implementing the same contract as

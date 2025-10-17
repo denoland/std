@@ -45,8 +45,6 @@ const DELETE = "\u007F";
 const CHECKED = "◉";
 const UNCHECKED = "◯";
 
-const input = Deno.stdin;
-
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
@@ -105,7 +103,7 @@ export function promptMultipleSelect<V = undefined>(
   values: PromptEntry<V>[],
   options: PromptMultipleSelectOptions = {},
 ): PromptEntry<V>[] | null {
-  if (!input.isTerminal()) return null;
+  if (!Deno.stdin.isTerminal()) return null;
 
   const selectedAbsoluteIndexes = new Set<number>();
 

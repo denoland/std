@@ -297,8 +297,8 @@ export async function* expandGlob(
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
+  const shouldInclude = (path: string) =>
+    !excludePatterns.some((p) => p.test(path));
 
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
@@ -454,8 +454,8 @@ export function* expandGlobSync(
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
+  const shouldInclude = (path: string) =>
+    !excludePatterns.some((p) => p.test(path));
 
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {

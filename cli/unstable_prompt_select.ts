@@ -41,8 +41,6 @@ const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 const DELETE = "\u007F";
 
-const input = Deno.stdin;
-
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
  *
@@ -104,7 +102,7 @@ export function promptSelect<V = undefined>(
   values: PromptEntry<V>[],
   options: PromptSelectOptions = {},
 ): PromptEntry<V> | null {
-  if (!input.isTerminal()) return null;
+  if (!Deno.stdin.isTerminal()) return null;
 
   let selectedIndex = 0;
 

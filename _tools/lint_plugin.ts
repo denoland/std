@@ -28,6 +28,10 @@ function isConstantCase(string: string): boolean {
 
 const CONTRACTION_REGEXP = /\S'\S/;
 
+export const COPYRIGHT_NOTICE = `Copyright 2018-${
+  new Date().getFullYear()
+} the Deno authors. MIT license.`;
+
 export default {
   name: "deno-style-guide",
   rules: {
@@ -376,6 +380,28 @@ export default {
             });
           },
         };
+      },
+    },
+    // https://docs.deno.com/runtime/contributing/style_guide/#copyright-headers
+    "copyright": {
+      create(context) {
+        // Skip checking this rule in the ignore_comments.ts file to avoid
+        // testing of other rules being affected.
+        if (context.filename === "ignore_comments.ts") return;
+        const comments = context.sourceCode.getAllComments();
+        // Only check the first 6 comments, for performance
+        const node = comments.slice(0, 6).find((comment) =>
+          comment.value.includes(COPYRIGHT_NOTICE) && comment.type === "Line"
+        );
+        if (!node) {
+          context.report({
+            node,
+            range: [0, 0],
+            message: "Missing copyright notice.",
+            hint:
+              `Add a copyright notice at the top of the file: // ${COPYRIGHT_NOTICE}`,
+          });
+        }
       },
     },
   },

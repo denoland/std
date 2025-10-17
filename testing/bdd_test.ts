@@ -1957,7 +1957,7 @@ Deno.test("describe()", async (t) => {
   });
 
   await t.step(
-    "mutiple hook calls",
+    "multiple hook calls",
     async () => {
       using test = stub(Deno, "test");
       const context = new TestContext("example");

@@ -37,9 +37,10 @@ Deno.test("generate() generates a UUIDv7 matching the example test vector", () =
     0x39,
     0x8F,
   ]);
+  type Uint8Array_ = ReturnType<Uint8Array["slice"]>;
   using _getRandomValuesStub = stub(crypto, "getRandomValues", (array) => {
     for (let index = 0; index < (random.length); index++) {
-      array[index] = random[index]!;
+      (array as Uint8Array_)[index] = random[index]!;
     }
     return random;
   });

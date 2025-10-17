@@ -197,7 +197,9 @@ Deno.test("expandGlob() accepts extended option set as true", async function () 
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(await expandGlobArray("abc@(def)", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(await expandGlobArray("abc{def}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc!(def|ghi)", options), ["abc"]);
 });
@@ -217,7 +219,9 @@ Deno.test("expandGlobSync() accepts extended option set as true", function () {
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(expandGlobSyncArray("abc@(def)", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(expandGlobSyncArray("abc{def}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc!(def|ghi)", options), ["abc"]);
 });
