@@ -534,6 +534,27 @@ export function* expandGlobSync(
 }
 
 const globEscapeChar = Deno.build.os === "windows" ? "`" : `\\`;
+const globMetachars = "*?{}[]";
 function unescapeGlobSegment(segment: string): string {
-  return segment.replaceAll(globEscapeChar, "");
+  let result = "";
+  let lastIndex = 0;
+  for (let i = 0; i < segment.length; i++) {
+    const char = segment[i]!;
+    if (char === globEscapeChar && i + 1 < segment.length) {
+      const nextChar = segment[i + 1]!;
+      if (globMetachars.includes(nextChar)) {
+        // append the slice before the escape char, then the metachar
+        result += segment.slice(lastIndex, i) + nextChar;
+        i++; // skip next char since we already processed it
+        lastIndex = i + 1;
+      }
+    }
+  }
+  // no escaped, return the original segment
+  if (lastIndex === 0) {
+    return segment;
+  }
+  // append any remaining characters
+  result += segment.slice(lastIndex);
+  return result;
 }
