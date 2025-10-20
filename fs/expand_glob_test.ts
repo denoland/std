@@ -448,3 +448,27 @@ Deno.test(
     );
   },
 );
+
+const escapeChar = Deno.build.os === "windows" ? "`" : "\\";
+
+Deno.test("expandGlob() finds directory with escaped brackets", async function () {
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});
+
+Deno.test("expandGlobSync() finds directory with escaped brackets", function () {
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});
