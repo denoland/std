@@ -534,7 +534,7 @@ export function* expandGlobSync(
 }
 
 const globEscapeChar = Deno.build.os === "windows" ? "`" : `\\`;
-const globMetachars = "*?{}[]";
+const globMetachars = "*?{}[]()|+@!";
 function unescapeGlobSegment(segment: string): string {
   let result = "";
   let lastIndex = 0;
