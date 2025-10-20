@@ -7,6 +7,7 @@ import {
   setCookie,
 } from "./cookie.ts";
 import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assertType, type IsExact } from "@std/testing/types";
 
 Deno.test({
   name: "getCookies() parses cookie",
@@ -32,6 +33,18 @@ Deno.test({
       wide: "1",
       SID: "123",
     });
+  },
+});
+
+Deno.test({
+  name: "getCookies() has correct types",
+  fn() {
+    const headers = new Headers([["Cookie", "foo=bar"]]);
+    const cookies = getCookies(headers);
+    assertType<IsExact<typeof cookies, Partial<Record<string, string>>>>(true);
+    assertEquals(cookies.unknown, undefined);
+    assertEquals(Object.getPrototypeOf(cookies), null);
+    assertEquals(cookies.toString, undefined);
   },
 });
 
