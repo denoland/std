@@ -7,11 +7,10 @@
  * ```ts
  * import { randomIntegerBetween } from "@std/random";
  * import { randomSeeded } from "@std/random";
- * import { assertEquals } from "@std/assert";
  *
- * const prng = randomSeeded(1n);
+ * const prng = randomSeeded(BigInt(crypto.getRandomValues(new Uint32Array(1))[0]));
  *
- * assertEquals(randomIntegerBetween(1, 10, { prng }), 3);
+ * const randomInteger = randomIntegerBetween(1, 10, { prng });
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
