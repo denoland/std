@@ -4,7 +4,7 @@
 /**
  * Utilities for generating random numbers.
  *
- * ```ts
+ * ```ts no-assert
  * import { randomIntegerBetween } from "@std/random";
  * import { randomSeeded } from "@std/random";
  *
