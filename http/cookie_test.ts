@@ -41,8 +41,10 @@ Deno.test({
   fn() {
     const headers = new Headers([["Cookie", "foo=bar"]]);
     const cookies = getCookies(headers);
-    assertType<IsExact<typeof cookies, Partial<Record<string, string>>>>(true);
-    assertEquals(cookies.unknown, undefined);
+    assertType<IsExact<typeof cookies, Record<string, string>>>(true);
+    // allowed due to `noUncheckedIndexedAccess`
+    const baz = cookies.baz as undefined;
+    assertEquals(baz, undefined);
     assertEquals(Object.getPrototypeOf(cookies), null);
     assertEquals(cookies.toString, undefined);
   },
