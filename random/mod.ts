@@ -4,6 +4,20 @@
 /**
  * Utilities for generating random numbers.
  *
+ * Example of generating a random integer with fixed seed number:
+ *
+ * ```ts
+ * import { randomIntegerBetween } from "@std/random";
+ * import { randomSeeded } from "@std/random";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const prng = randomSeeded(1n);
+ *
+ * assertEquals(randomIntegerBetween(1, 10, { prng }), 3);
+ * ```
+ *
+ * Example of generating a random integer between two values:
+ *
  * ```ts no-assert
  * import { randomIntegerBetween } from "@std/random";
  * import { randomSeeded } from "@std/random";
