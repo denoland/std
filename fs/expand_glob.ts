@@ -297,13 +297,13 @@ export async function* expandGlob(
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
+  const shouldInclude = (path: string) =>
+    !excludePatterns.some((p) => p.test(path));
 
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift()!;
-    fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
+    fixedRoot = joinGlobs([fixedRoot, unescapeGlobSegment(seg)], globOptions);
   }
 
   let fixedRootInfo: WalkEntry;
@@ -454,13 +454,13 @@ export function* expandGlobSync(
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
-  const shouldInclude = (path: string): boolean =>
-    !excludePatterns.some((p: RegExp): boolean => !!path.match(p));
+  const shouldInclude = (path: string) =>
+    !excludePatterns.some((p) => p.test(path));
 
   let fixedRoot = isGlobAbsolute ? winRoot ?? "/" : absRoot;
   while (segments.length > 0 && !isGlob(segments[0]!)) {
     const seg = segments.shift()!;
-    fixedRoot = joinGlobs([fixedRoot, seg], globOptions);
+    fixedRoot = joinGlobs([fixedRoot, unescapeGlobSegment(seg)], globOptions);
   }
 
   let fixedRootInfo: WalkEntry;
@@ -531,4 +531,30 @@ export function* expandGlobSync(
     );
   }
   yield* currentMatches;
+}
+
+const globEscapeChar = Deno.build.os === "windows" ? "`" : `\\`;
+const globMetachars = "*?{}[]()|+@!";
+function unescapeGlobSegment(segment: string): string {
+  let result = "";
+  let lastIndex = 0;
+  for (let i = 0; i < segment.length; i++) {
+    const char = segment[i];
+    if (char === globEscapeChar) {
+      const nextChar = segment[i + 1];
+      if (nextChar && globMetachars.includes(nextChar)) {
+        // append the slice before the escape char, then the metachar
+        result += segment.slice(lastIndex, i) + nextChar;
+        i++; // skip next char since we already processed it
+        lastIndex = i + 1;
+      }
+    }
+  }
+  // no escaped, return the original segment
+  if (lastIndex === 0) {
+    return segment;
+  }
+  // append any remaining characters
+  result += segment.slice(lastIndex);
+  return result;
 }

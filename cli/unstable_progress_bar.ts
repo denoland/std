@@ -144,7 +144,7 @@ function clamp(value: number, min: number, max: number) {
  * const bar = new ProgressBar({
  *   max: 100,
  *   formatter(formatter) {
- *     return `[${formatter.styledTime()}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
+ *     return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
  *   },
  * });
  *

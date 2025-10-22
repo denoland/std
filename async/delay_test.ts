@@ -108,8 +108,14 @@ Deno.test("delay() handles already aborted signal", async () => {
 });
 
 Deno.test("delay() handles persistent option", async () => {
-  using unrefTimer = stub(Deno, "unrefTimer");
-  await delay(100, { persistent: false });
+  // Stub with itself to ensure the actual function is still called, but we can track calls
+  using unrefTimer = stub(Deno, "unrefTimer", Deno.unrefTimer);
+
+  await Promise.all([
+    delay(0, { persistent: false }),
+    // Longer, persistent timer to ensure the process doesn't actually exit early (this would cause a test failure)
+    delay(1),
+  ]);
   assertSpyCalls(unrefTimer, 1);
 });
 
@@ -125,15 +131,16 @@ Deno.test({
   name: "delay() handles persistent option with error",
   async fn() {
     using unrefTimer = stub(Deno, "unrefTimer", () => {
-      throw new Error("Error!");
+      throw new TypeError("Error!");
     });
-    try {
-      await delay(100, { persistent: false });
-    } catch (e) {
-      assert(e instanceof Error);
-      assertEquals(e.message, "Error!");
-      assertSpyCalls(unrefTimer, 1);
-    }
+
+    await assertRejects(
+      () => delay(100, { persistent: false }),
+      TypeError,
+      "Error!",
+    );
+
+    assertSpyCalls(unrefTimer, 1);
   },
   sanitizeResources: false,
   sanitizeOps: false,

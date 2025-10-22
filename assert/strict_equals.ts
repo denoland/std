@@ -59,7 +59,8 @@ export function assertStrictEquals<T>(
     const diffResult = stringDiff
       ? diffStr(actual as string, expected as string)
       : diff(actualString.split("\n"), expectedString.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+    const diffMsg = buildMessage(diffResult, { stringDiff }, arguments[3])
+      .join("\n");
     message = `Values are not strictly equal${msgSuffix}\n${diffMsg}`;
   }
 

@@ -197,7 +197,9 @@ Deno.test("expandGlob() accepts extended option set as true", async function () 
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(await expandGlobArray("abc@(def)", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(await expandGlobArray("abc{def}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc!(def|ghi)", options), ["abc"]);
 });
@@ -217,7 +219,9 @@ Deno.test("expandGlobSync() accepts extended option set as true", function () {
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(expandGlobSyncArray("abc@(def)", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(expandGlobSyncArray("abc{def}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc!(def|ghi)", options), ["abc"]);
 });
@@ -444,3 +448,27 @@ Deno.test(
     );
   },
 );
+
+const escapeChar = Deno.build.os === "windows" ? "`" : "\\";
+
+Deno.test("expandGlob() finds directory with escaped brackets", async function () {
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});
+
+Deno.test("expandGlobSync() finds directory with escaped brackets", function () {
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});

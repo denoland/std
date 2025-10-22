@@ -24,6 +24,7 @@ import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
 import { serveDir as unstableServeDir } from "./unstable_file_server.ts";
+import { serveFile as unstableServeFile } from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -1175,4 +1176,15 @@ Deno.test("(unstable) serveDir() does not shadow existing files and directory if
 
   assertEquals(res.status, 301);
   assertEquals(res.headers.has("location"), true);
+});
+
+Deno.test("(unstable) serveFile() sends custom headers", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt");
+  const res = await unstableServeFile(req, TEST_FILE_PATH, {
+    headers: ["X-Extra: extra header"],
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("X-Extra"), "extra header");
+  assertEquals(await res.text(), TEST_FILE_TEXT);
 });

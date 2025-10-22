@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import type { DiffResult } from "./types.ts";
+import type { ChangedDiffResult, DiffResult } from "./types.ts";
 import { diff } from "./diff.ts";
 
 /**
@@ -179,7 +179,7 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
   const bLines = hasMoreRemovedLines ? removed : added;
   for (const a of aLines) {
     let tokens = [] as Array<DiffResult<string>>;
-    let b: undefined | DiffResult<string>;
+    let b: undefined | ChangedDiffResult<string>;
     // Search another diff line with at least one common token
     while (bLines.length) {
       b = bLines.shift();

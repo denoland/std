@@ -2,18 +2,29 @@
 // This module is browser compatible.
 
 /** Ways that lines in a diff can be different. */
-export type DiffType = "removed" | "common" | "added";
+export type DiffType = DiffResult<unknown>["type"];
 
 /**
  * Represents the result of a diff operation.
- *
  * @typeParam T The type of the value in the diff result.
  */
-export interface DiffResult<T> {
-  /** The type of the diff. */
-  type: DiffType;
-  /** The value of the diff. */
+export type DiffResult<T> = ChangedDiffResult<T> | CommonDiffResult<T>;
+
+/**
+ * Represents the result of a common diff operation.
+ * @typeParam T The type of the value in the diff result.
+ */
+export type CommonDiffResult<T> = {
+  type: "common" | "truncation";
   value: T;
-  /** The details of the diff. */
+};
+
+/**
+ * Represents the result of a changed diff operation.
+ * @typeParam T The type of the value in the diff result.
+ */
+export type ChangedDiffResult<T> = {
+  type: "removed" | "added";
+  value: T;
   details?: DiffResult<T>[];
-}
+};
