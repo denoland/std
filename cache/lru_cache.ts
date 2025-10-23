@@ -55,6 +55,8 @@ export class LruCache<K, V> extends Map<K, V>
    */
   maxSize: number;
 
+  #eject: (ejectedKey: K, ejectedValue: V) => void = () => {};
+
   /**
    * Constructs a new `LruCache`.
    *
@@ -75,6 +77,37 @@ export class LruCache<K, V> extends Map<K, V>
     if (this.size > this.maxSize) {
       this.delete(this.keys().next().value!);
     }
+  }
+
+  /**
+   * Registers a function to be called when a value is evicted.
+   *
+   * @param callback the function to be called.
+   * @returns `this` for chaining.
+   *
+   * @example Registering a function to the cache
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const cache = new LruCache<string, string>(3)
+   *  .onEject((key, value) => {
+   *     console.log("Revoking: ", key)
+   *     URL.revokeObjectURL(value)
+   * });
+   *
+   * cache.set(
+   *  "fast-url",
+   *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
+   * );
+   *
+   * cache.delete("fast-url") // "Revoking: fast-url"
+   * assertEquals(cache.get("fast-url"), undefined)
+   * ```
+   */
+  onEject(callback: (ejectedKey: K, ejectedValue: V) => void): this {
+    this.#eject = callback;
+    return this;
   }
 
   /**
@@ -151,5 +184,31 @@ export class LruCache<K, V> extends Map<K, V>
     this.#pruneToMaxSize();
 
     return this;
+  }
+
+  /**
+   * Deletes the value associated with the given key.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param key The key to delete.
+   * @returns `true` if the key was deleted, `false` otherwise.
+   *
+   * @example Deleting a key from the cache
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const cache = new LruCache<string, number>(1);
+   *
+   * cache.set("a", 1);
+   * cache.delete("a");
+   * assertEquals(cache.has("a"), false);
+   * ```
+   */
+  override delete(key: K): boolean {
+    const value = super.get(key)!;
+    this.#eject(key, value);
+    return super.delete(key);
   }
 }

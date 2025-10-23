@@ -32,6 +32,8 @@ export class TtlCache<K, V> extends Map<K, V>
   #defaultTtl: number;
   #timeouts = new Map<K, number>();
 
+  #eject: (ejectedKey: K, ejectedValue: V) => void = () => {};
+
   /**
    * Constructs a new instance.
    *
@@ -44,6 +46,38 @@ export class TtlCache<K, V> extends Map<K, V>
   constructor(defaultTtl: number) {
     super();
     this.#defaultTtl = defaultTtl;
+  }
+
+  /**
+   * Registers a function to be called when a value is evicted.
+   *
+   * @param callback the function to be called.
+   * @returns `this` for chaining.
+   *
+   * @example Registering a function to the cache
+   * ```ts
+   * import { TtlCache } from "@std/cache/ttl-cache";
+   * import { delay } from "@std/async/delay";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const cache = new TtlCache<string, string>(100)
+   *  .onEject((key, value) => {
+   *     console.log("Revoking: ", key)
+   *     URL.revokeObjectURL(value)
+   * });
+   *
+   * cache.set(
+   *  "fast-url",
+   *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
+   * );
+   *
+   * await delay(200) // "Revoking: fast-url"
+   * assertEquals(cache.get("fast-url"), undefined)
+   * ```
+   */
+  onEject(callback: (ejectedKey: K, ejectedValue: V) => void): this {
+    this.#eject = callback;
+    return this;
   }
 
   /**
@@ -102,7 +136,9 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
+    const value = super.get(key)!;
     clearTimeout(this.#timeouts.get(key));
+    this.#eject(key, value);
     this.#timeouts.delete(key);
     return super.delete(key);
   }
