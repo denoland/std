@@ -135,11 +135,8 @@ export class Buffer {
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     if (ab === undefined) {
       this.#buf = new Uint8Array(0);
-    } else if (ab instanceof SharedArrayBuffer) {
-      // Note: This is necessary to avoid type error
-      this.#buf = new Uint8Array(ab);
     } else {
-      this.#buf = new Uint8Array(ab);
+      this.#buf = new Uint8Array(ab as ArrayBuffer | SharedArrayBuffer);
     }
   }
 

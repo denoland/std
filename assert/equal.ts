@@ -117,7 +117,10 @@ export function equal(a: unknown, b: unknown): boolean {
       if (a instanceof TypedArray) {
         return compareTypedArrays(a as TypedArray, b as TypedArray);
       }
-      if (a instanceof ArrayBuffer || a instanceof SharedArrayBuffer) {
+      if (
+        a instanceof ArrayBuffer ||
+        (globalThis.SharedArrayBuffer && a instanceof SharedArrayBuffer)
+      ) {
         return compareTypedArrays(
           new Uint8Array(a),
           new Uint8Array(b as ArrayBuffer | SharedArrayBuffer),
