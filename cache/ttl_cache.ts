@@ -136,9 +136,11 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
-    const value = super.get(key)!;
+    const value = super.get(key);
+    if (value) {
+      this.#eject(key, value);
+    }
     clearTimeout(this.#timeouts.get(key));
-    this.#eject(key, value);
     this.#timeouts.delete(key);
     return super.delete(key);
   }
