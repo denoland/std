@@ -38,6 +38,25 @@ export type { MemoizationCache };
  * // less recent values are removed
  * assert(!cache.has("a"));
  * ```
+ *
+ * @example Adding a onEject function.
+ * ```ts
+ * import { LruCache } from "@std/cache";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const cache = new LruCache<string, string>(3, { onEject: (key, value) => {
+ *  console.log("Revoking: ", key)
+ *  URL.revokeObjectURL(value)
+ * }});
+ *
+ * cache.set(
+ *  "fast-url",
+ *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
+ * );
+ *
+ * cache.delete("fast-url") // "Revoking: fast-url"
+ * assertEquals(cache.get("fast-url"), undefined)
+ * ```
  */
 export class LruCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
@@ -55,16 +74,21 @@ export class LruCache<K, V> extends Map<K, V>
    */
   maxSize: number;
 
-  #eject: (ejectedKey: K, ejectedValue: V) => void = () => {};
+  #eject: (ejectedKey: K, ejectedValue: V) => void;
 
   /**
    * Constructs a new `LruCache`.
    *
    * @param maxSize The maximum number of entries to store in the cache.
+   * @param options Additional options.
    */
-  constructor(maxSize: number) {
+  constructor(
+    maxSize: number,
+    options?: { onEject: (ejectedKey: K, ejectedValue: V) => void },
+  ) {
     super();
     this.maxSize = maxSize;
+    this.#eject = options?.onEject ?? (() => {});
   }
 
   #setMostRecentlyUsed(key: K, value: V): void {
@@ -77,37 +101,6 @@ export class LruCache<K, V> extends Map<K, V>
     if (this.size > this.maxSize) {
       this.delete(this.keys().next().value!);
     }
-  }
-
-  /**
-   * Registers a function to be called when a value is evicted.
-   *
-   * @param callback the function to be called.
-   * @returns `this` for chaining.
-   *
-   * @example Registering a function to the cache
-   * ```ts
-   * import { LruCache } from "@std/cache";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const cache = new LruCache<string, string>(3)
-   *  .onEject((key, value) => {
-   *     console.log("Revoking: ", key)
-   *     URL.revokeObjectURL(value)
-   * });
-   *
-   * cache.set(
-   *  "fast-url",
-   *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
-   * );
-   *
-   * cache.delete("fast-url") // "Revoking: fast-url"
-   * assertEquals(cache.get("fast-url"), undefined)
-   * ```
-   */
-  onEject(callback: (ejectedKey: K, ejectedValue: V) => void): this {
-    this.#eject = callback;
-    return this;
   }
 
   /**

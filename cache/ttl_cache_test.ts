@@ -110,8 +110,7 @@ Deno.test("TtlCache deletes entries", async (t) => {
 Deno.test("TtlCache onEject()", () => {
   using time = new FakeTime(0);
   let called = 0;
-  const cache = new TtlCache<number, string>(10)
-    .onEject(() => called++);
+  const cache = new TtlCache<number, string>(10, { onEject: () => called++ });
 
   cache.set(1, "one");
   cache.set(2, "two");
