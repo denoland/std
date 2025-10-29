@@ -38,6 +38,25 @@ export type { MemoizationCache };
  * // less recent values are removed
  * assert(!cache.has("a"));
  * ```
+ *
+ * @example Adding a onEject function.
+ * ```ts
+ * import { LruCache } from "@std/cache";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const cache = new LruCache<string, string>(3, { onEject: (key, value) => {
+ *  console.log("Revoking: ", key)
+ *  URL.revokeObjectURL(value)
+ * }});
+ *
+ * cache.set(
+ *  "fast-url",
+ *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
+ * );
+ *
+ * cache.delete("fast-url") // "Revoking: fast-url"
+ * assertEquals(cache.get("fast-url"), undefined)
+ * ```
  */
 export class LruCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
@@ -55,14 +74,21 @@ export class LruCache<K, V> extends Map<K, V>
    */
   maxSize: number;
 
+  #eject: (ejectedKey: K, ejectedValue: V) => void;
+
   /**
    * Constructs a new `LruCache`.
    *
    * @param maxSize The maximum number of entries to store in the cache.
+   * @param options Additional options.
    */
-  constructor(maxSize: number) {
+  constructor(
+    maxSize: number,
+    options?: { onEject: (ejectedKey: K, ejectedValue: V) => void },
+  ) {
     super();
     this.maxSize = maxSize;
+    this.#eject = options?.onEject ?? (() => {});
   }
 
   #setMostRecentlyUsed(key: K, value: V): void {
@@ -151,5 +177,33 @@ export class LruCache<K, V> extends Map<K, V>
     this.#pruneToMaxSize();
 
     return this;
+  }
+
+  /**
+   * Deletes the value associated with the given key.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param key The key to delete.
+   * @returns `true` if the key was deleted, `false` otherwise.
+   *
+   * @example Deleting a key from the cache
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const cache = new LruCache<string, number>(1);
+   *
+   * cache.set("a", 1);
+   * cache.delete("a");
+   * assertEquals(cache.has("a"), false);
+   * ```
+   */
+  override delete(key: K): boolean {
+    const value = super.get(key);
+    if (value) {
+      this.#eject(key, value);
+    }
+    return super.delete(key);
   }
 }
