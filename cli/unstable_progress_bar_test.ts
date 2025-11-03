@@ -63,6 +63,36 @@ Deno.test("ProgressBar() prints every second", async () => {
   assertEquals(actual, expected);
 });
 
+Deno.test("ProgressBar() prints twice every second", async () => {
+  using fakeTime = new FakeTime();
+  const { readable, writable } = new TransformStream();
+  const bar = new ProgressBar({
+    writable,
+    max: 10 * 1000,
+    refreshMilliseconds: 500,
+  });
+  fakeTime.tick(3000);
+  bar.stop().then(() => writable.close());
+
+  const expected = [
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:01] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:01] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:02] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:02] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:03] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[00:03] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\n",
+  ];
+
+  const actual: string[] = [];
+  for await (const buffer of readable) {
+    actual.push(decoder.decode(buffer));
+  }
+  assertEquals(actual, expected);
+});
+
 Deno.test("ProgressBar() can handle a readable.cancel() correctly", async () => {
   using _fakeTime = new FakeTime();
   const { readable, writable } = new TransformStream();
