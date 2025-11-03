@@ -93,6 +93,12 @@ export interface ProgressBarOptions {
    * @default {true}
    */
   keepOpen?: boolean;
+  /**
+   * How often the progress bar updates. The progress bar will be updated every
+   * `refreshMilliseconds` milliseconds.
+   * @default {1000}
+   */
+  refreshMilliseconds?: number;
 }
 
 const LINE_CLEAR = "\r\u001b[K";
@@ -217,6 +223,7 @@ export class ProgressBar {
       clear = false,
       formatter = defaultFormatter,
       keepOpen = true,
+      refreshMilliseconds = 1000,
     } = options;
     this.value = value;
     this.max = max;
@@ -236,7 +243,7 @@ export class ProgressBar {
     this.#previousTime = 0;
     this.#previousValue = this.value;
 
-    this.#id = setInterval(() => this.#print(), 1000);
+    this.#id = setInterval(() => this.#print(), refreshMilliseconds);
     this.#print();
   }
   #createFormatterObject() {
