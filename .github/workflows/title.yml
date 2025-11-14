@@ -60,6 +60,7 @@ jobs:
             io(/unstable)?
             json(/unstable)?
             jsonc(/unstable)?
+            math(/unstable)?
             media-types(/unstable)?
             msgpack(/unstable)?
             net(/unstable)?

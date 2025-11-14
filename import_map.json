@@ -30,6 +30,7 @@
     "@std/io": "jsr:@std/io@^0.225.2",
     "@std/json": "jsr:@std/json@^1.0.2",
     "@std/jsonc": "jsr:@std/jsonc@^1.0.2",
+    "@std/math": "jsr:@std/math@^0.0.0",
     "@std/media-types": "jsr:@std/media-types@^1.1.0",
     "@std/msgpack": "jsr:@std/msgpack@^1.0.3",
     "@std/net": "jsr:@std/net@^1.0.6",
