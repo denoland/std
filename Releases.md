@@ -1,3 +1,58 @@
+### 2025.11.17
+
+#### @std/assert 1.0.16 (patch)
+
+- fix(assert,streams): handle SharedArrayBuffer being disabled in some browser
+  context (#6856)
+
+#### @std/cache 0.2.1 (patch)
+
+- feat(cache): add cleanup callback to `LruCache` and `TtlCache` (#6857)
+
+#### @std/cbor 0.1.9 (patch)
+
+- docs(cbor): remove h2 and change spelling from UK -> US (#6847)
+
+#### @std/cli 1.0.24 (patch)
+
+- feat(cli/unstable): custom progress bar refresh interval (#6862)
+- fix(cli/unstable): typo in ProgressBar example (#6848)
+
+#### @std/fs 1.0.20 (patch)
+
+- fix(fs): "Deno is not defined" when using the module in browser (#6868)
+- fix(fs): `expandGlob`/`expandGlobSync` - match non-glob path segments
+  containing escaped glob chars (#6788)
+- fix(fs,path): `expandGlob`, `expandGlobSync`, and `isGlob` match
+  `@(alternate)` syntax with only one member (#6850)
+
+#### @std/http 1.0.22 (patch)
+
+- feat(http/unstable): add support for extra headers in serveFile (#6842)
+- fix(http): runtime types for `getCookies` (#6853)
+
+#### @std/math 0.0.0 (patch)
+
+- feat(math/unstable): add `math` package with basic math utilities (#6823)
+
+#### @std/path 1.1.3 (patch)
+
+- fix(fs,path): `expandGlob`, `expandGlobSync`, and `isGlob` match
+  `@(alternate)` syntax with only one member (#6850)
+
+#### @std/random 0.1.4 (patch)
+
+- docs(random): use PRNG initialization with secure random seed (#6855)
+
+#### @std/semver 1.0.7 (patch)
+
+- refactor(semver): reduce nesting in `testComparatorSet()` (#6866)
+
+#### @std/streams 1.0.14 (patch)
+
+- fix(assert,streams): handle SharedArrayBuffer being disabled in some browser
+  context (#6856)
+
 ### 2025.10.07a
 
 #### @std/internal 1.0.12 (patch)
