@@ -4,7 +4,8 @@
 /**
  * True if the runtime is Deno, false otherwise.
  */
-export const isDeno = (globalThis as any).navigator.userAgent?.includes("Deno");
+export const isDeno = (globalThis as any).navigator
+  ?.userAgent?.includes("Deno");
 
 /**
  * @returns The Node.js `fs` module.
