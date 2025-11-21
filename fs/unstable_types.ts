@@ -360,7 +360,7 @@ export interface FsFile extends Disposable {
    *
    * @example Usage
    * ```ts ignore
-   * import { assert } from "jsr:@std/assert";
+   * import { assert } from "@std/assert";
    * import { open } from "@std/fs/unstable-open";
    * using file = await open("hello.txt");
    * const fileInfo = await file.stat();
@@ -373,7 +373,7 @@ export interface FsFile extends Disposable {
    *
    * @example Usage
    * ```ts ignore
-   * import { assert } from "jsr:@std/assert";
+   * import { assert } from "@std/assert";
    * import { openSync } from "@std/fs/unstable-open";
    * using file = openSync("hello.txt");
    * const fileInfo = file.statSync();
