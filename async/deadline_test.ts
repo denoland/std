@@ -93,6 +93,6 @@ Deno.test("deadline() handles already aborted signal", async () => {
 });
 
 Deno.test("deadline() supports numbers greater than Number.MAX_SAFE_INTEGER", async () => {
-  let promise = await deadline(Promise.resolve("Hello"), Infinity);
+  const promise = await deadline(Promise.resolve("Hello"), Infinity);
   assertEquals(promise, "Hello");
 });
