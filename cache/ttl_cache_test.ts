@@ -16,7 +16,10 @@ function assertEntries<K, V>(
   }
 
   cache.forEach((v, k) => assertEquals(v, entries.find(([x]) => x === k)![1]));
-  assertContentfulEntries(cache, entries.filter(([, v]) => v !== UNSET));
+  assertContentfulEntries(
+    cache as TtlCache<K, V | typeof UNSET>,
+    entries.filter(([, v]) => v !== UNSET),
+  );
 }
 
 // check `size`, `entries()`, `keys()`, `values()`, `[Symbol.iterator]()`
@@ -102,4 +105,21 @@ Deno.test("TtlCache deletes entries", async (t) => {
     using cache = new TtlCache<number, string>(10);
     cache.set(1, "one");
   });
+});
+
+Deno.test("TtlCache onEject()", () => {
+  using time = new FakeTime(0);
+  let called = 0;
+  const cache = new TtlCache<number, string>(10, { onEject: () => called++ });
+
+  cache.set(1, "one");
+  cache.set(2, "two");
+
+  cache.delete(2);
+  assertEquals(called, 1);
+
+  cache.set(3, "three");
+  time.now = 10;
+  assertEquals(called, 3);
+  assertEquals(cache.get(3), undefined);
 });

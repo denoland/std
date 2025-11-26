@@ -67,9 +67,9 @@ json:
 jsonc:
   - changed-files:
       - any-glob-to-any-file: jsonc/**
-log:
+math:
   - changed-files:
-      - any-glob-to-any-file: log/**
+      - any-glob-to-any-file: math/**
 media-types:
   - changed-files:
       - any-glob-to-any-file: media_types/**

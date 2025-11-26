@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 /**
- * Proxy type of {@code Uint8Array<ArrayBuffer} or {@code Uint8Array} in TypeScript 5.7 or below respectively.
+ * Proxy type of {@code Uint8Array<ArrayBuffer>} or {@code Uint8Array} in TypeScript 5.7 or below respectively.
  *
  * This type is internal utility type and should not be used directly.
  *

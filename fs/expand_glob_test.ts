@@ -2,8 +2,8 @@
 import {
   assert,
   assertEquals,
+  assertMatch,
   assertRejects,
-  assertStringIncludes,
   assertThrows,
 } from "@std/assert";
 import { fromFileUrl, join, joinGlobs, normalize, relative } from "@std/path";
@@ -12,7 +12,6 @@ import {
   type ExpandGlobOptions,
   expandGlobSync,
 } from "./expand_glob.ts";
-import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 async function expandGlobArray(
   globString: string,
@@ -117,11 +116,8 @@ Deno.test(
         async () => {
           await expandGlobArray("*", EG_OPTIONS);
         },
-        IS_DENO_2
-          // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-          // deno-lint-ignore no-explicit-any
-          ? (Deno as any).errors.NotCapable
-          : Deno.errors.PermissionDenied,
+        // deno-lint-ignore no-explicit-any
+        (Deno as any).errors.NotCapable ?? Deno.errors.PermissionDenied,
         "run again with the --allow-read flag",
       );
     }
@@ -131,11 +127,8 @@ Deno.test(
         () => {
           expandGlobSyncArray("*", EG_OPTIONS);
         },
-        IS_DENO_2
-          // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-          // deno-lint-ignore no-explicit-any
-          ? (Deno as any).errors.NotCapable
-          : Deno.errors.PermissionDenied,
+        // deno-lint-ignore no-explicit-any
+        (Deno as any).errors.NotCapable ?? Deno.errors.PermissionDenied,
         "run again with the --allow-read flag",
       );
     }
@@ -197,7 +190,9 @@ Deno.test("expandGlob() accepts extended option set as true", async function () 
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(await expandGlobArray("abc@(def)", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(await expandGlobArray("abc{def}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(await expandGlobArray("abc!(def|ghi)", options), ["abc"]);
 });
@@ -217,7 +212,9 @@ Deno.test("expandGlobSync() accepts extended option set as true", function () {
     "abcdef",
     "abcdefghi",
   ]);
+  assertEquals(expandGlobSyncArray("abc@(def)", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc@(def|ghi)", options), ["abcdef"]);
+  assertEquals(expandGlobSyncArray("abc{def}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc{def,ghi}", options), ["abcdef"]);
   assertEquals(expandGlobSyncArray("abc!(def|ghi)", options), ["abc"]);
 });
@@ -307,10 +304,9 @@ Deno.test(
     assert(!success);
     assertEquals(code, 1);
     assertEquals(decoder.decode(stdout), "");
-    assertStringIncludes(
+    assertMatch(
       decoder.decode(stderr),
-      // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-      IS_DENO_2 ? "NotCapable" : "PermissionDenied",
+      /(NotCapable|PermissionDenied)/,
     );
   },
 );
@@ -444,3 +440,27 @@ Deno.test(
     );
   },
 );
+
+const escapeChar = Deno.build.os === "windows" ? "`" : "\\";
+
+Deno.test("expandGlob() finds directory with escaped brackets", async function () {
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    await expandGlobArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});
+
+Deno.test("expandGlobSync() finds directory with escaped brackets", function () {
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c`, EG_OPTIONS),
+    ["a[b]c"],
+  );
+  assertEquals(
+    expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
+    [join("a[b]c", "foo")],
+  );
+});

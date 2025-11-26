@@ -8,12 +8,13 @@ import {
 } from "@std/assert";
 import { throttle, type ThrottledFunction } from "./unstable_throttle.ts";
 import { delay } from "./delay.ts";
+import { FakeTime } from "@std/testing/time";
 
 Deno.test("throttle() handles called", async () => {
   let called = 0;
   const t = throttle(() => called++, 100);
   assertEquals(t.throttling, false);
-  assertEquals(t.lastExecution, NaN);
+  assertEquals(t.lastExecution, -Infinity);
   t();
   const { lastExecution } = t;
   t();
@@ -40,14 +41,16 @@ Deno.test("throttle() handles cancelled", () => {
   t();
   assertEquals(called, 1);
   assertEquals(t.throttling, true);
-  assertNotEquals(t.lastExecution, NaN);
+  assertNotEquals(t.lastExecution, -Infinity);
   t.clear();
   assertEquals(called, 1);
   assertEquals(t.throttling, false);
-  assertEquals(t.lastExecution, NaN);
+  assertEquals(t.lastExecution, -Infinity);
 });
 
 Deno.test("throttle() handles flush", () => {
+  using time = new FakeTime(0);
+
   let called = 0;
   let arg = "";
   const t = throttle((_arg) => {
@@ -60,14 +63,31 @@ Deno.test("throttle() handles flush", () => {
   assertEquals(called, 1);
   assertEquals(arg, "foo");
   assertEquals(t.throttling, true);
-  assertNotEquals(t.lastExecution, NaN);
-  for (const _ of [1, 2]) {
-    t.flush();
-    assertEquals(called, 2);
-    assertEquals(arg, "baz");
-    assertEquals(t.throttling, false);
-    assertEquals(t.lastExecution, NaN);
-  }
+  assertEquals(t.lastExecution, 0);
+
+  time.tick(42);
+  // flush last value "baz"
+  t.flush();
+  assertEquals(t.throttling, true);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
+
+  time.tick(100);
+  // no-op, still throttling
+  t.flush();
+  assertEquals(t.throttling, true);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
+
+  time.tick(1);
+  // no-op, no longer throttling
+  t.flush();
+  assertEquals(t.throttling, false);
+  assertEquals(t.lastExecution, 42);
+  assertEquals(called, 2);
+  assertEquals(arg, "baz");
 });
 
 Deno.test("throttle() handles params and context", async () => {
@@ -90,4 +110,46 @@ Deno.test("throttle() handles params and context", async () => {
   await delay(200);
   assertEquals(params, ["foo", 1]);
   assertEquals(t.throttling, false);
+});
+
+Deno.test("throttle() handles ensureLastCall option", async (t) => {
+  for (
+    const options of [
+      undefined,
+      {},
+      { ensureLastCall: false },
+      { ensureLastCall: true },
+    ]
+  ) {
+    const ensure = options?.ensureLastCall === true;
+    const description = `${
+      ensure ? "Ensures" : "Doesn't ensure"
+    } last call when options set to ${JSON.stringify(options)}`;
+
+    await t.step(description, () => {
+      using time = new FakeTime();
+      const calls: string[] = [];
+      const fn = throttle(
+        (x: string) => calls.push(x),
+        100,
+        options,
+      );
+      fn("foo");
+      fn("bar");
+      fn("baz");
+      assertEquals(calls, ["foo"]);
+      assertEquals(fn.throttling, true);
+      time.tick(200);
+
+      if (ensure) {
+        assertEquals(calls, ["foo", "baz"]);
+        assertEquals(fn.throttling, true);
+        time.tick(1);
+        assertEquals(fn.throttling, false);
+      } else {
+        assertEquals(calls, ["foo"]);
+        assertEquals(fn.throttling, false);
+      }
+    });
+  }
 });

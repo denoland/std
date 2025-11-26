@@ -1,0 +1,10 @@
+{
+  "name": "@std/math",
+  "version": "0.0.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./clamp": "./clamp.ts",
+    "./modulo": "./modulo.ts",
+    "./round-to": "./round_to.ts"
+  }
+}

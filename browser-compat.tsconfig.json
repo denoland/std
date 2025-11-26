@@ -32,7 +32,7 @@
     "./io",
     "./json",
     "./jsonc",
-    "./log",
+    "./math",
     "./media_types",
     "./msgpack",
     "./net",
