@@ -493,3 +493,17 @@ Deno.test({
     assertEquals("Foo/Bar".match(pattern2)?.[0], "Foo/Bar");
   },
 });
+
+Deno.test({
+  name: "globToRegExp() path seperator in middle of group",
+  fn() {
+    assert(match("**/{foo/*.json,*.txt}", "/c/Users/me/foo/bar.json"));
+    assert(match("**/{foo/*.json,*.txt}", "/c/Users/me/file.txt"));
+    assert(!match("!(foo/*.json|*.txt)", "/foo/bar.json"));
+    assert(!match("!(foo/*.json|*.txt)", "/file.json"));
+    assert(match("**/@(foo/*.json|*.txt)", "/c/Users/me/foo/bar.json"));
+    assert(match("**/@(foo/*.json|*.txt)", "/c/Users/me/file.txt"));
+    assert(match("**/+(foo/*.json|*.txt)", "/c/Users/me/foo/bar.json"));
+    assert(match("**/+(foo/*.json|*.txt)", "/c/Users/me/file.txt"));
+  },
+});
