@@ -8,7 +8,7 @@ import { assertArgs } from "../_common/relative.ts";
 /**
  * Return the relative path from `from` to `to` based on current working directory.
  *
- * An example in windws, for instance:
+ * An example in windows, for instance:
  *  from = 'C:\\orandea\\test\\aaa'
  *  to = 'C:\\orandea\\impl\\bbb'
  * The output of the function should be: '..\\..\\impl\\bbb'
