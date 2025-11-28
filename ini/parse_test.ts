@@ -252,3 +252,18 @@ Deno.test({
     });
   },
 });
+
+Deno.test({
+  name: "parse() reviver function is type casted",
+  fn() {
+    const expected = { a: 100, b: true, c: null, d: "foo" };
+
+    const json = '{ "a": 100, "b": true, "c": null, "d": "foo" }';
+    const parsedJson = JSON.parse(json, (_key, value) => value);
+    assertEquals(parsedJson, expected);
+
+    const ini = "a=100\nb=true\nc=null\nd=foo";
+    const parsedIni = parse(ini, { reviver: (_key, value) => value });
+    assertEquals(parsedIni, expected);
+  },
+});

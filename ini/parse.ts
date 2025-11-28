@@ -4,7 +4,7 @@
 /** Function for replacing INI values with JavaScript values. */
 export type ReviverFunction = (
   key: string,
-  value: string,
+  value: string | number | boolean | null,
   section?: string,
 ) => unknown;
 
@@ -114,14 +114,14 @@ function defaultReviver(_key: string, value: string, _section?: string) {
  * const parsed = parse(`
  * [section Foo]
  * date = 2012-10-10
- * amount = 12345
+ * amount = "12345"
  * `, {
  *   reviver(key, value, section) {
  *     if (section === "section Foo") {
  *       if (key === "date") {
- *         return new Date(value);
+ *         return new Date(String(value));
  *       } else if (key === "amount") {
- *         return +value;
+ *         return Number(value);
  *       }
  *     }
  *     return value;
@@ -148,8 +148,6 @@ export function parse<T extends object>(
   if (typeof text !== "string") {
     throw new SyntaxError(`Unexpected token ${text} in INI at line 0`);
   }
-
-  const { reviver = defaultReviver } = options;
 
   const root = {} as T;
   let object: object = root;
@@ -198,7 +196,12 @@ export function parse<T extends object>(
       throw new SyntaxError(`Unexpected empty key name at line ${lineNumber}`);
     }
 
-    const val = reviver(key, value, sectionName);
+    const parsedValue = defaultReviver(key, value, sectionName);
+
+    const val = options.reviver
+      ? options.reviver(key, parsedValue, sectionName)
+      : parsedValue;
+
     Object.defineProperty(object, key, {
       value: val,
       writable: true,
