@@ -1,0 +1,221 @@
+// Copyright 2018-2025 the Deno authors. MIT license.
+
+import { toByteStream } from "@std/streams/unstable-to-byte-stream";
+
+/**
+ * Represents an entry in a LimitDelimiterStream.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface LimitDelimiterEntry {
+  /**
+   * True if the value ended with the delimiter.
+   */
+  match: boolean;
+  /**
+   * The chunk's bytes (never includes the delimiter itself).
+   */
+  value: Uint8Array;
+}
+
+/**
+ * The options for the LimitDelimiterStream.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface LimitDelimiterOptions {
+  /**
+   * The delimiter used to split the incoming stream.
+   */
+  delimiter: Uint8Array;
+  /**
+   * The maximum length for each emitted value.
+   */
+  limit: number;
+}
+
+/**
+ * {@linkcode LimitDelimiterStream} is a TransformStream that splits a
+ * `ReadableStream<Uint8Array>` by a provided `delimiter`, returning
+ * {@linkcode LimitDelimiterEntry} objects. Each entry's match property
+ * indicates whether the corresponding value ended with the delimiter. The
+ * class also requires a `limit` property to specify the max length that each
+ * entry can be, which can be preferable if your delimiter is unlikely to appear
+ * often.
+ *
+ * @example
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import {
+ *   LimitDelimiterStream,
+ * } from "@std/streams/unstable-limit-delimiter-stream";
+ *
+ * const encoder = new TextEncoder();
+ *
+ * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeThrough(
+ *     new LimitDelimiterStream({
+ *       delimiter: encoder.encode(";"),
+ *       limit: 4,
+ *     }),
+ *   );
+ *
+ * assertEquals(
+ *   await Array.fromAsync(readable),
+ *   [
+ *     { match: true, value: encoder.encode("foo") },
+ *     { match: false, value: encoder.encode("beep") },
+ *     { match: true, value: encoder.encode("s") },
+ *     { match: true, value: encoder.encode("") },
+ *     { match: true, value: encoder.encode("bar") },
+ *     { match: true, value: encoder.encode("") },
+ *   ],
+ * );
+ * ```
+ */
+export class LimitDelimiterStream
+  implements TransformStream<Uint8Array, LimitDelimiterEntry> {
+  #readable: ReadableStream<LimitDelimiterEntry>;
+  #writable: WritableStream<Uint8Array>;
+  /**
+   * Constructs a new instance.
+   *
+   * @param options The options for the stream.
+   */
+  constructor(options: LimitDelimiterOptions) {
+    const { readable, writable } = new TransformStream<
+      Uint8Array,
+      Uint8Array
+    >();
+    this.#writable = writable;
+    this.#readable = ReadableStream.from(this.#handle(readable, options));
+  }
+
+  async *#handle(
+    readable: ReadableStream<Uint8Array>,
+    { delimiter, limit }: LimitDelimiterOptions,
+  ): AsyncGenerator<LimitDelimiterEntry> {
+    const reader = toByteStream(readable).getReader({ mode: "byob" });
+    let buffer = (await reader.read(
+      new Uint8Array(limit + delimiter.length),
+      { min: limit + delimiter.length },
+    )).value!;
+
+    a: while (true) {
+      b: for (let i = 0; i <= buffer.length - delimiter.length; ++i) {
+        for (let j = 0; j < delimiter.length; ++j) {
+          if (buffer[i + j] !== delimiter[j]) continue b;
+        }
+        // Match
+        yield { match: true, value: buffer.slice(0, i) };
+        buffer.set(buffer.subarray(i + delimiter.length));
+        buffer = buffer.subarray(-i - delimiter.length);
+        buffer = (await reader.read(buffer, { min: buffer.length })).value!;
+        buffer = new Uint8Array(
+          buffer.buffer,
+          0,
+          buffer.byteOffset + buffer.byteLength,
+        );
+        continue a;
+      }
+      if (buffer.byteLength < buffer.buffer.byteLength) {
+        // Finished
+        while (buffer.length) {
+          yield { match: false, value: buffer.slice(0, limit) };
+          buffer = buffer.subarray(limit);
+        }
+        break;
+      }
+      yield { match: false, value: buffer.slice(0, -delimiter.length) };
+      buffer.set(buffer.subarray(-delimiter.length));
+      buffer = buffer.subarray(delimiter.length);
+      buffer = (await reader.read(buffer, { min: buffer.length })).value!;
+      buffer = new Uint8Array(
+        buffer.buffer,
+        0,
+        buffer.byteOffset + buffer.byteLength,
+      );
+    }
+  }
+
+  /**
+   * The ReadableStream.
+   *
+   * @return ReadableStream<LimitDelimiterEntry>
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import {
+   *   LimitDelimiterStream,
+   * } from "@std/streams/unstable-limit-delimiter-stream";
+   *
+   * const encoder = new TextEncoder();
+   *
+   * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
+   *   .pipeThrough(new TextEncoderStream())
+   *   .pipeThrough(
+   *     new LimitDelimiterStream({
+   *       delimiter: encoder.encode(";"),
+   *       limit: 4,
+   *     }),
+   *   );
+   *
+   * assertEquals(
+   *   await Array.fromAsync(readable),
+   *   [
+   *     { match: true, value: encoder.encode("foo") },
+   *     { match: false, value: encoder.encode("beep") },
+   *     { match: true, value: encoder.encode("s") },
+   *     { match: true, value: encoder.encode("") },
+   *     { match: true, value: encoder.encode("bar") },
+   *     { match: true, value: encoder.encode("") },
+   *   ],
+   * );
+   * ```
+   */
+  get readable(): ReadableStream<LimitDelimiterEntry> {
+    return this.#readable;
+  }
+
+  /**
+   * The WritableStream.
+   *
+   * @return WritableStream<Uint8Array>
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import {
+   *   LimitDelimiterStream,
+   * } from "@std/streams/unstable-limit-delimiter-stream";
+   *
+   * const encoder = new TextEncoder();
+   *
+   * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
+   *   .pipeThrough(new TextEncoderStream())
+   *   .pipeThrough(
+   *     new LimitDelimiterStream({
+   *       delimiter: encoder.encode(";"),
+   *       limit: 4,
+   *     }),
+   *   );
+   *
+   * assertEquals(
+   *   await Array.fromAsync(readable),
+   *   [
+   *     { match: true, value: encoder.encode("foo") },
+   *     { match: false, value: encoder.encode("beep") },
+   *     { match: true, value: encoder.encode("s") },
+   *     { match: true, value: encoder.encode("") },
+   *     { match: true, value: encoder.encode("bar") },
+   *     { match: true, value: encoder.encode("") },
+   *   ],
+   * );
+   * ```
+   */
+  get writable(): WritableStream<Uint8Array> {
+    return this.#writable;
+  }
+}

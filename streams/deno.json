@@ -11,6 +11,7 @@
     "./early-zip-readable-streams": "./early_zip_readable_streams.ts",
     "./limited-bytes-transform-stream": "./limited_bytes_transform_stream.ts",
     "./limited-transform-stream": "./limited_transform_stream.ts",
+    "./unstable-limit-delimiter-stream": "./unstable_limit_delimiter_stream.ts",
     "./merge-readable-streams": "./merge_readable_streams.ts",
     "./unstable-fixed-chunk-stream": "./unstable_fixed_chunk_stream.ts",
     "./text-delimiter-stream": "./text_delimiter_stream.ts",
