@@ -7,8 +7,6 @@ type LineParseResult = {
   notInterpolated: string;
 };
 
-type CharactersMap = { [key: string]: string };
-
 const RE_KEY_VALUE =
   /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
@@ -17,19 +15,18 @@ const RE_VALID_KEY = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 const RE_EXPAND_VALUE =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
-function expandCharacters(str: string): string {
-  const charactersMap: CharactersMap = {
-    "\\n": "\n",
-    "\\r": "\r",
-    "\\t": "\t",
-  };
+const CHARACTERS_MAP: { [key: string]: string } = {
+  "\\n": "\n",
+  "\\r": "\r",
+  "\\t": "\t",
+};
 
+function expandCharacters(str: string): string {
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1] ?? "",
+    ($1: keyof typeof CHARACTERS_MAP): string => CHARACTERS_MAP[$1] ?? "",
   );
 }
-
 function expand(str: string, variablesMap: { [key: string]: string }): string {
   if (RE_EXPAND_VALUE.test(str)) {
     return expand(
