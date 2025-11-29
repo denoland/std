@@ -66,7 +66,7 @@ export interface ParseOptions {
 }
 
 const QUOTED_VALUE_REGEXP = /^"(?<value>.*)"$/;
-function defaultReviver(_key: string, value: string, _section?: string) {
+function parseValue(_key: string, value: string) {
   if (value === "null") return null;
   if (value === "true") return true;
   if (value === "false") return false;
@@ -196,11 +196,9 @@ export function parse<T extends object>(
       throw new SyntaxError(`Unexpected empty key name at line ${lineNumber}`);
     }
 
-    const parsedValue = defaultReviver(key, value, sectionName);
-
-    const val = options.reviver
-      ? options.reviver(key, parsedValue, sectionName)
-      : parsedValue;
+    const parsedValue = parseValue(key, value);
+    let val = parsedValue as unknown;
+    if (options.reviver) val = options.reviver(key, parsedValue, sectionName);
 
     Object.defineProperty(object, key, {
       value: val,
