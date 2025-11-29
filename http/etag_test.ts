@@ -147,3 +147,17 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "eTag() returns undefined when calcFileInfo returns undefined",
+  async fn() {
+    {
+      const result = await eTag({
+        mtime: null,
+        size: 1024,
+      });
+
+      assert(result === undefined);
+    }
+  },
+});

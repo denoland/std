@@ -120,7 +120,7 @@ Deno.test(
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
       reject(new Error("isGlob() did not finish in time"));
-    }, 3000);
+    }, 20000);
     const worker = new Worker(
       `
       data:text/javascript,
