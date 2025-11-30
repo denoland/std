@@ -23,6 +23,12 @@ Deno.test({
     assertEquals(diff.quarters, 7);
     assertEquals(diff.years, 1);
 
+    // test for 'months' potential null-state when calculating quarters only
+    diff = difference(denoInit, denoReleaseV1, {
+      units: ["quarters"],
+    });
+    assertEquals(diff.quarters, 7);
+
     // Default units
     diff = difference(denoReleaseV1, denoInit);
     assertEquals(diff.days, 730);
