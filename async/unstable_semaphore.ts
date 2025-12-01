@@ -1,6 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
 
+/** Internal node for the FIFO waiting queue. */
+interface Node {
+  res: () => void;
+  next: Node | undefined;
+}
+
 /**
  * A counting semaphore for limiting concurrent access to a resource.
  *
@@ -24,18 +30,6 @@
  * // critical section
  * sem.release();
  * ```
- *
- * @module
- */
-
-/** Internal node for the FIFO waiting queue. */
-interface Node {
-  res: () => void;
-  next: Node | undefined;
-}
-
-/**
- * A counting semaphore that limits concurrent access to a shared resource.
  */
 export class Semaphore {
   /** Global registry for named semaphores. */
@@ -67,6 +61,16 @@ export class Semaphore {
   /**
    * Gets or creates a named semaphore from the global registry.
    *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = Semaphore.get("my-resource", 3);
+   * await sem.acquire();
+   * // critical section
+   * sem.release();
+   * ```
+   *
    * @param key The unique identifier for the semaphore.
    * @param max Maximum concurrent permits if creating new. Defaults to 1 (mutex).
    *            This parameter is ignored if a semaphore with the given key already exists.
@@ -84,6 +88,15 @@ export class Semaphore {
   /**
    * Removes a semaphore from the global registry.
    *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * Semaphore.get("my-resource", 3);
+   * Semaphore.delete("my-resource"); // true
+   * Semaphore.delete("my-resource"); // false
+   * ```
+   *
    * @param key The unique identifier of the semaphore to remove.
    * @returns `true` if a semaphore was removed, `false` otherwise.
    */
@@ -93,6 +106,26 @@ export class Semaphore {
 
   /**
    * Acquires a permit, waiting if none are available.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = new Semaphore(1);
+   * await sem.acquire();
+   * // critical section
+   * sem.release();
+   * ```
+   *
+   * @example Using `using` statement
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = new Semaphore(1);
+   * using _ = await sem.acquire();
+   * // critical section
+   * // permit is automatically released when exiting the block
+   * ```
    *
    * @returns A promise that resolves to a {@linkcode Disposable} when a permit is acquired.
    */
@@ -114,6 +147,16 @@ export class Semaphore {
 
   /**
    * Releases a permit, allowing the next waiter to proceed.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = new Semaphore(1);
+   * await sem.acquire();
+   * // critical section
+   * sem.release();
+   * ```
    */
   release(): void {
     if (this.#head) {
