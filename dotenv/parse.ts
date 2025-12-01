@@ -30,30 +30,28 @@ function expandCharacters(str: string): string {
   );
 }
 
-function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (EXPAND_VALUE_REGEXP.test(str)) {
-    return expand(
-      str.replace(EXPAND_VALUE_REGEXP, function (...params) {
-        const {
-          inBrackets,
-          inBracketsDefault,
-          notInBrackets,
-          notInBracketsDefault,
-        } = params[params.length - 1];
-        const expandValue = inBrackets || notInBrackets;
-        const defaultValue = inBracketsDefault || notInBracketsDefault;
+function expand(str: string, variablesMap: Record<string, string>): string {
+  let current = str;
 
-        let value: string | undefined = variablesMap[expandValue];
-        if (value === undefined) {
-          value = Deno.env.get(expandValue);
-        }
-        return value === undefined ? expand(defaultValue, variablesMap) : value;
-      }),
-      variablesMap,
-    );
-  } else {
-    return str;
+  while (EXPAND_VALUE_REGEXP.test(current)) {
+    current = current.replace(EXPAND_VALUE_REGEXP, (...params) => {
+      const {
+        inBrackets,
+        inBracketsDefault,
+        notInBrackets,
+        notInBracketsDefault,
+      } = params.at(-1);
+
+      const expandValue = inBrackets ?? notInBrackets;
+      const defaultValue = inBracketsDefault ?? notInBracketsDefault;
+
+      return (
+        variablesMap[expandValue] ?? Deno.env.get(expandValue) ?? defaultValue
+      );
+    });
   }
+
+  return current;
 }
 
 /**
