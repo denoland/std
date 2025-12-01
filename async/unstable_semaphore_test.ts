@@ -71,6 +71,15 @@ Deno.test("Semaphore.get() creates new instance for different keys", () => {
   assertNotStrictEquals(a, b);
 });
 
+Deno.test("Semaphore.delete() removes semaphore from registry", () => {
+  const key = "delete-test-key";
+  const a = Semaphore.get(key);
+  assert(Semaphore.delete(key));
+  assertFalse(Semaphore.delete(key));
+  const b = Semaphore.get(key);
+  assertNotStrictEquals(a, b);
+});
+
 Deno.test("Semaphore constructor throws for non-positive max", () => {
   assertThrows(() => new Semaphore(0), TypeError);
   assertThrows(() => new Semaphore(-1), TypeError);

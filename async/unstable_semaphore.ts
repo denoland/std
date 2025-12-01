@@ -70,7 +70,7 @@ export class Semaphore {
   /**
    * Gets or creates a named semaphore from the global registry.
    *
-   * @param key Unique identifier for the semaphore.
+   * @param key The unique identifier for the semaphore.
    * @param max Maximum concurrent permits if creating new. Defaults to 1 (mutex).
    * @returns The semaphore associated with the key.
    */
@@ -81,6 +81,16 @@ export class Semaphore {
       Semaphore.#registry.set(key, sem);
     }
     return sem;
+  }
+
+  /**
+   * Removes a semaphore from the global registry.
+   *
+   * @param key The unique identifier of the semaphore to remove.
+   * @returns `true` if a semaphore was removed, `false` otherwise.
+   */
+  static delete(key: unknown): boolean {
+    return Semaphore.#registry.delete(key);
   }
 
   /**
