@@ -7,12 +7,12 @@ type LineParseResult = {
   notInterpolated: string;
 };
 
-const RE_KEY_VALUE =
+const KEY_VALUE_REGEXP =
   /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
-const RE_VALID_KEY = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const VALID_KEY_REGEXP = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
-const RE_EXPAND_VALUE =
+const EXPAND_VALUE_REGEXP =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
 const CHARACTERS_MAP: { [key: string]: string } = {
@@ -28,9 +28,9 @@ function expandCharacters(str: string): string {
   );
 }
 function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (RE_EXPAND_VALUE.test(str)) {
+  if (EXPAND_VALUE_REGEXP.test(str)) {
     return expand(
-      str.replace(RE_EXPAND_VALUE, function (...params) {
+      str.replace(EXPAND_VALUE_REGEXP, function (...params) {
         const {
           inBrackets,
           inBracketsDefault,
@@ -76,11 +76,11 @@ export function parse(text: string): Record<string, string> {
   let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KEY_VALUE.exec(text)) !== null) {
+  while ((match = KEY_VALUE_REGEXP.exec(text)) !== null) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
-    if (!RE_VALID_KEY.test(key)) {
+    if (!VALID_KEY_REGEXP.test(key)) {
       // deno-lint-ignore no-console
       console.warn(
         `Ignored the key "${key}" as it is not a valid identifier: The key need to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.`,
