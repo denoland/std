@@ -60,6 +60,12 @@ Deno.test("Semaphore.acquire() resolves waiters in FIFO order", async () => {
   assertEquals(order, [1, 2, 3]);
 });
 
+Deno.test("Semaphore.acquire() returns Disposable that releases on dispose", async () => {
+  const sem = new Semaphore(1);
+  const permit = await sem.acquire();
+  await assertBlocks(sem.acquire(), () => permit[Symbol.dispose]());
+});
+
 Deno.test("Semaphore.release() ignores extra releases beyond max", async () => {
   const sem = new Semaphore(2);
   // Release without acquire - should be ignored

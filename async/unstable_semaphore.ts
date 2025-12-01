@@ -34,9 +34,6 @@ interface Node {
   next: Node | undefined;
 }
 
-/** Pre-resolved promise for zero-cost acquisition when permits are available. */
-const RESOLVED = Promise.resolve();
-
 /**
  * A counting semaphore that limits concurrent access to a shared resource.
  */
@@ -97,15 +94,16 @@ export class Semaphore {
   /**
    * Acquires a permit, waiting if none are available.
    *
-   * @returns A promise that resolves when a permit is acquired.
+   * @returns A promise that resolves to a {@linkcode Disposable} when a permit is acquired.
    */
-  acquire(): Promise<void> {
+  acquire(): Promise<Disposable> {
+    const disposable: Disposable = { [Symbol.dispose]: () => this.release() };
     if (this.#count > 0) {
       this.#count--;
-      return RESOLVED;
+      return Promise.resolve(disposable);
     }
     return new Promise((res) => {
-      const node: Node = { res, next: undefined };
+      const node: Node = { res: () => res(disposable), next: undefined };
       if (this.#tail) {
         this.#tail = this.#tail.next = node;
       } else {
