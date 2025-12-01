@@ -6,6 +6,7 @@ import {
   assertFalse,
   assertNotStrictEquals,
   assertStrictEquals,
+  assertThrows,
 } from "@std/assert";
 import { Semaphore } from "./unstable_semaphore.ts";
 
@@ -68,4 +69,10 @@ Deno.test("Semaphore.get() creates new instance for different keys", () => {
   const a = Semaphore.get("key-1");
   const b = Semaphore.get("key-2");
   assertNotStrictEquals(a, b);
+});
+
+Deno.test("Semaphore constructor throws for non-positive max", () => {
+  assertThrows(() => new Semaphore(0), TypeError);
+  assertThrows(() => new Semaphore(-1), TypeError);
+  assertThrows(() => Semaphore.get("negative-max", -5), TypeError);
 });
