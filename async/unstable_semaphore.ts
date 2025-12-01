@@ -72,6 +72,7 @@ export class Semaphore {
    *
    * @param key The unique identifier for the semaphore.
    * @param max Maximum concurrent permits if creating new. Defaults to 1 (mutex).
+   *            This parameter is ignored if a semaphore with the given key already exists.
    * @returns The semaphore associated with the key.
    */
   static get(key: unknown, max: number = 1): Semaphore {

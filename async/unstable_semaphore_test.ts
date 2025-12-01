@@ -71,6 +71,24 @@ Deno.test("Semaphore.get() creates new instance for different keys", () => {
   assertNotStrictEquals(a, b);
 });
 
+Deno.test("Semaphore.get() ignores max parameter for existing key", async () => {
+  const key = "ignore-max-test-key";
+  // Create semaphore with max=1
+  const a = Semaphore.get(key, 1);
+  // Try to get with different max value - should return same instance
+  const b = Semaphore.get(key, 5);
+  assertStrictEquals(a, b);
+  // Verify the semaphore still has max=1 (not 5)
+  await a.acquire();
+  let blocked = true;
+  const p = a.acquire().then(() => blocked = false);
+  await Promise.resolve();
+  assert(blocked);
+  a.release();
+  await p;
+  assertFalse(blocked);
+});
+
 Deno.test("Semaphore.delete() removes semaphore from registry", () => {
   const key = "delete-test-key";
   const a = Semaphore.get(key);
