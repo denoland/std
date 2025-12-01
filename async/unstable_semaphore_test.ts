@@ -10,18 +10,38 @@ import {
 } from "@std/assert";
 import { Semaphore } from "./unstable_semaphore.ts";
 
+/** Helper to assert that a promise is blocked until released */
+async function assertBlocks(
+  acquirePromise: Promise<unknown>,
+  release: () => void,
+): Promise<void> {
+  let blocked = true;
+  const p = acquirePromise.then(() => blocked = false);
+  await Promise.resolve();
+  assert(blocked);
+  release();
+  await p;
+  assertFalse(blocked);
+}
+
+Deno.test("Semaphore constructor throws for non-positive max", () => {
+  assertThrows(() => new Semaphore(0), TypeError);
+  assertThrows(() => new Semaphore(-1), TypeError);
+  assertThrows(() => Semaphore.get("negative-max", -5), TypeError);
+});
+
+Deno.test("Semaphore constructor defaults to 1", async () => {
+  const sem = new Semaphore();
+  await sem.acquire();
+  await assertBlocks(sem.acquire(), () => sem.release());
+});
+
 Deno.test("Semaphore.acquire() blocks when no permits available", async () => {
   const sem = new Semaphore(2);
   await sem.acquire();
   await sem.acquire();
   // Third acquire should block
-  let blocked = true;
-  const p = sem.acquire().then(() => blocked = false);
-  await Promise.resolve();
-  assert(blocked);
-  sem.release();
-  await p;
-  assertFalse(blocked);
+  await assertBlocks(sem.acquire(), () => sem.release());
 });
 
 Deno.test("Semaphore.acquire() resolves waiters in FIFO order", async () => {
@@ -50,13 +70,7 @@ Deno.test("Semaphore.release() ignores extra releases beyond max", async () => {
   await sem.acquire();
   await sem.acquire();
   // Third acquire should block
-  let blocked = true;
-  const p = sem.acquire().then(() => blocked = false);
-  await Promise.resolve();
-  assert(blocked);
-  sem.release();
-  await p;
-  assertFalse(blocked);
+  await assertBlocks(sem.acquire(), () => sem.release());
 });
 
 Deno.test("Semaphore.get() returns same instance for same key", () => {
@@ -80,13 +94,7 @@ Deno.test("Semaphore.get() ignores max parameter for existing key", async () => 
   assertStrictEquals(a, b);
   // Verify the semaphore still has max=1 (not 5)
   await a.acquire();
-  let blocked = true;
-  const p = a.acquire().then(() => blocked = false);
-  await Promise.resolve();
-  assert(blocked);
-  a.release();
-  await p;
-  assertFalse(blocked);
+  await assertBlocks(a.acquire(), () => a.release());
 });
 
 Deno.test("Semaphore.delete() removes semaphore from registry", () => {
@@ -96,22 +104,4 @@ Deno.test("Semaphore.delete() removes semaphore from registry", () => {
   assertFalse(Semaphore.delete(key));
   const b = Semaphore.get(key);
   assertNotStrictEquals(a, b);
-});
-
-Deno.test("Semaphore constructor throws for non-positive max", () => {
-  assertThrows(() => new Semaphore(0), TypeError);
-  assertThrows(() => new Semaphore(-1), TypeError);
-  assertThrows(() => Semaphore.get("negative-max", -5), TypeError);
-});
-
-Deno.test("Semaphore constructor defaults to 1", async () => {
-  const sem = new Semaphore();
-  await sem.acquire();
-  let blocked = true;
-  const p = sem.acquire().then(() => blocked = false);
-  await Promise.resolve();
-  assert(blocked);
-  sem.release();
-  await p;
-  assertFalse(blocked);
 });
