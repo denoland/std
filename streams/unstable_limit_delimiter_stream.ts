@@ -43,6 +43,21 @@ export interface LimitDelimiterOptions {
  * entry can be, which can be preferable if your delimiter is unlikely to appear
  * often.
  *
+ * ## Remarks
+ * This TransformStream is useful over {@linkcode DelimiterStream} when you
+ * need to split on a delimiter that is expected to occur rarely and want to
+ * protect against unbounded buffering. Setting a `limit` prevents the stream
+ * from growing its internal buffer indefinitely. When the buffer reaches the
+ * specified `limit` the stream will emit a {@linkcode LimitDelimiterEntry} with
+ * `{ match: false }` and continue. When the delimiter appears, the following
+ * entry will have `{ match: true }`.
+ *
+ * This pattern is handy for protocols or file formats that use an infrequent
+ * separator, like NUL, record separator, or a multi-byte boundary, while
+ * otherwise streaming arbitrarily large payloads. It lets consumers process
+ * intermediate chunks instead of waiting for the entire message or risking
+ * excessive memory usage.
+ *
  * @example
  * ```ts
  * import { assertEquals } from "@std/assert";
