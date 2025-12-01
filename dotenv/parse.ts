@@ -76,10 +76,9 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 export function parse(text: string): Record<string, string> {
   const env: Record<string, string> = Object.create(null);
 
-  let match;
   const keysForExpandCheck = [];
 
-  while ((match = KEY_VALUE_REGEXP.exec(text)) !== null) {
+  for (const match of text.matchAll(KEY_VALUE_REGEXP)) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
@@ -104,9 +103,10 @@ export function parse(text: string): Record<string, string> {
 
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
-  keysForExpandCheck.forEach((key) => {
+
+  for (const key of keysForExpandCheck) {
     env[key] = expand(env[key]!, variablesMap);
-  });
+  }
 
   return env;
 }
