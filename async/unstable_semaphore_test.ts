@@ -76,3 +76,15 @@ Deno.test("Semaphore constructor throws for non-positive max", () => {
   assertThrows(() => new Semaphore(-1), TypeError);
   assertThrows(() => Semaphore.get("negative-max", -5), TypeError);
 });
+
+Deno.test("Semaphore constructor defaults to 1", async () => {
+  const sem = new Semaphore();
+  await sem.acquire();
+  let blocked = true;
+  const p = sem.acquire().then(() => blocked = false);
+  await Promise.resolve();
+  assert(blocked);
+  sem.release();
+  await p;
+  assertFalse(blocked);
+});
