@@ -1,6 +1,12 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
-import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertExists,
+  assertFalse,
+  assertThrows,
+} from "@std/assert";
 import { Semaphore } from "./unstable_semaphore.ts";
 
 /** Helper to assert that a promise is blocked until released */
@@ -58,10 +64,12 @@ Deno.test("Semaphore.acquire() returns Disposable that releases on dispose", asy
   await assertBlocks(sem.acquire(), () => permit[Symbol.dispose]());
 });
 
-Deno.test("Semaphore.tryAcquire() returns Disposable when permit available", () => {
+Deno.test("Semaphore.tryAcquire() returns Disposable when permit available", async () => {
   const sem = new Semaphore(1);
   const permit = sem.tryAcquire();
-  assert(permit !== undefined);
+  assertExists(permit);
+  // Check that Disposable has returned and is working
+  await assertBlocks(sem.acquire(), () => permit[Symbol.dispose]());
 });
 
 Deno.test("Semaphore.tryAcquire() returns undefined when no permits available", async () => {
