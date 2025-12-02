@@ -58,6 +58,19 @@ Deno.test("Semaphore.acquire() returns Disposable that releases on dispose", asy
   await assertBlocks(sem.acquire(), () => permit[Symbol.dispose]());
 });
 
+Deno.test("Semaphore.tryAcquire() returns Disposable when permit available", () => {
+  const sem = new Semaphore(1);
+  const permit = sem.tryAcquire();
+  assert(permit !== undefined);
+});
+
+Deno.test("Semaphore.tryAcquire() returns undefined when no permits available", async () => {
+  const sem = new Semaphore(1);
+  await sem.acquire();
+  const permit = sem.tryAcquire();
+  assertEquals(permit, undefined);
+});
+
 Deno.test("Semaphore.release() ignores extra releases beyond max", async () => {
   const sem = new Semaphore(2);
   // Release without acquire - should be ignored

@@ -87,6 +87,33 @@ export class Semaphore {
   }
 
   /**
+   * Tries to acquire a permit without waiting.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = new Semaphore(1);
+   * const permit = sem.tryAcquire();
+   * if (permit) {
+   *   using _ = permit;
+   *   // critical section
+   * } else {
+   *   // resource is busy
+   * }
+   * ```
+   *
+   * @returns A {@linkcode Disposable} if a permit was acquired, `undefined` otherwise.
+   */
+  tryAcquire(): Disposable | undefined {
+    if (this.#count > 0) {
+      this.#count--;
+      return { [Symbol.dispose]: () => this.release() };
+    }
+    return undefined;
+  }
+
+  /**
    * Releases a permit, allowing the next waiter to proceed.
    *
    * @example Usage
