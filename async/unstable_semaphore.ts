@@ -24,8 +24,7 @@ interface Node {
  * ```
  */
 export class Semaphore {
-  /** Maximum number of permits. */
-  readonly max: number;
+  #max: number;
   /** Current number of available permits. */
   #count: number;
   /** Head of the waiting queue. */
@@ -44,7 +43,7 @@ export class Semaphore {
         `Cannot create semaphore as 'max' must be at least 1: current value is ${max}`,
       );
     }
-    this.#count = this.max = max;
+    this.#count = this.#max = max;
   }
 
   /**
@@ -133,7 +132,7 @@ export class Semaphore {
       this.#head.res();
       this.#head = this.#head.next;
       if (!this.#head) this.#tail = undefined;
-    } else if (this.#count < this.max) {
+    } else if (this.#count < this.#max) {
       this.#count++;
     }
   }
