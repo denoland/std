@@ -33,6 +33,10 @@ Deno.test({
       wide: "1",
       SID: "123",
     });
+
+    headers = new Headers();
+    headers.set("Cookie", "=");
+    assertThrows(() => getCookies(headers));
   },
 });
 
