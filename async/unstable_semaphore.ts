@@ -20,21 +20,8 @@ interface Node {
  * // critical section
  * sem.release();
  * ```
- *
- * @example Using static registry
- * ```ts
- * import { Semaphore } from "@std/async/unstable-semaphore";
- *
- * const sem = Semaphore.get("my-resource", 3);
- * await sem.acquire();
- * // critical section
- * sem.release();
- * ```
  */
 export class Semaphore {
-  /** Global registry for named semaphores. */
-  static #registry = new Map<unknown, Semaphore>();
-
   /** Maximum number of permits. */
   #max: number;
   /** Current number of available permits. */
@@ -56,52 +43,6 @@ export class Semaphore {
       );
     }
     this.#count = this.#max = max;
-  }
-
-  /**
-   * Gets or creates a named semaphore from the global registry.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
-   *
-   * const sem = Semaphore.get("my-resource", 3);
-   * await sem.acquire();
-   * // critical section
-   * sem.release();
-   * ```
-   *
-   * @param key The unique identifier for the semaphore.
-   * @param max Maximum concurrent permits if creating new. Defaults to 1 (mutex).
-   *            This parameter is ignored if a semaphore with the given key already exists.
-   * @returns The semaphore associated with the key.
-   */
-  static get(key: unknown, max: number = 1): Semaphore {
-    let sem = Semaphore.#registry.get(key);
-    if (!sem) {
-      sem = new Semaphore(max);
-      Semaphore.#registry.set(key, sem);
-    }
-    return sem;
-  }
-
-  /**
-   * Removes a semaphore from the global registry.
-   *
-   * @example Usage
-   * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
-   *
-   * Semaphore.get("my-resource", 3);
-   * Semaphore.delete("my-resource"); // true
-   * Semaphore.delete("my-resource"); // false
-   * ```
-   *
-   * @param key The unique identifier of the semaphore to remove.
-   * @returns `true` if a semaphore was removed, `false` otherwise.
-   */
-  static delete(key: unknown): boolean {
-    return Semaphore.#registry.delete(key);
   }
 
   /**
