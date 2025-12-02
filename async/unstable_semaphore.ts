@@ -37,9 +37,9 @@ export class Semaphore {
    * @param max Maximum concurrent permits. Defaults to 1 (mutex).
    */
   constructor(max: number = 1) {
-    if (max <= 0) {
+    if (max < 1) {
       throw new TypeError(
-        `Cannot create semaphore as 'max' must be positive: current value is ${max}`,
+        `Cannot create semaphore as 'max' must be at least 1: current value is ${max}`,
       );
     }
     this.#count = this.max = max;
