@@ -10,6 +10,8 @@ interface Node {
 /**
  * A counting semaphore for limiting concurrent access to a resource.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @example Usage
  * ```ts
  * import { Semaphore } from "@std/async/unstable-semaphore";
