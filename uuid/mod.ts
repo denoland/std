@@ -119,7 +119,7 @@ export const v5 = {
  * @example Usage
  * ```ts
  * import { v7 } from "@std/uuid";
- * import { assert } from "@std/assert";
+ * import { assert, assertEquals } from "@std/assert";
  *
  * const TIMESTAMP = 1527897600000;
  * const uuid = v7.generate(TIMESTAMP); // optional timestamp, otherwise defaults to Date.now();
