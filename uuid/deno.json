@@ -9,7 +9,7 @@
     "./v3": "./v3.ts",
     "./v4": "./v4.ts",
     "./v5": "./v5.ts",
-    "./unstable-v6": "./unstable_v6.ts",
-    "./unstable-v7": "./unstable_v7.ts"
+    "./v7": "./v7.ts",
+    "./unstable-v6": "./unstable_v6.ts"
   }
 }

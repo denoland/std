@@ -33,6 +33,11 @@ import { generate as generateV1, validate as validateV1 } from "./v1.ts";
 import { generate as generateV3, validate as validateV3 } from "./v3.ts";
 import { validate as validateV4 } from "./v4.ts";
 import { generate as generateV5, validate as validateV5 } from "./v5.ts";
+import {
+  generate as generateV7,
+  validate as validateV7,
+  extractTimestamp,
+} from "./v7.ts";
 
 /**
  * Generator and validator for
@@ -105,4 +110,25 @@ export const v4 = {
 export const v5 = {
   generate: generateV5,
   validate: validateV5,
+};
+
+/**
+ * Generator and validator for
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}
+ *
+ * @example Usage
+ * ```ts
+ * import { v7 } from "@std/uuid";
+ * import { assert } from "@std/assert";
+ *
+ * const TIMESTAMP = 1527897600000;
+ * const uuid = v7.generate(TIMESTAMP); // optional timestamp, otherwise defaults to Date.now();
+ * assert(v7.validate(uuid as string));
+ * assertEquals(v7.extractTimestamp(uuid), TIMESTAMP);
+ * ```
+ */
+export const v7 = {
+  generate: generateV7,
+  validate: validateV7,
+  extractTimestamp,
 };

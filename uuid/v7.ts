@@ -7,15 +7,13 @@
  * UUID Version 7 is defined in {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | RFC 9562}.
  *
  * ```ts
- * import { generate, validate, extractTimestamp } from "@std/uuid/unstable-v7";
+ * import { generate, validate, extractTimestamp } from "@std/uuid/v7";
  * import { assert, assertEquals } from "@std/assert";
  *
  * const uuid = generate();
  * assert(validate(uuid));
  * assertEquals(extractTimestamp("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"), 1645557742000);
  * ```
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
@@ -28,15 +26,13 @@ const UUID_RE =
  * Determines whether a string is a valid
  * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param id UUID value.
  *
  * @returns `true` if the string is a valid UUIDv7, otherwise `false`.
  *
  * @example Usage
  * ```ts
- * import { validate } from "@std/uuid/unstable-v7";
+ * import { validate } from "@std/uuid/v7";
  * import { assert, assertFalse } from "@std/assert";
  *
  * assert(validate("017f22e2-79b0-7cc3-98c4-dc0c0c07398f"));
@@ -50,8 +46,6 @@ export function validate(id: string): boolean {
 /**
  * Generates a {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @throws {RangeError} If the timestamp is not a non-negative integer.
  *
  * @param timestamp Unix Epoch timestamp in milliseconds.
@@ -60,7 +54,7 @@ export function validate(id: string): boolean {
  *
  * @example Usage
  * ```ts
- * import { generate, validate } from "@std/uuid/unstable-v7";
+ * import { generate, validate } from "@std/uuid/v7";
  * import { assert } from "@std/assert";
  *
  * const uuid = generate();
@@ -88,8 +82,6 @@ export function generate(timestamp: number = Date.now()): string {
 /**
  * Extracts the timestamp from a UUIDv7.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param uuid UUIDv7 string to extract the timestamp from.
  * @returns Returns the timestamp in milliseconds.
  *
@@ -97,7 +89,7 @@ export function generate(timestamp: number = Date.now()): string {
  *
  * @example Usage
  * ```ts
- * import { extractTimestamp } from "@std/uuid/unstable-v7";
+ * import { extractTimestamp } from "@std/uuid/v7";
  * import { assertEquals } from "@std/assert";
  *
  * const uuid = "017f22e2-79b0-7cc3-98c4-dc0c0c07398f";
