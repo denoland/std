@@ -34,9 +34,9 @@ import { generate as generateV3, validate as validateV3 } from "./v3.ts";
 import { validate as validateV4 } from "./v4.ts";
 import { generate as generateV5, validate as validateV5 } from "./v5.ts";
 import {
+  extractTimestamp,
   generate as generateV7,
   validate as validateV7,
-  extractTimestamp,
 } from "./v7.ts";
 
 /**
