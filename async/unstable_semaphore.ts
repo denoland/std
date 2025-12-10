@@ -18,7 +18,7 @@ interface Node {
  *
  * const sem = new Semaphore(2);
  * {
- *   const _permit = await sem.acquire();
+ *   using _permit = await sem.acquire();
  *   // critical section
  * } // permit is automatically released when exiting the block
  * ```
