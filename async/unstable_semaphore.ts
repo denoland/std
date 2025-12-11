@@ -17,10 +17,10 @@ interface Node {
  * import { Semaphore } from "@std/async/unstable-semaphore";
  *
  * const sem = new Semaphore(2);
- *
- * await sem.acquire();
- * // critical section
- * sem.release();
+ * {
+ *   using _permit = await sem.acquire();
+ *   // critical section
+ * } // permit is automatically released when exiting the block
  * ```
  */
 export class Semaphore {
@@ -55,8 +55,11 @@ export class Semaphore {
    *
    * const sem = new Semaphore(1);
    * await sem.acquire();
-   * // critical section
-   * sem.release();
+   * try {
+   *   // critical section
+   * } finally {
+   *   sem.release();
+   * }
    * ```
    *
    * @example Using `using` statement
@@ -64,9 +67,10 @@ export class Semaphore {
    * import { Semaphore } from "@std/async/unstable-semaphore";
    *
    * const sem = new Semaphore(1);
-   * using _ = await sem.acquire();
-   * // critical section
-   * // permit is automatically released when exiting the block
+   * {
+   *   using _permit = await sem.acquire();
+   *   // critical section
+   * } // permit is automatically released when exiting the block
    * ```
    *
    * @returns A promise that resolves to a {@linkcode Disposable} when a permit is acquired.
@@ -123,8 +127,11 @@ export class Semaphore {
    *
    * const sem = new Semaphore(1);
    * await sem.acquire();
-   * // critical section
-   * sem.release();
+   * try {
+   *   // critical section
+   * } finally {
+   *   sem.release();
+   * }
    * ```
    */
   release(): void {
