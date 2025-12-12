@@ -158,7 +158,11 @@ export async function eTag(
       ? calcFileInfo(entity, options)
       : calcEntity(entity, options));
 
-  return tag ? weak ? `W/"${tag}"` : `"${tag}"` : undefined;
+  if (!tag) {
+    return undefined;
+  }
+
+  return weak ? `W/"${tag}"` : `"${tag}"`;
 }
 
 const STAR_REGEXP = /^\s*\*\s*$/;
