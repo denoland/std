@@ -122,7 +122,9 @@ export interface CircuitBreakerStats {
  * // Trigger a failure to open the circuit
  * try {
  *   await breaker.execute(() => Promise.reject(new Error("fail")));
- * } catch { /* ignore *\/ }
+ * } catch (_) {
+ *   // Expected to fail
+ * }
  *
  * // Now the circuit is open
  * try {
