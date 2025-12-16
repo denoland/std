@@ -91,6 +91,21 @@ export interface WalkOptions {
    */
   skip?: RegExp[];
 }
+
+export interface FsResolvers {
+  stat: typeof Deno.stat;
+  lstat: typeof Deno.lstat;
+  realPath: typeof Deno.realPath;
+  readDir: typeof Deno.readDir;
+}
+
+export interface FsResolversSync {
+  statSync: typeof Deno.statSync;
+  lstatSync: typeof Deno.lstatSync;
+  realPathSync: typeof Deno.realPathSync;
+  readDirSync: typeof Deno.readDirSync;
+}
+
 export type { WalkEntry };
 
 /**
@@ -450,7 +465,7 @@ export type { WalkEntry };
  */
 export async function* walk(
   root: string | URL,
-  options?: WalkOptions,
+  options?: WalkOptions & { fsResolvers?: FsResolvers },
 ): AsyncIterableIterator<WalkEntry> {
   let {
     maxDepth = Infinity,
@@ -462,6 +477,12 @@ export async function* walk(
     exts = undefined,
     match = undefined,
     skip = undefined,
+    fsResolvers = {
+      stat: Deno.stat,
+      lstat: Deno.lstat,
+      realPath: Deno.realPath,
+      readDir: Deno.readDir,
+    },
   } = options ?? {};
 
   if (maxDepth < 0) {
@@ -472,12 +493,12 @@ export async function* walk(
     exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
   }
   if (includeDirs && include(root, exts, match, skip)) {
-    yield await createWalkEntry(root);
+    yield await createWalkEntry(root, fsResolvers);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  for await (const entry of Deno.readDir(root)) {
+  for await (const entry of fsResolvers.readDir(root)) {
     let path = join(root, entry.name);
 
     let { isSymlink, isDirectory } = entry;
@@ -489,14 +510,14 @@ export async function* walk(
         }
         continue;
       }
-      const realPath = await Deno.realPath(path);
+      const realPath = await fsResolvers.realPath(path);
       if (canonicalize) {
         path = realPath;
       }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
       // entity with a different type of entity before we call lstat().
-      ({ isSymlink, isDirectory } = await Deno.lstat(realPath));
+      ({ isSymlink, isDirectory } = await fsResolvers.lstat(realPath));
     }
 
     if (isSymlink || isDirectory) {
@@ -879,7 +900,7 @@ export async function* walk(
  */
 export function* walkSync(
   root: string | URL,
-  options?: WalkOptions,
+  options?: WalkOptions & { fsResolvers?: FsResolversSync },
 ): IterableIterator<WalkEntry> {
   let {
     maxDepth = Infinity,
@@ -891,6 +912,12 @@ export function* walkSync(
     exts = undefined,
     match = undefined,
     skip = undefined,
+    fsResolvers = {
+      statSync: Deno.statSync,
+      lstatSync: Deno.lstatSync,
+      realPathSync: Deno.realPathSync,
+      readDirSync: Deno.readDirSync,
+    },
   } = options ?? {};
 
   root = toPathString(root);
@@ -901,12 +928,12 @@ export function* walkSync(
     return;
   }
   if (includeDirs && include(root, exts, match, skip)) {
-    yield createWalkEntrySync(root);
+    yield createWalkEntrySync(root, fsResolvers);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  const entries = Deno.readDirSync(root);
+  const entries = fsResolvers.readDirSync(root);
   for (const entry of entries) {
     let path = join(root, entry.name);
 
@@ -919,14 +946,14 @@ export function* walkSync(
         }
         continue;
       }
-      const realPath = Deno.realPathSync(path);
+      const realPath = fsResolvers.realPathSync(path);
       if (canonicalize) {
         path = realPath;
       }
       // Caveat emptor: don't assume |path| is not a symlink. realpath()
       // resolves symlinks but another process can replace the file system
       // entity with a different type of entity before we call lstat().
-      ({ isSymlink, isDirectory } = Deno.lstatSync(realPath));
+      ({ isSymlink, isDirectory } = fsResolvers.lstatSync(realPath));
     }
 
     if (isSymlink || isDirectory) {

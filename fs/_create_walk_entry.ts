@@ -4,6 +4,7 @@
 import { basename } from "@std/path/basename";
 import { normalize } from "@std/path/normalize";
 import { toPathString } from "./_to_path_string.ts";
+import { FsResolvers, FsResolversSync } from "./walk.ts";
 
 /**
  * Walk entry for {@linkcode walk}, {@linkcode walkSync},
@@ -15,11 +16,14 @@ export interface WalkEntry extends Deno.DirEntry {
 }
 
 /** Create {@linkcode WalkEntry} for the `path` synchronously. */
-export function createWalkEntrySync(path: string | URL): WalkEntry {
+export function createWalkEntrySync(
+  path: string | URL,
+  fsResolvers?: FsResolversSync,
+): WalkEntry {
   path = toPathString(path);
   path = normalize(path);
   const name = basename(path);
-  const info = Deno.statSync(path);
+  const info = (fsResolvers?.statSync ?? Deno.statSync)(path);
   return {
     path,
     name,
@@ -30,11 +34,14 @@ export function createWalkEntrySync(path: string | URL): WalkEntry {
 }
 
 /** Create {@linkcode WalkEntry} for the `path` asynchronously. */
-export async function createWalkEntry(path: string | URL): Promise<WalkEntry> {
+export async function createWalkEntry(
+  path: string | URL,
+  fsResolvers?: FsResolvers,
+): Promise<WalkEntry> {
   path = toPathString(path);
   path = normalize(path);
   const name = basename(path);
-  const info = await Deno.stat(path);
+  const info = await (fsResolvers?.stat ?? Deno.stat)(path);
   return {
     path,
     name,
