@@ -3,11 +3,11 @@
 import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 
 /**
- * Represents an entry in a LimitDelimiterStream.
+ * Represents an entry in a CappedDelimiterStream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface LimitDelimiterEntry {
+export interface CappedDelimiterEntry {
   /**
    * True if the value ended with the delimiter.
    */
@@ -19,11 +19,11 @@ export interface LimitDelimiterEntry {
 }
 
 /**
- * The options for the LimitDelimiterStream.
+ * The options for the CappedDelimiterStream.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface LimitDelimiterOptions {
+export interface CappedDelimiterOptions {
   /**
    * The delimiter used to split the incoming stream.
    */
@@ -35,9 +35,9 @@ export interface LimitDelimiterOptions {
 }
 
 /**
- * {@linkcode LimitDelimiterStream} is a TransformStream that splits a
+ * {@linkcode CappedDelimiterStream} is a TransformStream that splits a
  * `ReadableStream<Uint8Array>` by a provided `delimiter`, returning
- * {@linkcode LimitDelimiterEntry} objects. Each entry's match property
+ * {@linkcode CappedDelimiterEntry} objects. Each entry's match property
  * indicates whether the corresponding value ended with the delimiter. The
  * class also requires a `limit` property to specify the max length that each
  * entry can be, which can be preferable if your delimiter is unlikely to appear
@@ -48,7 +48,7 @@ export interface LimitDelimiterOptions {
  * need to split on a delimiter that is expected to occur rarely and want to
  * protect against unbounded buffering. Setting a `limit` prevents the stream
  * from growing its internal buffer indefinitely. When the buffer reaches the
- * specified `limit` the stream will emit a {@linkcode LimitDelimiterEntry} with
+ * specified `limit` the stream will emit a {@linkcode CappedDelimiterEntry} with
  * `{ match: false }` and continue. When the delimiter appears, the following
  * entry will have `{ match: true }`.
  *
@@ -62,7 +62,7 @@ export interface LimitDelimiterOptions {
  * ```ts
  * import { assertEquals } from "@std/assert";
  * import {
- *   LimitDelimiterStream,
+ *   CappedDelimiterStream,
  * } from "@std/streams/unstable-limit-delimiter-stream";
  *
  * const encoder = new TextEncoder();
@@ -70,7 +70,7 @@ export interface LimitDelimiterOptions {
  * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
  *   .pipeThrough(new TextEncoderStream())
  *   .pipeThrough(
- *     new LimitDelimiterStream({
+ *     new CappedDelimiterStream({
  *       delimiter: encoder.encode(";"),
  *       limit: 4,
  *     }),
@@ -89,16 +89,16 @@ export interface LimitDelimiterOptions {
  * );
  * ```
  */
-export class LimitDelimiterStream
-  implements TransformStream<Uint8Array, LimitDelimiterEntry> {
-  #readable: ReadableStream<LimitDelimiterEntry>;
+export class CappedDelimiterStream
+  implements TransformStream<Uint8Array, CappedDelimiterEntry> {
+  #readable: ReadableStream<CappedDelimiterEntry>;
   #writable: WritableStream<Uint8Array>;
   /**
    * Constructs a new instance.
    *
    * @param options The options for the stream.
    */
-  constructor(options: LimitDelimiterOptions) {
+  constructor(options: CappedDelimiterOptions) {
     const { readable, writable } = new TransformStream<
       Uint8Array,
       Uint8Array
@@ -109,8 +109,8 @@ export class LimitDelimiterStream
 
   async *#handle(
     readable: ReadableStream<Uint8Array>,
-    { delimiter, limit }: LimitDelimiterOptions,
-  ): AsyncGenerator<LimitDelimiterEntry> {
+    { delimiter, limit }: CappedDelimiterOptions,
+  ): AsyncGenerator<CappedDelimiterEntry> {
     const reader = toByteStream(readable).getReader({ mode: "byob" });
     let buffer = (await reader.read(
       new Uint8Array(limit + delimiter.length),
@@ -157,13 +157,13 @@ export class LimitDelimiterStream
   /**
    * The ReadableStream.
    *
-   * @return ReadableStream<LimitDelimiterEntry>
+   * @return ReadableStream<CappedDelimiterEntry>
    *
    * @example Usage
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import {
-   *   LimitDelimiterStream,
+   *   CappedDelimiterStream,
    * } from "@std/streams/unstable-limit-delimiter-stream";
    *
    * const encoder = new TextEncoder();
@@ -171,7 +171,7 @@ export class LimitDelimiterStream
    * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
    *   .pipeThrough(new TextEncoderStream())
    *   .pipeThrough(
-   *     new LimitDelimiterStream({
+   *     new CappedDelimiterStream({
    *       delimiter: encoder.encode(";"),
    *       limit: 4,
    *     }),
@@ -190,7 +190,7 @@ export class LimitDelimiterStream
    * );
    * ```
    */
-  get readable(): ReadableStream<LimitDelimiterEntry> {
+  get readable(): ReadableStream<CappedDelimiterEntry> {
     return this.#readable;
   }
 
@@ -203,7 +203,7 @@ export class LimitDelimiterStream
    * ```ts
    * import { assertEquals } from "@std/assert";
    * import {
-   *   LimitDelimiterStream,
+   *   CappedDelimiterStream,
    * } from "@std/streams/unstable-limit-delimiter-stream";
    *
    * const encoder = new TextEncoder();
@@ -211,7 +211,7 @@ export class LimitDelimiterStream
    * const readable = ReadableStream.from(["foo;beeps;;bar;;"])
    *   .pipeThrough(new TextEncoderStream())
    *   .pipeThrough(
-   *     new LimitDelimiterStream({
+   *     new CappedDelimiterStream({
    *       delimiter: encoder.encode(";"),
    *       limit: 4,
    *     }),

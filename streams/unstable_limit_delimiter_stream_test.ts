@@ -1,9 +1,9 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { LimitDelimiterStream } from "./unstable_limit_delimiter_stream.ts";
+import { CappedDelimiterStream } from "./unstable_limit_delimiter_stream.ts";
 
-Deno.test("LimitDelimiterStream matching", async function () {
+Deno.test("CappedDelimiterStream matching", async function () {
   const input = Uint8Array.from(
     [0, 0, 1, 1, 1, 0, 0, 0, 0, 5, 5, 5, 5, 5, 2, 3, 3, 4, 6, 0, 0, 2, 3, 3],
   );
@@ -20,14 +20,14 @@ Deno.test("LimitDelimiterStream matching", async function () {
     ReadableStream
       .from([input])
       .pipeThrough(
-        new LimitDelimiterStream({ delimiter: new Uint8Array(2), limit: 5 }),
+        new CappedDelimiterStream({ delimiter: new Uint8Array(2), limit: 5 }),
       ),
   );
 
   assertEquals(actual, expected);
 });
 
-Deno.test("LimitDelimiterStream splitting", async function () {
+Deno.test("CappedDelimiterStream splitting", async function () {
   const input = Uint8Array.from(
     [1, 1, 1, 0, 0, 0, 0, 5, 5, 5, 5, 5, 2, 3, 3, 4, 6, 0, 0, 2, 0, 0, 0, 0],
   );
@@ -44,7 +44,7 @@ Deno.test("LimitDelimiterStream splitting", async function () {
     ReadableStream
       .from([input])
       .pipeThrough(
-        new LimitDelimiterStream({ delimiter: new Uint8Array(2), limit: 5 }),
+        new CappedDelimiterStream({ delimiter: new Uint8Array(2), limit: 5 }),
       ),
   );
 
