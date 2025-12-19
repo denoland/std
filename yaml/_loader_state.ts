@@ -134,18 +134,6 @@ function codepointToChar(codepoint: number): string {
   );
 }
 
-function writeFoldedLines(
-  data: unknown[] | Record<string, unknown> | string | null,
-  count: number,
-) {
-  if (count === 1) {
-    data += " ";
-  } else if (count > 1) {
-    data += "\n".repeat(count - 1);
-  }
-  return data;
-}
-
 const INDENT = 4;
 const MAX_LENGTH = 75;
 const DELIMITERS = "\x00\r\n\x85\u2028\u2029";
@@ -603,6 +591,18 @@ export class LoaderState {
     return false;
   }
 
+  writeFoldedLines(
+    data: unknown[] | Record<string, unknown> | string | null,
+    count: number,
+  ) {
+    if (count === 1) {
+      data += " ";
+    } else if (count > 1) {
+      data += "\n".repeat(count - 1);
+    }
+    return data;
+  }
+
   readPlainScalar(
     state: State,
     nodeIndent: number,
@@ -693,7 +693,7 @@ export class LoaderState {
           captureEnd,
           false,
         );
-        state.result = writeFoldedLines(state.result, this.line - line);
+        state.result = this.writeFoldedLines(state.result, this.line - line);
         captureStart = captureEnd = this.position;
         hasPendingContent = false;
       }
@@ -737,7 +737,7 @@ export class LoaderState {
         }
       } else if (isEOL(ch)) {
         result = this.captureSegment(result, captureStart, captureEnd, true);
-        result = writeFoldedLines(
+        result = this.writeFoldedLines(
           result,
           this.skipSeparationSpace(false, nodeIndent),
         );
@@ -817,7 +817,7 @@ export class LoaderState {
         captureStart = captureEnd = this.position;
       } else if (isEOL(ch)) {
         result = this.captureSegment(result, captureStart, captureEnd, true);
-        result = writeFoldedLines(
+        result = this.writeFoldedLines(
           result,
           this.skipSeparationSpace(false, nodeIndent),
         );
