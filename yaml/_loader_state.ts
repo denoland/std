@@ -1624,9 +1624,13 @@ export class LoaderState {
       } else if (indentStatus === 0) {
         // Special case: block sequences are allowed to have same indentation level as the parent.
         // http://www.yaml.org/spec/1.2/spec.html#id2799784
-        const state = this.readBlockSequence(resultState, blockIndent);
-        hasContent = allowBlockCollections && !!state;
-        if (state) resultState = state;
+        if (allowBlockCollections) {
+          const state = this.readBlockSequence(resultState, blockIndent);
+          if (state) {
+            hasContent = true;
+            resultState = state;
+          }
+        }
       }
     }
 
@@ -1687,8 +1691,7 @@ export class LoaderState {
 
     const success = resultState.tag !== null || resultState.anchor !== null ||
       hasContent;
-    if (!success) return;
-    return resultState;
+    if (success) return resultState;
   }
 
   readDirectives() {
