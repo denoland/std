@@ -341,21 +341,21 @@ export class LoaderState {
     this.tagMap.set(handle, prefix);
   }
   captureSegment(
-    result: unknown[] | Record<string, unknown> | string | null,
+    data: unknown[] | Record<string, unknown> | string | null,
     start: number,
     end: number,
     checkJson: boolean,
   ) {
     if (start < end) {
-      const newResult = this.input.slice(start, end);
+      const result = this.input.slice(start, end);
 
       if (checkJson) {
         for (
           let position = 0;
-          position < newResult.length;
+          position < result.length;
           position++
         ) {
-          const character = newResult.charCodeAt(position);
+          const character = result.charCodeAt(position);
           if (
             !(character === 0x09 ||
               (0x20 <= character && character <= 0x10ffff))
@@ -365,13 +365,13 @@ export class LoaderState {
             );
           }
         }
-      } else if (PATTERN_NON_PRINTABLE.test(newResult)) {
+      } else if (PATTERN_NON_PRINTABLE.test(result)) {
         throw this.#createError("Stream contains non-printable characters");
       }
 
-      result += newResult;
+      data += result;
     }
-    return result;
+    return data;
   }
   readBlockSequence(state: State, nodeIndent: number): State | void {
     let detected = false;
