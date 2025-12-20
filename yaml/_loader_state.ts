@@ -196,7 +196,7 @@ export class LoaderState {
   checkLineBreaks = false;
   tagMap = new Map();
   anchorMap = new Map();
-  tag: string | null | undefined;
+  tag: string | null = null;
   anchor: string | null | undefined;
   kind: string | null | undefined;
   result: unknown[] | Record<string, unknown> | string | null = "";
@@ -1450,7 +1450,56 @@ export class LoaderState {
     this.skipSeparationSpace(true, -1);
     return true;
   }
+  resolveTag() {
+    switch (this.tag) {
+      case null:
+      case "!":
+        return;
+      case "?":
+        for (const type of this.implicitTypes) {
+          // Implicit resolving is not allowed for non-scalar types, and '?'
+          // non-specific tag is only assigned to plain scalars. So, it isn't
+          // needed to check for 'kind' conformity.
 
+          if (!type.resolve(this.result)) continue;
+          // `state.result` updated in resolver if matched
+          this.result = type.construct(this.result);
+          this.tag = type.tag;
+          if (this.anchor !== null) {
+            this.anchorMap.set(this.anchor, this.result);
+          }
+          break;
+        }
+        return;
+    }
+
+    const kind = (this.kind ?? "fallback") as KindType;
+
+    const map = this.typeMap[kind];
+    const type = map.get(this.tag);
+
+    if (!type) {
+      throw this.#createError(`Cannot resolve unknown tag !<${this.tag}>`);
+    }
+
+    if (this.result !== null && type.kind !== this.kind) {
+      throw this.#createError(
+        `Unacceptable node kind for !<${this.tag}> tag: it should be "${type.kind}", not "${this.kind}"`,
+      );
+    }
+
+    if (!type.resolve(this.result)) {
+      // `state.result` updated in resolver if matched
+      throw this.#createError(
+        `Cannot resolve a node with !<${this.tag}> explicit tag`,
+      );
+    }
+
+    this.result = type.construct(this.result);
+    if (this.anchor !== null) {
+      this.anchorMap.set(this.anchor, this.result);
+    }
+  }
   composeNode(
     { parentIndent, nodeContext, allowToSeek, allowCompact }: {
       parentIndent: number;
@@ -1461,8 +1510,6 @@ export class LoaderState {
   ): boolean {
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
-    let hasContent = false;
-    let type: Type<KindType>;
 
     this.tag = null;
     this.anchor = null;
@@ -1512,108 +1559,72 @@ export class LoaderState {
       allowBlockCollections = atNewLine || allowCompact;
     }
 
-    if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
+    if (indentStatus === 1) {
       const cond = CONTEXT_FLOW_IN === nodeContext ||
         CONTEXT_FLOW_OUT === nodeContext;
       const flowIndent = cond ? parentIndent : parentIndent + 1;
 
       const blockIndent = this.position - this.lineStart;
 
-      if (indentStatus === 1) {
-        if (
-          (allowBlockCollections &&
-            (this.readBlockSequence(blockIndent) ||
-              this.readBlockMapping(blockIndent, flowIndent))) ||
-          this.readFlowCollection(flowIndent)
-        ) {
-          hasContent = true;
-        } else {
-          if (
-            (allowBlockScalars && this.readBlockScalar(flowIndent)) ||
-            this.readSingleQuotedScalar(flowIndent) ||
-            this.readDoubleQuotedScalar(flowIndent)
-          ) {
-            hasContent = true;
-          } else if (this.readAlias()) {
-            hasContent = true;
-
-            if (this.tag !== null || this.anchor !== null) {
-              throw this.#createError(
-                "Cannot compose node: alias node should not have any properties",
-              );
-            }
-          } else if (
-            this.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
-          ) {
-            hasContent = true;
-
-            if (this.tag === null) {
-              this.tag = "?";
-            }
-          }
-
-          if (this.anchor !== null) {
-            this.anchorMap.set(this.anchor, this.result);
-          }
+      if (allowBlockCollections) {
+        if (this.readBlockSequence(blockIndent)) {
+          this.resolveTag();
+          return true;
         }
-      } else if (indentStatus === 0) {
-        // Special case: block sequences are allowed to have same indentation level as the parent.
-        // http://www.yaml.org/spec/1.2/spec.html#id2799784
-        hasContent = allowBlockCollections &&
-          this.readBlockSequence(blockIndent);
+        if (this.readBlockMapping(blockIndent, flowIndent)) {
+          this.resolveTag();
+          return true;
+        }
+      }
+      if (this.readFlowCollection(flowIndent)) {
+        this.resolveTag();
+        return true;
+      }
+      if (allowBlockScalars && this.readBlockScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readSingleQuotedScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readDoubleQuotedScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readAlias()) {
+        if (this.tag !== null || this.anchor !== null) {
+          throw this.#createError(
+            "Cannot compose node: alias node should not have any properties",
+          );
+        }
+        this.resolveTag();
+        return true;
+      }
+      if (this.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.tag ??= "?";
+        this.resolveTag();
+        return true;
+      }
+    } else if (indentStatus === 0 && CONTEXT_BLOCK_OUT === nodeContext) {
+      // Special case: block sequences are allowed to have same indentation level as the parent.
+      // http://www.yaml.org/spec/1.2/spec.html#id2799784
+      const blockIndent = this.position - this.lineStart;
+      if (
+        allowBlockCollections &&
+        this.readBlockSequence(blockIndent)
+      ) {
+        this.resolveTag();
+        return true;
       }
     }
 
-    if (this.tag !== null && this.tag !== "!") {
-      if (this.tag === "?") {
-        for (
-          let typeIndex = 0;
-          typeIndex < this.implicitTypes.length;
-          typeIndex++
-        ) {
-          type = this.implicitTypes[typeIndex]!;
-
-          // Implicit resolving is not allowed for non-scalar types, and '?'
-          // non-specific tag is only assigned to plain scalars. So, it isn't
-          // needed to check for 'kind' conformity.
-
-          if (type.resolve(this.result)) {
-            // `state.result` updated in resolver if matched
-            this.result = type.construct(this.result);
-            this.tag = type.tag;
-            if (this.anchor !== null) {
-              this.anchorMap.set(this.anchor, this.result);
-            }
-            break;
-          }
-        }
-      } else if (this.typeMap[this.kind ?? "fallback"].has(this.tag)) {
-        const map = this.typeMap[this.kind ?? "fallback"];
-        type = map.get(this.tag)!;
-
-        if (this.result !== null && type.kind !== this.kind) {
-          throw this.#createError(
-            `Unacceptable node kind for !<${this.tag}> tag: it should be "${type.kind}", not "${this.kind}"`,
-          );
-        }
-
-        if (!type.resolve(this.result)) {
-          // `state.result` updated in resolver if matched
-          throw this.#createError(
-            `Cannot resolve a node with !<${this.tag}> explicit tag`,
-          );
-        } else {
-          this.result = type.construct(this.result);
-          if (this.anchor !== null) {
-            this.anchorMap.set(this.anchor, this.result);
-          }
-        }
-      } else {
-        throw this.#createError(`Cannot resolve unknown tag !<${this.tag}>`);
-      }
-    }
-
-    return this.tag !== null || this.anchor !== null || hasContent;
+    this.resolveTag();
+    return this.tag !== null || this.anchor !== null;
   }
 
   readDirectives() {
