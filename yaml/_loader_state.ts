@@ -196,9 +196,9 @@ export class LoaderState {
   checkLineBreaks = false;
   tagMap = new Map();
   anchorMap = new Map();
-  tag: string | null | undefined;
-  anchor: string | null | undefined;
-  kind: string | null | undefined;
+  tag: string | null = null;
+  anchor: string | null = null;
+  kind: string | null = null;
   result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
