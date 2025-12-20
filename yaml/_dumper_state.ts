@@ -400,6 +400,11 @@ function inspectNode(
   }
 }
 
+function stringifyValue(value: unknown, tag: string | null) {
+  if (tag !== null && tag !== "?") return `!<${tag}> ${value}`;
+  return value as string;
+}
+
 export interface DumperStateOptions {
   /** indentation width to use (in spaces). */
   indent?: number;
@@ -757,12 +762,16 @@ export class DumperState {
     if (block) {
       block = this.flowLevel < 0 || this.flowLevel > level;
     }
+
     if (typeof value === "string" || value instanceof String) {
       value = value instanceof String ? value.valueOf() : value;
       if (tag !== "?") {
         value = this.stringifyScalar(value as string, { level, isKey });
       }
-    } else if (isObject(value)) {
+      return stringifyValue(value, tag);
+    }
+
+    if (isObject(value)) {
       const duplicateIndex = this.duplicates.indexOf(value);
       const duplicate = duplicateIndex !== -1;
 
@@ -770,6 +779,7 @@ export class DumperState {
         if (this.usedDuplicates.has(value)) return `*ref_${duplicateIndex}`;
         this.usedDuplicates.add(value);
       }
+
       if (
         (tag !== null && tag !== "?") ||
         duplicate ||
@@ -777,6 +787,7 @@ export class DumperState {
       ) {
         compact = false;
       }
+
       if (Array.isArray(value)) {
         const arrayLevel = !this.arrayIndent && level > 0 ? level - 1 : level;
         if (block && value.length !== 0) {
@@ -784,38 +795,28 @@ export class DumperState {
             level: arrayLevel,
             compact,
           });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowSequence(value, { level: arrayLevel });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
+          if (duplicate) value = `&ref_${duplicateIndex}${value}`;
+          return stringifyValue(value, tag);
         }
-      } else {
-        if (block && Object.keys(value).length !== 0) {
-          value = this.stringifyBlockMapping(value, { tag, level, compact });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex}${value}`;
-          }
-        } else {
-          value = this.stringifyFlowMapping(value, { level });
-          if (duplicate) {
-            value = `&ref_${duplicateIndex} ${value}`;
-          }
-        }
+
+        value = this.stringifyFlowSequence(value, { level: arrayLevel });
+        if (duplicate) value = `&ref_${duplicateIndex} ${value}`;
+        return stringifyValue(value, tag);
       }
-    } else {
-      if (this.skipInvalid) return null;
-      throw new TypeError(`Cannot stringify ${typeof value}`);
+
+      if (block && Object.keys(value).length !== 0) {
+        value = this.stringifyBlockMapping(value, { tag, level, compact });
+        if (duplicate) value = `&ref_${duplicateIndex}${value}`;
+        return stringifyValue(value, tag);
+      }
+
+      value = this.stringifyFlowMapping(value, { level });
+      if (duplicate) value = `&ref_${duplicateIndex} ${value}`;
+      return stringifyValue(value, tag);
     }
 
-    if (tag !== null && tag !== "?") {
-      value = `!<${tag}> ${value}`;
-    }
-
-    return value as string;
+    if (this.skipInvalid) return null;
+    throw new TypeError(`Cannot stringify ${typeof value}`);
   }
 
   stringify(value: unknown): string {
