@@ -1,7 +1,7 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { CappedDelimiterStream } from "./unstable_limit_delimiter_stream.ts";
+import { CappedDelimiterStream } from "./unstable_capped_delimiter_stream.ts";
 
 Deno.test("CappedDelimiterStream matching", async function () {
   const input = Uint8Array.from(
