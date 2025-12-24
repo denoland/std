@@ -613,7 +613,7 @@ export function parseArgs<
   TAliasArgNames extends string = string,
   TAliasNames extends string = string,
 >(
-  args: string[],
+  args: readonly string[],
   options?: ParseOptions<
     TBooleans,
     TStrings,
