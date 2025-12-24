@@ -513,7 +513,7 @@ export function parse<const T extends ParseOptions>(
     if (options.skipFirstRow) {
       const head = r.shift();
       if (head === undefined) {
-        throw new TypeError("Cannot parse input: headers must be defined");
+        return [] as ParseResult<ParseOptions, T>;
       }
       headers = head;
     }
