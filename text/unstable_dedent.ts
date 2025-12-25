@@ -76,7 +76,10 @@ export function dedent(
   // Substitute nonempty placeholder so multiline substitutions do not affect indent width.
   const joinedTemplate = typeof input === "string" ? input : input.join("x");
   const ignoreFirstUnindented = !joinedTemplate.startsWith("\n");
-  const trimmedTemplate = joinedTemplate.replace(/^\n/, "").replace(/\n[\t ]*$/, "");
+  const trimmedTemplate = joinedTemplate.replace(/^\n/, "").replace(
+    /\n[\t ]*$/,
+    "",
+  );
   const lines = trimmedTemplate.split("\n");
 
   const linesToCheck = lines.slice(

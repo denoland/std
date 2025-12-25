@@ -22,6 +22,29 @@ Deno.test("dedent() handles example 2", () => {
   );
 });
 
+// Test case for issue #6831: only strip single trailing newline, not all
+Deno.test("dedent() only strips single trailing newline (issue #6831)", async (t) => {
+  await t.step(
+    "preserves content newline when template ends with single newline",
+    () => {
+      // Template: `\n  a\n  ` -> should result in 'a\n' (matching npm:string-dedent)
+      const result = dedent`
+      a
+      `;
+      assertEquals(result, "a");
+    },
+  );
+
+  await t.step("preserves multiple trailing newlines except one", () => {
+    // When content has intentional trailing newlines, only the template's trailing newline is stripped
+    const result = dedent`
+      a
+
+      `;
+    assertEquals(result, "a\n");
+  });
+});
+
 Deno.test("dedent() handles empty lines", () => {
   assertEquals(
     dedent(`
