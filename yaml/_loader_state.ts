@@ -181,6 +181,12 @@ function markToString(
   return where;
 }
 
+function getIndentStatus(lineIndent: number, parentIndent: number) {
+  if (lineIndent > parentIndent) return 1;
+  if (lineIndent < parentIndent) return -1;
+  return 0;
+}
+
 export class LoaderState {
   input: string;
   length: number;
@@ -1451,6 +1457,56 @@ export class LoaderState {
     return true;
   }
 
+  resolveTag() {
+    switch (this.tag) {
+      case null:
+      case "!":
+        return;
+      case "?":
+        for (const type of this.implicitTypes) {
+          // Implicit resolving is not allowed for non-scalar types, and '?'
+          // non-specific tag is only assigned to plain scalars. So, it isn't
+          // needed to check for 'kind' conformity.
+
+          if (!type.resolve(this.result)) continue;
+          // `state.result` updated in resolver if matched
+          this.result = type.construct(this.result);
+          this.tag = type.tag;
+          if (this.anchor !== null) {
+            this.anchorMap.set(this.anchor, this.result);
+          }
+          break;
+        }
+        return;
+    }
+
+    const kind = (this.kind ?? "fallback") as KindType;
+
+    const map = this.typeMap[kind];
+    const type = map.get(this.tag);
+
+    if (!type) {
+      throw this.#createError(`Cannot resolve unknown tag !<${this.tag}>`);
+    }
+
+    if (this.result !== null && type.kind !== this.kind) {
+      throw this.#createError(
+        `Unacceptable node kind for !<${this.tag}> tag: it should be "${type.kind}", not "${this.kind}"`,
+      );
+    }
+
+    if (!type.resolve(this.result)) {
+      // `state.result` updated in resolver if matched
+      throw this.#createError(
+        `Cannot resolve a node with !<${this.tag}> explicit tag`,
+      );
+    }
+
+    this.result = type.construct(this.result);
+    if (this.anchor !== null) {
+      this.anchorMap.set(this.anchor, this.result);
+    }
+  }
   composeNode(
     { parentIndent, nodeContext, allowToSeek, allowCompact }: {
       parentIndent: number;
@@ -1462,7 +1518,6 @@ export class LoaderState {
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
     let hasContent = false;
-    let type: Type<KindType>;
 
     this.tag = null;
     this.anchor = null;
@@ -1478,14 +1533,7 @@ export class LoaderState {
     if (allowToSeek) {
       if (this.skipSeparationSpace(true, -1)) {
         atNewLine = true;
-
-        if (this.lineIndent > parentIndent) {
-          indentStatus = 1;
-        } else if (this.lineIndent === parentIndent) {
-          indentStatus = 0;
-        } else if (this.lineIndent < parentIndent) {
-          indentStatus = -1;
-        }
+        indentStatus = getIndentStatus(this.lineIndent, parentIndent);
       }
     }
 
@@ -1494,14 +1542,7 @@ export class LoaderState {
         if (this.skipSeparationSpace(true, -1)) {
           atNewLine = true;
           allowBlockCollections = allowBlockStyles;
-
-          if (this.lineIndent > parentIndent) {
-            indentStatus = 1;
-          } else if (this.lineIndent === parentIndent) {
-            indentStatus = 0;
-          } else if (this.lineIndent < parentIndent) {
-            indentStatus = -1;
-          }
+          indentStatus = getIndentStatus(this.lineIndent, parentIndent);
         } else {
           allowBlockCollections = false;
         }
@@ -1564,54 +1605,7 @@ export class LoaderState {
       }
     }
 
-    if (this.tag !== null && this.tag !== "!") {
-      if (this.tag === "?") {
-        for (
-          let typeIndex = 0;
-          typeIndex < this.implicitTypes.length;
-          typeIndex++
-        ) {
-          type = this.implicitTypes[typeIndex]!;
-
-          // Implicit resolving is not allowed for non-scalar types, and '?'
-          // non-specific tag is only assigned to plain scalars. So, it isn't
-          // needed to check for 'kind' conformity.
-
-          if (type.resolve(this.result)) {
-            // `state.result` updated in resolver if matched
-            this.result = type.construct(this.result);
-            this.tag = type.tag;
-            if (this.anchor !== null) {
-              this.anchorMap.set(this.anchor, this.result);
-            }
-            break;
-          }
-        }
-      } else if (this.typeMap[this.kind ?? "fallback"].has(this.tag)) {
-        const map = this.typeMap[this.kind ?? "fallback"];
-        type = map.get(this.tag)!;
-
-        if (this.result !== null && type.kind !== this.kind) {
-          throw this.#createError(
-            `Unacceptable node kind for !<${this.tag}> tag: it should be "${type.kind}", not "${this.kind}"`,
-          );
-        }
-
-        if (!type.resolve(this.result)) {
-          // `state.result` updated in resolver if matched
-          throw this.#createError(
-            `Cannot resolve a node with !<${this.tag}> explicit tag`,
-          );
-        } else {
-          this.result = type.construct(this.result);
-          if (this.anchor !== null) {
-            this.anchorMap.set(this.anchor, this.result);
-          }
-        }
-      } else {
-        throw this.#createError(`Cannot resolve unknown tag !<${this.tag}>`);
-      }
-    }
+    this.resolveTag();
 
     return this.tag !== null || this.anchor !== null || hasContent;
   }
