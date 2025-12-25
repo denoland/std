@@ -1987,3 +1987,8 @@ Deno.test("parseArgs() throws if the alias value is undefined", () => {
     "Alias value must be defined",
   );
 });
+
+Deno.test("parseArgs() accepts readonly array input", () => {
+  const args: readonly string[] = ["--foo", "bar"];
+  const _parsed = parseArgs(args);
+});
