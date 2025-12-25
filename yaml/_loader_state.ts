@@ -181,6 +181,12 @@ function markToString(
   return where;
 }
 
+function getIndentStatus(lineIndent: number, parentIndent: number) {
+  if (lineIndent > parentIndent) return 1;
+  if (lineIndent < parentIndent) return -1;
+  return 0;
+}
+
 export class LoaderState {
   input: string;
   length: number;
@@ -197,8 +203,8 @@ export class LoaderState {
   tagMap = new Map();
   anchorMap = new Map();
   tag: string | null = null;
-  anchor: string | null | undefined;
-  kind: string | null | undefined;
+  anchor: string | null = null;
+  kind: string | null = null;
   result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
@@ -1525,14 +1531,7 @@ export class LoaderState {
     if (allowToSeek) {
       if (this.skipSeparationSpace(true, -1)) {
         atNewLine = true;
-
-        if (this.lineIndent > parentIndent) {
-          indentStatus = 1;
-        } else if (this.lineIndent === parentIndent) {
-          indentStatus = 0;
-        } else if (this.lineIndent < parentIndent) {
-          indentStatus = -1;
-        }
+        indentStatus = getIndentStatus(this.lineIndent, parentIndent);
       }
     }
 
@@ -1541,14 +1540,7 @@ export class LoaderState {
         if (this.skipSeparationSpace(true, -1)) {
           atNewLine = true;
           allowBlockCollections = allowBlockStyles;
-
-          if (this.lineIndent > parentIndent) {
-            indentStatus = 1;
-          } else if (this.lineIndent === parentIndent) {
-            indentStatus = 0;
-          } else if (this.lineIndent < parentIndent) {
-            indentStatus = -1;
-          }
+          indentStatus = getIndentStatus(this.lineIndent, parentIndent);
         } else {
           allowBlockCollections = false;
         }
@@ -1624,6 +1616,7 @@ export class LoaderState {
     }
 
     this.resolveTag();
+
     return this.tag !== null || this.anchor !== null;
   }
 

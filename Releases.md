@@ -1,3 +1,66 @@
+### 2025.12.25
+
+#### @std/streams 1.0.16 (patch)
+
+- fix(streams/unstable): use relative path for in-package import (#6909)
+
+### 2025.12.24
+
+#### @std/async 1.0.16 (patch)
+
+- feat(async/unstable): add semaphore (#6894)
+- fix(async): allow numbers greater than `Number.MAX_SAFE_INTEGER` in deadline
+  (#6810)
+- docs(async/unstable): update semaphore docs to suggest try/finally (#6899)
+
+#### @std/cli 1.0.25 (patch)
+
+- test(cli): ignore flaky examples (#6882)
+
+#### @std/datetime 0.225.6 (patch)
+
+- test(datetime): adding test for potential null-state of 'months' (#6891)
+
+#### @std/dotenv 0.225.6 (patch)
+
+- refactor(dotenv): avoid recursive `expand()` (#6892)
+- refactor(dotenv): use for loops (#6893)
+- refactor(dotenv): move `charactersMap` outside of `expandCharacters()` fn
+  (#6889)
+- refactor(dotenv): rename regexp constants (#6888)
+
+#### @std/fs 1.0.21 (patch)
+
+- fix(fs): "Deno is not defined" when using the module in browser (#6896)
+- fix(fs): support for Node.js v20 (#6873)
+- docs(fs): remove unversioned jsr specifiers (#6874)
+
+#### @std/http 1.0.23 (patch)
+
+- fix(http): negotiation returns the specific type of supported outcomes (when
+  provided) (#6876)
+- refactor(http): removing unreachable conditions, increasing coverage (#6895)
+- refactor(http): reached full line coverage, unwind ternary to improve
+  reability (#6885)
+
+#### @std/ini 1.0.0-rc.9 (prerelease)
+
+- feat(ini): reviver value is type casted (#6887)
+
+#### @std/path 1.1.4 (patch)
+
+- fix(path): handle file separator in group (#6880)
+- docs(path): fix typo in API doc (#6881)
+- test(path): relax timeout of isGlob perf testing (#6883)
+
+#### @std/streams 1.0.15 (patch)
+
+- feat(streams/unstable): new CappedDelimiterStream() (#6890)
+
+#### @std/uuid 1.1.0 (minor)
+
+- feat(uuid): stabilize uuidv7 module (#6897)
+
 ### 2025.11.17
 
 #### @std/assert 1.0.16 (patch)
