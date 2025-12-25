@@ -203,8 +203,8 @@ export class LoaderState {
   tagMap = new Map();
   anchorMap = new Map();
   tag: string | null = null;
-  anchor: string | null | undefined;
-  kind: string | null | undefined;
+  anchor: string | null = null;
+  kind: string | null = null;
   result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
