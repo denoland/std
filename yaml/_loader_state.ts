@@ -1556,9 +1556,8 @@ export class LoaderState {
         CONTEXT_FLOW_OUT === nodeContext;
       const flowIndent = cond ? parentIndent : parentIndent + 1;
 
-      const blockIndent = this.position - this.lineStart;
-
       if (allowBlockCollections) {
+        const blockIndent = this.position - this.lineStart;
         if (this.readBlockSequence(blockIndent)) {
           this.resolveTag();
           return true;
