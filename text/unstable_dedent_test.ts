@@ -35,7 +35,7 @@ Deno.test("dedent() handles empty lines", () => {
   assertEquals(
     dedent(`
       a
-
+        
         b
         \t\t\t
        c
