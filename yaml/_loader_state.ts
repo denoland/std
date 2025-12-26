@@ -1456,7 +1456,6 @@ export class LoaderState {
     this.skipSeparationSpace(true, -1);
     return true;
   }
-
   resolveTag() {
     switch (this.tag) {
       case null:
@@ -1517,7 +1516,6 @@ export class LoaderState {
   ): boolean {
     let indentStatus = 1; // 1: this>parent, 0: this=parent, -1: this<parent
     let atNewLine = false;
-    let hasContent = false;
 
     this.tag = null;
     this.anchor = null;
@@ -1553,61 +1551,72 @@ export class LoaderState {
       allowBlockCollections = atNewLine || allowCompact;
     }
 
-    if (indentStatus === 1 || CONTEXT_BLOCK_OUT === nodeContext) {
+    if (indentStatus === 1) {
       const cond = CONTEXT_FLOW_IN === nodeContext ||
         CONTEXT_FLOW_OUT === nodeContext;
       const flowIndent = cond ? parentIndent : parentIndent + 1;
 
-      const blockIndent = this.position - this.lineStart;
-
-      if (indentStatus === 1) {
-        if (
-          (allowBlockCollections &&
-            (this.readBlockSequence(blockIndent) ||
-              this.readBlockMapping(blockIndent, flowIndent))) ||
-          this.readFlowCollection(flowIndent)
-        ) {
-          hasContent = true;
-        } else {
-          if (
-            (allowBlockScalars && this.readBlockScalar(flowIndent)) ||
-            this.readSingleQuotedScalar(flowIndent) ||
-            this.readDoubleQuotedScalar(flowIndent)
-          ) {
-            hasContent = true;
-          } else if (this.readAlias()) {
-            hasContent = true;
-
-            if (this.tag !== null || this.anchor !== null) {
-              throw this.#createError(
-                "Cannot compose node: alias node should not have any properties",
-              );
-            }
-          } else if (
-            this.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)
-          ) {
-            hasContent = true;
-
-            if (this.tag === null) {
-              this.tag = "?";
-            }
-          }
-
-          if (this.anchor !== null) {
-            this.anchorMap.set(this.anchor, this.result);
-          }
+      if (allowBlockCollections) {
+        const blockIndent = this.position - this.lineStart;
+        if (this.readBlockSequence(blockIndent)) {
+          this.resolveTag();
+          return true;
         }
-      } else if (indentStatus === 0) {
-        // Special case: block sequences are allowed to have same indentation level as the parent.
-        // http://www.yaml.org/spec/1.2/spec.html#id2799784
-        hasContent = allowBlockCollections &&
-          this.readBlockSequence(blockIndent);
+        if (this.readBlockMapping(blockIndent, flowIndent)) {
+          this.resolveTag();
+          return true;
+        }
+      }
+      if (this.readFlowCollection(flowIndent)) {
+        this.resolveTag();
+        return true;
+      }
+      if (allowBlockScalars && this.readBlockScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readSingleQuotedScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readDoubleQuotedScalar(flowIndent)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.resolveTag();
+        return true;
+      }
+      if (this.readAlias()) {
+        if (this.tag !== null || this.anchor !== null) {
+          throw this.#createError(
+            "Cannot compose node: alias node should not have any properties",
+          );
+        }
+        this.resolveTag();
+        return true;
+      }
+      if (this.readPlainScalar(flowIndent, CONTEXT_FLOW_IN === nodeContext)) {
+        if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
+        this.tag ??= "?";
+        this.resolveTag();
+        return true;
+      }
+    } else if (indentStatus === 0 && CONTEXT_BLOCK_OUT === nodeContext) {
+      // Special case: block sequences are allowed to have same indentation level as the parent.
+      // http://www.yaml.org/spec/1.2/spec.html#id2799784
+      const blockIndent = this.position - this.lineStart;
+      if (
+        allowBlockCollections &&
+        this.readBlockSequence(blockIndent)
+      ) {
+        this.resolveTag();
+        return true;
       }
     }
 
     this.resolveTag();
 
-    return this.tag !== null || this.anchor !== null || hasContent;
+    return this.tag !== null || this.anchor !== null;
   }
 
   readDirectives() {
