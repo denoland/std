@@ -15,6 +15,7 @@
     "./tee": "./tee.ts",
     "./unstable-throttle": "./unstable_throttle.ts",
     "./unstable-wait-for": "./unstable_wait_for.ts",
-    "./unstable-semaphore": "./unstable_semaphore.ts"
+    "./unstable-semaphore": "./unstable_semaphore.ts",
+    "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts"
   }
 }
