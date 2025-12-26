@@ -22,6 +22,15 @@ Deno.test("dedent() handles example 2", () => {
   );
 });
 
+// Test case for issue #6831
+Deno.test("dedent() only strips single trailing newline", () => {
+  const result = dedent`
+      a
+
+      `;
+  assertEquals(result, "a\n");
+});
+
 Deno.test("dedent() handles empty lines", () => {
   assertEquals(
     dedent(`
