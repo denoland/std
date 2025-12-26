@@ -11,6 +11,7 @@
     "./unstable-prompt-select": "./unstable_prompt_select.ts",
     "./unstable-prompt-multiple-select": "./unstable_prompt_multiple_select.ts",
     "./unstable-spinner": "./unstable_spinner.ts",
+    "./unstable-static-line": "./unstable_static_line.ts",
     "./unicode-width": "./unicode_width.ts"
   }
 }
