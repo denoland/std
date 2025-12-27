@@ -1687,7 +1687,8 @@ export class LoaderState {
     const hasDirectives = this.readDirectives();
 
     this.skipSeparationSpace(true, -1);
-    let state: State = { tag: null, anchor: null, kind: null, result: null };
+
+    let result = null;
 
     if (
       this.lineIndent === 0 &&
@@ -1709,7 +1710,7 @@ export class LoaderState {
       allowToSeek: false,
       allowCompact: true,
     });
-    if (newState) state = newState;
+    if (newState) result = newState.result;
     this.skipSeparationSpace(true, -1);
 
     if (
@@ -1732,7 +1733,7 @@ export class LoaderState {
       );
     }
 
-    return state.result;
+    return result;
   }
 
   *readDocuments() {
