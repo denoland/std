@@ -1,6 +1,6 @@
 {
   "name": "@std/dotenv",
-  "version": "0.225.5",
+  "version": "0.225.6",
   "exports": {
     ".": "./mod.ts",
     "./load": "./load.ts",
