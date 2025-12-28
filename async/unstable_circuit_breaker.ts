@@ -667,10 +667,6 @@ export class CircuitBreaker<T = unknown> {
       return;
     }
 
-    if (previousState !== "half_open") {
-      return;
-    }
-
     const newSuccessCount = this.#state.consecutiveSuccesses + 1;
     if (newSuccessCount >= this.#successThreshold) {
       // Recovered! Close the circuit
