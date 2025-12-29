@@ -5,7 +5,6 @@ import {
   COMPARATOR_REGEXP,
   OPERATOR_XRANGE_REGEXP,
   parseBuild,
-  parseNumber,
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
@@ -27,29 +26,16 @@ function parseComparator(comparator: string): Comparator | null {
 
   if (!groups) return null;
 
-  const { operator, prerelease, buildmetadata } =
-    groups as ComparatorRegExpGroup;
+  // check to see what comparator.match() above will return if certain components are missing (ie prerelease or buildmetadata)
+  // if it still returns the group itself, we should be able to return it directly
 
-  const semver = groups.major
-    ? {
-      major: parseNumber(
-        groups.major,
-        `Cannot parse comparator ${comparator}: invalid major version`,
-      ),
-      minor: parseNumber(
-        groups.minor!,
-        `Cannot parse comparator ${comparator}: invalid minor version`,
-      ),
-      patch: parseNumber(
-        groups.patch!,
-        `Cannot parse comparator ${comparator}: invalid patch version`,
-      ),
-      prerelease: prerelease ? parsePrerelease(prerelease) : [],
-      build: buildmetadata ? parseBuild(buildmetadata) : [],
-    }
-    : ANY;
+  const { operator } = groups as ComparatorRegExpGroup;
 
-  return { operator: operator || undefined, ...semver };
+  if (!groups.major) {
+    return { operator: operator || undefined, ...ANY };
+  } else {
+    return null;
+  }
 }
 
 function isWildcard(id?: string): boolean {
@@ -347,7 +333,16 @@ function handleEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: undefined, major, minor, patch, prerelease, build }];
+
+  // can we set operator to '=' if it's in the spec, and undefined if it's not?
+  return [{
+    operator: groups.operator === "=" ? "=" : undefined,
+    major,
+    minor,
+    patch,
+    prerelease,
+    build,
+  }];
 }
 
 function parseOperatorRange(string: string): Comparator | Comparator[] | null {
@@ -409,7 +404,7 @@ function parseOperatorRanges(string: string): (Comparator | null)[] {
 export function parseRange(value: string): Range {
   const result = value
     // remove spaces between operators and versions
-    .replaceAll(/(?<=<|>|=|~|\^)(\s+)/g, "")
+    .replaceAll(/(?<=[<>=~^])(\s+)/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
   if (result.some((r) => r.includes(null))) {

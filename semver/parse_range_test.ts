@@ -106,7 +106,7 @@ Deno.test("parseRange() parse ranges of different kinds", () => {
     ["=1.2.3", [
       [
         {
-          operator: undefined,
+          operator: "=",
           major: 1,
           minor: 2,
           patch: 3,
@@ -664,6 +664,12 @@ Deno.test("parseRange() throws on invalid range", () => {
     () => parseRange("blerg"),
     TypeError,
     'Cannot parse version range: range "blerg" is invalid',
+  );
+
+  assertThrows(
+    () => parseRange("1.b.c"),
+    TypeError,
+    'Cannot parse version range: range "1.b.c" is invalid',
   );
 });
 
