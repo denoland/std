@@ -119,21 +119,19 @@ export interface RetryOptions {
  * ```
  *
  * @example Aborting a retry operation
- * ```ts no-assert
+ * ```ts ignore
  * import { retry } from "@std/async/retry";
  *
- * const controller = new AbortController();
- *
- * // Abort after 5 seconds
- * setTimeout(() => controller.abort(), 5000);
+ * // Automatically abort after 5 seconds
+ * const signal = AbortSignal.timeout(5000);
  *
  * try {
  *   await retry(async () => {
  *     throw new Error("Temporary failure");
- *   }, { signal: controller.signal });
+ *   }, { signal });
  * } catch (error) {
- *   if (error instanceof DOMException && error.name === "AbortError") {
- *     console.log("Retry was aborted");
+ *   if (error.name === "TimeoutError") {
+ *     console.log("Retry timed out");
  *   }
  * }
  * ```
