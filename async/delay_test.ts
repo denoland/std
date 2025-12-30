@@ -25,6 +25,20 @@ Deno.test("delay()", async () => {
   assert(diff >= 100);
 });
 
+Deno.test("delay() resolves immediately with ms = 0", async () => {
+  const start = new Date();
+  await delay(0);
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 50);
+});
+
+Deno.test("delay() treats negative ms as 0", async () => {
+  const start = new Date();
+  await delay(-100);
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 50);
+});
+
 Deno.test("delay() handles abort", async () => {
   const start = new Date();
   const abort = new AbortController();
@@ -164,6 +178,20 @@ Deno.test({
         assertEquals(result, 1);
       });
     }
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "delay() handles abort with ms > 0x7fffffff",
+  async fn() {
+    const abort = new AbortController();
+    const { signal } = abort;
+    const delayedPromise = delay(Number.MAX_SAFE_INTEGER, { signal });
+    setTimeout(() => abort.abort(), 10);
+    const cause = await assertRejects(() => delayedPromise);
+    assertIsDefaultAbortReason(cause);
   },
   sanitizeResources: false,
   sanitizeOps: false,
