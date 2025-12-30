@@ -66,7 +66,7 @@ Deno.test("retry() waits four times by default", async () => {
 });
 
 Deno.test(
-  "retry() throws if minTimeout is less than maxTimeout",
+  "retry() throws if minTimeout is greater than maxTimeout",
   async () => {
     await assertRejects(
       () =>
@@ -74,36 +74,102 @@ Deno.test(
           minTimeout: 1000,
           maxTimeout: 100,
         }),
-      TypeError,
+      RangeError,
       "Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=1000', 'maxTimeout=100'",
     );
   },
 );
 
 Deno.test(
-  "retry() throws if maxTimeout is less than 0",
+  "retry() throws if maxTimeout is less than or equal to 0",
   async () => {
     await assertRejects(
       () =>
         retry(() => {}, {
           maxTimeout: -1,
         }),
-      TypeError,
-      "Cannot retry as 'maxTimeout' must be positive: current value is -1",
+      RangeError,
+      "Cannot retry as 'maxTimeout' must be a positive number: current value is -1",
     );
   },
 );
 
 Deno.test(
-  "retry() throws if jitter is bigger than 1",
+  "retry() throws if jitter is greater than 1",
   async () => {
     await assertRejects(
       () =>
         retry(() => {}, {
           jitter: 2,
         }),
-      TypeError,
-      "Cannot retry as 'jitter' must be <= 1: current value is 2",
+      RangeError,
+      "Cannot retry as 'jitter' must be between 0 and 1: current value is 2",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if maxAttempts is 0",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { maxAttempts: 0 }),
+      RangeError,
+      "Cannot retry as 'maxAttempts' must be a positive integer: current value is 0",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if maxAttempts is not an integer",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { maxAttempts: 2.5 }),
+      RangeError,
+      "Cannot retry as 'maxAttempts' must be a positive integer: current value is 2.5",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if multiplier is less than 1",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { multiplier: 0.5 }),
+      RangeError,
+      "Cannot retry as 'multiplier' must be >= 1: current value is 0.5",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if minTimeout is negative",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { minTimeout: -100 }),
+      RangeError,
+      "Cannot retry as 'minTimeout' must be >= 0: current value is -100",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if jitter is negative",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { jitter: -0.5 }),
+      RangeError,
+      "Cannot retry as 'jitter' must be between 0 and 1: current value is -0.5",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if maxTimeout is NaN",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { maxTimeout: NaN }),
+      RangeError,
+      "Cannot retry as 'maxTimeout' must be a positive number: current value is NaN",
     );
   },
 );
