@@ -135,9 +135,9 @@ export async function retry<T>(
       `Cannot retry as 'maxAttempts' must be a positive integer: current value is ${maxAttempts}`,
     );
   }
-  if (multiplier < 1) {
+  if (!Number.isFinite(multiplier) || multiplier < 1) {
     throw new RangeError(
-      `Cannot retry as 'multiplier' must be >= 1: current value is ${multiplier}`,
+      `Cannot retry as 'multiplier' must be a finite number >= 1: current value is ${multiplier}`,
     );
   }
   if (Number.isNaN(maxTimeout) || maxTimeout <= 0) {
@@ -145,7 +145,7 @@ export async function retry<T>(
       `Cannot retry as 'maxTimeout' must be a positive number: current value is ${maxTimeout}`,
     );
   }
-  if (minTimeout < 0) {
+  if (Number.isNaN(minTimeout) || minTimeout < 0) {
     throw new RangeError(
       `Cannot retry as 'minTimeout' must be >= 0: current value is ${minTimeout}`,
     );
@@ -155,7 +155,7 @@ export async function retry<T>(
       `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${minTimeout}', 'maxTimeout=${maxTimeout}'`,
     );
   }
-  if (jitter < 0 || jitter > 1) {
+  if (Number.isNaN(jitter) || jitter < 0 || jitter > 1) {
     throw new RangeError(
       `Cannot retry as 'jitter' must be between 0 and 1: current value is ${jitter}`,
     );
