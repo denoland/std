@@ -1,6 +1,5 @@
 // Copyright 2018-2025 the Deno authors. MIT license.
 // This module is browser compatible.
-
 import { abortable } from "./abortable.ts";
 
 /** Options for {@linkcode deadline}. */
@@ -16,6 +15,7 @@ export interface DeadlineOptions {
  * Note: Prefer to use {@linkcode AbortSignal.timeout} instead for the APIs
  * that accept {@linkcode AbortSignal}.
  *
+ * @throws {TypeError} If `ms` is `NaN`.
  * @throws {DOMException & { name: "TimeoutError" }} If the provided duration
  * runs out before resolving.
  * @throws {DOMException & { name: "AbortError" }} If the optional signal is
@@ -25,7 +25,7 @@ export interface DeadlineOptions {
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make rejectable.
  * @param ms Duration in milliseconds for when the promise should time out. If
- * greater than `Number.MAX_SAFE_INTEGER`, the deadline will never expire.
+ * greater than or equal to `Number.MAX_SAFE_INTEGER`, the deadline will never expire.
  * @param options Additional options.
  * @returns A promise that will reject if the provided duration runs out before resolving.
  *
@@ -39,13 +39,32 @@ export interface DeadlineOptions {
  * const result = await deadline(delayedPromise, 10);
  * ```
  */
-export async function deadline<T>(
+export function deadline<T>(
   p: Promise<T>,
   ms: number,
   options: DeadlineOptions = {},
 ): Promise<T> {
-  const signals: AbortSignal[] = [];
-  if (ms < Number.MAX_SAFE_INTEGER) signals.push(AbortSignal.timeout(ms));
-  if (options.signal) signals.push(options.signal);
-  return await abortable(p, AbortSignal.any(signals));
+  if (Number.isNaN(ms)) {
+    throw new TypeError("Ms must be a number, received NaN");
+  }
+
+  const hasTimeout = ms < Number.MAX_SAFE_INTEGER;
+  const hasSignal = options.signal !== undefined;
+
+  if (!hasTimeout && !hasSignal) return p;
+
+  if (hasTimeout && !hasSignal) {
+    return abortable(p, AbortSignal.timeout(ms));
+  }
+  if (!hasTimeout && hasSignal) {
+    return abortable(p, options.signal!);
+  }
+
+  return abortable(
+    p,
+    AbortSignal.any([
+      AbortSignal.timeout(ms),
+      options.signal!,
+    ]),
+  );
 }
