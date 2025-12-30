@@ -23,6 +23,17 @@ Deno.test("shuffle() handles arrays with only one item", () => {
   assertNotStrictEquals(shuffled, array);
 });
 
+Deno.test("shuffle() handles arrays with two items", () => {
+  const prng = randomSeeded(0n);
+  const items = [1, 2];
+
+  const results = new Set<string>();
+  for (let i = 0; i < 10; i++) {
+    results.add(JSON.stringify(shuffle(items, { prng })));
+  }
+  assertEquals(results.size, 2);
+});
+
 Deno.test("shuffle() shuffles the provided array", () => {
   const prng = randomSeeded(0n);
 
@@ -31,6 +42,29 @@ Deno.test("shuffle() shuffles the provided array", () => {
   assertEquals(shuffle(items, { prng }), [2, 3, 5, 4, 1]);
   assertEquals(shuffle(items, { prng }), [3, 4, 1, 5, 2]);
   assertEquals(shuffle(items, { prng }), [2, 4, 5, 3, 1]);
+});
+
+Deno.test("shuffle() with PRNG always returning 0 produces predictable result", () => {
+  const items = [1, 2, 3, 4, 5];
+  // prng() = 0 means j = 0 every time, so each element swaps with position 0
+  const shuffled = shuffle(items, { prng: () => 0 });
+  assertEquals(shuffled, [2, 3, 4, 5, 1]);
+});
+
+Deno.test("shuffle() with PRNG returning max value keeps elements in place", () => {
+  const items = [1, 2, 3, 4, 5];
+  const shuffled = shuffle(items, { prng: () => 0.9999999999 });
+  assertEquals(shuffled, [1, 2, 3, 4, 5]);
+});
+
+Deno.test("shuffle() handles arrays with null and undefined values", () => {
+  const prng = randomSeeded(0n);
+  const items = [1, null, undefined, 2, null];
+  const shuffled = shuffle(items, { prng });
+
+  assertEquals(shuffled.length, items.length);
+  assertEquals(shuffled.filter((x) => x === null).length, 2);
+  assertEquals(shuffled.filter((x) => x === undefined).length, 1);
 });
 
 Deno.test("shuffle() returns a copy and without modifying the original array", () => {
