@@ -43,6 +43,20 @@ Deno.test("retry() fails after five errors when undefined is passed", async () =
   );
 });
 
+Deno.test("RetryError contains the last error as cause", async () => {
+  const specificError = new Error("Specific failure");
+  const error = await assertRejects(
+    () =>
+      retry(() => {
+        throw specificError;
+      }, { maxAttempts: 1 }),
+    RetryError,
+  );
+  assertEquals(error.cause, specificError);
+  assertEquals(error.name, "RetryError");
+  assertEquals(error.message, "Retrying exceeded the maxAttempts (1).");
+});
+
 Deno.test("retry() waits four times by default", async () => {
   let callCount = 0;
   const onlyErrors = function () {
@@ -130,6 +144,24 @@ Deno.test(
   },
 );
 
+Deno.test("retry() respects custom maxAttempts", async () => {
+  let attempts = 0;
+  const error = await assertRejects(
+    () =>
+      retry(() => {
+        attempts++;
+        throw new Error();
+      }, {
+        maxAttempts: 3,
+        minTimeout: 1,
+      }),
+    RetryError,
+    "Retrying exceeded the maxAttempts (3).",
+  );
+  assertEquals(attempts, 3);
+  assertEquals(error.message, "Retrying exceeded the maxAttempts (3).");
+});
+
 Deno.test(
   "retry() throws if multiplier is less than 1",
   async () => {
@@ -216,4 +248,31 @@ Deno.test("retry() checks backoff function timings", async (t) => {
   });
 
   Math.random = originalMathRandom;
+});
+
+Deno.test("retry() caps backoff at maxTimeout", async () => {
+  using time = new FakeTime();
+  const promise = retry(() => {
+    throw new Error();
+  }, {
+    minTimeout: 1000,
+    maxTimeout: 1500, // Should cap at 1500, not grow to 2000, 4000, etc.
+    multiplier: 2,
+    jitter: 0,
+  });
+
+  const startTime = time.now;
+  await time.nextAsync(); // 1000ms (1000 * 2^0)
+  assertEquals(time.now - startTime, 1000);
+
+  await time.nextAsync(); // 1500ms capped (would be 2000)
+  assertEquals(time.now - startTime, 2500);
+
+  await time.nextAsync(); // 1500ms capped (would be 4000)
+  assertEquals(time.now - startTime, 4000);
+
+  await time.nextAsync(); // 1500ms capped (would be 8000)
+  assertEquals(time.now - startTime, 5500);
+
+  await assertRejects(() => promise, RetryError);
 });
