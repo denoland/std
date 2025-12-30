@@ -62,6 +62,11 @@ export interface RetryOptions {
    * @default {1}
    */
   jitter?: number;
+  /**
+   * Signal used to abort the retry operation.
+   * When aborted, the retry will throw with the signal's reason.
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -113,6 +118,26 @@ export interface RetryOptions {
  * });
  * ```
  *
+ * @example Aborting a retry operation
+ * ```ts no-assert
+ * import { retry } from "@std/async/retry";
+ *
+ * const controller = new AbortController();
+ *
+ * // Abort after 5 seconds
+ * setTimeout(() => controller.abort(), 5000);
+ *
+ * try {
+ *   await retry(async () => {
+ *     throw new Error("Temporary failure");
+ *   }, { signal: controller.signal });
+ * } catch (error) {
+ *   if (error instanceof DOMException && error.name === "AbortError") {
+ *     console.log("Retry was aborted");
+ *   }
+ * }
+ * ```
+ *
  * @typeParam T The return type of the function to retry and returned promise.
  * @param fn The function to retry.
  * @param options Additional options.
@@ -128,6 +153,7 @@ export async function retry<T>(
     maxAttempts = 5,
     minTimeout = 1000,
     jitter = 1,
+    signal,
   } = options ?? {};
 
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
@@ -163,6 +189,8 @@ export async function retry<T>(
 
   let attempt = 0;
   while (true) {
+    signal?.throwIfAborted();
+
     try {
       return await fn();
     } catch (error) {
@@ -177,7 +205,7 @@ export async function retry<T>(
         multiplier,
         jitter,
       );
-      await delay(timeout);
+      await delay(timeout, signal ? { signal } : {});
     }
     attempt++;
   }

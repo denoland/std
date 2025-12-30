@@ -23,6 +23,26 @@ Deno.test("retry()", async () => {
   assertEquals(result, 3);
 });
 
+Deno.test("retry() works with async functions", async () => {
+  let attempts = 0;
+  const result = await retry(async () => {
+    await Promise.resolve();
+    attempts++;
+    if (attempts < 3) throw new Error("Not yet");
+    return "async success";
+  }, { minTimeout: 1 });
+  assertEquals(result, "async success");
+  assertEquals(attempts, 3);
+});
+
+Deno.test("retry() returns immediately on first success", async () => {
+  using time = new FakeTime();
+  const startTime = time.now;
+  const result = await retry(() => "immediate");
+  assertEquals(result, "immediate");
+  assertEquals(time.now, startTime); // No time passed
+});
+
 Deno.test("retry() fails after five errors by default", async () => {
   const fiveErrors = generateErroringFunction(5);
   await assertRejects(() =>
@@ -43,7 +63,7 @@ Deno.test("retry() fails after five errors when undefined is passed", async () =
   );
 });
 
-Deno.test("RetryError contains the last error as cause", async () => {
+Deno.test("retry() throws RetryError with last error as cause", async () => {
   const specificError = new Error("Specific failure");
   const error = await assertRejects(
     () =>
@@ -251,8 +271,6 @@ Deno.test(
 );
 
 Deno.test("retry() checks backoff function timings", async (t) => {
-  const originalMathRandom = Math.random;
-
   await t.step("wait fixed times without jitter", async () => {
     using time = new FakeTime();
     let resolved = false;
@@ -290,8 +308,6 @@ Deno.test("retry() checks backoff function timings", async (t) => {
     assertEquals(time.now - startTime, 15000);
     await promise;
   });
-
-  Math.random = originalMathRandom;
 });
 
 Deno.test("retry() caps backoff at maxTimeout", async () => {
@@ -319,4 +335,64 @@ Deno.test("retry() caps backoff at maxTimeout", async () => {
   assertEquals(time.now - startTime, 5500);
 
   await assertRejects(() => promise, RetryError);
+});
+
+Deno.test("retry() aborts during delay when signal is triggered", async () => {
+  using time = new FakeTime();
+  const controller = new AbortController();
+  let attempts = 0;
+
+  const promise = retry(() => {
+    attempts++;
+    throw new Error("Failure");
+  }, { signal: controller.signal, minTimeout: 1000 });
+
+  // Let the first attempt run and enter the delay
+  await time.runMicrotasks();
+  assertEquals(attempts, 1);
+
+  // Abort while still in the delay (before timer fires)
+  controller.abort();
+
+  await assertRejects(
+    () => promise,
+    DOMException,
+    "The signal has been aborted",
+  );
+  assertEquals(attempts, 1); // Should have only tried once
+});
+
+Deno.test("retry() throws immediately if signal is already aborted", async () => {
+  const controller = new AbortController();
+  controller.abort();
+
+  await assertRejects(
+    () => retry(() => "success", { signal: controller.signal }),
+    DOMException,
+  );
+});
+
+Deno.test("retry() succeeds normally with non-aborted signal", async () => {
+  const controller = new AbortController();
+  const threeErrors = generateErroringFunction(3);
+
+  const result = await retry(threeErrors, {
+    signal: controller.signal,
+    minTimeout: 1,
+  });
+  assertEquals(result, 3);
+});
+
+Deno.test("retry() preserves custom abort reason", async () => {
+  const controller = new AbortController();
+  const customReason = new Error("Custom abort reason");
+  controller.abort(customReason);
+
+  const error = await assertRejects(
+    () =>
+      retry(() => {
+        throw new Error();
+      }, { signal: controller.signal }),
+  );
+  assertEquals(error, customReason);
 });
