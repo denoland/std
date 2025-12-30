@@ -168,7 +168,29 @@ Deno.test(
     await assertRejects(
       () => retry(() => {}, { multiplier: 0.5 }),
       RangeError,
-      "Cannot retry as 'multiplier' must be >= 1: current value is 0.5",
+      "Cannot retry as 'multiplier' must be a finite number >= 1: current value is 0.5",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if multiplier is NaN",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { multiplier: NaN }),
+      RangeError,
+      "Cannot retry as 'multiplier' must be a finite number >= 1: current value is NaN",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if multiplier is Infinity",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { multiplier: Infinity }),
+      RangeError,
+      "Cannot retry as 'multiplier' must be a finite number >= 1: current value is Infinity",
     );
   },
 );
@@ -185,12 +207,34 @@ Deno.test(
 );
 
 Deno.test(
+  "retry() throws if minTimeout is NaN",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { minTimeout: NaN }),
+      RangeError,
+      "Cannot retry as 'minTimeout' must be >= 0: current value is NaN",
+    );
+  },
+);
+
+Deno.test(
   "retry() throws if jitter is negative",
   async () => {
     await assertRejects(
       () => retry(() => {}, { jitter: -0.5 }),
       RangeError,
       "Cannot retry as 'jitter' must be between 0 and 1: current value is -0.5",
+    );
+  },
+);
+
+Deno.test(
+  "retry() throws if jitter is NaN",
+  async () => {
+    await assertRejects(
+      () => retry(() => {}, { jitter: NaN }),
+      RangeError,
+      "Cannot retry as 'jitter' must be between 0 and 1: current value is NaN",
     );
   },
 );
