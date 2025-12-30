@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { delay } from "./delay.ts";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
@@ -176,7 +177,7 @@ export async function retry<T>(
         multiplier,
         jitter,
       );
-      await new Promise((r) => setTimeout(r, timeout));
+      await delay(timeout);
     }
     attempt++;
   }
