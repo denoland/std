@@ -325,7 +325,6 @@ function handleEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
 
-  // can we set operator to '=' if it's in the spec, and undefined if it's not?
   return [{
     operator: groups.operator === "=" ? "=" : undefined,
     major,
