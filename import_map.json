@@ -21,6 +21,7 @@
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "@std/expect": "jsr:@std/expect@^1.0.17",
     "@std/fmt": "jsr:@std/fmt@^1.0.8",
+    "@std/formdata": "jsr:@std/formdata@^0.0.1",
     "@std/front-matter": "jsr:@std/front-matter@^1.0.9",
     "@std/fs": "jsr:@std/fs@^1.0.21",
     "@std/html": "jsr:@std/html@^1.0.5",
