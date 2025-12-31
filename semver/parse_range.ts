@@ -26,16 +26,8 @@ function parseComparator(comparator: string): Comparator | null {
 
   if (!groups) return null;
 
-  // check to see what comparator.match() above will return if certain components are missing (ie prerelease or buildmetadata)
-  // if it still returns the group itself, we should be able to return it directly
-
   const { operator } = groups as ComparatorRegExpGroup;
-
-  if (!groups.major) {
-    return { operator: operator || undefined, ...ANY };
-  } else {
-    return null;
-  }
+  return { operator: operator || undefined, ...ANY };
 }
 
 function isWildcard(id?: string): boolean {
@@ -145,7 +137,6 @@ function parseHyphenRange(range: string): Comparator[] | null {
     new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return null;
 
   const from = handleLeftHyphenRangeGroups(leftGroup as RangeRegExpGroups);
   const to = handleRightHyphenRangeGroups(rightGroups as RangeRegExpGroups);
@@ -364,13 +355,8 @@ function parseOperatorRange(string: string): Comparator | Comparator[] | null {
       return handleGreaterThanOperator(groups);
     case ">=":
       return handleGreaterOrEqualOperator(groups);
-    case "=":
-    case "":
-      return handleEqualOperator(groups);
     default:
-      throw new Error(
-        `Cannot parse version range: '${groups.operator}' is not a valid operator`,
-      );
+      return handleEqualOperator(groups);
   }
 }
 function parseOperatorRanges(string: string): (Comparator | null)[] {
