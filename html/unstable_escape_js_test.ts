@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { escapeJs } from "./unstable_escape_js.ts";
 import { dedent } from "@std/text/unstable-dedent";

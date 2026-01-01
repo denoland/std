@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-write
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 // JSON version of the full canonical list of named HTML entities
 // https://html.spec.whatwg.org/multipage/named-characters.html

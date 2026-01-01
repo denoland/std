@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { getNodeFs, getNodeUtil, isDeno } from "./_utils.ts";
 import { getOpenFsFlag } from "./_get_fs_flag.ts";

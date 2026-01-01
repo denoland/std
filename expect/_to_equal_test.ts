@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { bold, gray, green, red, stripAnsiCode, yellow } from "@std/fmt/colors";
 import { AssertionError, assertThrows } from "@std/assert";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { globalSanitizersState } from "./_test_suite.ts";
 import type { DescribeArgs, ItArgs, TestSuite } from "./bdd.ts";

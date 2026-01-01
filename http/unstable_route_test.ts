@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { type Route, route } from "./unstable_route.ts";
 import { assertEquals } from "../assert/equals.ts";

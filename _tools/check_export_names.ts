@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-console
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
  * This script adds kebab case checking for export names found in each `@std`

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { type GlobOptions, globToRegExp } from "@std/path/glob-to-regexp";
 import { joinGlobs } from "@std/path/join-globs";
 import { isGlob } from "@std/path/is-glob";
