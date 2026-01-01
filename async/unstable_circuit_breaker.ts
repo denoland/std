@@ -352,7 +352,12 @@ export class CircuitBreaker<T = unknown> {
   }
 
   /**
-   * Current state of the circuit breaker.
+   * Current stored state of the circuit breaker.
+   *
+   * Note: This returns the stored state without resolving time-based
+   * transitions. After a cooldown expires, this may still show `"open"`
+   * until the next {@linkcode execute} call or {@linkcode isAvailable}
+   * check triggers the transition to `"half_open"`.
    *
    * @example Usage
    * ```ts
@@ -363,10 +368,10 @@ export class CircuitBreaker<T = unknown> {
    * assertEquals(breaker.state, "closed");
    * ```
    *
-   * @returns The current {@linkcode CircuitState}.
+   * @returns The stored {@linkcode CircuitState}.
    */
   get state(): CircuitState {
-    return this.#resolveCurrentState().state;
+    return this.#state.state;
   }
 
   /**
@@ -393,6 +398,10 @@ export class CircuitBreaker<T = unknown> {
 
   /**
    * Whether the circuit is currently allowing requests.
+   *
+   * Unlike {@linkcode state}, this resolves any pending time-based
+   * transitions (e.g., `"open"` → `"half_open"` after cooldown) to ensure
+   * the returned value reflects current availability.
    *
    * @example Usage
    * ```ts
