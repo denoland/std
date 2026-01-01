@@ -19,59 +19,7 @@ import {
 } from "./bdd.ts";
 import { TestSuiteInternal } from "./_test_suite.ts";
 import { assertSpyCall, assertSpyCalls, type Spy, spy, stub } from "./mock.ts";
-
-class TestContext implements Deno.TestContext {
-  name: string;
-  origin: string;
-  steps: TestContext[];
-  spies: {
-    step: Spy;
-  };
-
-  constructor(name: string) {
-    this.name = name;
-    this.origin = "origin";
-    this.spies = {
-      step: spy(this, "step"),
-    };
-    this.steps = [];
-  }
-
-  async step(t: Deno.TestStepDefinition): Promise<boolean>;
-  async step(
-    name: string,
-    fn: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean>;
-  async step(
-    fn: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean>;
-  async step(
-    tOrNameOrFn:
-      | Deno.TestStepDefinition
-      | string
-      | ((t: Deno.TestContext) => void | Promise<void>),
-    fn?: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean> {
-    let ignore = false;
-    if (typeof tOrNameOrFn === "function") {
-      ignore = false;
-      fn = tOrNameOrFn;
-    } else if (typeof tOrNameOrFn === "object") {
-      ignore = tOrNameOrFn.ignore ?? false;
-      fn = tOrNameOrFn.fn;
-    }
-
-    const name = typeof tOrNameOrFn === "string"
-      ? tOrNameOrFn
-      : tOrNameOrFn.name;
-    const context = new TestContext(name);
-    this.steps.push(context);
-    if (!ignore) {
-      await fn!(context);
-    }
-    return !ignore;
-  }
-}
+import { TestContext } from "./_test_helpers.ts";
 
 const baseStepOptions: Omit<Deno.TestStepDefinition, "name" | "fn"> = {
   ignore: false,
