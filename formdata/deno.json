@@ -1,0 +1,9 @@
+{
+  "name": "@std/formdata",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./mod.ts",
+    "./formdata-decoder-stream": "./formdata_decoder_stream.ts",
+    "./formdata-encoder-stream": "./formdata_encoder_stream.ts"
+  }
+}
