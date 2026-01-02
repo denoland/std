@@ -1,3 +1,9 @@
+### 2025.12.25
+
+#### @std/streams 1.0.16 (patch)
+
+- fix(streams/unstable): use relative path for in-package import (#6909)
+
 ### 2025.12.24
 
 #### @std/async 1.0.16 (patch)

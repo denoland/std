@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { getNodeFs, isDeno } from "./_utils.ts";
 import type { ReadFileOptions } from "./unstable_types.ts";

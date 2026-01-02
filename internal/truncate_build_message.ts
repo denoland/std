@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import type { CommonDiffResult, DiffResult } from "./types.ts";
 
 /** The environment variable used for setting diff context length. */

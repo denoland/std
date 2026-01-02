@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { randomSeeded } from "./seeded.ts";
 import { shuffle } from "./shuffle.ts";
 import {

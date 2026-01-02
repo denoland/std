@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 import { type Args, parseArgs, type ParseOptions } from "./parse_args.ts";
 import { assertType, type IsExact } from "@std/testing/types";
@@ -1986,4 +1986,9 @@ Deno.test("parseArgs() throws if the alias value is undefined", () => {
     Error,
     "Alias value must be defined",
   );
+});
+
+Deno.test("parseArgs() accepts readonly array input", () => {
+  const args: readonly string[] = ["--foo", "bar"];
+  const _parsed = parseArgs(args);
 });

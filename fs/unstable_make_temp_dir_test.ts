@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assert, assertRejects, assertThrows } from "@std/assert";
 import { makeTempDir, makeTempDirSync } from "./unstable_make_temp_dir.ts";
