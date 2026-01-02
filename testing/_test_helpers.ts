@@ -8,7 +8,7 @@ import {
 import { assertSpyCall, assertSpyCalls, type Spy, spy, stub } from "./mock.ts";
 import { TestSuiteInternal } from "./_test_suite.ts";
 
-class TestContext implements Deno.TestContext {
+export class TestContext implements Deno.TestContext {
   name: string;
   origin: string;
   steps: TestContext[];
