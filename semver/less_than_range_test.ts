@@ -186,6 +186,5 @@ Deno.test("lessThanRange() handles not equals operator", () => {
     prerelease: [],
     build: [],
   }]];
-  // FIXME(kt3k): This demonstrates a bug. This should be false
-  assertEquals(lessThanRange(version, range), true);
+  assertEquals(lessThanRange(version, range), false);
 });
