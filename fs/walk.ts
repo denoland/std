@@ -396,7 +396,7 @@ export type { WalkEntry };
  *
  * @example Filter by regular expressions
  *
- * Setting the `match` option to `[/.s/]` will only include entries with the
+ * Setting the `match` option to `[/s/]` will only include entries with the
  * letter `s` in their name.
  *
  * File structure:
@@ -423,7 +423,7 @@ export type { WalkEntry };
  *
  * @example Exclude by regular expressions
  *
- * Setting the `skip` option to `[/.s/]` will exclude entries with the letter
+ * Setting the `skip` option to `[/s/]` will exclude entries with the letter
  * `s` in their name.
  *
  * File structure:
@@ -825,7 +825,7 @@ export async function* walk(
  *
  * @example Filter by regular expressions
  *
- * Setting the `match` option to `[/.s/]` will only include entries with the
+ * Setting the `match` option to `[/s/]` will only include entries with the
  * letter `s` in their name.
  *
  * File structure:
@@ -852,7 +852,7 @@ export async function* walk(
  *
  * @example Exclude by regular expressions
  *
- * Setting the `skip` option to `[/.s/]` will exclude entries with the letter
+ * Setting the `skip` option to `[/s/]` will exclude entries with the letter
  * `s` in their name.
  *
  * File structure:
