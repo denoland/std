@@ -1,5 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { encodeBase64 } from "@std/encoding/unstable-base64";
 import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 
 /**
@@ -81,7 +82,7 @@ export class FormDataEncoderStream {
    */
   constructor(readable: ReadableStream<FormDataInput>) {
     const boundary = "--deno-std-" +
-      crypto.getRandomValues(new Uint8Array(30)).toBase64() +
+      encodeBase64(crypto.getRandomValues(new Uint8Array(30))) +
       "\r\n";
     this.#encoder
       .encodeInto(boundary, this.#boundary = new Uint8Array(boundary.length));
