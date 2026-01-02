@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 /**
- * Builds all possible orders of all elements in the given array
+ * Builds all possible orders of all elements in the given array.
  * Ignores equality of elements, meaning this will always return the same
  * number of permutations for a given length of input.
  *

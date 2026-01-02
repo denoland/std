@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import { partition } from "./partition.ts";
 
 function partitionTest<I>(
-  input: [Array<I>, (element: I) => boolean],
+  input: [Array<I>, (element: I, index: number) => boolean],
   expected: [Array<I>, Array<I>],
   message?: string,
 ) {
@@ -70,6 +70,16 @@ Deno.test({
     partitionTest(
       [["foo", "bar", ""], (it) => it.length > 0],
       [["foo", "bar"], [""]],
+    );
+  },
+});
+
+Deno.test({
+  name: "partition() passes index to predicate",
+  fn() {
+    partitionTest(
+      [[2, 4, 6], (_, index) => index % 2 === 0],
+      [[2, 6], [4]],
     );
   },
 });

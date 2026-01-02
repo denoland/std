@@ -137,3 +137,14 @@ Deno.test({
     assertEquals(minBy(input, (it) => new Date(it)), "December 17, 1995");
   },
 });
+
+Deno.test({
+  name: "minBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = minBy(input, (_, index) => index);
+
+    assertEquals(max, 4);
+  },
+});
