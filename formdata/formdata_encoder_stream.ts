@@ -1,19 +1,84 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { toByteStream } from "@std/streams/unstable-to-byte-stream";
 
+/**
+ * The input that can be passed to a {@linkcode FormDataEncoderStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface FormDataInput {
+  /**
+   * A string containing the key used for the form data entry. While all UTF-8
+   * characters should work, it is encouraged to only use ascii. The value of
+   * `name` should not generally be exposed to the user.
+   */
   name: string;
+  /**
+   * The value of the form data entry.
+   */
   value: string | Blob | ReadableStream<Uint8Array>;
-  filename?: string;
+  /**
+   * The content type of the form data entry.
+   * Defaults to:
+   * - `text/plain` when a string is passed to `value`.
+   * - `application/octet-stream` when a {@linkcode Blob} is passed to `value`
+   * and the {@linkcode Blob} doesn't have its own type.
+   * - `application/octet-stream` when a {@linkcode ReadableStream<Uint8Array>}
+   * is passed to `value`.
+   */
   contentType?: string;
+  /**
+   * The filename of the form data entry.
+   */
+  filename?: string;
 }
 
+/**
+ * ### Overview
+ * {@linkcode FormDataEncoderStream} is a class based off the
+ * [RFC 7578](https://datatracker.ietf.org/doc/html/rfc7578) spec and offers a
+ * way to create a {@linkcode FormData} in a streaming manner. Enabling one to
+ * send large amounts of information without having it all locally in memory
+ * first.
+ *
+ * ### Limitations
+ * Due to the structure of the `multipart` media type and the constraints of a
+ * streaming implementation, it is not possible to guarantee that a chosen
+ * boundary string will never occur within the payload itself. As a result, the
+ * appearance of a boundary sequence within the content must be considered a
+ * valid and unavoidable edge case inherent to this API. Each instance of this
+ * class will result in a different boundary being generated.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+ * const response = FormDataEncoderStream.from(ReadableStream.from([
+ *   {
+ *     name: "file",
+ *     value: (await Deno.open("deno.json")).readable,
+ *     contentType: "application/json",
+ *   }
+ * ]))
+ *   .toResponse();
+ *
+ * const formData = await response.formData();
+ * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+ * ```
+ */
 export class FormDataEncoderStream {
   #encoder = new TextEncoder();
   #readable: ReadableStream<Uint8Array>;
   #boundary: Uint8Array;
   #contentType: string;
+  /**
+   * Constructs a new instance.
+   *
+   * @param readable The readable stream of form data inputs.
+   */
   constructor(readable: ReadableStream<FormDataInput>) {
     const boundary = "--deno-std-" +
       crypto.getRandomValues(new Uint8Array(30)).toBase64() +
@@ -135,12 +200,60 @@ export class FormDataEncoderStream {
     return buffer.subarray(0, this.#encoder.encodeInto(x, buffer).written);
   }
 
+  /**
+   * Convert the {@linkcode FormDataEncoderStream} to a {@linkcode Response} to send to a
+   * client.
+   *
+   * @param init Optional response initialization options.
+   * @returns The {@linkcode Response} containing the encoded form data.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * const response = FormDataEncoderStream.from(ReadableStream.from([
+   *   {
+   *     name: "file",
+   *     value: (await Deno.open("deno.json")).readable,
+   *     contentType: "application/json",
+   *   }
+   * ]))
+   *   .toResponse();
+   *
+   * const formData = await response.formData();
+   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * ```
+   */
   toResponse(init?: ResponseInit): Response {
     init ??= {};
     init.headers = { ...init.headers, "Content-Type": this.#contentType };
     return new Response(this.#readable, init);
   }
 
+  /**
+   * Convert the {@linkcode FormDataEncoderStream} to a {@linkcode Request} to send to a server.
+   *
+   * @param input The URL or RequestInfo to send the request to.
+   * @param init Optional request initialization options.
+   * @returns The {@linkcode Request} containing the encoded form data.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * const request = FormDataEncoderStream.from(ReadableStream.from([
+   *   {
+   *     name: "file",
+   *     value: (await Deno.open("deno.json")).readable,
+   *     contentType: "application/json",
+   *   }
+   * ]))
+   *   .toRequest("https://example.com", { method: "POST" });
+   *
+   * const formData = await request.formData();
+   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * ```
+   */
   toRequest(input: RequestInfo | URL, init?: RequestInit): Request {
     init ??= {};
     init.headers = { ...init.headers, "Content-Type": this.#contentType };
@@ -148,14 +261,90 @@ export class FormDataEncoderStream {
     return new Request(input, init);
   }
 
+  /**
+   * Create a {@linkcode FormDataEncoderStream} from a
+   * {@linkcode ReadableStream}.
+   *
+   * @param readable The `ReadableStream` to encode.
+   * @returns The {@linkcode FormDataEncoderStream} containing the encoded form
+   * data.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * const response = FormDataEncoderStream.from(ReadableStream.from([
+   *   {
+   *     name: "file",
+   *     value: (await Deno.open("deno.json")).readable,
+   *     contentType: "application/json",
+   *   }
+   * ]))
+   *   .toResponse();
+   *
+   * const formData = await response.formData();
+   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * ```
+   */
   static from(readable: ReadableStream<FormDataInput>): FormDataEncoderStream {
     return new FormDataEncoderStream(readable);
   }
 
+  /**
+   * The content type of the `ReadableStream`. Contains the boundary
+   * required for decoding.
+   *
+   * @returns The content type of the `ReadableStream`.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * const encoder = FormDataEncoderStream.from(ReadableStream.from([
+   *   {
+   *     name: "file",
+   *     value: (await Deno.open("deno.json")).readable,
+   *     contentType: "application/json",
+   *   }
+   * ]));
+   *
+   * const response = new Response(encoder.readable, {
+   *   headers: { "Content-Type": encoder.contentType },
+   * });
+   *
+   * const formData = await response.formData();
+   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * ```
+   */
   get contentType(): string {
     return this.#contentType;
   }
 
+  /**
+   * The ReadableStream containing the encoded content.
+   *
+   * @returns The `ReadableStream` containing the encoded form data.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * const encoder = FormDataEncoderStream.from(ReadableStream.from([
+   *   {
+   *     name: "file",
+   *     value: (await Deno.open("deno.json")).readable,
+   *     contentType: "application/json",
+   *   }
+   * ]));
+   *
+   * const response = new Response(encoder.readable, {
+   *   headers: { "Content-Type": encoder.contentType },
+   * });
+   *
+   * const formData = await response.formData();
+   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * ```
+   */
   get readable(): ReadableStream<Uint8Array> {
     return this.#readable;
   }

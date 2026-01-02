@@ -1,16 +1,75 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { CappedDelimiterStream } from "@std/streams/unstable-capped-delimiter-stream";
 
+/**
+ * The output that is passed from a {@linkcode FormDataDecoderStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface FormDataEntry {
+  /**
+   * A string containing the key used for the form data entry.
+   */
   name: string;
+  /**
+   * The value of the form data entry.
+   */
   value: ReadableStream<Uint8Array>;
+  /**
+   * The content type of the form data entry.
+   */
   contentType: string;
+  /**
+   * The filename of the form data entry if one was provided.
+   */
   filename: string | undefined;
 }
 
+/**
+ * ### Overview
+ * {@linkcode FormDataDecoderStream} is a class based off the
+ * [RFC 7578](https://datatracker.ietf.org/doc/html/rfc7578) spec and offers a
+ * way to decode a {@linkcode FormData} in a streaming manner. Enabling one to
+ * receive large amounts of information and start working with it, without
+ * having it all locally in memory first.
+ *
+ * ### Limitations
+ * Due to the nature of streaming implementations the next entry of this stream
+ * won't be yielded until the `ReadableStream` value on the entry has been
+ * either fully consumed or cancelled. To not handle it will result in a
+ * hanging effect. Be aware that the client may send you a
+ * `multipart/form-data` with entries in an undesirable order.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { assertEquals } from "@std/assert";
+ * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+ * const request = new Request("https://example.com", {
+ *   method: "POST",
+ *   body: function() {
+ *     const formData = new FormData();
+ *     formData.append("file", "Hello World");
+ *     return formData;
+ *   }(),
+ * });
+ *
+ * for await (const entry of FormDataDecoderStream.from(request)) {
+ *   assertEquals(entry.name, "file");
+ *   assertEquals(await new Response(entry.value).text(), "Hello World");
+ * }
+ * ```
+ */
 export class FormDataDecoderStream {
   #readable: ReadableStream<FormDataEntry>;
+  /**
+   * Constructs a new instance.
+   *
+   * @param contentType The content type of the form data.
+   * @param readable The readable stream of the form data.
+   */
   constructor(contentType: string, readable: ReadableStream<Uint8Array>) {
     let boundary: string | Uint8Array | undefined = contentType
       .split(";")
@@ -204,6 +263,33 @@ export class FormDataDecoderStream {
     return { lock, releaseLock: releaseLock!, error: error! };
   }
 
+  /**
+   * Creates a {@linkcode ReadableStream} from a {@linkcode Request} or
+   * {@linkcode Response}.
+   *
+   * @param request The {@linkcode Request} or {@linkcode Response} to decode.
+   * @returns A {@linkcode ReadableStream} containing the decoded form data
+   * entries.
+   *
+   * @example Usage
+   * ```ts
+   * import { assertEquals } from "@std/assert";
+   * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+   * const request = new Request("https://example.com", {
+   *   method: "POST",
+   *   body: function() {
+   *     const formData = new FormData();
+   *     formData.append("file", "Hello World");
+   *     return formData;
+   *   }(),
+   * });
+   *
+   * for await (const entry of FormDataDecoderStream.from(request)) {
+   *   assertEquals(entry.name, "file");
+   *   assertEquals(await new Response(entry.value).text(), "Hello World");
+   * }
+   * ```
+   */
   static from(request: Request | Response): ReadableStream<FormDataEntry> {
     const contentType = request.headers.get("Content-Type");
     if (contentType == undefined) {
@@ -213,6 +299,37 @@ export class FormDataDecoderStream {
     return new FormDataDecoderStream(contentType, request.body).readable;
   }
 
+  /**
+   * The ReadableStream containing the decoded form data entries.
+   *
+   * @returns The {@linkcode ReadableStream} containing the decoded form data
+   * entries.
+   *
+   * @example Usage
+   * ```ts
+   * import { assert, assertEquals } from "@std/assert";
+   * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+   * const request = new Request("https://example.com", {
+   *   method: "POST",
+   *   body: function() {
+   *     const formData = new FormData();
+   *     formData.append("file", "Hello World");
+   *     return formData;
+   *   }(),
+   * });
+   * const contentType = request.headers.get("Content-Type");
+   * assert(typeof contentType === "string");
+   * const readable = request.body;
+   * assert(readable != undefined);
+   *
+   * for await (
+   *   const entry of new FormDataDecoderStream(contentType, readable).readable
+   * ) {
+   *   assertEquals(entry.name, "file");
+   *   assertEquals(await new Response(entry.value).text(), "Hello World");
+   * }
+   * ```
+   */
   get readable(): ReadableStream<FormDataEntry> {
     return this.#readable;
   }
