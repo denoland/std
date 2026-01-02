@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { binarySearch } from "./unstable_binary_search.ts";
 import { assertSpyCalls, spy } from "@std/testing/mock";
