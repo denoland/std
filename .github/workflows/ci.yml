@@ -37,6 +37,10 @@ jobs:
           deno-version: ${{ matrix.deno }}
           cache: true
 
+      - name: Enable TSGO unstable features
+        if: matrix.deno == 'canary'
+        run: echo "DENO_UNSTABLE_TSGO=1" >> "$GITHUB_ENV"
+
       - name: Run tests
         run: |
           deno task test
@@ -134,6 +138,8 @@ jobs:
   lint:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    env:
+      DENO_UNSTABLE_TSGO: 1
     strategy:
       fail-fast: false
       matrix:
