@@ -1,13 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { minOf } from "./min_of.ts";
-
 /**
  * Builds N-tuples of elements from the given N arrays with matching indices,
  * stopping when the smallest array's end is reached.
  *
- * @typeParam T the type of the tuples produced by this function.
+ * @typeParam T The type of the tuples produced by this function.
  *
  * @param arrays The arrays to zip.
  *
@@ -36,13 +34,25 @@ import { minOf } from "./min_of.ts";
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: ReadonlyArray<T[K]> }
 ): T[] {
-  const minLength = minOf(arrays, (element) => element.length) ?? 0;
+  const numArrays = arrays.length;
+  if (numArrays === 0) return [];
 
+  // Find the length of the shortest array
+  let minLength = arrays[0]!.length;
+  for (let arrayIndex = 1; arrayIndex < numArrays; ++arrayIndex) {
+    if (arrays[arrayIndex]!.length < minLength) {
+      minLength = arrays[arrayIndex]!.length;
+    }
+  }
+
+  // Build tuples from elements at corresponding indices
   const result: T[] = new Array(minLength);
-
-  for (let i = 0; i < minLength; i += 1) {
-    const arr = arrays.map((it) => it[i]);
-    result[i] = arr as T;
+  for (let resultIndex = 0; resultIndex < minLength; ++resultIndex) {
+    const tuple: unknown[] = new Array(numArrays);
+    for (let arrayIndex = 0; arrayIndex < numArrays; ++arrayIndex) {
+      tuple[arrayIndex] = arrays[arrayIndex]![resultIndex];
+    }
+    result[resultIndex] = tuple as T;
   }
 
   return result;
