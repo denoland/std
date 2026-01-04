@@ -31,6 +31,8 @@ export interface FormDataInput {
   contentType?: string;
   /**
    * The filename of the form data entry.
+   * Defaults to "blob" when a {@linkcode Blob} or
+   * {@linkcode ReadableStream<Uint8Array>} is passed to `value`.
    */
   filename?: string;
 }
@@ -55,8 +57,9 @@ export interface FormDataInput {
  *
  * @example Usage
  * ```ts
- * import { assertEquals } from "@std/assert";
+ * import { assert, assertEquals } from "@std/assert";
  * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+ *
  * const response = FormDataEncoderStream.from(ReadableStream.from([
  *   {
  *     name: "file",
@@ -67,7 +70,9 @@ export interface FormDataInput {
  *   .toResponse();
  *
  * const formData = await response.formData();
- * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+ * const file = formData.get("file");
+ * assert(typeof file !== "string");
+ * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
  * ```
  */
 export class FormDataEncoderStream {
@@ -149,9 +154,9 @@ export class FormDataEncoderStream {
 
       buffer = yield this.#setBuffer(buffer, fixed[0]!);
       buffer = yield this.#setString(buffer, input.name);
-      if (input.filename != undefined) {
+      if (input.filename != undefined || typeof input.value !== "string") {
         buffer = yield this.#setBuffer(buffer, fixed[1]!);
-        buffer = yield this.#setString(buffer, input.filename);
+        buffer = yield this.#setString(buffer, input.filename ?? "blob");
       }
       buffer = yield this.#setBuffer(buffer, fixed[2]!);
 
@@ -210,8 +215,9 @@ export class FormDataEncoderStream {
    *
    * @example Usage
    * ```ts
-   * import { assertEquals } from "@std/assert";
+   * import { assert, assertEquals } from "@std/assert";
    * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   *
    * const response = FormDataEncoderStream.from(ReadableStream.from([
    *   {
    *     name: "file",
@@ -222,7 +228,9 @@ export class FormDataEncoderStream {
    *   .toResponse();
    *
    * const formData = await response.formData();
-   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * const file = formData.get("file");
+   * assert(typeof file !== "string");
+   * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
    * ```
    */
   toResponse(init?: ResponseInit): Response {
@@ -240,8 +248,9 @@ export class FormDataEncoderStream {
    *
    * @example Usage
    * ```ts
-   * import { assertEquals } from "@std/assert";
+   * import { assert, assertEquals } from "@std/assert";
    * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   *
    * const request = FormDataEncoderStream.from(ReadableStream.from([
    *   {
    *     name: "file",
@@ -252,7 +261,9 @@ export class FormDataEncoderStream {
    *   .toRequest("https://example.com", { method: "POST" });
    *
    * const formData = await request.formData();
-   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * const file = formData.get("file");
+   * assert(typeof file !== "string");
+   * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
    * ```
    */
   toRequest(input: RequestInfo | URL, init?: RequestInit): Request {
@@ -272,8 +283,9 @@ export class FormDataEncoderStream {
    *
    * @example Usage
    * ```ts
-   * import { assertEquals } from "@std/assert";
+   * import { assert, assertEquals } from "@std/assert";
    * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   *
    * const response = FormDataEncoderStream.from(ReadableStream.from([
    *   {
    *     name: "file",
@@ -284,7 +296,9 @@ export class FormDataEncoderStream {
    *   .toResponse();
    *
    * const formData = await response.formData();
-   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * const file = formData.get("file");
+   * assert(typeof file !== "string");
+   * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
    * ```
    */
   static from(readable: ReadableStream<FormDataInput>): FormDataEncoderStream {
@@ -299,8 +313,9 @@ export class FormDataEncoderStream {
    *
    * @example Usage
    * ```ts
-   * import { assertEquals } from "@std/assert";
+   * import { assert, assertEquals } from "@std/assert";
    * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   *
    * const encoder = FormDataEncoderStream.from(ReadableStream.from([
    *   {
    *     name: "file",
@@ -314,7 +329,9 @@ export class FormDataEncoderStream {
    * });
    *
    * const formData = await response.formData();
-   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * const file = formData.get("file");
+   * assert(typeof file !== "string");
+   * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
    * ```
    */
   get contentType(): string {
@@ -328,8 +345,9 @@ export class FormDataEncoderStream {
    *
    * @example Usage
    * ```ts
-   * import { assertEquals } from "@std/assert";
+   * import { assert, assertEquals } from "@std/assert";
    * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   *
    * const encoder = FormDataEncoderStream.from(ReadableStream.from([
    *   {
    *     name: "file",
@@ -343,7 +361,9 @@ export class FormDataEncoderStream {
    * });
    *
    * const formData = await response.formData();
-   * assertEquals(formData.get("file"), await Deno.readTextFile("deno.json"));
+   * const file = formData.get("file");
+   * assert(typeof file !== "string");
+   * assertEquals(await file?.text(), await Deno.readTextFile("deno.json"));
    * ```
    */
   get readable(): ReadableStream<Uint8Array> {

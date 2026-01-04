@@ -5,10 +5,6 @@ import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
 
 type Uint8Array_ = ReturnType<Uint8Array["slice"]>;
 
-async function toBlob(body: BodyInit, init?: ResponseInit): Promise<Blob> {
-  return await new Response(body, init).blob();
-}
-
 function toRequest(input: [string, string | Blob][]): Request {
   return new Request("https://example.com/", {
     method: "POST",
@@ -23,7 +19,7 @@ function toRequest(input: [string, string | Blob][]): Request {
 Deno.test("FormDataDecoderStream", async () => {
   const request = toRequest([
     ["a", "b"],
-    ["c", await toBlob("Hello")],
+    ["c", new Blob(["Hello"])],
   ]);
 
   for await (const entry of FormDataDecoderStream.from(request)) {
@@ -351,7 +347,7 @@ Deno.test("FormDataDecoderStream handles CRLF in body", async () => {
   ]);
   const request = toRequest([[
     "a",
-    await toBlob(buffer),
+    new Blob([buffer]),
   ]]);
 
   for await (const entry of FormDataDecoderStream.from(request)) {
@@ -396,10 +392,10 @@ Deno.test("FormDataDecoderStream handles tight bodies", async () => {
 });
 
 Deno.test("FormDataDecoderStream handles being cancelled", async () => {
-  const request = toRequest([["a", await toBlob(new Uint8Array(1024 * 1024))], [
-    "b",
-    "c",
-  ]]);
+  const request = toRequest([
+    ["a", new Blob([new Uint8Array(1024 * 1024)])],
+    ["b", "c"],
+  ]);
 
   for await (const entry of FormDataDecoderStream.from(request)) {
     switch (entry.name) {
@@ -419,7 +415,7 @@ Deno.test(
   "FormDataDecoderStream handles being cancelled on an invalid stream",
   async () => {
     const request = toRequest([
-      ["a", await toBlob(new Uint8Array(1024 * 1024))],
+      ["a", new Blob([new Uint8Array(1024 * 1024)])],
     ]);
     const contentType = request.headers.get("Content-Type");
     assert(typeof contentType === "string");

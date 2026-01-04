@@ -3,15 +3,14 @@
 import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
 import { assert, assertEquals, assertRejects } from "@std/assert";
 
-async function toBlob(body: BodyInit, init?: ResponseInit): Promise<Blob> {
-  return await new Response(body, init).blob();
-}
-
 Deno.test("FormDataEncoderStream", async () => {
   const formData = await new FormDataEncoderStream(ReadableStream
     .from([
       { name: "a", value: "b" },
-      { name: "c", value: await toBlob(new Uint8Array(10)) },
+      {
+        name: "c",
+        value: new Blob([new Uint8Array(10)]),
+      },
       {
         name: "d",
         value: ReadableStream.from([new Uint8Array(20)]),
@@ -20,15 +19,36 @@ Deno.test("FormDataEncoderStream", async () => {
       { name: "e", value: "f", contentType: "text/plain" },
       {
         name: "g",
-        value: await toBlob(new Uint8Array(30), {
-          headers: { "Content-Type": "text/html" },
-        }),
+        value: new Blob([new Uint8Array(30)], { type: "text/html" }),
       },
     ]))
     .toRequest("https://example.com/", { method: "POST" })
     .formData();
 
   assertEquals(formData.get("a"), "b");
+  /* These can be uncommented when https://github.com/denoland/std/issues/6929
+  is resolved */
+  // assertEquals(
+  //   formData.get("c"),
+  //   new File(
+  //     [new Uint8Array(10)],
+  //     "blob",
+  //     { type: "application/octet-stream" },
+  //   ),
+  // );
+  // assertEquals(
+  //   formData.get("d"),
+  //   new File(
+  //     [new Uint8Array(20)],
+  //     "potato.txt",
+  //     { type: "application/octet-stream" },
+  //   ),
+  // );
+  assertEquals(formData.get("e"), "f");
+  // assertEquals(
+  //   formData.get("g"),
+  //   new File([new Uint8Array(30)], "blob", { type: "text/html" }),
+  // );
 });
 
 Deno.test(
@@ -91,7 +111,7 @@ Deno.test(
     const reader = FormDataEncoderStream
       .from(ReadableStream.from([{
         name: "a",
-        value: await toBlob(new Uint8Array(1024 * 8)),
+        value: new Blob([new Uint8Array(1024 * 8)]),
       }]))
       .readable
       .getReader({ mode: "byob" });
