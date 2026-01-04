@@ -136,7 +136,7 @@ export class FormDataEncoderStream {
   ): AsyncGenerator<Uint8Array, void, Uint8Array> {
     const fixed = [
       this.#encoder.encode('Content-Disposition: form-data; name="'),
-      this.#encoder.encode('" filename="'),
+      this.#encoder.encode('"; filename="'),
       this.#encoder.encode('"\r\nContent-Type: '),
       this.#encoder.encode('text/plain; charset="UTF-8"\r\n\r\n'),
       this.#encoder.encode("application/octet-stream\r\n\r\n"),
