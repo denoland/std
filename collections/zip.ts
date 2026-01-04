@@ -34,25 +34,23 @@
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: ReadonlyArray<T[K]> }
 ): T[] {
-  const numArrays = arrays.length;
-  if (numArrays === 0) return [];
+  const { length } = arrays;
+  if (length === 0) return [];
 
-  // Find the length of the shortest array
   let minLength = arrays[0]!.length;
-  for (let arrayIndex = 1; arrayIndex < numArrays; ++arrayIndex) {
-    if (arrays[arrayIndex]!.length < minLength) {
-      minLength = arrays[arrayIndex]!.length;
+  for (let i = 1; i < length; ++i) {
+    if (arrays[i]!.length < minLength) {
+      minLength = arrays[i]!.length;
     }
   }
 
-  // Build tuples from elements at corresponding indices
   const result: T[] = new Array(minLength);
-  for (let resultIndex = 0; resultIndex < minLength; ++resultIndex) {
-    const tuple: unknown[] = new Array(numArrays);
-    for (let arrayIndex = 0; arrayIndex < numArrays; ++arrayIndex) {
-      tuple[arrayIndex] = arrays[arrayIndex]![resultIndex];
+  for (let i = 0; i < minLength; ++i) {
+    const tuple: unknown[] = new Array(length);
+    for (let j = 0; j < length; ++j) {
+      tuple[j] = arrays[j]![i];
     }
-    result[resultIndex] = tuple as T;
+    result[i] = tuple as T;
   }
 
   return result;
