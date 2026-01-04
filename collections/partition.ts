@@ -3,12 +3,12 @@
 
 /**
  * Returns a tuple of two arrays with the first one containing all elements in
- * the given array that match the given predicate and the second one containing
- * all that do not.
+ * the given array that match the given predicate and the second one
+ * containing all that do not.
  *
  * This version of the function is a type-guard version of the function. It
  * allows you to specify a type-guard predicate function that narrows the type
- * of the elements in the array.
+ * of the elements in the first output array.
  *
  * @typeParam T The type of the elements in the array.
  * @typeParam U The type of the elements that match the predicate.
@@ -25,11 +25,12 @@
  * import { partition } from "@std/collections/partition";
  * import { assertEquals } from "@std/assert";
  *
- * const numbers = [5, 6, 7, 8, 9];
- * const [even, odd] = partition(numbers, (it) => it % 2 === 0);
+ * const mixed = [1, "a", 2, "b"];
+ * const isString = (x: unknown): x is string => typeof x === "string";
+ * const [strings, others] = partition(mixed, isString);
  *
- * assertEquals(even, [6, 8]);
- * assertEquals(odd, [5, 7, 9]);
+ * assertEquals(strings, ["a", "b"]);
+ * assertEquals(others, [1, 2]);
  * ```
  */
 export function partition<T, U extends T>(
@@ -38,8 +39,8 @@ export function partition<T, U extends T>(
 ): [U[], Exclude<T, U>[]];
 /**
  * Returns a tuple of two arrays with the first one containing all elements in
- * the given array that match the given predicate and the second one containing
- * all that do not.
+ * the given array that match the given predicate and the second one
+ * containing all that do not.
  *
  * @typeParam T The type of the elements in the array.
  *
