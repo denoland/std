@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";

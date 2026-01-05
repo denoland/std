@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { EXTRACT_REGEXP_MAP, type Format } from "./_formats.ts";
 

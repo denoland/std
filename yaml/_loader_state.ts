@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import {
   AMPERSAND,
@@ -365,9 +365,7 @@ export class LoaderState {
     const anchor = this.anchor;
     const result: unknown[] = [];
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap.set(this.anchor, result);
-    }
+    if (this.anchor !== null) this.anchorMap.set(this.anchor, result);
 
     let ch = this.peek();
 
@@ -844,9 +842,7 @@ export class LoaderState {
       return false;
     }
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap.set(this.anchor, result);
-    }
+    if (this.anchor !== null) this.anchorMap.set(this.anchor, result);
 
     ch = this.next();
 
@@ -1122,9 +1118,7 @@ export class LoaderState {
     let atExplicitKey = false;
     let detected = false;
 
-    if (this.anchor !== null && typeof this.anchor !== "undefined") {
-      this.anchorMap.set(this.anchor, result);
-    }
+    if (this.anchor !== null) this.anchorMap.set(this.anchor, result);
 
     let ch = this.peek();
 
@@ -1502,9 +1496,7 @@ export class LoaderState {
     }
 
     this.result = type.construct(this.result);
-    if (this.anchor !== null) {
-      this.anchorMap.set(this.anchor, this.result);
-    }
+    if (this.anchor !== null) this.anchorMap.set(this.anchor, this.result);
   }
   composeNode(
     { parentIndent, nodeContext, allowToSeek, allowCompact }: {

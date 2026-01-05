@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert } from "@std/assert";
 import { isGlob } from "./is_glob.ts";
 import { disposableStack } from "../internal/_testing.ts";

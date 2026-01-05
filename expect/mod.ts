@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // This module is browser compatible.
 

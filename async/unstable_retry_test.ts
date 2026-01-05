@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import { retry } from "./unstable_retry.ts";
 import { RetryError } from "./retry.ts";

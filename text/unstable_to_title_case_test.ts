@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertGreater } from "@std/assert";
 import { toTitleCase } from "./unstable_to_title_case.ts";
 import type {
