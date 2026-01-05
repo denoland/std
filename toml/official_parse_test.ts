@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "../assert/mod.ts";
 import { convertTestCase, type TestCase } from "./_test_utils.ts";

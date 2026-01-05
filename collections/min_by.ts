@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -135,16 +135,41 @@ export function minBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T | undefined {
-  let min: T | undefined;
-  let minValue: ReturnType<typeof selector> | undefined;
+  if (Array.isArray(array)) {
+    const length = array.length;
+    if (length === 0) return undefined;
 
-  for (const current of array) {
-    const currentValue = selector(current);
+    let min: T = array[0]!;
+    let minValue = selector(min);
 
-    if (minValue === undefined || currentValue < minValue) {
-      min = current;
+    for (let i = 1; i < length; i++) {
+      const current = array[i]!;
+      const currentValue = selector(current);
+      if (currentValue < minValue) {
+        min = current;
+        minValue = currentValue;
+      }
+    }
+
+    return min;
+  }
+
+  const iter = array[Symbol.iterator]();
+  const first = iter.next();
+
+  if (first.done) return undefined;
+
+  let min: T = first.value;
+  let minValue = selector(min);
+
+  let next = iter.next();
+  while (!next.done) {
+    const currentValue = selector(next.value);
+    if (currentValue < minValue) {
+      min = next.value;
       minValue = currentValue;
     }
+    next = iter.next();
   }
 
   return min;

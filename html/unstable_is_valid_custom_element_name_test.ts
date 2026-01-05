@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert/equals";
 import { isValidCustomElementName } from "./unstable_is_valid_custom_element_name.ts";
 

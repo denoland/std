@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertFalse, assertThrows } from "./mod.ts";
 
 Deno.test("assertFalse() matches with falsy values", () => {

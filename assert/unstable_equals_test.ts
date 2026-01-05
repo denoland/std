@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { AssertionError, assertThrows } from "./mod.ts";
 import { assertEquals } from "./unstable_equals.ts";
 import { DIFF_CONTEXT_LENGTH } from "@std/internal/truncate-build-message";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertNotStrictEquals } from "@std/assert";
 import { pick } from "./pick.ts";

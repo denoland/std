@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -13,6 +13,11 @@ export type CircuitState = "closed" | "open" | "half_open";
 export interface CircuitBreakerOptions<T> {
   /**
    * Number of failures before opening the circuit.
+   *
+   * Note: For high-volume services, a low absolute threshold may cause
+   * premature circuit opening during normal transient errors. Consider
+   * a higher value proportional to your request volume, or combine with
+   * a shorter {@linkcode failureWindowMs} to implement rate-based detection.
    *
    * @default {5}
    */
@@ -35,7 +40,7 @@ export interface CircuitBreakerOptions<T> {
   /**
    * Maximum concurrent requests allowed in half-open state.
    *
-   * @default {1}
+   * @default {3}
    */
   halfOpenMaxConcurrent?: number;
 
@@ -296,7 +301,7 @@ export class CircuitBreaker<T = unknown> {
       failureThreshold = 5,
       cooldownMs = 30_000,
       successThreshold = 2,
-      halfOpenMaxConcurrent = 1,
+      halfOpenMaxConcurrent = 3,
       failureWindowMs = 60_000,
       isFailure = () => true,
       isResultFailure = () => false,
@@ -582,26 +587,23 @@ export class CircuitBreaker<T = unknown> {
    * OPEN → HALF_OPEN after cooldown expires.
    */
   #resolveCurrentState(): CircuitBreakerState {
-    const currentTime = Date.now();
-
-    // Auto-transition from OPEN to HALF_OPEN after cooldown
-    if (
-      this.#state.state === "open" &&
-      this.#state.openedAt !== null
-    ) {
-      const cooldownEnd = this.#state.openedAt + this.#cooldownMs;
-      if (currentTime >= cooldownEnd) {
-        const newState: CircuitBreakerState = {
-          ...this.#state,
-          state: "half_open",
-          consecutiveSuccesses: 0,
-          halfOpenInFlight: 0,
-        };
-        this.#state = newState;
-        this.#onStateChange?.("open", "half_open");
-      }
+    if (this.#state.state !== "open" || this.#state.openedAt === null) {
+      return this.#state;
     }
 
+    const cooldownEnd = this.#state.openedAt + this.#cooldownMs;
+    if (Date.now() < cooldownEnd) {
+      return this.#state;
+    }
+
+    // Auto-transition from OPEN to HALF_OPEN after cooldown
+    this.#state = {
+      ...this.#state,
+      state: "half_open",
+      consecutiveSuccesses: 0,
+      halfOpenInFlight: 0,
+    };
+    this.#onStateChange?.("open", "half_open");
     return this.#state;
   }
 
@@ -660,26 +662,20 @@ export class CircuitBreaker<T = unknown> {
 
   /** Records a success and potentially closes the circuit from half-open. */
   #handleSuccess(previousState: CircuitState): void {
-    if (previousState === "half_open") {
-      const newSuccessCount = this.#state.consecutiveSuccesses + 1;
-
-      if (newSuccessCount >= this.#successThreshold) {
-        // Recovered! Close the circuit
-        this.#state = createInitialState();
-        this.#onStateChange?.("half_open", "closed");
-        this.#onClose?.();
-      } else {
-        this.#state = {
-          ...this.#state,
-          consecutiveSuccesses: newSuccessCount,
-        };
-      }
-    } else if (previousState === "closed") {
-      // Reset consecutive success counter on success in closed state
-      this.#state = {
-        ...this.#state,
-        consecutiveSuccesses: 0,
-      };
+    if (previousState === "closed") {
+      this.#state = { ...this.#state, consecutiveSuccesses: 0 };
+      return;
     }
+
+    const newSuccessCount = this.#state.consecutiveSuccesses + 1;
+    if (newSuccessCount >= this.#successThreshold) {
+      // Recovered! Close the circuit
+      this.#state = createInitialState();
+      this.#onStateChange?.("half_open", "closed");
+      this.#onClose?.();
+      return;
+    }
+
+    this.#state = { ...this.#state, consecutiveSuccesses: newSuccessCount };
   }
 }
