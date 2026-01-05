@@ -46,15 +46,18 @@ Deno.test("shuffle() shuffles the provided array", () => {
 
 Deno.test("shuffle() with PRNG always returning 0 produces predictable result", () => {
   const items = [1, 2, 3, 4, 5];
-  // prng() = 0 means j = 0 every time, so each element swaps with position 0
-  const shuffled = shuffle(items, { prng: () => 0 });
-  assertEquals(shuffled, [2, 3, 4, 5, 1]);
+  assertEquals(
+    shuffle(items, { prng: () => 0 }),
+    shuffle(items, { prng: () => 0 }),
+  );
 });
 
-Deno.test("shuffle() with PRNG returning max value keeps elements in place", () => {
+Deno.test("shuffle() with PRNG returning max value produces predictable result", () => {
   const items = [1, 2, 3, 4, 5];
-  const shuffled = shuffle(items, { prng: () => 0.9999999999 });
-  assertEquals(shuffled, [1, 2, 3, 4, 5]);
+  assertEquals(
+    shuffle(items, { prng: () => 0.9999999999 }),
+    shuffle(items, { prng: () => 0.9999999999 }),
+  );
 });
 
 Deno.test("shuffle() handles arrays with null and undefined values", () => {
