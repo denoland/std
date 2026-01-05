@@ -150,8 +150,71 @@ Deno.test("CircuitBreaker transitions to half_open after cooldown", async () => 
   // Advance time past cooldown
   time.tick(1001);
 
-  assertEquals(breaker.state, "half_open");
+  // isAvailable resolves time-based transitions
   assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
+});
+
+Deno.test("CircuitBreaker state getter is pure and does not trigger transitions", async () => {
+  using time = new FakeTime();
+
+  const transitions: Array<[CircuitState, CircuitState]> = [];
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    onStateChange: (from, to) => transitions.push([from, to]),
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+  assertEquals(transitions, [["closed", "open"]]);
+
+  // Advance time past cooldown
+  time.tick(1001);
+
+  // Reading state should NOT trigger transition or callbacks
+  assertEquals(breaker.state, "open"); // Still shows "open" (stale)
+  assertEquals(transitions.length, 1); // No new transitions
+
+  // Reading state multiple times should still not trigger
+  breaker.state;
+  breaker.state;
+  assertEquals(transitions.length, 1);
+
+  // Only isAvailable triggers the transition
+  assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
+  assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
+});
+
+Deno.test("CircuitBreaker execute() resolves stale state before checking", async () => {
+  using time = new FakeTime();
+
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    successThreshold: 1,
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // Advance time past cooldown
+  time.tick(1001);
+
+  // State is stale (still shows open)
+  assertEquals(breaker.state, "open");
+
+  // But execute() should resolve the transition and succeed
+  const result = await breaker.execute(() => Promise.resolve("success"));
+  assertEquals(result, "success");
+  assertEquals(breaker.state, "closed"); // Now closed after successful execution
 });
 
 Deno.test("CircuitBreaker closes from half_open after success threshold", async () => {
@@ -168,8 +231,9 @@ Deno.test("CircuitBreaker closes from half_open after success threshold", async 
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half_open
+  // Enter half_open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // First success
@@ -195,8 +259,9 @@ Deno.test("CircuitBreaker reopens from half_open on failure", async () => {
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half_open
+  // Enter half_open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Failure in half_open should reopen
@@ -358,10 +423,9 @@ Deno.test("CircuitBreaker onStateChange callback is invoked", async () => {
   } catch { /* expected */ }
   assertEquals(transitions, [["closed", "open"]]);
 
-  // Half-open
+  // Half-open (isAvailable resolves the transition)
   time.tick(1001);
-  // Access state to trigger transition
-  breaker.state;
+  breaker.isAvailable;
   assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
 
   // Close
@@ -455,8 +519,9 @@ Deno.test("CircuitBreaker half_open limits concurrent requests", async () => {
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Start a slow request
@@ -521,7 +586,8 @@ Deno.test("CircuitBreaker with zero cooldown transitions immediately", async () 
   } catch { /* expected */ }
 
   // Should immediately be half_open (or allow immediate transition)
-  // Since cooldown is 0, checking state should transition
+  // Since cooldown is 0, isAvailable resolves the transition
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Should be able to close immediately
@@ -658,8 +724,9 @@ Deno.test("CircuitBreaker half_open failure invokes onStateChange and onOpen", a
   assertEquals(transitions, [["closed", "open"]]);
   assertEquals(openCalls, [1]);
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
   assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
 
@@ -690,8 +757,9 @@ Deno.test("CircuitBreaker consecutiveSuccesses tracked in half_open getStats", a
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // First success
@@ -725,8 +793,9 @@ Deno.test("CircuitBreaker isResultFailure in half_open reopens circuit", async (
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Result failure in half-open should reopen
@@ -750,10 +819,10 @@ Deno.test("CircuitBreaker handles multiple half_open concurrent slots", async ()
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
-  assertEquals(breaker.state, "half_open");
   assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
 
   // Start two concurrent requests (should both be allowed)
   let resolve1: (() => void) | undefined;
