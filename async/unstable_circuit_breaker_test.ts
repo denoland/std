@@ -19,12 +19,22 @@ Deno.test("CircuitBreaker constructor throws for invalid failureThreshold", () =
   assertThrows(
     () => new CircuitBreaker({ failureThreshold: 0 }),
     TypeError,
-    "'failureThreshold' must be at least 1",
+    "'failureThreshold' must be a finite number >= 1",
   );
   assertThrows(
     () => new CircuitBreaker({ failureThreshold: -1 }),
     TypeError,
-    "'failureThreshold' must be at least 1",
+    "'failureThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureThreshold: NaN }),
+    TypeError,
+    "'failureThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureThreshold: Infinity }),
+    TypeError,
+    "'failureThreshold' must be a finite number >= 1",
   );
 });
 
@@ -32,7 +42,17 @@ Deno.test("CircuitBreaker constructor throws for invalid cooldownMs", () => {
   assertThrows(
     () => new CircuitBreaker({ cooldownMs: -1 }),
     TypeError,
-    "'cooldownMs' must be non-negative",
+    "'cooldownMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ cooldownMs: NaN }),
+    TypeError,
+    "'cooldownMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ cooldownMs: Infinity }),
+    TypeError,
+    "'cooldownMs' must be a finite non-negative number",
   );
 });
 
@@ -40,7 +60,17 @@ Deno.test("CircuitBreaker constructor throws for invalid successThreshold", () =
   assertThrows(
     () => new CircuitBreaker({ successThreshold: 0 }),
     TypeError,
-    "'successThreshold' must be at least 1",
+    "'successThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ successThreshold: NaN }),
+    TypeError,
+    "'successThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ successThreshold: Infinity }),
+    TypeError,
+    "'successThreshold' must be a finite number >= 1",
   );
 });
 
@@ -48,7 +78,17 @@ Deno.test("CircuitBreaker constructor throws for invalid halfOpenMaxConcurrent",
   assertThrows(
     () => new CircuitBreaker({ halfOpenMaxConcurrent: 0 }),
     TypeError,
-    "'halfOpenMaxConcurrent' must be at least 1",
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ halfOpenMaxConcurrent: NaN }),
+    TypeError,
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ halfOpenMaxConcurrent: Infinity }),
+    TypeError,
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
   );
 });
 
@@ -56,7 +96,17 @@ Deno.test("CircuitBreaker constructor throws for invalid failureWindowMs", () =>
   assertThrows(
     () => new CircuitBreaker({ failureWindowMs: -1 }),
     TypeError,
-    "'failureWindowMs' must be non-negative",
+    "'failureWindowMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureWindowMs: NaN }),
+    TypeError,
+    "'failureWindowMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureWindowMs: Infinity }),
+    TypeError,
+    "'failureWindowMs' must be a finite non-negative number",
   );
 });
 

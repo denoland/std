@@ -311,29 +311,29 @@ export class CircuitBreaker<T = unknown> {
       onClose,
     } = options;
 
-    if (failureThreshold < 1) {
+    if (!Number.isFinite(failureThreshold) || failureThreshold < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'failureThreshold' must be at least 1: current value is ${failureThreshold}`,
+        `Cannot create circuit breaker as 'failureThreshold' must be a finite number >= 1: received ${failureThreshold}`,
       );
     }
-    if (cooldownMs < 0) {
+    if (!Number.isFinite(cooldownMs) || cooldownMs < 0) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'cooldownMs' must be non-negative: current value is ${cooldownMs}`,
+        `Cannot create circuit breaker as 'cooldownMs' must be a finite non-negative number: received ${cooldownMs}`,
       );
     }
-    if (successThreshold < 1) {
+    if (!Number.isFinite(successThreshold) || successThreshold < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'successThreshold' must be at least 1: current value is ${successThreshold}`,
+        `Cannot create circuit breaker as 'successThreshold' must be a finite number >= 1: received ${successThreshold}`,
       );
     }
-    if (halfOpenMaxConcurrent < 1) {
+    if (!Number.isFinite(halfOpenMaxConcurrent) || halfOpenMaxConcurrent < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'halfOpenMaxConcurrent' must be at least 1: current value is ${halfOpenMaxConcurrent}`,
+        `Cannot create circuit breaker as 'halfOpenMaxConcurrent' must be a finite number >= 1: received ${halfOpenMaxConcurrent}`,
       );
     }
-    if (failureWindowMs < 0) {
+    if (!Number.isFinite(failureWindowMs) || failureWindowMs < 0) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'failureWindowMs' must be non-negative: current value is ${failureWindowMs}`,
+        `Cannot create circuit breaker as 'failureWindowMs' must be a finite non-negative number: received ${failureWindowMs}`,
       );
     }
 
