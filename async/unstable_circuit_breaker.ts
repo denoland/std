@@ -423,9 +423,12 @@ export class CircuitBreaker<T = unknown> {
   }
 
   /**
-   * Executes an async operation through the circuit breaker.
+   * Executes a function through the circuit breaker.
    *
-   * @example Usage
+   * The function can be synchronous or asynchronous. The result is always
+   * returned as a promise.
+   *
+   * @example Usage with async function
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
    * import { assertEquals } from "@std/assert";
@@ -435,9 +438,19 @@ export class CircuitBreaker<T = unknown> {
    * assertEquals(result, "success");
    * ```
    *
+   * @example Usage with sync function
+   * ```ts
+   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+   * const result = await breaker.execute(() => "sync result");
+   * assertEquals(result, "sync result");
+   * ```
+   *
    * @typeParam R The return type of the function, must extend T.
-   * @param fn The async operation to execute.
-   * @returns The result of the operation.
+   * @param fn The function to execute (sync or async).
+   * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    */
   /*
@@ -455,7 +468,7 @@ export class CircuitBreaker<T = unknown> {
    *
    * #stateMutex = new Semaphore(1);
    *
-   * async execute<R extends T>(fn: () => Promise<R>): Promise<R> {
+   * async execute<R extends T>(fn: (() => Promise<R>) | (() => R)): Promise<R> {
    *   {
    *     using _lock = await this.#stateMutex.acquire();
    *     // Check state and acquire half-open slot atomically
@@ -464,7 +477,9 @@ export class CircuitBreaker<T = unknown> {
    * }
    * ```
    */
-  async execute<R extends T>(fn: () => Promise<R>): Promise<R> {
+  async execute<R extends T>(
+    fn: (() => Promise<R>) | (() => R),
+  ): Promise<R> {
     const currentTime = Date.now();
     const currentState = this.#resolveCurrentState();
 

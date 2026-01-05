@@ -879,3 +879,70 @@ Deno.test("CircuitBreaker isFailure predicate prevents failure recording", async
   assertEquals(failures.length, 1);
   assertEquals(breaker.failureCount, 1);
 });
+
+Deno.test("CircuitBreaker.execute() accepts sync functions", async () => {
+  const breaker = new CircuitBreaker();
+  const result = await breaker.execute(() => "sync result");
+  assertEquals(result, "sync result");
+  assertEquals(breaker.state, "closed");
+});
+
+Deno.test("CircuitBreaker.execute() handles sync function that throws", async () => {
+  const breaker = new CircuitBreaker({ failureThreshold: 1 });
+  const error = new Error("sync error");
+
+  await assertRejects(
+    () =>
+      breaker.execute(() => {
+        throw error;
+      }),
+    Error,
+    "sync error",
+  );
+
+  assertEquals(breaker.failureCount, 1);
+  assertEquals(breaker.state, "open");
+});
+
+Deno.test("CircuitBreaker.execute() sync function in half_open state", async () => {
+  using time = new FakeTime();
+
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    successThreshold: 1,
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // Enter half-open
+  time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
+
+  // Sync function success should close the circuit
+  const result = await breaker.execute(() => "sync success");
+  assertEquals(result, "sync success");
+  assertEquals(breaker.state, "closed");
+});
+
+Deno.test("CircuitBreaker.execute() sync isResultFailure check", async () => {
+  const breaker = new CircuitBreaker<number>({
+    failureThreshold: 1,
+    isResultFailure: (result) => result < 0,
+  });
+
+  // Positive sync result - success
+  const result1 = await breaker.execute(() => 42);
+  assertEquals(result1, 42);
+  assertEquals(breaker.state, "closed");
+
+  // Negative sync result - counts as failure
+  const result2 = await breaker.execute(() => -1);
+  assertEquals(result2, -1);
+  assertEquals(breaker.state, "open");
+});
