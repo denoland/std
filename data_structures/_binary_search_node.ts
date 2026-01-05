@@ -1,13 +1,15 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { BinarySearchTreeNode } from "./binary_search_tree_node.ts";
+
 export type Direction = "left" | "right";
 
-export class BinarySearchNode<T> {
-  left: BinarySearchNode<T> | null;
-  right: BinarySearchNode<T> | null;
-  parent: BinarySearchNode<T> | null;
-  value: T;
+export class BinarySearchNode<T> implements BinarySearchTreeNode<T> {
+  declare left: BinarySearchNode<T> | null;
+  declare right: BinarySearchNode<T> | null;
+  declare parent: BinarySearchNode<T> | null;
+  declare value: T;
 
   constructor(parent: BinarySearchNode<T> | null, value: T) {
     this.left = null;
