@@ -84,6 +84,24 @@ Deno.test("maxOf() handles iterable input", () => {
   assertEquals(actual, 8);
 });
 
+Deno.test("maxOf() handles empty iterable", () => {
+  function* generate(): Generator<number> {}
+
+  const actual = maxOf(generate(), (i) => i);
+  assertEquals(actual, undefined);
+});
+
+Deno.test("maxOf() handles NaN in iterable", () => {
+  function* generate() {
+    yield 1;
+    yield NaN;
+    yield 3;
+  }
+
+  const actual = maxOf(generate(), (i) => i);
+  assertEquals(actual, NaN);
+});
+
 Deno.test("maxOf() handles empty array results in undefined", () => {
   const array: number[] = [];
 

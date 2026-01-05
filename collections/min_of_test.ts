@@ -84,6 +84,24 @@ Deno.test("minOf() handles iterable input", () => {
   assertEquals(actual, 1);
 });
 
+Deno.test("minOf() handles empty iterable", () => {
+  function* generate(): Generator<number> {}
+
+  const actual = minOf(generate(), (i) => i);
+  assertEquals(actual, undefined);
+});
+
+Deno.test("minOf() handles NaN in iterable", () => {
+  function* generate() {
+    yield 1;
+    yield NaN;
+    yield 3;
+  }
+
+  const actual = minOf(generate(), (i) => i);
+  assertEquals(actual, NaN);
+});
+
 Deno.test("minOf() handles empty array results in undefined", () => {
   const array: number[] = [];
 
