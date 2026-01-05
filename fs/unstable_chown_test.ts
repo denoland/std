@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { chown, chownSync } from "./unstable_chown.ts";

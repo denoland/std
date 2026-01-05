@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import type { CborArrayDecodedStream } from "./_array_decoded_stream.ts";
 import type { CborByteDecodedStream } from "./_byte_decoded_stream.ts";

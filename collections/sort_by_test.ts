@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { sortBy } from "./sort_by.ts";
@@ -31,6 +31,22 @@ Deno.test({
   name: "sortBy() handles empty input",
   fn() {
     assertEquals(sortBy([], () => 5), []);
+  },
+});
+
+Deno.test({
+  name: "sortBy() handles single element",
+  fn() {
+    const single = [{ value: 42 }];
+    assertEquals(sortBy(single, (it) => it.value), [{ value: 42 }]);
+  },
+});
+
+Deno.test({
+  name: "sortBy() handles two elements",
+  fn() {
+    assertEquals(sortBy([2, 1], (it) => it), [1, 2]);
+    assertEquals(sortBy([1, 2], (it) => it), [1, 2]);
   },
 });
 
@@ -147,6 +163,23 @@ Deno.test({
 });
 
 Deno.test({
+  name: "sortBy() handles invalid dates via getTime",
+  fn() {
+    // Use .getTime() to get numeric NaN which triggers proper NaN handling
+    const items = [
+      { id: 1, date: new Date("2020-01-01") },
+      { id: 2, date: new Date("invalid") },
+      { id: 3, date: new Date("2019-01-01") },
+    ];
+    const result = sortBy(items, (it) => it.date.getTime());
+    // NaN from invalid date sorts to end
+    assertEquals(result[0], { id: 3, date: new Date("2019-01-01") });
+    assertEquals(result[1], { id: 1, date: new Date("2020-01-01") });
+    assertEquals(result[2]!.id, 2);
+  },
+});
+
+Deno.test({
   name: "sortBy() handles sortings",
   fn() {
     const testArray = [
@@ -223,6 +256,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "sortBy() handles explicit asc ordering",
+  fn() {
+    assertEquals(
+      sortBy([3, 1, 2], (it) => it, { order: "asc" }),
+      [1, 2, 3],
+    );
+  },
+});
+
+Deno.test({
   name: "sortBy() works with iterators",
   fn() {
     const set = new Set([10, 312, 99, 5.45, 100, -3, 4.6]);
@@ -252,5 +295,39 @@ Deno.test({
       ["a", 2],
       ["c", 1],
     ]);
+  },
+});
+
+Deno.test({
+  name: "sortBy() works with generators",
+  fn() {
+    function* gen() {
+      yield { value: 3 };
+      yield { value: 1 };
+      yield { value: 2 };
+    }
+    assertEquals(sortBy(gen(), (it) => it.value), [
+      { value: 1 },
+      { value: 2 },
+      { value: 3 },
+    ]);
+  },
+});
+
+Deno.test({
+  name: "sortBy() handles large arrays",
+  fn() {
+    const large = Array.from(
+      { length: 10000 },
+      (_, i) => ({ i, rand: Math.random() }),
+    );
+    const sorted = sortBy(large, (it) => it.rand);
+
+    // Verify sorted order
+    for (let i = 1; i < sorted.length; i++) {
+      assertEquals(sorted[i - 1]!.rand <= sorted[i]!.rand, true);
+    }
+    // Verify no elements lost
+    assertEquals(sorted.length, 10000);
   },
 });

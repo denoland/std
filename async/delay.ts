@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /** Options for {@linkcode delay}. */
@@ -18,8 +18,10 @@ declare const Deno: { unrefTimer(id: number): void };
 /**
  * Resolve a {@linkcode Promise} after a given amount of milliseconds.
  *
- * @throws {DOMException} If the optional signal is aborted before the delay
- * duration, and `signal.reason` is undefined.
+ * If the optional signal is aborted before the delay duration, the returned
+ * promise rejects with the signal's reason. If no reason is provided to
+ * `abort()`, the browser's default `DOMException` with name `"AbortError"` is used.
+ *
  * @param ms Duration in milliseconds for how long the delay should last.
  * @param options Additional options.
  *
@@ -82,12 +84,18 @@ function setArbitraryLengthTimeout(
   delay: number,
 ): { valueOf(): number } {
   // ensure non-negative integer (but > I32_MAX is OK, even if Infinity)
-  let currentDelay = delay = Math.trunc(Math.max(delay, 0) || 0);
+  delay = Math.trunc(Math.max(delay, 0) || 0);
+
+  if (delay <= I32_MAX) {
+    const id = Number(setTimeout(callback, delay));
+    return { valueOf: () => id };
+  }
+
   const start = Date.now();
   let timeoutId: number;
 
   const queueTimeout = () => {
-    currentDelay = delay - (Date.now() - start);
+    const currentDelay = delay - (Date.now() - start);
     timeoutId = currentDelay > I32_MAX
       ? Number(setTimeout(queueTimeout, I32_MAX))
       : Number(setTimeout(callback, currentDelay));
