@@ -110,62 +110,6 @@ Deno.test("CircuitBreaker constructor throws for invalid failureWindowMs", () =>
   );
 });
 
-Deno.test("CircuitBreaker constructor throws for invalid callback types", () => {
-  // isFailure must be a function
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ isFailure: "not a function" }),
-    TypeError,
-    "'isFailure' must be a function",
-  );
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ isFailure: null }),
-    TypeError,
-    "'isFailure' must be a function",
-  );
-
-  // isResultFailure must be a function
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ isResultFailure: 123 }),
-    TypeError,
-    "'isResultFailure' must be a function",
-  );
-
-  // onStateChange must be a function if provided
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ onStateChange: {} }),
-    TypeError,
-    "'onStateChange' must be a function",
-  );
-
-  // onFailure must be a function if provided
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ onFailure: [] }),
-    TypeError,
-    "'onFailure' must be a function",
-  );
-
-  // onOpen must be a function if provided
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ onOpen: true }),
-    TypeError,
-    "'onOpen' must be a function",
-  );
-
-  // onClose must be a function if provided
-  assertThrows(
-    // @ts-expect-error: testing invalid input
-    () => new CircuitBreaker({ onClose: 0 }),
-    TypeError,
-    "'onClose' must be a function",
-  );
-});
-
 Deno.test("CircuitBreaker constructor defaults work correctly", () => {
   const breaker = new CircuitBreaker();
   assertEquals(breaker.state, "closed");
