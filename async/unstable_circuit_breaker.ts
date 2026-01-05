@@ -453,30 +453,6 @@ export class CircuitBreaker<T = unknown> {
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    */
-  /*
-   * NOTE: Known race condition in half-open state concurrent tracking.
-   *
-   * The `halfOpenInFlight` counter uses a read-modify-write pattern that is
-   * not atomic. Under high concurrency, more requests than `halfOpenMaxConcurrent`
-   * may slip through.
-   *
-   * Future fix: Once `@std/async/unstable-semaphore` stabilizes, use it to
-   * guard state transitions:
-   *
-   * ```ts
-   * import { Semaphore } from "@std/async/semaphore";
-   *
-   * #stateMutex = new Semaphore(1);
-   *
-   * async execute<R extends T>(fn: (() => Promise<R>) | (() => R)): Promise<R> {
-   *   {
-   *     using _lock = await this.#stateMutex.acquire();
-   *     // Check state and acquire half-open slot atomically
-   *   }
-   *   // Execute fn() outside the lock
-   * }
-   * ```
-   */
   async execute<R extends T>(
     fn: (() => Promise<R>) | (() => R),
   ): Promise<R> {
