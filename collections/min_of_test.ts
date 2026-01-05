@@ -9,6 +9,11 @@ Deno.test("minOf() handles regular min", () => {
   assertEquals(actual, 5);
 });
 
+Deno.test("minOf() handles single element", () => {
+  const actual = minOf([42], (i) => i);
+  assertEquals(actual, 42);
+});
+
 Deno.test("minOf() handles mixed negatives and positives numbers", () => {
   const array = [-32, -18, 140, 36];
 
@@ -67,6 +72,18 @@ Deno.test("minOf() handles no mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
+Deno.test("minOf() handles iterable input", () => {
+  function* generate() {
+    yield 5;
+    yield 2;
+    yield 8;
+    yield 1;
+  }
+
+  const actual = minOf(generate(), (i) => i);
+  assertEquals(actual, 1);
+});
+
 Deno.test("minOf() handles empty array results in undefined", () => {
   const array: number[] = [];
 
@@ -88,6 +105,13 @@ Deno.test("minOf() handles NaN and Infinity", () => {
     7,
     8,
   ];
+
+  const actual = minOf(array, (i) => i);
+  assertEquals(actual, NaN);
+});
+
+Deno.test("minOf() handles NaN as first element", () => {
+  const array = [NaN, 1, 2, 3];
 
   const actual = minOf(array, (i) => i);
   assertEquals(actual, NaN);
