@@ -103,13 +103,13 @@ export interface CircuitBreakerOptions<T> {
 /** Statistics returned by {@linkcode CircuitBreaker.getStats}. */
 export interface CircuitBreakerStats {
   /** Current state of the circuit breaker. */
-  state: CircuitState;
+  readonly state: CircuitState;
   /** Number of failures in the current window. */
-  failureCount: number;
+  readonly failureCount: number;
   /** Number of consecutive successes (relevant in half-open state). */
-  consecutiveSuccesses: number;
+  readonly consecutiveSuccesses: number;
   /** Whether the circuit is currently allowing requests. */
-  isAvailable: boolean;
+  readonly isAvailable: boolean;
 }
 
 /**
@@ -343,7 +343,7 @@ export class CircuitBreaker<T = unknown> {
     this.#halfOpenMaxConcurrent = halfOpenMaxConcurrent;
     this.#failureWindowMs = failureWindowMs;
     this.#isFailure = isFailure;
-    this.#isResultFailure = isResultFailure as (result: T) => boolean;
+    this.#isResultFailure = isResultFailure;
     this.#onStateChange = onStateChange;
     this.#onFailure = onFailure;
     this.#onOpen = onOpen;
