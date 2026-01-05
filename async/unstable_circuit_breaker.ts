@@ -336,6 +336,36 @@ export class CircuitBreaker<T = unknown> {
         `Cannot create circuit breaker as 'failureWindowMs' must be a finite non-negative number: received ${failureWindowMs}`,
       );
     }
+    if (typeof isFailure !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'isFailure' must be a function: received ${typeof isFailure}`,
+      );
+    }
+    if (typeof isResultFailure !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'isResultFailure' must be a function: received ${typeof isResultFailure}`,
+      );
+    }
+    if (onStateChange !== undefined && typeof onStateChange !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'onStateChange' must be a function: received ${typeof onStateChange}`,
+      );
+    }
+    if (onFailure !== undefined && typeof onFailure !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'onFailure' must be a function: received ${typeof onFailure}`,
+      );
+    }
+    if (onOpen !== undefined && typeof onOpen !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'onOpen' must be a function: received ${typeof onOpen}`,
+      );
+    }
+    if (onClose !== undefined && typeof onClose !== "function") {
+      throw new TypeError(
+        `Cannot create circuit breaker as 'onClose' must be a function: received ${typeof onClose}`,
+      );
+    }
 
     this.#failureThreshold = failureThreshold;
     this.#cooldownMs = cooldownMs;
