@@ -56,17 +56,13 @@ export interface FormatOptions {
   /**
    * The minimum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set.
-   *
-   * @default {3}
+   * are set, the number is formatted with 3 significant figures instead.
    */
   minimumFractionDigits?: number;
   /**
    * The maximum number of fraction digits to display. If neither
    * {@linkcode minimumFractionDigits} or {@linkcode maximumFractionDigits}
-   * are set.
-   *
-   * @default {3}
+   * are set, the number is formatted with 3 significant figures instead.
    */
   maximumFractionDigits?: number;
 }
@@ -76,10 +72,6 @@ export interface FormatOptions {
  *
  * Based on {@link https://github.com/sindresorhus/pretty-bytes | pretty-bytes}.
  * A utility for displaying file sizes for humans.
- *
- * @param num The bytes value to format
- * @param options The options for formatting
- * @returns The formatted string
  *
  * @example Basic usage
  * ```ts
@@ -117,6 +109,11 @@ export interface FormatOptions {
  *
  * assertEquals(format(1337, { locale: "de" }), "1,34 kB");
  * ```
+ *
+ * @param num The bytes value to format
+ * @param options The options for formatting
+ * @returns The formatted string
+ * @throws {TypeError} If `num` is not a finite number.
  */
 export function format(
   num: number,
