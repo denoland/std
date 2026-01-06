@@ -100,6 +100,20 @@ export interface CircuitBreakerOptions<T> {
   onClose?: () => void;
 }
 
+/** Options for {@linkcode CircuitBreaker.execute}. */
+export interface CircuitBreakerExecuteOptions {
+  /**
+   * An optional abort signal that can be used to cancel the operation
+   * before it starts. If the signal is already aborted when `execute` is
+   * called, the operation will fail immediately without executing the function.
+   *
+   * Note: This only checks the abort status before execution. It does not
+   * interrupt an in-progress operation — pass the signal to your async
+   * function for that behavior.
+   */
+  signal?: AbortSignal;
+}
+
 /** Statistics returned by {@linkcode CircuitBreaker.getStats}. */
 export interface CircuitBreakerStats {
   /** Current state of the circuit breaker. */
@@ -262,16 +276,19 @@ function pruneOldFailures(
  * });
  * ```
  *
- * @example Composing with retry
+ * @example Composing with retry and AbortSignal
  * ```ts ignore
  * import { retry } from "@std/async/retry";
  * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
  *
  * const breaker = new CircuitBreaker({ failureThreshold: 5 });
  *
- * // Circuit breaker wraps retry - if service is down, fail fast
- * const result = await breaker.execute(() =>
- *   retry(() => fetch("https://api.example.com"), { maxAttempts: 3 })
+ * // Timeout applies to the entire operation (circuit breaker + retries)
+ * const signal = AbortSignal.timeout(5000);
+ *
+ * const result = await breaker.execute(
+ *   () => retry(() => fetch("https://api.example.com"), { signal }),
+ *   { signal },
  * );
  * ```
  *
@@ -429,13 +446,24 @@ export class CircuitBreaker<T = unknown> {
    * returned as a promise.
    *
    * @example Usage with async function
-   * ```ts
+   * ```ts ignore
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
-   * import { assertEquals } from "@std/assert";
    *
    * const breaker = new CircuitBreaker({ failureThreshold: 5 });
-   * const result = await breaker.execute(() => Promise.resolve("success"));
-   * assertEquals(result, "success");
+   * const response = await breaker.execute(() => fetch("https://api.example.com"));
+   * ```
+   *
+   * @example With timeout
+   * ```ts ignore
+   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   *
+   * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+   *
+   * // Abort if operation takes longer than 5 seconds
+   * const response = await breaker.execute(
+   *   () => fetch("https://api.example.com"),
+   *   { signal: AbortSignal.timeout(5000) },
+   * );
    * ```
    *
    * @example Usage with sync function
@@ -450,12 +478,17 @@ export class CircuitBreaker<T = unknown> {
    *
    * @typeParam R The return type of the function, must extend T.
    * @param fn The function to execute (sync or async).
+   * @param options Optional execution options including an abort signal.
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
+   * @throws {DOMException} If the abort signal is already aborted.
    */
   async execute<R extends T>(
     fn: (() => Promise<R>) | (() => R),
+    options?: CircuitBreakerExecuteOptions,
   ): Promise<R> {
+    options?.signal?.throwIfAborted();
+
     const currentTime = Date.now();
     const currentState = this.#resolveCurrentState();
 

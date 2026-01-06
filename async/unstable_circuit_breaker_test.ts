@@ -923,3 +923,50 @@ Deno.test("CircuitBreaker.execute() handles sync function that throws", async ()
   assertEquals(breaker.failureCount, 1);
   assertEquals(breaker.state, "open");
 });
+
+Deno.test("CircuitBreaker.execute() rejects immediately if signal already aborted", async () => {
+  const breaker = new CircuitBreaker();
+  const controller = new AbortController();
+  controller.abort();
+
+  let fnCalled = false;
+  await assertRejects(
+    () =>
+      breaker.execute(() => {
+        fnCalled = true;
+        return Promise.resolve("ignored");
+      }, { signal: controller.signal }),
+    DOMException,
+    "aborted",
+  );
+
+  // Function should never have been called
+  assertEquals(fnCalled, false);
+  // Circuit should remain closed (no failure recorded)
+  assertEquals(breaker.state, "closed");
+  assertEquals(breaker.failureCount, 0);
+});
+
+Deno.test("CircuitBreaker abort does not count as circuit failure", async () => {
+  const failures: Array<{ error: unknown; count: number }> = [];
+  const breaker = new CircuitBreaker({
+    failureThreshold: 3,
+    onFailure: (error, count) => failures.push({ error, count }),
+  });
+
+  const controller = new AbortController();
+  controller.abort();
+
+  // Multiple aborted executions should not affect circuit state
+  for (let i = 0; i < 5; i++) {
+    try {
+      await breaker.execute(() => Promise.resolve("ignored"), {
+        signal: controller.signal,
+      });
+    } catch { /* expected */ }
+  }
+
+  assertEquals(failures.length, 0);
+  assertEquals(breaker.failureCount, 0);
+  assertEquals(breaker.state, "closed");
+});
