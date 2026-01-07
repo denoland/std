@@ -1467,10 +1467,11 @@ export class LoaderState {
           if (!type.resolve(state.result)) continue;
           // `state.result` updated in resolver if matched
           const result = type.construct(state.result);
-          const tag = type.tag;
-          const { anchor, kind } = state;
+          state.result = result;
+          state.tag = type.tag;
+          const { anchor } = state;
           if (anchor !== null) this.anchorMap.set(anchor, result);
-          return { tag, anchor, kind, result };
+          return state;
         }
         return state;
       }
@@ -1501,9 +1502,10 @@ export class LoaderState {
     }
 
     const result = type.construct(state.result);
-    const { tag, anchor } = state;
+    state.result = result;
+    const { anchor } = state;
     if (anchor !== null) this.anchorMap.set(anchor, result);
-    return { tag, anchor, kind, result };
+    return state;
   }
   composeNode({ parentIndent, nodeContext, allowToSeek, allowCompact }: {
     parentIndent: number;
