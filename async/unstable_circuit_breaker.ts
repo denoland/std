@@ -103,13 +103,13 @@ export interface CircuitBreakerOptions<T> {
 /** Statistics returned by {@linkcode CircuitBreaker.getStats}. */
 export interface CircuitBreakerStats {
   /** Current state of the circuit breaker. */
-  state: CircuitState;
+  readonly state: CircuitState;
   /** Number of failures in the current window. */
-  failureCount: number;
+  readonly failureCount: number;
   /** Number of consecutive successes (relevant in half-open state). */
-  consecutiveSuccesses: number;
+  readonly consecutiveSuccesses: number;
   /** Whether the circuit is currently allowing requests. */
-  isAvailable: boolean;
+  readonly isAvailable: boolean;
 }
 
 /**
@@ -311,29 +311,29 @@ export class CircuitBreaker<T = unknown> {
       onClose,
     } = options;
 
-    if (failureThreshold < 1) {
+    if (!Number.isFinite(failureThreshold) || failureThreshold < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'failureThreshold' must be at least 1: current value is ${failureThreshold}`,
+        `Cannot create circuit breaker as 'failureThreshold' must be a finite number >= 1: received ${failureThreshold}`,
       );
     }
-    if (cooldownMs < 0) {
+    if (!Number.isFinite(cooldownMs) || cooldownMs < 0) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'cooldownMs' must be non-negative: current value is ${cooldownMs}`,
+        `Cannot create circuit breaker as 'cooldownMs' must be a finite non-negative number: received ${cooldownMs}`,
       );
     }
-    if (successThreshold < 1) {
+    if (!Number.isFinite(successThreshold) || successThreshold < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'successThreshold' must be at least 1: current value is ${successThreshold}`,
+        `Cannot create circuit breaker as 'successThreshold' must be a finite number >= 1: received ${successThreshold}`,
       );
     }
-    if (halfOpenMaxConcurrent < 1) {
+    if (!Number.isFinite(halfOpenMaxConcurrent) || halfOpenMaxConcurrent < 1) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'halfOpenMaxConcurrent' must be at least 1: current value is ${halfOpenMaxConcurrent}`,
+        `Cannot create circuit breaker as 'halfOpenMaxConcurrent' must be a finite number >= 1: received ${halfOpenMaxConcurrent}`,
       );
     }
-    if (failureWindowMs < 0) {
+    if (!Number.isFinite(failureWindowMs) || failureWindowMs < 0) {
       throw new TypeError(
-        `Cannot create circuit breaker as 'failureWindowMs' must be non-negative: current value is ${failureWindowMs}`,
+        `Cannot create circuit breaker as 'failureWindowMs' must be a finite non-negative number: received ${failureWindowMs}`,
       );
     }
 
@@ -343,7 +343,7 @@ export class CircuitBreaker<T = unknown> {
     this.#halfOpenMaxConcurrent = halfOpenMaxConcurrent;
     this.#failureWindowMs = failureWindowMs;
     this.#isFailure = isFailure;
-    this.#isResultFailure = isResultFailure as (result: T) => boolean;
+    this.#isResultFailure = isResultFailure;
     this.#onStateChange = onStateChange;
     this.#onFailure = onFailure;
     this.#onOpen = onOpen;
@@ -423,9 +423,12 @@ export class CircuitBreaker<T = unknown> {
   }
 
   /**
-   * Executes an async operation through the circuit breaker.
+   * Executes a function through the circuit breaker.
    *
-   * @example Usage
+   * The function can be synchronous or asynchronous. The result is always
+   * returned as a promise.
+   *
+   * @example Usage with async function
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
    * import { assertEquals } from "@std/assert";
@@ -435,36 +438,24 @@ export class CircuitBreaker<T = unknown> {
    * assertEquals(result, "success");
    * ```
    *
+   * @example Usage with sync function
+   * ```ts
+   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+   * const result = await breaker.execute(() => "sync result");
+   * assertEquals(result, "sync result");
+   * ```
+   *
    * @typeParam R The return type of the function, must extend T.
-   * @param fn The async operation to execute.
-   * @returns The result of the operation.
+   * @param fn The function to execute (sync or async).
+   * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    */
-  /*
-   * NOTE: Known race condition in half-open state concurrent tracking.
-   *
-   * The `halfOpenInFlight` counter uses a read-modify-write pattern that is
-   * not atomic. Under high concurrency, more requests than `halfOpenMaxConcurrent`
-   * may slip through.
-   *
-   * Future fix: Once `@std/async/unstable-semaphore` stabilizes, use it to
-   * guard state transitions:
-   *
-   * ```ts
-   * import { Semaphore } from "@std/async/semaphore";
-   *
-   * #stateMutex = new Semaphore(1);
-   *
-   * async execute<R extends T>(fn: () => Promise<R>): Promise<R> {
-   *   {
-   *     using _lock = await this.#stateMutex.acquire();
-   *     // Check state and acquire half-open slot atomically
-   *   }
-   *   // Execute fn() outside the lock
-   * }
-   * ```
-   */
-  async execute<R extends T>(fn: () => Promise<R>): Promise<R> {
+  async execute<R extends T>(
+    fn: (() => Promise<R>) | (() => R),
+  ): Promise<R> {
     const currentTime = Date.now();
     const currentState = this.#resolveCurrentState();
 
