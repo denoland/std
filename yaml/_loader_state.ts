@@ -366,10 +366,12 @@ export class LoaderState {
       return result;
     }
   }
-  readBlockSequence(state: State, nodeIndent: number): State | void {
+  readBlockSequence(
+    tag: string | null,
+    anchor: string | null,
+    nodeIndent: number,
+  ): State | void {
     let detected = false;
-
-    const { tag, anchor } = state;
 
     const result: unknown[] = [];
 
@@ -593,7 +595,8 @@ export class LoaderState {
   }
 
   readPlainScalar(
-    state: State,
+    tag: string | null,
+    anchor: string | null,
     nodeIndent: number,
     withinFlowCollection: boolean,
   ): State | void {
@@ -692,11 +695,14 @@ export class LoaderState {
 
     const segment = this.captureSegment(captureStart, captureEnd, false);
     if (segment) result += segment;
-    const { tag, anchor } = state;
     if (anchor !== null) this.anchorMap.set(anchor, result);
     if (result) return { tag, anchor, kind: "scalar", result };
   }
-  readSingleQuotedScalar(state: State, nodeIndent: number): State | void {
+  readSingleQuotedScalar(
+    tag: string | null,
+    anchor: string | null,
+    nodeIndent: number,
+  ): State | void {
     let ch = this.peek();
 
     if (ch !== SINGLE_QUOTE) return;
@@ -718,7 +724,6 @@ export class LoaderState {
           this.position++;
           captureEnd = this.position;
         } else {
-          const { tag, anchor } = state;
           if (anchor !== null) this.anchorMap.set(anchor, result);
           return { tag, anchor, kind: "scalar", result };
         }
@@ -747,7 +752,11 @@ export class LoaderState {
       "Unexpected end of the stream within a single quoted scalar",
     );
   }
-  readDoubleQuotedScalar(state: State, nodeIndent: number): State | void {
+  readDoubleQuotedScalar(
+    tag: string | null,
+    anchor: string | null,
+    nodeIndent: number,
+  ): State | void {
     let ch = this.peek();
 
     if (ch !== DOUBLE_QUOTE) return;
@@ -763,7 +772,6 @@ export class LoaderState {
         const segment = this.captureSegment(captureStart, this.position, true);
         if (segment) result += segment;
         this.position++;
-        const { tag, anchor } = state;
         if (anchor !== null) this.anchorMap.set(anchor, result);
         return { tag, anchor, kind: "scalar", result };
       }
@@ -828,7 +836,11 @@ export class LoaderState {
       "Unexpected end of the stream within a double quoted scalar",
     );
   }
-  readFlowCollection(state: State, nodeIndent: number): State | void {
+  readFlowCollection(
+    tag: string | null,
+    anchor: string | null,
+    nodeIndent: number,
+  ): State | void {
     let ch = this.peek();
     let terminator: number;
     let isMapping = true;
@@ -842,8 +854,6 @@ export class LoaderState {
     } else {
       return;
     }
-
-    const { tag, anchor } = state;
 
     if (anchor !== null) this.anchorMap.set(anchor, result);
 
@@ -955,7 +965,11 @@ export class LoaderState {
   }
   // Handles block scaler styles: e.g. '|', '>', '|-' and '>-'.
   // https://yaml.org/spec/1.2.2/#81-block-scalar-styles
-  readBlockScalar(state: State, nodeIndent: number): State | void {
+  readBlockScalar(
+    tag: string | null,
+    anchor: string | null,
+    nodeIndent: number,
+  ): State | void {
     let chomping = CHOMPING_CLIP;
     let didReadContent = false;
     let detectedIndent = false;
@@ -1101,12 +1115,12 @@ export class LoaderState {
       if (segment) result += segment;
     }
 
-    const { tag, anchor } = state;
     if (anchor !== null) this.anchorMap.set(anchor, result);
     return { tag, anchor, kind: "scalar", result };
   }
   readBlockMapping(
-    state: State,
+    tag: string | null,
+    anchor: string | null,
     nodeIndent: number,
     flowIndent: number,
   ): State | void {
@@ -1121,8 +1135,6 @@ export class LoaderState {
     let valueNode = null;
     let atExplicitKey = false;
     let detected = false;
-
-    const { tag, anchor } = state;
 
     if (anchor !== null) this.anchorMap.set(anchor, result);
 
@@ -1515,17 +1527,18 @@ export class LoaderState {
       }
     }
 
-    const state: State = { tag: null, anchor: null, kind: null, result: null };
+    let tag: string | null = null;
+    let anchor: string | null = null;
 
     if (indentStatus === 1) {
       while (true) {
-        const tag = this.readTagProperty(state.tag);
-        if (tag) {
-          state.tag = tag;
+        const newTag = this.readTagProperty(tag);
+        if (newTag) {
+          tag = newTag;
         } else {
-          const anchor = this.readAnchorProperty(state.anchor);
-          if (!anchor) break;
-          state.anchor = anchor;
+          const newAnchor = this.readAnchorProperty(anchor);
+          if (!newAnchor) break;
+          anchor = newAnchor;
         }
         if (this.skipSeparationSpace(true, -1)) {
           atNewLine = true;
@@ -1548,41 +1561,62 @@ export class LoaderState {
 
       if (allowBlockCollections) {
         const blockIndent = this.position - this.lineStart;
-        const blockSequenceState = this.readBlockSequence(state, blockIndent);
+        const blockSequenceState = this.readBlockSequence(
+          tag,
+          anchor,
+          blockIndent,
+        );
         if (blockSequenceState) return this.resolveTag(blockSequenceState);
 
         const blockMappingState = this.readBlockMapping(
-          state,
+          tag,
+          anchor,
           blockIndent,
           flowIndent,
         );
         if (blockMappingState) return this.resolveTag(blockMappingState);
       }
-      const flowCollectionState = this.readFlowCollection(state, flowIndent);
+      const flowCollectionState = this.readFlowCollection(
+        tag,
+        anchor,
+        flowIndent,
+      );
       if (flowCollectionState) return this.resolveTag(flowCollectionState);
 
       if (allowBlockScalars) {
-        const blockScalarState = this.readBlockScalar(state, flowIndent);
+        const blockScalarState = this.readBlockScalar(
+          tag,
+          anchor,
+          flowIndent,
+        );
         if (blockScalarState) return this.resolveTag(blockScalarState);
       }
-      const singleQuoteState = this.readSingleQuotedScalar(state, flowIndent);
+      const singleQuoteState = this.readSingleQuotedScalar(
+        tag,
+        anchor,
+        flowIndent,
+      );
       if (singleQuoteState) return this.resolveTag(singleQuoteState);
 
-      const doubleQuoteState = this.readDoubleQuotedScalar(state, flowIndent);
+      const doubleQuoteState = this.readDoubleQuotedScalar(
+        tag,
+        anchor,
+        flowIndent,
+      );
       if (doubleQuoteState) return this.resolveTag(doubleQuoteState);
 
       const alias = this.readAlias();
       if (alias) {
-        if (state.tag !== null || state.anchor !== null) {
+        if (tag !== null || anchor !== null) {
           throw this.#createError(
             "Cannot compose node: alias node should not have any properties",
           );
         }
-        state.result = alias;
-        return this.resolveTag(state);
+        return this.resolveTag({ tag, anchor, kind: null, result: alias });
       }
       const plainScalarState = this.readPlainScalar(
-        state,
+        tag,
+        anchor,
         flowIndent,
         CONTEXT_FLOW_IN === nodeContext,
       );
@@ -1598,11 +1632,11 @@ export class LoaderState {
       // Special case: block sequences are allowed to have same indentation level as the parent.
       // http://www.yaml.org/spec/1.2/spec.html#id2799784
       const blockIndent = this.position - this.lineStart;
-      const newState = this.readBlockSequence(state, blockIndent);
-      if (newState) return this.resolveTag(state);
+      const newState = this.readBlockSequence(tag, anchor, blockIndent);
+      if (newState) return this.resolveTag(newState);
     }
 
-    const newState = this.resolveTag(state);
+    const newState = this.resolveTag({ tag, anchor, kind: null, result: null });
     if (newState.tag !== null || newState.anchor !== null) return newState;
   }
 
