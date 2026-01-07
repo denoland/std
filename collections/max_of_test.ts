@@ -9,6 +9,11 @@ Deno.test("maxOf() handles regular max", () => {
   assertEquals(actual, 120);
 });
 
+Deno.test("maxOf() handles single element", () => {
+  const actual = maxOf([42], (i) => i);
+  assertEquals(actual, 42);
+});
+
 Deno.test("maxOf() handles mixed negatives and positives numbers", () => {
   const array = [-32, -18, 140, 36];
 
@@ -67,6 +72,36 @@ Deno.test("maxOf() handles no mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
+Deno.test("maxOf() handles iterable input", () => {
+  function* generate() {
+    yield 5;
+    yield 2;
+    yield 8;
+    yield 1;
+  }
+
+  const actual = maxOf(generate(), (i) => i);
+  assertEquals(actual, 8);
+});
+
+Deno.test("maxOf() handles empty iterable", () => {
+  function* generate(): Generator<number> {}
+
+  const actual = maxOf(generate(), (i) => i);
+  assertEquals(actual, undefined);
+});
+
+Deno.test("maxOf() handles NaN in iterable", () => {
+  function* generate() {
+    yield 1;
+    yield NaN;
+    yield 3;
+  }
+
+  const actual = maxOf(generate(), (i) => i);
+  assertEquals(actual, NaN);
+});
+
 Deno.test("maxOf() handles empty array results in undefined", () => {
   const array: number[] = [];
 
@@ -88,6 +123,13 @@ Deno.test("maxOf() handles NaN and Infinity", () => {
     7,
     8,
   ];
+
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, NaN);
+});
+
+Deno.test("maxOf() handles NaN as first element", () => {
+  const array = [NaN, 1, 2, 3];
 
   const actual = maxOf(array, (i) => i);
   assertEquals(actual, NaN);
