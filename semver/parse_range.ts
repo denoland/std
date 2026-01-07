@@ -5,7 +5,6 @@ import {
   COMPARATOR_REGEXP,
   OPERATOR_XRANGE_REGEXP,
   parseBuild,
-  parseNumber,
   parsePrerelease,
   XRANGE,
 } from "./_shared.ts";
@@ -27,29 +26,8 @@ function parseComparator(comparator: string): Comparator | null {
 
   if (!groups) return null;
 
-  const { operator, prerelease, buildmetadata } =
-    groups as ComparatorRegExpGroup;
-
-  const semver = groups.major
-    ? {
-      major: parseNumber(
-        groups.major,
-        `Cannot parse comparator ${comparator}: invalid major version`,
-      ),
-      minor: parseNumber(
-        groups.minor!,
-        `Cannot parse comparator ${comparator}: invalid minor version`,
-      ),
-      patch: parseNumber(
-        groups.patch!,
-        `Cannot parse comparator ${comparator}: invalid patch version`,
-      ),
-      prerelease: prerelease ? parsePrerelease(prerelease) : [],
-      build: buildmetadata ? parseBuild(buildmetadata) : [],
-    }
-    : ANY;
-
-  return { operator: operator || undefined, ...semver };
+  const { operator } = groups as ComparatorRegExpGroup;
+  return { operator: operator || undefined, ...ANY };
 }
 
 function isWildcard(id?: string): boolean {
@@ -159,7 +137,6 @@ function parseHyphenRange(range: string): Comparator[] | null {
     new RegExp(`^${XRANGE}\\s*$`),
   );
   const rightGroups = rightMatch?.groups;
-  if (!rightGroups) return null;
 
   const from = handleLeftHyphenRangeGroups(leftGroup as RangeRegExpGroups);
   const to = handleRightHyphenRangeGroups(rightGroups as RangeRegExpGroups);
@@ -347,7 +324,15 @@ function handleEqualOperator(groups: RangeRegExpGroups): Comparator[] {
   }
   const prerelease = parsePrerelease(groups.prerelease ?? "");
   const build = parseBuild(groups.build ?? "");
-  return [{ operator: undefined, major, minor, patch, prerelease, build }];
+
+  return [{
+    operator: groups.operator === "=" ? "=" : undefined,
+    major,
+    minor,
+    patch,
+    prerelease,
+    build,
+  }];
 }
 
 function parseOperatorRange(string: string): Comparator | Comparator[] | null {
@@ -369,13 +354,8 @@ function parseOperatorRange(string: string): Comparator | Comparator[] | null {
       return handleGreaterThanOperator(groups);
     case ">=":
       return handleGreaterOrEqualOperator(groups);
-    case "=":
-    case "":
-      return handleEqualOperator(groups);
     default:
-      throw new Error(
-        `Cannot parse version range: '${groups.operator}' is not a valid operator`,
-      );
+      return handleEqualOperator(groups);
   }
 }
 function parseOperatorRanges(string: string): (Comparator | null)[] {
@@ -409,7 +389,7 @@ function parseOperatorRanges(string: string): (Comparator | null)[] {
 export function parseRange(value: string): Range {
   const result = value
     // remove spaces between operators and versions
-    .replaceAll(/(?<=<|>|=|~|\^)(\s+)/g, "")
+    .replaceAll(/(?<=[<>=~^])(\s+)/g, "")
     .split(/\s*\|\|\s*/)
     .map((string) => parseHyphenRange(string) || parseOperatorRanges(string));
   if (result.some((r) => r.includes(null))) {
