@@ -683,6 +683,7 @@ Deno.test("parseRange() handles wildcards", () => {
   assertEquals(parseRange("<1.*.*"), [
     [{ operator: "<", major: 1, minor: 0, patch: 0 }],
   ]);
+  // FIXME(kt3k): The following case should equal `[{ operator: "<", major: 2, minor: 0, patch: 0 }]`
   assertEquals(parseRange("<=1.*.2"), [
     [{ operator: "<", major: 1, minor: NaN, patch: 0 }],
   ]);
