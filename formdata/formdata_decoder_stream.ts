@@ -75,7 +75,9 @@ export class FormDataDecoderStream {
       .split(";")
       .find((x) => x.trimStart().startsWith("boundary="))
       ?.split("=")[1];
-    if (boundary == undefined) throw Error("Boundary not found in contentType");
+    if (boundary == undefined) {
+      throw TypeError("Boundary not found in contentType");
+    }
     if (boundary.startsWith('"')) boundary = boundary.slice(1, -1);
     boundary = "--" + boundary;
     // Only ASCII Characters are allowed within the boundary.
@@ -89,7 +91,7 @@ export class FormDataDecoderStream {
             boundary = new Uint8Array(boundary.length),
           )
           .read
-    ) throw new Error("Boundary has invalid characters within it");
+    ) throw new SyntaxError("Boundary has invalid characters within it");
     this.#readable = ReadableStream.from(this.#handle(readable, boundary));
   }
 
@@ -121,9 +123,9 @@ export class FormDataDecoderStream {
       buffer[boundary.length + 1] !== 45
     ) {
       buffer = (await reader.read()).value?.value;
-      if (buffer == undefined) throw new Error("Unexpected EOF");
+      if (buffer == undefined) throw new SyntaxError("Unexpected EOF");
       if (!buffer.length) {
-        throw new Error(
+        throw new SyntaxError(
           "Missing Content-Disposition header within FormData segment",
         );
       }
@@ -140,13 +142,13 @@ export class FormDataDecoderStream {
             .split(";")
             .map((x) => x.trim());
           if (x.findIndex((x) => x === "form-data") === -1) {
-            throw new Error("Content-Disposition was not of form-data");
+            throw new SyntaxError("Content-Disposition was not of form-data");
           }
           name = x
             .find((x) => x.startsWith("name="))
             ?.split("=")[1];
           if (name == undefined) {
-            throw new Error("Content-Disposition missing name field");
+            throw new SyntaxError("Content-Disposition missing name field");
           }
           if (name.startsWith('"')) name = name.slice(1, -1);
 
@@ -160,10 +162,10 @@ export class FormDataDecoderStream {
           contentType = header.slice(header.indexOf(":") + 1).trim();
         } // else ignore header
         buffer = (await reader.read()).value?.value;
-        if (buffer == undefined) throw new Error("Unexpected EOF");
+        if (buffer == undefined) throw new SyntaxError("Unexpected EOF");
       } while (buffer.length);
       if (name == undefined) {
-        throw new Error(
+        throw new SyntaxError(
           "Missing Content-Disposition header within FormData segment",
         );
       }
@@ -190,8 +192,8 @@ export class FormDataDecoderStream {
             while (true) {
               const v = (await reader.read()).value;
               if (v == undefined) {
-                error(new Error("Unexpected EOF"));
-                return controller.error(new Error("Unexpected EOF"));
+                error(new SyntaxError("Unexpected EOF"));
+                return controller.error(new SyntaxError("Unexpected EOF"));
               }
               if (
                 v.value.length >= boundary.length &&
@@ -235,7 +237,7 @@ export class FormDataDecoderStream {
             do {
               buffer = (await reader.read()).value?.value;
               if (buffer == undefined) {
-                return error(new Error("Unexpected EOF"));
+                return error(new SyntaxError("Unexpected EOF"));
               }
             } while (!boundary.every((x, i) => x === buffer![i]));
             releaseLock();
@@ -293,9 +295,11 @@ export class FormDataDecoderStream {
   static from(request: Request | Response): ReadableStream<FormDataEntry> {
     const contentType = request.headers.get("Content-Type");
     if (contentType == undefined) {
-      throw new Error("Content-Type header is missing");
+      throw new TypeError("Content-Type header is missing");
     }
-    if (request.body == undefined) throw new Error("Request body is missing");
+    if (request.body == undefined) {
+      throw new TypeError("Request body is missing");
+    }
     return new FormDataDecoderStream(contentType, request.body).readable;
   }
 

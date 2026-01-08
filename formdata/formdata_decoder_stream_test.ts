@@ -85,7 +85,7 @@ Deno.test("FormDataDecoderStream throws on missing Content-Type header", () => {
 
   assertThrows(
     () => FormDataDecoderStream.from(request),
-    Error,
+    TypeError,
     "Content-Type header is missing",
   );
 });
@@ -97,7 +97,7 @@ Deno.test("FormDataDecoderStream throws on missing body", () => {
   });
   assertThrows(
     () => FormDataDecoderStream.from(request),
-    Error,
+    TypeError,
     "Request body is missing",
   );
 });
@@ -110,7 +110,7 @@ Deno.test(
 
     assertThrows(
       () => FormDataDecoderStream.from(request),
-      Error,
+      TypeError,
       "Boundary not found in contentType",
     );
   },
@@ -128,7 +128,7 @@ Deno.test("FormDataDecoderStream throws on invalid boundary", () => {
     () => {
       new FormDataDecoderStream(contentType, readable);
     },
-    Error,
+    SyntaxError,
     "Boundary has invalid characters within it",
   );
 });
@@ -160,7 +160,7 @@ Deno.test(
           throw "Unreachable";
         }
       },
-      Error,
+      SyntaxError,
       "Unexpected EOF",
     );
   },
@@ -188,7 +188,7 @@ Deno.test(
           throw "Unreachable";
         }
       },
-      Error,
+      SyntaxError,
       "Missing Content-Disposition header within FormData segment",
     );
   },
@@ -214,7 +214,7 @@ Deno.test(
           throw "Unreachable";
         }
       },
-      Error,
+      SyntaxError,
       "Content-Disposition was not of form-data",
     );
   },
@@ -240,7 +240,7 @@ Deno.test(
           throw "Unreachable";
         }
       },
-      Error,
+      SyntaxError,
       "Content-Disposition missing name field",
     );
   },
@@ -264,7 +264,7 @@ Deno.test(
           ).readable
         ) throw "Unreachable";
       },
-      Error,
+      SyntaxError,
       "Unexpected EOF",
     );
   },
@@ -292,7 +292,7 @@ Deno.test(
           throw "Unreachable";
         }
       },
-      Error,
+      SyntaxError,
       "Missing Content-Disposition header within FormData segment",
     );
   },
@@ -317,12 +317,12 @@ Deno.test(
         ) {
           await assertRejects(
             async () => await new Response(entry.value).text(),
-            Error,
+            SyntaxError,
             "Unexpected EOF",
           );
         }
       },
-      Error,
+      SyntaxError,
       "Unexpected EOF",
     );
   },
@@ -432,7 +432,7 @@ Deno.test(
           await entry.value.cancel();
         }
       },
-      Error,
+      SyntaxError,
       "Unexpected EOF",
     );
   },
