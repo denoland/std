@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" 
+     creator="Sample GPS App"
+     xmlns="http://www.topografix.com/GPX/1/1"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>Morning Run</name>
+    <desc>A 5K morning run through the park</desc>
+    <author>
+      <name>John Runner</name>
+      <email id="john" domain="example.com"/>
+    </author>
+    <time>2024-01-15T07:30:00Z</time>
+  </metadata>
+  <trk>
+    <name>5K Run Track</name>
+    <type>Running</type>
+    <trkseg>
+      <trkpt lat="59.911491" lon="10.757933">
+        <ele>25.5</ele>
+        <time>2024-01-15T07:30:00Z</time>
+      </trkpt>
+      <trkpt lat="59.912103" lon="10.758421">
+        <ele>26.2</ele>
+        <time>2024-01-15T07:30:30Z</time>
+      </trkpt>
+      <trkpt lat="59.912845" lon="10.759102">
+        <ele>27.8</ele>
+        <time>2024-01-15T07:31:00Z</time>
+      </trkpt>
+      <trkpt lat="59.913521" lon="10.760234">
+        <ele>28.1</ele>
+        <time>2024-01-15T07:31:30Z</time>
+      </trkpt>
+      <trkpt lat="59.914012" lon="10.761543">
+        <ele>29.5</ele>
+        <time>2024-01-15T07:32:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <wpt lat="59.911491" lon="10.757933">
+    <name>Start Point</name>
+    <sym>Flag, Green</sym>
+  </wpt>
+  <wpt lat="59.914012" lon="10.761543">
+    <name>Checkpoint 1</name>
+    <sym>Flag, Blue</sym>
+  </wpt>
+</gpx>

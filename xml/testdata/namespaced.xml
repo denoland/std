@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<feed
+  xmlns="http://www.w3.org/2005/Atom"
+  xmlns:g="http://base.google.com/ns/1.0"
+>
+  <title>Product Feed</title>
+  <entry>
+    <g:id>SKU-001</g:id>
+    <g:title>Premium Widget</g:title>
+    <g:price>49.99 USD</g:price>
+    <g:availability>in stock</g:availability>
+  </entry>
+  <entry>
+    <g:id>SKU-002</g:id>
+    <g:title>Deluxe Gadget</g:title>
+    <g:price>79.99 USD</g:price>
+    <g:availability>preorder</g:availability>
+  </entry>
+</feed>
