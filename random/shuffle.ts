@@ -1,7 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import type { Prng, RandomOptions } from "./_types.ts";
-import { randomIntegerBetween } from "./integer_between.ts";
 export type { Prng, RandomOptions };
 
 /**
@@ -32,15 +31,18 @@ export function shuffle<T>(
   options?: RandomOptions,
 ): T[] {
   const result = [...items];
+  const prng = options?.prng ?? Math.random;
 
   // https://en.wikipedia.org/wiki/Fisher–Yates_shuffle#The_modern_algorithm
   // -- To shuffle an array a of n elements (indices 0..n-1):
   // for i from n−1 down to 1 do
   for (let i = result.length - 1; i >= 1; --i) {
     // j ← random integer such that 0 ≤ j ≤ i
-    const j = randomIntegerBetween(0, i, options);
+    const j = Math.floor(prng() * (i + 1));
     // exchange a[j] and a[i]
-    [result[i], result[j]] = [result[j]!, result[i]!];
+    const temp = result[i];
+    result[i] = result[j]!;
+    result[j] = temp!;
   }
 
   return result;

@@ -19,12 +19,22 @@ Deno.test("CircuitBreaker constructor throws for invalid failureThreshold", () =
   assertThrows(
     () => new CircuitBreaker({ failureThreshold: 0 }),
     TypeError,
-    "'failureThreshold' must be at least 1",
+    "'failureThreshold' must be a finite number >= 1",
   );
   assertThrows(
     () => new CircuitBreaker({ failureThreshold: -1 }),
     TypeError,
-    "'failureThreshold' must be at least 1",
+    "'failureThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureThreshold: NaN }),
+    TypeError,
+    "'failureThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureThreshold: Infinity }),
+    TypeError,
+    "'failureThreshold' must be a finite number >= 1",
   );
 });
 
@@ -32,7 +42,17 @@ Deno.test("CircuitBreaker constructor throws for invalid cooldownMs", () => {
   assertThrows(
     () => new CircuitBreaker({ cooldownMs: -1 }),
     TypeError,
-    "'cooldownMs' must be non-negative",
+    "'cooldownMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ cooldownMs: NaN }),
+    TypeError,
+    "'cooldownMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ cooldownMs: Infinity }),
+    TypeError,
+    "'cooldownMs' must be a finite non-negative number",
   );
 });
 
@@ -40,7 +60,17 @@ Deno.test("CircuitBreaker constructor throws for invalid successThreshold", () =
   assertThrows(
     () => new CircuitBreaker({ successThreshold: 0 }),
     TypeError,
-    "'successThreshold' must be at least 1",
+    "'successThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ successThreshold: NaN }),
+    TypeError,
+    "'successThreshold' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ successThreshold: Infinity }),
+    TypeError,
+    "'successThreshold' must be a finite number >= 1",
   );
 });
 
@@ -48,7 +78,17 @@ Deno.test("CircuitBreaker constructor throws for invalid halfOpenMaxConcurrent",
   assertThrows(
     () => new CircuitBreaker({ halfOpenMaxConcurrent: 0 }),
     TypeError,
-    "'halfOpenMaxConcurrent' must be at least 1",
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ halfOpenMaxConcurrent: NaN }),
+    TypeError,
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ halfOpenMaxConcurrent: Infinity }),
+    TypeError,
+    "'halfOpenMaxConcurrent' must be a finite number >= 1",
   );
 });
 
@@ -56,7 +96,17 @@ Deno.test("CircuitBreaker constructor throws for invalid failureWindowMs", () =>
   assertThrows(
     () => new CircuitBreaker({ failureWindowMs: -1 }),
     TypeError,
-    "'failureWindowMs' must be non-negative",
+    "'failureWindowMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureWindowMs: NaN }),
+    TypeError,
+    "'failureWindowMs' must be a finite non-negative number",
+  );
+  assertThrows(
+    () => new CircuitBreaker({ failureWindowMs: Infinity }),
+    TypeError,
+    "'failureWindowMs' must be a finite non-negative number",
   );
 });
 
@@ -150,8 +200,71 @@ Deno.test("CircuitBreaker transitions to half_open after cooldown", async () => 
   // Advance time past cooldown
   time.tick(1001);
 
-  assertEquals(breaker.state, "half_open");
+  // isAvailable resolves time-based transitions
   assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
+});
+
+Deno.test("CircuitBreaker state getter is pure and does not trigger transitions", async () => {
+  using time = new FakeTime();
+
+  const transitions: Array<[CircuitState, CircuitState]> = [];
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    onStateChange: (from, to) => transitions.push([from, to]),
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+  assertEquals(transitions, [["closed", "open"]]);
+
+  // Advance time past cooldown
+  time.tick(1001);
+
+  // Reading state should NOT trigger transition or callbacks
+  assertEquals(breaker.state, "open"); // Still shows "open" (stale)
+  assertEquals(transitions.length, 1); // No new transitions
+
+  // Reading state multiple times should still not trigger
+  breaker.state;
+  breaker.state;
+  assertEquals(transitions.length, 1);
+
+  // Only isAvailable triggers the transition
+  assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
+  assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
+});
+
+Deno.test("CircuitBreaker execute() resolves stale state before checking", async () => {
+  using time = new FakeTime();
+
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    successThreshold: 1,
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // Advance time past cooldown
+  time.tick(1001);
+
+  // State is stale (still shows open)
+  assertEquals(breaker.state, "open");
+
+  // But execute() should resolve the transition and succeed
+  const result = await breaker.execute(() => Promise.resolve("success"));
+  assertEquals(result, "success");
+  assertEquals(breaker.state, "closed"); // Now closed after successful execution
 });
 
 Deno.test("CircuitBreaker closes from half_open after success threshold", async () => {
@@ -168,8 +281,9 @@ Deno.test("CircuitBreaker closes from half_open after success threshold", async 
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half_open
+  // Enter half_open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // First success
@@ -195,8 +309,9 @@ Deno.test("CircuitBreaker reopens from half_open on failure", async () => {
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half_open
+  // Enter half_open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Failure in half_open should reopen
@@ -207,17 +322,27 @@ Deno.test("CircuitBreaker reopens from half_open on failure", async () => {
   assertEquals(breaker.state, "open");
 });
 
-Deno.test("CircuitBreaker.forceOpen() opens the circuit", () => {
-  const breaker = new CircuitBreaker();
+Deno.test("CircuitBreaker.forceOpen() opens the circuit and invokes onOpen", () => {
+  const openCalls: number[] = [];
+  const breaker = new CircuitBreaker({
+    onOpen: (count) => openCalls.push(count),
+  });
   assertEquals(breaker.state, "closed");
 
   breaker.forceOpen();
   assertEquals(breaker.state, "open");
   assertEquals(breaker.isAvailable, false);
+  assertEquals(openCalls, [0]); // No failures recorded, so count is 0
 });
 
-Deno.test("CircuitBreaker.forceClose() closes the circuit and resets", async () => {
-  const breaker = new CircuitBreaker({ failureThreshold: 1 });
+Deno.test("CircuitBreaker.forceClose() closes the circuit and invokes onClose", async () => {
+  let closeCalled = false;
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    onClose: () => {
+      closeCalled = true;
+    },
+  });
 
   // Open the circuit
   try {
@@ -229,6 +354,7 @@ Deno.test("CircuitBreaker.forceClose() closes the circuit and resets", async () 
   assertEquals(breaker.state, "closed");
   assertEquals(breaker.failureCount, 0);
   assertEquals(breaker.isAvailable, true);
+  assertEquals(closeCalled, true);
 });
 
 Deno.test("CircuitBreaker.reset() resets to initial state", async () => {
@@ -265,25 +391,39 @@ Deno.test("CircuitBreaker.getStats() returns correct statistics", async () => {
   assertEquals(stats.failureCount, 1);
 });
 
-Deno.test("CircuitBreaker isFailure predicate filters errors", async () => {
+Deno.test("CircuitBreaker isFailure predicate filters errors and onFailure callback", async () => {
+  const failures: Array<{ error: unknown; count: number }> = [];
   const breaker = new CircuitBreaker({
-    failureThreshold: 1,
-    // Only count TypeError as failures
-    isFailure: (error) => error instanceof TypeError,
+    failureThreshold: 2,
+    // Only count TypeError as failures (inverted from typical use for testing)
+    isFailure: (error) => !(error instanceof TypeError),
+    onFailure: (error, count) => failures.push({ error, count }),
   });
 
-  // Regular Error should not count
+  // TypeError should not be recorded (isFailure returns false)
+  const typeError = new TypeError("ignored");
   try {
-    await breaker.execute(() => Promise.reject(new Error("ignored")));
+    await breaker.execute(() => Promise.reject(typeError));
   } catch { /* expected */ }
+  assertEquals(failures.length, 0);
   assertEquals(breaker.failureCount, 0);
   assertEquals(breaker.state, "closed");
 
-  // TypeError should count and open circuit
+  // Regular Error should be recorded (isFailure returns true)
+  const regularError = new Error("counted");
   try {
-    await breaker.execute(() => Promise.reject(new TypeError("counts")));
+    await breaker.execute(() => Promise.reject(regularError));
   } catch { /* expected */ }
+  assertEquals(failures.length, 1);
   assertEquals(breaker.failureCount, 1);
+  assertEquals(breaker.state, "closed");
+
+  // Second regular Error should open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("counted2")));
+  } catch { /* expected */ }
+  assertEquals(failures.length, 2);
+  assertEquals(breaker.failureCount, 2);
   assertEquals(breaker.state, "open");
 });
 
@@ -358,10 +498,9 @@ Deno.test("CircuitBreaker onStateChange callback is invoked", async () => {
   } catch { /* expected */ }
   assertEquals(transitions, [["closed", "open"]]);
 
-  // Half-open
+  // Half-open (isAvailable resolves the transition)
   time.tick(1001);
-  // Access state to trigger transition
-  breaker.state;
+  breaker.isAvailable;
   assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
 
   // Close
@@ -455,8 +594,9 @@ Deno.test("CircuitBreaker half_open limits concurrent requests", async () => {
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Start a slow request
@@ -521,7 +661,8 @@ Deno.test("CircuitBreaker with zero cooldown transitions immediately", async () 
   } catch { /* expected */ }
 
   // Should immediately be half_open (or allow immediate transition)
-  // Since cooldown is 0, checking state should transition
+  // Since cooldown is 0, isAvailable resolves the transition
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Should be able to close immediately
@@ -578,36 +719,6 @@ Deno.test("CircuitBreaker multiple force operations", () => {
   assertEquals(transitions.length, 2);
 });
 
-Deno.test("CircuitBreaker.forceOpen() invokes onOpen callback", () => {
-  const openCalls: number[] = [];
-  const breaker = new CircuitBreaker({
-    onOpen: (count) => openCalls.push(count),
-  });
-
-  breaker.forceOpen();
-  assertEquals(openCalls, [0]); // No failures recorded, so count is 0
-});
-
-Deno.test("CircuitBreaker.forceClose() invokes onClose callback", async () => {
-  let closeCalled = false;
-  const breaker = new CircuitBreaker({
-    failureThreshold: 1,
-    onClose: () => {
-      closeCalled = true;
-    },
-  });
-
-  // Open the circuit first
-  try {
-    await breaker.execute(() => Promise.reject(new Error("fail")));
-  } catch { /* expected */ }
-  assertEquals(breaker.state, "open");
-
-  // forceClose should invoke onClose
-  breaker.forceClose();
-  assertEquals(closeCalled, true);
-});
-
 Deno.test("CircuitBreaker.reset() invokes onStateChange when not closed", async () => {
   const transitions: Array<[CircuitState, CircuitState]> = [];
   const breaker = new CircuitBreaker({
@@ -658,8 +769,9 @@ Deno.test("CircuitBreaker half_open failure invokes onStateChange and onOpen", a
   assertEquals(transitions, [["closed", "open"]]);
   assertEquals(openCalls, [1]);
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
   assertEquals(transitions, [["closed", "open"], ["open", "half_open"]]);
 
@@ -690,8 +802,9 @@ Deno.test("CircuitBreaker consecutiveSuccesses tracked in half_open getStats", a
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // First success
@@ -725,8 +838,9 @@ Deno.test("CircuitBreaker isResultFailure in half_open reopens circuit", async (
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
   assertEquals(breaker.state, "half_open");
 
   // Result failure in half-open should reopen
@@ -750,10 +864,10 @@ Deno.test("CircuitBreaker handles multiple half_open concurrent slots", async ()
     await breaker.execute(() => Promise.reject(new Error("fail")));
   } catch { /* expected */ }
 
-  // Enter half-open
+  // Enter half-open (isAvailable resolves the transition)
   time.tick(1001);
-  assertEquals(breaker.state, "half_open");
   assertEquals(breaker.isAvailable, true);
+  assertEquals(breaker.state, "half_open");
 
   // Start two concurrent requests (should both be allowed)
   let resolve1: (() => void) | undefined;
@@ -786,27 +900,26 @@ Deno.test("CircuitBreaker handles multiple half_open concurrent slots", async ()
   assertEquals(breaker.state, "closed"); // Both successes met threshold
 });
 
-Deno.test("CircuitBreaker isFailure predicate prevents failure recording", async () => {
-  const failures: Array<{ error: unknown; count: number }> = [];
-  const breaker = new CircuitBreaker({
-    failureThreshold: 2,
-    isFailure: (error) => !(error instanceof TypeError),
-    onFailure: (error, count) => failures.push({ error, count }),
-  });
+Deno.test("CircuitBreaker.execute() accepts sync functions", async () => {
+  const breaker = new CircuitBreaker();
+  const result = await breaker.execute(() => "sync result");
+  assertEquals(result, "sync result");
+  assertEquals(breaker.state, "closed");
+});
 
-  // TypeError should not be recorded
-  const typeError = new TypeError("ignored");
-  try {
-    await breaker.execute(() => Promise.reject(typeError));
-  } catch { /* expected */ }
-  assertEquals(failures.length, 0);
-  assertEquals(breaker.failureCount, 0);
+Deno.test("CircuitBreaker.execute() handles sync function that throws", async () => {
+  const breaker = new CircuitBreaker({ failureThreshold: 1 });
+  const error = new Error("sync error");
 
-  // Regular Error should be recorded
-  const regularError = new Error("counted");
-  try {
-    await breaker.execute(() => Promise.reject(regularError));
-  } catch { /* expected */ }
-  assertEquals(failures.length, 1);
+  await assertRejects(
+    () =>
+      breaker.execute(() => {
+        throw error;
+      }),
+    Error,
+    "sync error",
+  );
+
   assertEquals(breaker.failureCount, 1);
+  assertEquals(breaker.state, "open");
 });
