@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <product id="1">
+    <name>Widget</name>
+    <price currency="USD">19.99</price>
+  </product>
+  <product id="2">
+    <name>Gadget</name>
+    <price currency="EUR">29.99</price>
+  </product>
+</catalog>

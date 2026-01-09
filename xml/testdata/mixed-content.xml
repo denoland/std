@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mixed content: elements containing both text and child elements -->
+<article>
+  <title>Understanding XML Mixed Content</title>
+  <author>Jane Doe</author>
+  <content>
+    This article explains <emphasis>mixed content</emphasis> in XML. Mixed content allows
+    elements to contain both text and child elements.
+    <example>
+      Here's an example of <code>mixed content</code> within an XML element.
+    </example>
+    It's commonly used in document-centric XML applications.
+    <list>
+      Benefits of mixed content:
+      <item>Flexible content structuring</item>
+      <item>Natural representation of text with inline markup</item>
+      <item>Suitable for narrative content</item>
+    </list>
+    However, it can be more challenging to process than element-only content.
+  </content>
+  <!-- Test adjacent text with inline elements -->
+  <paragraph>
+    The <strong>quick</strong> brown <em>fox</em> jumps over the <strong>lazy</strong> dog.
+  </paragraph>
+</article>

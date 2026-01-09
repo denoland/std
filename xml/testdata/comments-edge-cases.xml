@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is a standard comment -->
+<root>
+  <!-- Simple comment inside element -->
+  <element1>Content</element1>
+  
+  <!--Comment without spaces-->
+  <element2>More content</element2>
+  
+  <!-- 
+    Multi-line comment
+    with several lines
+    of text
+  -->
+  <element3>Yet more content</element3>
+  
+  <!-- Comment with special characters: < > & -->
+  <element4>Content</element4>
+  
+  <!-- Comment with single dash - in the middle -->
+  <element5>Content</element5>
+  
+  <!-- Comment with XML-like content: <fake>element</fake> -->
+  <element6>Content</element6>
+  
+  <!-- Comment at start of line
+       and continuing -->
+  <element7>Content</element7>
+  
+  <!-- Comment with lots of dashes at start
+       ========================================
+       Section Header
+       ========================================
+  -->
+  <element8>Content</element8>
+  
+  <!-- Numbers: 12345 -->
+  <!-- Unicode: 日本語 -->
+  <!-- Emoji: 🎉 -->
+  <element9>Content</element9>
+  
+  <!-- Empty element below -->
+  <empty/>
+  <!-- Comment after empty element -->
+  
+  <!---->
+  <afterEmpty>After intentionally empty comment</afterEmpty>
+</root>

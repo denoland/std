@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CDATA section edge cases -->
+<root>
+  <!-- Basic CDATA -->
+  <basic><![CDATA[Simple CDATA content]]></basic>
+  
+  <!-- CDATA with XML-like content that would need escaping -->
+  <xmlLike><![CDATA[<element attr="value">Content</element>]]></xmlLike>
+  
+  <!-- CDATA with special characters -->
+  <special><![CDATA[< > & " ' are all allowed in CDATA]]></special>
+  
+  <!-- CDATA with the tricky ]]> sequence (needs splitting) -->
+  <trickySplit><![CDATA[Content with ]]]]><![CDATA[> inside]]></trickySplit>
+  
+  <!-- CDATA with single brackets -->
+  <brackets><![CDATA[Array[0] and Array[1] are valid]]></brackets>
+  
+  <!-- CDATA with double brackets but not closing -->
+  <doubleBracket><![CDATA[This has ]] but no > after]]></doubleBracket>
+  
+  <!-- CDATA with JavaScript -->
+  <javascript><![CDATA[
+    function process(data) {
+      if (data.length > 0 && data[0] !== null) {
+        return data.filter(x => x > 0);
+      }
+      return [];
+    }
+  ]]></javascript>
+  
+  <!-- CDATA with JSON -->
+  <json><![CDATA[
+    {
+      "name": "Test",
+      "values": [1, 2, 3],
+      "nested": {"a": true, "b": false}
+    }
+  ]]></json>
+  
+  <!-- Empty CDATA -->
+  <empty><![CDATA[]]></empty>
+  
+  <!-- CDATA with only whitespace -->
+  <whitespace><![CDATA[   
+   ]]></whitespace>
+  
+  <!-- Adjacent CDATA sections -->
+  <adjacent><![CDATA[First]]><![CDATA[Second]]></adjacent>
+  
+  <!-- CDATA mixed with text -->
+  <mixed>Text before <![CDATA[CDATA content]]> text after</mixed>
+</root>

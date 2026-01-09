@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Edge cases for XML parsing -->
+<root>
+  <!-- Self-closing vs empty elements -->
+  <selfClosing/>
+  <emptyWithAttrs id="1" type="test"/>
+  <emptyExplicit></emptyExplicit>
+  <emptyWithSpace> </emptyWithSpace>
+  
+  <!-- Whitespace handling -->
+  <preserveWhitespace xml:space="preserve">  multiple   spaces   here  </preserveWhitespace>
+  <newlines>
+Line 1
+Line 2
+Line 3
+  </newlines>
+  <tabs>	tab	separated	values	</tabs>
+  
+  <!-- Single and double quotes in attributes -->
+  <quotes single='He said "Hello"' double="It's working"/>
+  <nested attr="Value with 'single' inside"/>
+  
+  <!-- Attributes with various characters -->
+  <special url="https://example.com/path?a=1&amp;b=2" 
+           math="x &lt; 10 &amp;&amp; y &gt; 5"
+           empty=""
+           spaces="value with spaces"/>
+  
+  <!-- Empty text nodes between elements -->
+  <container><a/><b/><c/></container>
+  
+  <!-- Very long attribute value -->
+  <longAttr value="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."/>
+  
+  <!-- Elements with colons in local names (not namespaced) -->
+  <odd:name xmlns:odd="http://example.com/odd">This uses the odd prefix</odd:name>
+  
+  <!-- Numeric attribute values -->
+  <numbers int="42" float="3.14159" negative="-273.15" scientific="1.23e-10"/>
+  
+  <!-- Boolean-like attribute values -->
+  <booleans true="true" false="false" yes="yes" no="no" one="1" zero="0"/>
+</root>
