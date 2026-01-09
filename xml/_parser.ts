@@ -314,28 +314,3 @@ export class XmlEventParser {
     }
   }
 }
-
-/**
- * Legacy async generator interface for backwards compatibility.
- *
- * @deprecated Use {@linkcode XmlEventParser} class directly for better performance.
- * @param tokenBatches An async iterable of XmlToken arrays from the tokenizer.
- * @param options Options for filtering and behavior.
- * @yields Arrays of XmlEvent objects, batched for reduced async overhead.
- * @throws XmlSyntaxError on well-formedness errors
- */
-export async function* parseTokensToEvents(
-  tokenBatches: AsyncIterable<XmlToken[]>,
-  options: ParseStreamOptions = {},
-): AsyncGenerator<XmlEvent[]> {
-  const parser = new XmlEventParser(options);
-
-  for await (const tokenBatch of tokenBatches) {
-    const events = parser.process(tokenBatch);
-    if (events.length > 0) {
-      yield events;
-    }
-  }
-
-  parser.finalize();
-}

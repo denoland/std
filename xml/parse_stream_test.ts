@@ -331,3 +331,69 @@ Deno.test({
     );
   },
 });
+
+// =============================================================================
+// Coverage: flush() producing events
+// =============================================================================
+
+Deno.test("XmlParseStream flush produces remaining tokens as events", async () => {
+  // When the last chunk ends mid-text, flush() should produce remaining events
+  // Tests lines 127-132 in parse_stream.ts - flush path with events
+  const events = await collectEvents(["<root>hello", " world</root>"]);
+
+  assertEquals(events.length, 3);
+  assertEquals(events[0]!.type, "start_element");
+  assertEquals(events[1]!.type, "text");
+  if (events[1]!.type === "text") {
+    assertEquals(events[1]!.text, "hello world");
+  }
+  assertEquals(events[2]!.type, "end_element");
+});
+
+Deno.test("XmlParseStream handles text split at chunk boundary", async () => {
+  // Text content that spans chunk boundary - finalize will flush remaining text
+  const events = await collectEvents(["<r>hel", "lo</r>"]);
+
+  assertEquals(events.length, 3);
+  assertEquals(events[0]!.type, "start_element");
+  assertEquals(events[1]!.type, "text");
+  if (events[1]!.type === "text") {
+    assertEquals(events[1]!.text, "hello");
+  }
+  assertEquals(events[2]!.type, "end_element");
+});
+
+// =============================================================================
+// Flush produces events tests
+// =============================================================================
+
+Deno.test("XmlParseStream flush produces events from buffered text", async () => {
+  // Test that flush() produces events when text is buffered at stream end.
+  // The key is: trailing text with NO subsequent '<' stays in tokenizer buffer
+  // until flush() is called, which then emits it.
+  const stream = new XmlParseStream();
+  const writer = stream.writable.getWriter();
+
+  const events: XmlEvent[] = [];
+  const readPromise = (async () => {
+    for await (const batch of stream.readable) {
+      events.push(...batch);
+    }
+  })();
+
+  // Write self-closing element, then trailing text (no '<' after)
+  // The trailing text stays buffered until flush() emits it
+  await writer.write("<root/>");
+  await writer.write("trailing");
+  await writer.close();
+
+  await readPromise;
+
+  assertEquals(events.length, 3);
+  assertEquals(events[0]!.type, "start_element");
+  assertEquals(events[1]!.type, "end_element");
+  assertEquals(events[2]!.type, "text");
+  if (events[2]!.type === "text") {
+    assertEquals(events[2]!.text, "trailing");
+  }
+});

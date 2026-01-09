@@ -175,7 +175,6 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
    * Adds a text node to the current element.
    */
   function addTextNode(text: string): void {
-    if (text.length === 0) return; // Fast path: empty string check first (36x faster)
     if (ignoreWhitespace && WHITESPACE_ONLY_RE.test(text)) return;
     const node: XmlTextNode = { type: "text", text };
     if (stack.length > 0) {

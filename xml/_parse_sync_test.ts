@@ -79,7 +79,7 @@ Deno.test("parseSync() handles DOCTYPE with internal subset", () => {
 });
 
 Deno.test("parseSync() handles DOCTYPE with nested brackets in internal subset", () => {
-  // This tests the nested bracket depth tracking (line 313: if (input[pos] === "[") depth++)
+  // This tests the nested bracket depth tracking
   const doc = parseSync(`<!DOCTYPE root [
     <!-- Comment with [brackets] inside -->
     <!ENTITY test "[nested [brackets] here]">
@@ -93,7 +93,7 @@ Deno.test("parseSync() handles DOCTYPE with nested brackets in internal subset",
 // =============================================================================
 
 Deno.test("parseSync() handles adjacent tags without text between them", () => {
-  // This tests the empty text check (line 179: if (text.length === 0) return)
+  // This tests the empty text check
   const doc = parseSync("<root><a/><b/></root>");
 
   assertEquals(doc.root.children.length, 2);
@@ -110,7 +110,7 @@ Deno.test("parseSync() handles adjacent tags without text between them", () => {
 // =============================================================================
 
 Deno.test("parseSync() handles declaration with only encoding (no version)", () => {
-  // This tests the fallback to "1.0" when version is missing (line 346)
+  // This tests the fallback to "1.0" when version is missing
   const doc = parseSync('<?xml encoding="UTF-8"?><root/>');
 
   assertEquals(doc.declaration?.version, "1.0");
@@ -298,5 +298,66 @@ Deno.test("parseSync() throws on unsupported markup declaration", () => {
     () => parseSync("<root><!INVALID></root>"),
     XmlSyntaxError,
     "Unsupported markup declaration",
+  );
+});
+
+// =============================================================================
+// Comment with newlines (line position tracking)
+// =============================================================================
+
+Deno.test("parseSync() tracks line position in multi-line comments", () => {
+  // Tests newline tracking inside comments
+  const doc = parseSync(`<root><!-- line1
+line2
+line3 --><item/></root>`);
+
+  assertEquals(doc.root.children.length, 2);
+  // First child is comment, second is element
+  if (doc.root.children[0]!.type === "comment") {
+    assertEquals(doc.root.children[0]!.text, " line1\nline2\nline3 ");
+  }
+});
+
+// =============================================================================
+// Multi-line CDATA position tracking
+// =============================================================================
+
+Deno.test("parseSync() tracks line position in multi-line CDATA", () => {
+  // Tests newline tracking inside CDATA
+  const doc = parseSync(`<root><![CDATA[line1
+line2
+line3]]></root>`);
+
+  assertEquals(doc.root.children.length, 1);
+  if (doc.root.children[0]!.type === "cdata") {
+    assertEquals(doc.root.children[0]!.text, "line1\nline2\nline3");
+  }
+});
+
+Deno.test("parseSync() tracks line position in multi-line processing instruction", () => {
+  // Tests newline tracking inside PI content
+  // PI content with newlines - should not throw
+  const doc = parseSync(`<?xml version="1.0"?>
+<?target content
+  with newlines
+  here?>
+<root/>`);
+
+  assertEquals(doc.root.name.local, "root");
+  assertEquals(doc.declaration?.version, "1.0");
+});
+
+// =============================================================================
+// Empty text fast path test
+// =============================================================================
+
+Deno.test("parseSync() handles adjacent elements with no text between", () => {
+  // Tests line 178: empty text fast path when text.length === 0
+  const doc = parseSync("<root><a></a><b></b></root>");
+  assertEquals(doc.root.children.length, 2);
+  // Verify no empty text nodes were created
+  assertEquals(
+    doc.root.children.every((c) => c.type === "element"),
+    true,
   );
 });

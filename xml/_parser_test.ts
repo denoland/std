@@ -1,24 +1,19 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assertEquals, assertRejects } from "@std/assert";
-import { parseTokensToEvents } from "./_parser.ts";
-import { tokenize } from "./_tokenizer.ts";
+import { assertEquals, assertThrows } from "@std/assert";
+import { XmlEventParser } from "./_parser.ts";
+import { XmlTokenizer } from "./_tokenizer.ts";
 import type { ParseStreamOptions, XmlEvent } from "./types.ts";
 import { XmlSyntaxError } from "./types.ts";
 
-/** Helper to collect all events from parsing an XML string (flattens batches). */
-async function collectEvents(
-  xml: string,
-  options?: ParseStreamOptions,
-): Promise<XmlEvent[]> {
-  async function* stringSource(): AsyncIterable<string> {
-    yield xml;
-  }
-  const tokens = tokenize(stringSource());
-  const events: XmlEvent[] = [];
-  for await (const batch of parseTokensToEvents(tokens, options)) {
-    events.push(...batch);
-  }
+/** Helper to collect all events from parsing an XML string synchronously. */
+function collectEvents(xml: string, options?: ParseStreamOptions): XmlEvent[] {
+  const tokenizer = new XmlTokenizer();
+  const parser = new XmlEventParser(options);
+  const tokens = tokenizer.process(xml);
+  const remaining = tokenizer.finalize();
+  const events = parser.process([...tokens, ...remaining]);
+  parser.finalize();
   return events;
 }
 
@@ -26,8 +21,8 @@ async function collectEvents(
 // Namespace Prefix Parsing (Parser-specific)
 // =============================================================================
 
-Deno.test("parse() extracts namespace prefix from element name", async () => {
-  const events = await collectEvents("<ns:element></ns:element>");
+Deno.test("XmlEventParser.process() extracts namespace prefix from element name", () => {
+  const events = collectEvents("<ns:element></ns:element>");
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -36,8 +31,8 @@ Deno.test("parse() extracts namespace prefix from element name", async () => {
   }
 });
 
-Deno.test("parse() extracts namespace prefix from attribute name", async () => {
-  const events = await collectEvents('<root xml:lang="en"/>');
+Deno.test("XmlEventParser.process() extracts namespace prefix from attribute name", () => {
+  const events = collectEvents('<root xml:lang="en"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -48,8 +43,8 @@ Deno.test("parse() extracts namespace prefix from attribute name", async () => {
   }
 });
 
-Deno.test("parse() handles element without prefix", async () => {
-  const events = await collectEvents("<element/>");
+Deno.test("XmlEventParser.process() handles element without prefix", () => {
+  const events = collectEvents("<element/>");
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -62,8 +57,8 @@ Deno.test("parse() handles element without prefix", async () => {
 // Entity Decoding (Parser-specific)
 // =============================================================================
 
-Deno.test("parse() decodes entities in attribute values", async () => {
-  const events = await collectEvents('<item name="Tom &amp; Jerry"/>');
+Deno.test("XmlEventParser.process() decodes entities in attribute values", () => {
+  const events = collectEvents('<item name="Tom &amp; Jerry"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -71,8 +66,8 @@ Deno.test("parse() decodes entities in attribute values", async () => {
   }
 });
 
-Deno.test("parse() decodes character references in attribute values", async () => {
-  const events = await collectEvents('<item char="&#60;&#62;"/>');
+Deno.test("XmlEventParser.process() decodes character references in attribute values", () => {
+  const events = collectEvents('<item char="&#60;&#62;"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -80,8 +75,8 @@ Deno.test("parse() decodes character references in attribute values", async () =
   }
 });
 
-Deno.test("parse() decodes entities in text content", async () => {
-  const events = await collectEvents("<root>&lt;script&gt;</root>");
+Deno.test("XmlEventParser.process() decodes entities in text content", () => {
+  const events = collectEvents("<root>&lt;script&gt;</root>");
 
   assertEquals(events[1]!.type, "text");
   if (events[1]!.type === "text") {
@@ -89,8 +84,8 @@ Deno.test("parse() decodes entities in text content", async () => {
   }
 });
 
-Deno.test("parse() decodes all predefined entities in text", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() decodes all predefined entities in text", () => {
+  const events = collectEvents(
     "<root>&lt;&gt;&amp;&apos;&quot;</root>",
   );
 
@@ -100,8 +95,8 @@ Deno.test("parse() decodes all predefined entities in text", async () => {
   }
 });
 
-Deno.test("parse() handles hex character references", async () => {
-  const events = await collectEvents("<root>&#x3C;&#x3E;</root>");
+Deno.test("XmlEventParser.process() handles hex character references", () => {
+  const events = collectEvents("<root>&#x3C;&#x3E;</root>");
 
   assertEquals(events[1]!.type, "text");
   if (events[1]!.type === "text") {
@@ -109,8 +104,8 @@ Deno.test("parse() handles hex character references", async () => {
   }
 });
 
-Deno.test("parse() handles Unicode in text", async () => {
-  const events = await collectEvents("<root>日本語 🎉 émoji</root>");
+Deno.test("XmlEventParser.process() handles Unicode in text", () => {
+  const events = collectEvents("<root>日本語 🎉 émoji</root>");
 
   assertEquals(events[1]!.type, "text");
   if (events[1]!.type === "text") {
@@ -122,8 +117,8 @@ Deno.test("parse() handles Unicode in text", async () => {
 // Attribute Value Normalization (§3.3.3, Parser-specific)
 // =============================================================================
 
-Deno.test("parse() normalizes literal tab in attribute value to space", async () => {
-  const events = await collectEvents('<item value="a\tb"/>');
+Deno.test("XmlEventParser.process() normalizes literal tab in attribute value to space", () => {
+  const events = collectEvents('<item value="a\tb"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -131,8 +126,8 @@ Deno.test("parse() normalizes literal tab in attribute value to space", async ()
   }
 });
 
-Deno.test("parse() normalizes literal newline in attribute value to space", async () => {
-  const events = await collectEvents('<item value="a\nb"/>');
+Deno.test("XmlEventParser.process() normalizes literal newline in attribute value to space", () => {
+  const events = collectEvents('<item value="a\nb"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -140,8 +135,8 @@ Deno.test("parse() normalizes literal newline in attribute value to space", asyn
   }
 });
 
-Deno.test("parse() preserves character reference to newline in attribute value", async () => {
-  const events = await collectEvents('<item value="a&#10;b"/>');
+Deno.test("XmlEventParser.process() preserves character reference to newline in attribute value", () => {
+  const events = collectEvents('<item value="a&#10;b"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -149,8 +144,8 @@ Deno.test("parse() preserves character reference to newline in attribute value",
   }
 });
 
-Deno.test("parse() preserves character reference to tab in attribute value", async () => {
-  const events = await collectEvents('<item value="a&#9;b"/>');
+Deno.test("XmlEventParser.process() preserves character reference to tab in attribute value", () => {
+  const events = collectEvents('<item value="a&#9;b"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -158,8 +153,8 @@ Deno.test("parse() preserves character reference to tab in attribute value", asy
   }
 });
 
-Deno.test("parse() preserves character reference to CR in attribute value", async () => {
-  const events = await collectEvents('<item value="a&#13;b"/>');
+Deno.test("XmlEventParser.process() preserves character reference to CR in attribute value", () => {
+  const events = collectEvents('<item value="a&#13;b"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -167,8 +162,8 @@ Deno.test("parse() preserves character reference to CR in attribute value", asyn
   }
 });
 
-Deno.test("parse() normalizes mixed literal and reference whitespace correctly", async () => {
-  const events = await collectEvents('<item value="a\t&#10;b"/>');
+Deno.test("XmlEventParser.process() normalizes mixed literal and reference whitespace correctly", () => {
+  const events = collectEvents('<item value="a\t&#10;b"/>');
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -180,8 +175,8 @@ Deno.test("parse() normalizes mixed literal and reference whitespace correctly",
 // CDATA Handling (Parser-specific)
 // =============================================================================
 
-Deno.test("parse() does not decode entities in CDATA", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() does not decode entities in CDATA", () => {
+  const events = collectEvents(
     "<root><![CDATA[&amp; stays &amp;]]></root>",
   );
 
@@ -191,8 +186,8 @@ Deno.test("parse() does not decode entities in CDATA", async () => {
   }
 });
 
-Deno.test("parse() coerces CDATA to text when option is set", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() coerces CDATA to text when option is set", () => {
+  const events = collectEvents(
     "<root><![CDATA[content]]></root>",
     { coerceCDataToText: true },
   );
@@ -207,8 +202,8 @@ Deno.test("parse() coerces CDATA to text when option is set", async () => {
 // Filtering Options (Parser-specific)
 // =============================================================================
 
-Deno.test("parse() filters comments when ignoreComments is true", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() filters comments when ignoreComments is true", () => {
+  const events = collectEvents(
     "<root><!-- comment -->text</root>",
     { ignoreComments: true },
   );
@@ -219,8 +214,8 @@ Deno.test("parse() filters comments when ignoreComments is true", async () => {
   assertEquals(events[2]!.type, "end_element");
 });
 
-Deno.test("parse() filters PIs when ignoreProcessingInstructions is true", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() filters PIs when ignoreProcessingInstructions is true", () => {
+  const events = collectEvents(
     "<?pi content?><root/>",
     { ignoreProcessingInstructions: true },
   );
@@ -230,8 +225,8 @@ Deno.test("parse() filters PIs when ignoreProcessingInstructions is true", async
   assertEquals(events[1]!.type, "end_element");
 });
 
-Deno.test("parse() ignores whitespace-only text when option is set", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() ignores whitespace-only text when option is set", () => {
+  const events = collectEvents(
     "<root>  \n  </root>",
     { ignoreWhitespace: true },
   );
@@ -241,8 +236,8 @@ Deno.test("parse() ignores whitespace-only text when option is set", async () =>
   assertEquals(events[1]!.type, "end_element");
 });
 
-Deno.test("parse() preserves whitespace by default", async () => {
-  const events = await collectEvents("<root>  \n  </root>");
+Deno.test("XmlEventParser.process() preserves whitespace by default", () => {
+  const events = collectEvents("<root>  \n  </root>");
 
   assertEquals(events.length, 3);
   assertEquals(events[1]!.type, "text");
@@ -251,8 +246,8 @@ Deno.test("parse() preserves whitespace by default", async () => {
   }
 });
 
-Deno.test("parse() preserves text with whitespace and content", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() preserves text with whitespace and content", () => {
+  const events = collectEvents(
     "<root>  hello  </root>",
     { ignoreWhitespace: true },
   );
@@ -264,8 +259,8 @@ Deno.test("parse() preserves text with whitespace and content", async () => {
   }
 });
 
-Deno.test("parse() handles multiple options together", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() handles multiple options together", () => {
+  const events = collectEvents(
     `<?pi data?>
 <root>
   <!-- comment -->
@@ -289,40 +284,40 @@ Deno.test("parse() handles multiple options together", async () => {
 // Well-formedness Validation (Parser-specific)
 // =============================================================================
 
-Deno.test("parse() throws on mismatched closing tag", async () => {
-  await assertRejects(
+Deno.test("XmlEventParser.process() throws on mismatched closing tag", () => {
+  assertThrows(
     () => collectEvents("<root></wrong>"),
     XmlSyntaxError,
     "Mismatched closing tag: expected </root> but found </wrong>",
   );
 });
 
-Deno.test("parse() throws on unexpected closing tag", async () => {
-  await assertRejects(
+Deno.test("XmlEventParser.process() throws on unexpected closing tag", () => {
+  assertThrows(
     () => collectEvents("</orphan>"),
     XmlSyntaxError,
     "Unexpected closing tag </orphan> with no matching opening tag",
   );
 });
 
-Deno.test("parse() throws on unclosed element", async () => {
-  await assertRejects(
+Deno.test("XmlEventParser.process() throws on unclosed element", () => {
+  assertThrows(
     () => collectEvents("<root>"),
     XmlSyntaxError,
     "Unclosed element <root>",
   );
 });
 
-Deno.test("parse() throws on deeply nested unclosed element", async () => {
-  await assertRejects(
+Deno.test("XmlEventParser.process() throws on deeply nested unclosed element", () => {
+  assertThrows(
     () => collectEvents("<root><child><grandchild></grandchild></child>"),
     XmlSyntaxError,
     "Unclosed element <root>",
   );
 });
 
-Deno.test("parse() throws on multiple top-level elements after self-closing", async () => {
-  await assertRejects(
+Deno.test("XmlEventParser.process() throws on multiple top-level elements after self-closing", () => {
+  assertThrows(
     () => collectEvents("<root/></extra>"),
     XmlSyntaxError,
     "Unexpected closing tag </extra>",
@@ -333,8 +328,8 @@ Deno.test("parse() throws on multiple top-level elements after self-closing", as
 // Position Tracking (Parser-specific - verifies propagation)
 // =============================================================================
 
-Deno.test("parse() tracks position for start elements", async () => {
-  const events = await collectEvents("<root/>");
+Deno.test("XmlEventParser.process() tracks position for start elements", () => {
+  const events = collectEvents("<root/>");
 
   assertEquals(events[0]!.type, "start_element");
   if (events[0]!.type === "start_element") {
@@ -344,8 +339,8 @@ Deno.test("parse() tracks position for start elements", async () => {
   }
 });
 
-Deno.test("parse() tracks position on multiple lines", async () => {
-  const events = await collectEvents("<root>\n  <child/>\n</root>");
+Deno.test("XmlEventParser.process() tracks position on multiple lines", () => {
+  const events = collectEvents("<root>\n  <child/>\n</root>");
 
   const child = events.find(
     (e) => e.type === "start_element" && e.name.local === "child",
@@ -357,8 +352,8 @@ Deno.test("parse() tracks position on multiple lines", async () => {
   }
 });
 
-Deno.test("parse() tracks position for declaration", async () => {
-  const events = await collectEvents('<?xml version="1.0"?><root/>');
+Deno.test("XmlEventParser.process() tracks position for declaration", () => {
+  const events = collectEvents('<?xml version="1.0"?><root/>');
 
   assertEquals(events[0]!.type, "declaration");
   if (events[0]!.type === "declaration") {
@@ -372,8 +367,8 @@ Deno.test("parse() tracks position for declaration", async () => {
 // Additional coverage: Declaration with encoding and standalone
 // =============================================================================
 
-Deno.test("parse() propagates declaration encoding", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() propagates declaration encoding", () => {
+  const events = collectEvents(
     '<?xml version="1.0" encoding="UTF-8"?><root/>',
   );
 
@@ -383,8 +378,8 @@ Deno.test("parse() propagates declaration encoding", async () => {
   }
 });
 
-Deno.test("parse() propagates declaration standalone", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() propagates declaration standalone", () => {
+  const events = collectEvents(
     '<?xml version="1.0" standalone="yes"?><root/>',
   );
 
@@ -398,8 +393,8 @@ Deno.test("parse() propagates declaration standalone", async () => {
 // Additional coverage: Processing instruction events (not filtered)
 // =============================================================================
 
-Deno.test("parse() emits processing instruction events by default", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() emits processing instruction events by default", () => {
+  const events = collectEvents(
     '<?xml-stylesheet href="style.xsl"?><root/>',
   );
 
@@ -413,8 +408,8 @@ Deno.test("parse() emits processing instruction events by default", async () => 
   }
 });
 
-Deno.test("parse() emits multiple processing instructions", async () => {
-  const events = await collectEvents(
+Deno.test("XmlEventParser.process() emits multiple processing instructions", () => {
+  const events = collectEvents(
     "<?pi1 data1?><?pi2 data2?><root/>",
   );
 
@@ -426,8 +421,8 @@ Deno.test("parse() emits multiple processing instructions", async () => {
 // Additional coverage: DOCTYPE handling
 // =============================================================================
 
-Deno.test("parse() silently consumes DOCTYPE", async () => {
-  const events = await collectEvents("<!DOCTYPE html><root/>");
+Deno.test("XmlEventParser.process() silently consumes DOCTYPE", () => {
+  const events = collectEvents("<!DOCTYPE html><root/>");
 
   // DOCTYPE should not appear in events - only start_element and end_element
   assertEquals(events.length, 2);
