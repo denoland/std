@@ -52,60 +52,61 @@ function normalizeAttributeValue(raw: string): string {
 }
 
 /**
- * Transforms raw XML tokens into high-level XML events.
+ * Stateful XML Event Parser.
  *
- * This generator function:
- * - Aggregates start_tag_open, attribute, and start_tag_close tokens into
- *   a single XmlStartElementEvent
- * - Extracts namespace prefixes from element and attribute names
- * - Decodes XML entities in text and attribute values
- * - Optionally filters whitespace-only text, comments, and PIs
- * - Validates well-formedness (matching open/close tags)
+ * Transforms raw XML tokens into high-level events. Handles element stacking,
+ * well-formedness validation, and optional filtering of whitespace/comments.
  *
- * @param tokenBatches An async iterable of XmlToken arrays from the tokenizer.
- * @param options Options for filtering and behavior.
- * @yields Arrays of XmlEvent objects, batched for reduced async overhead.
- * @throws XmlSyntaxError on well-formedness errors
+ * @example Basic usage
+ * ```ts ignore
+ * const parser = new XmlEventParser({ ignoreWhitespace: true });
+ * const events1 = parser.process(tokens1);
+ * const events2 = parser.process(tokens2);
+ * parser.finalize(); // throws if unclosed elements
+ * ```
  */
-export async function* parseTokensToEvents(
-  tokenBatches: AsyncIterable<XmlToken[]>,
-  options: ParseStreamOptions = {},
-): AsyncGenerator<XmlEvent[]> {
-  const {
-    ignoreWhitespace = false,
-    ignoreComments = false,
-    ignoreProcessingInstructions = false,
-    coerceCDataToText = false,
-  } = options;
-
-  // Stack of open elements for well-formedness validation
-  const elementStack: Array<
+export class XmlEventParser {
+  #elementStack: Array<
     { name: string; line: number; column: number; offset: number }
   > = [];
-
-  // Accumulator for building start element events
-  let pendingStartElement: {
+  #pendingStartElement: {
     name: string;
     attributes: XmlAttribute[];
     line: number;
     column: number;
     offset: number;
   } | null = null;
+  #options: ParseStreamOptions;
 
-  // Event batch for current token batch
-  let eventBatch: XmlEvent[] = [];
-
-  /** Push event to current batch */
-  function emit(event: XmlEvent): void {
-    eventBatch.push(event);
+  /**
+   * Constructs a new XmlEventParser.
+   *
+   * @param options Options for filtering and behavior.
+   */
+  constructor(options: ParseStreamOptions = {}) {
+    this.#options = options;
   }
 
-  for await (const tokenBatch of tokenBatches) {
-    // Process all tokens in this batch synchronously
-    for (const token of tokenBatch) {
+  /**
+   * Process tokens synchronously and return events.
+   *
+   * @param tokens Array of tokens from the tokenizer.
+   * @returns Array of events extracted from the tokens.
+   */
+  process(tokens: XmlToken[]): XmlEvent[] {
+    const {
+      ignoreWhitespace = false,
+      ignoreComments = false,
+      ignoreProcessingInstructions = false,
+      coerceCDataToText = false,
+    } = this.#options;
+
+    const events: XmlEvent[] = [];
+
+    for (const token of tokens) {
       switch (token.type) {
         case "declaration": {
-          emit(
+          events.push(
             {
               type: "declaration",
               version: token.version,
@@ -129,7 +130,7 @@ export async function* parseTokensToEvents(
         }
 
         case "start_tag_open": {
-          pendingStartElement = {
+          this.#pendingStartElement = {
             name: token.name,
             attributes: [],
             line: token.position.line,
@@ -140,8 +141,8 @@ export async function* parseTokensToEvents(
         }
 
         case "attribute": {
-          if (pendingStartElement) {
-            pendingStartElement.attributes.push({
+          if (this.#pendingStartElement) {
+            this.#pendingStartElement.attributes.push({
               name: parseName(token.name),
               value: normalizeAttributeValue(token.value),
             });
@@ -150,15 +151,15 @@ export async function* parseTokensToEvents(
         }
 
         case "start_tag_close": {
-          if (pendingStartElement) {
-            const name = parseName(pendingStartElement.name);
-            const { line, column, offset } = pendingStartElement;
+          if (this.#pendingStartElement) {
+            const name = parseName(this.#pendingStartElement.name);
+            const { line, column, offset } = this.#pendingStartElement;
 
-            emit(
+            events.push(
               {
                 type: "start_element",
                 name,
-                attributes: pendingStartElement.attributes,
+                attributes: this.#pendingStartElement.attributes,
                 selfClosing: token.selfClosing,
                 line,
                 column,
@@ -167,7 +168,7 @@ export async function* parseTokensToEvents(
             );
 
             if (token.selfClosing) {
-              emit(
+              events.push(
                 {
                   type: "end_element",
                   name,
@@ -177,21 +178,21 @@ export async function* parseTokensToEvents(
                 } satisfies XmlEndElementEvent,
               );
             } else {
-              elementStack.push({
-                name: pendingStartElement.name,
+              this.#elementStack.push({
+                name: this.#pendingStartElement.name,
                 line,
                 column,
                 offset,
               });
             }
 
-            pendingStartElement = null;
+            this.#pendingStartElement = null;
           }
           break;
         }
 
         case "end_tag": {
-          const expected = elementStack.pop();
+          const expected = this.#elementStack.pop();
           if (expected === undefined) {
             throw new XmlSyntaxError(
               `Unexpected closing tag </${token.name}> with no matching opening tag`,
@@ -205,7 +206,7 @@ export async function* parseTokensToEvents(
             );
           }
 
-          emit(
+          events.push(
             {
               type: "end_element",
               name: parseName(token.name),
@@ -224,7 +225,7 @@ export async function* parseTokensToEvents(
             break;
           }
 
-          emit(
+          events.push(
             {
               type: "text",
               text,
@@ -238,7 +239,7 @@ export async function* parseTokensToEvents(
 
         case "cdata": {
           if (coerceCDataToText) {
-            emit(
+            events.push(
               {
                 type: "text",
                 text: token.content,
@@ -248,7 +249,7 @@ export async function* parseTokensToEvents(
               } satisfies XmlTextEvent,
             );
           } else {
-            emit(
+            events.push(
               {
                 type: "cdata",
                 text: token.content,
@@ -266,7 +267,7 @@ export async function* parseTokensToEvents(
             break;
           }
 
-          emit(
+          events.push(
             {
               type: "comment",
               text: token.content,
@@ -283,7 +284,7 @@ export async function* parseTokensToEvents(
             break;
           }
 
-          emit(
+          events.push(
             {
               type: "processing_instruction",
               target: token.target,
@@ -298,19 +299,43 @@ export async function* parseTokensToEvents(
       }
     }
 
-    // Yield event batch at end of each token batch (chunk-aligned)
-    if (eventBatch.length > 0) {
-      yield eventBatch;
-      eventBatch = [];
+    return events;
+  }
+
+  /**
+   * Finalize parsing and validate that all elements are closed.
+   *
+   * @throws {XmlSyntaxError} If there are unclosed elements.
+   */
+  finalize(): void {
+    if (this.#elementStack.length > 0) {
+      const unclosed = this.#elementStack[this.#elementStack.length - 1]!;
+      throw new XmlSyntaxError(`Unclosed element <${unclosed.name}>`, unclosed);
+    }
+  }
+}
+
+/**
+ * Legacy async generator interface for backwards compatibility.
+ *
+ * @deprecated Use {@linkcode XmlEventParser} class directly for better performance.
+ * @param tokenBatches An async iterable of XmlToken arrays from the tokenizer.
+ * @param options Options for filtering and behavior.
+ * @yields Arrays of XmlEvent objects, batched for reduced async overhead.
+ * @throws XmlSyntaxError on well-formedness errors
+ */
+export async function* parseTokensToEvents(
+  tokenBatches: AsyncIterable<XmlToken[]>,
+  options: ParseStreamOptions = {},
+): AsyncGenerator<XmlEvent[]> {
+  const parser = new XmlEventParser(options);
+
+  for await (const tokenBatch of tokenBatches) {
+    const events = parser.process(tokenBatch);
+    if (events.length > 0) {
+      yield events;
     }
   }
 
-  // Check for unclosed elements at end of input
-  if (elementStack.length > 0) {
-    const unclosed = elementStack[elementStack.length - 1]!;
-    throw new XmlSyntaxError(
-      `Unclosed element <${unclosed.name}>`,
-      unclosed,
-    );
-  }
+  parser.finalize();
 }

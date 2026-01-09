@@ -658,7 +658,7 @@ Deno.test("tokenize() throws on unclosed comment", async () => {
   await assertRejects(
     async () => await collectTokens("<root><!-- unclosed"),
     XmlSyntaxError,
-    "Unexpected end of input",
+    "Unterminated comment",
   );
 });
 
@@ -666,7 +666,7 @@ Deno.test("tokenize() throws on unclosed CDATA", async () => {
   await assertRejects(
     async () => await collectTokens("<root><![CDATA[unclosed"),
     XmlSyntaxError,
-    "Unexpected end of input",
+    "Unterminated CDATA",
   );
 });
 
@@ -674,7 +674,7 @@ Deno.test("tokenize() throws on unclosed attribute value", async () => {
   await assertRejects(
     async () => await collectTokens('<root attr="unclosed'),
     XmlSyntaxError,
-    "Unexpected end of input",
+    "Unterminated attribute value",
   );
 });
 

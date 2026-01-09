@@ -7,10 +7,9 @@
  * @module
  */
 
-import { toTransformStream } from "@std/streams/to-transform-stream";
 import type { ParseStreamOptions, XmlEvent } from "./types.ts";
-import { tokenize } from "./_tokenizer.ts";
-import { parseTokensToEvents } from "./_parser.ts";
+import { XmlTokenizer } from "./_tokenizer.ts";
+import { XmlEventParser } from "./_parser.ts";
 
 export type { ParseStreamOptions } from "./types.ts";
 
@@ -86,42 +85,7 @@ export type { ParseStreamOptions } from "./types.ts";
  * }
  * ```
  */
-export class XmlParseStream implements TransformStream<string, XmlEvent[]> {
-  /**
-   * The writable side of the transform stream.
-   *
-   * @example Usage
-   * ```ts
-   * import { XmlParseStream } from "@std/xml/parse-stream";
-   * import { assertInstanceOf } from "@std/assert";
-   *
-   * const stream = new XmlParseStream();
-   * assertInstanceOf(stream.writable, WritableStream);
-   * ```
-   */
-  readonly writable: WritableStream<string>;
-
-  /**
-   * The readable side of the transform stream.
-   *
-   * @example Usage
-   * ```ts
-   * import { XmlParseStream } from "@std/xml/parse-stream";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const parser = new XmlParseStream();
-   * const reader = parser.readable.getReader();
-   *
-   * const writer = parser.writable.getWriter();
-   * await writer.write("<root/>");
-   * await writer.close();
-   *
-   * const { value: batch } = await reader.read();
-   * assertEquals(batch?.[0]?.type, "start_element");
-   * ```
-   */
-  readonly readable: ReadableStream<XmlEvent[]>;
-
+export class XmlParseStream extends TransformStream<string, XmlEvent[]> {
   /**
    * Constructs a new XmlParseStream.
    *
@@ -145,17 +109,28 @@ export class XmlParseStream implements TransformStream<string, XmlEvent[]> {
    * ```
    */
   constructor(options: ParseStreamOptions = {}) {
-    const { writable, readable } = toTransformStream(
-      async function* (src: ReadableStream<string>): AsyncIterable<XmlEvent[]> {
-        // Cast to AsyncIterable for tokenizer - browsers support async iteration on ReadableStream
-        // Yield batches directly for optimal performance
-        yield* parseTokensToEvents(
-          tokenize(src as unknown as AsyncIterable<string>),
-          options,
-        );
+    const tokenizer = new XmlTokenizer();
+    const parser = new XmlEventParser(options);
+
+    super({
+      transform(
+        chunk: string,
+        controller: TransformStreamDefaultController<XmlEvent[]>,
+      ) {
+        const tokens = tokenizer.process(chunk);
+        const events = parser.process(tokens);
+        if (events.length > 0) {
+          controller.enqueue(events);
+        }
       },
-    );
-    this.writable = writable;
-    this.readable = readable;
+      flush(controller: TransformStreamDefaultController<XmlEvent[]>) {
+        const tokens = tokenizer.finalize();
+        const events = parser.process(tokens);
+        parser.finalize();
+        if (events.length > 0) {
+          controller.enqueue(events);
+        }
+      },
+    });
   }
 }

@@ -4,7 +4,7 @@
 /**
  * Internal XML tokenizer module.
  *
- * Implements a streaming state machine that tokenizes XML input,
+ * Implements a stateful streaming tokenizer that processes XML input chunk by chunk,
  * handling chunk boundaries and tracking position information.
  *
  * @module
@@ -125,7 +125,7 @@ const State = {
   PI_QUESTION: 34,
 } as const;
 
-type State = typeof State[keyof typeof State];
+type StateType = typeof State[keyof typeof State];
 
 // NOTE: These patterns cover the ASCII subset of XML 1.0 NameStartChar/NameChar.
 // The full spec (Production [4], [4a]) includes many Unicode ranges:
@@ -139,77 +139,93 @@ type State = typeof State[keyof typeof State];
 // would be ~200+ characters. This trade-off is acceptable for a non-validating parser.
 
 /**
- * Tokenizes an async iterable of XML string chunks.
+ * Stateful XML Tokenizer.
  *
- * Line endings are normalized per XML 1.0 §2.11.
- * Yields arrays of tokens (one array per input chunk) for better performance.
+ * Processes XML input chunk by chunk, emitting tokens. Handles cross-chunk
+ * boundaries correctly for all XML constructs.
  *
- * @param source Async iterable of XML string chunks.
- * @yields Arrays of XML tokens, batched per input chunk.
+ * @example Basic usage
+ * ```ts ignore
+ * const tokenizer = new XmlTokenizer();
+ * const tokens1 = tokenizer.process("<root>");
+ * const tokens2 = tokenizer.process("</root>");
+ * const remaining = tokenizer.finalize();
+ * ```
  */
-export async function* tokenize(
-  source: AsyncIterable<string>,
-): AsyncGenerator<XmlToken[]> {
-  let buffer = "";
-  let bufferIndex = 0;
-  let state: State = State.INITIAL;
-  let line = 1;
-  let column = 1;
-  let offset = 0;
+export class XmlTokenizer {
+  #buffer = "";
+  #bufferIndex = 0;
+  #state: StateType = State.INITIAL;
+  #line = 1;
+  #column = 1;
+  #offset = 0;
 
-  // Position of current token start
-  let tokenLine = 1;
-  let tokenColumn = 1;
-  let tokenOffset = 0;
+  #tokenLine = 1;
+  #tokenColumn = 1;
+  #tokenOffset = 0;
 
   // Slice-based accumulators: track start index + partial for cross-chunk
-  // Text content (highest frequency)
-  let textStartIdx = -1;
-  let textPartial = "";
-  // CDATA content (high frequency for product feeds)
-  let cdataStartIdx = -1;
-  let cdataPartial = "";
-  // Attribute values (medium frequency)
-  let attrStartIdx = -1;
-  let attrPartial = "";
+  #textStartIdx = -1;
+  #textPartial = "";
+  #cdataStartIdx = -1;
+  #cdataPartial = "";
+  #attrStartIdx = -1;
+  #attrPartial = "";
 
-  // Traditional accumulators for short/infrequent strings
-  let tagName = "";
-  let attrName = "";
-  let piTarget = "";
-  let piContent = "";
-  let commentContent = "";
-  let cdataCheck = "";
+  // Index-based accumulators for tag names, comments, PI, attr names
+  #tagNameStartIdx = -1;
+  #tagNamePartial = "";
+  #commentStartIdx = -1;
+  #commentPartial = "";
+  #piTargetStartIdx = -1;
+  #piTargetPartial = "";
+  #piContentStartIdx = -1;
+  #piContentPartial = "";
+  #attrNameStartIdx = -1;
+  #attrNamePartial = "";
+
+  // Short strings still use direct accumulation
+  #cdataCheck = "";
 
   // DOCTYPE accumulators
-  let doctypeCheck = "";
-  let doctypeName = "";
-  let doctypePublicId = "";
-  let doctypeSystemId = "";
-  let doctypeQuoteChar = "";
-  let doctypeBracketDepth = 0;
+  #doctypeCheck = "";
+  #doctypeName = "";
+  #doctypePublicId = "";
+  #doctypeSystemId = "";
+  #doctypeQuoteChar = "";
+  #doctypeBracketDepth = 0;
 
   // For tracking text start position
-  let textStartLine = 1;
-  let textStartColumn = 1;
-  let textStartOffset = 0;
+  #textStartLine = 1;
+  #textStartColumn = 1;
+  #textStartOffset = 0;
 
-  function saveTokenPosition(): void {
-    tokenLine = line;
-    tokenColumn = column;
-    tokenOffset = offset;
+  #tokens: XmlToken[] = [];
+
+  #saveTokenPosition(): void {
+    this.#tokenLine = this.#line;
+    this.#tokenColumn = this.#column;
+    this.#tokenOffset = this.#offset;
   }
 
-  function getTokenPosition(): TokenPosition {
-    return { line: tokenLine, column: tokenColumn, offset: tokenOffset };
+  #getTokenPosition(): TokenPosition {
+    return {
+      line: this.#tokenLine,
+      column: this.#tokenColumn,
+      offset: this.#tokenOffset,
+    };
   }
 
-  function error(message: string): never {
-    throw new XmlSyntaxError(message, { line, column, offset });
+  #error(message: string): never {
+    throw new XmlSyntaxError(message, {
+      line: this.#line,
+      column: this.#column,
+      offset: this.#offset,
+    });
   }
 
   // Optimized character checks using charCode (4x faster than regex)
-  function isNameStartChar(c: string): boolean {
+  #isNameStartChar(c: string): boolean {
     const code = c.charCodeAt(0);
     return (code >= 97 && code <= 122) || // a-z
       (code >= 65 && code <= 90) || // A-Z
@@ -217,7 +233,7 @@ export async function* tokenize(
       code > 127; // non-ASCII
   }
 
-  function isNameChar(c: string): boolean {
+  #isNameChar(c: string): boolean {
     const code = c.charCodeAt(0);
     return (code >= 97 && code <= 122) || // a-z
       (code >= 65 && code <= 90) || // A-Z
@@ -227,718 +243,821 @@ export async function* tokenize(
       code > 127; // non-ASCII
   }
 
-  function isWhitespace(c: string): boolean {
+  #isWhitespace(c: string): boolean {
     const code = c.charCodeAt(0);
     return code === 32 || code === 9 || code === 10 || code === 13; // space, tab, LF, CR
   }
 
-  /** Flush text content using slice, returns tokens instead of yielding */
-  function flushTextTokens(): XmlToken[] {
-    if (textStartIdx !== -1) {
-      const content = textPartial + buffer.slice(textStartIdx, bufferIndex);
-      textStartIdx = -1;
-      textPartial = "";
+  #flushText(): void {
+    if (this.#textStartIdx !== -1) {
+      const content = this.#textPartial +
+        this.#buffer.slice(this.#textStartIdx, this.#bufferIndex);
+      this.#textStartIdx = -1;
+      this.#textPartial = "";
       if (content.length > 0) {
-        return [{
+        this.#emit({
           type: "text",
           content,
           position: {
-            line: textStartLine,
-            column: textStartColumn,
-            offset: textStartOffset,
+            line: this.#textStartLine,
+            column: this.#textStartColumn,
+            offset: this.#textStartOffset,
           },
-        }];
+        });
       }
     }
-    return [];
   }
 
-  /** Flush text and emit to batch */
-  function flushText(): void {
-    for (const token of flushTextTokens()) {
-      emit(token);
-    }
-  }
-
-  /** Get attribute value using slice */
-  function getAttrValue(): string {
-    const value = attrPartial + buffer.slice(attrStartIdx, bufferIndex);
-    attrStartIdx = -1;
-    attrPartial = "";
+  #getAttrValue(): string {
+    const value = this.#attrPartial +
+      this.#buffer.slice(this.#attrStartIdx, this.#bufferIndex);
+    this.#attrStartIdx = -1;
+    this.#attrPartial = "";
     return value;
   }
 
-  /** Save partial content before buffer reset (for cross-chunk handling) */
-  function savePartialsBeforeReset(): void {
-    if (textStartIdx !== -1) {
-      textPartial += buffer.slice(textStartIdx, bufferIndex);
-      textStartIdx = 0; // Will continue from start of new buffer
+  #getTagName(): string {
+    const name = this.#tagNamePartial +
+      this.#buffer.slice(this.#tagNameStartIdx, this.#bufferIndex);
+    this.#tagNameStartIdx = -1;
+    this.#tagNamePartial = "";
+    return name;
+  }
+
+  #getAttrName(): string {
+    const name = this.#attrNamePartial +
+      this.#buffer.slice(this.#attrNameStartIdx, this.#bufferIndex);
+    this.#attrNameStartIdx = -1;
+    this.#attrNamePartial = "";
+    return name;
+  }
+
+  #getComment(): string {
+    const content = this.#commentPartial +
+      this.#buffer.slice(this.#commentStartIdx, this.#bufferIndex);
+    this.#commentStartIdx = -1;
+    this.#commentPartial = "";
+    return content;
+  }
+
+  #getPiTarget(): string {
+    const target = this.#piTargetPartial +
+      this.#buffer.slice(this.#piTargetStartIdx, this.#bufferIndex);
+    this.#piTargetStartIdx = -1;
+    this.#piTargetPartial = "";
+    return target;
+  }
+
+  #getPiContent(): string {
+    const content = this.#piContentPartial +
+      this.#buffer.slice(this.#piContentStartIdx, this.#bufferIndex);
+    this.#piContentStartIdx = -1;
+    this.#piContentPartial = "";
+    return content;
+  }
+
+  #savePartialsBeforeReset(): void {
+    if (this.#textStartIdx !== -1) {
+      this.#textPartial += this.#buffer.slice(
+        this.#textStartIdx,
+        this.#bufferIndex,
+      );
+      this.#textStartIdx = 0;
     }
-    if (cdataStartIdx !== -1) {
-      cdataPartial += buffer.slice(cdataStartIdx, bufferIndex);
-      cdataStartIdx = 0;
+    if (this.#cdataStartIdx !== -1) {
+      this.#cdataPartial += this.#buffer.slice(
+        this.#cdataStartIdx,
+        this.#bufferIndex,
+      );
+      this.#cdataStartIdx = 0;
     }
-    if (attrStartIdx !== -1) {
-      attrPartial += buffer.slice(attrStartIdx, bufferIndex);
-      attrStartIdx = 0;
+    if (this.#attrStartIdx !== -1) {
+      this.#attrPartial += this.#buffer.slice(
+        this.#attrStartIdx,
+        this.#bufferIndex,
+      );
+      this.#attrStartIdx = 0;
+    }
+    // OPTIMIZED: Save all index-based accumulators
+    if (this.#tagNameStartIdx !== -1) {
+      this.#tagNamePartial += this.#buffer.slice(
+        this.#tagNameStartIdx,
+        this.#bufferIndex,
+      );
+      this.#tagNameStartIdx = 0;
+    }
+    if (this.#commentStartIdx !== -1) {
+      this.#commentPartial += this.#buffer.slice(
+        this.#commentStartIdx,
+        this.#bufferIndex,
+      );
+      this.#commentStartIdx = 0;
+    }
+    if (this.#piTargetStartIdx !== -1) {
+      this.#piTargetPartial += this.#buffer.slice(
+        this.#piTargetStartIdx,
+        this.#bufferIndex,
+      );
+      this.#piTargetStartIdx = 0;
+    }
+    if (this.#piContentStartIdx !== -1) {
+      this.#piContentPartial += this.#buffer.slice(
+        this.#piContentStartIdx,
+        this.#bufferIndex,
+      );
+      this.#piContentStartIdx = 0;
+    }
+    if (this.#attrNameStartIdx !== -1) {
+      this.#attrNamePartial += this.#buffer.slice(
+        this.#attrNameStartIdx,
+        this.#bufferIndex,
+      );
+      this.#attrNameStartIdx = 0;
     }
   }
 
-  function advance(): void {
-    if (buffer[bufferIndex] === "\n") {
-      line++;
-      column = 1;
+  #advance(): void {
+    if (this.#buffer[this.#bufferIndex] === "\n") {
+      this.#line++;
+      this.#column = 1;
     } else {
-      column++;
+      this.#column++;
     }
-    offset++;
-    bufferIndex++;
+    this.#offset++;
+    this.#bufferIndex++;
   }
 
-  // Normalize line endings: \r\n and \r → \n
-  function normalizeLineEndings(chunk: string): string {
-    // Fast path: skip regex if no carriage returns (common case)
+  #normalizeLineEndings(chunk: string): string {
     return chunk.includes("\r") ? chunk.replace(LINE_ENDING_RE, "\n") : chunk;
   }
 
-  // Batch tokens per chunk for reduced async overhead
-  let tokenBatch: XmlToken[] = [];
-
-  /** Push token to current batch instead of yielding directly */
-  function emit(token: XmlToken): void {
-    tokenBatch.push(token);
+  #emit(token: XmlToken): void {
+    this.#tokens.push(token);
   }
 
-  for await (const chunk of source) {
-    // Save any partial content before resetting buffer
-    savePartialsBeforeReset();
-    // Reset buffer: keep unprocessed portion + new chunk
-    buffer = buffer.slice(bufferIndex) + normalizeLineEndings(chunk);
-    bufferIndex = 0;
+  #createDeclaration(content: string, position: TokenPosition): XmlToken {
+    const versionMatch = VERSION_RE.exec(content);
+    const encodingMatch = ENCODING_RE.exec(content);
+    const standaloneMatch = STANDALONE_RE.exec(content);
 
-    while (bufferIndex < buffer.length) {
-      // SAFETY: bufferIndex < buffer.length is checked above
-      const c = buffer[bufferIndex]!;
+    const version = versionMatch?.[1] ?? versionMatch?.[2] ?? "1.0";
+    const encoding = encodingMatch?.[1] ?? encodingMatch?.[2];
+    const standalone = standaloneMatch?.[1] ?? standaloneMatch?.[2];
 
-      switch (state) {
+    return {
+      type: "declaration",
+      version,
+      ...(encoding && { encoding }),
+      ...(standalone && { standalone: standalone as "yes" | "no" }),
+      position,
+    };
+  }
+
+  /**
+   * Process a chunk of XML text and return tokens.
+   *
+   * This method is synchronous and can be called multiple times with
+   * consecutive chunks of XML input. Tokens are returned as an array
+   * for optimal performance.
+   *
+   * @param chunk The XML text chunk to process.
+   * @returns Array of tokens extracted from this chunk.
+   */
+  process(chunk: string): XmlToken[] {
+    this.#tokens = [];
+    this.#savePartialsBeforeReset();
+    this.#buffer = this.#buffer.slice(this.#bufferIndex) +
+      this.#normalizeLineEndings(chunk);
+    this.#bufferIndex = 0;
+
+    while (this.#bufferIndex < this.#buffer.length) {
+      const c = this.#buffer[this.#bufferIndex]!;
+
+      switch (this.#state) {
         case State.INITIAL: {
           if (c === "<") {
-            flushText();
-            saveTokenPosition();
-            advance();
-            state = State.TAG_OPEN;
+            this.#flushText();
+            this.#saveTokenPosition();
+            this.#advance();
+            this.#state = State.TAG_OPEN;
           } else {
-            // Track text start index for slice (instead of += per char)
-            if (textStartIdx === -1) {
-              textStartLine = line;
-              textStartColumn = column;
-              textStartOffset = offset;
-              textStartIdx = bufferIndex;
+            if (this.#textStartIdx === -1) {
+              this.#textStartLine = this.#line;
+              this.#textStartColumn = this.#column;
+              this.#textStartOffset = this.#offset;
+              this.#textStartIdx = this.#bufferIndex;
             }
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.TAG_OPEN: {
           if (c === "/") {
-            advance();
-            tagName = "";
-            state = State.END_TAG_NAME;
+            this.#advance();
+            this.#tagNameStartIdx = this.#bufferIndex;
+            this.#tagNamePartial = "";
+            this.#state = State.END_TAG_NAME;
           } else if (c === "!") {
-            advance();
-            state = State.MARKUP_DECLARATION;
+            this.#advance();
+            this.#state = State.MARKUP_DECLARATION;
           } else if (c === "?") {
-            advance();
-            piTarget = "";
-            state = State.PI_TARGET;
-          } else if (isNameStartChar(c)) {
-            tagName = c;
-            advance();
-            state = State.TAG_NAME;
+            this.#advance();
+            this.#piTargetStartIdx = this.#bufferIndex;
+            this.#piTargetPartial = "";
+            this.#state = State.PI_TARGET;
+          } else if (this.#isNameStartChar(c)) {
+            this.#tagNameStartIdx = this.#bufferIndex;
+            this.#tagNamePartial = "";
+            this.#advance();
+            this.#state = State.TAG_NAME;
           } else {
-            error(`Unexpected character '${c}' after '<'`);
+            this.#error(`Unexpected character '${c}' after '<'`);
           }
           break;
         }
 
         case State.TAG_NAME: {
-          if (isNameChar(c)) {
-            tagName += c;
-            advance();
-          } else if (isWhitespace(c)) {
-            emit({
+          if (this.#isNameChar(c)) {
+            this.#advance();
+          } else if (this.#isWhitespace(c)) {
+            this.#emit({
               type: "start_tag_open",
-              name: tagName,
-              position: getTokenPosition(),
+              name: this.#getTagName(),
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.AFTER_TAG_NAME;
+            this.#advance();
+            this.#state = State.AFTER_TAG_NAME;
           } else if (c === ">") {
-            emit({
+            this.#emit({
               type: "start_tag_open",
-              name: tagName,
-              position: getTokenPosition(),
+              name: this.#getTagName(),
+              position: this.#getTokenPosition(),
             });
-            emit({ type: "start_tag_close", selfClosing: false });
-            advance();
-            state = State.INITIAL;
+            this.#emit({ type: "start_tag_close", selfClosing: false });
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "/") {
-            emit({
+            this.#emit({
               type: "start_tag_open",
-              name: tagName,
-              position: getTokenPosition(),
+              name: this.#getTagName(),
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.EXPECT_SELF_CLOSE_GT;
+            this.#advance();
+            this.#state = State.EXPECT_SELF_CLOSE_GT;
           } else {
-            error(`Unexpected character '${c}' in tag name`);
+            this.#error(`Unexpected character '${c}' in tag name`);
           }
           break;
         }
 
         case State.AFTER_TAG_NAME: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === ">") {
-            emit({ type: "start_tag_close", selfClosing: false });
-            advance();
-            state = State.INITIAL;
+            this.#emit({ type: "start_tag_close", selfClosing: false });
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "/") {
-            advance();
-            state = State.EXPECT_SELF_CLOSE_GT;
-          } else if (isNameStartChar(c)) {
-            attrName = c;
-            advance();
-            state = State.ATTRIBUTE_NAME;
+            this.#advance();
+            this.#state = State.EXPECT_SELF_CLOSE_GT;
+          } else if (this.#isNameStartChar(c)) {
+            this.#attrNameStartIdx = this.#bufferIndex;
+            this.#attrNamePartial = "";
+            this.#advance();
+            this.#state = State.ATTRIBUTE_NAME;
           } else {
-            error(`Unexpected character '${c}' after tag name`);
+            this.#error(`Unexpected character '${c}' after tag name`);
           }
           break;
         }
 
         case State.ATTRIBUTE_NAME: {
-          if (isNameChar(c)) {
-            attrName += c;
-            advance();
-          } else if (isWhitespace(c)) {
-            advance();
-            state = State.AFTER_ATTRIBUTE_NAME;
+          if (this.#isNameChar(c)) {
+            this.#advance();
+          } else if (this.#isWhitespace(c)) {
+            // Save the attribute name before transitioning
+            const name = this.#getAttrName();
+            this.#attrNamePartial = name; // Store temporarily
+            this.#advance();
+            this.#state = State.AFTER_ATTRIBUTE_NAME;
           } else if (c === "=") {
-            advance();
-            state = State.BEFORE_ATTRIBUTE_VALUE;
+            const name = this.#getAttrName();
+            this.#attrNamePartial = name; // Store temporarily
+            this.#advance();
+            this.#state = State.BEFORE_ATTRIBUTE_VALUE;
           } else {
-            error(`Unexpected character '${c}' in attribute name`);
+            this.#error(`Unexpected character '${c}' in attribute name`);
           }
           break;
         }
 
         case State.AFTER_ATTRIBUTE_NAME: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === "=") {
-            advance();
-            state = State.BEFORE_ATTRIBUTE_VALUE;
+            this.#advance();
+            this.#state = State.BEFORE_ATTRIBUTE_VALUE;
           } else {
-            error(`Expected '=' after attribute name`);
+            this.#error(`Expected '=' after attribute name`);
           }
           break;
         }
 
         case State.BEFORE_ATTRIBUTE_VALUE: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === '"') {
-            advance();
-            attrStartIdx = bufferIndex; // Start tracking after quote
-            attrPartial = "";
-            state = State.ATTRIBUTE_VALUE_DOUBLE;
+            this.#advance();
+            this.#attrStartIdx = this.#bufferIndex;
+            this.#attrPartial = "";
+            this.#state = State.ATTRIBUTE_VALUE_DOUBLE;
           } else if (c === "'") {
-            advance();
-            attrStartIdx = bufferIndex;
-            attrPartial = "";
-            state = State.ATTRIBUTE_VALUE_SINGLE;
+            this.#advance();
+            this.#attrStartIdx = this.#bufferIndex;
+            this.#attrPartial = "";
+            this.#state = State.ATTRIBUTE_VALUE_SINGLE;
           } else {
-            error(`Expected quote to start attribute value`);
+            this.#error(`Expected quote to start attribute value`);
           }
           break;
         }
 
         case State.ATTRIBUTE_VALUE_DOUBLE: {
           if (c === '"') {
-            emit({ type: "attribute", name: attrName, value: getAttrValue() });
-            advance();
-            state = State.AFTER_TAG_NAME;
+            this.#emit({
+              type: "attribute",
+              name: this.#attrNamePartial,
+              value: this.#getAttrValue(),
+            });
+            this.#attrNamePartial = "";
+            this.#advance();
+            this.#state = State.AFTER_TAG_NAME;
           } else if (c === "<") {
-            error(`'<' not allowed in attribute value`);
+            this.#error(`'<' not allowed in attribute value`);
           } else {
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.ATTRIBUTE_VALUE_SINGLE: {
           if (c === "'") {
-            emit({ type: "attribute", name: attrName, value: getAttrValue() });
-            advance();
-            state = State.AFTER_TAG_NAME;
+            this.#emit({
+              type: "attribute",
+              name: this.#attrNamePartial,
+              value: this.#getAttrValue(),
+            });
+            this.#attrNamePartial = "";
+            this.#advance();
+            this.#state = State.AFTER_TAG_NAME;
           } else if (c === "<") {
-            error(`'<' not allowed in attribute value`);
+            this.#error(`'<' not allowed in attribute value`);
           } else {
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.END_TAG_NAME: {
-          if (tagName === "" && isNameStartChar(c)) {
-            tagName = c;
-            advance();
-          } else if (isNameChar(c)) {
-            tagName += c;
-            advance();
-          } else if (isWhitespace(c)) {
-            advance();
-            state = State.AFTER_END_TAG_NAME;
+          if (
+            this.#tagNameStartIdx === this.#bufferIndex &&
+            this.#tagNamePartial === "" &&
+            this.#isNameStartChar(c)
+          ) {
+            this.#advance();
+          } else if (this.#isNameChar(c)) {
+            this.#advance();
+          } else if (this.#isWhitespace(c)) {
+            const name = this.#getTagName();
+            this.#tagNamePartial = name; // Store temporarily
+            this.#advance();
+            this.#state = State.AFTER_END_TAG_NAME;
           } else if (c === ">") {
-            emit({
+            this.#emit({
               type: "end_tag",
-              name: tagName,
-              position: getTokenPosition(),
+              name: this.#getTagName(),
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#advance();
+            this.#state = State.INITIAL;
           } else {
-            error(`Unexpected character '${c}' in end tag`);
+            this.#error(`Unexpected character '${c}' in end tag`);
           }
           break;
         }
 
         case State.AFTER_END_TAG_NAME: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === ">") {
-            emit({
+            this.#emit({
               type: "end_tag",
-              name: tagName,
-              position: getTokenPosition(),
+              name: this.#tagNamePartial,
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#tagNamePartial = "";
+            this.#advance();
+            this.#state = State.INITIAL;
           } else {
-            error(`Unexpected character '${c}' in end tag`);
+            this.#error(`Unexpected character '${c}' in end tag`);
           }
           break;
         }
 
         case State.EXPECT_SELF_CLOSE_GT: {
           if (c === ">") {
-            emit({ type: "start_tag_close", selfClosing: true });
-            advance();
-            state = State.INITIAL;
+            this.#emit({ type: "start_tag_close", selfClosing: true });
+            this.#advance();
+            this.#state = State.INITIAL;
           } else {
-            error(`Expected '>' after '/' in self-closing tag`);
+            this.#error(`Expected '>' after '/' in self-closing tag`);
           }
           break;
         }
 
         case State.MARKUP_DECLARATION: {
           if (c === "-") {
-            advance();
-            state = State.COMMENT_START;
+            this.#advance();
+            this.#state = State.COMMENT_START;
           } else if (c === "[") {
-            advance();
-            cdataCheck = "";
-            state = State.CDATA_START;
+            this.#advance();
+            this.#cdataCheck = "";
+            this.#state = State.CDATA_START;
           } else if (c === "D") {
-            // Likely DOCTYPE
-            doctypeCheck = "D";
-            advance();
-            state = State.DOCTYPE_START;
+            this.#doctypeCheck = "D";
+            this.#advance();
+            this.#state = State.DOCTYPE_START;
           } else {
-            error(`Unsupported markup declaration`);
+            this.#error(`Unsupported markup declaration`);
           }
           break;
         }
 
         case State.DOCTYPE_START: {
-          doctypeCheck += c;
-          advance();
-          if (doctypeCheck === "DOCTYPE") {
-            doctypeName = "";
-            doctypePublicId = "";
-            doctypeSystemId = "";
-            state = State.DOCTYPE_NAME;
-          } else if (!"DOCTYPE".startsWith(doctypeCheck)) {
-            error(`Expected DOCTYPE, got <!${doctypeCheck}`);
+          this.#doctypeCheck += c;
+          this.#advance();
+          if (this.#doctypeCheck === "DOCTYPE") {
+            this.#doctypeName = "";
+            this.#doctypePublicId = "";
+            this.#doctypeSystemId = "";
+            this.#state = State.DOCTYPE_NAME;
+          } else if (!"DOCTYPE".startsWith(this.#doctypeCheck)) {
+            this.#error(`Expected DOCTYPE, got <!${this.#doctypeCheck}`);
           }
           break;
         }
 
         case State.DOCTYPE_NAME: {
-          if (isWhitespace(c)) {
-            if (doctypeName === "") {
-              // Skip leading whitespace after DOCTYPE
-              advance();
+          if (this.#isWhitespace(c)) {
+            if (this.#doctypeName === "") {
+              this.#advance();
             } else {
-              advance();
-              state = State.DOCTYPE_AFTER_NAME;
+              this.#advance();
+              this.#state = State.DOCTYPE_AFTER_NAME;
             }
           } else if (c === ">") {
-            emit({
+            this.#emit({
               type: "doctype",
-              name: doctypeName,
-              position: getTokenPosition(),
+              name: this.#doctypeName,
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "[") {
-            advance();
-            doctypeBracketDepth = 1;
-            state = State.DOCTYPE_INTERNAL_SUBSET;
+            this.#advance();
+            this.#doctypeBracketDepth = 1;
+            this.#state = State.DOCTYPE_INTERNAL_SUBSET;
           } else if (
-            isNameChar(c) || (doctypeName === "" && isNameStartChar(c))
+            this.#isNameChar(c) ||
+            (this.#doctypeName === "" && this.#isNameStartChar(c))
           ) {
-            doctypeName += c;
-            advance();
+            this.#doctypeName += c;
+            this.#advance();
           } else {
-            error(`Unexpected character '${c}' in DOCTYPE name`);
+            this.#error(`Unexpected character '${c}' in DOCTYPE name`);
           }
           break;
         }
 
         case State.DOCTYPE_AFTER_NAME: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === ">") {
-            emit({
+            this.#emit({
               type: "doctype",
-              name: doctypeName,
-              ...(doctypePublicId && { publicId: doctypePublicId }),
-              ...(doctypeSystemId && { systemId: doctypeSystemId }),
-              position: getTokenPosition(),
+              name: this.#doctypeName,
+              ...(this.#doctypePublicId && { publicId: this.#doctypePublicId }),
+              ...(this.#doctypeSystemId && { systemId: this.#doctypeSystemId }),
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "[") {
-            advance();
-            doctypeBracketDepth = 1;
-            state = State.DOCTYPE_INTERNAL_SUBSET;
+            this.#advance();
+            this.#doctypeBracketDepth = 1;
+            this.#state = State.DOCTYPE_INTERNAL_SUBSET;
           } else if (c === "P") {
-            doctypeCheck = "P";
-            advance();
-            state = State.DOCTYPE_PUBLIC;
+            this.#doctypeCheck = "P";
+            this.#advance();
+            this.#state = State.DOCTYPE_PUBLIC;
           } else if (c === "S") {
-            doctypeCheck = "S";
-            advance();
-            state = State.DOCTYPE_SYSTEM;
+            this.#doctypeCheck = "S";
+            this.#advance();
+            this.#state = State.DOCTYPE_SYSTEM;
           } else {
-            error(`Unexpected character '${c}' in DOCTYPE`);
+            this.#error(`Unexpected character '${c}' in DOCTYPE`);
           }
           break;
         }
 
         case State.DOCTYPE_PUBLIC: {
-          doctypeCheck += c;
-          advance();
-          if (doctypeCheck === "PUBLIC") {
-            state = State.DOCTYPE_PUBLIC_ID;
-          } else if (!"PUBLIC".startsWith(doctypeCheck)) {
-            error(`Expected PUBLIC, got ${doctypeCheck}`);
+          this.#doctypeCheck += c;
+          this.#advance();
+          if (this.#doctypeCheck === "PUBLIC") {
+            this.#state = State.DOCTYPE_PUBLIC_ID;
+          } else if (!"PUBLIC".startsWith(this.#doctypeCheck)) {
+            this.#error(`Expected PUBLIC, got ${this.#doctypeCheck}`);
           }
           break;
         }
 
         case State.DOCTYPE_PUBLIC_ID: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === '"' || c === "'") {
-            doctypeQuoteChar = c;
-            doctypePublicId = "";
-            advance();
-            // Read until closing quote
+            this.#doctypeQuoteChar = c;
+            this.#doctypePublicId = "";
+            this.#advance();
             while (
-              bufferIndex < buffer.length &&
-              buffer[bufferIndex] !== doctypeQuoteChar
+              this.#bufferIndex < this.#buffer.length &&
+              this.#buffer[this.#bufferIndex] !== this.#doctypeQuoteChar
             ) {
-              doctypePublicId += buffer[bufferIndex];
-              advance();
+              this.#doctypePublicId += this.#buffer[this.#bufferIndex];
+              this.#advance();
             }
-            if (bufferIndex >= buffer.length) {
-              // Need more data
+            if (this.#bufferIndex >= this.#buffer.length) {
               continue;
             }
-            advance(); // closing quote
-            state = State.DOCTYPE_AFTER_PUBLIC_ID;
+            this.#advance();
+            this.#state = State.DOCTYPE_AFTER_PUBLIC_ID;
           } else {
-            error(`Expected quote to start public ID`);
+            this.#error(`Expected quote to start public ID`);
           }
           break;
         }
 
         case State.DOCTYPE_AFTER_PUBLIC_ID: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === '"' || c === "'") {
-            doctypeQuoteChar = c;
-            doctypeSystemId = "";
-            advance();
-            // Read until closing quote
+            this.#doctypeQuoteChar = c;
+            this.#doctypeSystemId = "";
+            this.#advance();
             while (
-              bufferIndex < buffer.length &&
-              buffer[bufferIndex] !== doctypeQuoteChar
+              this.#bufferIndex < this.#buffer.length &&
+              this.#buffer[this.#bufferIndex] !== this.#doctypeQuoteChar
             ) {
-              doctypeSystemId += buffer[bufferIndex];
-              advance();
+              this.#doctypeSystemId += this.#buffer[this.#bufferIndex];
+              this.#advance();
             }
-            if (bufferIndex >= buffer.length) {
+            if (this.#bufferIndex >= this.#buffer.length) {
               continue;
             }
-            advance(); // closing quote
-            state = State.DOCTYPE_AFTER_NAME;
+            this.#advance();
+            this.#state = State.DOCTYPE_AFTER_NAME;
           } else if (c === ">") {
-            // PUBLIC without system ID (unusual but possible)
-            emit({
+            this.#emit({
               type: "doctype",
-              name: doctypeName,
-              publicId: doctypePublicId,
-              position: getTokenPosition(),
+              name: this.#doctypeName,
+              publicId: this.#doctypePublicId,
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#advance();
+            this.#state = State.INITIAL;
           } else {
-            error(`Expected system ID or '>' after public ID`);
+            this.#error(`Expected system ID or '>' after public ID`);
           }
           break;
         }
 
         case State.DOCTYPE_SYSTEM: {
-          doctypeCheck += c;
-          advance();
-          if (doctypeCheck === "SYSTEM") {
-            state = State.DOCTYPE_SYSTEM_ID;
-          } else if (!"SYSTEM".startsWith(doctypeCheck)) {
-            error(`Expected SYSTEM, got ${doctypeCheck}`);
+          this.#doctypeCheck += c;
+          this.#advance();
+          if (this.#doctypeCheck === "SYSTEM") {
+            this.#state = State.DOCTYPE_SYSTEM_ID;
+          } else if (!"SYSTEM".startsWith(this.#doctypeCheck)) {
+            this.#error(`Expected SYSTEM, got ${this.#doctypeCheck}`);
           }
           break;
         }
 
         case State.DOCTYPE_SYSTEM_ID: {
-          if (isWhitespace(c)) {
-            advance();
+          if (this.#isWhitespace(c)) {
+            this.#advance();
           } else if (c === '"' || c === "'") {
-            doctypeQuoteChar = c;
-            doctypeSystemId = "";
-            advance();
-            // Read until closing quote
+            this.#doctypeQuoteChar = c;
+            this.#doctypeSystemId = "";
+            this.#advance();
             while (
-              bufferIndex < buffer.length &&
-              buffer[bufferIndex] !== doctypeQuoteChar
+              this.#bufferIndex < this.#buffer.length &&
+              this.#buffer[this.#bufferIndex] !== this.#doctypeQuoteChar
             ) {
-              doctypeSystemId += buffer[bufferIndex];
-              advance();
+              this.#doctypeSystemId += this.#buffer[this.#bufferIndex];
+              this.#advance();
             }
-            if (bufferIndex >= buffer.length) {
+            if (this.#bufferIndex >= this.#buffer.length) {
               continue;
             }
-            advance(); // closing quote
-            state = State.DOCTYPE_AFTER_NAME;
+            this.#advance();
+            this.#state = State.DOCTYPE_AFTER_NAME;
           } else {
-            error(`Expected quote to start system ID`);
+            this.#error(`Expected quote to start system ID`);
           }
           break;
         }
 
         case State.DOCTYPE_INTERNAL_SUBSET: {
-          // Skip internal subset content, tracking bracket depth
           if (c === "]") {
-            doctypeBracketDepth--;
-            advance();
-            if (doctypeBracketDepth === 0) {
-              state = State.DOCTYPE_AFTER_NAME;
+            this.#doctypeBracketDepth--;
+            this.#advance();
+            if (this.#doctypeBracketDepth === 0) {
+              this.#state = State.DOCTYPE_AFTER_NAME;
             }
           } else if (c === "[") {
-            doctypeBracketDepth++;
-            advance();
+            this.#doctypeBracketDepth++;
+            this.#advance();
           } else if (c === '"' || c === "'") {
-            // Skip quoted strings (may contain brackets)
-            doctypeQuoteChar = c;
-            advance();
-            state = State.DOCTYPE_INTERNAL_SUBSET_STRING;
+            this.#doctypeQuoteChar = c;
+            this.#advance();
+            this.#state = State.DOCTYPE_INTERNAL_SUBSET_STRING;
           } else {
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.DOCTYPE_INTERNAL_SUBSET_STRING: {
-          if (c === doctypeQuoteChar) {
-            advance();
-            state = State.DOCTYPE_INTERNAL_SUBSET;
+          if (c === this.#doctypeQuoteChar) {
+            this.#advance();
+            this.#state = State.DOCTYPE_INTERNAL_SUBSET;
           } else {
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.COMMENT_START: {
           if (c === "-") {
-            advance();
-            commentContent = "";
-            state = State.COMMENT;
+            this.#advance();
+            this.#commentStartIdx = this.#bufferIndex;
+            this.#commentPartial = "";
+            this.#state = State.COMMENT;
           } else {
-            error(`Expected '-' to start comment`);
+            this.#error(`Expected '-' to start comment`);
           }
           break;
         }
 
         case State.COMMENT: {
-          // Per XML 1.0 §2.5, comments use the grammar:
-          //   Comment ::= '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
-          // This means '--' MUST NOT appear inside comments.
-          // We use sub-states to handle chunk boundaries correctly.
           if (c === "-") {
-            advance();
-            state = State.COMMENT_DASH;
+            // Save content up to this point
+            this.#commentPartial += this.#buffer.slice(
+              this.#commentStartIdx,
+              this.#bufferIndex,
+            );
+            this.#advance();
+            this.#commentStartIdx = this.#bufferIndex;
+            this.#state = State.COMMENT_DASH;
           } else {
-            commentContent += c;
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.COMMENT_DASH: {
-          // We've seen one '-' in comment content
           if (c === "-") {
-            // Now we've seen '--', expecting '>' or spec violation
-            advance();
-            state = State.COMMENT_DASH_DASH;
+            this.#advance();
+            // Mark that we've consumed the --, no more content to capture
+            this.#commentStartIdx = -1;
+            this.#state = State.COMMENT_DASH_DASH;
           } else {
-            // Single dash is valid content, add it and continue
-            commentContent += "-";
-            commentContent += c;
-            advance();
-            state = State.COMMENT;
+            this.#commentPartial += "-";
+            this.#commentStartIdx = this.#bufferIndex;
+            this.#advance();
+            this.#state = State.COMMENT;
           }
           break;
         }
 
         case State.COMMENT_DASH_DASH: {
-          // We've seen '--', expecting '>'
           if (c === ">") {
-            // Valid comment end
-            emit({
+            this.#emit({
               type: "comment",
-              content: commentContent,
-              position: getTokenPosition(),
+              content: this.#commentPartial,
+              position: this.#getTokenPosition(),
             });
-            advance();
-            state = State.INITIAL;
+            this.#commentStartIdx = -1;
+            this.#commentPartial = "";
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "-") {
-            // "---..." case: first '--' violates spec, but we're lenient
-            // Treat the first dash as content, stay in COMMENT_DASH_DASH
-            // (we still have '--' pending from the second and third dashes)
-            commentContent += "-";
-            advance();
-            // state stays COMMENT_DASH_DASH
+            // Add one - to content, stay in COMMENT_DASH_DASH
+            this.#commentPartial += "-";
+            this.#advance();
           } else {
-            // '--' followed by non-'>': spec violation (lenient mode)
-            // Per XML 1.0 §2.5: '--' MUST NOT occur within comments
-            // We include it in content for error recovery
-            commentContent += "--";
-            commentContent += c;
-            advance();
-            state = State.COMMENT;
+            // Spec violation: -- inside comment. Be lenient.
+            this.#commentPartial += "--";
+            // Restart capturing from current position
+            this.#commentStartIdx = this.#bufferIndex;
+            this.#advance();
+            this.#state = State.COMMENT;
           }
           break;
         }
 
         case State.CDATA_START: {
-          cdataCheck += c;
-          advance();
-          if (cdataCheck === "CDATA[") {
-            cdataStartIdx = bufferIndex; // Start tracking after CDATA[
-            cdataPartial = "";
-            state = State.CDATA;
-          } else if (!"CDATA[".startsWith(cdataCheck)) {
-            error(`Expected 'CDATA[' after '<![`);
+          this.#cdataCheck += c;
+          this.#advance();
+          if (this.#cdataCheck === "CDATA[") {
+            this.#cdataStartIdx = this.#bufferIndex;
+            this.#cdataPartial = "";
+            this.#state = State.CDATA;
+          } else if (!"CDATA[".startsWith(this.#cdataCheck)) {
+            this.#error(`Expected 'CDATA[' after '<![`);
           }
           break;
         }
 
         case State.CDATA: {
-          // Use sub-states to handle ]]> across chunk boundaries
           if (c === "]") {
-            // Save content up to this point (excluding the ])
-            cdataPartial += buffer.slice(cdataStartIdx, bufferIndex);
-            advance();
-            cdataStartIdx = bufferIndex; // Reset start for potential continuation
-            state = State.CDATA_BRACKET;
+            this.#cdataPartial += this.#buffer.slice(
+              this.#cdataStartIdx,
+              this.#bufferIndex,
+            );
+            this.#advance();
+            this.#cdataStartIdx = this.#bufferIndex;
+            this.#state = State.CDATA_BRACKET;
           } else {
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.CDATA_BRACKET: {
-          // We've seen one ] in CDATA content
           if (c === "]") {
-            advance();
-            cdataStartIdx = bufferIndex;
-            state = State.CDATA_BRACKET_BRACKET;
+            this.#advance();
+            this.#cdataStartIdx = this.#bufferIndex;
+            this.#state = State.CDATA_BRACKET_BRACKET;
           } else {
-            // Single ] is valid content, add it back
-            cdataPartial += "]";
-            // cdataStartIdx already points to current position
-            advance();
-            state = State.CDATA;
+            this.#cdataPartial += "]";
+            this.#advance();
+            this.#state = State.CDATA;
           }
           break;
         }
 
         case State.CDATA_BRACKET_BRACKET: {
-          // We've seen ]], expecting > or more content
           if (c === ">") {
-            // Emit CDATA with content (]] is NOT included)
-            emit({
+            this.#emit({
               type: "cdata",
-              content: cdataPartial,
-              position: getTokenPosition(),
+              content: this.#cdataPartial,
+              position: this.#getTokenPosition(),
             });
-            cdataStartIdx = -1;
-            cdataPartial = "";
-            advance();
-            state = State.INITIAL;
+            this.#cdataStartIdx = -1;
+            this.#cdataPartial = "";
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "]") {
-            // "...]]]..." - first ] is content, still have ]] pending
-            cdataPartial += "]";
-            advance();
-            cdataStartIdx = bufferIndex;
-            // state stays CDATA_BRACKET_BRACKET, pendingBrackets stays 2
+            this.#cdataPartial += "]";
+            this.#advance();
+            this.#cdataStartIdx = this.#bufferIndex;
           } else {
-            // ]] followed by non->, ]] is content, continue
-            cdataPartial += "]]";
-            // cdataStartIdx already at current position
-            advance();
-            state = State.CDATA;
+            this.#cdataPartial += "]]";
+            this.#advance();
+            this.#state = State.CDATA;
           }
           break;
         }
 
         case State.PI_TARGET: {
-          if (isNameChar(c)) {
-            piTarget += c;
-            advance();
-          } else if (isWhitespace(c)) {
-            advance();
-            piContent = "";
-            state = State.PI_CONTENT;
+          if (this.#isNameChar(c)) {
+            this.#advance();
+          } else if (this.#isWhitespace(c)) {
+            // Save target
+            const target = this.#getPiTarget();
+            this.#piTargetPartial = target; // Store temporarily
+            this.#advance();
+            this.#piContentStartIdx = this.#bufferIndex;
+            this.#piContentPartial = "";
+            this.#state = State.PI_CONTENT;
           } else if (c === "?") {
-            // Possible end of PI with empty content, use sub-state for chunk safety
-            advance();
-            state = State.PI_TARGET_QUESTION;
+            const target = this.#getPiTarget();
+            this.#piTargetPartial = target; // Store temporarily
+            this.#advance();
+            this.#state = State.PI_TARGET_QUESTION;
           } else {
-            error(
+            this.#error(
               `Unexpected character '${c}' in processing instruction target`,
             );
           }
@@ -946,23 +1065,22 @@ export async function* tokenize(
         }
 
         case State.PI_TARGET_QUESTION: {
-          // We've seen ? after PI target (no whitespace), expecting >
           if (c === ">") {
-            // Empty PI content
-            if (piTarget.toLowerCase() === "xml") {
-              emit(createDeclaration("", getTokenPosition()));
+            if (this.#piTargetPartial.toLowerCase() === "xml") {
+              this.#emit(this.#createDeclaration("", this.#getTokenPosition()));
             } else {
-              emit({
+              this.#emit({
                 type: "processing_instruction",
-                target: piTarget,
+                target: this.#piTargetPartial,
                 content: "",
-                position: getTokenPosition(),
+                position: this.#getTokenPosition(),
               });
             }
-            advance();
-            state = State.INITIAL;
+            this.#piTargetPartial = "";
+            this.#advance();
+            this.#state = State.INITIAL;
           } else {
-            error(
+            this.#error(
               `Expected '>' after '?' in processing instruction, got '${c}'`,
             );
           }
@@ -970,93 +1088,153 @@ export async function* tokenize(
         }
 
         case State.PI_CONTENT: {
-          // Use sub-state to handle ?> across chunk boundaries
           if (c === "?") {
-            advance();
-            state = State.PI_QUESTION;
+            // Save content up to current position
+            this.#piContentPartial += this.#buffer.slice(
+              this.#piContentStartIdx,
+              this.#bufferIndex,
+            );
+            this.#piContentStartIdx = -1;
+            this.#advance();
+            this.#state = State.PI_QUESTION;
           } else {
-            piContent += c;
-            advance();
+            this.#advance();
           }
           break;
         }
 
         case State.PI_QUESTION: {
-          // We've seen ? in PI content, check for >
           if (c === ">") {
-            if (piTarget.toLowerCase() === "xml") {
-              emit(createDeclaration(piContent, getTokenPosition()));
+            if (this.#piTargetPartial.toLowerCase() === "xml") {
+              this.#emit(
+                this.#createDeclaration(
+                  this.#piContentPartial,
+                  this.#getTokenPosition(),
+                ),
+              );
             } else {
-              emit({
+              this.#emit({
                 type: "processing_instruction",
-                target: piTarget,
-                content: piContent.trim(),
-                position: getTokenPosition(),
+                target: this.#piTargetPartial,
+                content: this.#piContentPartial.trim(),
+                position: this.#getTokenPosition(),
               });
             }
-            advance();
-            state = State.INITIAL;
+            this.#piTargetPartial = "";
+            this.#piContentPartial = "";
+            this.#advance();
+            this.#state = State.INITIAL;
           } else if (c === "?") {
-            // "??" - first ? is content, stay waiting for >
-            piContent += "?";
-            advance();
-            // state stays PI_QUESTION
+            this.#piContentPartial += "?";
+            this.#advance();
           } else {
-            // ? followed by non->, add to content
-            piContent += "?";
-            piContent += c;
-            advance();
-            state = State.PI_CONTENT;
+            this.#piContentPartial += "?";
+            // Restart capturing from current position
+            this.#piContentStartIdx = this.#bufferIndex;
+            this.#advance();
+            this.#state = State.PI_CONTENT;
           }
           break;
         }
       }
     }
 
-    // Yield batch at end of each chunk (reduces async overhead 3000x)
-    if (tokenBatch.length > 0) {
-      yield tokenBatch;
-      tokenBatch = [];
+    return this.#tokens;
+  }
+
+  /**
+   * Finalize tokenization and return any remaining tokens.
+   *
+   * This method should be called after all chunks have been processed.
+   * It flushes any pending text content and validates that the tokenizer
+   * is in a valid end state.
+   *
+   * @returns Array of remaining tokens (typically just text content).
+   * @throws {XmlSyntaxError} If the tokenizer is in an incomplete state.
+   */
+  finalize(): XmlToken[] {
+    this.#tokens = [];
+    this.#flushText();
+
+    if (this.#state !== State.INITIAL) {
+      // Provide specific error messages based on state
+      const message = this.#getEndOfInputErrorMessage();
+      this.#error(message);
     }
+
+    return this.#tokens;
   }
 
-  // Flush remaining text and yield final batch
-  for (const token of flushTextTokens()) {
-    emit(token);
-  }
-  if (tokenBatch.length > 0) {
-    yield tokenBatch;
-  }
-
-  // Check for incomplete state
-  if (state !== State.INITIAL) {
-    error(`Unexpected end of input`);
+  #getEndOfInputErrorMessage(): string {
+    switch (this.#state) {
+      case State.TAG_OPEN:
+        return "Unexpected end of input after '<'";
+      case State.TAG_NAME:
+      case State.AFTER_TAG_NAME:
+      case State.ATTRIBUTE_NAME:
+      case State.AFTER_ATTRIBUTE_NAME:
+      case State.BEFORE_ATTRIBUTE_VALUE:
+      case State.EXPECT_SELF_CLOSE_GT:
+        return "Unexpected end of input in start tag";
+      case State.ATTRIBUTE_VALUE_DOUBLE:
+      case State.ATTRIBUTE_VALUE_SINGLE:
+        return "Unterminated attribute value";
+      case State.END_TAG_NAME:
+      case State.AFTER_END_TAG_NAME:
+        return "Unexpected end of input in end tag";
+      case State.COMMENT:
+      case State.COMMENT_START:
+      case State.COMMENT_DASH:
+      case State.COMMENT_DASH_DASH:
+        return "Unterminated comment";
+      case State.CDATA:
+      case State.CDATA_START:
+      case State.CDATA_BRACKET:
+      case State.CDATA_BRACKET_BRACKET:
+        return "Unterminated CDATA section";
+      case State.PI_TARGET:
+      case State.PI_TARGET_QUESTION:
+      case State.PI_CONTENT:
+      case State.PI_QUESTION:
+        return "Unterminated processing instruction";
+      case State.MARKUP_DECLARATION:
+        return "Unexpected end of input in markup declaration";
+      case State.DOCTYPE_START:
+      case State.DOCTYPE_NAME:
+      case State.DOCTYPE_AFTER_NAME:
+      case State.DOCTYPE_PUBLIC:
+      case State.DOCTYPE_PUBLIC_ID:
+      case State.DOCTYPE_AFTER_PUBLIC_ID:
+      case State.DOCTYPE_SYSTEM:
+      case State.DOCTYPE_SYSTEM_ID:
+      case State.DOCTYPE_INTERNAL_SUBSET:
+      case State.DOCTYPE_INTERNAL_SUBSET_STRING:
+        return "Unterminated DOCTYPE";
+      default:
+        return "Unexpected end of input";
+    }
   }
 }
 
 /**
- * Create XML declaration token.
+ * Legacy async generator interface for backwards compatibility.
  *
- * Uses alternation in regex to enforce matching quotes (single or double).
- * Per XML 1.0 spec, `version='1.0"` (mismatched quotes) is invalid.
+ * @deprecated Use {@linkcode XmlTokenizer} class directly for better performance.
+ * @param source Async iterable of XML string chunks.
+ * @yields Arrays of XML tokens, batched per input chunk.
  */
-function createDeclaration(
-  content: string,
-  position: TokenPosition,
-): XmlToken {
-  const versionMatch = VERSION_RE.exec(content);
-  const encodingMatch = ENCODING_RE.exec(content);
-  const standaloneMatch = STANDALONE_RE.exec(content);
-
-  const version = versionMatch?.[1] ?? versionMatch?.[2] ?? "1.0";
-  const encoding = encodingMatch?.[1] ?? encodingMatch?.[2];
-  const standalone = standaloneMatch?.[1] ?? standaloneMatch?.[2];
-
-  return {
-    type: "declaration",
-    version,
-    ...(encoding && { encoding }),
-    ...(standalone && { standalone: standalone as "yes" | "no" }),
-    position,
-  };
+export async function* tokenize(
+  source: AsyncIterable<string>,
+): AsyncGenerator<XmlToken[]> {
+  const tokenizer = new XmlTokenizer();
+  for await (const chunk of source) {
+    const tokens = tokenizer.process(chunk);
+    if (tokens.length > 0) {
+      yield tokens;
+    }
+  }
+  const remaining = tokenizer.finalize();
+  if (remaining.length > 0) {
+    yield remaining;
+  }
 }
