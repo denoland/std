@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { toTransformStream } from "./to_transform_stream.ts";
 
 Deno.test({
@@ -30,6 +30,38 @@ Deno.test({
 
     const res = await Array.fromAsync(readable);
     assertEquals(res, [0, 100, 200]);
+  },
+});
+
+Deno.test({
+  name: "toTransformStream() throws if transformer returns non-iterable",
+  fn() {
+    assertThrows(
+      () => {
+        // @ts-expect-error Testing invalid input
+        toTransformStream(() => null);
+      },
+      TypeError,
+      "Transformer must return an iterable or async iterable",
+    );
+
+    assertThrows(
+      () => {
+        // @ts-expect-error Testing invalid input
+        toTransformStream(() => 123);
+      },
+      TypeError,
+      "Transformer must return an iterable or async iterable",
+    );
+
+    assertThrows(
+      () => {
+        // @ts-expect-error Testing invalid input
+        toTransformStream(() => ({ notAnIterator: true }));
+      },
+      TypeError,
+      "Transformer must return an iterable or async iterable",
+    );
   },
 });
 
@@ -205,5 +237,29 @@ Deno.test({
       Error,
       "foo",
     );
+  },
+});
+
+Deno.test({
+  name: "toTransformStream() executes finally blocks on cancellation",
+  async fn() {
+    let finallyCalled = false;
+
+    const readable = ReadableStream.from([1, 2, 3])
+      .pipeThrough(toTransformStream(async function* (src) {
+        try {
+          for await (const chunk of src) {
+            yield chunk;
+          }
+        } finally {
+          finallyCalled = true;
+        }
+      }));
+
+    const reader = readable.getReader();
+    await reader.read(); // Read first chunk
+    await reader.cancel("test cancellation");
+
+    assertEquals(finallyCalled, true);
   },
 });
