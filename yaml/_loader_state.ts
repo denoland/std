@@ -204,7 +204,7 @@ export class LoaderState {
   anchorMap = new Map();
   tag: string | null = null;
   anchor: string | null = null;
-  kind: string | null = null;
+  kind: KindType | null = null;
   result: unknown[] | Record<string, unknown> | string | null = "";
 
   constructor(
@@ -1473,7 +1473,7 @@ export class LoaderState {
         return;
     }
 
-    const kind = (this.kind ?? "fallback") as KindType;
+    const kind = this.kind ?? "fallback";
 
     const map = this.typeMap[kind];
     const type = map.get(this.tag);
