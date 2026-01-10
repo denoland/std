@@ -313,10 +313,11 @@ function mergeObjects(
     // Handle maps
     if ((left instanceof Map) && (right instanceof Map)) {
       if (options.maps === "merge") {
-        return new Map([
-          ...left,
-          ...right,
-        ]);
+        const result = new Map(left);
+        for (const [k, v] of right) {
+          result.set(k, v);
+        }
+        return result;
       }
 
       return right;
@@ -325,10 +326,11 @@ function mergeObjects(
     // Handle sets
     if ((left instanceof Set) && (right instanceof Set)) {
       if (options.sets === "merge") {
-        return new Set([
-          ...left,
-          ...right,
-        ]);
+        const result = new Set(left);
+        for (const v of right) {
+          result.add(v);
+        }
+        return result;
       }
 
       return right;
