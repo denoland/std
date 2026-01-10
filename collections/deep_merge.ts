@@ -3,6 +3,13 @@
 
 import { filterInPlace } from "./_utils.ts";
 
+/** Default merging options - cached to avoid object allocation on each call */
+const DEFAULT_OPTIONS: DeepMergeOptions = {
+  arrays: "merge",
+  sets: "merge",
+  maps: "merge",
+};
+
 /**
  * Merges the two given records, recursively merging any nested records with the
  * second collection overriding the first in case of conflict.
@@ -214,7 +221,12 @@ export function deepMerge<
   other: Readonly<U>,
   options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
-  return deepMergeInternal(record, other, new Set(), options);
+  return deepMergeInternal(
+    record,
+    other,
+    new Set(),
+    options ?? DEFAULT_OPTIONS as Options,
+  );
 }
 
 function deepMergeInternal<
@@ -229,7 +241,7 @@ function deepMergeInternal<
   record: Readonly<T>,
   other: Readonly<U>,
   seen: Set<NonNullable<unknown>>,
-  options?: Readonly<Options>,
+  options: Readonly<Options>,
 ) {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
@@ -281,11 +293,7 @@ function mergeObjects(
   left: Readonly<NonNullable<Record<string, unknown>>>,
   right: Readonly<NonNullable<Record<string, unknown>>>,
   seen: Set<NonNullable<unknown>>,
-  options: Readonly<DeepMergeOptions> = {
-    arrays: "merge",
-    sets: "merge",
-    maps: "merge",
-  },
+  options: Readonly<DeepMergeOptions>,
 ): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
