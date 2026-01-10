@@ -142,3 +142,14 @@ Deno.test("maxOf() handles infinity", () => {
 
   assertEquals(actual, Infinity);
 });
+
+Deno.test({
+  name: "maxBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = maxOf(input, (it, index) => it * index);
+
+    assertEquals(max, 4);
+  },
+});

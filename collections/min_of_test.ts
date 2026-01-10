@@ -142,3 +142,14 @@ Deno.test("minOf() handles minus infinity", () => {
 
   assertEquals(actual, -Infinity);
 });
+
+Deno.test({
+  name: "minOf() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = minOf(input, (it, index) => it * index);
+
+    assertEquals(max, 0);
+  },
+});

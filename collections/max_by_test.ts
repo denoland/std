@@ -191,3 +191,14 @@ Deno.test("maxBy() handles Map values", () => {
   const max = maxBy(input.values(), (i) => i.age);
   assertEquals(max, { age: 45 });
 });
+
+Deno.test({
+  name: "maxBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = maxBy(input, (_, index) => index);
+
+    assertEquals(max, 1);
+  },
+});

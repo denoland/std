@@ -107,3 +107,11 @@ Deno.test("dropWhile() handles a Map", () => {
     ["f", 6],
   ]);
 });
+
+Deno.test("dropWhile() passes index to predicate", () => {
+  const array = [20, 30, 20];
+
+  const actual = dropWhile(array, (_, index) => index < 1);
+
+  assertEquals(actual, [30, 20]);
+});
