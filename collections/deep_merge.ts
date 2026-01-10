@@ -486,7 +486,7 @@ export type MergeAllSets<
 /** Get array values type */
 export type ArrayValueType<T> = T extends Array<infer V> ? V : never;
 
-/** Merge all sets types definitions from keys present in both objects */
+/** Merge all arrays types definitions from keys present in both objects */
 export type MergeAllArrays<
   T,
   U,
@@ -505,7 +505,7 @@ export type MapKeyType<T> = T extends Map<infer K, unknown> ? K : never;
 /** Get map values types */
 export type MapValueType<T> = T extends Map<unknown, infer V> ? V : never;
 
-/** Merge all sets types definitions from keys present in both objects */
+/** Merge all maps types definitions from keys present in both objects */
 export type MergeAllMaps<
   T,
   U,
