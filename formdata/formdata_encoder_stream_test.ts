@@ -26,29 +26,22 @@ Deno.test("FormDataEncoderStream", async () => {
     .formData();
 
   assertEquals(formData.get("a"), "b");
-  /* These can be uncommented when https://github.com/denoland/std/issues/6929
-  is resolved */
-  // assertEquals(
-  //   formData.get("c"),
-  //   new File(
-  //     [new Uint8Array(10)],
-  //     "blob",
-  //     { type: "application/octet-stream" },
-  //   ),
-  // );
-  // assertEquals(
-  //   formData.get("d"),
-  //   new File(
-  //     [new Uint8Array(20)],
-  //     "potato.txt",
-  //     { type: "application/octet-stream" },
-  //   ),
-  // );
+  const c = formData.get("c");
+  assert(c instanceof File);
+  assertEquals(c.name, "blob");
+  assertEquals(c.type, "application/octet-stream");
+  assertEquals(await c.bytes(), new Uint8Array(10));
+  const d = formData.get("d");
+  assert(d instanceof File);
+  assertEquals(d.name, "potato.txt");
+  assertEquals(d.type, "application/octet-stream");
+  assertEquals(await d.bytes(), new Uint8Array(20));
   assertEquals(formData.get("e"), "f");
-  // assertEquals(
-  //   formData.get("g"),
-  //   new File([new Uint8Array(30)], "blob", { type: "text/html" }),
-  // );
+  const g = formData.get("g");
+  assert(g instanceof File);
+  assertEquals(g.name, "blob");
+  assertEquals(g.type, "text/html");
+  assertEquals(await g.bytes(), new Uint8Array(30));
 });
 
 Deno.test(
