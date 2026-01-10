@@ -1,8 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { filterInPlace } from "./_utils.ts";
-
 /** Default merging options - cached to avoid object allocation on each call */
 const DEFAULT_OPTIONS: DeepMergeOptions = {
   arrays: "merge",
@@ -364,14 +362,19 @@ function isNonNullObject(
 }
 
 function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
-  const result = Object.getOwnPropertySymbols(record) as Array<keyof T>;
-  filterInPlace(
-    result,
-    (key) => Object.prototype.propertyIsEnumerable.call(record, key),
-  );
-  result.push(...(Object.keys(record) as Array<keyof T>));
+  const keys = Object.keys(record) as Array<keyof T>;
+  const symbols = Object.getOwnPropertySymbols(record);
 
-  return result;
+  // Fast path: most objects have no symbol keys
+  if (symbols.length === 0) return keys;
+
+  for (const sym of symbols) {
+    if (Object.prototype.propertyIsEnumerable.call(record, sym)) {
+      keys.push(sym as keyof T);
+    }
+  }
+
+  return keys;
 }
 
 /** Merging strategy */
