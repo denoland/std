@@ -166,3 +166,17 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "zip() handles sparse arrays",
+  fn() {
+    // deno-lint-ignore no-sparse-arrays
+    const sparse = [1, , 3];
+    const result = zip(sparse, ["a", "b", "c"]);
+    assertEquals(result, [
+      [1, "a"],
+      [undefined, "b"],
+      [3, "c"],
+    ]);
+  },
+});

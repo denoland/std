@@ -124,6 +124,7 @@ export interface FormatOptions {
  * @param ms The milliseconds value to format
  * @param options The options for formatting
  * @returns The formatted string
+ * @throws {TypeError} If an invalid style option is provided.
  */
 export function format(
   ms: number,

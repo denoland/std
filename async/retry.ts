@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
-
+import { delay } from "./delay.ts";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
@@ -129,19 +129,34 @@ export async function retry<T>(
     jitter = 1,
   } = options ?? {};
 
-  if (maxTimeout <= 0) {
-    throw new TypeError(
-      `Cannot retry as 'maxTimeout' must be positive: current value is ${maxTimeout}`,
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
+    throw new RangeError(
+      `Cannot retry as 'maxAttempts' must be a positive integer: current value is ${maxAttempts}`,
+    );
+  }
+  if (!Number.isFinite(multiplier) || multiplier < 1) {
+    throw new RangeError(
+      `Cannot retry as 'multiplier' must be a finite number >= 1: current value is ${multiplier}`,
+    );
+  }
+  if (Number.isNaN(maxTimeout) || maxTimeout <= 0) {
+    throw new RangeError(
+      `Cannot retry as 'maxTimeout' must be a positive number: current value is ${maxTimeout}`,
+    );
+  }
+  if (Number.isNaN(minTimeout) || minTimeout < 0) {
+    throw new RangeError(
+      `Cannot retry as 'minTimeout' must be >= 0: current value is ${minTimeout}`,
     );
   }
   if (minTimeout > maxTimeout) {
-    throw new TypeError(
+    throw new RangeError(
       `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${minTimeout}', 'maxTimeout=${maxTimeout}'`,
     );
   }
-  if (jitter > 1) {
-    throw new TypeError(
-      `Cannot retry as 'jitter' must be <= 1: current value is ${jitter}`,
+  if (Number.isNaN(jitter) || jitter < 0 || jitter > 1) {
+    throw new RangeError(
+      `Cannot retry as 'jitter' must be between 0 and 1: current value is ${jitter}`,
     );
   }
 
@@ -161,7 +176,7 @@ export async function retry<T>(
         multiplier,
         jitter,
       );
-      await new Promise((r) => setTimeout(r, timeout));
+      await delay(timeout);
     }
     attempt++;
   }

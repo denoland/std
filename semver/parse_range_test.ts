@@ -106,7 +106,7 @@ Deno.test("parseRange() parse ranges of different kinds", () => {
     ["=1.2.3", [
       [
         {
-          operator: undefined,
+          operator: "=",
           major: 1,
           minor: 2,
           patch: 3,
@@ -665,6 +665,12 @@ Deno.test("parseRange() throws on invalid range", () => {
     TypeError,
     'Cannot parse version range: range "blerg" is invalid',
   );
+
+  assertThrows(
+    () => parseRange("1.b.c"),
+    TypeError,
+    'Cannot parse version range: range "1.b.c" is invalid',
+  );
 });
 
 Deno.test("parseRange() handles wildcards", () => {
@@ -676,6 +682,10 @@ Deno.test("parseRange() handles wildcards", () => {
   ]);
   assertEquals(parseRange("<1.*.*"), [
     [{ operator: "<", major: 1, minor: 0, patch: 0 }],
+  ]);
+  // FIXME(kt3k): The following case should equal `[{ operator: "<", major: 2, minor: 0, patch: 0 }]`
+  assertEquals(parseRange("<=1.*.2"), [
+    [{ operator: "<", major: 1, minor: NaN, patch: 0 }],
   ]);
   assertEquals(parseRange(">=1.*.0"), [
     [{ operator: ">=", major: 1, minor: 0, patch: 0 }],
