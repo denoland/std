@@ -428,3 +428,54 @@ Deno.test("deepMerge() handles target object is not modified", () => {
     quux: new Set([1, 2, 3]),
   });
 });
+
+Deno.test("deepMerge() uses merge strategy by default for arrays/sets/maps", () => {
+  const result = deepMerge(
+    { arr: [1], set: new Set(["a"]), map: new Map([["x", 1]]) },
+    { arr: [2], set: new Set(["b"]), map: new Map([["y", 2]]) },
+  );
+  assertEquals(result.arr, [1, 2]);
+  assertEquals(result.set, new Set(["a", "b"]));
+  assertEquals(result.map, new Map([["x", 1], ["y", 2]]));
+});
+
+Deno.test("deepMerge() handles empty objects", () => {
+  assertEquals(deepMerge({}, {}), {});
+  assertEquals(deepMerge({ foo: 1 }, {}), { foo: 1 });
+  assertEquals(deepMerge({}, { bar: 2 }), { bar: 2 });
+});
+
+Deno.test("deepMerge() handles map key conflicts with merge strategy", () => {
+  const result = deepMerge(
+    { map: new Map([["foo", 1]]) },
+    { map: new Map([["foo", 2]]) },
+    { maps: "merge" },
+  );
+  assertEquals(result.map.get("foo"), 2);
+});
+
+Deno.test("deepMerge() deduplicates sets when merging", () => {
+  const result = deepMerge(
+    { set: new Set([1, 2, 3]) },
+    { set: new Set([2, 3, 4]) },
+    { sets: "merge" },
+  );
+  assertEquals(result.set, new Set([1, 2, 3, 4]));
+});
+
+Deno.test("deepMerge() handles mixed merge strategies", () => {
+  const result = deepMerge(
+    { arr: [1], set: new Set(["a"]) },
+    { arr: [2], set: new Set(["b"]) },
+    { arrays: "replace", sets: "merge" },
+  );
+  assertEquals(result.arr, [2]);
+  assertEquals(result.set, new Set(["a", "b"]));
+});
+
+Deno.test("deepMerge() preserves keys only in target", () => {
+  assertEquals(
+    deepMerge({ a: 1, b: 2 }, { b: 3 }),
+    { a: 1, b: 3 },
+  );
+});
