@@ -312,6 +312,7 @@ export class CircuitBreaker<T = unknown> {
    * Constructs a new {@linkcode CircuitBreaker} instance.
    *
    * @param options Configuration options for the circuit breaker.
+   * @throws {RangeError} If any numeric option is not a finite number within its valid range.
    */
   constructor(options: CircuitBreakerOptions<T> = {}) {
     const {
@@ -329,27 +330,27 @@ export class CircuitBreaker<T = unknown> {
     } = options;
 
     if (!Number.isFinite(failureThreshold) || failureThreshold < 1) {
-      throw new TypeError(
+      throw new RangeError(
         `Cannot create circuit breaker as 'failureThreshold' must be a finite number >= 1: received ${failureThreshold}`,
       );
     }
     if (!Number.isFinite(cooldownMs) || cooldownMs < 0) {
-      throw new TypeError(
+      throw new RangeError(
         `Cannot create circuit breaker as 'cooldownMs' must be a finite non-negative number: received ${cooldownMs}`,
       );
     }
     if (!Number.isFinite(successThreshold) || successThreshold < 1) {
-      throw new TypeError(
+      throw new RangeError(
         `Cannot create circuit breaker as 'successThreshold' must be a finite number >= 1: received ${successThreshold}`,
       );
     }
     if (!Number.isFinite(halfOpenMaxConcurrent) || halfOpenMaxConcurrent < 1) {
-      throw new TypeError(
+      throw new RangeError(
         `Cannot create circuit breaker as 'halfOpenMaxConcurrent' must be a finite number >= 1: received ${halfOpenMaxConcurrent}`,
       );
     }
     if (!Number.isFinite(failureWindowMs) || failureWindowMs < 0) {
-      throw new TypeError(
+      throw new RangeError(
         `Cannot create circuit breaker as 'failureWindowMs' must be a finite non-negative number: received ${failureWindowMs}`,
       );
     }
