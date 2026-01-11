@@ -172,7 +172,7 @@ export class CircuitBreakerOpenError extends Error {
    * assertEquals(error.remainingCooldownMs, 5000);
    * ```
    */
-  remainingCooldownMs: number;
+  readonly remainingCooldownMs: number;
 
   /**
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
@@ -188,19 +188,34 @@ export class CircuitBreakerOpenError extends Error {
   }
 }
 
-/** Internal state managed by the circuit breaker. */
-interface CircuitBreakerState {
-  state: CircuitState;
+/** Base properties shared by all circuit breaker states. */
+interface CircuitBreakerStateBase {
   /** Failure timestamps in milliseconds since epoch. */
   failureTimestamps: number[];
   consecutiveSuccesses: number;
-  /** Timestamp when circuit opened, in milliseconds since epoch. */
-  openedAt: number | null;
   halfOpenInFlight: number;
 }
 
+/** Internal state managed by the circuit breaker (discriminated union). */
+type CircuitBreakerState =
+  | (CircuitBreakerStateBase & {
+    state: "closed";
+    /** Timestamp when circuit opened, in milliseconds since epoch. */
+    openedAt: null;
+  })
+  | (CircuitBreakerStateBase & {
+    state: "open";
+    /** Timestamp when circuit opened, in milliseconds since epoch. */
+    openedAt: number;
+  })
+  | (CircuitBreakerStateBase & {
+    state: "half_open";
+    /** Timestamp when circuit opened, in milliseconds since epoch. */
+    openedAt: number;
+  });
+
 /** Creates initial circuit breaker state. */
-function createInitialState(): CircuitBreakerState {
+function createInitialState(): CircuitBreakerState & { state: "closed" } {
   return {
     state: "closed",
     failureTimestamps: [],
@@ -213,16 +228,16 @@ function createInitialState(): CircuitBreakerState {
 /**
  * Removes failure timestamps outside the decay window.
  *
- * @param timestamps Array of failure timestamps in ms.
+ * @param timestamps Readonly array of failure timestamps in ms.
  * @param windowMs Duration window in milliseconds.
  * @param nowMs Current time in milliseconds.
- * @returns Filtered array of timestamps within the window.
+ * @returns Readonly filtered array of timestamps within the window.
  */
 function pruneOldFailures(
-  timestamps: number[],
+  timestamps: readonly number[],
   windowMs: number,
   nowMs: number,
-): number[] {
+): readonly number[] {
   if (windowMs === 0) return timestamps;
   const cutoff = nowMs - windowMs;
   return timestamps.filter((ts) => ts > cutoff);
@@ -493,7 +508,7 @@ export class CircuitBreaker<T = unknown> {
    * @throws {DOMException} If the abort signal is already aborted.
    */
   async execute<R extends T>(
-    fn: (() => Promise<R>) | (() => R),
+    fn: () => R | Promise<R>,
     options?: CircuitBreakerExecuteOptions,
   ): Promise<R> {
     options?.signal?.throwIfAborted();
@@ -503,8 +518,7 @@ export class CircuitBreaker<T = unknown> {
 
     // Check if we should reject
     if (currentState.state === "open") {
-      const openedAt = currentState.openedAt!;
-      const cooldownEnd = openedAt + this.#cooldownMs;
+      const cooldownEnd = currentState.openedAt + this.#cooldownMs;
       const remainingMs = Math.max(0, cooldownEnd - currentTime);
       throw new CircuitBreakerOpenError(Math.round(remainingMs));
     }
@@ -653,7 +667,7 @@ export class CircuitBreaker<T = unknown> {
    * OPEN → HALF_OPEN after cooldown expires.
    */
   #resolveCurrentState(): CircuitBreakerState {
-    if (this.#state.state !== "open" || this.#state.openedAt === null) {
+    if (this.#state.state !== "open") {
       return this.#state;
     }
 
