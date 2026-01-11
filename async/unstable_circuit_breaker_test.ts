@@ -580,6 +580,30 @@ Deno.test("CircuitBreaker onClose callback is invoked", async () => {
   assertEquals(closeCalled, true);
 });
 
+Deno.test("CircuitBreaker onHalfOpen callback is invoked", async () => {
+  using time = new FakeTime();
+
+  let halfOpenCalled = false;
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    onHalfOpen: () => {
+      halfOpenCalled = true;
+    },
+  });
+
+  // Open
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(halfOpenCalled, false);
+
+  // Enter half-open (isAvailable resolves the transition)
+  time.tick(1001);
+  assertEquals(breaker.isAvailable, true);
+  assertEquals(halfOpenCalled, true);
+});
+
 Deno.test("CircuitBreaker half_open limits concurrent requests", async () => {
   using time = new FakeTime();
 

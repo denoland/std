@@ -95,6 +95,11 @@ export interface CircuitBreakerOptions<T> {
   onOpen?: (failureCount: number) => void;
 
   /**
+   * Callback invoked when circuit enters half-open state (testing recovery).
+   */
+  onHalfOpen?: () => void;
+
+  /**
    * Callback invoked when circuit closes (recovery complete).
    */
   onClose?: () => void;
@@ -305,6 +310,7 @@ export class CircuitBreaker<T = unknown> {
   #onStateChange: ((from: CircuitState, to: CircuitState) => void) | undefined;
   #onFailure: ((error: unknown, failureCount: number) => void) | undefined;
   #onOpen: ((failureCount: number) => void) | undefined;
+  #onHalfOpen: (() => void) | undefined;
   #onClose: (() => void) | undefined;
   #state: CircuitBreakerState;
 
@@ -326,6 +332,7 @@ export class CircuitBreaker<T = unknown> {
       onStateChange,
       onFailure,
       onOpen,
+      onHalfOpen,
       onClose,
     } = options;
 
@@ -365,6 +372,7 @@ export class CircuitBreaker<T = unknown> {
     this.#onStateChange = onStateChange;
     this.#onFailure = onFailure;
     this.#onOpen = onOpen;
+    this.#onHalfOpen = onHalfOpen;
     this.#onClose = onClose;
     this.#state = createInitialState();
   }
@@ -662,6 +670,7 @@ export class CircuitBreaker<T = unknown> {
       halfOpenInFlight: 0,
     };
     this.#onStateChange?.("open", "half_open");
+    this.#onHalfOpen?.();
     return this.#state;
   }
 
