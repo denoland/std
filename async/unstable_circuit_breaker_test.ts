@@ -743,11 +743,13 @@ Deno.test("CircuitBreaker multiple force operations", () => {
   assertEquals(transitions.length, 2);
 });
 
-Deno.test("CircuitBreaker.reset() invokes onStateChange when not closed", async () => {
+Deno.test("CircuitBreaker.reset() silently resets without invoking callbacks", async () => {
   const transitions: Array<[CircuitState, CircuitState]> = [];
+  let closeCalled = false;
   const breaker = new CircuitBreaker({
     failureThreshold: 1,
     onStateChange: (from, to) => transitions.push([from, to]),
+    onClose: () => closeCalled = true,
   });
 
   // Open the circuit
@@ -757,20 +759,34 @@ Deno.test("CircuitBreaker.reset() invokes onStateChange when not closed", async 
   assertEquals(breaker.state, "open");
   assertEquals(transitions, [["closed", "open"]]);
 
-  // Reset should trigger state change callback
+  // Reset should NOT trigger any callbacks (silent reset)
   breaker.reset();
-  assertEquals(transitions, [["closed", "open"], ["open", "closed"]]);
+  assertEquals(breaker.state, "closed");
+  assertEquals(breaker.failureCount, 0);
+  assertEquals(transitions, [["closed", "open"]]); // No new transition
+  assertEquals(closeCalled, false); // onClose not called
 });
 
-Deno.test("CircuitBreaker.reset() does not invoke onStateChange when already closed", () => {
+Deno.test("CircuitBreaker.forceClose() invokes callbacks unlike reset()", async () => {
   const transitions: Array<[CircuitState, CircuitState]> = [];
+  let closeCalled = false;
   const breaker = new CircuitBreaker({
+    failureThreshold: 1,
     onStateChange: (from, to) => transitions.push([from, to]),
+    onClose: () => closeCalled = true,
   });
 
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // forceClose SHOULD trigger callbacks
+  breaker.forceClose();
   assertEquals(breaker.state, "closed");
-  breaker.reset();
-  assertEquals(transitions.length, 0); // No state change callback
+  assertEquals(transitions, [["closed", "open"], ["open", "closed"]]);
+  assertEquals(closeCalled, true);
 });
 
 Deno.test("CircuitBreaker half_open failure invokes onStateChange and onOpen", async () => {

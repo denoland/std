@@ -610,8 +610,13 @@ export class CircuitBreaker<T = unknown> {
   }
 
   /**
-   * Forces the circuit breaker to closed state.
-   * Resets all failure counters.
+   * Forces the circuit breaker to closed state and notifies observers.
+   *
+   * This is an operational transition that fires {@linkcode onStateChange}
+   * and {@linkcode onClose} callbacks. Use this when the protected service
+   * has recovered and you want observers to be notified.
+   *
+   * For silent resets (e.g., in tests), use {@linkcode reset} instead.
    *
    * @example Usage
    * ```ts
@@ -634,7 +639,11 @@ export class CircuitBreaker<T = unknown> {
   }
 
   /**
-   * Resets the circuit breaker to initial state.
+   * Silently resets the circuit breaker to initial state.
+   *
+   * Unlike {@linkcode forceClose}, this does not fire any callbacks
+   * (`onStateChange`, `onClose`). Use this for testing or administrative
+   * resets where observers should not be notified.
    *
    * @example Usage
    * ```ts
@@ -648,11 +657,7 @@ export class CircuitBreaker<T = unknown> {
    * ```
    */
   reset(): void {
-    const previous = this.#state.state;
     this.#state = createInitialState();
-    if (previous !== "closed") {
-      this.#onStateChange?.(previous, "closed");
-    }
   }
 
   /**
