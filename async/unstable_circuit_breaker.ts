@@ -312,6 +312,25 @@ function pruneOldFailures(
  * );
  * ```
  *
+ * @example Waiting out the cooldown with delay
+ * ```ts ignore
+ * import { delay } from "@std/async/delay";
+ * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
+ *
+ * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+ *
+ * try {
+ *   return await breaker.execute(() => fetch("https://api.example.com"));
+ * } catch (error) {
+ *   if (error instanceof CircuitBreakerOpenError) {
+ *     // Wait for the circuit to transition to half-open, then retry
+ *     await delay(error.remainingCooldownMs);
+ *     return await breaker.execute(() => fetch("https://api.example.com"));
+ *   }
+ *   throw error;
+ * }
+ * ```
+ *
  * @typeParam T The type of value returned by the executed function.
  */
 export class CircuitBreaker<T = unknown> {
