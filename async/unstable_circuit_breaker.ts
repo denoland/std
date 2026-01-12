@@ -191,27 +191,27 @@ export class CircuitBreakerOpenError extends Error {
 /** Base properties shared by all circuit breaker states. */
 interface CircuitBreakerStateBase {
   /** Failure timestamps in milliseconds since epoch. */
-  failureTimestamps: number[];
-  consecutiveSuccesses: number;
-  halfOpenInFlight: number;
+  readonly failureTimestamps: readonly number[];
+  readonly consecutiveSuccesses: number;
+  readonly halfOpenInFlight: number;
 }
 
 /** Internal state managed by the circuit breaker (discriminated union). */
 type CircuitBreakerState =
   | (CircuitBreakerStateBase & {
-    state: "closed";
+    readonly state: "closed";
     /** Timestamp when circuit opened, in milliseconds since epoch. */
-    openedAt: null;
+    readonly openedAt: null;
   })
   | (CircuitBreakerStateBase & {
-    state: "open";
+    readonly state: "open";
     /** Timestamp when circuit opened, in milliseconds since epoch. */
-    openedAt: number;
+    readonly openedAt: number;
   })
   | (CircuitBreakerStateBase & {
-    state: "half_open";
+    readonly state: "half_open";
     /** Timestamp when circuit opened, in milliseconds since epoch. */
-    openedAt: number;
+    readonly openedAt: number;
   });
 
 /** Creates initial circuit breaker state. */
