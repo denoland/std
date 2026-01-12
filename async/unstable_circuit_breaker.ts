@@ -475,7 +475,7 @@ export class CircuitBreaker<T = unknown> {
    * @returns `true` if requests will be attempted, `false` if rejected.
    */
   get isAvailable(): boolean {
-    const resolved = this.#resolveCurrentState();
+    const resolved = this.#resolveCurrentState(Date.now());
     if (resolved.state === "closed") return true;
     if (resolved.state === "open") return false;
     // half_open: available if under concurrent limit
@@ -533,7 +533,7 @@ export class CircuitBreaker<T = unknown> {
     options?.signal?.throwIfAborted();
 
     const currentTime = Date.now();
-    const currentState = this.#resolveCurrentState();
+    const currentState = this.#resolveCurrentState(currentTime);
 
     // Check if we should reject
     if (currentState.state === "open") {
@@ -557,7 +557,7 @@ export class CircuitBreaker<T = unknown> {
     try {
       result = await fn();
     } catch (error) {
-      this.#handleFailure(error, currentState.state);
+      this.#handleFailure(error, currentState.state, currentTime);
       throw error;
     } finally {
       // Decrement half-open in-flight counter
@@ -572,7 +572,7 @@ export class CircuitBreaker<T = unknown> {
     // Check if successful result should count as failure
     if (this.#isResultFailure(result)) {
       const syntheticError = new Error("Result classified as failure");
-      this.#handleFailure(syntheticError, currentState.state);
+      this.#handleFailure(syntheticError, currentState.state, currentTime);
       return result; // Still return the result, but record the failure
     }
 
@@ -689,14 +689,16 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Resolves the current state, handling automatic transitions.
    * OPEN → HALF_OPEN after cooldown expires.
+   *
+   * @param now Current timestamp in milliseconds.
    */
-  #resolveCurrentState(): CircuitBreakerState {
+  #resolveCurrentState(now: number): CircuitBreakerState {
     if (this.#state.state !== "open") {
       return this.#state;
     }
 
     const cooldownEnd = this.#state.openedAt + this.#cooldownMs;
-    if (Date.now() < cooldownEnd) {
+    if (now < cooldownEnd) {
       return this.#state;
     }
 
@@ -712,22 +714,30 @@ export class CircuitBreaker<T = unknown> {
     return this.#state;
   }
 
-  /** Records a failure and potentially opens the circuit. */
-  #handleFailure(error: unknown, previousState: CircuitState): void {
+  /**
+   * Records a failure and potentially opens the circuit.
+   *
+   * @param error The error that occurred.
+   * @param previousState The state before this failure.
+   * @param now Current timestamp in milliseconds.
+   */
+  #handleFailure(
+    error: unknown,
+    previousState: CircuitState,
+    now: number,
+  ): void {
     // Check if this error should count as a failure
     if (!this.#isFailure(error)) {
       return;
     }
 
-    const currentTime = Date.now();
-
     // Prune old failures and add new one
     const prunedFailures = pruneOldFailures(
       this.#state.failureTimestamps,
       this.#failureWindowMs,
-      currentTime,
+      now,
     );
-    const newFailures = [...prunedFailures, currentTime];
+    const newFailures = [...prunedFailures, now];
 
     this.#onFailure?.(error, newFailures.length);
 
@@ -737,7 +747,7 @@ export class CircuitBreaker<T = unknown> {
         ...this.#state,
         state: "open",
         failureTimestamps: newFailures,
-        openedAt: currentTime,
+        openedAt: now,
         consecutiveSuccesses: 0,
       };
       this.#onStateChange?.("half_open", "open");
@@ -751,7 +761,7 @@ export class CircuitBreaker<T = unknown> {
         ...this.#state,
         state: "open",
         failureTimestamps: newFailures,
-        openedAt: currentTime,
+        openedAt: now,
         consecutiveSuccesses: 0,
       };
       this.#onStateChange?.("closed", "open");
