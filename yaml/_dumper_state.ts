@@ -385,14 +385,14 @@ function blockHeader(string: string, indentPerLevel: number): string {
 
 function getDuplicateObjects(root: unknown): unknown[] {
   const seenObjects = new Set();
-  const duplicateObjects = [];
+  const duplicateObjects = new Set();
   const queue = [root];
 
   for (let i = 0; i < queue.length; i++) {
     const value = queue[i];
     if (!isObject(value)) continue;
     if (seenObjects.has(value)) {
-      duplicateObjects.push(value);
+      duplicateObjects.add(value);
       continue;
     }
     seenObjects.add(value);
@@ -400,7 +400,7 @@ function getDuplicateObjects(root: unknown): unknown[] {
     queue.push(...children);
   }
 
-  return duplicateObjects;
+  return [...duplicateObjects];
 }
 function stringifyValue(value: unknown, tag: string | null) {
   if (tag !== null && tag !== "?") return `!<${tag}> ${value}`;
