@@ -73,6 +73,7 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit state changes.
+   * Must not throw.
    *
    * @param from Previous state.
    * @param to New state.
@@ -81,6 +82,7 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when a failure is recorded.
+   * Must not throw.
    *
    * @param error The error that caused the failure.
    * @param failureCount Current number of failures in the window.
@@ -89,6 +91,7 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit opens.
+   * Must not throw.
    *
    * @param failureCount Number of failures that triggered the open.
    */
@@ -96,11 +99,13 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit enters half-open state (testing recovery).
+   * Must not throw.
    */
   onHalfOpen?: () => void;
 
   /**
    * Callback invoked when circuit closes (recovery complete).
+   * Must not throw.
    */
   onClose?: () => void;
 }
