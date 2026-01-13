@@ -119,18 +119,6 @@ export interface CircuitBreakerExecuteOptions {
   signal?: AbortSignal;
 }
 
-/** Statistics returned by {@linkcode CircuitBreaker.getStats}. */
-export interface CircuitBreakerStats {
-  /** Current state of the circuit breaker. */
-  readonly state: CircuitState;
-  /** Number of failures in the current window. */
-  readonly failureCount: number;
-  /** Number of consecutive successes (relevant in half-open state). */
-  readonly consecutiveSuccesses: number;
-  /** Whether the circuit is currently allowing requests. */
-  readonly isAvailable: boolean;
-}
-
 /**
  * Error thrown when {@linkcode CircuitBreaker} is open and rejects a request.
  *
@@ -416,8 +404,8 @@ export class CircuitBreaker<T = unknown> {
    *
    * Note: This returns the stored state without resolving time-based
    * transitions. After a cooldown expires, this may still show `"open"`
-   * until the next {@linkcode execute} call or {@linkcode isAvailable}
-   * check triggers the transition to `"half_open"`.
+   * until the next {@linkcode execute} call triggers the transition to
+   * `"half_open"`.
    *
    * @example Usage
    * ```ts
@@ -432,54 +420,6 @@ export class CircuitBreaker<T = unknown> {
    */
   get state(): CircuitState {
     return this.#state.state;
-  }
-
-  /**
-   * Number of failures in the current window.
-   *
-   * @example Usage
-   * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const breaker = new CircuitBreaker();
-   * assertEquals(breaker.failureCount, 0);
-   * ```
-   *
-   * @returns The number of failures recorded in the sliding window.
-   */
-  get failureCount(): number {
-    return pruneOldFailures(
-      this.#state.failureTimestamps,
-      this.#failureWindowMs,
-      Date.now(),
-    ).length;
-  }
-
-  /**
-   * Whether the circuit is currently allowing requests.
-   *
-   * Unlike {@linkcode state}, this resolves any pending time-based
-   * transitions (e.g., `"open"` → `"half_open"` after cooldown) to ensure
-   * the returned value reflects current availability.
-   *
-   * @example Usage
-   * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const breaker = new CircuitBreaker();
-   * assertEquals(breaker.isAvailable, true);
-   * ```
-   *
-   * @returns `true` if requests will be attempted, `false` if rejected.
-   */
-  get isAvailable(): boolean {
-    const resolved = this.#resolveCurrentState(Date.now());
-    if (resolved.state === "closed") return true;
-    if (resolved.state === "open") return false;
-    // half_open: available if under concurrent limit
-    return resolved.halfOpenInFlight < this.#halfOpenMaxConcurrent;
   }
 
   /**
@@ -597,6 +537,7 @@ export class CircuitBreaker<T = unknown> {
    */
   forceOpen(): void {
     const previous = this.#state.state;
+    const failureTimestamps = this.#state.failureTimestamps;
     this.#state = {
       ...this.#state,
       state: "open",
@@ -605,7 +546,12 @@ export class CircuitBreaker<T = unknown> {
     };
     if (previous !== "open") {
       this.#onStateChange?.(previous, "open");
-      this.#onOpen?.(this.failureCount);
+      const failureCount = pruneOldFailures(
+        failureTimestamps,
+        this.#failureWindowMs,
+        Date.now(),
+      ).length;
+      this.#onOpen?.(failureCount);
     }
   }
 
@@ -653,37 +599,10 @@ export class CircuitBreaker<T = unknown> {
    * const breaker = new CircuitBreaker();
    * breaker.reset();
    * assertEquals(breaker.state, "closed");
-   * assertEquals(breaker.failureCount, 0);
    * ```
    */
   reset(): void {
     this.#state = createInitialState();
-  }
-
-  /**
-   * Returns circuit breaker statistics for monitoring.
-   *
-   * @example Usage
-   * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const breaker = new CircuitBreaker();
-   * const stats = breaker.getStats();
-   * assertEquals(stats.state, "closed");
-   * assertEquals(stats.failureCount, 0);
-   * assertEquals(stats.isAvailable, true);
-   * ```
-   *
-   * @returns Current stats including state, failure count, and availability.
-   */
-  getStats(): CircuitBreakerStats {
-    return {
-      state: this.state,
-      failureCount: this.failureCount,
-      consecutiveSuccesses: this.#state.consecutiveSuccesses,
-      isAvailable: this.isAvailable,
-    };
   }
 
   /**
