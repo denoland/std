@@ -31,7 +31,7 @@ function isPrimitive(value: unknown): boolean {
  * assertArrayIncludes([{ a: 1 }, { b: 2 }], [{ a: 1 }]); // Passes
  * ```
  *
- * @typeParam T The element type, inferred from `actual`.
+ * @typeParam T The element type of the arrays.
  * @param actual The array-like object to search within.
  * @param expected The values that must be present in `actual`.
  * @param msg Optional message to display on failure.
@@ -39,10 +39,10 @@ function isPrimitive(value: unknown): boolean {
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
-  expected: ArrayLikeArg<NoInfer<T>>,
+  expected: ArrayLikeArg<T>,
   msg?: string,
 ): void {
-  const missing: T[] = [];
+  const missing: unknown[] = [];
   const expectedLen = expected.length;
   const actualLen = actual.length;
   for (let i = 0; i < expectedLen; i++) {
@@ -61,7 +61,7 @@ export function assertArrayIncludes<T>(
       }
     }
     if (!found) {
-      missing.push(item as T);
+      missing.push(item);
     }
   }
   if (missing.length === 0) {
