@@ -110,7 +110,7 @@ Deno.test({
   fn() {
     const result = unstable.findSingle(
       [9, 12, 13],
-      (_, index) => index === 1
+      (_, index) => index === 1,
     );
     assertEquals(result, 12);
   },

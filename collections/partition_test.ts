@@ -119,7 +119,7 @@ Deno.test({
   fn() {
     const result = unstable.partition(
       [2, 4, 6],
-      (_: number, index: number) => index % 2 === 0
+      (_: number, index: number) => index % 2 === 0,
     );
     assertEquals(result, [[2, 6], [4]]);
   },

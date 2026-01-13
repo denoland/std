@@ -97,7 +97,7 @@ Deno.test({
   fn() {
     const result = unstable.mapNotNullish(
       [1, 2, 3, 4],
-      (it, index) => index === 1 ? null : it + index
+      (it, index) => index === 1 ? null : it + index,
     );
     assertEquals(result, [1, 5, 7]);
   },

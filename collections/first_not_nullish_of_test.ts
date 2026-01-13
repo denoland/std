@@ -92,7 +92,7 @@ Deno.test({
   fn() {
     const result = unstable.firstNotNullishOf(
       [1, 2, 3, 4],
-      (it, index) => index < 1 ? null : it
+      (it, index) => index < 1 ? null : it,
     );
     assertEquals(result, 2);
   },
