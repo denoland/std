@@ -7,42 +7,61 @@ import { AssertionError } from "./assertion_error.ts";
 /** An array-like object (`Array`, `Uint8Array`, `NodeList`, etc.) that is not a string */
 export type ArrayLikeArg<T> = ArrayLike<T> & object;
 
+function isPrimitive(value: unknown): boolean {
+  return value === null ||
+    typeof value !== "object" && typeof value !== "function";
+}
+
 /**
- * Make an assertion that `actual` includes the `expected` values. If not then
- * an error will be thrown.
+ * Asserts that `actual` contains all values in `expected`, using deep equality
+ * for non-primitive values.
  *
- * Type parameter can be specified to ensure values under comparison have the
- * same type.
- *
- * @example Usage
+ * @example Usage with primitives
  * ```ts ignore
  * import { assertArrayIncludes } from "@std/assert";
  *
- * assertArrayIncludes([1, 2], [2]); // Doesn't throw
- * assertArrayIncludes([1, 2], [3]); // Throws
+ * assertArrayIncludes([1, 2, 3], [2, 3]); // Passes
+ * assertArrayIncludes([1, 2, 3], [4]); // Throws
  * ```
  *
- * @typeParam T The type of the elements in the array to compare.
- * @param actual The array-like object to check for.
- * @param expected The array-like object to check for.
- * @param msg The optional message to display if the assertion fails.
+ * @example Usage with objects (deep equality)
+ * ```ts ignore
+ * import { assertArrayIncludes } from "@std/assert";
+ *
+ * assertArrayIncludes([{ a: 1 }, { b: 2 }], [{ a: 1 }]); // Passes
+ * ```
+ *
+ * @typeParam T The element type, inferred from `actual`.
+ * @param actual The array-like object to search within.
+ * @param expected The values that must be present in `actual`.
+ * @param msg Optional message to display on failure.
+ * @throws {AssertionError} If any value in `expected` is not found in `actual`.
  */
 export function assertArrayIncludes<T>(
   actual: ArrayLikeArg<T>,
-  expected: ArrayLikeArg<T>,
+  expected: ArrayLikeArg<NoInfer<T>>,
   msg?: string,
-) {
-  const missing: unknown[] = [];
-  for (let i = 0; i < expected.length; i++) {
-    let found = false;
-    for (let j = 0; j < actual.length; j++) {
-      if (equal(expected[i], actual[j])) {
-        found = true;
-        break;
+): void {
+  const missing: T[] = [];
+  const expectedLen = expected.length;
+  const actualLen = actual.length;
+  for (let i = 0; i < expectedLen; i++) {
+    const item = expected[i];
+    let found: boolean;
+    if (isPrimitive(item)) {
+      // Fast path
+      found = Array.prototype.includes.call(actual, item);
+    } else {
+      found = false;
+      for (let j = 0; j < actualLen; j++) {
+        if (equal(item, actual[j])) {
+          found = true;
+          break;
+        }
       }
     }
     if (!found) {
-      missing.push(expected[i]);
+      missing.push(item as T);
     }
   }
   if (missing.length === 0) {
