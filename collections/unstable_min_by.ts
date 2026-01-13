@@ -5,6 +5,8 @@
  * Returns the first element that is the smallest value of the given function or
  * undefined if there are no elements.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the elements in the array.
  *
  * @param array The array to find the minimum element in.
@@ -15,7 +17,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { minBy } from "@std/collections/min-by";
+ * import { minBy } from "@std/collections/unstable-min-by";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -31,7 +33,7 @@
  */
 export function minBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
@@ -47,7 +49,7 @@ export function minBy<T>(
  *
  * @example Basic usage
  * ```ts
- * import { minBy } from "@std/collections/min-by";
+ * import { minBy } from "@std/collections/unstable-min-by";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -63,7 +65,7 @@ export function minBy<T>(
  */
 export function minBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => string,
+  selector: (el: T, index: number) => string,
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
@@ -79,7 +81,7 @@ export function minBy<T>(
  *
  * @example Basic usage
  * ```ts
- * import { minBy } from "@std/collections/min-by";
+ * import { minBy } from "@std/collections/unstable-min-by";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -95,7 +97,7 @@ export function minBy<T>(
  */
 export function minBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => bigint,
+  selector: (el: T, index: number) => bigint,
 ): T | undefined;
 /**
  * Returns the first element that is the smallest value of the given function or
@@ -111,7 +113,7 @@ export function minBy<T>(
  *
  * @example Basic usage
  * ```ts
- * import { minBy } from "@std/collections/min-by";
+ * import { minBy } from "@std/collections/unstable-min-by";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -125,26 +127,26 @@ export function minBy<T>(
  */
 export function minBy<T>(
   array: Iterable<T>,
-  selector: (el: T) => Date,
+  selector: (el: T, index: number) => Date,
 ): T | undefined;
 export function minBy<T>(
   array: Iterable<T>,
   selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => string)
+    | ((el: T, index: number) => bigint)
+    | ((el: T, index: number) => Date),
 ): T | undefined {
   if (Array.isArray(array)) {
     const length = array.length;
     if (length === 0) return undefined;
 
     let min: T = array[0]!;
-    let minValue = selector(min);
+    let minValue = selector(min, 0);
 
     for (let i = 1; i < length; i++) {
       const current = array[i]!;
-      const currentValue = selector(current);
+      const currentValue = selector(current, i);
       if (currentValue < minValue) {
         min = current;
         minValue = currentValue;
@@ -154,17 +156,18 @@ export function minBy<T>(
     return min;
   }
 
+  let index = 0;
   const iter = array[Symbol.iterator]();
   const first = iter.next();
 
   if (first.done) return undefined;
 
   let min: T = first.value;
-  let minValue = selector(min);
+  let minValue = selector(min, index++);
 
   let next = iter.next();
   while (!next.done) {
-    const currentValue = selector(next.value);
+    const currentValue = selector(next.value, index++);
     if (currentValue < minValue) {
       min = next.value;
       minValue = currentValue;

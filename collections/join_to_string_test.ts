@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { joinToString } from "./join_to_string.ts";
+import * as unstable from "./unstable_join_to_string.ts";
 
 Deno.test({
   name: "joinToString() handles no mutation",
@@ -146,11 +147,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "joinToString() passes index to selector",
+  name: "unstable.joinToString() passes index to selector",
   fn() {
     const arr = ["Kim", "Anna", "Tim"];
 
-    const out = joinToString(arr, (it, index) => it + index);
+    const out = unstable.joinToString(arr, (it, index) => it + index);
 
     assertEquals(out, "Kim0,Anna1,Tim2");
   },

@@ -2,9 +2,10 @@
 
 import { assertEquals } from "@std/assert";
 import { firstNotNullishOf } from "./first_not_nullish_of.ts";
+import * as unstable from "./unstable_first_not_nullish_of.ts";
 
 function firstNotNullishOfTest<T, O>(
-  input: [Array<T>, (el: T, index: number) => O | undefined | null],
+  input: [Array<T>, (el: T) => O | undefined | null],
   expected: NonNullable<O> | undefined,
   message?: string,
 ) {
@@ -87,11 +88,12 @@ Deno.test({
 });
 
 Deno.test({
-  name: "firstNotNullishOf() passes index to selector",
+  name: "unstable.firstNotNullishOf() passes index to selector",
   fn() {
-    firstNotNullishOfTest(
-      [[1, 2, 3, 4], (it, index) => index < 1 ? null : it],
-      2,
+    const result = unstable.firstNotNullishOf(
+      [1, 2, 3, 4],
+      (it, index) => index < 1 ? null : it
     );
+    assertEquals(result, 2);
   },
 });

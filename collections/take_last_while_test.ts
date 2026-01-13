@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { takeLastWhile } from "./take_last_while.ts";
+import * as unstable from "./unstable_take_last_while.ts";
 
 Deno.test("takeLastWhile() handles num array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
@@ -117,10 +118,10 @@ Deno.test("takeLastWhile() gets from last matching element from a generator", ()
   assertEquals(actual, [5, 6]);
 });
 
-Deno.test("takeLastWhile() passes the index to the predicate", () => {
+Deno.test("unstable.takeLastWhile() passes the index to the predicate", () => {
   const arr = [1, 2, 3, 4];
 
-  const actual = takeLastWhile(arr, (_, index) => index > 1);
+  const actual = unstable.takeLastWhile(arr, (_, index) => index > 1);
 
   assertEquals(actual, [3, 4]);
 });

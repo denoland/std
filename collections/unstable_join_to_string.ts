@@ -41,6 +41,8 @@ export type JoinToStringOptions = {
  * selector. Joins the produced strings into one using the given `separator`
  * and applying the given `prefix` and `suffix` to the whole string afterwards.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * If the array could be huge, you can specify a non-negative value of `limit`,
  * in which case only the first `limit` elements will be appended, followed by
  * the `truncated` string.
@@ -55,7 +57,7 @@ export type JoinToStringOptions = {
  *
  * @example Usage with options
  * ```ts
- * import { joinToString } from "@std/collections/join-to-string";
+ * import { joinToString } from "@std/collections/unstable-join-to-string";
  * import { assertEquals } from "@std/assert";
  *
  * const users = [
@@ -77,7 +79,7 @@ export type JoinToStringOptions = {
  */
 export function joinToString<T>(
   array: Iterable<T>,
-  selector: (el: T) => string,
+  selector: (el: T, index: number) => string,
   options: Readonly<JoinToStringOptions> = {},
 ): string {
   const {
@@ -101,7 +103,7 @@ export function joinToString<T>(
       break;
     }
 
-    result += selector(el);
+    result += selector(el, index);
     index++;
   }
 

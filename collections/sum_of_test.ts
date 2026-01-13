@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { sumOf } from "./sum_of.ts";
+import * as unstable from "./unstable_sum_of.ts";
 
 Deno.test("sumOf() handles object properties", () => {
   const object = [
@@ -131,10 +132,10 @@ Deno.test("sumOf() handles Infinity", () => {
   assertEquals(actual, Infinity);
 });
 
-Deno.test("sumOf() passes index to selector", () => {
+Deno.test("unstable.sumOf() passes index to selector", () => {
   const array = [1, 2, 3];
 
-  const actual = sumOf(array, (_, index) => index);
+  const actual = unstable.sumOf(array, (_, index) => index);
 
   assertEquals(actual, 3);
 });

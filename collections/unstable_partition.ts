@@ -6,6 +6,8 @@
  * the given array that match the given predicate and the second one
  * containing all that do not.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * This version of the function is a type-guard version of the function. It
  * allows you to specify a type-guard predicate function that narrows the type
  * of the elements in the first output array.
@@ -22,7 +24,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { partition } from "@std/collections/partition";
+ * import { partition } from "@std/collections/unstable-partition";
  * import { assertEquals } from "@std/assert";
  *
  * const mixed = [1, "a", 2, "b"];
@@ -53,7 +55,7 @@ export function partition<T, U extends T>(
  *
  * @example Basic usage
  * ```ts
- * import { partition } from "@std/collections/partition";
+ * import { partition } from "@std/collections/unstable-partition";
  * import { assertEquals } from "@std/assert";
  *
  * const numbers = [5, 6, 7, 8, 9];
@@ -65,17 +67,18 @@ export function partition<T, U extends T>(
  */
 export function partition<T>(
   array: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): [T[], T[]];
 export function partition(
   array: Iterable<unknown>,
-  predicate: (el: unknown) => boolean,
+  predicate: (el: unknown, index: number) => boolean,
 ): [unknown[], unknown[]] {
   const matches: Array<unknown> = [];
   const rest: Array<unknown> = [];
+  let index = 0;
 
   for (const element of array) {
-    if (predicate(element)) {
+    if (predicate(element, index++)) {
       matches.push(element);
     } else {
       rest.push(element);

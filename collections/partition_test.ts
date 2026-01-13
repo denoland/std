@@ -2,9 +2,10 @@
 
 import { assertEquals } from "@std/assert";
 import { partition } from "./partition.ts";
+import * as unstable from "./unstable_partition.ts";
 
 function partitionTest<I>(
-  input: [Array<I>, (element: I, index: number) => boolean],
+  input: [Array<I>, (element: I) => boolean],
   expected: [Array<I>, Array<I>],
   message?: string,
 ) {
@@ -114,11 +115,12 @@ Deno.test({
 });
 
 Deno.test({
-  name: "partition() passes index to predicate",
+  name: "unstable.partition() passes index to predicate",
   fn() {
-    partitionTest(
-      [[2, 4, 6], (_, index) => index % 2 === 0],
-      [[2, 6], [4]],
+    const result = unstable.partition(
+      [2, 4, 6],
+      (_: number, index: number) => index % 2 === 0
     );
+    assertEquals(result, [[2, 6], [4]]);
   },
 });

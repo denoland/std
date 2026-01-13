@@ -5,6 +5,8 @@
  * Returns all elements in the given collection until the first element that
  * does not match the given predicate.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the elements in the iterable.
  *
  * @param iterable The iterable to take elements from.
@@ -16,7 +18,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { takeWhile } from "@std/collections/take-while";
+ * import { takeWhile } from "@std/collections/unstable-take-while";
  * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3, 4, 5, 6];
@@ -28,11 +30,12 @@
  */
 export function takeWhile<T>(
   iterable: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
+  let index = 0;
   const result: T[] = [];
   for (const element of iterable) {
-    if (!predicate(element)) {
+    if (!predicate(element, index++)) {
       break;
     }
     result.push(element);

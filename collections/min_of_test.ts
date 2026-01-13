@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { minOf } from "./min_of.ts";
 import { assertEquals } from "@std/assert";
+import * as unstable from "./unstable_min_of.ts";
 
 Deno.test("minOf() handles regular min", () => {
   const array = [5, 18, 35, 120];
@@ -144,11 +145,11 @@ Deno.test("minOf() handles minus infinity", () => {
 });
 
 Deno.test({
-  name: "minOf() passes index to selector",
+  name: "unstable.minOf() passes index to selector",
   fn() {
     const input = [4, 3, 2, 1];
 
-    const max = minOf(input, (it, index) => it * index);
+    const max = unstable.minOf(input, (it, index) => it * index);
 
     assertEquals(max, 0);
   },

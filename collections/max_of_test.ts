@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { maxOf } from "./max_of.ts";
 import { assertEquals } from "@std/assert";
+import * as unstable from "./unstable_max_of.ts";
 
 Deno.test("maxOf() handles regular max", () => {
   const array = [5, 18, 35, 120];
@@ -144,11 +145,11 @@ Deno.test("maxOf() handles infinity", () => {
 });
 
 Deno.test({
-  name: "maxBy() passes index to selector",
+  name: "unstable.maxOf() passes index to selector",
   fn() {
     const input = [4, 3, 2, 1];
 
-    const max = maxOf(input, (it, index) => it * index);
+    const max = unstable.maxOf(input, (it, index) => it * index);
 
     assertEquals(max, 4);
   },

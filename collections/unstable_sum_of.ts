@@ -5,6 +5,8 @@
  * Applies the given selector to all elements in the given collection and
  * calculates the sum of the results.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the array elements.
  *
  * @param array The array to calculate the sum of.
@@ -14,7 +16,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { sumOf } from "@std/collections/sum-of";
+ * import { sumOf } from "@std/collections/unstable-sum-of";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -30,12 +32,13 @@
  */
 export function sumOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): number {
   let sum = 0;
+  let index = 0;
 
   for (const i of array) {
-    sum += selector(i);
+    sum += selector(i, index++);
   }
 
   return sum;

@@ -2,9 +2,10 @@
 
 import { assertEquals } from "@std/assert";
 import { mapNotNullish } from "./map_not_nullish.ts";
+import * as unstable from "./unstable_map_not_nullish.ts";
 
 function mapNotNullishTest<T, O>(
-  input: [Array<T>, (el: T, index: number) => O | undefined | null],
+  input: [Array<T>, (el: T) => O | undefined | null],
   expected: Array<O>,
   message?: string,
 ) {
@@ -92,14 +93,12 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mapNotNullish() passes index to transformer",
+  name: "unstable.mapNotNullish() passes index to transformer",
   fn() {
-    mapNotNullishTest(
-      [
-        [1, 2, 3, 4],
-        (it, index) => index === 1 ? null : it + index,
-      ],
-      [1, 5, 7],
+    const result = unstable.mapNotNullish(
+      [1, 2, 3, 4],
+      (it, index) => index === 1 ? null : it + index
     );
+    assertEquals(result, [1, 5, 7]);
   },
 });

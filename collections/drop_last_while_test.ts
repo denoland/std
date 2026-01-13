@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { dropLastWhile } from "./drop_last_while.ts";
 import { assertEquals } from "@std/assert";
+import * as unstable from "./unstable_drop_last_while.ts";
 
 Deno.test("dropLastWhile() handles num array", () => {
   const values = [20, 33, 44];
@@ -81,10 +82,10 @@ Deno.test("dropLastWhile() handles a generator", () => {
   assertEquals(actual, [20]);
 });
 
-Deno.test("dropLastWhile() passes index to predicate", () => {
+Deno.test("unstable.dropLastWhile() passes index to predicate", () => {
   const array = [20, 30, 20];
 
-  const actual = dropLastWhile(array, (_, index) => index > 1);
+  const actual = unstable.dropLastWhile(array, (_, index) => index > 1);
 
   assertEquals(actual, [20, 30]);
 });

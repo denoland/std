@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { sortBy } from "./sort_by.ts";
+import * as unstable from "./unstable_sort_by.ts";
 
 Deno.test({
   name: "sortBy() handles no mutation",
@@ -333,8 +334,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sortBy() passes index to selector",
+  name: "unstable.sortBy() passes index to selector",
   fn() {
-    assertEquals(sortBy([2, 3, 1], (_, index) => -index), [1, 3, 2]);
+    assertEquals(unstable.sortBy([2, 3, 1], (_, index) => -index), [1, 3, 2]);
   },
 });

@@ -6,6 +6,8 @@
  * produced that is neither `null` nor `undefined` and returns that value.
  * Returns `undefined` if no such value is produced.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the elements in the input array.
  * @typeParam O The type of the value produced by the selector function.
  *
@@ -17,7 +19,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
+ * import { firstNotNullishOf } from "@std/collections/unstable-first-not-nullish-of";
  * import { assertEquals } from "@std/assert";
  *
  * const tables = [
@@ -33,10 +35,11 @@
  */
 export function firstNotNullishOf<T, O>(
   array: Iterable<T>,
-  selector: (item: T) => O | undefined | null,
+  selector: (item: T, index: number) => O | undefined | null,
 ): NonNullable<O> | undefined {
+  let index = 0;
   for (const current of array) {
-    const selected = selector(current);
+    const selected = selector(current, index++);
 
     if (selected !== null && selected !== undefined) {
       return selected as NonNullable<O>;

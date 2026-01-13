@@ -6,6 +6,8 @@
  * using the given transformer, except the ones that were transformed to `null`
  * or `undefined`.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @typeParam T The type of the elements in the input array.
  * @typeParam O The type of the elements in the output array.
  *
@@ -17,7 +19,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { mapNotNullish } from "@std/collections/map-not-nullish";
+ * import { mapNotNullish } from "@std/collections/unstable-map-not-nullish";
  * import { assertEquals } from "@std/assert";
  *
  * const people = [
@@ -33,12 +35,13 @@
  */
 export function mapNotNullish<T, O>(
   array: Iterable<T>,
-  transformer: (el: T) => O,
+  transformer: (el: T, index: number) => O,
 ): NonNullable<O>[] {
   const result: NonNullable<O>[] = [];
+  let index = 0;
 
   for (const element of array) {
-    const transformedElement = transformer(element);
+    const transformedElement = transformer(element, index++);
 
     if (transformedElement !== undefined && transformedElement !== null) {
       result.push(transformedElement as NonNullable<O>);
