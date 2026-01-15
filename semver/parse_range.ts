@@ -248,10 +248,7 @@ function handleLessThanOrEqualOperator(
   const patch = +groups.patch;
 
   if (minorIsWildcard) {
-    if (patchIsWildcard) {
-      return [{ operator: "<", major: major + 1, minor: 0, patch: 0 }];
-    }
-    return [{ operator: "<", major, minor: minor + 1, patch: 0 }];
+    return [{ operator: "<", major: major + 1, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) {
     return [{ operator: "<", major, minor: minor + 1, patch: 0 }];
@@ -292,7 +289,6 @@ function handleGreaterOrEqualOperator(groups: RangeRegExpGroups): Comparator[] {
 
   if (majorIsWildcard) return [ALL];
   if (minorIsWildcard) {
-    if (patchIsWildcard) return [{ operator: ">=", major, minor: 0, patch: 0 }];
     return [{ operator: ">=", major, minor: 0, patch: 0 }];
   }
   if (patchIsWildcard) return [{ operator: ">=", major, minor, patch: 0 }];
