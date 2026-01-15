@@ -383,23 +383,25 @@ function blockHeader(string: string, indentPerLevel: number): string {
   return `${indentIndicator}${chomp}\n`;
 }
 
-function inspectNode(
-  object: unknown,
-  objects: Set<unknown>,
-  duplicateObjects: Set<unknown>,
-) {
-  if (!isObject(object)) return;
-  if (objects.has(object)) {
-    duplicateObjects.add(object);
-    return;
-  }
-  objects.add(object);
-  const entries = Array.isArray(object) ? object : Object.values(object);
-  for (const value of entries) {
-    inspectNode(value, objects, duplicateObjects);
-  }
-}
+function getDuplicateObjects(root: unknown): unknown[] {
+  const seenObjects = new Set();
+  const duplicateObjects = new Set();
+  const queue = [root];
 
+  for (let i = 0; i < queue.length; i++) {
+    const value = queue[i];
+    if (!isObject(value)) continue;
+    if (seenObjects.has(value)) {
+      duplicateObjects.add(value);
+      continue;
+    }
+    seenObjects.add(value);
+    const children = Array.isArray(value) ? value : Object.values(value);
+    queue.push(...children);
+  }
+
+  return [...duplicateObjects];
+}
 function stringifyValue(value: unknown, tag: string | null) {
   if (tag !== null && tag !== "?") return `!<${tag}> ${value}`;
   return value as string;
@@ -821,10 +823,7 @@ export class DumperState {
 
   stringify(value: unknown): string {
     if (this.useAnchors) {
-      const values: Set<unknown> = new Set();
-      const duplicateObjects: Set<unknown> = new Set();
-      inspectNode(value, values, duplicateObjects);
-      this.duplicates = [...duplicateObjects];
+      this.duplicates = getDuplicateObjects(value);
       this.usedDuplicates = new Set();
     }
 
