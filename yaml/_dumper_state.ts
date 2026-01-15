@@ -57,7 +57,7 @@ const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x2029, "\\P"],
 ]);
 
-const DEPRECATED_BOOLEANS_SYNTAX = [
+const DEPRECATED_BOOLEANS_SYNTAX = new Set([
   "y",
   "Y",
   "yes",
@@ -74,7 +74,7 @@ const DEPRECATED_BOOLEANS_SYNTAX = [
   "off",
   "Off",
   "OFF",
-];
+]);
 
 /**
  * Encodes a Unicode character code point as a hexadecimal escape sequence.
@@ -519,7 +519,7 @@ export class DumperState {
     if (string.length === 0) {
       return "''";
     }
-    if (this.compatMode && DEPRECATED_BOOLEANS_SYNTAX.includes(string)) {
+    if (this.compatMode && DEPRECATED_BOOLEANS_SYNTAX.has(string)) {
       return `'${string}'`;
     }
 
