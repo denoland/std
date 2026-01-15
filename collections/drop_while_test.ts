@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { dropWhile } from "./drop_while.ts";
+import * as unstable from "./unstable_drop_while.ts";
 
 Deno.test("dropWhile() handles Array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
@@ -106,4 +107,12 @@ Deno.test("dropWhile() handles a Map", () => {
     ["e", 5],
     ["f", 6],
   ]);
+});
+
+Deno.test("unstable.dropWhile() passes index to predicate", () => {
+  const array = [20, 30, 20];
+
+  const actual = unstable.dropWhile(array, (_, index) => index < 1);
+
+  assertEquals(actual, [30, 20]);
 });

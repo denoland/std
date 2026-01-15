@@ -36,11 +36,12 @@ export class Semaphore {
    * Creates a new semaphore with the specified number of permits.
    *
    * @param max Maximum concurrent permits. Defaults to 1 (mutex).
+   * @throws {TypeError} If `max` is not a positive integer.
    */
   constructor(max: number = 1) {
-    if (max < 1) {
+    if (!Number.isInteger(max) || max < 1) {
       throw new TypeError(
-        `Cannot create semaphore as 'max' must be at least 1: current value is ${max}`,
+        `Cannot create semaphore as 'max' must be a positive integer: received ${max}`,
       );
     }
     this.#count = this.#max = max;

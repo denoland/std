@@ -200,9 +200,8 @@ export class LruCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
-    const value = super.get(key);
-    if (value) {
-      this.#eject(key, value);
+    if (super.has(key)) {
+      this.#eject(key, super.get(key) as V);
     }
     return super.delete(key);
   }
