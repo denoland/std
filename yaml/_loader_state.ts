@@ -196,7 +196,7 @@ function writeFoldedLines(count: number) {
 interface State {
   tag: string | null;
   anchor: string | null;
-  kind: string | null;
+  kind: KindType | null;
   result: unknown[] | Record<string, unknown> | string | null;
 }
 export class LoaderState {
@@ -1477,7 +1477,7 @@ export class LoaderState {
       }
     }
 
-    const kind = (state.kind ?? "fallback") as KindType;
+    const kind = state.kind ?? "fallback";
 
     const map = this.typeMap[kind];
     const type = map.get(state.tag);
