@@ -37,7 +37,7 @@ Deno.test("assertAlmostEquals() throws values outside higher precision range", (
   );
 });
 
-Deno.test("assertAlmostEquals() matches infinity with inifinity", () => {
+Deno.test("assertAlmostEquals() matches infinity with infinity", () => {
   assertAlmostEquals(Infinity, Infinity);
 });
 

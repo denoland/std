@@ -2,6 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { distinctBy } from "./distinct_by.ts";
+import * as unstable from "./unstable_distinct_by.ts";
 
 function distinctByTest<I>(
   array: Array<I>,
@@ -115,5 +116,16 @@ Deno.test({
       (it) => it.name.length,
       [kim, arthur, anna],
     );
+  },
+});
+
+Deno.test({
+  name: "distinctBy() passes index to discriminator",
+  fn() {
+    const result = unstable.distinctBy(
+      [25, "asdf", true],
+      (_, index) => index > 1,
+    );
+    assertEquals(result, [25, true]);
   },
 });
