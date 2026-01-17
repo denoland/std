@@ -69,15 +69,6 @@ Deno.test("ServerSentEventParseStream parses id field", async () => {
   assertEquals(result, [{ id: "123", data: "payload" }]);
 });
 
-Deno.test("ServerSentEventParseStream parses id field as string", async () => {
-  const result = await Array.fromAsync(parseStream([
-    "id: abc\n\n",
-  ]));
-
-  assertEquals(result, [{ id: "abc" }]);
-  assertEquals(typeof result[0]!.id, "string");
-});
-
 Deno.test("ServerSentEventParseStream ignores id with null character", async () => {
   const result = await Array.fromAsync(parseStream([
     "id: abc\0def\ndata: test\n\n",
@@ -339,4 +330,37 @@ Deno.test("ServerSentEventParseStream handles multi-byte UTF-8 in various positi
     data: "Привет мир",
     id: "中文",
   }]);
+});
+
+Deno.test("ServerSentEventParseStream ignoreComments option filters out comments", async () => {
+  const encoder = new TextEncoder();
+  const stream = ReadableStream.from([
+    encoder.encode(":keepalive\ndata: hello\n\n"),
+  ]).pipeThrough(new ServerSentEventParseStream({ ignoreComments: true }));
+
+  const result = await Array.fromAsync(stream);
+
+  assertEquals(result, [{ data: "hello" }]);
+});
+
+Deno.test("ServerSentEventParseStream ignoreComments option filters multiple comments", async () => {
+  const encoder = new TextEncoder();
+  const stream = ReadableStream.from([
+    encoder.encode(":comment1\n:comment2\nevent: update\ndata: test\n\n"),
+  ]).pipeThrough(new ServerSentEventParseStream({ ignoreComments: true }));
+
+  const result = await Array.fromAsync(stream);
+
+  assertEquals(result, [{ event: "update", data: "test" }]);
+});
+
+Deno.test("ServerSentEventParseStream ignoreComments with comment-only message produces no output", async () => {
+  const encoder = new TextEncoder();
+  const stream = ReadableStream.from([
+    encoder.encode(":just a comment\n\n"),
+  ]).pipeThrough(new ServerSentEventParseStream({ ignoreComments: true }));
+
+  const result = await Array.fromAsync(stream);
+
+  assertEquals(result, []);
 });

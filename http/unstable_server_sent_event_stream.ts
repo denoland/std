@@ -20,6 +20,24 @@ export type ServerSentEventParsedMessage =
     id?: string;
   };
 
+/**
+ * Options for {@linkcode ServerSentEventParseStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface ServerSentEventParseStreamOptions {
+  /**
+   * Whether to ignore comment lines (lines starting with `:`).
+   *
+   * Comments are often used as keep-alive signals and may not be needed
+   * by the consumer. When `true`, comment lines are still parsed to detect
+   * message boundaries but are not included in the output.
+   *
+   * @default {false}
+   */
+  ignoreComments?: boolean;
+}
+
 const NEWLINE_REGEXP = /\r\n|\r|\n/;
 
 /**
@@ -29,9 +47,11 @@ const NEWLINE_REGEXP = /\r\n|\r|\n/;
 function parseLine(
   line: string,
   message: ServerSentEventParsedMessage,
+  ignoreComments: boolean,
 ): boolean {
   // Lines starting with colon are comments
   if (line[0] === ":") {
+    if (ignoreComments) return false;
     const value = line.slice(1);
     message.comment = message.comment !== undefined
       ? `${message.comment}\n${value}`
@@ -133,10 +153,30 @@ function parseLine(
  *
  * assertEquals(result, original);
  * ```
+ *
+ * @example Ignoring comments
+ * ```ts
+ * import { ServerSentEventParseStream } from "@std/http/unstable-server-sent-event-stream";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const stream = ReadableStream.from([
+ *   new TextEncoder().encode(":keepalive\ndata: hello\n\n"),
+ * ]).pipeThrough(new ServerSentEventParseStream({ ignoreComments: true }));
+ *
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [{ data: "hello" }]);
+ * ```
  */
 export class ServerSentEventParseStream
   extends TransformStream<Uint8Array, ServerSentEventParsedMessage> {
-  constructor() {
+  /**
+   * Constructs a new instance.
+   *
+   * @param options Options for the stream.
+   */
+  constructor(options: ServerSentEventParseStreamOptions = {}) {
+    const { ignoreComments = false } = options;
     // Note: TextDecoder automatically strips the UTF-8 BOM (U+FEFF) from the
     // start of the stream per the WHATWG Encoding Standard, so we don't need
     // to handle it manually.
@@ -169,7 +209,7 @@ export class ServerSentEventParseStream
             }
             message = {};
             hasFields = false;
-          } else if (parseLine(line, message)) {
+          } else if (parseLine(line, message, ignoreComments)) {
             hasFields = true;
           }
         }
@@ -182,7 +222,7 @@ export class ServerSentEventParseStream
         // Trailing \r at end of stream is a line ending
         if (buffer[buffer.length - 1] === "\r") {
           buffer = buffer.slice(0, -1);
-          if (parseLine(buffer, message)) {
+          if (parseLine(buffer, message, ignoreComments)) {
             hasFields = true;
           }
           // The \r was a line ending, so dispatch if we have fields
@@ -191,7 +231,7 @@ export class ServerSentEventParseStream
             return;
           }
         } else if (buffer) {
-          if (parseLine(buffer, message)) {
+          if (parseLine(buffer, message, ignoreComments)) {
             hasFields = true;
           }
         }
