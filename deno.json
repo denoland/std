@@ -7,13 +7,11 @@
     "noUncheckedIndexedAccess": true
   },
   "importMap": "./import_map.json",
-  "unstable": [
-    "webgpu",
-    "fs"
-  ],
+  "unstable": ["webgpu", "fs"],
   "tasks": {
     "test": "deno test --allow-all --parallel --trace-leaks --coverage --doc --clean",
     "test:with-unsafe-proto": "deno test --unstable-unsafe-proto --allow-all --parallel --trace-leaks --coverage --doc --clean",
+
     "test:browser": "git grep --name-only \"This module is browser compatible.\" | grep -v deno.json | grep -v .github/workflows | grep -v _tools | grep -v encoding/README.md | grep -v media_types/vendor/update.ts | xargs deno check --config browser-compat.tsconfig.json",
     "test:node": "(cd _tools/node_test_runner && npm install) && node --import ./_tools/node_test_runner/register_deno_shim.mjs ./_tools/node_test_runner/run_test.mjs",
     "lint:deprecations": "deno run --allow-read --allow-net --allow-env ./_tools/check_deprecation.ts",
@@ -46,10 +44,7 @@
   ],
   "lint": {
     "rules": {
-      "tags": [
-        "recommended",
-        "jsr"
-      ],
+      "tags": ["recommended", "jsr"],
       "include": [
         "camelcase",
         "no-sync-fn-in-async-fn",
@@ -57,9 +52,7 @@
         "no-console"
       ]
     },
-    "plugins": [
-      "./_tools/lint_plugin.ts"
-    ]
+    "plugins": ["./_tools/lint_plugin.ts"]
   },
   "workspace": [
     "./assert",
