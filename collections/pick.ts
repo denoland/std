@@ -24,11 +24,11 @@
  * assertEquals(picked, { a: 5, c: 7 });
  * ```
  */
-export function pick<T extends object, const K extends readonly (keyof T)[]>(
+export function pick<T extends object, const K extends keyof T>(
   obj: Readonly<T>,
-  keys: K,
-): Pick<T, K[number]> {
-  const result = {} as Pick<T, K[number]>;
+  keys: readonly K[],
+): Pick<T, K> {
+  const result = {} as Pick<T, K>;
   for (const key of keys) if (key in obj) result[key] = obj[key];
   return result;
 }
