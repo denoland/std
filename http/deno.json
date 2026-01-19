@@ -13,6 +13,7 @@
     "./server-sent-event-stream": "./server_sent_event_stream.ts",
     "./status": "./status.ts",
     "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
+    "./unstable-structured-fields": "./unstable_structured_fields.ts",
     "./user-agent": "./user_agent.ts",
     "./unstable-route": "./unstable_route.ts"
   }
