@@ -170,14 +170,14 @@ export function canonicalize(value: JsonValue): string {
  * // Create a deterministic hash of JSON data for verification
  * const payload = { action: "transfer", amount: 100, to: "alice" };
  * const bytes = canonicalizeToBytes(payload);
- * const hashBuffer = await crypto.subtle.digest("SHA-256", bytes);
+ * const hashBuffer = await crypto.subtle.digest("SHA-256", bytes.buffer);
  * const hash = encodeHex(new Uint8Array(hashBuffer));
  *
  * // Same hash regardless of original key order
  * const reordered = { to: "alice", action: "transfer", amount: 100 };
  * const reorderedBytes = canonicalizeToBytes(reordered);
  * const reorderedHash = encodeHex(
- *   new Uint8Array(await crypto.subtle.digest("SHA-256", reorderedBytes)),
+ *   new Uint8Array(await crypto.subtle.digest("SHA-256", reorderedBytes.buffer)),
  * );
  *
  * assertEquals(hash, reorderedHash);
