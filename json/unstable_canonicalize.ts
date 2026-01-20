@@ -167,18 +167,18 @@ export function canonicalize(value: JsonValue): string {
  * import { encodeHex } from "@std/encoding/hex";
  * import { assertEquals } from "@std/assert";
  *
+ * async function sha256Hex(data: Uint8Array): Promise<string> {
+ *   const hash = await crypto.subtle.digest("SHA-256", data.buffer.slice(0));
+ *   return encodeHex(new Uint8Array(hash));
+ * }
+ *
  * // Create a deterministic hash of JSON data for verification
  * const payload = { action: "transfer", amount: 100, to: "alice" };
- * const bytes = canonicalizeToBytes(payload);
- * const hashBuffer = await crypto.subtle.digest("SHA-256", bytes.buffer);
- * const hash = encodeHex(new Uint8Array(hashBuffer));
+ * const hash = await sha256Hex(canonicalizeToBytes(payload));
  *
  * // Same hash regardless of original key order
  * const reordered = { to: "alice", action: "transfer", amount: 100 };
- * const reorderedBytes = canonicalizeToBytes(reordered);
- * const reorderedHash = encodeHex(
- *   new Uint8Array(await crypto.subtle.digest("SHA-256", reorderedBytes.buffer)),
- * );
+ * const reorderedHash = await sha256Hex(canonicalizeToBytes(reordered));
  *
  * assertEquals(hash, reorderedHash);
  * ```
