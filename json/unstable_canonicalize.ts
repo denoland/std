@@ -167,8 +167,8 @@ export function canonicalize(value: JsonValue): string {
  * import { encodeHex } from "@std/encoding/hex";
  * import { assertEquals } from "@std/assert";
  *
- * async function sha256Hex(data: Uint8Array): Promise<string> {
- *   const hash = await crypto.subtle.digest("SHA-256", data.buffer.slice(0));
+ * async function sha256Hex(data: Uint8Array<ArrayBuffer>): Promise<string> {
+ *   const hash = await crypto.subtle.digest("SHA-256", data.buffer);
  *   return encodeHex(new Uint8Array(hash));
  * }
  *
