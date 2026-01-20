@@ -168,6 +168,19 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parseItem() rejects invalid char in string after escape",
+  fn() {
+    // String with escape sequence followed by invalid character (NUL)
+    // This tests the slow path in parseString (after processing escapes)
+    assertThrows(
+      () => parseItem('"test\\\\\x00"'),
+      SyntaxError,
+      "invalid character",
+    );
+  },
+});
+
+Deno.test({
   name: "parseItem() rejects invalid key start in parameters",
   fn() {
     assertThrows(

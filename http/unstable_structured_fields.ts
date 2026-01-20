@@ -45,7 +45,7 @@
 
 import { decodeBase64, encodeBase64 } from "@std/encoding/base64";
 
-const UTF8_DECODER = /*@__PURE__*/ new TextDecoder("utf-8", { fatal: true });
+const UTF8_DECODER = new TextDecoder("utf-8", { fatal: true });
 
 // =============================================================================
 // Type Definitions (RFC 9651 Section 3)
@@ -377,6 +377,7 @@ export function isInnerList(
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @typeParam T The bare item type to check for.
  * @param item The bare item to check.
  * @param type The type to check for.
  * @returns `true` if the item is of the specified type.
@@ -417,6 +418,13 @@ const CHAR_CODE_UPPER_Z = 90; // 'Z'
 const CHAR_CODE_LOWER_A = 97; // 'a'
 const CHAR_CODE_LOWER_Z = 122; // 'z'
 
+// RFC 9651 numeric limits
+const MAX_INTEGER_DIGITS = 15;
+const MAX_INTEGER = 999_999_999_999_999;
+const MAX_DECIMAL_INTEGER_DIGITS = 12;
+const MAX_DECIMAL_FRACTIONAL_DIGITS = 3;
+const MAX_DECIMAL_INTEGER_PART = 999_999_999_999;
+
 /** Check if character is alphabetic (A-Z or a-z) */
 function isAlpha(c: string): boolean {
   const code = c.charCodeAt(0);
@@ -450,7 +458,7 @@ function isKeyChar(c: string): boolean {
 // Pre-computed lookup table for tchar (RFC 9110 token characters)
 // tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
 //         "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
-const TCHAR_LOOKUP: boolean[] = /*@__PURE__*/ (() => {
+const TCHAR_LOOKUP: boolean[] = (() => {
   const table: boolean[] = new Array(128).fill(false);
   const tchars = "!#$%&'*+-.^_`|~0123456789" +
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -461,7 +469,7 @@ const TCHAR_LOOKUP: boolean[] = /*@__PURE__*/ (() => {
 })();
 
 // Pre-computed lookup table for base64 characters (A-Z, a-z, 0-9, +, /, =)
-const BASE64_LOOKUP: boolean[] = /*@__PURE__*/ (() => {
+const BASE64_LOOKUP: boolean[] = (() => {
   const table: boolean[] = new Array(128).fill(false);
   for (let i = CHAR_CODE_UPPER_A; i <= CHAR_CODE_UPPER_Z; i++) table[i] = true;
   for (let i = CHAR_CODE_LOWER_A; i <= CHAR_CODE_LOWER_Z; i++) table[i] = true;
@@ -778,7 +786,7 @@ function parseIntegerOrDecimal(state: ParserState): SfBareItem {
   let integerPart = "";
   while (isDigit(peek(state))) {
     integerPart += consume(state);
-    if (integerPart.length > 15) {
+    if (integerPart.length > MAX_INTEGER_DIGITS) {
       throw new SyntaxError(
         "Invalid structured field: integer too long",
       );
@@ -787,7 +795,7 @@ function parseIntegerOrDecimal(state: ParserState): SfBareItem {
 
   if (peek(state) === ".") {
     consume(state); // consume '.'
-    if (integerPart.length > 12) {
+    if (integerPart.length > MAX_DECIMAL_INTEGER_DIGITS) {
       throw new SyntaxError(
         "Invalid structured field: decimal integer part too long",
       );
@@ -796,7 +804,7 @@ function parseIntegerOrDecimal(state: ParserState): SfBareItem {
     let fractionalPart = "";
     while (isDigit(peek(state))) {
       fractionalPart += consume(state);
-      if (fractionalPart.length > 3) {
+      if (fractionalPart.length > MAX_DECIMAL_FRACTIONAL_DIGITS) {
         throw new SyntaxError(
           "Invalid structured field: decimal fractional part too long",
         );
@@ -815,8 +823,7 @@ function parseIntegerOrDecimal(state: ParserState): SfBareItem {
 
   const value = sign * parseInt(integerPart, 10);
 
-  // Check range: -999999999999999 to 999999999999999
-  if (value < -999_999_999_999_999 || value > 999_999_999_999_999) {
+  if (value < -MAX_INTEGER || value > MAX_INTEGER) {
     throw new SyntaxError(
       "Invalid structured field: integer out of range",
     );
@@ -907,17 +914,18 @@ function parseToken(state: ParserState): SfBareItem {
     );
   }
 
-  let value = consume(state);
+  const startPos = state.pos;
+  state.pos++; // Skip validated first char
   while (!isEof(state)) {
     const c = peek(state);
     if (isTchar(c) || c === ":" || c === "/") {
-      value += consume(state);
+      state.pos++;
     } else {
       break;
     }
   }
 
-  return { type: "token", value };
+  return { type: "token", value: state.input.slice(startPos, state.pos) };
 }
 
 function parseBinary(state: ParserState): SfBareItem {
@@ -1065,19 +1073,19 @@ function parseDisplayString(state: ParserState): SfBareItem {
 }
 
 function parseKey(state: ParserState): string {
-  const first = peek(state);
-  if (!isKeyStart(first)) {
+  if (!isKeyStart(peek(state))) {
     throw new SyntaxError(
       `Invalid structured field: invalid key start at position ${state.pos}`,
     );
   }
 
-  let key = consume(state);
+  const startPos = state.pos;
+  state.pos++; // Skip validated first char
   while (!isEof(state) && isKeyChar(peek(state))) {
-    key += consume(state);
+    state.pos++;
   }
 
-  return key;
+  return state.input.slice(startPos, state.pos);
 }
 
 function parseParameters(state: ParserState): SfParameters {
@@ -1249,7 +1257,7 @@ function serializeInteger(value: number): string {
   if (!Number.isInteger(value)) {
     throw new TypeError("Integer must be a whole number");
   }
-  if (value < -999_999_999_999_999 || value > 999_999_999_999_999) {
+  if (value < -MAX_INTEGER || value > MAX_INTEGER) {
     throw new TypeError("Integer out of range");
   }
   return String(value);
@@ -1260,17 +1268,18 @@ function serializeDecimal(value: number): string {
     throw new TypeError("Decimal must be finite");
   }
 
-  // Round to 3 decimal places
-  const rounded = Math.round(value * 1000) / 1000;
+  // Round to MAX_DECIMAL_FRACTIONAL_DIGITS decimal places
+  const scale = 10 ** MAX_DECIMAL_FRACTIONAL_DIGITS;
+  const rounded = Math.round(value * scale) / scale;
 
-  // Check integer part (max 12 digits)
+  // Check integer part (max MAX_DECIMAL_INTEGER_DIGITS digits)
   const intPart = Math.trunc(Math.abs(rounded));
-  if (intPart > 999_999_999_999) {
+  if (intPart > MAX_DECIMAL_INTEGER_PART) {
     throw new TypeError("Decimal integer part too large");
   }
 
-  // Format with 3 fractional digits
-  const str = rounded.toFixed(3);
+  // Format with MAX_DECIMAL_FRACTIONAL_DIGITS fractional digits
+  const str = rounded.toFixed(MAX_DECIMAL_FRACTIONAL_DIGITS);
 
   // Remove trailing zeros but keep at least one digit after decimal
   let end = str.length;
