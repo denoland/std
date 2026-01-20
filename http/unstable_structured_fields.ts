@@ -11,16 +11,19 @@
  *
  * @example Parsing a Dictionary (e.g., UCP-Agent header)
  * ```ts
- * import { parseDictionary } from "@std/http/unstable-structured-fields";
+ * import { isItem, parseDictionary } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const header = 'profile="https://example.com/profile.json"';
  * const dict = parseDictionary(header);
+ * const profile = dict.get("profile");
  *
- * assertEquals(dict.get("profile")?.value, {
- *   type: "string",
- *   value: "https://example.com/profile.json",
- * });
+ * if (profile && isItem(profile)) {
+ *   assertEquals(profile.value, {
+ *     type: "string",
+ *     value: "https://example.com/profile.json",
+ *   });
+ * }
  * ```
  *
  * @example Serializing a Dictionary
