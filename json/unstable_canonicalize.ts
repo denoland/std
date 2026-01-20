@@ -168,7 +168,7 @@ export function canonicalize(value: JsonValue): string {
  * import { assertEquals } from "@std/assert";
  *
  * async function sha256Hex(data: Uint8Array<ArrayBuffer>): Promise<string> {
- *   const hash = await crypto.subtle.digest("SHA-256", data.buffer);
+ *   const hash = await crypto.subtle.digest("SHA-256", data);
  *   return encodeHex(new Uint8Array(hash));
  * }
  *
@@ -188,6 +188,9 @@ export function canonicalize(value: JsonValue): string {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc8785 | RFC 8785}
  */
-export function canonicalizeToBytes(value: JsonValue): Uint8Array {
-  return new TextEncoder().encode(canonicalize(value));
+export function canonicalizeToBytes(value: JsonValue): Uint8Array<ArrayBuffer> {
+  // TextEncoder.encode() always creates a Uint8Array with a regular ArrayBuffer
+  return new TextEncoder().encode(canonicalize(value)) as Uint8Array<
+    ArrayBuffer
+  >;
 }
