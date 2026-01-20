@@ -263,32 +263,6 @@ function or<T extends readonly ParserComponent<any>[]>(
 
 /** Join the parse results of the given parser into an array.
  *
- * If the parser fails at the first attempt, it will return an empty array.
- */
-function join<T>(
-  parser: ParserComponent<T>,
-  separator: string,
-): ParserComponent<T[]> {
-  const Separator = character(separator);
-  return (scanner: Scanner): ParseResult<T[]> => {
-    const out: T[] = [];
-    const first = parser(scanner);
-    if (!first.ok) return success(out);
-    out.push(first.body);
-    while (!scanner.eof()) {
-      if (!Separator(scanner).ok) break;
-      const result = parser(scanner);
-      if (!result.ok) {
-        throw new SyntaxError(`Invalid token after "${separator}"`);
-      }
-      out.push(result.body);
-    }
-    return success(out);
-  };
-}
-
-/** Join the parse results of the given parser into an array.
- *
  * This requires the parser to succeed at least once.
  */
 function join1<T>(
