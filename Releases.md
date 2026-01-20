@@ -1,3 +1,97 @@
+### 2026.01.20
+
+#### @std/assert 1.0.17 (patch)
+
+- docs(assert): fix typo and add @throws tag in assertAlmostEquals (#6950)
+
+#### @std/async 1.1.0 (minor)
+
+- feat(async): stabilize isRetriable option for retry (#6944)
+- feat(async/unstable): add support for AbortSignal in retry (#6938)
+- feat(async/unstable): support sync functions in CircuitBreaker (#6933)
+- feat(async/unstable): add unstable circuit breaker (#6900)
+- fix(async/unstable): validate Semaphore max is a positive integer (#6934)
+- fix(async/unstable): make circuit breaker state getter pure (#6926)
+- docs(async): list exact API names in module document (#6946)
+- refactor(async): improve retry() input validation (#6922)
+- refactor(async): optimize delay() for common timeout durations (#6923)
+- refactor(async/unstable): improve circuit breaker defaults and readability
+  (#6917)
+
+#### @std/cache 0.2.2 (patch)
+
+- fix(cache/unstable): call onEject for falsy values on delete (#6935)
+
+#### @std/cli 1.0.26 (patch)
+
+- fix(cli): accept readonly string array in parseArgs (#6911)
+
+#### @std/collections 1.1.4 (patch)
+
+- feat(collections/unstable): add index arg to methods (#6382)
+- fix(collections): correct overload ordering (#6930)
+- perf(collections): optimize minOf/maxOf with fast array paths (#6936)
+- perf(collections): optimize minBy/maxBy with fast array paths (#6919)
+- perf(collections): optimize sortBy (#6916)
+- refactor(collections): optimize zip() (#6931)
+
+#### @std/data-structures 1.0.10 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/datetime 0.225.7 (patch)
+
+- feat(datetime): add month and day of week constants (#6910)
+- refactor(datetime): rename abbreviated month and weekday constants to full
+  names (#6939)
+
+#### @std/fmt 1.0.9 (patch)
+
+- docs(fmt): fix JSDoc errors and inconsistencies (#6937)
+
+#### @std/fs 1.0.22 (patch)
+
+- docs(fs): fix `walk` examples (#6918)
+
+#### @std/random 0.1.5 (patch)
+
+- perf(random): inline random index calculation in shuffle() (#6920)
+- test(random): replace exact-value assertions with property-based checks
+  (#6932)
+
+#### @std/semver 1.0.8 (patch)
+
+- fix(semver): correcting <= operator behavior when minor version is wildcard
+  (#6943)
+- refactor(semver): removing unreachable code, bringing coverage to 100% (#6924)
+
+#### @std/streams 1.0.17 (patch)
+
+- fix(streams): add input validation to toTransformStream (#6945)
+
+#### @std/testing 1.0.17 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/text 1.0.17 (patch)
+
+- fix(text/unstable): only strip single trailing newline in dedent (#6913)
+
+#### @std/yaml 1.0.11 (patch)
+
+- perf(yaml): rewrite `inspectNode()` (#6952)
+- perf(yaml): make `DEPRECATED_BOOLEANS_SYNTAX` a `Set` (#6949)
+- refactor(yaml): eliminate shared class state by passing parameters in
+  `LoaderState` (#6902)
+- refactor(yaml): add correct `kind` type (#6941)
+- refactor(yaml): remove `anchor` `undefined` check (#6915)
+- refactor(yaml): cleanup `composeNode()` statements (#6905)
+- refactor(yaml): remove `undefined` type from `tag`, `anchor` and `kind`
+  (#6907)
+- refactor(yaml): flatten `stringifyNode()` (#6906)
+- refactor(yaml): add `resolveTag()` method (#6904)
+- refactor(yaml): add `getIndentStatus` function (#6903)
+
 ### 2025.12.25
 
 #### @std/streams 1.0.16 (patch)
