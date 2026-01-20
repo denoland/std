@@ -421,8 +421,9 @@ export function bareKey(scanner: Scanner): ParseResult<string> {
 function escapeSequence(scanner: Scanner): ParseResult<string> {
   if (scanner.char() !== "\\") return failure();
   scanner.next();
-  // See https://toml.io/en/v1.0.0-rc.3#string
-  switch (scanner.char()) {
+  // See https://toml.io/en/v1.1.0#string
+  const char = scanner.char();
+  switch (char) {
     case "b":
       scanner.next();
       return success("\b");
@@ -438,11 +439,15 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
     case "r":
       scanner.next();
       return success("\r");
+    case "e":
+      scanner.next();
+      return success("\x1B");
+    case "x":
     case "u":
     case "U": {
       // Unicode character
-      const codePointLen = scanner.char() === "u" ? 4 : 6;
-      const codePoint = parseInt("0x" + scanner.slice(1, 1 + codePointLen), 16);
+      const codePointLen = { "x": 2, "u": 4, "U": 8 }[char];
+      const codePoint = Number("0x" + scanner.slice(1, 1 + codePointLen));
       const str = String.fromCodePoint(codePoint);
       scanner.next(codePointLen + 1);
       return success(str);
@@ -455,7 +460,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
       return success("\\");
     default:
       throw new SyntaxError(
-        `Invalid escape sequence: \\${scanner.char()}`,
+        `Invalid escape sequence: \\${char}`,
       );
   }
 }
@@ -712,14 +717,18 @@ export function dateTime(scanner: Scanner): ParseResult<Date> {
   return success(date);
 }
 
-const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2}):(\d{2})(?:\.[0-9]+)?\b/y;
+const LOCAL_TIME_REGEXP = /(\d{2}):(\d{2})(:(\d{2})(?:\.[0-9]+)?)?\b/y;
 export function localTime(scanner: Scanner): ParseResult<string> {
   scanner.skipWhitespaces();
 
-  const match = scanner.match(LOCAL_TIME_REGEXP)?.[0];
-  if (!match) return failure();
-  scanner.next(match.length);
-  return success(match);
+  const string = scanner.match(LOCAL_TIME_REGEXP)?.[0];
+  if (!string) return failure();
+  scanner.next(string.length);
+  // seconds are omitted
+  if (string.length == 5) {
+    return success(`${string}:00`);
+  }
+  return success(string);
 }
 
 export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
@@ -750,17 +759,30 @@ export function arrayValue(scanner: Scanner): ParseResult<unknown[]> {
 export function inlineTable(
   scanner: Scanner,
 ): ParseResult<Record<string, unknown>> {
-  scanner.nextUntilChar();
-  if (scanner.char(1) === "}") {
-    scanner.next(2);
-    return success({ __proto__: null });
-  }
-  const pairs = surround("{", join(pair, ","), "}")(scanner);
-  if (!pairs.ok) return failure();
+  scanner.skipWhitespaces();
+
+  if (scanner.char() !== "{") return failure();
+  scanner.next();
+
   let table = { __proto__: null } as Record<string, unknown>;
-  for (const pair of pairs.body) {
-    table = deepMerge(table, pair);
+  while (!scanner.eof()) {
+    scanner.nextUntilChar();
+    const result = pair(scanner);
+    if (!result.ok) break;
+    table = deepMerge(table, result.body);
+    scanner.skipWhitespaces();
+    // may have a next item, but trailing comma is allowed in inline tables
+    if (scanner.char() !== ",") break;
+    scanner.next();
   }
+
+  scanner.nextUntilChar();
+
+  if (scanner.char() !== "}") {
+    throw new SyntaxError("Inline Table is not closed");
+  }
+  scanner.next();
+
   return success(table);
 }
 

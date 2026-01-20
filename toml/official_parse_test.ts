@@ -5,7 +5,7 @@ import { convertTestCase, type TestCase } from "./_test_utils.ts";
 import { parse } from "./parse.ts";
 
 const testCases = await Deno.readTextFile(
-  new URL("./testdata/files-toml-1.0.0", import.meta.url),
+  new URL("./testdata/files-toml-1.1.0", import.meta.url),
 );
 
 const ignored = [
