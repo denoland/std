@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { JsonPrimitive, JsonValue } from "./types.ts";
+import type { Uint8Array_ } from "./_types.ts";
 
 /**
  * Serializes a primitive JSON value (null, boolean, number, string) to its
@@ -188,6 +189,6 @@ export function canonicalize(value: JsonValue): string {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc8785 | RFC 8785}
  */
-export function canonicalizeToBytes(value: JsonValue): Uint8Array {
+export function canonicalizeToBytes(value: JsonValue): Uint8Array_ {
   return new TextEncoder().encode(canonicalize(value));
 }
