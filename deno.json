@@ -39,7 +39,8 @@
     "_tools/node_test_runner",
     "http/testdata",
     "fs/testdata",
-    "dotenv/testdata"
+    "dotenv/testdata",
+    "crypto/_benches"
   ],
   "lint": {
     "rules": {
