@@ -379,3 +379,51 @@ Deno.test("retry() only retries errors that are retriable with `isRetriable` opt
     }, options), HttpError);
   assertEquals(numCalls, 3);
 });
+
+Deno.test("retry() aborts during delay when signal is aborted", async () => {
+  using time = new FakeTime();
+  const controller = new AbortController();
+  let attempts = 0;
+
+  const promise = retry(() => {
+    attempts++;
+    throw new Error("fail");
+  }, { signal: controller.signal, jitter: 0 });
+
+  await time.nextAsync(); // First delay starts (1000ms)
+  controller.abort("cancelled");
+
+  const error = await assertRejects(() => promise);
+  assertEquals(error, "cancelled");
+  assertEquals(attempts, 2); // Only 2 attempts, not 5
+});
+
+Deno.test("retry() throws immediately if signal is already aborted", async () => {
+  const controller = new AbortController();
+  controller.abort("pre-aborted");
+  let called = false;
+
+  const error = await assertRejects(
+    () =>
+      retry(() => {
+        called = true;
+        return "ok";
+      }, { signal: controller.signal }),
+  );
+  assertEquals(error, "pre-aborted");
+  assertEquals(called, false); // fn was never called
+});
+
+Deno.test("retry() throws AbortError when signal is aborted without reason", async () => {
+  const controller = new AbortController();
+  controller.abort(); // No reason = DOMException with name "AbortError"
+
+  const error = await assertRejects(
+    () =>
+      retry(() => {
+        throw new Error();
+      }, { signal: controller.signal }),
+    DOMException,
+  );
+  assertEquals(error.name, "AbortError");
+});
