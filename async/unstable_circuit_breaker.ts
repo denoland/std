@@ -643,11 +643,11 @@ export class CircuitBreaker<T = unknown> {
       ),
       now,
     ];
-    this.#onFailure?.(error, newFailures.length);
 
     const shouldOpen = previousState === "half_open" ||
       newFailures.length >= this.#failureThreshold;
 
+    // State mutations first (before any callbacks)
     if (shouldOpen) {
       this.#state = {
         ...this.#state,
@@ -656,14 +656,19 @@ export class CircuitBreaker<T = unknown> {
         openedAt: now,
         consecutiveSuccesses: 0,
       };
-      this.#onStateChange?.(previousState, "open");
-      this.#onOpen?.(newFailures.length);
     } else {
       this.#state = {
         ...this.#state,
         failureTimestamps: newFailures,
         consecutiveSuccesses: 0,
       };
+    }
+
+    // Callbacks last (state is consistent even if these throw)
+    this.#onFailure?.(error, newFailures.length);
+    if (shouldOpen) {
+      this.#onStateChange?.(previousState, "open");
+      this.#onOpen?.(newFailures.length);
     }
   }
 
