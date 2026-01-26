@@ -42,6 +42,10 @@ jobs:
           deno task test
           deno task test:with-unsafe-proto
 
+      - name: Run tools tests
+        run: deno task test:tools
+        if: matrix.deno == 'canary'
+
       - name: Run timezone-dependent tests
         run: |
           TZ=Australia/Sydney deno test datetime
