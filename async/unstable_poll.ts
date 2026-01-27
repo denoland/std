@@ -25,7 +25,7 @@ export interface PollOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Polling a payment status with {@linkcode deadline}
- * ```ts no-assert
+ * ```ts ignore
  * import { poll } from "@std/async/unstable-poll";
  * import { deadline } from "@std/async/deadline";
  *
@@ -45,7 +45,7 @@ export interface PollOptions {
  * ```
  *
  * @example Using AbortSignal for timeout
- * ```ts no-assert
+ * ```ts ignore
  * import { poll } from "@std/async/unstable-poll";
  *
  * const result = await poll(
