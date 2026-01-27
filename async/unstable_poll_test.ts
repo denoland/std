@@ -73,6 +73,7 @@ Deno.test("poll() respects interval timing", async () => {
 });
 
 Deno.test("poll() handles abort signal", async () => {
+  using time = new FakeTime();
   const controller = new AbortController();
   let callCount = 0;
 
@@ -82,8 +83,19 @@ Deno.test("poll() handles abort signal", async () => {
     { signal: controller.signal, interval: 10 },
   );
 
-  // Abort after a short delay
-  setTimeout(() => controller.abort(), 25);
+  // First call is immediate
+  await time.runMicrotasks();
+  assertEquals(callCount, 1);
+
+  // Advance through two more intervals
+  await time.nextAsync();
+  assertEquals(callCount, 2);
+
+  await time.nextAsync();
+  assertEquals(callCount, 3);
+
+  // Abort during the delay after call 3
+  controller.abort();
 
   await assertRejects(() => promise, DOMException);
   assertEquals(callCount, 3);
