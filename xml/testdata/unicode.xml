@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Testing Unicode characters from various scripts -->
+<translations>
+  <!-- European languages -->
+  <text lang="de">Größe und Überblick über die Wärme</text>
+  <text lang="fr">Ça c'est très bien, n'est-ce pas?</text>
+  <text lang="es">¿Cómo estás? ¡Muy bien!</text>
+  <text lang="no">Blåbærsyltetøy og rømme</text>
+  <text lang="sv">Räksmörgås med dill</text>
+  
+  <!-- Asian languages -->
+  <text lang="ja">日本語テスト：こんにちは世界</text>
+  <text lang="zh">中文测试：你好世界</text>
+  <text lang="ko">한국어 테스트: 안녕하세요</text>
+  <text lang="th">ภาษาไทย: สวัสดีครับ</text>
+  
+  <!-- Arabic and Hebrew (RTL) -->
+  <text lang="ar">اللغة العربية: مرحبا بالعالم</text>
+  <text lang="he">עברית: שלום עולם</text>
+  
+  <!-- Cyrillic -->
+  <text lang="ru">Русский язык: Привет мир</text>
+  <text lang="uk">Українська мова: Привіт світ</text>
+  
+  <!-- Greek -->
+  <text lang="el">Ελληνικά: Γεια σου κόσμε</text>
+  
+  <!-- Emojis and special symbols -->
+  <text lang="emoji">🎉 🚀 ❤️ 🌟 🎸 🍕 🦄 👋</text>
+  <text lang="symbols">© ® ™ € £ ¥ § † ‡ • ◆ ★</text>
+  <text lang="math">∑ ∏ √ ∞ ≠ ≈ ≤ ≥ ∫ ∂ Δ π</text>
+  
+  <!-- Unicode in attributes -->
+  <item name="日本製品" price="¥1,000" emoji="🎌"/>
+  <item name="Überprodukt" price="€50" emoji="🇩🇪"/>
+</translations>

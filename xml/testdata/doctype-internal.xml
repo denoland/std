@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE catalog [
+  <!ELEMENT catalog (product*)>
+  <!ELEMENT product (name, price, description?)>
+  <!ELEMENT name (#PCDATA)>
+  <!ELEMENT price (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+  <!ATTLIST product id ID #REQUIRED>
+  <!ENTITY copyright "© 2024 Example Corp">
+]>
+<!-- Document with DOCTYPE including internal subset -->
+<catalog>
+  <product id="p1">
+    <name>Widget Pro</name>
+    <price>29.99</price>
+    <description>A professional-grade widget.</description>
+  </product>
+  <product id="p2">
+    <name>Gadget Plus</name>
+    <price>49.99</price>
+  </product>
+</catalog>

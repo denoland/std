@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://www.example.com/</loc>
+    <lastmod>2024-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.example.com/about</loc>
+    <lastmod>2024-01-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.example.com/products</loc>
+    <lastmod>2024-01-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://www.example.com/images/product1.jpg</image:loc>
+      <image:title>Product One</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.example.com/images/product2.jpg</image:loc>
+      <image:title>Product Two</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.example.com/video/demo</loc>
+    <video:video>
+      <video:thumbnail_loc>https://www.example.com/thumbs/demo.jpg</video:thumbnail_loc>
+      <video:title>Product Demo Video</video:title>
+      <video:description>A demonstration of our product features.</video:description>
+      <video:content_loc>https://www.example.com/videos/demo.mp4</video:content_loc>
+      <video:duration>300</video:duration>
+    </video:video>
+  </url>
+</urlset>

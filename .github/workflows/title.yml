@@ -76,4 +76,5 @@ jobs:
             ulid(/unstable)?
             uuid(/unstable)?
             webgpu(/unstable)?
+            xml(/unstable)?
             yaml(/unstable)?

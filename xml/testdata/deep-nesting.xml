@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Deeply nested structure for testing tree building -->
+<level1 id="1">
+  <level2 id="1.1">
+    <level3 id="1.1.1">
+      <level4 id="1.1.1.1">
+        <level5 id="1.1.1.1.1">
+          <level6 id="1.1.1.1.1.1">
+            <level7 id="1.1.1.1.1.1.1">
+              <level8 id="1.1.1.1.1.1.1.1">
+                <level9 id="1.1.1.1.1.1.1.1.1">
+                  <level10 id="1.1.1.1.1.1.1.1.1.1">
+                    <deepest>You found the treasure!</deepest>
+                  </level10>
+                </level9>
+              </level8>
+            </level7>
+          </level6>
+        </level5>
+      </level4>
+    </level3>
+    <level3 id="1.1.2">
+      <data>Sibling at level 3</data>
+    </level3>
+  </level2>
+  <level2 id="1.2">
+    <level3 id="1.2.1">
+      <level4 id="1.2.1.1">
+        <level5 id="1.2.1.1.1">
+          <content>Another deep path</content>
+        </level5>
+      </level4>
+    </level3>
+  </level2>
+</level1>

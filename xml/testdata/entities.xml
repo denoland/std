@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entities>
+  <!-- Predefined XML entities -->
+  <predefined>
+    <lt>&lt;</lt>
+    <gt>&gt;</gt>
+    <amp>&amp;</amp>
+    <apos>&apos;</apos>
+    <quot>&quot;</quot>
+    <mixed>Tom &amp; Jerry &lt;3</mixed>
+  </predefined>
+
+  <!-- Numeric character references -->
+  <numeric>
+    <decimal>&#60;&#62;&#38;</decimal>
+    <hex>&#x3C;&#x3E;&#x26;</hex>
+    <unicode>&#x1F600;&#x1F389;&#x1F680;</unicode>
+  </numeric>
+
+  <!-- Entities in attributes -->
+  <attributes name="O&apos;Brien" company="Tom &amp; Co" emoji="&#x1F44D;" />
+</entities>

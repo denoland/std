@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Document demonstrating CDATA sections -->
+<document>
+  <!-- CDATA in script element -->
+  <script><![CDATA[
+    function example() {
+      if (x < 10 && y > 5) {
+        return "<result>";
+      }
+    }
+  ]]></script>
+
+  <!-- CDATA in style element -->
+  <style><![CDATA[
+    body > div {
+      content: "test & more";
+    }
+  ]]></style>
+
+  <!-- CDATA with special characters -->
+  <data><![CDATA[Raw content with <special> & "characters"]]></data>
+</document>

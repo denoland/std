@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- XHTML document with DOCTYPE declaration -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>DOCTYPE Test Document</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  </head>
+  <body>
+    <h1>Testing DOCTYPE Declarations</h1>
+    <p>This document tests parsing of DOCTYPE with PUBLIC and SYSTEM identifiers.</p>
+    <div id="content">
+      <p>The parser should correctly skip the DOCTYPE declaration while preserving the document structure.</p>
+    </div>
+  </body>
+</html>

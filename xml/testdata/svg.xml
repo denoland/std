@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 200 200" 
+     width="200" 
+     height="200">
+  <!-- SVG with namespaces and various elements -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgb(255,255,0);stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:rgb(255,0,0);stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Basic shapes -->
+  <rect x="10" y="10" width="80" height="80" fill="url(#grad1)" stroke="black" stroke-width="2"/>
+  <circle cx="150" cy="50" r="40" fill="blue" opacity="0.7"/>
+  <ellipse cx="50" cy="150" rx="40" ry="25" fill="green"/>
+  
+  <!-- Path with complex d attribute -->
+  <path d="M100,150 C120,100 180,100 180,150 S180,200 100,200 Z" 
+        fill="purple" 
+        stroke="black" 
+        stroke-width="1"/>
+  
+  <!-- Text element -->
+  <text x="100" y="190" font-family="Arial" font-size="12" text-anchor="middle">
+    SVG Test
+  </text>
+  
+  <!-- Use element with xlink namespace -->
+  <use xlink:href="#grad1" x="0" y="0"/>
+</svg>

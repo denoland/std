@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="transform.xsl"?>
+<?xml-stylesheet type="text/css" href="style.css"?>
+<?custom-pi This is custom processing instruction content?>
+<?empty-pi?>
+<!-- Document with multiple processing instructions -->
+<document>
+  <metadata>
+    <created>2024-01-15</created>
+    <modified>2024-06-20</modified>
+  </metadata>
+  <?mid-document-pi Some processing instruction in the middle?>
+  <content>
+    <section id="intro">
+      <title>Introduction</title>
+      <body>This document demonstrates XML processing instructions.</body>
+    </section>
+    <?section-pi section="main"?>
+    <section id="main">
+      <title>Main Content</title>
+      <body>Processing instructions can appear anywhere in the document.</body>
+    </section>
+  </content>
+</document>

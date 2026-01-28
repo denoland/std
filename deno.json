@@ -39,7 +39,8 @@
     "_tools/node_test_runner",
     "http/testdata",
     "fs/testdata",
-    "dotenv/testdata"
+    "dotenv/testdata",
+    "xml/testdata"
   ],
   "lint": {
     "rules": {
@@ -94,6 +95,7 @@
     "./ulid",
     "./uuid",
     "./webgpu",
+    "./xml",
     "./yaml"
   ]
 }
