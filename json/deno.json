@@ -6,6 +6,7 @@
     "./types": "./types.ts",
     "./concatenated-json-parse-stream": "./concatenated_json_parse_stream.ts",
     "./parse-stream": "./parse_stream.ts",
-    "./stringify-stream": "./stringify_stream.ts"
+    "./stringify-stream": "./stringify_stream.ts",
+    "./unstable-canonicalize": "./unstable_canonicalize.ts"
   }
 }
