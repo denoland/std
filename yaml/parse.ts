@@ -43,9 +43,6 @@ function sanitizeInput(input: string) {
     if (input.charCodeAt(0) === 0xfeff) input = input.slice(1);
   }
 
-  // Use 0 as string terminator. That significantly simplifies bounds check.
-  input += "\0";
-
   return input;
 }
 
