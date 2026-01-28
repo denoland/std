@@ -101,12 +101,37 @@ export interface TarStreamDir {
 }
 
 /**
+ * The interface required to provide a symbolic link.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TarStreamSymlink {
+  /**
+   * The type of the input.
+   */
+  type: "symlink";
+  /**
+   * The path of the symbolic link, relative to the archive's root directory.
+   */
+  path: string;
+  /**
+   * The target path that the symbolic link points to.
+   * Must be at most 100 bytes per the ustar format spec.
+   */
+  linkname: string;
+  /**
+   * The metadata of the symbolic link.
+   */
+  options?: TarStreamOptions;
+}
+
+/**
  * A union type merging all the TarStream interfaces that can be piped into the
  * TarStream class.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type TarStreamInput = TarStreamFile | TarStreamDir;
+export type TarStreamInput = TarStreamFile | TarStreamDir | TarStreamSymlink;
 
 const SLASH_CODE_POINT = "/".charCodeAt(0);
 
@@ -121,7 +146,8 @@ const SLASH_CODE_POINT = "/".charCodeAt(0);
  * The ustar file format is used for creating the tar archive.  While this
  * format is compatible with most tar readers, the format has several
  * limitations, including:
- * - Paths must be at most 256 characters.
+ * - Paths must be at most 256 bytes.
+ * - Symlink target paths (linkname) must be at most 100 bytes.
  * - Files must be at most 8 GiBs in size, or 64 GiBs if `sizeExtension` is set
  * to true.
  * - Sparse files are not supported.
@@ -229,7 +255,11 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
     buffer: Uint8Array_,
   ): void {
     input.options ??= {};
-    input.options.mode ??= input.type === "file" ? 0o644 : 0o755;
+    input.options.mode ??= input.type === "file"
+      ? 0o644
+      : input.type === "symlink"
+      ? 0o777
+      : 0o755;
     input.options.uid ??= 0o0;
     input.options.gid ??= 0o0;
     input.options.mtime ??= Math.floor(Date.now() / 1000);
@@ -245,6 +275,9 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
       throw new RangeError(
         "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
       );
+    }
+    if (input.type === "symlink") {
+      assertValidLinkname(input.linkname);
     }
 
     // name (100) & prefix (155)
@@ -271,9 +304,18 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
     // checksum (8)
     buffer.fill(32, 148, 156);
     // typeflag (1)
-    buffer[156] = input.type === "file" ? 48 : 53;
+    buffer[156] = input.type === "file"
+      ? 48
+      : input.type === "symlink"
+      ? 50
+      : 53;
     // linkname (100)
-    buffer.fill(0, 157, 257);
+    if (input.type === "symlink") {
+      buffer.subarray(157, 257).fill(0);
+      this.#encoder.encodeInto(input.linkname, buffer.subarray(157, 257));
+    } else {
+      buffer.fill(0, 157, 257);
+    }
     // magic (6)
     buffer[257] = 117;
     buffer[258] = 115;
@@ -319,6 +361,7 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
       buffer = yield buffer.subarray(0, 512);
 
       if (input.type === "directory") continue;
+      if (input.type === "symlink") continue;
 
       let size = 0;
       const reader = toByteStream(input.readable).getReader({ mode: "byob" });
@@ -639,6 +682,40 @@ function parsePath(size: number, buffer: Uint8Array_): void {
 export function assertValidPath(path: string): void {
   const buffer = new Uint8Array(512);
   parsePath(new TextEncoder().encodeInto(path, buffer).written, buffer);
+}
+
+/**
+ * Asserts that the linkname provided is valid for a {@linkcode TarStream}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param linkname The linkname as a string
+ *
+ * @example Usage
+ * ```ts no-assert ignore
+ * import { assertValidLinkname, TarStream, type TarStreamInput } from "@std/tar";
+ *
+ * const linkname = "./target";
+ * assertValidLinkname(linkname);
+ * await ReadableStream.from<TarStreamInput>([
+ *   { type: "symlink", path: "./link", linkname },
+ * ])
+ *   .pipeThrough(new TarStream())
+ *   .pipeTo((await Deno.create('./out.tar')).writable);
+ * ```
+ */
+export function assertValidLinkname(linkname: string): void {
+  if (linkname.length === 0) {
+    throw new TypeError(
+      "Cannot add to the tar archive: Invalid Linkname provided",
+    );
+  }
+  const encoded = new TextEncoder().encode(linkname);
+  if (encoded.length > 100) {
+    throw new TypeError(
+      `Cannot add to the tar archive: Linkname cannot exceed 100 bytes: The linkname length is ${encoded.length}`,
+    );
+  }
 }
 
 function parseOctalInto(x: number, buffer: Uint8Array_): void {
