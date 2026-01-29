@@ -19,7 +19,6 @@
     "./encoding",
     "./expect",
     "./fmt",
-    "./formdata",
     "./front_matter",
     "./fs",
     "./html",

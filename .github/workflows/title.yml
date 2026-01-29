@@ -50,7 +50,6 @@ jobs:
             encoding(/unstable)?
             expect(/unstable)?
             fmt(/unstable)?
-            formdata(/unstable)?
             front-matter(/unstable)?
             fs(/unstable)?
             functions(/unstable)?

@@ -7,6 +7,8 @@
     "./etag": "./etag.ts",
     "./file-server": "./file_server.ts",
     "./unstable-file-server": "./unstable_file_server.ts",
+    "./unstable-formdata-decoder-stream": "./unstable_formdata_decoder_stream.ts",
+    "./unstable-formdata-encoder-stream": "./unstable_formdata_encoder_stream.ts",
     "./unstable-header": "./unstable_header.ts",
     "./unstable-method": "./unstable_method.ts",
     "./negotiation": "./negotiation.ts",

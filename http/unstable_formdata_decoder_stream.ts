@@ -46,7 +46,7 @@ export interface FormDataEntry {
  * @example Usage
  * ```ts
  * import { assertEquals } from "@std/assert";
- * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+ * import { FormDataDecoderStream } from "@std/http/unstable-formdata-decoder-stream";
  * const request = new Request("https://example.com", {
  *   method: "POST",
  *   body: function() {
@@ -276,7 +276,7 @@ export class FormDataDecoderStream {
    * @example Usage
    * ```ts
    * import { assertEquals } from "@std/assert";
-   * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+   * import { FormDataDecoderStream } from "@std/http/unstable-formdata-decoder-stream";
    * const request = new Request("https://example.com", {
    *   method: "POST",
    *   body: function() {
@@ -312,7 +312,7 @@ export class FormDataDecoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataDecoderStream } from "@std/formdata/formdata-decoder-stream";
+   * import { FormDataDecoderStream } from "@std/http/unstable-formdata-decoder-stream";
    * const request = new Request("https://example.com", {
    *   method: "POST",
    *   body: function() {

@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
 import { assert, assertEquals, assertRejects } from "@std/assert";
 
 Deno.test("FormDataEncoderStream", async () => {

@@ -58,7 +58,7 @@ export interface FormDataInput {
  * @example Usage
  * ```ts
  * import { assert, assertEquals } from "@std/assert";
- * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+ * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
  *
  * const response = FormDataEncoderStream.from(ReadableStream.from([
  *   {
@@ -216,7 +216,7 @@ export class FormDataEncoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
    *
    * const response = FormDataEncoderStream.from(ReadableStream.from([
    *   {
@@ -249,7 +249,7 @@ export class FormDataEncoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
    *
    * const request = FormDataEncoderStream.from(ReadableStream.from([
    *   {
@@ -284,7 +284,7 @@ export class FormDataEncoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
    *
    * const response = FormDataEncoderStream.from(ReadableStream.from([
    *   {
@@ -314,7 +314,7 @@ export class FormDataEncoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
    *
    * const encoder = FormDataEncoderStream.from(ReadableStream.from([
    *   {
@@ -346,7 +346,7 @@ export class FormDataEncoderStream {
    * @example Usage
    * ```ts
    * import { assert, assertEquals } from "@std/assert";
-   * import { FormDataEncoderStream } from "@std/formdata/formdata-encoder-stream";
+   * import { FormDataEncoderStream } from "@std/http/unstable-formdata-encoder-stream";
    *
    * const encoder = FormDataEncoderStream.from(ReadableStream.from([
    *   {

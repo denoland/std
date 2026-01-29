@@ -40,9 +40,6 @@ expect:
 fmt:
   - changed-files:
       - any-glob-to-any-file: fmt/**
-formdata:
-  - changed-files:
-      - any-glob-to-any-file: formdata/**
 front-matter:
   - changed-files:
       - any-glob-to-any-file: front_matter/**
