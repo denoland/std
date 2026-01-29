@@ -6,7 +6,7 @@ import { AssertionError } from "./assertion_error.ts";
 export type Falsy = false | 0 | 0n | "" | null | undefined;
 
 /**
- * Make an assertion, error will be thrown if `expr` have truthy value.
+ * Make an assertion, an error will be thrown if `expr` has a truthy value.
  *
  * @example Usage
  * ```ts ignore
@@ -18,6 +18,7 @@ export type Falsy = false | 0 | 0n | "" | null | undefined;
  *
  * @param expr The expression to test.
  * @param msg The optional message to display if the assertion fails.
+ * @throws {AssertionError} If `expr` is truthy.
  */
 export function assertFalse(expr: unknown, msg = ""): asserts expr is Falsy {
   if (expr) {

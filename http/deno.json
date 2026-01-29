@@ -13,6 +13,7 @@
     "./unstable-method": "./unstable_method.ts",
     "./negotiation": "./negotiation.ts",
     "./server-sent-event-stream": "./server_sent_event_stream.ts",
+    "./unstable-server-sent-event-stream": "./unstable_server_sent_event_stream.ts",
     "./status": "./status.ts",
     "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
     "./user-agent": "./user_agent.ts",

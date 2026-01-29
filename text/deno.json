@@ -1,6 +1,6 @@
 {
   "name": "@std/text",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "exports": {
     ".": "./mod.ts",
     "./closest-string": "./closest_string.ts",

@@ -1,5 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
+// Deno.lint namespace does not pass type checking in Deno 1.x
 
 import { assertEquals } from "@std/assert/equals";
 import lintPlugin, { COPYRIGHT_NOTICE } from "./lint_plugin.ts";
@@ -240,7 +240,7 @@ enum enumName {
         message: "Interface name 'interfaceName' is not PascalCase.",
         range: [264, 277],
       },
-    ],
+    ] as unknown as Deno.lint.Diagnostic[],
   );
 });
 
