@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import type { PromptEntry } from "./unstable_prompt_select.ts";
+import { stripAnsiCode } from "@std/fmt/colors";
 
 const SAFE_PADDING = 4;
 
@@ -46,8 +47,9 @@ export function handlePromptSelect<V>(
   }));
   let clearLength = indexedValues.length + 1;
 
-  const PADDING = " ".repeat(indicator.length);
-  const ARROW_PADDING = " ".repeat(indicator.length + 1);
+  const indicatorLength = stripAnsiCode(indicator).length;
+  const PADDING = " ".repeat(indicatorLength);
+  const ARROW_PADDING = " ".repeat(indicatorLength + 1);
 
   // Deno.consoleSize().rows - 3 because we need to output the message, the up arrow, the terminal line and the down arrow
   let visibleLines = visibleLinesInit ?? Math.min(
