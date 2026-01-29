@@ -3,6 +3,8 @@
 
 import type { Writer, WriterSync } from "./types.ts";
 
+export type { Writer, WriterSync } from "./types.ts";
+
 /**
  * Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
