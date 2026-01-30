@@ -14,6 +14,7 @@ const decoder = new TextDecoder();
 const CLEAR_ALL = encoder.encode("\x1b[J"); // Clear all lines after cursor
 const HIDE_CURSOR = encoder.encode("\x1b[?25l");
 const SHOW_CURSOR = encoder.encode("\x1b[?25h");
+const QUERY_CURSOR_POSITION = encoder.encode("\x1b[6n");
 
 /**
  * @param message The prompt message to show to the user.
@@ -21,6 +22,7 @@ const SHOW_CURSOR = encoder.encode("\x1b[?25h");
  * @param values The values for the prompt.
  * @param clear Whether to clear the lines after the user's input.
  * @param visibleLinesInit The initial number of lines to be visible at once.
+ * @param fitToRemainingHeight Whether to calculate visible lines based on remaining height from cursor position.
  * @param valueChange A function that is called when the value changes.
  * @param handleInput A function that handles the input from the user. If it returns false, the prompt will continue. If it returns true, the prompt will exit with clean ups of terminal state (Use this for finalizing the selection). If it returns "return", the prompt will exit immediately without clean ups of terminal state (Use this for exiting the program).
  */
@@ -30,6 +32,7 @@ export function handlePromptSelect<V>(
   values: PromptEntry<V>[],
   clear: boolean | undefined,
   visibleLinesInit: number | undefined,
+  fitToRemainingHeight: boolean | undefined,
   valueChange: (active: boolean, absoluteIndex: number) => string | void,
   handleInput: (str: string, absoluteIndex: number | undefined, actions: {
     etx(): "return";
@@ -51,12 +54,6 @@ export function handlePromptSelect<V>(
   const PADDING = " ".repeat(indicatorLength);
   const ARROW_PADDING = " ".repeat(indicatorLength + 1);
 
-  // Deno.consoleSize().rows - 3 because we need to output the message, the up arrow, the terminal line and the down arrow
-  let visibleLines = visibleLinesInit ?? Math.min(
-    Deno.consoleSize().rows - SAFE_PADDING,
-    values.length,
-  );
-
   let activeIndex = 0;
   let offset = 0;
   let searchBuffer = "";
@@ -64,6 +61,19 @@ export function handlePromptSelect<V>(
 
   input.setRaw(true);
   output.writeSync(HIDE_CURSOR);
+
+  let availableHeight = Deno.consoleSize().rows - SAFE_PADDING;
+  if (fitToRemainingHeight) {
+    const cursorRow = getCursorRow(input, output);
+    if (cursorRow !== undefined) {
+      availableHeight = Deno.consoleSize().rows - cursorRow - SAFE_PADDING + 1;
+    }
+  }
+
+  let visibleLines = visibleLinesInit ?? Math.min(
+    availableHeight,
+    values.length,
+  );
 
   while (true) {
     output.writeSync(
@@ -168,10 +178,15 @@ export function handlePromptSelect<V>(
       break;
     }
 
-    visibleLines = Math.min(
-      Deno.consoleSize().rows - SAFE_PADDING,
-      visibleLines,
-    );
+    if (fitToRemainingHeight) {
+      availableHeight = Math.min(
+        availableHeight,
+        Deno.consoleSize().rows - SAFE_PADDING,
+      );
+    } else {
+      availableHeight = Deno.consoleSize().rows - SAFE_PADDING;
+    }
+    visibleLines = Math.min(availableHeight, visibleLines);
 
     clearLength = 1 + // message
       (hasUpArrow ? 1 : 0) +
@@ -189,4 +204,24 @@ export function handlePromptSelect<V>(
 
   output.writeSync(SHOW_CURSOR);
   input.setRaw(false);
+}
+
+function getCursorRow(
+  input: typeof Deno.stdin,
+  output: typeof Deno.stdout,
+): number | undefined {
+  output.writeSync(QUERY_CURSOR_POSITION);
+
+  const buffer = new Uint8Array(32);
+  const n = input.readSync(buffer);
+  if (n === null || n === 0) return undefined;
+
+  const response = decoder.decode(buffer.subarray(0, n)).trim();
+
+  // deno-lint-ignore no-control-regex
+  const match = response.match(/\x1b\[(\d+);(\d+)R/);
+  if (match) {
+    return parseInt(match[1]!, 10);
+  }
+  return undefined;
 }
