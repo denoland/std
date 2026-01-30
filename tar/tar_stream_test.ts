@@ -531,6 +531,9 @@ Deno.test("TarStream() mixed archive with files, dirs, and symlinks", async () =
 Deno.test("assertValidLinkname()", () => {
   assertValidLinkname("./target");
   assertValidLinkname("a".repeat(100));
+  assertValidLinkname("target/\u3042");
+  assertValidLinkname("\u00e4".repeat(50));
+  assertValidLinkname("あ".repeat(33));
   assertThrows(
     () => assertValidLinkname(""),
     TypeError,
@@ -541,5 +544,14 @@ Deno.test("assertValidLinkname()", () => {
     TypeError,
     "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
   );
-  assertValidLinkname("target/\u3042");
+  assertThrows(
+    () => assertValidLinkname("\u00e4".repeat(51)),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
+  );
+  assertThrows(
+    () => assertValidLinkname("あ".repeat(34)),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
+  );
 });

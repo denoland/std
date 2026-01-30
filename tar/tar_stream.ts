@@ -276,9 +276,6 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
         "Cannot add to the tar archive: The size cannot exceed 64 Gibs",
       );
     }
-    if (input.type === "symlink") {
-      assertValidLinkname(input.linkname);
-    }
 
     // name (100) & prefix (155)
     this.#parsePathInto(input.path, buffer);
@@ -310,11 +307,11 @@ export class TarStream implements TransformStream<TarStreamInput, Uint8Array_> {
       ? 50
       : 53;
     // linkname (100)
+    buffer.fill(0, 157, 257);
     if (input.type === "symlink") {
-      buffer.subarray(157, 257).fill(0);
-      this.#encoder.encodeInto(input.linkname, buffer.subarray(157, 257));
-    } else {
-      buffer.fill(0, 157, 257);
+      checkLinkname(
+        this.#encoder.encodeInto(input.linkname, buffer.subarray(157)).written,
+      );
     }
     // magic (6)
     buffer[257] = 117;
@@ -705,15 +702,19 @@ export function assertValidPath(path: string): void {
  * ```
  */
 export function assertValidLinkname(linkname: string): void {
-  if (linkname.length === 0) {
+  const buffer = new Uint8Array(355);
+  checkLinkname(new TextEncoder().encodeInto(linkname, buffer).written);
+}
+
+function checkLinkname(bytes: number): void {
+  if (bytes === 0) {
     throw new TypeError(
       "Cannot add to the tar archive: Invalid Linkname provided",
     );
   }
-  const encoded = new TextEncoder().encode(linkname);
-  if (encoded.length > 100) {
+  if (bytes > 100) {
     throw new TypeError(
-      `Cannot add to the tar archive: Linkname cannot exceed 100 bytes: The linkname length is ${encoded.length}`,
+      `Cannot add to the tar archive: Linkname cannot exceed 100 bytes: The linkname length is ${bytes}`,
     );
   }
 }
