@@ -3,12 +3,14 @@
 import { assert, assertEquals } from "@std/assert";
 import { concat } from "@std/bytes";
 import {
+  assertValidLinkname,
   assertValidPath,
   assertValidTarStreamOptions,
   TarStream,
   type TarStreamInput,
   type Uint8Array_,
 } from "./tar_stream.ts";
+import { UntarStream } from "./untar_stream.ts";
 import { assertThrows } from "@std/assert/throws";
 import { assertRejects } from "@std/assert/rejects";
 
@@ -372,5 +374,184 @@ Deno.test("TarStream() decoding header", async () => {
   assertEquals(
     buffer.subarray(500, 512),
     new Uint8Array(12),
+  );
+});
+
+Deno.test("TarStream() with symlink", async () => {
+  const buffer = await new Response(
+    ReadableStream
+      .from<TarStreamInput>([
+        {
+          type: "symlink",
+          path: "./link",
+          linkname: "./target",
+        },
+      ])
+      .pipeThrough(new TarStream()),
+  ).bytes();
+
+  // 512 (header) + 1024 (end padding)
+  assertEquals(buffer.length, 512 + 1024);
+});
+
+Deno.test("TarStream() symlink has correct typeflag", async () => {
+  const buffer = await new Response(
+    ReadableStream
+      .from<TarStreamInput>([
+        { type: "symlink", path: "./link", linkname: "./target" },
+      ])
+      .pipeThrough(new TarStream()),
+  ).bytes();
+
+  // typeflag at byte 156 should be 50 (ASCII '2' for symlink)
+  assertEquals(buffer[156], 50);
+});
+
+Deno.test("TarStream() symlink writes linkname to header", async () => {
+  const buffer = await new Response(
+    ReadableStream
+      .from<TarStreamInput>([
+        { type: "symlink", path: "./link", linkname: "./target" },
+      ])
+      .pipeThrough(new TarStream()),
+  ).bytes();
+
+  const decoder = new TextDecoder();
+  const linkname = decoder.decode(buffer.subarray(157, 257)).split("\0")[0];
+  assertEquals(linkname, "./target");
+});
+
+Deno.test("TarStream() symlink round-trip", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "symlink",
+      path: "./mylink",
+      linkname: "./target/file.txt",
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.path, "./mylink");
+    assertEquals(entry.header.typeflag, "2");
+    assertEquals(entry.header.linkname, "./target/file.txt");
+    assertEquals(entry.header.size, 0);
+    assertEquals(entry.readable, undefined);
+  }
+});
+
+Deno.test("TarStream() rejects empty linkname", async () => {
+  await assertRejects(
+    async () =>
+      await new Response(
+        ReadableStream
+          .from<TarStreamInput>([
+            { type: "symlink", path: "./link", linkname: "" },
+          ])
+          .pipeThrough(new TarStream()),
+      ).bytes(),
+    TypeError,
+    "Cannot add to the tar archive: Invalid Linkname provided",
+  );
+});
+
+Deno.test("TarStream() rejects linkname exceeding 100 bytes", async () => {
+  await assertRejects(
+    async () =>
+      await new Response(
+        ReadableStream
+          .from<TarStreamInput>([
+            { type: "symlink", path: "./link", linkname: "a".repeat(101) },
+          ])
+          .pipeThrough(new TarStream()),
+      ).bytes(),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
+  );
+});
+
+Deno.test("TarStream() symlink with non-ASCII linkname round-trip", async () => {
+  const linkname = "target/\u3042";
+
+  const readable = ReadableStream.from<TarStreamInput>([
+    { type: "symlink", path: "./link", linkname },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.header.linkname, linkname);
+  }
+});
+
+Deno.test("TarStream() accepts exactly 100 byte linkname", async () => {
+  const linkname = "a".repeat(100);
+
+  const readable = ReadableStream.from<TarStreamInput>([
+    { type: "symlink", path: "./link", linkname },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.header.linkname, linkname);
+  }
+});
+
+Deno.test("TarStream() mixed archive with files, dirs, and symlinks", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+
+  const readable = ReadableStream.from<TarStreamInput>([
+    { type: "directory", path: "./dir" },
+    {
+      type: "file",
+      path: "./dir/file.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+    { type: "symlink", path: "./link-to-file", linkname: "./dir/file.txt" },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  const entries: { path: string; typeflag: string }[] = [];
+  for await (const entry of readable) {
+    entries.push({ path: entry.path, typeflag: entry.header.typeflag });
+    await entry.readable?.cancel();
+  }
+
+  assertEquals(entries, [
+    { path: "./dir", typeflag: "5" },
+    { path: "./dir/file.txt", typeflag: "0" },
+    { path: "./link-to-file", typeflag: "2" },
+  ]);
+});
+
+Deno.test("assertValidLinkname()", () => {
+  assertValidLinkname("./target");
+  assertValidLinkname("a".repeat(100));
+  assertValidLinkname("target/\u3042");
+  assertValidLinkname("\u00e4".repeat(50));
+  assertValidLinkname("あ".repeat(33));
+  assertThrows(
+    () => assertValidLinkname(""),
+    TypeError,
+    "Cannot add to the tar archive: Invalid Linkname provided",
+  );
+  assertThrows(
+    () => assertValidLinkname("a".repeat(101)),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
+  );
+  assertThrows(
+    () => assertValidLinkname("\u00e4".repeat(51)),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
+  );
+  assertThrows(
+    () => assertValidLinkname("あ".repeat(34)),
+    TypeError,
+    "Cannot add to the tar archive: Linkname cannot exceed 100 bytes",
   );
 });
