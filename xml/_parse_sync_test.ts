@@ -416,3 +416,442 @@ Deno.test("parseSync() extracts standalone with single quotes", () => {
   const doc = parseSync("<?xml version='1.0' standalone='yes'?><root/>");
   assertEquals(doc.declaration?.standalone, "yes");
 });
+
+// =============================================================================
+// DTD ENTITY Declaration Tests
+// =============================================================================
+
+Deno.test("parseSync() handles ENTITY with SYSTEM identifier", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ENTITY external SYSTEM "http://example.com/entity.xml">
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles ENTITY with PUBLIC identifier", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ENTITY external PUBLIC "-//Example//EN" "http://example.com/entity.xml">
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles ENTITY with NDATA declaration", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ENTITY logo SYSTEM "logo.png" NDATA png>
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles parameter entity declaration", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ENTITY % common "INCLUDE">
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() throws on parameter entity with NDATA", () => {
+  assertThrows(
+    () =>
+      parseSync(`<!DOCTYPE root [
+      <!ENTITY % logo SYSTEM "logo.png" NDATA png>
+    ]><root/>`),
+    XmlSyntaxError,
+    "Parameter entities cannot have NDATA declarations",
+  );
+});
+
+Deno.test("parseSync() throws on lowercase system keyword", () => {
+  assertThrows(
+    () =>
+      parseSync(`<!DOCTYPE root [
+      <!ENTITY test system "test.xml">
+    ]><root/>`),
+    XmlSyntaxError,
+    "must be uppercase 'SYSTEM'",
+  );
+});
+
+Deno.test("parseSync() throws on lowercase public keyword", () => {
+  assertThrows(
+    () =>
+      parseSync(`<!DOCTYPE root [
+      <!ENTITY test public "-//Test//EN" "test.xml">
+    ]><root/>`),
+    XmlSyntaxError,
+    "must be uppercase 'PUBLIC'",
+  );
+});
+
+// =============================================================================
+// DTD Declaration Validation Tests
+// =============================================================================
+
+Deno.test("parseSync() handles ELEMENT declaration", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ELEMENT root (item*)>
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles ATTLIST declaration", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!ATTLIST root id ID #IMPLIED>
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles NOTATION declaration", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!NOTATION png SYSTEM "image/png">
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles comment in internal subset", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <!-- This is a comment in the DTD -->
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles PI in internal subset", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    <?target content?>
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles parameter entity reference in internal subset", () => {
+  const doc = parseSync(`<!DOCTYPE root [
+    %common;
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() throws on unknown DTD declaration type", () => {
+  assertThrows(
+    () =>
+      parseSync(`<!DOCTYPE root [
+      <!INVALID test>
+    ]><root/>`),
+    XmlSyntaxError,
+    "Unknown DTD declaration type",
+  );
+});
+
+Deno.test("parseSync() throws on conditional section in internal subset", () => {
+  // Conditional sections start with <![INCLUDE or <![IGNORE
+  // The parser sees <![, expects CDATA[, but gets something else
+  assertThrows(
+    () =>
+      parseSync(`<!DOCTYPE root [
+      <![INCLUDE[
+        <!ELEMENT root (#PCDATA)>
+      ]]>
+    ]><root/>`),
+    XmlSyntaxError,
+    // The parser sees <! followed by [ which is the conditional section marker
+    "Unknown DTD declaration type",
+  );
+});
+
+// =============================================================================
+// Content Before/After Root Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on text before root element", () => {
+  assertThrows(
+    () => parseSync("text<root/>"),
+    XmlSyntaxError,
+    "Content is not allowed before the root element",
+  );
+});
+
+Deno.test("parseSync() throws on text after root element", () => {
+  assertThrows(
+    () => parseSync("<root/>text"),
+    XmlSyntaxError,
+    "Content is not allowed after the root element",
+  );
+});
+
+Deno.test("parseSync() throws on entity reference before root", () => {
+  assertThrows(
+    () => parseSync("&amp;<root/>"),
+    XmlSyntaxError,
+    "Character/entity references are not allowed in prolog",
+  );
+});
+
+Deno.test("parseSync() throws on entity reference after root", () => {
+  assertThrows(
+    () => parseSync("<root/>&amp;"),
+    XmlSyntaxError,
+    "Character/entity references are not allowed in prolog/epilog",
+  );
+});
+
+Deno.test("parseSync() throws on CDATA before root element", () => {
+  assertThrows(
+    () => parseSync("<![CDATA[test]]><root/>"),
+    XmlSyntaxError,
+    "CDATA section is not allowed before the root element",
+  );
+});
+
+Deno.test("parseSync() throws on CDATA after root element", () => {
+  assertThrows(
+    () => parseSync("<root/><![CDATA[test]]>"),
+    XmlSyntaxError,
+    "CDATA section is not allowed after the root element",
+  );
+});
+
+Deno.test("parseSync() throws on multiple root elements", () => {
+  assertThrows(
+    () => parseSync("<root1/><root2/>"),
+    XmlSyntaxError,
+    "Only one root element is allowed",
+  );
+});
+
+// =============================================================================
+// Namespace Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on unbound namespace prefix in element", () => {
+  assertThrows(
+    () => parseSync("<ns:root/>"),
+    XmlSyntaxError,
+    "Unbound namespace prefix 'ns'",
+  );
+});
+
+Deno.test("parseSync() throws on unbound namespace prefix in attribute", () => {
+  assertThrows(
+    () => parseSync("<root ns:attr='value'/>"),
+    XmlSyntaxError,
+    "Unbound namespace prefix 'ns'",
+  );
+});
+
+Deno.test("parseSync() throws on duplicate attribute", () => {
+  assertThrows(
+    () => parseSync('<root attr="1" attr="2"/>'),
+    XmlSyntaxError,
+    "Duplicate attribute 'attr'",
+  );
+});
+
+Deno.test("parseSync() throws on duplicate expanded attribute names", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        '<root xmlns:a="http://example.com" xmlns:b="http://example.com" a:attr="1" b:attr="2"/>',
+      ),
+    XmlSyntaxError,
+    "Duplicate expanded attribute name",
+  );
+});
+
+Deno.test("parseSync() throws on element using xmlns prefix", () => {
+  assertThrows(
+    () => parseSync('<xmlns:test xmlns:xmlns="http://example.com"/>'),
+    XmlSyntaxError,
+    "Element name cannot use the 'xmlns' prefix",
+  );
+});
+
+Deno.test("parseSync() handles namespace scope restoration on element close", () => {
+  // Tests that namespace bindings are properly restored when elements close
+  const doc = parseSync(`
+    <root xmlns:ns="http://outer.com">
+      <child xmlns:ns="http://inner.com">
+        <ns:inner/>
+      </child>
+      <ns:outer/>
+    </root>
+  `);
+
+  // The inner ns:inner element should have inner URI
+  const children = doc.root.children.filter((c) => c.type === "element");
+  const child = children[0];
+  if (child?.type === "element") {
+    const innerEl = child.children.find((c) => c.type === "element");
+    if (innerEl?.type === "element") {
+      assertEquals(innerEl.name.uri, "http://inner.com");
+    }
+  }
+
+  // The outer ns:outer element should have outer URI
+  const outer = children[1];
+  if (outer?.type === "element") {
+    assertEquals(outer.name.uri, "http://outer.com");
+  }
+});
+
+// =============================================================================
+// QName Validation Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on QName starting with colon", () => {
+  assertThrows(
+    () => parseSync('<:element xmlns=":""/>'),
+    XmlSyntaxError,
+    "QName cannot start with ':'",
+  );
+});
+
+Deno.test("parseSync() throws on QName ending with colon", () => {
+  assertThrows(
+    () => parseSync('<element: xmlns:element="http://example.com"/>'),
+    XmlSyntaxError,
+    "QName cannot end with ':'",
+  );
+});
+
+Deno.test("parseSync() throws on QName with multiple colons", () => {
+  assertThrows(
+    () => parseSync('<a:b:c xmlns:a="http://a.com" xmlns:b="http://b.com"/>'),
+    XmlSyntaxError,
+    "QName cannot contain multiple ':'",
+  );
+});
+
+Deno.test("parseSync() throws on attribute QName starting with colon", () => {
+  assertThrows(
+    () => parseSync('<root :attr="value"/>'),
+    XmlSyntaxError,
+    "QName cannot start with ':'",
+  );
+});
+
+// =============================================================================
+// Processing Instruction Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on PI target containing colon", () => {
+  assertThrows(
+    () => parseSync("<?ns:target content?><root/>"),
+    XmlSyntaxError,
+    "Processing instruction target must not contain ':'",
+  );
+});
+
+Deno.test("parseSync() throws on XML declaration not at start", () => {
+  assertThrows(
+    () => parseSync('<!-- comment --><?xml version="1.0"?><root/>'),
+    XmlSyntaxError,
+    "XML declaration must appear at the start of the document",
+  );
+});
+
+Deno.test("parseSync() throws on BOM before root element", () => {
+  // BOM (U+FEFF) is treated as content before root element which is invalid
+  // XML 1.0 §2.8 only allows whitespace, comments, PIs, and DOCTYPE before root
+  assertThrows(
+    () => parseSync('\uFEFF<?xml version="1.0"?><root/>'),
+    XmlSyntaxError,
+    "Content is not allowed before the root element",
+  );
+});
+
+// =============================================================================
+// Comment Validation Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on dash immediately before --> in comment", () => {
+  assertThrows(
+    () => parseSync("<root><!-- test---></root>"),
+    XmlSyntaxError,
+    "'-' is not permitted immediately before '-->'",
+  );
+});
+
+// =============================================================================
+// Text Content Validation Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on ]]> in text content", () => {
+  assertThrows(
+    () => parseSync("<root>]]></root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
+});
+
+Deno.test("parseSync() throws on illegal XML character in text", () => {
+  assertThrows(
+    () => parseSync("<root>\x00</root>"),
+    XmlSyntaxError,
+    "Illegal XML character U+0000",
+  );
+});
+
+Deno.test("parseSync() throws on illegal XML character in comment", () => {
+  assertThrows(
+    () => parseSync("<root><!-- \x01 --></root>"),
+    XmlSyntaxError,
+    "Illegal XML character U+0001",
+  );
+});
+
+Deno.test("parseSync() throws on illegal XML character in CDATA", () => {
+  assertThrows(
+    () => parseSync("<root><![CDATA[\x02]]></root>"),
+    XmlSyntaxError,
+    "Illegal XML character U+0002",
+  );
+});
+
+// =============================================================================
+// No Root Element Test
+// =============================================================================
+
+Deno.test("parseSync() throws on empty document", () => {
+  assertThrows(
+    () => parseSync(""),
+    XmlSyntaxError,
+    "No root element found",
+  );
+});
+
+Deno.test("parseSync() throws on document with only whitespace", () => {
+  assertThrows(
+    () => parseSync("   \n   "),
+    XmlSyntaxError,
+    "No root element found",
+  );
+});
+
+Deno.test("parseSync() throws on document with only declaration", () => {
+  assertThrows(
+    () => parseSync('<?xml version="1.0"?>'),
+    XmlSyntaxError,
+    "No root element found",
+  );
+});
+
+// =============================================================================
+// Invalid Character in End Tag Tests
+// =============================================================================
+
+Deno.test("parseSync() throws on invalid character in end tag name", () => {
+  // The parser reads "r" then hits "@" which terminates the name
+  // Then expects '>' but finds 'o'
+  assertThrows(
+    () => parseSync("<root></r@ot>"),
+    XmlSyntaxError,
+    "Expected '>' in end tag",
+  );
+});
+
+// =============================================================================
+// Self-closing root element with namespace
+// =============================================================================
+
+Deno.test("parseSync() handles self-closing root with namespace bindings", () => {
+  const doc = parseSync('<ns:root xmlns:ns="http://example.com"/>');
+  assertEquals(doc.root.name.prefix, "ns");
+  assertEquals(doc.root.name.uri, "http://example.com");
+});
