@@ -1,0 +1,174 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+
+import { assertEquals } from "@std/assert";
+import { isNameChar, isNameStartChar } from "./_name_chars.ts";
+
+// =============================================================================
+// NameStartChar Tests
+// =============================================================================
+
+Deno.test("isNameStartChar() returns true for ASCII letters", () => {
+  // a-z
+  for (let c = 0x61; c <= 0x7A; c++) {
+    assertEquals(isNameStartChar(c), true, `a-z: U+${c.toString(16)}`);
+  }
+  // A-Z
+  for (let c = 0x41; c <= 0x5A; c++) {
+    assertEquals(isNameStartChar(c), true, `A-Z: U+${c.toString(16)}`);
+  }
+});
+
+Deno.test("isNameStartChar() returns true for underscore and colon", () => {
+  assertEquals(isNameStartChar(0x5F), true, "underscore _");
+  assertEquals(isNameStartChar(0x3A), true, "colon :");
+});
+
+Deno.test("isNameStartChar() returns false for digits", () => {
+  for (let c = 0x30; c <= 0x39; c++) {
+    assertEquals(isNameStartChar(c), false, `digit: U+${c.toString(16)}`);
+  }
+});
+
+Deno.test("isNameStartChar() returns false for hyphen and dot", () => {
+  assertEquals(isNameStartChar(0x2D), false, "hyphen -");
+  assertEquals(isNameStartChar(0x2E), false, "dot .");
+});
+
+Deno.test("isNameStartChar() returns false for ASCII invalid chars", () => {
+  assertEquals(isNameStartChar(0x20), false, "space");
+  assertEquals(isNameStartChar(0x21), false, "!");
+  assertEquals(isNameStartChar(0x3C), false, "<");
+  assertEquals(isNameStartChar(0x3E), false, ">");
+  assertEquals(isNameStartChar(0x40), false, "@");
+  assertEquals(isNameStartChar(0x5B), false, "[");
+  assertEquals(isNameStartChar(0x7B), false, "{");
+});
+
+Deno.test("isNameStartChar() validates Latin-1 Supplement correctly", () => {
+  // Valid: [#xC0-#xD6]
+  assertEquals(isNameStartChar(0xC0), true, "À");
+  assertEquals(isNameStartChar(0xD6), true, "Ö");
+
+  // Invalid: #xD7 (×)
+  assertEquals(isNameStartChar(0xD7), false, "× multiplication sign");
+
+  // Valid: [#xD8-#xF6]
+  assertEquals(isNameStartChar(0xD8), true, "Ø");
+  assertEquals(isNameStartChar(0xF6), true, "ö");
+
+  // Invalid: #xF7 (÷)
+  assertEquals(isNameStartChar(0xF7), false, "÷ division sign");
+
+  // Valid: [#xF8-#xFF]
+  assertEquals(isNameStartChar(0xF8), true, "ø");
+  assertEquals(isNameStartChar(0xFF), true, "ÿ");
+
+  // Invalid: [#x80-#xBF]
+  assertEquals(isNameStartChar(0x80), false, "control char 0x80");
+  assertEquals(isNameStartChar(0xBF), false, "¿");
+});
+
+Deno.test("isNameStartChar() validates Unicode ranges correctly", () => {
+  // [#x100-#x2FF] - Latin Extended
+  assertEquals(isNameStartChar(0x100), true, "Ā");
+  assertEquals(isNameStartChar(0x2FF), true, "end of Latin Extended");
+
+  // [#x370-#x37D] | [#x37F-#x1FFF] - Greek, Cyrillic, etc.
+  assertEquals(isNameStartChar(0x370), true, "Ͱ Greek");
+  assertEquals(isNameStartChar(0x37D), true, "ͽ Greek");
+  assertEquals(isNameStartChar(0x37E), false, "; Greek question mark");
+  assertEquals(isNameStartChar(0x37F), true, "Ϳ Greek");
+  assertEquals(isNameStartChar(0x391), true, "Α Greek Alpha");
+  assertEquals(isNameStartChar(0x410), true, "А Cyrillic");
+
+  // [#x200C-#x200D] - Zero-width joiners
+  assertEquals(isNameStartChar(0x200C), true, "ZWNJ");
+  assertEquals(isNameStartChar(0x200D), true, "ZWJ");
+  assertEquals(isNameStartChar(0x200B), false, "ZWSP");
+
+  // [#x3001-#xD7FF] - CJK
+  assertEquals(isNameStartChar(0x3001), true, "、CJK punctuation");
+  assertEquals(isNameStartChar(0x4E00), true, "一 CJK");
+  assertEquals(isNameStartChar(0x9FFF), true, "鿿 CJK");
+
+  // Invalid ranges
+  assertEquals(isNameStartChar(0x2000), false, "En Quad");
+  assertEquals(isNameStartChar(0x206F), false, "Nominal Digit Shapes");
+});
+
+Deno.test("isNameStartChar() validates astral planes", () => {
+  // [#x10000-#xEFFFF]
+  assertEquals(isNameStartChar(0x10000), true, "Linear B Syllable");
+  assertEquals(isNameStartChar(0x1F600), true, "😀 emoji (in valid range)");
+  assertEquals(isNameStartChar(0xEFFFF), true, "last valid astral");
+  assertEquals(isNameStartChar(0xF0000), false, "Private Use Area");
+});
+
+// =============================================================================
+// NameChar Tests
+// =============================================================================
+
+Deno.test("isNameChar() returns true for all NameStartChar", () => {
+  // Sample of NameStartChar that should also be valid NameChar
+  assertEquals(isNameChar(0x61), true, "a");
+  assertEquals(isNameChar(0x5A), true, "Z");
+  assertEquals(isNameChar(0x5F), true, "_");
+  assertEquals(isNameChar(0x3A), true, ":");
+  assertEquals(isNameChar(0xC0), true, "À");
+  assertEquals(isNameChar(0x4E00), true, "一");
+});
+
+Deno.test("isNameChar() returns true for digits", () => {
+  for (let c = 0x30; c <= 0x39; c++) {
+    assertEquals(isNameChar(c), true, `digit: U+${c.toString(16)}`);
+  }
+});
+
+Deno.test("isNameChar() returns true for hyphen and dot", () => {
+  assertEquals(isNameChar(0x2D), true, "hyphen -");
+  assertEquals(isNameChar(0x2E), true, "dot .");
+});
+
+Deno.test("isNameChar() returns true for middle dot", () => {
+  assertEquals(isNameChar(0xB7), true, "· middle dot");
+});
+
+Deno.test("isNameChar() returns true for combining diacritical marks", () => {
+  // [#x0300-#x036F]
+  assertEquals(isNameChar(0x0300), true, "Combining Grave Accent");
+  assertEquals(isNameChar(0x036F), true, "Combining Latin Small Letter X");
+  assertEquals(isNameChar(0x0370), true, "Ͱ (is NameStartChar)");
+});
+
+Deno.test("isNameChar() returns true for undertie and character tie", () => {
+  assertEquals(isNameChar(0x203F), true, "Undertie");
+  assertEquals(isNameChar(0x2040), true, "Character Tie");
+});
+
+Deno.test("isNameChar() returns false for invalid chars", () => {
+  assertEquals(isNameChar(0x20), false, "space");
+  assertEquals(isNameChar(0x3C), false, "<");
+  assertEquals(isNameChar(0x3E), false, ">");
+  assertEquals(isNameChar(0xD7), false, "×");
+  assertEquals(isNameChar(0xF7), false, "÷");
+});
+
+// =============================================================================
+// Edge Cases
+// =============================================================================
+
+Deno.test("isNameStartChar() rejects control characters", () => {
+  for (let c = 0; c < 0x20; c++) {
+    assertEquals(
+      isNameStartChar(c),
+      false,
+      `control char: U+${c.toString(16)}`,
+    );
+  }
+});
+
+Deno.test("isNameChar() rejects control characters", () => {
+  for (let c = 0; c < 0x20; c++) {
+    assertEquals(isNameChar(c), false, `control char: U+${c.toString(16)}`);
+  }
+});
