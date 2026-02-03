@@ -446,3 +446,217 @@ Deno.test("parseXmlStreamFromBytes() flushes decoder at end of stream", async ()
 
   assertEquals(text, "test");
 });
+
+// =============================================================================
+// Streaming Parser Error Tests (XmlEventParser validation paths)
+// =============================================================================
+
+Deno.test("parseXmlStream() throws on invalid QName element name", async () => {
+  const xml = '<:element xmlns=":"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "QName cannot start with ':'",
+  );
+});
+
+Deno.test("parseXmlStream() throws on element using xmlns prefix", async () => {
+  const xml = '<xmlns:test xmlns:xmlns="http://example.com"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Element name cannot use the 'xmlns' prefix",
+  );
+});
+
+Deno.test("parseXmlStream() throws on invalid QName attribute name", async () => {
+  const xml = '<root :attr="value"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "QName cannot start with ':'",
+  );
+});
+
+Deno.test("parseXmlStream() throws on invalid namespace binding", async () => {
+  // xmlns:xml cannot be rebound to a different URI
+  const xml = '<root xmlns:xml="http://wrong.com"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+  );
+});
+
+Deno.test("parseXmlStream() throws on duplicate attribute", async () => {
+  const xml = '<root attr="1" attr="2"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Duplicate attribute",
+  );
+});
+
+Deno.test("parseXmlStream() throws on multiple root elements", async () => {
+  const xml = "<root/><extra/>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Only one root element is allowed",
+  );
+});
+
+Deno.test("parseXmlStream() throws on unbound namespace prefix in element", async () => {
+  const xml = "<ns:root/>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Unbound namespace prefix",
+  );
+});
+
+Deno.test("parseXmlStream() throws on unbound namespace prefix in attribute", async () => {
+  const xml = '<root ns:attr="value"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Unbound namespace prefix",
+  );
+});
+
+Deno.test("parseXmlStream() throws on duplicate expanded attribute names", async () => {
+  const xml =
+    '<root xmlns:a="http://example.com" xmlns:b="http://example.com" a:attr="1" b:attr="2"/>';
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Duplicate expanded attribute name",
+  );
+});
+
+Deno.test("parseXmlStream() throws on text before root", async () => {
+  const xml = "text<root/>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Content is not allowed before the root element",
+  );
+});
+
+Deno.test("parseXmlStream() throws on text after root", async () => {
+  const xml = "<root/>text";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Content is not allowed after the root element",
+  );
+});
+
+Deno.test("parseXmlStream() throws on entity reference before root", async () => {
+  const xml = "&amp;<root/>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "Character/entity references are not allowed in prolog",
+  );
+});
+
+Deno.test("parseXmlStream() throws on CDATA before root", async () => {
+  const xml = "<![CDATA[test]]><root/>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "CDATA section is not allowed before the root element",
+  );
+});
+
+Deno.test("parseXmlStream() throws on CDATA after root", async () => {
+  const xml = "<root/><![CDATA[test]]>";
+  const stream = ReadableStream.from([xml]);
+
+  await assertRejects(
+    () => parseXmlStream(stream, {}),
+    XmlSyntaxError,
+    "CDATA section is not allowed after the root element",
+  );
+});
+
+Deno.test("parseXmlStream() handles xml prefix on element", async () => {
+  // xml: prefix is always bound to the XML namespace
+  // This tests the xml prefix element URI resolution path
+  const xml = '<xml:element xmlns:xml="http://www.w3.org/XML/1998/namespace"/>';
+  const stream = ReadableStream.from([xml]);
+
+  const elements: Array<{ name: string; uri: string | undefined }> = [];
+  await parseXmlStream(stream, {
+    onStartElement(name, _colonIndex, uri) {
+      elements.push({ name, uri });
+    },
+  });
+
+  assertEquals(elements[0]?.name, "xml:element");
+  assertEquals(elements[0]?.uri, "http://www.w3.org/XML/1998/namespace");
+});
+
+Deno.test("parseXmlStream() handles namespace scope restoration", async () => {
+  // Tests that namespace bindings are properly restored when elements close
+  const xml =
+    `<root xmlns:ns="http://outer.com"><child xmlns:ns="http://inner.com"><ns:inner/></child><ns:outer/></root>`;
+  const stream = ReadableStream.from([xml]);
+
+  const elements: Array<{ name: string; uri: string | undefined }> = [];
+  await parseXmlStream(stream, {
+    onStartElement(name, _colonIndex, uri) {
+      elements.push({ name, uri });
+    },
+  });
+
+  // inner should have inner URI, outer should have outer URI
+  const inner = elements.find((e) => e.name === "ns:inner");
+  const outer = elements.find((e) => e.name === "ns:outer");
+
+  assertEquals(inner?.uri, "http://inner.com");
+  assertEquals(outer?.uri, "http://outer.com");
+});
+
+Deno.test("parseXmlStream() handles self-closing element namespace restoration", async () => {
+  // Tests namespace restoration for self-closing elements
+  const xml =
+    '<root xmlns:ns="http://outer.com"><inner xmlns:ns="http://inner.com" ns:attr="value"/><ns:outer/></root>';
+  const stream = ReadableStream.from([xml]);
+
+  const elements: Array<{ name: string; uri: string | undefined }> = [];
+  await parseXmlStream(stream, {
+    onStartElement(name, _colonIndex, uri) {
+      elements.push({ name, uri });
+    },
+  });
+
+  const outer = elements.find((e) => e.name === "ns:outer");
+  assertEquals(outer?.uri, "http://outer.com");
+});

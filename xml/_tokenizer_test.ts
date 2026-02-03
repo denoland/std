@@ -1143,3 +1143,152 @@ Deno.test("XmlTokenizer.process() handles ? at chunk boundary in PI", () => {
   const pi = tokens.find((t) => t.type === "processing_instruction");
   assertEquals(pi?.content, "test?x");
 });
+
+// =============================================================================
+// DTD Comment Tests (DOCTYPE Internal Subset)
+// =============================================================================
+
+Deno.test("XmlTokenizer.process() handles comment inside DOCTYPE internal subset", () => {
+  // Tests DTD_COMMENT_START, DTD_COMMENT, DTD_COMMENT_DASH, DTD_COMMENT_DASH_DASH states
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<!-- DTD comment -->]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+  assertEquals(tokens[1]?.type, "start_tag_open");
+});
+
+Deno.test("XmlTokenizer.process() handles comment with dashes inside DOCTYPE internal subset", () => {
+  // Tests DTD_COMMENT_DASH state (dash followed by non-dash)
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<!-- a-b-c -->]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() handles comment with multiple trailing dashes in DOCTYPE", () => {
+  // Tests DTD_COMMENT_DASH_DASH staying in state for consecutive dashes (----->)
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<!------>]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () => {
+  // Tests DTD_COMMENT_DASH_DASH error path
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root [<!-- a--b -->]><root/>"),
+    XmlSyntaxError,
+    "'--' is not allowed within XML comments",
+  );
+});
+
+Deno.test("XmlTokenizer.finalize() throws on unterminated comment in DOCTYPE", () => {
+  const tokenizer = new XmlTokenizer();
+  const { callbacks } = createCollector();
+  tokenizer.process("<!DOCTYPE root [<!-- unterminated", callbacks);
+  assertThrows(
+    () => tokenizer.finalize(callbacks),
+    XmlSyntaxError,
+    "Unterminated comment in DOCTYPE",
+  );
+});
+
+// =============================================================================
+// DTD Processing Instruction Tests (DOCTYPE Internal Subset)
+// =============================================================================
+
+Deno.test("XmlTokenizer.process() handles PI inside DOCTYPE internal subset", () => {
+  // Tests DTD_PI and DTD_PI_QUESTION states
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<?target content?>]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+  assertEquals(tokens[1]?.type, "start_tag_open");
+});
+
+Deno.test("XmlTokenizer.process() handles PI with ? inside DOCTYPE internal subset", () => {
+  // Tests DTD_PI_QUESTION with ? followed by non->
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<?target test?content?>]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() handles PI with multiple ? in DOCTYPE internal subset", () => {
+  // Tests DTD_PI_QUESTION staying in state for consecutive ?
+  const tokens = collectTokens(
+    "<!DOCTYPE root [<?target ????>]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.finalize() throws on unterminated PI in DOCTYPE", () => {
+  const tokenizer = new XmlTokenizer();
+  const { callbacks } = createCollector();
+  tokenizer.process("<!DOCTYPE root [<?target unterminated", callbacks);
+  assertThrows(
+    () => tokenizer.finalize(callbacks),
+    XmlSyntaxError,
+    "Unterminated processing instruction in DOCTYPE",
+  );
+});
+
+// =============================================================================
+// DTD Parameter Entity Reference Tests (DOCTYPE Internal Subset)
+// =============================================================================
+
+Deno.test("XmlTokenizer.process() handles parameter entity reference in DOCTYPE", () => {
+  // Tests DTD_PE_REF state
+  const tokens = collectTokens(
+    "<!DOCTYPE root [%entity;]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+  assertEquals(tokens[1]?.type, "start_tag_open");
+});
+
+Deno.test("XmlTokenizer.process() handles parameter entity with long name in DOCTYPE", () => {
+  // Tests DTD_PE_REF state with multiple name characters
+  const tokens = collectTokens(
+    "<!DOCTYPE root [%longEntityName123;]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() throws on invalid char in parameter entity reference", () => {
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root [%entity@;]><root/>"),
+    XmlSyntaxError,
+    "Invalid character in parameter entity reference",
+  );
+});
+
+Deno.test("XmlTokenizer.finalize() throws on unterminated parameter entity reference", () => {
+  const tokenizer = new XmlTokenizer();
+  const { callbacks } = createCollector();
+  tokenizer.process("<!DOCTYPE root [%entity", callbacks);
+  assertThrows(
+    () => tokenizer.finalize(callbacks),
+    XmlSyntaxError,
+    "Unterminated parameter entity reference in DOCTYPE",
+  );
+});
+
+// =============================================================================
+// DTD Internal Subset Chunk Boundary Tests
+// =============================================================================
+
+Deno.test("XmlTokenizer.process() handles comment across chunks in DOCTYPE", () => {
+  const tokens = collectChunkedTokens(
+    "<!DOCTYPE root [<!-",
+    "- comment -->]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() handles PI across chunks in DOCTYPE", () => {
+  const tokens = collectChunkedTokens(
+    "<!DOCTYPE root [<?tar",
+    "get content?>]><root/>",
+  );
+  assertEquals(tokens[0]?.type, "doctype");
+});
