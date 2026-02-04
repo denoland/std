@@ -142,7 +142,7 @@ export function equal(a: unknown, b: unknown): boolean {
         throw new TypeError("Cannot compare TransformStream instances");
       }
       if (a instanceof Blob) {
-        throw new TypeError("Cannot compare Blob instances");
+        throw new TypeError("Cannot compare Blob or File instances");
       }
       if (a instanceof Request) {
         throw new TypeError("Cannot compare Request instances");
