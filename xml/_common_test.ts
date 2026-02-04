@@ -480,3 +480,118 @@ Deno.test("parseName() does not include URI for unprefixed name", () => {
   assertEquals(result.local, "element");
   assertEquals(result.prefix, undefined);
 });
+
+// =============================================================================
+// Additional Coverage: validateXmlDeclaration Edge Cases
+// =============================================================================
+
+Deno.test("validateXmlDeclaration() rejects version with non-digit character", () => {
+  // Tests line 82-84: version like "1.0a" where non-digit appears after digits
+  const result = validateXmlDeclaration('version="1.0a"');
+  assertEquals(result.valid, false);
+  if (!result.valid) {
+    assertEquals(
+      result.error,
+      "Invalid version '1.0a', must match '1.' followed by digits",
+    );
+  }
+});
+
+Deno.test("validateXmlDeclaration() accepts encoding starting with lowercase", () => {
+  // Tests line 104: encoding name starting with lowercase letter
+  const result = validateXmlDeclaration('version="1.0" encoding="utf-8"');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.encoding, "utf-8");
+  }
+});
+
+Deno.test("validateXmlDeclaration() accepts encoding with mixed case and special chars", () => {
+  // Tests line 113: encoding with various valid characters (letters, digits, ., _, -)
+  const result = validateXmlDeclaration(
+    'version="1.0" encoding="Shift_JIS-2004"',
+  );
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.encoding, "Shift_JIS-2004");
+  }
+});
+
+Deno.test("validateXmlDeclaration() handles leading whitespace", () => {
+  // Tests lines 179-181: leading whitespace in declaration content
+  const result = validateXmlDeclaration('   version="1.0"');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.version, "1.0");
+  }
+});
+
+Deno.test("validateXmlDeclaration() handles trailing whitespace only", () => {
+  // Tests lines 196-199: empty name after whitespace (trailing whitespace)
+  const result = validateXmlDeclaration('version="1.0"   ');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.version, "1.0");
+  }
+});
+
+Deno.test("validateXmlDeclaration() handles whitespace around = in attributes", () => {
+  // Tests lines 276-278: whitespace after = in attribute
+  const result = validateXmlDeclaration('version = "1.0" encoding =  "UTF-8"');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.version, "1.0");
+    assertEquals(result.encoding, "UTF-8");
+  }
+});
+
+Deno.test("validateXmlDeclaration() rejects Encoding (mixed case)", () => {
+  // Tests line 246-247: Encoding mixed case variant
+  const result = validateXmlDeclaration('version="1.0" Encoding="UTF-8"');
+  assertEquals(result.valid, false);
+  if (!result.valid) {
+    assertEquals(
+      result.error,
+      "'Encoding' must be lowercase in XML declaration",
+    );
+  }
+});
+
+Deno.test("validateXmlDeclaration() rejects Standalone (mixed case)", () => {
+  // Tests line 247: Standalone mixed case variant
+  const result = validateXmlDeclaration('version="1.0" Standalone="yes"');
+  assertEquals(result.valid, false);
+  if (!result.valid) {
+    assertEquals(
+      result.error,
+      "'Standalone' must be lowercase in XML declaration",
+    );
+  }
+});
+
+// =============================================================================
+// Additional Coverage: isReservedPiTarget
+// =============================================================================
+
+import { isReservedPiTarget } from "./_common.ts";
+
+Deno.test("isReservedPiTarget() returns true for 'xml'", () => {
+  assertEquals(isReservedPiTarget("xml"), true);
+});
+
+Deno.test("isReservedPiTarget() returns true for 'XML'", () => {
+  assertEquals(isReservedPiTarget("XML"), true);
+});
+
+Deno.test("isReservedPiTarget() returns true for mixed case 'Xml'", () => {
+  assertEquals(isReservedPiTarget("Xml"), true);
+  assertEquals(isReservedPiTarget("xMl"), true);
+  assertEquals(isReservedPiTarget("xML"), true);
+});
+
+Deno.test("isReservedPiTarget() returns false for other targets", () => {
+  assertEquals(isReservedPiTarget("target"), false);
+  assertEquals(isReservedPiTarget("xmlfoo"), false); // starts with xml but longer
+  assertEquals(isReservedPiTarget("xm"), false); // too short
+  assertEquals(isReservedPiTarget(""), false);
+});

@@ -855,3 +855,531 @@ Deno.test("parseSync() handles self-closing root with namespace bindings", () =>
   assertEquals(doc.root.name.prefix, "ns");
   assertEquals(doc.root.name.uri, "http://example.com");
 });
+
+// =============================================================================
+// Additional Coverage: DTD Internal Subset Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on unexpected end of input in DTD after <", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<"),
+    XmlSyntaxError,
+    "Unexpected end of input in DTD",
+  );
+});
+
+Deno.test("parseSync() throws on unexpected character after < in DTD internal subset", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<x]><root/>"),
+    XmlSyntaxError,
+    "Unexpected character 'x' after '<' in DTD",
+  );
+});
+
+Deno.test("parseSync() throws on conditional section [ in internal subset", () => {
+  // A bare '[' character (not as part of <![) is not allowed
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [ [ ]><root/>"),
+    XmlSyntaxError,
+    "Conditional sections (INCLUDE/IGNORE) are not allowed in internal DTD subset",
+  );
+});
+
+Deno.test("parseSync() throws on unexpected character in DTD internal subset", () => {
+  // Characters like '@' are not valid in the internal subset
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [ @ ]><root/>"),
+    XmlSyntaxError,
+    "Unexpected character '@' in DTD internal subset",
+  );
+});
+
+Deno.test("parseSync() throws on unterminated DTD internal subset", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [ <!ELEMENT root (#PCDATA)>"),
+    XmlSyntaxError,
+    "Unterminated DTD internal subset",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: DTD Comment Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on single dash starting comment in DTD", () => {
+  // <!- is not a valid comment start, must be <!--
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!->]><root/>"),
+    XmlSyntaxError,
+    "Expected '--' to start comment in DTD",
+  );
+});
+
+Deno.test("parseSync() throws on -- not followed by > in DTD comment", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!-- comment --x -->]><root/>"),
+    XmlSyntaxError,
+    "'--' is not allowed within XML comments",
+  );
+});
+
+Deno.test("parseSync() throws on unterminated comment in DTD", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!-- unterminated"),
+    XmlSyntaxError,
+    "Unterminated comment in DTD",
+  );
+});
+
+Deno.test("parseSync() throws on unexpected end in DTD declaration", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!"),
+    XmlSyntaxError,
+    "Unexpected end of input in DTD declaration",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: DTD Declaration Keyword Validation
+// =============================================================================
+
+Deno.test("parseSync() throws on missing whitespace after DTD declaration keyword", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!ELEMENT>]><root/>"),
+    XmlSyntaxError,
+    "Missing whitespace after '<!ELEMENT'",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: ENTITY Declaration Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on missing whitespace after % in parameter entity", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!ENTITY %name 'value'>]><root/>"),
+    XmlSyntaxError,
+    "Missing whitespace after '%' in parameter entity declaration",
+  );
+});
+
+Deno.test("parseSync() throws on missing entity name in ENTITY declaration", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!ENTITY  'value'>]><root/>"),
+    XmlSyntaxError,
+    "Missing entity name in ENTITY declaration",
+  );
+});
+
+Deno.test("parseSync() throws on missing whitespace after entity name", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [<!ENTITY name'value'>]><root/>"),
+    XmlSyntaxError,
+    "Missing whitespace after entity name",
+  );
+});
+
+Deno.test("parseSync() throws on SGML-style comment in entity value", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        "<!DOCTYPE root [<!ENTITY name 'value' -- comment -->]><root/>",
+      ),
+    XmlSyntaxError,
+    "SGML-style comments (--) are not allowed in XML declarations",
+  );
+});
+
+Deno.test("parseSync() throws on missing whitespace after SYSTEM in ENTITY", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root [<!ENTITY ext SYSTEM"file.xml">]><root/>'),
+    XmlSyntaxError,
+    "Missing whitespace after SYSTEM keyword",
+  );
+});
+
+Deno.test("parseSync() throws on missing whitespace after PUBLIC in ENTITY", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        '<!DOCTYPE root [<!ENTITY ext PUBLIC"-//Test//EN" "file.xml">]><root/>',
+      ),
+    XmlSyntaxError,
+    "Missing whitespace after PUBLIC keyword",
+  );
+});
+
+Deno.test("parseSync() throws on PUBLIC missing system literal in ENTITY", () => {
+  assertThrows(
+    () =>
+      parseSync('<!DOCTYPE root [<!ENTITY ext PUBLIC "-//Test//EN">]><root/>'),
+    XmlSyntaxError,
+    "PUBLIC identifier requires both public ID and system ID literals",
+  );
+});
+
+Deno.test("parseSync() throws on PUBLIC with non-quoted system literal", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        '<!DOCTYPE root [<!ENTITY ext PUBLIC "-//Test//EN" file.xml>]><root/>',
+      ),
+    XmlSyntaxError,
+    "PUBLIC identifier requires both public ID and system ID literals",
+  );
+});
+
+Deno.test("parseSync() throws on invalid keyword in ENTITY declaration", () => {
+  assertThrows(
+    () =>
+      parseSync('<!DOCTYPE root [<!ENTITY ext INVALID "file.xml">]><root/>'),
+    XmlSyntaxError,
+    "Expected SYSTEM, PUBLIC, or quoted string in ENTITY declaration",
+  );
+});
+
+Deno.test("parseSync() throws on missing whitespace after NDATA keyword", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        '<!DOCTYPE root [<!ENTITY logo SYSTEM "logo.png" NDATApng>]><root/>',
+      ),
+    XmlSyntaxError,
+    "Missing whitespace after NDATA keyword",
+  );
+});
+
+Deno.test("parseSync() throws on missing notation name after NDATA", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        '<!DOCTYPE root [<!ENTITY logo SYSTEM "logo.png" NDATA >]><root/>',
+      ),
+    XmlSyntaxError,
+    "Missing notation name after NDATA",
+  );
+});
+
+Deno.test("parseSync() throws on unexpected content in ENTITY declaration", () => {
+  assertThrows(
+    () =>
+      parseSync('<!DOCTYPE root [<!ENTITY ext SYSTEM "file.xml" @>]><root/>'),
+    XmlSyntaxError,
+    "Unexpected content '@' in ENTITY declaration",
+  );
+});
+
+Deno.test("parseSync() throws on unterminated ENTITY declaration", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root [<!ENTITY name "value"'),
+    XmlSyntaxError,
+    "Unterminated ENTITY declaration",
+  );
+});
+
+Deno.test("parseSync() throws on unterminated quoted string in ENTITY", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root [<!ENTITY name "unterminated'),
+    XmlSyntaxError,
+    "Unterminated quoted string",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: PubidLiteral Validation
+// =============================================================================
+
+Deno.test("parseSync() throws on invalid character in public ID literal", () => {
+  // Control characters are not valid in PubidLiteral
+  assertThrows(
+    () =>
+      parseSync(
+        '<!DOCTYPE root [<!ENTITY ext PUBLIC "test\x7Fvalue" "file.xml">]><root/>',
+      ),
+    XmlSyntaxError,
+    "Invalid character",
+  );
+});
+
+Deno.test("parseSync() throws on single quote in single-quoted public ID", () => {
+  // Single quote inside single-quoted PubidLiteral is invalid
+  assertThrows(
+    () =>
+      parseSync(
+        "<!DOCTYPE root [<!ENTITY ext PUBLIC 'test'quote' \"file.xml\">]><root/>",
+      ),
+    XmlSyntaxError,
+  );
+});
+
+// =============================================================================
+// Additional Coverage: DOCTYPE External ID Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on missing whitespace after DOCTYPE", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPEroot><root/>"),
+    XmlSyntaxError,
+    "Expected whitespace after DOCTYPE",
+  );
+});
+
+Deno.test("parseSync() throws on missing name in DOCTYPE", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE ><root/>"),
+    XmlSyntaxError,
+    "Missing name in DOCTYPE declaration",
+  );
+});
+
+Deno.test("parseSync() handles DOCTYPE with SYSTEM external ID", () => {
+  const doc = parseSync('<!DOCTYPE root SYSTEM "root.dtd"><root/>');
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() handles DOCTYPE with PUBLIC external ID", () => {
+  const doc = parseSync(
+    '<!DOCTYPE root PUBLIC "-//Test//DTD Test//EN" "test.dtd"><root/>',
+  );
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() throws on quoted string in DOCTYPE without SYSTEM/PUBLIC", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root "unexpected.dtd"><root/>'),
+    XmlSyntaxError,
+    "Unexpected quoted string in DOCTYPE - expected PUBLIC or SYSTEM",
+  );
+});
+
+Deno.test("parseSync() throws on unterminated quoted string in DOCTYPE", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root SYSTEM "unterminated'),
+    XmlSyntaxError,
+    "Unterminated quoted string in DOCTYPE",
+  );
+});
+
+Deno.test("parseSync() throws on lowercase public in DOCTYPE", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root public "-//Test//EN" "test.dtd"><root/>'),
+    XmlSyntaxError,
+    "must be uppercase 'PUBLIC'",
+  );
+});
+
+Deno.test("parseSync() throws on lowercase system in DOCTYPE", () => {
+  assertThrows(
+    () => parseSync('<!DOCTYPE root system "test.dtd"><root/>'),
+    XmlSyntaxError,
+    "must be uppercase 'SYSTEM'",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: Processing Instruction Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on empty PI target", () => {
+  assertThrows(
+    () => parseSync("<? content?><root/>"),
+    XmlSyntaxError,
+    "Invalid character in processing instruction target",
+  );
+});
+
+Deno.test("parseSync() throws on invalid character after PI target", () => {
+  // The '+' is not a valid NameChar, so target ends, then '+' is unexpected
+  assertThrows(
+    () => parseSync("<?target+ content?><root/>"),
+    XmlSyntaxError,
+    "Unexpected character '+' in processing instruction target",
+  );
+});
+
+Deno.test("parseSync() throws on illegal XML character in PI content", () => {
+  assertThrows(
+    () => parseSync("<?target \x00?><root/>"),
+    XmlSyntaxError,
+    "Illegal XML character U+0000 in processing instruction",
+  );
+});
+
+Deno.test("parseSync() throws on reserved PI target XML (uppercase)", () => {
+  assertThrows(
+    () => parseSync("<?XML version='1.0'?><root/>"),
+    XmlSyntaxError,
+    "Processing instruction target 'XML' is reserved",
+  );
+});
+
+Deno.test("parseSync() throws on reserved PI target Xml (mixed case)", () => {
+  assertThrows(
+    () => parseSync("<?Xml version='1.0'?><root/>"),
+    XmlSyntaxError,
+    "Processing instruction target 'Xml' is reserved",
+  );
+});
+
+Deno.test("parseSync() throws on invalid XML declaration", () => {
+  assertThrows(
+    () => parseSync("<?xml invalid?><root/>"),
+    XmlSyntaxError,
+  );
+});
+
+// =============================================================================
+// Additional Coverage: Attribute and Element Edge Cases
+// =============================================================================
+
+Deno.test("parseSync() throws on missing whitespace between attributes", () => {
+  assertThrows(
+    () => parseSync('<root attr1="1"attr2="2"/>'),
+    XmlSyntaxError,
+    "Whitespace is required between attributes",
+  );
+});
+
+Deno.test("parseSync() throws on invalid character in end tag name", () => {
+  // Empty name case - starts with invalid char
+  assertThrows(
+    () => parseSync("<root></@>"),
+    XmlSyntaxError,
+    "Invalid character in end tag name",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: Namespace Binding Validation
+// =============================================================================
+
+Deno.test("parseSync() throws on invalid namespace binding", () => {
+  // Empty namespace URI for non-default namespace is invalid
+  assertThrows(
+    () => parseSync('<root xmlns:ns=""/>'),
+    XmlSyntaxError,
+  );
+});
+
+Deno.test("parseSync() handles element with default xmlns namespace", () => {
+  // Default xmlns should be skipped in namespace processing
+  const doc = parseSync('<root xmlns="http://default.com"><child/></root>');
+  assertEquals(doc.root.name.uri, undefined); // Default NS doesn't set URI on non-prefixed elements in this impl
+});
+
+// =============================================================================
+// Additional Coverage: xml Prefix Element URI
+// =============================================================================
+
+Deno.test("parseSync() resolves xml prefix on element to XML namespace", () => {
+  // The xml: prefix is always bound to the XML namespace
+  // While unusual, xml:element should work
+  const doc = parseSync(
+    '<xml:root xmlns:xml="http://www.w3.org/XML/1998/namespace"/>',
+  );
+  assertEquals(doc.root.name.prefix, "xml");
+  assertEquals(doc.root.name.uri, "http://www.w3.org/XML/1998/namespace");
+});
+
+// =============================================================================
+// Additional Coverage: Namespace Scope Restoration with Previous URI
+// =============================================================================
+
+Deno.test("parseSync() restores previous namespace URI on element close", () => {
+  // Tests the branch where previousUri is not undefined
+  const doc = parseSync(`
+    <root xmlns:ns="http://first.com">
+      <middle xmlns:ns="http://second.com">
+        <inner xmlns:ns="http://third.com">
+          <ns:elem1/>
+        </inner>
+        <ns:elem2/>
+      </middle>
+      <ns:elem3/>
+    </root>
+  `);
+
+  // Find the ns:elem elements and check their URIs
+  function findElement(
+    children: readonly import("./types.ts").XmlNode[],
+    name: string,
+  ): import("./types.ts").XmlElement | undefined {
+    for (const child of children) {
+      if (child.type === "element") {
+        if (child.name.local === name) return child;
+        const found = findElement(child.children, name);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  }
+
+  const elem1 = findElement(doc.root.children, "elem1");
+  const elem2 = findElement(doc.root.children, "elem2");
+  const elem3 = findElement(doc.root.children, "elem3");
+
+  assertEquals(elem1?.name.uri, "http://third.com");
+  assertEquals(elem2?.name.uri, "http://second.com");
+  assertEquals(elem3?.name.uri, "http://first.com");
+});
+
+// =============================================================================
+// Additional Coverage: Self-closing Element Namespace Restoration
+// =============================================================================
+
+Deno.test("parseSync() restores namespace for self-closing element with redefinition", () => {
+  // Tests the branch in self-closing element namespace restoration where previousUri exists
+  const doc = parseSync(`
+    <root xmlns:ns="http://outer.com">
+      <ns:child xmlns:ns="http://inner.com"/>
+      <ns:sibling/>
+    </root>
+  `);
+
+  const children = doc.root.children.filter((c) => c.type === "element");
+  const child = children[0];
+  const sibling = children[1];
+
+  if (child?.type === "element" && sibling?.type === "element") {
+    assertEquals(child.name.uri, "http://inner.com");
+    assertEquals(sibling.name.uri, "http://outer.com");
+  }
+});
+
+// =============================================================================
+// Additional Coverage: Parameter Entity Reference in DTD
+// =============================================================================
+
+Deno.test("parseSync() handles parameter entity reference with extended chars", () => {
+  // Tests the name character loop in parameter entity parsing
+  const doc = parseSync(`<!DOCTYPE root [
+    %entity_name.test-123;
+  ]><root/>`);
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parseSync() throws on invalid character in parameter entity reference", () => {
+  assertThrows(
+    () => parseSync("<!DOCTYPE root [%entity@name;]><root/>"),
+    XmlSyntaxError,
+    "Invalid character in parameter entity reference",
+  );
+});
+
+// =============================================================================
+// Additional Coverage: ignoreWhitespace Option
+// =============================================================================
+
+Deno.test("parseSync() ignores whitespace-only text nodes when ignoreWhitespace is true", () => {
+  const doc = parseSync("<root>   \n   </root>", { ignoreWhitespace: true });
+  // With ignoreWhitespace, whitespace-only text should not create nodes
+  assertEquals(doc.root.children.length, 0);
+});
+
+Deno.test("parseSync() preserves non-whitespace text when ignoreWhitespace is true", () => {
+  const doc = parseSync("<root>  text  </root>", { ignoreWhitespace: true });
+  assertEquals(doc.root.children.length, 1);
+  if (doc.root.children[0]?.type === "text") {
+    assertEquals(doc.root.children[0].text, "  text  ");
+  }
+});

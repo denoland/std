@@ -172,3 +172,61 @@ Deno.test("isNameChar() rejects control characters", () => {
     assertEquals(isNameChar(c), false, `control char: U+${c.toString(16)}`);
   }
 });
+
+// =============================================================================
+// Additional Coverage: Unicode Range Tests
+// =============================================================================
+
+Deno.test("isNameStartChar() validates Glagolitic and Extended Latin range", () => {
+  // [#x2C00-#x2FEF] - Glagolitic, Latin Extended-C/D, Coptic, Georgian Supplement
+  assertEquals(isNameStartChar(0x2C00), true, "Glagolitic Capital Azu");
+  assertEquals(isNameStartChar(0x2C30), true, "Glagolitic Small Azu");
+  assertEquals(isNameStartChar(0x2FEF), true, "end of range");
+  assertEquals(
+    isNameStartChar(0x2FF0),
+    false,
+    "after range - Ideographic Description",
+  );
+});
+
+Deno.test("isNameStartChar() validates CJK Compatibility and Arabic Presentation Forms range", () => {
+  // [#xF900-#xFDCF] | [#xFDF0-#xFFFD]
+  assertEquals(isNameStartChar(0xF900), true, "CJK Compatibility start");
+  assertEquals(
+    isNameStartChar(0xFDCF),
+    true,
+    "Arabic Presentation Forms-A end",
+  );
+  assertEquals(isNameStartChar(0xFDD0), false, "non-character");
+  assertEquals(isNameStartChar(0xFDEF), false, "non-character range");
+  assertEquals(
+    isNameStartChar(0xFDF0),
+    true,
+    "Arabic Presentation Forms-A restart",
+  );
+  assertEquals(isNameStartChar(0xFFFD), true, "Replacement Character");
+  assertEquals(isNameStartChar(0xFFFE), false, "non-character");
+});
+
+Deno.test("isNameStartChar() validates Superscripts and Currency range", () => {
+  // [#x2070-#x218F] - Superscripts, Currency, Letterlike, Number Forms
+  assertEquals(isNameStartChar(0x2070), true, "Superscript zero");
+  assertEquals(isNameStartChar(0x20AC), true, "Euro sign");
+  assertEquals(isNameStartChar(0x2100), true, "Account of");
+  assertEquals(isNameStartChar(0x218F), true, "end of Letterlike range");
+  assertEquals(isNameStartChar(0x2190), false, "Arrow - outside range");
+});
+
+Deno.test("isNameChar() rejects characters not in any valid range", () => {
+  // Tests line 111: return false in isUnicodeNameChar
+  // Characters that are neither NameStartChar nor in the NameChar-only ranges
+  assertEquals(isNameChar(0x2000), false, "En Quad - general punctuation");
+  assertEquals(
+    isNameChar(0x2010),
+    false,
+    "Hyphen (different from ASCII hyphen)",
+  );
+  assertEquals(isNameChar(0x2041), false, "after Character Tie");
+  assertEquals(isNameChar(0x2050), false, "Close Up");
+  assertEquals(isNameChar(0x2190), false, "Leftwards Arrow");
+});

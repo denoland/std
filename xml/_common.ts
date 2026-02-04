@@ -481,17 +481,14 @@ export function validateNamespaceBinding(
     return `Only the 'xml' prefix may be bound to '${XML_NAMESPACE}'`;
   }
 
-  // Nothing can bind to xmlns namespace
+  // Nothing can bind to xmlns namespace (includes default namespace case)
   if (uri === XMLNS_NAMESPACE) {
     return `The namespace '${XMLNS_NAMESPACE}' must not be bound to any prefix`;
   }
 
-  // Default namespace cannot be xml or xmlns namespace
+  // Default namespace cannot be xml namespace
   if (isDefaultNs && uri === XML_NAMESPACE) {
     return `The XML namespace '${XML_NAMESPACE}' cannot be the default namespace`;
-  }
-  if (isDefaultNs && uri === XMLNS_NAMESPACE) {
-    return `The xmlns namespace '${XMLNS_NAMESPACE}' cannot be the default namespace`;
   }
 
   return null; // Valid binding

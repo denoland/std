@@ -660,3 +660,37 @@ Deno.test("parseXmlStream() handles self-closing element namespace restoration",
   const outer = elements.find((e) => e.name === "ns:outer");
   assertEquals(outer?.uri, "http://outer.com");
 });
+
+// =============================================================================
+// Additional Coverage: Decoder Flush Path
+// =============================================================================
+
+Deno.test("parseXmlStreamFromBytes() yields final flush when stream ends with incomplete UTF-8", async () => {
+  // Tests the branch where decoder.decode() (final flush) returns non-empty content
+  // This happens when the byte stream ends with incomplete UTF-8 bytes
+  // The TextDecoder will produce replacement characters (U+FFFD) on flush
+
+  // To hit line 126: `if (final) yield final;`
+  // The stream must END with incomplete UTF-8 bytes, so the final decode() produces output
+
+  async function* generateWithTrailingIncomplete(): AsyncGenerator<Uint8Array> {
+    // Valid complete XML
+    yield new TextEncoder().encode("<root>test</root>");
+    // Trailing incomplete UTF-8: first byte of a 2-byte sequence with no continuation
+    // This byte will be buffered during streaming decode and flushed at the end
+    yield new Uint8Array([0xC2]); // Incomplete 2-byte sequence (expects 0x80-0xBF to follow)
+  }
+
+  // The XML parser will see the replacement character after the closing tag
+  // which causes "Content is not allowed after the root element"
+  await assertRejects(
+    () =>
+      parseXmlStreamFromBytes(generateWithTrailingIncomplete(), {
+        onText(_text) {
+          // callback exists but we just need to process the stream
+        },
+      }),
+    XmlSyntaxError,
+    "Content is not allowed after the root element",
+  );
+});

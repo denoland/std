@@ -716,7 +716,7 @@ export class XmlTokenizer {
         }
 
         // XML 1.0 §2.2: Check for illegal C0 control characters
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D) - inlined for performance
+        // Valid: TAB (0x09), LF (0x0A), CR (0x0D)
         if (
           code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
         ) {
