@@ -1,7 +1,8 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { mapNotNullish } from "./map_not_nullish.ts";
+import * as unstable from "./unstable_map_not_nullish.ts";
 
 function mapNotNullishTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],
@@ -88,5 +89,16 @@ Deno.test({
       ],
       ["Hans", "Marija"],
     );
+  },
+});
+
+Deno.test({
+  name: "unstable.mapNotNullish() passes index to transformer",
+  fn() {
+    const result = unstable.mapNotNullish(
+      [1, 2, 3, 4],
+      (it, index) => index === 1 ? null : it + index,
+    );
+    assertEquals(result, [1, 5, 7]);
   },
 });

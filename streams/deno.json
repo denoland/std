@@ -1,11 +1,12 @@
 {
   "name": "@std/streams",
-  "version": "1.0.14",
+  "version": "1.0.17",
   "exports": {
     ".": "./mod.ts",
     "./unstable-abort-stream": "./unstable_abort_stream.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
+    "./unstable-capped-delimiter-stream": "./unstable_capped_delimiter_stream.ts",
     "./concat-readable-streams": "./concat_readable_streams.ts",
     "./delimiter-stream": "./delimiter_stream.ts",
     "./early-zip-readable-streams": "./early_zip_readable_streams.ts",

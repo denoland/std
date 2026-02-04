@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 type LineParseResult = {
   key: string;
@@ -27,30 +27,29 @@ function expandCharacters(str: string): string {
     ($1: keyof typeof CHARACTERS_MAP): string => CHARACTERS_MAP[$1] ?? "",
   );
 }
-function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (EXPAND_VALUE_REGEXP.test(str)) {
-    return expand(
-      str.replace(EXPAND_VALUE_REGEXP, function (...params) {
-        const {
-          inBrackets,
-          inBracketsDefault,
-          notInBrackets,
-          notInBracketsDefault,
-        } = params[params.length - 1];
-        const expandValue = inBrackets || notInBrackets;
-        const defaultValue = inBracketsDefault || notInBracketsDefault;
 
-        let value: string | undefined = variablesMap[expandValue];
-        if (value === undefined) {
-          value = Deno.env.get(expandValue);
-        }
-        return value === undefined ? expand(defaultValue, variablesMap) : value;
-      }),
-      variablesMap,
-    );
-  } else {
-    return str;
+function expand(str: string, variablesMap: Record<string, string>): string {
+  let current = str;
+
+  while (EXPAND_VALUE_REGEXP.test(current)) {
+    current = current.replace(EXPAND_VALUE_REGEXP, (...params) => {
+      const {
+        inBrackets,
+        inBracketsDefault,
+        notInBrackets,
+        notInBracketsDefault,
+      } = params.at(-1);
+
+      const expandValue = inBrackets ?? notInBrackets;
+      const defaultValue = inBracketsDefault ?? notInBracketsDefault;
+
+      return (
+        variablesMap[expandValue] ?? Deno.env.get(expandValue) ?? defaultValue
+      );
+    });
   }
+
+  return current;
 }
 
 /**
@@ -73,10 +72,9 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 export function parse(text: string): Record<string, string> {
   const env: Record<string, string> = Object.create(null);
 
-  let match;
   const keysForExpandCheck = [];
 
-  while ((match = KEY_VALUE_REGEXP.exec(text)) !== null) {
+  for (const match of text.matchAll(KEY_VALUE_REGEXP)) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
@@ -101,9 +99,10 @@ export function parse(text: string): Record<string, string> {
 
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
-  keysForExpandCheck.forEach((key) => {
+
+  for (const key of keysForExpandCheck) {
     env[key] = expand(env[key]!, variablesMap);
-  });
+  }
 
   return env;
 }

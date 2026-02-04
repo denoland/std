@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import {
   assert,
   assertEquals,
@@ -7,17 +7,7 @@ import {
 } from "@std/assert";
 import { BinarySearchTree } from "./binary_search_tree.ts";
 import { ascend, descend } from "./comparators.ts";
-
-class MyMath {
-  multiply(a: number, b: number): number {
-    return a * b;
-  }
-}
-
-interface Container {
-  id: number;
-  values: number[];
-}
+import { type Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("BinarySearchTree throws if compare is not a function", () => {
   assertThrows(

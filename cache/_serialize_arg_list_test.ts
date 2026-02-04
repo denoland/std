@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
 import { delay } from "@std/async";

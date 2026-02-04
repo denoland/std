@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { zip } from "./zip.ts";
@@ -164,5 +164,19 @@ Deno.test({
         [false, true],
       ],
     );
+  },
+});
+
+Deno.test({
+  name: "zip() handles sparse arrays",
+  fn() {
+    // deno-lint-ignore no-sparse-arrays
+    const sparse = [1, , 3];
+    const result = zip(sparse, ["a", "b", "c"]);
+    assertEquals(result, [
+      [1, "a"],
+      [undefined, "b"],
+      [3, "c"],
+    ]);
   },
 });

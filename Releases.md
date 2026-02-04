@@ -1,3 +1,199 @@
+### 2026.01.30
+
+#### @std/assert 1.0.18 (patch)
+
+- docs(assert): improve assertFalse() docs and test coverage (#6956)
+- docs(assert): improve assert() docs and test coverage (#6955)
+- refactor(assert): improve assertArrayIncludes perf and docs (#6953)
+
+#### @std/async 1.1.1 (patch)
+
+- feat(async/unstable): enhance CircuitBreaker with AbortSignal and onHalfOpen
+  callback (#6951)
+- fix(async/unstable): ensure state consistency in circuit breaker before
+  callbacks fire (#6967)
+
+#### @std/cli 1.0.27 (patch)
+
+- feat(cli/unstable): add fitToRemainingHeight option for promptSelect and
+  promptMultipleSelect (#6978)
+- fix(cli): strip ANSI codes from indicator for padding in promptSelect (#6977)
+
+#### @std/collections 1.1.5 (patch)
+
+- perf(collections): optimize deepMerge (#6948)
+
+#### @std/http 1.0.24 (patch)
+
+- feat(http/unstable): FormData Decoder/Encoder Streams (#6928)
+- feat(http/unstable): add ServerSentEventParseStream for decoding SSE streams
+  (#6957)
+
+#### @std/io 0.225.3 (patch)
+
+- fix(io): re-export public type aliases (#6969)
+
+#### @std/tar 0.1.10 (patch)
+
+- feat(tar/unstable): add symlink support to TarStream (#6976)
+
+### 2026.01.20
+
+#### @std/assert 1.0.17 (patch)
+
+- docs(assert): fix typo and add @throws tag in assertAlmostEquals (#6950)
+
+#### @std/async 1.1.0 (minor)
+
+- feat(async): stabilize isRetriable option for retry (#6944)
+- feat(async/unstable): add support for AbortSignal in retry (#6938)
+- feat(async/unstable): support sync functions in CircuitBreaker (#6933)
+- feat(async/unstable): add unstable circuit breaker (#6900)
+- fix(async/unstable): validate Semaphore max is a positive integer (#6934)
+- fix(async/unstable): make circuit breaker state getter pure (#6926)
+- docs(async): list exact API names in module document (#6946)
+- refactor(async): improve retry() input validation (#6922)
+- refactor(async): optimize delay() for common timeout durations (#6923)
+- refactor(async/unstable): improve circuit breaker defaults and readability
+  (#6917)
+
+#### @std/cache 0.2.2 (patch)
+
+- fix(cache/unstable): call onEject for falsy values on delete (#6935)
+
+#### @std/cli 1.0.26 (patch)
+
+- fix(cli): accept readonly string array in parseArgs (#6911)
+
+#### @std/collections 1.1.4 (patch)
+
+- feat(collections/unstable): add index arg to methods (#6382)
+- fix(collections): correct overload ordering (#6930)
+- perf(collections): optimize minOf/maxOf with fast array paths (#6936)
+- perf(collections): optimize minBy/maxBy with fast array paths (#6919)
+- perf(collections): optimize sortBy (#6916)
+- refactor(collections): optimize zip() (#6931)
+
+#### @std/data-structures 1.0.10 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/datetime 0.225.7 (patch)
+
+- feat(datetime): add month and day of week constants (#6910)
+- refactor(datetime): rename abbreviated month and weekday constants to full
+  names (#6939)
+
+#### @std/fmt 1.0.9 (patch)
+
+- docs(fmt): fix JSDoc errors and inconsistencies (#6937)
+
+#### @std/fs 1.0.22 (patch)
+
+- docs(fs): fix `walk` examples (#6918)
+
+#### @std/random 0.1.5 (patch)
+
+- perf(random): inline random index calculation in shuffle() (#6920)
+- test(random): replace exact-value assertions with property-based checks
+  (#6932)
+
+#### @std/semver 1.0.8 (patch)
+
+- fix(semver): correcting <= operator behavior when minor version is wildcard
+  (#6943)
+- refactor(semver): removing unreachable code, bringing coverage to 100% (#6924)
+
+#### @std/streams 1.0.17 (patch)
+
+- fix(streams): add input validation to toTransformStream (#6945)
+
+#### @std/testing 1.0.17 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/text 1.0.17 (patch)
+
+- fix(text/unstable): only strip single trailing newline in dedent (#6913)
+
+#### @std/yaml 1.0.11 (patch)
+
+- perf(yaml): rewrite `inspectNode()` (#6952)
+- perf(yaml): make `DEPRECATED_BOOLEANS_SYNTAX` a `Set` (#6949)
+- refactor(yaml): eliminate shared class state by passing parameters in
+  `LoaderState` (#6902)
+- refactor(yaml): add correct `kind` type (#6941)
+- refactor(yaml): remove `anchor` `undefined` check (#6915)
+- refactor(yaml): cleanup `composeNode()` statements (#6905)
+- refactor(yaml): remove `undefined` type from `tag`, `anchor` and `kind`
+  (#6907)
+- refactor(yaml): flatten `stringifyNode()` (#6906)
+- refactor(yaml): add `resolveTag()` method (#6904)
+- refactor(yaml): add `getIndentStatus` function (#6903)
+
+### 2025.12.25
+
+#### @std/streams 1.0.16 (patch)
+
+- fix(streams/unstable): use relative path for in-package import (#6909)
+
+### 2025.12.24
+
+#### @std/async 1.0.16 (patch)
+
+- feat(async/unstable): add semaphore (#6894)
+- fix(async): allow numbers greater than `Number.MAX_SAFE_INTEGER` in deadline
+  (#6810)
+- docs(async/unstable): update semaphore docs to suggest try/finally (#6899)
+
+#### @std/cli 1.0.25 (patch)
+
+- test(cli): ignore flaky examples (#6882)
+
+#### @std/datetime 0.225.6 (patch)
+
+- test(datetime): adding test for potential null-state of 'months' (#6891)
+
+#### @std/dotenv 0.225.6 (patch)
+
+- refactor(dotenv): avoid recursive `expand()` (#6892)
+- refactor(dotenv): use for loops (#6893)
+- refactor(dotenv): move `charactersMap` outside of `expandCharacters()` fn
+  (#6889)
+- refactor(dotenv): rename regexp constants (#6888)
+
+#### @std/fs 1.0.21 (patch)
+
+- fix(fs): "Deno is not defined" when using the module in browser (#6896)
+- fix(fs): support for Node.js v20 (#6873)
+- docs(fs): remove unversioned jsr specifiers (#6874)
+
+#### @std/http 1.0.23 (patch)
+
+- fix(http): negotiation returns the specific type of supported outcomes (when
+  provided) (#6876)
+- refactor(http): removing unreachable conditions, increasing coverage (#6895)
+- refactor(http): reached full line coverage, unwind ternary to improve
+  reability (#6885)
+
+#### @std/ini 1.0.0-rc.9 (prerelease)
+
+- feat(ini): reviver value is type casted (#6887)
+
+#### @std/path 1.1.4 (patch)
+
+- fix(path): handle file separator in group (#6880)
+- docs(path): fix typo in API doc (#6881)
+- test(path): relax timeout of isGlob perf testing (#6883)
+
+#### @std/streams 1.0.15 (patch)
+
+- feat(streams/unstable): new CappedDelimiterStream() (#6890)
+
+#### @std/uuid 1.1.0 (minor)
+
+- feat(uuid): stabilize uuidv7 module (#6897)
+
 ### 2025.11.17
 
 #### @std/assert 1.0.16 (patch)

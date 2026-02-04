@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { TtlCache } from "./ttl_cache.ts";
 import { assertEquals } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
@@ -107,19 +107,40 @@ Deno.test("TtlCache deletes entries", async (t) => {
   });
 });
 
-Deno.test("TtlCache onEject()", () => {
-  using time = new FakeTime(0);
-  let called = 0;
-  const cache = new TtlCache<number, string>(10, { onEject: () => called++ });
+Deno.test("TtlCache onEject()", async (t) => {
+  await t.step("calls onEject on delete and TTL expiry", () => {
+    using time = new FakeTime(0);
+    let called = 0;
+    const cache = new TtlCache<number, string>(10, { onEject: () => called++ });
 
-  cache.set(1, "one");
-  cache.set(2, "two");
+    cache.set(1, "one");
+    cache.set(2, "two");
 
-  cache.delete(2);
-  assertEquals(called, 1);
+    cache.delete(2);
+    assertEquals(called, 1);
 
-  cache.set(3, "three");
-  time.now = 10;
-  assertEquals(called, 3);
-  assertEquals(cache.get(3), undefined);
+    cache.set(3, "three");
+    time.now = 10;
+    assertEquals(called, 3);
+    assertEquals(cache.get(3), undefined);
+  });
+
+  await t.step("calls onEject for falsy values", () => {
+    const ejected: [number, unknown][] = [];
+    using cache = new TtlCache<number, unknown>(1000, {
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set(1, 0);
+    cache.set(2, "");
+    cache.set(3, false);
+    cache.set(4, null);
+
+    cache.delete(1);
+    cache.delete(2);
+    cache.delete(3);
+    cache.delete(4);
+
+    assertEquals(ejected, [[1, 0], [2, ""], [3, false], [4, null]]);
+  });
 });

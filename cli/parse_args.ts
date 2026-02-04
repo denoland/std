@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -439,6 +439,11 @@ function isNumber(string: string): boolean {
   return NON_WHITESPACE_REGEXP.test(string) && Number.isFinite(Number(string));
 }
 
+function isConstructorOrProto(obj: NestedMapping, key: string): boolean {
+  return (key === "constructor" && typeof obj[key] === "function") ||
+    key === "__proto__";
+}
+
 function setNested(
   object: NestedMapping,
   keys: string[],
@@ -448,7 +453,12 @@ function setNested(
   keys = [...keys];
   const key = keys.pop()!;
 
-  keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
+  for (const k of keys) {
+    if (isConstructorOrProto(object, k)) return;
+    object = (object[k] ??= {}) as NestedMapping;
+  }
+
+  if (isConstructorOrProto(object, key)) return;
 
   if (collect) {
     const v = object[key];
@@ -613,7 +623,7 @@ export function parseArgs<
   TAliasArgNames extends string = string,
   TAliasNames extends string = string,
 >(
-  args: string[],
+  args: readonly string[],
   options?: ParseOptions<
     TBooleans,
     TStrings,

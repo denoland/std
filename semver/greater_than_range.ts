@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { Comparator, Range, SemVer } from "./types.ts";
@@ -54,7 +54,7 @@ function lessThanComparator(version: SemVer, comparator: Comparator): boolean {
     case undefined:
       return cmp < 0;
     case "!=":
-      return false;
+      return cmp >= 0;
     case ">":
       return cmp <= 0;
     case "<":

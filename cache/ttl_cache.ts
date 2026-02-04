@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { MemoizationCache } from "./memoize.ts";
@@ -129,9 +129,8 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
-    const value = super.get(key);
-    if (value) {
-      this.#eject(key, value);
+    if (super.has(key)) {
+      this.#eject(key, super.get(key) as V);
     }
     clearTimeout(this.#timeouts.get(key));
     this.#timeouts.delete(key);

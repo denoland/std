@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { stripAnsiCode } from "@std/fmt/colors";
 import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import { assertEquals } from "@std/assert";

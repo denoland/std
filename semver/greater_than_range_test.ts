@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
 import { assert, assertEquals, assertFalse } from "@std/assert";
@@ -65,6 +65,7 @@ Deno.test("greaterThanRange() checks if the semver is greater than the range", a
     ["<1", "1.0.0"],
     ["=0.7.x", "0.8.2"],
     ["<0.7.x", "0.7.2"],
+    ["=0.1.0", "1.0.0"],
   ] as const;
 
   for (const [range, version] of versionGtRange) {
@@ -178,7 +179,7 @@ Deno.test("greaterThanRange() handles equals operator", () => {
     build: [],
   };
   const range = [[{
-    operator: "=" as unknown as Operator,
+    operator: "=" as Operator,
     major: 1,
     minor: 0,
     patch: 0,
@@ -204,6 +205,5 @@ Deno.test("greaterThanRange() handles not equals operator", () => {
     prerelease: [],
     build: [],
   }]];
-  // FIXME(kt3k): This demonstrates a bug. This should be false
-  assertEquals(greaterThanRange(version, range), true);
+  assertEquals(greaterThanRange(version, range), false);
 });

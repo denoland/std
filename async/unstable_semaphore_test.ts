@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import {
   assert,
@@ -26,6 +26,12 @@ async function assertBlocks(
 Deno.test("Semaphore constructor throws for non-positive max", () => {
   assertThrows(() => new Semaphore(0), TypeError);
   assertThrows(() => new Semaphore(-1), TypeError);
+});
+
+Deno.test("Semaphore constructor throws for non-integer max", () => {
+  assertThrows(() => new Semaphore(NaN), TypeError);
+  assertThrows(() => new Semaphore(Infinity), TypeError);
+  assertThrows(() => new Semaphore(1.5), TypeError);
 });
 
 Deno.test("Semaphore constructor defaults to 1", async () => {

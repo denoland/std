@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { stub } from "@std/testing/mock";
 import {
   deleteCookie,
@@ -33,6 +33,10 @@ Deno.test({
       wide: "1",
       SID: "123",
     });
+
+    headers = new Headers();
+    headers.set("Cookie", "=");
+    assertThrows(() => getCookies(headers));
   },
 });
 

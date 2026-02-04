@@ -1,7 +1,8 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertStrictEquals } from "@std/assert";
 import { maxBy } from "./max_by.ts";
+import * as unstable from "./unstable_max_by.ts";
 
 Deno.test("maxBy() handles array input", () => {
   const input = [
@@ -40,6 +41,10 @@ Deno.test("maxBy() handles array input with multiple max", () => {
   assertEquals(max, { name: "John", age: 42 });
 });
 
+Deno.test("maxBy() handles single element array", () => {
+  assertEquals(maxBy([42], (i) => i), 42);
+});
+
 Deno.test("maxBy() handles array of positive numbers", () => {
   const input = [2, 3, 5];
 
@@ -72,6 +77,18 @@ Deno.test("maxBy() handles of empty array", () => {
   assertEquals(max, undefined);
 });
 
+Deno.test("maxBy() handles empty input", () => {
+  const emptyArray: Array<{ age: number }> = [];
+  const max = maxBy(emptyArray, (it) => it.age);
+
+  assertEquals(max, undefined);
+});
+
+Deno.test("maxBy() handles empty generator", () => {
+  function* gen(): Generator<number> {}
+  assertEquals(maxBy(gen(), (i) => i), undefined);
+});
+
 Deno.test("maxBy() handles array of numbers with multiple max", () => {
   const input = [2, 3, 5, 5];
 
@@ -96,6 +113,12 @@ Deno.test("maxBy() handles array of numbers with NaN", () => {
   assertEquals(max, 5);
 });
 
+Deno.test("maxBy() handles NaN at first position", () => {
+  const input = [NaN, 2, 3];
+  const max = maxBy(input, (i) => i);
+  assertEquals(max, NaN);
+});
+
 Deno.test("maxBy() handles no mutation", () => {
   const input = [2, 3, 5];
 
@@ -104,11 +127,11 @@ Deno.test("maxBy() handles no mutation", () => {
   assertEquals(input, [2, 3, 5]);
 });
 
-Deno.test("maxBy() handles empty input", () => {
-  const emptyArray: Array<{ age: number }> = [];
-  const max = maxBy(emptyArray, (it) => it.age);
-
-  assertEquals(max, undefined);
+Deno.test("maxBy() returns same object reference", () => {
+  const john = { name: "John", age: 42 };
+  const input = [{ name: "Kyle", age: 34 }, john, { name: "Anna", age: 23 }];
+  const max = maxBy(input, (i) => i.age);
+  assertStrictEquals(max, john);
 });
 
 Deno.test({
@@ -134,5 +157,49 @@ Deno.test({
     ];
 
     assertEquals(maxBy(input, (it) => new Date(it)), "February 1, 2022");
+  },
+});
+
+Deno.test("maxBy() handles generator input", () => {
+  function* gen() {
+    yield { name: "Kyle", age: 34 };
+    yield { name: "John", age: 42 };
+    yield { name: "Anna", age: 23 };
+  }
+  const max = maxBy(gen(), (i) => i.age);
+  assertEquals(max, { name: "John", age: 42 });
+});
+
+Deno.test("maxBy() handles single element generator", () => {
+  function* gen() {
+    yield 42;
+  }
+  assertEquals(maxBy(gen(), (i) => i), 42);
+});
+
+Deno.test("maxBy() handles Set input", () => {
+  const input = new Set([5, 2, 8, 1, 9]);
+  const max = maxBy(input, (i) => i);
+  assertEquals(max, 9);
+});
+
+Deno.test("maxBy() handles Map values", () => {
+  const input = new Map([
+    ["a", { age: 34 }],
+    ["b", { age: 23 }],
+    ["c", { age: 45 }],
+  ]);
+  const max = maxBy(input.values(), (i) => i.age);
+  assertEquals(max, { age: 45 });
+});
+
+Deno.test({
+  name: "unstable.maxBy() passes index to selector",
+  fn() {
+    const input = [4, 3, 2, 1];
+
+    const max = unstable.maxBy(input, (_, index) => index);
+
+    assertEquals(max, 1);
   },
 });

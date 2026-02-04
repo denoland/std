@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -6,10 +6,20 @@
  *
  * @typeparam I The type of the chunks in the source stream.
  * @typeparam O The type of the chunks in the transformed stream.
- * @param transformer A function to transform.
- * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
- * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
+ * @param transformer A function to transform. Must return an iterable or async iterable.
+ * @param writableStrategy An object that optionally defines a queuing strategy
+ * for the stream's internal buffer between source and transformer.
+ * @param readableStrategy An object that optionally defines a queuing strategy
+ * for the stream's output buffer.
  * @returns A {@linkcode TransformStream} that transforms the source stream as defined by the provided transformer.
+ *
+ * @throws {TypeError} If `transformer` does not return an iterable or async iterable.
+ *
+ * When the output stream is cancelled, the cancellation is propagated to both
+ * the iterator (via `throw()`) and the source readable stream.
+ *
+ * When the iterator throws an error, the error is propagated to both the output
+ * readable stream and the source readable stream (via `cancel()`).
  *
  * @example Build a transform stream that multiplies each value by 100
  * ```ts
@@ -72,9 +82,14 @@ export function toTransformStream<I, O>(
   } = new TransformStream<I, I>(undefined, writableStrategy);
 
   const iterable = transformer(readable);
-  const iterator: Iterator<O> | AsyncIterator<O> =
-    (iterable as AsyncIterable<O>)[Symbol.asyncIterator]?.() ??
-      (iterable as Iterable<O>)[Symbol.iterator]?.();
+  const iterator: Iterator<O> | AsyncIterator<O> | undefined =
+    (iterable as AsyncIterable<O> | null)?.[Symbol.asyncIterator]?.() ??
+      (iterable as Iterable<O> | null)?.[Symbol.iterator]?.();
+  if (!iterator) {
+    throw new TypeError(
+      "Transformer must return an iterable or async iterable",
+    );
+  }
   return {
     writable,
     readable: new ReadableStream<O>({

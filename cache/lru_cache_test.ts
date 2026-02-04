@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert, assertEquals } from "@std/assert";
 import { LruCache } from "./lru_cache.ts";
 
@@ -23,21 +23,42 @@ Deno.test("LruCache deletes least-recently-used", () => {
   assertEquals(cache.get(3), undefined);
 });
 
-Deno.test("LruCache onEject()", () => {
-  let called = 0;
-  const cache = new LruCache<number, string>(3, { onEject: () => called++ });
+Deno.test("LruCache onEject()", async (t) => {
+  await t.step("calls onEject on delete and eviction", () => {
+    let called = 0;
+    const cache = new LruCache<number, string>(3, { onEject: () => called++ });
 
-  cache.set(1, "!");
-  cache.set(2, "!");
-  cache.set(3, "!");
-  cache.set(4, "!");
-  cache.set(5, "!");
+    cache.set(1, "!");
+    cache.set(2, "!");
+    cache.set(3, "!");
+    cache.set(4, "!");
+    cache.set(5, "!");
 
-  assertEquals(cache.size, 3);
-  assertEquals(called, 2);
-  cache.delete(3);
+    assertEquals(cache.size, 3);
+    assertEquals(called, 2);
+    cache.delete(3);
 
-  assertEquals(called, 3);
-  assertEquals(cache.size, 2);
-  assertEquals(cache.get(3), undefined);
+    assertEquals(called, 3);
+    assertEquals(cache.size, 2);
+    assertEquals(cache.get(3), undefined);
+  });
+
+  await t.step("calls onEject for falsy values", () => {
+    const ejected: [number, unknown][] = [];
+    const cache = new LruCache<number, unknown>(10, {
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set(1, 0);
+    cache.set(2, "");
+    cache.set(3, false);
+    cache.set(4, null);
+
+    cache.delete(1);
+    cache.delete(2);
+    cache.delete(3);
+    cache.delete(4);
+
+    assertEquals(ejected, [[1, 0], [2, ""], [3, false], [4, null]]);
+  });
 });
