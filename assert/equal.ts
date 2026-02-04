@@ -132,6 +132,24 @@ export function equal(a: unknown, b: unknown): boolean {
       if (a instanceof WeakSet) {
         throw new TypeError("Cannot compare WeakSet instances");
       }
+      if (a instanceof ReadableStream) {
+        throw new TypeError("Cannot compare ReadableStream instances");
+      }
+      if (a instanceof WritableStream) {
+        throw new TypeError("Cannot compare WritableStream instances");
+      }
+      if (a instanceof TransformStream) {
+        throw new TypeError("Cannot compare TransformStream instances");
+      }
+      if (a instanceof Blob) {
+        throw new TypeError("Cannot compare Blob instances");
+      }
+      if (a instanceof Request) {
+        throw new TypeError("Cannot compare Request instances");
+      }
+      if (a instanceof Response) {
+        throw new TypeError("Cannot compare Response instances");
+      }
       if (a instanceof WeakRef) {
         return compare(a.deref(), (b as WeakRef<WeakKey>).deref());
       }

@@ -277,6 +277,26 @@ Deno.test("equal() WeakMap, WeakRef and WeakSet", () => {
   assertFalse(equal(new WeakRef({}), { constructor: WeakRef }));
 });
 
+Deno.test("equal() throws for non-comparable types", () => {
+  // Streams
+  assertThrows(() => equal(new ReadableStream(), new ReadableStream()));
+  assertThrows(() => equal(new WritableStream(), new WritableStream()));
+  assertThrows(() => equal(new TransformStream(), new TransformStream()));
+
+  // Blob and File
+  assertThrows(() => equal(new Blob(), new Blob()));
+  assertThrows(() => equal(new Blob(["a"]), new Blob(["a"])));
+  assertThrows(
+    () => equal(new File(["a"], "a.txt"), new File(["a"], "a.txt")),
+  );
+
+  // Request and Response
+  assertThrows(
+    () => equal(new Request("http://a"), new Request("http://a")),
+  );
+  assertThrows(() => equal(new Response(), new Response()));
+});
+
 Deno.test("equal() fast path for primitive keyed collections", () => {
   const arr = Array.from({ length: 10_000 }, (_, i) => i);
 
