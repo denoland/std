@@ -1,6 +1,6 @@
 {
   "name": "@std/xml",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "exports": {
     ".": "./mod.ts",
     "./types": "./types.ts",
