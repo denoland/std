@@ -54,15 +54,15 @@ export type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
  * assertEquals(items, ["First", "Second"]);
  * ```
  *
- * @param source The XML text stream to parse. Can be a ReadableStream or any
- *               AsyncIterable that yields string chunks.
+ * @param source The XML text stream to parse. Can be any AsyncIterable that
+ *               yields string chunks, including ReadableStream.
  * @param callbacks Callback functions invoked for each XML event. All callbacks
  *                  are optional - only provide the ones you need.
  * @param options Parsing options.
  * @returns A promise that resolves when parsing is complete.
  */
 export async function parseXmlStream(
-  source: ReadableStream<string> | AsyncIterable<string>,
+  source: AsyncIterable<string>,
   callbacks: XmlEventCallbacks,
   options: ParseStreamOptions = {},
 ): Promise<void> {
@@ -105,7 +105,7 @@ export async function parseXmlStream(
  * @returns A promise that resolves when parsing is complete.
  */
 export function parseXmlStreamFromBytes(
-  source: ReadableStream<Uint8Array> | AsyncIterable<Uint8Array>,
+  source: AsyncIterable<Uint8Array>,
   callbacks: XmlEventCallbacks,
   options: ParseStreamOptions = {},
 ): Promise<void> {
@@ -115,7 +115,7 @@ export function parseXmlStreamFromBytes(
 
 /** Helper to decode an AsyncIterable of bytes to strings. */
 async function* decodeAsyncIterable(
-  source: ReadableStream<Uint8Array> | AsyncIterable<Uint8Array>,
+  source: AsyncIterable<Uint8Array>,
 ): AsyncGenerator<string> {
   const decoder = new TextDecoder();
   for await (const chunk of source) {
