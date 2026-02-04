@@ -110,6 +110,25 @@ export function equal(a: unknown, b: unknown): boolean {
     if (a instanceof Date && b instanceof Date) {
       return Object.is(a.getTime(), b.getTime());
     }
+    if (a instanceof Request && b instanceof Request) {
+      // `Request.body` properties aren't direct compared as doing so would
+      // consume the body streams. In most cases, this is caught anyway by other
+      // properties being different.
+      return a.bodyUsed === b.bodyUsed &&
+        a.cache === b.cache &&
+        a.credentials === b.credentials &&
+        a.destination === b.destination &&
+        equal(a.headers, b.headers) &&
+        a.integrity === b.integrity &&
+        a.keepalive === b.keepalive &&
+        a.method === b.method &&
+        a.mode === b.mode &&
+        a.redirect === b.redirect &&
+        a.referrer === b.referrer &&
+        a.referrerPolicy === b.referrerPolicy &&
+        equal(a.signal, b.signal) &&
+        a.url === b.url;
+    }
     if (a && typeof a === "object" && b && typeof b === "object") {
       if (!prototypesEqual(a, b)) {
         return false;

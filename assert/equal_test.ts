@@ -509,3 +509,33 @@ Deno.test("equal() with ArrayBuffer", async (t) => {
     });
   });
 });
+
+Deno.test("equal() with Requests", async (t) => {
+  await t.step("equal", () => {
+    const reqA = new Request("https://example.com/foo", {
+      method: "POST",
+      headers: { "x-foo": "bar" },
+      body: "hello world",
+    });
+    const reqB = new Request("https://example.com/foo", {
+      method: "POST",
+      headers: { "x-foo": "bar" },
+      body: "hello world",
+    });
+    assert(equal(reqA, reqB));
+  });
+
+  await t.step("not equal", () => {
+    const reqA = new Request("https://example.com/foo", {
+      method: "POST",
+      headers: { "x-foo": "bar" },
+      body: "hello world",
+    });
+    const reqB = new Request("https://example.com/foo", {
+      method: "PUT",
+      headers: { "x-foo": "bar" },
+      body: "hello world",
+    });
+    assertFalse(equal(reqA, reqB));
+  });
+});
