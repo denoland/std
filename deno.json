@@ -94,6 +94,7 @@
     "./ulid",
     "./uuid",
     "./webgpu",
+    "./xml",
     "./yaml"
   ]
 }
