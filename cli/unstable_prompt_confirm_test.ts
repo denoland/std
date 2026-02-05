@@ -12,7 +12,7 @@ Deno.test("promptConfirm() returns true when user enters 'y'", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -54,7 +54,7 @@ Deno.test("promptConfirm() returns false when user enters 'n'", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -96,7 +96,7 @@ Deno.test("promptConfirm() returns default false when user presses Enter", () =>
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -138,7 +138,7 @@ Deno.test("promptConfirm() returns default true when default is set to 'y'", () 
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [Y$/n$] ",
+    "Continue? [Y/n] ",
     "\n",
   ];
 
@@ -180,7 +180,7 @@ Deno.test("promptConfirm() handles custom values with labels", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y (yes)$/N (no)$] ",
+    "Continue? [y (yes)/N (no)] ",
     "\n",
   ];
 
@@ -225,7 +225,7 @@ Deno.test("promptConfirm() handles three options", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Save changes? [y (yes)$/n (no)$/C (cancel)$] ",
+    "Save changes? [y (yes)/n (no)/C (cancel)] ",
     "\n",
   ];
 
@@ -271,7 +271,7 @@ Deno.test("promptConfirm() returns third option value", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y (yes)$/n (no)$/M (maybe)$] ",
+    "Continue? [y (yes)/n (no)/M (maybe)] ",
     "\n",
   ];
 
@@ -317,7 +317,7 @@ Deno.test("promptConfirm() is case insensitive for key", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -359,7 +359,7 @@ Deno.test("promptConfirm() accepts label as input", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y (yes)$/N (no)$] ",
+    "Continue? [y (yes)/N (no)] ",
     "\n",
   ];
 
@@ -404,7 +404,7 @@ Deno.test("promptConfirm() handles clear option", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\r\x1b[K",
   ];
 
@@ -470,7 +470,7 @@ Deno.test("promptConfirm() returns default on invalid input", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -512,7 +512,7 @@ Deno.test("promptConfirm() handles backspace", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y$/N$] ",
+    "Continue? [y/N] ",
     "\n",
   ];
 
@@ -554,7 +554,7 @@ Deno.test("promptConfirm() returns default for third option on Enter", () => {
   stub(Deno.stdin, "isTerminal", () => true);
 
   const expectedOutput = [
-    "Continue? [y (yes)$/n (no)$/M (maybe)$] ",
+    "Continue? [y (yes)/n (no)/M (maybe)] ",
     "\n",
   ];
 

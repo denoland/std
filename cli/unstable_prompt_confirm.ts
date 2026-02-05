@@ -117,7 +117,7 @@ export function promptConfirm<T>(
   const optionsDisplay = values.map((v) => {
     const isDefault = v.key.toLowerCase() === defaultKey.toLowerCase();
     const key = isDefault ? v.key.toUpperCase() : v.key.toLowerCase();
-    return `${key}${v.label ? ` (${v.label})` : ""}$`;
+    return `${key}${v.label ? ` (${v.label})` : ""}`;
   }).join("/");
 
   const prompt = `${message} [${optionsDisplay}] `;
