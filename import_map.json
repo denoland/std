@@ -45,7 +45,7 @@
     "@std/ulid": "jsr:@std/ulid@^1.0.0",
     "@std/uuid": "jsr:@std/uuid@^1.1.0",
     "@std/webgpu": "jsr:@std/webgpu@^0.224.9",
-    "@std/xml": "jsr:@std/xml@^0.0.1",
+    "@std/xml": "jsr:@std/xml@^0.1.0",
     "@std/yaml": "jsr:@std/yaml@^1.0.11"
   }
 }
