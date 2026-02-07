@@ -89,9 +89,15 @@ function sameValueZero(a: unknown, b: unknown) {
 /**
  * Deep equality comparison used in assertions.
  *
+ * Note: Types whose state is not exposed as enumerable properties, such as
+ * `Blob`, `ReadableStream`, `Request`, and `Response`, may produce unreliable
+ * results. For `Blob` and `File`, compare via `Blob.bytes()` instead.
+ *
  * @param a The actual value
  * @param b The expected value
  * @returns `true` if the values are deeply equal, `false` otherwise
+ *
+ * @throws {TypeError} If either value is a `WeakMap` or `WeakSet`.
  *
  * @example Usage
  * ```ts

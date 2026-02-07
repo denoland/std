@@ -15,9 +15,9 @@ import { AssertionError } from "./assertion_error.ts";
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
  *
- * Note: When comparing `Blob` objects, you should first convert them to
- * `Uint8Array` using the `Blob.bytes()` method and then compare their
- * contents.
+ * Note: Types whose state is not exposed as enumerable properties, such as
+ * `Blob`, `ReadableStream`, `Request`, and `Response`, may produce unreliable
+ * results. For `Blob` and `File`, compare via `Blob.bytes()` instead.
  *
  * @example Usage
  * ```ts ignore

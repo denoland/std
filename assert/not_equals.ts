@@ -11,6 +11,10 @@ import { format } from "@std/internal/format";
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
+ * Note: Types whose state is not exposed as enumerable properties, such as
+ * `Blob`, `ReadableStream`, `Request`, and `Response`, may produce unreliable
+ * results. For `Blob` and `File`, compare via `Blob.bytes()` instead.
+ *
  * @example Usage
  * ```ts ignore
  * import { assertNotEquals } from "@std/assert";
