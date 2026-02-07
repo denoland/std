@@ -1,7 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-/** A handler for requests that don't match any route. */
-type RequestHandler = (
+/**
+ * A handler for HTTP requests.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type RequestHandler = (
   request: Request,
   info?: Deno.ServeHandlerInfo,
 ) => Response | Promise<Response>;
