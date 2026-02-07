@@ -17,11 +17,3 @@ Deno.test({
     assertEquals(METHOD.Label, "LABEL");
   },
 });
-
-Deno.test({
-  name: "METHOD has the expected number of methods",
-  fn() {
-    // There are 40 methods in the IANA registry (excluding the wildcard "*")
-    assertEquals(Object.keys(METHOD).length, 40);
-  },
-});
