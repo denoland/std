@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 // This module is generated from {@link https://www.iana.org/assignments/http-methods/http-methods.xhtml#methods | IANA Hypertext Transfer Protocol (HTTP) Method Registry}
+// The wildcard method "*" from the IANA registry is intentionally excluded as it is not a real method name.
 
 /**
  * HTTP Methods derived from IANA Hypertext Transfer Protocol (HTTP) Method Registry
@@ -34,14 +35,14 @@ export const METHOD = {
   /**
    * CHECKIN (Safe: no; Idempotent: yes)
    *
-   * @see {@link https://www.iana.org/go/rfc3253 | RFC3253, Section 4.4, Section 9.4}
+   * @see {@link https://www.iana.org/go/rfc3253 | RFC3253, Section 9.4}
    */
   Checkin: "CHECKIN",
 
   /**
    * CHECKOUT (Safe: no; Idempotent: yes)
    *
-   * @see {@link https://www.iana.org/go/rfc3253 | RFC3253, Section 4.3, Section 8.8}
+   * @see {@link https://www.iana.org/go/rfc3253 | RFC3253, Section 8.8}
    */
   Checkout: "CHECKOUT",
 
@@ -212,6 +213,13 @@ export const METHOD = {
   Put: "PUT",
 
   /**
+   * QUERY (Safe: yes; Idempotent: yes)
+   *
+   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-safe-method-w-body-14 | RFC-ietf-httpbis-safe-method-w-body-14, Section 2}
+   */
+  Query: "QUERY",
+
+  /**
    * REBIND (Safe: no; Idempotent: yes)
    *
    * @see {@link https://www.iana.org/go/rfc5842 | RFC5842, Section 6}
@@ -291,7 +299,7 @@ export const METHOD = {
 } as const;
 
 /**
- * A HTTP Method
+ * An HTTP Method
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
