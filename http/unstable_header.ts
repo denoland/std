@@ -1304,7 +1304,7 @@ export const HEADER = {
 } as const;
 
 /**
- * A HTTP Header
+ * An HTTP Header
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
