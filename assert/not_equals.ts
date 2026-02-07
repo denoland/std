@@ -11,9 +11,11 @@ import { format } from "@std/internal/format";
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
- * Note: Types whose state is not exposed as enumerable properties, such as
- * `Blob`, `ReadableStream`, `Request`, and `Response`, may produce unreliable
- * results. For `Blob` and `File`, compare via `Blob.bytes()` instead.
+ * Note: This function is based on value equality, but for some cases (such as
+ * data that can only be read asynchronously or function properties) value
+ * equality is not possible to determine. In such cases, reference equality is
+ * used instead, which may cause false negatives for objects such as `Blob`s or
+ * `Request`s.
  *
  * @example Usage
  * ```ts ignore
