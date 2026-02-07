@@ -81,6 +81,13 @@ export const HEADER = {
   AcceptPost: "Accept-Post",
 
   /**
+   * HTTP Header Accept-Query
+   *
+   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-safe-method-w-body-14 | RFC-ietf-httpbis-safe-method-w-body-14, Section 3: The HTTP QUERY Method}
+   */
+  AcceptQuery: "Accept-Query",
+
+  /**
    * HTTP Header Accept-Ranges
    *
    * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 14.3: HTTP Semantics}
@@ -90,7 +97,7 @@ export const HEADER = {
   /**
    * HTTP Header Accept-Signature
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-message-signatures-19 | RFC-ietf-httpbis-message-signatures-19, Section 5.1: HTTP Message Signatures}
+   * @see {@link https://www.iana.org/go/rfc9421 | RFC 9421, Section 5.1: HTTP Message Signatures}
    */
   AcceptSignature: "Accept-Signature",
 
@@ -221,11 +228,32 @@ export const HEADER = {
   Authorization: "Authorization",
 
   /**
+   * HTTP Header Available-Dictionary
+   *
+   * @see {@link https://www.iana.org/go/rfc9842 | RFC 9842, Section 2.2: Compression Dictionary Transport}
+   */
+  AvailableDictionary: "Available-Dictionary",
+
+  /**
    * HTTP Header Cache-Control
    *
    * @see {@link https://www.iana.org/go/rfc9111 | RFC9111, Section 5.2}
    */
   CacheControl: "Cache-Control",
+
+  /**
+   * HTTP Header Cache-Group-Invalidation
+   *
+   * @see {@link https://www.iana.org/go/rfc9875 | RFC 9875: HTTP Cache Groups}
+   */
+  CacheGroupInvalidation: "Cache-Group-Invalidation",
+
+  /**
+   * HTTP Header Cache-Groups
+   *
+   * @see {@link https://www.iana.org/go/rfc9875 | RFC 9875: HTTP Cache Groups}
+   */
+  CacheGroups: "Cache-Groups",
 
   /**
    * HTTP Header Cache-Status
@@ -319,18 +347,24 @@ export const HEADER = {
   Connection: "Connection",
 
   /**
+   * HTTP Header Concealed-Auth-Export
+   *
+   * @see {@link https://www.iana.org/go/rfc9729 | RFC 9729: The Concealed HTTP Authentication Scheme}
+   */
+  ConcealedAuthExport: "Concealed-Auth-Export",
+
+  /**
    * HTTP Header Content-Digest
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-digest-headers-13 | RFC-ietf-httpbis-digest-headers-13, Section 2: Digest Fields}
+   * @see {@link https://www.iana.org/go/rfc9530 | RFC 9530, Section 2: Digest Fields}
    */
   ContentDigest: "Content-Digest",
 
   /**
- * HTTP Header Content-Disposition
- *
- * @see {@link https://www.iana.org/go/rfc6266 | RFC 6266: Use of the Content-Disposition Header Field in the
-        Hypertext Transfer Protocol (HTTP)}
- */
+   * HTTP Header Content-Disposition
+   *
+   * @see {@link https://www.iana.org/go/rfc6266 | RFC 6266: Use of the Content-Disposition Header Field in the Hypertext Transfer Protocol (HTTP)}
+   */
   ContentDisposition: "Content-Disposition",
 
   /**
@@ -392,7 +426,7 @@ export const HEADER = {
   /**
    * HTTP Header Cookie
    *
-   * @see {@link https://www.iana.org/go/rfc6265 | RFC 6265: HTTP State Management Mechanism}
+   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-rfc6265bis-22 | RFC-ietf-httpbis-rfc6265bis-22, Section 5.8.1: Cookies: HTTP State Management Mechanism}
    */
   Cookie: "Cookie",
 
@@ -461,6 +495,13 @@ export const HEADER = {
   DeltaBase: "Delta-Base",
 
   /**
+   * HTTP Header Deprecation
+   *
+   * @see {@link https://www.iana.org/go/rfc9745 | RFC 9745, Section 2: The Deprecation HTTP Response Header Field}
+   */
+  Deprecation: "Deprecation",
+
+  /**
    * HTTP Header Depth
    *
    * @see {@link https://www.iana.org/go/rfc4918 | RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)}
@@ -473,6 +514,20 @@ export const HEADER = {
    * @see {@link https://www.iana.org/go/rfc4918 | RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)}
    */
   Destination: "Destination",
+
+  /**
+   * HTTP Header Detached-JWS
+   *
+   * @see {@link https://www.iana.org/go/rfc9635 | RFC 9635: Grant Negotiation and Authorization Protocol (GNAP)}
+   */
+  DetachedJws: "Detached-JWS",
+
+  /**
+   * HTTP Header Dictionary-ID
+   *
+   * @see {@link https://www.iana.org/go/rfc9842 | RFC 9842, Section 2.3: Compression Dictionary Transport}
+   */
+  DictionaryId: "Dictionary-ID",
 
   /**
    * HTTP Header DPoP
@@ -582,7 +637,7 @@ export const HEADER = {
   /**
    * HTTP Header If-Schedule-Tag-Match
    *
-   * @see {@link https://www.iana.org/go/rfc6638 |  RFC 6338: Scheduling Extensions to CalDAV}
+   * @see {@link https://www.iana.org/go/rfc6638 | RFC 6638: Scheduling Extensions to CalDAV}
    */
   IfScheduleTagMatch: "If-Schedule-Tag-Match",
 
@@ -641,6 +696,13 @@ export const HEADER = {
    * @see {@link https://www.iana.org/go/rfc8288 | RFC 8288: Web Linking}
    */
   Link: "Link",
+
+  /**
+   * HTTP Header Link-Template
+   *
+   * @see {@link https://www.iana.org/go/rfc9652 | RFC 9652: The Link-Template HTTP Header Field}
+   */
+  LinkTemplate: "Link-Template",
 
   /**
    * HTTP Header Location
@@ -891,6 +953,13 @@ export const HEADER = {
   Referer: "Referer",
 
   /**
+   * HTTP Header Referrer-Policy
+   *
+   * @see {@link https://www.w3.org/TR/referrer-policy/#referrer-policy-header | Referrer Policy}
+   */
+  ReferrerPolicy: "Referrer-Policy",
+
+  /**
    * HTTP Header Refresh
    *
    * @see {@link https://html.spec.whatwg.org/multipage/browsing-the-web.html#refresh | HTML}
@@ -907,7 +976,7 @@ export const HEADER = {
   /**
    * HTTP Header Repr-Digest
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-digest-headers-13 | RFC-ietf-httpbis-digest-headers-13, Section 3: Digest Fields}
+   * @see {@link https://www.iana.org/go/rfc9530 | RFC 9530, Section 3: Digest Fields}
    */
   ReprDigest: "Repr-Digest",
 
@@ -928,9 +997,37 @@ export const HEADER = {
   /**
    * HTTP Header Schedule-Tag
    *
-   * @see {@link https://www.iana.org/go/rfc6638 | RFC 6338: Scheduling Extensions to CalDAV}
+   * @see {@link https://www.iana.org/go/rfc6638 | RFC 6638: Scheduling Extensions to CalDAV}
    */
   ScheduleTag: "Schedule-Tag",
+
+  /**
+   * HTTP Header Sec-Fetch-Dest
+   *
+   * @see {@link https://www.w3.org/TR/fetch-metadata/#sec-fetch-dest-header | Fetch Metadata Request Headers}
+   */
+  SecFetchDest: "Sec-Fetch-Dest",
+
+  /**
+   * HTTP Header Sec-Fetch-Mode
+   *
+   * @see {@link https://www.w3.org/TR/fetch-metadata/#sec-fetch-mode-header | Fetch Metadata Request Headers}
+   */
+  SecFetchMode: "Sec-Fetch-Mode",
+
+  /**
+   * HTTP Header Sec-Fetch-Site
+   *
+   * @see {@link https://www.w3.org/TR/fetch-metadata/#sec-fetch-site-header | Fetch Metadata Request Headers}
+   */
+  SecFetchSite: "Sec-Fetch-Site",
+
+  /**
+   * HTTP Header Sec-Fetch-User
+   *
+   * @see {@link https://www.w3.org/TR/fetch-metadata/#sec-fetch-user-header | Fetch Metadata Request Headers}
+   */
+  SecFetchUser: "Sec-Fetch-User",
 
   /**
    * HTTP Header Sec-Purpose
@@ -998,21 +1095,28 @@ export const HEADER = {
   /**
    * HTTP Header Set-Cookie
    *
-   * @see {@link https://www.iana.org/go/rfc6265 | RFC 6265: HTTP State Management Mechanism}
+   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-rfc6265bis-22 | RFC-ietf-httpbis-rfc6265bis-22, Section 5.8.1: Cookies: HTTP State Management Mechanism}
    */
   SetCookie: "Set-Cookie",
 
   /**
+   * HTTP Header Set-Txn
+   *
+   * @see {@link https://www.iana.org/go/draft-ietf-scim-events-15 | RFC-ietf-scim-events-15, Section 3: SCIM Profile for Security Event Tokens}
+   */
+  SetTxn: "Set-Txn",
+
+  /**
    * HTTP Header Signature
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-message-signatures-19 | RFC-ietf-httpbis-message-signatures-19, Section 4.2: HTTP Message Signatures}
+   * @see {@link https://www.iana.org/go/rfc9421 | RFC 9421, Section 4.2: HTTP Message Signatures}
    */
   Signature: "Signature",
 
   /**
    * HTTP Header Signature-Input
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-message-signatures-19 | RFC-ietf-httpbis-message-signatures-19, Section 4.1: HTTP Message Signatures}
+   * @see {@link https://www.iana.org/go/rfc9421 | RFC 9421, Section 4.1: HTTP Message Signatures}
    */
   SignatureInput: "Signature-Input",
 
@@ -1129,6 +1233,13 @@ export const HEADER = {
   Urgency: "Urgency",
 
   /**
+   * HTTP Header Use-As-Dictionary
+   *
+   * @see {@link https://www.iana.org/go/rfc9842 | RFC 9842, Section 2.1: Compression Dictionary Transport}
+   */
+  UseAsDictionary: "Use-As-Dictionary",
+
+  /**
    * HTTP Header User-Agent
    *
    * @see {@link https://www.iana.org/go/rfc9110 | RFC9110, Section 10.1.5: HTTP Semantics}
@@ -1159,14 +1270,14 @@ export const HEADER = {
   /**
    * HTTP Header Want-Content-Digest
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-digest-headers-13 | RFC-ietf-httpbis-digest-headers-13, Section 4: Digest Fields}
+   * @see {@link https://www.iana.org/go/rfc9530 | RFC 9530, Section 4: Digest Fields}
    */
   WantContentDigest: "Want-Content-Digest",
 
   /**
    * HTTP Header Want-Repr-Digest
    *
-   * @see {@link https://www.iana.org/go/draft-ietf-httpbis-digest-headers-13 | RFC-ietf-httpbis-digest-headers-13, Section 4: Digest Fields}
+   * @see {@link https://www.iana.org/go/rfc9530 | RFC 9530, Section 4: Digest Fields}
    */
   WantReprDigest: "Want-Repr-Digest",
 
