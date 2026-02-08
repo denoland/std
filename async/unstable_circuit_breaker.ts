@@ -514,7 +514,9 @@ export class CircuitBreaker<T = unknown> {
     try {
       result = await fn();
     } catch (error) {
-      this.#handleFailure(error, currentState.state, currentTime);
+      if (this.#isFailure(error)) {
+        this.#handleFailure(error, currentState.state, currentTime);
+      }
       throw error;
     } finally {
       // Decrement half-open in-flight counter
@@ -663,8 +665,6 @@ export class CircuitBreaker<T = unknown> {
     previousState: CircuitState,
     now: number,
   ): void {
-    if (!this.#isFailure(error)) return;
-
     const newFailures = [
       ...pruneOldFailures(
         this.#state.failureTimestamps,

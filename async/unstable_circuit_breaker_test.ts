@@ -418,6 +418,31 @@ Deno.test("CircuitBreaker isResultFailure counts successful results as failures"
   assertEquals(breaker.state, "open");
 });
 
+Deno.test("CircuitBreaker isResultFailure works with custom isFailure predicate", async () => {
+  const failures: Array<{ error: unknown; count: number }> = [];
+  const breaker = new CircuitBreaker<number>({
+    failureThreshold: 1,
+    // Only count TypeError as thrown-error failures
+    isFailure: (error) => error instanceof TypeError,
+    // Also count negative results as failures
+    isResultFailure: (result) => result < 0,
+    onFailure: (error, count) => failures.push({ error, count }),
+  });
+
+  // Regular Error throw should NOT count (isFailure filters it out)
+  try {
+    await breaker.execute(() => Promise.reject(new Error("ignored")));
+  } catch { /* expected */ }
+  assertEquals(failures.length, 0);
+  assertEquals(breaker.state, "closed");
+
+  // Negative result should count as failure regardless of isFailure predicate
+  const result = await breaker.execute(() => Promise.resolve(-1));
+  assertEquals(result, -1);
+  assertEquals(failures.length, 1);
+  assertEquals(breaker.state, "open");
+});
+
 Deno.test("CircuitBreaker failure window prunes old failures", async () => {
   using time = new FakeTime();
 
