@@ -1,10 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertMatch } from "@std/assert";
 import {
-  ASCII_DIACRITICS,
-  DIACRITICS,
-  NON_ASCII,
-  NON_WORD,
+  ASCII_DIACRITICS_REGEXP,
+  DIACRITICS_REGEXP,
+  NON_ASCII_REGEXP,
+  NON_WORD_REGEXP,
   slugify,
 } from "./unstable_slugify.ts";
 
@@ -33,44 +33,44 @@ Deno.test("slugify() normalizes diacritic characters to NFC form by default", ()
   );
 });
 
-Deno.test("slugify() strips all non-ASCII chars, including diacritics, if strip: NON_ASCII", () => {
+Deno.test("slugify() strips all non-ASCII chars, including diacritics, if strip: NON_ASCII_REGEXP", () => {
   assertEquals(
-    slugify("déjà vu".normalize("NFC"), { strip: NON_ASCII }),
+    slugify("déjà vu".normalize("NFC"), { strip: NON_ASCII_REGEXP }),
     "deja-vu",
   );
   assertEquals(
-    slugify("déjà vu".normalize("NFD"), { strip: NON_ASCII }),
+    slugify("déjà vu".normalize("NFD"), { strip: NON_ASCII_REGEXP }),
     "deja-vu",
   );
-  assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_ASCII }), "-");
+  assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_ASCII_REGEXP }), "-");
 });
 
-Deno.test("slugify() strips all diacritics if strip: DIACRITICS", () => {
+Deno.test("slugify() strips all diacritics if strip: DIACRITICS_REGEXP", () => {
   assertEquals(
-    slugify("déjà vu".normalize("NFC"), { strip: DIACRITICS }),
+    slugify("déjà vu".normalize("NFC"), { strip: DIACRITICS_REGEXP }),
     "deja-vu",
   );
   assertEquals(
-    slugify("déjà vu".normalize("NFD"), { strip: DIACRITICS }),
+    slugify("déjà vu".normalize("NFD"), { strip: DIACRITICS_REGEXP }),
     "deja-vu",
   );
   assertEquals(
-    slugify("Συστημάτων Γραφής", { strip: DIACRITICS }),
+    slugify("Συστημάτων Γραφής", { strip: DIACRITICS_REGEXP }),
     "συστηματων-γραφης",
   );
 });
 
-Deno.test("slugify() strips ASCII diacritics (but not other diacritics) if strip: ASCII_DIACRITICS", () => {
+Deno.test("slugify() strips ASCII diacritics (but not other diacritics) if strip: ASCII_DIACRITICS_REGEXP", () => {
   assertEquals(
-    slugify("déjà-vu".normalize("NFC"), { strip: ASCII_DIACRITICS }),
+    slugify("déjà-vu".normalize("NFC"), { strip: ASCII_DIACRITICS_REGEXP }),
     "deja-vu",
   );
   assertEquals(
-    slugify("déjà-vu".normalize("NFD"), { strip: ASCII_DIACRITICS }),
+    slugify("déjà-vu".normalize("NFD"), { strip: ASCII_DIACRITICS_REGEXP }),
     "deja-vu",
   );
   assertEquals(
-    slugify("Συστημάτων Γραφής", { strip: ASCII_DIACRITICS }),
+    slugify("Συστημάτων Γραφής", { strip: ASCII_DIACRITICS_REGEXP }),
     "συστημάτων-γραφής",
   );
 });
@@ -151,7 +151,14 @@ Deno.test("slugify() strips or replaces all non-alphanumeric ASCII chars except 
   );
 
   // defense-in-depth - the exported regexes _also_ all strip non-ASCII characters
-  for (const re of [ASCII_DIACRITICS, DIACRITICS, NON_ASCII, NON_WORD]) {
+  for (
+    const re of [
+      ASCII_DIACRITICS_REGEXP,
+      DIACRITICS_REGEXP,
+      NON_ASCII_REGEXP,
+      NON_WORD_REGEXP,
+    ]
+  ) {
     assertMatch(
       ALL_ASCII.replaceAll(re, ""),
       ASCII_ALPHANUM_OR_DASH_ONLY_REGEXP,
