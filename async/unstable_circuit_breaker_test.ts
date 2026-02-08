@@ -883,6 +883,64 @@ Deno.test("CircuitBreaker isResultFailure in half_open reopens circuit", async (
   ]);
 });
 
+Deno.test("CircuitBreaker concurrent half_open failure prevents stale success from closing circuit", async () => {
+  using time = new FakeTime();
+
+  const transitions: Array<[CircuitState, CircuitState]> = [];
+  const breaker = new CircuitBreaker({
+    failureThreshold: 1,
+    cooldownMs: 1000,
+    halfOpenMaxConcurrent: 2,
+    successThreshold: 1,
+    onStateChange: (from, to) => transitions.push([from, to]),
+  });
+
+  // Open the circuit
+  try {
+    await breaker.execute(() => Promise.reject(new Error("fail")));
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // Advance past cooldown
+  time.tick(1001);
+
+  // Start two concurrent half-open requests
+  let resolveA: (() => void) | undefined;
+  let rejectB: ((err: Error) => void) | undefined;
+
+  const promiseA = breaker.execute(
+    () =>
+      new Promise<string>((r) => {
+        resolveA = () => r("ok");
+      }),
+  );
+  const promiseB = breaker.execute(
+    () =>
+      new Promise<string>((_r, rej) => {
+        rejectB = (e) => rej(e);
+      }),
+  );
+
+  // B fails first — this should reopen the circuit
+  rejectB?.(new Error("still broken"));
+  try {
+    await promiseB;
+  } catch { /* expected */ }
+  assertEquals(breaker.state, "open");
+
+  // A succeeds after B already opened the circuit
+  resolveA?.();
+  await promiseA;
+
+  // Circuit must remain open — the stale success must not close it
+  assertEquals(breaker.state, "open");
+  assertEquals(transitions, [
+    ["closed", "open"],
+    ["open", "half_open"],
+    ["half_open", "open"],
+  ]);
+});
+
 Deno.test("CircuitBreaker handles multiple half_open concurrent slots", async () => {
   using time = new FakeTime();
 

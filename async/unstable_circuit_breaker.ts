@@ -704,6 +704,7 @@ export class CircuitBreaker<T = unknown> {
   /** Records a success and potentially closes the circuit from half-open. */
   #handleSuccess(previousState: CircuitState): void {
     if (previousState === "closed") return;
+    if (this.#state.state !== "half_open") return;
 
     const newSuccessCount = this.#state.consecutiveSuccesses + 1;
     if (newSuccessCount >= this.#successThreshold) {
