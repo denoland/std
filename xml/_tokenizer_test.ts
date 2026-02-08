@@ -1295,6 +1295,18 @@ Deno.test("XmlTokenizer.process() handles PI across chunks in DOCTYPE", () => {
   assertEquals(tokens[0]?.type, "doctype");
 });
 
+Deno.test("XmlTokenizer.process() throws on DOCTYPE quoted string spanning chunk boundary", () => {
+  assertThrows(
+    () =>
+      collectChunkedTokens(
+        '<!DOCTYPE root SYSTEM "long-system-',
+        'id.dtd"><root/>',
+      ),
+    XmlSyntaxError,
+    "Unterminated quoted string in DOCTYPE declaration",
+  );
+});
+
 // =============================================================================
 // Illegal XML Character Validation Tests (XML 1.0 §2.2)
 // =============================================================================
@@ -1883,6 +1895,30 @@ Deno.test("XmlTokenizer.process() handles text content split across multiple chu
   const tokens = collectChunkedTokens("<root>Hello ", "Wor", "ld</root>");
   const text = tokens.find((t) => t.type === "text");
   assertEquals(text?.content, "Hello World");
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (]] then >)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]]", ">more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (] then ]>)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]>more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling three chunks", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]", ">more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
 });
 
 // =============================================================================

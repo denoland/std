@@ -373,6 +373,15 @@ export class XmlTokenizer {
       this.#textStartIdx = -1;
       this.#textPartial = "";
       if (content.length > 0) {
+        // XML 1.0 §2.4: The literal string "]]>" is not allowed in text content.
+        // The per-character scan catches this within a single chunk, but "]]>"
+        // can straddle a chunk boundary. Check the accumulated content as a
+        // safety net (mirrors the sync parser's approach).
+        if (content.includes("]") && content.includes("]]>")) {
+          this.#error(
+            "']]>' is not allowed in text content (XML 1.0 §2.4)",
+          );
+        }
         // Any content before XML declaration invalidates XMLDecl position
         this.#xmlDeclAllowed = false;
         this.#callbacks.onText?.(
@@ -638,6 +647,9 @@ export class XmlTokenizer {
     ) {
       value += buffer[this.#bufferIndex];
       this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+    }
+    if (this.#bufferIndex >= bufferLen) {
+      this.#error("Unterminated quoted string in DOCTYPE declaration");
     }
     this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
     return value;
