@@ -1243,7 +1243,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
     // Note: elementName is created after namespace processing below,
     // so we can include the resolved URI
-    const attributes: Record<string, string> = {};
+    const attributes: Record<string, string> = Object.create(null);
     let selfClosing = false;
 
     // Read attributes
