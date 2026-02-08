@@ -811,9 +811,7 @@ export class XmlTokenizer {
         const code = buffer.charCodeAt(this.#bufferIndex);
         // Fast path for ASCII (99%+ of real XML)
         if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) {
-            return; // End of name
-          }
+          if (!this.#isNameCharCode(code)) return;
           this.#column++;
           this.#offset++;
           this.#bufferIndex++;
@@ -823,9 +821,7 @@ export class XmlTokenizer {
             buffer,
             this.#bufferIndex,
           );
-          if (!isValid) {
-            return; // End of name
-          }
+          if (!isValid) return;
           this.#column += charCount;
           this.#offset += charCount;
           this.#bufferIndex += charCount;
@@ -837,9 +833,7 @@ export class XmlTokenizer {
         const code = buffer.charCodeAt(this.#bufferIndex);
         // Fast path for ASCII
         if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) {
-            return;
-          }
+          if (!this.#isNameCharCode(code)) return;
           this.#bufferIndex++;
         } else {
           // Non-ASCII: use surrogate-aware checking
@@ -847,9 +841,7 @@ export class XmlTokenizer {
             buffer,
             this.#bufferIndex,
           );
-          if (!isValid) {
-            return;
-          }
+          if (!isValid) return;
           this.#bufferIndex += charCount;
         }
       }
@@ -1181,7 +1173,8 @@ export class XmlTokenizer {
     quoteCode: number,
   ): boolean {
     const quoteChar = String.fromCharCode(quoteCode);
-    const endIdx = buffer.indexOf(quoteChar, this.#bufferIndex);
+    const idx = this.#bufferIndex;
+    const endIdx = buffer.indexOf(quoteChar, idx);
 
     if (endIdx !== -1) {
       // Found closing quote - validate and complete
@@ -1195,7 +1188,7 @@ export class XmlTokenizer {
       }
 
       // Update position for the content region (not including closing quote)
-      this.#updatePositionForRegion(buffer, this.#bufferIndex, endIdx);
+      this.#updatePositionForRegion(buffer, idx, endIdx);
       this.#bufferIndex = endIdx;
       return true; // Complete - ready to emit
     }
@@ -1211,9 +1204,9 @@ export class XmlTokenizer {
     }
 
     // Batch consume the entire remaining buffer
-    if (bufferLen > this.#bufferIndex) {
+    if (bufferLen > idx) {
       this.#attrPartial += buffer.slice(this.#attrStartIdx, bufferLen);
-      this.#updatePositionForRegion(buffer, this.#bufferIndex, bufferLen);
+      this.#updatePositionForRegion(buffer, idx, bufferLen);
       this.#bufferIndex = bufferLen;
       this.#attrStartIdx = bufferLen;
     }
@@ -1234,8 +1227,13 @@ export class XmlTokenizer {
   process(chunk: string, callbacks: XmlTokenCallbacks): void {
     this.#callbacks = callbacks;
     this.#savePartialsBeforeReset();
-    this.#buffer = this.#buffer.slice(this.#bufferIndex) +
-      this.#normalizeLineEndings(chunk);
+    const normalized = this.#normalizeLineEndings(chunk);
+    // When buffer fully consumed, avoid slice + concat (common case)
+    if (this.#bufferIndex >= this.#buffer.length) {
+      this.#buffer = normalized;
+    } else {
+      this.#buffer = this.#buffer.slice(this.#bufferIndex) + normalized;
+    }
     this.#bufferIndex = 0;
 
     // Cache hot variables locally to reduce private field access overhead.
