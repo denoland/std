@@ -104,6 +104,9 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   }
 }
 
+/** Shared empty array for elements without namespace bindings, avoiding per-element allocation. */
+const EMPTY_NS_BINDINGS: Array<[string, string | undefined]> = [];
+
 /**
  * Stateful XML Event Parser.
  *
@@ -414,8 +417,13 @@ export class XmlEventParser implements XmlTokenCallbacks {
           column: this.#pendingColumn,
           offset: this.#pendingOffset,
         });
-        // Push namespace bindings to stack
-        this.#nsStack.push(this.#pendingNsBindings.slice());
+        // Push namespace bindings to stack (shared constant avoids allocation
+        // for the common case of elements without namespace declarations)
+        this.#nsStack.push(
+          this.#pendingNsBindings.length > 0
+            ? this.#pendingNsBindings.slice()
+            : EMPTY_NS_BINDINGS,
+        );
       }
 
       // Reset pending namespace bindings for next element

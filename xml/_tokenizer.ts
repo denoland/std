@@ -188,6 +188,18 @@ ASCII_NAME_CHAR[0x2D] = 1; // -
 ASCII_NAME_CHAR[0x2E] = 1; // .
 
 /**
+ * Lookup table for ASCII NameStartChar (0x00-0x7F).
+ * Valid: [a-z] [A-Z] _ :
+ * Used to inline the ASCII fast path at {@link XmlTokenizer.#isNameStartCharAt}
+ * call sites, avoiding tuple allocation for 99%+ of real XML.
+ */
+const ASCII_NAME_START_CHAR = new Uint8Array(128);
+for (let i = 0x61; i <= 0x7A; i++) ASCII_NAME_START_CHAR[i] = 1; // a-z
+for (let i = 0x41; i <= 0x5A; i++) ASCII_NAME_START_CHAR[i] = 1; // A-Z
+ASCII_NAME_START_CHAR[0x5F] = 1; // _
+ASCII_NAME_START_CHAR[0x3A] = 1; // :
+
+/**
  * Matches any C0 control character that is illegal in XML 1.0 content.
  * Valid C0 chars: TAB (0x09), LF (0x0A), CR (0x0D). All others are illegal.
  * Used as a fast native pre-check in {@link XmlTokenizer.#flushText}.
@@ -1327,21 +1339,32 @@ export class XmlTokenizer {
             this.#tagNameStartIdx === this.#bufferIndex &&
             this.#tagNamePartial === ""
           ) {
-            // Check for valid NameStartChar (handles astral plane via surrogate pairs)
-            const [isValid, charCount] = this.#isNameStartCharAt(
-              buffer,
-              this.#bufferIndex,
-            );
-            if (!isValid) {
-              this.#error(
-                `Unexpected character '${
-                  String.fromCharCode(code)
-                }' in end tag`,
+            // ASCII fast path: lookup table avoids function call + tuple allocation
+            if (code < 0x80) {
+              if (!ASCII_NAME_START_CHAR[code]) {
+                this.#error(
+                  `Unexpected character '${
+                    String.fromCharCode(code)
+                  }' in end tag`,
+                );
+              }
+              this.#advanceWithCode(code);
+            } else {
+              // Non-ASCII: surrogate-aware check (rare)
+              const [isValid, charCount] = this.#isNameStartCharAt(
+                buffer,
+                this.#bufferIndex,
               );
-            }
-            // Advance by charCount (1 for BMP, 2 for astral plane)
-            for (let i = 0; i < charCount; i++) {
-              this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+              if (!isValid) {
+                this.#error(
+                  `Unexpected character '${
+                    String.fromCharCode(code)
+                  }' in end tag`,
+                );
+              }
+              for (let i = 0; i < charCount; i++) {
+                this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+              }
             }
           }
 
@@ -1476,8 +1499,19 @@ export class XmlTokenizer {
             this.#piTargetStartIdx = this.#bufferIndex;
             this.#piTargetPartial = "";
             this.#state = State.PI_TARGET;
+          } else if (code < 0x80) {
+            // ASCII fast path: lookup table avoids function call + tuple allocation
+            if (!ASCII_NAME_START_CHAR[code]) {
+              this.#error(
+                `Unexpected character '${String.fromCharCode(code)}' after '<'`,
+              );
+            }
+            this.#tagNameStartIdx = this.#bufferIndex;
+            this.#tagNamePartial = "";
+            this.#advanceWithCode(code);
+            this.#state = State.TAG_NAME;
           } else {
-            // Check for valid NameStartChar (handles astral plane via surrogate pairs)
+            // Non-ASCII: surrogate-aware check (rare)
             const [isValid, charCount] = this.#isNameStartCharAt(
               buffer,
               this.#bufferIndex,
@@ -1485,7 +1519,6 @@ export class XmlTokenizer {
             if (isValid) {
               this.#tagNameStartIdx = this.#bufferIndex;
               this.#tagNamePartial = "";
-              // Advance by charCount (1 for BMP, 2 for astral plane)
               for (let i = 0; i < charCount; i++) {
                 this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
               }
