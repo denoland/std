@@ -173,6 +173,21 @@ C0_VALID[0x0A] = 1; // LF
 C0_VALID[0x0D] = 1; // CR
 
 /**
+ * Lookup table for ASCII NameChar (0x00-0x7F).
+ * Valid: [a-z] [A-Z] [0-9] _ : - .
+ * Replaces 10 chained comparisons in {@link XmlTokenizer.#captureNameChars}
+ * with a single array access.
+ */
+const ASCII_NAME_CHAR = new Uint8Array(128);
+for (let i = 0x61; i <= 0x7A; i++) ASCII_NAME_CHAR[i] = 1; // a-z
+for (let i = 0x41; i <= 0x5A; i++) ASCII_NAME_CHAR[i] = 1; // A-Z
+for (let i = 0x30; i <= 0x39; i++) ASCII_NAME_CHAR[i] = 1; // 0-9
+ASCII_NAME_CHAR[0x5F] = 1; // _
+ASCII_NAME_CHAR[0x3A] = 1; // :
+ASCII_NAME_CHAR[0x2D] = 1; // -
+ASCII_NAME_CHAR[0x2E] = 1; // .
+
+/**
  * Matches any C0 control character that is illegal in XML 1.0 content.
  * Valid C0 chars: TAB (0x09), LF (0x0A), CR (0x0D). All others are illegal.
  * Used as a fast native pre-check in {@link XmlTokenizer.#flushText}.
@@ -382,10 +397,11 @@ export class XmlTokenizer {
       this.#textPartial = "";
       if (content.length > 0) {
         // XML 1.0 §2.2: Reject illegal C0 control characters.
-        // The position-tracking path checks inline in #captureText; this
-        // native regex pre-check covers the no-position-tracking path and
-        // acts as a safety net for cross-chunk text in all modes.
-        if (ILLEGAL_XML_CHAR_REGEXP.test(content)) {
+        // The position-tracking path already validates inline in
+        // #captureText, so this native regex pre-check only runs for the
+        // no-position-tracking path (avoids redundant scan of every text
+        // node when positions are tracked).
+        if (!this.#trackPosition && ILLEGAL_XML_CHAR_REGEXP.test(content)) {
           for (let i = 0; i < content.length; i++) {
             const code = content.charCodeAt(i);
             if (
@@ -790,54 +806,49 @@ export class XmlTokenizer {
 
   /**
    * Capture an XML name (element or attribute name) in a tight loop.
-   * Returns the captured name, or empty string if no valid name found.
    *
    * Assumes the first character has already been validated as NameStartChar.
    * Continues until a non-NameChar is encountered.
+   *
+   * Uses a pre-computed {@link ASCII_NAME_CHAR} lookup table (1 array access)
+   * instead of calling {@link #isNameCharCode} per char (10 comparisons).
+   * Local `idx` avoids private-field access in the loop. Position is updated
+   * in a single batch after the loop (names cannot contain newlines).
    */
   #captureNameChars(buffer: string, bufferLen: number): void {
-    // Tight loop: scan NameChar characters
-    // Handles surrogate pairs for astral plane characters (U+10000+)
-    if (this.#trackPosition) {
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
-        // Fast path for ASCII (99%+ of real XML)
+    let idx = this.#bufferIndex;
+
+    // Tight ASCII loop: 1 charCodeAt + 1 comparison + 1 array access per char.
+    // No function calls, no private-field access.
+    while (idx < bufferLen) {
+      const code = buffer.charCodeAt(idx);
+      if (code >= 0x80) break;
+      if (!ASCII_NAME_CHAR[code]) break;
+      idx++;
+    }
+
+    // Non-ASCII tail (rare): surrogate-aware checking
+    if (idx < bufferLen && buffer.charCodeAt(idx) >= 0x80) {
+      while (idx < bufferLen) {
+        const code = buffer.charCodeAt(idx);
         if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) return;
-          this.#column++;
-          this.#offset++;
-          this.#bufferIndex++;
+          if (!ASCII_NAME_CHAR[code]) break;
+          idx++;
         } else {
-          // Non-ASCII: use surrogate-aware checking
-          const [isValid, charCount] = this.#isNameCharAt(
-            buffer,
-            this.#bufferIndex,
-          );
-          if (!isValid) return;
-          this.#column += charCount;
-          this.#offset += charCount;
-          this.#bufferIndex += charCount;
-        }
-      }
-    } else {
-      // Fast path without position tracking
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
-        // Fast path for ASCII
-        if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) return;
-          this.#bufferIndex++;
-        } else {
-          // Non-ASCII: use surrogate-aware checking
-          const [isValid, charCount] = this.#isNameCharAt(
-            buffer,
-            this.#bufferIndex,
-          );
-          if (!isValid) return;
-          this.#bufferIndex += charCount;
+          const [isValid, charCount] = this.#isNameCharAt(buffer, idx);
+          if (!isValid) break;
+          idx += charCount;
         }
       }
     }
+
+    // Batch position update: names never contain newlines, so column += length.
+    if (this.#trackPosition) {
+      const advance = idx - this.#bufferIndex;
+      this.#column += advance;
+      this.#offset += advance;
+    }
+    this.#bufferIndex = idx;
   }
 
   /**
