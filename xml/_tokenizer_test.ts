@@ -1165,12 +1165,14 @@ Deno.test("XmlTokenizer.process() handles comment with dashes inside DOCTYPE int
   assertEquals(tokens[0]?.type, "doctype");
 });
 
-Deno.test("XmlTokenizer.process() handles comment with multiple trailing dashes in DOCTYPE", () => {
-  // Tests DTD_COMMENT_DASH_DASH staying in state for consecutive dashes (----->)
-  const tokens = collectTokens(
-    "<!DOCTYPE root [<!------>]><root/>",
+Deno.test("XmlTokenizer.process() throws on multiple trailing dashes in DOCTYPE comment", () => {
+  // Per XML 1.0 §2.5, after '--' only '>' is permitted.
+  // '<!------>' has content '--' which contains the forbidden '--' sequence.
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root [<!------>]><root/>"),
+    XmlSyntaxError,
+    "'--' is not allowed within XML comments",
   );
-  assertEquals(tokens[0]?.type, "doctype");
 });
 
 Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () => {

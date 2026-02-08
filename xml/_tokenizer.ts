@@ -2449,11 +2449,10 @@ export class XmlTokenizer {
           if (code === CC_GT) {
             this.#advanceWithCode(code);
             this.#state = State.DOCTYPE_INTERNAL_SUBSET;
-          } else if (code === CC_DASH) {
-            // Stay in DASH_DASH state, ----> is valid ending
-            this.#advanceWithCode(code);
           } else {
-            // Per spec, -- is not allowed within comments
+            // Per XML 1.0 §2.5, after '--' only '>' is permitted.
+            // Any other character (including '-') means '--' appears
+            // within the comment content, which is not allowed.
             this.#error(
               `'--' is not allowed within XML comments (XML 1.0 §2.5)`,
             );
