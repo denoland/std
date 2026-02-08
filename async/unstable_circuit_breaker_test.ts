@@ -952,6 +952,93 @@ Deno.test("CircuitBreaker.execute() rejects immediately if signal already aborte
   assertEquals(breaker.state, "closed");
 });
 
+Deno.test("CircuitBreaker throwing onFailure does not mask original error and later callbacks still fire", async () => {
+  const transitions: Array<[CircuitState, CircuitState]> = [];
+  const openCalls: number[] = [];
+  const asyncErrors: Error[] = [];
+  const callbackError = new Error("callback bug");
+
+  // Intercept the asynchronously re-thrown callback error
+  const onError = (event: ErrorEvent) => {
+    event.preventDefault();
+    asyncErrors.push(event.error);
+  };
+  globalThis.addEventListener("error", onError);
+
+  try {
+    const breaker = new CircuitBreaker({
+      failureThreshold: 1,
+      onFailure: () => {
+        throw callbackError;
+      },
+      onStateChange: (from, to) => transitions.push([from, to]),
+      onOpen: (count) => openCalls.push(count),
+    });
+
+    // The original error must propagate, not the callback error
+    const originalError = new Error("service down");
+    await assertRejects(
+      () => breaker.execute(() => Promise.reject(originalError)),
+      Error,
+      "service down",
+    );
+
+    // Flush the microtask queue so the async error is delivered
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
+
+    // Circuit must still have opened
+    assertEquals(breaker.state, "open");
+
+    // onStateChange and onOpen must still have been called despite onFailure throwing
+    assertEquals(transitions, [["closed", "open"]]);
+    assertEquals(openCalls, [1]);
+
+    // The callback error was reported asynchronously
+    assertEquals(asyncErrors.length, 1);
+    assertEquals(asyncErrors[0], callbackError);
+  } finally {
+    globalThis.removeEventListener("error", onError);
+  }
+});
+
+Deno.test("CircuitBreaker throwing onStateChange during success does not prevent result return", async () => {
+  using time = new FakeTime();
+
+  // Intercept asynchronously re-thrown callback errors
+  const onError = (event: ErrorEvent) => {
+    event.preventDefault();
+  };
+  globalThis.addEventListener("error", onError);
+
+  try {
+    const breaker = new CircuitBreaker({
+      failureThreshold: 1,
+      cooldownMs: 1000,
+      successThreshold: 1,
+      onStateChange: () => {
+        throw new Error("observer bug");
+      },
+    });
+
+    // Open the circuit (onStateChange throws here too, but circuit still opens)
+    try {
+      await breaker.execute(() => Promise.reject(new Error("fail")));
+    } catch { /* expected */ }
+    assertEquals(breaker.state, "open");
+
+    // Advance past cooldown
+    time.tick(1001);
+
+    // Success triggers half_open→closed transition where onStateChange throws,
+    // but the result must still be returned
+    const result = await breaker.execute(() => Promise.resolve("recovered"));
+    assertEquals(result, "recovered");
+    assertEquals(breaker.state, "closed");
+  } finally {
+    globalThis.removeEventListener("error", onError);
+  }
+});
+
 Deno.test("CircuitBreaker abort does not count as circuit failure", async () => {
   const failures: Array<{ error: unknown; count: number }> = [];
   const breaker = new CircuitBreaker({
