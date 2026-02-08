@@ -719,11 +719,22 @@ export class XmlTokenizer {
       this.#textStartIdx = this.#bufferIndex;
     }
 
-    // Tight loop: scan for '<', validating characters as we go
+    // Tight loop: scan for '<', validating characters as we go.
+    // Cache #bufferIndex as local to avoid private field access overhead per iteration.
+    let idx = this.#bufferIndex;
+
     if (this.#trackPosition) {
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
+      let line = this.#line;
+      let column = this.#column;
+      let offset = this.#offset;
+
+      while (idx < bufferLen) {
+        const code = buffer.charCodeAt(idx);
         if (code === CC_LT) {
+          this.#bufferIndex = idx;
+          this.#line = line;
+          this.#column = column;
+          this.#offset = offset;
           return true;
         }
 
@@ -732,6 +743,10 @@ export class XmlTokenizer {
         if (
           code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
         ) {
+          this.#bufferIndex = idx;
+          this.#line = line;
+          this.#column = column;
+          this.#offset = offset;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
@@ -743,27 +758,36 @@ export class XmlTokenizer {
         // Only check when we see ']' to avoid overhead
         if (
           code === CC_RBRACKET &&
-          this.#bufferIndex + 2 < bufferLen &&
-          buffer.charCodeAt(this.#bufferIndex + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(this.#bufferIndex + 2) === CC_GT
+          idx + 2 < bufferLen &&
+          buffer.charCodeAt(idx + 1) === CC_RBRACKET &&
+          buffer.charCodeAt(idx + 2) === CC_GT
         ) {
+          this.#bufferIndex = idx;
+          this.#line = line;
+          this.#column = column;
+          this.#offset = offset;
           this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
         }
 
         if (code === CC_LF) {
-          this.#line++;
-          this.#column = 1;
+          line++;
+          column = 1;
         } else {
-          this.#column++;
+          column++;
         }
-        this.#offset++;
-        this.#bufferIndex++;
+        offset++;
+        idx++;
       }
+
+      this.#line = line;
+      this.#column = column;
+      this.#offset = offset;
     } else {
       // Fast path without position tracking
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
+      while (idx < bufferLen) {
+        const code = buffer.charCodeAt(idx);
         if (code === CC_LT) {
+          this.#bufferIndex = idx;
           return true;
         }
 
@@ -772,6 +796,7 @@ export class XmlTokenizer {
         if (
           code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
         ) {
+          this.#bufferIndex = idx;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
@@ -782,17 +807,19 @@ export class XmlTokenizer {
         // XML 1.0 §2.4: Check for "]]>" in text content
         if (
           code === CC_RBRACKET &&
-          this.#bufferIndex + 2 < bufferLen &&
-          buffer.charCodeAt(this.#bufferIndex + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(this.#bufferIndex + 2) === CC_GT
+          idx + 2 < bufferLen &&
+          buffer.charCodeAt(idx + 1) === CC_RBRACKET &&
+          buffer.charCodeAt(idx + 2) === CC_GT
         ) {
+          this.#bufferIndex = idx;
           this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
         }
 
-        this.#bufferIndex++;
+        idx++;
       }
     }
 
+    this.#bufferIndex = idx;
     return false;
   }
 
