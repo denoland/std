@@ -28,12 +28,12 @@ import { XmlSyntaxError } from "./types.ts";
 import { decodeEntities } from "./_entities.ts";
 import {
   isReservedPiTarget,
-  LINE_ENDING_RE,
+  LINE_ENDING_REGEXP,
   parseName,
   validateNamespaceBinding,
   validateQName,
   validateXmlDeclaration,
-  WHITESPACE_ONLY_RE,
+  WHITESPACE_ONLY_REGEXP,
   XML_NAMESPACE,
 } from "./_common.ts";
 import { isNameChar, isNameStartChar } from "./_name_chars.ts";
@@ -94,7 +94,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const trackPosition = options?.trackPosition ?? true;
 
   // Normalize line endings (XML 1.0 §2.11)
-  const input = xml.includes("\r") ? xml.replace(LINE_ENDING_RE, "\n") : xml;
+  const input = xml.includes("\r")
+    ? xml.replace(LINE_ENDING_REGEXP, "\n")
+    : xml;
   const len = input.length;
 
   // Parser state - only track position offset, not line/column
@@ -850,7 +852,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           );
         }
         // Check for non-whitespace content
-        if (!WHITESPACE_ONLY_RE.test(text)) {
+        if (!WHITESPACE_ONLY_REGEXP.test(text)) {
           pos = textStart;
           if (!root) {
             error(
@@ -864,7 +866,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         }
       }
 
-      if (!(ignoreWhitespace && WHITESPACE_ONLY_RE.test(text))) {
+      if (!(ignoreWhitespace && WHITESPACE_ONLY_REGEXP.test(text))) {
         addNode({ type: "text", text });
       }
       continue;

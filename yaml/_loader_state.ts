@@ -49,13 +49,13 @@ const CHOMPING_CLIP = 1;
 const CHOMPING_STRIP = 2;
 const CHOMPING_KEEP = 3;
 
-const PATTERN_NON_PRINTABLE =
+const PATTERN_NON_PRINTABLE_REGEXP =
   // deno-lint-ignore no-control-regex
   /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/;
-const PATTERN_NON_ASCII_LINE_BREAKS = /[\x85\u2028\u2029]/;
-const PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/;
-const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
-const PATTERN_TAG_URI =
+const PATTERN_NON_ASCII_LINE_BREAKS_REGEXP = /[\x85\u2028\u2029]/;
+const PATTERN_FLOW_INDICATORS_REGEXP = /[,\[\]\{\}]/;
+const PATTERN_TAG_HANDLE_REGEXP = /^(?:!|!!|![a-z\-]+!)$/i;
+const PATTERN_TAG_URI_REGEXP =
   /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
 export interface LoaderStateOptions {
@@ -319,7 +319,7 @@ export class LoaderState {
     const handle = args[0]!;
     const prefix = args[1]!;
 
-    if (!PATTERN_TAG_HANDLE.test(handle)) {
+    if (!PATTERN_TAG_HANDLE_REGEXP.test(handle)) {
       throw this.#createError(
         `Cannot handle tag directive: ill-formed handle (first argument) in "${handle}"`,
       );
@@ -331,7 +331,7 @@ export class LoaderState {
       );
     }
 
-    if (!PATTERN_TAG_URI.test(prefix)) {
+    if (!PATTERN_TAG_URI_REGEXP.test(prefix)) {
       throw this.#createError(
         "Cannot handle tag directive: ill-formed tag prefix (second argument) of the TAG directive",
       );
@@ -359,7 +359,7 @@ export class LoaderState {
             );
           }
         }
-      } else if (PATTERN_NON_PRINTABLE.test(result)) {
+      } else if (PATTERN_NON_PRINTABLE_REGEXP.test(result)) {
         throw this.#createError("Stream contains non-printable characters");
       }
 
@@ -1354,7 +1354,7 @@ export class LoaderState {
           if (!isNamed) {
             tagHandle = this.input.slice(position - 1, this.position + 1);
 
-            if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
+            if (!PATTERN_TAG_HANDLE_REGEXP.test(tagHandle)) {
               throw this.#createError(
                 "Cannot read tag property: named tag handle contains invalid characters",
               );
@@ -1374,14 +1374,14 @@ export class LoaderState {
 
       tagName = this.input.slice(position, this.position);
 
-      if (PATTERN_FLOW_INDICATORS.test(tagName)) {
+      if (PATTERN_FLOW_INDICATORS_REGEXP.test(tagName)) {
         throw this.#createError(
           "Cannot read tag property: tag suffix cannot contain flow indicator characters",
         );
       }
     }
 
-    if (tagName && !PATTERN_TAG_URI.test(tagName)) {
+    if (tagName && !PATTERN_TAG_URI_REGEXP.test(tagName)) {
       throw this.#createError(
         `Cannot read tag property: invalid characters in tag name "${tagName}"`,
       );
@@ -1751,7 +1751,7 @@ export class LoaderState {
 
     if (
       this.checkLineBreaks &&
-      PATTERN_NON_ASCII_LINE_BREAKS.test(
+      PATTERN_NON_ASCII_LINE_BREAKS_REGEXP.test(
         this.input.slice(documentStart, this.position),
       )
     ) {

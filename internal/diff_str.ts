@@ -35,7 +35,7 @@ export function unescape(string: string): string {
     );
 }
 
-const WHITESPACE_SYMBOLS =
+const WHITESPACE_SYMBOLS_REGEXP =
   /((?:\\[bftv]|[^\S\r\n])+|\\[rn\\]|[()[\]{}'"\r\n]|\b)/;
 
 /**
@@ -57,7 +57,7 @@ const WHITESPACE_SYMBOLS =
 export function tokenize(string: string, wordDiff = false): string[] {
   if (wordDiff) {
     return string
-      .split(WHITESPACE_SYMBOLS)
+      .split(WHITESPACE_SYMBOLS_REGEXP)
       .filter((token) => token);
   }
   const tokens: string[] = [];

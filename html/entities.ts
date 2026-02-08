@@ -53,8 +53,8 @@ const defaultUnescapeOptions: UnescapeOptions = {
 
 const MAX_CODE_POINT = 0x10ffff;
 
-const RX_DEC_ENTITY = /&#([0-9]+);/g;
-const RX_HEX_ENTITY = /&#x(\p{AHex}+);/gu;
+const RX_DEC_ENTITY_REGEXP = /&#([0-9]+);/g;
+const RX_HEX_ENTITY_REGEXP = /&#x(\p{AHex}+);/gu;
 
 const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 
@@ -111,8 +111,8 @@ export function unescape(
 
   return str
     .replaceAll(entityRe, (m) => entityList[m]!)
-    .replaceAll(RX_DEC_ENTITY, (_, dec) => codePointStrToChar(dec, 10))
-    .replaceAll(RX_HEX_ENTITY, (_, hex) => codePointStrToChar(hex, 16));
+    .replaceAll(RX_DEC_ENTITY_REGEXP, (_, dec) => codePointStrToChar(dec, 10))
+    .replaceAll(RX_HEX_ENTITY_REGEXP, (_, hex) => codePointStrToChar(hex, 16));
 }
 
 function codePointStrToChar(codePointStr: string, radix: number) {

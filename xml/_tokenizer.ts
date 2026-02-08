@@ -17,7 +17,7 @@ import {
 } from "./types.ts";
 import {
   isReservedPiTarget,
-  LINE_ENDING_RE,
+  LINE_ENDING_REGEXP,
   validateXmlDeclaration,
 } from "./_common.ts";
 import { isNameChar, isNameStartChar } from "./_name_chars.ts";
@@ -527,7 +527,9 @@ export class XmlTokenizer {
   }
 
   #normalizeLineEndings(chunk: string): string {
-    return chunk.includes("\r") ? chunk.replace(LINE_ENDING_RE, "\n") : chunk;
+    return chunk.includes("\r")
+      ? chunk.replace(LINE_ENDING_REGEXP, "\n")
+      : chunk;
   }
 
   /**

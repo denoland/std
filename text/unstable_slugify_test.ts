@@ -136,23 +136,26 @@ Deno.test("slugify() strips or replaces all non-alphanumeric ASCII chars except 
    * or other exploits, which could be allowed by presence of chars like
    * `./?&=#` etc.
    */
-  const ASCII_ALPHANUM_OR_DASH_ONLY = /^[a-zA-Z0-9\-]+$/;
+  const ASCII_ALPHANUM_OR_DASH_ONLY_REGEXP = /^[a-zA-Z0-9\-]+$/;
   const ALL_ASCII = Array.from(
     { length: 0x80 },
     (_, i) => String.fromCodePoint(i),
   ).join("");
 
   // with default
-  assertMatch(slugify(ALL_ASCII), ASCII_ALPHANUM_OR_DASH_ONLY);
+  assertMatch(slugify(ALL_ASCII), ASCII_ALPHANUM_OR_DASH_ONLY_REGEXP);
   // even if we explicitly set the strip regex to match nothing
   assertMatch(
     slugify(ALL_ASCII, { strip: /[^\s\S]/gu }),
-    ASCII_ALPHANUM_OR_DASH_ONLY,
+    ASCII_ALPHANUM_OR_DASH_ONLY_REGEXP,
   );
 
   // defense-in-depth - the exported regexes _also_ all strip non-ASCII characters
   for (const re of [ASCII_DIACRITICS, DIACRITICS, NON_ASCII, NON_WORD]) {
-    assertMatch(ALL_ASCII.replaceAll(re, ""), ASCII_ALPHANUM_OR_DASH_ONLY);
+    assertMatch(
+      ALL_ASCII.replaceAll(re, ""),
+      ASCII_ALPHANUM_OR_DASH_ONLY_REGEXP,
+    );
   }
 });
 
