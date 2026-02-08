@@ -1193,13 +1193,11 @@ export class XmlTokenizer {
 
     if (endIdx !== -1) {
       // Found closing quote - validate and complete
-      // Check for '<' which is not allowed in attribute values
-      for (let i = this.#attrStartIdx; i < endIdx; i++) {
-        const code = buffer.charCodeAt(i);
-        if (code === CC_LT) {
-          this.#bufferIndex = i;
-          this.#error(`'<' not allowed in attribute value`);
-        }
+      // Check for '<' which is not allowed in attribute values (native indexOf)
+      const ltIdx = buffer.indexOf("<", this.#attrStartIdx);
+      if (ltIdx !== -1 && ltIdx < endIdx) {
+        this.#bufferIndex = ltIdx;
+        this.#error(`'<' not allowed in attribute value`);
       }
 
       // Update position for the content region (not including closing quote)
@@ -1209,13 +1207,11 @@ export class XmlTokenizer {
     }
 
     // No closing quote found - consume as much as safely possible
-    // Check for '<' and batch consume the region
-    for (let i = this.#attrStartIdx; i < bufferLen; i++) {
-      const code = buffer.charCodeAt(i);
-      if (code === CC_LT) {
-        this.#bufferIndex = i;
-        this.#error(`'<' not allowed in attribute value`);
-      }
+    // Check for '<' which is not allowed in attribute values (native indexOf)
+    const ltCheck = buffer.indexOf("<", this.#attrStartIdx);
+    if (ltCheck !== -1 && ltCheck < bufferLen) {
+      this.#bufferIndex = ltCheck;
+      this.#error(`'<' not allowed in attribute value`);
     }
 
     // Batch consume the entire remaining buffer
@@ -1425,6 +1421,15 @@ export class XmlTokenizer {
             // Whitespace seen - no longer require whitespace before next attr
             this.#needsAttrWhitespace = false;
             this.#advanceWithCode(code);
+            // Tight loop: skip remaining whitespace without switch dispatch
+            while (this.#bufferIndex < bufferLen) {
+              const wsCode = buffer.charCodeAt(this.#bufferIndex);
+              if (
+                wsCode !== CC_SPACE && wsCode !== CC_TAB &&
+                wsCode !== CC_LF && wsCode !== CC_CR
+              ) break;
+              this.#advanceWithCode(wsCode);
+            }
           } else if (code === CC_GT) {
             this.#needsAttrWhitespace = false;
             this.#callbacks.onStartTagClose?.(false);
@@ -1434,7 +1439,11 @@ export class XmlTokenizer {
             this.#needsAttrWhitespace = false;
             this.#advanceWithCode(code);
             this.#state = State.EXPECT_SELF_CLOSE_GT;
-          } else if (this.#isNameStartCharCode(code)) {
+          } else if (
+            code < 0x80
+              ? ASCII_NAME_START_CHAR[code]
+              : this.#isNameStartCharCode(code)
+          ) {
             // XML 1.0 §3.1: Whitespace is required between attributes
             if (this.#needsAttrWhitespace) {
               this.#error("Whitespace is required between attributes");
