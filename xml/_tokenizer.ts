@@ -172,6 +172,14 @@ C0_VALID[0x09] = 1; // TAB
 C0_VALID[0x0A] = 1; // LF
 C0_VALID[0x0D] = 1; // CR
 
+/**
+ * Matches any C0 control character that is illegal in XML 1.0 content.
+ * Valid C0 chars: TAB (0x09), LF (0x0A), CR (0x0D). All others are illegal.
+ * Used as a fast native pre-check in {@link XmlTokenizer.#flushText}.
+ */
+// deno-lint-ignore no-control-regex
+const ILLEGAL_XML_CHAR_REGEXP = /[\x00-\x08\x0B\x0C\x0E-\x1F]/;
+
 /** Sentinel position used when position tracking is disabled. */
 const NO_POSITION: XmlPosition = { line: 0, column: 0, offset: 0 };
 
@@ -373,9 +381,27 @@ export class XmlTokenizer {
       this.#textStartIdx = -1;
       this.#textPartial = "";
       if (content.length > 0) {
-        // XML 1.0 §2.4: "]]>" not allowed in text content. The per-character
-        // scan misses this when it straddles a chunk boundary; #textPartial
-        // accumulates across chunks so the full sequence is present here.
+        // XML 1.0 §2.2: Reject illegal C0 control characters.
+        // The position-tracking path checks inline in #captureText; this
+        // native regex pre-check covers the no-position-tracking path and
+        // acts as a safety net for cross-chunk text in all modes.
+        if (ILLEGAL_XML_CHAR_REGEXP.test(content)) {
+          for (let i = 0; i < content.length; i++) {
+            const code = content.charCodeAt(i);
+            if (
+              code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
+            ) {
+              this.#error(
+                `Illegal XML character U+${
+                  code.toString(16).toUpperCase().padStart(4, "0")
+                } (XML 1.0 §2.2)`,
+              );
+            }
+          }
+        }
+        // XML 1.0 §2.4: "]]>" is not allowed in text content.
+        // Catches both within-chunk and cross-chunk occurrences since
+        // #textPartial accumulates across chunks.
         if (content.includes("]]>")) {
           this.#error(
             "']]>' is not allowed in text content (XML 1.0 §2.4)",
@@ -682,9 +708,12 @@ export class XmlTokenizer {
    * Capture text content in a tight loop until '<' is found.
    * Returns true if '<' was found, false if end of buffer reached.
    *
-   * Validates XML 1.0 constraints:
-   * - §2.4: "]]>" is not allowed in text content
-   * - §2.2: Illegal C0 control characters are rejected
+   * The "]]>" check (XML 1.0 §2.4) is deferred to {@link #flushText} where
+   * a single native `includes` covers both within-chunk and cross-chunk cases.
+   *
+   * Illegal C0 control characters (XML 1.0 §2.2) are checked inline in the
+   * position-tracking path (already iterating per char) and via a fast native
+   * regex pre-check in {@link #flushText} for the no-position-tracking path.
    */
   #captureText(buffer: string, bufferLen: number): boolean {
     // Initialize text tracking if this is the start of a new text node
@@ -697,11 +726,10 @@ export class XmlTokenizer {
       this.#textStartIdx = this.#bufferIndex;
     }
 
-    // Tight loop: scan for '<', validating characters as we go.
-    // Cache #bufferIndex as local to avoid private field access overhead per iteration.
-    let idx = this.#bufferIndex;
-
     if (this.#trackPosition) {
+      // Scan for '<' while tracking line/column positions.
+      // Illegal C0 chars are checked here (we're already per-char).
+      let idx = this.#bufferIndex;
       let line = this.#line;
       let column = this.#column;
       let offset = this.#offset;
@@ -716,8 +744,8 @@ export class XmlTokenizer {
           return true;
         }
 
-        // XML 1.0 §2.2: Check for illegal C0 control characters
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D)
+        // XML 1.0 §2.2: Reject illegal C0 control characters.
+        // Valid: TAB (0x09), LF (0x0A), CR (0x0D).
         if (
           code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
         ) {
@@ -730,21 +758,6 @@ export class XmlTokenizer {
               code.toString(16).toUpperCase().padStart(4, "0")
             } (XML 1.0 §2.2)`,
           );
-        }
-
-        // XML 1.0 §2.4: Check for "]]>" in text content
-        // Only check when we see ']' to avoid overhead
-        if (
-          code === CC_RBRACKET &&
-          idx + 2 < bufferLen &&
-          buffer.charCodeAt(idx + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(idx + 2) === CC_GT
-        ) {
-          this.#bufferIndex = idx;
-          this.#line = line;
-          this.#column = column;
-          this.#offset = offset;
-          this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
         }
 
         if (code === CC_LF) {
@@ -757,47 +770,21 @@ export class XmlTokenizer {
         idx++;
       }
 
+      this.#bufferIndex = idx;
       this.#line = line;
       this.#column = column;
       this.#offset = offset;
     } else {
-      // Fast path without position tracking
-      while (idx < bufferLen) {
-        const code = buffer.charCodeAt(idx);
-        if (code === CC_LT) {
-          this.#bufferIndex = idx;
-          return true;
-        }
-
-        // XML 1.0 §2.2: Check for illegal C0 control characters
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D) - inlined for performance
-        if (
-          code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
-        ) {
-          this.#bufferIndex = idx;
-          this.#error(
-            `Illegal XML character U+${
-              code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
-          );
-        }
-
-        // XML 1.0 §2.4: Check for "]]>" in text content
-        if (
-          code === CC_RBRACKET &&
-          idx + 2 < bufferLen &&
-          buffer.charCodeAt(idx + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(idx + 2) === CC_GT
-        ) {
-          this.#bufferIndex = idx;
-          this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
-        }
-
-        idx++;
+      // Fast path: native indexOf is SIMD-optimized in V8.
+      // Illegal C0 chars are checked in #flushText via regex.
+      const ltIdx = buffer.indexOf("<", this.#bufferIndex);
+      if (ltIdx >= 0) {
+        this.#bufferIndex = ltIdx;
+        return true;
       }
+      this.#bufferIndex = bufferLen;
     }
 
-    this.#bufferIndex = idx;
     return false;
   }
 
