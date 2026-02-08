@@ -810,10 +810,8 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     // Slice text once (reused for ]]> check and entity decoding)
     const text = input.slice(start, end);
 
-    // XML 1.0 §2.4: The literal string "]]>" is not allowed in text content
-    // Fast path: only check for ]]> if text contains ']' (rare in real XML)
-    // This avoids O(n) indexOf scan per text node which caused O(n²) overall
-    if (text.includes("]") && text.includes("]]>")) {
+    // XML 1.0 §2.4: "]]>" is not allowed in text content
+    if (text.includes("]]>")) {
       pos = start + text.indexOf("]]>");
       error("']]>' is not allowed in text content (XML 1.0 §2.4)");
     }

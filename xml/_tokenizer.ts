@@ -373,11 +373,10 @@ export class XmlTokenizer {
       this.#textStartIdx = -1;
       this.#textPartial = "";
       if (content.length > 0) {
-        // XML 1.0 §2.4: The literal string "]]>" is not allowed in text content.
-        // The per-character scan catches this within a single chunk, but "]]>"
-        // can straddle a chunk boundary. Check the accumulated content as a
-        // safety net (mirrors the sync parser's approach).
-        if (content.includes("]") && content.includes("]]>")) {
+        // XML 1.0 §2.4: "]]>" not allowed in text content. The per-character
+        // scan misses this when it straddles a chunk boundary; #textPartial
+        // accumulates across chunks so the full sequence is present here.
+        if (content.includes("]]>")) {
           this.#error(
             "']]>' is not allowed in text content (XML 1.0 §2.4)",
           );
@@ -441,62 +440,41 @@ export class XmlTokenizer {
       return;
     }
 
+    // Cache private fields accessed multiple times
+    const buffer = this.#buffer;
+    const end = this.#bufferIndex;
+
+    // --- Accumulators that need their data saved ---
+    // Text, tag name, attribute name, and PI target accumulators track
+    // [startIdx, bufferIndex) ranges that haven't been copied to their
+    // partial strings yet. Save that data before the buffer changes.
     if (this.#textStartIdx !== -1) {
-      this.#textPartial += this.#buffer.slice(
-        this.#textStartIdx,
-        this.#bufferIndex,
-      );
+      this.#textPartial += buffer.slice(this.#textStartIdx, end);
       this.#textStartIdx = 0;
     }
-    if (this.#cdataStartIdx !== -1) {
-      this.#cdataPartial += this.#buffer.slice(
-        this.#cdataStartIdx,
-        this.#bufferIndex,
-      );
-      this.#cdataStartIdx = 0;
-    }
-    if (this.#attrStartIdx !== -1) {
-      this.#attrPartial += this.#buffer.slice(
-        this.#attrStartIdx,
-        this.#bufferIndex,
-      );
-      this.#attrStartIdx = 0;
-    }
     if (this.#tagNameStartIdx !== -1) {
-      this.#tagNamePartial += this.#buffer.slice(
-        this.#tagNameStartIdx,
-        this.#bufferIndex,
-      );
+      this.#tagNamePartial += buffer.slice(this.#tagNameStartIdx, end);
       this.#tagNameStartIdx = 0;
     }
-    if (this.#commentStartIdx !== -1) {
-      this.#commentPartial += this.#buffer.slice(
-        this.#commentStartIdx,
-        this.#bufferIndex,
-      );
-      this.#commentStartIdx = 0;
-    }
-    if (this.#piTargetStartIdx !== -1) {
-      this.#piTargetPartial += this.#buffer.slice(
-        this.#piTargetStartIdx,
-        this.#bufferIndex,
-      );
-      this.#piTargetStartIdx = 0;
-    }
-    if (this.#piContentStartIdx !== -1) {
-      this.#piContentPartial += this.#buffer.slice(
-        this.#piContentStartIdx,
-        this.#bufferIndex,
-      );
-      this.#piContentStartIdx = 0;
-    }
     if (this.#attrNameStartIdx !== -1) {
-      this.#attrNamePartial += this.#buffer.slice(
-        this.#attrNameStartIdx,
-        this.#bufferIndex,
-      );
+      this.#attrNamePartial += buffer.slice(this.#attrNameStartIdx, end);
       this.#attrNameStartIdx = 0;
     }
+    if (this.#piTargetStartIdx !== -1) {
+      this.#piTargetPartial += buffer.slice(this.#piTargetStartIdx, end);
+      this.#piTargetStartIdx = 0;
+    }
+
+    // --- Accumulators that only need index reset ---
+    // Comment, CDATA, PI content, and attribute value accumulators save
+    // their data eagerly during batch scanning (#captureComment, etc.).
+    // At chunk boundaries their startIdx always equals bufferIndex (the
+    // main loop fully consumes the buffer), so the range is empty and
+    // there is nothing to copy — just reset the indices for the next chunk.
+    if (this.#cdataStartIdx !== -1) this.#cdataStartIdx = 0;
+    if (this.#commentStartIdx !== -1) this.#commentStartIdx = 0;
+    if (this.#piContentStartIdx !== -1) this.#piContentStartIdx = 0;
+    if (this.#attrStartIdx !== -1) this.#attrStartIdx = 0;
   }
 
   #advanceWithCode(code: number): void {
@@ -1255,17 +1233,14 @@ export class XmlTokenizer {
     this.#callbacks = callbacks;
     this.#savePartialsBeforeReset();
     const normalized = this.#normalizeLineEndings(chunk);
-    // When buffer fully consumed, avoid slice + concat (common case)
-    if (this.#bufferIndex >= this.#buffer.length) {
-      this.#buffer = normalized;
-    } else {
-      this.#buffer = this.#buffer.slice(this.#bufferIndex) + normalized;
-    }
+    // The main loop always fully consumes the buffer (bufferIndex reaches
+    // buffer.length), so the new chunk is assigned directly — no leftover
+    // to slice or concatenate.
+    this.#buffer = normalized;
     this.#bufferIndex = 0;
 
     // Cache hot variables locally to reduce private field access overhead.
-    // Private field access (#) can be slower than local variable access.
-    const buffer = this.#buffer;
+    const buffer = normalized;
     const bufferLen = buffer.length;
 
     // Check for BOM at the very first character (for XML declaration position check)
