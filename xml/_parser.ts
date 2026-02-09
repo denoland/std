@@ -23,7 +23,7 @@ import { decodeEntities } from "./_entities.ts";
 import {
   validateNamespaceBinding,
   validateQName,
-  WHITESPACE_ONLY_RE,
+  WHITESPACE_ONLY_REGEXP,
   XML_NAMESPACE,
 } from "./_common.ts";
 
@@ -491,7 +491,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
       }
       // For outside root, only whitespace is allowed - check raw content first
       // (avoids entity decoding for whitespace-only content)
-      if (!WHITESPACE_ONLY_RE.test(content)) {
+      if (!WHITESPACE_ONLY_REGEXP.test(content)) {
         if (!this.#hasRoot) {
           throw new XmlSyntaxError(
             "Content is not allowed before the root element (XML 1.0 §2.8)",
@@ -512,7 +512,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
 
     // Inside root element - decode entities
     const text = decodeEntities(content);
-    if (this.#ignoreWhitespace && WHITESPACE_ONLY_RE.test(text)) return;
+    if (this.#ignoreWhitespace && WHITESPACE_ONLY_REGEXP.test(text)) return;
     this.#callbacks.onText?.(text, line, column, offset);
   }
 

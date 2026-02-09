@@ -30,8 +30,8 @@ type DocNodeWithJsDoc<T = DocNodeBase> = T & {
   jsDoc: JsDoc;
 };
 
-const TS_SNIPPET = /```ts[\s\S]*?```/g;
-const ASSERTION_IMPORT =
+const TS_SNIPPET_REGEXP = /```ts[\s\S]*?```/g;
+const ASSERTION_IMPORT_REGEXP =
   /from "@std\/(assert(\/[a-z-]+)?|expect(\/[a-z-]+)?|testing\/(mock|snapshot|types))"/g;
 const NEWLINE = "\n";
 const diagnostics: DocumentError[] = [];
@@ -142,7 +142,7 @@ function assertHasSnippets(
   doc: string,
   document: { jsDoc: JsDoc; location: Location },
 ) {
-  const snippets = doc.match(TS_SNIPPET);
+  const snippets = doc.match(TS_SNIPPET_REGEXP);
   assert(
     snippets !== null,
     "@example tag must have a TypeScript code snippet",
@@ -155,7 +155,7 @@ function assertHasSnippets(
     snippet = snippet.split(NEWLINE).slice(1, -1).join(NEWLINE);
     if (!(delim?.includes("no-assert") || delim?.includes("ignore"))) {
       assert(
-        snippet.match(ASSERTION_IMPORT) !== null,
+        snippet.match(ASSERTION_IMPORT_REGEXP) !== null,
         "Snippet must contain assertion from `@std/assert`, `@std/expect` or `@std/testing`",
         document,
       );

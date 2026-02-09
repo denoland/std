@@ -48,7 +48,7 @@ function constructYamlFloat(data: string): number {
   return sign * parseFloat(value);
 }
 
-const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
+const SCIENTIFIC_WITHOUT_DOT_REGEXP = /^[-+]?[0-9]+e/;
 
 function representYamlFloat(
   // deno-lint-ignore ban-types
@@ -92,7 +92,7 @@ function representYamlFloat(
   // JS stringifier can build scientific format without dots: 5e-100,
   // while YAML requires dot: 5.e-100. Fix it with simple hack
 
-  return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
+  return SCIENTIFIC_WITHOUT_DOT_REGEXP.test(res) ? res.replace("e", ".e") : res;
 }
 
 function isFloat(object: unknown): object is number {

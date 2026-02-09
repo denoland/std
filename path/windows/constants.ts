@@ -12,4 +12,4 @@ export const SEPARATOR = "\\" as const;
 /**
  * A regular expression that matches one or more path separators.
  */
-export const SEPARATOR_PATTERN = /[\\/]+/;
+export const SEPARATOR_PATTERN_REGEXP = /[\\/]+/;
