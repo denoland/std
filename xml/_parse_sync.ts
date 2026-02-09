@@ -461,7 +461,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         // Check if we're about to see NDATA
         if (
           pos + 4 < len &&
-          input.slice(pos, pos + 5) === "NDATA"
+          input.startsWith("NDATA", pos)
         ) {
           if (isParameterEntity) {
             error("Parameter entities cannot have NDATA declarations");
@@ -976,7 +976,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       }
 
       // CDATA: <![CDATA[...]]>
-      if (pos + 6 < len && input.slice(pos, pos + 7) === "[CDATA[") {
+      if (pos + 6 < len && input.startsWith("[CDATA[", pos)) {
         // XML 1.0 §2.8: CDATA sections are only allowed within elements
         if (!root) {
           pos -= 2; // Point back to '<!'
@@ -1016,7 +1016,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       }
 
       // DOCTYPE: <!DOCTYPE...>
-      if (pos + 6 < len && input.slice(pos, pos + 7) === "DOCTYPE") {
+      if (pos + 6 < len && input.startsWith("DOCTYPE", pos)) {
         pos += 7; // Skip 'DOCTYPE'
 
         // Skip whitespace before name (required)
@@ -1073,14 +1073,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
             }
             pos++; // Skip closing quote
           } else if (
-            input.slice(pos, pos + 6) === "PUBLIC" &&
+            input.startsWith("PUBLIC", pos) &&
             (pos + 6 >= len || isWhitespace(input.charCodeAt(pos + 6)))
           ) {
             pos += 6;
             expectPubidLiteral = true;
             sawExternalIdKeyword = true;
           } else if (
-            input.slice(pos, pos + 6) === "SYSTEM" &&
+            input.startsWith("SYSTEM", pos) &&
             (pos + 6 >= len || isWhitespace(input.charCodeAt(pos + 6)))
           ) {
             pos += 6;
@@ -1228,7 +1228,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     }
 
     // Elements cannot use xmlns prefix (Namespaces 1.0 errata NE08)
-    if (colonIndex !== -1 && name.slice(0, colonIndex) === "xmlns") {
+    if (colonIndex !== -1 && name.startsWith("xmlns:")) {
       pos -= name.length;
       error("Element name cannot use the 'xmlns' prefix");
     }
@@ -1358,11 +1358,11 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       const prefix = name.slice(0, colonIndex);
       // xml prefix is always implicitly bound, xmlns prefix is handled separately
       if (prefix !== "xml" && prefix !== "xmlns") {
-        if (!ns.bindings?.has(prefix)) {
+        elementUri = ns.bindings?.get(prefix);
+        if (elementUri === undefined) {
           pos -= name.length;
           error(`Unbound namespace prefix '${prefix}' in element <${name}>`);
         }
-        elementUri = ns.bindings!.get(prefix);
       } else if (prefix === "xml") {
         elementUri = XML_NAMESPACE;
       }

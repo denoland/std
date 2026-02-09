@@ -185,7 +185,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
     }
 
     // Elements cannot use xmlns prefix (Namespaces 1.0 errata NE08)
-    if (colonIndex !== -1 && name.slice(0, colonIndex) === "xmlns") {
+    if (colonIndex !== -1 && name.startsWith("xmlns:")) {
       throw new XmlSyntaxError(
         "Element name cannot use the 'xmlns' prefix",
         { line, column, offset },
@@ -281,7 +281,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
         const prefix = this.#pendingName.slice(0, this.#pendingColonIndex);
         // xml prefix is always implicitly bound, xmlns prefix is handled separately
         if (prefix !== "xml" && prefix !== "xmlns") {
-          if (!this.#nsBindings || !this.#nsBindings.has(prefix)) {
+          elementUri = this.#nsBindings?.get(prefix);
+          if (elementUri === undefined) {
             throw new XmlSyntaxError(
               `Unbound namespace prefix '${prefix}' in element <${this.#pendingName}>`,
               {
@@ -291,7 +292,6 @@ export class XmlEventParser implements XmlTokenCallbacks {
               },
             );
           }
-          elementUri = this.#nsBindings.get(prefix);
         } else if (prefix === "xml") {
           elementUri = XML_NAMESPACE;
         }
@@ -317,7 +317,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
             this.#attrIterator._setUri(i, XML_NAMESPACE);
             continue;
           }
-          if (!this.#nsBindings || !this.#nsBindings.has(prefix)) {
+          const attrUri = this.#nsBindings?.get(prefix);
+          if (attrUri === undefined) {
             throw new XmlSyntaxError(
               `Unbound namespace prefix '${prefix}' in attribute '${attrName}'`,
               {
@@ -328,7 +329,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
             );
           }
           // Set the resolved URI for this attribute
-          this.#attrIterator._setUri(i, this.#nsBindings.get(prefix));
+          this.#attrIterator._setUri(i, attrUri);
           // Track local names for duplicate expanded name detection
           const localName = attrName.slice(colonIdx + 1);
           if (!localNameToPrefixes) {
