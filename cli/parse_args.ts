@@ -425,7 +425,7 @@ interface NestedMapping {
 }
 
 const FLAG_REGEXP =
-  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.*))?$/s;
 const LETTER_REGEXP = /[A-Za-z]/;
 const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
 const HYPHEN_REGEXP = /^(-|--)[^-]/;
@@ -758,7 +758,7 @@ export function parseArgs<
       let value: string | number | boolean | undefined = groups.value;
 
       if (doubleDash) {
-        if (value) {
+        if (value != null) {
           if (booleanSet.has(key)) value = parseBooleanString(value);
           setArgument(key, value, arg, true);
           continue;
@@ -807,6 +807,11 @@ export function parseArgs<
         if (next === "-") {
           setArgument(letter, next, arg, true);
           continue;
+        }
+
+        if (next === "=") {
+          setArgument(letter, "", arg, true);
+          continue argsLoop;
         }
 
         if (LETTER_REGEXP.test(letter)) {
