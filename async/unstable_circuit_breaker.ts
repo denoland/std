@@ -73,7 +73,9 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit state changes.
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    *
    * @param from Previous state.
    * @param to New state.
@@ -82,7 +84,9 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when a failure is recorded.
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    *
    * @param error The error that caused the failure.
    * @param failureCount Current number of failures in the window.
@@ -91,7 +95,9 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit opens.
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    *
    * @param failureCount Number of failures that triggered the open.
    */
@@ -99,13 +105,17 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit enters half-open state (testing recovery).
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    */
   onHalfOpen?: () => void;
 
   /**
    * Callback invoked when circuit closes (recovery complete).
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    */
   onClose?: () => void;
 }
@@ -249,6 +259,26 @@ function validateOption(name: string, value: number, min: number): void {
 }
 
 /**
+ * Wraps a notification callback so that if it throws, the error is
+ * re-thrown asynchronously (as an unhandled rejection) without
+ * disrupting the circuit breaker's synchronous control flow.
+ */
+function safeCallback<A extends unknown[]>(
+  fn: ((...args: A) => void) | undefined,
+): ((...args: A) => void) | undefined {
+  if (!fn) return undefined;
+  return (...args: A) => {
+    try {
+      fn(...args);
+    } catch (error) {
+      queueMicrotask(() => {
+        throw error;
+      });
+    }
+  };
+}
+
+/**
  * A circuit breaker that wraps async operations to prevent cascading failures.
  *
  * The circuit breaker monitors for failures and "trips" (opens) when a threshold
@@ -388,11 +418,11 @@ export class CircuitBreaker<T = unknown> {
     this.#failureWindowMs = failureWindowMs;
     this.#isFailure = isFailure;
     this.#isResultFailure = isResultFailure;
-    this.#onStateChange = onStateChange;
-    this.#onFailure = onFailure;
-    this.#onOpen = onOpen;
-    this.#onHalfOpen = onHalfOpen;
-    this.#onClose = onClose;
+    this.#onStateChange = safeCallback(onStateChange);
+    this.#onFailure = safeCallback(onFailure);
+    this.#onOpen = safeCallback(onOpen);
+    this.#onHalfOpen = safeCallback(onHalfOpen);
+    this.#onClose = safeCallback(onClose);
     this.#state = createInitialState();
   }
 
@@ -484,7 +514,9 @@ export class CircuitBreaker<T = unknown> {
     try {
       result = await fn();
     } catch (error) {
-      this.#handleFailure(error, currentState.state, currentTime);
+      if (this.#isFailure(error)) {
+        this.#handleFailure(error, currentState.state, currentTime);
+      }
       throw error;
     } finally {
       // Decrement half-open in-flight counter
@@ -633,8 +665,6 @@ export class CircuitBreaker<T = unknown> {
     previousState: CircuitState,
     now: number,
   ): void {
-    if (!this.#isFailure(error)) return;
-
     const newFailures = [
       ...pruneOldFailures(
         this.#state.failureTimestamps,
@@ -664,7 +694,6 @@ export class CircuitBreaker<T = unknown> {
       };
     }
 
-    // Callbacks last (state is consistent even if these throw)
     this.#onFailure?.(error, newFailures.length);
     if (shouldOpen) {
       this.#onStateChange?.(previousState, "open");
@@ -675,6 +704,7 @@ export class CircuitBreaker<T = unknown> {
   /** Records a success and potentially closes the circuit from half-open. */
   #handleSuccess(previousState: CircuitState): void {
     if (previousState === "closed") return;
+    if (this.#state.state !== "half_open") return;
 
     const newSuccessCount = this.#state.consecutiveSuccesses + 1;
     if (newSuccessCount >= this.#successThreshold) {
