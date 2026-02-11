@@ -1,4 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
 
 /**
  * Ansi is a module that offers export function s and variables that returns
