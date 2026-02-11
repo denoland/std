@@ -1117,3 +1117,80 @@ Deno.test("promptSelect() supports search by typing", () => {
   assertEquals(browser, "safari");
   restore();
 });
+
+Deno.test("promptSelect() handles fitToRemainingHeight option", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  // 24 rows, cursor at row 15, SAFE_PADDING=4: availableHeight = 24 - 15 - 4 + 1 = 6
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 24 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "\x1b[6n", // cursor position query
+    "Please select a browser:\r\n",
+    "❯ safari\r\n",
+    "  chrome\r\n",
+    "  firefox\r\n",
+    "  brave\r\n",
+    "  edge\r\n",
+    "  opera\r\n",
+    "  ...\r\n",
+    "\x1b[8A",
+    "\x1b[J",
+    "Please select a browser:\r\n",
+    "  safari\r\n",
+    "❯ chrome\r\n",
+    "  firefox\r\n",
+    "  brave\r\n",
+    "  edge\r\n",
+    "  opera\r\n",
+    "  ...\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\x1b[15;1R", // cursor position response: row 15, col 1
+    "\u001B[B", // arrow down
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browser = promptSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+    "brave",
+    "edge",
+    "opera",
+    "vivaldi",
+    "tor",
+  ], { fitToRemainingHeight: true });
+
+  assertEquals(browser, "chrome");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});

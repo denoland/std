@@ -3,7 +3,7 @@
 import { AssertionError } from "./assertion_error.ts";
 
 /**
- * Make an assertion, error will be thrown if `expr` does not have truthy value.
+ * Make an assertion, an error will be thrown if `expr` does not have a truthy value.
  *
  * @example Usage
  * ```ts ignore
@@ -15,6 +15,7 @@ import { AssertionError } from "./assertion_error.ts";
  *
  * @param expr The expression to test.
  * @param msg The optional message to display if the assertion fails.
+ * @throws {AssertionError} If `expr` is falsy.
  */
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {

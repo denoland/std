@@ -1,3 +1,42 @@
+### 2026.01.30
+
+#### @std/assert 1.0.18 (patch)
+
+- docs(assert): improve assertFalse() docs and test coverage (#6956)
+- docs(assert): improve assert() docs and test coverage (#6955)
+- refactor(assert): improve assertArrayIncludes perf and docs (#6953)
+
+#### @std/async 1.1.1 (patch)
+
+- feat(async/unstable): enhance CircuitBreaker with AbortSignal and onHalfOpen
+  callback (#6951)
+- fix(async/unstable): ensure state consistency in circuit breaker before
+  callbacks fire (#6967)
+
+#### @std/cli 1.0.27 (patch)
+
+- feat(cli/unstable): add fitToRemainingHeight option for promptSelect and
+  promptMultipleSelect (#6978)
+- fix(cli): strip ANSI codes from indicator for padding in promptSelect (#6977)
+
+#### @std/collections 1.1.5 (patch)
+
+- perf(collections): optimize deepMerge (#6948)
+
+#### @std/http 1.0.24 (patch)
+
+- feat(http/unstable): FormData Decoder/Encoder Streams (#6928)
+- feat(http/unstable): add ServerSentEventParseStream for decoding SSE streams
+  (#6957)
+
+#### @std/io 0.225.3 (patch)
+
+- fix(io): re-export public type aliases (#6969)
+
+#### @std/tar 0.1.10 (patch)
+
+- feat(tar/unstable): add symlink support to TarStream (#6976)
+
 ### 2026.01.20
 
 #### @std/assert 1.0.17 (patch)

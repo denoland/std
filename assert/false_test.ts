@@ -1,18 +1,17 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { assertFalse, assertThrows } from "./mod.ts";
+import { assertFalse, AssertionError, assertThrows } from "./mod.ts";
 
-Deno.test("assertFalse() matches with falsy values", () => {
-  assertFalse(false);
-  assertFalse(0);
-  assertFalse("");
-  assertFalse(null);
-  assertFalse(undefined);
+Deno.test("assertFalse() throws if expr is truthy", () => {
+  const TRUTHY_VALUES = [true, 1, -1, 1n, "string", {}, [], Symbol(), () => {}];
+  for (const value of TRUTHY_VALUES) {
+    const msg = crypto.randomUUID();
+    assertThrows(() => assertFalse(value, msg), AssertionError, msg);
+  }
 });
 
-Deno.test("assertFalse() throws with truthy values", () => {
-  assertThrows(() => assertFalse(true));
-  assertThrows(() => assertFalse(1));
-  assertThrows(() => assertFalse("a"));
-  assertThrows(() => assertFalse({}));
-  assertThrows(() => assertFalse([]));
+Deno.test("assertFalse() does not throw if expr is falsy", () => {
+  const FALSY_VALUES = [false, 0, 0n, "", null, undefined, NaN];
+  for (const value of FALSY_VALUES) {
+    assertFalse(value);
+  }
 });

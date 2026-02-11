@@ -12,6 +12,14 @@ export interface PromptMultipleSelectOptions {
 
   /** The string to indicate the selected item */
   indicator?: string;
+
+  /**
+   * If true, the visible lines will be calculated based on the remaining
+   * height from the current cursor position instead of using the full
+   * screen height. This is useful when you have content above the prompt
+   * that should remain visible.
+   */
+  fitToRemainingHeight?: boolean;
 }
 
 /**
@@ -113,6 +121,7 @@ export function promptMultipleSelect<V = undefined>(
     values,
     options.clear,
     options.visibleLines,
+    options.fitToRemainingHeight,
     (_active, absoluteIndex) => {
       const checked = selectedAbsoluteIndexes.has(absoluteIndex);
       return checked ? CHECKED : UNCHECKED;

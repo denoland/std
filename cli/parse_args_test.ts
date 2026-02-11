@@ -1992,3 +1992,23 @@ Deno.test("parseArgs() accepts readonly array input", () => {
   const args: readonly string[] = ["--foo", "bar"];
   const _parsed = parseArgs(args);
 });
+
+/** ---------------------- PROTOTYPE POLLUTION TESTS ---------------------- */
+// These tests verify the fix for CVE-2020-7598 and CVE-2021-44906.
+
+Deno.test("parseArgs() prevents __proto__ pollution", () => {
+  parseArgs(["--__proto__.polluted", "yes"]);
+  // deno-lint-ignore no-explicit-any
+  assertEquals((Object.prototype as any).polluted, undefined);
+});
+
+Deno.test("parseArgs() prevents constructor.prototype pollution", () => {
+  parseArgs(["--constructor.prototype.isAdmin", "true"]);
+  // deno-lint-ignore no-explicit-any
+  assertEquals((Object.prototype as any).isAdmin, undefined);
+});
+
+Deno.test("parseArgs() allows legitimate nested keys with fix applied", () => {
+  const result = parseArgs(["--foo.bar.baz", "value"]);
+  assertEquals(result.foo, { bar: { baz: "value" } });
+});
