@@ -11,19 +11,19 @@ import {
   serializeDictionary,
   serializeItem,
   serializeList,
-  type SfBareItem,
-  sfBinary,
-  sfBoolean,
-  sfDate,
-  sfDecimal,
-  type SfDictionary,
-  sfDisplayString,
-  type SfInnerList,
-  sfInteger,
-  type SfItem,
-  type SfList,
-  sfString,
-  sfToken,
+  type BareItem,
+  binary,
+  boolean,
+  date,
+  decimal,
+  type Dictionary,
+  displayString,
+  type InnerList,
+  integer,
+  type Item,
+  type List,
+  string,
+  token,
 } from "./unstable_structured_fields.ts";
 
 // =============================================================================
@@ -108,7 +108,7 @@ Deno.test({
   fn() {
     const dict = parseDictionary("*key=1");
     assertEquals(dict.has("*key"), true);
-    assertEquals((dict.get("*key") as SfItem).value, {
+    assertEquals((dict.get("*key") as Item).value, {
       type: "integer",
       value: 1,
     });
@@ -215,9 +215,9 @@ Deno.test({
 Deno.test({
   name: "serializeList() serializes basic list",
   fn() {
-    const list: SfList = [
-      { value: sfInteger(1), parameters: new Map() },
-      { value: sfInteger(42), parameters: new Map() },
+    const list: List = [
+      { value: integer(1), parameters: new Map() },
+      { value: integer(42), parameters: new Map() },
     ];
     assertEquals(serializeList(list), "1, 42");
   },
@@ -233,14 +233,14 @@ Deno.test({
 Deno.test({
   name: "serializeList() serializes inner list",
   fn() {
-    const innerList: SfInnerList = {
+    const innerList: InnerList = {
       items: [
-        { value: sfInteger(1), parameters: new Map() },
-        { value: sfInteger(2), parameters: new Map() },
+        { value: integer(1), parameters: new Map() },
+        { value: integer(2), parameters: new Map() },
       ],
       parameters: new Map(),
     };
-    const list: SfList = [innerList];
+    const list: List = [innerList];
     assertEquals(serializeList(list), "(1 2)");
   },
 });
@@ -248,12 +248,12 @@ Deno.test({
 Deno.test({
   name: "serializeList() serializes inner list with parameters",
   fn() {
-    const innerList: SfInnerList = {
+    const innerList: InnerList = {
       items: [
-        { value: sfInteger(1), parameters: new Map() },
+        { value: integer(1), parameters: new Map() },
       ],
-      parameters: new Map<string, SfBareItem>([
-        ["param", sfToken("value")],
+      parameters: new Map<string, BareItem>([
+        ["param", token("value")],
       ]),
     };
     assertEquals(serializeList([innerList]), "(1);param=value");
@@ -263,9 +263,9 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() serializes basic dictionary",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["a", { value: sfInteger(1), parameters: new Map() }],
-      ["b", { value: sfInteger(2), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["a", { value: integer(1), parameters: new Map() }],
+      ["b", { value: integer(2), parameters: new Map() }],
     ]);
     assertEquals(serializeDictionary(dict), "a=1, b=2");
   },
@@ -274,8 +274,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() omits =?1 for true boolean",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["a", { value: sfBoolean(true), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["a", { value: boolean(true), parameters: new Map() }],
     ]);
     assertEquals(serializeDictionary(dict), "a");
   },
@@ -284,8 +284,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() includes =?0 for false boolean",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["a", { value: sfBoolean(false), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["a", { value: boolean(false), parameters: new Map() }],
     ]);
     assertEquals(serializeDictionary(dict), "a=?0");
   },
@@ -294,8 +294,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() handles key starting with *",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["*key", { value: sfInteger(1), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["*key", { value: integer(1), parameters: new Map() }],
     ]);
     assertEquals(serializeDictionary(dict), "*key=1");
   },
@@ -304,14 +304,14 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() serializes inner list value",
   fn() {
-    const innerList: SfInnerList = {
+    const innerList: InnerList = {
       items: [
-        { value: sfInteger(1), parameters: new Map() },
-        { value: sfInteger(2), parameters: new Map() },
+        { value: integer(1), parameters: new Map() },
+        { value: integer(2), parameters: new Map() },
       ],
       parameters: new Map(),
     };
-    const dict: SfDictionary = new Map([
+    const dict: Dictionary = new Map([
       ["a", innerList],
     ]);
     assertEquals(serializeDictionary(dict), "a=(1 2)");
@@ -322,31 +322,31 @@ Deno.test({
   name: "serializeItem() covers all bare item types",
   fn() {
     assertEquals(
-      serializeItem({ value: sfToken("foo"), parameters: new Map() }),
+      serializeItem({ value: token("foo"), parameters: new Map() }),
       "foo",
     );
     assertEquals(
       serializeItem({
-        value: sfBinary(new Uint8Array([1, 2, 3])),
+        value: binary(new Uint8Array([1, 2, 3])),
         parameters: new Map(),
       }),
       ":AQID:",
     );
     assertEquals(
-      serializeItem({ value: sfBoolean(true), parameters: new Map() }),
+      serializeItem({ value: boolean(true), parameters: new Map() }),
       "?1",
     );
     assertEquals(
-      serializeItem({ value: sfBoolean(false), parameters: new Map() }),
+      serializeItem({ value: boolean(false), parameters: new Map() }),
       "?0",
     );
     const d = new Date(1659578233000);
     assertEquals(
-      serializeItem({ value: sfDate(d), parameters: new Map() }),
+      serializeItem({ value: date(d), parameters: new Map() }),
       "@1659578233",
     );
     assertEquals(
-      serializeItem({ value: sfDisplayString("héllo"), parameters: new Map() }),
+      serializeItem({ value: displayString("héllo"), parameters: new Map() }),
       '%"h%c3%a9llo"',
     );
   },
@@ -357,13 +357,13 @@ Deno.test({
   fn() {
     assertEquals(
       serializeItem({
-        value: sfString('hello "world"'),
+        value: string('hello "world"'),
         parameters: new Map(),
       }),
       '"hello \\"world\\""',
     );
     assertEquals(
-      serializeItem({ value: sfString("hello\\world"), parameters: new Map() }),
+      serializeItem({ value: string("hello\\world"), parameters: new Map() }),
       '"hello\\\\world"',
     );
   },
@@ -372,12 +372,12 @@ Deno.test({
 Deno.test({
   name: "serializeItem() serializes item with parameters",
   fn() {
-    const params = new Map<string, SfBareItem>([
-      ["a", sfInteger(1)],
-      ["b", sfBoolean(true)],
+    const params = new Map<string, BareItem>([
+      ["a", integer(1)],
+      ["b", boolean(true)],
     ]);
     assertEquals(
-      serializeItem({ value: sfToken("foo"), parameters: params }),
+      serializeItem({ value: token("foo"), parameters: params }),
       "foo;a=1;b",
     );
   },
@@ -388,14 +388,14 @@ Deno.test({
   fn() {
     assertEquals(
       serializeItem({
-        value: sfInteger(-999_999_999_999_999),
+        value: integer(-999_999_999_999_999),
         parameters: new Map(),
       }),
       "-999999999999999",
     );
     assertEquals(
       serializeItem({
-        value: sfInteger(999_999_999_999_999),
+        value: integer(999_999_999_999_999),
         parameters: new Map(),
       }),
       "999999999999999",
@@ -407,11 +407,11 @@ Deno.test({
   name: "serializeItem() handles decimal edge cases",
   fn() {
     assertEquals(
-      serializeItem({ value: sfDecimal(1.0), parameters: new Map() }),
+      serializeItem({ value: decimal(1.0), parameters: new Map() }),
       "1.0",
     );
     assertEquals(
-      serializeItem({ value: sfDecimal(-3.14), parameters: new Map() }),
+      serializeItem({ value: decimal(-3.14), parameters: new Map() }),
       "-3.14",
     );
   },
@@ -421,7 +421,7 @@ Deno.test({
   name: "serializeItem() handles token starting with *",
   fn() {
     assertEquals(
-      serializeItem({ value: sfToken("*foo"), parameters: new Map() }),
+      serializeItem({ value: token("*foo"), parameters: new Map() }),
       "*foo",
     );
   },
@@ -432,7 +432,7 @@ Deno.test({
   fn() {
     assertEquals(
       serializeItem({
-        value: sfDisplayString('hello % and "'),
+        value: displayString('hello % and "'),
         parameters: new Map(),
       }),
       '%"hello %25 and %22"',
@@ -448,12 +448,12 @@ Deno.test({
   name: "serializeItem() rejects out-of-range integer",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfInteger(1e16), parameters: new Map() }),
+      () => serializeItem({ value: integer(1e16), parameters: new Map() }),
       TypeError,
       "out of range",
     );
     assertThrows(
-      () => serializeItem({ value: sfInteger(-1e16), parameters: new Map() }),
+      () => serializeItem({ value: integer(-1e16), parameters: new Map() }),
       TypeError,
       "out of range",
     );
@@ -464,7 +464,7 @@ Deno.test({
   name: "serializeItem() rejects non-integer value for integer type",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfInteger(3.14), parameters: new Map() }),
+      () => serializeItem({ value: integer(3.14), parameters: new Map() }),
       TypeError,
       "must be a whole number",
     );
@@ -476,12 +476,12 @@ Deno.test({
   fn() {
     assertThrows(
       () =>
-        serializeItem({ value: sfDecimal(Infinity), parameters: new Map() }),
+        serializeItem({ value: decimal(Infinity), parameters: new Map() }),
       TypeError,
       "must be finite",
     );
     assertThrows(
-      () => serializeItem({ value: sfDecimal(NaN), parameters: new Map() }),
+      () => serializeItem({ value: decimal(NaN), parameters: new Map() }),
       TypeError,
       "must be finite",
     );
@@ -494,7 +494,7 @@ Deno.test({
     assertThrows(
       () =>
         serializeItem({
-          value: sfDecimal(1_000_000_000_000.1),
+          value: decimal(1_000_000_000_000.1),
           parameters: new Map(),
         }),
       TypeError,
@@ -503,7 +503,7 @@ Deno.test({
     assertThrows(
       () =>
         serializeItem({
-          value: sfDecimal(-1_000_000_000_000.1),
+          value: decimal(-1_000_000_000_000.1),
           parameters: new Map(),
         }),
       TypeError,
@@ -518,7 +518,7 @@ Deno.test({
     assertThrows(
       () =>
         serializeItem({
-          value: sfDate(new Date("invalid")),
+          value: date(new Date("invalid")),
           parameters: new Map(),
         }),
       TypeError,
@@ -531,7 +531,7 @@ Deno.test({
   name: "serializeItem() rejects non-printable ASCII in string",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfString("\x00"), parameters: new Map() }),
+      () => serializeItem({ value: string("\x00"), parameters: new Map() }),
       TypeError,
       "Invalid character",
     );
@@ -542,7 +542,7 @@ Deno.test({
   name: "serializeItem() rejects non-ASCII in string",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfString("héllo"), parameters: new Map() }),
+      () => serializeItem({ value: string("héllo"), parameters: new Map() }),
       TypeError,
       "Invalid character",
     );
@@ -553,7 +553,7 @@ Deno.test({
   name: "serializeItem() rejects empty token",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfToken(""), parameters: new Map() }),
+      () => serializeItem({ value: token(""), parameters: new Map() }),
       TypeError,
       "cannot be empty",
     );
@@ -564,7 +564,7 @@ Deno.test({
   name: "serializeItem() rejects token with invalid start character",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfToken("1foo"), parameters: new Map() }),
+      () => serializeItem({ value: token("1foo"), parameters: new Map() }),
       TypeError,
       "must start with ALPHA",
     );
@@ -575,7 +575,7 @@ Deno.test({
   name: "serializeItem() rejects token with invalid character",
   fn() {
     assertThrows(
-      () => serializeItem({ value: sfToken("foo bar"), parameters: new Map() }),
+      () => serializeItem({ value: token("foo bar"), parameters: new Map() }),
       TypeError,
       "Invalid character in token",
     );
@@ -585,8 +585,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects invalid key",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["INVALID", { value: sfInteger(1), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["INVALID", { value: integer(1), parameters: new Map() }],
     ]);
     assertThrows(
       () => serializeDictionary(dict),
@@ -599,8 +599,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects empty key",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["", { value: sfInteger(1), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["", { value: integer(1), parameters: new Map() }],
     ]);
     assertThrows(
       () => serializeDictionary(dict),
@@ -613,8 +613,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects key with invalid character",
   fn() {
-    const dict: SfDictionary = new Map([
-      ["a!b", { value: sfInteger(1), parameters: new Map() }],
+    const dict: Dictionary = new Map([
+      ["a!b", { value: integer(1), parameters: new Map() }],
     ]);
     assertThrows(
       () => serializeDictionary(dict),
@@ -627,11 +627,11 @@ Deno.test({
 Deno.test({
   name: "serializeItem() rejects invalid parameter key",
   fn() {
-    const params = new Map<string, SfBareItem>([
-      ["INVALID", sfInteger(1)],
+    const params = new Map<string, BareItem>([
+      ["INVALID", integer(1)],
     ]);
     assertThrows(
-      () => serializeItem({ value: sfToken("foo"), parameters: params }),
+      () => serializeItem({ value: token("foo"), parameters: params }),
       TypeError,
       "must start with lowercase",
     );
@@ -681,18 +681,18 @@ Deno.test({
 // =============================================================================
 
 Deno.test({
-  name: "sf* factory functions create correct bare items",
+  name: "factory functions create correct bare items",
   fn() {
-    assertEquals(sfInteger(42), { type: "integer", value: 42 });
-    assertEquals(sfDecimal(3.14), { type: "decimal", value: 3.14 });
-    assertEquals(sfString("hello"), { type: "string", value: "hello" });
-    assertEquals(sfToken("foo"), { type: "token", value: "foo" });
-    assertEquals(sfBinary(new Uint8Array([1, 2, 3])).type, "binary");
-    assertEquals(sfBoolean(true), { type: "boolean", value: true });
-    assertEquals(sfBoolean(false), { type: "boolean", value: false });
+    assertEquals(integer(42), { type: "integer", value: 42 });
+    assertEquals(decimal(3.14), { type: "decimal", value: 3.14 });
+    assertEquals(string("hello"), { type: "string", value: "hello" });
+    assertEquals(token("foo"), { type: "token", value: "foo" });
+    assertEquals(binary(new Uint8Array([1, 2, 3])).type, "binary");
+    assertEquals(boolean(true), { type: "boolean", value: true });
+    assertEquals(boolean(false), { type: "boolean", value: false });
     const d = new Date();
-    assertEquals(sfDate(d), { type: "date", value: d });
-    assertEquals(sfDisplayString("héllo"), {
+    assertEquals(date(d), { type: "date", value: d });
+    assertEquals(displayString("héllo"), {
       type: "displaystring",
       value: "héllo",
     });
@@ -780,32 +780,32 @@ function decodeBase32(input: string): Uint8Array {
 
 // Convert test suite expected value to our internal format
 // deno-lint-ignore no-explicit-any
-function convertExpectedBareItem(expected: any): SfBareItem {
+function convertExpectedBareItem(expected: any): BareItem {
   if (expected === null || expected === undefined) {
     throw new Error("Unexpected null/undefined bare item");
   }
   if (typeof expected === "boolean") {
-    return sfBoolean(expected);
+    return boolean(expected);
   }
   if (typeof expected === "number") {
     if (Number.isInteger(expected)) {
-      return sfInteger(expected);
+      return integer(expected);
     }
-    return sfDecimal(expected);
+    return decimal(expected);
   }
   if (typeof expected === "string") {
-    return sfString(expected);
+    return string(expected);
   }
   if (typeof expected === "object" && "__type" in expected) {
     switch (expected.__type) {
       case "token":
-        return sfToken(expected.value);
+        return token(expected.value);
       case "binary":
-        return sfBinary(decodeBase32(expected.value));
+        return binary(decodeBase32(expected.value));
       case "date":
-        return sfDate(new Date(expected.value * 1000));
+        return date(new Date(expected.value * 1000));
       case "displaystring":
-        return sfDisplayString(expected.value);
+        return displayString(expected.value);
       default:
         throw new Error(`Unknown __type: ${expected.__type}`);
     }
@@ -815,17 +815,17 @@ function convertExpectedBareItem(expected: any): SfBareItem {
 
 // Convert test suite expected params array to Map
 // deno-lint-ignore no-explicit-any
-function convertExpectedParams(params: any[]): Map<string, SfBareItem> {
-  const map = new Map<string, SfBareItem>();
+function convertExpectedParams(params: any[]): Map<string, BareItem> {
+  const map = new Map<string, BareItem>();
   for (const [key, value] of params) {
     map.set(key, convertExpectedBareItem(value));
   }
   return map;
 }
 
-// Convert test suite expected item [bareItem, params] to SfItem
+// Convert test suite expected item [bareItem, params] to Item
 // deno-lint-ignore no-explicit-any
-function convertExpectedItem(expected: any[]): SfItem {
+function convertExpectedItem(expected: any[]): Item {
   const [bareItem, params] = expected;
   return {
     value: convertExpectedBareItem(bareItem),
@@ -833,9 +833,9 @@ function convertExpectedItem(expected: any[]): SfItem {
   };
 }
 
-// Convert test suite expected inner list [[items...], params] to SfInnerList
+// Convert test suite expected inner list [[items...], params] to InnerList
 // deno-lint-ignore no-explicit-any
-function convertExpectedInnerList(expected: any[]): SfInnerList {
+function convertExpectedInnerList(expected: any[]): InnerList {
   const [items, params] = expected;
   return {
     items: items.map(convertExpectedItem),
@@ -861,7 +861,7 @@ function isExpectedInnerList(expected: any[]): boolean {
 
 // Convert test suite expected list member
 // deno-lint-ignore no-explicit-any
-function convertExpectedListMember(expected: any[]): SfItem | SfInnerList {
+function convertExpectedListMember(expected: any[]): Item | InnerList {
   if (isExpectedInnerList(expected)) {
     return convertExpectedInnerList(expected);
   }
@@ -869,7 +869,7 @@ function convertExpectedListMember(expected: any[]): SfItem | SfInnerList {
 }
 
 // Compare bare items for equality
-function bareItemsEqual(a: SfBareItem, b: SfBareItem): boolean {
+function bareItemsEqual(a: BareItem, b: BareItem): boolean {
   // Handle integer/decimal comparison - JSON loses distinction between 1 and 1.0
   if (
     (a.type === "integer" || a.type === "decimal") &&
@@ -892,8 +892,8 @@ function bareItemsEqual(a: SfBareItem, b: SfBareItem): boolean {
 
 // Compare parameters for equality
 function paramsEqual(
-  a: ReadonlyMap<string, SfBareItem>,
-  b: ReadonlyMap<string, SfBareItem>,
+  a: ReadonlyMap<string, BareItem>,
+  b: ReadonlyMap<string, BareItem>,
 ): boolean {
   if (a.size !== b.size) return false;
   for (const [key, val] of a) {
@@ -904,13 +904,13 @@ function paramsEqual(
 }
 
 // Compare items for equality
-function itemsEqual(a: SfItem, b: SfItem): boolean {
+function itemsEqual(a: Item, b: Item): boolean {
   return bareItemsEqual(a.value, b.value) &&
     paramsEqual(a.parameters, b.parameters);
 }
 
 // Compare inner lists for equality
-function innerListsEqual(a: SfInnerList, b: SfInnerList): boolean {
+function innerListsEqual(a: InnerList, b: InnerList): boolean {
   if (a.items.length !== b.items.length) return false;
   for (let i = 0; i < a.items.length; i++) {
     if (!itemsEqual(a.items[i]!, b.items[i]!)) return false;
@@ -920,16 +920,16 @@ function innerListsEqual(a: SfInnerList, b: SfInnerList): boolean {
 
 // Compare list members for equality
 function listMembersEqual(
-  a: SfItem | SfInnerList,
-  b: SfItem | SfInnerList,
+  a: Item | InnerList,
+  b: Item | InnerList,
 ): boolean {
   const aIsInner = "items" in a;
   const bIsInner = "items" in b;
   if (aIsInner !== bIsInner) return false;
   if (aIsInner && bIsInner) {
-    return innerListsEqual(a as SfInnerList, b as SfInnerList);
+    return innerListsEqual(a as InnerList, b as InnerList);
   }
-  return itemsEqual(a as SfItem, b as SfItem);
+  return itemsEqual(a as Item, b as Item);
 }
 
 // Interface for test case from JSON files
@@ -1005,7 +1005,7 @@ async function runConformanceTests(
           }
           case "list": {
             const parsed = parseList(rawInput);
-            const expected: SfList = test.expected.map(
+            const expected: List = test.expected.map(
               convertExpectedListMember,
             );
             assertEquals(parsed.length, expected.length);
@@ -1029,7 +1029,7 @@ async function runConformanceTests(
           case "dictionary": {
             const parsed = parseDictionary(rawInput);
             // Convert expected dictionary format [[key, value], ...]
-            const expectedEntries: Array<[string, SfItem | SfInnerList]> =
+            const expectedEntries: Array<[string, Item | InnerList]> =
               // deno-lint-ignore no-explicit-any
               (test.expected as any[]).map(
                 ([key, value]: [string, unknown]) => [

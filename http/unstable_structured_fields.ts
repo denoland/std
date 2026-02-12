@@ -28,11 +28,11 @@
  *
  * @example Serializing a Dictionary
  * ```ts
- * import { serializeDictionary, sfString } from "@std/http/unstable-structured-fields";
+ * import { serializeDictionary, string } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
- *   ["profile", { value: sfString("https://example.com/profile.json"), parameters: new Map() }],
+ *   ["profile", { value: string("https://example.com/profile.json"), parameters: new Map() }],
  * ]);
  *
  * assertEquals(
@@ -61,7 +61,7 @@ const UTF8_DECODER = new TextDecoder("utf-8", { fatal: true });
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.3}
  */
-export type SfBareItem =
+export type BareItem =
   | { type: "integer"; value: number }
   | { type: "decimal"; value: number }
   | { type: "string"; value: string }
@@ -81,7 +81,7 @@ export type SfBareItem =
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1.2}
  */
-export type SfParameters = ReadonlyMap<string, SfBareItem>;
+export type Parameters = ReadonlyMap<string, BareItem>;
 
 /**
  * An Item in a Structured Field, consisting of a Bare Item and Parameters.
@@ -90,11 +90,11 @@ export type SfParameters = ReadonlyMap<string, SfBareItem>;
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.3}
  */
-export interface SfItem {
+export interface Item {
   /** The bare item value. */
-  value: SfBareItem;
+  value: BareItem;
   /** Parameters associated with this item. */
-  parameters: SfParameters;
+  parameters: Parameters;
 }
 
 /**
@@ -104,11 +104,11 @@ export interface SfItem {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1.1}
  */
-export interface SfInnerList {
+export interface InnerList {
   /** The items in the inner list. */
-  items: SfItem[];
+  items: Item[];
   /** Parameters associated with the inner list. */
-  parameters: SfParameters;
+  parameters: Parameters;
 }
 
 /**
@@ -118,7 +118,7 @@ export interface SfInnerList {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1}
  */
-export type SfList = Array<SfItem | SfInnerList>;
+export type List = Array<Item | InnerList>;
 
 /**
  * A Dictionary Structured Field value.
@@ -130,14 +130,14 @@ export type SfList = Array<SfItem | SfInnerList>;
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.2}
  */
-export type SfDictionary = ReadonlyMap<string, SfItem | SfInnerList>;
+export type Dictionary = ReadonlyMap<string, Item | InnerList>;
 
 // =============================================================================
 // Convenience Builders
 // =============================================================================
 
 /** An integer Bare Item. */
-export type SfIntegerItem = Extract<SfBareItem, { type: "integer" }>;
+export type IntegerItem = Extract<BareItem, { type: "integer" }>;
 
 /**
  * Creates an integer Bare Item.
@@ -149,18 +149,18 @@ export type SfIntegerItem = Extract<SfBareItem, { type: "integer" }>;
  *
  * @example Usage
  * ```ts
- * import { sfInteger } from "@std/http/unstable-structured-fields";
+ * import { integer } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfInteger(42), { type: "integer", value: 42 });
+ * assertEquals(integer(42), { type: "integer", value: 42 });
  * ```
  */
-export function sfInteger(value: number): SfIntegerItem {
+export function integer(value: number): IntegerItem {
   return { type: "integer", value };
 }
 
 /** A decimal Bare Item. */
-export type SfDecimalItem = Extract<SfBareItem, { type: "decimal" }>;
+export type DecimalItem = Extract<BareItem, { type: "decimal" }>;
 
 /**
  * Creates a decimal Bare Item.
@@ -172,18 +172,18 @@ export type SfDecimalItem = Extract<SfBareItem, { type: "decimal" }>;
  *
  * @example Usage
  * ```ts
- * import { sfDecimal } from "@std/http/unstable-structured-fields";
+ * import { decimal } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfDecimal(3.14), { type: "decimal", value: 3.14 });
+ * assertEquals(decimal(3.14), { type: "decimal", value: 3.14 });
  * ```
  */
-export function sfDecimal(value: number): SfDecimalItem {
+export function decimal(value: number): DecimalItem {
   return { type: "decimal", value };
 }
 
 /** A string Bare Item. */
-export type SfStringItem = Extract<SfBareItem, { type: "string" }>;
+export type StringItem = Extract<BareItem, { type: "string" }>;
 
 /**
  * Creates a string Bare Item.
@@ -195,18 +195,18 @@ export type SfStringItem = Extract<SfBareItem, { type: "string" }>;
  *
  * @example Usage
  * ```ts
- * import { sfString } from "@std/http/unstable-structured-fields";
+ * import { string } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfString("hello"), { type: "string", value: "hello" });
+ * assertEquals(string("hello"), { type: "string", value: "hello" });
  * ```
  */
-export function sfString(value: string): SfStringItem {
+export function string(value: string): StringItem {
   return { type: "string", value };
 }
 
 /** A token Bare Item. */
-export type SfTokenItem = Extract<SfBareItem, { type: "token" }>;
+export type TokenItem = Extract<BareItem, { type: "token" }>;
 
 /**
  * Creates a token Bare Item.
@@ -218,18 +218,18 @@ export type SfTokenItem = Extract<SfBareItem, { type: "token" }>;
  *
  * @example Usage
  * ```ts
- * import { sfToken } from "@std/http/unstable-structured-fields";
+ * import { token } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfToken("foo"), { type: "token", value: "foo" });
+ * assertEquals(token("foo"), { type: "token", value: "foo" });
  * ```
  */
-export function sfToken(value: string): SfTokenItem {
+export function token(value: string): TokenItem {
   return { type: "token", value };
 }
 
 /** A binary Bare Item. */
-export type SfBinaryItem = Extract<SfBareItem, { type: "binary" }>;
+export type BinaryItem = Extract<BareItem, { type: "binary" }>;
 
 /**
  * Creates a binary Bare Item.
@@ -241,19 +241,19 @@ export type SfBinaryItem = Extract<SfBareItem, { type: "binary" }>;
  *
  * @example Usage
  * ```ts
- * import { sfBinary } from "@std/http/unstable-structured-fields";
+ * import { binary } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * const result = sfBinary(new Uint8Array([1, 2, 3]));
+ * const result = binary(new Uint8Array([1, 2, 3]));
  * assertEquals(result.type, "binary");
  * ```
  */
-export function sfBinary(value: Uint8Array): SfBinaryItem {
+export function binary(value: Uint8Array): BinaryItem {
   return { type: "binary", value };
 }
 
 /** A boolean Bare Item. */
-export type SfBooleanItem = Extract<SfBareItem, { type: "boolean" }>;
+export type BooleanItem = Extract<BareItem, { type: "boolean" }>;
 
 /**
  * Creates a boolean Bare Item.
@@ -265,18 +265,18 @@ export type SfBooleanItem = Extract<SfBareItem, { type: "boolean" }>;
  *
  * @example Usage
  * ```ts
- * import { sfBoolean } from "@std/http/unstable-structured-fields";
+ * import { boolean } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfBoolean(true), { type: "boolean", value: true });
+ * assertEquals(boolean(true), { type: "boolean", value: true });
  * ```
  */
-export function sfBoolean(value: boolean): SfBooleanItem {
+export function boolean(value: boolean): BooleanItem {
   return { type: "boolean", value };
 }
 
 /** A date Bare Item. */
-export type SfDateItem = Extract<SfBareItem, { type: "date" }>;
+export type DateItem = Extract<BareItem, { type: "date" }>;
 
 /**
  * Creates a date Bare Item.
@@ -288,20 +288,20 @@ export type SfDateItem = Extract<SfBareItem, { type: "date" }>;
  *
  * @example Usage
  * ```ts
- * import { sfDate } from "@std/http/unstable-structured-fields";
+ * import { date } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const d = new Date("2022-08-04T00:00:00Z");
- * assertEquals(sfDate(d), { type: "date", value: d });
+ * assertEquals(date(d), { type: "date", value: d });
  * ```
  */
-export function sfDate(value: Date): SfDateItem {
+export function date(value: Date): DateItem {
   return { type: "date", value };
 }
 
 /** A display string Bare Item. */
-export type SfDisplayStringItem = Extract<
-  SfBareItem,
+export type DisplayStringItem = Extract<
+  BareItem,
   { type: "displaystring" }
 >;
 
@@ -315,13 +315,13 @@ export type SfDisplayStringItem = Extract<
  *
  * @example Usage
  * ```ts
- * import { sfDisplayString } from "@std/http/unstable-structured-fields";
+ * import { displayString } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * assertEquals(sfDisplayString("héllo"), { type: "displaystring", value: "héllo" });
+ * assertEquals(displayString("héllo"), { type: "displaystring", value: "héllo" });
  * ```
  */
-export function sfDisplayString(value: string): SfDisplayStringItem {
+export function displayString(value: string): DisplayStringItem {
   return { type: "displaystring", value };
 }
 
@@ -347,7 +347,7 @@ export function sfDisplayString(value: string): SfDisplayStringItem {
  * assert(!isItem(list[1]!));  // false - inner list
  * ```
  */
-export function isItem(member: SfItem | SfInnerList): member is SfItem {
+export function isItem(member: Item | InnerList): member is Item {
   return !("items" in member);
 }
 
@@ -370,8 +370,8 @@ export function isItem(member: SfItem | SfInnerList): member is SfItem {
  * ```
  */
 export function isInnerList(
-  member: SfItem | SfInnerList,
-): member is SfInnerList {
+  member: Item | InnerList,
+): member is InnerList {
   return "items" in member;
 }
 
@@ -396,10 +396,10 @@ export function isInnerList(
  * }
  * ```
  */
-export function isBareItemType<T extends SfBareItem["type"]>(
-  item: SfBareItem,
+export function isBareItemType<T extends BareItem["type"]>(
+  item: BareItem,
   type: T,
-): item is Extract<SfBareItem, { type: T }> {
+): item is Extract<BareItem, { type: T }> {
   return item.type === type;
 }
 
@@ -551,7 +551,7 @@ function skipSP(state: ParserState): void {
  * assertEquals(list.length, 2);
  * ```
  */
-export function parseList(input: string): SfList {
+export function parseList(input: string): List {
   const state: ParserState = { input, pos: 0 };
   skipSP(state);
   const list = parseListInternal(state);
@@ -564,8 +564,8 @@ export function parseList(input: string): SfList {
   return list;
 }
 
-function parseListInternal(state: ParserState): SfList {
-  const members: SfList = [];
+function parseListInternal(state: ParserState): List {
+  const members: List = [];
 
   while (!isEof(state)) {
     const member = parseItemOrInnerList(state);
@@ -611,7 +611,7 @@ function parseListInternal(state: ParserState): SfList {
  * assertEquals(dict.has("profile"), true);
  * ```
  */
-export function parseDictionary(input: string): SfDictionary {
+export function parseDictionary(input: string): Dictionary {
   const state: ParserState = { input, pos: 0 };
   skipSP(state);
   const dict = parseDictionaryInternal(state);
@@ -624,12 +624,12 @@ export function parseDictionary(input: string): SfDictionary {
   return dict;
 }
 
-function parseDictionaryInternal(state: ParserState): SfDictionary {
-  const dict: Map<string, SfItem | SfInnerList> = new Map();
+function parseDictionaryInternal(state: ParserState): Dictionary {
+  const dict: Map<string, Item | InnerList> = new Map();
 
   while (!isEof(state)) {
     const key = parseKey(state);
-    let member: SfItem | SfInnerList;
+    let member: Item | InnerList;
 
     if (peek(state) === "=") {
       consume(state); // consume '='
@@ -685,7 +685,7 @@ function parseDictionaryInternal(state: ParserState): SfDictionary {
  * assertEquals(item.value, { type: "integer", value: 42 });
  * ```
  */
-export function parseItem(input: string): SfItem {
+export function parseItem(input: string): Item {
   const state: ParserState = { input, pos: 0 };
   skipSP(state);
   const item = parseItemInternal(state);
@@ -698,21 +698,21 @@ export function parseItem(input: string): SfItem {
   return item;
 }
 
-function parseItemOrInnerList(state: ParserState): SfItem | SfInnerList {
+function parseItemOrInnerList(state: ParserState): Item | InnerList {
   if (peek(state) === "(") {
     return parseInnerList(state);
   }
   return parseItemInternal(state);
 }
 
-function parseInnerList(state: ParserState): SfInnerList {
+function parseInnerList(state: ParserState): InnerList {
   if (consume(state) !== "(") {
     throw new SyntaxError(
       `Invalid structured field: expected '(' at position ${state.pos - 1}`,
     );
   }
 
-  const items: SfItem[] = [];
+  const items: Item[] = [];
 
   while (!isEof(state)) {
     skipSP(state);
@@ -737,13 +737,13 @@ function parseInnerList(state: ParserState): SfInnerList {
   );
 }
 
-function parseItemInternal(state: ParserState): SfItem {
+function parseItemInternal(state: ParserState): Item {
   const value = parseBareItem(state);
   const parameters = parseParameters(state);
   return { value, parameters };
 }
 
-function parseBareItem(state: ParserState): SfBareItem {
+function parseBareItem(state: ParserState): BareItem {
   const c = peek(state);
 
   if (c === "-" || isDigit(c)) {
@@ -773,7 +773,7 @@ function parseBareItem(state: ParserState): SfBareItem {
   );
 }
 
-function parseIntegerOrDecimal(state: ParserState): SfBareItem {
+function parseIntegerOrDecimal(state: ParserState): BareItem {
   let sign = 1;
   if (peek(state) === "-") {
     consume(state);
@@ -835,7 +835,7 @@ function parseIntegerOrDecimal(state: ParserState): SfBareItem {
   return { type: "integer", value };
 }
 
-function parseString(state: ParserState): SfBareItem {
+function parseString(state: ParserState): BareItem {
   if (consume(state) !== '"') {
     throw new SyntaxError(
       `Invalid structured field: expected '"' at position ${state.pos - 1}`,
@@ -909,7 +909,7 @@ function parseString(state: ParserState): SfBareItem {
   );
 }
 
-function parseToken(state: ParserState): SfBareItem {
+function parseToken(state: ParserState): BareItem {
   const first = peek(state);
   if (!isAlpha(first) && first !== "*") {
     throw new SyntaxError(
@@ -931,7 +931,7 @@ function parseToken(state: ParserState): SfBareItem {
   return { type: "token", value: state.input.slice(startPos, state.pos) };
 }
 
-function parseBinary(state: ParserState): SfBareItem {
+function parseBinary(state: ParserState): BareItem {
   if (consume(state) !== ":") {
     throw new SyntaxError(
       `Invalid structured field: expected ':' at position ${state.pos - 1}`,
@@ -970,7 +970,7 @@ function parseBinary(state: ParserState): SfBareItem {
   }
 }
 
-function parseBoolean(state: ParserState): SfBareItem {
+function parseBoolean(state: ParserState): BareItem {
   if (consume(state) !== "?") {
     throw new SyntaxError(
       `Invalid structured field: expected '?' at position ${state.pos - 1}`,
@@ -992,7 +992,7 @@ function parseBoolean(state: ParserState): SfBareItem {
   );
 }
 
-function parseDate(state: ParserState): SfBareItem {
+function parseDate(state: ParserState): BareItem {
   if (consume(state) !== "@") {
     throw new SyntaxError(
       `Invalid structured field: expected '@' at position ${state.pos - 1}`,
@@ -1010,7 +1010,7 @@ function parseDate(state: ParserState): SfBareItem {
   return { type: "date", value };
 }
 
-function parseDisplayString(state: ParserState): SfBareItem {
+function parseDisplayString(state: ParserState): BareItem {
   if (consume(state) !== "%") {
     throw new SyntaxError(
       `Invalid structured field: expected '%' at position ${state.pos - 1}`,
@@ -1091,15 +1091,15 @@ function parseKey(state: ParserState): string {
   return state.input.slice(startPos, state.pos);
 }
 
-function parseParameters(state: ParserState): SfParameters {
-  const parameters: Map<string, SfBareItem> = new Map();
+function parseParameters(state: ParserState): Parameters {
+  const parameters: Map<string, BareItem> = new Map();
 
   while (peek(state) === ";") {
     consume(state); // consume ';'
     skipSP(state);
     const key = parseKey(state);
 
-    let value: SfBareItem;
+    let value: BareItem;
     if (peek(state) === "=") {
       consume(state); // consume '='
       value = parseBareItem(state);
@@ -1130,18 +1130,18 @@ function parseParameters(state: ParserState): SfParameters {
  *
  * @example Usage
  * ```ts
- * import { serializeList, sfInteger } from "@std/http/unstable-structured-fields";
+ * import { serializeList, integer } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const list = [
- *   { value: sfInteger(1), parameters: new Map() },
- *   { value: sfInteger(42), parameters: new Map() },
+ *   { value: integer(1), parameters: new Map() },
+ *   { value: integer(42), parameters: new Map() },
  * ];
  *
  * assertEquals(serializeList(list), "1, 42");
  * ```
  */
-export function serializeList(list: SfList): string {
+export function serializeList(list: List): string {
   const parts: string[] = [];
 
   for (const member of list) {
@@ -1168,17 +1168,17 @@ export function serializeList(list: SfList): string {
  *
  * @example Usage
  * ```ts
- * import { serializeDictionary, sfString } from "@std/http/unstable-structured-fields";
+ * import { serializeDictionary, string } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
- *   ["key", { value: sfString("value"), parameters: new Map() }],
+ *   ["key", { value: string("value"), parameters: new Map() }],
  * ]);
  *
  * assertEquals(serializeDictionary(dict), 'key="value"');
  * ```
  */
-export function serializeDictionary(dict: SfDictionary): string {
+export function serializeDictionary(dict: Dictionary): string {
   const parts: string[] = [];
 
   for (const [key, member] of dict) {
@@ -1214,28 +1214,28 @@ export function serializeDictionary(dict: SfDictionary): string {
  *
  * @example Usage
  * ```ts
- * import { serializeItem, sfInteger } from "@std/http/unstable-structured-fields";
+ * import { serializeItem, integer } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * const item = { value: sfInteger(42), parameters: new Map() };
+ * const item = { value: integer(42), parameters: new Map() };
  *
  * assertEquals(serializeItem(item), "42");
  * ```
  */
-export function serializeItem(item: SfItem): string {
+export function serializeItem(item: Item): string {
   return serializeItemInternal(item);
 }
 
-function serializeInnerList(innerList: SfInnerList): string {
+function serializeInnerList(innerList: InnerList): string {
   const items = innerList.items.map(serializeItemInternal).join(" ");
   return `(${items})${serializeParameters(innerList.parameters)}`;
 }
 
-function serializeItemInternal(item: SfItem): string {
+function serializeItemInternal(item: Item): string {
   return serializeBareItem(item.value) + serializeParameters(item.parameters);
 }
 
-function serializeBareItem(bareItem: SfBareItem): string {
+function serializeBareItem(bareItem: BareItem): string {
   switch (bareItem.type) {
     case "integer":
       return serializeInteger(bareItem.value);
@@ -1382,7 +1382,7 @@ function serializeDisplayString(value: string): string {
   return result;
 }
 
-function serializeParameters(parameters: SfParameters): string {
+function serializeParameters(parameters: Parameters): string {
   let result = "";
 
   for (const [key, value] of parameters) {
