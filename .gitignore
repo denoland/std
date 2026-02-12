@@ -17,6 +17,8 @@ coverage/
 .vim
 _tmp/
 !_tmp/.keep
+*.sublime-project
+*.sublime-workspace
 
 # tsconfig for bun
 /tsconfig.json

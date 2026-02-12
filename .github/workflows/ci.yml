@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -41,6 +41,10 @@ jobs:
         run: |
           deno task test
           deno task test:with-unsafe-proto
+
+      - name: Run tools tests
+        run: deno task test:tools
+        if: matrix.deno == 'canary'
 
       - name: Run timezone-dependent tests
         run: |
@@ -88,7 +92,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -96,7 +100,7 @@ jobs:
           cache: true
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
 
@@ -116,7 +120,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -142,7 +146,7 @@ jobs:
           - windows-latest
     steps:
       - name: Clone repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -172,7 +176,7 @@ jobs:
         module: [crypto/_wasm]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           # required to check for changes
           fetch-depth: 2

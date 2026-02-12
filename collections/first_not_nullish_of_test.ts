@@ -1,7 +1,8 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { firstNotNullishOf } from "./first_not_nullish_of.ts";
+import * as unstable from "./unstable_first_not_nullish_of.ts";
 
 function firstNotNullishOfTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],
@@ -83,5 +84,16 @@ Deno.test({
       ],
       "Hans",
     );
+  },
+});
+
+Deno.test({
+  name: "unstable.firstNotNullishOf() passes index to selector",
+  fn() {
+    const result = unstable.firstNotNullishOf(
+      [1, 2, 3, 4],
+      (it, index) => index < 1 ? null : it,
+    );
+    assertEquals(result, 2);
   },
 });

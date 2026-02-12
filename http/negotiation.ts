@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -61,14 +61,15 @@ export function accepts(request: Pick<Request, "headers">): string[];
  * assertEquals(accepts(request, "text/html", "image/webp"), "text/html");
  * ```
  *
+ * @typeParam T The type of supported content-types (if provided).
  * @param request The request to get the acceptable media types for.
  * @param types An array of media types to find the best matching one from.
  * @returns The best matching media type, if any match.
  */
-export function accepts(
+export function accepts<T extends string = string>(
   request: Pick<Request, "headers">,
-  ...types: string[]
-): string | undefined;
+  ...types: T[]
+): T | undefined;
 export function accepts(
   request: Pick<Request, "headers">,
   ...types: string[]
@@ -123,14 +124,15 @@ export function acceptsEncodings(request: Pick<Request, "headers">): string[];
  * assertEquals(acceptsEncodings(request, "gzip", "identity"), "gzip");
  * ```
  *
+ * @typeParam T The type of supported encodings (if provided).
  * @param request The request to get the acceptable content encodings for.
  * @param encodings An array of encodings to find the best matching one from.
  * @returns The best matching encoding, if any match.
  */
-export function acceptsEncodings(
+export function acceptsEncodings<T extends string = string>(
   request: Pick<Request, "headers">,
-  ...encodings: string[]
-): string | undefined;
+  ...encodings: T[]
+): T | undefined;
 export function acceptsEncodings(
   request: Pick<Request, "headers">,
   ...encodings: string[]
@@ -186,14 +188,15 @@ export function acceptsLanguages(request: Pick<Request, "headers">): string[];
  * assertEquals(acceptsLanguages(request, "en-gb", "en-us", "en"), "en");
  * ```
  *
+ * @typeParam T The type of supported languages (if provided).
  * @param request The request to get the acceptable language for.
  * @param langs An array of languages to find the best matching one from.
  * @returns The best matching language, if any match.
  */
-export function acceptsLanguages(
+export function acceptsLanguages<T extends string = string>(
   request: Pick<Request, "headers">,
-  ...langs: string[]
-): string | undefined;
+  ...langs: T[]
+): T | undefined;
 export function acceptsLanguages(
   request: Pick<Request, "headers">,
   ...langs: string[]

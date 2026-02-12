@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 type LineParseResult = {
   key: string;
@@ -7,53 +7,49 @@ type LineParseResult = {
   notInterpolated: string;
 };
 
-type CharactersMap = { [key: string]: string };
-
-const RE_KEY_VALUE =
+const KEY_VALUE_REGEXP =
   /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
-const RE_VALID_KEY = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const VALID_KEY_REGEXP = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
-const RE_EXPAND_VALUE =
+const EXPAND_VALUE_REGEXP =
   /(\${(?<inBrackets>.+?)(\:-(?<inBracketsDefault>.+))?}|(?<!\\)\$(?<notInBrackets>\w+)(\:-(?<notInBracketsDefault>.+))?)/g;
 
-function expandCharacters(str: string): string {
-  const charactersMap: CharactersMap = {
-    "\\n": "\n",
-    "\\r": "\r",
-    "\\t": "\t",
-  };
+const CHARACTERS_MAP: { [key: string]: string } = {
+  "\\n": "\n",
+  "\\r": "\r",
+  "\\t": "\t",
+};
 
+function expandCharacters(str: string): string {
   return str.replace(
     /\\([nrt])/g,
-    ($1: keyof CharactersMap): string => charactersMap[$1] ?? "",
+    ($1: keyof typeof CHARACTERS_MAP): string => CHARACTERS_MAP[$1] ?? "",
   );
 }
 
-function expand(str: string, variablesMap: { [key: string]: string }): string {
-  if (RE_EXPAND_VALUE.test(str)) {
-    return expand(
-      str.replace(RE_EXPAND_VALUE, function (...params) {
-        const {
-          inBrackets,
-          inBracketsDefault,
-          notInBrackets,
-          notInBracketsDefault,
-        } = params[params.length - 1];
-        const expandValue = inBrackets || notInBrackets;
-        const defaultValue = inBracketsDefault || notInBracketsDefault;
+function expand(str: string, variablesMap: Record<string, string>): string {
+  let current = str;
 
-        let value: string | undefined = variablesMap[expandValue];
-        if (value === undefined) {
-          value = Deno.env.get(expandValue);
-        }
-        return value === undefined ? expand(defaultValue, variablesMap) : value;
-      }),
-      variablesMap,
-    );
-  } else {
-    return str;
+  while (EXPAND_VALUE_REGEXP.test(current)) {
+    current = current.replace(EXPAND_VALUE_REGEXP, (...params) => {
+      const {
+        inBrackets,
+        inBracketsDefault,
+        notInBrackets,
+        notInBracketsDefault,
+      } = params.at(-1);
+
+      const expandValue = inBrackets ?? notInBrackets;
+      const defaultValue = inBracketsDefault ?? notInBracketsDefault;
+
+      return (
+        variablesMap[expandValue] ?? Deno.env.get(expandValue) ?? defaultValue
+      );
+    });
   }
+
+  return current;
 }
 
 /**
@@ -76,14 +72,13 @@ function expand(str: string, variablesMap: { [key: string]: string }): string {
 export function parse(text: string): Record<string, string> {
   const env: Record<string, string> = Object.create(null);
 
-  let match;
   const keysForExpandCheck = [];
 
-  while ((match = RE_KEY_VALUE.exec(text)) !== null) {
+  for (const match of text.matchAll(KEY_VALUE_REGEXP)) {
     const { key, interpolated, notInterpolated, unquoted } = match
       ?.groups as LineParseResult;
 
-    if (!RE_VALID_KEY.test(key)) {
+    if (!VALID_KEY_REGEXP.test(key)) {
       // deno-lint-ignore no-console
       console.warn(
         `Ignored the key "${key}" as it is not a valid identifier: The key need to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.`,
@@ -104,9 +99,10 @@ export function parse(text: string): Record<string, string> {
 
   //https://github.com/motdotla/dotenv-expand/blob/ed5fea5bf517a09fd743ce2c63150e88c8a5f6d1/lib/main.js#L23
   const variablesMap = { ...env };
-  keysForExpandCheck.forEach((key) => {
+
+  for (const key of keysForExpandCheck) {
     env[key] = expand(env[key]!, variablesMap);
-  });
+  }
 
   return env;
 }

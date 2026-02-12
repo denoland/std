@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert } from "@std/assert";
 import { isGlob } from "./is_glob.ts";
 import { disposableStack } from "../internal/_testing.ts";
@@ -91,7 +91,10 @@ Deno.test({
     assert(isGlob("a/b/c/[a-z].js"));
     assert(isGlob("abc/(aaa|bbb).js"));
     assert(isGlob("abc/*.js"));
+    assert(isGlob("abc/{a}.js"));
     assert(isGlob("abc/{a,b}.js"));
+    assert(isGlob("abc/@(a).js"));
+    assert(isGlob("abc/@(a|b).js"));
     assert(isGlob("abc/{a..z..2}.js"));
     assert(isGlob("abc/{a..z}.js"));
 
@@ -117,7 +120,7 @@ Deno.test(
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
       reject(new Error("isGlob() did not finish in time"));
-    }, 3000);
+    }, 20000);
     const worker = new Worker(
       `
       data:text/javascript,

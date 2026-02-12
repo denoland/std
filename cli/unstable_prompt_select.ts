@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { handlePromptSelect } from "./_prompt_select.ts";
 
@@ -12,6 +12,14 @@ export interface PromptSelectOptions {
 
   /** The string to indicate the selected item */
   indicator?: string;
+
+  /**
+   * If true, the visible lines will be calculated based on the remaining
+   * height from the current cursor position instead of using the full
+   * screen height. This is useful when you have content above the prompt
+   * that should remain visible.
+   */
+  fitToRemainingHeight?: boolean;
 }
 
 /**
@@ -40,8 +48,6 @@ const ARROW_UP = "\u001B[A";
 const ARROW_DOWN = "\u001B[B";
 const CR = "\r";
 const DELETE = "\u007F";
-
-const input = Deno.stdin;
 
 /**
  * Shows the given message and waits for the user's input. Returns the user's selected value as string.
@@ -104,7 +110,7 @@ export function promptSelect<V = undefined>(
   values: PromptEntry<V>[],
   options: PromptSelectOptions = {},
 ): PromptEntry<V> | null {
-  if (!input.isTerminal()) return null;
+  if (!Deno.stdin.isTerminal()) return null;
 
   let selectedIndex = 0;
 
@@ -114,6 +120,7 @@ export function promptSelect<V = undefined>(
     values,
     options.clear,
     options.visibleLines,
+    options.fitToRemainingHeight,
     (active, absoluteIndex) => {
       if (active) {
         selectedIndex = absoluteIndex;

@@ -1,11 +1,14 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
 import { stringify } from "./stringify.ts";
-import { stringify as unstableStringify } from "./unstable_stringify.ts";
+import {
+  type ImplicitType,
+  stringify as unstableStringify,
+} from "./unstable_stringify.ts";
 import { compare, parse } from "@std/semver";
 
 Deno.test({
@@ -864,6 +867,32 @@ Deno.test({
     assertEquals(
       unstableStringify(object, { quoteStyle: "'" }),
       `url: 'https://example.com'\n`,
+    );
+  },
+});
+
+Deno.test({
+  name: "unstableStringify() handles custom types",
+  fn() {
+    const foo: ImplicitType = {
+      tag: "tag:custom:smile",
+      resolve: (data: string): boolean => data === "=)",
+      construct: (): string => "🙂",
+      predicate: (data: unknown): data is string => data === "🙂",
+      kind: "scalar",
+      represent: (): string => "=)",
+    };
+
+    assertEquals(
+      unstableStringify({
+        title: "🙂",
+        tags: ["🙂", "bar"],
+      }, { extraTypes: [foo] }),
+      `title: =)
+tags:
+  - =)
+  - bar
+`,
     );
   },
 });

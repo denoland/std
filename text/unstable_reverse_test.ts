@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert/equals";
 import { reverse } from "./unstable_reverse.ts";
 
@@ -35,7 +35,10 @@ Deno.test("reverse() reverses a string", () => {
 
 // CREDIT: https://github.com/mathiasbynens/esrever/blob/14b34013dad49106ca08c0e65919f1fc8fea5331/README.md
 Deno.test("reverse() handles unicode strings", () => {
-  testUnicode("Lorem ipsum 𝌆 dolor sit ameͨ͆t.", ".teͨ͆ma tis rolod 𝌆 muspi meroL");
+  testUnicode(
+    "Lorem ipsum 𝌆 dolor sit ameͨ͆t.",
+    ".teͨ͆ma tis rolod 𝌆 muspi meroL",
+  );
   testUnicode("mañana mañana", "anañam anañam");
 
   testUnicode("H̹̙̦̮͉̩̗̗ͧ̇̏̊̾Eͨ͆͒̆ͮ̃͏̷̮̣̫̤̣ ̵̞̹̻̀̉̓ͬ͑͡ͅCͯ̂͐͏̨̛͔̦̟͈̻O̜͎͍͙͚̬̝̣̽ͮ͐͗̀ͤ̍̀͢M̴̡̲̭͍͇̼̟̯̦̉̒͠Ḛ̛̙̞̪̗ͥͤͩ̾͑̔͐ͅṮ̴̷̷̗̼͍̿̿̓̽͐H̙̙̔̄͜", "H̙̙̔̄͜Ṯ̴̷̷̗̼͍̿̿̓̽͐Ḛ̛̙̞̪̗ͥͤͩ̾͑̔͐ͅM̴̡̲̭͍͇̼̟̯̦̉̒͠O̜͎͍͙͚̬̝̣̽ͮ͐͗̀ͤ̍̀͢Cͯ̂͐͏̨̛͔̦̟͈̻ ̵̞̹̻̀̉̓ͬ͑͡ͅEͨ͆͒̆ͮ̃͏̷̮̣̫̤̣H̹̙̦̮͉̩̗̗ͧ̇̏̊̾");

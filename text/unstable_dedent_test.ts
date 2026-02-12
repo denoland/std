@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { dedent } from "./unstable_dedent.ts";
 import { assertEquals } from "@std/assert";
 import { stub } from "@std/testing/mock";
@@ -20,6 +20,15 @@ Deno.test("dedent() handles example 2", () => {
            line 2`,
     "line 1\nline 2",
   );
+});
+
+// Test case for issue #6831
+Deno.test("dedent() only strips single trailing newline", () => {
+  const result = dedent`
+      a
+
+      `;
+  assertEquals(result, "a\n");
 });
 
 Deno.test("dedent() handles empty lines", () => {

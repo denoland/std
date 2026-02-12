@@ -1,8 +1,10 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
  * Utilities for generating random numbers.
+ *
+ * Example of generating a random integer with fixed seed number:
  *
  * ```ts
  * import { randomIntegerBetween } from "@std/random";
@@ -12,6 +14,17 @@
  * const prng = randomSeeded(1n);
  *
  * assertEquals(randomIntegerBetween(1, 10, { prng }), 3);
+ * ```
+ *
+ * Example of generating a random integer between two values:
+ *
+ * ```ts no-assert
+ * import { randomIntegerBetween } from "@std/random";
+ * import { randomSeeded } from "@std/random";
+ *
+ * const prng = randomSeeded(BigInt(crypto.getRandomValues(new Uint32Array(1))[0]!));
+ *
+ * const randomInteger = randomIntegerBetween(1, 10, { prng });
  * ```
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.

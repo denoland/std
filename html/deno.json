@@ -1,9 +1,11 @@
 {
   "name": "@std/html",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "exports": {
     ".": "./mod.ts",
     "./entities": "./entities.ts",
+    "./unstable-escape-css": "./unstable_escape_css.ts",
+    "./unstable-escape-js": "./unstable_escape_js.ts",
     "./unstable-is-valid-custom-element-name": "./unstable_is_valid_custom_element_name.ts",
     "./named-entity-list.json": "./named_entity_list.json"
   }

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 /**
  * Internal utilities for the public API of the Deno Standard Library.
@@ -43,4 +43,5 @@ export * from "./diff_str.ts";
 export * from "./format.ts";
 export * from "./os.ts";
 export * from "./styles.ts";
+export * from "./truncate_build_message.ts";
 export * from "./types.ts";

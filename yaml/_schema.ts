@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { KindType, Type } from "./_type.ts";
@@ -46,8 +46,12 @@ import { undefinedType } from "./_type/undefined.ts";
  */
 export type SchemaType = "failsafe" | "json" | "core" | "default" | "extended";
 
-type ImplicitType = Type<"scalar">;
-type ExplicitType = Type<KindType>;
+/**
+ * A type that can be implicitly resolved (i.e. without using a tag) when
+ * loading a YAML document.
+ */
+export type ImplicitType = Type<"scalar">;
+export type ExplicitType = Type<KindType>;
 
 export type TypeMap = Record<
   KindType | "fallback",
@@ -161,3 +165,19 @@ export const SCHEMA_MAP = new Map<SchemaType, Schema>([
   ["json", JSON_SCHEMA],
   ["extended", EXTENDED_SCHEMA],
 ]);
+
+export function getSchema(
+  schema: SchemaType = "default",
+  types?: ImplicitType[],
+): Schema {
+  const schemaObj = SCHEMA_MAP.get(schema)!;
+
+  if (!types) {
+    return schemaObj;
+  }
+
+  return createSchema({
+    implicitTypes: [...types, ...schemaObj.implicitTypes],
+    explicitTypes: [...schemaObj.explicitTypes],
+  });
+}

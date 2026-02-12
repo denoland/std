@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { decode } from "./_common_decode.ts";
 import type { CborType } from "./types.ts";

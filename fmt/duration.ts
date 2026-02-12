@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -124,6 +124,7 @@ export interface FormatOptions {
  * @param ms The milliseconds value to format
  * @param options The options for formatting
  * @returns The formatted string
+ * @throws {TypeError} If an invalid style option is provided.
  */
 export function format(
   ms: number,

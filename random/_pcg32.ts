@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Based on Rust `rand` crate (https://github.com/rust-random/rand). Apache-2.0 + MIT license.
 
 import { platform } from "./_platform.ts";

@@ -1,8 +1,6 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { isSubdir } from "./_is_subdir.ts";
 import { isSamePath } from "./_is_same_path.ts";
-
-const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
 
 /** Options for {@linkcode move} and {@linkcode moveSync}. */
 export interface MoveOptions {
@@ -79,6 +77,7 @@ export async function move(
       }
     }
   } else {
+    const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
     try {
       await Deno.lstat(dest);
       return Promise.reject(EXISTS_ERROR);
@@ -155,6 +154,7 @@ export function moveSync(
       }
     }
   } else {
+    const EXISTS_ERROR = new Deno.errors.AlreadyExists("dest already exists.");
     try {
       Deno.lstatSync(dest);
       throw EXISTS_ERROR;

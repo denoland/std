@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { copy } from "@std/bytes/copy";
@@ -135,11 +135,8 @@ export class Buffer {
   constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
     if (ab === undefined) {
       this.#buf = new Uint8Array(0);
-    } else if (ab instanceof SharedArrayBuffer) {
-      // Note: This is necessary to avoid type error
-      this.#buf = new Uint8Array(ab);
     } else {
-      this.#buf = new Uint8Array(ab);
+      this.#buf = new Uint8Array(ab as ArrayBuffer | SharedArrayBuffer);
     }
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import type { MemoizationCache } from "./memoize.ts";
@@ -26,11 +26,33 @@ import type { MemoizationCache } from "./memoize.ts";
  * await delay(2000);
  * assertEquals(cache.size, 0);
  * ```
+ *
+ * @example Adding a onEject function.
+ * ```ts
+ * import { TtlCache } from "@std/cache/ttl-cache";
+ * import { delay } from "@std/async/delay";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const cache = new TtlCache<string, string>(100, { onEject: (key, value) => {
+ *  console.log("Revoking: ", key)
+ *  URL.revokeObjectURL(value)
+ * }})
+ *
+ * cache.set(
+ *  "fast-url",
+ *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
+ * );
+ *
+ * await delay(200) // "Revoking: fast-url"
+ * assertEquals(cache.get("fast-url"), undefined)
+ * ```
  */
 export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
   #timeouts = new Map<K, number>();
+
+  #eject: (ejectedKey: K, ejectedValue: V) => void;
 
   /**
    * Constructs a new instance.
@@ -40,10 +62,15 @@ export class TtlCache<K, V> extends Map<K, V>
    * @param defaultTtl The default time-to-live in milliseconds. This value must
    * be equal to or greater than 0. Its limit is determined by the current
    * runtime's {@linkcode setTimeout} implementation.
+   * @param options Additional options.
    */
-  constructor(defaultTtl: number) {
+  constructor(
+    defaultTtl: number,
+    options?: { onEject: (ejectedKey: K, ejectedValue: V) => void },
+  ) {
     super();
     this.#defaultTtl = defaultTtl;
+    this.#eject = options?.onEject ?? (() => {});
   }
 
   /**
@@ -102,6 +129,9 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
+    if (super.has(key)) {
+      this.#eject(key, super.get(key) as V);
+    }
     clearTimeout(this.#timeouts.get(key));
     this.#timeouts.delete(key);
     return super.delete(key);

@@ -1,17 +1,19 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
-// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Deno.lint namespace does not pass type checking in Deno 1.x
 
 import { assertEquals } from "@std/assert/equals";
-import lintPlugin from "./lint_plugin.ts";
+import lintPlugin, { COPYRIGHT_NOTICE } from "./lint_plugin.ts";
 
 function assertLintPluginDiagnostics(
   source: string,
   // Note: if empty, means no lint errors
   expectedDiagnostics: Deno.lint.Diagnostic[],
+  // Set to false when wanting to check comments (i.e. testing of `deno-style-guide/copyright-notice` lint rule)
+  ignoreComments = true,
 ) {
   const actualDiagnostics = Deno.lint.runPlugin(
     lintPlugin,
-    "main.ts", // Dummy filename, file doesn't need to exist.
+    ignoreComments ? "ignore_comments.ts" : "main.ts", // Dummy filename, file doesn't need to exist.
     source,
   );
   assertEquals(actualDiagnostics, expectedDiagnostics);
@@ -238,7 +240,7 @@ enum enumName {
         message: "Interface name 'interfaceName' is not PascalCase.",
         range: [264, 277],
       },
-    ],
+    ] as unknown as Deno.lint.Diagnostic[],
   );
 });
 
@@ -372,5 +374,36 @@ export function foo(bar: unknown, baz: unknown, bat: unknown, options: Record<st
         range: [83, 86],
       },
     ],
+  );
+});
+
+Deno.test("deno-style-guide/copyright-notice", {
+  ignore: !Deno.version.deno.startsWith("2"),
+}, () => {
+  // Good
+  assertLintPluginDiagnostics(
+    `
+// Copyright 2018-2026 the Deno authors. MIT license.
+    `,
+    [],
+    false,
+  );
+
+  // Bad
+  assertLintPluginDiagnostics(
+    `
+// Copyright (c) 2023 the Deno authors. MIT license.
+    `,
+    [
+      {
+        fix: [],
+        hint:
+          `Add a copyright notice at the top of the file: // ${COPYRIGHT_NOTICE}`,
+        id: "deno-style-guide/copyright",
+        message: "Missing copyright notice.",
+        range: [0, 0],
+      },
+    ],
+    false,
   );
 });

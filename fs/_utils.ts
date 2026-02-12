@@ -1,10 +1,11 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 /**
  * True if the runtime is Deno, false otherwise.
  */
-export const isDeno = navigator.userAgent?.includes("Deno");
+export const isDeno = (globalThis as any).navigator
+  ?.userAgent?.includes("Deno");
 
 /**
  * @returns The Node.js `fs` module.

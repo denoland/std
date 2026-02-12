@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Ported from test262
 // https://github.com/tc39/test262/blob/488eb365db7c613d52e72a9f5b8726684906e540/harness/assert.js
 // Copyright (C) 2017 Ecma International.  All rights reserved.

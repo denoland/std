@@ -1,6 +1,6 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
-
+import { delay } from "./delay.ts";
 import { exponentialBackoffWithJitter } from "./_util.ts";
 
 /**
@@ -61,6 +61,15 @@ export interface RetryOptions {
    * @default {1}
    */
   jitter?: number;
+  /**
+   * Callback to determine if an error or other thrown value is retriable.
+   *
+   * @default {() => true}
+   *
+   * @param err The thrown error or other value.
+   * @returns `true` if the error is retriable, `false` otherwise.
+   */
+  isRetriable?: (err: unknown) => boolean;
 }
 
 /**
@@ -112,10 +121,35 @@ export interface RetryOptions {
  * });
  * ```
  *
+ * @example Only retry on specific error types
+ * ```ts no-assert
+ * import { retry } from "@std/async/retry";
+ *
+ * class HttpError extends Error {
+ *   status: number;
+ *   constructor(status: number) {
+ *     super(`HTTP ${status}`);
+ *     this.status = status;
+ *   }
+ * }
+ *
+ * const req = async () => {
+ *   // some function that throws HttpError
+ * };
+ *
+ * // Only retry on 429 (rate limit) or 5xx (server) errors
+ * const retryPromise = await retry(req, {
+ *   isRetriable: (err) =>
+ *     err instanceof HttpError && (err.status === 429 || err.status >= 500),
+ * });
+ * ```
+ *
  * @typeParam T The return type of the function to retry and returned promise.
  * @param fn The function to retry.
  * @param options Additional options.
  * @returns The promise that resolves with the value returned by the function to retry.
+ * @throws {RetryError} If the function fails after `maxAttempts` attempts.
+ * @throws If `isRetriable` returns `false` for an error, throws that error immediately.
  */
 export async function retry<T>(
   fn: (() => Promise<T>) | (() => T),
@@ -127,21 +161,37 @@ export async function retry<T>(
     maxAttempts = 5,
     minTimeout = 1000,
     jitter = 1,
+    isRetriable = () => true,
   } = options ?? {};
 
-  if (maxTimeout <= 0) {
-    throw new TypeError(
-      `Cannot retry as 'maxTimeout' must be positive: current value is ${maxTimeout}`,
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
+    throw new RangeError(
+      `Cannot retry as 'maxAttempts' must be a positive integer: current value is ${maxAttempts}`,
+    );
+  }
+  if (!Number.isFinite(multiplier) || multiplier < 1) {
+    throw new RangeError(
+      `Cannot retry as 'multiplier' must be a finite number >= 1: current value is ${multiplier}`,
+    );
+  }
+  if (Number.isNaN(maxTimeout) || maxTimeout <= 0) {
+    throw new RangeError(
+      `Cannot retry as 'maxTimeout' must be a positive number: current value is ${maxTimeout}`,
+    );
+  }
+  if (Number.isNaN(minTimeout) || minTimeout < 0) {
+    throw new RangeError(
+      `Cannot retry as 'minTimeout' must be >= 0: current value is ${minTimeout}`,
     );
   }
   if (minTimeout > maxTimeout) {
-    throw new TypeError(
+    throw new RangeError(
       `Cannot retry as 'minTimeout' must be <= 'maxTimeout': current values 'minTimeout=${minTimeout}', 'maxTimeout=${maxTimeout}'`,
     );
   }
-  if (jitter > 1) {
-    throw new TypeError(
-      `Cannot retry as 'jitter' must be <= 1: current value is ${jitter}`,
+  if (Number.isNaN(jitter) || jitter < 0 || jitter > 1) {
+    throw new RangeError(
+      `Cannot retry as 'jitter' must be between 0 and 1: current value is ${jitter}`,
     );
   }
 
@@ -150,6 +200,10 @@ export async function retry<T>(
     try {
       return await fn();
     } catch (error) {
+      if (!isRetriable(error)) {
+        throw error;
+      }
+
       if (attempt + 1 >= maxAttempts) {
         throw new RetryError(error, maxAttempts);
       }
@@ -161,7 +215,7 @@ export async function retry<T>(
         multiplier,
         jitter,
       );
-      await new Promise((r) => setTimeout(r, timeout));
+      await delay(timeout);
     }
     attempt++;
   }

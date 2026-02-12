@@ -1,6 +1,6 @@
 {
   "name": "@std/async",
-  "version": "1.0.14",
+  "version": "1.1.1",
   "exports": {
     ".": "./mod.ts",
     "./abortable": "./abortable.ts",
@@ -14,6 +14,9 @@
     "./unstable-retry": "./unstable_retry.ts",
     "./tee": "./tee.ts",
     "./unstable-throttle": "./unstable_throttle.ts",
-    "./unstable-wait-for": "./unstable_wait_for.ts"
+    "./unstable-wait-for": "./unstable_wait_for.ts",
+    "./unstable-semaphore": "./unstable_semaphore.ts",
+    "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
+    "./unstable-all-keyed": "./unstable_all_keyed.ts"
   }
 }

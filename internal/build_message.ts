@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { bgGreen, bgRed, bold, gray, green, red, white } from "./styles.ts";
@@ -36,6 +36,8 @@ export function createColor(
       return (s) => background ? bgGreen(white(s)) : green(bold(s));
     case "removed":
       return (s) => background ? bgRed(white(s)) : red(bold(s));
+    case "truncation":
+      return gray;
     default:
       return white;
   }
@@ -73,7 +75,6 @@ export function createSign(diffType: DiffType): string {
 export interface BuildMessageOptions {
   /**
    * Whether to output the diff as a single string.
-   *
    * @default {false}
    */
   stringDiff?: boolean;
@@ -84,6 +85,7 @@ export interface BuildMessageOptions {
  *
  * @param diffResult The diff result array.
  * @param options Optional parameters for customizing the message.
+ * @param truncateDiff Function to truncate the diff (default is no truncation).
  *
  * @returns An array of strings representing the built message.
  *
@@ -91,9 +93,7 @@ export interface BuildMessageOptions {
  * ```ts no-assert
  * import { diffStr, buildMessage } from "@std/internal";
  *
- * const diffResult = diffStr("Hello, world!", "Hello, world");
- *
- * console.log(buildMessage(diffResult));
+ * diffStr("Hello, world!", "Hello, world");
  * // [
  * //   "",
  * //   "",
@@ -109,7 +109,16 @@ export interface BuildMessageOptions {
 export function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
   options: BuildMessageOptions = {},
+  truncateDiff?: (
+    diffResult: ReadonlyArray<DiffResult<string>>,
+    stringDiff: boolean,
+    contextLength?: number | null,
+  ) => ReadonlyArray<DiffResult<string>>,
 ): string[] {
+  if (truncateDiff != null) {
+    diffResult = truncateDiff(diffResult, options.stringDiff ?? false);
+  }
+
   const { stringDiff = false } = options;
   const messages = [
     "",
@@ -122,11 +131,15 @@ export function buildMessage(
   ];
   const diffMessages = diffResult.map((result) => {
     const color = createColor(result.type);
-    const line = result.details?.map((detail) =>
-      detail.type !== "common"
-        ? createColor(detail.type, true)(detail.value)
-        : detail.value
-    ).join("") ?? result.value;
+
+    const line = result.type === "added" || result.type === "removed"
+      ? result.details?.map((detail) =>
+        detail.type !== "common"
+          ? createColor(detail.type, true)(detail.value)
+          : detail.value
+      ).join("") ?? result.value
+      : result.value;
+
     return color(`${createSign(result.type)}${line}`);
   });
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages), "");

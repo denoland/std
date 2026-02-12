@@ -1,9 +1,8 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
-import { IS_DENO_2 } from "../internal/_is_deno_2.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata", "ensure_dir");
@@ -184,11 +183,8 @@ Deno.test({
     // but don't swallow that error.
     await assertRejects(
       async () => await ensureDir(baseDir),
-      IS_DENO_2
-        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-        // deno-lint-ignore no-explicit-any
-        ? (Deno as any).errors.NotCapable
-        : Deno.errors.PermissionDenied,
+      // deno-lint-ignore no-explicit-any
+      (Deno as any).errors.NotCapable ?? Deno.errors.PermissionDenied,
     );
   },
 });
@@ -206,11 +202,8 @@ Deno.test({
     // but don't swallow that error.
     assertThrows(
       () => ensureDirSync(baseDir),
-      IS_DENO_2
-        // TODO(iuioiua): Just use `Deno.errors.NotCapable` once Deno 2 is released.
-        // deno-lint-ignore no-explicit-any
-        ? (Deno as any).errors.NotCapable
-        : Deno.errors.PermissionDenied,
+      // deno-lint-ignore no-explicit-any
+      (Deno as any).errors.NotCapable ?? Deno.errors.PermissionDenied,
     );
   },
 });

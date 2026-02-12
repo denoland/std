@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -89,7 +89,12 @@ export function _globToRegExp(
     let i = j;
 
     // Terminates with `i` at the non-inclusive end of the current segment.
-    for (; i < glob.length && !c.seps.includes(glob[i]!); i++) {
+    for (
+      ;
+      i < glob.length &&
+      !(c.seps.includes(glob[i]!) && groupStack.length === 0);
+      i++
+    ) {
       if (inEscape) {
         inEscape = false;
         const escapeChars = (inRange

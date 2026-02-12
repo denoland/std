@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { parse } from "./mod.ts";
 import {
@@ -250,5 +250,16 @@ Deno.test({
     assertEquals(parse("  [section]  \n  value  =  foo  "), {
       section: { value: "foo" },
     });
+  },
+});
+
+Deno.test({
+  name: "parse() reviver function is type casted",
+  fn() {
+    const expected = { a: 100, b: true, c: null, d: "foo" };
+
+    const ini = "a=100\nb=true\nc=null\nd=foo";
+    const parsedIni = parse(ini, { reviver: (_key, value) => value });
+    assertEquals(parsedIni, expected);
   },
 });
