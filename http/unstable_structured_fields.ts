@@ -1363,6 +1363,9 @@ function serializeDate(value: Date): string {
   if (!Number.isFinite(timestamp)) {
     throw new TypeError("Invalid date");
   }
+  if (timestamp < -MAX_INTEGER || timestamp > MAX_INTEGER) {
+    throw new TypeError("Date out of range");
+  }
   return `@${timestamp}`;
 }
 
