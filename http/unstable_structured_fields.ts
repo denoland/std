@@ -49,6 +49,7 @@
 import { decodeBase64, encodeBase64 } from "@std/encoding/base64";
 
 const UTF8_DECODER = new TextDecoder("utf-8", { fatal: true });
+const UTF8_ENCODER = new TextEncoder();
 
 // =============================================================================
 // Type Definitions (RFC 9651 Section 3)
@@ -784,9 +785,10 @@ function parseBareItem(state: ParserState): BareItem {
 }
 
 function parseIntegerOrDecimal(state: ParserState): BareItem {
+  const { input } = state;
   let sign = 1;
   if (peek(state) === "-") {
-    consume(state);
+    state.pos++;
     sign = -1;
   }
 
@@ -796,45 +798,47 @@ function parseIntegerOrDecimal(state: ParserState): BareItem {
     );
   }
 
-  let integerPart = "";
+  const intStart = state.pos;
   while (isDigit(peek(state))) {
-    integerPart += consume(state);
-    if (integerPart.length > MAX_INTEGER_DIGITS) {
-      throw new SyntaxError(
-        "Invalid structured field: integer too long",
-      );
-    }
+    state.pos++;
+  }
+  const intLen = state.pos - intStart;
+  if (intLen > MAX_INTEGER_DIGITS) {
+    throw new SyntaxError(
+      "Invalid structured field: integer too long",
+    );
   }
 
   if (peek(state) === ".") {
-    consume(state); // consume '.'
-    if (integerPart.length > MAX_DECIMAL_INTEGER_DIGITS) {
+    state.pos++; // consume '.'
+    if (intLen > MAX_DECIMAL_INTEGER_DIGITS) {
       throw new SyntaxError(
         "Invalid structured field: decimal integer part too long",
       );
     }
 
-    let fractionalPart = "";
+    const fracStart = state.pos;
     while (isDigit(peek(state))) {
-      fractionalPart += consume(state);
-      if (fractionalPart.length > MAX_DECIMAL_FRACTIONAL_DIGITS) {
-        throw new SyntaxError(
-          "Invalid structured field: decimal fractional part too long",
-        );
-      }
+      state.pos++;
+    }
+    const fracLen = state.pos - fracStart;
+    if (fracLen > MAX_DECIMAL_FRACTIONAL_DIGITS) {
+      throw new SyntaxError(
+        "Invalid structured field: decimal fractional part too long",
+      );
     }
 
-    if (fractionalPart.length === 0) {
+    if (fracLen === 0) {
       throw new SyntaxError(
         "Invalid structured field: decimal requires fractional digits",
       );
     }
 
-    const value = sign * parseFloat(`${integerPart}.${fractionalPart}`);
+    const value = sign * parseFloat(input.slice(intStart, state.pos));
     return { type: "decimal", value };
   }
 
-  const value = sign * parseInt(integerPart, 10);
+  const value = sign * parseInt(input.slice(intStart, state.pos), 10);
 
   if (value < -MAX_INTEGER || value > MAX_INTEGER) {
     throw new SyntaxError(
@@ -1363,8 +1367,7 @@ function serializeDate(value: Date): string {
 }
 
 function serializeDisplayString(value: string): string {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(value);
+  const bytes = UTF8_ENCODER.encode(value);
 
   let result = '%"';
   for (const byte of bytes) {
