@@ -142,7 +142,8 @@ export type Dictionary = ReadonlyMap<string, Item | InnerList>;
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param value The integer value (-999999999999999 to 999999999999999).
+ * @param value The integer value. Must be in the range -999999999999999 to
+ * 999999999999999; validated during serialization.
  * @returns A Bare Item of type integer.
  *
  * @example Usage
@@ -162,7 +163,8 @@ export function integer(value: number): Extract<BareItem, { type: "integer" }> {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param value The decimal value.
+ * @param value The decimal value. Must be finite with an integer part of at
+ * most 12 digits; validated during serialization.
  * @returns A Bare Item of type decimal.
  *
  * @example Usage
@@ -182,7 +184,8 @@ export function decimal(value: number): Extract<BareItem, { type: "decimal" }> {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param value The string value (ASCII printable characters only).
+ * @param value The string value. Must contain only ASCII printable characters
+ * (0x20-0x7E); validated during serialization.
  * @returns A Bare Item of type string.
  *
  * @example Usage
@@ -202,7 +205,8 @@ export function string(value: string): Extract<BareItem, { type: "string" }> {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param value The token value.
+ * @param value The token value. Must start with ALPHA or '*' and contain only
+ * token characters; validated during serialization.
  * @returns A Bare Item of type token.
  *
  * @example Usage
@@ -267,7 +271,8 @@ export function boolean(
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param value The date value.
+ * @param value The date value. Must represent a valid date whose Unix timestamp
+ * is in the integer range; validated during serialization.
  * @returns A Bare Item of type date.
  *
  * @example Usage
