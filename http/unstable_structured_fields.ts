@@ -1222,7 +1222,7 @@ export function serializeDictionary(dict: Dictionary): string {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @param item The Item to serialize.
+ * @param value The Item to serialize.
  * @returns The serialized string.
  * @throws {TypeError} If the item contains invalid values.
  *
