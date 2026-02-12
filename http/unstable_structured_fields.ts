@@ -28,11 +28,11 @@
  *
  * @example Serializing a Dictionary
  * ```ts
- * import { serializeDictionary, string } from "@std/http/unstable-structured-fields";
+ * import { item, serializeDictionary, string } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
- *   ["profile", { value: string("https://example.com/profile.json"), parameters: new Map() }],
+ *   ["profile", item(string("https://example.com/profile.json"))],
  * ]);
  *
  * assertEquals(
@@ -136,9 +136,6 @@ export type Dictionary = ReadonlyMap<string, Item | InnerList>;
 // Convenience Builders
 // =============================================================================
 
-/** An integer Bare Item. */
-export type IntegerItem = Extract<BareItem, { type: "integer" }>;
-
 /**
  * Creates an integer Bare Item.
  *
@@ -155,12 +152,9 @@ export type IntegerItem = Extract<BareItem, { type: "integer" }>;
  * assertEquals(integer(42), { type: "integer", value: 42 });
  * ```
  */
-export function integer(value: number): IntegerItem {
+export function integer(value: number): Extract<BareItem, { type: "integer" }> {
   return { type: "integer", value };
 }
-
-/** A decimal Bare Item. */
-export type DecimalItem = Extract<BareItem, { type: "decimal" }>;
 
 /**
  * Creates a decimal Bare Item.
@@ -178,12 +172,9 @@ export type DecimalItem = Extract<BareItem, { type: "decimal" }>;
  * assertEquals(decimal(3.14), { type: "decimal", value: 3.14 });
  * ```
  */
-export function decimal(value: number): DecimalItem {
+export function decimal(value: number): Extract<BareItem, { type: "decimal" }> {
   return { type: "decimal", value };
 }
-
-/** A string Bare Item. */
-export type StringItem = Extract<BareItem, { type: "string" }>;
 
 /**
  * Creates a string Bare Item.
@@ -201,12 +192,9 @@ export type StringItem = Extract<BareItem, { type: "string" }>;
  * assertEquals(string("hello"), { type: "string", value: "hello" });
  * ```
  */
-export function string(value: string): StringItem {
+export function string(value: string): Extract<BareItem, { type: "string" }> {
   return { type: "string", value };
 }
-
-/** A token Bare Item. */
-export type TokenItem = Extract<BareItem, { type: "token" }>;
 
 /**
  * Creates a token Bare Item.
@@ -224,12 +212,9 @@ export type TokenItem = Extract<BareItem, { type: "token" }>;
  * assertEquals(token("foo"), { type: "token", value: "foo" });
  * ```
  */
-export function token(value: string): TokenItem {
+export function token(value: string): Extract<BareItem, { type: "token" }> {
   return { type: "token", value };
 }
-
-/** A binary Bare Item. */
-export type BinaryItem = Extract<BareItem, { type: "binary" }>;
 
 /**
  * Creates a binary Bare Item.
@@ -248,12 +233,11 @@ export type BinaryItem = Extract<BareItem, { type: "binary" }>;
  * assertEquals(result.type, "binary");
  * ```
  */
-export function binary(value: Uint8Array): BinaryItem {
+export function binary(
+  value: Uint8Array,
+): Extract<BareItem, { type: "binary" }> {
   return { type: "binary", value };
 }
-
-/** A boolean Bare Item. */
-export type BooleanItem = Extract<BareItem, { type: "boolean" }>;
 
 /**
  * Creates a boolean Bare Item.
@@ -271,12 +255,11 @@ export type BooleanItem = Extract<BareItem, { type: "boolean" }>;
  * assertEquals(boolean(true), { type: "boolean", value: true });
  * ```
  */
-export function boolean(value: boolean): BooleanItem {
+export function boolean(
+  value: boolean,
+): Extract<BareItem, { type: "boolean" }> {
   return { type: "boolean", value };
 }
-
-/** A date Bare Item. */
-export type DateItem = Extract<BareItem, { type: "date" }>;
 
 /**
  * Creates a date Bare Item.
@@ -295,15 +278,9 @@ export type DateItem = Extract<BareItem, { type: "date" }>;
  * assertEquals(date(d), { type: "date", value: d });
  * ```
  */
-export function date(value: Date): DateItem {
+export function date(value: Date): Extract<BareItem, { type: "date" }> {
   return { type: "date", value };
 }
-
-/** A display string Bare Item. */
-export type DisplayStringItem = Extract<
-  BareItem,
-  { type: "displaystring" }
->;
 
 /**
  * Creates a display string Bare Item.
@@ -321,8 +298,69 @@ export type DisplayStringItem = Extract<
  * assertEquals(displayString("héllo"), { type: "displaystring", value: "héllo" });
  * ```
  */
-export function displayString(value: string): DisplayStringItem {
+export function displayString(
+  value: string,
+): Extract<BareItem, { type: "displaystring" }> {
   return { type: "displaystring", value };
+}
+
+/**
+ * Creates an Item from a Bare Item and optional Parameters.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param value The Bare Item value.
+ * @param parameters Optional parameters as a `Map` or iterable of key-value pairs.
+ * @returns An Item with the given value and parameters.
+ *
+ * @example Usage
+ * ```ts
+ * import { item, integer, token } from "@std/http/unstable-structured-fields";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(item(integer(42)), {
+ *   value: { type: "integer", value: 42 },
+ *   parameters: new Map(),
+ * });
+ *
+ * assertEquals(item(integer(42), [["q", token("fast")]]), {
+ *   value: { type: "integer", value: 42 },
+ *   parameters: new Map([["q", { type: "token", value: "fast" }]]),
+ * });
+ * ```
+ */
+export function item(
+  value: BareItem,
+  parameters?: Iterable<[string, BareItem]>,
+): Item {
+  return { value, parameters: new Map(parameters) };
+}
+
+/**
+ * Creates an Inner List from Items and optional Parameters.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @param items The items in the inner list.
+ * @param parameters Optional parameters as a `Map` or iterable of key-value pairs.
+ * @returns An InnerList with the given items and parameters.
+ *
+ * @example Usage
+ * ```ts
+ * import { innerList, item, integer } from "@std/http/unstable-structured-fields";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const list = innerList([item(integer(1)), item(integer(2))]);
+ *
+ * assertEquals(list.items.length, 2);
+ * assertEquals(list.parameters.size, 0);
+ * ```
+ */
+export function innerList(
+  items: Item[],
+  parameters?: Iterable<[string, BareItem]>,
+): InnerList {
+  return { items, parameters: new Map(parameters) };
 }
 
 // =============================================================================
@@ -373,34 +411,6 @@ export function isInnerList(
   member: Item | InnerList,
 ): member is InnerList {
   return "items" in member;
-}
-
-/**
- * Checks if a Bare Item is of a specific type.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @typeParam T The bare item type to check for.
- * @param item The bare item to check.
- * @param type The type to check for.
- * @returns `true` if the item is of the specified type.
- *
- * @example Usage
- * ```ts
- * import { parseItem, isBareItemType } from "@std/http/unstable-structured-fields";
- * import { assert, assertEquals } from "@std/assert";
- *
- * const item = parseItem("42");
- * if (isBareItemType(item.value, "integer")) {
- *   assertEquals(item.value.value, 42); // TypeScript knows value is number
- * }
- * ```
- */
-export function isBareItemType<T extends BareItem["type"]>(
-  item: BareItem,
-  type: T,
-): item is Extract<BareItem, { type: T }> {
-  return item.type === type;
 }
 
 // =============================================================================
@@ -1130,13 +1140,10 @@ function parseParameters(state: ParserState): Parameters {
  *
  * @example Usage
  * ```ts
- * import { serializeList, integer } from "@std/http/unstable-structured-fields";
+ * import { item, serializeList, integer } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * const list = [
- *   { value: integer(1), parameters: new Map() },
- *   { value: integer(42), parameters: new Map() },
- * ];
+ * const list = [item(integer(1)), item(integer(42))];
  *
  * assertEquals(serializeList(list), "1, 42");
  * ```
@@ -1168,11 +1175,11 @@ export function serializeList(list: List): string {
  *
  * @example Usage
  * ```ts
- * import { serializeDictionary, string } from "@std/http/unstable-structured-fields";
+ * import { item, serializeDictionary, string } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
- *   ["key", { value: string("value"), parameters: new Map() }],
+ *   ["key", item(string("value"))],
  * ]);
  *
  * assertEquals(serializeDictionary(dict), 'key="value"');
@@ -1214,16 +1221,14 @@ export function serializeDictionary(dict: Dictionary): string {
  *
  * @example Usage
  * ```ts
- * import { serializeItem, integer } from "@std/http/unstable-structured-fields";
+ * import { item, serializeItem, integer } from "@std/http/unstable-structured-fields";
  * import { assertEquals } from "@std/assert";
  *
- * const item = { value: integer(42), parameters: new Map() };
- *
- * assertEquals(serializeItem(item), "42");
+ * assertEquals(serializeItem(item(integer(42))), "42");
  * ```
  */
-export function serializeItem(item: Item): string {
-  return serializeItemInternal(item);
+export function serializeItem(value: Item): string {
+  return serializeItemInternal(value);
 }
 
 function serializeInnerList(innerList: InnerList): string {

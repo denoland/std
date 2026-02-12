@@ -2,15 +2,6 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import {
-  isBareItemType,
-  isInnerList,
-  isItem,
-  parseDictionary,
-  parseItem,
-  parseList,
-  serializeDictionary,
-  serializeItem,
-  serializeList,
   type BareItem,
   binary,
   boolean,
@@ -19,9 +10,19 @@ import {
   type Dictionary,
   displayString,
   type InnerList,
+  innerList,
   integer,
+  isInnerList,
+  isItem,
   type Item,
+  item,
   type List,
+  parseDictionary,
+  parseItem,
+  parseList,
+  serializeDictionary,
+  serializeItem,
+  serializeList,
   string,
   token,
 } from "./unstable_structured_fields.ts";
@@ -215,11 +216,7 @@ Deno.test({
 Deno.test({
   name: "serializeList() serializes basic list",
   fn() {
-    const list: List = [
-      { value: integer(1), parameters: new Map() },
-      { value: integer(42), parameters: new Map() },
-    ];
-    assertEquals(serializeList(list), "1, 42");
+    assertEquals(serializeList([item(integer(1)), item(integer(42))]), "1, 42");
   },
 });
 
@@ -233,30 +230,22 @@ Deno.test({
 Deno.test({
   name: "serializeList() serializes inner list",
   fn() {
-    const innerList: InnerList = {
-      items: [
-        { value: integer(1), parameters: new Map() },
-        { value: integer(2), parameters: new Map() },
-      ],
-      parameters: new Map(),
-    };
-    const list: List = [innerList];
-    assertEquals(serializeList(list), "(1 2)");
+    assertEquals(
+      serializeList([innerList([item(integer(1)), item(integer(2))])]),
+      "(1 2)",
+    );
   },
 });
 
 Deno.test({
   name: "serializeList() serializes inner list with parameters",
   fn() {
-    const innerList: InnerList = {
-      items: [
-        { value: integer(1), parameters: new Map() },
-      ],
-      parameters: new Map<string, BareItem>([
-        ["param", token("value")],
+    assertEquals(
+      serializeList([
+        innerList([item(integer(1))], [["param", token("value")]]),
       ]),
-    };
-    assertEquals(serializeList([innerList]), "(1);param=value");
+      "(1);param=value",
+    );
   },
 });
 
@@ -264,8 +253,8 @@ Deno.test({
   name: "serializeDictionary() serializes basic dictionary",
   fn() {
     const dict: Dictionary = new Map([
-      ["a", { value: integer(1), parameters: new Map() }],
-      ["b", { value: integer(2), parameters: new Map() }],
+      ["a", item(integer(1))],
+      ["b", item(integer(2))],
     ]);
     assertEquals(serializeDictionary(dict), "a=1, b=2");
   },
@@ -274,9 +263,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() omits =?1 for true boolean",
   fn() {
-    const dict: Dictionary = new Map([
-      ["a", { value: boolean(true), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["a", item(boolean(true))]]);
     assertEquals(serializeDictionary(dict), "a");
   },
 });
@@ -284,9 +271,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() includes =?0 for false boolean",
   fn() {
-    const dict: Dictionary = new Map([
-      ["a", { value: boolean(false), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["a", item(boolean(false))]]);
     assertEquals(serializeDictionary(dict), "a=?0");
   },
 });
@@ -294,9 +279,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() handles key starting with *",
   fn() {
-    const dict: Dictionary = new Map([
-      ["*key", { value: integer(1), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["*key", item(integer(1))]]);
     assertEquals(serializeDictionary(dict), "*key=1");
   },
 });
@@ -304,15 +287,8 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() serializes inner list value",
   fn() {
-    const innerList: InnerList = {
-      items: [
-        { value: integer(1), parameters: new Map() },
-        { value: integer(2), parameters: new Map() },
-      ],
-      parameters: new Map(),
-    };
     const dict: Dictionary = new Map([
-      ["a", innerList],
+      ["a", innerList([item(integer(1)), item(integer(2))])],
     ]);
     assertEquals(serializeDictionary(dict), "a=(1 2)");
   },
@@ -321,32 +297,17 @@ Deno.test({
 Deno.test({
   name: "serializeItem() covers all bare item types",
   fn() {
+    assertEquals(serializeItem(item(token("foo"))), "foo");
     assertEquals(
-      serializeItem({ value: token("foo"), parameters: new Map() }),
-      "foo",
-    );
-    assertEquals(
-      serializeItem({
-        value: binary(new Uint8Array([1, 2, 3])),
-        parameters: new Map(),
-      }),
+      serializeItem(item(binary(new Uint8Array([1, 2, 3])))),
       ":AQID:",
     );
-    assertEquals(
-      serializeItem({ value: boolean(true), parameters: new Map() }),
-      "?1",
-    );
-    assertEquals(
-      serializeItem({ value: boolean(false), parameters: new Map() }),
-      "?0",
-    );
+    assertEquals(serializeItem(item(boolean(true))), "?1");
+    assertEquals(serializeItem(item(boolean(false))), "?0");
     const d = new Date(1659578233000);
+    assertEquals(serializeItem(item(date(d))), "@1659578233");
     assertEquals(
-      serializeItem({ value: date(d), parameters: new Map() }),
-      "@1659578233",
-    );
-    assertEquals(
-      serializeItem({ value: displayString("héllo"), parameters: new Map() }),
+      serializeItem(item(displayString("héllo"))),
       '%"h%c3%a9llo"',
     );
   },
@@ -356,14 +317,11 @@ Deno.test({
   name: "serializeItem() escapes quotes and backslash in string",
   fn() {
     assertEquals(
-      serializeItem({
-        value: string('hello "world"'),
-        parameters: new Map(),
-      }),
+      serializeItem(item(string('hello "world"'))),
       '"hello \\"world\\""',
     );
     assertEquals(
-      serializeItem({ value: string("hello\\world"), parameters: new Map() }),
+      serializeItem(item(string("hello\\world"))),
       '"hello\\\\world"',
     );
   },
@@ -372,12 +330,10 @@ Deno.test({
 Deno.test({
   name: "serializeItem() serializes item with parameters",
   fn() {
-    const params = new Map<string, BareItem>([
-      ["a", integer(1)],
-      ["b", boolean(true)],
-    ]);
     assertEquals(
-      serializeItem({ value: token("foo"), parameters: params }),
+      serializeItem(
+        item(token("foo"), [["a", integer(1)], ["b", boolean(true)]]),
+      ),
       "foo;a=1;b",
     );
   },
@@ -387,17 +343,11 @@ Deno.test({
   name: "serializeItem() handles boundary integers",
   fn() {
     assertEquals(
-      serializeItem({
-        value: integer(-999_999_999_999_999),
-        parameters: new Map(),
-      }),
+      serializeItem(item(integer(-999_999_999_999_999))),
       "-999999999999999",
     );
     assertEquals(
-      serializeItem({
-        value: integer(999_999_999_999_999),
-        parameters: new Map(),
-      }),
+      serializeItem(item(integer(999_999_999_999_999))),
       "999999999999999",
     );
   },
@@ -406,24 +356,15 @@ Deno.test({
 Deno.test({
   name: "serializeItem() handles decimal edge cases",
   fn() {
-    assertEquals(
-      serializeItem({ value: decimal(1.0), parameters: new Map() }),
-      "1.0",
-    );
-    assertEquals(
-      serializeItem({ value: decimal(-3.14), parameters: new Map() }),
-      "-3.14",
-    );
+    assertEquals(serializeItem(item(decimal(1.0))), "1.0");
+    assertEquals(serializeItem(item(decimal(-3.14))), "-3.14");
   },
 });
 
 Deno.test({
   name: "serializeItem() handles token starting with *",
   fn() {
-    assertEquals(
-      serializeItem({ value: token("*foo"), parameters: new Map() }),
-      "*foo",
-    );
+    assertEquals(serializeItem(item(token("*foo"))), "*foo");
   },
 });
 
@@ -431,10 +372,7 @@ Deno.test({
   name: 'serializeItem() encodes % and " in display string',
   fn() {
     assertEquals(
-      serializeItem({
-        value: displayString('hello % and "'),
-        parameters: new Map(),
-      }),
+      serializeItem(item(displayString('hello % and "'))),
       '%"hello %25 and %22"',
     );
   },
@@ -448,12 +386,12 @@ Deno.test({
   name: "serializeItem() rejects out-of-range integer",
   fn() {
     assertThrows(
-      () => serializeItem({ value: integer(1e16), parameters: new Map() }),
+      () => serializeItem(item(integer(1e16))),
       TypeError,
       "out of range",
     );
     assertThrows(
-      () => serializeItem({ value: integer(-1e16), parameters: new Map() }),
+      () => serializeItem(item(integer(-1e16))),
       TypeError,
       "out of range",
     );
@@ -464,7 +402,7 @@ Deno.test({
   name: "serializeItem() rejects non-integer value for integer type",
   fn() {
     assertThrows(
-      () => serializeItem({ value: integer(3.14), parameters: new Map() }),
+      () => serializeItem(item(integer(3.14))),
       TypeError,
       "must be a whole number",
     );
@@ -475,13 +413,12 @@ Deno.test({
   name: "serializeItem() rejects non-finite decimal",
   fn() {
     assertThrows(
-      () =>
-        serializeItem({ value: decimal(Infinity), parameters: new Map() }),
+      () => serializeItem(item(decimal(Infinity))),
       TypeError,
       "must be finite",
     );
     assertThrows(
-      () => serializeItem({ value: decimal(NaN), parameters: new Map() }),
+      () => serializeItem(item(decimal(NaN))),
       TypeError,
       "must be finite",
     );
@@ -492,20 +429,12 @@ Deno.test({
   name: "serializeItem() rejects decimal with integer part too large",
   fn() {
     assertThrows(
-      () =>
-        serializeItem({
-          value: decimal(1_000_000_000_000.1),
-          parameters: new Map(),
-        }),
+      () => serializeItem(item(decimal(1_000_000_000_000.1))),
       TypeError,
       "integer part too large",
     );
     assertThrows(
-      () =>
-        serializeItem({
-          value: decimal(-1_000_000_000_000.1),
-          parameters: new Map(),
-        }),
+      () => serializeItem(item(decimal(-1_000_000_000_000.1))),
       TypeError,
       "integer part too large",
     );
@@ -516,11 +445,7 @@ Deno.test({
   name: "serializeItem() rejects invalid date",
   fn() {
     assertThrows(
-      () =>
-        serializeItem({
-          value: date(new Date("invalid")),
-          parameters: new Map(),
-        }),
+      () => serializeItem(item(date(new Date("invalid")))),
       TypeError,
       "Invalid date",
     );
@@ -531,7 +456,7 @@ Deno.test({
   name: "serializeItem() rejects non-printable ASCII in string",
   fn() {
     assertThrows(
-      () => serializeItem({ value: string("\x00"), parameters: new Map() }),
+      () => serializeItem(item(string("\x00"))),
       TypeError,
       "Invalid character",
     );
@@ -542,7 +467,7 @@ Deno.test({
   name: "serializeItem() rejects non-ASCII in string",
   fn() {
     assertThrows(
-      () => serializeItem({ value: string("héllo"), parameters: new Map() }),
+      () => serializeItem(item(string("héllo"))),
       TypeError,
       "Invalid character",
     );
@@ -553,7 +478,7 @@ Deno.test({
   name: "serializeItem() rejects empty token",
   fn() {
     assertThrows(
-      () => serializeItem({ value: token(""), parameters: new Map() }),
+      () => serializeItem(item(token(""))),
       TypeError,
       "cannot be empty",
     );
@@ -564,7 +489,7 @@ Deno.test({
   name: "serializeItem() rejects token with invalid start character",
   fn() {
     assertThrows(
-      () => serializeItem({ value: token("1foo"), parameters: new Map() }),
+      () => serializeItem(item(token("1foo"))),
       TypeError,
       "must start with ALPHA",
     );
@@ -575,7 +500,7 @@ Deno.test({
   name: "serializeItem() rejects token with invalid character",
   fn() {
     assertThrows(
-      () => serializeItem({ value: token("foo bar"), parameters: new Map() }),
+      () => serializeItem(item(token("foo bar"))),
       TypeError,
       "Invalid character in token",
     );
@@ -585,9 +510,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects invalid key",
   fn() {
-    const dict: Dictionary = new Map([
-      ["INVALID", { value: integer(1), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["INVALID", item(integer(1))]]);
     assertThrows(
       () => serializeDictionary(dict),
       TypeError,
@@ -599,9 +522,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects empty key",
   fn() {
-    const dict: Dictionary = new Map([
-      ["", { value: integer(1), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["", item(integer(1))]]);
     assertThrows(
       () => serializeDictionary(dict),
       TypeError,
@@ -613,9 +534,7 @@ Deno.test({
 Deno.test({
   name: "serializeDictionary() rejects key with invalid character",
   fn() {
-    const dict: Dictionary = new Map([
-      ["a!b", { value: integer(1), parameters: new Map() }],
-    ]);
+    const dict: Dictionary = new Map([["a!b", item(integer(1))]]);
     assertThrows(
       () => serializeDictionary(dict),
       TypeError,
@@ -627,11 +546,8 @@ Deno.test({
 Deno.test({
   name: "serializeItem() rejects invalid parameter key",
   fn() {
-    const params = new Map<string, BareItem>([
-      ["INVALID", integer(1)],
-    ]);
     assertThrows(
-      () => serializeItem({ value: token("foo"), parameters: params }),
+      () => serializeItem(item(token("foo"), [["INVALID", integer(1)]])),
       TypeError,
       "must start with lowercase",
     );
@@ -699,6 +615,56 @@ Deno.test({
   },
 });
 
+Deno.test({
+  name: "item() creates item with empty parameters by default",
+  fn() {
+    const i = item(integer(42));
+    assertEquals(i.value, { type: "integer", value: 42 });
+    assertEquals(i.parameters.size, 0);
+  },
+});
+
+Deno.test({
+  name: "item() creates item with parameters from iterable",
+  fn() {
+    const i = item(token("foo"), [["a", integer(1)], ["b", boolean(true)]]);
+    assertEquals(i.value, { type: "token", value: "foo" });
+    assertEquals(i.parameters.size, 2);
+    assertEquals(i.parameters.get("a"), integer(1));
+    assertEquals(i.parameters.get("b"), boolean(true));
+  },
+});
+
+Deno.test({
+  name: "item() creates item with parameters from Map",
+  fn() {
+    const params = new Map<string, BareItem>([["q", decimal(0.9)]]);
+    const i = item(token("text/html"), params);
+    assertEquals(i.parameters.get("q"), decimal(0.9));
+  },
+});
+
+Deno.test({
+  name: "innerList() creates inner list with empty parameters by default",
+  fn() {
+    const il = innerList([item(integer(1)), item(integer(2))]);
+    assertEquals(il.items.length, 2);
+    assertEquals(il.parameters.size, 0);
+  },
+});
+
+Deno.test({
+  name: "innerList() creates inner list with parameters",
+  fn() {
+    const il = innerList(
+      [item(integer(1))],
+      [["param", token("value")]],
+    );
+    assertEquals(il.items.length, 1);
+    assertEquals(il.parameters.get("param"), token("value"));
+  },
+});
+
 // =============================================================================
 // Type Guard Tests
 // =============================================================================
@@ -718,20 +684,6 @@ Deno.test({
     const list = parseList("1, (2 3)");
     assertEquals(isInnerList(list[0]!), false);
     assertEquals(isInnerList(list[1]!), true);
-  },
-});
-
-Deno.test({
-  name: "isBareItemType() narrows bare item type",
-  fn() {
-    const item = parseItem("42");
-    assertEquals(isBareItemType(item.value, "integer"), true);
-    assertEquals(isBareItemType(item.value, "string"), false);
-
-    if (isBareItemType(item.value, "integer")) {
-      // TypeScript should know this is a number
-      assertEquals(item.value.value, 42);
-    }
   },
 });
 
