@@ -331,7 +331,7 @@ export function displayString(
  *
  * assertEquals(item(integer(42), [["q", token("fast")]]), {
  *   value: { type: "integer", value: 42 },
- *   parameters: new Map([["q", { type: "token", value: "fast" }]]),
+ *   parameters: new Map([["q", token("fast")]]),
  * });
  * ```
  */
