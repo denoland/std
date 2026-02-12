@@ -15,9 +15,11 @@ import { AssertionError } from "./assertion_error.ts";
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
  *
- * Note: When comparing `Blob` objects, you should first convert them to
- * `Uint8Array` using the `Blob.bytes()` method and then compare their
- * contents.
+ * Note: This function is based on value equality, but for some cases (such as
+ * data that can only be read asynchronously or function properties) value
+ * equality is not possible to determine. In such cases, reference equality is
+ * used instead, which may cause false negatives for objects such as `Blob`s or
+ * `Request`s.
  *
  * @example Usage
  * ```ts ignore
