@@ -70,40 +70,19 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * assert(func.lastExecution > 0);
  * ```
  *
- * @example Using a dynamic timeframe
- * ```ts
- * import { throttle } from "@std/async/unstable-throttle";
- * import { delay } from "./delay.ts";
- * import { assertEquals } from "@std/assert";
- *
- * let timesCalled = 0;
- * const fn = throttle(async (ms: number) => {
- *  await delay(ms);
- *  ++timesCalled;
- * }, (previousExecution) => previousExecution * 2);
- * await fn(50); // takes ~50ms to execute, after which it will be throttled for 50ms * 2 = 100ms
- * assertEquals(timesCalled, 1);
- * await delay(50);
- * await fn(50);
- * assertEquals(timesCalled, 1); // still throttled
- * await delay(30);
- * await fn(50);
- * assertEquals(timesCalled, 1); // still throttled
- * await delay(30);
- * await fn(50);
- * assertEquals(timesCalled, 2); // not throttled this time
- * ```
- *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to throttle.
- * @param timeframe The timeframe in milliseconds in which the function should be called at most once. If a callback function is supplied, it will be called with the duration of the previous execution and should return the next timeframe to use in milliseconds.
+ * @param timeframe The timeframe in milliseconds in which the function should be called at most once.
+ * If a callback function is supplied, it will be called with the duration of
+ * the previous execution and should return the
+ * next timeframe to use in milliseconds.
  * @param options Additional options.
  * @returns The throttled function.
  */
 // deno-lint-ignore no-explicit-any
 export function throttle<T extends Array<any>>(
   fn: (this: ThrottledFunction<T>, ...args: T) => void,
-  timeframe: number | ((previousExecution: number) => number),
+  timeframe: number | ((previousDuration: number) => number),
   options?: ThrottleOptions,
 ): ThrottledFunction<T> {
   const ensureLast = Boolean(options?.ensureLastCall);
@@ -118,22 +97,20 @@ export function throttle<T extends Array<any>>(
     flush = () => {
       const start = Date.now();
       let result: unknown;
+      const done = () => {
+        lastExecution = Date.now();
+        if (typeof timeframe === "function") {
+          tf = timeframe(lastExecution - start);
+        }
+      };
       try {
         clearTimeout(timeout);
         result = fn.call(throttled, ...args);
       } finally {
-        lastExecution = Date.now();
         if (isPromiseLike(result)) {
-          result.finally(() => {
-            lastExecution = Date.now();
-            if (typeof timeframe === "function") {
-              tf = timeframe(lastExecution - start);
-            }
-          });
+          result.finally(done);
         } else {
-          if (typeof timeframe === "function") {
-            tf = timeframe(lastExecution - start);
-          }
+          done();
         }
         flush = null;
       }
