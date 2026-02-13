@@ -56,6 +56,7 @@ import {
   toHaveReturnedWith,
   toMatch,
   toMatchObject,
+  toMatchSnapshot,
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
@@ -63,6 +64,11 @@ import { addSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { SnapshotPlugin, Tester } from "./_types.ts";
+import {
+  type ExpectSnapshotState,
+  getState as getSnapshotState,
+  setState as setSnapshotState,
+} from "./_snapshot_state.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -103,6 +109,7 @@ const matchers: Record<MatcherKey, Matcher> = {
   toHaveReturnedWith,
   toHaveReturned,
   toMatchObject,
+  toMatchSnapshot,
   toMatch,
   toReturn: toHaveReturned,
   toReturnTimes: toHaveReturnedTimes,
@@ -618,3 +625,37 @@ expect.not = {
 expect.addSnapshotSerializer = addSerializer as (
   plugin: SnapshotPlugin,
 ) => void;
+/**
+ * `expect.setState` sets the state for snapshot matchers. This must be called
+ * before using `toMatchSnapshot()` to provide the current test name and
+ * optionally the test file path.
+ *
+ * @example
+ * ```ts ignore
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("my test", () => {
+ *   expect.setState({
+ *     currentTestName: "my test",
+ *     testPath: import.meta.url,
+ *   });
+ *   expect({ foo: 42 }).toMatchSnapshot();
+ * });
+ * ```
+ */
+expect.setState = setSnapshotState as (
+  state: Partial<ExpectSnapshotState>,
+) => void;
+/**
+ * `expect.getState` returns the current state for snapshot matchers.
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * expect.setState({ currentTestName: "my test" });
+ * const state = expect.getState();
+ * expect(state.currentTestName).toBe("my test");
+ * ```
+ */
+expect.getState = getSnapshotState as () => ExpectSnapshotState;
