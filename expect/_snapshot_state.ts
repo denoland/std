@@ -37,6 +37,8 @@ type V8Error = typeof Error & {
 interface CallSite {
   isEval(): boolean;
   getFileName(): string | null;
+  getLineNumber(): number | null;
+  getColumnNumber(): number | null;
 }
 
 /**
@@ -161,6 +163,211 @@ export function getIsUpdate(): boolean {
   }
   return _isUpdate;
 }
+
+// --- Inline snapshot infrastructure ---
+
+interface InlineSnapshotUpdateRequest {
+  fileName: string;
+  lineNumber: number;
+  columnNumber: number;
+  actualSnapshot: string;
+}
+
+const inlineUpdateRequests: InlineSnapshotUpdateRequest[] = [];
+
+/**
+ * Gets the call site location of the caller of `toMatchInlineSnapshot`.
+ * Walks the stack to find the first frame outside of expect internals.
+ */
+export function getInlineCallSite(
+  // deno-lint-ignore no-explicit-any
+  captureTarget: (...args: any[]) => any,
+): InlineSnapshotUpdateRequest | null {
+  const origPrepareStackTrace = (Error as V8Error).prepareStackTrace;
+  try {
+    const obj: { stack: InlineSnapshotUpdateRequest | null } = { stack: null };
+    (Error as V8Error).prepareStackTrace = (
+      _err: Error,
+      stack: CallSite[],
+    ): InlineSnapshotUpdateRequest | null => {
+      for (const frame of stack) {
+        if (frame.isEval()) continue;
+        const fileName = frame.getFileName();
+        if (fileName === null) continue;
+        if (
+          fileName.includes("/expect/_") ||
+          fileName.includes("/expect/expect.ts")
+        ) {
+          continue;
+        }
+        const lineNumber = frame.getLineNumber();
+        const columnNumber = frame.getColumnNumber();
+        if (lineNumber === null || columnNumber === null) continue;
+        return { fileName, lineNumber, columnNumber, actualSnapshot: "" };
+      }
+      return null;
+    };
+    Error.captureStackTrace(obj, captureTarget);
+    return obj.stack;
+  } finally {
+    (Error as V8Error).prepareStackTrace = origPrepareStackTrace;
+  }
+}
+
+/** Queues an inline snapshot update to be applied on teardown. */
+export function pushInlineUpdate(request: InlineSnapshotUpdateRequest): void {
+  inlineUpdateRequests.push(request);
+}
+
+/** Returns the current inline update queue (for testing). */
+export function getInlineUpdateRequests(): InlineSnapshotUpdateRequest[] {
+  return inlineUpdateRequests;
+}
+
+/** Clears the inline update queue (for testing). */
+export function clearInlineUpdateRequests(): void {
+  inlineUpdateRequests.length = 0;
+}
+
+function makeSnapshotUpdater(
+  updateRequests: InlineSnapshotUpdateRequest[],
+  // deno-lint-ignore no-explicit-any
+): any {
+  return {
+    name: "snapshot-updater-plugin",
+    rules: {
+      "update-snapshot": {
+        // deno-lint-ignore no-explicit-any
+        create(context: any) {
+          const src = context.sourceCode.text;
+          const lineBreaks = [...src.matchAll(/\n|\r\n?/g)]
+            .map((m: RegExpExecArray) => m.index);
+          const locationToSnapshot: Record<number, string> = {};
+          for (const req of updateRequests) {
+            const { lineNumber, columnNumber, actualSnapshot } = req;
+            const location = (lineBreaks[lineNumber - 2] ?? 0) + columnNumber;
+            locationToSnapshot[location] = actualSnapshot;
+          }
+
+          return {
+            // deno-lint-ignore no-explicit-any
+            "CallExpression"(node: any) {
+              const snapshot = locationToSnapshot[node.range[0]];
+              if (snapshot === undefined) return;
+              // The inline snapshot is the first argument to toMatchInlineSnapshot
+              // In the AST, it's the last argument of the expect(...).toMatchInlineSnapshot(...) call
+              const args = node.arguments;
+              if (args.length === 0) {
+                // No argument - need to insert. We'll place after the opening paren
+                // Find the range end of callee and add the snapshot
+                context.report({
+                  node,
+                  message: "",
+                  // deno-lint-ignore no-explicit-any
+                  fix(fixer: any) {
+                    // Insert before the closing paren: range[1] - 1 is the ")"
+                    return fixer.insertTextBeforeRange(
+                      [node.range[1] - 1, node.range[1] - 1],
+                      snapshot,
+                    );
+                  },
+                });
+              } else {
+                // Replace the last argument (the snapshot string)
+                const lastArg = args[args.length - 1];
+                context.report({
+                  node,
+                  message: "",
+                  // deno-lint-ignore no-explicit-any
+                  fix(fixer: any) {
+                    return fixer.replaceText(lastArg, snapshot);
+                  },
+                });
+              }
+            },
+          };
+        },
+      },
+    },
+  };
+}
+
+function applyInlineUpdates(): void {
+  if (inlineUpdateRequests.length === 0) return;
+
+  // @ts-ignore Deno.lint may not exist in all versions
+  if (typeof Deno.lint?.runPlugin !== "function") {
+    throw new Error(
+      "Deno versions before 2.2.0 do not support Deno.lint, which is required to update inline snapshots",
+    );
+  }
+
+  const pathsToUpdate = Map.groupBy(inlineUpdateRequests, (r) => r.fileName);
+
+  for (const [path, requests] of pathsToUpdate) {
+    const file = Deno.readTextFileSync(path);
+    // @ts-ignore Deno.lint may not exist in all versions
+    const pluginRunResults = Deno.lint.runPlugin(
+      makeSnapshotUpdater(requests),
+      "dummy.ts",
+      file,
+    );
+
+    // deno-lint-ignore no-explicit-any
+    const fixes = pluginRunResults.flatMap((v: any) => v.fix ?? []);
+
+    // Apply fixes in order
+    fixes.sort((
+      a: { range: [number, number] },
+      b: { range: [number, number] },
+    ) => a.range[0] - b.range[0]);
+    let output = "";
+    let lastIndex = 0;
+    for (
+      const fix of fixes as {
+        range: [number, number];
+        text?: string;
+      }[]
+    ) {
+      output += file.slice(lastIndex, fix.range[0]);
+      output += fix.text ?? "";
+      lastIndex = fix.range[1];
+    }
+    output += file.slice(lastIndex);
+
+    Deno.writeTextFileSync(path, output);
+  }
+
+  const shouldFormat = !Deno.args.some((arg) => arg === "--no-format");
+  if (shouldFormat) {
+    const command = new Deno.Command(Deno.execPath(), {
+      args: ["fmt", ...pathsToUpdate.keys()],
+    });
+    command.outputSync();
+  }
+
+  // deno-lint-ignore no-console
+  console.log(
+    `%c\n > ${inlineUpdateRequests.length} inline ${
+      inlineUpdateRequests.length === 1 ? "snapshot" : "snapshots"
+    } updated.`,
+    "color: green; font-weight: bold;",
+  );
+}
+
+let inlineTeardownRegistered = false;
+
+/** Registers the global teardown for inline snapshot updates. */
+export function registerInlineTeardown(): void {
+  if (inlineTeardownRegistered) return;
+  globalThis.addEventListener("unload", () => {
+    applyInlineUpdates();
+  });
+  inlineTeardownRegistered = true;
+}
+
+/** Re-export escapeStringForJs for use by inline snapshot matcher. */
+export { escapeStringForJs };
 
 // --- Snapshot Context (per snapshot file) ---
 

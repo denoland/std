@@ -29,9 +29,13 @@ import {
   buildNotEqualErrorMessage,
 } from "./_build_message.ts";
 import {
+  escapeStringForJs,
+  getInlineCallSite,
   getIsUpdate,
   getState,
   getTestFileFromStack,
+  pushInlineUpdate,
+  registerInlineTeardown,
   serialize,
   SnapshotContext,
 } from "./_snapshot_state.ts";
@@ -1154,6 +1158,114 @@ export function toMatchSnapshot(
       throw new AssertionError(
         `Snapshot does not match:\n${diffMsg}\n` +
           "To update snapshots, run:\n" +
+          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      );
+    }
+  }
+}
+
+export function toMatchInlineSnapshot(
+  context: MatcherContext,
+  // deno-lint-ignore no-explicit-any
+  propertyMatchersOrSnapshot?: Record<string, any> | string,
+  maybeSnapshot?: string,
+): MatchResult {
+  if (context.isNot) {
+    throw new AssertionError("Snapshot matchers do not support `.not`");
+  }
+
+  // Parse arguments: (propertyMatchers?, inlineSnapshot?)
+  // deno-lint-ignore no-explicit-any
+  let propertyMatchers: Record<string, any> | undefined;
+  let inlineSnapshot: string | undefined;
+  if (typeof propertyMatchersOrSnapshot === "string") {
+    inlineSnapshot = propertyMatchersOrSnapshot;
+  } else if (
+    typeof propertyMatchersOrSnapshot === "object" &&
+    propertyMatchersOrSnapshot !== null
+  ) {
+    propertyMatchers = propertyMatchersOrSnapshot;
+    inlineSnapshot = maybeSnapshot;
+  }
+
+  // Handle property matchers
+  let valueToSerialize = context.value;
+  if (propertyMatchers) {
+    if (typeof context.value !== "object" || context.value === null) {
+      throw new AssertionError(
+        "Property matchers can only be used with object values in toMatchInlineSnapshot",
+      );
+    }
+    const pass = equal(context.value, propertyMatchers, {
+      strictCheck: false,
+      customTesters: [
+        ...context.customTesters,
+        iterableEquality,
+        subsetEquality,
+      ],
+    });
+    if (!pass) {
+      throw new AssertionError(
+        buildEqualErrorMessage(
+          context.value,
+          propertyMatchers,
+          { msg: "toMatchInlineSnapshot: Property matchers did not match" },
+        ),
+      );
+    }
+    valueToSerialize = replaceAsymmetricMatchers(
+      context.value as Record<string, unknown>,
+      propertyMatchers,
+    );
+  }
+
+  const actualSnapshot = serialize(valueToSerialize);
+
+  // Strip leading/trailing newlines from the inline snapshot template literal
+  if (
+    inlineSnapshot !== undefined &&
+    inlineSnapshot.startsWith("\n") && inlineSnapshot.endsWith("\n")
+  ) {
+    inlineSnapshot = inlineSnapshot.slice(1, -1);
+  }
+
+  if (inlineSnapshot === undefined) {
+    // No inline snapshot provided - queue update to insert it
+    if (!getIsUpdate()) {
+      throw new AssertionError(
+        "Missing inline snapshot argument. To create inline snapshots, run:\n" +
+          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      );
+    }
+    const callSite = getInlineCallSite(toMatchInlineSnapshot);
+    if (callSite) {
+      callSite.actualSnapshot = "`" + escapeStringForJs(actualSnapshot) + "`";
+      pushInlineUpdate(callSite);
+      registerInlineTeardown();
+    }
+  } else if (actualSnapshot !== inlineSnapshot) {
+    if (getIsUpdate()) {
+      // Update mode - queue replacement
+      const callSite = getInlineCallSite(toMatchInlineSnapshot);
+      if (callSite) {
+        callSite.actualSnapshot = "`" + escapeStringForJs(actualSnapshot) +
+          "`";
+        pushInlineUpdate(callSite);
+        registerInlineTeardown();
+      }
+    } else {
+      // Assert mode - throw diff
+      const stringDiff = !actualSnapshot.includes("\n");
+      const diffResult = stringDiff
+        ? diffStr(actualSnapshot, inlineSnapshot)
+        : diff(
+          actualSnapshot.split("\n"),
+          inlineSnapshot.split("\n"),
+        );
+      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+      throw new AssertionError(
+        `Inline snapshot does not match:\n${diffMsg}\n` +
+          "To update inline snapshots, run:\n" +
           "    deno test --allow-read --allow-write [files]... -- --update\n",
       );
     }
