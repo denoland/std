@@ -55,7 +55,7 @@ export type StringifyOptions = {
    *
    * @default {false}
    */
-  sortKeys?: boolean | ((a: string, b: string) => number);
+  sortKeys?: boolean | ((a: string, b: string, depth: number) => number);
   /**
    * Set max line width.
    *
