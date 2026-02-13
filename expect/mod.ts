@@ -39,6 +39,8 @@
  *   - {@linkcode Expected.toBeInstanceOf | toBeInstanceOf}
  *   - {@linkcode Expected.toThrow | toThrow}
  *   - {@linkcode Expected.toHaveProperty | toHaveProperty}
+ *   - {@linkcode Expected.toMatchSnapshot | toMatchSnapshot}
+ *   - {@linkcode Expected.toMatchInlineSnapshot | toMatchInlineSnapshot}
  * - Mock related matchers:
  *   - {@linkcode Expected.toHaveBeenCalled | toHaveBeenCalled}
  *   - {@linkcode Expected.toHaveBeenCalledTimes | toHaveBeenCalledTimes}
@@ -71,8 +73,6 @@
  *
  * Only these functions are still not available:
  * - Matchers:
- *   - `toMatchSnapshot`
- *   - `toMatchInlineSnapshot`
  *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`
  *
@@ -87,3 +87,4 @@
  */
 export * from "./expect.ts";
 export * from "./fn.ts";
+export type { ExpectSnapshotState } from "./_snapshot_state.ts";
