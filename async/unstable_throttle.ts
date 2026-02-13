@@ -15,8 +15,8 @@ export type ThrottleOptions = {
  * A throttled function that will be executed at most once during the
  * specified `timeframe` in milliseconds.
  */
-export interface ThrottledFunction<T extends Array<unknown>, R = void> {
-  (...args: T): R extends Promise<unknown> ? Promise<void> : void;
+export interface ThrottledFunction<T extends Array<unknown>> {
+  (...args: T): void;
   /**
    * Clears the throttling state.
    * {@linkcode ThrottledFunction.lastExecution} will be reset to `-Infinity` and
@@ -26,7 +26,7 @@ export interface ThrottledFunction<T extends Array<unknown>, R = void> {
   /**
    * Execute the last throttled call (if any) and clears the throttling state.
    */
-  flush(): R extends Promise<unknown> ? Promise<void> : void;
+  flush(): void;
   /**
    * Returns a boolean indicating whether the function is currently being throttled.
    */
@@ -101,11 +101,11 @@ export interface ThrottledFunction<T extends Array<unknown>, R = void> {
  * @returns The throttled function.
  */
 // deno-lint-ignore no-explicit-any
-export function throttle<T extends Array<any>, R = void>(
-  fn: (this: ThrottledFunction<T, R>, ...args: T) => R,
+export function throttle<T extends Array<any>>(
+  fn: (this: ThrottledFunction<T>, ...args: T) => void,
   timeframe: number | ((previousExecution: number) => number),
   options?: ThrottleOptions,
-): ThrottledFunction<T, R> {
+): ThrottledFunction<T> {
   const ensureLast = Boolean(options?.ensureLastCall);
   let timeout = -1;
 
@@ -124,21 +124,19 @@ export function throttle<T extends Array<any>, R = void>(
       } finally {
         lastExecution = Date.now();
         if (isPromiseLike(result)) {
-          result = result.finally(() => {
+          result.finally(() => {
             lastExecution = Date.now();
             if (typeof timeframe === "function") {
               tf = timeframe(lastExecution - start);
             }
           });
         } else {
-          // lastExecution = Date.now();
           if (typeof timeframe === "function") {
             tf = timeframe(lastExecution - start);
           }
         }
         flush = null;
       }
-      if (isPromiseLike(result)) return result.then(() => {});
     };
     if (throttled.throttling) {
       if (ensureLast) {
@@ -147,15 +145,15 @@ export function throttle<T extends Array<any>, R = void>(
       }
       return;
     }
-    return flush?.();
-  }) as ThrottledFunction<T, R>;
+    flush?.();
+  }) as ThrottledFunction<T>;
 
   throttled.clear = () => {
     lastExecution = -Infinity;
   };
 
   throttled.flush = () => {
-    return flush?.() as ReturnType<ThrottledFunction<T, R>["flush"]>;
+    flush?.();
   };
 
   Object.defineProperties(throttled, {
