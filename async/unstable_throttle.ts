@@ -89,7 +89,8 @@ export function throttle<T extends Array<any>>(
   let timeout = -1;
 
   let lastExecution = -Infinity;
-  let flush: (() => void | Promise<void>) | null = null;
+  let flush: (() => void) | null = null;
+  let throttlingAsync = false;
 
   let tf = typeof timeframe === "function" ? 0 : timeframe;
 
@@ -98,6 +99,7 @@ export function throttle<T extends Array<any>>(
       const start = Date.now();
       let result: unknown;
       const done = () => {
+        throttlingAsync = false;
         lastExecution = Date.now();
         if (typeof timeframe === "function") {
           tf = timeframe(lastExecution - start);
@@ -108,6 +110,7 @@ export function throttle<T extends Array<any>>(
         result = fn.call(throttled, ...args);
       } finally {
         if (isPromiseLike(result)) {
+          throttlingAsync = true;
           result.finally(done);
         } else {
           done();
@@ -134,7 +137,9 @@ export function throttle<T extends Array<any>>(
   };
 
   Object.defineProperties(throttled, {
-    throttling: { get: () => Date.now() - lastExecution <= tf },
+    throttling: {
+      get: () => Date.now() - lastExecution <= tf || throttlingAsync,
+    },
     lastExecution: { get: () => lastExecution },
   });
 
