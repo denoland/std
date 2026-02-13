@@ -1165,12 +1165,14 @@ Deno.test("XmlTokenizer.process() handles comment with dashes inside DOCTYPE int
   assertEquals(tokens[0]?.type, "doctype");
 });
 
-Deno.test("XmlTokenizer.process() handles comment with multiple trailing dashes in DOCTYPE", () => {
-  // Tests DTD_COMMENT_DASH_DASH staying in state for consecutive dashes (----->)
-  const tokens = collectTokens(
-    "<!DOCTYPE root [<!------>]><root/>",
+Deno.test("XmlTokenizer.process() throws on multiple trailing dashes in DOCTYPE comment", () => {
+  // Per XML 1.0 §2.5, after '--' only '>' is permitted.
+  // '<!------>' has content '--' which contains the forbidden '--' sequence.
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root [<!------>]><root/>"),
+    XmlSyntaxError,
+    "'--' is not allowed within XML comments",
   );
-  assertEquals(tokens[0]?.type, "doctype");
 });
 
 Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () => {
@@ -1291,6 +1293,18 @@ Deno.test("XmlTokenizer.process() handles PI across chunks in DOCTYPE", () => {
     "get content?>]><root/>",
   );
   assertEquals(tokens[0]?.type, "doctype");
+});
+
+Deno.test("XmlTokenizer.process() throws on DOCTYPE quoted string spanning chunk boundary", () => {
+  assertThrows(
+    () =>
+      collectChunkedTokens(
+        '<!DOCTYPE root SYSTEM "long-system-',
+        'id.dtd"><root/>',
+      ),
+    XmlSyntaxError,
+    "Unterminated quoted string in DOCTYPE declaration",
+  );
 });
 
 // =============================================================================
@@ -1881,6 +1895,30 @@ Deno.test("XmlTokenizer.process() handles text content split across multiple chu
   const tokens = collectChunkedTokens("<root>Hello ", "Wor", "ld</root>");
   const text = tokens.find((t) => t.type === "text");
   assertEquals(text?.content, "Hello World");
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (]] then >)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]]", ">more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (] then ]>)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]>more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling three chunks", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]", ">more</root>"),
+    XmlSyntaxError,
+    "']]>' is not allowed in text content",
+  );
 });
 
 // =============================================================================
