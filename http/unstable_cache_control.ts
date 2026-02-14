@@ -207,9 +207,9 @@ function parseFieldNames(value: string): string[] {
  * import { parseCacheControl } from "@std/http/unstable-cache-control";
  * import { assertEquals } from "@std/assert";
  *
- * const cc = parseCacheControl("max-age=3600, private");
+ * const cc = parseCacheControl("max-age=3600, no-store");
  * assertEquals(cc.maxAge, 3600);
- * assertEquals(cc.private, true);
+ * assertEquals(cc.noStore, true);
  * ```
  *
  * @throws {SyntaxError} If a known directive has a malformed value (e.g.
