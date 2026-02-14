@@ -111,7 +111,7 @@ export function throttle<T extends Array<any>>(
       } finally {
         if (isPromiseLike(result)) {
           throttlingAsync = true;
-          result.finally(done);
+          Promise.resolve(result).finally(done);
         } else {
           done();
         }
@@ -129,6 +129,7 @@ export function throttle<T extends Array<any>>(
   }) as ThrottledFunction<T>;
 
   throttled.clear = () => {
+    throttlingAsync = false;
     lastExecution = -Infinity;
   };
 
@@ -146,6 +147,6 @@ export function throttle<T extends Array<any>>(
   return throttled;
 }
 
-function isPromiseLike(obj: unknown): obj is Promise<unknown> {
-  return typeof (obj as Promise<unknown>)?.then === "function";
+function isPromiseLike(obj: unknown): obj is PromiseLike<unknown> {
+  return typeof (obj as PromiseLike<unknown>)?.then === "function";
 }
