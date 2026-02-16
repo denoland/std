@@ -1040,29 +1040,102 @@ export function toThrow<E extends Error = Error>(
   );
 }
 
+/**
+ * Parses an overloaded `(propertyMatchers?, stringArg?)` argument list.
+ * Both `toMatchSnapshot` and `toMatchInlineSnapshot` accept an optional
+ * property-matchers object followed by an optional string argument.
+ */
+function parseSnapshotArgs(
+  first?: Record<string, unknown> | string,
+  second?: string,
+): {
+  propertyMatchers: Record<string, unknown> | undefined;
+  stringArg: string | undefined;
+} {
+  if (typeof first === "string") {
+    return { propertyMatchers: undefined, stringArg: first };
+  }
+  if (typeof first === "object" && first !== null) {
+    return { propertyMatchers: first, stringArg: second };
+  }
+  return { propertyMatchers: undefined, stringArg: undefined };
+}
+
+/**
+ * Validates property matchers against the actual value and returns the
+ * value to serialize (with asymmetric matchers replaced by their string
+ * representations).
+ */
+function applyPropertyMatchers(
+  context: MatcherContext,
+  propertyMatchers: Record<string, unknown>,
+  matcherName: string,
+): unknown {
+  if (typeof context.value !== "object" || context.value === null) {
+    throw new AssertionError(
+      `Property matchers can only be used with object values in ${matcherName}`,
+    );
+  }
+  const pass = equal(context.value, propertyMatchers, {
+    strictCheck: false,
+    customTesters: [
+      ...context.customTesters,
+      iterableEquality,
+      subsetEquality,
+    ],
+  });
+  if (!pass) {
+    throw new AssertionError(
+      buildEqualErrorMessage(
+        context.value,
+        propertyMatchers,
+        { msg: `${matcherName}: Property matchers did not match` },
+      ),
+    );
+  }
+  return replaceAsymmetricMatchers(
+    context.value as Record<string, unknown>,
+    propertyMatchers,
+  );
+}
+
+/** Throws a diff-based assertion error comparing two snapshot strings. */
+function throwSnapshotMismatch(
+  actual: string,
+  expected: string,
+  label: string,
+  updateHint: string,
+): never {
+  const stringDiff = !actual.includes("\n");
+  const diffResult = stringDiff
+    ? diffStr(actual, expected)
+    : diff(actual.split("\n"), expected.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  throw new AssertionError(
+    `${label} does not match:\n${diffMsg}\n` +
+      `To update ${label.toLowerCase()}s, run:\n` +
+      `    ${updateHint}\n`,
+  );
+}
+
+/**
+ * Compares a value against a stored snapshot file.
+ *
+ * @experimental
+ */
 export function toMatchSnapshot(
   context: MatcherContext,
-  // deno-lint-ignore no-explicit-any
-  propertyMatchersOrHint?: Record<string, any> | string,
+  propertyMatchersOrHint?: Record<string, unknown> | string,
   maybeHint?: string,
 ): MatchResult {
   if (context.isNot) {
     throw new AssertionError("Snapshot matchers do not support `.not`");
   }
 
-  // Parse arguments: (propertyMatchers?, hint?)
-  // deno-lint-ignore no-explicit-any
-  let propertyMatchers: Record<string, any> | undefined;
-  let hint: string | undefined;
-  if (typeof propertyMatchersOrHint === "string") {
-    hint = propertyMatchersOrHint;
-  } else if (
-    typeof propertyMatchersOrHint === "object" &&
-    propertyMatchersOrHint !== null
-  ) {
-    propertyMatchers = propertyMatchersOrHint;
-    hint = maybeHint;
-  }
+  const { propertyMatchers, stringArg: hint } = parseSnapshotArgs(
+    propertyMatchersOrHint,
+    maybeHint,
+  );
 
   // Determine test file path
   const state = getState();
@@ -1089,41 +1162,9 @@ export function toMatchSnapshot(
   const count = snapshotCtx.getCount(snapshotName);
   const key = `${snapshotName} ${count}`;
 
-  // Handle property matchers: check the value matches the matchers,
-  // then replace matched properties with their matcher representations
-  let valueToSerialize = context.value;
-  if (propertyMatchers) {
-    if (
-      typeof context.value !== "object" || context.value === null
-    ) {
-      throw new AssertionError(
-        "Property matchers can only be used with object values in toMatchSnapshot",
-      );
-    }
-    // Verify the value matches the property matchers (like toMatchObject)
-    const pass = equal(context.value, propertyMatchers, {
-      strictCheck: false,
-      customTesters: [
-        ...context.customTesters,
-        iterableEquality,
-        subsetEquality,
-      ],
-    });
-    if (!pass) {
-      throw new AssertionError(
-        buildEqualErrorMessage(
-          context.value,
-          propertyMatchers,
-          { msg: "toMatchSnapshot: Property matchers did not match" },
-        ),
-      );
-    }
-    // Replace matched properties with the asymmetric matcher representations
-    valueToSerialize = replaceAsymmetricMatchers(
-      context.value as Record<string, unknown>,
-      propertyMatchers,
-    );
-  }
+  const valueToSerialize = propertyMatchers
+    ? applyPropertyMatchers(context, propertyMatchers, "toMatchSnapshot")
+    : context.value;
 
   const actualSnapshot = serialize(valueToSerialize);
   snapshotCtx.pushToUpdateQueue(key);
@@ -1145,91 +1186,58 @@ export function toMatchSnapshot(
       );
     }
 
-    const expectedSnapshot = snapshotCtx.getSnapshot(key);
+    const expectedSnapshot = snapshotCtx.getSnapshot(key)!;
     if (actualSnapshot !== expectedSnapshot) {
-      const stringDiff = !actualSnapshot.includes("\n");
-      const diffResult = stringDiff
-        ? diffStr(actualSnapshot, expectedSnapshot!)
-        : diff(
-          actualSnapshot.split("\n"),
-          expectedSnapshot!.split("\n"),
-        );
-      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-      throw new AssertionError(
-        `Snapshot does not match:\n${diffMsg}\n` +
-          "To update snapshots, run:\n" +
-          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      throwSnapshotMismatch(
+        actualSnapshot,
+        expectedSnapshot,
+        "Snapshot",
+        "deno test --allow-read --allow-write [files]... -- --update",
       );
     }
   }
 }
 
+/**
+ * Compares a value against an inline snapshot string embedded in the test file.
+ *
+ * @experimental
+ */
 export function toMatchInlineSnapshot(
   context: MatcherContext,
-  // deno-lint-ignore no-explicit-any
-  propertyMatchersOrSnapshot?: Record<string, any> | string,
+  propertyMatchersOrSnapshot?: Record<string, unknown> | string,
   maybeSnapshot?: string,
 ): MatchResult {
   if (context.isNot) {
     throw new AssertionError("Snapshot matchers do not support `.not`");
   }
 
-  // Parse arguments: (propertyMatchers?, inlineSnapshot?)
-  // deno-lint-ignore no-explicit-any
-  let propertyMatchers: Record<string, any> | undefined;
-  let inlineSnapshot: string | undefined;
-  if (typeof propertyMatchersOrSnapshot === "string") {
-    inlineSnapshot = propertyMatchersOrSnapshot;
-  } else if (
-    typeof propertyMatchersOrSnapshot === "object" &&
-    propertyMatchersOrSnapshot !== null
-  ) {
-    propertyMatchers = propertyMatchersOrSnapshot;
-    inlineSnapshot = maybeSnapshot;
-  }
+  const { propertyMatchers, stringArg: inlineSnapshot } = parseSnapshotArgs(
+    propertyMatchersOrSnapshot,
+    maybeSnapshot,
+  );
 
-  // Handle property matchers
-  let valueToSerialize = context.value;
-  if (propertyMatchers) {
-    if (typeof context.value !== "object" || context.value === null) {
-      throw new AssertionError(
-        "Property matchers can only be used with object values in toMatchInlineSnapshot",
-      );
-    }
-    const pass = equal(context.value, propertyMatchers, {
-      strictCheck: false,
-      customTesters: [
-        ...context.customTesters,
-        iterableEquality,
-        subsetEquality,
-      ],
-    });
-    if (!pass) {
-      throw new AssertionError(
-        buildEqualErrorMessage(
-          context.value,
-          propertyMatchers,
-          { msg: "toMatchInlineSnapshot: Property matchers did not match" },
-        ),
-      );
-    }
-    valueToSerialize = replaceAsymmetricMatchers(
-      context.value as Record<string, unknown>,
+  const valueToSerialize = propertyMatchers
+    ? applyPropertyMatchers(
+      context,
       propertyMatchers,
-    );
-  }
+      "toMatchInlineSnapshot",
+    )
+    : context.value;
 
   const actualSnapshot = serialize(valueToSerialize);
 
   // Strip leading/trailing newlines from the inline snapshot template literal
+  let trimmedInlineSnapshot = inlineSnapshot;
   if (
-    inlineSnapshot !== undefined &&
-    inlineSnapshot.startsWith("\n") && inlineSnapshot.endsWith("\n")
+    trimmedInlineSnapshot !== undefined &&
+    trimmedInlineSnapshot.startsWith("\n") &&
+    trimmedInlineSnapshot.endsWith("\n")
   ) {
-    inlineSnapshot = inlineSnapshot.slice(1, -1);
+    trimmedInlineSnapshot = trimmedInlineSnapshot.slice(1, -1);
   }
 
-  if (inlineSnapshot === undefined) {
+  if (trimmedInlineSnapshot === undefined) {
     // No inline snapshot provided - queue update to insert it
     if (!getIsUpdate()) {
       throw new AssertionError(
@@ -1243,7 +1251,7 @@ export function toMatchInlineSnapshot(
       pushInlineUpdate(callSite);
       registerInlineTeardown();
     }
-  } else if (actualSnapshot !== inlineSnapshot) {
+  } else if (actualSnapshot !== trimmedInlineSnapshot) {
     if (getIsUpdate()) {
       // Update mode - queue replacement
       const callSite = getInlineCallSite(toMatchInlineSnapshot);
@@ -1254,19 +1262,11 @@ export function toMatchInlineSnapshot(
         registerInlineTeardown();
       }
     } else {
-      // Assert mode - throw diff
-      const stringDiff = !actualSnapshot.includes("\n");
-      const diffResult = stringDiff
-        ? diffStr(actualSnapshot, inlineSnapshot)
-        : diff(
-          actualSnapshot.split("\n"),
-          inlineSnapshot.split("\n"),
-        );
-      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
-      throw new AssertionError(
-        `Inline snapshot does not match:\n${diffMsg}\n` +
-          "To update inline snapshots, run:\n" +
-          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      throwSnapshotMismatch(
+        actualSnapshot,
+        trimmedInlineSnapshot,
+        "Inline snapshot",
+        "deno test --allow-read --allow-write [files]... -- --update",
       );
     }
   }

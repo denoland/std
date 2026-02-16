@@ -1,11 +1,21 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { basename } from "@std/path/basename";
+import { dirname } from "@std/path/dirname";
+import { fromFileUrl } from "@std/path/from-file-url";
+import { join } from "@std/path/join";
+
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
 // --- Jest-compatible state management ---
 
-/** State for snapshot testing, following Jest's `expect.getState()`/`expect.setState()` API. */
+/**
+ * State for snapshot testing, following Jest's
+ * `expect.getState()`/`expect.setState()` API.
+ *
+ * @experimental
+ */
 export interface ExpectSnapshotState {
   /** The name of the currently running test. Required for snapshot testing. */
   currentTestName?: string | undefined;
@@ -15,47 +25,41 @@ export interface ExpectSnapshotState {
 
 let expectState: ExpectSnapshotState = {};
 
-/** Sets the expect state. Used by test runners to provide test context. */
+/**
+ * Sets the expect state. Used by test runners to provide test context.
+ *
+ * @experimental
+ */
 export function setState(newState: Partial<ExpectSnapshotState>): void {
   expectState = { ...expectState, ...newState };
 }
 
-/** Gets the current expect state. */
+/**
+ * Gets the current expect state.
+ *
+ * @experimental
+ */
 export function getState(): ExpectSnapshotState {
   return { ...expectState };
 }
 
 // --- V8 structured stack trace API ---
 
-type V8Error = typeof Error & {
-  prepareStackTrace(
-    error: Error,
-    structuredStackTrace: CallSite[],
-  ): unknown;
-};
-
-interface CallSite {
-  isEval(): boolean;
-  getFileName(): string | null;
-  getLineNumber(): number | null;
-  getColumnNumber(): number | null;
-}
-
 /**
  * Gets the test file path by walking up the call stack and finding the first
  * frame that isn't part of the expect module internals.
  */
 export function getTestFileFromStack(): string | null {
-  const origPrepareStackTrace = (Error as V8Error).prepareStackTrace;
+  // deno-lint-ignore no-explicit-any
+  const ErrorCtor = Error as any;
+  const origPrepareStackTrace = ErrorCtor.prepareStackTrace;
   try {
     const obj: { stack: string | null } = { stack: null };
-    (Error as V8Error).prepareStackTrace = (
-      _err: Error,
-      stack: CallSite[],
-    ): string | null => {
+    // deno-lint-ignore no-explicit-any
+    ErrorCtor.prepareStackTrace = (_err: Error, stack: any[]): string | null => {
       for (const frame of stack) {
         if (frame.isEval()) continue;
-        const fileName = frame.getFileName();
+        const fileName: string | null = frame.getFileName();
         if (fileName === null) continue;
         // Skip expect module internal files
         if (
@@ -68,35 +72,11 @@ export function getTestFileFromStack(): string | null {
       }
       return null;
     };
-    Error.captureStackTrace(obj);
+    ErrorCtor.captureStackTrace(obj);
     return obj.stack;
   } finally {
-    (Error as V8Error).prepareStackTrace = origPrepareStackTrace;
+    ErrorCtor.prepareStackTrace = origPrepareStackTrace;
   }
-}
-
-// --- Path utilities (minimal, avoids @std/path dependency) ---
-
-function fileUrlToPath(url: string): string {
-  if (url.startsWith("file://")) {
-    return decodeURIComponent(new URL(url).pathname);
-  }
-  return url;
-}
-
-function dirname(path: string): string {
-  const i = path.lastIndexOf("/");
-  if (i <= 0) return path.charAt(0) === "/" ? "/" : ".";
-  return path.substring(0, i);
-}
-
-function basename(path: string): string {
-  const i = path.lastIndexOf("/");
-  return i === -1 ? path : path.substring(i + 1);
-}
-
-function join(...parts: string[]): string {
-  return parts.join("/");
 }
 
 // --- Serialization ---
@@ -117,7 +97,7 @@ export function serialize(actual: unknown): string {
 
 // --- Snapshot string escaping ---
 
-function escapeStringForJs(str: string): string {
+export function escapeStringForJs(str: string): string {
   return str
     .replace(/\\/g, "\\\\")
     .replace(/`/g, "\\`")
@@ -161,7 +141,7 @@ export function getIsUpdate(): boolean {
   } catch {
     _isUpdate = false;
   }
-  return _isUpdate;
+  return _isUpdate!;
 }
 
 // --- Inline snapshot infrastructure ---
@@ -183,16 +163,19 @@ export function getInlineCallSite(
   // deno-lint-ignore no-explicit-any
   captureTarget: (...args: any[]) => any,
 ): InlineSnapshotUpdateRequest | null {
-  const origPrepareStackTrace = (Error as V8Error).prepareStackTrace;
+  // deno-lint-ignore no-explicit-any
+  const ErrorCtor = Error as any;
+  const origPrepareStackTrace = ErrorCtor.prepareStackTrace;
   try {
     const obj: { stack: InlineSnapshotUpdateRequest | null } = { stack: null };
-    (Error as V8Error).prepareStackTrace = (
+    ErrorCtor.prepareStackTrace = (
       _err: Error,
-      stack: CallSite[],
+      // deno-lint-ignore no-explicit-any
+      stack: any[],
     ): InlineSnapshotUpdateRequest | null => {
       for (const frame of stack) {
         if (frame.isEval()) continue;
-        const fileName = frame.getFileName();
+        const fileName: string | null = frame.getFileName();
         if (fileName === null) continue;
         if (
           fileName.includes("/expect/_") ||
@@ -200,17 +183,17 @@ export function getInlineCallSite(
         ) {
           continue;
         }
-        const lineNumber = frame.getLineNumber();
-        const columnNumber = frame.getColumnNumber();
+        const lineNumber: number | null = frame.getLineNumber();
+        const columnNumber: number | null = frame.getColumnNumber();
         if (lineNumber === null || columnNumber === null) continue;
         return { fileName, lineNumber, columnNumber, actualSnapshot: "" };
       }
       return null;
     };
-    Error.captureStackTrace(obj, captureTarget);
+    ErrorCtor.captureStackTrace(obj, captureTarget);
     return obj.stack;
   } finally {
-    (Error as V8Error).prepareStackTrace = origPrepareStackTrace;
+    ErrorCtor.prepareStackTrace = origPrepareStackTrace;
   }
 }
 
@@ -231,17 +214,16 @@ export function clearInlineUpdateRequests(): void {
 
 function makeSnapshotUpdater(
   updateRequests: InlineSnapshotUpdateRequest[],
-  // deno-lint-ignore no-explicit-any
-): any {
+) {
   return {
     name: "snapshot-updater-plugin",
     rules: {
       "update-snapshot": {
         // deno-lint-ignore no-explicit-any
         create(context: any) {
-          const src = context.sourceCode.text;
+          const src = context.sourceCode.text as string;
           const lineBreaks = [...src.matchAll(/\n|\r\n?/g)]
-            .map((m: RegExpExecArray) => m.index);
+            .map((m) => m.index);
           const locationToSnapshot: Record<number, string> = {};
           for (const req of updateRequests) {
             const { lineNumber, columnNumber, actualSnapshot } = req;
@@ -254,18 +236,13 @@ function makeSnapshotUpdater(
             "CallExpression"(node: any) {
               const snapshot = locationToSnapshot[node.range[0]];
               if (snapshot === undefined) return;
-              // The inline snapshot is the first argument to toMatchInlineSnapshot
-              // In the AST, it's the last argument of the expect(...).toMatchInlineSnapshot(...) call
               const args = node.arguments;
               if (args.length === 0) {
-                // No argument - need to insert. We'll place after the opening paren
-                // Find the range end of callee and add the snapshot
                 context.report({
                   node,
                   message: "",
                   // deno-lint-ignore no-explicit-any
                   fix(fixer: any) {
-                    // Insert before the closing paren: range[1] - 1 is the ")"
                     return fixer.insertTextBeforeRange(
                       [node.range[1] - 1, node.range[1] - 1],
                       snapshot,
@@ -273,7 +250,6 @@ function makeSnapshotUpdater(
                   },
                 });
               } else {
-                // Replace the last argument (the snapshot string)
                 const lastArg = args[args.length - 1];
                 context.report({
                   node,
@@ -313,22 +289,14 @@ function applyInlineUpdates(): void {
       file,
     );
 
-    // deno-lint-ignore no-explicit-any
-    const fixes = pluginRunResults.flatMap((v: any) => v.fix ?? []);
+    const fixes = (pluginRunResults as { fix?: { range: [number, number]; text?: string }[] }[])
+      .flatMap((v) => v.fix ?? []);
 
     // Apply fixes in order
-    fixes.sort((
-      a: { range: [number, number] },
-      b: { range: [number, number] },
-    ) => a.range[0] - b.range[0]);
+    fixes.sort((a, b) => a.range[0] - b.range[0]);
     let output = "";
     let lastIndex = 0;
-    for (
-      const fix of fixes as {
-        range: [number, number];
-        text?: string;
-      }[]
-    ) {
+    for (const fix of fixes) {
       output += file.slice(lastIndex, fix.range[0]);
       output += fix.text ?? "";
       lastIndex = fix.range[1];
@@ -366,16 +334,18 @@ export function registerInlineTeardown(): void {
   inlineTeardownRegistered = true;
 }
 
-/** Re-export escapeStringForJs for use by inline snapshot matcher. */
-export { escapeStringForJs };
-
 // --- Snapshot Context (per snapshot file) ---
 
+/**
+ * @experimental
+ */
 export class SnapshotContext {
   static contexts = new Map<string, SnapshotContext>();
 
   static fromTestFile(testFilePath: string): SnapshotContext {
-    const filePath = fileUrlToPath(testFilePath);
+    const filePath = testFilePath.startsWith("file://")
+      ? fromFileUrl(testFilePath)
+      : testFilePath;
     const dir = dirname(filePath);
     const base = basename(filePath);
     const snapshotPath = join(dir, SNAPSHOT_DIR, `${base}.${SNAPSHOT_EXT}`);

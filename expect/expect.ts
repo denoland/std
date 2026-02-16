@@ -1,5 +1,4 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 // The documentation is extracted from https://github.com/jestjs/jest/blob/main/website/versioned_docs/version-29.7/ExpectAPI.md
@@ -632,6 +631,8 @@ expect.addSnapshotSerializer = addSerializer as (
  * before using `toMatchSnapshot()` to provide the current test name and
  * optionally the test file path.
  *
+ * @experimental
+ *
  * @example
  * ```ts ignore
  * import { expect } from "@std/expect";
@@ -650,6 +651,8 @@ expect.setState = setSnapshotState as (
 ) => void;
 /**
  * `expect.getState` returns the current state for snapshot matchers.
+ *
+ * @experimental
  *
  * @example
  * ```ts
