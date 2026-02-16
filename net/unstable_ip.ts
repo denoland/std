@@ -1,4 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
 
 /**
  * Validates whether a given string is a valid IPv4 address.
