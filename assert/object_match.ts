@@ -100,6 +100,11 @@ function filter(a: Loose, b: Loose): Loose {
         defineProperty(filtered, key, value);
         continue;
       }
+      // On date references, keep value as it to avoid losing the timestamp
+      if (value instanceof Date) {
+        defineProperty(filtered, key, value);
+        continue;
+      }
 
       const subset = (b as Loose)[key];
 
@@ -167,6 +172,11 @@ function filter(a: Loose, b: Loose): Loose {
 
       // On regexp references, keep value as it to avoid losing pattern and flags
       if (value instanceof RegExp) {
+        filtered.push(value);
+        continue;
+      }
+      // On date references, keep value as it to avoid losing the timestamp
+      if (value instanceof Date) {
         filtered.push(value);
         continue;
       }
