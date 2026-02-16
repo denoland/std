@@ -55,9 +55,9 @@ export function getTestFileFromStack(): string | null {
   const origPrepareStackTrace = ErrorCtor.prepareStackTrace;
   try {
     const obj: { stack: string | null } = { stack: null };
-    // deno-lint-ignore no-explicit-any
     ErrorCtor.prepareStackTrace = (
       _err: Error,
+      // deno-lint-ignore no-explicit-any
       stack: any[],
     ): string | null => {
       for (const frame of stack) {
