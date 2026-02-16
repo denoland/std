@@ -5,12 +5,14 @@ import { assertEquals } from "../assert/equals.ts";
 
 const routes: Route[] = [
   {
+    // No method — matches all HTTP methods
     pattern: new URLPattern({ pathname: "/about" }),
     handler: (request: Request) => new Response(new URL(request.url).pathname),
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
-    handler: (_request, params) => new Response(params?.pathname.groups.id),
+    method: "GET",
+    handler: (_request, params) => new Response(params.pathname.groups.id),
   },
   {
     pattern: new URLPattern({ pathname: "/users/:id" }),
@@ -72,5 +74,61 @@ Deno.test("route()", async (t) => {
     const headMethodResponse = await handler(headMethodRequest);
     assertEquals(headMethodResponse?.status, 200);
     assertEquals(await headMethodResponse?.text(), "");
+  });
+
+  await t.step("matches all methods when method is not specified", async () => {
+    for (const method of ["GET", "POST", "PUT", "DELETE", "PATCH"]) {
+      const request = new Request("http://example.com/about", { method });
+      const response = await handler(request);
+      assertEquals(response?.status, 200);
+      assertEquals(await response?.text(), "/about");
+    }
+  });
+
+  await t.step("does not match unspecified methods", async () => {
+    const request = new Request("http://example.com/users/123", {
+      method: "DELETE",
+    });
+    const response = await handler(request);
+    assertEquals(response?.status, 404);
+  });
+
+  await t.step("method matching is case-insensitive", async () => {
+    const lowerCaseRoutes: Route[] = [
+      {
+        pattern: new URLPattern({ pathname: "/test" }),
+        method: "post",
+        handler: () => new Response("matched"),
+      },
+    ];
+    const lowerCaseHandler = route(lowerCaseRoutes, defaultHandler);
+
+    const request = new Request("http://example.com/test", {
+      method: "POST",
+    });
+    const response = await lowerCaseHandler(request);
+    assertEquals(response?.status, 200);
+    assertEquals(await response?.text(), "matched");
+  });
+
+  await t.step("method matching is case-insensitive for arrays", async () => {
+    const mixedCaseRoutes: Route[] = [
+      {
+        pattern: new URLPattern({ pathname: "/test" }),
+        method: ["get", "Post"],
+        handler: () => new Response("matched"),
+      },
+    ];
+    const mixedCaseHandler = route(mixedCaseRoutes, defaultHandler);
+
+    const getResponse = await mixedCaseHandler(
+      new Request("http://example.com/test"),
+    );
+    assertEquals(getResponse?.status, 200);
+
+    const postResponse = await mixedCaseHandler(
+      new Request("http://example.com/test", { method: "POST" }),
+    );
+    assertEquals(postResponse?.status, 200);
   });
 });
