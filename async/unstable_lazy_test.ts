@@ -46,14 +46,23 @@ Deno.test("Lazy.get() propagates rejection to all concurrent callers", async () 
   const [resultA, resultB] = await Promise.allSettled([lazy.get(), lazy.get()]);
   assertEquals(resultA.status, "rejected");
   assertEquals(resultB.status, "rejected");
-  assertEquals((resultA as PromiseRejectedResult).reason?.message, "init failed");
-  assertEquals((resultB as PromiseRejectedResult).reason?.message, "init failed");
+  assertEquals(
+    (resultA as PromiseRejectedResult).reason?.message,
+    "init failed",
+  );
+  assertEquals(
+    (resultB as PromiseRejectedResult).reason?.message,
+    "init failed",
+  );
 });
 
 Deno.test("Lazy.initialized reflects lifecycle", async () => {
   const holder: { resolve: (v: number) => void } = { resolve: () => {} };
   const lazy = new Lazy<number>(
-    () => new Promise((res) => { holder.resolve = res; }),
+    () =>
+      new Promise((res) => {
+        holder.resolve = res;
+      }),
   );
 
   // Before init
@@ -95,7 +104,10 @@ Deno.test("Lazy.initialized disambiguates T = undefined", async () => {
 Deno.test("Lazy.peek() returns undefined while in-flight", async () => {
   const holder: { resolve: (v: number) => void } = { resolve: () => {} };
   const lazy = new Lazy<number>(
-    () => new Promise((res) => { holder.resolve = res; }),
+    () =>
+      new Promise((res) => {
+        holder.resolve = res;
+      }),
   );
   const getPromise = lazy.get();
   await Promise.resolve();
@@ -125,7 +137,10 @@ Deno.test("Lazy.reset() causes re-initialization", async () => {
 Deno.test("Lazy.reset() does not affect in-flight initialization", async () => {
   const holder: { resolve: (v: string) => void } = { resolve: () => {} };
   const lazy = new Lazy<string>(
-    () => new Promise((res) => { holder.resolve = res; }),
+    () =>
+      new Promise((res) => {
+        holder.resolve = res;
+      }),
   );
   const getPromise = lazy.get();
   await Promise.resolve();
