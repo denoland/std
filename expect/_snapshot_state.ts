@@ -56,7 +56,10 @@ export function getTestFileFromStack(): string | null {
   try {
     const obj: { stack: string | null } = { stack: null };
     // deno-lint-ignore no-explicit-any
-    ErrorCtor.prepareStackTrace = (_err: Error, stack: any[]): string | null => {
+    ErrorCtor.prepareStackTrace = (
+      _err: Error,
+      stack: any[],
+    ): string | null => {
       for (const frame of stack) {
         if (frame.isEval()) continue;
         const fileName: string | null = frame.getFileName();
@@ -289,7 +292,9 @@ function applyInlineUpdates(): void {
       file,
     );
 
-    const fixes = (pluginRunResults as { fix?: { range: [number, number]; text?: string }[] }[])
+    const fixes = (pluginRunResults as {
+      fix?: { range: [number, number]; text?: string }[];
+    }[])
       .flatMap((v) => v.fix ?? []);
 
     // Apply fixes in order
