@@ -193,8 +193,6 @@ export class CircuitBreakerOpenError extends Error {
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
-   * @param remainingCooldownMs Milliseconds until cooldown expires.
    */
   constructor(remainingCooldownMs: number) {
     super(
@@ -395,7 +393,6 @@ export class CircuitBreaker<T = unknown> {
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
-   * @param options Configuration options for the circuit breaker.
    * @throws {RangeError} If any numeric option is not a finite number within its valid range.
    */
   constructor(options: CircuitBreakerOptions<T> = {}) {
@@ -490,8 +487,6 @@ export class CircuitBreaker<T = unknown> {
    * ```
    *
    * @typeParam R The return type of the function, must extend T.
-   * @param fn The function to execute (sync or async).
-   * @param options Optional execution options including an abort signal.
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    * @throws {DOMException} If the abort signal is already aborted.
@@ -647,8 +642,6 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Resolves the current state, handling automatic transitions.
    * OPEN → HALF_OPEN after cooldown expires.
-   *
-   * @param now Current timestamp in milliseconds.
    */
   #resolveCurrentState(now: number): CircuitBreakerState {
     if (this.#state.state !== "open") {
@@ -672,13 +665,7 @@ export class CircuitBreaker<T = unknown> {
     return this.#state;
   }
 
-  /**
-   * Records a failure and potentially opens the circuit.
-   *
-   * @param error The error that occurred.
-   * @param previousState The state before this failure.
-   * @param now Current timestamp in milliseconds.
-   */
+  /** Records a failure and potentially opens the circuit. */
   #handleFailure(
     error: unknown,
     previousState: CircuitState,
