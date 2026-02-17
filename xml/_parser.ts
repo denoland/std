@@ -610,8 +610,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
 
   // Entity declarations from DTD are intentionally NOT stored.
   // We only support the 5 predefined XML entities.
-  // deno-lint-ignore no-unused-vars
-  onEntityDeclaration(name: string, value: string): void {
+  onEntityDeclaration(_name: string, _value: string): void {
     // Intentionally empty - custom entities are not expanded
   }
 
