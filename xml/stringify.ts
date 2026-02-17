@@ -36,8 +36,6 @@ export type { StringifyOptions } from "./types.ts";
  * assertEquals(stringify(element), "<root>Hello!</root>");
  * ```
  *
- * @param node The XML document or element to serialize.
- * @param options Options to control serialization behavior.
  * @returns The serialized XML string.
  */
 export function stringify(

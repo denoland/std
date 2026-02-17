@@ -69,7 +69,6 @@ function isXmlWhitespace(code: number): boolean {
  * Validates a VersionNum per XML 1.0 §2.8.
  * VersionNum ::= '1.' [0-9]+
  *
- * @param version The version string to validate
  * @returns true if valid, false otherwise
  */
 function isValidVersionNum(version: string): boolean {
@@ -90,7 +89,6 @@ function isValidVersionNum(version: string): boolean {
  * Validates an EncName per XML 1.0 §4.3.3.
  * EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
  *
- * @param encoding The encoding name to validate
  * @returns true if valid, false otherwise
  */
 function isValidEncName(encoding: string): boolean {
@@ -375,7 +373,6 @@ export function validateXmlDeclaration(
  * XML 1.0 §2.6: "The target names 'XML', 'xml', and so on are reserved for
  * standardization in this or future versions of this specification."
  *
- * @param target The PI target name
  * @returns true if the target is reserved (any case variant of "xml")
  */
 export function isReservedPiTarget(target: string): boolean {
@@ -404,9 +401,8 @@ export const XMLNS_NAMESPACE = "http://www.w3.org/2000/xmlns/";
  * - No colon at end (foo: is invalid)
  * - No multiple colons (a:b:c is invalid)
  *
- * @param name The name to validate
- * @param colonIndex The index of the first colon, or -1 if none
- * @returns Error message if invalid, null if valid
+ * @param colonIndex The index of the first colon, or -1 if none.
+ * @returns Error message if invalid, null if valid.
  */
 export function validateQName(name: string, colonIndex: number): string | null {
   if (colonIndex === -1) {
@@ -442,9 +438,7 @@ export function validateQName(name: string, colonIndex: number): string | null {
  * - Nothing can bind to the xmlns namespace
  * - Default namespace cannot be xml or xmlns namespace
  *
- * @param attrName The attribute name (e.g., "xmlns" or "xmlns:foo")
- * @param attrValue The namespace URI value
- * @returns Error message if invalid, null if valid
+ * @returns Error message if invalid, null if valid.
  */
 export function validateNamespaceBinding(
   attrName: string,
@@ -497,9 +491,8 @@ export function validateNamespaceBinding(
 /**
  * Parses a qualified XML name into its prefix and local parts.
  *
- * @param name The raw name string (e.g., "ns:element" or "element")
- * @param uri Optional resolved namespace URI for prefixed names
- * @returns An XmlName object with raw, local, optional prefix, and optional uri
+ * @param uri Optional resolved namespace URI for prefixed names.
+ * @returns An XmlName object with raw, local, optional prefix, and optional uri.
  */
 export function parseName(name: string, uri?: string): XmlName {
   const colonIndex = name.indexOf(":");

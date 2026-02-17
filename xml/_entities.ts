@@ -83,7 +83,6 @@ function isValidXmlChar(codePoint: number): boolean {
  *
  * External entities (SYSTEM/PUBLIC) are also not supported.
  *
- * @param text The text containing XML entities to decode.
  * @returns The text with predefined entities decoded.
  * @throws {Error} If the text contains invalid or unknown entity references.
  */
@@ -150,7 +149,6 @@ export function decodeEntities(text: string): string {
 /**
  * Encodes special characters as XML entities.
  *
- * @param text The text to encode.
  * @returns The text with special characters encoded as entities.
  */
 export function encodeEntities(text: string): string {
@@ -163,7 +161,6 @@ export function encodeEntities(text: string): string {
  * Encodes special characters for use in XML attribute values.
  * Encodes whitespace characters that would be normalized per XML 1.0 §3.3.3.
  *
- * @param value The attribute value to encode.
  * @returns The encoded attribute value.
  */
 export function encodeAttributeValue(value: string): string {

@@ -299,11 +299,7 @@ export class XmlTokenizer {
   /** Current callbacks for emission (set during process/finalize calls). */
   #callbacks: XmlTokenCallbacks = {};
 
-  /**
-   * Constructs a new XmlTokenizer.
-   *
-   * @param options Options for tokenizer behavior.
-   */
+  /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
   }
@@ -693,8 +689,7 @@ export class XmlTokenizer {
    *
    * Note: If quoted with ', the value cannot contain '.
    *
-   * @param value The public ID value (without quotes)
-   * @param quote The quote character used (' or ")
+   * @param quote The quote character used (' or ").
    */
   #validatePubidLiteral(value: string, quote: string): void {
     for (let i = 0; i < value.length; i++) {
@@ -1231,9 +1226,6 @@ export class XmlTokenizer {
    * This method is synchronous and can be called multiple times with
    * consecutive chunks of XML input. Callbacks are invoked for each
    * token, enabling zero-allocation streaming.
-   *
-   * @param chunk The XML text chunk to process.
-   * @param callbacks Callbacks to invoke for each token.
    */
   process(chunk: string, callbacks: XmlTokenCallbacks): void {
     this.#callbacks = callbacks;
@@ -2561,7 +2553,6 @@ export class XmlTokenizer {
    * It flushes any pending text content and validates that the tokenizer
    * is in a valid end state.
    *
-   * @param callbacks Callbacks to invoke for remaining tokens.
    * @throws {XmlSyntaxError} If the tokenizer is in an incomplete state.
    */
   finalize(callbacks: XmlTokenCallbacks): void {

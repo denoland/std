@@ -83,8 +83,6 @@ type MutableElement = {
  * Uses lazy position tracking: line/column are only computed when an error
  * occurs, eliminating tracking overhead during successful parsing.
  *
- * @param xml The XML string to parse.
- * @param options Options to control parsing behavior.
  * @returns The parsed document.
  * @throws {XmlSyntaxError} If the XML is malformed.
  */
