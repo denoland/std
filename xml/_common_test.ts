@@ -247,7 +247,7 @@ Deno.test("validateXmlDeclaration() rejects invalid version number", () => {
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid version '2.0', must match '1.' followed by digits",
+      "Invalid version '2.0': must match '1.' followed by digits",
     );
   }
 });
@@ -258,7 +258,7 @@ Deno.test("validateXmlDeclaration() rejects version without minor number", () =>
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid version '1.', must match '1.' followed by digits",
+      "Invalid version '1.': must match '1.' followed by digits",
     );
   }
 });
@@ -269,7 +269,7 @@ Deno.test("validateXmlDeclaration() rejects invalid encoding name", () => {
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid encoding name '123UTF', must start with letter and contain only letters, digits, '.', '_', '-'",
+      "Invalid encoding name '123UTF': must start with a letter and contain only letters, digits, '.', '_', '-'",
     );
   }
 });
@@ -280,7 +280,7 @@ Deno.test("validateXmlDeclaration() rejects encoding with invalid character", ()
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid encoding name 'UTF@8', must start with letter and contain only letters, digits, '.', '_', '-'",
+      "Invalid encoding name 'UTF@8': must start with a letter and contain only letters, digits, '.', '_', '-'",
     );
   }
 });
@@ -291,7 +291,7 @@ Deno.test("validateXmlDeclaration() rejects empty encoding name", () => {
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid encoding name '', must start with letter and contain only letters, digits, '.', '_', '-'",
+      "Invalid encoding name '': must start with a letter and contain only letters, digits, '.', '_', '-'",
     );
   }
 });
@@ -302,7 +302,7 @@ Deno.test("validateXmlDeclaration() rejects invalid standalone value", () => {
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid standalone value 'maybe', must be 'yes' or 'no'",
+      "Invalid standalone value 'maybe': must be 'yes' or 'no'",
     );
   }
 });
@@ -363,14 +363,14 @@ Deno.test("validateNamespaceBinding() accepts prefixed namespace declaration", (
 
 Deno.test("validateNamespaceBinding() rejects empty prefix after xmlns:", () => {
   const error = validateNamespaceBinding("xmlns:", "http://example.com");
-  assertEquals(error, "Namespace prefix cannot be empty after 'xmlns:'");
+  assertEquals(error, "Cannot have empty namespace prefix after 'xmlns:'");
 });
 
 Deno.test("validateNamespaceBinding() rejects prefix unbinding (empty URI)", () => {
   const error = validateNamespaceBinding("xmlns:ns", "");
   assertEquals(
     error,
-    "Namespace prefix unbinding (empty URI) is not allowed in Namespaces 1.0",
+    "Cannot unbind namespace prefix (empty URI) in Namespaces 1.0",
   );
 });
 
@@ -381,14 +381,14 @@ Deno.test("validateNamespaceBinding() allows empty default namespace", () => {
 
 Deno.test("validateNamespaceBinding() rejects xmlns prefix declaration", () => {
   const error = validateNamespaceBinding("xmlns:xmlns", "http://example.com");
-  assertEquals(error, "The 'xmlns' prefix must not be declared");
+  assertEquals(error, "Cannot declare the 'xmlns' prefix");
 });
 
 Deno.test("validateNamespaceBinding() rejects wrong URI for xml prefix", () => {
   const error = validateNamespaceBinding("xmlns:xml", "http://wrong.uri");
   assertEquals(
     error,
-    "The 'xml' prefix must be bound to 'http://www.w3.org/XML/1998/namespace'",
+    "Cannot bind 'xml' prefix to 'http://wrong.uri': must use 'http://www.w3.org/XML/1998/namespace'",
   );
 });
 
@@ -407,7 +407,7 @@ Deno.test("validateNamespaceBinding() rejects xml namespace URI for non-xml pref
   );
   assertEquals(
     error,
-    "Only the 'xml' prefix may be bound to 'http://www.w3.org/XML/1998/namespace'",
+    "Cannot bind prefix 'other' to 'http://www.w3.org/XML/1998/namespace': only the 'xml' prefix may use this namespace",
   );
 });
 
@@ -418,7 +418,7 @@ Deno.test("validateNamespaceBinding() rejects binding to xmlns namespace", () =>
   );
   assertEquals(
     error,
-    "The namespace 'http://www.w3.org/2000/xmlns/' must not be bound to any prefix",
+    "Cannot bind any prefix to 'http://www.w3.org/2000/xmlns/'",
   );
 });
 
@@ -429,7 +429,7 @@ Deno.test("validateNamespaceBinding() rejects xml namespace as default", () => {
   );
   assertEquals(
     error,
-    "The XML namespace 'http://www.w3.org/XML/1998/namespace' cannot be the default namespace",
+    "Cannot use 'http://www.w3.org/XML/1998/namespace' as the default namespace",
   );
 });
 
@@ -438,10 +438,10 @@ Deno.test("validateNamespaceBinding() rejects xmlns namespace as default", () =>
     "xmlns",
     "http://www.w3.org/2000/xmlns/",
   );
-  // The general "must not be bound to any prefix" check comes first
+  // The general "Cannot bind any prefix" check comes first
   assertEquals(
     error,
-    "The namespace 'http://www.w3.org/2000/xmlns/' must not be bound to any prefix",
+    "Cannot bind any prefix to 'http://www.w3.org/2000/xmlns/'",
   );
 });
 
@@ -492,7 +492,7 @@ Deno.test("validateXmlDeclaration() rejects version with non-digit character", (
   if (!result.valid) {
     assertEquals(
       result.error,
-      "Invalid version '1.0a', must match '1.' followed by digits",
+      "Invalid version '1.0a': must match '1.' followed by digits",
     );
   }
 });

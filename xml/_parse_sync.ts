@@ -291,7 +291,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         ) {
           pos += 2;
           if (pos >= len || input.charCodeAt(pos) !== CC_GT) {
-            error("'--' is not allowed within XML comments (XML 1.0 §2.5)");
+            error("Cannot use '--' within XML comments (XML 1.0 §2.5)");
           }
           pos++;
           return;
@@ -773,7 +773,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     if (raw.includes("<")) {
       // Find exact position for error reporting
       pos = start + raw.indexOf("<");
-      error("'<' not allowed in attribute value");
+      error("Cannot use '<' in attribute value");
     }
 
     pos = closeIdx + 1;
@@ -811,7 +811,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     // XML 1.0 §2.4: "]]>" is not allowed in text content
     if (text.includes("]]>")) {
       pos = start + text.indexOf("]]>");
-      error("']]>' is not allowed in text content (XML 1.0 §2.4)");
+      error("Cannot use ']]>' in text content (XML 1.0 §2.4)");
     }
 
     // Note: Only predefined entities are expanded
@@ -842,7 +842,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (rawText.includes("&")) {
           pos = textStart + rawText.indexOf("&");
           error(
-            "Character/entity references are not allowed in prolog/epilog (XML 1.0 §2.8)",
+            "Cannot use character/entity references in prolog/epilog (XML 1.0 §2.8)",
           );
         }
         // Check for non-whitespace content
@@ -850,11 +850,11 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           pos = textStart;
           if (!root) {
             error(
-              "Content is not allowed before the root element (XML 1.0 §2.8)",
+              "Cannot have content before the root element (XML 1.0 §2.8)",
             );
           } else {
             error(
-              "Content is not allowed after the root element (XML 1.0 §2.8)",
+              "Cannot have content after the root element (XML 1.0 §2.8)",
             );
           }
         }
@@ -942,7 +942,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         // (grammar: Comment ::= '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->')
         if (content.includes("--")) {
           pos = start + content.indexOf("--");
-          error("'--' is not permitted within comments (XML 1.0 §2.5)");
+          error("Cannot use '--' within comments (XML 1.0 §2.5)");
         }
         // Check trailing dash before --> (e.g., "<!--->" or "<!-- comment --->")
         if (
@@ -950,7 +950,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           content.charCodeAt(content.length - 1) === CC_DASH
         ) {
           pos = endIdx - 1; // Point to the trailing dash
-          error("'-' is not permitted immediately before '-->' (XML 1.0 §2.5)");
+          error("Cannot use '-' immediately before '-->' (XML 1.0 §2.5)");
         }
 
         // XML 1.0 §2.2: Validate characters are legal XML Char
@@ -979,13 +979,13 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (!root) {
           pos -= 2; // Point back to '<!'
           error(
-            "CDATA section is not allowed before the root element (XML 1.0 §2.8)",
+            "Cannot have CDATA section before the root element (XML 1.0 §2.8)",
           );
         }
         if (rootClosed) {
           pos -= 2; // Point back to '<!'
           error(
-            "CDATA section is not allowed after the root element (XML 1.0 §2.8)",
+            "Cannot have CDATA section after the root element (XML 1.0 §2.8)",
           );
         }
 
@@ -1127,7 +1127,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       if (target.includes(":")) {
         pos = ltPos + 2; // Point to start of target
         error(
-          "Processing instruction target must not contain ':' (Namespaces §3)",
+          "Cannot use ':' in processing instruction target (Namespaces §3)",
         );
       }
 
@@ -1274,7 +1274,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
       // XML 1.0 §3.1: Whitespace is required between attributes
       if (needsWhitespace && !sawWhitespace) {
-        error("Whitespace is required between attributes");
+        error("Missing whitespace between attributes");
       }
 
       // Read attribute

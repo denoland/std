@@ -183,12 +183,12 @@ function serializeCData(text: string): string {
 function validateCommentText(text: string): string {
   if (text.includes("--")) {
     throw new TypeError(
-      `Invalid comment: contains "--" which is forbidden in XML comments`,
+      `Cannot serialize comment: XML forbids "--" within comments`,
     );
   }
   if (text.endsWith("-")) {
     throw new TypeError(
-      `Invalid comment: ends with "-" which would produce invalid "--->"`,
+      `Cannot serialize comment: trailing "-" would produce invalid "--->"`,
     );
   }
   return text;

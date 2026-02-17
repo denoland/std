@@ -311,7 +311,7 @@ export function validateXmlDeclaration(
         return {
           valid: false,
           error:
-            `Invalid version '${value}', must match '1.' followed by digits`,
+            `Invalid version '${value}': must match '1.' followed by digits`,
         };
       }
       version = value;
@@ -320,7 +320,7 @@ export function validateXmlDeclaration(
         return {
           valid: false,
           error:
-            `Invalid encoding name '${value}', must start with letter and contain only letters, digits, '.', '_', '-'`,
+            `Invalid encoding name '${value}': must start with a letter and contain only letters, digits, '.', '_', '-'`,
         };
       }
       encoding = value;
@@ -328,7 +328,7 @@ export function validateXmlDeclaration(
       if (value !== "yes" && value !== "no") {
         return {
           valid: false,
-          error: `Invalid standalone value '${value}', must be 'yes' or 'no'`,
+          error: `Invalid standalone value '${value}': must be 'yes' or 'no'`,
         };
       }
       standalone = value;
@@ -452,37 +452,37 @@ export function validateNamespaceBinding(
   // xmlns: with empty local part is caught by QName validation
   // But check for empty prefix after xmlns:
   if (colonIndex !== -1 && prefix === "") {
-    return "Namespace prefix cannot be empty after 'xmlns:'";
+    return "Cannot have empty namespace prefix after 'xmlns:'";
   }
 
   // Prefix unbinding not allowed in NS 1.0 (xmlns:foo="")
   if (!isDefaultNs && uri === "") {
-    return "Namespace prefix unbinding (empty URI) is not allowed in Namespaces 1.0";
+    return "Cannot unbind namespace prefix (empty URI) in Namespaces 1.0";
   }
 
   // Cannot declare xmlns prefix at all
   if (prefix === "xmlns") {
-    return "The 'xmlns' prefix must not be declared";
+    return "Cannot declare the 'xmlns' prefix";
   }
 
   // xml prefix must use correct URI
   if (prefix === "xml" && uri !== XML_NAMESPACE) {
-    return `The 'xml' prefix must be bound to '${XML_NAMESPACE}'`;
+    return `Cannot bind 'xml' prefix to '${uri}': must use '${XML_NAMESPACE}'`;
   }
 
   // Only xml prefix can use xml namespace
   if (uri === XML_NAMESPACE && prefix !== "xml" && prefix !== "") {
-    return `Only the 'xml' prefix may be bound to '${XML_NAMESPACE}'`;
+    return `Cannot bind prefix '${prefix}' to '${XML_NAMESPACE}': only the 'xml' prefix may use this namespace`;
   }
 
   // Nothing can bind to xmlns namespace (includes default namespace case)
   if (uri === XMLNS_NAMESPACE) {
-    return `The namespace '${XMLNS_NAMESPACE}' must not be bound to any prefix`;
+    return `Cannot bind any prefix to '${XMLNS_NAMESPACE}'`;
   }
 
   // Default namespace cannot be xml namespace
   if (isDefaultNs && uri === XML_NAMESPACE) {
-    return `The XML namespace '${XML_NAMESPACE}' cannot be the default namespace`;
+    return `Cannot use '${XML_NAMESPACE}' as the default namespace`;
   }
 
   return null; // Valid binding
