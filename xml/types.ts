@@ -94,12 +94,6 @@ export interface XmlName {
    *
    * For unprefixed names, this is undefined (the default namespace is not
    * applied to element names in this implementation for simplicity).
-   *
-   * @example
-   * ```ts
-   * // For <ns:item xmlns:ns="http://example.com">
-   * // name.uri === "http://example.com"
-   * ```
    */
   readonly uri?: string;
 }
