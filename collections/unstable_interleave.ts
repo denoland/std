@@ -12,8 +12,6 @@
  * @typeParam T Tuple of element types, one per input array; result is
  * `T[number][]`.
  *
- * @param arrays The arrays to interleave.
- *
  * @returns A new array containing elements from all input arrays in
  * round-robin order.
  *
