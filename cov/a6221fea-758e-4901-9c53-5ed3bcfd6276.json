@@ -1,0 +1,28 @@
+{
+  "scriptId": "356",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/string_includes.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 898,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertStringIncludes",
+      "ranges": [
+        {
+          "startOffset": 645,
+          "endOffset": 897,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

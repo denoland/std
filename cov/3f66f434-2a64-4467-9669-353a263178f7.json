@@ -1,0 +1,28 @@
+{
+  "scriptId": "361",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/fail.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 560,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "fail",
+      "ranges": [
+        {
+          "startOffset": 433,
+          "endOffset": 559,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

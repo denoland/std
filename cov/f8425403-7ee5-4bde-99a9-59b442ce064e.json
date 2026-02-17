@@ -1,0 +1,28 @@
+{
+  "scriptId": "363",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/unreachable.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 553,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "unreachable",
+      "ranges": [
+        {
+          "startOffset": 424,
+          "endOffset": 552,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

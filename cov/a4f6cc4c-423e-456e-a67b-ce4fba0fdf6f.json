@@ -1,0 +1,28 @@
+{
+  "scriptId": "352",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/not_strict_equals.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 1162,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertNotStrictEquals",
+      "ranges": [
+        {
+          "startOffset": 896,
+          "endOffset": 1161,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

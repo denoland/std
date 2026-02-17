@@ -1,0 +1,154 @@
+{
+  "scriptId": "368",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/internal/styles.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 5220,
+          "count": 1
+        },
+        {
+          "startOffset": 361,
+          "endOffset": 368,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "code",
+      "ranges": [
+        {
+          "startOffset": 396,
+          "endOffset": 557,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "run",
+      "ranges": [
+        {
+          "startOffset": 558,
+          "endOffset": 677,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "bold",
+      "ranges": [
+        {
+          "startOffset": 1050,
+          "endOffset": 1114,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "red",
+      "ranges": [
+        {
+          "startOffset": 1481,
+          "endOffset": 1545,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "green",
+      "ranges": [
+        {
+          "startOffset": 1921,
+          "endOffset": 1987,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "yellow",
+      "ranges": [
+        {
+          "startOffset": 2369,
+          "endOffset": 2436,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "white",
+      "ranges": [
+        {
+          "startOffset": 2748,
+          "endOffset": 2814,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "gray",
+      "ranges": [
+        {
+          "startOffset": 3120,
+          "endOffset": 3169,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "brightBlack",
+      "ranges": [
+        {
+          "startOffset": 3521,
+          "endOffset": 3593,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "bgRed",
+      "ranges": [
+        {
+          "startOffset": 3947,
+          "endOffset": 4013,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "bgGreen",
+      "ranges": [
+        {
+          "startOffset": 4379,
+          "endOffset": 4447,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "stripAnsiCode",
+      "ranges": [
+        {
+          "startOffset": 5142,
+          "endOffset": 5219,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

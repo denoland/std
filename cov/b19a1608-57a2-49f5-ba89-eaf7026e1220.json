@@ -1,0 +1,28 @@
+{
+  "scriptId": "337",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/almost_equals.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 1913,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertAlmostEquals",
+      "ranges": [
+        {
+          "startOffset": 1327,
+          "endOffset": 1912,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

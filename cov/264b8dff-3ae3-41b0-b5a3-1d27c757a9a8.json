@@ -1,0 +1,73 @@
+{
+  "scriptId": "336",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/collections/unstable_interleave.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 1777,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "interleave",
+      "ranges": [
+        {
+          "startOffset": 1246,
+          "endOffset": 1776,
+          "count": 10
+        },
+        {
+          "startOffset": 1339,
+          "endOffset": 1349,
+          "count": 1
+        },
+        {
+          "startOffset": 1349,
+          "endOffset": 1431,
+          "count": 9
+        },
+        {
+          "startOffset": 1431,
+          "endOffset": 1536,
+          "count": 20
+        },
+        {
+          "startOffset": 1516,
+          "endOffset": 1532,
+          "count": 9
+        },
+        {
+          "startOffset": 1536,
+          "endOffset": 1627,
+          "count": 9
+        },
+        {
+          "startOffset": 1627,
+          "endOffset": 1757,
+          "count": 23
+        },
+        {
+          "startOffset": 1668,
+          "endOffset": 1753,
+          "count": 48
+        },
+        {
+          "startOffset": 1702,
+          "endOffset": 1747,
+          "count": 37
+        },
+        {
+          "startOffset": 1757,
+          "endOffset": 1775,
+          "count": 9
+        }
+      ],
+      "isBlockCoverage": true
+    }
+  ]
+}

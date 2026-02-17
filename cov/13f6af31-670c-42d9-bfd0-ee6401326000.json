@@ -1,0 +1,72 @@
+{
+  "scriptId": "364",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/internal/format.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 1929,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "format",
+      "ranges": [
+        {
+          "startOffset": 726,
+          "endOffset": 1201,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 1225,
+          "endOffset": 1582,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 1586,
+          "endOffset": 1600,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "formatters",
+      "ranges": [
+        {
+          "startOffset": 1604,
+          "endOffset": 1642,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    },
+    {
+      "functionName": "basicInspect",
+      "ranges": [
+        {
+          "startOffset": 1716,
+          "endOffset": 1928,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

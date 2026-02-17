@@ -1,0 +1,28 @@
+{
+  "scriptId": "343",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/greater.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 964,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertGreater",
+      "ranges": [
+        {
+          "startOffset": 718,
+          "endOffset": 963,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

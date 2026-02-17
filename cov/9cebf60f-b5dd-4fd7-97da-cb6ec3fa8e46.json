@@ -1,0 +1,28 @@
+{
+  "scriptId": "345",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/is_error.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 2140,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertIsError",
+      "ranges": [
+        {
+          "startOffset": 1159,
+          "endOffset": 2139,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

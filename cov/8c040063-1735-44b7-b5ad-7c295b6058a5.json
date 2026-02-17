@@ -1,0 +1,28 @@
+{
+  "scriptId": "350",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/not_instance_of.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 1015,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertNotInstanceOf",
+      "ranges": [
+        {
+          "startOffset": 728,
+          "endOffset": 1014,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

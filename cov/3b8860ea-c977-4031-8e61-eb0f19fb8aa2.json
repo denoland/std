@@ -1,0 +1,28 @@
+{
+  "scriptId": "362",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/unimplemented.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 583,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "unimplemented",
+      "ranges": [
+        {
+          "startOffset": 450,
+          "endOffset": 582,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

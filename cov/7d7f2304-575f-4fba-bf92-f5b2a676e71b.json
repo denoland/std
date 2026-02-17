@@ -1,0 +1,28 @@
+{
+  "scriptId": "347",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/less.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 915,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertLess",
+      "ranges": [
+        {
+          "startOffset": 672,
+          "endOffset": 914,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}

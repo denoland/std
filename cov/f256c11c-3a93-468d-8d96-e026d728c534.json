@@ -1,0 +1,28 @@
+{
+  "scriptId": "340",
+  "url": "file:///Users/tomas.zijdemans/Code/deno_std/std_cb/assert/exists.ts",
+  "functions": [
+    {
+      "functionName": "",
+      "ranges": [
+        {
+          "startOffset": 0,
+          "endOffset": 853,
+          "count": 1
+        }
+      ],
+      "isBlockCoverage": true
+    },
+    {
+      "functionName": "assertExists",
+      "ranges": [
+        {
+          "startOffset": 598,
+          "endOffset": 852,
+          "count": 0
+        }
+      ],
+      "isBlockCoverage": false
+    }
+  ]
+}
