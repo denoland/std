@@ -25,6 +25,8 @@ export type { ParseOptions } from "./types.ts";
  * assertEquals(doc.root.attributes["id"], "1");
  * ```
  *
+ * @param xml The XML string to parse.
+ * @param options Options for configuring the parser.
  * @returns The parsed document.
  * @throws {XmlSyntaxError} If the XML is malformed or has no root element.
  */

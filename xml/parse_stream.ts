@@ -54,6 +54,9 @@ export type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
  * assertEquals(items, ["First", "Second"]);
  * ```
  *
+ * @param source The async iterable of XML string chunks to parse.
+ * @param callbacks The event callbacks invoked during parsing.
+ * @param options Options for configuring the parser.
  * @returns A promise that resolves when parsing is complete.
  */
 export async function parseXmlStream(
@@ -94,6 +97,9 @@ export async function parseXmlStream(
  * assertEquals(text, "Hello");
  * ```
  *
+ * @param source The async iterable of XML byte chunks to parse.
+ * @param callbacks The event callbacks invoked during parsing.
+ * @param options Options for configuring the parser.
  * @returns A promise that resolves when parsing is complete.
  */
 export function parseXmlStreamFromBytes(

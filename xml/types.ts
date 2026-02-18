@@ -66,7 +66,12 @@ export class XmlSyntaxError extends SyntaxError {
    */
   readonly offset: number;
 
-  /** Constructs a new XmlSyntaxError. */
+  /**
+   * Constructs a new XmlSyntaxError.
+   *
+   * @param message The error message describing the syntax issue.
+   * @param position The position in the XML source where the error occurred.
+   */
   constructor(message: string, position: XmlPosition) {
     super(`${message} at line ${position.line}, column ${position.column}`);
     this.name = "XmlSyntaxError";
@@ -539,6 +544,7 @@ export interface XmlEventCallbacks {
  * assertEquals(isElement(node), true);
  * ```
  *
+ * @param node The XML node to check.
  * @returns `true` if the node is an element, `false` otherwise.
  */
 export function isElement(node: XmlNode): node is XmlElement {
@@ -557,6 +563,7 @@ export function isElement(node: XmlNode): node is XmlElement {
  * assertEquals(isText(node), true);
  * ```
  *
+ * @param node The XML node to check.
  * @returns `true` if the node is a text node, `false` otherwise.
  */
 export function isText(node: XmlNode): node is XmlTextNode {
@@ -575,6 +582,7 @@ export function isText(node: XmlNode): node is XmlTextNode {
  * assertEquals(isCData(node), true);
  * ```
  *
+ * @param node The XML node to check.
  * @returns `true` if the node is a CDATA node, `false` otherwise.
  */
 export function isCData(node: XmlNode): node is XmlCDataNode {
@@ -593,6 +601,7 @@ export function isCData(node: XmlNode): node is XmlCDataNode {
  * assertEquals(isComment(node), true);
  * ```
  *
+ * @param node The XML node to check.
  * @returns `true` if the node is a comment, `false` otherwise.
  */
 export function isComment(node: XmlNode): node is XmlCommentNode {
