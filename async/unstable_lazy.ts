@@ -117,6 +117,8 @@ export class Lazy<T> {
    * await lazy.get();
    * assertEquals(lazy.initialized, true);
    * ```
+   *
+   * @returns `true` if the value has been initialized, `false` otherwise.
    */
   get initialized(): boolean {
     return this.#settled;
