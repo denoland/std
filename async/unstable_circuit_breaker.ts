@@ -193,6 +193,8 @@ export class CircuitBreakerOpenError extends Error {
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param remainingCooldownMs The number of milliseconds until the circuit breaker exits the open state.
    */
   constructor(remainingCooldownMs: number) {
     super(
@@ -393,6 +395,7 @@ export class CircuitBreaker<T = unknown> {
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
+   * @param options Configuration options for the circuit breaker.
    * @throws {RangeError} If any numeric option is not a finite number within its valid range.
    */
   constructor(options: CircuitBreakerOptions<T> = {}) {
@@ -487,6 +490,8 @@ export class CircuitBreaker<T = unknown> {
    * ```
    *
    * @typeParam R The return type of the function, must extend T.
+   * @param fn The function to execute through the circuit breaker.
+   * @param options Options for this execution, such as an abort signal.
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    * @throws {DOMException} If the abort signal is already aborted.
