@@ -503,7 +503,7 @@ expect.stringMatching = asymmetricMatchers.stringMatching as (
  * Note: expect.hasAssertions only can use in bdd function test suite, such as `test` or `it`.
  *
  * @example
- * ```ts
+ * ```ts ignore
  *
  * import { test } from "@std/testing/bdd";
  * import { expect } from "@std/expect";
@@ -522,7 +522,7 @@ expect.hasAssertions = hasAssertions as () => void;
  * Note: expect.assertions only can use in bdd function test suite, such as `test` or `it`.
  *
  * @example
- * ```ts
+ * ```ts ignore
  *
  * import { test } from "@std/testing/bdd";
  * import { expect } from "@std/expect";
