@@ -84,6 +84,10 @@ export function pooledMap<T, R>(
 ): AsyncIterableIterator<R> {
   const { poolLimit, signal } = options;
 
+  if (!Number.isInteger(poolLimit) || poolLimit < 1) {
+    throw new RangeError("'poolLimit' must be a positive integer");
+  }
+
   const res = new TransformStream<Promise<R>, R>({
     async transform(
       p: Promise<R>,
