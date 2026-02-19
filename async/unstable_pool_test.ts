@@ -42,7 +42,9 @@ Deno.test("pooledMap() handles errors", async () => {
   const mappedNumbers: number[] = [];
   const error = await assertRejects(
     async () => {
-      for await (const m of pooledMap([1, 2, 3, 4], mapNumber, { poolLimit: 3 })) {
+      for await (
+        const m of pooledMap([1, 2, 3, 4], mapNumber, { poolLimit: 3 })
+      ) {
         mappedNumbers.push(m);
       }
     },
