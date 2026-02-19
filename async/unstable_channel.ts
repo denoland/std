@@ -217,9 +217,7 @@ export class Channel<T> implements AsyncIterable<T>, Disposable {
 
     if (this.#senderHead) return Promise.resolve(this.#takeSender());
 
-    if (this.#closed) {
-      return Promise.reject(this.#receiveError());
-    }
+    if (this.#closed) return Promise.reject(this.#receiveError());
 
     return new Promise<T>((res, rej) => {
       const node: ReceiverNode<T> = { res, rej, next: undefined };
