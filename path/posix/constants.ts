@@ -12,4 +12,5 @@ export const SEPARATOR = "/" as const;
 /**
  * A regular expression that matches one or more path separators.
  */
-export const SEPARATOR_PATTERN_REGEXP = /\/+/;
+// deno-lint-ignore deno-style-guide/naming-convention
+export const SEPARATOR_PATTERN = /\/+/;

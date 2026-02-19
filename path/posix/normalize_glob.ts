@@ -3,7 +3,7 @@
 
 import type { GlobOptions } from "../_common/glob_to_reg_exp.ts";
 import { normalize } from "./normalize.ts";
-import { SEPARATOR_PATTERN_REGEXP } from "./constants.ts";
+import { SEPARATOR_PATTERN } from "./constants.ts";
 
 export type { GlobOptions };
 
@@ -34,7 +34,7 @@ export function normalizeGlob(
   if (!globstar) {
     return normalize(glob);
   }
-  const s = SEPARATOR_PATTERN_REGEXP.source;
+  const s = SEPARATOR_PATTERN.source;
   const badParentPattern = new RegExp(
     `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
     "g",
