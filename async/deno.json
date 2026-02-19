@@ -10,6 +10,7 @@
     "./mux-async-iterator": "./mux_async_iterator.ts",
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
     "./pool": "./pool.ts",
+    "./unstable-pool": "./unstable_pool.ts",
     "./retry": "./retry.ts",
     "./unstable-retry": "./unstable_retry.ts",
     "./tee": "./tee.ts",
