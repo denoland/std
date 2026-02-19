@@ -234,17 +234,37 @@ export default {
               if (id.type !== "Identifier") return;
               const name = id.name;
               if (!name) return;
-              if (
-                isConstantCase(name) && declaration.init?.type === "Literal" &&
-                declaration.init.value instanceof RegExp &&
-                name !== "REGEXP" && !name.endsWith("_REGEXP")
-              ) {
-                context.report({
-                  node: id,
-                  message:
-                    `RegExp variable name '${name}' must end with _REGEXP.`,
-                  fix: (fixer) => fixer.replaceText(id, `${name}_REGEXP`),
-                });
+              if (isConstantCase(name)) {
+                if (
+                  declaration.init?.type === "NewExpression" &&
+                  declaration.init.callee.type === "Identifier"
+                ) {
+                  switch (declaration.init.callee.name) {
+                    case "RegExp": {
+                      if (name !== "REGEXP" && !name.endsWith("_REGEXP")) {
+                        context.report({
+                          node: id,
+                          message:
+                            `RegExp variable name '${name}' must end with _REGEXP.`,
+                          fix: (fixer) =>
+                            fixer.replaceText(id, `${name}_REGEXP`),
+                        });
+                      }
+                      break;
+                    }
+                  }
+                } else if (
+                  declaration.init?.type === "Literal" &&
+                  declaration.init.value instanceof RegExp &&
+                  name !== "REGEXP" && !name.endsWith("_REGEXP")
+                ) {
+                  context.report({
+                    node: id,
+                    message:
+                      `RegExp variable name '${name}' must end with _REGEXP.`,
+                    fix: (fixer) => fixer.replaceText(id, `${name}_REGEXP`),
+                  });
+                }
               }
               if (
                 !isConstantCase(name) && !isCamelCase(name) &&
