@@ -8,11 +8,7 @@ import {
   assertRejects,
   assertThrows,
 } from "@std/assert";
-import {
-  Channel,
-  ChannelClosedError,
-  type ChannelReceiveResult,
-} from "./unstable_channel.ts";
+import { Channel, ChannelClosedError } from "./unstable_channel.ts";
 
 // -- Constructor --
 
@@ -274,7 +270,7 @@ Deno.test("Channel.trySend() delivers to waiting receiver", async () => {
 Deno.test("Channel.tryReceive() returns value when buffered", async () => {
   const ch = new Channel<number>(2);
   await ch.send(1);
-  const result: ChannelReceiveResult<number> = ch.tryReceive();
+  const result = ch.tryReceive();
   assertEquals(result, { ok: true, value: 1 });
 });
 

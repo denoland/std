@@ -80,14 +80,6 @@ export class ChannelClosedError extends Error {
   }
 }
 
-/** Result type returned by {@linkcode Channel.tryReceive}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export type ChannelReceiveResult<T> =
-  | { ok: true; value: T }
-  | { ok: false };
-
 /**
  * An async channel for communicating between concurrent tasks with optional
  * bounded buffering and backpressure.
@@ -285,7 +277,7 @@ export class Channel<T> implements AsyncIterable<T>, Disposable {
    * assertEquals(ch.tryReceive(), { ok: false });
    * ```
    */
-  tryReceive(): ChannelReceiveResult<T> {
+  tryReceive(): { ok: true; value: T } | { ok: false } {
     if (this.#size > 0) return { ok: true, value: this.#dequeue() };
     if (this.#senderHead) return { ok: true, value: this.#takeSender() };
     return { ok: false };
