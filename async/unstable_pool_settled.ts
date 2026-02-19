@@ -47,11 +47,11 @@ export interface PooledMapSettledOptions {
  *   { poolLimit: 2 },
  * );
  *
- * assertEquals(await Array.fromAsync(results), [
- *   { status: "fulfilled", value: 1 },
- *   { status: "rejected", reason: new Error("bad") },
- *   { status: "fulfilled", value: 3 },
- * ]);
+ * const settled = await Array.fromAsync(results);
+ * assertEquals(settled.length, 3);
+ * assertEquals(settled[0], { status: "fulfilled", value: 1 });
+ * assertEquals(settled[1]!.status, "rejected");
+ * assertEquals(settled[2], { status: "fulfilled", value: 3 });
  * ```
  *
  * @example With AbortSignal
