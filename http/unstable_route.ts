@@ -1,19 +1,29 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
+ * A handler for HTTP requests.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type RequestHandler = (
+  request: Request,
+  info?: Deno.ServeHandlerInfo,
+) => Response | Promise<Response>;
+
+/**
  * Request handler for {@linkcode Route}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * Extends {@linkcode Deno.ServeHandlerInfo} by adding adding a `params` argument.
+ * Extends {@linkcode Deno.ServeHandlerInfo} by adding a `params` argument.
  *
  * @param request Request
- * @param info Request info
  * @param params URL pattern result
+ * @param info Request info
  */
 export type Handler = (
   request: Request,
-  params?: URLPatternResult,
+  params: URLPatternResult,
   info?: Deno.ServeHandlerInfo,
 ) => Response | Promise<Response>;
 
@@ -29,8 +39,9 @@ export interface Route {
   pattern: URLPattern;
   /**
    * Request method. This can be a string or an array of strings.
+   * Method matching is case-insensitive.
    *
-   * @default {"GET"}
+   * If not specified, all HTTP methods are matched.
    */
   method?: string | string[];
   /**
@@ -51,14 +62,17 @@ export interface Route {
  *
  * const routes: Route[] = [
  *   {
+ *     // Matches all HTTP methods
  *     pattern: new URLPattern({ pathname: "/about" }),
  *     handler: () => new Response("About page"),
  *   },
  *   {
  *     pattern: new URLPattern({ pathname: "/users/:id" }),
- *     handler: (_req, params) => new Response(params?.pathname.groups.id),
+ *     method: "GET",
+ *     handler: (_req, params) => new Response(params.pathname.groups.id),
  *   },
  *   {
+ *     // Matches any method — serves static files
  *     pattern: new URLPattern({ pathname: "/static/*" }),
  *     handler: (req: Request) => serveDir(req)
  *   },
@@ -84,27 +98,27 @@ export interface Route {
  */
 export function route(
   routes: Route[],
-  defaultHandler: (
-    request: Request,
-    info?: Deno.ServeHandlerInfo,
-  ) => Response | Promise<Response>,
-): (
-  request: Request,
-  info?: Deno.ServeHandlerInfo,
-) => Response | Promise<Response> {
+  defaultHandler: RequestHandler,
+): RequestHandler {
   // TODO(iuioiua): Use `URLPatternList` once available (https://github.com/whatwg/urlpattern/pull/166)
   return (request: Request, info?: Deno.ServeHandlerInfo) => {
     for (const route of routes) {
       const match = route.pattern.exec(request.url);
-      if (
-        match &&
-        (Array.isArray(route.method)
-          ? route.method.includes(request.method)
-          : request.method === (route.method ?? "GET"))
-      ) {
-        return route.handler(request, match, info);
-      }
+      if (!match) continue;
+      if (!methodMatches(route.method, request.method)) continue;
+      return route.handler(request, match, info);
     }
     return defaultHandler(request, info);
   };
+}
+
+function methodMatches(
+  routeMethod: string | string[] | undefined,
+  requestMethod: string,
+): boolean {
+  if (!routeMethod) return true;
+  if (Array.isArray(routeMethod)) {
+    return routeMethod.some((m) => m.toUpperCase() === requestMethod);
+  }
+  return routeMethod.toUpperCase() === requestMethod;
 }

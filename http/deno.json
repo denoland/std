@@ -16,7 +16,9 @@
     "./unstable-server-sent-event-stream": "./unstable_server_sent_event_stream.ts",
     "./status": "./status.ts",
     "./unstable-signed-cookie": "./unstable_signed_cookie.ts",
+    "./unstable-structured-fields": "./unstable_structured_fields.ts",
     "./user-agent": "./user_agent.ts",
-    "./unstable-route": "./unstable_route.ts"
+    "./unstable-route": "./unstable_route.ts",
+    "./unstable-cache-control": "./unstable_cache_control.ts"
   }
 }
