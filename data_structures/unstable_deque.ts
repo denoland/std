@@ -115,6 +115,18 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
         "Cannot construct a Deque: the 'source' parameter is not iterable, did you mean to call Deque.from?",
       );
     }
+    // Fast path: copy array directly without iterator protocol overhead
+    if (Array.isArray(source)) {
+      const len = source.length;
+      const capacity = nextPowerOfTwo(len);
+      const buffer = new Array(capacity);
+      for (let i = 0; i < len; i++) buffer[i] = source[i];
+      this.#buffer = buffer;
+      this.#head = 0;
+      this.#length = len;
+      this.#mask = capacity - 1;
+      return;
+    }
     const items = [...source];
     const capacity = nextPowerOfTwo(items.length);
     this.#buffer = new Array(capacity);
@@ -189,17 +201,22 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns The new length of the deque.
    */
   pushBack(value: T, ...rest: T[]): number {
-    this.#pushBackOne(value);
-    for (let i = 0; i < rest.length; i++) {
-      this.#pushBackOne(rest[i]!);
+    // Inlined (no #pushBackOne call) to avoid extra private-field brand checks
+    if (this.#length === (this.#mask + 1)) {
+      if (this.#head === 0) this.#growInPlace();
+      else this.#grow();
     }
-    return this.#length;
-  }
-
-  #pushBackOne(value: T): void {
-    if (this.#length === (this.#mask + 1)) this.#grow();
     this.#buffer[(this.#head + this.#length) & this.#mask] = value;
     this.#length++;
+    for (let i = 0; i < rest.length; i++) {
+      if (this.#length === (this.#mask + 1)) {
+        if (this.#head === 0) this.#growInPlace();
+        else this.#grow();
+      }
+      this.#buffer[(this.#head + this.#length) & this.#mask] = rest[i]!;
+      this.#length++;
+    }
+    return this.#length;
   }
 
   /**
@@ -224,7 +241,6 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns The new length of the deque.
    */
   pushFront(value: T, ...rest: T[]): number {
-    // Insert in reverse so argument order is preserved at the front
     for (let i = rest.length - 1; i >= 0; i--) {
       this.#pushFrontOne(rest[i]!);
     }
@@ -597,9 +613,16 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     this.#realloc((this.#mask + 1) * 2);
   }
 
+  /** When head is 0, elements are already contiguous — just extend the array. */
+  #growInPlace(): void {
+    this.#buffer.length <<= 1;
+    this.#mask = this.#buffer.length - 1;
+  }
+
+  /** Halve the buffer when usage drops below 25%. Skips small buffers (<=64). */
   #maybeShrink(): void {
     const capacity = this.#mask + 1;
-    if (this.#length < (capacity >>> 2) && capacity > MIN_CAPACITY) {
+    if (capacity > 64 && this.#length < (capacity >>> 2)) {
       this.#realloc(capacity >>> 1);
     }
   }
