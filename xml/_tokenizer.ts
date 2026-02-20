@@ -299,11 +299,7 @@ export class XmlTokenizer {
   /** Current callbacks for emission (set during process/finalize calls). */
   #callbacks: XmlTokenCallbacks = {};
 
-  /**
-   * Constructs a new XmlTokenizer.
-   *
-   * @param options Options for tokenizer behavior.
-   */
+  /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
   }
@@ -432,7 +428,7 @@ export class XmlTokenizer {
         // #textPartial accumulates across chunks.
         if (content.includes("]]>")) {
           this.#error(
-            "']]>' is not allowed in text content (XML 1.0 §2.4)",
+            "Cannot use ']]>' in text content (XML 1.0 §2.4)",
           );
         }
         // Any content before XML declaration invalidates XMLDecl position
@@ -693,8 +689,7 @@ export class XmlTokenizer {
    *
    * Note: If quoted with ', the value cannot contain '.
    *
-   * @param value The public ID value (without quotes)
-   * @param quote The quote character used (' or ")
+   * @param quote The quote character used (' or ").
    */
   #validatePubidLiteral(value: string, quote: string): void {
     for (let i = 0; i < value.length; i++) {
@@ -882,7 +877,7 @@ export class XmlTokenizer {
       // Check both the accumulated partial and new content for "--"
       if (this.#commentPartial.includes("--") || newContent.includes("--")) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -891,7 +886,7 @@ export class XmlTokenizer {
         this.#commentPartial.endsWith("-") && newContent.startsWith("-")
       ) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -903,7 +898,7 @@ export class XmlTokenizer {
       ) {
         this.#bufferIndex = endIdx - 1;
         this.#error(
-          `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+          `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
         );
       }
       // Also check if partial ends with dash and new content is empty
@@ -916,7 +911,7 @@ export class XmlTokenizer {
       ) {
         this.#bufferIndex = endIdx - 1;
         this.#error(
-          `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+          `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
         );
       }
 
@@ -978,7 +973,7 @@ export class XmlTokenizer {
       // XML 1.0 §2.5: "--" is not permitted within comments
       if (region.includes("--")) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -1197,7 +1192,7 @@ export class XmlTokenizer {
       const ltIdx = buffer.indexOf("<", this.#attrStartIdx);
       if (ltIdx !== -1 && ltIdx < endIdx) {
         this.#bufferIndex = ltIdx;
-        this.#error(`'<' not allowed in attribute value`);
+        this.#error(`Cannot use '<' in attribute value`);
       }
 
       // Update position for the content region (not including closing quote)
@@ -1211,7 +1206,7 @@ export class XmlTokenizer {
     const ltCheck = buffer.indexOf("<", this.#attrStartIdx);
     if (ltCheck !== -1 && ltCheck < bufferLen) {
       this.#bufferIndex = ltCheck;
-      this.#error(`'<' not allowed in attribute value`);
+      this.#error(`Cannot use '<' in attribute value`);
     }
 
     // Batch consume the entire remaining buffer
@@ -1231,9 +1226,6 @@ export class XmlTokenizer {
    * This method is synchronous and can be called multiple times with
    * consecutive chunks of XML input. Callbacks are invoked for each
    * token, enabling zero-allocation streaming.
-   *
-   * @param chunk The XML text chunk to process.
-   * @param callbacks Callbacks to invoke for each token.
    */
   process(chunk: string, callbacks: XmlTokenCallbacks): void {
     this.#callbacks = callbacks;
@@ -1446,7 +1438,7 @@ export class XmlTokenizer {
           ) {
             // XML 1.0 §3.1: Whitespace is required between attributes
             if (this.#needsAttrWhitespace) {
-              this.#error("Whitespace is required between attributes");
+              this.#error("Missing whitespace between attributes");
             }
             this.#attrNameStartIdx = this.#bufferIndex;
             this.#attrNamePartial = "";
@@ -1764,7 +1756,7 @@ export class XmlTokenizer {
             // Check before emitting
             if (this.#commentPartial.includes("--")) {
               this.#error(
-                `'--' is not permitted within comments (XML 1.0 §2.5)`,
+                `Cannot use '--' within comments (XML 1.0 §2.5)`,
               );
             }
             // Check for trailing dash (e.g., "<!--->" or "<!-- comment --->")
@@ -1775,7 +1767,7 @@ export class XmlTokenizer {
                 ) === CC_DASH
             ) {
               this.#error(
-                `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+                `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
               );
             }
             // Any comment before XML declaration invalidates XMLDecl position
@@ -1799,7 +1791,7 @@ export class XmlTokenizer {
             // XML 1.0 §2.5: After "--", only ">" or "-" is allowed.
             // Any other character means "--" appears within the comment content.
             this.#error(
-              `'--' is not permitted within comments (XML 1.0 §2.5)`,
+              `Cannot use '--' within comments (XML 1.0 §2.5)`,
             );
           }
           break;
@@ -1866,7 +1858,7 @@ export class XmlTokenizer {
               this.#advanceWithCode(code);
             } else if (this.#isWhitespaceCode(code) || code === CC_QUESTION) {
               // Empty PI target is not allowed
-              this.#error("Processing instruction target is required");
+              this.#error("Missing processing instruction target");
             } else {
               this.#error(
                 `Invalid character '${
@@ -2506,7 +2498,7 @@ export class XmlTokenizer {
             // Any other character (including '-') means '--' appears
             // within the comment content, which is not allowed.
             this.#error(
-              `'--' is not allowed within XML comments (XML 1.0 §2.5)`,
+              `Cannot use '--' within XML comments (XML 1.0 §2.5)`,
             );
           }
           break;
@@ -2561,7 +2553,6 @@ export class XmlTokenizer {
    * It flushes any pending text content and validates that the tokenizer
    * is in a valid end state.
    *
-   * @param callbacks Callbacks to invoke for remaining tokens.
    * @throws {XmlSyntaxError} If the tokenizer is in an incomplete state.
    */
   finalize(callbacks: XmlTokenCallbacks): void {

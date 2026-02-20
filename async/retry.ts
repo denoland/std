@@ -70,6 +70,16 @@ export interface RetryOptions {
    * @returns `true` if the error is retriable, `false` otherwise.
    */
   isRetriable?: (err: unknown) => boolean;
+  /**
+   * An AbortSignal to cancel the retry operation.
+   *
+   * If the signal is aborted, the retry will stop and reject with the signal's
+   * reason. The signal is checked before each attempt and during the delay
+   * between attempts.
+   *
+   * @default {undefined}
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -149,6 +159,7 @@ export interface RetryOptions {
  * @param options Additional options.
  * @returns The promise that resolves with the value returned by the function to retry.
  * @throws {RetryError} If the function fails after `maxAttempts` attempts.
+ * @throws If the `signal` is aborted, throws the signal's reason.
  * @throws If `isRetriable` returns `false` for an error, throws that error immediately.
  */
 export async function retry<T>(
@@ -162,6 +173,7 @@ export async function retry<T>(
     minTimeout = 1000,
     jitter = 1,
     isRetriable = () => true,
+    signal,
   } = options ?? {};
 
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
@@ -197,6 +209,8 @@ export async function retry<T>(
 
   let attempt = 0;
   while (true) {
+    signal?.throwIfAborted();
+
     try {
       return await fn();
     } catch (error) {
@@ -215,7 +229,7 @@ export async function retry<T>(
         multiplier,
         jitter,
       );
-      await delay(timeout);
+      await delay(timeout, signal ? { signal } : undefined);
     }
     attempt++;
   }

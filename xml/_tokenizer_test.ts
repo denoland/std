@@ -381,7 +381,7 @@ Deno.test("XmlTokenizer.process() throws on < in attribute value", () => {
   assertThrows(
     () => collectTokens('<root attr="<">'),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -536,7 +536,7 @@ Deno.test("XmlTokenizer.process() throws on -- inside comment", () => {
   assertThrows(
     () => collectTokens("<r><!-- a--b --></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -769,7 +769,7 @@ Deno.test("XmlTokenizer.process() throws on < in single-quoted attribute value",
   assertThrows(
     () => collectTokens("<root attr='<'/>"),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -797,7 +797,7 @@ Deno.test("XmlTokenizer.process() throws on -- not followed by > in comment", ()
   assertThrows(
     () => collectTokens("<r><!--a--b--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -805,7 +805,7 @@ Deno.test("XmlTokenizer.process() throws on -- at chunk boundary in comment", ()
   assertThrows(
     () => collectChunkedTokens("<r><!--a-", "-b--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -815,7 +815,7 @@ Deno.test("XmlTokenizer.process() rejects single - before --> in comment", () =>
   assertThrows(
     () => collectChunkedTokens("<r><!--test-", "--></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -1171,7 +1171,7 @@ Deno.test("XmlTokenizer.process() throws on multiple trailing dashes in DOCTYPE 
   assertThrows(
     () => collectTokens("<!DOCTYPE root [<!------>]><root/>"),
     XmlSyntaxError,
-    "'--' is not allowed within XML comments",
+    "Cannot use '--' within XML comments",
   );
 });
 
@@ -1180,7 +1180,7 @@ Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () =>
   assertThrows(
     () => collectTokens("<!DOCTYPE root [<!-- a--b -->]><root/>"),
     XmlSyntaxError,
-    "'--' is not allowed within XML comments",
+    "Cannot use '--' within XML comments",
   );
 });
 
@@ -1368,7 +1368,7 @@ Deno.test("XmlTokenizer.process() throws on ]]> in text content", () => {
   assertThrows(
     () => collectTokens("<root>invalid ]]> here</root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1393,7 +1393,7 @@ Deno.test("XmlTokenizer.process() throws on missing whitespace between attribute
   assertThrows(
     () => collectTokens('<root a="1"b="2"/>'),
     XmlSyntaxError,
-    "Whitespace is required between attributes",
+    "Missing whitespace between attributes",
   );
 });
 
@@ -1688,7 +1688,7 @@ Deno.test("XmlTokenizer.process() throws on empty PI target", () => {
   assertThrows(
     () => collectTokens("<? ?><root/>"),
     XmlSyntaxError,
-    "Processing instruction target is required",
+    "Missing processing instruction target",
   );
 });
 
@@ -1883,7 +1883,7 @@ Deno.test("XmlTokenizer with trackPosition: false handles ]]> in text", () => {
       tokenizer.process("<root>test]]>value</root>", callbacks);
     },
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1901,7 +1901,7 @@ Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (]] th
   assertThrows(
     () => collectChunkedTokens("<root>test]]", ">more</root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1909,7 +1909,7 @@ Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (] the
   assertThrows(
     () => collectChunkedTokens("<root>test]", "]>more</root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1917,7 +1917,7 @@ Deno.test("XmlTokenizer.process() throws on ]]> straddling three chunks", () => 
   assertThrows(
     () => collectChunkedTokens("<root>test]", "]", ">more</root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1930,7 +1930,7 @@ Deno.test("XmlTokenizer.process() throws on -- at chunk boundary forming double 
   assertThrows(
     () => collectChunkedTokens("<r><!--abc-", "-def--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -1939,7 +1939,7 @@ Deno.test("XmlTokenizer.process() throws on trailing dash in batch comment captu
   assertThrows(
     () => collectTokens("<r><!--test---></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -1957,7 +1957,7 @@ Deno.test("XmlTokenizer.process() throws on -- in long comment batch capture", (
   assertThrows(
     () => collectTokens(`<r><!--${prefix}--${prefix}--></r>`),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -2231,7 +2231,7 @@ Deno.test("XmlTokenizer.process() handles trailing dash before --> across chunks
   assertThrows(
     () => collectChunkedTokens("<r><!--test-", "--></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -2368,7 +2368,7 @@ Deno.test("XmlTokenizer.process() throws on < in long attribute value", () => {
   assertThrows(
     () => collectTokens(`<root attr="${prefix}<${prefix}"/>`),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 

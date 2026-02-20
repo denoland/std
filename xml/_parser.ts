@@ -494,7 +494,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
       // Check raw content for any entity/character references
       if (content.includes("&")) {
         throw new XmlSyntaxError(
-          "Character/entity references are not allowed in prolog/epilog (XML 1.0 §2.8)",
+          "Cannot use character/entity references in prolog/epilog (XML 1.0 §2.8)",
           { line, column, offset },
         );
       }
@@ -503,12 +503,12 @@ export class XmlEventParser implements XmlTokenCallbacks {
       if (!WHITESPACE_ONLY_RE.test(content)) {
         if (!this.#hasRoot) {
           throw new XmlSyntaxError(
-            "Content is not allowed before the root element (XML 1.0 §2.8)",
+            "Cannot have content before the root element (XML 1.0 §2.8)",
             { line, column, offset },
           );
         } else {
           throw new XmlSyntaxError(
-            "Content is not allowed after the root element (XML 1.0 §2.8)",
+            "Cannot have content after the root element (XML 1.0 §2.8)",
             { line, column, offset },
           );
         }
@@ -534,13 +534,13 @@ export class XmlEventParser implements XmlTokenCallbacks {
     // XML 1.0 §2.8: CDATA sections are only allowed within elements
     if (!this.#hasRoot) {
       throw new XmlSyntaxError(
-        "CDATA section is not allowed before the root element (XML 1.0 §2.8)",
+        "Cannot have CDATA section before the root element (XML 1.0 §2.8)",
         { line, column, offset },
       );
     }
     if (this.#rootClosed) {
       throw new XmlSyntaxError(
-        "CDATA section is not allowed after the root element (XML 1.0 §2.8)",
+        "Cannot have CDATA section after the root element (XML 1.0 §2.8)",
         { line, column, offset },
       );
     }
@@ -572,7 +572,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
     // XML Namespaces §3: PI targets must not contain colons
     if (target.includes(":")) {
       throw new XmlSyntaxError(
-        "Processing instruction target must not contain ':' (Namespaces §3)",
+        "Cannot use ':' in processing instruction target (Namespaces §3)",
         { line, column, offset },
       );
     }
@@ -610,8 +610,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
 
   // Entity declarations from DTD are intentionally NOT stored.
   // We only support the 5 predefined XML entities.
-  // deno-lint-ignore no-unused-vars
-  onEntityDeclaration(name: string, value: string): void {
+  onEntityDeclaration(_name: string, _value: string): void {
     // Intentionally empty - custom entities are not expanded
   }
 
