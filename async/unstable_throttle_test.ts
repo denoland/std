@@ -153,3 +153,29 @@ Deno.test("throttle() handles ensureLastCall option", async (t) => {
     });
   }
 });
+
+Deno.test("throttle() handles dynamic timeframe", () => {
+  using time = new FakeTime();
+  let calls = 0;
+  const fn = throttle(
+    () => {
+      time.tick(50 * ++calls);
+    },
+    (n) => n,
+  );
+  fn();
+  assertEquals(calls, 1);
+  assertEquals(fn.throttling, true);
+  time.tick(49);
+  assertEquals(fn.throttling, true);
+  time.tick(2);
+  assertEquals(fn.throttling, false);
+
+  fn();
+  assertEquals(calls, 2);
+  assertEquals(fn.throttling, true);
+  time.tick(99);
+  assertEquals(fn.throttling, true);
+  time.tick(2);
+  assertEquals(fn.throttling, false);
+});
