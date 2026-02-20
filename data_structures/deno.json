@@ -9,6 +9,7 @@
     "./unstable-binary-search-tree": "./unstable_binary_search_tree.ts",
     "./comparators": "./comparators.ts",
     "./red-black-tree": "./red_black_tree.ts",
-    "./unstable-2d-array": "./unstable_2d_array.ts"
+    "./unstable-2d-array": "./unstable_2d_array.ts",
+    "./unstable-deque": "./unstable_deque.ts"
   }
 }
