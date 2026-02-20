@@ -36,8 +36,8 @@ export type { StringifyOptions } from "./types.ts";
  * assertEquals(stringify(element), "<root>Hello!</root>");
  * ```
  *
- * @param node The XML document or element to serialize.
- * @param options Options to control serialization behavior.
+ * @param node The document or element to serialize.
+ * @param options Options for configuring the serialization.
  * @returns The serialized XML string.
  */
 export function stringify(
@@ -185,12 +185,12 @@ function serializeCData(text: string): string {
 function validateCommentText(text: string): string {
   if (text.includes("--")) {
     throw new TypeError(
-      `Invalid comment: contains "--" which is forbidden in XML comments`,
+      `Cannot serialize comment: XML forbids "--" within comments`,
     );
   }
   if (text.endsWith("-")) {
     throw new TypeError(
-      `Invalid comment: ends with "-" which would produce invalid "--->"`,
+      `Cannot serialize comment: trailing "-" would produce invalid "--->"`,
     );
   }
   return text;

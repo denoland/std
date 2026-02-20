@@ -69,7 +69,6 @@ function isXmlWhitespace(code: number): boolean {
  * Validates a VersionNum per XML 1.0 §2.8.
  * VersionNum ::= '1.' [0-9]+
  *
- * @param version The version string to validate
  * @returns true if valid, false otherwise
  */
 function isValidVersionNum(version: string): boolean {
@@ -90,7 +89,6 @@ function isValidVersionNum(version: string): boolean {
  * Validates an EncName per XML 1.0 §4.3.3.
  * EncName ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
  *
- * @param encoding The encoding name to validate
  * @returns true if valid, false otherwise
  */
 function isValidEncName(encoding: string): boolean {
@@ -313,7 +311,7 @@ export function validateXmlDeclaration(
         return {
           valid: false,
           error:
-            `Invalid version '${value}', must match '1.' followed by digits`,
+            `Invalid version '${value}': must match '1.' followed by digits`,
         };
       }
       version = value;
@@ -322,7 +320,7 @@ export function validateXmlDeclaration(
         return {
           valid: false,
           error:
-            `Invalid encoding name '${value}', must start with letter and contain only letters, digits, '.', '_', '-'`,
+            `Invalid encoding name '${value}': must start with a letter and contain only letters, digits, '.', '_', '-'`,
         };
       }
       encoding = value;
@@ -330,7 +328,7 @@ export function validateXmlDeclaration(
       if (value !== "yes" && value !== "no") {
         return {
           valid: false,
-          error: `Invalid standalone value '${value}', must be 'yes' or 'no'`,
+          error: `Invalid standalone value '${value}': must be 'yes' or 'no'`,
         };
       }
       standalone = value;
@@ -375,7 +373,6 @@ export function validateXmlDeclaration(
  * XML 1.0 §2.6: "The target names 'XML', 'xml', and so on are reserved for
  * standardization in this or future versions of this specification."
  *
- * @param target The PI target name
  * @returns true if the target is reserved (any case variant of "xml")
  */
 export function isReservedPiTarget(target: string): boolean {
@@ -404,9 +401,8 @@ export const XMLNS_NAMESPACE = "http://www.w3.org/2000/xmlns/";
  * - No colon at end (foo: is invalid)
  * - No multiple colons (a:b:c is invalid)
  *
- * @param name The name to validate
- * @param colonIndex The index of the first colon, or -1 if none
- * @returns Error message if invalid, null if valid
+ * @param colonIndex The index of the first colon, or -1 if none.
+ * @returns Error message if invalid, null if valid.
  */
 export function validateQName(name: string, colonIndex: number): string | null {
   if (colonIndex === -1) {
@@ -442,9 +438,7 @@ export function validateQName(name: string, colonIndex: number): string | null {
  * - Nothing can bind to the xmlns namespace
  * - Default namespace cannot be xml or xmlns namespace
  *
- * @param attrName The attribute name (e.g., "xmlns" or "xmlns:foo")
- * @param attrValue The namespace URI value
- * @returns Error message if invalid, null if valid
+ * @returns Error message if invalid, null if valid.
  */
 export function validateNamespaceBinding(
   attrName: string,
@@ -458,37 +452,37 @@ export function validateNamespaceBinding(
   // xmlns: with empty local part is caught by QName validation
   // But check for empty prefix after xmlns:
   if (colonIndex !== -1 && prefix === "") {
-    return "Namespace prefix cannot be empty after 'xmlns:'";
+    return "Cannot have empty namespace prefix after 'xmlns:'";
   }
 
   // Prefix unbinding not allowed in NS 1.0 (xmlns:foo="")
   if (!isDefaultNs && uri === "") {
-    return "Namespace prefix unbinding (empty URI) is not allowed in Namespaces 1.0";
+    return "Cannot unbind namespace prefix (empty URI) in Namespaces 1.0";
   }
 
   // Cannot declare xmlns prefix at all
   if (prefix === "xmlns") {
-    return "The 'xmlns' prefix must not be declared";
+    return "Cannot declare the 'xmlns' prefix";
   }
 
   // xml prefix must use correct URI
   if (prefix === "xml" && uri !== XML_NAMESPACE) {
-    return `The 'xml' prefix must be bound to '${XML_NAMESPACE}'`;
+    return `Cannot bind 'xml' prefix to '${uri}': must use '${XML_NAMESPACE}'`;
   }
 
   // Only xml prefix can use xml namespace
   if (uri === XML_NAMESPACE && prefix !== "xml" && prefix !== "") {
-    return `Only the 'xml' prefix may be bound to '${XML_NAMESPACE}'`;
+    return `Cannot bind prefix '${prefix}' to '${XML_NAMESPACE}': only the 'xml' prefix may use this namespace`;
   }
 
   // Nothing can bind to xmlns namespace (includes default namespace case)
   if (uri === XMLNS_NAMESPACE) {
-    return `The namespace '${XMLNS_NAMESPACE}' must not be bound to any prefix`;
+    return `Cannot bind any prefix to '${XMLNS_NAMESPACE}'`;
   }
 
   // Default namespace cannot be xml namespace
   if (isDefaultNs && uri === XML_NAMESPACE) {
-    return `The XML namespace '${XML_NAMESPACE}' cannot be the default namespace`;
+    return `Cannot use '${XML_NAMESPACE}' as the default namespace`;
   }
 
   return null; // Valid binding
@@ -497,9 +491,8 @@ export function validateNamespaceBinding(
 /**
  * Parses a qualified XML name into its prefix and local parts.
  *
- * @param name The raw name string (e.g., "ns:element" or "element")
- * @param uri Optional resolved namespace URI for prefixed names
- * @returns An XmlName object with raw, local, optional prefix, and optional uri
+ * @param uri Optional resolved namespace URI for prefixed names.
+ * @returns An XmlName object with raw, local, optional prefix, and optional uri.
  */
 export function parseName(name: string, uri?: string): XmlName {
   const colonIndex = name.indexOf(":");
