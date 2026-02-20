@@ -18,6 +18,7 @@
     "./unstable-wait-for": "./unstable_wait_for.ts",
     "./unstable-semaphore": "./unstable_semaphore.ts",
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
+    "./unstable-lazy": "./unstable_lazy.ts",
     "./unstable-all-keyed": "./unstable_all_keyed.ts",
     "./unstable-poll": "./unstable_poll.ts"
   }
