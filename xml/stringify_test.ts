@@ -566,7 +566,7 @@ Deno.test("stringify() throws for -- in comment", () => {
   assertThrows(
     () => stringify(element),
     TypeError,
-    'contains "--"',
+    'XML forbids "--"',
   );
 });
 
@@ -581,7 +581,7 @@ Deno.test("stringify() throws for comment ending with -", () => {
   assertThrows(
     () => stringify(element),
     TypeError,
-    'ends with "-"',
+    'trailing "-"',
   );
 });
 

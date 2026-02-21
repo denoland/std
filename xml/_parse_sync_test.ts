@@ -209,7 +209,7 @@ Deno.test("parseSync() throws on -- inside comment", () => {
   assertThrows(
     () => parseSync("<root><!-- a--b --></root>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -257,7 +257,7 @@ Deno.test("parseSync() throws on < in attribute value", () => {
   assertThrows(
     () => parseSync('<root attr="<"/>'),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -563,7 +563,7 @@ Deno.test("parseSync() throws on text before root element", () => {
   assertThrows(
     () => parseSync("text<root/>"),
     XmlSyntaxError,
-    "Content is not allowed before the root element",
+    "Cannot have content before the root element",
   );
 });
 
@@ -571,7 +571,7 @@ Deno.test("parseSync() throws on text after root element", () => {
   assertThrows(
     () => parseSync("<root/>text"),
     XmlSyntaxError,
-    "Content is not allowed after the root element",
+    "Cannot have content after the root element",
   );
 });
 
@@ -579,7 +579,7 @@ Deno.test("parseSync() throws on entity reference before root", () => {
   assertThrows(
     () => parseSync("&amp;<root/>"),
     XmlSyntaxError,
-    "Character/entity references are not allowed in prolog",
+    "Cannot use character/entity references in prolog",
   );
 });
 
@@ -587,7 +587,7 @@ Deno.test("parseSync() throws on entity reference after root", () => {
   assertThrows(
     () => parseSync("<root/>&amp;"),
     XmlSyntaxError,
-    "Character/entity references are not allowed in prolog/epilog",
+    "Cannot use character/entity references in prolog/epilog",
   );
 });
 
@@ -595,7 +595,7 @@ Deno.test("parseSync() throws on CDATA before root element", () => {
   assertThrows(
     () => parseSync("<![CDATA[test]]><root/>"),
     XmlSyntaxError,
-    "CDATA section is not allowed before the root element",
+    "Cannot have CDATA section before the root element",
   );
 });
 
@@ -603,7 +603,7 @@ Deno.test("parseSync() throws on CDATA after root element", () => {
   assertThrows(
     () => parseSync("<root/><![CDATA[test]]>"),
     XmlSyntaxError,
-    "CDATA section is not allowed after the root element",
+    "Cannot have CDATA section after the root element",
   );
 });
 
@@ -734,7 +734,7 @@ Deno.test("parseSync() throws on PI target containing colon", () => {
   assertThrows(
     () => parseSync("<?ns:target content?><root/>"),
     XmlSyntaxError,
-    "Processing instruction target must not contain ':'",
+    "Cannot use ':' in processing instruction target",
   );
 });
 
@@ -752,7 +752,7 @@ Deno.test("parseSync() throws on BOM before root element", () => {
   assertThrows(
     () => parseSync('\uFEFF<?xml version="1.0"?><root/>'),
     XmlSyntaxError,
-    "Content is not allowed before the root element",
+    "Cannot have content before the root element",
   );
 });
 
@@ -764,7 +764,7 @@ Deno.test("parseSync() throws on dash immediately before --> in comment", () => 
   assertThrows(
     () => parseSync("<root><!-- test---></root>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -776,7 +776,7 @@ Deno.test("parseSync() throws on ]]> in text content", () => {
   assertThrows(
     () => parseSync("<root>]]></root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -919,7 +919,7 @@ Deno.test("parseSync() throws on -- not followed by > in DTD comment", () => {
   assertThrows(
     () => parseSync("<!DOCTYPE root [<!-- comment --x -->]><root/>"),
     XmlSyntaxError,
-    "'--' is not allowed within XML comments",
+    "Cannot use '--' within XML comments",
   );
 });
 
@@ -1236,7 +1236,7 @@ Deno.test("parseSync() throws on missing whitespace between attributes", () => {
   assertThrows(
     () => parseSync('<root attr1="1"attr2="2"/>'),
     XmlSyntaxError,
-    "Whitespace is required between attributes",
+    "Missing whitespace between attributes",
   );
 });
 

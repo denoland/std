@@ -558,7 +558,7 @@ Deno.test("parseXmlStream() throws on text before root", async () => {
   await assertRejects(
     () => parseXmlStream(stream, {}),
     XmlSyntaxError,
-    "Content is not allowed before the root element",
+    "Cannot have content before the root element",
   );
 });
 
@@ -569,7 +569,7 @@ Deno.test("parseXmlStream() throws on text after root", async () => {
   await assertRejects(
     () => parseXmlStream(stream, {}),
     XmlSyntaxError,
-    "Content is not allowed after the root element",
+    "Cannot have content after the root element",
   );
 });
 
@@ -580,7 +580,7 @@ Deno.test("parseXmlStream() throws on entity reference before root", async () =>
   await assertRejects(
     () => parseXmlStream(stream, {}),
     XmlSyntaxError,
-    "Character/entity references are not allowed in prolog",
+    "Cannot use character/entity references in prolog",
   );
 });
 
@@ -591,7 +591,7 @@ Deno.test("parseXmlStream() throws on CDATA before root", async () => {
   await assertRejects(
     () => parseXmlStream(stream, {}),
     XmlSyntaxError,
-    "CDATA section is not allowed before the root element",
+    "Cannot have CDATA section before the root element",
   );
 });
 
@@ -602,7 +602,7 @@ Deno.test("parseXmlStream() throws on CDATA after root", async () => {
   await assertRejects(
     () => parseXmlStream(stream, {}),
     XmlSyntaxError,
-    "CDATA section is not allowed after the root element",
+    "Cannot have CDATA section after the root element",
   );
 });
 
@@ -682,7 +682,7 @@ Deno.test("parseXmlStreamFromBytes() yields final flush when stream ends with in
   }
 
   // The XML parser will see the replacement character after the closing tag
-  // which causes "Content is not allowed after the root element"
+  // which causes "Cannot have content after the root element"
   await assertRejects(
     () =>
       parseXmlStreamFromBytes(generateWithTrailingIncomplete(), {
@@ -691,6 +691,6 @@ Deno.test("parseXmlStreamFromBytes() yields final flush when stream ends with in
         },
       }),
     XmlSyntaxError,
-    "Content is not allowed after the root element",
+    "Cannot have content after the root element",
   );
 });
