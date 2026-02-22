@@ -620,8 +620,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
     );
   }
 
-  // DOCTYPE parsed by tokenizer but not emitted as event
-  onDoctype(): void {}
+  onDoctype(
+    name: string,
+    publicId: string | undefined,
+    systemId: string | undefined,
+    line: number,
+    column: number,
+    offset: number,
+  ): void {
+    this.#callbacks.onDoctype?.(name, publicId, systemId, line, column, offset);
+  }
 
   // Entity declarations from DTD are intentionally NOT stored.
   // We only support the 5 predefined XML entities.

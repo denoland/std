@@ -90,6 +90,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const ignoreWhitespace = options?.ignoreWhitespace ?? false;
   const ignoreComments = options?.ignoreComments ?? false;
   const trackPosition = options?.trackPosition ?? true;
+  const disallowDoctype = options?.disallowDoctype ?? true;
 
   // Normalize line endings (XML 1.0 §2.11)
   const input = xml.includes("\r") ? xml.replace(LINE_ENDING_RE, "\n") : xml;
@@ -1015,6 +1016,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
       // DOCTYPE: <!DOCTYPE...>
       if (pos + 6 < len && input.startsWith("DOCTYPE", pos)) {
+        if (disallowDoctype) {
+          error("DOCTYPE declarations are not allowed");
+        }
         pos += 7; // Skip 'DOCTYPE'
 
         // Skip whitespace before name (required)

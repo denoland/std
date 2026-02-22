@@ -31,6 +31,13 @@ interface XmlTokenizerOptions {
    * @default {true}
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, reject DOCTYPE declarations immediately.
+   *
+   * @default {false}
+   */
+  readonly disallowDoctype?: boolean;
 }
 
 /** Tokenizer state machine states. */
@@ -230,6 +237,8 @@ export class XmlTokenizer {
 
   /** Whether to track line/column positions. */
   readonly #trackPosition: boolean;
+  /** Whether to reject DOCTYPE declarations. */
+  readonly #disallowDoctype: boolean;
 
   // Slice-based accumulators: track start index + partial for cross-chunk
   #textStartIdx = -1;
@@ -301,6 +310,7 @@ export class XmlTokenizer {
   /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
+    this.#disallowDoctype = options.disallowDoctype ?? false;
   }
 
   #saveTokenPosition(): void {
@@ -1960,6 +1970,9 @@ export class XmlTokenizer {
           this.#doctypeCheck += String.fromCharCode(code);
           this.#advanceWithCode(code);
           if (this.#doctypeCheck === "DOCTYPE") {
+            if (this.#disallowDoctype) {
+              this.#error("DOCTYPE declarations are not allowed");
+            }
             this.#doctypeName = "";
             this.#doctypePublicId = "";
             this.#doctypeSystemId = "";

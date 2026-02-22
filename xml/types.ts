@@ -246,6 +246,18 @@ export interface BaseParseOptions {
    * Disabling improves performance but makes debugging harder.
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, DOCTYPE declarations are rejected immediately with an
+   * {@linkcode XmlSyntaxError}, before any internal subset is parsed.
+   * This prevents resource exhaustion attacks via hostile DTD content.
+   *
+   * Set to `false` to allow DOCTYPE declarations (e.g. for documents
+   * that use predefined entities or external DTD references).
+   *
+   * @default {true}
+   */
+  readonly disallowDoctype?: boolean;
 }
 
 /**

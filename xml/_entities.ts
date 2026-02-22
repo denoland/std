@@ -7,16 +7,13 @@
  * @module
  */
 
-// Hoisted regex patterns for performance
-// Single-pass regex that matches predefined entities and char refs, while
-// also detecting bare/invalid ampersands. Uses [a-zA-Z]+ (not [a-zA-Z0-9]*)
-// to allow entity names with digits to pass through unchanged (non-validating).
-// Group 1: named entity (letters only, e.g. "amp")
+// Single-pass regex that matches all entity references and bare ampersands.
+// Group 1: named entity ([a-zA-Z][a-zA-Z0-9]*, e.g. "amp", "foo1")
 // Group 2: decimal char ref (e.g. "#13")
 // Group 3: hex char ref (e.g. "#xd")
-// Match with no groups: bare/invalid ampersand (if lookahead fails)
+// No groups: bare/invalid ampersand
 const ENTITY_OR_AMPERSAND_RE =
-  /&(?:([a-zA-Z]+);|(#[0-9]+);|(#x[0-9a-fA-F]+);|(?![a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;))/g;
+  /&(?:([a-zA-Z][a-zA-Z0-9]*);|(#[0-9]+);|(#x[0-9a-fA-F]+);)?/g;
 const SPECIAL_CHARS_RE = /[<>&'"]/g;
 const ATTR_ENCODE_RE = /[<>&'"\t\n\r]/g;
 
@@ -124,13 +121,12 @@ export function decodeEntities(text: string): string {
         return String.fromCodePoint(codePoint);
       }
 
-      // Named entity (&name;) - only letters matched
+      // Named entity (&name;)
       if (namedEntity !== undefined) {
         const predefined = NAMED_ENTITIES[namedEntity];
         if (predefined !== undefined) {
           return predefined;
         }
-        // Unknown letter-only entity
         throw new Error(
           `Unknown entity '${match}' at position ${offset}: ` +
             `only predefined entities (lt, gt, amp, apos, quot) are recognized`,
