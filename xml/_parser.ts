@@ -43,6 +43,9 @@ function normalizeAttributeValue(raw: string): string {
   return decodeEntities(normalized);
 }
 
+/** Threshold above which duplicate detection switches from linear scan to Set. */
+const ATTR_SET_THRESHOLD = 32;
+
 /**
  * Reusable attribute iterator implementation.
  *
@@ -55,6 +58,7 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   #colonIndices: number[] = [];
   #uris: (string | undefined)[] = [];
   #count = 0;
+  #nameSet: Set<string> | null = null;
 
   get count(): number {
     return this.#count;
@@ -79,6 +83,7 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   /** @internal Reset the iterator for a new element. */
   _reset(): void {
     this.#count = 0;
+    this.#nameSet = null;
   }
 
   /** @internal Add an attribute (name already decoded, value raw). */
@@ -86,7 +91,8 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
     this.#names[this.#count] = name;
     this.#values[this.#count] = normalizeAttributeValue(value);
     this.#colonIndices[this.#count] = name.indexOf(":");
-    this.#uris[this.#count] = undefined; // Will be set later
+    this.#uris[this.#count] = undefined;
+    this.#nameSet?.add(name);
     this.#count++;
   }
 
@@ -97,10 +103,19 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
 
   /** @internal Check if an attribute with this name already exists. */
   _has(name: string): boolean {
-    for (let i = 0; i < this.#count; i++) {
-      if (this.#names[i] === name) return true;
+    if (this.#count < ATTR_SET_THRESHOLD) {
+      for (let i = 0; i < this.#count; i++) {
+        if (this.#names[i] === name) return true;
+      }
+      return false;
     }
-    return false;
+    if (!this.#nameSet) {
+      this.#nameSet = new Set<string>();
+      for (let i = 0; i < this.#count; i++) {
+        this.#nameSet.add(this.#names[i]!);
+      }
+    }
+    return this.#nameSet.has(name);
   }
 }
 
