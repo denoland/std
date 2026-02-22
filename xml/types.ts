@@ -2,6 +2,12 @@
 // This module is browser compatible.
 
 /**
+ * Type definitions for the XML parser and serializer.
+ *
+ * @module
+ */
+
+/**
  * Position information for error reporting.
  */
 export interface XmlPosition {
