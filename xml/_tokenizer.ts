@@ -281,7 +281,6 @@ export class XmlTokenizer {
   #isEntityDecl = false;
   #isParameterEntity = false;
   #entityName = "";
-  #entityValue = "";
   #entityParsePhase: "name" | "value" | "done" = "name";
   #entityExternalType: "" | "SYSTEM" | "PUBLIC" = ""; // Track SYSTEM/PUBLIC keyword
   #entityQuotedLiterals = 0; // Count quoted literals for PUBLIC validation
@@ -2237,7 +2236,6 @@ export class XmlTokenizer {
               this.#isEntityDecl = kw === "ENTITY";
               this.#isParameterEntity = false;
               this.#entityName = "";
-              this.#entityValue = "";
               this.#entityParsePhase = "name";
               this.#entityExternalType = "";
               this.#entityQuotedLiterals = 0;
@@ -2278,13 +2276,10 @@ export class XmlTokenizer {
                 );
               }
               // Emit entity if applicable
-              if (
-                !this.#isParameterEntity &&
-                this.#entityName && this.#entityValue !== undefined
-              ) {
+              if (!this.#isParameterEntity && this.#entityName) {
                 this.#callbacks.onEntityDeclaration?.(
                   this.#entityName,
-                  this.#entityValue,
+                  "",
                 );
               }
             }
@@ -2309,9 +2304,6 @@ export class XmlTokenizer {
             this.#dtdStringIsPubid = false;
             // For ENTITY declarations, track quoted literals
             if (this.#isEntityDecl) {
-              if (this.#entityParsePhase === "value") {
-                this.#entityValue = "";
-              }
               this.#entityQuotedLiterals++;
               // First quoted literal after PUBLIC is PubidLiteral
               if (
@@ -2447,11 +2439,8 @@ export class XmlTokenizer {
             this.#dtdDeclSawWhitespace = false;
             this.#state = State.DTD_DECL_CONTENT;
           } else {
-            // Accumulate string value for validation
-            this.#dtdStringValue += String.fromCharCode(code);
-            // For ENTITY declarations in value phase, capture the value
-            if (this.#isEntityDecl && this.#entityParsePhase === "value") {
-              this.#entityValue += String.fromCharCode(code);
+            if (this.#dtdStringIsPubid) {
+              this.#dtdStringValue += String.fromCharCode(code);
             }
             this.#advanceWithCode(code);
           }
