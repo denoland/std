@@ -9,37 +9,15 @@ import {
 } from "@std/assert";
 import { delay } from "./delay.ts";
 
-Deno.test("pooledMapSettled() throws for non-positive poolLimit", () => {
+Deno.test("pooledMapSettled() throws for invalid poolLimit", () => {
   const noop = (i: number) => i;
-  assertThrows(
-    () => pooledMapSettled([1], noop, { poolLimit: 0 }),
-    RangeError,
-    "'poolLimit' must be a positive integer",
-  );
-  assertThrows(
-    () => pooledMapSettled([1], noop, { poolLimit: -1 }),
-    RangeError,
-    "'poolLimit' must be a positive integer",
-  );
-});
-
-Deno.test("pooledMapSettled() throws for non-integer poolLimit", () => {
-  const noop = (i: number) => i;
-  assertThrows(
-    () => pooledMapSettled([1], noop, { poolLimit: 1.5 }),
-    RangeError,
-    "'poolLimit' must be a positive integer",
-  );
-  assertThrows(
-    () => pooledMapSettled([1], noop, { poolLimit: NaN }),
-    RangeError,
-    "'poolLimit' must be a positive integer",
-  );
-  assertThrows(
-    () => pooledMapSettled([1], noop, { poolLimit: Infinity }),
-    RangeError,
-    "'poolLimit' must be a positive integer",
-  );
+  for (const poolLimit of [0, -1, 1.5, NaN, Infinity]) {
+    assertThrows(
+      () => pooledMapSettled([1], noop, { poolLimit }),
+      RangeError,
+      "'poolLimit' must be a positive integer",
+    );
+  }
 });
 
 Deno.test("pooledMapSettled() yields rejected results without stopping", async () => {

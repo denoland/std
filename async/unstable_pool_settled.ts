@@ -75,6 +75,7 @@ export interface PooledMapSettledOptions {
  * @param options Configuration for concurrency and cancellation.
  * @returns An async iterator yielding `PromiseSettledResult<R>` for each item,
  *          in the order items were yielded from the input.
+ * @throws {RangeError} If `poolLimit` is not a positive integer.
  */
 export function pooledMapSettled<T, R>(
   array: Iterable<T> | AsyncIterable<T>,
