@@ -1638,18 +1638,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const commentCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `-` characters
-          if (commentCode === CC_DASH) {
-            this.#commentPartial += buffer.slice(
-              this.#commentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(commentCode);
-            this.#commentStartIdx = this.#bufferIndex;
-            this.#state = State.COMMENT_DASH;
-          } else {
-            this.#advanceWithCode(commentCode);
-          }
+          // After batch capture, only trailing `-` chars remain
+          this.#commentPartial += buffer.slice(
+            this.#commentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(commentCode);
+          this.#commentStartIdx = this.#bufferIndex;
+          this.#state = State.COMMENT_DASH;
           break;
         }
 
@@ -1664,18 +1660,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const cdataCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `]` characters
-          if (cdataCode === CC_RBRACKET) {
-            this.#cdataPartial += buffer.slice(
-              this.#cdataStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(cdataCode);
-            this.#cdataStartIdx = this.#bufferIndex;
-            this.#state = State.CDATA_BRACKET;
-          } else {
-            this.#advanceWithCode(cdataCode);
-          }
+          // After batch capture, only trailing `]` chars remain
+          this.#cdataPartial += buffer.slice(
+            this.#cdataStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(cdataCode);
+          this.#cdataStartIdx = this.#bufferIndex;
+          this.#state = State.CDATA_BRACKET;
           break;
         }
 
@@ -1688,28 +1680,14 @@ export class XmlTokenizer {
           if (this.#bufferIndex >= bufferLen) {
             break; // Buffer exhausted, need more data
           }
-          // Re-read code since bufferIndex may have changed
-          const piCode = buffer.charCodeAt(this.#bufferIndex);
-          // XML 1.0 §2.2: Validate character
-          if (piCode < 0x20 && C0_VALID[piCode] !== 1) {
-            this.#error(
-              `Illegal XML character U+${
-                piCode.toString(16).toUpperCase().padStart(4, "0")
-              } in processing instruction (XML 1.0 §2.2)`,
-            );
-          }
-          // Fall through to char-by-char for trailing `?` character
-          if (piCode === CC_QUESTION) {
-            this.#piContentPartial += buffer.slice(
-              this.#piContentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#piContentStartIdx = -1;
-            this.#advanceWithCode(piCode);
-            this.#state = State.PI_QUESTION;
-          } else {
-            this.#advanceWithCode(piCode);
-          }
+          // After batch capture, only a trailing `?` remains
+          this.#piContentPartial += buffer.slice(
+            this.#piContentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#piContentStartIdx = -1;
+          this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+          this.#state = State.PI_QUESTION;
           break;
         }
 

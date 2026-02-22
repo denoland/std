@@ -1510,3 +1510,55 @@ Deno.test("parseSync() preserves non-whitespace text when ignoreWhitespace is tr
     assertEquals(doc.root.children[0].text, "  text  ");
   }
 });
+
+// =============================================================================
+// Resource Exhaustion Limits: maxDepth / maxAttributes
+// =============================================================================
+
+Deno.test("parseSync() throws when element nesting exceeds maxDepth", () => {
+  assertThrows(
+    () => parseSync("<a><b><c></c></b></a>", { maxDepth: 2 }),
+    XmlSyntaxError,
+    "Element nesting depth exceeds limit of 2",
+  );
+});
+
+Deno.test("parseSync() allows nesting within maxDepth", () => {
+  const doc = parseSync("<a><b><c/></b></a>", { maxDepth: 3 });
+  assertEquals(doc.root.name.local, "a");
+});
+
+Deno.test("parseSync() throws when attributes exceed maxAttributes", () => {
+  assertThrows(
+    () => parseSync('<root a="1" b="2" c="3"/>', { maxAttributes: 2 }),
+    XmlSyntaxError,
+    "Attribute count exceeds limit of 2",
+  );
+});
+
+Deno.test("parseSync() allows attributes within maxAttributes", () => {
+  const doc = parseSync('<root a="1" b="2"/>', { maxAttributes: 2 });
+  assertEquals(doc.root.name.local, "root");
+});
+
+// =============================================================================
+// Non-ASCII (Unicode) element and attribute names
+// =============================================================================
+
+Deno.test("parseSync() handles non-ASCII BMP element name", () => {
+  const doc = parseSync("<café/>");
+  assertEquals(doc.root.name.local, "café");
+});
+
+// =============================================================================
+// Namespace expanded-name: same local name, different URIs
+// =============================================================================
+
+Deno.test("parseSync() allows same local name with different namespace URIs", () => {
+  const doc = parseSync(
+    '<root xmlns:a="http://a.com" xmlns:b="http://b.com" a:x="1" b:x="2"/>',
+  );
+  const attrs = Object.keys(doc.root.attributes);
+  assertEquals(attrs.includes("a:x"), true);
+  assertEquals(attrs.includes("b:x"), true);
+});
