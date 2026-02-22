@@ -135,6 +135,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
   #ignoreComments: boolean;
   #ignoreProcessingInstructions: boolean;
   #coerceCDataToText: boolean;
+  #maxDepth: number;
+  #maxAttributes: number;
 
   #elementStack: Array<{
     rawName: string;
@@ -178,6 +180,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
     this.#ignoreProcessingInstructions = options.ignoreProcessingInstructions ??
       false;
     this.#coerceCDataToText = options.coerceCDataToText ?? false;
+    this.#maxDepth = options.maxDepth ?? Infinity;
+    this.#maxAttributes = options.maxAttributes ?? Infinity;
   }
 
   // XmlTokenCallbacks implementation
@@ -259,6 +263,17 @@ export class XmlEventParser implements XmlTokenCallbacks {
           this.#pendingNsBindings.push([prefix, this.#nsBindings.get(prefix)]);
           this.#nsBindings.set(prefix, normalizedValue);
         }
+      }
+
+      if (this.#attrIterator.count >= this.#maxAttributes) {
+        throw new XmlSyntaxError(
+          `Attribute count exceeds limit of ${this.#maxAttributes}`,
+          {
+            line: this.#pendingLine,
+            column: this.#pendingColumn,
+            offset: this.#pendingOffset,
+          },
+        );
       }
 
       // XML 1.0 §3.1: Attribute names must be unique within a start-tag
@@ -425,6 +440,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
           }
         }
       } else {
+        if (this.#elementStack.length >= this.#maxDepth) {
+          throw new XmlSyntaxError(
+            `Element nesting depth exceeds limit of ${this.#maxDepth}`,
+            {
+              line: this.#pendingLine,
+              column: this.#pendingColumn,
+              offset: this.#pendingOffset,
+            },
+          );
+        }
         this.#elementStack.push({
           rawName: this.#pendingName,
           colonIndex: this.#pendingColonIndex,

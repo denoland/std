@@ -258,6 +258,24 @@ export interface BaseParseOptions {
    * @default {true}
    */
   readonly disallowDoctype?: boolean;
+
+  /**
+   * Maximum element nesting depth. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents stack exhaustion from
+   * deeply nested documents.
+   *
+   * @default {Infinity}
+   */
+  readonly maxDepth?: number;
+
+  /**
+   * Maximum number of attributes per element. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents memory exhaustion from
+   * elements with huge attribute lists.
+   *
+   * @default {Infinity}
+   */
+  readonly maxAttributes?: number;
 }
 
 /**
