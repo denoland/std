@@ -9,9 +9,7 @@ function isKeyedCollection(x: unknown): x is KeyedCollection {
 function prototypesEqual(a: object, b: object) {
   const pa = Object.getPrototypeOf(a);
   const pb = Object.getPrototypeOf(b);
-  return pa === pb ||
-    pa === Object.prototype && pb === null ||
-    pa === null && pb === Object.prototype;
+  return pa === pb;
 }
 
 function isBasicObjectOrArray(obj: object) {
