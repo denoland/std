@@ -23,49 +23,50 @@ export type SlugifyOptions = {
  *
  * @example Usage
  * ```ts
- * import { NON_WORD, slugify } from "@std/text/unstable-slugify";
+ * import { NON_WORD_REGEXP, slugify } from "@std/text/unstable-slugify";
  * import { assertEquals } from "@std/assert";
- * assertEquals(slugify("déjà-vu", { strip: NON_WORD }), "déjà-vu");
- * assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_WORD }), "συστημάτων-γραφής");
+ * assertEquals(slugify("déjà-vu", { strip: NON_WORD_REGEXP }), "déjà-vu");
+ * assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_WORD_REGEXP }), "συστημάτων-γραφής");
  * ```
  */
-export const NON_WORD = /[^\p{L}\p{M}\p{N}\-]+/gu;
+export const NON_WORD_REGEXP = /[^\p{L}\p{M}\p{N}\-]+/gu;
 /**
  * A regular expression for stripping diacritics from slugs.
  *
  * @example Usage
  * ```ts
- * import { DIACRITICS, slugify } from "@std/text/unstable-slugify";
+ * import { DIACRITICS_REGEXP, slugify } from "@std/text/unstable-slugify";
  * import { assertEquals } from "@std/assert";
- * assertEquals(slugify("déjà-vu", { strip: DIACRITICS }), "deja-vu");
- * assertEquals(slugify("Συστημάτων Γραφής", { strip: DIACRITICS }), "συστηματων-γραφης");
+ * assertEquals(slugify("déjà-vu", { strip: DIACRITICS_REGEXP }), "deja-vu");
+ * assertEquals(slugify("Συστημάτων Γραφής", { strip: DIACRITICS_REGEXP }), "συστηματων-γραφης");
  * ```
  */
-export const DIACRITICS = /[^\p{L}\p{N}\-]+/gu;
+export const DIACRITICS_REGEXP = /[^\p{L}\p{N}\-]+/gu;
 /**
  * A regular expression for stripping ASCII diacritics (but not other diacritics) from slugs.
  *
  * @example Usage
  * ```ts
- * import { ASCII_DIACRITICS, slugify } from "@std/text/unstable-slugify";
+ * import { ASCII_DIACRITICS_REGEXP, slugify } from "@std/text/unstable-slugify";
  * import { assertEquals } from "@std/assert";
- * assertEquals(slugify("déjà-vu", { strip: ASCII_DIACRITICS }), "deja-vu");
- * assertEquals(slugify("Συστημάτων Γραφής", { strip: ASCII_DIACRITICS }), "συστημάτων-γραφής");
+ * assertEquals(slugify("déjà-vu", { strip: ASCII_DIACRITICS_REGEXP }), "deja-vu");
+ * assertEquals(slugify("Συστημάτων Γραφής", { strip: ASCII_DIACRITICS_REGEXP }), "συστημάτων-γραφής");
  * ```
  */
-export const ASCII_DIACRITICS = /(?<=[a-zA-Z])\p{M}+|[^\p{L}\p{M}\p{N}\-]+/gu;
+export const ASCII_DIACRITICS_REGEXP =
+  /(?<=[a-zA-Z])\p{M}+|[^\p{L}\p{M}\p{N}\-]+/gu;
 /**
  * A regular expression for stripping non-ASCII characters from slugs.
  *
  * @example Usage
  * ```ts
- * import { NON_ASCII, slugify } from "@std/text/unstable-slugify";
+ * import { NON_ASCII_REGEXP, slugify } from "@std/text/unstable-slugify";
  * import { assertEquals } from "@std/assert";
- * assertEquals(slugify("déjà-vu", { strip: NON_ASCII }), "deja-vu");
- * assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_ASCII }), "-");
+ * assertEquals(slugify("déjà-vu", { strip: NON_ASCII_REGEXP }), "deja-vu");
+ * assertEquals(slugify("Συστημάτων Γραφής", { strip: NON_ASCII_REGEXP }), "-");
  * ```
  */
-export const NON_ASCII = /[^0-9a-zA-Z\-]/g;
+export const NON_ASCII_REGEXP = /[^0-9a-zA-Z\-]/g;
 
 /**
  * Converts a string into a {@link https://en.wikipedia.org/wiki/Clean_URL#Slug | slug}.
@@ -87,11 +88,11 @@ export const NON_ASCII = /[^0-9a-zA-Z\-]/g;
  *
  * @example With transliteration using a third-party library
  * ```ts no-assert
- * import { NON_ASCII, slugify } from "@std/text/unstable-slugify";
+ * import { NON_ASCII_REGEXP, slugify } from "@std/text/unstable-slugify";
  * // example third-party transliteration library
  * import transliterate from "npm:any-ascii";
  *
- * slugify("Συστημάτων Γραφής", { transliterate, strip: NON_ASCII });
+ * slugify("Συστημάτων Γραφής", { transliterate, strip: NON_ASCII_REGEXP });
  * // => "sistimaton-grafis"
  * ```
  */
@@ -100,7 +101,7 @@ export function slugify(
   options?: Partial<SlugifyOptions>,
 ): string {
   // clone with `new RegExp` in case `lastIndex` isn't zeroed
-  const stripRe = new RegExp(options?.strip ?? NON_WORD);
+  const stripRe = new RegExp(options?.strip ?? NON_WORD_REGEXP);
   const words: string[] = [];
 
   for (

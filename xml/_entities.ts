@@ -15,10 +15,10 @@
 // Group 2: decimal char ref (e.g. "#13")
 // Group 3: hex char ref (e.g. "#xd")
 // Match with no groups: bare/invalid ampersand (if lookahead fails)
-const ENTITY_OR_AMPERSAND_RE =
+const ENTITY_OR_AMPERSAND_REGEXP =
   /&(?:([a-zA-Z]+);|(#[0-9]+);|(#x[0-9a-fA-F]+);|(?![a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;))/g;
-const SPECIAL_CHARS_RE = /[<>&'"]/g;
-const ATTR_ENCODE_RE = /[<>&'"\t\n\r]/g;
+const SPECIAL_CHARS_REGEXP = /[<>&'"]/g;
+const ATTR_ENCODE_REGEXP = /[<>&'"\t\n\r]/g;
 
 /** XML 1.0 §4.6 predefined entities (decode). */
 const NAMED_ENTITIES: Record<string, string> = {
@@ -92,7 +92,7 @@ export function decodeEntities(text: string): string {
 
   // Single-pass: decode predefined entities and char refs, error on invalid
   return text.replace(
-    ENTITY_OR_AMPERSAND_RE,
+    ENTITY_OR_AMPERSAND_REGEXP,
     (
       match: string,
       namedEntity: string | undefined,
@@ -154,7 +154,7 @@ export function decodeEntities(text: string): string {
 export function encodeEntities(text: string): string {
   // Fast path: no special characters means nothing to encode
   if (!/[<>&'"]/.test(text)) return text;
-  return text.replace(SPECIAL_CHARS_RE, (c) => ENTITY_MAP[c]!);
+  return text.replace(SPECIAL_CHARS_REGEXP, (c) => ENTITY_MAP[c]!);
 }
 
 /**
@@ -166,5 +166,5 @@ export function encodeEntities(text: string): string {
 export function encodeAttributeValue(value: string): string {
   // Fast path: no special characters means nothing to encode
   if (!/[<>&'"\t\n\r]/.test(value)) return value;
-  return value.replace(ATTR_ENCODE_RE, (c) => ATTR_ENTITY_MAP[c]!);
+  return value.replace(ATTR_ENCODE_REGEXP, (c) => ATTR_ENTITY_MAP[c]!);
 }

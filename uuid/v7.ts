@@ -20,7 +20,7 @@
 
 import { bytesToUuid } from "./_common.ts";
 
-const UUID_RE =
+const UUID_REGEXP =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[7][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 /**
  * Determines whether a string is a valid
@@ -40,7 +40,7 @@ const UUID_RE =
  * ```
  */
 export function validate(id: string): boolean {
-  return UUID_RE.test(id);
+  return UUID_REGEXP.test(id);
 }
 
 /**

@@ -11,9 +11,10 @@ import { toFileUrl } from "@std/path/to-file-url";
 import { resolve } from "@std/path/resolve";
 
 const PASCAL_CASE_REGEXP = /^_?(?:[A-Z][a-z0-9]*)*_?$/;
-const UPPER_CASE_ONLY = /^_?[A-Z]{2,}$/;
+const UPPER_CASE_ONLY_REGEXP = /^_?[A-Z]{2,}$/;
 function isPascalCase(string: string): boolean {
-  return PASCAL_CASE_REGEXP.test(string) && !UPPER_CASE_ONLY.test(string);
+  return PASCAL_CASE_REGEXP.test(string) &&
+    !UPPER_CASE_ONLY_REGEXP.test(string);
 }
 
 const CAMEL_CASE_REGEXP = /^[_a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*_?$/;
@@ -233,6 +234,38 @@ export default {
               if (id.type !== "Identifier") return;
               const name = id.name;
               if (!name) return;
+              if (isConstantCase(name)) {
+                if (
+                  declaration.init?.type === "NewExpression" &&
+                  declaration.init.callee.type === "Identifier"
+                ) {
+                  switch (declaration.init.callee.name) {
+                    case "RegExp": {
+                      if (name !== "REGEXP" && !name.endsWith("_REGEXP")) {
+                        context.report({
+                          node: id,
+                          message:
+                            `RegExp variable name '${name}' must end with _REGEXP.`,
+                          fix: (fixer) =>
+                            fixer.replaceText(id, `${name}_REGEXP`),
+                        });
+                      }
+                      break;
+                    }
+                  }
+                } else if (
+                  declaration.init?.type === "Literal" &&
+                  declaration.init.value instanceof RegExp &&
+                  name !== "REGEXP" && !name.endsWith("_REGEXP")
+                ) {
+                  context.report({
+                    node: id,
+                    message:
+                      `RegExp variable name '${name}' must end with _REGEXP.`,
+                    fix: (fixer) => fixer.replaceText(id, `${name}_REGEXP`),
+                  });
+                }
+              }
               if (
                 !isConstantCase(name) && !isCamelCase(name) &&
                 !isPascalCase(name)
