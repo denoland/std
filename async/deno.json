@@ -6,6 +6,7 @@
     "./abortable": "./abortable.ts",
     "./deadline": "./deadline.ts",
     "./debounce": "./debounce.ts",
+    "./unstable-debounce": "./unstable_debounce.ts",
     "./delay": "./delay.ts",
     "./mux-async-iterator": "./mux_async_iterator.ts",
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
