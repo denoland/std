@@ -32,16 +32,21 @@ const ERROR_WHILE_MAPPING_MESSAGE =
  * @typeParam T the input type.
  * @typeParam R the output type.
  * @param poolLimit The maximum count of items being processed concurrently.
+ * Must be a positive integer.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
  * @returns The async iterator with the transformed values.
+ * @throws {RangeError} If `poolLimit` is not a positive integer.
  */
 export function pooledMap<T, R>(
   poolLimit: number,
   array: Iterable<T> | AsyncIterable<T>,
   iteratorFn: (data: T) => Promise<R>,
 ): AsyncIterableIterator<R> {
-  // Create the async iterable that is returned from this function.
+  if (!Number.isInteger(poolLimit) || poolLimit < 1) {
+    throw new RangeError("'poolLimit' must be a positive integer");
+  }
+
   const res = new TransformStream<Promise<R>, R>({
     async transform(
       p: Promise<R>,

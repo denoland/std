@@ -7,8 +7,20 @@ import {
   assertLess,
   assertRejects,
   assertStringIncludes,
+  assertThrows,
 } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
+
+Deno.test("pooledMap() throws for invalid poolLimit", () => {
+  const noop = (i: number) => Promise.resolve(i);
+  for (const poolLimit of [0, -1, 1.5, NaN, Infinity]) {
+    assertThrows(
+      () => pooledMap(poolLimit, [1], noop),
+      RangeError,
+      "'poolLimit' must be a positive integer",
+    );
+  }
+});
 
 Deno.test("pooledMap()", async () => {
   using time = new FakeTime();
