@@ -206,12 +206,6 @@ export function validateXmlDeclaration(
       }
       foundVersion = true;
     } else if (name === "encoding") {
-      if (!foundVersion) {
-        return {
-          valid: false,
-          error: "'encoding' must come after 'version' in XML declaration",
-        };
-      }
       if (foundEncoding) {
         return {
           valid: false,
@@ -226,12 +220,6 @@ export function validateXmlDeclaration(
       }
       foundEncoding = true;
     } else if (name === "standalone") {
-      if (!foundVersion) {
-        return {
-          valid: false,
-          error: "'standalone' must come after 'version' in XML declaration",
-        };
-      }
       if (foundStandalone) {
         return {
           valid: false,
@@ -349,14 +337,6 @@ export function validateXmlDeclaration(
         error: "Missing whitespace between attributes in XML declaration",
       };
     }
-  }
-
-  // Validate required attributes
-  if (!foundVersion) {
-    return {
-      valid: false,
-      error: "Missing required 'version' attribute in XML declaration",
-    };
   }
 
   return {

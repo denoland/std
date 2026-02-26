@@ -31,6 +31,13 @@ interface XmlTokenizerOptions {
    * @default {true}
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, reject DOCTYPE declarations immediately.
+   *
+   * @default {false}
+   */
+  readonly disallowDoctype?: boolean;
 }
 
 /** Tokenizer state machine states. */
@@ -230,6 +237,8 @@ export class XmlTokenizer {
 
   /** Whether to track line/column positions. */
   readonly #trackPosition: boolean;
+  /** Whether to reject DOCTYPE declarations. */
+  readonly #disallowDoctype: boolean;
 
   // Slice-based accumulators: track start index + partial for cross-chunk
   #textStartIdx = -1;
@@ -281,7 +290,6 @@ export class XmlTokenizer {
   #isEntityDecl = false;
   #isParameterEntity = false;
   #entityName = "";
-  #entityValue = "";
   #entityParsePhase: "name" | "value" | "done" = "name";
   #entityExternalType: "" | "SYSTEM" | "PUBLIC" = ""; // Track SYSTEM/PUBLIC keyword
   #entityQuotedLiterals = 0; // Count quoted literals for PUBLIC validation
@@ -302,6 +310,7 @@ export class XmlTokenizer {
   /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
+    this.#disallowDoctype = options.disallowDoctype ?? false;
   }
 
   #saveTokenPosition(): void {
@@ -1629,18 +1638,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const commentCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `-` characters
-          if (commentCode === CC_DASH) {
-            this.#commentPartial += buffer.slice(
-              this.#commentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(commentCode);
-            this.#commentStartIdx = this.#bufferIndex;
-            this.#state = State.COMMENT_DASH;
-          } else {
-            this.#advanceWithCode(commentCode);
-          }
+          // After batch capture, only trailing `-` chars remain
+          this.#commentPartial += buffer.slice(
+            this.#commentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(commentCode);
+          this.#commentStartIdx = this.#bufferIndex;
+          this.#state = State.COMMENT_DASH;
           break;
         }
 
@@ -1655,18 +1660,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const cdataCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `]` characters
-          if (cdataCode === CC_RBRACKET) {
-            this.#cdataPartial += buffer.slice(
-              this.#cdataStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(cdataCode);
-            this.#cdataStartIdx = this.#bufferIndex;
-            this.#state = State.CDATA_BRACKET;
-          } else {
-            this.#advanceWithCode(cdataCode);
-          }
+          // After batch capture, only trailing `]` chars remain
+          this.#cdataPartial += buffer.slice(
+            this.#cdataStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(cdataCode);
+          this.#cdataStartIdx = this.#bufferIndex;
+          this.#state = State.CDATA_BRACKET;
           break;
         }
 
@@ -1679,28 +1680,14 @@ export class XmlTokenizer {
           if (this.#bufferIndex >= bufferLen) {
             break; // Buffer exhausted, need more data
           }
-          // Re-read code since bufferIndex may have changed
-          const piCode = buffer.charCodeAt(this.#bufferIndex);
-          // XML 1.0 §2.2: Validate character
-          if (piCode < 0x20 && C0_VALID[piCode] !== 1) {
-            this.#error(
-              `Illegal XML character U+${
-                piCode.toString(16).toUpperCase().padStart(4, "0")
-              } in processing instruction (XML 1.0 §2.2)`,
-            );
-          }
-          // Fall through to char-by-char for trailing `?` character
-          if (piCode === CC_QUESTION) {
-            this.#piContentPartial += buffer.slice(
-              this.#piContentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#piContentStartIdx = -1;
-            this.#advanceWithCode(piCode);
-            this.#state = State.PI_QUESTION;
-          } else {
-            this.#advanceWithCode(piCode);
-          }
+          // After batch capture, only a trailing `?` remains
+          this.#piContentPartial += buffer.slice(
+            this.#piContentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#piContentStartIdx = -1;
+          this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+          this.#state = State.PI_QUESTION;
           break;
         }
 
@@ -1961,6 +1948,9 @@ export class XmlTokenizer {
           this.#doctypeCheck += String.fromCharCode(code);
           this.#advanceWithCode(code);
           if (this.#doctypeCheck === "DOCTYPE") {
+            if (this.#disallowDoctype) {
+              this.#error("DOCTYPE declarations are not allowed");
+            }
             this.#doctypeName = "";
             this.#doctypePublicId = "";
             this.#doctypeSystemId = "";
@@ -2237,7 +2227,6 @@ export class XmlTokenizer {
               this.#isEntityDecl = kw === "ENTITY";
               this.#isParameterEntity = false;
               this.#entityName = "";
-              this.#entityValue = "";
               this.#entityParsePhase = "name";
               this.#entityExternalType = "";
               this.#entityQuotedLiterals = 0;
@@ -2278,13 +2267,10 @@ export class XmlTokenizer {
                 );
               }
               // Emit entity if applicable
-              if (
-                !this.#isParameterEntity &&
-                this.#entityName && this.#entityValue !== undefined
-              ) {
+              if (!this.#isParameterEntity && this.#entityName) {
                 this.#callbacks.onEntityDeclaration?.(
                   this.#entityName,
-                  this.#entityValue,
+                  "",
                 );
               }
             }
@@ -2309,9 +2295,6 @@ export class XmlTokenizer {
             this.#dtdStringIsPubid = false;
             // For ENTITY declarations, track quoted literals
             if (this.#isEntityDecl) {
-              if (this.#entityParsePhase === "value") {
-                this.#entityValue = "";
-              }
               this.#entityQuotedLiterals++;
               // First quoted literal after PUBLIC is PubidLiteral
               if (
@@ -2447,11 +2430,8 @@ export class XmlTokenizer {
             this.#dtdDeclSawWhitespace = false;
             this.#state = State.DTD_DECL_CONTENT;
           } else {
-            // Accumulate string value for validation
-            this.#dtdStringValue += String.fromCharCode(code);
-            // For ENTITY declarations in value phase, capture the value
-            if (this.#isEntityDecl && this.#entityParsePhase === "value") {
-              this.#entityValue += String.fromCharCode(code);
+            if (this.#dtdStringIsPubid) {
+              this.#dtdStringValue += String.fromCharCode(code);
             }
             this.#advanceWithCode(code);
           }

@@ -43,6 +43,9 @@ function normalizeAttributeValue(raw: string): string {
   return decodeEntities(normalized);
 }
 
+/** Threshold above which duplicate detection switches from linear scan to Set. */
+const ATTR_SET_THRESHOLD = 32;
+
 /**
  * Reusable attribute iterator implementation.
  *
@@ -55,6 +58,7 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   #colonIndices: number[] = [];
   #uris: (string | undefined)[] = [];
   #count = 0;
+  #nameSet: Set<string> | null = null;
 
   get count(): number {
     return this.#count;
@@ -79,6 +83,7 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   /** @internal Reset the iterator for a new element. */
   _reset(): void {
     this.#count = 0;
+    this.#nameSet = null;
   }
 
   /** @internal Add an attribute (name already decoded, value raw). */
@@ -86,7 +91,8 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
     this.#names[this.#count] = name;
     this.#values[this.#count] = normalizeAttributeValue(value);
     this.#colonIndices[this.#count] = name.indexOf(":");
-    this.#uris[this.#count] = undefined; // Will be set later
+    this.#uris[this.#count] = undefined;
+    this.#nameSet?.add(name);
     this.#count++;
   }
 
@@ -97,10 +103,19 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
 
   /** @internal Check if an attribute with this name already exists. */
   _has(name: string): boolean {
-    for (let i = 0; i < this.#count; i++) {
-      if (this.#names[i] === name) return true;
+    if (this.#count < ATTR_SET_THRESHOLD) {
+      for (let i = 0; i < this.#count; i++) {
+        if (this.#names[i] === name) return true;
+      }
+      return false;
     }
-    return false;
+    if (!this.#nameSet) {
+      this.#nameSet = new Set<string>();
+      for (let i = 0; i < this.#count; i++) {
+        this.#nameSet.add(this.#names[i]!);
+      }
+    }
+    return this.#nameSet.has(name);
   }
 }
 
@@ -120,6 +135,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
   #ignoreComments: boolean;
   #ignoreProcessingInstructions: boolean;
   #coerceCDataToText: boolean;
+  #maxDepth: number;
+  #maxAttributes: number;
 
   #elementStack: Array<{
     rawName: string;
@@ -163,6 +180,8 @@ export class XmlEventParser implements XmlTokenCallbacks {
     this.#ignoreProcessingInstructions = options.ignoreProcessingInstructions ??
       false;
     this.#coerceCDataToText = options.coerceCDataToText ?? false;
+    this.#maxDepth = options.maxDepth ?? Infinity;
+    this.#maxAttributes = options.maxAttributes ?? Infinity;
   }
 
   // XmlTokenCallbacks implementation
@@ -244,6 +263,17 @@ export class XmlEventParser implements XmlTokenCallbacks {
           this.#pendingNsBindings.push([prefix, this.#nsBindings.get(prefix)]);
           this.#nsBindings.set(prefix, normalizedValue);
         }
+      }
+
+      if (this.#attrIterator.count >= this.#maxAttributes) {
+        throw new XmlSyntaxError(
+          `Attribute count exceeds limit of ${this.#maxAttributes}`,
+          {
+            line: this.#pendingLine,
+            column: this.#pendingColumn,
+            offset: this.#pendingOffset,
+          },
+        );
       }
 
       // XML 1.0 §3.1: Attribute names must be unique within a start-tag
@@ -410,6 +440,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
           }
         }
       } else {
+        if (this.#elementStack.length >= this.#maxDepth) {
+          throw new XmlSyntaxError(
+            `Element nesting depth exceeds limit of ${this.#maxDepth}`,
+            {
+              line: this.#pendingLine,
+              column: this.#pendingColumn,
+              offset: this.#pendingOffset,
+            },
+          );
+        }
         this.#elementStack.push({
           rawName: this.#pendingName,
           colonIndex: this.#pendingColonIndex,
@@ -605,8 +645,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
     );
   }
 
-  // DOCTYPE parsed by tokenizer but not emitted as event
-  onDoctype(): void {}
+  onDoctype(
+    name: string,
+    publicId: string | undefined,
+    systemId: string | undefined,
+    line: number,
+    column: number,
+    offset: number,
+  ): void {
+    this.#callbacks.onDoctype?.(name, publicId, systemId, line, column, offset);
+  }
 
   // Entity declarations from DTD are intentionally NOT stored.
   // We only support the 5 predefined XML entities.
