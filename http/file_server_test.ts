@@ -1153,6 +1153,30 @@ Deno.test(async function serveFileHeadRequest() {
   assertEquals(res.headers.get("content-length"), "10034");
 });
 
+Deno.test(async function serveDirHeadRequest() {
+  const req = new Request("http://localhost/test_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
+  assertEquals(res.headers.get("content-length"), "10034");
+});
+
+Deno.test(async function serveDirHeadRequestForDirectoryWithIndex() {
+  const req = new Request("http://localhost/subdir-with-index/", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+  assert(res.headers.has("content-length"));
+});
+
 Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
   const req = new Request("http://localhost/hello");
   const res = await unstableServeDir(req, {
