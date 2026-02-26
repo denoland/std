@@ -69,6 +69,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   protected describe: DescribeDefinition<T>;
   protected steps: (TestSuiteInternal<T> | ItDefinition<T>)[];
   protected hasOnlyStep: boolean;
+  #registeredOptions: Deno.TestDefinition | undefined;
 
   constructor(describe: DescribeDefinition<T>) {
     this.describe = describe;
@@ -203,7 +204,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       if (sanitizeResources !== undefined) {
         options.sanitizeResources = sanitizeResources;
       }
-      TestSuiteInternal.registerTest(options);
+      this.#registeredOptions = TestSuiteInternal.registerTest(options);
     }
   }
 
@@ -233,7 +234,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   }
 
   /** This is used internally to register tests. */
-  static registerTest(options: Deno.TestDefinition) {
+  static registerTest(options: Deno.TestDefinition): Deno.TestDefinition {
     options = { ...options };
     if (options.only === undefined) {
       delete options.only;
@@ -254,6 +255,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       delete options.sanitizeResources;
     }
     Deno.test(options);
+    return options;
   }
 
   /** Updates all steps within top level suite to have ignore set to true if only is not set to true on step. */
@@ -273,6 +275,12 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       TestSuiteInternal.suites.get(parentSuite.symbol);
     if (parentTestSuite) {
       TestSuiteInternal.addingOnlyStep(parentTestSuite);
+    }
+
+    // If this suite was already registered with Deno.test (e.g. a global
+    // suite created by beforeAll), retroactively mark it as only.
+    if (suite.#registeredOptions) {
+      suite.#registeredOptions.only = true;
     }
   }
 
