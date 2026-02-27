@@ -433,7 +433,7 @@ export interface DumperStateOptions {
    * if first argument is less than second argument, zero if they're equal
    * and a positive value otherwise.
    */
-  sortKeys?: boolean | ((a: string, b: string) => number);
+  sortKeys?: boolean | ((a: string, b: string, depth: number) => number);
   /** set max line width. (default: 80) */
   lineWidth?: number;
   /**
@@ -467,7 +467,7 @@ export class DumperState {
   arrayIndent: boolean;
   skipInvalid: boolean;
   flowLevel: number;
-  sortKeys: boolean | ((a: string, b: string) => number);
+  sortKeys: boolean | ((a: string, b: string, depth: number) => number);
   lineWidth: number;
   useAnchors: boolean;
   compatMode: boolean;
@@ -667,7 +667,8 @@ export class DumperState {
       keys.sort();
     } else if (typeof this.sortKeys === "function") {
       // Custom sort function
-      keys.sort(this.sortKeys);
+      const sortKeys = this.sortKeys;
+      keys.sort((a, b) => sortKeys(a, b, level));
     } else if (this.sortKeys) {
       // Something is wrong
       throw new TypeError(
