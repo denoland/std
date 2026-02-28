@@ -9,6 +9,7 @@ const ERROR_WHILE_MAPPING_MESSAGE =
 export interface PooledMapOptions {
   /**
    * The maximum count of items being processed concurrently.
+   * Must be a positive integer.
    */
   poolLimit: number;
   /**
@@ -76,6 +77,7 @@ export interface PooledMapOptions {
  * @param iteratorFn The function to call for every item of the array.
  * @param options Options including pool limit and abort signal.
  * @returns The async iterator with the transformed values.
+ * @throws {RangeError} If `poolLimit` is not a positive integer.
  */
 export function pooledMap<T, R>(
   array: Iterable<T> | AsyncIterable<T>,
