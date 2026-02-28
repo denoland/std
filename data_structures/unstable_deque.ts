@@ -28,9 +28,9 @@ export type ReadonlyDeque<T> = Pick<
   | typeof Symbol.toStringTag
 >;
 
+/** Round up to the smallest power of two >= n (at least {@linkcode MIN_CAPACITY}). */
 function nextPowerOfTwo(n: number): number {
   if (n <= MIN_CAPACITY) return MIN_CAPACITY;
-  // Bit trick: fill all bits below the highest set bit, then add 1
   n--;
   n |= n >>> 1;
   n |= n >>> 2;
@@ -41,12 +41,8 @@ function nextPowerOfTwo(n: number): number {
 }
 
 /**
- * A double-ended queue implemented with a ring buffer. Provides O(1) amortized
- * {@linkcode Deque.prototype.pushFront | pushFront},
- * {@linkcode Deque.prototype.pushBack | pushBack},
- * {@linkcode Deque.prototype.popFront | popFront},
- * {@linkcode Deque.prototype.popBack | popBack}, and indexed access via
- * {@linkcode Deque.prototype.at | at}.
+ * A double-ended queue backed by a ring buffer. Pushing, popping, and indexed
+ * access stay fast as the deque grows.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -68,7 +64,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   #buffer: (T | undefined)[];
   #head: number;
   #length: number;
+  /** Always `#capacity - 1`. Used to wrap indices via `& #mask`. */
   #mask: number;
+
+  get #capacity(): number {
+    return this.#mask + 1;
+  }
 
   /**
    * Creates an empty deque, optionally populated from an iterable.
@@ -205,16 +206,15 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns The new length of the deque.
    */
   pushBack(value: T, ...rest: T[]): number {
-    // Inlined (no #pushBackOne call) to avoid extra private-field brand checks
-    if (this.#length === (this.#mask + 1)) {
-      if (this.#head === 0) this.#growInPlace();
+    if (this.#length === this.#capacity) {
+      if (this.#head === 0) this.#growWithoutCopying();
       else this.#grow();
     }
     this.#buffer[(this.#head + this.#length) & this.#mask] = value;
     this.#length++;
     for (let i = 0; i < rest.length; i++) {
-      if (this.#length === (this.#mask + 1)) {
-        if (this.#head === 0) this.#growInPlace();
+      if (this.#length === this.#capacity) {
+        if (this.#head === 0) this.#growWithoutCopying();
         else this.#grow();
       }
       this.#buffer[(this.#head + this.#length) & this.#mask] = rest[i]!;
@@ -246,12 +246,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    */
   pushFront(value: T, ...rest: T[]): number {
     for (let i = rest.length - 1; i >= 0; i--) {
-      if (this.#length === (this.#mask + 1)) this.#grow();
+      if (this.#length === this.#capacity) this.#grow();
       this.#head = (this.#head - 1) & this.#mask;
       this.#buffer[this.#head] = rest[i]!;
       this.#length++;
     }
-    if (this.#length === (this.#mask + 1)) this.#grow();
+    if (this.#length === this.#capacity) this.#grow();
     this.#head = (this.#head - 1) & this.#mask;
     this.#buffer[this.#head] = value;
     this.#length++;
@@ -314,9 +314,8 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
   /**
    * Remove and return the first element matching the predicate, scanning from
-   * front to back. The gap is closed by shifting the shorter side of the
-   * buffer, so the operation is O(n) in the worst case but O(min(i, n-i))
-   * in element moves where i is the index of the match.
+   * front to back. The gap is closed by shifting whichever side (front or back)
+   * has fewer elements to move, so removals near either end are fast.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
@@ -340,10 +339,11 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
     const val = this.#buffer[(this.#head + i) & this.#mask] as T;
 
-    if (i < this.#length - i - 1) {
-      this.#shiftFrontForward(i);
+    const closerToFront = i < this.#length - i - 1;
+    if (closerToFront) {
+      this.#closeGapFromFront(i);
     } else {
-      this.#shiftBackBackward(i);
+      this.#closeGapFromBack(i);
     }
 
     this.#length--;
@@ -742,11 +742,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   }
 
   #realloc(newCapacity: number): void {
-    const newBuffer = new Array<T | undefined>(newCapacity);
-    for (let i = 0; i < this.#length; i++) {
-      newBuffer[i] = this.#buffer[(this.#head + i) & this.#mask];
-    }
-    this.#buffer = newBuffer;
+    this.#buffer = Deque.#copyBuffer(this, newCapacity);
     this.#head = 0;
     this.#mask = newCapacity - 1;
   }
@@ -760,8 +756,8 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     return -1;
   }
 
-  /** Shift elements [0, i) one slot toward the back, freeing the front slot. */
-  #shiftFrontForward(i: number): void {
+  /** Close the gap at `i` by shifting elements before it one slot toward the back. */
+  #closeGapFromFront(i: number): void {
     for (let j = i; j > 0; j--) {
       const dst = (this.#head + j) & this.#mask;
       const src = (this.#head + j - 1) & this.#mask;
@@ -771,8 +767,8 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     this.#head = (this.#head + 1) & this.#mask;
   }
 
-  /** Shift elements (i, length) one slot toward the front, freeing the back slot. */
-  #shiftBackBackward(i: number): void {
+  /** Close the gap at `i` by shifting elements after it one slot toward the front. */
+  #closeGapFromBack(i: number): void {
     for (let j = i; j < this.#length - 1; j++) {
       const dst = (this.#head + j) & this.#mask;
       const src = (this.#head + j + 1) & this.#mask;
@@ -782,19 +778,19 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   }
 
   #grow(): void {
-    this.#realloc((this.#mask + 1) * 2);
+    this.#realloc(this.#capacity * 2);
   }
 
-  /** When head is 0, elements are already contiguous — just extend the array. */
-  #growInPlace(): void {
-    this.#buffer.length <<= 1;
+  /** Only valid when head is 0 (elements are already packed at the start). */
+  #growWithoutCopying(): void {
+    this.#buffer.length = this.#capacity * 2;
     this.#mask = this.#buffer.length - 1;
   }
 
   #maybeShrink(): void {
-    const capacity = this.#mask + 1;
-    if (capacity > MIN_SHRINK_CAPACITY && this.#length < (capacity >>> 2)) {
-      this.#realloc(capacity >>> 1);
+    const capacity = this.#capacity;
+    if (capacity > MIN_SHRINK_CAPACITY && this.#length < capacity / 4) {
+      this.#realloc(capacity / 2);
     }
   }
 }
