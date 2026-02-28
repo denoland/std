@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 const MIN_CAPACITY = 8;
+const MIN_SHRINK_CAPACITY = 64;
 
 /**
  * Read-only view of a {@linkcode Deque}. Strips all mutation methods,
@@ -19,9 +20,12 @@ export type ReadonlyDeque<T> = Pick<
   | "peekFront"
   | "peekBack"
   | "at"
+  | "find"
+  | "findIndex"
   | "toArray"
   | typeof Symbol.iterator
   | "reversed"
+  | typeof Symbol.toStringTag
 >;
 
 function nextPowerOfTwo(n: number): number {
@@ -242,17 +246,16 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    */
   pushFront(value: T, ...rest: T[]): number {
     for (let i = rest.length - 1; i >= 0; i--) {
-      this.#pushFrontOne(rest[i]!);
+      if (this.#length === (this.#mask + 1)) this.#grow();
+      this.#head = (this.#head - 1) & this.#mask;
+      this.#buffer[this.#head] = rest[i]!;
+      this.#length++;
     }
-    this.#pushFrontOne(value);
-    return this.#length;
-  }
-
-  #pushFrontOne(value: T): void {
     if (this.#length === (this.#mask + 1)) this.#grow();
     this.#head = (this.#head - 1) & this.#mask;
     this.#buffer[this.#head] = value;
     this.#length++;
+    return this.#length;
   }
 
   /**
@@ -307,6 +310,95 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     this.#length--;
     this.#maybeShrink();
     return value;
+  }
+
+  /**
+   * Remove and return the first element matching the predicate, scanning from
+   * front to back. The gap is closed by shifting the shorter side of the
+   * buffer, so the operation is O(n) in the worst case but O(min(i, n-i))
+   * in element moves where i is the index of the match.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Removing the first even number
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3, 4]);
+   * assertEquals(deque.removeFirst((v) => v % 2 === 0), 2);
+   * assertEquals([...deque], [1, 3, 4]);
+   * ```
+   *
+   * @param predicate A function called for each element with its index. The
+   *   first element for which it returns `true` is removed and returned.
+   * @returns The removed element, or `undefined` if no match was found.
+   */
+  removeFirst(predicate: (value: T, index: number) => boolean): T | undefined {
+    const i = this.#findIndex(predicate);
+    if (i === -1) return undefined;
+
+    const val = this.#buffer[(this.#head + i) & this.#mask] as T;
+
+    if (i < this.#length - i - 1) {
+      this.#shiftFrontForward(i);
+    } else {
+      this.#shiftBackBackward(i);
+    }
+
+    this.#length--;
+    this.#maybeShrink();
+    return val;
+  }
+
+  /**
+   * Return the first element matching the predicate, scanning from front to
+   * back, without removing it. Returns `undefined` if no match is found.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Finding the first even number
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3, 4]);
+   * assertEquals(deque.find((v) => v % 2 === 0), 2);
+   * assertEquals(deque.find((v) => v > 10), undefined);
+   * ```
+   *
+   * @param predicate A function called for each element with its index. The
+   *   first element for which it returns `true` is returned.
+   * @returns The first matching element, or `undefined` if no match was found.
+   */
+  find(predicate: (value: T, index: number) => boolean): T | undefined {
+    const i = this.#findIndex(predicate);
+    if (i === -1) return undefined;
+    return this.#buffer[(this.#head + i) & this.#mask] as T;
+  }
+
+  /**
+   * Return the index of the first element matching the predicate, scanning
+   * from front to back. Returns `-1` if no match is found.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Finding the index of the first even number
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3, 4]);
+   * assertEquals(deque.findIndex((v) => v % 2 === 0), 1);
+   * assertEquals(deque.findIndex((v) => v > 10), -1);
+   * ```
+   *
+   * @param predicate A function called for each element with its index. The
+   *   index of the first element for which it returns `true` is returned.
+   * @returns The index of the first matching element, or `-1` if not found.
+   */
+  findIndex(predicate: (value: T, index: number) => boolean): number {
+    return this.#findIndex(predicate);
   }
 
   /**
@@ -406,6 +498,44 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   }
 
   /**
+   * Keep only the elements for which the predicate returns `true`, removing
+   * the rest in place. Equivalent to an in-place
+   * {@linkcode Array.prototype.filter}. The predicate is called once per
+   * element in front-to-back order.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Retaining only odd numbers
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3, 4, 5]);
+   * deque.retain((v) => v % 2 !== 0);
+   * assertEquals([...deque], [1, 3, 5]);
+   * ```
+   *
+   * @param predicate A function called for each element with its index.
+   *   Elements for which it returns `false` are removed.
+   */
+  retain(predicate: (value: T, index: number) => boolean): void {
+    let write = 0;
+    for (let read = 0; read < this.#length; read++) {
+      const val = this.#buffer[(this.#head + read) & this.#mask] as T;
+      if (!predicate(val, read)) continue;
+      if (write !== read) {
+        this.#buffer[(this.#head + write) & this.#mask] = val;
+      }
+      write++;
+    }
+    for (let i = write; i < this.#length; i++) {
+      this.#buffer[(this.#head + i) & this.#mask] = undefined;
+    }
+    this.#length = write;
+    this.#maybeShrink();
+  }
+
+  /**
    * Return a shallow copy of the deque's contents as an array, in
    * front-to-back order.
    *
@@ -497,6 +627,18 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
       thisArg?: V;
     },
   ): Deque<U> {
+    if (
+      collection === null || collection === undefined ||
+      typeof collection !== "object" && typeof collection !== "string" ||
+      !(
+        Symbol.iterator in Object(collection) ||
+        "length" in Object(collection)
+      )
+    ) {
+      throw new TypeError(
+        "Cannot create a Deque: the 'collection' parameter is not iterable or array-like",
+      );
+    }
     const result = new Deque<U>();
     let unmappedValues: ArrayLike<T> | Iterable<T>;
 
@@ -609,6 +751,36 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     this.#mask = newCapacity - 1;
   }
 
+  #findIndex(predicate: (value: T, index: number) => boolean): number {
+    for (let i = 0; i < this.#length; i++) {
+      if (predicate(this.#buffer[(this.#head + i) & this.#mask] as T, i)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /** Shift elements [0, i) one slot toward the back, freeing the front slot. */
+  #shiftFrontForward(i: number): void {
+    for (let j = i; j > 0; j--) {
+      const dst = (this.#head + j) & this.#mask;
+      const src = (this.#head + j - 1) & this.#mask;
+      this.#buffer[dst] = this.#buffer[src];
+    }
+    this.#buffer[this.#head] = undefined;
+    this.#head = (this.#head + 1) & this.#mask;
+  }
+
+  /** Shift elements (i, length) one slot toward the front, freeing the back slot. */
+  #shiftBackBackward(i: number): void {
+    for (let j = i; j < this.#length - 1; j++) {
+      const dst = (this.#head + j) & this.#mask;
+      const src = (this.#head + j + 1) & this.#mask;
+      this.#buffer[dst] = this.#buffer[src];
+    }
+    this.#buffer[(this.#head + this.#length - 1) & this.#mask] = undefined;
+  }
+
   #grow(): void {
     this.#realloc((this.#mask + 1) * 2);
   }
@@ -619,10 +791,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
     this.#mask = this.#buffer.length - 1;
   }
 
-  /** Halve the buffer when usage drops below 25%. Skips small buffers (<=64). */
   #maybeShrink(): void {
     const capacity = this.#mask + 1;
-    if (capacity > 64 && this.#length < (capacity >>> 2)) {
+    if (capacity > MIN_SHRINK_CAPACITY && this.#length < (capacity >>> 2)) {
       this.#realloc(capacity >>> 1);
     }
   }
