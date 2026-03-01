@@ -41,6 +41,7 @@ jobs:
             cache(/unstable)?
             cbor(/unstable)?
             cli(/unstable)?
+            concurrency(/unstable)?
             collections(/unstable)?
             crypto(/unstable)?
             csv(/unstable)?
