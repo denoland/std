@@ -7,7 +7,7 @@ import {
   assertFalse,
   assertThrows,
 } from "@std/assert";
-import { Semaphore } from "./unstable_semaphore.ts";
+import { Semaphore } from "./semaphore.ts";
 
 /** Helper to assert that a promise is blocked until released */
 async function assertBlocks(

@@ -1,0 +1,10 @@
+{
+  "name": "@std/concurrency",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./semaphore": "./semaphore.ts",
+    "./circuit-breaker": "./circuit_breaker.ts",
+    "./lazy": "./lazy.ts"
+  }
+}

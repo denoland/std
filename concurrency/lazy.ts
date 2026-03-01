@@ -7,12 +7,10 @@
  * both trigger the initializer; only one initialization runs and all callers share
  * the same promise.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Concurrent deduplication
  *
  * ```ts
- * import { Lazy } from "@std/async/unstable-lazy";
+ * import { Lazy } from "@std/concurrency/lazy";
  * import { assertEquals } from "@std/assert";
  *
  * let initCount = 0;
@@ -30,7 +28,7 @@
  * @example Composing with retry
  *
  * ```ts ignore
- * import { Lazy } from "@std/async/unstable-lazy";
+ * import { Lazy } from "@std/concurrency/lazy";
  * import { retry } from "@std/async/retry";
  *
  * const db = new Lazy(() =>
@@ -50,8 +48,6 @@ export class Lazy<T> {
   /**
    * Creates a new lazy value.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param init Initializer function, called at most once (until {@linkcode reset}).
    */
   constructor(init: () => T | Promise<T>) {
@@ -65,11 +61,9 @@ export class Lazy<T> {
    *
    * Always returns a promise, even when the initializer is synchronous.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts no-assert
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/concurrency/lazy";
    *
    * const config = new Lazy(async () => ({ loaded: true }));
    * const value = await config.get();
@@ -105,11 +99,9 @@ export class Lazy<T> {
    * distinguishing "not yet initialized" from "initialized with `undefined`"
    * when `T` can be `undefined`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Check initialization state
    * ```ts
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/concurrency/lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const lazy = new Lazy(() => 42);
@@ -132,11 +124,9 @@ export class Lazy<T> {
    * If `T` can be `undefined`, use {@linkcode initialized} to distinguish
    * "not yet initialized" from "initialized with `undefined`".
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Fast-path when already initialized
    * ```ts no-assert
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/concurrency/lazy";
    *
    * const config = new Lazy(async () => ({ port: 8080 }));
    * await config.get();
@@ -158,11 +148,9 @@ export class Lazy<T> {
    * not cancel an in-flight initialization; callers that already have the
    * promise will still receive its result.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Force reload
    * ```ts ignore
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/concurrency/lazy";
    *
    * const config = new Lazy(async () => loadConfig());
    * await config.get();

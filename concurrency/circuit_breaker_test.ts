@@ -12,7 +12,7 @@ import {
   CircuitBreaker,
   CircuitBreakerOpenError,
   type CircuitState,
-} from "./unstable_circuit_breaker.ts";
+} from "./circuit_breaker.ts";
 
 Deno.test("CircuitBreaker() throws for invalid failureThreshold", () => {
   assertThrows(

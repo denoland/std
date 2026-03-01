@@ -60,6 +60,7 @@
     "./cache",
     "./cbor",
     "./cli",
+    "./concurrency",
     "./collections",
     "./crypto",
     "./csv",

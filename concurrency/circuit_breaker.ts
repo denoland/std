@@ -6,15 +6,11 @@
  * - `"closed"`: Normal operation, requests pass through
  * - `"open"`: Failing, all requests rejected immediately
  * - `"half_open"`: Testing recovery, limited requests allowed
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type CircuitState = "closed" | "open" | "half_open";
 
 /**
  * Options for {@linkcode CircuitBreaker}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface CircuitBreakerOptions<T> {
   /**
@@ -128,8 +124,6 @@ export interface CircuitBreakerOptions<T> {
 
 /**
  * Options for {@linkcode CircuitBreaker.execute}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface CircuitBreakerExecuteOptions {
   /**
@@ -147,11 +141,9 @@ export interface CircuitBreakerExecuteOptions {
 /**
  * Error thrown when {@linkcode CircuitBreaker} is open and rejects a request.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/concurrency/circuit-breaker";
  * import { assert } from "@std/assert";
  *
  * const breaker = new CircuitBreaker({ failureThreshold: 1 });
@@ -176,11 +168,9 @@ export class CircuitBreakerOpenError extends Error {
   /**
    * Milliseconds until the circuit breaker cooldown expires.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreakerOpenError } from "@std/concurrency/circuit-breaker";
    * import { assertEquals } from "@std/assert";
    *
    * const error = new CircuitBreakerOpenError(5000);
@@ -191,8 +181,6 @@ export class CircuitBreakerOpenError extends Error {
 
   /**
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param remainingCooldownMs The number of milliseconds until the circuit breaker exits the open state.
    */
@@ -293,11 +281,9 @@ function safeCallback<A extends unknown[]>(
  * After a cooldown period, it enters a "half-open" state to test if the service
  * has recovered.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
  * import { assertEquals } from "@std/assert";
  *
  * const breaker = new CircuitBreaker({
@@ -313,7 +299,7 @@ function safeCallback<A extends unknown[]>(
  *
  * @example Handling open circuit
  * ```ts
- * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/concurrency/circuit-breaker";
  *
  * const breaker = new CircuitBreaker({ failureThreshold: 5 });
  *
@@ -328,7 +314,7 @@ function safeCallback<A extends unknown[]>(
  *
  * @example With custom failure detection
  * ```ts no-assert
- * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
  *
  * const breaker = new CircuitBreaker<Response>({
  *   failureThreshold: 3,
@@ -341,7 +327,7 @@ function safeCallback<A extends unknown[]>(
  * @example Composing with retry and AbortSignal
  * ```ts ignore
  * import { retry } from "@std/async/retry";
- * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
  *
  * const breaker = new CircuitBreaker({ failureThreshold: 5 });
  *
@@ -357,7 +343,7 @@ function safeCallback<A extends unknown[]>(
  * @example Waiting out the cooldown with delay
  * ```ts ignore
  * import { delay } from "@std/async/delay";
- * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
+ * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/concurrency/circuit-breaker";
  *
  * const breaker = new CircuitBreaker({ failureThreshold: 5 });
  *
@@ -392,8 +378,6 @@ export class CircuitBreaker<T = unknown> {
 
   /**
    * Constructs a new {@linkcode CircuitBreaker} instance.
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param options Configuration options for the circuit breaker.
    * @throws {RangeError} If any numeric option is not a finite number within its valid range.
@@ -443,11 +427,9 @@ export class CircuitBreaker<T = unknown> {
    * until the next {@linkcode execute} call triggers the transition to
    * `"half_open"`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    * import { assertEquals } from "@std/assert";
    *
    * const breaker = new CircuitBreaker();
@@ -466,11 +448,9 @@ export class CircuitBreaker<T = unknown> {
    * The function can be synchronous or asynchronous. The result is always
    * returned as a promise.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage with async function
    * ```ts ignore
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    *
    * const breaker = new CircuitBreaker({ failureThreshold: 5 });
    * const response = await breaker.execute(() => fetch("https://api.example.com"));
@@ -478,7 +458,7 @@ export class CircuitBreaker<T = unknown> {
    *
    * @example With timeout
    * ```ts ignore
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    *
    * const breaker = new CircuitBreaker({ failureThreshold: 5 });
    *
@@ -557,11 +537,9 @@ export class CircuitBreaker<T = unknown> {
    * Forces the circuit breaker to open state.
    * Useful for maintenance or known outages.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    * import { assertEquals } from "@std/assert";
    *
    * const breaker = new CircuitBreaker();
@@ -599,11 +577,9 @@ export class CircuitBreaker<T = unknown> {
    *
    * For silent resets (e.g., in tests), use {@linkcode reset} instead.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    * import { assertEquals } from "@std/assert";
    *
    * const breaker = new CircuitBreaker();
@@ -628,11 +604,9 @@ export class CircuitBreaker<T = unknown> {
    * (`onStateChange`, `onClose`). Use this for testing or administrative
    * resets where observers should not be notified.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
+   * import { CircuitBreaker } from "@std/concurrency/circuit-breaker";
    * import { assertEquals } from "@std/assert";
    *
    * const breaker = new CircuitBreaker();

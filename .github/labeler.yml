@@ -19,6 +19,9 @@ cli:
 collections:
   - changed-files:
       - any-glob-to-any-file: collections/**
+concurrency:
+  - changed-files:
+      - any-glob-to-any-file: concurrency/**
 crypto:
   - changed-files:
       - any-glob-to-any-file: crypto/**

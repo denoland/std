@@ -11,6 +11,7 @@
     "@std/cache": "jsr:@std/cache@^0.2.2",
     "@std/cbor": "jsr:@std/cbor@^0.1.9",
     "@std/cli": "jsr:@std/cli@^1.0.28",
+    "@std/concurrency": "jsr:@std/concurrency@^0.1.0",
     "@std/collections": "jsr:@std/collections@^1.1.6",
     "@std/crypto": "jsr:@std/crypto@^1.0.5",
     "@std/csv": "jsr:@std/csv@^1.0.6",

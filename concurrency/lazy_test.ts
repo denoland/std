@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertStrictEquals } from "@std/assert";
-import { Lazy } from "./unstable_lazy.ts";
+import { Lazy } from "./lazy.ts";
 
 Deno.test("Lazy.get() initializes and returns sync value", async () => {
   const lazy = new Lazy(() => 42);

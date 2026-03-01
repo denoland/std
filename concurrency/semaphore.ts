@@ -10,11 +10,9 @@ interface Node {
 /**
  * A counting semaphore for limiting concurrent access to a resource.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { Semaphore } from "@std/async/unstable-semaphore";
+ * import { Semaphore } from "@std/concurrency/semaphore";
  *
  * const sem = new Semaphore(2);
  * {
@@ -52,7 +50,7 @@ export class Semaphore {
    *
    * @example Usage
    * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
+   * import { Semaphore } from "@std/concurrency/semaphore";
    *
    * const sem = new Semaphore(1);
    * await sem.acquire();
@@ -65,7 +63,7 @@ export class Semaphore {
    *
    * @example Using `using` statement
    * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
+   * import { Semaphore } from "@std/concurrency/semaphore";
    *
    * const sem = new Semaphore(1);
    * {
@@ -97,7 +95,7 @@ export class Semaphore {
    *
    * @example Usage
    * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
+   * import { Semaphore } from "@std/concurrency/semaphore";
    *
    * const sem = new Semaphore(1);
    * const permit = sem.tryAcquire();
@@ -124,7 +122,7 @@ export class Semaphore {
    *
    * @example Usage
    * ```ts no-assert
-   * import { Semaphore } from "@std/async/unstable-semaphore";
+   * import { Semaphore } from "@std/concurrency/semaphore";
    *
    * const sem = new Semaphore(1);
    * await sem.acquire();
