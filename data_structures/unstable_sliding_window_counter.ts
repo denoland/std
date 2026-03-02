@@ -4,10 +4,10 @@
 /**
  * A fixed-size sliding window counter.
  *
- * The counter divides a conceptual time window into a fixed number of segments.
- * The caller owns all timing — the counter has no concept of time, durations,
- * or timers. Call {@linkcode SlidingWindowCounter.prototype.rotate | `rotate`}
- * to advance the window.
+ * The counter splits a window into a fixed number of segments, each tracking
+ * a count. It has no built-in clock. Call
+ * {@linkcode SlidingWindowCounter.prototype.rotate | `rotate`} to advance the
+ * window on your own schedule.
  *
  * The class is iterable and yields segment counts from oldest to newest.
  *
@@ -44,10 +44,9 @@ export class SlidingWindowCounter {
   #total: number;
 
   /**
-   * Creates a new instance.
+   * Creates a counter with the given number of segments, all starting at zero.
    *
-   * @param segmentCount The number of segments in the sliding window. Must be
-   * a positive integer.
+   * @param segmentCount The number of segments. Must be a positive integer.
    */
   constructor(segmentCount: number) {
     if (
@@ -90,14 +89,12 @@ export class SlidingWindowCounter {
   }
 
   /**
-   * Advances the window by `steps` positions, evicting the oldest segments.
+   * Advances the window by `steps`, dropping the oldest segments. If `steps`
+   * is at least {@linkcode segmentCount}, all segments are cleared.
    *
-   * If `steps` is greater than or equal to {@linkcode segmentCount}, all
-   * segments are cleared at once rather than one at a time.
-   *
-   * @param steps The number of positions to advance. Defaults to `1`. Must be a
+   * @param steps How many steps to advance. Defaults to `1`. Must be a
    * non-negative integer.
-   * @returns The total count evicted across all dropped segments.
+   * @returns The sum of the counts that were removed.
    *
    * @example Usage
    * ```ts
@@ -151,7 +148,7 @@ export class SlidingWindowCounter {
   }
 
   /**
-   * The combined count across all segments.
+   * The sum of all segment counts.
    *
    * @returns The sum of all segment counts.
    *
@@ -172,7 +169,7 @@ export class SlidingWindowCounter {
   }
 
   /**
-   * Number of segments in the sliding window.
+   * The number of segments in the window.
    *
    * @returns The number of segments.
    *
@@ -190,7 +187,7 @@ export class SlidingWindowCounter {
   }
 
   /**
-   * Resets all segments and the cursor to their initial state.
+   * Resets all segments to zero, as if the counter were just created.
    *
    * @example Usage
    * ```ts
