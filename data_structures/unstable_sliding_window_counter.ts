@@ -150,12 +150,41 @@ export class SlidingWindowCounter {
     return evicted;
   }
 
-  /** The combined count across all segments. */
+  /**
+   * The combined count across all segments.
+   *
+   * @returns The sum of all segment counts.
+   *
+   * @example Usage
+   * ```ts
+   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new SlidingWindowCounter(3);
+   * counter.increment(5);
+   * counter.rotate();
+   * counter.increment(3);
+   * assertEquals(counter.total, 8);
+   * ```
+   */
   get total(): number {
     return this.#total;
   }
 
-  /** Number of segments in the sliding window. */
+  /**
+   * Number of segments in the sliding window.
+   *
+   * @returns The number of segments.
+   *
+   * @example Usage
+   * ```ts
+   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new SlidingWindowCounter(5);
+   * assertEquals(counter.segmentCount, 5);
+   * ```
+   */
   get segmentCount(): number {
     return this.#segments.length;
   }
@@ -182,6 +211,8 @@ export class SlidingWindowCounter {
 
   /**
    * Yields segment counts from oldest to newest.
+   *
+   * @returns An iterator over segment counts.
    *
    * @example Usage
    * ```ts
