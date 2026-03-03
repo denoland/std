@@ -65,7 +65,7 @@ const RESERVED_CHARS = {
   "|": "\\|",
 } as const;
 
-const RX_REGEXP_ESCAPE = new RegExp(
+const ESCAPE_REGEXP = new RegExp(
   `[${Object.values(RESERVED_CHARS).join("")}]`,
   "gu",
 );
@@ -91,7 +91,7 @@ const RX_REGEXP_ESCAPE = new RegExp(
  */
 export function escape(str: string): string {
   return str.replaceAll(
-    RX_REGEXP_ESCAPE,
+    ESCAPE_REGEXP,
     (m) => RESERVED_CHARS[m as keyof typeof RESERVED_CHARS],
   ).replace(/^[0-9a-zA-Z]/, (m) => `\\x${m.codePointAt(0)!.toString(16)}`);
 }
