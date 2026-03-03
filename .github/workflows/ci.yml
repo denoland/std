@@ -89,6 +89,8 @@ jobs:
           - 24.2.0
         os:
           - ubuntu-latest
+          - windows-latest
+          - macOS-latest
 
     steps:
       - name: Clone repository
