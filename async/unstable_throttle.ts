@@ -70,6 +70,26 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * assert(func.lastExecution > 0);
  * ```
  *
+ * @example With dynamic timeframe
+ *
+ * ```ts no-assert
+ * import { throttle } from "@std/async/unstable-throttle";
+ *
+ * function processUserInput(input: string) {
+ *   // Do some expensive computation with user input that changes on each
+ *   // keypress, which takes a variable amount of time depending on the length
+ *   // or complexity of input.
+ * }
+ *
+ * const processUserInputThrottled = throttle(
+ *   processUserInput,
+ *   // Throttle dynamically, waiting twice as long as the previous execution
+ *   // took to complete before starting the next call.
+ *   (n) => n * 2,
+ *   { ensureLastCall: true },
+ * );
+ * ```
+ *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to throttle.
  * @param timeframe The timeframe in milliseconds in which the function should be called at most once.
