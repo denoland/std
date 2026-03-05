@@ -177,6 +177,7 @@ function assertHasExampleTag(
       "@example tag must have a title and TypeScript code snippet",
       document,
     );
+    if (tag.doc === undefined) continue;
     /**
      * Otherwise, if the example title is undefined, it is given the title
      * "Example #" by default.
@@ -202,6 +203,7 @@ function assertHasTypeParamTags(
     `Symbol must have a @typeParam tag for ${typeParamName}`,
     document,
   );
+  if (tag === undefined) return;
   assert(
     // @ts-ignore doc is defined
     tag.doc !== undefined,
