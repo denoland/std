@@ -2,11 +2,11 @@
 // This module is browser compatible.
 
 /**
- * A fixed-size sliding window counter.
+ * A fixed-size rolling counter.
  *
  * The counter splits a window into a fixed number of segments, each tracking
  * a count. It has no built-in clock. Call
- * {@linkcode SlidingWindowCounter.prototype.rotate | `rotate`} to advance the
+ * {@linkcode RollingCounter.prototype.rotate | `rotate`} to advance the
  * window on your own schedule.
  *
  * The class is iterable and yields segment counts from oldest to newest.
@@ -15,11 +15,11 @@
  *
  * @example Usage
  * ```ts
- * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+ * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
  * import { assertEquals } from "@std/assert";
  *
  * // 3 segments, all starting at zero
- * const counter = new SlidingWindowCounter(3);
+ * const counter = new RollingCounter(3);
  *
  * // Add 5 to the current (newest) segment
  * counter.increment(5);
@@ -38,7 +38,7 @@
  * assertEquals([...counter], [3, 0, 0]);
  * ```
  */
-export class SlidingWindowCounter {
+export class RollingCounter {
   #segments: number[];
   #cursor: number;
   #total: number;
@@ -53,7 +53,7 @@ export class SlidingWindowCounter {
       !Number.isInteger(segmentCount) || segmentCount < 1
     ) {
       throw new RangeError(
-        `Cannot create SlidingWindowCounter: segmentCount must be a positive integer, got ${segmentCount}`,
+        `Cannot create RollingCounter: segmentCount must be a positive integer, got ${segmentCount}`,
       );
     }
     this.#segments = new Array<number>(segmentCount).fill(0);
@@ -69,10 +69,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(3);
+   * const counter = new RollingCounter(3);
    * const total = counter.increment(5);
    * assertEquals(total, 5);
    * ```
@@ -80,7 +80,7 @@ export class SlidingWindowCounter {
   increment(n: number = 1): number {
     if (!Number.isInteger(n) || n < 0) {
       throw new RangeError(
-        `Cannot increment SlidingWindowCounter: n must be a non-negative integer, got ${n}`,
+        `Cannot increment RollingCounter: n must be a non-negative integer, got ${n}`,
       );
     }
     this.#segments[this.#cursor]! += n;
@@ -98,10 +98,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(2);
+   * const counter = new RollingCounter(2);
    * counter.increment(10);
    * counter.rotate();
    * const evicted = counter.rotate();
@@ -110,10 +110,10 @@ export class SlidingWindowCounter {
    *
    * @example Bulk rotation
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(3);
+   * const counter = new RollingCounter(3);
    * counter.increment(5);
    * counter.rotate();
    * counter.increment(3);
@@ -126,7 +126,7 @@ export class SlidingWindowCounter {
   rotate(steps: number = 1): number {
     if (!Number.isInteger(steps) || steps < 0) {
       throw new RangeError(
-        `Cannot rotate SlidingWindowCounter: steps must be a non-negative integer, got ${steps}`,
+        `Cannot rotate RollingCounter: steps must be a non-negative integer, got ${steps}`,
       );
     }
     const len = this.#segments.length;
@@ -154,10 +154,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(3);
+   * const counter = new RollingCounter(3);
    * counter.increment(5);
    * counter.rotate();
    * counter.increment(3);
@@ -175,10 +175,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(5);
+   * const counter = new RollingCounter(5);
    * assertEquals(counter.segmentCount, 5);
    * ```
    */
@@ -191,10 +191,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(3);
+   * const counter = new RollingCounter(3);
    * counter.increment(10);
    * counter.clear();
    * assertEquals(counter.total, 0);
@@ -213,10 +213,10 @@ export class SlidingWindowCounter {
    *
    * @example Usage
    * ```ts
-   * import { SlidingWindowCounter } from "@std/data-structures/unstable-sliding-window-counter";
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
-   * const counter = new SlidingWindowCounter(3);
+   * const counter = new RollingCounter(3);
    * counter.increment(5);
    * counter.rotate();
    * counter.increment(3);
