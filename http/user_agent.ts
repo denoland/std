@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 // This module was heavily inspired by ua-parser-js
@@ -1200,15 +1200,17 @@ export class UserAgent {
    * ```
    *
    * @param inspect internal inspect function.
+   * @param options inspect options.
    *
    * @returns The custom value to inspect.
    */
   [Symbol.for("Deno.customInspect")](
-    inspect: (value: unknown) => string,
+    inspect: (value: unknown, options: unknown) => string,
+    options: unknown,
   ): string {
     const { browser, cpu, device, engine, os, ua } = this;
     return `${this.constructor.name} ${
-      inspect({ browser, cpu, device, engine, os, ua })
+      inspect({ browser, cpu, device, engine, os, ua }, options)
     }`;
   }
 

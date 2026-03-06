@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -71,20 +71,43 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
-  let maximumValue: ReturnType<S> | undefined;
+  if (Array.isArray(array)) {
+    const length = array.length;
+    if (length === 0) return undefined;
 
-  for (const element of array) {
-    const currentValue = selector(element) as ReturnType<S>;
+    let max = selector(array[0]!) as ReturnType<S>;
+    if (Number.isNaN(max)) return max;
 
-    if (maximumValue === undefined || currentValue > maximumValue) {
-      maximumValue = currentValue;
-      continue;
+    for (let i = 1; i < length; i++) {
+      const currentValue = selector(array[i]!) as ReturnType<S>;
+      if (currentValue > max) {
+        max = currentValue;
+      } else if (Number.isNaN(currentValue)) {
+        return currentValue;
+      }
     }
 
-    if (Number.isNaN(currentValue)) {
-      return currentValue;
-    }
+    return max;
   }
 
-  return maximumValue;
+  const iter = array[Symbol.iterator]();
+  const first = iter.next();
+
+  if (first.done) return undefined;
+
+  let max = selector(first.value) as ReturnType<S>;
+  if (Number.isNaN(max)) return max;
+
+  let next = iter.next();
+  while (!next.done) {
+    const currentValue = selector(next.value) as ReturnType<S>;
+    if (currentValue > max) {
+      max = currentValue;
+    } else if (Number.isNaN(currentValue)) {
+      return currentValue;
+    }
+    next = iter.next();
+  }
+
+  return max;
 }

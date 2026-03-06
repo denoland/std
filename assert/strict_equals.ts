@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import { buildMessage } from "@std/internal/build-message";
 import { diff } from "@std/internal/diff";
@@ -59,7 +59,8 @@ export function assertStrictEquals<T>(
     const diffResult = stringDiff
       ? diffStr(actual as string, expected as string)
       : diff(actualString.split("\n"), expectedString.split("\n"));
-    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+    const diffMsg = buildMessage(diffResult, { stringDiff }, arguments[3])
+      .join("\n");
     message = `Values are not strictly equal${msgSuffix}\n${diffMsg}`;
   }
 

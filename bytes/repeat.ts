@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import { copy } from "./copy.ts";
 import type { Uint8Array_ } from "./_types.ts";

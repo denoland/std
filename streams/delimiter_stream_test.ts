@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { DelimiterStream } from "./delimiter_stream.ts";
 import { testTransformStream } from "./_test_utils.ts";

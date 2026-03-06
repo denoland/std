@@ -1,9 +1,10 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
+import { type ImplicitType, parse as unstableParse } from "./unstable_parse.ts";
 import {
   assert,
   assertEquals,
@@ -488,6 +489,36 @@ Deno.test({
       () => parse("--- !!omap\n- foo: 1\n- foo: 2"),
       SyntaxError,
       "Cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
+    );
+  },
+});
+
+Deno.test({
+  name: "unstableParse() handles custom types",
+  fn() {
+    const foo: ImplicitType = {
+      tag: "tag:custom:smile",
+      resolve: (data: string): boolean => data === "=)",
+      construct: (): string => "🙂",
+      predicate: (data: unknown): data is string => data === "🙂",
+      kind: "scalar",
+      represent: (): string => "=)",
+    };
+
+    assertEquals(
+      unstableParse(
+        `
+title: =)
+tags:
+  - =)
+  - bar
+`,
+        { extraTypes: [foo] },
+      ),
+      {
+        title: "🙂",
+        tags: ["🙂", "bar"],
+      },
     );
   },
 });

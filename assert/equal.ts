@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 type KeyedCollection = Set<unknown> | Map<unknown, unknown>;
@@ -42,8 +42,7 @@ function getKeysDeep(obj: object) {
 }
 
 // deno-lint-ignore no-explicit-any
-const Temporal: any = (globalThis as any).Temporal ??
-  new Proxy({}, { get: () => {} });
+const Temporal = (globalThis as any).Temporal ?? Object.create(null);
 
 /** A non-exhaustive list of prototypes that can be accurately fast-path compared with `String(instance)` */
 const stringComparablePrototypes = new Set<unknown>(
@@ -90,9 +89,17 @@ function sameValueZero(a: unknown, b: unknown) {
 /**
  * Deep equality comparison used in assertions.
  *
+ * This function is based on value equality, but for some cases (such as data
+ * that can only be read asynchronously or function properties) value equality
+ * is not possible to determine. In such cases, reference equality is used
+ * instead, which may cause false negatives for objects such as `Blob`s or
+ * `Request`s.
+ *
  * @param a The actual value
  * @param b The expected value
  * @returns `true` if the values are deeply equal, `false` otherwise
+ *
+ * @throws {TypeError} If either value is a `WeakMap` or `WeakSet`.
  *
  * @example Usage
  * ```ts
@@ -117,6 +124,15 @@ export function equal(a: unknown, b: unknown): boolean {
       }
       if (a instanceof TypedArray) {
         return compareTypedArrays(a as TypedArray, b as TypedArray);
+      }
+      if (
+        a instanceof ArrayBuffer ||
+        (globalThis.SharedArrayBuffer && a instanceof SharedArrayBuffer)
+      ) {
+        return compareTypedArrays(
+          new Uint8Array(a),
+          new Uint8Array(b as ArrayBuffer | SharedArrayBuffer),
+        );
       }
       if (a instanceof WeakMap) {
         throw new TypeError("Cannot compare WeakMap instances");

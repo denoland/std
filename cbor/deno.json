@@ -1,6 +1,6 @@
 {
   "name": "@std/cbor",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "exports": {
     ".": "./mod.ts",
     "./array-encoder-stream": "./array_encoder_stream.ts",

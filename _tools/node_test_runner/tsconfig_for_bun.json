@@ -10,7 +10,8 @@
       "@std/internal/os": ["./internal/os.ts"],
       "@std/internal/styles": ["./internal/styles.ts"],
       "@std/path": ["./path/mod.ts"],
-      "@std/semver": ["./semver/mod.ts"]
+      "@std/semver": ["./semver/mod.ts"],
+      "@std/testing/types": ["./testing/types.ts"]
     }
   }
 }

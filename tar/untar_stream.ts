@@ -1,7 +1,8 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
+import type { Uint8Array_ } from "./_types.ts";
 
 /**
  * The original tar	archive	header format.
@@ -333,7 +334,7 @@ export class UntarStream
             controller.byobRequest.respond(value.length);
           }
         } else {
-          controller.enqueue(value);
+          controller.enqueue(value as Uint8Array_);
         }
       },
       async cancel() {

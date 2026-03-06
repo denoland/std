@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";

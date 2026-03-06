@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
  * This script adds a browser-compatible declaration to files that are
@@ -8,12 +8,12 @@
  */
 
 import { walk } from "../fs/walk.ts";
-import { LICENSE } from "./check_license.ts";
+import { COPYRIGHT_NOTICE } from "./lint_plugin.ts";
 
 const ROOT = new URL("../", import.meta.url);
 const SKIP = [/(test|bench|\/_|\\_|testdata|version.ts)/];
 const DECLARATION = "// This module is browser compatible.";
-const COPYRIGHT = `// ${LICENSE}`;
+const COPYRIGHT = `// ${COPYRIGHT_NOTICE}`;
 
 async function isBrowserCompatible(filePath: string): Promise<boolean> {
   return (await new Deno.Command(Deno.execPath(), {

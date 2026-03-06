@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { iterateReader, iterateReaderSync } from "./iterate_reader.ts";
 import { readerFromStreamReader } from "./reader_from_stream_reader.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { AssertionError, assertObjectMatch, assertThrows } from "./mod.ts";
 
 const sym = Symbol("foo");
@@ -117,6 +117,26 @@ Deno.test("assertObjectMatch() matches subset with nested array inside", () => {
 Deno.test("assertObjectMatch() matches subset with regexp", () => {
   assertObjectMatch(m, { foo: /abc+/i });
   assertObjectMatch(m, { bar: [/abc/g, /abc/m] });
+});
+
+Deno.test("assertObjectMatch() matches when expected has shared Date references", () => {
+  const timestamp = 1700000000000;
+  const startTime = new Date(timestamp);
+  assertObjectMatch(
+    { startTime: new Date(timestamp), data: [{ t: new Date(timestamp) }] },
+    { startTime, data: [{ t: startTime }] },
+  );
+});
+
+Deno.test("assertObjectMatch() throws when date mismatches", () => {
+  assertThrows(
+    () =>
+      assertObjectMatch(
+        { startTime: new Date(1000) },
+        { startTime: new Date(2000) },
+      ),
+    AssertionError,
+  );
 });
 
 Deno.test("assertObjectMatch() matches subset with built-in data structures", () => {

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 use digest::{Digest, DynDigest, ExtendableOutput, Update};
 use typenum::{U16, U20, U28, U32, U48};
 

@@ -6,13 +6,13 @@
  * position. The cursor position may have also moved in this time due to the
  * user entering information. Due to the sync nature of this function, it is
  * not recommended to use this function frequently. Instead
- * {@linkcode Ansi.saveCursorPosition} and
- * {@linkcode Ansi.restoreCursorPosition} should be used when possible.
+ * {@linkcode Ansi.SAVE_CURSOR} and
+ * {@linkcode Ansi.RESTORE_CURSOR} should be used when possible.
  *
  * @returns The cursor position or null if the terminal is not a TTY.
  * @example Usage
  * ```ts ignore
- * import { Ansi } from "@std/cli/unstable-ansi";
+ * import * as Ansi from "@std/cli/unstable-ansi";
  * import { askForCursorPositionSync } from "@std/cli/unstable-get-cursor";
  *
  * const { column, row } = askForCursorPositionSync()!;

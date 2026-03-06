@@ -1,9 +1,11 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
  * A transform stream that accepts a {@linkcode AbortSignal} to easily abort a
  * stream pipeThrough.
+ *
+ * @deprecated Use [`readable.pipThrough`'s signal option](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream/pipeThrough#signal) instead.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *

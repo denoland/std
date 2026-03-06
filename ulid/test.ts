@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Copyright 2023 Yoshiya Hinosawa. All rights reserved. MIT license.
 // Copyright 2017 Alizain Feerasta. All rights reserved. MIT license.
 

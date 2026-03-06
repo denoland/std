@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import _titleCaseMapping from "./title_case_mapping.json" with { type: "json" };
 const titleCaseMap = new Map(Object.entries(_titleCaseMapping));

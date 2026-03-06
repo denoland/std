@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assert, assertEquals } from "@std/assert";
 import { assertType, type IsExact } from "@std/testing/types";
@@ -144,6 +144,20 @@ Deno.test({
     {
       const result = await eTag(new Uint8Array());
       assertType<IsExact<typeof result, string>>(true);
+    }
+  },
+});
+
+Deno.test({
+  name: "eTag() returns undefined when calcFileInfo returns undefined",
+  async fn() {
+    {
+      const result = await eTag({
+        mtime: null,
+        size: 1024,
+      });
+
+      assert(result === undefined);
     }
   },
 });

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import {
   assert,
   assertEquals,
@@ -19,59 +19,7 @@ import {
 } from "./bdd.ts";
 import { TestSuiteInternal } from "./_test_suite.ts";
 import { assertSpyCall, assertSpyCalls, type Spy, spy, stub } from "./mock.ts";
-
-class TestContext implements Deno.TestContext {
-  name: string;
-  origin: string;
-  steps: TestContext[];
-  spies: {
-    step: Spy;
-  };
-
-  constructor(name: string) {
-    this.name = name;
-    this.origin = "origin";
-    this.spies = {
-      step: spy(this, "step"),
-    };
-    this.steps = [];
-  }
-
-  async step(t: Deno.TestStepDefinition): Promise<boolean>;
-  async step(
-    name: string,
-    fn: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean>;
-  async step(
-    fn: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean>;
-  async step(
-    tOrNameOrFn:
-      | Deno.TestStepDefinition
-      | string
-      | ((t: Deno.TestContext) => void | Promise<void>),
-    fn?: (t: Deno.TestContext) => void | Promise<void>,
-  ): Promise<boolean> {
-    let ignore = false;
-    if (typeof tOrNameOrFn === "function") {
-      ignore = false;
-      fn = tOrNameOrFn;
-    } else if (typeof tOrNameOrFn === "object") {
-      ignore = tOrNameOrFn.ignore ?? false;
-      fn = tOrNameOrFn.fn;
-    }
-
-    const name = typeof tOrNameOrFn === "string"
-      ? tOrNameOrFn
-      : tOrNameOrFn.name;
-    const context = new TestContext(name);
-    this.steps.push(context);
-    if (!ignore) {
-      await fn!(context);
-    }
-    return !ignore;
-  }
-}
+import { TestContext } from "./_test_helpers.ts";
 
 const baseStepOptions: Omit<Deno.TestStepDefinition, "name" | "fn"> = {
   ignore: false,
@@ -173,6 +121,24 @@ Deno.test("beforeAll(), afterAll(), beforeEach() and afterEach()", async () => {
   assertSpyCalls(afterAllFn, 1);
   assertSpyCalls(beforeEachFn, 2);
   assertSpyCalls(afterEachFn, 2);
+});
+
+Deno.test("beforeAll() with it.only() propagates only to Deno.test", () => {
+  using test = stub(Deno, "test");
+  try {
+    beforeAll(() => {});
+
+    it({ name: "a", fn: () => {} });
+    it.only({ name: "b", fn: () => {} });
+    it({ name: "c", fn: () => {} });
+
+    assertSpyCall(test, 0);
+    const options = test.calls[0]?.args[0] as Deno.TestDefinition;
+    assertEquals(Object.keys(options).sort(), ["fn", "name", "only"]);
+    assertObjectMatch(options, { name: "global", only: true });
+  } finally {
+    TestSuiteInternal.reset();
+  }
 });
 
 Deno.test("it()", async (t) => {
@@ -1470,7 +1436,6 @@ Deno.test("describe()", async (t) => {
   await t.step("flat child only", async (t) => {
     /**
      * Asserts that when only is used on a child `describe` or `it` call, it will be the only test case or suite that runs within the top test suite.
-     * This demonstrates the issue where `Deno.test` is called without `only` even though one of its child steps are focused.
      * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
      */
     async function assertOnly(
@@ -1486,10 +1451,11 @@ Deno.test("describe()", async (t) => {
         const options = call?.args[0] as Deno.TestDefinition;
         assertEquals(
           Object.keys(options).sort(),
-          ["name", "fn"].sort(),
+          ["name", "only", "fn"].sort(),
         );
         assertObjectMatch(options, {
           name: "example",
+          only: true,
         });
 
         assertSpyCalls(fns[0], 0);
@@ -1957,7 +1923,7 @@ Deno.test("describe()", async (t) => {
   });
 
   await t.step(
-    "mutiple hook calls",
+    "multiple hook calls",
     async () => {
       using test = stub(Deno, "test");
       const context = new TestContext("example");

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 /** Type for a ULID generator function. */
 // deno-lint-ignore deno-style-guide/naming-convention

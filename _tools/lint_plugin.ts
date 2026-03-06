@@ -1,5 +1,5 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
-// @ts-nocheck Deno.lint namespace does not pass type checking in Deno 1.x
+// Copyright 2018-2026 the Deno authors. MIT license.
+// Deno.lint namespace does not pass type checking in Deno 1.x
 
 /**
  * Lint plugin that enforces the
@@ -11,9 +11,10 @@ import { toFileUrl } from "@std/path/to-file-url";
 import { resolve } from "@std/path/resolve";
 
 const PASCAL_CASE_REGEXP = /^_?(?:[A-Z][a-z0-9]*)*_?$/;
-const UPPER_CASE_ONLY = /^_?[A-Z]{2,}$/;
+const UPPER_CASE_ONLY_REGEXP = /^_?[A-Z]{2,}$/;
 function isPascalCase(string: string): boolean {
-  return PASCAL_CASE_REGEXP.test(string) && !UPPER_CASE_ONLY.test(string);
+  return PASCAL_CASE_REGEXP.test(string) &&
+    !UPPER_CASE_ONLY_REGEXP.test(string);
 }
 
 const CAMEL_CASE_REGEXP = /^[_a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*_?$/;
@@ -27,6 +28,10 @@ function isConstantCase(string: string): boolean {
 }
 
 const CONTRACTION_REGEXP = /\S'\S/;
+
+export const COPYRIGHT_NOTICE = `Copyright 2018-${
+  new Date().getFullYear()
+} the Deno authors. MIT license.`;
 
 export default {
   name: "deno-style-guide",
@@ -229,6 +234,38 @@ export default {
               if (id.type !== "Identifier") return;
               const name = id.name;
               if (!name) return;
+              if (isConstantCase(name)) {
+                if (
+                  declaration.init?.type === "NewExpression" &&
+                  declaration.init.callee.type === "Identifier"
+                ) {
+                  switch (declaration.init.callee.name) {
+                    case "RegExp": {
+                      if (name !== "REGEXP" && !name.endsWith("_REGEXP")) {
+                        context.report({
+                          node: id,
+                          message:
+                            `RegExp variable name '${name}' must end with _REGEXP.`,
+                          fix: (fixer) =>
+                            fixer.replaceText(id, `${name}_REGEXP`),
+                        });
+                      }
+                      break;
+                    }
+                  }
+                } else if (
+                  declaration.init?.type === "Literal" &&
+                  declaration.init.value instanceof RegExp &&
+                  name !== "REGEXP" && !name.endsWith("_REGEXP")
+                ) {
+                  context.report({
+                    node: id,
+                    message:
+                      `RegExp variable name '${name}' must end with _REGEXP.`,
+                    fix: (fixer) => fixer.replaceText(id, `${name}_REGEXP`),
+                  });
+                }
+              }
               if (
                 !isConstantCase(name) && !isCamelCase(name) &&
                 !isPascalCase(name)
@@ -260,7 +297,8 @@ export default {
             const value = argument.value;
             if (typeof value !== "string") return;
 
-            if (value[0] !== value[0].toUpperCase()) {
+            const char = value[0] as string;
+            if (char !== char.toUpperCase()) {
               context.report({
                 node: argument,
                 message: "Error message starts with a lowercase.",
@@ -268,7 +306,7 @@ export default {
                   "Capitalize the error message. See https://docs.deno.com/runtime/contributing/style_guide/#error-messages for more details.",
                 fix(fixer) {
                   const newValue = argument.raw.at(0) +
-                    value[0].toUpperCase() +
+                    char.toUpperCase() +
                     value.slice(1) +
                     argument.raw.at(-1);
                   return fixer.replaceText(argument, newValue);
@@ -321,6 +359,7 @@ export default {
         if (url.href.includes("/assert/")) return {};
         if (url.href.includes("/testing/mock.ts")) return {};
         if (url.href.includes("/testing/unstable_stub.ts")) return {};
+        if (url.href.includes("/testing/unstable_stub_property.ts")) return {};
         if (url.href.includes("/testing/snapshot.ts")) return {};
         if (url.href.includes("/testing/unstable_snapshot.ts")) return {};
 
@@ -333,26 +372,29 @@ export default {
 
         return {
           ExportNamedDeclaration(node) {
-            if (node.declaration?.type !== "FunctionDeclaration") return;
-            const { params, id } = node.declaration;
+            const { declaration } = node;
+            if (declaration?.type !== "FunctionDeclaration") return;
+            const { params, id } = declaration;
             if (params.length < 3) return;
             if (params.length === 3) {
               const param = params.at(-1)!;
 
               switch (param.type) {
-                case "Identifier":
+                case "Identifier": {
                   if (param.name === "options") return;
                   // Function as 3rd argument is valid (e.g. pooledMap)
                   if (
                     param.typeAnnotation?.typeAnnotation?.type ===
                       "TSFunctionType"
                   ) return;
+
                   // attributes: Pick<T, "foo" | "bar"> as 3rd argument is valid
-                  if (
-                    param.typeAnnotation?.typeAnnotation?.typeName?.name ===
-                      "Pick"
-                  ) return;
+                  const typeAnn = param.typeAnnotation?.typeAnnotation;
+                  const typeRef = typeAnn as Deno.lint.TSTypeReference;
+                  const typeName = typeRef?.typeName as Deno.lint.Identifier;
+                  if (typeName?.name === "Pick") return;
                   break;
+                }
                 case "AssignmentPattern": {
                   if (param.right.type === "ObjectExpression") return;
                   break;
@@ -377,5 +419,27 @@ export default {
         };
       },
     },
+    // https://docs.deno.com/runtime/contributing/style_guide/#copyright-headers
+    "copyright": {
+      create(context) {
+        // Skip checking this rule in the ignore_comments.ts file to avoid
+        // testing of other rules being affected.
+        if (context.filename === "ignore_comments.ts") return {};
+        const comments = context.sourceCode.getAllComments();
+        // Only check the first 6 comments, for performance
+        const node = comments.slice(0, 6).find((comment) =>
+          comment.value.includes(COPYRIGHT_NOTICE) && comment.type === "Line"
+        );
+        if (!node) {
+          context.report({
+            range: [0, 0],
+            message: "Missing copyright notice.",
+            hint:
+              `Add a copyright notice at the top of the file: // ${COPYRIGHT_NOTICE}`,
+          });
+        }
+        return {};
+      },
+    },
   },
-} satisfies Deno.lint.Plugin;
+} as Deno.lint.Plugin;

@@ -1,5 +1,5 @@
 // Copyright Isaac Z. Schlueter and Contributors. All rights reserved. ISC license.
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 import type { ReleaseType } from "./types.ts";
 import { increment } from "./increment.ts";
@@ -972,6 +972,55 @@ Deno.test("increment()", async (t) => {
       undefined,
       undefined,
       "1.2.3-0",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: [], build: [] },
+      "pre",
+      "pr.123", // test specifying a specific prerelease number
+      undefined,
+      "1.2.3-pr.123",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["pr", 1], build: [] },
+      "pre",
+      "pr.7", // even when the prerelease labels match, if its specified, use it
+      undefined,
+      "1.2.3-pr.7",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.11", // when switching prereleases, if the number is specified, use it
+      undefined,
+      "1.2.3-pr.11",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz",
+      undefined,
+      "1.2.3-pr.xyz.0",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz.3",
+      undefined,
+      "1.2.3-pr.xyz.3",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "pr.xyz.5.foo",
+      undefined,
+      "1.2.3-pr.xyz.5.foo",
+    ],
+    [
+      { major: 1, minor: 2, patch: 3, prerelease: ["alpha", 1], build: [] },
+      "pre",
+      "alpha.1.foo",
+      undefined,
+      "1.2.3-alpha.1.foo",
     ],
   ];
 

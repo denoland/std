@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import type { MatcherContext, MatchResult } from "./_types.ts";
 import { AssertionError } from "@std/assert/assertion-error";

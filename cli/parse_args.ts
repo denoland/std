@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -425,7 +425,7 @@ interface NestedMapping {
 }
 
 const FLAG_REGEXP =
-  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.+?))?$/s;
+  /^(?:-(?:(?<doubleDash>-)(?<negated>no-)?)?)(?<key>.+?)(?:=(?<value>.*))?$/s;
 const LETTER_REGEXP = /[A-Za-z]/;
 const NUMBER_REGEXP = /-?\d+(\.\d*)?(e-?\d+)?$/;
 const HYPHEN_REGEXP = /^(-|--)[^-]/;
@@ -439,6 +439,11 @@ function isNumber(string: string): boolean {
   return NON_WHITESPACE_REGEXP.test(string) && Number.isFinite(Number(string));
 }
 
+function isConstructorOrProto(obj: NestedMapping, key: string): boolean {
+  return (key === "constructor" && typeof obj[key] === "function") ||
+    key === "__proto__";
+}
+
 function setNested(
   object: NestedMapping,
   keys: string[],
@@ -448,7 +453,12 @@ function setNested(
   keys = [...keys];
   const key = keys.pop()!;
 
-  keys.forEach((key) => object = (object[key] ??= {}) as NestedMapping);
+  for (const k of keys) {
+    if (isConstructorOrProto(object, k)) return;
+    object = (object[k] ??= {}) as NestedMapping;
+  }
+
+  if (isConstructorOrProto(object, key)) return;
 
   if (collect) {
     const v = object[key];
@@ -613,7 +623,7 @@ export function parseArgs<
   TAliasArgNames extends string = string,
   TAliasNames extends string = string,
 >(
-  args: string[],
+  args: readonly string[],
   options?: ParseOptions<
     TBooleans,
     TStrings,
@@ -709,6 +719,7 @@ export function parseArgs<
       !booleanSet.has(key) &&
       !stringSet.has(key) &&
       !aliasMap.has(key) &&
+      !collectSet.has(key) &&
       !(allBools && FLAG_NAME_REGEXP.test(arg)) &&
       unknownFn?.(arg, key, value) === false
     ) {
@@ -747,7 +758,7 @@ export function parseArgs<
       let value: string | number | boolean | undefined = groups.value;
 
       if (doubleDash) {
-        if (value) {
+        if (value != null) {
           if (booleanSet.has(key)) value = parseBooleanString(value);
           setArgument(key, value, arg, true);
           continue;
@@ -796,6 +807,11 @@ export function parseArgs<
         if (next === "-") {
           setArgument(letter, next, arg, true);
           continue;
+        }
+
+        if (next === "=") {
+          setArgument(letter, "", arg, true);
+          continue argsLoop;
         }
 
         if (LETTER_REGEXP.test(letter)) {

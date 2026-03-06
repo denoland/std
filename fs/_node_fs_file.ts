@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { getNodeFs, getNodeStream, getNodeTty, getNodeUtil } from "./_utils.ts";
 import { mapError } from "./_map_error.ts";

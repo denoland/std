@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
@@ -63,15 +63,20 @@ interface EntryInfo {
   name: string;
 }
 
-const ENV_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-    .state ?? "granted"; // for deno deploy
-const NET_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
-    .state ?? "granted"; // for deno deploy
-const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
-  ? Deno.env.get("DENO_DEPLOYMENT_ID")
-  : undefined;
+const ENV_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({
+    name: "env",
+    variable: "DENO_DEPLOYMENT_ID",
+  }).state ?? "granted"
+  : "granted"; // for deno deploy
+const NET_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
+    .state ?? "granted"
+  : "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID =
+  ENV_PERM_STATUS === "granted" && typeof Deno !== "undefined"
+    ? Deno.env.get("DENO_DEPLOYMENT_ID")
+    : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
   ? eTag(DENO_DEPLOYMENT_ID, { weak: true })
   : undefined;

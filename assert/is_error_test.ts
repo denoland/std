@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { AssertionError, assertIsError, assertThrows } from "./mod.ts";
 
 class CustomError extends Error {}

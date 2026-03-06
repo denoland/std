@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert, assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { notEquals } from "./not_equals.ts";

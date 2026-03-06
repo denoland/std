@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import {
   assert,
   assertEquals,
@@ -61,15 +61,17 @@ Deno.test(
       expectedDigest,
     );
 
+    type Uint8Array_ = ReturnType<Uint8Array["slice"]>;
+
     assertEquals(
       encodeHex(
         await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
             yield new Uint16Array();
-            yield inputPieces[0] as Uint8Array;
+            yield inputPieces[0] as Uint8Array_;
             yield new ArrayBuffer(0);
-            yield inputPieces[1] as Uint8Array;
+            yield inputPieces[1] as Uint8Array_;
           })(),
         ),
       ),

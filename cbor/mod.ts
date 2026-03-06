@@ -1,15 +1,14 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
- * ## Overview
- * Concise Binary Object Representation (CBOR) is a binary data serialisation
- * format optimised for compactness and efficiency. It is designed to encode a
+ * Concise Binary Object Representation (CBOR) is a binary data serialization
+ * format optimized for compactness and efficiency. It is designed to encode a
  * wide range of data types, including integers, strings, arrays, and maps, in a
  * space-efficient manner.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  * spec.
  *
- * ## Limitations
+ * ### Limitations
  * - This implementation only supports the encoding and decoding of
  * "Text String" keys.
  * - This implementation encodes decimal numbers with 64 bits. It takes no

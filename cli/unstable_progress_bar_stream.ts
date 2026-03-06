@@ -1,9 +1,13 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import {
   ProgressBar,
   type ProgressBarOptions,
 } from "./unstable_progress_bar.ts";
+
+import type { Uint8Array_ } from "./_types.ts";
+
+export type { Uint8Array_ };
 
 /**
  * `ProgressBarStream` is a {@link TransformStream} class that reports updates
@@ -12,7 +16,7 @@ import {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic Usage
- * ```ts no-assert
+ * ```ts ignore no-assert
  * import { ProgressBarStream } from "@std/cli/unstable-progress-bar-stream";
  *
  * const response = await fetch("https://example.com/");
@@ -25,12 +29,13 @@ import {
  * await readable?.pipeTo((await Deno.create("./_tmp/example.com.html")).writable);
  * ```
  */
-export class ProgressBarStream extends TransformStream<Uint8Array, Uint8Array> {
+export class ProgressBarStream
+  extends TransformStream<Uint8Array_, Uint8Array_> {
   /**
    * Constructs a new instance.
    *
    * @example Basic Usage
-   * ```ts no-assert
+   * ```ts ignore no-assert
    * import { ProgressBarStream } from "@std/cli/unstable-progress-bar-stream";
    *
    * const response = await fetch("https://example.com/");

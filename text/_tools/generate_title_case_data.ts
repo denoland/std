@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -W --allow-net=www.unicode.org:443
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Modified from https://gist.github.com/0f-0b/c87dcf2d87f3428cc2abce2e20b7eef9
 import { assert, assertEquals } from "@std/assert";
 
