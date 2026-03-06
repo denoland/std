@@ -19,6 +19,7 @@
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
     "./unstable-lazy": "./unstable_lazy.ts",
     "./unstable-all-keyed": "./unstable_all_keyed.ts",
-    "./unstable-poll": "./unstable_poll.ts"
+    "./unstable-poll": "./unstable_poll.ts",
+    "./unstable-pool-settled": "./unstable_pool_settled.ts"
   }
 }
