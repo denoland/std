@@ -13,32 +13,32 @@ import type { XmlName } from "./types.ts";
  * Line ending normalization pattern per XML 1.0 §2.11.
  * Converts \r\n and standalone \r to \n.
  */
-export const LINE_ENDING_RE = /\r\n?/g;
+export const LINE_ENDING_REGEXP = /\r\n?/g;
 
 /**
  * Whitespace-only test per XML 1.0 §2.3.
  * Uses explicit [ \t\r\n] instead of \s to match XML spec exactly:
  *   S ::= (#x20 | #x9 | #xD | #xA)+
  */
-export const WHITESPACE_ONLY_RE = /^[ \t\r\n]*$/;
+export const WHITESPACE_ONLY_REGEXP = /^[ \t\r\n]*$/;
 
 /**
  * XML declaration version attribute pattern.
  * Matches both single and double quoted values.
  */
-export const VERSION_RE = /version\s*=\s*(?:"([^"]+)"|'([^']+)')/;
+export const VERSION_REGEXP = /version\s*=\s*(?:"([^"]+)"|'([^']+)')/;
 
 /**
  * XML declaration encoding attribute pattern.
  * Matches both single and double quoted values.
  */
-export const ENCODING_RE = /encoding\s*=\s*(?:"([^"]+)"|'([^']+)')/;
+export const ENCODING_REGEXP = /encoding\s*=\s*(?:"([^"]+)"|'([^']+)')/;
 
 /**
  * XML declaration standalone attribute pattern.
  * Matches both single and double quoted values, restricted to "yes" or "no".
  */
-export const STANDALONE_RE = /standalone\s*=\s*(?:"(yes|no)"|'(yes|no)')/;
+export const STANDALONE_REGEXP = /standalone\s*=\s*(?:"(yes|no)"|'(yes|no)')/;
 
 /**
  * Result of validating an XML declaration.
