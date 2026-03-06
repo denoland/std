@@ -27,7 +27,7 @@ export interface PooledMapOptions {
 /**
  * Transforms values from an (async) iterable into another async iterable.
  * The transforms are done concurrently, with a max concurrency defined by
- * {@linkcode PooledMapOptions.poolLimit}.
+ * `poolLimit`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -42,9 +42,49 @@ export interface PooledMapOptions {
  * import { assertEquals } from "@std/assert";
  *
  * const results = pooledMap(
+ *   2,
  *   [1, 2, 3],
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+ * );
+ *
+ * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
+ * ```
+ *
+ * @typeParam T the input type.
+ * @typeParam R the output type.
+ * @param poolLimit The maximum count of items being processed concurrently.
+ * @param array The input array for mapping.
+ * @param iteratorFn The function to call for every item of the array.
+ * @returns The async iterator with the transformed values.
+ * @throws {RangeError} If `poolLimit` is not a positive integer.
+ */
+export function pooledMap<T, R>(
+  poolLimit: number,
+  array: Iterable<T> | AsyncIterable<T>,
+  iteratorFn: (data: T) => Promise<R>,
+): AsyncIterableIterator<R>;
+
+/**
+ * Transforms values from an (async) iterable into another async iterable.
+ * The transforms are done concurrently, with a max concurrency defined by
+ * {@linkcode PooledMapOptions.poolLimit}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * If an error is thrown from `iteratorFn`, no new transformations will begin.
+ * All currently executing transformations are allowed to finish and still
+ * yielded on success. After that, the rejections among them are gathered and
+ * thrown by the iterator in an `AggregateError`.
+ *
+ * @example Usage with options
+ * ```ts
+ * import { pooledMap } from "@std/async/unstable-pool";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const results = pooledMap(
  *   { poolLimit: 2 },
+ *   [1, 2, 3],
+ *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
  * );
  *
  * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
@@ -57,9 +97,9 @@ export interface PooledMapOptions {
  *
  * const controller = new AbortController();
  * const results = pooledMap(
+ *   { poolLimit: 2, signal: controller.signal },
  *   [1, 2, 3, 4, 5],
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
- *   { poolLimit: 2, signal: controller.signal },
  * );
  *
  * controller.abort(new Error("cancelled"));
@@ -73,18 +113,32 @@ export interface PooledMapOptions {
  *
  * @typeParam T the input type.
  * @typeParam R the output type.
+ * @param options Options including pool limit and abort signal.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
- * @param options Options including pool limit and abort signal.
  * @returns The async iterator with the transformed values.
  * @throws {RangeError} If `poolLimit` is not a positive integer.
  */
 export function pooledMap<T, R>(
+  options: PooledMapOptions,
   array: Iterable<T> | AsyncIterable<T>,
   iteratorFn: (data: T) => Promise<R>,
-  options: PooledMapOptions,
+): AsyncIterableIterator<R>;
+
+export function pooledMap<T, R>(
+  poolLimitOrOptions: number | PooledMapOptions,
+  array: Iterable<T> | AsyncIterable<T>,
+  iteratorFn: (data: T) => Promise<R>,
 ): AsyncIterableIterator<R> {
-  const { poolLimit, signal } = options;
+  let poolLimit: number;
+  let signal: AbortSignal | undefined;
+
+  if (typeof poolLimitOrOptions === "number") {
+    poolLimit = poolLimitOrOptions;
+  } else {
+    poolLimit = poolLimitOrOptions.poolLimit;
+    signal = poolLimitOrOptions.signal;
+  }
 
   if (!Number.isInteger(poolLimit) || poolLimit < 1) {
     throw new RangeError("'poolLimit' must be a positive integer");
@@ -120,10 +174,10 @@ export function pooledMap<T, R>(
     ): Promise<unknown> {
       if (!signal) return Promise.race(promises);
       const { promise, resolve, reject } = Promise.withResolvers<never>();
-      const onAbort = () => reject(signal.reason);
+      const onAbort = () => reject(signal!.reason);
       signal.addEventListener("abort", onAbort, { once: true });
       return Promise.race([...promises, promise]).finally(() => {
-        signal.removeEventListener("abort", onAbort);
+        signal!.removeEventListener("abort", onAbort);
         resolve(undefined as never);
       });
     }

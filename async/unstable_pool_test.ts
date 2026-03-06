@@ -14,12 +14,12 @@ import { FakeTime } from "@std/testing/time";
 Deno.test("pooledMap() throws for non-positive poolLimit", () => {
   const noop = (i: number) => Promise.resolve(i);
   assertThrows(
-    () => pooledMap([1], noop, { poolLimit: 0 }),
+    () => pooledMap(0, [1], noop),
     RangeError,
     "'poolLimit' must be a positive integer",
   );
   assertThrows(
-    () => pooledMap([1], noop, { poolLimit: -1 }),
+    () => pooledMap(-1, [1], noop),
     RangeError,
     "'poolLimit' must be a positive integer",
   );
@@ -28,17 +28,31 @@ Deno.test("pooledMap() throws for non-positive poolLimit", () => {
 Deno.test("pooledMap() throws for non-integer poolLimit", () => {
   const noop = (i: number) => Promise.resolve(i);
   assertThrows(
-    () => pooledMap([1], noop, { poolLimit: 1.5 }),
+    () => pooledMap(1.5, [1], noop),
     RangeError,
     "'poolLimit' must be a positive integer",
   );
   assertThrows(
-    () => pooledMap([1], noop, { poolLimit: NaN }),
+    () => pooledMap(NaN, [1], noop),
     RangeError,
     "'poolLimit' must be a positive integer",
   );
   assertThrows(
-    () => pooledMap([1], noop, { poolLimit: Infinity }),
+    () => pooledMap(Infinity, [1], noop),
+    RangeError,
+    "'poolLimit' must be a positive integer",
+  );
+});
+
+Deno.test("pooledMap() throws for non-positive poolLimit in options form", () => {
+  const noop = (i: number) => Promise.resolve(i);
+  assertThrows(
+    () => pooledMap({ poolLimit: 0 }, [1], noop),
+    RangeError,
+    "'poolLimit' must be a positive integer",
+  );
+  assertThrows(
+    () => pooledMap({ poolLimit: -1 }, [1], noop),
     RangeError,
     "'poolLimit' must be a positive integer",
   );
@@ -49,9 +63,30 @@ Deno.test("pooledMap()", async () => {
 
   const start = Date.now();
   const results = pooledMap(
+    2,
     [1, 2, 3],
     (i) => new Promise<number>((r) => setTimeout(() => r(i), 300)),
+  );
+  for (const _ of Array(7)) {
+    time.tick(100);
+    await time.runMicrotasks();
+  }
+  const array = await Array.fromAsync(results);
+  assertEquals(array, [1, 2, 3]);
+  const diff = Date.now() - start;
+
+  assertGreaterOrEqual(diff, 600);
+  assertLess(diff, 900);
+});
+
+Deno.test("pooledMap() with options form", async () => {
+  using time = new FakeTime();
+
+  const start = Date.now();
+  const results = pooledMap(
     { poolLimit: 2 },
+    [1, 2, 3],
+    (i) => new Promise<number>((r) => setTimeout(() => r(i), 300)),
   );
   for (const _ of Array(7)) {
     time.tick(100);
@@ -76,9 +111,7 @@ Deno.test("pooledMap() handles errors", async () => {
   const mappedNumbers: number[] = [];
   const error = await assertRejects(
     async () => {
-      for await (
-        const m of pooledMap([1, 2, 3, 4], mapNumber, { poolLimit: 3 })
-      ) {
+      for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
         mappedNumbers.push(m);
       }
     },
@@ -93,9 +126,9 @@ Deno.test("pooledMap() handles errors", async () => {
 
 Deno.test("pooledMap() returns ordered items", async () => {
   const results = pooledMap(
+    2,
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     (i) => new Promise<number>((r) => setTimeout(() => r(i), 100 / i)),
-    { poolLimit: 2 },
   );
 
   const returned = await Array.fromAsync(results);
@@ -108,9 +141,9 @@ Deno.test("pooledMap() checks browser compat", async () => {
   delete (ReadableStream.prototype as any)[Symbol.asyncIterator];
   try {
     const results = pooledMap(
+      2,
       [1, 2, 3],
       (i) => new Promise<number>((r) => setTimeout(() => r(i), 100)),
-      { poolLimit: 2 },
     );
     const array = await Array.fromAsync(results);
     assertEquals(array, [1, 2, 3]);
@@ -124,9 +157,9 @@ Deno.test("pooledMap() rejects immediately with already-aborted signal", async (
   controller.abort(new Error("already aborted"));
 
   const results = pooledMap(
+    { poolLimit: 2, signal: controller.signal },
     [1, 2, 3],
     (i) => Promise.resolve(i),
-    { poolLimit: 2, signal: controller.signal },
   );
 
   await assertRejects(
@@ -141,6 +174,7 @@ Deno.test("pooledMap() stops processing when signal is aborted", async () => {
   const started: number[] = [];
 
   const results = pooledMap(
+    { poolLimit: 1, signal: controller.signal },
     [1, 2, 3, 4, 5],
     async (i) => {
       started.push(i);
@@ -148,7 +182,6 @@ Deno.test("pooledMap() stops processing when signal is aborted", async () => {
       if (i === 2) controller.abort(new Error("stop at 2"));
       return i;
     },
-    { poolLimit: 1, signal: controller.signal },
   );
 
   const collected: number[] = [];
@@ -170,12 +203,12 @@ Deno.test("pooledMap() aborts during pool wait", async () => {
   const controller = new AbortController();
 
   const results = pooledMap(
+    { poolLimit: 2, signal: controller.signal },
     [1, 2, 3, 4, 5, 6, 7, 8],
     async (i) => {
       await delay(200);
       return i;
     },
-    { poolLimit: 2, signal: controller.signal },
   );
 
   setTimeout(() => controller.abort(new Error("timed out")), 50);
@@ -189,12 +222,12 @@ Deno.test("pooledMap() aborts during pool wait", async () => {
 
 Deno.test("pooledMap() works normally without signal", async () => {
   const results = pooledMap(
+    { poolLimit: 2 },
     [10, 20, 30],
     async (i) => {
       await delay(10);
       return i * 2;
     },
-    { poolLimit: 2 },
   );
 
   const array = await Array.fromAsync(results);
