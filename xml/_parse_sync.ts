@@ -90,6 +90,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const ignoreWhitespace = options?.ignoreWhitespace ?? false;
   const ignoreComments = options?.ignoreComments ?? false;
   const trackPosition = options?.trackPosition ?? true;
+  const disallowDoctype = options?.disallowDoctype ?? true;
+  const maxDepth = options?.maxDepth ?? Infinity;
+  const maxAttributes = options?.maxAttributes ?? Infinity;
 
   // Normalize line endings (XML 1.0 §2.11)
   const input = xml.includes("\r")
@@ -1017,6 +1020,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
       // DOCTYPE: <!DOCTYPE...>
       if (pos + 6 < len && input.startsWith("DOCTYPE", pos)) {
+        if (disallowDoctype) {
+          error("DOCTYPE declarations are not allowed");
+        }
         pos += 7; // Skip 'DOCTYPE'
 
         // Skip whitespace before name (required)
@@ -1242,6 +1248,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     // Note: elementName is created after namespace processing below,
     // so we can include the resolved URI
     const attributes: Record<string, string> = Object.create(null);
+    let attrCount = 0;
     let selfClosing = false;
 
     // Read attributes
@@ -1317,6 +1324,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       // handle namespace-prefixed attributes like a:attr vs b:attr
       if (Object.hasOwn(attributes, attrName)) {
         error(`Duplicate attribute '${attrName}'`);
+      }
+      if (++attrCount > maxAttributes) {
+        error(`Attribute count exceeds limit of ${maxAttributes}`);
       }
       attributes[attrName] = attrValue;
 
@@ -1439,6 +1449,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
     // Only push non-self-closing elements to stack
     if (!selfClosing) {
+      if (stack.length >= maxDepth) {
+        error(`Element nesting depth exceeds limit of ${maxDepth}`);
+      }
       stack.push(element);
     } else if (stack.length === 0 && root === element) {
       // Self-closing root element
