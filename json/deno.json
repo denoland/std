@@ -1,6 +1,6 @@
 {
   "name": "@std/json",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "exports": {
     ".": "./mod.ts",
     "./types": "./types.ts",

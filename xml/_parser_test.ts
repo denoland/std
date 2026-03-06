@@ -547,3 +547,100 @@ Deno.test("XmlEventParser.process() silently consumes DOCTYPE", () => {
   assertEquals(events[0]!.type, "start_element");
   assertEquals(events[1]!.type, "end_element");
 });
+
+// =============================================================================
+// Resource exhaustion limits: maxDepth / maxAttributes
+// =============================================================================
+
+Deno.test("XmlEventParser.process() throws when nesting exceeds maxDepth", () => {
+  assertThrows(
+    () => collectEvents("<a><b><c></c></b></a>", { maxDepth: 2 }),
+    XmlSyntaxError,
+    "Element nesting depth exceeds limit of 2",
+  );
+});
+
+Deno.test("XmlEventParser.process() allows nesting within maxDepth", () => {
+  const events = collectEvents("<a><b><c/></b></a>", { maxDepth: 3 });
+  assertEquals(events.filter((e) => e.type === "start_element").length, 3);
+});
+
+Deno.test("XmlEventParser.process() throws when attributes exceed maxAttributes", () => {
+  assertThrows(
+    () => collectEvents('<root a="1" b="2" c="3"/>', { maxAttributes: 2 }),
+    XmlSyntaxError,
+    "Attribute count exceeds limit of 2",
+  );
+});
+
+Deno.test("XmlEventParser.process() allows attributes within maxAttributes", () => {
+  const events = collectEvents('<root a="1" b="2"/>', { maxAttributes: 2 });
+  assertEquals(events[0]!.attributes?.length, 2);
+});
+
+// =============================================================================
+// Attribute duplicate detection: Set-based path (32+ attributes)
+// =============================================================================
+
+Deno.test("XmlEventParser.process() detects duplicate among 32+ attributes", () => {
+  const attrs = Array.from(
+    { length: 33 },
+    (_, i) => `a${i}="v"`,
+  ).join(" ");
+  // Duplicate the first attribute at the end
+  const xml = `<root ${attrs} a0="dup"/>`;
+  assertThrows(
+    () => collectEvents(xml),
+    XmlSyntaxError,
+    "Duplicate attribute 'a0'",
+  );
+});
+
+Deno.test("XmlEventParser.process() parses 33 unique attributes", () => {
+  const attrs = Array.from(
+    { length: 33 },
+    (_, i) => `a${i}="v${i}"`,
+  ).join(" ");
+  const xml = `<root ${attrs}/>`;
+  const events = collectEvents(xml);
+  assertEquals(events[0]!.attributes?.length, 33);
+});
+
+// =============================================================================
+// PI target namespace constraint
+// =============================================================================
+
+Deno.test("XmlEventParser.process() throws on PI target with colon", () => {
+  assertThrows(
+    () => collectEvents("<?foo:bar data?><root/>"),
+    XmlSyntaxError,
+    "Cannot use ':' in processing instruction target",
+  );
+});
+
+// =============================================================================
+// Finalize without root element
+// =============================================================================
+
+Deno.test("XmlEventParser.process() throws on finalize with no root element", () => {
+  assertThrows(
+    () => collectEvents(""),
+    XmlSyntaxError,
+    "No root element found in XML document",
+  );
+});
+
+// =============================================================================
+// Namespace expanded-name: same local name, different URIs
+// =============================================================================
+
+Deno.test("XmlEventParser.process() allows same local name with different namespace URIs", () => {
+  const xml =
+    '<root xmlns:a="http://a.com" xmlns:b="http://b.com" a:x="1" b:x="2"/>';
+  const events = collectEvents(xml);
+  const attrs = events[0]!.attributes!;
+  const aX = attrs.find((a) => a.name.raw === "a:x");
+  const bX = attrs.find((a) => a.name.raw === "b:x");
+  assertEquals(aX?.name.uri, "http://a.com");
+  assertEquals(bX?.name.uri, "http://b.com");
+});

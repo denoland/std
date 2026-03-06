@@ -6,10 +6,16 @@
  * - `"closed"`: Normal operation, requests pass through
  * - `"open"`: Failing, all requests rejected immediately
  * - `"half_open"`: Testing recovery, limited requests allowed
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type CircuitState = "closed" | "open" | "half_open";
 
-/** Options for {@linkcode CircuitBreaker}. */
+/**
+ * Options for {@linkcode CircuitBreaker}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CircuitBreakerOptions<T> {
   /**
    * Number of failures before opening the circuit.
@@ -120,7 +126,11 @@ export interface CircuitBreakerOptions<T> {
   onClose?: () => void;
 }
 
-/** Options for {@linkcode CircuitBreaker.execute}. */
+/**
+ * Options for {@linkcode CircuitBreaker.execute}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CircuitBreakerExecuteOptions {
   /**
    * An optional abort signal that can be used to cancel the operation
@@ -166,6 +176,8 @@ export class CircuitBreakerOpenError extends Error {
   /**
    * Milliseconds until the circuit breaker cooldown expires.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
@@ -180,11 +192,13 @@ export class CircuitBreakerOpenError extends Error {
   /**
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
    *
-   * @param remainingCooldownMs Milliseconds until cooldown expires.
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param remainingCooldownMs The number of milliseconds until the circuit breaker exits the open state.
    */
   constructor(remainingCooldownMs: number) {
     super(
-      `Circuit breaker is open. Retry after ${remainingCooldownMs}ms.`,
+      `Circuit breaker is open: retry after ${remainingCooldownMs}ms`,
     );
     this.name = "CircuitBreakerOpenError";
     this.remainingCooldownMs = remainingCooldownMs;
@@ -199,7 +213,7 @@ interface CircuitBreakerStateBase {
   readonly halfOpenInFlight: number;
 }
 
-/** Internal state managed by the circuit breaker */
+/** Internal state managed by the circuit breaker. */
 type CircuitBreakerState =
   | (CircuitBreakerStateBase & {
     readonly state: "closed";
@@ -228,14 +242,7 @@ function createInitialState(): CircuitBreakerState & { state: "closed" } {
   };
 }
 
-/**
- * Removes failure timestamps outside the decay window.
- *
- * @param timestamps Readonly array of failure timestamps in ms.
- * @param windowMs Duration window in milliseconds.
- * @param nowMs Current time in milliseconds.
- * @returns Readonly filtered array of timestamps within the window.
- */
+/** Removes failure timestamps outside the decay window. */
 function pruneOldFailures(
   timestamps: readonly number[],
   windowMs: number,
@@ -253,7 +260,7 @@ function validateOption(name: string, value: number, min: number): void {
       ? "a finite non-negative number"
       : `a finite number >= ${min}`;
     throw new RangeError(
-      `Cannot create circuit breaker as '${name}' must be ${constraint}: received ${value}`,
+      `Cannot create circuit breaker: "${name}" must be ${constraint}, received ${value}`,
     );
   }
 }
@@ -386,6 +393,8 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Constructs a new {@linkcode CircuitBreaker} instance.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @param options Configuration options for the circuit breaker.
    * @throws {RangeError} If any numeric option is not a finite number within its valid range.
    */
@@ -434,6 +443,8 @@ export class CircuitBreaker<T = unknown> {
    * until the next {@linkcode execute} call triggers the transition to
    * `"half_open"`.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
@@ -454,6 +465,8 @@ export class CircuitBreaker<T = unknown> {
    *
    * The function can be synchronous or asynchronous. The result is always
    * returned as a promise.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage with async function
    * ```ts ignore
@@ -477,8 +490,8 @@ export class CircuitBreaker<T = unknown> {
    * ```
    *
    * @typeParam R The return type of the function, must extend T.
-   * @param fn The function to execute (sync or async).
-   * @param options Optional execution options including an abort signal.
+   * @param fn The function to execute through the circuit breaker.
+   * @param options Options for this execution, such as an abort signal.
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    * @throws {DOMException} If the abort signal is already aborted.
@@ -544,6 +557,8 @@ export class CircuitBreaker<T = unknown> {
    * Forces the circuit breaker to open state.
    * Useful for maintenance or known outages.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
@@ -584,6 +599,8 @@ export class CircuitBreaker<T = unknown> {
    *
    * For silent resets (e.g., in tests), use {@linkcode reset} instead.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
@@ -611,6 +628,8 @@ export class CircuitBreaker<T = unknown> {
    * (`onStateChange`, `onClose`). Use this for testing or administrative
    * resets where observers should not be notified.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
@@ -628,8 +647,6 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Resolves the current state, handling automatic transitions.
    * OPEN → HALF_OPEN after cooldown expires.
-   *
-   * @param now Current timestamp in milliseconds.
    */
   #resolveCurrentState(now: number): CircuitBreakerState {
     if (this.#state.state !== "open") {
@@ -653,13 +670,7 @@ export class CircuitBreaker<T = unknown> {
     return this.#state;
   }
 
-  /**
-   * Records a failure and potentially opens the circuit.
-   *
-   * @param error The error that occurred.
-   * @param previousState The state before this failure.
-   * @param now Current timestamp in milliseconds.
-   */
+  /** Records a failure and potentially opens the circuit. */
   #handleFailure(
     error: unknown,
     previousState: CircuitState,

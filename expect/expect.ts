@@ -1,5 +1,4 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-// This module is browser compatible.
 // Copyright 2019 Allain Lalonde. All rights reserved. ISC License.
 // Copyright (c) Meta Platforms, Inc. and affiliates.
 // The documentation is extracted from https://github.com/jestjs/jest/blob/main/website/versioned_docs/version-29.7/ExpectAPI.md
@@ -55,7 +54,9 @@ import {
   toHaveReturnedTimes,
   toHaveReturnedWith,
   toMatch,
+  toMatchInlineSnapshot,
   toMatchObject,
+  toMatchSnapshot,
   toStrictEqual,
   toThrow,
 } from "./_matchers.ts";
@@ -63,6 +64,11 @@ import { addSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
 import * as asymmetricMatchers from "./_asymmetric_matchers.ts";
 import type { SnapshotPlugin, Tester } from "./_types.ts";
+import {
+  type ExpectSnapshotState,
+  getState as getSnapshotState,
+  setState as setSnapshotState,
+} from "./_snapshot_state.ts";
 
 export type { AnyConstructor, Async, Expected } from "./_types.ts";
 
@@ -102,7 +108,9 @@ const matchers: Record<MatcherKey, Matcher> = {
   toHaveReturnedTimes,
   toHaveReturnedWith,
   toHaveReturned,
+  toMatchInlineSnapshot,
   toMatchObject,
+  toMatchSnapshot,
   toMatch,
   toReturn: toHaveReturned,
   toReturnTimes: toHaveReturnedTimes,
@@ -618,3 +626,41 @@ expect.not = {
 expect.addSnapshotSerializer = addSerializer as (
   plugin: SnapshotPlugin,
 ) => void;
+/**
+ * `expect.setState` sets the state for snapshot matchers. This must be called
+ * before using `toMatchSnapshot()` to provide the current test name and
+ * optionally the test file path.
+ *
+ * @experimental
+ *
+ * @example
+ * ```ts ignore
+ * import { expect } from "@std/expect";
+ *
+ * Deno.test("my test", () => {
+ *   expect.setState({
+ *     currentTestName: "my test",
+ *     testPath: import.meta.url,
+ *   });
+ *   expect({ foo: 42 }).toMatchSnapshot();
+ * });
+ * ```
+ */
+expect.setState = setSnapshotState as (
+  state: Partial<ExpectSnapshotState>,
+) => void;
+/**
+ * `expect.getState` returns the current state for snapshot matchers.
+ *
+ * @experimental
+ *
+ * @example
+ * ```ts
+ * import { expect } from "@std/expect";
+ *
+ * expect.setState({ currentTestName: "my test" });
+ * const state = expect.getState();
+ * expect(state.currentTestName).toBe("my test");
+ * ```
+ */
+expect.getState = getSnapshotState as () => ExpectSnapshotState;
