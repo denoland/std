@@ -337,6 +337,7 @@ export async function serveFile(
 }
 
 async function serveDirIndex(
+  req: Request,
   dirPath: string,
   options: {
     showDotfiles: boolean;
@@ -406,9 +407,11 @@ async function serveDirIndex(
 
   const headers = createBaseHeaders();
   headers.set(HEADER.ContentType, "text/html; charset=UTF-8");
+  const pageSize = new TextEncoder().encode(page).byteLength;
+  headers.set(HEADER.ContentLength, `${pageSize}`);
 
   const status = STATUS_CODE.OK;
-  return new Response(page, {
+  return new Response(req.method === METHOD.Head ? null : page, {
     status,
     statusText: STATUS_TEXT[status],
     headers,
@@ -660,7 +663,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== METHOD.Get) {
+  if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -796,7 +799,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);
