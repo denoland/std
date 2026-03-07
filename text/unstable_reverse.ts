@@ -22,8 +22,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-const REGEX_SYMBOL_WITH_COMBINING_MARKS = /(\P{M})(\p{M}+)/gu;
-const REGEX_SURROGATE_PAIR = /([\uD800-\uDBFF])([\uDC00-\uDFFF])/g;
+const SYMBOL_WITH_COMBINING_MARKS_REGEXP = /(\P{M})(\p{M}+)/gu;
+const SURROGATE_PAIR_REGEXP = /([\uD800-\uDBFF])([\uDC00-\uDFFF])/g;
 
 /** Options for {@linkcode reverse}  */
 export type ReverseOptions = {
@@ -71,13 +71,13 @@ export function reverse(
     // Step 1: deal with combining marks and astral symbols (surrogate pairs)
     input = input
       // Swap symbols with their combining marks so the combining marks go first
-      .replace(REGEX_SYMBOL_WITH_COMBINING_MARKS, (_, $1, $2) => {
+      .replace(SYMBOL_WITH_COMBINING_MARKS_REGEXP, (_, $1, $2) => {
         // Reverse the combining marks so they will end up in the same order
         // later on (after another round of reversing)
         return reverse($2) + $1;
       })
       // Swap high and low surrogates so the low surrogates go first
-      .replace(REGEX_SURROGATE_PAIR, "$2$1");
+      .replace(SURROGATE_PAIR_REGEXP, "$2$1");
   }
 
   // Step 2: reverse the code units in the string

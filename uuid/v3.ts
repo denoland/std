@@ -6,7 +6,7 @@ import { concat } from "@std/bytes/concat";
 import { crypto } from "@std/crypto/crypto";
 import { validate as validateCommon } from "./common.ts";
 
-const UUID_RE =
+const UUID_REGEXP =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[3][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
@@ -27,7 +27,7 @@ const UUID_RE =
  * ```
  */
 export function validate(id: string): boolean {
-  return UUID_RE.test(id);
+  return UUID_REGEXP.test(id);
 }
 
 /**

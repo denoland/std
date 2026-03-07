@@ -70,16 +70,39 @@ export interface ThrottledFunction<T extends Array<unknown>> {
  * assert(func.lastExecution > 0);
  * ```
  *
+ * @example With dynamic timeframe
+ *
+ * ```ts no-assert
+ * import { throttle } from "@std/async/unstable-throttle";
+ *
+ * function processUserInput(input: string) {
+ *   // Do some expensive computation with user input that changes on each
+ *   // keypress, which takes a variable amount of time depending on the length
+ *   // or complexity of input.
+ * }
+ *
+ * const processUserInputThrottled = throttle(
+ *   processUserInput,
+ *   // Throttle dynamically, waiting twice as long as the previous execution
+ *   // took to complete before starting the next call.
+ *   (n) => n * 2,
+ *   { ensureLastCall: true },
+ * );
+ * ```
+ *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to throttle.
  * @param timeframe The timeframe in milliseconds in which the function should be called at most once.
+ * If a callback function is supplied, it will be called with the duration of
+ * the previous execution and should return the
+ * next timeframe to use in milliseconds.
  * @param options Additional options.
  * @returns The throttled function.
  */
 // deno-lint-ignore no-explicit-any
 export function throttle<T extends Array<any>>(
   fn: (this: ThrottledFunction<T>, ...args: T) => void,
-  timeframe: number,
+  timeframe: number | ((previousDuration: number) => number),
   options?: ThrottleOptions,
 ): ThrottledFunction<T> {
   const ensureLast = Boolean(options?.ensureLastCall);
@@ -87,21 +110,38 @@ export function throttle<T extends Array<any>>(
 
   let lastExecution = -Infinity;
   let flush: (() => void) | null = null;
+  let throttlingAsync = false;
+
+  let tf = typeof timeframe === "function" ? 0 : timeframe;
 
   const throttled = ((...args: T) => {
     flush = () => {
+      const start = Date.now();
+      let result: unknown;
+      const done = () => {
+        throttlingAsync = false;
+        lastExecution = Date.now();
+        if (typeof timeframe === "function") {
+          tf = timeframe(lastExecution - start);
+        }
+      };
       try {
         clearTimeout(timeout);
-        fn.call(throttled, ...args);
+        result = fn.call(throttled, ...args);
       } finally {
-        lastExecution = Date.now();
+        if (isPromiseLike(result)) {
+          throttlingAsync = true;
+          Promise.resolve(result).finally(done);
+        } else {
+          done();
+        }
         flush = null;
       }
     };
     if (throttled.throttling) {
       if (ensureLast) {
         clearTimeout(timeout);
-        timeout = setTimeout(() => flush?.(), timeframe);
+        timeout = setTimeout(() => flush?.(), tf);
       }
       return;
     }
@@ -109,6 +149,7 @@ export function throttle<T extends Array<any>>(
   }) as ThrottledFunction<T>;
 
   throttled.clear = () => {
+    throttlingAsync = false;
     lastExecution = -Infinity;
   };
 
@@ -117,9 +158,15 @@ export function throttle<T extends Array<any>>(
   };
 
   Object.defineProperties(throttled, {
-    throttling: { get: () => Date.now() - lastExecution <= timeframe },
+    throttling: {
+      get: () => Date.now() - lastExecution <= tf || throttlingAsync,
+    },
     lastExecution: { get: () => lastExecution },
   });
 
   return throttled;
+}
+
+function isPromiseLike(obj: unknown): obj is PromiseLike<unknown> {
+  return typeof (obj as PromiseLike<unknown>)?.then === "function";
 }

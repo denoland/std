@@ -2,6 +2,12 @@
 // This module is browser compatible.
 
 /**
+ * Type definitions for the XML parser and serializer.
+ *
+ * @module
+ */
+
+/**
  * Position information for error reporting.
  */
 export interface XmlPosition {
@@ -240,6 +246,36 @@ export interface BaseParseOptions {
    * Disabling improves performance but makes debugging harder.
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, DOCTYPE declarations are rejected immediately with an
+   * {@linkcode XmlSyntaxError}, before any internal subset is parsed.
+   * This prevents resource exhaustion attacks via hostile DTD content.
+   *
+   * Set to `false` to allow DOCTYPE declarations (e.g. for documents
+   * that use predefined entities or external DTD references).
+   *
+   * @default {true}
+   */
+  readonly disallowDoctype?: boolean;
+
+  /**
+   * Maximum element nesting depth. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents stack exhaustion from
+   * deeply nested documents.
+   *
+   * @default {Infinity}
+   */
+  readonly maxDepth?: number;
+
+  /**
+   * Maximum number of attributes per element. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents memory exhaustion from
+   * elements with huge attribute lists.
+   *
+   * @default {Infinity}
+   */
+  readonly maxAttributes?: number;
 }
 
 /**

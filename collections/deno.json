@@ -53,6 +53,7 @@
     "./unstable-drop-while": "./unstable_drop_while.ts",
     "./unstable-find-single": "./unstable_find_single.ts",
     "./unstable-first-not-nullish-of": "./unstable_first_not_nullish_of.ts",
+    "./unstable-interleave": "./unstable_interleave.ts",
     "./unstable-join-to-string": "./unstable_join_to_string.ts",
     "./unstable-map-not-nullish": "./unstable_map_not_nullish.ts",
     "./unstable-max-by": "./unstable_max_by.ts",
