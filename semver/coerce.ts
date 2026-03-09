@@ -6,12 +6,13 @@ import { parse } from "./parse.ts";
 const MAX_SAFE_COMPONENT_LENGTH = 16;
 
 const PRERELEASE_IDENTIFIER = "(?:0|[1-9]\\d*|\\d*[a-zA-Z-][a-zA-Z0-9-]*)";
-const PRERELEASE = `(?:-(?<prerelease>${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
+const PRERELEASE =
+  `(?:-(?<prerelease>${PRERELEASE_IDENTIFIER}(?:\\.${PRERELEASE_IDENTIFIER})*))`;
 const BUILD_IDENTIFIER = "[0-9A-Za-z-]+";
-const BUILD = `(?:\\+(?<buildmetadata>${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
+const BUILD =
+  `(?:\\+(?<buildmetadata>${BUILD_IDENTIFIER}(?:\\.${BUILD_IDENTIFIER})*))`;
 
-const COERCE_PLAIN =
-  `(^|[^\\d])(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}})` +
+const COERCE_PLAIN = `(^|[^\\d])(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}})` +
   `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
   `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`;
 
