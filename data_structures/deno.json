@@ -10,6 +10,7 @@
     "./comparators": "./comparators.ts",
     "./red-black-tree": "./red_black_tree.ts",
     "./unstable-2d-array": "./unstable_2d_array.ts",
+    "./unstable-rolling-counter": "./unstable_rolling_counter.ts",
     "./unstable-deque": "./unstable_deque.ts"
   }
 }
