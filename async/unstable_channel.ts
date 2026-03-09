@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { Deque } from "../data_structures/unstable_deque.ts";
+import { Deque } from "@std/data-structures/unstable-deque";
 
 /** Internal node for the FIFO sender waiting queue. */
 interface SenderNode<T> {
