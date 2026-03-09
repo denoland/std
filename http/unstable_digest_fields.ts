@@ -74,6 +74,17 @@ export interface CreateDigestOptions {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @example Usage
+ * ```ts
+ * import { computeDigest } from "@std/http/unstable-digest-fields";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const content = new TextEncoder().encode("hello");
+ * const digest = await computeDigest(content, "sha-256");
+ *
+ * assertEquals(digest.length, 32);
+ * ```
+ *
  * @param content The content to digest.
  * @param algorithm The digest algorithm.
  * @returns The digest bytes.
@@ -139,6 +150,16 @@ function validateAlgorithms(algorithms: DigestAlgorithm[]): void {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @example Usage
+ * ```ts
+ * import { createContentDigest } from "@std/http/unstable-digest-fields";
+ * import { assert } from "@std/assert";
+ *
+ * const digest = await createContentDigest("hello");
+ *
+ * assert(digest.startsWith("sha-256=:"));
+ * ```
+ *
  * @param content The message body (string, bytes, or stream).
  * @param options Optional algorithms to include; defaults to `["sha-256"]`.
  * @returns The header value, e.g. `sha-256=:base64...:`.
@@ -168,6 +189,16 @@ export async function createContentDigest(
  * responsibility to pass the decoded representation bytes.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { createReprDigest } from "@std/http/unstable-digest-fields";
+ * import { assert } from "@std/assert";
+ *
+ * const digest = await createReprDigest("hello");
+ *
+ * assert(digest.startsWith("sha-256=:"));
+ * ```
  *
  * @param content The representation body (string, bytes, or stream).
  * @param options Optional algorithms to include; defaults to `["sha-256"]`.
@@ -248,6 +279,23 @@ async function verifyDigestHeader<T extends Request | Response>(
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @example Usage
+ * ```ts
+ * import { createContentDigest, verifyContentDigest } from "@std/http/unstable-digest-fields";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const body = "hello";
+ * const digest = await createContentDigest(body);
+ * const response = new Response(body, {
+ *   headers: { "Content-Digest": digest },
+ * });
+ *
+ * const verified = await verifyContentDigest(response);
+ *
+ * assertEquals(await verified.text(), body);
+ * ```
+ *
+ * @typeParam T The type of the message (if provided).
  * @param message The HTTP request or response to verify.
  * @returns The same message (body still consumable).
  * @throws {TypeError} If the header is missing, malformed, or contains no supported algorithms.
@@ -267,6 +315,23 @@ export function verifyContentDigest<T extends Request | Response>(
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @example Usage
+ * ```ts
+ * import { createReprDigest, verifyReprDigest } from "@std/http/unstable-digest-fields";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const body = "hello";
+ * const digest = await createReprDigest(body);
+ * const response = new Response(body, {
+ *   headers: { "Repr-Digest": digest },
+ * });
+ *
+ * const verified = await verifyReprDigest(response);
+ *
+ * assertEquals(await verified.text(), body);
+ * ```
+ *
+ * @typeParam T The type of the message (if provided).
  * @param message The HTTP request or response to verify.
  * @returns The same message (body still consumable).
  * @throws {TypeError} If the header is missing, malformed, or contains no supported algorithms.
