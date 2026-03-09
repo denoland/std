@@ -274,6 +274,7 @@
  *
  * @module
  */
+export * from "./coerce.ts";
 export * from "./compare.ts";
 export * from "./difference.ts";
 export * from "./format.ts";
@@ -282,6 +283,7 @@ export * from "./increment.ts";
 export * from "./is_semver.ts";
 export * from "./max_satisfying.ts";
 export * from "./min_satisfying.ts";
+export * from "./min_version.ts";
 export * from "./parse_range.ts";
 export * from "./parse.ts";
 export * from "./range_intersects.ts";
