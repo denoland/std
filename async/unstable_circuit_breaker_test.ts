@@ -593,7 +593,7 @@ Deno.test("CircuitBreaker.execute() isolates isResultFailure predicate errors an
 // forceOpen / forceClose / reset
 // ---------------------------------------------------------------------------
 
-Deno.test("CircuitBreaker.forceOpen() opens the circuit from any state", async () => {
+Deno.test("CircuitBreaker.forceOpen() opens the circuit from any state", () => {
   using time = new FakeTime();
 
   const transitions: Array<[CircuitState, CircuitState]> = [];
