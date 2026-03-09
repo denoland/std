@@ -16,12 +16,12 @@ const COERCE_PLAIN = `(^|[^\\d])(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}})` +
   `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
   `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`;
 
-const COERCE_RE = new RegExp(`${COERCE_PLAIN}(?:$|[^\\d])`);
-const COERCE_FULL_RE = new RegExp(
+const COERCE_REGEXP = new RegExp(`${COERCE_PLAIN}(?:$|[^\\d])`);
+const COERCE_FULL_REGEXP = new RegExp(
   `${COERCE_PLAIN}${PRERELEASE}?${BUILD}?(?:$|[^\\d])`,
 );
-const COERCE_RTL_RE = new RegExp(COERCE_RE.source, "g");
-const COERCE_RTL_FULL_RE = new RegExp(COERCE_FULL_RE.source, "g");
+const COERCE_RTL_REGEXP = new RegExp(COERCE_REGEXP.source, "g");
+const COERCE_RTL_FULL_REGEXP = new RegExp(COERCE_FULL_REGEXP.source, "g");
 
 /** Options for {@linkcode coerce}. */
 export interface CoerceOptions {
@@ -81,12 +81,12 @@ export function coerce(
 
   if (!options?.rtl) {
     match = version.match(
-      includePrerelease ? COERCE_FULL_RE : COERCE_RE,
+      includePrerelease ? COERCE_FULL_REGEXP : COERCE_REGEXP,
     ) as RegExpExecArray | null;
   } else {
     const coerceRtlRegex = includePrerelease
-      ? COERCE_RTL_FULL_RE
-      : COERCE_RTL_RE;
+      ? COERCE_RTL_FULL_REGEXP
+      : COERCE_RTL_REGEXP;
     let next: RegExpExecArray | null;
     while (
       (next = coerceRtlRegex.exec(version)) &&
@@ -115,5 +115,7 @@ export function coerce(
 
   try {
     return parse(`${major}.${minor}.${patch}${prerelease}${build}`);
-  } catch {}
+  } catch {
+    // invalid semver, return undefined
+  }
 }
