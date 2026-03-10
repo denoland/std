@@ -184,6 +184,8 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  await req.body?.cancel();
+
   if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
@@ -194,7 +196,6 @@ export async function serveFile(
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      await req.body?.cancel();
       return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
@@ -202,7 +203,6 @@ export async function serveFile(
   }
 
   if (fileInfo.isDirectory) {
-    await req.body?.cancel();
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
