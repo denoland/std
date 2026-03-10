@@ -11,7 +11,7 @@
  * Fields Dictionaries ({@link https://www.rfc-editor.org/rfc/rfc9651 | RFC 9651}).
  *
  * @example Signing a request
- * ```ts
+ * ```ts ignore
  * import { signMessage } from "@std/http/unstable-message-signatures";
  *
  * const key = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]);
@@ -70,6 +70,7 @@ import {
 } from "@std/http/unstable-structured-fields";
 
 const UTF8_ENCODER = new TextEncoder();
+const SF_KEY_REGEXP = /^[a-z*][a-z0-9_\-.*]*$/;
 
 // =============================================================================
 // Public Types
@@ -98,15 +99,15 @@ export type SignatureAlgorithm =
  */
 export interface ComponentParameters {
   /** Strict Structured Field serialization. */
-  sf?: boolean;
+  sf?: true;
   /** Dictionary member key. */
   key?: string;
   /** Binary-wrapped field values. */
-  bs?: boolean;
+  bs?: true;
   /** Derive value from the related request. */
-  req?: boolean;
+  req?: true;
   /** Derive value from trailer fields. */
-  tr?: boolean;
+  tr?: true;
   /** Query parameter name (for `@query-param`). */
   name?: string;
 }
@@ -126,12 +127,33 @@ export interface ComponentIdentifier {
 }
 
 /**
- * Convenience type accepting either a plain string or a full
- * {@linkcode ComponentIdentifier}.
+ * Known derived component names per
+ * {@link https://www.rfc-editor.org/rfc/rfc9421#section-2.2 | RFC 9421 section 2.2}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type ComponentInput = string | ComponentIdentifier;
+export type DerivedComponent =
+  | "@method"
+  | "@target-uri"
+  | "@authority"
+  | "@scheme"
+  | "@request-target"
+  | "@path"
+  | "@query"
+  | "@query-param"
+  | "@status";
+
+/**
+ * Convenience type accepting either a plain string or a full
+ * {@linkcode ComponentIdentifier}. Known derived component names are
+ * autocompleted.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type ComponentInput =
+  | DerivedComponent
+  | (string & NonNullable<unknown>)
+  | ComponentIdentifier;
 
 /**
  * Signature parameters used when signing a message.
@@ -155,7 +177,7 @@ export interface SignatureParams {
   nonce?: string;
   /** Application-specific tag. */
   tag?: string;
-  /** Signature label, defaults to `"sig"`. */
+  /** Signature label, defaults to `"sig"`. Must be a valid sf-key (lowercase alphanumeric, `_`, `-`, `.`, `*`). */
   label?: string;
 }
 
@@ -187,7 +209,9 @@ export interface ParsedSignatureParams {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface SignOptions<T extends Request | Response = Request | Response> {
+export interface SignOptions<
+  T extends Request | Response = Request | Response,
+> {
   /** The HTTP request or response to sign. */
   message: T;
   /** Signature parameters. */
@@ -230,17 +254,17 @@ export interface VerifyResult {
 // Algorithm Dispatch
 // =============================================================================
 
-const SIGNATURE_ALGORITHMS: Record<string, boolean> = {
-  "rsa-pss-sha512": true,
-  "rsa-v1_5-sha256": true,
-  "hmac-sha256": true,
-  "ecdsa-p256-sha256": true,
-  "ecdsa-p384-sha384": true,
-  "ed25519": true,
-};
+const SUPPORTED_ALGORITHMS: ReadonlySet<string> = new Set([
+  "rsa-pss-sha512",
+  "rsa-v1_5-sha256",
+  "hmac-sha256",
+  "ecdsa-p256-sha256",
+  "ecdsa-p384-sha384",
+  "ed25519",
+]);
 
 function isSupportedAlgorithm(value: string): value is SignatureAlgorithm {
-  return value in SIGNATURE_ALGORITHMS;
+  return SUPPORTED_ALGORITHMS.has(value);
 }
 
 function getSignParams(
@@ -270,8 +294,8 @@ function inferAlgorithm(key: CryptoKey): SignatureAlgorithm {
   if (name === "RSA-PSS") return "rsa-pss-sha512";
   if (name === "RSASSA-PKCS1-v1_5") return "rsa-v1_5-sha256";
   if (name === "ECDSA") {
-    const hash = (alg as EcKeyAlgorithm & { namedCurve: string }).namedCurve;
-    if (hash === "P-384") return "ecdsa-p384-sha384";
+    const curve = (alg as EcKeyAlgorithm).namedCurve;
+    if (curve === "P-384") return "ecdsa-p384-sha384";
     return "ecdsa-p256-sha256";
   }
   throw new TypeError(`Cannot infer signature algorithm from key: "${name}"`);
@@ -291,7 +315,9 @@ function normalizeIdentifier(input: ComponentInput): ComponentIdentifier {
 function resolveComponentValue(
   id: ComponentIdentifier,
   message: Request | Response,
+  parsedUrl: { value?: URL },
   relatedRequest?: Request,
+  relatedParsedUrl?: { value?: URL },
 ): string {
   const params = id.parameters ?? {};
 
@@ -304,6 +330,12 @@ function resolveComponentValue(
   if (params.bs && params.key !== undefined) {
     throw new TypeError(
       `Cannot combine "bs" and "key" parameters on component "${id.name}"`,
+    );
+  }
+
+  if (params.tr) {
+    throw new TypeError(
+      `Trailer field resolution (";tr") is not supported for component "${id.name}"`,
     );
   }
 
@@ -323,103 +355,83 @@ function resolveComponentValue(
     return resolveComponentValue(
       { name: id.name, parameters: restParams },
       relatedRequest,
+      relatedParsedUrl ?? {},
     );
   }
 
   if (id.name.startsWith("@")) {
-    return resolveDerivedComponent(id.name, message, params);
+    return resolveDerivedComponent(id.name, message, params, parsedUrl);
   }
 
   return resolveFieldComponent(id.name, message, params);
 }
 
+const REQUEST_ONLY_DERIVED: ReadonlySet<string> = new Set<DerivedComponent>([
+  "@method",
+  "@target-uri",
+  "@authority",
+  "@scheme",
+  "@request-target",
+  "@path",
+  "@query",
+  "@query-param",
+]);
+
 function resolveDerivedComponent(
   name: string,
   message: Request | Response,
   params: ComponentParameters,
+  parsedUrl: { value?: URL },
 ): string {
+  if (REQUEST_ONLY_DERIVED.has(name)) {
+    if (!(message instanceof Request)) {
+      throw new TypeError(`Cannot use "${name}" on a response message`);
+    }
+    return resolveRequestDerived(name, message, params, parsedUrl);
+  }
+
+  if (name === "@status") {
+    if (message instanceof Request) {
+      throw new TypeError(`Cannot use "${name}" on a request message`);
+    }
+    return String(message.status);
+  }
+
+  throw new TypeError(`Unknown derived component "${name}"`);
+}
+
+function resolveRequestDerived(
+  name: string,
+  request: Request,
+  params: ComponentParameters,
+  parsedUrl: { value?: URL },
+): string {
+  if (name === "@method") return request.method.toUpperCase();
+  if (name === "@target-uri") return request.url;
+
+  const url = parsedUrl.value ??= new URL(request.url);
   switch (name) {
-    case "@method": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      return message.method;
-    }
-    case "@target-uri": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      return message.url;
-    }
-    case "@authority": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      const url = new URL(message.url);
+    case "@authority":
       return url.host;
-    }
-    case "@scheme": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      const url = new URL(message.url);
+    case "@scheme":
       return url.protocol.slice(0, -1);
-    }
-    case "@request-target": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      const url = new URL(message.url);
+    case "@request-target":
       return url.pathname + url.search;
-    }
-    case "@path": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      const url = new URL(message.url);
+    case "@path":
       return url.pathname || "/";
-    }
-    case "@query": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
-      const url = new URL(message.url);
-      // search includes the "?" prefix, but if absent we return "?"
+    case "@query":
       return url.search || "?";
-    }
     case "@query-param": {
-      if (!(message instanceof Request)) {
-        throw new TypeError(
-          `Cannot use "${name}" on a response message`,
-        );
-      }
       if (params.name === undefined) {
         throw new TypeError(
           `Component "${name}" requires "name" parameter`,
         );
       }
-      const url = new URL(message.url);
       const decoded = decodeURIComponent(params.name);
       const searchParams = new URLSearchParams(url.search);
       const values: string[] = [];
       for (const [k, v] of searchParams) {
-        if (k === decoded) {
-          values.push(v);
-        }
+        if (k === decoded) values.push(v);
       }
       if (values.length === 0) {
         throw new TypeError(
@@ -431,28 +443,22 @@ function resolveDerivedComponent(
           `Query parameter "${params.name}" occurs multiple times`,
         );
       }
-      // Re-encode per the spec's application/x-www-form-urlencoded serializing
       return encodeQueryParamValue(values[0]!);
     }
-    case "@status": {
-      if (message instanceof Request) {
-        throw new TypeError(
-          `Cannot use "${name}" on a request message`,
-        );
-      }
-      return String(message.status);
-    }
     default:
-      throw new TypeError(
-        `Unknown derived component "${name}"`,
-      );
+      throw new TypeError(`Unknown derived component "${name}"`);
   }
 }
 
 function encodeQueryParamValue(value: string): string {
-  // Percent-encode per application/x-www-form-urlencoded serializing
-  // then convert + back to %20 for the signature base
-  return encodeURIComponent(value).replace(/%20/g, "%20");
+  // RFC 9421 section 2.2.8: use "percent-encode after encoding" from the
+  // WHATWG URL spec (application/x-www-form-urlencoded serializing), which
+  // differs from encodeURIComponent in that it also encodes !'()* characters.
+  // URLSearchParams serializes with + for spaces; convert back to %20.
+  return new URLSearchParams([["", value]]).toString().slice(1).replaceAll(
+    "+",
+    "%20",
+  );
 }
 
 function resolveFieldComponent(
@@ -527,9 +533,11 @@ function resolveDictionaryMember(
 }
 
 function resolveBinaryWrapped(headerValue: string): string {
-  // Each field value is individually wrapped as a Byte Sequence
-  // For the Fetch API, headers.get() already combines multiple values
-  // We split on ", " to get individual values, then wrap each as binary
+  // Each field value is individually wrapped as a Byte Sequence.
+  // The Fetch API Headers.get() joins multiple values with ", " and does not
+  // expose getAll(). Splitting on ", " is therefore the best we can do, but
+  // it will mishandle single header values that contain a literal ", " (e.g.
+  // the Date header). Avoid using ;bs on such fields.
   const values = headerValue.split(", ");
   const items: Item[] = values.map((v) => {
     const bytes = UTF8_ENCODER.encode(v.trim());
@@ -563,11 +571,15 @@ function buildSignatureParamsValue(
     const sfParams = new Map<string, BareItem>();
     const p = id.parameters ?? {};
     if (p.sf) sfParams.set("sf", { type: "boolean", value: true });
-    if (p.key !== undefined) sfParams.set("key", { type: "string", value: p.key });
+    if (p.key !== undefined) {
+      sfParams.set("key", { type: "string", value: p.key });
+    }
     if (p.bs) sfParams.set("bs", { type: "boolean", value: true });
     if (p.req) sfParams.set("req", { type: "boolean", value: true });
     if (p.tr) sfParams.set("tr", { type: "boolean", value: true });
-    if (p.name !== undefined) sfParams.set("name", { type: "string", value: p.name });
+    if (p.name !== undefined) {
+      sfParams.set("name", { type: "string", value: p.name });
+    }
     return sfItem(sfString(id.name), sfParams);
   });
 
@@ -617,7 +629,11 @@ function serializeBareItemValue(bareItem: BareItem): string {
   }
 }
 
-/** Options for {@linkcode createSignatureBase}. */
+/**
+ * Options for {@linkcode createSignatureBase}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CreateSignatureBaseOptions {
   /** The HTTP request or response. */
   message: Request | Response;
@@ -663,22 +679,35 @@ export function createSignatureBase(
   const { message, params, request: relatedRequest } = options;
   const components = params.components.map(normalizeIdentifier);
 
-  // Check for duplicate component identifiers
   const seen = new Set<string>();
+  const lines: string[] = [];
+  const parsedUrl: { value?: URL } = {};
+  const relatedParsedUrl: { value?: URL } = {};
   for (const id of components) {
-    const key = serializeComponentIdentifier(id);
-    if (seen.has(key)) {
+    if (id.name === "@signature-params") {
       throw new TypeError(
-        `Duplicate component identifier ${key} in covered components`,
+        `"@signature-params" must not be listed in covered components`,
       );
     }
-    seen.add(key);
-  }
-
-  const lines: string[] = [];
-  for (const id of components) {
+    if (id.name !== id.name.toLowerCase()) {
+      throw new TypeError(
+        `Component name "${id.name}" must be lowercase`,
+      );
+    }
     const serializedId = serializeComponentIdentifier(id);
-    const value = resolveComponentValue(id, message, relatedRequest);
+    if (seen.has(serializedId)) {
+      throw new TypeError(
+        `Duplicate component identifier ${serializedId} in covered components`,
+      );
+    }
+    seen.add(serializedId);
+    const value = resolveComponentValue(
+      id,
+      message,
+      parsedUrl,
+      relatedRequest,
+      relatedParsedUrl,
+    );
     lines.push(`${serializedId}: ${value}`);
   }
 
@@ -701,6 +730,11 @@ function validateTimestamp(value: number, name: string): void {
 }
 
 function validateSignParams(params: SignatureParams): void {
+  if (params.label !== undefined && !SF_KEY_REGEXP.test(params.label)) {
+    throw new TypeError(
+      `Invalid signature label "${params.label}": must be a valid sf-key (lowercase alphanumeric, _, -, ., *)`,
+    );
+  }
   if (params.created !== undefined) {
     validateTimestamp(params.created, "created");
   }
@@ -750,7 +784,7 @@ function validateSignParams(params: SignatureParams): void {
  * assert(signed.headers.has("Signature-Input"));
  * ```
  *
- * @typeParam T The type of the message (Request or Response).
+ * @typeParam T The message type ({@linkcode Request} or {@linkcode Response}).
  * @param options Signing options.
  * @returns A new message with signature headers appended.
  */
@@ -773,8 +807,6 @@ export async function signMessage<T extends Request | Response>(
   const signatureBytes: Uint8Array<ArrayBuffer> = new Uint8Array(
     await crypto.subtle.sign(signParams, key, baseBytes),
   );
-  // Web Crypto in Deno/browsers already produces raw (r, s) for ECDSA,
-  // which is the format RFC 9421 requires. No DER conversion needed.
 
   // Build Signature-Input value
   const components = params.components.map(normalizeIdentifier);
@@ -786,27 +818,11 @@ export async function signMessage<T extends Request | Response>(
     new Map([[label, sfItem(binary(signatureBytes))]]),
   );
 
-  // Clone the message and append headers
-  if (message instanceof Request) {
-    const clone = new Request(message, {
-      headers: new Headers(message.headers),
-    });
-    appendHeader(clone.headers, "Signature-Input", sigInputHeader);
-    appendHeader(clone.headers, "Signature", sigHeader);
-    return clone as T;
-  } else {
-    const bodyBytes = message.body
-      ? await message.clone().arrayBuffer()
-      : null;
-    const clone = new Response(bodyBytes, {
-      status: message.status,
-      statusText: message.statusText,
-      headers: new Headers(message.headers),
-    });
-    appendHeader(clone.headers, "Signature-Input", sigInputHeader);
-    appendHeader(clone.headers, "Signature", sigHeader);
-    return clone as T;
-  }
+  // clone() preserves the concrete type at runtime
+  const clone = message.clone() as T;
+  appendHeader(clone.headers, "Signature-Input", sigInputHeader);
+  appendHeader(clone.headers, "Signature", sigHeader);
+  return clone;
 }
 
 function appendHeader(headers: Headers, name: string, value: string): void {
@@ -840,7 +856,9 @@ function appendHeader(headers: Headers, name: string, value: string): void {
  * ```
  *
  * @param message The HTTP request or response to verify.
- * @param keyLookup Resolves a key identifier to a CryptoKey.
+ * @param keyLookup Resolves a key identifier to a CryptoKey, or `null` if the
+ *   key is not found. When the signature has no `keyid` parameter, the empty
+ *   string `""` is passed.
  * @param options Optional verification constraints.
  * @returns Array of verified signature results.
  */
@@ -849,15 +867,16 @@ export async function verifyMessage(
   keyLookup: (
     keyId: string,
     algorithm?: SignatureAlgorithm,
-  ) => Promise<CryptoKey> | CryptoKey,
+  ) => Promise<CryptoKey | null> | CryptoKey | null,
   options?: VerifyOptions,
 ): Promise<VerifyResult[]> {
-  if (options?.maxAge !== undefined) {
-    if (!Number.isInteger(options.maxAge) || options.maxAge < 0) {
-      throw new RangeError(
-        `maxAge must be a non-negative integer, got ${options.maxAge}`,
-      );
-    }
+  if (
+    options?.maxAge !== undefined &&
+    (!Number.isInteger(options.maxAge) || options.maxAge < 0)
+  ) {
+    throw new RangeError(
+      `maxAge must be a non-negative integer, got ${options.maxAge}`,
+    );
   }
 
   const sigInputHeader = message.headers.get("Signature-Input");
@@ -889,6 +908,7 @@ export async function verifyMessage(
   }
 
   const results: VerifyResult[] = [];
+  const now = Math.floor(Date.now() / 1000);
 
   for (const [label, sigInputMember] of sigInputDict) {
     // Filter by labels option
@@ -919,9 +939,22 @@ export async function verifyMessage(
       }
     }
 
+    // Check expires
+    if (parsedParams.expires !== undefined) {
+      if (now > parsedParams.expires) {
+        throw new Error(
+          `Signature "${label}" has expired (past "expires" timestamp)`,
+        );
+      }
+    }
+
     // Check maxAge
-    if (options?.maxAge !== undefined && parsedParams.created !== undefined) {
-      const now = Math.floor(Date.now() / 1000);
+    if (options?.maxAge !== undefined) {
+      if (parsedParams.created === undefined) {
+        throw new Error(
+          `Signature "${label}" has no "created" timestamp but maxAge was requested`,
+        );
+      }
       if (now - parsedParams.created > options.maxAge) {
         throw new Error(`Signature "${label}" has expired`);
       }
@@ -930,10 +963,13 @@ export async function verifyMessage(
     // Reconstruct signature base
     const reconstructedParams: SignatureParams = {
       components: parsedParams.components,
-      ...(parsedParams.algorithm !== undefined && { algorithm: parsedParams.algorithm }),
+      ...(parsedParams.algorithm !== undefined &&
+        { algorithm: parsedParams.algorithm }),
       ...(parsedParams.keyId !== undefined && { keyId: parsedParams.keyId }),
-      ...(parsedParams.created !== undefined && { created: parsedParams.created }),
-      ...(parsedParams.expires !== undefined && { expires: parsedParams.expires }),
+      ...(parsedParams.created !== undefined &&
+        { created: parsedParams.created }),
+      ...(parsedParams.expires !== undefined &&
+        { expires: parsedParams.expires }),
       ...(parsedParams.nonce !== undefined && { nonce: parsedParams.nonce }),
       ...(parsedParams.tag !== undefined && { tag: parsedParams.tag }),
     };
@@ -957,18 +993,21 @@ export async function verifyMessage(
         `Signature member "${label}" is not a Byte Sequence`,
       );
     }
-    const sigBytes: Uint8Array<ArrayBuffer> = new Uint8Array(sigMember.value.value);
+    const sigBytes: Uint8Array<ArrayBuffer> = new Uint8Array(
+      sigMember.value.value,
+    );
 
     // Look up key
     const algorithm = parsedParams.algorithm ?? undefined;
     const keyId = parsedParams.keyId ?? "";
     const verifyKey = await keyLookup(keyId, algorithm);
+    if (verifyKey === null) {
+      throw new TypeError(`Key not found for keyId "${keyId}"`);
+    }
 
     const verifyAlgorithm = algorithm ?? inferAlgorithm(verifyKey);
     const verifyParams = getSignParams(verifyAlgorithm);
 
-    // Web Crypto in Deno/browsers accepts raw (r, s) for ECDSA directly,
-    // which is the format RFC 9421 uses. No DER conversion needed.
     const valid = await crypto.subtle.verify(
       verifyParams,
       verifyKey,
@@ -1005,19 +1044,19 @@ function parseSignatureInput(
     for (const [key, value] of member.parameters) {
       switch (key) {
         case "sf":
-          params.sf = value.type === "boolean" ? value.value : true;
+          if (value.type === "boolean" && value.value) params.sf = true;
           break;
         case "key":
           if (value.type === "string") params.key = value.value;
           break;
         case "bs":
-          params.bs = value.type === "boolean" ? value.value : true;
+          if (value.type === "boolean" && value.value) params.bs = true;
           break;
         case "req":
-          params.req = value.type === "boolean" ? value.value : true;
+          if (value.type === "boolean" && value.value) params.req = true;
           break;
         case "tr":
-          params.tr = value.type === "boolean" ? value.value : true;
+          if (value.type === "boolean" && value.value) params.tr = true;
           break;
         case "name":
           if (value.type === "string") params.name = value.value;

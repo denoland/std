@@ -704,7 +704,10 @@ Deno.test("verifyMessage() filters by labels option", async () => {
 Deno.test("verifyMessage() throws TypeError on missing Signature-Input header", async () => {
   const request = new Request("https://example.com/", { method: "GET" });
   await assertRejects(
-    () => verifyMessage(request, () => { throw new Error("unreachable"); }),
+    () =>
+      verifyMessage(request, () => {
+        throw new Error("unreachable");
+      }),
     TypeError,
     'Missing "Signature-Input" header',
   );
