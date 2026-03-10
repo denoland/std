@@ -74,6 +74,7 @@ export function minVersion(range: Range): SemVer | undefined {
           break;
         case "<":
         case "<=":
+        case "!=":
           break;
         default:
           throw new Error(`Unexpected operator: ${comparator.operator}`);

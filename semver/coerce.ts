@@ -100,7 +100,7 @@ export function coerce(
       }
       coerceRtlRegex.lastIndex = next.index + next[1]!.length + next[2]!.length;
     }
-    coerceRtlRegex.lastIndex = -1;
+    coerceRtlRegex.lastIndex = 0;
   }
 
   if (match === null) {
