@@ -47,6 +47,8 @@
  * @module
  */
 
+import type { Uint8Array_ } from "./_types.ts";
+export type { Uint8Array_ };
 import type {
   BareItem,
   Dictionary,
@@ -768,7 +770,7 @@ function validateSignParams(params: SignatureParams): void {
  * import { signMessage } from "@std/http/unstable-message-signatures";
  * import { assert } from "@std/assert";
  *
- * const key = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]);
+ * const key = await crypto.subtle.generateKey("Ed25519", true, ["sign", "verify"]) as CryptoKeyPair;
  * const request = new Request("https://example.com/", { method: "POST" });
  * const signed = await signMessage({
  *   message: request,
@@ -804,7 +806,7 @@ export async function signMessage<T extends Request | Response>(
   const baseBytes = UTF8_ENCODER.encode(base);
 
   const signParams = getSignParams(algorithm);
-  const signatureBytes: Uint8Array<ArrayBuffer> = new Uint8Array(
+  const signatureBytes: Uint8Array_ = new Uint8Array(
     await crypto.subtle.sign(signParams, key, baseBytes),
   );
 
@@ -993,7 +995,7 @@ export async function verifyMessage(
         `Signature member "${label}" is not a Byte Sequence`,
       );
     }
-    const sigBytes: Uint8Array<ArrayBuffer> = new Uint8Array(
+    const sigBytes: Uint8Array_ = new Uint8Array(
       sigMember.value.value,
     );
 
