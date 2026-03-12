@@ -21,6 +21,7 @@
     "./unstable-lazy": "./unstable_lazy.ts",
     "./unstable-all-keyed": "./unstable_all_keyed.ts",
     "./unstable-poll": "./unstable_poll.ts",
-    "./unstable-pool-settled": "./unstable_pool_settled.ts"
+    "./unstable-pool-settled": "./unstable_pool_settled.ts",
+    "./unstable-channel": "./unstable_channel.ts"
   }
 }
