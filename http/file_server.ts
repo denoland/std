@@ -660,7 +660,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== METHOD.Get) {
+  if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
