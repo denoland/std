@@ -4,6 +4,63 @@
 import type { MemoizationCache } from "./memoize.ts";
 
 /**
+ * Options for {@linkcode TtlCache.prototype.set} when
+ * {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
+ * disabled (the default).
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TtlCacheSetOptions {
+  /**
+   * A custom time-to-live in milliseconds for this entry. If supplied,
+   * overrides the cache's default TTL. Must be a finite, non-negative number.
+   */
+  ttl?: number;
+}
+
+/**
+ * Options for {@linkcode TtlCache.prototype.set} when
+ * {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
+ * enabled.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TtlCacheSlidingSetOptions extends TtlCacheSetOptions {
+  /**
+   * A maximum lifetime in milliseconds for this entry, measured from the
+   * time it is set. The sliding window cannot extend past this duration.
+   */
+  absoluteExpiration?: number;
+}
+
+/**
+ * Options for the {@linkcode TtlCache} constructor.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @typeParam Sliding Whether sliding expiration is enabled.
+ */
+export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
+  /**
+   * Callback invoked when an entry is removed, whether by TTL expiry,
+   * manual deletion, or clearing the cache.
+   */
+  onEject?: (ejectedKey: K, ejectedValue: V) => void;
+  /**
+   * When `true`, each {@linkcode TtlCache.prototype.get | get()} or
+   * {@linkcode TtlCache.prototype.has | has()} call resets the entry's TTL.
+   *
+   * If both `slidingExpiration` and
+   * {@linkcode TtlCacheSlidingSetOptions.absoluteExpiration | absoluteExpiration}
+   * are set on an entry, the sliding window cannot extend past the absolute
+   * expiration.
+   *
+   * @default {false}
+   */
+  slidingExpiration?: Sliding;
+}
+
+/**
  * Time-to-live cache.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -12,6 +69,7 @@ import type { MemoizationCache } from "./memoize.ts";
  *
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
+ * @typeParam Sliding Whether sliding expiration is enabled.
  *
  * @example Usage
  * ```ts
@@ -27,32 +85,34 @@ import type { MemoizationCache } from "./memoize.ts";
  * assertEquals(cache.size, 0);
  * ```
  *
- * @example Adding a onEject function.
+ * @example Sliding expiration
  * ```ts
  * import { TtlCache } from "@std/cache/ttl-cache";
- * import { delay } from "@std/async/delay";
  * import { assertEquals } from "@std/assert/equals";
+ * import { FakeTime } from "@std/testing/time";
  *
- * const cache = new TtlCache<string, string>(100, { onEject: (key, value) => {
- *  console.log("Revoking: ", key)
- *  URL.revokeObjectURL(value)
- * }})
+ * using time = new FakeTime(0);
+ * const cache = new TtlCache<string, number, true>(100, {
+ *   slidingExpiration: true,
+ * });
  *
- * cache.set(
- *  "fast-url",
- *  URL.createObjectURL(new Blob(["Hello, World"], { type: "text/plain" }))
- * );
- *
- * await delay(200) // "Revoking: fast-url"
- * assertEquals(cache.get("fast-url"), undefined)
+ * cache.set("a", 1);
+ * time.now = 80;
+ * assertEquals(cache.get("a"), 1); // resets TTL
+ * time.now = 160;
+ * assertEquals(cache.get("a"), 1); // still alive, TTL was reset at t=80
+ * time.now = 260;
+ * assertEquals(cache.get("a"), undefined); // expired
  * ```
  */
-export class TtlCache<K, V> extends Map<K, V>
+export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
   #timeouts = new Map<K, number>();
-
-  #eject: (ejectedKey: K, ejectedValue: V) => void;
+  #eject?: ((ejectedKey: K, ejectedValue: V) => void) | undefined;
+  #slidingExpiration: Sliding;
+  #entryTtls = new Map<K, number>();
+  #absoluteDeadlines = new Map<K, number>();
 
   /**
    * Constructs a new instance.
@@ -60,17 +120,23 @@ export class TtlCache<K, V> extends Map<K, V>
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param defaultTtl The default time-to-live in milliseconds. This value must
-   * be equal to or greater than 0. Its limit is determined by the current
-   * runtime's {@linkcode setTimeout} implementation.
+   * be a finite, non-negative number. Its upper limit is determined by the
+   * current runtime's {@linkcode setTimeout} implementation.
    * @param options Additional options.
    */
   constructor(
     defaultTtl: number,
-    options?: { onEject: (ejectedKey: K, ejectedValue: V) => void },
+    options?: TtlCacheOptions<K, V, Sliding>,
   ) {
     super();
+    if (!(defaultTtl >= 0) || !Number.isFinite(defaultTtl)) {
+      throw new RangeError(
+        `Cannot create TtlCache: defaultTtl must be a finite, non-negative number: received ${defaultTtl}`,
+      );
+    }
     this.#defaultTtl = defaultTtl;
-    this.#eject = options?.onEject ?? (() => {});
+    this.#eject = options?.onEject;
+    this.#slidingExpiration = (options?.slidingExpiration ?? false) as Sliding;
   }
 
   /**
@@ -78,12 +144,9 @@ export class TtlCache<K, V> extends Map<K, V>
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
-   * @param key The cache key
-   * @param value The value to set
-   * @param ttl A custom time-to-live. If supplied, overrides the cache's
-   * default TTL for this entry. This value must
-   * be equal to or greater than 0. Its limit is determined by the current
-   * runtime's {@linkcode setTimeout} implementation.
+   * @param key The cache key.
+   * @param value The value to set.
+   * @param options Options for this entry.
    * @returns `this` for chaining.
    *
    * @example Usage
@@ -101,11 +164,98 @@ export class TtlCache<K, V> extends Map<K, V>
    * assertEquals(cache.get("a"), undefined);
    * ```
    */
-  override set(key: K, value: V, ttl: number = this.#defaultTtl): this {
-    clearTimeout(this.#timeouts.get(key));
+  override set(
+    key: K,
+    value: V,
+    options?: Sliding extends true ? TtlCacheSlidingSetOptions
+      : TtlCacheSetOptions,
+  ): this {
+    const ttl = options?.ttl ?? this.#defaultTtl;
+    if (!(ttl >= 0) || !Number.isFinite(ttl)) {
+      throw new RangeError(
+        `Cannot set entry in TtlCache: ttl must be a finite, non-negative number: received ${ttl}`,
+      );
+    }
+
+    const existing = this.#timeouts.get(key);
+    if (existing !== undefined) clearTimeout(existing);
     super.set(key, value);
     this.#timeouts.set(key, setTimeout(() => this.delete(key), ttl));
+
+    if (this.#slidingExpiration) {
+      const slidingOptions = options as TtlCacheSlidingSetOptions | undefined;
+      this.#entryTtls.set(key, ttl);
+      if (slidingOptions?.absoluteExpiration !== undefined) {
+        const abs = slidingOptions.absoluteExpiration;
+        if (!(abs >= 0) || !Number.isFinite(abs)) {
+          throw new RangeError(
+            `Cannot set entry in TtlCache: absoluteExpiration must be a finite, non-negative number: received ${abs}`,
+          );
+        }
+        this.#absoluteDeadlines.set(key, Date.now() + abs);
+      } else {
+        this.#absoluteDeadlines.delete(key);
+      }
+    }
+
     return this;
+  }
+
+  /**
+   * Gets the value associated with the specified key.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * When {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
+   * enabled, accessing an entry resets its TTL.
+   *
+   * @param key The key to get the value for.
+   * @returns The value associated with the specified key, or `undefined` if
+   * the key is not present in the cache.
+   *
+   * @example Usage
+   * ```ts
+   * import { TtlCache } from "@std/cache/ttl-cache";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * using cache = new TtlCache<string, number>(1000);
+   *
+   * cache.set("a", 1);
+   * assertEquals(cache.get("a"), 1);
+   * ```
+   */
+  override get(key: K): V | undefined {
+    if (!super.has(key)) return undefined;
+    if (this.#slidingExpiration) this.#resetTtl(key);
+    return super.get(key);
+  }
+
+  /**
+   * Checks whether an element with the specified key exists.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * When {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
+   * enabled, checking an entry resets its TTL.
+   *
+   * @param key The key to check.
+   * @returns `true` if the cache contains the specified key, otherwise `false`.
+   *
+   * @example Usage
+   * ```ts
+   * import { TtlCache } from "@std/cache/ttl-cache";
+   * import { assert } from "@std/assert";
+   *
+   * using cache = new TtlCache<string, number>(1000);
+   *
+   * cache.set("a", 1);
+   * assert(cache.has("a"));
+   * ```
+   */
+  override has(key: K): boolean {
+    const exists = super.has(key);
+    if (exists && this.#slidingExpiration) this.#resetTtl(key);
+    return exists;
   }
 
   /**
@@ -129,12 +279,17 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
-    if (super.has(key)) {
-      this.#eject(key, super.get(key) as V);
-    }
-    clearTimeout(this.#timeouts.get(key));
+    const value = super.get(key);
+    const existed = super.delete(key);
+    if (!existed) return false;
+
+    const timeout = this.#timeouts.get(key);
+    if (timeout !== undefined) clearTimeout(timeout);
     this.#timeouts.delete(key);
-    return super.delete(key);
+    this.#entryTtls.delete(key);
+    this.#absoluteDeadlines.delete(key);
+    this.#eject?.(key, value!);
+    return true;
   }
 
   /**
@@ -160,7 +315,19 @@ export class TtlCache<K, V> extends Map<K, V>
       clearTimeout(timeout);
     }
     this.#timeouts.clear();
+    this.#entryTtls.clear();
+    this.#absoluteDeadlines.clear();
+    const entries = [...super.entries()];
     super.clear();
+    let error: unknown;
+    for (const [key, value] of entries) {
+      try {
+        this.#eject?.(key, value);
+      } catch (e) {
+        error ??= e;
+      }
+    }
+    if (error !== undefined) throw error;
   }
 
   /**
@@ -185,5 +352,22 @@ export class TtlCache<K, V> extends Map<K, V>
    */
   [Symbol.dispose](): void {
     this.clear();
+  }
+
+  #resetTtl(key: K): void {
+    const ttl = this.#entryTtls.get(key);
+    if (ttl === undefined) return;
+
+    const deadline = this.#absoluteDeadlines.get(key);
+    const effectiveTtl = deadline !== undefined
+      ? Math.min(ttl, Math.max(0, deadline - Date.now()))
+      : ttl;
+
+    const existing = this.#timeouts.get(key);
+    if (existing !== undefined) clearTimeout(existing);
+    this.#timeouts.set(
+      key,
+      setTimeout(() => this.delete(key), effectiveTtl),
+    );
   }
 }
