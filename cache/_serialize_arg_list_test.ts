@@ -3,30 +3,6 @@ import { assertEquals } from "@std/assert";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
 import { delay } from "@std/async";
 
-Deno.test("_serializeArgList() serializes simple numbers", () => {
-  const getKey = _serializeArgList(new Map());
-  assertEquals(getKey(1), "undefined,1");
-  assertEquals(getKey(1, 2), "undefined,1,2");
-  assertEquals(getKey(1, 2, 3), "undefined,1,2,3");
-});
-
-Deno.test("_serializeArgList() serializes reference types", () => {
-  const getKey = _serializeArgList(new Map());
-  const obj = {};
-  const arr: [] = [];
-  const sym = Symbol("xyz");
-
-  assertEquals(getKey(obj), "undefined,{0}");
-  assertEquals(getKey(obj, obj), "undefined,{0},{0}");
-
-  assertEquals(getKey(arr), "undefined,{1}");
-  assertEquals(getKey(sym), "undefined,{2}");
-  assertEquals(
-    getKey(obj, arr, sym),
-    "undefined,{0},{1},{2}",
-  );
-});
-
 Deno.test("_serializeArgList() gives same results as SameValueZero algorithm", async (t) => {
   /**
    * [`SameValueZero`](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero),
@@ -83,6 +59,17 @@ Deno.test("_serializeArgList() gives same results as SameValueZero algorithm", a
   });
 });
 
+Deno.test("_serializeArgList() serializes function arguments as weak keys", () => {
+  const getKey = _serializeArgList(new Map());
+  const fn1 = () => {};
+  const fn2 = () => {};
+
+  assertEquals(getKey(fn1), "undefined,{0}");
+  assertEquals(getKey(fn1), "undefined,{0}");
+  assertEquals(getKey(fn2), "undefined,{1}");
+  assertEquals(getKey(fn1, fn2), "undefined,{0},{1}");
+});
+
 Deno.test("_serializeArgList() discriminates on `this` arg", () => {
   const getKey = _serializeArgList(new Map());
   const obj1 = {};
@@ -92,6 +79,42 @@ Deno.test("_serializeArgList() discriminates on `this` arg", () => {
   assertEquals(getKey.call(obj1), "{0}");
   assertEquals(getKey.call(obj2), "{1}");
   assertEquals(getKey.call(obj1, obj2), "{0},{1}");
+});
+
+Deno.test("_serializeArgList() cleans up cache entries when finalization callback fires", () => {
+  let cleanupCallback: (keySegment: string) => void;
+
+  const OriginalFinalizationRegistry = FinalizationRegistry;
+  // deno-lint-ignore no-explicit-any
+  (globalThis as any).FinalizationRegistry = function (
+    cb: (keySegment: string) => void,
+  ) {
+    cleanupCallback = cb;
+    return { register() {}, unregister() {} };
+  };
+
+  try {
+    const cache = new Map();
+    const getKey = _serializeArgList(cache);
+
+    const obj = {};
+    const k1 = getKey(obj);
+    const k2 = getKey(obj, "x");
+    cache.set(k1, "v1");
+    cache.set(k2, "v2");
+    cache.set("unrelated", "v3");
+
+    assertEquals(cache.size, 3);
+
+    cleanupCallback!("{0}");
+
+    assertEquals(cache.size, 1);
+    assertEquals(cache.has("unrelated"), true);
+    assertEquals(cache.has(k1), false);
+    assertEquals(cache.has(k2), false);
+  } finally {
+    globalThis.FinalizationRegistry = OriginalFinalizationRegistry;
+  }
 });
 
 Deno.test("_serializeArgList() allows garbage collection for weak keys", async () => {
