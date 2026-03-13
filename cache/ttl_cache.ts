@@ -69,6 +69,7 @@ export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
  *
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
+ * @typeParam Sliding Whether sliding expiration is enabled.
  *
  * @example Usage
  * ```ts
