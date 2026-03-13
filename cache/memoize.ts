@@ -9,9 +9,13 @@ import { _serializeArgList } from "./_serialize_arg_list.ts";
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface MemoizationCache<K, V> {
+  /** Checks whether a value for the given key exists in the cache. */
   has(key: K): boolean;
+  /** Returns the cached value associated with the given key, if present. */
   get(key: K): V | undefined;
+  /** Stores a value in the cache under the given key. */
   set(key: K, val: V): unknown;
+  /** Removes the value associated with the given key from the cache. */
   delete(key: K): unknown;
 }
 
