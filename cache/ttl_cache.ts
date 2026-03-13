@@ -217,7 +217,7 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
    * import { TtlCache } from "@std/cache/ttl-cache";
    * import { assertEquals } from "@std/assert/equals";
    *
-   * const cache = new TtlCache<string, number>(1000);
+   * using cache = new TtlCache<string, number>(1000);
    *
    * cache.set("a", 1);
    * assertEquals(cache.get("a"), 1);
@@ -245,7 +245,7 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
    * import { TtlCache } from "@std/cache/ttl-cache";
    * import { assert } from "@std/assert";
    *
-   * const cache = new TtlCache<string, number>(1000);
+   * using cache = new TtlCache<string, number>(1000);
    *
    * cache.set("a", 1);
    * assert(cache.has("a"));
