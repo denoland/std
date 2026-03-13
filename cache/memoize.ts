@@ -1,8 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-// deno-lint-ignore no-unused-vars
-import type { LruCache } from "./lru_cache.ts";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
 
 /**
@@ -10,12 +8,12 @@ import { _serializeArgList } from "./_serialize_arg_list.ts";
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type MemoizationCache<K, V> = {
-  has: (key: K) => boolean;
-  get: (key: K) => V | undefined;
-  set: (key: K, val: V) => unknown;
-  delete: (key: K) => unknown;
-};
+export interface MemoizationCache<K, V> {
+  has(key: K): boolean;
+  get(key: K): V | undefined;
+  set(key: K, val: V): unknown;
+  delete(key: K): unknown;
+}
 
 /**
  * The result of a memoized function, as stored in its cache.
@@ -46,8 +44,9 @@ export type MemoizeOptions<
    * {@linkcode Map} object is instantiated upon memoization and used as a cache, with no
    * limit on the number of results to be cached.
    *
-   * Alternatively, you can supply a {@linkcode LruCache} with a specified max
-   * size to limit memory usage.
+   * Alternatively, you can supply an
+   * {@link https://jsr.io/@std/cache/doc/lru-cache/~/LruCache | LruCache}
+   * with a specified max size to limit memory usage.
    */
   cache?: Cache;
   /**
@@ -92,7 +91,8 @@ export type MemoizeOptions<
  * @param fn The function to memoize
  * @param options Options for memoization
  *
- * @returns The memoized function.
+ * @returns The memoized function, with a `cache` property exposing the
+ * underlying cache for inspection or manual invalidation.
  *
  * @example Basic usage
  * ```ts
@@ -126,8 +126,8 @@ export function memoize<
 >(
   fn: Fn,
   options?: MemoizeOptions<Fn, Key, Cache>,
-): Fn {
-  const cache = options?.cache ?? new Map();
+): Fn & { cache: Cache } {
+  const cache = (options?.cache ?? new Map()) as Cache;
   const getKey = options?.getKey ??
     _serializeArgList(
       cache as MemoizationCache<unknown, unknown>,
@@ -142,14 +142,14 @@ export function memoize<
   ): ReturnType<Fn> {
     const key = getKey.apply(this, args) as Key;
 
-    if (cache.has(key)) {
-      const result = cache.get(key)!;
-      switch (result.kind) {
+    const cached = cache.get(key);
+    if (cached !== undefined) {
+      switch (cached.kind) {
         case "ok":
         case "promise":
-          return result.value;
+          return cached.value as ReturnType<Fn>;
         case "error":
-          throw result.error;
+          throw cached.error;
       }
     }
 
@@ -180,13 +180,14 @@ export function memoize<
 
       throw e;
     }
-  } as Fn;
+  } as Fn & { cache: Cache };
 
   return Object.defineProperties(
     memoized,
     {
       length: { value: fn.length },
       name: { value: fn.name },
+      cache: { value: cache },
     },
   );
 }
