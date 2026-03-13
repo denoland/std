@@ -407,8 +407,10 @@ async function serveDirIndex(
 
   const headers = createBaseHeaders();
   headers.set(HEADER.ContentType, "text/html; charset=UTF-8");
-  const pageSize = new TextEncoder().encode(page).byteLength;
-  headers.set(HEADER.ContentLength, `${pageSize}`);
+  if (req.method === METHOD.Head) {
+    const pageSize = new TextEncoder().encode(page).byteLength;
+    headers.set(HEADER.ContentLength, String(pageSize));
+  }
 
   const status = STATUS_CODE.OK;
   return new Response(req.method === METHOD.Head ? null : page, {
