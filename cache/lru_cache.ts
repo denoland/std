@@ -128,6 +128,8 @@ export class LruCache<K, V> extends Map<K, V>
   /**
    * The maximum number of entries to store in the cache.
    *
+   * @returns The maximum number of entries in the cache.
+   *
    * @example Max size
    * ```ts
    * import { LruCache } from "@std/cache";
