@@ -45,6 +45,7 @@ function parseLine(
   message: ServerSentEventParsedMessage,
   ignoreComments: boolean,
 ): boolean {
+  // Lines starting with colon are comments
   if (line[0] === ":") {
     if (ignoreComments) return false;
     const value = line.slice(1);
@@ -54,15 +55,18 @@ function parseLine(
     return true;
   }
 
+  // Parse field:value
   const colonIndex = line.indexOf(":");
   let field: string;
   let value: string;
 
   if (colonIndex === -1) {
+    // No colon means field name only, empty value
     field = line;
     value = "";
   } else {
     field = line.slice(0, colonIndex);
+    // Remove single leading space from value if present
     value = line[colonIndex + 1] === " "
       ? line.slice(colonIndex + 2)
       : line.slice(colonIndex + 1);
@@ -73,23 +77,27 @@ function parseLine(
       message.event = value;
       return true;
     case "data":
+      // Accumulate data with newlines between
       message.data = message.data !== undefined
         ? `${message.data}\n${value}`
         : value;
       return true;
     case "id":
+      // Per spec: ignore if value contains null character
       if (!value.includes("\0")) {
         message.id = value;
         return true;
       }
       return false;
     case "retry":
+      // Per spec: only set if value consists of ASCII digits only
       if (/^\d+$/.test(value)) {
         message.retry = parseInt(value, 10);
         return true;
       }
       return false;
     default:
+      // Unknown fields are ignored per spec
       return false;
   }
 }
@@ -175,17 +183,21 @@ export class ServerSentEventParseStream
       transform(chunk, controller) {
         buffer += decoder.decode(chunk, { stream: true });
 
+        // Preserve trailing \r - it might be part of \r\n split across chunks
         let trailingCR = "";
         if (buffer[buffer.length - 1] === "\r") {
           trailingCR = "\r";
           buffer = buffer.slice(0, -1);
         }
 
+        // Process complete lines
         const lines = buffer.split(NEWLINE_REGEXP);
+        // Keep incomplete last line in buffer, restore any trailing \r
         buffer = lines.pop()! + trailingCR;
 
         for (const line of lines) {
           if (line === "") {
+            // Empty line signals end of message - dispatch if non-empty
             if (hasFields) {
               controller.enqueue(message);
             }
@@ -198,13 +210,16 @@ export class ServerSentEventParseStream
       },
 
       flush(controller) {
+        // Handle any remaining content in buffer
         buffer += decoder.decode();
 
+        // Trailing \r at end of stream is a line ending
         if (buffer[buffer.length - 1] === "\r") {
           buffer = buffer.slice(0, -1);
           if (parseLine(buffer, message, ignoreComments)) {
             hasFields = true;
           }
+          // The \r was a line ending, so dispatch if we have fields
           if (hasFields) {
             controller.enqueue(message);
             return;
@@ -215,6 +230,7 @@ export class ServerSentEventParseStream
           }
         }
 
+        // Dispatch final message if non-empty
         if (hasFields) {
           controller.enqueue(message);
         }
