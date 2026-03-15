@@ -3,7 +3,7 @@ import { assertEquals } from "@std/assert";
 import {
   type ServerSentEventParsedMessage,
   ServerSentEventParseStream,
-} from "./unstable_server_sent_event_stream.ts";
+} from "./server_sent_event_parse_stream.ts";
 import {
   type ServerSentEventMessage,
   ServerSentEventStream,
@@ -167,7 +167,6 @@ Deno.test("ServerSentEventParseStream handles mixed line endings", async () => {
 });
 
 Deno.test("ServerSentEventParseStream handles CRLF split across chunks", async () => {
-  // \r at end of chunk 1, \n at start of chunk 2 should be ONE line ending
   const result = await Array.fromAsync(parseStream([
     ":comment\r",
     "\ndata: hello\n\n",
@@ -177,7 +176,6 @@ Deno.test("ServerSentEventParseStream handles CRLF split across chunks", async (
 });
 
 Deno.test("ServerSentEventParseStream handles standalone CR at chunk boundary", async () => {
-  // \r at end of chunk 1 followed by non-\n should be a line ending
   const result = await Array.fromAsync(parseStream([
     "data: one\r",
     "data: two\n\n",
@@ -235,7 +233,6 @@ Deno.test("ServerSentEventParseStream handles empty data value", async () => {
 });
 
 Deno.test("ServerSentEventParseStream handles data with leading space preserved", async () => {
-  // Only ONE space after colon is removed
   const result = await Array.fromAsync(parseStream([
     "data:  two spaces\n\n",
   ]));
@@ -244,7 +241,6 @@ Deno.test("ServerSentEventParseStream handles data with leading space preserved"
 });
 
 Deno.test("ServerSentEventParseStream handles flush with pending message", async () => {
-  // No trailing newlines - message should be dispatched on flush
   const result = await Array.fromAsync(parseStream([
     "data: final",
   ]));
@@ -305,12 +301,9 @@ Deno.test("ServerSentEventParseStream handles stream with only whitespace", asyn
 });
 
 Deno.test("ServerSentEventParseStream handles multi-byte UTF-8 split across chunks", async () => {
-  // "data: 🦕\n\n" - the dinosaur emoji is 4 bytes (F0 9F A6 95)
-  // Split it in the middle of the emoji
   const full = new TextEncoder().encode("data: 🦕\n\n");
-  // Split after "data: " and first 2 bytes of emoji
-  const chunk1 = full.slice(0, 8); // "data: " (6) + first 2 bytes of emoji
-  const chunk2 = full.slice(8); // last 2 bytes of emoji + "\n\n"
+  const chunk1 = full.slice(0, 8);
+  const chunk2 = full.slice(8);
 
   const stream = ReadableStream.from([chunk1, chunk2])
     .pipeThrough(new ServerSentEventParseStream());
