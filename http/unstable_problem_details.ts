@@ -216,7 +216,11 @@ function normalizeParsedProblemDetails(
   raw: Record<string, unknown>,
 ): Record<string, unknown> {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    throw new TypeError("Cannot parse Problem Details: expected a JSON object");
+    throw new TypeError(
+      `Cannot parse Problem Details: expected a JSON object, but got ${
+        raw === null ? "null" : Array.isArray(raw) ? "an array" : typeof raw
+      }`,
+    );
   }
 
   const result: Record<string, unknown> = {};
