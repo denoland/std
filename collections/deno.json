@@ -48,6 +48,7 @@
     "./union": "./union.ts",
     "./unstable-binary-search": "./unstable_binary_search.ts",
     "./unstable-cycle": "./unstable_cycle.ts",
+    "./unstable-deep-merge": "./unstable_deep_merge.ts",
     "./unstable-distinct-by": "./unstable_distinct_by.ts",
     "./unstable-drop-last-while": "./unstable_drop_last_while.ts",
     "./unstable-drop-while": "./unstable_drop_while.ts",
