@@ -60,6 +60,14 @@ Deno.test("validateXmlDeclaration() accepts single-quoted values", () => {
   }
 });
 
+Deno.test("validateXmlDeclaration() accepts trailing whitespace", () => {
+  const result = validateXmlDeclaration('version="1.0"   ');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.version, "1.0");
+  }
+});
+
 Deno.test("validateXmlDeclaration() rejects missing version attribute", () => {
   const result = validateXmlDeclaration('encoding="UTF-8"');
   assertEquals(result.valid, false);

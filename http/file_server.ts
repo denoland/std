@@ -184,6 +184,8 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  await req.body?.cancel();
+
   if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
@@ -194,7 +196,6 @@ export async function serveFile(
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      await req.body?.cancel();
       return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
@@ -202,7 +203,6 @@ export async function serveFile(
   }
 
   if (fileInfo.isDirectory) {
-    await req.body?.cancel();
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
@@ -337,6 +337,7 @@ export async function serveFile(
 }
 
 async function serveDirIndex(
+  req: Request,
   dirPath: string,
   options: {
     showDotfiles: boolean;
@@ -406,9 +407,13 @@ async function serveDirIndex(
 
   const headers = createBaseHeaders();
   headers.set(HEADER.ContentType, "text/html; charset=UTF-8");
+  if (req.method === METHOD.Head) {
+    const pageSize = new TextEncoder().encode(page).byteLength;
+    headers.set(HEADER.ContentLength, String(pageSize));
+  }
 
   const status = STATUS_CODE.OK;
-  return new Response(page, {
+  return new Response(req.method === METHOD.Head ? null : page, {
     status,
     statusText: STATUS_TEXT[status],
     headers,
@@ -660,7 +665,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== METHOD.Get) {
+  if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -796,7 +801,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);
