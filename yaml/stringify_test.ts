@@ -760,6 +760,12 @@ Deno.test("stringify() handles string", () => {
   assertEquals(stringify(new String("Hello World")), "Hello World\n");
 });
 
+Deno.test("stringify() preserves leading-zero numeric strings", () => {
+  assertEquals(stringify("08"), "'08'\n");
+  assertEquals(stringify("09"), "'09'\n");
+  assertEquals(stringify("007"), "'007'\n");
+});
+
 Deno.test("stringify() uses quotes around deprecated boolean notations when `compatMode: true`", () => {
   assertEquals(stringify("On", { compatMode: true }), "'On'\n");
   assertEquals(stringify("Off", { compatMode: true }), "'Off'\n");
