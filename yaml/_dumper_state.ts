@@ -238,7 +238,7 @@ function chooseScalarStyle(
   if (!hasLineBreak && !hasFoldableLine) {
     // Strings interpretable as another type have to be quoted;
     // e.g. the string 'true' vs. the boolean true.
-    return plain && !implicitTypes.some((type) => type.resolve(string))
+    return plain && !implicitTypes.some((type) => type.resolve(string)) && !/^0[0-9]+$/.test(string)
       ? STYLE_PLAIN
       : quoteStyle === "'"
       ? STYLE_SINGLE
