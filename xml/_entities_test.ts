@@ -2,10 +2,15 @@
 
 import { assertEquals, assertThrows } from "@std/assert";
 import {
-  decodeEntities,
+  decodeEntities as _decodeEntities,
   encodeAttributeValue,
   encodeEntities,
 } from "./_entities.ts";
+
+/** Wrapper that defaults xml11 to false for existing tests. */
+function decodeEntities(text: string): string {
+  return _decodeEntities(text, false);
+}
 
 // =============================================================================
 // decodeEntities tests
@@ -426,4 +431,56 @@ Deno.test("encodeAttributeValue() handles empty string", () => {
 
 Deno.test("encodeAttributeValue() handles only whitespace", () => {
   assertEquals(encodeAttributeValue("\t\n\r"), "&#9;&#10;&#13;");
+});
+
+// =============================================================================
+// XML 1.1 decodeEntities tests
+// =============================================================================
+
+Deno.test("decodeEntities() xml11 accepts C0 control char refs that XML 1.0 rejects", () => {
+  assertEquals(_decodeEntities("&#x1;", true), "\x01");
+  assertEquals(_decodeEntities("&#x2;", true), "\x02");
+  assertEquals(_decodeEntities("&#x8;", true), "\x08");
+  assertEquals(_decodeEntities("&#xB;", true), "\x0B");
+  assertEquals(_decodeEntities("&#xC;", true), "\x0C");
+  assertEquals(_decodeEntities("&#xE;", true), "\x0E");
+  assertEquals(_decodeEntities("&#x1F;", true), "\x1F");
+});
+
+Deno.test("decodeEntities() xml11 accepts C1 control char refs", () => {
+  assertEquals(_decodeEntities("&#x7F;", true), "\x7F");
+  assertEquals(_decodeEntities("&#x80;", true), "\x80");
+  assertEquals(_decodeEntities("&#x85;", true), "\x85");
+  assertEquals(_decodeEntities("&#x9F;", true), "\x9F");
+});
+
+Deno.test("decodeEntities() xml11 still rejects NULL (&#x0;)", () => {
+  assertThrows(
+    () => _decodeEntities("&#x0;", true),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml10 rejects C0 control char refs", () => {
+  assertThrows(
+    () => _decodeEntities("&#x1;", false),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => _decodeEntities("&#x2;", false),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => _decodeEntities("&#x8;", false),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml11 decimal char refs for controls", () => {
+  assertEquals(_decodeEntities("&#1;", true), "\x01");
+  assertEquals(_decodeEntities("&#31;", true), "\x1F");
 });
