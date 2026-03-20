@@ -13,6 +13,7 @@
     "./pool": "./pool.ts",
     "./retry": "./retry.ts",
     "./tee": "./tee.ts",
+    "./all-keyed": "./all_keyed.ts",
     "./unstable-abortable": "./unstable_abortable.ts",
     "./unstable-throttle": "./unstable_throttle.ts",
     "./unstable-wait-for": "./unstable_wait_for.ts",
