@@ -31,6 +31,7 @@ import {
   LINE_ENDING_REGEXP,
   parseName,
   validateNamespaceBinding,
+  validatePubidLiteral,
   validateQName,
   validateXmlDeclaration,
   WHITESPACE_ONLY_REGEXP,
@@ -50,6 +51,17 @@ const CC_SQUOTE = 39; // '
 const CC_LBRACKET = 91; // [
 const CC_RBRACKET = 93; // ]
 const CC_DASH = 45; // -
+
+// Character codes for DTD parsing (cold path)
+const CC_HASH = 35; // #
+const CC_PERCENT = 37; // %
+const CC_LPAREN = 40; // (
+const CC_RPAREN = 41; // )
+const CC_STAR = 42; // *
+const CC_PLUS = 43; // +
+const CC_COMMA = 44; // ,
+const CC_SEMICOLON = 59; // ;
+const CC_PIPE = 124; // |
 
 // =============================================================================
 // XML 1.0 CHARACTER VALIDATION
@@ -93,12 +105,31 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const disallowDoctype = options?.disallowDoctype ?? true;
   const maxDepth = options?.maxDepth ?? Infinity;
   const maxAttributes = options?.maxAttributes ?? Infinity;
+  const xml11 = options?.xmlVersion === "1.1";
 
-  // Normalize line endings (XML 1.0 §2.11)
-  const input = xml.includes("\r")
-    ? xml.replace(LINE_ENDING_REGEXP, "\n")
+  // Normalize line endings (XML 1.0 §2.11 / XML 1.1 §2.11)
+  const version = xml11 ? "1.1" : "1.0";
+  const needsNormalization = xml11
+    ? xml.includes("\r") || xml.includes("\x85") || xml.includes("\u2028")
+    : xml.includes("\r");
+  const input = needsNormalization
+    ? xml.replace(LINE_ENDING_REGEXP[version], "\n")
     : xml;
   const len = input.length;
+
+  function isIllegalLiteralChar(code: number): boolean {
+    if (xml11) {
+      return code === 0 ||
+        (code >= 0x01 && code <= 0x08) ||
+        code === 0x0B || code === 0x0C ||
+        (code >= 0x0E && code <= 0x1F) ||
+        (code >= 0x7F && code <= 0x84) ||
+        (code >= 0x86 && code <= 0x9F) ||
+        code === 0xFFFE || code === 0xFFFF;
+    }
+    return (code < 0x20 && C0_VALID[code] !== 1) ||
+      code === 0xFFFE || code === 0xFFFF;
+  }
 
   // Parser state - only track position offset, not line/column
   let pos = 0;
@@ -184,6 +215,10 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     return code === 0x20 || code === 0x09 || code === 0x0a || code === 0x0d;
   }
 
+  // ===========================================================================
+  // DTD PARSING
+  // ===========================================================================
+
   /**
    * Parse DTD internal subset with validation.
    * Validates whitespace requirements per XML 1.0 spec.
@@ -242,12 +277,11 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
       // Parameter entity reference: %name;
       // These are valid in internal subset and must be skipped
-      if (code === 37) { // %
-        pos++; // Skip %
-        // Read the entity name
+      if (code === CC_PERCENT) {
+        pos++;
         while (pos < len) {
           const c = input.charCodeAt(pos);
-          if (c === 59) { // ;
+          if (c === CC_SEMICOLON) {
             pos++;
             break;
           }
@@ -360,9 +394,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     skipWhitespace();
 
     // Check for parameter entity marker '%'
-    const isParameterEntity = input.charCodeAt(pos) === 37; // %
+    const isParameterEntity = input.charCodeAt(pos) === CC_PERCENT;
     if (isParameterEntity) {
-      pos++; // Skip '%'
+      pos++;
       // Must have whitespace after '%'
       if (pos >= len || !isWhitespace(input.charCodeAt(pos))) {
         error("Missing whitespace after '%' in parameter entity declaration");
@@ -497,7 +531,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     if (pos >= len || input.charCodeAt(pos) !== CC_GT) {
       error("Unterminated ENTITY declaration");
     }
-    pos++; // Skip '>'
+    pos++;
   }
 
   /**
@@ -518,48 +552,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     if (pos >= len) {
       error("Unterminated quoted string");
     }
-    // Validate PubidLiteral if requested
     if (validatePubid) {
-      validatePubidLiteral(input.slice(valueStart, pos), quoteChar);
+      const pubidError = validatePubidLiteral(
+        input.slice(valueStart, pos),
+        quoteChar,
+      );
+      if (pubidError) error(pubidError);
     }
-    pos++; // Skip closing quote
-  }
-
-  /**
-   * Validates a PubidLiteral per XML 1.0 §2.3.
-   * PubidChar ::= #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
-   *
-   * Note: If quoted with ', the value cannot contain '.
-   */
-  function validatePubidLiteral(value: string, quoteChar: string): void {
-    for (let i = 0; i < value.length; i++) {
-      const code = value.charCodeAt(i);
-      const ch = value[i];
-      // Valid PubidChar:
-      // #x20 (space), #xD (CR), #xA (LF)
-      // [a-zA-Z0-9]
-      // [-'()+,./:=?;!*#@$_%]
-      const isValid = code === 0x20 || // space
-        code === 0x0D || // CR
-        code === 0x0A || // LF
-        (code >= 0x41 && code <= 0x5A) || // A-Z
-        (code >= 0x61 && code <= 0x7A) || // a-z
-        (code >= 0x30 && code <= 0x39) || // 0-9
-        ch === "-" || ch === "(" || ch === ")" || ch === "+" ||
-        ch === "," || ch === "." || ch === "/" || ch === ":" ||
-        ch === "=" || ch === "?" || ch === ";" || ch === "!" ||
-        ch === "*" || ch === "#" || ch === "@" || ch === "$" ||
-        ch === "_" || ch === "%" ||
-        (ch === "'" && quoteChar === '"'); // ' only allowed if quoted with "
-
-      if (!isValid) {
-        error(
-          `Invalid character '${ch}' (U+${
-            code.toString(16).toUpperCase().padStart(4, "0")
-          }) in public ID literal`,
-        );
-      }
-    }
+    pos++;
   }
 
   /**
@@ -597,14 +597,12 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (pos >= len) {
           error("Unterminated string in DTD declaration");
         }
-        pos++; // Skip closing quote
+        pos++;
         sawWhitespace = false;
         continue;
       }
 
-      if (code === 40) { // (
-        // Opening paren - must have whitespace before FIRST paren only
-        // Nested parens like ((a|b)) are valid without whitespace between them
+      if (code === CC_LPAREN) {
         if (!sawWhitespace && parenDepth === 0) {
           error("Missing whitespace before '(' in DTD declaration");
         }
@@ -614,7 +612,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
-      if (code === 41) { // )
+      if (code === CC_RPAREN) {
         if (parenDepth === 0) {
           error("Unexpected ')' in DTD declaration");
         }
@@ -624,21 +622,19 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
-      if (code === 124) { // |
+      if (code === CC_PIPE) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
-      if (code === 44) { // ,
-        // Comma is valid in element content models (sequence operator)
+      if (code === CC_COMMA) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
-      if (code === 35) { // #
-        // #PCDATA, #IMPLIED, #REQUIRED, #FIXED - must have whitespace before
+      if (code === CC_HASH) {
         if (!sawWhitespace && parenDepth === 0) {
           error("Missing whitespace before '#' in DTD declaration");
         }
@@ -647,15 +643,13 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
-      if (code === 37) { // %
-        // Parameter entity reference
+      if (code === CC_PERCENT) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
-      if (code === 59) { // ;
-        // End of entity reference
+      if (code === CC_SEMICOLON) {
         sawWhitespace = false;
         pos++;
         continue;
@@ -683,8 +677,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
-      // Content model operators: *, +, ?
-      if (code === 42 || code === 43 || code === 63) { // * + ?
+      if (code === CC_STAR || code === CC_PLUS || code === CC_QUESTION) {
         sawWhitespace = false;
         pos++;
         continue;
@@ -696,6 +689,10 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     }
     error("Unterminated DTD declaration");
   }
+
+  // ===========================================================================
+  // NAME AND VALUE READING
+  // ===========================================================================
 
   function readName(): string {
     const start = pos;
@@ -784,8 +781,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     pos = closeIdx + 1;
 
     // Normalize whitespace (§3.3.3) and decode entities
-    // Note: Only predefined entities are expanded
-    return decodeEntities(raw.replace(/[\t\n]/g, " "));
+    return decodeEntities(raw.replace(/[\t\n]/g, " "), xml11);
   }
 
   function readText(): string {
@@ -793,17 +789,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     const idx = input.indexOf("<", pos);
     const end = idx === -1 ? len : idx;
 
-    // XML 1.0 §2.2: Validate characters are legal XML Char
-    // Only check C0 control characters (0x00-0x1F) as they're the common issue
-    // and checking every character would be too expensive
     for (let i = start; i < end; i++) {
       const code = input.charCodeAt(i);
-      if (code < 0x20 && C0_VALID[code] !== 1) {
+      if (isIllegalLiteralChar(code)) {
         pos = i;
         error(
           `Illegal XML character U+${
             code.toString(16).toUpperCase().padStart(4, "0")
-          } (XML 1.0 §2.2)`,
+          }`,
         );
       }
     }
@@ -819,8 +812,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       error("Cannot use ']]>' in text content (XML 1.0 §2.4)");
     }
 
-    // Note: Only predefined entities are expanded
-    return decodeEntities(text);
+    return decodeEntities(text, xml11);
   }
 
   function addNode(node: XmlTextNode | XmlCDataNode | XmlCommentNode): void {
@@ -829,7 +821,10 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     }
   }
 
-  // Main parsing loop
+  // ===========================================================================
+  // MAIN PARSING LOOP
+  // ===========================================================================
+
   while (pos < len) {
     // Handle text content first (early continue)
     if (input.charCodeAt(pos) !== CC_LT) {
@@ -871,7 +866,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       continue;
     }
 
-    pos++; // Skip '<'
+    pos++;
 
     if (pos >= len) {
       error("Unexpected end of input after '<'");
@@ -881,7 +876,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
     // End tag: </name>
     if (code === CC_SLASH) {
-      pos++; // Skip '/'
+      pos++;
       const name = readName();
       if (name === "") {
         error("Invalid character in end tag name");
@@ -890,7 +885,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       if (input.charCodeAt(pos) !== CC_GT) {
         error("Expected '>' in end tag");
       }
-      pos++; // Skip '>'
+      pos++;
 
       const expected = stack.pop();
       if (!expected) {
@@ -927,7 +922,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
     // Comment, CDATA, or DOCTYPE
     if (code === CC_BANG) {
-      pos++; // Skip '!'
+      pos++;
 
       // Comment: <!--...-->
       if (
@@ -958,15 +953,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           error("Cannot use '-' immediately before '-->' (XML 1.0 §2.5)");
         }
 
-        // XML 1.0 §2.2: Validate characters are legal XML Char
         for (let i = start; i < endIdx; i++) {
           const charCode = input.charCodeAt(i);
-          if (charCode < 0x20 && C0_VALID[charCode] !== 1) {
+          if (isIllegalLiteralChar(charCode)) {
             pos = i;
             error(
               `Illegal XML character U+${
                 charCode.toString(16).toUpperCase().padStart(4, "0")
-              } (XML 1.0 §2.2)`,
+              }`,
             );
           }
         }
@@ -1000,15 +994,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         const endIdx = input.indexOf("]]>", pos);
         if (endIdx === -1) errorUnterminated("Unterminated CDATA section");
 
-        // XML 1.0 §2.2: Validate characters are legal XML Char
         for (let i = start; i < endIdx; i++) {
           const charCode = input.charCodeAt(i);
-          if (charCode < 0x20 && C0_VALID[charCode] !== 1) {
+          if (isIllegalLiteralChar(charCode)) {
             pos = i;
             error(
               `Illegal XML character U+${
                 charCode.toString(16).toUpperCase().padStart(4, "0")
-              } (XML 1.0 §2.2)`,
+              }`,
             );
           }
         }
@@ -1072,12 +1065,15 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
             if (pos >= len) {
               error("Unterminated quoted string in DOCTYPE");
             }
-            // Validate PubidLiteral if this is a PUBLIC ID
             if (expectPubidLiteral) {
-              validatePubidLiteral(input.slice(valueStart, pos), quoteChar);
+              const pubidError = validatePubidLiteral(
+                input.slice(valueStart, pos),
+                quoteChar,
+              );
+              if (pubidError) error(pubidError);
               expectPubidLiteral = false;
             }
-            pos++; // Skip closing quote
+            pos++;
           } else if (
             input.startsWith("PUBLIC", pos) &&
             (pos + 6 >= len || isWhitespace(input.charCodeAt(pos + 6)))
@@ -1113,7 +1109,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
             pos++;
           }
         }
-        if (pos < len) pos++; // Skip '>'
+        if (pos < len) pos++;
         continue;
       }
 
@@ -1125,7 +1121,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       // Save position of '<' for XML declaration position check
       // pos is currently pointing at '?', so '<' was at pos-1
       const ltPos = pos - 1;
-      pos++; // Skip '?'
+      pos++;
       const target = readName();
       if (target === "") {
         error("Invalid character in processing instruction target");
@@ -1162,15 +1158,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         errorUnterminated("Unterminated processing instruction");
       }
 
-      // XML 1.0 §2.2: Validate characters in PI content are legal XML Char
       for (let i = contentStart; i < endIdx; i++) {
         const charCode = input.charCodeAt(i);
-        if (charCode < 0x20 && C0_VALID[charCode] !== 1) {
+        if (isIllegalLiteralChar(charCode)) {
           pos = i;
           error(
             `Illegal XML character U+${
               charCode.toString(16).toUpperCase().padStart(4, "0")
-            } in processing instruction (XML 1.0 §2.2)`,
+            } in processing instruction`,
           );
         }
       }
@@ -1267,16 +1262,16 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       const chCode = input.charCodeAt(pos);
 
       if (chCode === CC_GT) {
-        pos++; // Skip '>'
+        pos++;
         break;
       }
 
       if (chCode === CC_SLASH) {
-        pos++; // Skip '/'
+        pos++;
         if (input.charCodeAt(pos) !== CC_GT) {
           error("Expected '>' after '/' in self-closing tag");
         }
-        pos++; // Skip '>'
+        pos++;
         selfClosing = true;
         break;
       }
@@ -1306,14 +1301,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
       if (input.charCodeAt(pos) !== CC_EQ) {
         error("Expected '=' after attribute name");
       }
-      pos++; // Skip '='
+      pos++;
       skipWhitespace();
 
       const attrValue = readQuotedValue();
 
       // Validate namespace binding if this is an xmlns attribute
       if (attrName === "xmlns" || attrName.startsWith("xmlns:")) {
-        const nsError = validateNamespaceBinding(attrName, attrValue);
+        const nsError = validateNamespaceBinding(attrName, attrValue, xml11);
         if (nsError) {
           error(nsError);
         }

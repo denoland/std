@@ -203,7 +203,7 @@ export interface XmlProcessingInstructionEvent extends XmlPosition {
 export interface XmlDeclarationEvent extends XmlPosition {
   /** The event type discriminant. */
   readonly type: "declaration";
-  /** The XML version (always "1.0" for XML 1.0 documents). */
+  /** The XML version as declared in the document (e.g. `"1.0"` or `"1.1"`). */
   readonly version: string;
   /** The declared character encoding, if specified. */
   readonly encoding?: string;
@@ -276,6 +276,24 @@ export interface BaseParseOptions {
    * @default {Infinity}
    */
   readonly maxAttributes?: number;
+
+  /**
+   * XML version to use for character and line-ending validation.
+   *
+   * When `"1.1"`, the parser applies XML 1.1 rules:
+   * - Character references to C0 controls (`&#x1;`–`&#x1F;` except `&#x0;`)
+   *   are accepted
+   * - Literal C1 controls (`#x7F`–`#x9F` except `#x85`) are rejected
+   * - NEL (`#x85`) and Unicode line separator (`#x2028`) are normalized to LF
+   * - Namespace prefix unbinding (`xmlns:prefix=""`) is allowed
+   *
+   * This option is independent of the `<?xml version="...">` declaration
+   * in the document. Set it explicitly to handle documents that declare
+   * `version="1.0"` but contain XML 1.1-style character references.
+   *
+   * @default {"1.0"}
+   */
+  readonly xmlVersion?: "1.0" | "1.1";
 }
 
 /**

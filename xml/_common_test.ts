@@ -2,11 +2,21 @@
 
 import { assertEquals } from "@std/assert";
 import {
+  LINE_ENDING_REGEXP,
   parseName,
-  validateNamespaceBinding,
+  validateNamespaceBinding as _validateNamespaceBinding,
+  validatePubidLiteral,
   validateQName,
   validateXmlDeclaration,
 } from "./_common.ts";
+
+/** Wrapper that defaults xml11 to false for existing tests. */
+function validateNamespaceBinding(
+  attrName: string,
+  attrValue: string,
+): string | null {
+  return _validateNamespaceBinding(attrName, attrValue, false);
+}
 
 // =============================================================================
 // validateXmlDeclaration Tests
@@ -602,4 +612,104 @@ Deno.test("isReservedPiTarget() returns false for other targets", () => {
   assertEquals(isReservedPiTarget("xmlfoo"), false); // starts with xml but longer
   assertEquals(isReservedPiTarget("xm"), false); // too short
   assertEquals(isReservedPiTarget(""), false);
+});
+
+// =============================================================================
+// XML 1.1 Namespace Unbinding Tests
+// =============================================================================
+
+Deno.test("validateNamespaceBinding() xml11 allows prefix unbinding", () => {
+  const error = _validateNamespaceBinding("xmlns:ns", "", true);
+  assertEquals(error, null);
+});
+
+Deno.test("validateNamespaceBinding() xml11 still rejects xmlns prefix declaration", () => {
+  const error = _validateNamespaceBinding(
+    "xmlns:xmlns",
+    "http://example.com",
+    true,
+  );
+  assertEquals(typeof error, "string");
+});
+
+Deno.test("validateNamespaceBinding() xml11 still validates xml prefix binding", () => {
+  const error = _validateNamespaceBinding(
+    "xmlns:xml",
+    "http://wrong.example.com",
+    true,
+  );
+  assertEquals(typeof error, "string");
+});
+
+// =============================================================================
+// LINE_ENDING_REGEXP Tests
+// =============================================================================
+
+Deno.test("LINE_ENDING_REGEXP 1.0 normalizes \\r\\n to \\n", () => {
+  assertEquals("a\r\nb".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.0 normalizes standalone \\r to \\n", () => {
+  assertEquals("a\rb".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.0 does not normalize NEL or LS", () => {
+  assertEquals("a\x85b".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\x85b");
+  assertEquals("a\u2028b".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\u2028b");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes \\r\\n to \\n", () => {
+  assertEquals("a\r\nb".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes standalone \\r to \\n", () => {
+  assertEquals("a\rb".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes NEL to \\n", () => {
+  assertEquals("a\x85b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes \\r\\x85 to single \\n", () => {
+  assertEquals("a\r\x85b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes LS (U+2028) to \\n", () => {
+  assertEquals("a\u2028b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+// =============================================================================
+// validatePubidLiteral Tests
+// =============================================================================
+
+Deno.test("validatePubidLiteral() accepts valid characters", () => {
+  assertEquals(
+    validatePubidLiteral("-//OASIS//DTD DocBook V4.5//EN", '"'),
+    null,
+  );
+});
+
+Deno.test("validatePubidLiteral() accepts empty string", () => {
+  assertEquals(validatePubidLiteral("", '"'), null);
+});
+
+Deno.test("validatePubidLiteral() accepts all special PubidChars", () => {
+  assertEquals(
+    validatePubidLiteral("-()+,./:=?;!*#@$_%", '"'),
+    null,
+  );
+});
+
+Deno.test("validatePubidLiteral() accepts single quote inside double-quoted literal", () => {
+  assertEquals(validatePubidLiteral("it's", '"'), null);
+});
+
+Deno.test("validatePubidLiteral() rejects single quote inside single-quoted literal", () => {
+  const error = validatePubidLiteral("it's", "'");
+  assertEquals(typeof error, "string");
+});
+
+Deno.test("validatePubidLiteral() rejects invalid character", () => {
+  const error = validatePubidLiteral("hello\x7F", '"');
+  assertEquals(typeof error, "string");
 });
