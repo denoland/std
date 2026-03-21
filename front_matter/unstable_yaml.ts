@@ -5,6 +5,7 @@ import { extractFrontMatter } from "./_shared.ts";
 import { parse, type ParseOptions } from "@std/yaml/parse";
 import type { Extract } from "./types.ts";
 import { EXTRACT_YAML_REGEXP } from "./_formats.ts";
+import { test as _test } from "./test.ts";
 
 export type { Extract };
 
@@ -41,4 +42,41 @@ export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
   const { frontMatter, body } = extractFrontMatter(text, EXTRACT_YAML_REGEXP);
   const attrs = parse(frontMatter, options) as T;
   return { frontMatter, body, attrs };
+}
+
+/**
+ * Tests if a string has valid YAML front matter.
+ * Supports {@link https://yaml.org | YAML}.
+ *
+ * @param str String to test.
+ * @returns `true` if the string has valid YAML front matter, otherwise `false`.
+ *
+ * @example Test for valid YAML front matter
+ * ```ts
+ * import { test } from "@std/front-matter/yaml";
+ * import { assert } from "@std/assert";
+ *
+ * const result = test(
+ * `---
+ * title: Three dashes marks the spot
+ * ---
+ * `);
+ * assert(result);
+ * ```
+ *
+ * @example JSON front matter is not valid as YAML
+ * ```ts
+ * import { test } from "@std/front-matter/yaml";
+ * import { assertFalse } from "@std/assert";
+ *
+ * const result = test(
+ * `---json
+ * {"title": "Three dashes followed by format marks the spot"}
+ * ---
+ * `;
+ * assertFalse(result);
+ * ```
+*/
+export function test(str: string) {
+  return _test(str, ["yaml"]);
 }

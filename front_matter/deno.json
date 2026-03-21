@@ -8,6 +8,8 @@
     "./test": "./test.ts",
     "./toml": "./toml.ts",
     "./yaml": "./yaml.ts",
+    "./unstable-json": "./unstable_json.ts",
+    "./unstable-toml": "./unstable_toml.ts",
     "./unstable-yaml": "./unstable_yaml.ts",
     "./types": "./types.ts"
   }
