@@ -73,6 +73,6 @@ export function extract<T>(text: string): Extract<T> {
  * assertFalse(result);
  * ```
  */
-export function test(str: string) {
+export function test(str: string): boolean {
   return _test(str, ["json"]);
 }

@@ -73,10 +73,10 @@ export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
  * `---json
  * {"title": "Three dashes followed by format marks the spot"}
  * ---
- * `;
+ * `);
  * assertFalse(result);
  * ```
  */
-export function test(str: string) {
+export function test(str: string): boolean {
   return _test(str, ["yaml"]);
 }
