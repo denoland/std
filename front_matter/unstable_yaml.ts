@@ -48,12 +48,14 @@ export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
  * Tests if a string has valid YAML front matter.
  * Supports {@link https://yaml.org | YAML}.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param str String to test.
  * @returns `true` if the string has valid YAML front matter, otherwise `false`.
  *
  * @example Test for valid YAML front matter
  * ```ts
- * import { test } from "@std/front-matter/yaml";
+ * import { test } from "@std/front-matter/unstable-yaml";
  * import { assert } from "@std/assert";
  *
  * const result = test(
@@ -66,7 +68,7 @@ export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
  *
  * @example JSON front matter is not valid as YAML
  * ```ts
- * import { test } from "@std/front-matter/yaml";
+ * import { test } from "@std/front-matter/unstable-yaml";
  * import { assertFalse } from "@std/assert";
  *
  * const result = test(

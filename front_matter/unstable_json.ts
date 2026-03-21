@@ -44,12 +44,14 @@ export function extract<T>(text: string): Extract<T> {
  * Tests if a string has valid front matter.
  * Supports {@link https://www.json.org/ | JSON}.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param str String to test.
  * @returns `true` if the string has valid JSON front matter, otherwise `false`.
  *
  * @example Test for valid JSON front matter
  * ```ts
- * import { test } from "@std/front-matter/json";
+ * import { test } from "@std/front-matter/unstable-json";
  * import { assert } from "@std/assert";
  *
  * const result = test(
@@ -62,8 +64,8 @@ export function extract<T>(text: string): Extract<T> {
  *
  * @example TOML front matter is not valid as JSON
  * ```ts
- * import { test } from "@std/front-matter/json";
- * import { assert } from "@std/assert";
+ * import { test } from "@std/front-matter/unstable-json";
+ * import { assertFalse } from "@std/assert";
  *
  * const result = test(
  * `---toml
