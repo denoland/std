@@ -74,7 +74,7 @@ export function extract<T>(text: string): Extract<T> {
  * `;
  * assertFalse(result);
  * ```
-*/
+ */
 export function test(str: string) {
   return _test(str, ["toml"]);
 }

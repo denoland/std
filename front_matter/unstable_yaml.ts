@@ -76,7 +76,7 @@ export function extract<T>(text: string, options?: ParseOptions): Extract<T> {
  * `;
  * assertFalse(result);
  * ```
-*/
+ */
 export function test(str: string) {
   return _test(str, ["yaml"]);
 }
