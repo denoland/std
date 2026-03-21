@@ -1,8 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { assert } from "@std/assert";
 import { assertThrows } from "../assert/throws.ts";
 import { extract } from "./toml.ts";
 import { assertEquals } from "@std/assert/equals";
+import { test as unstableTest } from "./unstable_toml.ts";
 
 Deno.test("toml() extracts type error on invalid input", () => {
   assertThrows(() => extract(""));
@@ -100,4 +102,21 @@ Deno.test("extractToml() throws at missing newline before body", () => {
     TypeError,
     "Unexpected end of input",
   );
+});
+
+Deno.test("(unstable)test() handles valid toml input", () => {
+  assert(unstableTest("---toml\nname = 'deno'\n---\n"));
+  assert(unstableTest("= toml =\nname = 'deno'\n= toml =\n"));
+  assert(unstableTest("= toml =\nname = 'deno'\n= toml =\ndeno is awesome\n"));
+});
+
+Deno.test("(unstable)test() handles invalid toml input", () => {
+  assert(!unstableTest(""));
+  assert(!unstableTest("---"));
+  assert(!unstableTest("---toml"));
+  assert(!unstableTest("= toml ="));
+  assert(!unstableTest("---\n"));
+  assert(!unstableTest("---toml\n"));
+  assert(!unstableTest("= toml =\n"));
+  assert(!unstableTest("---\nasdasdasd"));
 });
