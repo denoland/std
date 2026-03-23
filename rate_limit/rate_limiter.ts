@@ -210,7 +210,7 @@ export interface KeyedRateLimiter extends Disposable {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic API rate limiting
- * ```ts no-assert
+ * ```ts no-eval
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
  *
  * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
