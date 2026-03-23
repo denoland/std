@@ -53,8 +53,9 @@ export interface SlidingWindowOptions extends QueueOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic usage
- * ```ts no-assert
+ * ```ts
  * import { createSlidingWindow } from "@std/rate-limit/sliding-window";
+ * import { assert } from "@std/assert";
  *
  * using limiter = createSlidingWindow({
  *   permitLimit: 100,
@@ -63,9 +64,7 @@ export interface SlidingWindowOptions extends QueueOptions {
  * });
  *
  * using lease = limiter.tryAcquire();
- * if (!lease.acquired) {
- *   console.log(`Retry after ${lease.retryAfter}ms`);
- * }
+ * assert(lease.acquired);
  * ```
  *
  * @example Manual replenishment

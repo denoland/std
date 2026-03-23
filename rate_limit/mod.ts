@@ -11,15 +11,14 @@
  * single-resource limiting, use the primitives: {@linkcode createTokenBucket},
  * {@linkcode createFixedWindow}, and {@linkcode createSlidingWindow}.
  *
- * ```ts no-assert
+ * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
+ * import { assert } from "@std/assert";
  *
  * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
  *
  * const result = limiter.limit("user:123");
- * if (!result.ok) {
- *   console.log(`Retry after ${result.retryAfter}ms`);
- * }
+ * assert(result.ok);
  * ```
  *
  * @module

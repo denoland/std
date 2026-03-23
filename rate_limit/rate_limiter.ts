@@ -210,7 +210,7 @@ export interface KeyedRateLimiter extends Disposable {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic API rate limiting
- * ```ts no-eval
+ * ```ts ignore
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
  *
  * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
@@ -231,16 +231,20 @@ export interface KeyedRateLimiter extends Disposable {
  * ```
  *
  * @example Variable cost
- * ```ts no-assert
+ * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
+ * import { assert, assertEquals } from "@std/assert";
  *
  * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
  * const result = limiter.limit("user:123", { cost: 5 });
+ * assert(result.ok);
+ * assertEquals(result.remaining, 95);
  * ```
  *
  * @example GCRA for strict uniform spacing
- * ```ts no-assert
+ * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
+ * import { assert } from "@std/assert";
  *
  * using limiter = createRateLimiter({
  *   limit: 10,
@@ -249,9 +253,7 @@ export interface KeyedRateLimiter extends Disposable {
  * });
  *
  * const result = limiter.limit("user:123");
- * if (!result.ok) {
- *   console.log(`Retry after ${result.retryAfter}ms`);
- * }
+ * assert(result.ok);
  * ```
  *
  * @param options Configuration for the rate limiter.

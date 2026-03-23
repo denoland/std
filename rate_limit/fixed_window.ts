@@ -46,8 +46,9 @@ export interface FixedWindowOptions extends QueueOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic usage
- * ```ts no-assert
+ * ```ts
  * import { createFixedWindow } from "@std/rate-limit/fixed-window";
+ * import { assert } from "@std/assert";
  *
  * using limiter = createFixedWindow({
  *   permitLimit: 100,
@@ -55,9 +56,7 @@ export interface FixedWindowOptions extends QueueOptions {
  * });
  *
  * using lease = limiter.tryAcquire();
- * if (!lease.acquired) {
- *   console.log(`Retry after ${lease.retryAfter}ms`);
- * }
+ * assert(lease.acquired);
  * ```
  *
  * @example Manual replenishment

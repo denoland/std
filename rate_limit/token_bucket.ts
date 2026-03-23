@@ -47,8 +47,9 @@ export interface TokenBucketOptions extends QueueOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Basic usage
- * ```ts no-assert
+ * ```ts
  * import { createTokenBucket } from "@std/rate-limit/token-bucket";
+ * import { assert } from "@std/assert";
  *
  * using limiter = createTokenBucket({
  *   tokenLimit: 10,
@@ -57,9 +58,7 @@ export interface TokenBucketOptions extends QueueOptions {
  * });
  *
  * using lease = limiter.tryAcquire();
- * if (!lease.acquired) {
- *   console.log(`Retry after ${lease.retryAfter}ms`);
- * }
+ * assert(lease.acquired);
  * ```
  *
  * @example Manual replenishment
