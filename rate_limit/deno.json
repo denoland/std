@@ -1,0 +1,12 @@
+{
+  "name": "@std/rate-limit",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./mod.ts",
+    "./token-bucket": "./token_bucket.ts",
+    "./fixed-window": "./fixed_window.ts",
+    "./sliding-window": "./sliding_window.ts",
+    "./types": "./types.ts",
+    "./rate-limiter": "./rate_limiter.ts"
+  }
+}

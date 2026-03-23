@@ -1,0 +1,32 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * Rate limiting strategies for controlling how many operations can occur over
+ * time.
+ *
+ * The primary API is {@linkcode createRateLimiter}, a keyed rate limiter for
+ * the common case of "allow key X at most N requests per window." It supports
+ * fixed-window, sliding-window, token-bucket, and GCRA algorithms. For
+ * single-resource limiting, use the primitives: {@linkcode createTokenBucket},
+ * {@linkcode createFixedWindow}, and {@linkcode createSlidingWindow}.
+ *
+ * ```ts no-assert
+ * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
+ *
+ * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
+ *
+ * const result = limiter.limit("user:123");
+ * if (!result.ok) {
+ *   console.log(`Retry after ${result.retryAfter}ms`);
+ * }
+ * ```
+ *
+ * @module
+ */
+
+export * from "./types.ts";
+export * from "./token_bucket.ts";
+export * from "./fixed_window.ts";
+export * from "./sliding_window.ts";
+export * from "./rate_limiter.ts";
