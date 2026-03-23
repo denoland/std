@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
-import { poll } from "./unstable_poll.ts";
+import { poll } from "./poll.ts";
 import { FakeTime } from "@std/testing/time";
 
 Deno.test("poll() returns result when isDone returns true", async () => {
@@ -116,6 +116,23 @@ Deno.test("poll() handles already aborted signal", async () => {
   );
 });
 
+Deno.test("poll() propagates custom abort reason", async () => {
+  const controller = new AbortController();
+  const customError = new Error("custom reason");
+  controller.abort(customError);
+
+  await assertRejects(
+    () =>
+      poll(
+        () => "value",
+        () => false,
+        { signal: controller.signal },
+      ),
+    Error,
+    "custom reason",
+  );
+});
+
 Deno.test("poll() propagates errors from fn", async () => {
   await assertRejects(
     () =>
@@ -127,5 +144,55 @@ Deno.test("poll() propagates errors from fn", async () => {
       ),
     Error,
     "fetch failed",
+  );
+});
+
+Deno.test("poll() propagates errors from isDone", async () => {
+  await assertRejects(
+    () =>
+      poll(
+        () => "value",
+        () => {
+          throw new Error("predicate failed");
+        },
+      ),
+    Error,
+    "predicate failed",
+  );
+});
+
+Deno.test("poll() throws RangeError for negative interval", () => {
+  assertRejects(
+    () =>
+      poll(
+        () => "value",
+        () => true,
+        { interval: -1 },
+      ),
+    RangeError,
+  );
+});
+
+Deno.test("poll() throws RangeError for NaN interval", () => {
+  assertRejects(
+    () =>
+      poll(
+        () => "value",
+        () => true,
+        { interval: NaN },
+      ),
+    RangeError,
+  );
+});
+
+Deno.test("poll() throws RangeError for Infinity interval", () => {
+  assertRejects(
+    () =>
+      poll(
+        () => "value",
+        () => true,
+        { interval: Infinity },
+      ),
+    RangeError,
   );
 });
