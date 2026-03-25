@@ -5,7 +5,7 @@ import { assertThrows } from "../assert/throws.ts";
 import { extract } from "./json.ts";
 
 import { assertEquals } from "@std/assert/equals";
-import { test as unstableTest } from "@std/front-matter/unstable-json";
+import { test as unstableTest } from "./unstable_json.ts";
 
 Deno.test("json() extracts type error on invalid input", () => {
   assertThrows(() => extract(""));
