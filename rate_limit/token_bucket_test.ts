@@ -729,6 +729,64 @@ Deno.test("retryAfter is correct after manual replenish", () => {
   limiter[Symbol.dispose]();
 });
 
+// --- Floating-point boundary ---
+
+Deno.test("remaining uses floor when tokens are at integer boundary", () => {
+  using time = new FakeTime(0);
+  using limiter = createTokenBucket({
+    tokenLimit: 5,
+    tokensPerPeriod: 1,
+    replenishmentPeriod: 1000,
+  });
+
+  for (let i = 0; i < 5; i++) limiter.tryAcquire();
+  assertFalse(limiter.tryAcquire().acquired);
+
+  time.tick(1000);
+  const lease = limiter.tryAcquire();
+  assert(lease.acquired);
+});
+
+Deno.test("tryAcquire() denied at exact token boundary after partial refill", () => {
+  using time = new FakeTime(0);
+  using limiter = createTokenBucket({
+    tokenLimit: 10,
+    tokensPerPeriod: 3,
+    replenishmentPeriod: 1000,
+  });
+
+  for (let i = 0; i < 10; i++) limiter.tryAcquire();
+  assertFalse(limiter.tryAcquire().acquired);
+
+  time.tick(1000);
+  assert(limiter.tryAcquire(3).acquired);
+  assertFalse(limiter.tryAcquire().acquired);
+
+  time.tick(1000);
+  assert(limiter.tryAcquire(3).acquired);
+  assertFalse(limiter.tryAcquire().acquired);
+
+  time.tick(1000);
+  assert(limiter.tryAcquire(3).acquired);
+  assertFalse(limiter.tryAcquire().acquired);
+});
+
+Deno.test("retryAfter is correct with non-power-of-two tokensPerPeriod", () => {
+  using time = new FakeTime(0);
+  using limiter = createTokenBucket({
+    tokenLimit: 7,
+    tokensPerPeriod: 3,
+    replenishmentPeriod: 1000,
+  });
+  void time;
+
+  for (let i = 0; i < 7; i++) limiter.tryAcquire();
+
+  const lease = limiter.tryAcquire(5);
+  assertFalse(lease.acquired);
+  assertEquals(lease.retryAfter, 2000);
+});
+
 // --- Double dispose ---
 
 Deno.test("double dispose is a no-op", () => {

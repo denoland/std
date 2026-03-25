@@ -98,7 +98,7 @@ export interface AcquireOptions {
  * ```ts
  * import { createTokenBucket } from "@std/rate-limit/token-bucket";
  *
- * const limiter = createTokenBucket({
+ * using limiter = createTokenBucket({
  *   tokenLimit: 10,
  *   tokensPerPeriod: 1,
  *   replenishmentPeriod: 1000,
@@ -108,8 +108,6 @@ export interface AcquireOptions {
  * if (!lease.acquired) {
  *   console.log(`Retry after ${lease.retryAfter}ms: ${lease.reason}`);
  * }
- *
- * limiter[Symbol.dispose]();
  * ```
  */
 export type RateLimitLease = AcquiredLease | RejectedLease;

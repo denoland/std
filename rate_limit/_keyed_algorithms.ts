@@ -55,6 +55,8 @@ function createKeyedAlgorithm<S extends object>(
       const ok = ops.tryConsume(state, cost, now);
       return ops.result(state, ok, cost, now);
     },
+    // Advances time (segment rotation, token refill) so metadata is
+    // accurate, but does not consume permits or update lastAccess.
     peek(key, cost, now) {
       const state = keys.get(key);
       if (state === undefined) return peekDefault(cost, now);
@@ -125,16 +127,16 @@ export function createSlidingWindowAlgorithm(
  *
  * @param limit Bucket capacity (max tokens per key). Must be a positive integer.
  * @param window Refill cycle duration in milliseconds. Must be a positive finite number.
- * @param tokensPerCycle Tokens added per cycle. Must be a positive integer.
+ * @param tokensPerPeriod Tokens added per replenishment period. Must be a positive integer.
  * @returns A keyed algorithm using token-bucket semantics.
  */
 export function createTokenBucketAlgorithm(
   limit: number,
   window: number,
-  tokensPerCycle: number,
+  tokensPerPeriod: number,
 ): KeyedAlgorithm {
   return createKeyedAlgorithm(
-    createTokenBucketOps(limit, window, tokensPerCycle),
+    createTokenBucketOps(limit, window, tokensPerPeriod),
   );
 }
 

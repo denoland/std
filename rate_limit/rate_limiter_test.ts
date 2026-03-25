@@ -62,17 +62,17 @@ Deno.test("createRateLimiter() throws for invalid segmentsPerWindow", () => {
   );
 });
 
-Deno.test("createRateLimiter() throws for invalid tokensPerCycle", () => {
+Deno.test("createRateLimiter() throws for invalid tokensPerPeriod", () => {
   assertThrows(
     () =>
       createRateLimiter({
         limit: 10,
         window: 1000,
         algorithm: "token-bucket",
-        tokensPerCycle: 0,
+        tokensPerPeriod: 0,
       }),
     RangeError,
-    "tokensPerCycle",
+    "tokensPerPeriod",
   );
   assertThrows(
     () =>
@@ -80,10 +80,10 @@ Deno.test("createRateLimiter() throws for invalid tokensPerCycle", () => {
         limit: 10,
         window: 1000,
         algorithm: "token-bucket",
-        tokensPerCycle: 11,
+        tokensPerPeriod: 11,
       }),
     RangeError,
-    "tokensPerCycle",
+    "tokensPerPeriod",
   );
 });
 
@@ -341,7 +341,7 @@ Deno.test("token-bucket: tokens refill lazily on access", () => {
     limit: 3,
     window: 1000,
     algorithm: "token-bucket",
-    tokensPerCycle: 1,
+    tokensPerPeriod: 1,
     evictionTtl: 0,
     clock: () => now,
   });
@@ -363,7 +363,7 @@ Deno.test("token-bucket: refill capped at limit", () => {
     limit: 3,
     window: 1000,
     algorithm: "token-bucket",
-    tokensPerCycle: 3,
+    tokensPerPeriod: 3,
     evictionTtl: 0,
     clock: () => now,
   });
@@ -381,7 +381,7 @@ Deno.test("token-bucket: retryAfter reflects time until enough tokens", () => {
     limit: 10,
     window: 500,
     algorithm: "token-bucket",
-    tokensPerCycle: 2,
+    tokensPerPeriod: 2,
     evictionTtl: 0,
     clock: () => now,
   });
@@ -390,6 +390,52 @@ Deno.test("token-bucket: retryAfter reflects time until enough tokens", () => {
   const r = limiter.limit("a", { cost: 3 });
   assertFalse(r.ok);
   assertEquals(r.retryAfter, 1000);
+});
+
+Deno.test("token-bucket: remaining is integer even with partial-cycle elapsed time", () => {
+  let now = 0;
+  using limiter = createRateLimiter({
+    limit: 10,
+    window: 300,
+    algorithm: "token-bucket",
+    tokensPerPeriod: 3,
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  limiter.limit("a", { cost: 10 });
+
+  now = 500;
+  const r = limiter.limit("a");
+  assert(r.ok);
+  assert(
+    Number.isInteger(r.remaining),
+    `remaining (${r.remaining}) should be integer`,
+  );
+  assertEquals(r.remaining, 2);
+});
+
+Deno.test("token-bucket: exact token boundary with multi-cycle refill", () => {
+  let now = 0;
+  using limiter = createRateLimiter({
+    limit: 7,
+    window: 1000,
+    algorithm: "token-bucket",
+    tokensPerPeriod: 3,
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  limiter.limit("a", { cost: 7 });
+  assertFalse(limiter.limit("a").ok);
+
+  now = 1000;
+  assert(limiter.limit("a", { cost: 3 }).ok);
+  assertFalse(limiter.limit("a").ok);
+
+  now = 2000;
+  assert(limiter.limit("a", { cost: 3 }).ok);
+  assertFalse(limiter.limit("a").ok);
 });
 
 // === GCRA ===

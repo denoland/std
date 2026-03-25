@@ -49,12 +49,12 @@ export interface RateLimiterOptions {
    */
   segmentsPerWindow?: number;
   /**
-   * For token bucket: tokens added per replenishment cycle. Ignored for
+   * For token bucket: tokens added per replenishment period. Ignored for
    * other algorithms.
    *
    * @default {limit}
    */
-  tokensPerCycle?: number;
+  tokensPerPeriod?: number;
   /**
    * Time-to-live for idle key state in milliseconds. Keys with no activity
    * for this duration are eligible for eviction. Set to `0` to disable
@@ -186,6 +186,11 @@ export interface KeyedRateLimiter extends Disposable {
    * Useful for displaying remaining quota in UI or headers without
    * affecting the count.
    *
+   * Note: `peek()` advances the algorithm's internal clock (e.g. rotates
+   * sliding-window segments, refills token-bucket tokens) so that the
+   * returned metadata reflects the current point in time. This is a
+   * time-advancement side effect only — no permits are consumed.
+   *
    * Note: `peek()` does not count as activity for TTL-based eviction.
    * Keys that are only peeked (never limited) will still be evicted after
    * `evictionTtl` of inactivity.
@@ -271,7 +276,7 @@ export function createRateLimiter(
     window: windowMs,
     algorithm: algorithmName = "sliding-window",
     segmentsPerWindow = 10,
-    tokensPerCycle = limit,
+    tokensPerPeriod = limit,
     evictionTtl = 300_000,
     evictionInterval = 60_000,
     maxKeys = 0,
@@ -279,10 +284,10 @@ export function createRateLimiter(
   } = options;
 
   if (algorithmName === "token-bucket") {
-    assertPositiveInteger(context, "tokensPerCycle", tokensPerCycle);
-    if (tokensPerCycle > limit) {
+    assertPositiveInteger(context, "tokensPerPeriod", tokensPerPeriod);
+    if (tokensPerPeriod > limit) {
       throw new RangeError(
-        `Cannot create ${context}: 'tokensPerCycle' (${tokensPerCycle}) exceeds 'limit' (${limit})`,
+        `Cannot create ${context}: 'tokensPerPeriod' (${tokensPerPeriod}) exceeds 'limit' (${limit})`,
       );
     }
   }
@@ -312,7 +317,7 @@ export function createRateLimiter(
       );
       break;
     case "token-bucket":
-      algorithm = createTokenBucketAlgorithm(limit, windowMs, tokensPerCycle);
+      algorithm = createTokenBucketAlgorithm(limit, windowMs, tokensPerPeriod);
       break;
     case "gcra":
       algorithm = createGcraAlgorithm(limit, windowMs);

@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
-
 import { assertPositiveFinite, assertPositiveInteger } from "./_validation.ts";
 
 /**
@@ -96,13 +95,12 @@ export function createFixedWindowOps(
     replenish(state) {
       state.count = 0;
     },
-    result(state, ok, _cost, now) {
-      const resetAt = state.windowStart + window;
+    result(state, ok, cost, now) {
       return {
         ok,
         remaining: Math.max(0, limit - state.count),
-        resetAt,
-        retryAfter: ok ? 0 : resetAt - now,
+        resetAt: state.windowStart + window,
+        retryAfter: ok ? 0 : this.computeRetryAfter(state, cost, now),
         limit,
       };
     },
@@ -176,13 +174,12 @@ export function createSlidingWindowOps(
       state.counter.rotate();
       state.segmentStart += segmentDuration;
     },
-    result(state, ok, _cost, now) {
-      const resetAt = state.segmentStart + segmentDuration;
+    result(state, ok, cost, now) {
       return {
         ok,
         remaining: Math.max(0, limit - state.counter.total),
-        resetAt,
-        retryAfter: ok ? 0 : resetAt - now,
+        resetAt: state.segmentStart + segmentDuration,
+        retryAfter: ok ? 0 : this.computeRetryAfter(state, cost, now),
         limit,
       };
     },
@@ -205,18 +202,18 @@ export interface TokenBucketState {
  *
  * @param limit Maximum tokens (bucket capacity). Must be a positive integer.
  * @param window Refill cycle duration in milliseconds. Must be a positive finite number.
- * @param tokensPerCycle Tokens added per cycle. Must be a positive integer.
+ * @param tokensPerPeriod Tokens added per replenishment period. Must be a positive integer.
  * @returns Algorithm ops for token-bucket rate limiting.
  */
 export function createTokenBucketOps(
   limit: number,
   window: number,
-  tokensPerCycle: number,
+  tokensPerPeriod: number,
 ): AlgorithmOps<TokenBucketState> {
   const context = "token bucket";
   assertPositiveInteger(context, "limit", limit);
   assertPositiveFinite(context, "window", window);
-  assertPositiveInteger(context, "tokensPerCycle", tokensPerCycle);
+  assertPositiveInteger(context, "tokensPerPeriod", tokensPerPeriod);
   return {
     limit,
     create(now) {
@@ -226,7 +223,7 @@ export function createTokenBucketOps(
       const elapsed = now - state.lastRefill;
       if (elapsed >= window) {
         const cycles = Math.floor(elapsed / window);
-        state.tokens = Math.min(limit, state.tokens + cycles * tokensPerCycle);
+        state.tokens = Math.min(limit, state.tokens + cycles * tokensPerPeriod);
         state.lastRefill += cycles * window;
       }
     },
@@ -239,7 +236,7 @@ export function createTokenBucketOps(
       return state.tokens >= cost;
     },
     replenish(state) {
-      state.tokens = Math.min(limit, state.tokens + tokensPerCycle);
+      state.tokens = Math.min(limit, state.tokens + tokensPerPeriod);
       state.lastRefill += window;
     },
     result(state, ok, cost, now) {
@@ -254,7 +251,7 @@ export function createTokenBucketOps(
     },
     computeRetryAfter(state, cost, now) {
       const deficit = cost - state.tokens;
-      const cycles = Math.ceil(deficit / tokensPerCycle);
+      const cycles = Math.ceil(deficit / tokensPerPeriod);
       return Math.max(0, cycles * window - (now - state.lastRefill));
     },
   };
