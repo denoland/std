@@ -6,7 +6,8 @@ Node.js, Bun, browsers, and Cloudflare Workers.
 
 ## Repository Structure
 
-- Each top-level directory is a package (e.g., `async/`, `http/`, `collections/`)
+- Each top-level directory is a package (e.g., `async/`, `http/`,
+  `collections/`)
 - `_tools/` contains internal CI/dev tooling (lint plugins, doc checkers, etc.)
 - Root `deno.json` defines the workspace, tasks, and compiler options
 - `import_map.json` maps all `@std/*` packages and dev dependencies
