@@ -30,6 +30,7 @@ export * from "./text_delimiter_stream.ts";
 export * from "./text_line_stream.ts";
 export * from "./to_array_buffer.ts";
 export * from "./to_blob.ts";
+export * from "./to_bytes.ts";
 export * from "./to_json.ts";
 export * from "./to_text.ts";
 export * from "./to_transform_stream.ts";
