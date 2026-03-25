@@ -34,6 +34,9 @@
  * }
  * ```
  *
+ * Only the JSON serialization (`application/problem+json`) is implemented.
+ * The XML serialization defined by the RFC is not supported.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9457.html}
@@ -260,6 +263,9 @@ function normalizeParsedProblemDetails(
  * ignored per RFC 9457 §3.1. Does not throw on missing fields — the RFC makes
  * all members optional. Extension member types provided via `T` are asserted at
  * the type level only — values are not validated at runtime.
+ *
+ * Note: this consumes the response body. The `Response` cannot be re-read
+ * after this call.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
