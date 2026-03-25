@@ -708,6 +708,99 @@ export interface Expected<IsAsync = false> {
   ): void;
 
   /**
+   * Asserts that the value matches the most recent snapshot. If no snapshot
+   * exists, one will be created when running in update mode (`-- --update`).
+   *
+   * Requires `expect.setState({ currentTestName: "..." })` to be called before use.
+   * The test file path is auto-detected from the call stack.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { expect } from "@std/expect";
+   *
+   * Deno.test("snapshot test", () => {
+   *   expect.setState({ currentTestName: "snapshot test", testPath: import.meta.url });
+   *   expect({ foo: 42 }).toMatchSnapshot();
+   * });
+   * ```
+   *
+   * @param hint An optional hint string appended to the snapshot name.
+   */
+  toMatchSnapshot(hint?: string): void;
+  /**
+   * Asserts that the value matches the most recent snapshot, using property
+   * matchers to handle dynamic values like timestamps or IDs.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { expect } from "@std/expect";
+   *
+   * Deno.test("snapshot with matchers", () => {
+   *   expect.setState({ currentTestName: "snapshot with matchers", testPath: import.meta.url });
+   *   expect({ id: 1, name: "Alice" }).toMatchSnapshot({
+   *     id: expect.any(Number),
+   *   });
+   * });
+   * ```
+   *
+   * @param propertyMatchers An object of asymmetric matchers for dynamic values.
+   * @param hint An optional hint string appended to the snapshot name.
+   */
+  toMatchSnapshot(
+    propertyMatchers: Record<string, unknown>,
+    hint?: string,
+  ): void;
+
+  /**
+   * Asserts that the value matches the inline snapshot string. If no snapshot
+   * is provided or the value differs, the source file will be updated when
+   * running in update mode (`-- --update`).
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { expect } from "@std/expect";
+   *
+   * Deno.test("inline snapshot", () => {
+   *   expect({ foo: 42 }).toMatchInlineSnapshot(`
+   * {
+   *   foo: 42,
+   * }
+   * `);
+   * });
+   * ```
+   *
+   * @param inlineSnapshot The expected inline snapshot string.
+   */
+  toMatchInlineSnapshot(inlineSnapshot?: string): void;
+  /**
+   * Asserts that the value matches the inline snapshot string, using property
+   * matchers to handle dynamic values like timestamps or IDs.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { expect } from "@std/expect";
+   *
+   * Deno.test("inline snapshot with matchers", () => {
+   *   expect({ id: 1, name: "Alice" }).toMatchInlineSnapshot({
+   *     id: expect.any(Number),
+   *   }, `
+   * {
+   *   id: Any<Number>,
+   *   name: "Alice",
+   * }
+   * `);
+   * });
+   * ```
+   *
+   * @param propertyMatchers An object of asymmetric matchers for dynamic values.
+   * @param inlineSnapshot The expected inline snapshot string.
+   */
+  toMatchInlineSnapshot(
+    propertyMatchers: Record<string, unknown>,
+    inlineSnapshot?: string,
+  ): void;
+
+  /**
    * Asserts that the function returned.
    *
    * @example Usage

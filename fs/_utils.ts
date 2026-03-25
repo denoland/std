@@ -62,6 +62,11 @@ export function getNodeUtil() {
  * @returns A randomized 6-digit hexadecimal string.
  */
 export function randomId(): string {
-  const n = (Math.random() * 0xfffff * 1_000_000).toString(16);
-  return "".concat(n.slice(0, 6));
+  const bytes = new Uint8Array(3);
+  crypto.getRandomValues(bytes);
+  let result = "";
+  for (const byte of bytes) {
+    result += byte.toString(16).padStart(2, "0");
+  }
+  return result;
 }

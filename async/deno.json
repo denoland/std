@@ -1,23 +1,27 @@
 {
   "name": "@std/async",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "exports": {
     ".": "./mod.ts",
     "./abortable": "./abortable.ts",
     "./deadline": "./deadline.ts",
     "./debounce": "./debounce.ts",
+    "./unstable-debounce": "./unstable_debounce.ts",
     "./delay": "./delay.ts",
     "./mux-async-iterator": "./mux_async_iterator.ts",
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
     "./pool": "./pool.ts",
     "./retry": "./retry.ts",
-    "./unstable-retry": "./unstable_retry.ts",
     "./tee": "./tee.ts",
+    "./all-keyed": "./all_keyed.ts",
+    "./unstable-abortable": "./unstable_abortable.ts",
     "./unstable-throttle": "./unstable_throttle.ts",
     "./unstable-wait-for": "./unstable_wait_for.ts",
     "./unstable-semaphore": "./unstable_semaphore.ts",
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
-    "./unstable-all-keyed": "./unstable_all_keyed.ts",
-    "./unstable-poll": "./unstable_poll.ts"
+    "./unstable-lazy": "./unstable_lazy.ts",
+    "./unstable-poll": "./unstable_poll.ts",
+    "./unstable-pool-settled": "./unstable_pool_settled.ts",
+    "./unstable-channel": "./unstable_channel.ts"
   }
 }

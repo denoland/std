@@ -2,6 +2,12 @@
 // This module is browser compatible.
 
 /**
+ * Type definitions for the XML parser and serializer.
+ *
+ * @module
+ */
+
+/**
  * Position information for error reporting.
  */
 export interface XmlPosition {
@@ -69,8 +75,8 @@ export class XmlSyntaxError extends SyntaxError {
   /**
    * Constructs a new XmlSyntaxError.
    *
-   * @param message The error message describing what went wrong.
-   * @param position The position in the input where the error occurred.
+   * @param message The error message describing the syntax issue.
+   * @param position The position in the XML source where the error occurred.
    */
   constructor(message: string, position: XmlPosition) {
     super(`${message} at line ${position.line}, column ${position.column}`);
@@ -99,12 +105,6 @@ export interface XmlName {
    *
    * For unprefixed names, this is undefined (the default namespace is not
    * applied to element names in this implementation for simplicity).
-   *
-   * @example
-   * ```ts
-   * // For <ns:item xmlns:ns="http://example.com">
-   * // name.uri === "http://example.com"
-   * ```
    */
   readonly uri?: string;
 }
@@ -246,6 +246,36 @@ export interface BaseParseOptions {
    * Disabling improves performance but makes debugging harder.
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, DOCTYPE declarations are rejected immediately with an
+   * {@linkcode XmlSyntaxError}, before any internal subset is parsed.
+   * This prevents resource exhaustion attacks via hostile DTD content.
+   *
+   * Set to `false` to allow DOCTYPE declarations (e.g. for documents
+   * that use predefined entities or external DTD references).
+   *
+   * @default {true}
+   */
+  readonly disallowDoctype?: boolean;
+
+  /**
+   * Maximum element nesting depth. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents stack exhaustion from
+   * deeply nested documents.
+   *
+   * @default {Infinity}
+   */
+  readonly maxDepth?: number;
+
+  /**
+   * Maximum number of attributes per element. Exceeding this throws
+   * {@linkcode XmlSyntaxError}. Prevents memory exhaustion from
+   * elements with huge attribute lists.
+   *
+   * @default {Infinity}
+   */
+  readonly maxAttributes?: number;
 }
 
 /**
@@ -550,7 +580,7 @@ export interface XmlEventCallbacks {
  * assertEquals(isElement(node), true);
  * ```
  *
- * @param node The node to check.
+ * @param node The XML node to check.
  * @returns `true` if the node is an element, `false` otherwise.
  */
 export function isElement(node: XmlNode): node is XmlElement {
@@ -569,7 +599,7 @@ export function isElement(node: XmlNode): node is XmlElement {
  * assertEquals(isText(node), true);
  * ```
  *
- * @param node The node to check.
+ * @param node The XML node to check.
  * @returns `true` if the node is a text node, `false` otherwise.
  */
 export function isText(node: XmlNode): node is XmlTextNode {
@@ -588,7 +618,7 @@ export function isText(node: XmlNode): node is XmlTextNode {
  * assertEquals(isCData(node), true);
  * ```
  *
- * @param node The node to check.
+ * @param node The XML node to check.
  * @returns `true` if the node is a CDATA node, `false` otherwise.
  */
 export function isCData(node: XmlNode): node is XmlCDataNode {
@@ -607,7 +637,7 @@ export function isCData(node: XmlNode): node is XmlCDataNode {
  * assertEquals(isComment(node), true);
  * ```
  *
- * @param node The node to check.
+ * @param node The XML node to check.
  * @returns `true` if the node is a comment, `false` otherwise.
  */
 export function isComment(node: XmlNode): node is XmlCommentNode {

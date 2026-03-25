@@ -7,6 +7,9 @@ async:
 bytes:
   - changed-files:
       - any-glob-to-any-file: bytes/**
+cache:
+  - changed-files:
+      - any-glob-to-any-file: cache/**
 cbor:
   - changed-files:
       - any-glob-to-any-file: cbor/**
@@ -115,6 +118,9 @@ uuid:
 webgpu:
   - changed-files:
       - any-glob-to-any-file: webgpu/**
+xml:
+  - changed-files:
+      - any-glob-to-any-file: xml/**
 yaml:
   - changed-files:
       - any-glob-to-any-file: yaml/**

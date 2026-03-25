@@ -61,15 +61,20 @@ interface EntryInfo {
   name: string;
 }
 
-const ENV_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-    .state ?? "granted"; // for deno deploy
-const NET_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
-    .state ?? "granted"; // for deno deploy
-const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
-  ? Deno.env.get("DENO_DEPLOYMENT_ID")
-  : undefined;
+const ENV_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({
+    name: "env",
+    variable: "DENO_DEPLOYMENT_ID",
+  }).state ?? "granted"
+  : "granted"; // for deno deploy
+const NET_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
+    .state ?? "granted"
+  : "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID =
+  ENV_PERM_STATUS === "granted" && typeof Deno !== "undefined"
+    ? Deno.env.get("DENO_DEPLOYMENT_ID")
+    : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
   ? eTag(DENO_DEPLOYMENT_ID, { weak: true })
   : undefined;
@@ -177,6 +182,8 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  await req.body?.cancel();
+
   if (req.method !== "GET" && req.method !== "HEAD") {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
@@ -187,7 +194,6 @@ export async function serveFile(
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      await req.body?.cancel();
       return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
@@ -195,7 +201,6 @@ export async function serveFile(
   }
 
   if (fileInfo.isDirectory) {
-    await req.body?.cancel();
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
@@ -330,6 +335,7 @@ export async function serveFile(
 }
 
 async function serveDirIndex(
+  req: Request,
   dirPath: string,
   options: {
     showDotfiles: boolean;
@@ -399,9 +405,13 @@ async function serveDirIndex(
 
   const headers = createBaseHeaders();
   headers.set("Content-Type", "text/html; charset=UTF-8");
+  if (req.method === "HEAD") {
+    const pageSize = new TextEncoder().encode(page).byteLength;
+    headers.set("Content-Length", String(pageSize));
+  }
 
   const status = STATUS_CODE.OK;
-  return new Response(page, {
+  return new Response(req.method === "HEAD" ? null : page, {
     status,
     statusText: STATUS_TEXT[status],
     headers,
@@ -653,7 +663,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "HEAD") {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -789,7 +799,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);

@@ -8,7 +8,7 @@ import { describe as describe_, it as it_, test as test_ } from "./bdd.ts";
  * Registers a test suite.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
  *
@@ -30,7 +30,7 @@ const describe = describe_ as typeof describe_ & describe;
  * Registers an individual test case.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { describe, it } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
  *
@@ -53,7 +53,7 @@ const it = it_ as typeof it_ & it;
  * Registers an individual test case.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { test } from "@std/testing/bdd";
  * import { assertEquals } from "@std/assert";
  *
@@ -123,7 +123,7 @@ export function configureGlobalSanitizers(
  * Register a test suite that is not yet implemented.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { describe } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
@@ -142,7 +142,7 @@ describe.todo = function describeTodo<T>(
  * Register a test case that is not yet implemented.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { describe, it } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *
@@ -161,7 +161,7 @@ it.todo = function itTodo<T>(...args: ItArgs<T>): void {
  * Register a test case that is not yet implemented.
  *
  * @example Usage
- * ```ts
+ * ```ts ignore
  * import { describe, test } from "@std/testing/unstable-bdd";
  * import { assertEquals } from "@std/assert";
  *

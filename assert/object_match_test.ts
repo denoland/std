@@ -119,6 +119,26 @@ Deno.test("assertObjectMatch() matches subset with regexp", () => {
   assertObjectMatch(m, { bar: [/abc/g, /abc/m] });
 });
 
+Deno.test("assertObjectMatch() matches when expected has shared Date references", () => {
+  const timestamp = 1700000000000;
+  const startTime = new Date(timestamp);
+  assertObjectMatch(
+    { startTime: new Date(timestamp), data: [{ t: new Date(timestamp) }] },
+    { startTime, data: [{ t: startTime }] },
+  );
+});
+
+Deno.test("assertObjectMatch() throws when date mismatches", () => {
+  assertThrows(
+    () =>
+      assertObjectMatch(
+        { startTime: new Date(1000) },
+        { startTime: new Date(2000) },
+      ),
+    AssertionError,
+  );
+});
+
 Deno.test("assertObjectMatch() matches subset with built-in data structures", () => {
   assertObjectMatch(n, { foo: new Set(["foo"]) });
   assertObjectMatch(n, { bar: new Map([["bar", 2]]) });

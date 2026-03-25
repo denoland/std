@@ -7,18 +7,15 @@
  * @module
  */
 
-// Hoisted regex patterns for performance
-// Single-pass regex that matches predefined entities and char refs, while
-// also detecting bare/invalid ampersands. Uses [a-zA-Z]+ (not [a-zA-Z0-9]*)
-// to allow entity names with digits to pass through unchanged (non-validating).
-// Group 1: named entity (letters only, e.g. "amp")
+// Single-pass regex that matches all entity references and bare ampersands.
+// Group 1: named entity ([a-zA-Z][a-zA-Z0-9]*, e.g. "amp", "foo1")
 // Group 2: decimal char ref (e.g. "#13")
 // Group 3: hex char ref (e.g. "#xd")
-// Match with no groups: bare/invalid ampersand (if lookahead fails)
-const ENTITY_OR_AMPERSAND_RE =
-  /&(?:([a-zA-Z]+);|(#[0-9]+);|(#x[0-9a-fA-F]+);|(?![a-zA-Z][a-zA-Z0-9]*;|#[0-9]+;|#x[0-9a-fA-F]+;))/g;
-const SPECIAL_CHARS_RE = /[<>&'"]/g;
-const ATTR_ENCODE_RE = /[<>&'"\t\n\r]/g;
+// No groups: bare/invalid ampersand
+const ENTITY_OR_AMPERSAND_REGEXP =
+  /&(?:([a-zA-Z][a-zA-Z0-9]*);|(#[0-9]+);|(#x[0-9a-fA-F]+);)?/g;
+const SPECIAL_CHARS_REGEXP = /[<>&'"]/g;
+const ATTR_ENCODE_REGEXP = /[<>&'"\t\n\r]/g;
 
 /** XML 1.0 §4.6 predefined entities (decode). */
 const NAMED_ENTITIES: Record<string, string> = {
@@ -83,7 +80,6 @@ function isValidXmlChar(codePoint: number): boolean {
  *
  * External entities (SYSTEM/PUBLIC) are also not supported.
  *
- * @param text The text containing XML entities to decode.
  * @returns The text with predefined entities decoded.
  * @throws {Error} If the text contains invalid or unknown entity references.
  */
@@ -93,7 +89,7 @@ export function decodeEntities(text: string): string {
 
   // Single-pass: decode predefined entities and char refs, error on invalid
   return text.replace(
-    ENTITY_OR_AMPERSAND_RE,
+    ENTITY_OR_AMPERSAND_REGEXP,
     (
       match: string,
       namedEntity: string | undefined,
@@ -125,23 +121,22 @@ export function decodeEntities(text: string): string {
         return String.fromCodePoint(codePoint);
       }
 
-      // Named entity (&name;) - only letters matched
+      // Named entity (&name;)
       if (namedEntity !== undefined) {
         const predefined = NAMED_ENTITIES[namedEntity];
         if (predefined !== undefined) {
           return predefined;
         }
-        // Unknown letter-only entity
         throw new Error(
           `Unknown entity '${match}' at position ${offset}: ` +
-            `only predefined entities (lt, gt, amp, apos, quot) are supported`,
+            `only predefined entities (lt, gt, amp, apos, quot) are recognized`,
         );
       }
 
       // Bare ampersand (no valid entity pattern matched)
       throw new Error(
         `Invalid bare '&' at position ${offset}: ` +
-          `entity references must be &name; or &#num; or &#xHex;`,
+          `use &amp; or a valid entity reference (&name;, &#num;, &#xHex;)`,
       );
     },
   );
@@ -150,24 +145,22 @@ export function decodeEntities(text: string): string {
 /**
  * Encodes special characters as XML entities.
  *
- * @param text The text to encode.
  * @returns The text with special characters encoded as entities.
  */
 export function encodeEntities(text: string): string {
   // Fast path: no special characters means nothing to encode
   if (!/[<>&'"]/.test(text)) return text;
-  return text.replace(SPECIAL_CHARS_RE, (c) => ENTITY_MAP[c]!);
+  return text.replace(SPECIAL_CHARS_REGEXP, (c) => ENTITY_MAP[c]!);
 }
 
 /**
  * Encodes special characters for use in XML attribute values.
  * Encodes whitespace characters that would be normalized per XML 1.0 §3.3.3.
  *
- * @param value The attribute value to encode.
  * @returns The encoded attribute value.
  */
 export function encodeAttributeValue(value: string): string {
   // Fast path: no special characters means nothing to encode
   if (!/[<>&'"\t\n\r]/.test(value)) return value;
-  return value.replace(ATTR_ENCODE_RE, (c) => ATTR_ENTITY_MAP[c]!);
+  return value.replace(ATTR_ENCODE_REGEXP, (c) => ATTR_ENTITY_MAP[c]!);
 }

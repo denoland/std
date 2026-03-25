@@ -3,7 +3,7 @@ import { assertEquals } from "@std/assert";
 import {
   type ServerSentEventParsedMessage,
   ServerSentEventParseStream,
-} from "./unstable_server_sent_event_stream.ts";
+} from "./server_sent_event_parse_stream.ts";
 import {
   type ServerSentEventMessage,
   ServerSentEventStream,
