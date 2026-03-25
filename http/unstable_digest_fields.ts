@@ -38,7 +38,7 @@
 
 import { timingSafeEqual } from "@std/crypto/timing-safe-equal";
 import type { Item } from "@std/http/unstable-structured-fields";
-import { toBytes } from "@std/streams/unstable-to-bytes";
+import { toBytes } from "@std/streams/to-bytes";
 import {
   binary,
   isItem,
