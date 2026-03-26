@@ -12,72 +12,72 @@ import {
 // =============================================================================
 
 Deno.test("decodeEntities() decodes predefined entities", () => {
-  assertEquals(decodeEntities("&lt;"), "<");
-  assertEquals(decodeEntities("&gt;"), ">");
-  assertEquals(decodeEntities("&amp;"), "&");
-  assertEquals(decodeEntities("&apos;"), "'");
-  assertEquals(decodeEntities("&quot;"), '"');
+  assertEquals(decodeEntities("&lt;", false), "<");
+  assertEquals(decodeEntities("&gt;", false), ">");
+  assertEquals(decodeEntities("&amp;", false), "&");
+  assertEquals(decodeEntities("&apos;", false), "'");
+  assertEquals(decodeEntities("&quot;", false), '"');
 });
 
 Deno.test("decodeEntities() decodes multiple entities in a string", () => {
   assertEquals(
-    decodeEntities("&lt;hello&gt; &amp; &quot;world&quot;"),
+    decodeEntities("&lt;hello&gt; &amp; &quot;world&quot;", false),
     '<hello> & "world"',
   );
 });
 
 Deno.test("decodeEntities() decodes decimal character references", () => {
-  assertEquals(decodeEntities("&#60;"), "<");
-  assertEquals(decodeEntities("&#62;"), ">");
-  assertEquals(decodeEntities("&#38;"), "&");
-  assertEquals(decodeEntities("&#39;"), "'");
-  assertEquals(decodeEntities("&#34;"), '"');
-  assertEquals(decodeEntities("&#65;"), "A");
-  assertEquals(decodeEntities("&#8364;"), "€");
+  assertEquals(decodeEntities("&#60;", false), "<");
+  assertEquals(decodeEntities("&#62;", false), ">");
+  assertEquals(decodeEntities("&#38;", false), "&");
+  assertEquals(decodeEntities("&#39;", false), "'");
+  assertEquals(decodeEntities("&#34;", false), '"');
+  assertEquals(decodeEntities("&#65;", false), "A");
+  assertEquals(decodeEntities("&#8364;", false), "€");
 });
 
 Deno.test("decodeEntities() decodes hexadecimal character references", () => {
-  assertEquals(decodeEntities("&#x3C;"), "<");
-  assertEquals(decodeEntities("&#x3c;"), "<");
-  assertEquals(decodeEntities("&#x3E;"), ">");
-  assertEquals(decodeEntities("&#x26;"), "&");
-  assertEquals(decodeEntities("&#x27;"), "'");
-  assertEquals(decodeEntities("&#x22;"), '"');
-  assertEquals(decodeEntities("&#x41;"), "A");
-  assertEquals(decodeEntities("&#x20AC;"), "€");
+  assertEquals(decodeEntities("&#x3C;", false), "<");
+  assertEquals(decodeEntities("&#x3c;", false), "<");
+  assertEquals(decodeEntities("&#x3E;", false), ">");
+  assertEquals(decodeEntities("&#x26;", false), "&");
+  assertEquals(decodeEntities("&#x27;", false), "'");
+  assertEquals(decodeEntities("&#x22;", false), '"');
+  assertEquals(decodeEntities("&#x41;", false), "A");
+  assertEquals(decodeEntities("&#x20AC;", false), "€");
 });
 
 Deno.test("decodeEntities() throws on unknown entities", () => {
   assertThrows(
-    () => decodeEntities("&unknown;"),
+    () => decodeEntities("&unknown;", false),
     Error,
     "Unknown entity '&unknown;'",
   );
   assertThrows(
-    () => decodeEntities("&nbsp;"),
+    () => decodeEntities("&nbsp;", false),
     Error,
     "Unknown entity '&nbsp;'",
   );
 });
 
 Deno.test("decodeEntities() handles text without entities", () => {
-  assertEquals(decodeEntities("hello world"), "hello world");
-  assertEquals(decodeEntities(""), "");
+  assertEquals(decodeEntities("hello world", false), "hello world");
+  assertEquals(decodeEntities("", false), "");
 });
 
 Deno.test("decodeEntities() throws on incomplete entity-like patterns", () => {
   assertThrows(
-    () => decodeEntities("a & b"),
+    () => decodeEntities("a & b", false),
     Error,
     "Invalid bare '&'",
   );
   assertThrows(
-    () => decodeEntities("foo &bar"),
+    () => decodeEntities("foo &bar", false),
     Error,
     "Invalid bare '&'",
   );
   assertThrows(
-    () => decodeEntities("&;"),
+    () => decodeEntities("&;", false),
     Error,
     "Invalid bare '&'",
   );
@@ -86,17 +86,17 @@ Deno.test("decodeEntities() throws on incomplete entity-like patterns", () => {
 Deno.test("decodeEntities() throws on invalid code points", () => {
   // Code points exceeding max Unicode (0x10FFFF) are invalid
   assertThrows(
-    () => decodeEntities("&#x110000;"),
+    () => decodeEntities("&#x110000;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#1114112;"),
+    () => decodeEntities("&#1114112;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#999999999;"),
+    () => decodeEntities("&#999999999;", false),
     Error,
     "Invalid character reference",
   );
@@ -104,20 +104,20 @@ Deno.test("decodeEntities() throws on invalid code points", () => {
 
 Deno.test("decodeEntities() handles max valid Unicode code point", () => {
   // 0x10FFFF is the maximum valid Unicode code point
-  assertEquals(decodeEntities("&#x10FFFF;"), "\u{10FFFF}");
-  assertEquals(decodeEntities("&#1114111;"), "\u{10FFFF}");
+  assertEquals(decodeEntities("&#x10FFFF;", false), "\u{10FFFF}");
+  assertEquals(decodeEntities("&#1114111;", false), "\u{10FFFF}");
 });
 
 Deno.test("decodeEntities() handles leading zeros in character references", () => {
-  assertEquals(decodeEntities("&#0065;"), "A");
-  assertEquals(decodeEntities("&#x0041;"), "A");
-  assertEquals(decodeEntities("&#00000000065;"), "A");
+  assertEquals(decodeEntities("&#0065;", false), "A");
+  assertEquals(decodeEntities("&#x0041;", false), "A");
+  assertEquals(decodeEntities("&#00000000065;", false), "A");
 });
 
 Deno.test("decodeEntities() handles consecutive entities", () => {
-  assertEquals(decodeEntities("&amp;&amp;"), "&&");
-  assertEquals(decodeEntities("&lt;&gt;"), "<>");
-  assertEquals(decodeEntities("&#65;&#66;&#67;"), "ABC");
+  assertEquals(decodeEntities("&amp;&amp;", false), "&&");
+  assertEquals(decodeEntities("&lt;&gt;", false), "<>");
+  assertEquals(decodeEntities("&#65;&#66;&#67;", false), "ABC");
 });
 
 // =============================================================================
@@ -126,7 +126,7 @@ Deno.test("decodeEntities() handles consecutive entities", () => {
 
 Deno.test("decodeEntities() throws on bare &", () => {
   assertThrows(
-    () => decodeEntities("foo&bar"),
+    () => decodeEntities("foo&bar", false),
     Error,
     "Invalid bare '&' at position 3",
   );
@@ -134,7 +134,7 @@ Deno.test("decodeEntities() throws on bare &", () => {
 
 Deno.test("decodeEntities() throws on & at end", () => {
   assertThrows(
-    () => decodeEntities("trailing&"),
+    () => decodeEntities("trailing&", false),
     Error,
     "Invalid bare '&' at position 8",
   );
@@ -142,7 +142,7 @@ Deno.test("decodeEntities() throws on & at end", () => {
 
 Deno.test("decodeEntities() throws on & followed by space", () => {
   assertThrows(
-    () => decodeEntities("a & b"),
+    () => decodeEntities("a & b", false),
     Error,
     "Invalid bare '&' at position 2",
   );
@@ -150,7 +150,7 @@ Deno.test("decodeEntities() throws on & followed by space", () => {
 
 Deno.test("decodeEntities() throws on & in URL query strings", () => {
   assertThrows(
-    () => decodeEntities("http://example.com?a=1&b=2"),
+    () => decodeEntities("http://example.com?a=1&b=2", false),
     Error,
     "Invalid bare '&'",
   );
@@ -215,7 +215,7 @@ Deno.test("encodeAttributeValue() handles combined cases", () => {
 Deno.test("decodeEntities and encodeEntities are inverse operations for basic entities", () => {
   const original = '<hello> & "world"';
   const encoded = encodeEntities(original);
-  const decoded = decodeEntities(encoded);
+  const decoded = decodeEntities(encoded, false);
   assertEquals(decoded, original);
 });
 
@@ -225,7 +225,7 @@ Deno.test("decodeEntities and encodeEntities are inverse operations for basic en
 
 Deno.test("decodeEntities() throws on empty hex reference", () => {
   assertThrows(
-    () => decodeEntities("&#x;"),
+    () => decodeEntities("&#x;", false),
     Error,
     "Invalid bare '&'",
   );
@@ -233,12 +233,12 @@ Deno.test("decodeEntities() throws on empty hex reference", () => {
 
 Deno.test("decodeEntities() throws on invalid hex digits", () => {
   assertThrows(
-    () => decodeEntities("&#xGG;"),
+    () => decodeEntities("&#xGG;", false),
     Error,
     "Invalid bare '&'",
   );
   assertThrows(
-    () => decodeEntities("&#xZZ;"),
+    () => decodeEntities("&#xZZ;", false),
     Error,
     "Invalid bare '&'",
   );
@@ -246,7 +246,7 @@ Deno.test("decodeEntities() throws on invalid hex digits", () => {
 
 Deno.test("decodeEntities() throws on empty decimal reference", () => {
   assertThrows(
-    () => decodeEntities("&#;"),
+    () => decodeEntities("&#;", false),
     Error,
     "Invalid bare '&'",
   );
@@ -255,28 +255,28 @@ Deno.test("decodeEntities() throws on empty decimal reference", () => {
 Deno.test("decodeEntities() throws on surrogate code points", () => {
   // U+D800-U+DFFF are surrogate pairs, invalid per XML 1.0 §2.2
   assertThrows(
-    () => decodeEntities("&#xD800;"),
+    () => decodeEntities("&#xD800;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xDFFF;"),
+    () => decodeEntities("&#xDFFF;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xDBFF;"),
+    () => decodeEntities("&#xDBFF;", false),
     Error,
     "Invalid character reference",
   );
   // Decimal surrogates (55296 = 0xD800, 57343 = 0xDFFF)
   assertThrows(
-    () => decodeEntities("&#55296;"),
+    () => decodeEntities("&#55296;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#57343;"),
+    () => decodeEntities("&#57343;", false),
     Error,
     "Invalid character reference",
   );
@@ -288,100 +288,100 @@ Deno.test("decodeEntities() throws on invalid XML characters per §2.2", () => {
 
   // NULL (#x0) is invalid
   assertThrows(
-    () => decodeEntities("&#0;"),
+    () => decodeEntities("&#0;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#x0;"),
+    () => decodeEntities("&#x0;", false),
     Error,
     "Invalid character reference",
   );
 
   // Control characters #x1-#x8 are invalid
   assertThrows(
-    () => decodeEntities("&#1;"),
+    () => decodeEntities("&#1;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#x1;"),
+    () => decodeEntities("&#x1;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#8;"),
+    () => decodeEntities("&#8;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#x8;"),
+    () => decodeEntities("&#x8;", false),
     Error,
     "Invalid character reference",
   );
 
   // #xB and #xC are invalid (but #x9, #xA, #xD are valid)
   assertThrows(
-    () => decodeEntities("&#11;"),
+    () => decodeEntities("&#11;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xB;"),
+    () => decodeEntities("&#xB;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#12;"),
+    () => decodeEntities("&#12;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xC;"),
+    () => decodeEntities("&#xC;", false),
     Error,
     "Invalid character reference",
   );
 
   // Control characters #xE-#x1F are invalid
   assertThrows(
-    () => decodeEntities("&#14;"),
+    () => decodeEntities("&#14;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xE;"),
+    () => decodeEntities("&#xE;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#31;"),
+    () => decodeEntities("&#31;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#x1F;"),
+    () => decodeEntities("&#x1F;", false),
     Error,
     "Invalid character reference",
   );
 
   // #xFFFE and #xFFFF are invalid
   assertThrows(
-    () => decodeEntities("&#xFFFE;"),
+    () => decodeEntities("&#xFFFE;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#xFFFF;"),
+    () => decodeEntities("&#xFFFF;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#65534;"),
+    () => decodeEntities("&#65534;", false),
     Error,
     "Invalid character reference",
   );
   assertThrows(
-    () => decodeEntities("&#65535;"),
+    () => decodeEntities("&#65535;", false),
     Error,
     "Invalid character reference",
   );
@@ -389,31 +389,31 @@ Deno.test("decodeEntities() throws on invalid XML characters per §2.2", () => {
 
 Deno.test("decodeEntities() allows valid XML whitespace characters", () => {
   // #x9 (tab), #xA (newline), #xD (carriage return) are valid
-  assertEquals(decodeEntities("&#9;"), "\t");
-  assertEquals(decodeEntities("&#x9;"), "\t");
-  assertEquals(decodeEntities("&#10;"), "\n");
-  assertEquals(decodeEntities("&#xA;"), "\n");
-  assertEquals(decodeEntities("&#13;"), "\r");
-  assertEquals(decodeEntities("&#xD;"), "\r");
+  assertEquals(decodeEntities("&#9;", false), "\t");
+  assertEquals(decodeEntities("&#x9;", false), "\t");
+  assertEquals(decodeEntities("&#10;", false), "\n");
+  assertEquals(decodeEntities("&#xA;", false), "\n");
+  assertEquals(decodeEntities("&#13;", false), "\r");
+  assertEquals(decodeEntities("&#xD;", false), "\r");
 });
 
 Deno.test("decodeEntities() throws on mixed valid and invalid references", () => {
   // Throws on the first invalid reference encountered
   assertThrows(
-    () => decodeEntities("&lt;&invalid;&gt;"),
+    () => decodeEntities("&lt;&invalid;&gt;", false),
     Error,
     "Unknown entity '&invalid;'",
   );
   assertThrows(
-    () => decodeEntities("&amp;&#999999999;&amp;"),
+    () => decodeEntities("&amp;&#999999999;&amp;", false),
     Error,
     "Invalid character reference",
   );
 });
 
 Deno.test("decodeEntities() handles entity at start and end", () => {
-  assertEquals(decodeEntities("&lt;text&gt;"), "<text>");
-  assertEquals(decodeEntities("&amp;"), "&");
+  assertEquals(decodeEntities("&lt;text&gt;", false), "<text>");
+  assertEquals(decodeEntities("&amp;", false), "&");
 });
 
 Deno.test("encodeEntities() handles all special chars adjacent", () => {
@@ -426,4 +426,93 @@ Deno.test("encodeAttributeValue() handles empty string", () => {
 
 Deno.test("encodeAttributeValue() handles only whitespace", () => {
   assertEquals(encodeAttributeValue("\t\n\r"), "&#9;&#10;&#13;");
+});
+
+// =============================================================================
+// XML 1.1 decodeEntities tests
+// =============================================================================
+
+Deno.test("decodeEntities() xml11 accepts C0 control char refs that XML 1.0 rejects", () => {
+  assertEquals(decodeEntities("&#x1;", true), "\x01");
+  assertEquals(decodeEntities("&#x2;", true), "\x02");
+  assertEquals(decodeEntities("&#x8;", true), "\x08");
+  assertEquals(decodeEntities("&#xB;", true), "\x0B");
+  assertEquals(decodeEntities("&#xC;", true), "\x0C");
+  assertEquals(decodeEntities("&#xE;", true), "\x0E");
+  assertEquals(decodeEntities("&#x1F;", true), "\x1F");
+});
+
+Deno.test("decodeEntities() xml11 accepts C1 control char refs", () => {
+  assertEquals(decodeEntities("&#x7F;", true), "\x7F");
+  assertEquals(decodeEntities("&#x80;", true), "\x80");
+  assertEquals(decodeEntities("&#x85;", true), "\x85");
+  assertEquals(decodeEntities("&#x9F;", true), "\x9F");
+});
+
+Deno.test("decodeEntities() xml11 still rejects NULL (&#x0;)", () => {
+  assertThrows(
+    () => decodeEntities("&#x0;", true),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml10 rejects C0 control char refs", () => {
+  assertThrows(
+    () => decodeEntities("&#x1;", false),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => decodeEntities("&#x2;", false),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => decodeEntities("&#x8;", false),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml11 decimal char refs for controls", () => {
+  assertEquals(decodeEntities("&#1;", true), "\x01");
+  assertEquals(decodeEntities("&#31;", true), "\x1F");
+});
+
+Deno.test("decodeEntities() xml11 rejects noncharacters U+FFFE and U+FFFF", () => {
+  assertThrows(
+    () => decodeEntities("&#xFFFE;", true),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => decodeEntities("&#xFFFF;", true),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml11 rejects surrogate code points", () => {
+  assertThrows(
+    () => decodeEntities("&#xD800;", true),
+    Error,
+    "Invalid character reference",
+  );
+  assertThrows(
+    () => decodeEntities("&#xDFFF;", true),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("decodeEntities() xml11 accepts supplementary plane characters", () => {
+  assertEquals(decodeEntities("&#x10000;", true), "\u{10000}");
+  assertEquals(decodeEntities("&#x10FFFF;", true), "\u{10FFFF}");
+});
+
+Deno.test("decodeEntities() xml11 accepts BMP boundary characters", () => {
+  assertEquals(decodeEntities("&#xD7FF;", true), "\uD7FF");
+  assertEquals(decodeEntities("&#xE000;", true), "\uE000");
+  assertEquals(decodeEntities("&#xFFFD;", true), "\uFFFD");
 });
