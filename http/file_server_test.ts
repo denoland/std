@@ -1153,6 +1153,55 @@ Deno.test(async function serveFileHeadRequest() {
   assertEquals(res.headers.get("content-length"), "10034");
 });
 
+Deno.test("serveDir() handles HEAD request for a file", async () => {
+  const req = new Request("http://localhost/test_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
+  assertEquals(res.headers.get("content-length"), `${TEST_FILE_SIZE}`);
+  assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
+  assertEquals(res.headers.get("last-modified"), TEST_FILE_LAST_MODIFIED);
+  assertEquals(res.headers.get("accept-ranges"), "bytes");
+});
+
+Deno.test("serveDir() handles HEAD request for index.html", async () => {
+  const req = new Request(
+    "http://localhost/http/testdata/subdir-with-index/",
+    { method: "HEAD" },
+  );
+  const res = await serveDir(req, { showIndex: true });
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+});
+
+Deno.test("serveDir() handles HEAD request for directory listing", async () => {
+  const req = new Request("http://localhost/", { method: "HEAD" });
+  const res = await serveDir(req, serveDirOptions);
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+  assert(Number(res.headers.get("content-length")) > 0);
+});
+
+Deno.test("serveDir() handles HEAD request for missing file", async () => {
+  const req = new Request("http://localhost/no_such_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 404);
+  assertEquals(res.statusText, "Not Found");
+});
+
 Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
   const req = new Request("http://localhost/hello");
   const res = await unstableServeDir(req, {
