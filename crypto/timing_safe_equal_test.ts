@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assert } from "@std/assert";
+import { assert, assertThrows } from "@std/assert";
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 Deno.test({
@@ -72,22 +72,28 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "timingSafeEqual() handles Uint8Array with different byte lengths (a > b)",
+  name: "timingSafeEqual() throws on different byte lengths (a > b)",
   fn() {
     const a = new Uint8Array([212, 213]);
     const b = new Uint8Array([212]);
-    assert(!timingSafeEqual(a, b));
+    assertThrows(
+      () => timingSafeEqual(a, b),
+      TypeError,
+      "Cannot compare buffers of different byte lengths (2 vs 1)",
+    );
   },
 });
 
 Deno.test({
-  name:
-    "timingSafeEqual() handles Uint8Array with different byte lengths (a < b)",
+  name: "timingSafeEqual() throws on different byte lengths (a < b)",
   fn() {
     const a = new Uint8Array([212]);
     const b = new Uint8Array([212, 213]);
-    assert(!timingSafeEqual(a, b));
+    assertThrows(
+      () => timingSafeEqual(a, b),
+      TypeError,
+      "Cannot compare buffers of different byte lengths (1 vs 2)",
+    );
   },
 });
 
@@ -192,5 +198,27 @@ Deno.test({
     vb.setUint8(0, 212);
     vb.setUint8(1, 212);
     assert(!timingSafeEqual(va, vb));
+  },
+});
+
+Deno.test({
+  name: "timingSafeEqual() compares equal SharedArrayBuffers",
+  fn() {
+    const a = new SharedArrayBuffer(2);
+    new Uint8Array(a).set([212, 213]);
+    const b = new SharedArrayBuffer(2);
+    new Uint8Array(b).set([212, 213]);
+    assert(timingSafeEqual(a, b));
+  },
+});
+
+Deno.test({
+  name: "timingSafeEqual() compares unequal SharedArrayBuffers",
+  fn() {
+    const a = new SharedArrayBuffer(2);
+    new Uint8Array(a).set([212, 213]);
+    const b = new SharedArrayBuffer(2);
+    new Uint8Array(b).set([212, 212]);
+    assert(!timingSafeEqual(a, b));
   },
 });
