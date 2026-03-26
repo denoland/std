@@ -104,7 +104,7 @@ export class HexEncoderStream<T extends "string" | "bytes">
  *   HexDecoderStream,
  *   HexEncoderStream,
  * } from "@std/encoding/unstable-hex-stream";
- * import { toBytes } from "@std/streams/unstable-to-bytes";
+ * import { toBytes } from "@std/streams/to-bytes";
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable
