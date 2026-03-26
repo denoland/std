@@ -61,6 +61,14 @@ export function _serializeArgList<Return>(
         }
       }
 
+      try {
+        new WeakRef(arg as WeakKey);
+      } catch {
+        throw new Error(
+          "Should be unreachable: please open an issue at https://github.com/denoland/std/issues/new",
+        );
+      }
+
       let keySegment = weakKeyToKeySegmentCache.get(arg as WeakKey);
       if (keySegment === undefined) {
         keySegment = `{${nextWeakKeyId++}}`;

@@ -3,6 +3,30 @@ import { assertEquals } from "@std/assert";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
 import { delay } from "@std/async";
 
+Deno.test("_serializeArgList() serializes simple numbers", () => {
+  const getKey = _serializeArgList(new Map());
+  assertEquals(getKey(1), "undefined,1");
+  assertEquals(getKey(1, 2), "undefined,1,2");
+  assertEquals(getKey(1, 2, 3), "undefined,1,2,3");
+});
+
+Deno.test("_serializeArgList() serializes reference types", () => {
+  const getKey = _serializeArgList(new Map());
+  const obj = {};
+  const arr: [] = [];
+  const sym = Symbol("xyz");
+
+  assertEquals(getKey(obj), "undefined,{0}");
+  assertEquals(getKey(obj, obj), "undefined,{0},{0}");
+
+  assertEquals(getKey(arr), "undefined,{1}");
+  assertEquals(getKey(sym), "undefined,{2}");
+  assertEquals(
+    getKey(obj, arr, sym),
+    "undefined,{0},{1},{2}",
+  );
+});
+
 Deno.test("_serializeArgList() gives same results as SameValueZero algorithm", async (t) => {
   /**
    * [`SameValueZero`](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero),
