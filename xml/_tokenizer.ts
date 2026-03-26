@@ -16,6 +16,7 @@ import {
   type XmlTokenCallbacks,
 } from "./types.ts";
 import {
+  isIllegalXmlLiteralChar,
   isReservedPiTarget,
   LINE_ENDING_REGEXP,
   validatePubidLiteral,
@@ -354,26 +355,8 @@ export class XmlTokenizer {
     );
   }
 
-  /**
-   * Checks if a code point is illegal as a literal character in the current
-   * XML version. XML 1.0 forbids C0 controls except TAB/LF/CR. XML 1.1
-   * additionally forbids C1 controls (#x7F-#x9F except #x85 NEL) and NULL,
-   * while allowing #x1-#x8, #xB-#xC, #xE-#x1F only via character references.
-   */
   #isIllegalLiteralChar(code: number): boolean {
-    if (this.#xml11) {
-      // XML 1.1 RestrictedChar + NULL + noncharacters
-      return code === 0 ||
-        (code >= 0x01 && code <= 0x08) ||
-        code === 0x0B || code === 0x0C ||
-        (code >= 0x0E && code <= 0x1F) ||
-        (code >= 0x7F && code <= 0x84) ||
-        (code >= 0x86 && code <= 0x9F) ||
-        code === 0xFFFE || code === 0xFFFF;
-    }
-    // XML 1.0: C0 controls except TAB/LF/CR + noncharacters (outside Char production)
-    return (code < 0x20 && code !== 0x09 && code !== 0x0A && code !== 0x0D) ||
-      code === 0xFFFE || code === 0xFFFF;
+    return isIllegalXmlLiteralChar(code, this.#xml11);
   }
 
   // XML 1.0 Fifth Edition name character validation with inlined ASCII fast path

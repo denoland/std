@@ -10,6 +10,34 @@
 import type { XmlName } from "./types.ts";
 
 /**
+ * Checks if a code point is illegal as a literal character in the given
+ * XML version. XML 1.0 forbids C0 controls except TAB/LF/CR. XML 1.1
+ * additionally forbids C1 controls (#x7F-#x9F except #x85 NEL) and NULL,
+ * while allowing #x1-#x8, #xB-#xC, #xE-#x1F only via character references.
+ *
+ * @see {@link https://www.w3.org/TR/xml/#charsets | XML 1.0 §2.2}
+ * @see {@link https://www.w3.org/TR/xml11/#charsets | XML 1.1 §2.2}
+ */
+export function isIllegalXmlLiteralChar(
+  code: number,
+  xml11: boolean,
+): boolean {
+  if (xml11) {
+    // XML 1.1 RestrictedChar + NULL + noncharacters
+    return code === 0 ||
+      (code >= 0x01 && code <= 0x08) ||
+      code === 0x0B || code === 0x0C ||
+      (code >= 0x0E && code <= 0x1F) ||
+      (code >= 0x7F && code <= 0x84) ||
+      (code >= 0x86 && code <= 0x9F) ||
+      code === 0xFFFE || code === 0xFFFF;
+  }
+  // XML 1.0: C0 controls except TAB/LF/CR + noncharacters
+  return (code < 0x20 && code !== 0x09 && code !== 0x0A && code !== 0x0D) ||
+    code === 0xFFFE || code === 0xFFFF;
+}
+
+/**
  * Line ending normalization patterns per XML 1.0 §2.11 and XML 1.1 §2.11.
  *
  * XML 1.0: Converts `\r\n` and standalone `\r` to `\n`.

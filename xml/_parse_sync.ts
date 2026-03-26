@@ -27,6 +27,7 @@ import type {
 import { XmlSyntaxError } from "./types.ts";
 import { decodeEntities } from "./_entities.ts";
 import {
+  isIllegalXmlLiteralChar,
   isReservedPiTarget,
   LINE_ENDING_REGEXP,
   parseName,
@@ -62,20 +63,6 @@ const CC_PLUS = 43; // +
 const CC_COMMA = 44; // ,
 const CC_SEMICOLON = 59; // ;
 const CC_PIPE = 124; // |
-
-// =============================================================================
-// XML 1.0 CHARACTER VALIDATION
-// =============================================================================
-
-/**
- * Lookup table for C0 control characters (0x00-0x1F).
- * Valid XML 1.0 Char in this range: #x9 (TAB), #xA (LF), #xD (CR)
- * All others are illegal.
- */
-const C0_VALID = new Uint8Array(32);
-C0_VALID[0x09] = 1; // TAB
-C0_VALID[0x0A] = 1; // LF
-C0_VALID[0x0D] = 1; // CR
 
 /** Internal mutable type for building the tree. */
 type MutableElement = {
@@ -118,17 +105,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const len = input.length;
 
   function isIllegalLiteralChar(code: number): boolean {
-    if (xml11) {
-      return code === 0 ||
-        (code >= 0x01 && code <= 0x08) ||
-        code === 0x0B || code === 0x0C ||
-        (code >= 0x0E && code <= 0x1F) ||
-        (code >= 0x7F && code <= 0x84) ||
-        (code >= 0x86 && code <= 0x9F) ||
-        code === 0xFFFE || code === 0xFFFF;
-    }
-    return (code < 0x20 && C0_VALID[code] !== 1) ||
-      code === 0xFFFE || code === 0xFFFF;
+    return isIllegalXmlLiteralChar(code, xml11);
   }
 
   // Parser state - only track position offset, not line/column
@@ -602,6 +579,8 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
+      // Opening paren - must have whitespace before FIRST paren only
+      // Nested parens like ((a|b)) are valid without whitespace between them
       if (code === CC_LPAREN) {
         if (!sawWhitespace && parenDepth === 0) {
           error("Missing whitespace before '(' in DTD declaration");
@@ -622,18 +601,21 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
+      // Choice operator per §3.2.1: choice ::= '(' S? cp ( S? '|' S? cp )+ S? ')'
       if (code === CC_PIPE) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
+      // Sequence operator per §3.2.1: seq ::= '(' S? cp ( S? ',' S? cp )* S? ')'
       if (code === CC_COMMA) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
+      // #PCDATA, #IMPLIED, #REQUIRED, #FIXED keywords
       if (code === CC_HASH) {
         if (!sawWhitespace && parenDepth === 0) {
           error("Missing whitespace before '#' in DTD declaration");
@@ -643,12 +625,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
+      // Parameter entity reference
       if (code === CC_PERCENT) {
         sawWhitespace = false;
         pos++;
         continue;
       }
 
+      // End of parameter entity reference
       if (code === CC_SEMICOLON) {
         sawWhitespace = false;
         pos++;
@@ -677,6 +661,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         continue;
       }
 
+      // Content model operators per §3.2.1: cp ::= (Name | choice | seq) ('?' | '*' | '+')?
       if (code === CC_STAR || code === CC_PLUS || code === CC_QUESTION) {
         sawWhitespace = false;
         pos++;

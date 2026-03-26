@@ -44,13 +44,13 @@ const ATTR_ENTITY_MAP: Record<string, string> = {
 };
 
 /**
- * Checks if a code point is a valid XML 1.0 Char per §2.2.
+ * Checks if a code point is valid for a character reference in XML 1.0 per §2.2.
  *
  * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
  *
  * @see {@link https://www.w3.org/TR/xml/#charsets | XML 1.0 §2.2 Characters}
  */
-function isValidXmlChar(codePoint: number): boolean {
+function isValidXml10CharRef(codePoint: number): boolean {
   return (
     codePoint === 0x9 ||
     codePoint === 0xA ||
@@ -62,17 +62,18 @@ function isValidXmlChar(codePoint: number): boolean {
 }
 
 /**
- * Checks if a code point is a valid XML 1.1 Char per §2.2.
+ * Checks if a code point is valid for a character reference in XML 1.1 per §2.2.
  *
  * Char ::= [#x1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
  *
  * XML 1.1 allows all code points except NULL (#x0), surrogates, and
  * non-characters #xFFFE-#xFFFF. C0 and C1 controls are valid as character
- * references but restricted as literal characters (handled by the tokenizer).
+ * references but restricted as literal characters (handled by
+ * {@linkcode isIllegalXmlLiteralChar} in `_common.ts`).
  *
  * @see {@link https://www.w3.org/TR/xml11/#charsets | XML 1.1 §2.2 Characters}
  */
-function isValidXml11Char(codePoint: number): boolean {
+function isValidXml11CharRef(codePoint: number): boolean {
   return (
     (codePoint >= 0x1 && codePoint <= 0xD7FF) ||
     (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
@@ -99,7 +100,7 @@ export function decodeEntities(text: string, xml11: boolean): string {
   // Fast path: no ampersand means no entities to decode
   if (!text.includes("&")) return text;
 
-  const isValid = xml11 ? isValidXml11Char : isValidXmlChar;
+  const isValid = xml11 ? isValidXml11CharRef : isValidXml10CharRef;
 
   // Single-pass: decode predefined entities and char refs, error on invalid
   return text.replace(
