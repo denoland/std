@@ -4,6 +4,32 @@
 import type { MemoizationCache } from "./memoize.ts";
 
 /**
+ * Options for {@linkcode TtlCache.prototype.set}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TtlCacheSetOptions {
+  /**
+   * A custom time-to-live in milliseconds for this entry. If supplied,
+   * overrides the cache's default TTL. Must be a finite, non-negative number.
+   */
+  ttl?: number;
+}
+
+/**
+ * Options for the {@linkcode TtlCache} constructor.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface TtlCacheOptions<K, V> {
+  /**
+   * Callback invoked when an entry is removed, whether by TTL expiry,
+   * manual deletion, or clearing the cache.
+   */
+  onEject?: (ejectedKey: K, ejectedValue: V) => void;
+}
+
+/**
  * Time-to-live cache.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -27,7 +53,7 @@ import type { MemoizationCache } from "./memoize.ts";
  * assertEquals(cache.size, 0);
  * ```
  *
- * @example Adding a onEject function.
+ * @example Adding an onEject callback
  * ```ts
  * import { TtlCache } from "@std/cache/ttl-cache";
  * import { delay } from "@std/async/delay";
@@ -51,8 +77,7 @@ export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
   #timeouts = new Map<K, number>();
-
-  #eject: (ejectedKey: K, ejectedValue: V) => void;
+  #eject?: ((ejectedKey: K, ejectedValue: V) => void) | undefined;
 
   /**
    * Constructs a new instance.
@@ -60,17 +85,22 @@ export class TtlCache<K, V> extends Map<K, V>
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param defaultTtl The default time-to-live in milliseconds. This value must
-   * be equal to or greater than 0. Its limit is determined by the current
-   * runtime's {@linkcode setTimeout} implementation.
+   * be a finite, non-negative number. Its upper limit is determined by the
+   * current runtime's {@linkcode setTimeout} implementation.
    * @param options Additional options.
    */
   constructor(
     defaultTtl: number,
-    options?: { onEject: (ejectedKey: K, ejectedValue: V) => void },
+    options?: TtlCacheOptions<K, V>,
   ) {
     super();
+    if (!(defaultTtl >= 0) || !Number.isFinite(defaultTtl)) {
+      throw new RangeError(
+        `Cannot create TtlCache: defaultTtl must be a finite, non-negative number: received ${defaultTtl}`,
+      );
+    }
     this.#defaultTtl = defaultTtl;
-    this.#eject = options?.onEject ?? (() => {});
+    this.#eject = options?.onEject;
   }
 
   /**
@@ -78,12 +108,9 @@ export class TtlCache<K, V> extends Map<K, V>
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
-   * @param key The cache key
-   * @param value The value to set
-   * @param ttl A custom time-to-live. If supplied, overrides the cache's
-   * default TTL for this entry. This value must
-   * be equal to or greater than 0. Its limit is determined by the current
-   * runtime's {@linkcode setTimeout} implementation.
+   * @param key The cache key.
+   * @param value The value to set.
+   * @param options Options for this entry.
    * @returns `this` for chaining.
    *
    * @example Usage
@@ -101,8 +128,16 @@ export class TtlCache<K, V> extends Map<K, V>
    * assertEquals(cache.get("a"), undefined);
    * ```
    */
-  override set(key: K, value: V, ttl: number = this.#defaultTtl): this {
-    clearTimeout(this.#timeouts.get(key));
+  override set(key: K, value: V, options?: TtlCacheSetOptions): this {
+    const ttl = options?.ttl ?? this.#defaultTtl;
+    if (!(ttl >= 0) || !Number.isFinite(ttl)) {
+      throw new RangeError(
+        `Cannot set entry in TtlCache: ttl must be a finite, non-negative number: received ${ttl}`,
+      );
+    }
+
+    const existing = this.#timeouts.get(key);
+    if (existing !== undefined) clearTimeout(existing);
     super.set(key, value);
     this.#timeouts.set(key, setTimeout(() => this.delete(key), ttl));
     return this;
@@ -129,12 +164,15 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
-    if (super.has(key)) {
-      this.#eject(key, super.get(key) as V);
-    }
-    clearTimeout(this.#timeouts.get(key));
+    const value = super.get(key);
+    const existed = super.delete(key);
+    if (!existed) return false;
+
+    const timeout = this.#timeouts.get(key);
+    if (timeout !== undefined) clearTimeout(timeout);
     this.#timeouts.delete(key);
-    return super.delete(key);
+    this.#eject?.(key, value!);
+    return true;
   }
 
   /**
@@ -160,7 +198,17 @@ export class TtlCache<K, V> extends Map<K, V>
       clearTimeout(timeout);
     }
     this.#timeouts.clear();
+    const entries = [...super.entries()];
     super.clear();
+    let error: unknown;
+    for (const [key, value] of entries) {
+      try {
+        this.#eject?.(key, value);
+      } catch (e) {
+        error ??= e;
+      }
+    }
+    if (error !== undefined) throw error;
   }
 
   /**
