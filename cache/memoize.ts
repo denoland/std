@@ -147,6 +147,8 @@ export function memoize<
     const key = getKey.apply(this, args) as Key;
 
     const cached = cache.get(key);
+    // `MemoizationCacheResult` is always a truthy object, so `undefined`
+    // reliably indicates a cache miss here.
     if (cached !== undefined) {
       switch (cached.kind) {
         case "ok":

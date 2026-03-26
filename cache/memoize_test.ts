@@ -3,6 +3,41 @@ import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { type MemoizationCacheResult, memoize } from "./memoize.ts";
 import { LruCache } from "./lru_cache.ts";
 
+Deno.test("memoize() memoizes nullary function (lazy/singleton)", async (t) => {
+  await t.step("async function", async () => {
+    let calls = 0;
+
+    const db = {
+      connect() {
+        ++calls;
+        return Promise.resolve({});
+      },
+    };
+
+    const getConn = memoize(async () => await db.connect());
+    const conn = await getConn();
+    assertEquals(calls, 1);
+    const conn2 = await getConn();
+    assert(conn2 === conn);
+    assertEquals(calls, 1);
+  });
+
+  await t.step("sync function", () => {
+    let calls = 0;
+    const fn = memoize(() => {
+      ++calls;
+      return {};
+    });
+
+    const result = fn();
+    assertEquals(calls, 1);
+
+    const result2 = fn();
+    assert(result2 === result);
+    assertEquals(calls, 1);
+  });
+});
+
 Deno.test("memoize() returns cached result for repeated calls", () => {
   let calls = 0;
   const fn = memoize((a: number, b: number) => {
@@ -37,6 +72,27 @@ Deno.test("memoize() caches by all passed args including implicit ones", () => {
   assertEquals(calls, 4);
 });
 
+Deno.test("memoize() allows ...spread primitive args", () => {
+  let calls = 0;
+  const fn = memoize((...ns: number[]) => {
+    ++calls;
+    return ns.reduce((total, val) => total + val, 0);
+  });
+
+  assertEquals(fn(), 0);
+  assertEquals(fn(), 0);
+  assertEquals(calls, 1);
+  assertEquals(fn(7), 7);
+  assertEquals(fn(7), 7);
+  assertEquals(calls, 2);
+  assertEquals(fn(7, 8), 15);
+  assertEquals(fn(7, 8), 15);
+  assertEquals(calls, 3);
+  assertEquals(fn(7, 8, 9), 24);
+  assertEquals(fn(7, 8, 9), 24);
+  assertEquals(calls, 4);
+});
+
 Deno.test("memoize() preserves `this` binding for function and getKey", () => {
   type Obj = { b: number; c: number; memoized: (a: number) => number };
 
@@ -61,6 +117,23 @@ Deno.test("memoize() preserves `this` binding for function and getKey", () => {
   obj.b = 3;
   obj.c = 5;
   assertEquals(obj.memoized(1), 9);
+  assertEquals(calls, 2);
+});
+
+Deno.test("memoize() caches single reference arg (symbol) by identity", () => {
+  let calls = 0;
+  const fn = memoize((sym: symbol) => {
+    ++calls;
+    return sym;
+  });
+  const sym1 = Symbol();
+  const sym2 = Symbol();
+
+  fn(sym1);
+  assertEquals(calls, 1);
+  fn(sym1);
+  assertEquals(calls, 1);
+  fn(sym2);
   assertEquals(calls, 2);
 });
 
@@ -166,6 +239,20 @@ Deno.test("memoize() returns same promise for parallel calls with same args", as
   assertEquals(results[3]!.status, "fulfilled");
 });
 
+Deno.test("memoize() allows passing an explicit `Map` as a cache", () => {
+  let calls = 0;
+  const cache = new Map();
+  const fn = memoize((n: number) => {
+    ++calls;
+    return 0 - n;
+  }, { cache });
+
+  assertEquals(fn(42), -42);
+  assertEquals(calls, 1);
+  assertEquals(fn(42), -42);
+  assertEquals(calls, 1);
+});
+
 Deno.test("memoize() works with custom cache implementing MemoizationCache", () => {
   let calls = 0;
 
@@ -210,6 +297,25 @@ Deno.test("memoize() evicts stale entries when used with LruCache", () => {
   assertEquals(calls, 5);
 });
 
+Deno.test("memoize() only caches single latest result with LruCache of maxSize=1", () => {
+  let calls = 0;
+
+  const fn = memoize((n: number) => {
+    ++calls;
+    return 0 - n;
+  }, { cache: new LruCache<string, MemoizationCacheResult<number>>(1) });
+
+  assertEquals(fn(0), 0);
+  assertEquals(fn(0), 0);
+  assertEquals(calls, 1);
+
+  assertEquals(fn(1), -1);
+  assertEquals(calls, 2);
+
+  assertEquals(fn(0), 0);
+  assertEquals(calls, 3);
+});
+
 Deno.test("memoize() exposes the underlying cache", () => {
   const fn = memoize((n: number) => 0 - n);
 
@@ -239,10 +345,19 @@ Deno.test("memoize() preserves function length and name", () => {
   assertEquals(memoize(() => {}).length, 0);
   assertEquals(memoize((_a: number) => {}).length, 1);
   assertEquals(memoize((_a: number, _b: number) => {}).length, 2);
+  assertEquals(memoize((..._args: number[]) => {}).length, 0);
+  assertEquals(memoize((_a: number, ..._args: number[]) => {}).length, 1);
 
-  function myFunc() {}
-  assertEquals(memoize(myFunc).name, "myFunc");
+  const fn1 = () => {};
+  function fn2() {}
+  const obj = { ["!"]: () => {} };
+
   assertEquals(memoize(() => {}).name, "");
+  assertEquals(memoize(fn1).name, "fn1");
+  assertEquals(memoize(fn1.bind({})).name, "bound fn1");
+  assertEquals(memoize(fn2).name, "fn2");
+  assertEquals(memoize(function fn3() {}).name, "fn3");
+  assertEquals(memoize(obj["!"]).name, "!");
 });
 
 Deno.test("memoize() respects `errorIsCacheable` option", async (t) => {
