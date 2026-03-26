@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { TtlCache } from "./ttl_cache.ts";
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
 
 const UNSET = Symbol("UNSET");
@@ -68,7 +68,7 @@ Deno.test("TtlCache deletes entries", async (t) => {
     const cache = new TtlCache<number, string>(10);
 
     cache.set(1, "one");
-    cache.set(2, "two", 3);
+    cache.set(2, "two", { ttl: 3 });
 
     time.now = 1;
     assertEntries(cache, [[1, "one"], [2, "two"]]);
@@ -143,4 +143,141 @@ Deno.test("TtlCache onEject()", async (t) => {
 
     assertEquals(ejected, [[1, 0], [2, ""], [3, false], [4, null]]);
   });
+
+  await t.step("calls onEject on clear()", () => {
+    const ejected: [number, string][] = [];
+    using cache = new TtlCache<number, string>(1000, {
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set(1, "one");
+    cache.set(2, "two");
+    cache.set(3, "three");
+    cache.clear();
+
+    assertEquals(ejected, [[1, "one"], [2, "two"], [3, "three"]]);
+  });
+
+  await t.step("calls onEject on [Symbol.dispose]()", () => {
+    const ejected: [number, string][] = [];
+    {
+      using cache = new TtlCache<number, string>(1000, {
+        onEject: (k, v) => ejected.push([k, v]),
+      });
+      cache.set(1, "one");
+      cache.set(2, "two");
+    }
+
+    assertEquals(ejected, [[1, "one"], [2, "two"]]);
+  });
+
+  await t.step("does not call onEject when overwriting a key", () => {
+    const ejected: [string, number][] = [];
+    using cache = new TtlCache<string, number>(1000, {
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set("a", 1);
+    cache.set("a", 2);
+
+    assertEquals(ejected, []);
+    assertEquals(cache.get("a"), 2);
+  });
+
+  await t.step("entry is fully removed before onEject fires", () => {
+    let sizeInCallback = -1;
+    let hasInCallback = true;
+    using cache = new TtlCache<string, number>(1000, {
+      onEject: (k) => {
+        sizeInCallback = cache.size;
+        hasInCallback = cache.has(k);
+      },
+    });
+
+    cache.set("a", 1);
+    cache.delete("a");
+
+    assertEquals(sizeInCallback, 0);
+    assertEquals(hasInCallback, false);
+  });
+});
+
+Deno.test("TtlCache validates TTL", async (t) => {
+  await t.step("constructor rejects negative defaultTtl", () => {
+    assertThrows(
+      () => new TtlCache(-1),
+      RangeError,
+      "defaultTtl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("constructor rejects NaN defaultTtl", () => {
+    assertThrows(
+      () => new TtlCache(NaN),
+      RangeError,
+      "defaultTtl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("constructor rejects Infinity defaultTtl", () => {
+    assertThrows(
+      () => new TtlCache(Infinity),
+      RangeError,
+      "defaultTtl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("constructor accepts 0", () => {
+    using _cache = new TtlCache(0);
+  });
+
+  await t.step("set() rejects negative ttl", () => {
+    using cache = new TtlCache<string, number>(1000);
+    assertThrows(
+      () => cache.set("a", 1, { ttl: -1 }),
+      RangeError,
+      "ttl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("set() rejects NaN ttl", () => {
+    using cache = new TtlCache<string, number>(1000);
+    assertThrows(
+      () => cache.set("a", 1, { ttl: NaN }),
+      RangeError,
+      "ttl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("set() rejects Infinity ttl", () => {
+    using cache = new TtlCache<string, number>(1000);
+    assertThrows(
+      () => cache.set("a", 1, { ttl: Infinity }),
+      RangeError,
+      "ttl must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("set() accepts 0 ttl", () => {
+    using cache = new TtlCache<string, number>(1000);
+    cache.set("a", 1, { ttl: 0 });
+    assertEquals(cache.get("a"), 1);
+  });
+});
+
+Deno.test("TtlCache clear() calls all onEject callbacks even if one throws", () => {
+  const ejected: string[] = [];
+  using cache = new TtlCache<string, number>(1000, {
+    onEject: (k) => {
+      ejected.push(k);
+      if (k === "a") throw new Error("boom");
+    },
+  });
+
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.set("c", 3);
+  assertThrows(() => cache.clear(), Error, "boom");
+  assertEquals(ejected, ["a", "b", "c"]);
+  assertEquals(cache.size, 0);
 });
