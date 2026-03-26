@@ -45,8 +45,6 @@ export type SettledRecord<T extends Record<PropertyKey, unknown>> = {
  * {@link https://github.com/tc39/proposal-await-dictionary | Await Dictionary}
  * proposal (`Promise.allKeyed`).
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The record shape with resolved (unwrapped) value types. For
  * example, if passing `{ foo: Promise<number> }`, `T` would be `{ foo: number }`.
  * @param record A record where values are promise-like (thenables) or plain values.
@@ -57,7 +55,7 @@ export type SettledRecord<T extends Record<PropertyKey, unknown>> = {
  *
  * @example Basic usage
  * ```ts
- * import { allKeyed } from "@std/async/unstable-all-keyed";
+ * import { allKeyed } from "@std/async/all-keyed";
  * import { assertEquals } from "@std/assert";
  *
  * const result = await allKeyed({
@@ -70,7 +68,7 @@ export type SettledRecord<T extends Record<PropertyKey, unknown>> = {
  *
  * @example Parallel HTTP requests
  * ```ts no-assert ignore
- * import { allKeyed } from "@std/async/unstable-all-keyed";
+ * import { allKeyed } from "@std/async/all-keyed";
  *
  * const { user, posts } = await allKeyed({
  *   user: fetch("/api/user").then((r) => r.json()),
@@ -80,7 +78,7 @@ export type SettledRecord<T extends Record<PropertyKey, unknown>> = {
  *
  * @example Mixed promises and plain values
  * ```ts
- * import { allKeyed } from "@std/async/unstable-all-keyed";
+ * import { allKeyed } from "@std/async/all-keyed";
  * import { assertEquals } from "@std/assert";
  *
  * const result = await allKeyed({
@@ -124,8 +122,6 @@ export function allKeyed<T extends Record<PropertyKey, unknown>>(
  * {@link https://github.com/tc39/proposal-await-dictionary | Await Dictionary}
  * proposal (`Promise.allSettledKeyed`).
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The record shape with resolved (unwrapped) value types. For
  * example, if passing `{ foo: Promise<number> }`, `T` would be `{ foo: number }`.
  * @param record A record where values are promise-like (thenables) or plain values.
@@ -134,7 +130,7 @@ export function allKeyed<T extends Record<PropertyKey, unknown>>(
  *
  * @example Basic usage
  * ```ts
- * import { allSettledKeyed } from "@std/async/unstable-all-keyed";
+ * import { allSettledKeyed } from "@std/async/all-keyed";
  * import { assertEquals } from "@std/assert";
  *
  * const settled = await allSettledKeyed({
@@ -148,7 +144,7 @@ export function allKeyed<T extends Record<PropertyKey, unknown>>(
  *
  * @example Error handling
  * ```ts
- * import { allSettledKeyed } from "@std/async/unstable-all-keyed";
+ * import { allSettledKeyed } from "@std/async/all-keyed";
  * import { assertEquals, assertExists } from "@std/assert";
  *
  * const settled = await allSettledKeyed({
