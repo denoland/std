@@ -260,7 +260,7 @@ Deno.test("LruCache onEject is not re-entrant", async (t) => {
     cache.set("b", 2);
     assertThrows(
       () => cache.set("c", 3),
-      Error,
+      TypeError,
       "cache is not re-entrant during onEject callbacks",
     );
   });
@@ -276,7 +276,7 @@ Deno.test("LruCache onEject is not re-entrant", async (t) => {
     cache.set("b", 2);
     assertThrows(
       () => cache.delete("a"),
-      Error,
+      TypeError,
       "cache is not re-entrant during onEject callbacks",
     );
   });
@@ -291,7 +291,7 @@ Deno.test("LruCache onEject is not re-entrant", async (t) => {
     cache.set("a", 1);
     assertThrows(
       () => cache.delete("a"),
-      Error,
+      TypeError,
       "cache is not re-entrant during onEject callbacks",
     );
   });

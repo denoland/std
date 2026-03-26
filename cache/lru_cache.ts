@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import type { MemoizationCache } from "./memoize.ts";
+export type { MemoizationCache };
 
 /**
  * The reason an entry was removed from the cache.
@@ -262,7 +263,7 @@ export class LruCache<K, V> extends Map<K, V>
    */
   override set(key: K, value: V): this {
     if (this.#ejecting) {
-      throw new Error(
+      throw new TypeError(
         "Cannot set entry in LruCache: cache is not re-entrant during onEject callbacks",
       );
     }
@@ -294,7 +295,7 @@ export class LruCache<K, V> extends Map<K, V>
    */
   override delete(key: K): boolean {
     if (this.#ejecting) {
-      throw new Error(
+      throw new TypeError(
         "Cannot delete entry in LruCache: cache is not re-entrant during onEject callbacks",
       );
     }
@@ -333,7 +334,7 @@ export class LruCache<K, V> extends Map<K, V>
    */
   override clear(): void {
     if (this.#ejecting) {
-      throw new Error(
+      throw new TypeError(
         "Cannot clear LruCache: cache is not re-entrant during onEject callbacks",
       );
     }
