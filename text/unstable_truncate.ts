@@ -25,7 +25,8 @@ export interface TruncateOptions {
  * Truncates a string to at most `maxLength` UTF-16 code units. When truncation
  * occurs the suffix is included within the `maxLength` budget. Surrogate pairs
  * are never split, so the result may be shorter than `maxLength` when a cut
- * would land inside a pair.
+ * would land inside a pair. When the suffix itself contains surrogate pairs and
+ * `maxLength` is very small, the result can even be empty.
  *
  * Note: this function is not grapheme-cluster-aware. Combining characters, flag
  * emoji, and ZWJ sequences may still be visually split.
@@ -33,11 +34,12 @@ export interface TruncateOptions {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param str The string to truncate.
- * @param maxLength The maximum length of the returned string (must be an
- * integer).
+ * @param maxLength The maximum length of the returned string (must be a
+ * non-negative integer).
  * @param options The truncation options.
  * @returns The truncated string.
- * @throws {RangeError} If `maxLength` is not an integer.
+ * @throws {RangeError} If `maxLength` is not a non-negative integer.
+ * @throws {TypeError} If `position` is not a valid position.
  *
  * @example End truncation (default)
  * ```ts
@@ -86,12 +88,12 @@ export function truncate(
   maxLength: number,
   options?: TruncateOptions,
 ): string {
-  if (!Number.isInteger(maxLength)) {
+  if (!Number.isInteger(maxLength) || maxLength < 0) {
     throw new RangeError(
-      `Cannot truncate: maxLength must be an integer, received ${maxLength}`,
+      `Cannot truncate: maxLength must be a non-negative integer, received ${maxLength}`,
     );
   }
-  if (maxLength <= 0) return "";
+  if (maxLength === 0) return "";
   if (str.length <= maxLength) return str;
 
   const suffix = options?.suffix ?? "\u2026";
@@ -116,8 +118,11 @@ export function truncate(
         str.slice(adjustSplitForward(str, rightStart));
     }
     case "end":
-    default:
       return str.slice(0, adjustSplitBack(str, budget)) + suffix;
+    default:
+      throw new TypeError(
+        `Cannot truncate: position must be "end", "middle", or "start", received "${position}"`,
+      );
   }
 }
 

@@ -3,9 +3,8 @@ import { assertEquals } from "@std/assert/equals";
 import { assertThrows } from "@std/assert/throws";
 import { truncate } from "./unstable_truncate.ts";
 
-Deno.test("truncate() returns empty string when maxLength is zero or negative", () => {
+Deno.test("truncate() returns empty string when maxLength is zero", () => {
   assertEquals(truncate("hello", 0), "");
-  assertEquals(truncate("hello", -5), "");
 });
 
 Deno.test("truncate() returns string unchanged when within maxLength", () => {
@@ -115,4 +114,19 @@ Deno.test("truncate() throws RangeError for non-integer maxLength", () => {
   assertThrows(() => truncate("hello", Infinity), RangeError);
   assertThrows(() => truncate("hello", -Infinity), RangeError);
   assertThrows(() => truncate("hello", 3.7), RangeError);
+});
+
+Deno.test("truncate() throws RangeError for negative maxLength", () => {
+  assertThrows(() => truncate("hello", -1), RangeError);
+  assertThrows(() => truncate("hello", -5), RangeError);
+});
+
+Deno.test("truncate() throws TypeError for invalid position", () => {
+  assertThrows(
+    () =>
+      truncate("hello", 3, {
+        position: "top" as "end",
+      }),
+    TypeError,
+  );
 });
