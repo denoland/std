@@ -1,5 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { allKeyed, allSettledKeyed } from "./unstable_all_keyed.ts";
+import { allKeyed, allSettledKeyed } from "./all_keyed.ts";
 import {
   assertEquals,
   assertFalse,
@@ -194,4 +194,26 @@ Deno.test("allKeyed() ignores non-enumerable symbol keys", async () => {
 
   assertEquals(Object.keys(result), ["visible"]);
   assertFalse(sym in result);
+});
+
+Deno.test("allKeyed() resolves custom thenables", async () => {
+  const thenable = {
+    then(resolve: (value: number) => void) {
+      resolve(99);
+    },
+  } as PromiseLike<number>;
+  const result = await allKeyed({ val: thenable });
+
+  assertEquals(result.val, 99);
+});
+
+Deno.test("allSettledKeyed() resolves custom thenables", async () => {
+  const thenable = {
+    then(resolve: (value: string) => void) {
+      resolve("from thenable");
+    },
+  } as PromiseLike<string>;
+  const result = await allSettledKeyed({ val: thenable });
+
+  assertEquals(result.val, { status: "fulfilled", value: "from thenable" });
 });
