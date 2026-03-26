@@ -9,6 +9,7 @@
     "./unstable-file-server": "./unstable_file_server.ts",
     "./unstable-formdata-decoder-stream": "./unstable_formdata_decoder_stream.ts",
     "./unstable-formdata-encoder-stream": "./unstable_formdata_encoder_stream.ts",
+    "./unstable-problem-details": "./unstable_problem_details.ts",
     "./negotiation": "./negotiation.ts",
     "./server-sent-event-stream": "./server_sent_event_stream.ts",
     "./server-sent-event-parse-stream": "./server_sent_event_parse_stream.ts",
