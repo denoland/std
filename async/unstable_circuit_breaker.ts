@@ -1,27 +1,57 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+
 /**
  * Circuit breaker states following the standard pattern.
  * - `"closed"`: Normal operation, requests pass through
  * - `"open"`: Failing, all requests rejected immediately
  * - `"half_open"`: Testing recovery, limited requests allowed
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type CircuitState = "closed" | "open" | "half_open";
 
-/** Options for {@linkcode CircuitBreaker}. */
+/**
+ * Options for {@linkcode CircuitBreaker}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CircuitBreakerOptions<T> {
   /**
-   * Number of failures before opening the circuit.
+   * Failure rate threshold as a ratio between 0 (exclusive) and 1 (inclusive).
+   * The circuit opens when the failure rate in the sliding window meets or
+   * exceeds this value and at least {@linkcode minimumThroughput} requests
+   * have been recorded.
    *
-   * Note: For high-volume services, a low absolute threshold may cause
-   * premature circuit opening during normal transient errors. Consider
-   * a higher value proportional to your request volume, or combine with
-   * a shorter {@linkcode failureWindowMs} to implement rate-based detection.
-   *
-   * @default {5}
+   * @default {0.5}
    */
-  failureThreshold?: number;
+  failureRateThreshold?: number;
+
+  /**
+   * Minimum number of requests in the sliding window before the failure rate
+   * is evaluated. Prevents the circuit from tripping on statistically
+   * insignificant samples during low traffic.
+   *
+   * @default {20}
+   */
+  minimumThroughput?: number;
+
+  /**
+   * Duration of the sliding window in milliseconds.
+   *
+   * @default {60000}
+   */
+  windowMs?: number;
+
+  /**
+   * Number of segments the sliding window is divided into. More segments
+   * give finer-grained decay at the cost of slightly more memory.
+   *
+   * @default {10}
+   */
+  segmentsPerWindow?: number;
 
   /**
    * Duration in milliseconds the circuit stays open before entering half-open.
@@ -45,15 +75,6 @@ export interface CircuitBreakerOptions<T> {
   halfOpenMaxConcurrent?: number;
 
   /**
-   * Time window in milliseconds for counting failures.
-   * Failures older than this are forgotten (sliding window).
-   * Set to `0` to disable decay.
-   *
-   * @default {60000}
-   */
-  failureWindowMs?: number;
-
-  /**
    * Custom predicate to determine if an error should count as a circuit failure.
    * By default, any thrown error is a failure.
    *
@@ -73,7 +94,9 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when circuit state changes.
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    *
    * @param from Previous state.
    * @param to New state.
@@ -82,35 +105,54 @@ export interface CircuitBreakerOptions<T> {
 
   /**
    * Callback invoked when a failure is recorded.
-   * Must not throw.
    *
-   * @param error The error that caused the failure.
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
+   *
+   * @param error The error that caused the failure, or a synthetic error
+   *   when the result was classified as failure by {@linkcode isResultFailure}.
    * @param failureCount Current number of failures in the window.
+   * @param totalRequests Current number of total requests in the window.
    */
-  onFailure?: (error: unknown, failureCount: number) => void;
+  onFailure?: (
+    error: unknown,
+    failureCount: number,
+    totalRequests: number,
+  ) => void;
 
   /**
    * Callback invoked when circuit opens.
-   * Must not throw.
    *
-   * @param failureCount Number of failures that triggered the open.
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
+   *
+   * @param failureCount Number of failures in the window that triggered the open.
+   * @param totalRequests Number of total requests in the window.
    */
-  onOpen?: (failureCount: number) => void;
+  onOpen?: (failureCount: number, totalRequests: number) => void;
 
   /**
    * Callback invoked when circuit enters half-open state (testing recovery).
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    */
   onHalfOpen?: () => void;
 
   /**
    * Callback invoked when circuit closes (recovery complete).
-   * Must not throw.
+   *
+   * If this callback throws, the error is reported asynchronously
+   * without disrupting circuit breaker operation.
    */
   onClose?: () => void;
 }
 
-/** Options for {@linkcode CircuitBreaker.execute}. */
+/**
+ * Options for {@linkcode CircuitBreaker.execute}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CircuitBreakerExecuteOptions {
   /**
    * An optional abort signal that can be used to cancel the operation
@@ -134,7 +176,10 @@ export interface CircuitBreakerExecuteOptions {
  * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
  * import { assert } from "@std/assert";
  *
- * const breaker = new CircuitBreaker({ failureThreshold: 1 });
+ * const breaker = new CircuitBreaker({
+ *   failureRateThreshold: 1,
+ *   minimumThroughput: 1,
+ * });
  *
  * // Trigger a failure to open the circuit
  * try {
@@ -156,6 +201,8 @@ export class CircuitBreakerOpenError extends Error {
   /**
    * Milliseconds until the circuit breaker cooldown expires.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
@@ -170,91 +217,109 @@ export class CircuitBreakerOpenError extends Error {
   /**
    * Constructs a new {@linkcode CircuitBreakerOpenError} instance.
    *
-   * @param remainingCooldownMs Milliseconds until cooldown expires.
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param remainingCooldownMs The number of milliseconds until the circuit breaker exits the open state.
    */
   constructor(remainingCooldownMs: number) {
     super(
-      `Circuit breaker is open. Retry after ${remainingCooldownMs}ms.`,
+      `Circuit breaker is open: retry after ${remainingCooldownMs}ms`,
     );
     this.name = "CircuitBreakerOpenError";
     this.remainingCooldownMs = remainingCooldownMs;
   }
 }
 
-/** Base properties shared by all circuit breaker states. */
-interface CircuitBreakerStateBase {
-  /** Failure timestamps in milliseconds since epoch. */
-  readonly failureTimestamps: readonly number[];
-  readonly consecutiveSuccesses: number;
-  readonly halfOpenInFlight: number;
-}
-
-/** Internal state managed by the circuit breaker */
+/** Internal state managed by the circuit breaker. */
 type CircuitBreakerState =
-  | (CircuitBreakerStateBase & {
+  | {
     readonly state: "closed";
-    /** Timestamp when circuit opened, in milliseconds since epoch. */
     readonly openedAt: null;
-  })
-  | (CircuitBreakerStateBase & {
+    readonly consecutiveSuccesses: number;
+    readonly halfOpenInFlight: number;
+  }
+  | {
     readonly state: "open";
-    /** Timestamp when circuit opened, in milliseconds since epoch. */
     readonly openedAt: number;
-  })
-  | (CircuitBreakerStateBase & {
+    readonly consecutiveSuccesses: number;
+    readonly halfOpenInFlight: number;
+  }
+  | {
     readonly state: "half_open";
-    /** Timestamp when circuit opened, in milliseconds since epoch. */
     readonly openedAt: number;
-  });
+    readonly consecutiveSuccesses: number;
+    readonly halfOpenInFlight: number;
+  };
 
 /** Creates initial circuit breaker state. */
 function createInitialState(): CircuitBreakerState & { state: "closed" } {
   return {
     state: "closed",
-    failureTimestamps: [],
     consecutiveSuccesses: 0,
     openedAt: null,
     halfOpenInFlight: 0,
   };
 }
 
-/**
- * Removes failure timestamps outside the decay window.
- *
- * @param timestamps Readonly array of failure timestamps in ms.
- * @param windowMs Duration window in milliseconds.
- * @param nowMs Current time in milliseconds.
- * @returns Readonly filtered array of timestamps within the window.
- */
-function pruneOldFailures(
-  timestamps: readonly number[],
-  windowMs: number,
-  nowMs: number,
-): readonly number[] {
-  if (windowMs === 0) return timestamps;
-  const cutoff = nowMs - windowMs;
-  return timestamps.filter((ts) => ts > cutoff);
+/** Validates that a value is a finite non-negative number. */
+function validateNonNegative(name: string, value: number): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new RangeError(
+      `Cannot create circuit breaker: "${name}" must be a finite non-negative number, received ${value}`,
+    );
+  }
 }
 
-/** Validates a numeric option for the circuit breaker constructor. */
-function validateOption(name: string, value: number, min: number): void {
-  if (!Number.isFinite(value) || value < min) {
-    const constraint = min === 0
-      ? "a finite non-negative number"
-      : `a finite number >= ${min}`;
+/** Validates that a value is a positive integer. */
+function validatePositiveInteger(name: string, value: number): void {
+  if (!Number.isInteger(value) || value < 1) {
     throw new RangeError(
-      `Cannot create circuit breaker as '${name}' must be ${constraint}: received ${value}`,
+      `Cannot create circuit breaker: "${name}" must be a positive integer, received ${value}`,
+    );
+  }
+}
+
+/** Validates that a value is in the range (0, 1]. */
+function validateRate(name: string, value: number): void {
+  if (!Number.isFinite(value) || value <= 0 || value > 1) {
+    throw new RangeError(
+      `Cannot create circuit breaker: "${name}" must be a finite number in (0, 1], received ${value}`,
     );
   }
 }
 
 /**
+ * Wraps a notification callback so that if it throws, the error is
+ * re-thrown asynchronously (as an uncaught exception) without
+ * disrupting the circuit breaker's synchronous control flow.
+ */
+function safeCallback<A extends unknown[]>(
+  fn: ((...args: A) => void) | undefined,
+): ((...args: A) => void) | undefined {
+  if (!fn) return undefined;
+  return (...args: A) => {
+    try {
+      fn(...args);
+    } catch (error) {
+      queueMicrotask(() => {
+        throw error;
+      });
+    }
+  };
+}
+
+/**
  * A circuit breaker that wraps async operations to prevent cascading failures.
  *
- * The circuit breaker monitors for failures and "trips" (opens) when a threshold
- * is reached, rejecting subsequent requests immediately without executing them.
- * After a cooldown period, it enters a "half-open" state to test if the service
- * has recovered.
+ * The circuit breaker monitors the failure rate within a sliding window and
+ * "trips" (opens) when the rate exceeds a threshold, rejecting subsequent
+ * requests immediately without executing them. After a cooldown period, it
+ * enters a "half-open" state to test if the service has recovered.
+ *
+ * The failure rate is only evaluated once at least
+ * {@linkcode CircuitBreakerOptions.minimumThroughput | minimumThroughput}
+ * requests have been recorded in the window, preventing false positives
+ * during low traffic.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -264,7 +329,8 @@ function validateOption(name: string, value: number, min: number): void {
  * import { assertEquals } from "@std/assert";
  *
  * const breaker = new CircuitBreaker({
- *   failureThreshold: 5,
+ *   failureRateThreshold: 0.5,
+ *   minimumThroughput: 20,
  *   cooldownMs: 30000,
  * });
  *
@@ -275,10 +341,10 @@ function validateOption(name: string, value: number, min: number): void {
  * ```
  *
  * @example Handling open circuit
- * ```ts
+ * ```ts ignore
  * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
  *
- * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+ * const breaker = new CircuitBreaker();
  *
  * try {
  *   const result = await breaker.execute(() => fetch("https://api.example.com"));
@@ -294,8 +360,7 @@ function validateOption(name: string, value: number, min: number): void {
  * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
  *
  * const breaker = new CircuitBreaker<Response>({
- *   failureThreshold: 3,
- *   // Only count server errors as circuit failures
+ *   failureRateThreshold: 0.1,
  *   isResultFailure: (response) => response.status >= 500,
  *   onStateChange: (from, to) => console.log(`Circuit: ${from} → ${to}`),
  * });
@@ -306,7 +371,7 @@ function validateOption(name: string, value: number, min: number): void {
  * import { retry } from "@std/async/retry";
  * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
  *
- * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+ * const breaker = new CircuitBreaker();
  *
  * // Timeout applies to the entire operation (circuit breaker + retries)
  * const signal = AbortSignal.timeout(5000);
@@ -322,7 +387,7 @@ function validateOption(name: string, value: number, min: number): void {
  * import { delay } from "@std/async/delay";
  * import { CircuitBreaker, CircuitBreakerOpenError } from "@std/async/unstable-circuit-breaker";
  *
- * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+ * const breaker = new CircuitBreaker();
  *
  * try {
  *   return await breaker.execute(() => fetch("https://api.example.com"));
@@ -339,33 +404,43 @@ function validateOption(name: string, value: number, min: number): void {
  * @typeParam T The type of value returned by the executed function.
  */
 export class CircuitBreaker<T = unknown> {
-  #failureThreshold: number;
+  #failureRateThreshold: number;
+  #minimumThroughput: number;
   #cooldownMs: number;
   #successThreshold: number;
   #halfOpenMaxConcurrent: number;
-  #failureWindowMs: number;
   #isFailure: (error: unknown) => boolean;
   #isResultFailure: (result: T) => boolean;
   #onStateChange: ((from: CircuitState, to: CircuitState) => void) | undefined;
-  #onFailure: ((error: unknown, failureCount: number) => void) | undefined;
-  #onOpen: ((failureCount: number) => void) | undefined;
+  #onFailure:
+    | ((error: unknown, failureCount: number, totalRequests: number) => void)
+    | undefined;
+  #onOpen: ((failureCount: number, totalRequests: number) => void) | undefined;
   #onHalfOpen: (() => void) | undefined;
   #onClose: (() => void) | undefined;
   #state: CircuitBreakerState;
+  #requests: RollingCounter;
+  #failures: RollingCounter;
+  #lastRotationMs: number;
+  #msPerSegment: number;
 
   /**
    * Constructs a new {@linkcode CircuitBreaker} instance.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param options Configuration options for the circuit breaker.
    * @throws {RangeError} If any numeric option is not a finite number within its valid range.
    */
   constructor(options: CircuitBreakerOptions<T> = {}) {
     const {
-      failureThreshold = 5,
+      failureRateThreshold = 0.5,
+      minimumThroughput = 20,
+      windowMs = 60_000,
+      segmentsPerWindow = 10,
       cooldownMs = 30_000,
       successThreshold = 2,
       halfOpenMaxConcurrent = 3,
-      failureWindowMs = 60_000,
       isFailure = () => true,
       isResultFailure = () => false,
       onStateChange,
@@ -375,34 +450,40 @@ export class CircuitBreaker<T = unknown> {
       onClose,
     } = options;
 
-    validateOption("failureThreshold", failureThreshold, 1);
-    validateOption("cooldownMs", cooldownMs, 0);
-    validateOption("successThreshold", successThreshold, 1);
-    validateOption("halfOpenMaxConcurrent", halfOpenMaxConcurrent, 1);
-    validateOption("failureWindowMs", failureWindowMs, 0);
+    validateRate("failureRateThreshold", failureRateThreshold);
+    validatePositiveInteger("minimumThroughput", minimumThroughput);
+    validatePositiveInteger("windowMs", windowMs);
+    validatePositiveInteger("segmentsPerWindow", segmentsPerWindow);
+    validateNonNegative("cooldownMs", cooldownMs);
+    validatePositiveInteger("successThreshold", successThreshold);
+    validatePositiveInteger("halfOpenMaxConcurrent", halfOpenMaxConcurrent);
 
-    this.#failureThreshold = failureThreshold;
+    this.#failureRateThreshold = failureRateThreshold;
+    this.#minimumThroughput = minimumThroughput;
     this.#cooldownMs = cooldownMs;
     this.#successThreshold = successThreshold;
     this.#halfOpenMaxConcurrent = halfOpenMaxConcurrent;
-    this.#failureWindowMs = failureWindowMs;
     this.#isFailure = isFailure;
     this.#isResultFailure = isResultFailure;
-    this.#onStateChange = onStateChange;
-    this.#onFailure = onFailure;
-    this.#onOpen = onOpen;
-    this.#onHalfOpen = onHalfOpen;
-    this.#onClose = onClose;
+    this.#onStateChange = safeCallback(onStateChange);
+    this.#onFailure = safeCallback(onFailure);
+    this.#onOpen = safeCallback(onOpen);
+    this.#onHalfOpen = safeCallback(onHalfOpen);
+    this.#onClose = safeCallback(onClose);
     this.#state = createInitialState();
+    this.#requests = new RollingCounter(segmentsPerWindow);
+    this.#failures = new RollingCounter(segmentsPerWindow);
+    this.#msPerSegment = windowMs / segmentsPerWindow;
+    this.#lastRotationMs = Date.now();
   }
 
   /**
-   * Current stored state of the circuit breaker.
+   * Current state of the circuit breaker.
    *
-   * Note: This returns the stored state without resolving time-based
-   * transitions. After a cooldown expires, this may still show `"open"`
-   * until the next {@linkcode execute} call triggers the transition to
-   * `"half_open"`.
+   * Time-based transitions (e.g. open to half-open after cooldown) are
+   * resolved lazily when this property is read.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts
@@ -413,10 +494,10 @@ export class CircuitBreaker<T = unknown> {
    * assertEquals(breaker.state, "closed");
    * ```
    *
-   * @returns The stored {@linkcode CircuitState}.
+   * @returns The current {@linkcode CircuitState}.
    */
   get state(): CircuitState {
-    return this.#state.state;
+    return this.#advanceState(Date.now()).state;
   }
 
   /**
@@ -425,11 +506,13 @@ export class CircuitBreaker<T = unknown> {
    * The function can be synchronous or asynchronous. The result is always
    * returned as a promise.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage with async function
    * ```ts ignore
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
    *
-   * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+   * const breaker = new CircuitBreaker();
    * const response = await breaker.execute(() => fetch("https://api.example.com"));
    * ```
    *
@@ -437,7 +520,7 @@ export class CircuitBreaker<T = unknown> {
    * ```ts ignore
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
    *
-   * const breaker = new CircuitBreaker({ failureThreshold: 5 });
+   * const breaker = new CircuitBreaker();
    *
    * // Abort if operation takes longer than 5 seconds
    * const response = await breaker.execute(
@@ -447,8 +530,8 @@ export class CircuitBreaker<T = unknown> {
    * ```
    *
    * @typeParam R The return type of the function, must extend T.
-   * @param fn The function to execute (sync or async).
-   * @param options Optional execution options including an abort signal.
+   * @param fn The function to execute through the circuit breaker.
+   * @param options Options for this execution, such as an abort signal.
    * @returns A promise that resolves to the result of the operation.
    * @throws {CircuitBreakerOpenError} If circuit is open.
    * @throws {DOMException} If the abort signal is already aborted.
@@ -460,16 +543,14 @@ export class CircuitBreaker<T = unknown> {
     options?.signal?.throwIfAborted();
 
     const currentTime = Date.now();
-    const currentState = this.#resolveCurrentState(currentTime);
+    const currentState = this.#advanceState(currentTime);
 
-    // Check if we should reject
     if (currentState.state === "open") {
       const cooldownEnd = currentState.openedAt + this.#cooldownMs;
       const remainingMs = Math.max(0, cooldownEnd - currentTime);
       throw new CircuitBreakerOpenError(Math.round(remainingMs));
     }
 
-    // In half-open, check concurrent limit
     if (currentState.state === "half_open") {
       if (currentState.halfOpenInFlight >= this.#halfOpenMaxConcurrent) {
         throw new CircuitBreakerOpenError(0);
@@ -480,14 +561,24 @@ export class CircuitBreaker<T = unknown> {
       };
     }
 
+    this.#rotateToNow(currentTime);
+    this.#requests.increment();
+
     let result: R;
     try {
       result = await fn();
     } catch (error) {
-      this.#handleFailure(error, currentState.state, currentTime);
+      try {
+        if (this.#isFailure(error)) {
+          this.#handleFailure(error, currentState.state, currentTime);
+        }
+      } catch (predicateError) {
+        queueMicrotask(() => {
+          throw predicateError;
+        });
+      }
       throw error;
     } finally {
-      // Decrement half-open in-flight counter
       if (currentState.state === "half_open") {
         this.#state = {
           ...this.#state,
@@ -496,14 +587,19 @@ export class CircuitBreaker<T = unknown> {
       }
     }
 
-    // Check if successful result should count as failure
-    if (this.#isResultFailure(result)) {
-      const syntheticError = new Error("Result classified as failure");
-      this.#handleFailure(syntheticError, currentState.state, currentTime);
-      return result; // Still return the result, but record the failure
+    try {
+      if (this.#isResultFailure(result)) {
+        const syntheticError = new Error("Result classified as failure");
+        this.#handleFailure(syntheticError, currentState.state, currentTime);
+        return result;
+      }
+    } catch (predicateError) {
+      queueMicrotask(() => {
+        throw predicateError;
+      });
+      return result;
     }
 
-    // Success path
     this.#handleSuccess(currentState.state);
     return result;
   }
@@ -511,6 +607,8 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Forces the circuit breaker to open state.
    * Useful for maintenance or known outages.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts
@@ -524,8 +622,8 @@ export class CircuitBreaker<T = unknown> {
    */
   forceOpen(): void {
     const previous = this.#state.state;
-    const failureTimestamps = this.#state.failureTimestamps;
     const now = Date.now();
+    this.#rotateToNow(now);
     this.#state = {
       ...this.#state,
       state: "open",
@@ -534,12 +632,7 @@ export class CircuitBreaker<T = unknown> {
     };
     if (previous !== "open") {
       this.#onStateChange?.(previous, "open");
-      const failureCount = pruneOldFailures(
-        failureTimestamps,
-        this.#failureWindowMs,
-        now,
-      ).length;
-      this.#onOpen?.(failureCount);
+      this.#onOpen?.(this.#failures.total, this.#requests.total);
     }
   }
 
@@ -551,6 +644,8 @@ export class CircuitBreaker<T = unknown> {
    * has recovered and you want observers to be notified.
    *
    * For silent resets (e.g., in tests), use {@linkcode reset} instead.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts
@@ -566,6 +661,7 @@ export class CircuitBreaker<T = unknown> {
   forceClose(): void {
     const previous = this.#state.state;
     this.#state = createInitialState();
+    this.#clearCounters();
     if (previous !== "closed") {
       this.#onStateChange?.(previous, "closed");
       this.#onClose?.();
@@ -579,6 +675,8 @@ export class CircuitBreaker<T = unknown> {
    * (`onStateChange`, `onClose`). Use this for testing or administrative
    * resets where observers should not be notified.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @example Usage
    * ```ts
    * import { CircuitBreaker } from "@std/async/unstable-circuit-breaker";
@@ -591,15 +689,32 @@ export class CircuitBreaker<T = unknown> {
    */
   reset(): void {
     this.#state = createInitialState();
+    this.#clearCounters();
+  }
+
+  /** Advances both counters to the current time, evicting stale segments. */
+  #rotateToNow(now: number): void {
+    const elapsed = now - this.#lastRotationMs;
+    const steps = Math.floor(elapsed / this.#msPerSegment);
+    if (steps > 0) {
+      this.#requests.rotate(steps);
+      this.#failures.rotate(steps);
+      this.#lastRotationMs += steps * this.#msPerSegment;
+    }
+  }
+
+  /** Resets both counters and the rotation timestamp. */
+  #clearCounters(): void {
+    this.#requests.clear();
+    this.#failures.clear();
+    this.#lastRotationMs = Date.now();
   }
 
   /**
-   * Resolves the current state, handling automatic transitions.
-   * OPEN → HALF_OPEN after cooldown expires.
-   *
-   * @param now Current timestamp in milliseconds.
+   * Advances the state machine, transitioning OPEN -> HALF_OPEN when
+   * the cooldown has expired. No-op for other states.
    */
-  #resolveCurrentState(now: number): CircuitBreakerState {
+  #advanceState(now: number): CircuitBreakerState {
     if (this.#state.state !== "open") {
       return this.#state;
     }
@@ -609,7 +724,6 @@ export class CircuitBreaker<T = unknown> {
       return this.#state;
     }
 
-    // Auto-transition from OPEN to HALF_OPEN after cooldown
     this.#state = {
       ...this.#state,
       state: "half_open",
@@ -621,64 +735,50 @@ export class CircuitBreaker<T = unknown> {
     return this.#state;
   }
 
-  /**
-   * Records a failure and potentially opens the circuit.
-   *
-   * @param error The error that occurred.
-   * @param previousState The state before this failure.
-   * @param now Current timestamp in milliseconds.
-   */
+  /** Records a failure and potentially opens the circuit. */
   #handleFailure(
     error: unknown,
     previousState: CircuitState,
     now: number,
   ): void {
-    if (!this.#isFailure(error)) return;
-
-    const newFailures = [
-      ...pruneOldFailures(
-        this.#state.failureTimestamps,
-        this.#failureWindowMs,
-        now,
-      ),
-      now,
-    ];
+    this.#failures.increment();
+    const totalRequests = this.#requests.total;
+    const failureCount = this.#failures.total;
 
     const shouldOpen = previousState === "half_open" ||
-      newFailures.length >= this.#failureThreshold;
+      (totalRequests >= this.#minimumThroughput &&
+        failureCount / totalRequests >= this.#failureRateThreshold);
 
-    // State mutations first (before any callbacks)
     if (shouldOpen) {
       this.#state = {
         ...this.#state,
         state: "open",
-        failureTimestamps: newFailures,
         openedAt: now,
         consecutiveSuccesses: 0,
       };
     } else {
       this.#state = {
         ...this.#state,
-        failureTimestamps: newFailures,
         consecutiveSuccesses: 0,
       };
     }
 
-    // Callbacks last (state is consistent even if these throw)
-    this.#onFailure?.(error, newFailures.length);
+    this.#onFailure?.(error, failureCount, totalRequests);
     if (shouldOpen) {
       this.#onStateChange?.(previousState, "open");
-      this.#onOpen?.(newFailures.length);
+      this.#onOpen?.(failureCount, totalRequests);
     }
   }
 
   /** Records a success and potentially closes the circuit from half-open. */
   #handleSuccess(previousState: CircuitState): void {
     if (previousState === "closed") return;
+    if (this.#state.state !== "half_open") return;
 
     const newSuccessCount = this.#state.consecutiveSuccesses + 1;
     if (newSuccessCount >= this.#successThreshold) {
       this.#state = createInitialState();
+      this.#clearCounters();
       this.#onStateChange?.("half_open", "closed");
       this.#onClose?.();
       return;

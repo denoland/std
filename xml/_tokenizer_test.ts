@@ -381,7 +381,7 @@ Deno.test("XmlTokenizer.process() throws on < in attribute value", () => {
   assertThrows(
     () => collectTokens('<root attr="<">'),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -536,7 +536,7 @@ Deno.test("XmlTokenizer.process() throws on -- inside comment", () => {
   assertThrows(
     () => collectTokens("<r><!-- a--b --></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -769,7 +769,7 @@ Deno.test("XmlTokenizer.process() throws on < in single-quoted attribute value",
   assertThrows(
     () => collectTokens("<root attr='<'/>"),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -797,7 +797,7 @@ Deno.test("XmlTokenizer.process() throws on -- not followed by > in comment", ()
   assertThrows(
     () => collectTokens("<r><!--a--b--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -805,7 +805,7 @@ Deno.test("XmlTokenizer.process() throws on -- at chunk boundary in comment", ()
   assertThrows(
     () => collectChunkedTokens("<r><!--a-", "-b--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -815,7 +815,7 @@ Deno.test("XmlTokenizer.process() rejects single - before --> in comment", () =>
   assertThrows(
     () => collectChunkedTokens("<r><!--test-", "--></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -1165,12 +1165,14 @@ Deno.test("XmlTokenizer.process() handles comment with dashes inside DOCTYPE int
   assertEquals(tokens[0]?.type, "doctype");
 });
 
-Deno.test("XmlTokenizer.process() handles comment with multiple trailing dashes in DOCTYPE", () => {
-  // Tests DTD_COMMENT_DASH_DASH staying in state for consecutive dashes (----->)
-  const tokens = collectTokens(
-    "<!DOCTYPE root [<!------>]><root/>",
+Deno.test("XmlTokenizer.process() throws on multiple trailing dashes in DOCTYPE comment", () => {
+  // Per XML 1.0 §2.5, after '--' only '>' is permitted.
+  // '<!------>' has content '--' which contains the forbidden '--' sequence.
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root [<!------>]><root/>"),
+    XmlSyntaxError,
+    "Cannot use '--' within XML comments",
   );
-  assertEquals(tokens[0]?.type, "doctype");
 });
 
 Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () => {
@@ -1178,7 +1180,7 @@ Deno.test("XmlTokenizer.process() throws on -- in comment inside DOCTYPE", () =>
   assertThrows(
     () => collectTokens("<!DOCTYPE root [<!-- a--b -->]><root/>"),
     XmlSyntaxError,
-    "'--' is not allowed within XML comments",
+    "Cannot use '--' within XML comments",
   );
 });
 
@@ -1293,6 +1295,18 @@ Deno.test("XmlTokenizer.process() handles PI across chunks in DOCTYPE", () => {
   assertEquals(tokens[0]?.type, "doctype");
 });
 
+Deno.test("XmlTokenizer.process() throws on DOCTYPE quoted string spanning chunk boundary", () => {
+  assertThrows(
+    () =>
+      collectChunkedTokens(
+        '<!DOCTYPE root SYSTEM "long-system-',
+        'id.dtd"><root/>',
+      ),
+    XmlSyntaxError,
+    "Unterminated quoted string in DOCTYPE declaration",
+  );
+});
+
 // =============================================================================
 // Illegal XML Character Validation Tests (XML 1.0 §2.2)
 // =============================================================================
@@ -1354,7 +1368,7 @@ Deno.test("XmlTokenizer.process() throws on ]]> in text content", () => {
   assertThrows(
     () => collectTokens("<root>invalid ]]> here</root>"),
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1379,7 +1393,7 @@ Deno.test("XmlTokenizer.process() throws on missing whitespace between attribute
   assertThrows(
     () => collectTokens('<root a="1"b="2"/>'),
     XmlSyntaxError,
-    "Whitespace is required between attributes",
+    "Missing whitespace between attributes",
   );
 });
 
@@ -1674,7 +1688,7 @@ Deno.test("XmlTokenizer.process() throws on empty PI target", () => {
   assertThrows(
     () => collectTokens("<? ?><root/>"),
     XmlSyntaxError,
-    "Processing instruction target is required",
+    "Missing processing instruction target",
   );
 });
 
@@ -1869,7 +1883,7 @@ Deno.test("XmlTokenizer with trackPosition: false handles ]]> in text", () => {
       tokenizer.process("<root>test]]>value</root>", callbacks);
     },
     XmlSyntaxError,
-    "']]>' is not allowed in text content",
+    "Cannot use ']]>' in text content",
   );
 });
 
@@ -1883,6 +1897,30 @@ Deno.test("XmlTokenizer.process() handles text content split across multiple chu
   assertEquals(text?.content, "Hello World");
 });
 
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (]] then >)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]]", ">more</root>"),
+    XmlSyntaxError,
+    "Cannot use ']]>' in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling chunk boundary (] then ]>)", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]>more</root>"),
+    XmlSyntaxError,
+    "Cannot use ']]>' in text content",
+  );
+});
+
+Deno.test("XmlTokenizer.process() throws on ]]> straddling three chunks", () => {
+  assertThrows(
+    () => collectChunkedTokens("<root>test]", "]", ">more</root>"),
+    XmlSyntaxError,
+    "Cannot use ']]>' in text content",
+  );
+});
+
 // =============================================================================
 // Comment Edge Cases - Batch Capture Path
 // =============================================================================
@@ -1892,7 +1930,7 @@ Deno.test("XmlTokenizer.process() throws on -- at chunk boundary forming double 
   assertThrows(
     () => collectChunkedTokens("<r><!--abc-", "-def--></r>"),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -1901,7 +1939,7 @@ Deno.test("XmlTokenizer.process() throws on trailing dash in batch comment captu
   assertThrows(
     () => collectTokens("<r><!--test---></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -1919,7 +1957,7 @@ Deno.test("XmlTokenizer.process() throws on -- in long comment batch capture", (
   assertThrows(
     () => collectTokens(`<r><!--${prefix}--${prefix}--></r>`),
     XmlSyntaxError,
-    "'--' is not permitted within comments",
+    "Cannot use '--' within comments",
   );
 });
 
@@ -2193,7 +2231,7 @@ Deno.test("XmlTokenizer.process() handles trailing dash before --> across chunks
   assertThrows(
     () => collectChunkedTokens("<r><!--test-", "--></r>"),
     XmlSyntaxError,
-    "'-' is not permitted immediately before '-->'",
+    "Cannot use '-' immediately before '-->'",
   );
 });
 
@@ -2330,7 +2368,7 @@ Deno.test("XmlTokenizer.process() throws on < in long attribute value", () => {
   assertThrows(
     () => collectTokens(`<root attr="${prefix}<${prefix}"/>`),
     XmlSyntaxError,
-    "'<' not allowed in attribute value",
+    "Cannot use '<' in attribute value",
   );
 });
 
@@ -2345,5 +2383,86 @@ Deno.test("XmlTokenizer.process() throws on illegal char in CDATA safe region", 
     () => collectTokens(`<r><![CDATA[${prefix}\x07${prefix}]]></r>`),
     XmlSyntaxError,
     "Illegal XML character",
+  );
+});
+
+// =============================================================================
+// Cross-chunk streaming edge cases
+// =============================================================================
+
+Deno.test("XmlTokenizer.process() handles comment split at dash boundary", () => {
+  // Chunk ends with a single '-' inside comment body → batch capture
+  // consumes up to it, then the switch COMMENT case hits the dash fallback
+  // (lines 1642-1652) and transitions to COMMENT_DASH across chunks
+  const tokens = collectChunkedTokens(
+    "<r><!--abc-",
+    "-></r>",
+  );
+  const comment = tokens.find((t) => t.type === "comment");
+  assertEquals(comment?.content, "abc");
+});
+
+Deno.test("XmlTokenizer.process() handles CDATA split at bracket boundary", () => {
+  // Chunk ends with ']' inside CDATA → batch capture consumes up to it,
+  // then the switch CDATA case hits the bracket fallback (lines 1668-1678)
+  const tokens = collectChunkedTokens(
+    "<r><![CDATA[abc]",
+    "]></r>",
+  );
+  const cdata = tokens.find((t) => t.type === "cdata");
+  assertEquals(cdata?.content, "abc");
+});
+
+Deno.test("XmlTokenizer.process() handles PI split at question mark boundary", () => {
+  // Chunk ends with '?' inside PI content → batch capture consumes up to it,
+  // then the switch PI_CONTENT case hits the question fallback (lines 1702-1712)
+  const tokens = collectChunkedTokens(
+    "<r><?target abc?",
+    "></r>",
+  );
+  const pi = tokens.find((t) => t.type === "processing_instruction");
+  assertEquals(pi?.target, "target");
+  assertEquals(pi?.content, "abc");
+});
+
+Deno.test("XmlTokenizer.process() handles attribute value split across chunks", () => {
+  // Chunk ends mid-attribute-value with no closing quote →
+  // exercises attribute batch capture incomplete path (lines 1216-1219)
+  const tokens = collectChunkedTokens(
+    '<r attr="hello ',
+    'world"/></r>',
+  );
+  const attr = tokens.find((t) => t.type === "attribute");
+  assertEquals(attr?.name, "attr");
+  assertEquals(attr?.value, "hello world");
+});
+
+Deno.test("XmlTokenizer.process() throws on lowercase public/system in DOCTYPE", () => {
+  assertThrows(
+    () =>
+      collectTokens(
+        '<!DOCTYPE root public "pubid" "sysid"><root/>',
+      ),
+    XmlSyntaxError,
+    "must be uppercase 'PUBLIC'",
+  );
+  assertThrows(
+    () =>
+      collectTokens(
+        '<!DOCTYPE root system "sysid"><root/>',
+      ),
+    XmlSyntaxError,
+    "must be uppercase 'SYSTEM'",
+  );
+  // Lone 'p' or 's' that doesn't form 'public'/'system' → generic error
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root pxyz><root/>"),
+    XmlSyntaxError,
+    "Unexpected character",
+  );
+  assertThrows(
+    () => collectTokens("<!DOCTYPE root sxyz><root/>"),
+    XmlSyntaxError,
+    "Unexpected character",
   );
 });

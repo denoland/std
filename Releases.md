@@ -1,3 +1,62 @@
+### 2026.02.20
+
+#### @std/assert 1.0.19 (patch)
+
+- fix(assert): preserve Date instances in assertObjectMatch filter (#6988)
+- docs(assert): add a note about unreliable equality (#6989)
+
+#### @std/async 1.2.0 (minor)
+
+- feat(async): stabilize abort signal support in retry (#6968)
+- feat(async/unstable): add `Lazy` for once-only async init (#7007)
+- feat(async/unstable): allow `AbortableOptions` with optional signal in
+  `abortable` (#6971)
+- feat(async/unstable): add poll function (#6973)
+- feat(async/unstable): add allKeyed and allSettledKeyed (#6959)
+- refactor(async/unstable): apply style guide to circuit breaker (#7008)
+- refactor(async/unstable): make circuit breaker resilient to throwing callbacks
+  (#6996)
+
+#### @std/cli 1.0.28 (patch)
+
+- feat(cli/unstable): introduce StaticLine (#6758)
+- fix(cli): handle empty value in parseArgs (#6995)
+- fix(cli): prevent prototype pollution in parseArgs (#6980)
+
+#### @std/collections 1.1.6 (patch)
+
+- fix(collections): stricter enforcement on generics (#6961)
+
+#### @std/expect 1.0.18 (patch)
+
+- feat(expect/unstable): implement toMatchSnapshot() (#7003)
+
+#### @std/fs 1.0.23 (patch)
+
+- fix(fs/unstable): use crypto.getRandomValues() for temp file naming (#6983)
+
+#### @std/http 1.0.25 (patch)
+
+- feat(http/unstable): add `Cache-Control` header parser and formatter (#7005)
+- feat(http/unstable): implement RFC 9651 Structured Field Values (#6963)
+- fix(http): guard top-level Deno global access for browser compatibility
+  (#6987)
+- refactor(http/unstable): improve route() method matching (#6990)
+
+#### @std/json 1.0.3 (patch)
+
+- feat(json/unstable): implement RFC 8785 JSON canonicalization (#6965)
+
+#### @std/xml 0.1.0 (minor)
+
+- feat(xml/unstable): add XML parsing and serialization module (#6981)
+- docs(xml): clean up JSDoc and error message style (#7009)
+- refactor(xml): improve tokenizer edge cases and performance (#6997)
+
+#### @std/yaml 1.0.12 (patch)
+
+- refactor(yaml): add `Scanner` class (#6958)
+
 ### 2026.01.30
 
 #### @std/assert 1.0.18 (patch)

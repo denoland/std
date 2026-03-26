@@ -23,3 +23,4 @@ export * from "./mux_async_iterator.ts";
 export * from "./pool.ts";
 export * from "./tee.ts";
 export * from "./retry.ts";
+export * from "./all_keyed.ts";

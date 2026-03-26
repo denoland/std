@@ -126,8 +126,7 @@ function isUnicodeNameChar(code: number): boolean {
  *
  * Optimized for the common case (ASCII letters, underscore, colon).
  *
- * @param code The Unicode code point to check
- * @returns true if valid NameStartChar, false otherwise
+ * @returns true if valid NameStartChar, false otherwise.
  */
 export function isNameStartChar(code: number): boolean {
   // Fast ASCII path (handles 99%+ of real-world XML)
@@ -154,8 +153,7 @@ export function isNameStartChar(code: number): boolean {
  *
  * Optimized for the common case (ASCII alphanumerics, underscore, colon, hyphen, dot).
  *
- * @param code The Unicode code point to check
- * @returns true if valid NameChar, false otherwise
+ * @returns true if valid NameChar, false otherwise.
  */
 export function isNameChar(code: number): boolean {
   // Fast ASCII path (handles 99%+ of real-world XML)

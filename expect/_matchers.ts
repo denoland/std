@@ -8,6 +8,9 @@ import { assertNotInstanceOf } from "@std/assert/not-instance-of";
 import { assertMatch } from "@std/assert/match";
 import { assertNotMatch } from "@std/assert/not-match";
 import { AssertionError } from "@std/assert/assertion-error";
+import { buildMessage } from "@std/internal/build-message";
+import { diff } from "@std/internal/diff";
+import { diffStr } from "@std/internal/diff-str";
 
 import { assertEquals } from "./_assert_equals.ts";
 import { assertNotEquals } from "./_assert_not_equals.ts";
@@ -25,6 +28,17 @@ import {
   buildEqualErrorMessage,
   buildNotEqualErrorMessage,
 } from "./_build_message.ts";
+import {
+  escapeStringForJs,
+  getInlineCallSite,
+  getIsUpdate,
+  getState,
+  getTestFileFromStack,
+  pushInlineUpdate,
+  registerInlineTeardown,
+  serialize,
+  SnapshotContext,
+} from "./_snapshot_state.ts";
 
 export function toBe(context: MatcherContext, expect: unknown): MatchResult {
   if (context.isNot) {
@@ -1024,4 +1038,270 @@ export function toThrow<E extends Error = Error>(
     expectMessage,
     context.customMessage,
   );
+}
+
+/**
+ * Parses an overloaded `(propertyMatchers?, stringArg?)` argument list.
+ * Both `toMatchSnapshot` and `toMatchInlineSnapshot` accept an optional
+ * property-matchers object followed by an optional string argument.
+ */
+function parseSnapshotArgs(
+  first?: Record<string, unknown> | string,
+  second?: string,
+): {
+  propertyMatchers: Record<string, unknown> | undefined;
+  stringArg: string | undefined;
+} {
+  if (typeof first === "string") {
+    return { propertyMatchers: undefined, stringArg: first };
+  }
+  if (typeof first === "object" && first !== null) {
+    return { propertyMatchers: first, stringArg: second };
+  }
+  return { propertyMatchers: undefined, stringArg: undefined };
+}
+
+/**
+ * Validates property matchers against the actual value and returns the
+ * value to serialize (with asymmetric matchers replaced by their string
+ * representations).
+ */
+function applyPropertyMatchers(
+  context: MatcherContext,
+  propertyMatchers: Record<string, unknown>,
+  matcherName: string,
+): unknown {
+  if (typeof context.value !== "object" || context.value === null) {
+    throw new AssertionError(
+      `Property matchers can only be used with object values in ${matcherName}`,
+    );
+  }
+  const pass = equal(context.value, propertyMatchers, {
+    strictCheck: false,
+    customTesters: [
+      ...context.customTesters,
+      iterableEquality,
+      subsetEquality,
+    ],
+  });
+  if (!pass) {
+    throw new AssertionError(
+      buildEqualErrorMessage(
+        context.value,
+        propertyMatchers,
+        { msg: `${matcherName}: Property matchers did not match` },
+      ),
+    );
+  }
+  return replaceAsymmetricMatchers(
+    context.value as Record<string, unknown>,
+    propertyMatchers,
+  );
+}
+
+/** Throws a diff-based assertion error comparing two snapshot strings. */
+function throwSnapshotMismatch(
+  actual: string,
+  expected: string,
+  label: string,
+  updateHint: string,
+): never {
+  const stringDiff = !actual.includes("\n");
+  const diffResult = stringDiff
+    ? diffStr(actual, expected)
+    : diff(actual.split("\n"), expected.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  throw new AssertionError(
+    `${label} does not match:\n${diffMsg}\n` +
+      `To update ${label.toLowerCase()}s, run:\n` +
+      `    ${updateHint}\n`,
+  );
+}
+
+/**
+ * Compares a value against a stored snapshot file.
+ *
+ * @experimental
+ */
+export function toMatchSnapshot(
+  context: MatcherContext,
+  propertyMatchersOrHint?: Record<string, unknown> | string,
+  maybeHint?: string,
+): MatchResult {
+  if (context.isNot) {
+    throw new AssertionError("Snapshot matchers do not support `.not`");
+  }
+
+  const { propertyMatchers, stringArg: hint } = parseSnapshotArgs(
+    propertyMatchersOrHint,
+    maybeHint,
+  );
+
+  // Determine test file path
+  const state = getState();
+  const testFilePath = state.testPath ?? getTestFileFromStack();
+  if (!testFilePath) {
+    throw new Error(
+      "toMatchSnapshot: Unable to determine test file path. " +
+        "Set it using expect.setState({ testPath: import.meta.url }).",
+    );
+  }
+
+  // Determine test name
+  const testName = state.currentTestName;
+  if (!testName) {
+    throw new Error(
+      "toMatchSnapshot: Unable to determine test name. " +
+        "Set it using expect.setState({ currentTestName: '<test name>' }).",
+    );
+  }
+
+  // Build the snapshot key: "testName: hint count" or "testName count"
+  const snapshotName = hint ? `${testName}: ${hint}` : testName;
+  const snapshotCtx = SnapshotContext.fromTestFile(testFilePath);
+  const count = snapshotCtx.getCount(snapshotName);
+  const key = `${snapshotName} ${count}`;
+
+  const valueToSerialize = propertyMatchers
+    ? applyPropertyMatchers(context, propertyMatchers, "toMatchSnapshot")
+    : context.value;
+
+  const actualSnapshot = serialize(valueToSerialize);
+  snapshotCtx.pushToUpdateQueue(key);
+
+  if (getIsUpdate()) {
+    // Update mode: write new snapshot
+    snapshotCtx.registerTeardown();
+    const existing = snapshotCtx.getSnapshot(key);
+    if (actualSnapshot !== existing) {
+      snapshotCtx.updateSnapshot(key, actualSnapshot);
+    }
+  } else {
+    // Assert mode: compare with existing snapshot
+    if (!snapshotCtx.hasSnapshot(key)) {
+      throw new AssertionError(
+        `Missing snapshot: ${key}\n` +
+          "To create snapshots, run:\n" +
+          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      );
+    }
+
+    const expectedSnapshot = snapshotCtx.getSnapshot(key)!;
+    if (actualSnapshot !== expectedSnapshot) {
+      throwSnapshotMismatch(
+        actualSnapshot,
+        expectedSnapshot,
+        "Snapshot",
+        "deno test --allow-read --allow-write [files]... -- --update",
+      );
+    }
+  }
+}
+
+/**
+ * Compares a value against an inline snapshot string embedded in the test file.
+ *
+ * @experimental
+ */
+export function toMatchInlineSnapshot(
+  context: MatcherContext,
+  propertyMatchersOrSnapshot?: Record<string, unknown> | string,
+  maybeSnapshot?: string,
+): MatchResult {
+  if (context.isNot) {
+    throw new AssertionError("Snapshot matchers do not support `.not`");
+  }
+
+  const { propertyMatchers, stringArg: inlineSnapshot } = parseSnapshotArgs(
+    propertyMatchersOrSnapshot,
+    maybeSnapshot,
+  );
+
+  const valueToSerialize = propertyMatchers
+    ? applyPropertyMatchers(
+      context,
+      propertyMatchers,
+      "toMatchInlineSnapshot",
+    )
+    : context.value;
+
+  const actualSnapshot = serialize(valueToSerialize);
+
+  // Strip leading/trailing newlines from the inline snapshot template literal
+  let trimmedInlineSnapshot = inlineSnapshot;
+  if (
+    trimmedInlineSnapshot !== undefined &&
+    trimmedInlineSnapshot.startsWith("\n") &&
+    trimmedInlineSnapshot.endsWith("\n")
+  ) {
+    trimmedInlineSnapshot = trimmedInlineSnapshot.slice(1, -1);
+  }
+
+  if (trimmedInlineSnapshot === undefined) {
+    // No inline snapshot provided - queue update to insert it
+    if (!getIsUpdate()) {
+      throw new AssertionError(
+        "Missing inline snapshot argument. To create inline snapshots, run:\n" +
+          "    deno test --allow-read --allow-write [files]... -- --update\n",
+      );
+    }
+    const callSite = getInlineCallSite(toMatchInlineSnapshot);
+    if (callSite) {
+      callSite.actualSnapshot = "`" + escapeStringForJs(actualSnapshot) + "`";
+      pushInlineUpdate(callSite);
+      registerInlineTeardown();
+    }
+  } else if (actualSnapshot !== trimmedInlineSnapshot) {
+    if (getIsUpdate()) {
+      // Update mode - queue replacement
+      const callSite = getInlineCallSite(toMatchInlineSnapshot);
+      if (callSite) {
+        callSite.actualSnapshot = "`" + escapeStringForJs(actualSnapshot) +
+          "`";
+        pushInlineUpdate(callSite);
+        registerInlineTeardown();
+      }
+    } else {
+      throwSnapshotMismatch(
+        actualSnapshot,
+        trimmedInlineSnapshot,
+        "Inline snapshot",
+        "deno test --allow-read --allow-write [files]... -- --update",
+      );
+    }
+  }
+}
+
+/**
+ * Recursively replaces values in `obj` with their asymmetric matcher
+ * string representations where `matchers` contains an asymmetric matcher.
+ */
+function replaceAsymmetricMatchers(
+  obj: Record<string, unknown>,
+  // deno-lint-ignore no-explicit-any
+  matchers: Record<string, any>,
+): Record<string, unknown> {
+  const result = { ...obj };
+  for (const key of Object.keys(matchers)) {
+    const matcher = matchers[key];
+    if (
+      matcher !== null &&
+      typeof matcher === "object" &&
+      typeof matcher.asymmetricMatch === "function"
+    ) {
+      // Replace with the matcher's string representation
+      result[key] = matcher.toString();
+    } else if (
+      typeof matcher === "object" && matcher !== null &&
+      typeof obj[key] === "object" && obj[key] !== null &&
+      !Array.isArray(matcher)
+    ) {
+      // Recurse into nested objects
+      result[key] = replaceAsymmetricMatchers(
+        obj[key] as Record<string, unknown>,
+        matcher,
+      );
+    }
+  }
+  return result;
 }

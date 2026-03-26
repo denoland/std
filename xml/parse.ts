@@ -26,7 +26,7 @@ export type { ParseOptions } from "./types.ts";
  * ```
  *
  * @param xml The XML string to parse.
- * @param options Options to control parsing behavior.
+ * @param options Options for configuring the parser.
  * @returns The parsed document.
  * @throws {XmlSyntaxError} If the XML is malformed or has no root element.
  */

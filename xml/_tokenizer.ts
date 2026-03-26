@@ -17,7 +17,7 @@ import {
 } from "./types.ts";
 import {
   isReservedPiTarget,
-  LINE_ENDING_RE,
+  LINE_ENDING_REGEXP,
   validateXmlDeclaration,
 } from "./_common.ts";
 import { isNameChar, isNameStartChar } from "./_name_chars.ts";
@@ -31,6 +31,13 @@ interface XmlTokenizerOptions {
    * @default {true}
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, reject DOCTYPE declarations immediately.
+   *
+   * @default {false}
+   */
+  readonly disallowDoctype?: boolean;
 }
 
 /** Tokenizer state machine states. */
@@ -172,6 +179,41 @@ C0_VALID[0x09] = 1; // TAB
 C0_VALID[0x0A] = 1; // LF
 C0_VALID[0x0D] = 1; // CR
 
+/**
+ * Lookup table for ASCII NameChar (0x00-0x7F).
+ * Valid: [a-z] [A-Z] [0-9] _ : - .
+ * Replaces 10 chained comparisons in {@link XmlTokenizer.#captureNameChars}
+ * with a single array access.
+ */
+const ASCII_NAME_CHAR = new Uint8Array(128);
+for (let i = 0x61; i <= 0x7A; i++) ASCII_NAME_CHAR[i] = 1; // a-z
+for (let i = 0x41; i <= 0x5A; i++) ASCII_NAME_CHAR[i] = 1; // A-Z
+for (let i = 0x30; i <= 0x39; i++) ASCII_NAME_CHAR[i] = 1; // 0-9
+ASCII_NAME_CHAR[0x5F] = 1; // _
+ASCII_NAME_CHAR[0x3A] = 1; // :
+ASCII_NAME_CHAR[0x2D] = 1; // -
+ASCII_NAME_CHAR[0x2E] = 1; // .
+
+/**
+ * Lookup table for ASCII NameStartChar (0x00-0x7F).
+ * Valid: [a-z] [A-Z] _ :
+ * Used to inline the ASCII fast path at {@link XmlTokenizer.#isNameStartCharAt}
+ * call sites, avoiding tuple allocation for 99%+ of real XML.
+ */
+const ASCII_NAME_START_CHAR = new Uint8Array(128);
+for (let i = 0x61; i <= 0x7A; i++) ASCII_NAME_START_CHAR[i] = 1; // a-z
+for (let i = 0x41; i <= 0x5A; i++) ASCII_NAME_START_CHAR[i] = 1; // A-Z
+ASCII_NAME_START_CHAR[0x5F] = 1; // _
+ASCII_NAME_START_CHAR[0x3A] = 1; // :
+
+/**
+ * Matches any C0 control character that is illegal in XML 1.0 content.
+ * Valid C0 chars: TAB (0x09), LF (0x0A), CR (0x0D). All others are illegal.
+ * Used as a fast native pre-check in {@link XmlTokenizer.#flushText}.
+ */
+// deno-lint-ignore no-control-regex
+const ILLEGAL_XML_CHAR_REGEXP = /[\x00-\x08\x0B\x0C\x0E-\x1F]/;
+
 /** Sentinel position used when position tracking is disabled. */
 const NO_POSITION: XmlPosition = { line: 0, column: 0, offset: 0 };
 
@@ -195,6 +237,8 @@ export class XmlTokenizer {
 
   /** Whether to track line/column positions. */
   readonly #trackPosition: boolean;
+  /** Whether to reject DOCTYPE declarations. */
+  readonly #disallowDoctype: boolean;
 
   // Slice-based accumulators: track start index + partial for cross-chunk
   #textStartIdx = -1;
@@ -246,7 +290,6 @@ export class XmlTokenizer {
   #isEntityDecl = false;
   #isParameterEntity = false;
   #entityName = "";
-  #entityValue = "";
   #entityParsePhase: "name" | "value" | "done" = "name";
   #entityExternalType: "" | "SYSTEM" | "PUBLIC" = ""; // Track SYSTEM/PUBLIC keyword
   #entityQuotedLiterals = 0; // Count quoted literals for PUBLIC validation
@@ -264,13 +307,10 @@ export class XmlTokenizer {
   /** Current callbacks for emission (set during process/finalize calls). */
   #callbacks: XmlTokenCallbacks = {};
 
-  /**
-   * Constructs a new XmlTokenizer.
-   *
-   * @param options Options for tokenizer behavior.
-   */
+  /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
+    this.#disallowDoctype = options.disallowDoctype ?? false;
   }
 
   #saveTokenPosition(): void {
@@ -373,6 +413,33 @@ export class XmlTokenizer {
       this.#textStartIdx = -1;
       this.#textPartial = "";
       if (content.length > 0) {
+        // XML 1.0 §2.2: Reject illegal C0 control characters.
+        // The position-tracking path already validates inline in
+        // #captureText, so this native regex pre-check only runs for the
+        // no-position-tracking path (avoids redundant scan of every text
+        // node when positions are tracked).
+        if (!this.#trackPosition && ILLEGAL_XML_CHAR_REGEXP.test(content)) {
+          for (let i = 0; i < content.length; i++) {
+            const code = content.charCodeAt(i);
+            if (
+              code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
+            ) {
+              this.#error(
+                `Illegal XML character U+${
+                  code.toString(16).toUpperCase().padStart(4, "0")
+                } (XML 1.0 §2.2)`,
+              );
+            }
+          }
+        }
+        // XML 1.0 §2.4: "]]>" is not allowed in text content.
+        // Catches both within-chunk and cross-chunk occurrences since
+        // #textPartial accumulates across chunks.
+        if (content.includes("]]>")) {
+          this.#error(
+            "Cannot use ']]>' in text content (XML 1.0 §2.4)",
+          );
+        }
         // Any content before XML declaration invalidates XMLDecl position
         this.#xmlDeclAllowed = false;
         this.#callbacks.onText?.(
@@ -432,62 +499,41 @@ export class XmlTokenizer {
       return;
     }
 
+    // Cache private fields accessed multiple times
+    const buffer = this.#buffer;
+    const end = this.#bufferIndex;
+
+    // --- Accumulators that need their data saved ---
+    // Text, tag name, attribute name, and PI target accumulators track
+    // [startIdx, bufferIndex) ranges that haven't been copied to their
+    // partial strings yet. Save that data before the buffer changes.
     if (this.#textStartIdx !== -1) {
-      this.#textPartial += this.#buffer.slice(
-        this.#textStartIdx,
-        this.#bufferIndex,
-      );
+      this.#textPartial += buffer.slice(this.#textStartIdx, end);
       this.#textStartIdx = 0;
     }
-    if (this.#cdataStartIdx !== -1) {
-      this.#cdataPartial += this.#buffer.slice(
-        this.#cdataStartIdx,
-        this.#bufferIndex,
-      );
-      this.#cdataStartIdx = 0;
-    }
-    if (this.#attrStartIdx !== -1) {
-      this.#attrPartial += this.#buffer.slice(
-        this.#attrStartIdx,
-        this.#bufferIndex,
-      );
-      this.#attrStartIdx = 0;
-    }
     if (this.#tagNameStartIdx !== -1) {
-      this.#tagNamePartial += this.#buffer.slice(
-        this.#tagNameStartIdx,
-        this.#bufferIndex,
-      );
+      this.#tagNamePartial += buffer.slice(this.#tagNameStartIdx, end);
       this.#tagNameStartIdx = 0;
     }
-    if (this.#commentStartIdx !== -1) {
-      this.#commentPartial += this.#buffer.slice(
-        this.#commentStartIdx,
-        this.#bufferIndex,
-      );
-      this.#commentStartIdx = 0;
-    }
-    if (this.#piTargetStartIdx !== -1) {
-      this.#piTargetPartial += this.#buffer.slice(
-        this.#piTargetStartIdx,
-        this.#bufferIndex,
-      );
-      this.#piTargetStartIdx = 0;
-    }
-    if (this.#piContentStartIdx !== -1) {
-      this.#piContentPartial += this.#buffer.slice(
-        this.#piContentStartIdx,
-        this.#bufferIndex,
-      );
-      this.#piContentStartIdx = 0;
-    }
     if (this.#attrNameStartIdx !== -1) {
-      this.#attrNamePartial += this.#buffer.slice(
-        this.#attrNameStartIdx,
-        this.#bufferIndex,
-      );
+      this.#attrNamePartial += buffer.slice(this.#attrNameStartIdx, end);
       this.#attrNameStartIdx = 0;
     }
+    if (this.#piTargetStartIdx !== -1) {
+      this.#piTargetPartial += buffer.slice(this.#piTargetStartIdx, end);
+      this.#piTargetStartIdx = 0;
+    }
+
+    // --- Accumulators that only need index reset ---
+    // Comment, CDATA, PI content, and attribute value accumulators save
+    // their data eagerly during batch scanning (#captureComment, etc.).
+    // At chunk boundaries their startIdx always equals bufferIndex (the
+    // main loop fully consumes the buffer), so the range is empty and
+    // there is nothing to copy — just reset the indices for the next chunk.
+    if (this.#cdataStartIdx !== -1) this.#cdataStartIdx = 0;
+    if (this.#commentStartIdx !== -1) this.#commentStartIdx = 0;
+    if (this.#piContentStartIdx !== -1) this.#piContentStartIdx = 0;
+    if (this.#attrStartIdx !== -1) this.#attrStartIdx = 0;
   }
 
   #advanceWithCode(code: number): void {
@@ -527,7 +573,9 @@ export class XmlTokenizer {
   }
 
   #normalizeLineEndings(chunk: string): string {
-    return chunk.includes("\r") ? chunk.replace(LINE_ENDING_RE, "\n") : chunk;
+    return chunk.includes("\r")
+      ? chunk.replace(LINE_ENDING_REGEXP, "\n")
+      : chunk;
   }
 
   /**
@@ -639,6 +687,9 @@ export class XmlTokenizer {
       value += buffer[this.#bufferIndex];
       this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
     }
+    if (this.#bufferIndex >= bufferLen) {
+      this.#error("Unterminated quoted string in DOCTYPE declaration");
+    }
     this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
     return value;
   }
@@ -649,8 +700,7 @@ export class XmlTokenizer {
    *
    * Note: If quoted with ', the value cannot contain '.
    *
-   * @param value The public ID value (without quotes)
-   * @param quote The quote character used (' or ")
+   * @param quote The quote character used (' or ").
    */
   #validatePubidLiteral(value: string, quote: string): void {
     for (let i = 0; i < value.length; i++) {
@@ -692,9 +742,12 @@ export class XmlTokenizer {
    * Capture text content in a tight loop until '<' is found.
    * Returns true if '<' was found, false if end of buffer reached.
    *
-   * Validates XML 1.0 constraints:
-   * - §2.4: "]]>" is not allowed in text content
-   * - §2.2: Illegal C0 control characters are rejected
+   * The "]]>" check (XML 1.0 §2.4) is deferred to {@link #flushText} where
+   * a single native `includes` covers both within-chunk and cross-chunk cases.
+   *
+   * Illegal C0 control characters (XML 1.0 §2.2) are checked inline in the
+   * position-tracking path (already iterating per char) and via a fast native
+   * regex pre-check in {@link #flushText} for the no-position-tracking path.
    */
   #captureText(buffer: string, bufferLen: number): boolean {
     // Initialize text tracking if this is the start of a new text node
@@ -707,78 +760,63 @@ export class XmlTokenizer {
       this.#textStartIdx = this.#bufferIndex;
     }
 
-    // Tight loop: scan for '<', validating characters as we go
     if (this.#trackPosition) {
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
+      // Scan for '<' while tracking line/column positions.
+      // Illegal C0 chars are checked here (we're already per-char).
+      let idx = this.#bufferIndex;
+      let line = this.#line;
+      let column = this.#column;
+      let offset = this.#offset;
+
+      while (idx < bufferLen) {
+        const code = buffer.charCodeAt(idx);
         if (code === CC_LT) {
+          this.#bufferIndex = idx;
+          this.#line = line;
+          this.#column = column;
+          this.#offset = offset;
           return true;
         }
 
-        // XML 1.0 §2.2: Check for illegal C0 control characters
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D)
+        // XML 1.0 §2.2: Reject illegal C0 control characters.
+        // Valid: TAB (0x09), LF (0x0A), CR (0x0D).
         if (
           code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
         ) {
+          this.#bufferIndex = idx;
+          this.#line = line;
+          this.#column = column;
+          this.#offset = offset;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
             } (XML 1.0 §2.2)`,
           );
-        }
-
-        // XML 1.0 §2.4: Check for "]]>" in text content
-        // Only check when we see ']' to avoid overhead
-        if (
-          code === CC_RBRACKET &&
-          this.#bufferIndex + 2 < bufferLen &&
-          buffer.charCodeAt(this.#bufferIndex + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(this.#bufferIndex + 2) === CC_GT
-        ) {
-          this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
         }
 
         if (code === CC_LF) {
-          this.#line++;
-          this.#column = 1;
+          line++;
+          column = 1;
         } else {
-          this.#column++;
+          column++;
         }
-        this.#offset++;
-        this.#bufferIndex++;
+        offset++;
+        idx++;
       }
+
+      this.#bufferIndex = idx;
+      this.#line = line;
+      this.#column = column;
+      this.#offset = offset;
     } else {
-      // Fast path without position tracking
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
-        if (code === CC_LT) {
-          return true;
-        }
-
-        // XML 1.0 §2.2: Check for illegal C0 control characters
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D) - inlined for performance
-        if (
-          code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
-        ) {
-          this.#error(
-            `Illegal XML character U+${
-              code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
-          );
-        }
-
-        // XML 1.0 §2.4: Check for "]]>" in text content
-        if (
-          code === CC_RBRACKET &&
-          this.#bufferIndex + 2 < bufferLen &&
-          buffer.charCodeAt(this.#bufferIndex + 1) === CC_RBRACKET &&
-          buffer.charCodeAt(this.#bufferIndex + 2) === CC_GT
-        ) {
-          this.#error("']]>' is not allowed in text content (XML 1.0 §2.4)");
-        }
-
-        this.#bufferIndex++;
+      // Fast path: native indexOf is SIMD-optimized in V8.
+      // Illegal C0 chars are checked in #flushText via regex.
+      const ltIdx = buffer.indexOf("<", this.#bufferIndex);
+      if (ltIdx >= 0) {
+        this.#bufferIndex = ltIdx;
+        return true;
       }
+      this.#bufferIndex = bufferLen;
     }
 
     return false;
@@ -786,62 +824,49 @@ export class XmlTokenizer {
 
   /**
    * Capture an XML name (element or attribute name) in a tight loop.
-   * Returns the captured name, or empty string if no valid name found.
    *
    * Assumes the first character has already been validated as NameStartChar.
    * Continues until a non-NameChar is encountered.
+   *
+   * Uses a pre-computed {@link ASCII_NAME_CHAR} lookup table (1 array access)
+   * instead of calling {@link #isNameCharCode} per char (10 comparisons).
+   * Local `idx` avoids private-field access in the loop. Position is updated
+   * in a single batch after the loop (names cannot contain newlines).
    */
   #captureNameChars(buffer: string, bufferLen: number): void {
-    // Tight loop: scan NameChar characters
-    // Handles surrogate pairs for astral plane characters (U+10000+)
-    if (this.#trackPosition) {
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
-        // Fast path for ASCII (99%+ of real XML)
+    let idx = this.#bufferIndex;
+
+    // Tight ASCII loop: 1 charCodeAt + 1 comparison + 1 array access per char.
+    // No function calls, no private-field access.
+    while (idx < bufferLen) {
+      const code = buffer.charCodeAt(idx);
+      if (code >= 0x80) break;
+      if (!ASCII_NAME_CHAR[code]) break;
+      idx++;
+    }
+
+    // Non-ASCII tail (rare): surrogate-aware checking
+    if (idx < bufferLen && buffer.charCodeAt(idx) >= 0x80) {
+      while (idx < bufferLen) {
+        const code = buffer.charCodeAt(idx);
         if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) {
-            return; // End of name
-          }
-          this.#column++;
-          this.#offset++;
-          this.#bufferIndex++;
+          if (!ASCII_NAME_CHAR[code]) break;
+          idx++;
         } else {
-          // Non-ASCII: use surrogate-aware checking
-          const [isValid, charCount] = this.#isNameCharAt(
-            buffer,
-            this.#bufferIndex,
-          );
-          if (!isValid) {
-            return; // End of name
-          }
-          this.#column += charCount;
-          this.#offset += charCount;
-          this.#bufferIndex += charCount;
-        }
-      }
-    } else {
-      // Fast path without position tracking
-      while (this.#bufferIndex < bufferLen) {
-        const code = buffer.charCodeAt(this.#bufferIndex);
-        // Fast path for ASCII
-        if (code < 0x80) {
-          if (!this.#isNameCharCode(code)) {
-            return;
-          }
-          this.#bufferIndex++;
-        } else {
-          // Non-ASCII: use surrogate-aware checking
-          const [isValid, charCount] = this.#isNameCharAt(
-            buffer,
-            this.#bufferIndex,
-          );
-          if (!isValid) {
-            return;
-          }
-          this.#bufferIndex += charCount;
+          const [isValid, charCount] = this.#isNameCharAt(buffer, idx);
+          if (!isValid) break;
+          idx += charCount;
         }
       }
     }
+
+    // Batch position update: names never contain newlines, so column += length.
+    if (this.#trackPosition) {
+      const advance = idx - this.#bufferIndex;
+      this.#column += advance;
+      this.#offset += advance;
+    }
+    this.#bufferIndex = idx;
   }
 
   /**
@@ -863,7 +888,7 @@ export class XmlTokenizer {
       // Check both the accumulated partial and new content for "--"
       if (this.#commentPartial.includes("--") || newContent.includes("--")) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -872,7 +897,7 @@ export class XmlTokenizer {
         this.#commentPartial.endsWith("-") && newContent.startsWith("-")
       ) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -884,7 +909,7 @@ export class XmlTokenizer {
       ) {
         this.#bufferIndex = endIdx - 1;
         this.#error(
-          `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+          `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
         );
       }
       // Also check if partial ends with dash and new content is empty
@@ -897,7 +922,7 @@ export class XmlTokenizer {
       ) {
         this.#bufferIndex = endIdx - 1;
         this.#error(
-          `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+          `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
         );
       }
 
@@ -959,7 +984,7 @@ export class XmlTokenizer {
       // XML 1.0 §2.5: "--" is not permitted within comments
       if (region.includes("--")) {
         this.#error(
-          `'--' is not permitted within comments (XML 1.0 §2.5)`,
+          `Cannot use '--' within comments (XML 1.0 §2.5)`,
         );
       }
 
@@ -1169,39 +1194,36 @@ export class XmlTokenizer {
     quoteCode: number,
   ): boolean {
     const quoteChar = String.fromCharCode(quoteCode);
-    const endIdx = buffer.indexOf(quoteChar, this.#bufferIndex);
+    const idx = this.#bufferIndex;
+    const endIdx = buffer.indexOf(quoteChar, idx);
 
     if (endIdx !== -1) {
       // Found closing quote - validate and complete
-      // Check for '<' which is not allowed in attribute values
-      for (let i = this.#attrStartIdx; i < endIdx; i++) {
-        const code = buffer.charCodeAt(i);
-        if (code === CC_LT) {
-          this.#bufferIndex = i;
-          this.#error(`'<' not allowed in attribute value`);
-        }
+      // Check for '<' which is not allowed in attribute values (native indexOf)
+      const ltIdx = buffer.indexOf("<", this.#attrStartIdx);
+      if (ltIdx !== -1 && ltIdx < endIdx) {
+        this.#bufferIndex = ltIdx;
+        this.#error(`Cannot use '<' in attribute value`);
       }
 
       // Update position for the content region (not including closing quote)
-      this.#updatePositionForRegion(buffer, this.#bufferIndex, endIdx);
+      this.#updatePositionForRegion(buffer, idx, endIdx);
       this.#bufferIndex = endIdx;
       return true; // Complete - ready to emit
     }
 
     // No closing quote found - consume as much as safely possible
-    // Check for '<' and batch consume the region
-    for (let i = this.#attrStartIdx; i < bufferLen; i++) {
-      const code = buffer.charCodeAt(i);
-      if (code === CC_LT) {
-        this.#bufferIndex = i;
-        this.#error(`'<' not allowed in attribute value`);
-      }
+    // Check for '<' which is not allowed in attribute values (native indexOf)
+    const ltCheck = buffer.indexOf("<", this.#attrStartIdx);
+    if (ltCheck !== -1 && ltCheck < bufferLen) {
+      this.#bufferIndex = ltCheck;
+      this.#error(`Cannot use '<' in attribute value`);
     }
 
     // Batch consume the entire remaining buffer
-    if (bufferLen > this.#bufferIndex) {
+    if (bufferLen > idx) {
       this.#attrPartial += buffer.slice(this.#attrStartIdx, bufferLen);
-      this.#updatePositionForRegion(buffer, this.#bufferIndex, bufferLen);
+      this.#updatePositionForRegion(buffer, idx, bufferLen);
       this.#bufferIndex = bufferLen;
       this.#attrStartIdx = bufferLen;
     }
@@ -1215,20 +1237,19 @@ export class XmlTokenizer {
    * This method is synchronous and can be called multiple times with
    * consecutive chunks of XML input. Callbacks are invoked for each
    * token, enabling zero-allocation streaming.
-   *
-   * @param chunk The XML text chunk to process.
-   * @param callbacks Callbacks to invoke for each token.
    */
   process(chunk: string, callbacks: XmlTokenCallbacks): void {
     this.#callbacks = callbacks;
     this.#savePartialsBeforeReset();
-    this.#buffer = this.#buffer.slice(this.#bufferIndex) +
-      this.#normalizeLineEndings(chunk);
+    const normalized = this.#normalizeLineEndings(chunk);
+    // The main loop always fully consumes the buffer (bufferIndex reaches
+    // buffer.length), so the new chunk is assigned directly — no leftover
+    // to slice or concatenate.
+    this.#buffer = normalized;
     this.#bufferIndex = 0;
 
     // Cache hot variables locally to reduce private field access overhead.
-    // Private field access (#) can be slower than local variable access.
-    const buffer = this.#buffer;
+    const buffer = normalized;
     const bufferLen = buffer.length;
 
     // Check for BOM at the very first character (for XML declaration position check)
@@ -1317,21 +1338,32 @@ export class XmlTokenizer {
             this.#tagNameStartIdx === this.#bufferIndex &&
             this.#tagNamePartial === ""
           ) {
-            // Check for valid NameStartChar (handles astral plane via surrogate pairs)
-            const [isValid, charCount] = this.#isNameStartCharAt(
-              buffer,
-              this.#bufferIndex,
-            );
-            if (!isValid) {
-              this.#error(
-                `Unexpected character '${
-                  String.fromCharCode(code)
-                }' in end tag`,
+            // ASCII fast path: lookup table avoids function call + tuple allocation
+            if (code < 0x80) {
+              if (!ASCII_NAME_START_CHAR[code]) {
+                this.#error(
+                  `Unexpected character '${
+                    String.fromCharCode(code)
+                  }' in end tag`,
+                );
+              }
+              this.#advanceWithCode(code);
+            } else {
+              // Non-ASCII: surrogate-aware check (rare)
+              const [isValid, charCount] = this.#isNameStartCharAt(
+                buffer,
+                this.#bufferIndex,
               );
-            }
-            // Advance by charCount (1 for BMP, 2 for astral plane)
-            for (let i = 0; i < charCount; i++) {
-              this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+              if (!isValid) {
+                this.#error(
+                  `Unexpected character '${
+                    String.fromCharCode(code)
+                  }' in end tag`,
+                );
+              }
+              for (let i = 0; i < charCount; i++) {
+                this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+              }
             }
           }
 
@@ -1392,6 +1424,15 @@ export class XmlTokenizer {
             // Whitespace seen - no longer require whitespace before next attr
             this.#needsAttrWhitespace = false;
             this.#advanceWithCode(code);
+            // Tight loop: skip remaining whitespace without switch dispatch
+            while (this.#bufferIndex < bufferLen) {
+              const wsCode = buffer.charCodeAt(this.#bufferIndex);
+              if (
+                wsCode !== CC_SPACE && wsCode !== CC_TAB &&
+                wsCode !== CC_LF && wsCode !== CC_CR
+              ) break;
+              this.#advanceWithCode(wsCode);
+            }
           } else if (code === CC_GT) {
             this.#needsAttrWhitespace = false;
             this.#callbacks.onStartTagClose?.(false);
@@ -1401,10 +1442,14 @@ export class XmlTokenizer {
             this.#needsAttrWhitespace = false;
             this.#advanceWithCode(code);
             this.#state = State.EXPECT_SELF_CLOSE_GT;
-          } else if (this.#isNameStartCharCode(code)) {
+          } else if (
+            code < 0x80
+              ? ASCII_NAME_START_CHAR[code]
+              : this.#isNameStartCharCode(code)
+          ) {
             // XML 1.0 §3.1: Whitespace is required between attributes
             if (this.#needsAttrWhitespace) {
-              this.#error("Whitespace is required between attributes");
+              this.#error("Missing whitespace between attributes");
             }
             this.#attrNameStartIdx = this.#bufferIndex;
             this.#attrNamePartial = "";
@@ -1466,8 +1511,19 @@ export class XmlTokenizer {
             this.#piTargetStartIdx = this.#bufferIndex;
             this.#piTargetPartial = "";
             this.#state = State.PI_TARGET;
+          } else if (code < 0x80) {
+            // ASCII fast path: lookup table avoids function call + tuple allocation
+            if (!ASCII_NAME_START_CHAR[code]) {
+              this.#error(
+                `Unexpected character '${String.fromCharCode(code)}' after '<'`,
+              );
+            }
+            this.#tagNameStartIdx = this.#bufferIndex;
+            this.#tagNamePartial = "";
+            this.#advanceWithCode(code);
+            this.#state = State.TAG_NAME;
           } else {
-            // Check for valid NameStartChar (handles astral plane via surrogate pairs)
+            // Non-ASCII: surrogate-aware check (rare)
             const [isValid, charCount] = this.#isNameStartCharAt(
               buffer,
               this.#bufferIndex,
@@ -1475,7 +1531,6 @@ export class XmlTokenizer {
             if (isValid) {
               this.#tagNameStartIdx = this.#bufferIndex;
               this.#tagNamePartial = "";
-              // Advance by charCount (1 for BMP, 2 for astral plane)
               for (let i = 0; i < charCount; i++) {
                 this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
               }
@@ -1585,18 +1640,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const commentCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `-` characters
-          if (commentCode === CC_DASH) {
-            this.#commentPartial += buffer.slice(
-              this.#commentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(commentCode);
-            this.#commentStartIdx = this.#bufferIndex;
-            this.#state = State.COMMENT_DASH;
-          } else {
-            this.#advanceWithCode(commentCode);
-          }
+          // After batch capture, only trailing `-` chars remain
+          this.#commentPartial += buffer.slice(
+            this.#commentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(commentCode);
+          this.#commentStartIdx = this.#bufferIndex;
+          this.#state = State.COMMENT_DASH;
           break;
         }
 
@@ -1611,18 +1662,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const cdataCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `]` characters
-          if (cdataCode === CC_RBRACKET) {
-            this.#cdataPartial += buffer.slice(
-              this.#cdataStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(cdataCode);
-            this.#cdataStartIdx = this.#bufferIndex;
-            this.#state = State.CDATA_BRACKET;
-          } else {
-            this.#advanceWithCode(cdataCode);
-          }
+          // After batch capture, only trailing `]` chars remain
+          this.#cdataPartial += buffer.slice(
+            this.#cdataStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(cdataCode);
+          this.#cdataStartIdx = this.#bufferIndex;
+          this.#state = State.CDATA_BRACKET;
           break;
         }
 
@@ -1635,28 +1682,14 @@ export class XmlTokenizer {
           if (this.#bufferIndex >= bufferLen) {
             break; // Buffer exhausted, need more data
           }
-          // Re-read code since bufferIndex may have changed
-          const piCode = buffer.charCodeAt(this.#bufferIndex);
-          // XML 1.0 §2.2: Validate character
-          if (piCode < 0x20 && C0_VALID[piCode] !== 1) {
-            this.#error(
-              `Illegal XML character U+${
-                piCode.toString(16).toUpperCase().padStart(4, "0")
-              } in processing instruction (XML 1.0 §2.2)`,
-            );
-          }
-          // Fall through to char-by-char for trailing `?` character
-          if (piCode === CC_QUESTION) {
-            this.#piContentPartial += buffer.slice(
-              this.#piContentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#piContentStartIdx = -1;
-            this.#advanceWithCode(piCode);
-            this.#state = State.PI_QUESTION;
-          } else {
-            this.#advanceWithCode(piCode);
-          }
+          // After batch capture, only a trailing `?` remains
+          this.#piContentPartial += buffer.slice(
+            this.#piContentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#piContentStartIdx = -1;
+          this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+          this.#state = State.PI_QUESTION;
           break;
         }
 
@@ -1712,7 +1745,7 @@ export class XmlTokenizer {
             // Check before emitting
             if (this.#commentPartial.includes("--")) {
               this.#error(
-                `'--' is not permitted within comments (XML 1.0 §2.5)`,
+                `Cannot use '--' within comments (XML 1.0 §2.5)`,
               );
             }
             // Check for trailing dash (e.g., "<!--->" or "<!-- comment --->")
@@ -1723,7 +1756,7 @@ export class XmlTokenizer {
                 ) === CC_DASH
             ) {
               this.#error(
-                `'-' is not permitted immediately before '-->' (XML 1.0 §2.5)`,
+                `Cannot use '-' immediately before '-->' (XML 1.0 §2.5)`,
               );
             }
             // Any comment before XML declaration invalidates XMLDecl position
@@ -1747,7 +1780,7 @@ export class XmlTokenizer {
             // XML 1.0 §2.5: After "--", only ">" or "-" is allowed.
             // Any other character means "--" appears within the comment content.
             this.#error(
-              `'--' is not permitted within comments (XML 1.0 §2.5)`,
+              `Cannot use '--' within comments (XML 1.0 §2.5)`,
             );
           }
           break;
@@ -1814,7 +1847,7 @@ export class XmlTokenizer {
               this.#advanceWithCode(code);
             } else if (this.#isWhitespaceCode(code) || code === CC_QUESTION) {
               // Empty PI target is not allowed
-              this.#error("Processing instruction target is required");
+              this.#error("Missing processing instruction target");
             } else {
               this.#error(
                 `Invalid character '${
@@ -1917,6 +1950,9 @@ export class XmlTokenizer {
           this.#doctypeCheck += String.fromCharCode(code);
           this.#advanceWithCode(code);
           if (this.#doctypeCheck === "DOCTYPE") {
+            if (this.#disallowDoctype) {
+              this.#error("DOCTYPE declarations are not allowed");
+            }
             this.#doctypeName = "";
             this.#doctypePublicId = "";
             this.#doctypeSystemId = "";
@@ -2193,7 +2229,6 @@ export class XmlTokenizer {
               this.#isEntityDecl = kw === "ENTITY";
               this.#isParameterEntity = false;
               this.#entityName = "";
-              this.#entityValue = "";
               this.#entityParsePhase = "name";
               this.#entityExternalType = "";
               this.#entityQuotedLiterals = 0;
@@ -2234,13 +2269,10 @@ export class XmlTokenizer {
                 );
               }
               // Emit entity if applicable
-              if (
-                !this.#isParameterEntity &&
-                this.#entityName && this.#entityValue !== undefined
-              ) {
+              if (!this.#isParameterEntity && this.#entityName) {
                 this.#callbacks.onEntityDeclaration?.(
                   this.#entityName,
-                  this.#entityValue,
+                  "",
                 );
               }
             }
@@ -2265,9 +2297,6 @@ export class XmlTokenizer {
             this.#dtdStringIsPubid = false;
             // For ENTITY declarations, track quoted literals
             if (this.#isEntityDecl) {
-              if (this.#entityParsePhase === "value") {
-                this.#entityValue = "";
-              }
               this.#entityQuotedLiterals++;
               // First quoted literal after PUBLIC is PubidLiteral
               if (
@@ -2403,11 +2432,8 @@ export class XmlTokenizer {
             this.#dtdDeclSawWhitespace = false;
             this.#state = State.DTD_DECL_CONTENT;
           } else {
-            // Accumulate string value for validation
-            this.#dtdStringValue += String.fromCharCode(code);
-            // For ENTITY declarations in value phase, capture the value
-            if (this.#isEntityDecl && this.#entityParsePhase === "value") {
-              this.#entityValue += String.fromCharCode(code);
+            if (this.#dtdStringIsPubid) {
+              this.#dtdStringValue += String.fromCharCode(code);
             }
             this.#advanceWithCode(code);
           }
@@ -2449,13 +2475,12 @@ export class XmlTokenizer {
           if (code === CC_GT) {
             this.#advanceWithCode(code);
             this.#state = State.DOCTYPE_INTERNAL_SUBSET;
-          } else if (code === CC_DASH) {
-            // Stay in DASH_DASH state, ----> is valid ending
-            this.#advanceWithCode(code);
           } else {
-            // Per spec, -- is not allowed within comments
+            // Per XML 1.0 §2.5, after '--' only '>' is permitted.
+            // Any other character (including '-') means '--' appears
+            // within the comment content, which is not allowed.
             this.#error(
-              `'--' is not allowed within XML comments (XML 1.0 §2.5)`,
+              `Cannot use '--' within XML comments (XML 1.0 §2.5)`,
             );
           }
           break;
@@ -2510,7 +2535,6 @@ export class XmlTokenizer {
    * It flushes any pending text content and validates that the tokenizer
    * is in a valid end state.
    *
-   * @param callbacks Callbacks to invoke for remaining tokens.
    * @throws {XmlSyntaxError} If the tokenizer is in an incomplete state.
    */
   finalize(callbacks: XmlTokenCallbacks): void {
