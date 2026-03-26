@@ -9,8 +9,6 @@ import type { ServerSentEventMessage } from "./server_sent_event_stream.ts";
  * Unlike {@linkcode ServerSentEventMessage}, the `id` field is always
  * a string (not `string | number`) because parsed IDs are not coerced.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#fields}
  */
 export type ServerSentEventParsedMessage =
@@ -22,8 +20,6 @@ export type ServerSentEventParsedMessage =
 
 /**
  * Options for {@linkcode ServerSentEventParseStream}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface ServerSentEventParseStreamOptions {
   /**
@@ -115,11 +111,9 @@ function parseLine(
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events}
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Basic usage with fetch
  * ```ts ignore
- * import { ServerSentEventParseStream } from "@std/http/unstable-server-sent-event-stream";
+ * import { ServerSentEventParseStream } from "@std/http/server-sent-event-parse-stream";
  *
  * const response = await fetch("https://example.com/sse", {
  *   headers: { "Authorization": "Bearer token" },
@@ -135,7 +129,7 @@ function parseLine(
  *
  * @example Roundtrip with ServerSentEventStream
  * ```ts
- * import { ServerSentEventParseStream } from "@std/http/unstable-server-sent-event-stream";
+ * import { ServerSentEventParseStream } from "@std/http/server-sent-event-parse-stream";
  * import { ServerSentEventStream } from "@std/http/server-sent-event-stream";
  * import { assertEquals } from "@std/assert";
  *
@@ -156,7 +150,7 @@ function parseLine(
  *
  * @example Ignoring comments
  * ```ts
- * import { ServerSentEventParseStream } from "@std/http/unstable-server-sent-event-stream";
+ * import { ServerSentEventParseStream } from "@std/http/server-sent-event-parse-stream";
  * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([
