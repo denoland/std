@@ -265,6 +265,42 @@ Deno.test("TtlCache validates TTL", async (t) => {
   });
 });
 
+Deno.test("TtlCache peek()", async (t) => {
+  await t.step("returns value without resetting sliding TTL", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1);
+
+    time.now = 80;
+    assertEquals(cache.peek("a"), 1);
+
+    // peek did not reset the TTL, so the entry still expires at t=100
+    time.now = 100;
+    assertEquals(cache.peek("a"), undefined);
+  });
+
+  await t.step("returns value for non-sliding cache", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100);
+
+    cache.set("a", 1);
+
+    time.now = 50;
+    assertEquals(cache.peek("a"), 1);
+
+    time.now = 100;
+    assertEquals(cache.peek("a"), undefined);
+  });
+
+  await t.step("returns undefined for missing key", () => {
+    using cache = new TtlCache<string, number>(100);
+    assertEquals(cache.peek("missing"), undefined);
+  });
+});
+
 Deno.test("TtlCache get() returns undefined for missing key with sliding expiration", () => {
   using cache = new TtlCache<string, number>(100, {
     slidingExpiration: true,
