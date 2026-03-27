@@ -265,6 +265,176 @@ Deno.test("TtlCache validates TTL", async (t) => {
   });
 });
 
+Deno.test("TtlCache get() returns undefined for missing key with sliding expiration", () => {
+  using cache = new TtlCache<string, number>(100, {
+    slidingExpiration: true,
+  });
+  assertEquals(cache.get("missing"), undefined);
+});
+
+Deno.test("TtlCache sliding expiration", async (t) => {
+  await t.step("get() resets TTL", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1);
+
+    time.now = 80;
+    assertEquals(cache.get("a"), 1);
+
+    // TTL was reset at t=80, so entry lives until t=180
+    time.now = 160;
+    assertEquals(cache.get("a"), 1);
+
+    // TTL was reset at t=160, so entry lives until t=260
+    time.now = 250;
+    assertEquals(cache.get("a"), 1);
+
+    time.now = 350;
+    assertEquals(cache.get("a"), undefined);
+  });
+
+  await t.step("has() does not reset TTL", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1);
+
+    time.now = 80;
+    assertEquals(cache.has("a"), true);
+
+    // has() did not reset the TTL, so the entry still expires at t=100
+    time.now = 100;
+    assertEquals(cache.has("a"), false);
+  });
+
+  await t.step("does not reset TTL when slidingExpiration is false", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100);
+
+    cache.set("a", 1);
+
+    time.now = 80;
+    assertEquals(cache.get("a"), 1);
+
+    time.now = 100;
+    assertEquals(cache.get("a"), undefined);
+  });
+
+  await t.step("absoluteExpiration caps sliding extension", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1, { absoluteExpiration: 150 });
+
+    time.now = 80;
+    assertEquals(cache.get("a"), 1);
+
+    time.now = 140;
+    assertEquals(cache.get("a"), 1);
+
+    // Absolute deadline is t=150; sliding cannot extend past it
+    time.now = 150;
+    assertEquals(cache.get("a"), undefined);
+  });
+
+  await t.step("absoluteExpiration throws without slidingExpiration", () => {
+    using cache = new TtlCache<string, number>(100);
+    assertThrows(
+      () => cache.set("a", 1, { absoluteExpiration: 50 }),
+      TypeError,
+      "absoluteExpiration requires slidingExpiration to be enabled",
+    );
+  });
+
+  await t.step("per-entry TTL works with sliding expiration", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1, { ttl: 50 });
+
+    time.now = 40;
+    assertEquals(cache.get("a"), 1);
+
+    // TTL reset to 50ms at t=40, so alive until t=90
+    time.now = 80;
+    assertEquals(cache.get("a"), 1);
+
+    // TTL reset to 50ms at t=80, so alive until t=130
+    time.now = 130;
+    assertEquals(cache.get("a"), undefined);
+  });
+
+  await t.step("sliding expiration calls onEject on expiry", () => {
+    using time = new FakeTime(0);
+    const ejected: [string, number][] = [];
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set("a", 1);
+
+    time.now = 80;
+    cache.get("a");
+
+    time.now = 180;
+    assertEquals(ejected, [["a", 1]]);
+  });
+
+  await t.step("overwriting entry resets sliding metadata", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1, { ttl: 50, absoluteExpiration: 200 });
+
+    time.now = 40;
+    cache.get("a");
+
+    // Overwrite with different TTL and no absoluteExpiration
+    cache.set("a", 2, { ttl: 30 });
+
+    time.now = 60;
+    assertEquals(cache.get("a"), 2);
+
+    // TTL reset to 30ms at t=60, alive until t=90
+    time.now = 90;
+    assertEquals(cache.get("a"), undefined);
+  });
+
+  await t.step("set() rejects negative absoluteExpiration", () => {
+    using cache = new TtlCache<string, number>(1000, {
+      slidingExpiration: true,
+    });
+    assertThrows(
+      () => cache.set("a", 1, { absoluteExpiration: -1 }),
+      RangeError,
+      "absoluteExpiration must be a finite, non-negative number",
+    );
+  });
+
+  await t.step("set() rejects NaN absoluteExpiration", () => {
+    using cache = new TtlCache<string, number>(1000, {
+      slidingExpiration: true,
+    });
+    assertThrows(
+      () => cache.set("a", 1, { absoluteExpiration: NaN }),
+      RangeError,
+      "absoluteExpiration must be a finite, non-negative number",
+    );
+  });
+});
+
 Deno.test("TtlCache clear() calls all onEject callbacks even if one throws", () => {
   const ejected: string[] = [];
   using cache = new TtlCache<string, number>(1000, {
