@@ -19,6 +19,7 @@ export * from "./abortable.ts";
 export * from "./deadline.ts";
 export * from "./debounce.ts";
 export * from "./delay.ts";
+export * from "./lazy.ts";
 export * from "./mux_async_iterator.ts";
 export * from "./poll.ts";
 export * from "./pool.ts";

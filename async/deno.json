@@ -8,6 +8,7 @@
     "./debounce": "./debounce.ts",
     "./unstable-debounce": "./unstable_debounce.ts",
     "./delay": "./delay.ts",
+    "./lazy": "./lazy.ts",
     "./mux-async-iterator": "./mux_async_iterator.ts",
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
     "./poll": "./poll.ts",
@@ -20,7 +21,6 @@
     "./unstable-wait-for": "./unstable_wait_for.ts",
     "./unstable-semaphore": "./unstable_semaphore.ts",
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
-    "./unstable-lazy": "./unstable_lazy.ts",
     "./unstable-pool-settled": "./unstable_pool_settled.ts",
     "./unstable-channel": "./unstable_channel.ts"
   }
