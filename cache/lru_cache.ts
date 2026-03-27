@@ -19,6 +19,29 @@ export type { MemoizationCache };
 export type LruCacheEjectionReason = "evicted" | "deleted" | "cleared";
 
 /**
+ * Aggregate statistics for {@linkcode LruCache} operations.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * Returned by {@linkcode LruCache.prototype.stats}. Each field counts how many
+ * times the corresponding operation occurred since construction or the last
+ * {@linkcode LruCache.prototype.resetStats | resetStats()} call. All fields are
+ * readonly: each snapshot is immutable at the type level.
+ */
+export interface LruCacheStats {
+  /** Number of successful {@linkcode LruCache.prototype.get | get()} lookups. */
+  readonly hits: number;
+  /** Number of {@linkcode LruCache.prototype.get | get()} lookups that missed. */
+  readonly misses: number;
+  /** Number of {@linkcode LruCache.prototype.set | set()} calls. */
+  readonly sets: number;
+  /** Number of {@linkcode LruCache.prototype.delete | delete()} calls that removed a key. */
+  readonly deletes: number;
+  /** Number of entries evicted due to {@linkcode LruCache.prototype.maxSize | maxSize}. */
+  readonly evictions: number;
+}
+
+/**
  * Options for the {@linkcode LruCache} constructor.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -102,6 +125,11 @@ export class LruCache<K, V> extends Map<K, V>
   #eject?:
     | ((ejectedKey: K, ejectedValue: V, reason: LruCacheEjectionReason) => void)
     | undefined;
+  #hits = 0;
+  #misses = 0;
+  #sets = 0;
+  #deletes = 0;
+  #evictions = 0;
 
   /**
    * Constructs a new `LruCache`.
@@ -144,6 +172,75 @@ export class LruCache<K, V> extends Map<K, V>
     return this.#maxSize;
   }
 
+  /**
+   * Aggregate statistics for this cache.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * Returns a new object each time. The snapshot is typed as
+   * {@linkcode LruCacheStats} with readonly fields; mutating it is not
+   * supported at the type level and does not affect the cache.
+   * {@linkcode LruCache.prototype.peek | peek()} and
+   * {@linkcode LruCache.prototype.has | has()} do not update statistics.
+   * {@linkcode LruCache.prototype.clear | clear()} does not increment
+   * `deletes`. Counters reflect committed mutations: if an
+   * {@linkcode LruCacheOptions.onEject | onEject} callback throws, the
+   * counter for that operation has already been incremented.
+   *
+   * @returns A snapshot of hit, miss, set, delete, and eviction counts.
+   *
+   * @example Reading statistics
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const cache = new LruCache<string, number>(10);
+   * cache.set("a", 1);
+   * cache.get("a");
+   * cache.get("missing");
+   *
+   * assertEquals(cache.stats, { hits: 1, misses: 1, sets: 1, deletes: 0, evictions: 0 });
+   * ```
+   */
+  get stats(): LruCacheStats {
+    return {
+      hits: this.#hits,
+      misses: this.#misses,
+      sets: this.#sets,
+      deletes: this.#deletes,
+      evictions: this.#evictions,
+    };
+  }
+
+  /**
+   * Resets all statistics counters to zero.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * Does not modify cache entries.
+   *
+   * @example Resetting statistics
+   * ```ts
+   * import { LruCache } from "@std/cache";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const cache = new LruCache<string, number>(10);
+   * cache.set("a", 1);
+   * cache.resetStats();
+   *
+   * assertEquals(cache.stats.hits, 0);
+   * assertEquals(cache.stats.sets, 0);
+   * assertEquals(cache.get("a"), 1);
+   * ```
+   */
+  resetStats(): void {
+    this.#hits = 0;
+    this.#misses = 0;
+    this.#sets = 0;
+    this.#deletes = 0;
+    this.#evictions = 0;
+  }
+
   #setMostRecentlyUsed(key: K, value: V): void {
     super.delete(key);
     super.set(key, value);
@@ -154,6 +251,7 @@ export class LruCache<K, V> extends Map<K, V>
     const key = this.keys().next().value!;
     const value = super.get(key)!;
     super.delete(key);
+    this.#evictions++;
     if (this.#eject) {
       this.#ejecting = true;
       try {
@@ -206,11 +304,13 @@ export class LruCache<K, V> extends Map<K, V>
    */
   override get(key: K): V | undefined {
     if (super.has(key)) {
+      this.#hits++;
       const value = super.get(key)!;
       this.#setMostRecentlyUsed(key, value);
       return value;
     }
 
+    this.#misses++;
     return undefined;
   }
 
@@ -267,6 +367,7 @@ export class LruCache<K, V> extends Map<K, V>
         "Cannot set entry in LruCache: cache is not re-entrant during onEject callbacks",
       );
     }
+    this.#sets++;
     this.#setMostRecentlyUsed(key, value);
     this.#pruneToMaxSize();
 
@@ -303,6 +404,7 @@ export class LruCache<K, V> extends Map<K, V>
     const existed = super.delete(key);
     if (!existed) return false;
 
+    this.#deletes++;
     if (this.#eject) {
       this.#ejecting = true;
       try {

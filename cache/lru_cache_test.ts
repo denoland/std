@@ -333,3 +333,157 @@ Deno.test("LruCache iteration order reflects LRU recency", () => {
   assertEquals([...cache.values()], [2, 3, 1]);
   assertEquals([...cache.entries()], [["b", 2], ["c", 3], ["a", 1]]);
 });
+
+Deno.test("LruCache stats tracks hits and misses", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  cache.get("a");
+  cache.get("a");
+  cache.get("missing");
+
+  assertEquals(cache.stats, {
+    hits: 2,
+    misses: 1,
+    sets: 1,
+    deletes: 0,
+    evictions: 0,
+  });
+});
+
+Deno.test("LruCache stats tracks sets", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.set("a", 3);
+
+  assertEquals(cache.stats.sets, 3);
+});
+
+Deno.test("LruCache stats tracks deletes", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  cache.delete("a");
+  assertEquals(cache.delete("a"), false);
+
+  assertEquals(cache.stats.deletes, 1);
+});
+
+Deno.test("LruCache stats tracks evictions", () => {
+  const cache = new LruCache<string, number>(2);
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.set("c", 3);
+
+  assertEquals(cache.stats.evictions, 1);
+  cache.set("d", 4);
+  assertEquals(cache.stats.evictions, 2);
+});
+
+Deno.test("LruCache stats returns a snapshot", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  const s = cache.stats;
+  // Runtime-only: prove mutating the plain object does not alias internal counters
+  (s as unknown as { hits: number }).hits = 999;
+  assertEquals(cache.stats.hits, 0);
+});
+
+Deno.test("LruCache stats are unaffected by peek() and has()", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  cache.peek("a");
+  cache.peek("missing");
+  cache.has("a");
+  cache.has("missing");
+
+  assertEquals(cache.stats, {
+    hits: 0,
+    misses: 0,
+    sets: 1,
+    deletes: 0,
+    evictions: 0,
+  });
+});
+
+Deno.test("LruCache stats are unaffected by clear()", () => {
+  const cache = new LruCache<string, number>(10);
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.clear();
+
+  assertEquals(cache.stats.deletes, 0);
+});
+
+Deno.test("LruCache resetStats() zeros all counters", () => {
+  const cache = new LruCache<string, number>(2);
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.set("c", 3);
+  cache.get("c");
+  cache.get("missing");
+  cache.delete("c");
+
+  cache.resetStats();
+  assertEquals(cache.stats, {
+    hits: 0,
+    misses: 0,
+    sets: 0,
+    deletes: 0,
+    evictions: 0,
+  });
+  assertEquals(cache.get("b"), 2);
+});
+
+Deno.test("LruCache stats combined operations", () => {
+  const cache = new LruCache<string, number>(2);
+  cache.set("a", 1);
+  cache.set("b", 2);
+  cache.get("a");
+  cache.get("x");
+  cache.set("c", 3);
+  cache.delete("a");
+
+  assertEquals(cache.stats, {
+    hits: 1,
+    misses: 1,
+    sets: 3,
+    deletes: 1,
+    evictions: 1,
+  });
+});
+
+Deno.test("LruCache stats counts get() on cached undefined as a hit", () => {
+  const cache = new LruCache<string, number | undefined>(10);
+  cache.set("a", undefined);
+  assertEquals(cache.get("a"), undefined);
+
+  assertEquals(cache.stats, {
+    hits: 1,
+    misses: 0,
+    sets: 1,
+    deletes: 0,
+    evictions: 0,
+  });
+});
+
+Deno.test("LruCache stats still advance when onEject throws", () => {
+  const cache = new LruCache<string, number>(2, {
+    onEject: () => {
+      throw new Error("boom");
+    },
+  });
+
+  cache.set("a", 1);
+  cache.set("b", 2);
+  try {
+    cache.set("c", 3);
+  } catch { /* expected */ }
+
+  assertEquals(cache.stats, {
+    hits: 0,
+    misses: 0,
+    sets: 3,
+    deletes: 0,
+    evictions: 1,
+  });
+});
