@@ -266,7 +266,7 @@ Deno.test("TtlCache validates TTL", async (t) => {
 });
 
 Deno.test("TtlCache get() returns undefined for missing key with sliding expiration", () => {
-  using cache = new TtlCache<string, number, true>(100, {
+  using cache = new TtlCache<string, number>(100, {
     slidingExpiration: true,
   });
   assertEquals(cache.get("missing"), undefined);
@@ -275,7 +275,7 @@ Deno.test("TtlCache get() returns undefined for missing key with sliding expirat
 Deno.test("TtlCache sliding expiration", async (t) => {
   await t.step("get() resets TTL", () => {
     using time = new FakeTime(0);
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
     });
 
@@ -298,7 +298,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
 
   await t.step("has() does not reset TTL", () => {
     using time = new FakeTime(0);
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
     });
 
@@ -327,7 +327,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
 
   await t.step("absoluteExpiration caps sliding extension", () => {
     using time = new FakeTime(0);
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
     });
 
@@ -344,26 +344,18 @@ Deno.test("TtlCache sliding expiration", async (t) => {
     assertEquals(cache.get("a"), undefined);
   });
 
-  await t.step(
-    "absoluteExpiration is a type error without slidingExpiration",
-    () => {
-      using time = new FakeTime(0);
-      const cache = new TtlCache<string, number>(100);
-
-      // @ts-expect-error absoluteExpiration requires slidingExpiration: true
-      cache.set("a", 1, { absoluteExpiration: 50 });
-
-      time.now = 80;
-      assertEquals(cache.get("a"), 1);
-
-      time.now = 100;
-      assertEquals(cache.get("a"), undefined);
-    },
-  );
+  await t.step("absoluteExpiration throws without slidingExpiration", () => {
+    using cache = new TtlCache<string, number>(100);
+    assertThrows(
+      () => cache.set("a", 1, { absoluteExpiration: 50 }),
+      TypeError,
+      "absoluteExpiration requires slidingExpiration to be enabled",
+    );
+  });
 
   await t.step("per-entry TTL works with sliding expiration", () => {
     using time = new FakeTime(0);
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
     });
 
@@ -384,7 +376,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
   await t.step("sliding expiration calls onEject on expiry", () => {
     using time = new FakeTime(0);
     const ejected: [string, number][] = [];
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
       onEject: (k, v) => ejected.push([k, v]),
     });
@@ -400,7 +392,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
 
   await t.step("overwriting entry resets sliding metadata", () => {
     using time = new FakeTime(0);
-    const cache = new TtlCache<string, number, true>(100, {
+    const cache = new TtlCache<string, number>(100, {
       slidingExpiration: true,
     });
 
@@ -421,7 +413,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
   });
 
   await t.step("set() rejects negative absoluteExpiration", () => {
-    using cache = new TtlCache<string, number, true>(1000, {
+    using cache = new TtlCache<string, number>(1000, {
       slidingExpiration: true,
     });
     assertThrows(
@@ -432,7 +424,7 @@ Deno.test("TtlCache sliding expiration", async (t) => {
   });
 
   await t.step("set() rejects NaN absoluteExpiration", () => {
-    using cache = new TtlCache<string, number, true>(1000, {
+    using cache = new TtlCache<string, number>(1000, {
       slidingExpiration: true,
     });
     assertThrows(

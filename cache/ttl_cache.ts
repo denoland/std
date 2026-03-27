@@ -4,9 +4,7 @@
 import type { MemoizationCache } from "./memoize.ts";
 
 /**
- * Options for {@linkcode TtlCache.prototype.set} when
- * {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
- * disabled (the default).
+ * Options for {@linkcode TtlCache.prototype.set}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -16,19 +14,12 @@ export interface TtlCacheSetOptions {
    * overrides the cache's default TTL. Must be a finite, non-negative number.
    */
   ttl?: number;
-}
-
-/**
- * Options for {@linkcode TtlCache.prototype.set} when
- * {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
- * enabled.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface TtlCacheSlidingSetOptions extends TtlCacheSetOptions {
   /**
    * A maximum lifetime in milliseconds for this entry, measured from the
-   * time it is set. The sliding window cannot extend past this duration.
+   * time it is set. When
+   * {@linkcode TtlCacheOptions.slidingExpiration | slidingExpiration} is
+   * enabled, the sliding window cannot extend past this duration. Throws
+   * if `slidingExpiration` is not enabled.
    */
   absoluteExpiration?: number;
 }
@@ -37,10 +28,8 @@ export interface TtlCacheSlidingSetOptions extends TtlCacheSetOptions {
  * Options for the {@linkcode TtlCache} constructor.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @typeParam Sliding Whether sliding expiration is enabled.
  */
-export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
+export interface TtlCacheOptions<K, V> {
   /**
    * Callback invoked when an entry is removed, whether by TTL expiry,
    * manual deletion, or clearing the cache.
@@ -50,14 +39,12 @@ export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
    * When `true`, each {@linkcode TtlCache.prototype.get | get()} call resets
    * the entry's TTL.
    *
-   * If both `slidingExpiration` and
-   * {@linkcode TtlCacheSlidingSetOptions.absoluteExpiration | absoluteExpiration}
-   * are set on an entry, the sliding window cannot extend past the absolute
-   * expiration.
+   * If both `slidingExpiration` and `absoluteExpiration` are set on an entry,
+   * the sliding window cannot extend past the absolute expiration.
    *
    * @default {false}
    */
-  slidingExpiration?: Sliding;
+  slidingExpiration?: boolean;
 }
 
 /**
@@ -69,8 +56,6 @@ export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
  *
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
- * @typeParam Sliding Whether sliding expiration is enabled.
- *
  * @example Usage
  * ```ts
  * import { TtlCache } from "@std/cache/ttl-cache";
@@ -92,7 +77,7 @@ export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
  * import { FakeTime } from "@std/testing/time";
  *
  * using time = new FakeTime(0);
- * const cache = new TtlCache<string, number, true>(100, {
+ * const cache = new TtlCache<string, number>(100, {
  *   slidingExpiration: true,
  * });
  *
@@ -105,14 +90,14 @@ export interface TtlCacheOptions<K, V, Sliding extends boolean = boolean> {
  * assertEquals(cache.get("a"), undefined); // expired
  * ```
  */
-export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
+export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
   #timeouts = new Map<K, number>();
   #eject?: ((ejectedKey: K, ejectedValue: V) => void) | undefined;
-  #slidingExpiration: Sliding;
-  #entryTtls = new Map<K, number>();
-  #absoluteDeadlines = new Map<K, number>();
+  #slidingExpiration: boolean;
+  #entryTtls?: Map<K, number>;
+  #absoluteDeadlines?: Map<K, number>;
 
   /**
    * Constructs a new instance.
@@ -126,7 +111,7 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
    */
   constructor(
     defaultTtl: number,
-    options?: TtlCacheOptions<K, V, Sliding>,
+    options?: TtlCacheOptions<K, V>,
   ) {
     super();
     if (!(defaultTtl >= 0) || !Number.isFinite(defaultTtl)) {
@@ -136,7 +121,11 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
     }
     this.#defaultTtl = defaultTtl;
     this.#eject = options?.onEject;
-    this.#slidingExpiration = (options?.slidingExpiration ?? false) as Sliding;
+    this.#slidingExpiration = options?.slidingExpiration ?? false;
+    if (this.#slidingExpiration) {
+      this.#entryTtls = new Map();
+      this.#absoluteDeadlines = new Map();
+    }
   }
 
   /**
@@ -167,9 +156,14 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
   override set(
     key: K,
     value: V,
-    options?: Sliding extends true ? TtlCacheSlidingSetOptions
-      : TtlCacheSetOptions,
+    options?: TtlCacheSetOptions,
   ): this {
+    if (options?.absoluteExpiration !== undefined && !this.#slidingExpiration) {
+      throw new TypeError(
+        "Cannot set entry in TtlCache: absoluteExpiration requires slidingExpiration to be enabled",
+      );
+    }
+
     const ttl = options?.ttl ?? this.#defaultTtl;
     if (!(ttl >= 0) || !Number.isFinite(ttl)) {
       throw new RangeError(
@@ -183,18 +177,17 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
     this.#timeouts.set(key, setTimeout(() => this.delete(key), ttl));
 
     if (this.#slidingExpiration) {
-      const slidingOptions = options as TtlCacheSlidingSetOptions | undefined;
-      this.#entryTtls.set(key, ttl);
-      if (slidingOptions?.absoluteExpiration !== undefined) {
-        const abs = slidingOptions.absoluteExpiration;
+      this.#entryTtls!.set(key, ttl);
+      if (options?.absoluteExpiration !== undefined) {
+        const abs = options.absoluteExpiration;
         if (!(abs >= 0) || !Number.isFinite(abs)) {
           throw new RangeError(
             `Cannot set entry in TtlCache: absoluteExpiration must be a finite, non-negative number: received ${abs}`,
           );
         }
-        this.#absoluteDeadlines.set(key, Date.now() + abs);
+        this.#absoluteDeadlines!.set(key, Date.now() + abs);
       } else {
-        this.#absoluteDeadlines.delete(key);
+        this.#absoluteDeadlines!.delete(key);
       }
     }
 
@@ -258,8 +251,8 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
     const timeout = this.#timeouts.get(key);
     if (timeout !== undefined) clearTimeout(timeout);
     this.#timeouts.delete(key);
-    this.#entryTtls.delete(key);
-    this.#absoluteDeadlines.delete(key);
+    this.#entryTtls?.delete(key);
+    this.#absoluteDeadlines?.delete(key);
     this.#eject?.(key, value!);
     return true;
   }
@@ -287,8 +280,8 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
       clearTimeout(timeout);
     }
     this.#timeouts.clear();
-    this.#entryTtls.clear();
-    this.#absoluteDeadlines.clear();
+    this.#entryTtls?.clear();
+    this.#absoluteDeadlines?.clear();
     const entries = [...super.entries()];
     super.clear();
     let error: unknown;
@@ -327,10 +320,10 @@ export class TtlCache<K, V, Sliding extends boolean = false> extends Map<K, V>
   }
 
   #resetTtl(key: K): void {
-    const ttl = this.#entryTtls.get(key);
+    const ttl = this.#entryTtls!.get(key);
     if (ttl === undefined) return;
 
-    const deadline = this.#absoluteDeadlines.get(key);
+    const deadline = this.#absoluteDeadlines!.get(key);
     const effectiveTtl = deadline !== undefined
       ? Math.min(ttl, Math.max(0, deadline - Date.now()))
       : ttl;
