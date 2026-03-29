@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 import type { MemoizationCache } from "./memoize.ts";
-export type { MemoizationCache };
 
 /**
  * The reason an entry was removed from the cache.
