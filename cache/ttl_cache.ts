@@ -31,8 +31,19 @@ export interface TtlCacheSetOptions {
  */
 export interface TtlCacheOptions<K, V> {
   /**
+   * Maximum number of entries the cache may hold. When a new entry would
+   * exceed this limit, the entry that was
+   * {@linkcode TtlCache.prototype.set | set()} least recently is evicted
+   * before the new one is added. Must be a positive integer when provided.
+   */
+  maxSize?: number;
+  /**
    * Callback invoked when an entry is removed, whether by TTL expiry,
-   * manual deletion, or clearing the cache.
+   * capacity eviction, manual deletion, or clearing the cache. The entry is
+   * already removed from the cache when this callback fires. Overwriting an
+   * existing key via {@linkcode TtlCache.prototype.set | set()} does **not**
+   * trigger this callback. The cache is not re-entrant during this callback:
+   * calling `set`, `delete`, or `clear` will throw.
    */
   onEject?: (ejectedKey: K, ejectedValue: V) => void;
   /**
@@ -93,7 +104,9 @@ export interface TtlCacheOptions<K, V> {
 export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
+  #maxSize: number;
   #timeouts = new Map<K, number>();
+  #ejecting = false;
   #eject?: ((ejectedKey: K, ejectedValue: V) => void) | undefined;
   #slidingExpiration: boolean;
   #entryTtls?: Map<K, number>;
@@ -119,13 +132,41 @@ export class TtlCache<K, V> extends Map<K, V>
         `Cannot create TtlCache: defaultTtl must be a finite, non-negative number: received ${defaultTtl}`,
       );
     }
+    const maxSize = options?.maxSize;
+    if (maxSize !== undefined && (!Number.isInteger(maxSize) || maxSize < 1)) {
+      throw new RangeError(
+        `Cannot create TtlCache: maxSize must be a positive integer: received ${maxSize}`,
+      );
+    }
     this.#defaultTtl = defaultTtl;
+    this.#maxSize = maxSize ?? Infinity;
     this.#eject = options?.onEject;
     this.#slidingExpiration = options?.slidingExpiration ?? false;
     if (this.#slidingExpiration) {
       this.#entryTtls = new Map();
       this.#absoluteDeadlines = new Map();
     }
+  }
+
+  /**
+   * The maximum number of entries the cache may hold, or `Infinity` if no
+   * limit was set.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns The maximum number of entries in the cache.
+   *
+   * @example Usage
+   * ```ts
+   * import { TtlCache } from "@std/cache/ttl-cache";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const cache = new TtlCache<string, number>(1000, { maxSize: 5 });
+   * assertEquals(cache.maxSize, 5);
+   * ```
+   */
+  get maxSize(): number {
+    return this.#maxSize;
   }
 
   /**
@@ -158,6 +199,11 @@ export class TtlCache<K, V> extends Map<K, V>
     value: V,
     options?: TtlCacheSetOptions,
   ): this {
+    if (this.#ejecting) {
+      throw new TypeError(
+        "Cannot set entry in TtlCache: cache is not re-entrant during onEject callbacks",
+      );
+    }
     if (options?.absoluteExpiration !== undefined && !this.#slidingExpiration) {
       throw new TypeError(
         "Cannot set entry in TtlCache: absoluteExpiration requires slidingExpiration to be enabled",
@@ -178,8 +224,14 @@ export class TtlCache<K, V> extends Map<K, V>
       );
     }
 
+    const isNew = !super.has(key);
+    if (isNew && this.size >= this.#maxSize) {
+      this.delete(super.keys().next().value as K);
+    }
+
     const existing = this.#timeouts.get(key);
     if (existing !== undefined) clearTimeout(existing);
+    super.delete(key);
     super.set(key, value);
     this.#timeouts.set(key, setTimeout(() => this.delete(key), ttl));
 
@@ -285,6 +337,11 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override delete(key: K): boolean {
+    if (this.#ejecting) {
+      throw new TypeError(
+        "Cannot delete entry in TtlCache: cache is not re-entrant during onEject callbacks",
+      );
+    }
     const value = super.get(key);
     const existed = super.delete(key);
     if (!existed) return false;
@@ -294,7 +351,14 @@ export class TtlCache<K, V> extends Map<K, V>
     this.#timeouts.delete(key);
     this.#entryTtls?.delete(key);
     this.#absoluteDeadlines?.delete(key);
-    this.#eject?.(key, value!);
+    if (this.#eject) {
+      this.#ejecting = true;
+      try {
+        this.#eject(key, value!);
+      } finally {
+        this.#ejecting = false;
+      }
+    }
     return true;
   }
 
@@ -317,6 +381,11 @@ export class TtlCache<K, V> extends Map<K, V>
    * ```
    */
   override clear(): void {
+    if (this.#ejecting) {
+      throw new TypeError(
+        "Cannot clear TtlCache: cache is not re-entrant during onEject callbacks",
+      );
+    }
     for (const timeout of this.#timeouts.values()) {
       clearTimeout(timeout);
     }
@@ -325,13 +394,19 @@ export class TtlCache<K, V> extends Map<K, V>
     this.#absoluteDeadlines?.clear();
     const entries = [...super.entries()];
     super.clear();
+    if (!this.#eject) return;
+    this.#ejecting = true;
     let error: unknown;
-    for (const [key, value] of entries) {
-      try {
-        this.#eject?.(key, value);
-      } catch (e) {
-        error ??= e;
+    try {
+      for (const [key, value] of entries) {
+        try {
+          this.#eject(key, value);
+        } catch (e) {
+          error ??= e;
+        }
       }
+    } finally {
+      this.#ejecting = false;
     }
     if (error !== undefined) throw error;
   }
@@ -361,9 +436,7 @@ export class TtlCache<K, V> extends Map<K, V>
   }
 
   #resetTtl(key: K): void {
-    const ttl = this.#entryTtls!.get(key);
-    if (ttl === undefined) return;
-
+    const ttl = this.#entryTtls!.get(key)!;
     const deadline = this.#absoluteDeadlines!.get(key);
     const effectiveTtl = deadline !== undefined
       ? Math.min(ttl, Math.max(0, deadline - Date.now()))

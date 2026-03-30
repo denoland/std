@@ -471,6 +471,228 @@ Deno.test("TtlCache sliding expiration", async (t) => {
   });
 });
 
+Deno.test("TtlCache maxSize", async (t) => {
+  await t.step("evicts oldest entry when full", () => {
+    using _time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(1000, { maxSize: 3 });
+    assertEquals(cache.maxSize, 3);
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.set("c", 3);
+    assertEquals(cache.size, 3);
+
+    cache.set("d", 4);
+    assertEquals(cache.size, 3);
+    assertEquals(cache.has("a"), false);
+    assertEntries(cache, [["a", UNSET], ["b", 2], ["c", 3], ["d", 4]]);
+  });
+
+  await t.step("overwriting existing key does not evict", () => {
+    using _time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(1000, { maxSize: 2 });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.set("a", 10);
+
+    assertEquals(cache.size, 2);
+    assertEquals(cache.get("a"), 10);
+    assertEquals(cache.get("b"), 2);
+
+    // "a" was overwritten so it moved to the newest position; "b" is now
+    // the oldest and gets evicted next
+    cache.set("c", 3);
+    assertEquals(cache.size, 2);
+    assertEquals(cache.has("b"), false);
+    assertEquals(cache.get("a"), 10);
+    assertEquals(cache.get("c"), 3);
+  });
+
+  await t.step("calls onEject for evicted entry", () => {
+    using _time = new FakeTime(0);
+    const ejected: [string, number][] = [];
+    const cache = new TtlCache<string, number>(1000, {
+      maxSize: 2,
+      onEject: (k, v) => ejected.push([k, v]),
+    });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.set("c", 3);
+
+    assertEquals(ejected, [["a", 1]]);
+  });
+
+  await t.step("evicted entries have their timeouts cleared", () => {
+    using time = new FakeTime(0);
+    const ejected: string[] = [];
+    const cache = new TtlCache<string, number>(100, {
+      maxSize: 1,
+      onEject: (k) => ejected.push(k),
+    });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+
+    assertEquals(ejected, ["a"]);
+
+    time.now = 100;
+    assertEquals(ejected, ["a", "b"]);
+    assertEquals(cache.size, 0);
+  });
+
+  await t.step("works with slidingExpiration", () => {
+    using time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(100, {
+      maxSize: 2,
+      slidingExpiration: true,
+    });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+
+    time.now = 80;
+    cache.get("a");
+
+    // "a" is the oldest by insertion order, so it gets evicted
+    cache.set("c", 3);
+    assertEquals(cache.has("a"), false);
+    assertEquals(cache.get("b"), 2);
+    assertEquals(cache.get("c"), 3);
+  });
+
+  await t.step("eviction cleans up absoluteExpiration metadata", () => {
+    using time = new FakeTime(0);
+    const ejected: string[] = [];
+    const cache = new TtlCache<string, number>(1000, {
+      maxSize: 2,
+      slidingExpiration: true,
+      onEject: (k) => ejected.push(k),
+    });
+
+    cache.set("a", 1, { absoluteExpiration: 2000 });
+    cache.set("b", 2);
+
+    // Evicts "a" (oldest by insertion order), including its absoluteExpiration
+    cache.set("c", 3);
+    assertEquals(ejected, ["a"]);
+    assertEquals(cache.has("a"), false);
+
+    // "b" and "c" remain and eventually expire via TTL
+    time.now = 1000;
+    assertEquals(ejected, ["a", "b", "c"]);
+    assertEquals(cache.size, 0);
+  });
+
+  await t.step("validates maxSize in constructor", () => {
+    assertThrows(
+      () => new TtlCache(1000, { maxSize: 0 }),
+      RangeError,
+      "maxSize must be a positive integer",
+    );
+    assertThrows(
+      () => new TtlCache(1000, { maxSize: -1 }),
+      RangeError,
+      "maxSize must be a positive integer",
+    );
+    assertThrows(
+      () => new TtlCache(1000, { maxSize: 1.5 }),
+      RangeError,
+      "maxSize must be a positive integer",
+    );
+    assertThrows(
+      () => new TtlCache(1000, { maxSize: NaN }),
+      RangeError,
+      "maxSize must be a positive integer",
+    );
+    assertThrows(
+      () => new TtlCache(1000, { maxSize: Infinity }),
+      RangeError,
+      "maxSize must be a positive integer",
+    );
+  });
+
+  await t.step("maxSize of 1 always keeps only the latest entry", () => {
+    using _time = new FakeTime(0);
+    const cache = new TtlCache<string, number>(1000, { maxSize: 1 });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.set("c", 3);
+
+    assertEquals(cache.size, 1);
+    assertEquals(cache.has("a"), false);
+    assertEquals(cache.has("b"), false);
+    assertEquals(cache.get("c"), 3);
+  });
+});
+
+Deno.test("TtlCache is not re-entrant during onEject", async (t) => {
+  await t.step("set() throws during onEject from delete()", () => {
+    using cache = new TtlCache<string, number>(1000, {
+      onEject: () => {
+        assertThrows(
+          () => cache.set("x", 99),
+          TypeError,
+          "cache is not re-entrant during onEject callbacks",
+        );
+      },
+    });
+
+    cache.set("a", 1);
+    cache.delete("a");
+  });
+
+  await t.step("delete() throws during onEject", () => {
+    using cache = new TtlCache<string, number>(1000, {
+      onEject: () => {
+        assertThrows(
+          () => cache.delete("b"),
+          TypeError,
+          "cache is not re-entrant during onEject callbacks",
+        );
+      },
+    });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+    cache.delete("a");
+  });
+
+  await t.step("clear() throws during onEject", () => {
+    using cache = new TtlCache<string, number>(1000, {
+      onEject: () => {
+        assertThrows(
+          () => cache.clear(),
+          TypeError,
+          "cache is not re-entrant during onEject callbacks",
+        );
+      },
+    });
+
+    cache.set("a", 1);
+    cache.delete("a");
+  });
+
+  await t.step("set() throws during onEject from maxSize eviction", () => {
+    using _time = new FakeTime(0);
+    using cache = new TtlCache<string, number>(1000, {
+      maxSize: 1,
+      onEject: () => {
+        assertThrows(
+          () => cache.set("x", 99),
+          TypeError,
+          "cache is not re-entrant during onEject callbacks",
+        );
+      },
+    });
+
+    cache.set("a", 1);
+    cache.set("b", 2);
+  });
+});
+
 Deno.test("TtlCache clear() calls all onEject callbacks even if one throws", () => {
   const ejected: string[] = [];
   using cache = new TtlCache<string, number>(1000, {
