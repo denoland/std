@@ -1,125 +1,31 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import {
-  assertNonNegativeInteger,
-  assertPositiveFinite,
-  assertPositiveInteger,
-} from "./_validation.ts";
-import {
-  createFixedWindowAlgorithm,
-  createGcraAlgorithm,
-  createSlidingWindowAlgorithm,
-  createTokenBucketAlgorithm,
-} from "./_keyed_algorithms.ts";
-import type { KeyedAlgorithm } from "./_keyed_algorithms.ts";
+import type { MemoryStoreOptions } from "./memory_store.ts";
+import { createMemoryStore } from "./memory_store.ts";
+import type { RateLimitStore } from "./store_types.ts";
 
 /**
- * Options for {@linkcode createRateLimiter}.
+ * Options for {@linkcode KeyedRateLimiter.limit} and
+ * {@linkcode KeyedRateLimiter.peek}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface RateLimiterOptions {
-  /** Maximum permits per key per window/cycle. */
-  limit: number;
-  /** Window duration in milliseconds. */
-  window: number;
-  /**
-   * Algorithm to use.
-   *
-   * - `"fixed-window"` — counter resets at each window boundary. Simplest.
-   *   Allows boundary bursts up to 2× the limit.
-   * - `"sliding-window"` — window divided into segments that rotate
-   *   individually. Smoother enforcement, no boundary bursts.
-   * - `"token-bucket"` — tokens refill at a steady rate. Best for smoothing
-   *   bursty traffic with a configurable burst cap.
-   * - `"gcra"` — Generic Cell Rate Algorithm. Enforces strict uniform
-   *   spacing between requests with a single timestamp per key. Ideal when you
-   *   want hard, even enforcement with no boundary effects and minimal memory.
-   *
-   * @default {"sliding-window"}
-   */
-  algorithm?: "fixed-window" | "sliding-window" | "token-bucket" | "gcra";
-  /**
-   * Number of segments for the sliding window algorithm. Higher values give
-   * smoother enforcement at the cost of slightly more memory per key.
-   * Ignored for other algorithms.
-   *
-   * @default {10}
-   */
-  segmentsPerWindow?: number;
-  /**
-   * For token bucket: tokens added per replenishment period. Ignored for
-   * other algorithms.
-   *
-   * @default {limit}
-   */
-  tokensPerPeriod?: number;
-  /**
-   * Time-to-live for idle key state in milliseconds. Keys with no activity
-   * for this duration are eligible for eviction. Set to `0` to disable
-   * automatic eviction.
-   *
-   * Only {@linkcode KeyedRateLimiter.limit} counts as activity for
-   * eviction purposes. {@linkcode KeyedRateLimiter.peek} does not refresh
-   * a key's last-access time.
-   *
-   * @default {300_000}
-   */
-  evictionTtl?: number;
-  /**
-   * How often to scan for and evict idle keys, in milliseconds. Only
-   * meaningful when `evictionTtl > 0`.
-   *
-   * @default {60_000}
-   */
-  evictionInterval?: number;
-  /**
-   * Maximum number of keys to track. When the limit is reached, new keys
-   * are rejected with `ok: false` (with `resetAt: 0` and `retryAfter: 0`).
-   * Set to `0` to disable (unbounded).
-   *
-   * Note: this limits the number of keys, not total memory. Long key
-   * strings still consume memory proportional to their length.
-   *
-   * @default {0}
-   */
-  maxKeys?: number;
-  /**
-   * Clock function returning the current time in milliseconds. Override
-   * for testing with `FakeTime`.
-   *
-   * @default {Date.now}
-   */
-  clock?: () => number;
-}
-
-/**
- * Options for {@linkcode KeyedRateLimiter.limit}.
  *
- * @see {@linkcode PeekOptions} for the read-only equivalent.
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface LimitOptions {
-  /**
-   * Number of permits to consume for this request. Use higher values for
-   * expensive operations.
-   *
-   * @default {1}
-   */
-  cost?: number;
-}
-
-/**
- * Options for {@linkcode KeyedRateLimiter.peek}.
+ * @example Variable cost per request
+ * ```ts
+ * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
+ * import { assert } from "@std/assert";
  *
- * @see {@linkcode LimitOptions} for the consuming equivalent.
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * await using limiter = createRateLimiter({ limit: 100, window: 60_000 });
+ *
+ * const result = await limiter.limit("user:123", { cost: 5 });
+ * assert(result.ok);
+ * ```
  */
-export interface PeekOptions {
+export interface CostOptions {
   /**
-   * Number of permits to check. Determines whether a request of this size
-   * would be allowed and computes `retryAfter` accordingly.
+   * Number of permits to consume (for `limit`) or check (for `peek`).
+   * Use higher values for expensive operations.
    *
    * @default {1}
    */
@@ -141,8 +47,9 @@ export interface RateLimitResult {
    * Timestamp (milliseconds since epoch) of the next replenishment event
    * (segment rotation, window boundary, or refill cycle). This is *not*
    * necessarily when full capacity is restored — for sliding-window and
-   * token-bucket it may take multiple replenishment cycles. Useful for the
-   * `X-RateLimit-Reset` HTTP header.
+   * token-bucket it may take multiple replenishment cycles. For GCRA this
+   * is the theoretical arrival time (TAT) at which full burst capacity is
+   * restored. Useful for the `X-RateLimit-Reset` HTTP header.
    */
   readonly resetAt: number;
   /**
@@ -163,14 +70,17 @@ export interface RateLimitResult {
  * primary rate limiting API for the common case of "allow key X at most N
  * requests per window."
  *
+ * All methods are async to support pluggable store backends (in-memory,
+ * Redis, Deno KV). For in-memory stores the returned promises resolve
+ * synchronously.
+ *
  * **Disposal behavior:** after disposal, `limit()` and `peek()` return a
  * result with `ok: false` (remaining/resetAt/retryAfter all `0`), and
- * `reset()` is a no-op. This matches the primitive limiter contract where
- * `tryAcquire()` returns a rejected lease after disposal.
+ * `reset()` is a no-op.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface KeyedRateLimiter extends Disposable {
+export interface KeyedRateLimiter extends AsyncDisposable {
   /**
    * Check whether a request for the given key should be allowed, and
    * consume permits if so.
@@ -179,86 +89,92 @@ export interface KeyedRateLimiter extends Disposable {
    * @param options Override cost per request.
    * @returns A {@linkcode RateLimitResult} with the decision and metadata.
    */
-  limit(key: string, options?: LimitOptions): RateLimitResult;
+  limit(key: string, options?: CostOptions): Promise<RateLimitResult>;
 
   /**
    * Check the current state for a key without consuming any permits.
    * Useful for displaying remaining quota in UI or headers without
    * affecting the count.
-   *
-   * Note: `peek()` advances the algorithm's internal clock (e.g. rotates
-   * sliding-window segments, refills token-bucket tokens) so that the
-   * returned metadata reflects the current point in time. This is a
-   * time-advancement side effect only — no permits are consumed.
-   *
-   * Note: `peek()` does not count as activity for TTL-based eviction.
-   * Keys that are only peeked (never limited) will still be evicted after
-   * `evictionTtl` of inactivity.
    */
-  peek(key: string, options?: PeekOptions): RateLimitResult;
+  peek(key: string, options?: CostOptions): Promise<RateLimitResult>;
 
   /**
-   * Reset all state for a key, restoring it to full capacity. Useful for
-   * testing, admin overrides, or support tooling.
+   * Reset all state for a key, restoring it to full capacity.
    */
-  reset(key: string): void;
-
-  /** Number of keys currently tracked. */
-  readonly size: number;
+  reset(key: string): Promise<void>;
 }
 
 /**
- * Create a keyed rate limiter. The algorithm and its parameters are
- * configured once; per-key state is managed internally with automatic
- * eviction of idle keys.
+ * Options when using the default in-memory store. Extends
+ * {@linkcode MemoryStoreOptions} with a `store?: undefined` discriminant.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type MemoryRateLimiterOptions = MemoryStoreOptions & {
+  store?: undefined;
+};
+
+/**
+ * Options when providing a custom {@linkcode RateLimitStore} backend.
+ * Memory-store options (`limit`, `window`, etc.) are typed as `never`
+ * to prevent accidentally passing them alongside a custom store, since
+ * the store owns those settings.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface StoreRateLimiterOptions {
+  /** The store backend to delegate to. */
+  store: RateLimitStore;
+  limit?: never;
+  window?: never;
+  algorithm?: never;
+  segmentsPerWindow?: never;
+  tokensPerPeriod?: never;
+  evictionTtl?: never;
+  evictionInterval?: never;
+  maxKeys?: never;
+  clock?: never;
+}
+
+/**
+ * Options for {@linkcode createRateLimiter}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type RateLimiterOptions =
+  | MemoryRateLimiterOptions
+  | StoreRateLimiterOptions;
+
+/**
+ * Create a keyed rate limiter backed by an in-memory store or a custom
+ * {@linkcode RateLimitStore}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @example Basic API rate limiting
- * ```ts ignore
- * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
- *
- * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
- *
- * Deno.serve((req) => {
- *   const ip = req.headers.get("x-forwarded-for") ?? "unknown";
- *   const result = limiter.limit(ip);
- *   if (!result.ok) {
- *     return new Response("Too many requests", {
- *       status: 429,
- *       headers: {
- *         "Retry-After": String(Math.ceil(result.retryAfter / 1000)),
- *       },
- *     });
- *   }
- *   return new Response("OK");
- * });
- * ```
- *
- * @example Variable cost
+ * @example Basic usage
  * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
  * import { assert, assertEquals } from "@std/assert";
  *
- * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
- * const result = limiter.limit("user:123", { cost: 5 });
+ * await using limiter = createRateLimiter({ limit: 100, window: 60_000 });
+ * const result = await limiter.limit("user:123", { cost: 5 });
  * assert(result.ok);
  * assertEquals(result.remaining, 95);
  * ```
  *
- * @example GCRA for strict uniform spacing
- * ```ts
+ * @example Custom store backend
+ * ```ts ignore
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
- * import { assert } from "@std/assert";
+ * import { createRedisStore } from "@std/rate-limit/redis-store";
  *
- * using limiter = createRateLimiter({
- *   limit: 10,
- *   window: 1_000,
- *   algorithm: "gcra",
+ * const store = createRedisStore({
+ *   redis: myRedisClient,
+ *   algorithm: "sliding-window",
+ *   limit: 100,
+ *   window: 60_000,
  * });
  *
- * const result = limiter.limit("user:123");
- * assert(result.ok);
+ * await using limiter = createRateLimiter({ store });
  * ```
  *
  * @param options Configuration for the rate limiter.
@@ -267,74 +183,10 @@ export interface KeyedRateLimiter extends Disposable {
 export function createRateLimiter(
   options: RateLimiterOptions,
 ): KeyedRateLimiter {
-  const context = "rate limiter";
-  assertPositiveInteger(context, "limit", options.limit);
-  assertPositiveFinite(context, "window", options.window);
+  const store: RateLimitStore = options.store ??
+    createMemoryStore(options as MemoryRateLimiterOptions);
 
-  const {
-    limit,
-    window: windowMs,
-    algorithm: algorithmName = "sliding-window",
-    segmentsPerWindow = 10,
-    tokensPerPeriod = limit,
-    evictionTtl = 300_000,
-    evictionInterval = 60_000,
-    maxKeys = 0,
-    clock = Date.now,
-  } = options;
-
-  if (algorithmName === "token-bucket") {
-    assertPositiveInteger(context, "tokensPerPeriod", tokensPerPeriod);
-    if (tokensPerPeriod > limit) {
-      throw new RangeError(
-        `Cannot create ${context}: 'tokensPerPeriod' (${tokensPerPeriod}) exceeds 'limit' (${limit})`,
-      );
-    }
-  }
-
-  if (!Number.isFinite(evictionTtl) || evictionTtl < 0) {
-    throw new RangeError(
-      `Cannot create ${context}: 'evictionTtl' must be a non-negative finite number, received ${evictionTtl}`,
-    );
-  }
-
-  if (evictionTtl > 0) {
-    assertPositiveFinite(context, "evictionInterval", evictionInterval);
-  }
-
-  assertNonNegativeInteger(context, "maxKeys", maxKeys);
-
-  let algorithm: KeyedAlgorithm;
-  switch (algorithmName) {
-    case "fixed-window":
-      algorithm = createFixedWindowAlgorithm(limit, windowMs);
-      break;
-    case "sliding-window":
-      algorithm = createSlidingWindowAlgorithm(
-        limit,
-        windowMs,
-        segmentsPerWindow,
-      );
-      break;
-    case "token-bucket":
-      algorithm = createTokenBucketAlgorithm(limit, windowMs, tokensPerPeriod);
-      break;
-    case "gcra":
-      algorithm = createGcraAlgorithm(limit, windowMs);
-      break;
-    default:
-      throw new TypeError(
-        `Cannot create ${context}: unknown algorithm '${algorithmName as string}'`,
-      );
-  }
-
-  const MAX_KEYS_REJECTED: RateLimitResult = Object.freeze({
-    ok: false as const,
-    remaining: 0,
-    resetAt: 0,
-    retryAfter: 0,
-    limit,
-  });
+  const limit = store.capacity;
 
   const DISPOSED_RESULT: RateLimitResult = Object.freeze({
     ok: false as const,
@@ -345,14 +197,6 @@ export function createRateLimiter(
   });
 
   let disposed = false;
-  let evictionTimer: ReturnType<typeof setInterval> | undefined;
-
-  if (evictionTtl > 0) {
-    evictionTimer = setInterval(
-      () => algorithm.evict(clock(), evictionTtl),
-      evictionInterval,
-    );
-  }
 
   function validateCost(method: string, cost: number): void {
     if (!Number.isInteger(cost) || cost < 1) {
@@ -368,39 +212,26 @@ export function createRateLimiter(
   }
 
   return {
-    limit(key: string, options?: LimitOptions): RateLimitResult {
-      if (disposed) return DISPOSED_RESULT;
+    limit(key: string, options?: CostOptions): Promise<RateLimitResult> {
+      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       const cost = options?.cost ?? 1;
       validateCost("limit", cost);
-      if (maxKeys > 0 && algorithm.size >= maxKeys && !algorithm.has(key)) {
-        return MAX_KEYS_REJECTED;
-      }
-      return algorithm.limit(key, cost, clock());
+      return store.consume(key, cost);
     },
-    peek(key: string, options?: PeekOptions): RateLimitResult {
-      if (disposed) return DISPOSED_RESULT;
+    peek(key: string, options?: CostOptions): Promise<RateLimitResult> {
+      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       const cost = options?.cost ?? 1;
       validateCost("peek", cost);
-      if (maxKeys > 0 && algorithm.size >= maxKeys && !algorithm.has(key)) {
-        return MAX_KEYS_REJECTED;
-      }
-      return algorithm.peek(key, cost, clock());
+      return store.peek(key, cost);
     },
-    reset(_key: string): void {
-      if (disposed) return;
-      algorithm.reset(_key);
+    reset(key: string): Promise<void> {
+      if (disposed) return Promise.resolve();
+      return store.reset(key);
     },
-    get size(): number {
-      return algorithm.size;
-    },
-    [Symbol.dispose](): void {
+    async [Symbol.asyncDispose](): Promise<void> {
       if (disposed) return;
       disposed = true;
-      if (evictionTimer !== undefined) {
-        clearInterval(evictionTimer);
-        evictionTimer = undefined;
-      }
-      algorithm.clear();
+      await store[Symbol.asyncDispose]();
     },
   };
 }

@@ -20,15 +20,43 @@ export interface KeyedAlgorithm {
   clear(): void;
 }
 
-/** Wraps AlgorithmOps with a Map and eviction. */
+/** Options for {@linkcode createKeyedAlgorithm}. */
+export interface KeyedAlgorithmOptions {
+  /**
+   * Maximum number of keys to track. When a new key arrives at capacity,
+   * the least-recently-used key is evicted. `0` disables the limit.
+   */
+  maxKeys?: number;
+}
+
+/**
+ * Wraps AlgorithmOps with a Map, LRU eviction, and TTL eviction.
+ *
+ * LRU tracking exploits Map's insertion-order guarantee: on every access
+ * the entry is deleted and re-inserted, keeping the least-recently-used
+ * key at the front. Eviction is therefore O(1).
+ */
 function createKeyedAlgorithm<S extends object>(
   ops: AlgorithmOps<S>,
+  options?: KeyedAlgorithmOptions,
 ): KeyedAlgorithm {
+  const maxKeys = options?.maxKeys ?? 0;
   const keys = new Map<string, S & { lastAccess: number }>();
+
+  /** Move `key` to the back of the Map (most-recently-used position). */
+  function touch(key: string, state: S & { lastAccess: number }): void {
+    keys.delete(key);
+    keys.set(key, state);
+  }
 
   function getOrCreate(key: string, now: number): S & { lastAccess: number } {
     let state = keys.get(key);
     if (state === undefined) {
+      if (maxKeys > 0 && keys.size >= maxKeys) {
+        // The first key in the Map is the LRU entry.
+        const lruKey = keys.keys().next().value;
+        if (lruKey !== undefined) keys.delete(lruKey);
+      }
       const base = ops.create(now);
       (base as S & { lastAccess: number }).lastAccess = now;
       state = base as S & { lastAccess: number };
@@ -52,6 +80,7 @@ function createKeyedAlgorithm<S extends object>(
       const state = getOrCreate(key, now);
       ops.advance(state, now);
       state.lastAccess = now;
+      if (maxKeys > 0) touch(key, state);
       const ok = ops.tryConsume(state, cost, now);
       return ops.result(state, ok, cost, now);
     },
@@ -91,13 +120,15 @@ function createKeyedAlgorithm<S extends object>(
  *
  * @param limit Maximum permits per key per window. Must be a positive integer.
  * @param window Window duration in milliseconds. Must be a positive finite number.
+ * @param options Additional keyed algorithm options.
  * @returns A keyed algorithm using fixed-window semantics.
  */
 export function createFixedWindowAlgorithm(
   limit: number,
   window: number,
+  options?: KeyedAlgorithmOptions,
 ): KeyedAlgorithm {
-  return createKeyedAlgorithm(createFixedWindowOps(limit, window));
+  return createKeyedAlgorithm(createFixedWindowOps(limit, window), options);
 }
 
 // --- Sliding Window ---
@@ -108,15 +139,18 @@ export function createFixedWindowAlgorithm(
  * @param limit Maximum permits per key per window. Must be a positive integer.
  * @param window Window duration in milliseconds. Must be a positive finite number.
  * @param segmentsPerWindow Number of segments per window. Must be an integer >= 2.
+ * @param options Additional keyed algorithm options.
  * @returns A keyed algorithm using sliding-window semantics.
  */
 export function createSlidingWindowAlgorithm(
   limit: number,
   window: number,
   segmentsPerWindow: number,
+  options?: KeyedAlgorithmOptions,
 ): KeyedAlgorithm {
   return createKeyedAlgorithm(
     createSlidingWindowOps(limit, window, segmentsPerWindow),
+    options,
   );
 }
 
@@ -128,15 +162,18 @@ export function createSlidingWindowAlgorithm(
  * @param limit Bucket capacity (max tokens per key). Must be a positive integer.
  * @param window Refill cycle duration in milliseconds. Must be a positive finite number.
  * @param tokensPerPeriod Tokens added per replenishment period. Must be a positive integer.
+ * @param options Additional keyed algorithm options.
  * @returns A keyed algorithm using token-bucket semantics.
  */
 export function createTokenBucketAlgorithm(
   limit: number,
   window: number,
   tokensPerPeriod: number,
+  options?: KeyedAlgorithmOptions,
 ): KeyedAlgorithm {
   return createKeyedAlgorithm(
     createTokenBucketOps(limit, window, tokensPerPeriod),
+    options,
   );
 }
 
@@ -147,11 +184,13 @@ export function createTokenBucketAlgorithm(
  *
  * @param limit Maximum permits per key per window. Must be a positive integer.
  * @param window Window (tau) in milliseconds. Must be a positive finite number.
+ * @param options Additional keyed algorithm options.
  * @returns A keyed algorithm using GCRA semantics.
  */
 export function createGcraAlgorithm(
   limit: number,
   window: number,
+  options?: KeyedAlgorithmOptions,
 ): KeyedAlgorithm {
-  return createKeyedAlgorithm(createGcraOps(limit, window));
+  return createKeyedAlgorithm(createGcraOps(limit, window), options);
 }

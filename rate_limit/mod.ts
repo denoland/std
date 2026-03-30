@@ -7,17 +7,20 @@
  *
  * The primary API is {@linkcode createRateLimiter}, a keyed rate limiter for
  * the common case of "allow key X at most N requests per window." It supports
- * fixed-window, sliding-window, token-bucket, and GCRA algorithms. For
- * single-resource limiting, use the primitives: {@linkcode createTokenBucket},
- * {@linkcode createFixedWindow}, and {@linkcode createSlidingWindow}.
+ * fixed-window, sliding-window, token-bucket, and GCRA algorithms and accepts
+ * a pluggable {@linkcode RateLimitStore} backend (in-memory by default).
+ *
+ * For single-resource limiting, use the primitives:
+ * {@linkcode createTokenBucket}, {@linkcode createFixedWindow}, and
+ * {@linkcode createSlidingWindow}.
  *
  * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
  * import { assert } from "@std/assert";
  *
- * using limiter = createRateLimiter({ limit: 100, window: 60_000 });
+ * await using limiter = createRateLimiter({ limit: 100, window: 60_000 });
  *
- * const result = limiter.limit("user:123");
+ * const result = await limiter.limit("user:123");
  * assert(result.ok);
  * ```
  *
@@ -29,3 +32,5 @@ export * from "./token_bucket.ts";
 export * from "./fixed_window.ts";
 export * from "./sliding_window.ts";
 export * from "./rate_limiter.ts";
+export * from "./store_types.ts";
+export * from "./memory_store.ts";

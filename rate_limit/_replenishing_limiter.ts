@@ -96,6 +96,7 @@ export function createReplenishingLimiter(
 
   if (config.autoReplenishment) {
     timer = setInterval(replenishAndDrain, config.replenishmentPeriod);
+    if (typeof Deno !== "undefined") Deno.unrefTimer(timer as number);
   }
 
   function peekNext(): Waiter | undefined {
