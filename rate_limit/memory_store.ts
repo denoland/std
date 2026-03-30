@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import type { RateLimitResult } from "./rate_limiter.ts";
-import type { RateLimitStore } from "./store_types.ts";
+import type { AlgorithmOptions, RateLimitStore } from "./store_types.ts";
 import {
   assertNonNegativeInteger,
   assertPositiveFinite,
@@ -24,29 +24,7 @@ import type {
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface MemoryStoreOptions {
-  /** Maximum permits per key per window/cycle. */
-  limit: number;
-  /** Window duration in milliseconds. */
-  window: number;
-  /**
-   * Algorithm to use.
-   *
-   * @default {"sliding-window"}
-   */
-  algorithm?: "fixed-window" | "sliding-window" | "token-bucket" | "gcra";
-  /**
-   * Number of segments for the sliding window algorithm.
-   *
-   * @default {10}
-   */
-  segmentsPerWindow?: number;
-  /**
-   * For token bucket: tokens added per replenishment period.
-   *
-   * @default {limit}
-   */
-  tokensPerPeriod?: number;
+export interface MemoryStoreOptions extends AlgorithmOptions {
   /**
    * Time-to-live for idle key state in milliseconds. Set to `0` to disable.
    *

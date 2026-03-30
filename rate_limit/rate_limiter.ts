@@ -116,25 +116,15 @@ export type MemoryRateLimiterOptions = MemoryStoreOptions & {
 
 /**
  * Options when providing a custom {@linkcode RateLimitStore} backend.
- * Memory-store options (`limit`, `window`, etc.) are typed as `never`
- * to prevent accidentally passing them alongside a custom store, since
- * the store owns those settings.
+ * {@linkcode MemoryStoreOptions} keys (`limit`, `window`, `algorithm`,
+ * `ttl`, etc.) are typed as `never` to prevent accidentally passing them
+ * alongside a custom store, since the store owns those settings.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export interface StoreRateLimiterOptions {
-  /** The store backend to delegate to. */
-  store: RateLimitStore;
-  limit?: never;
-  window?: never;
-  algorithm?: never;
-  segmentsPerWindow?: never;
-  tokensPerPeriod?: never;
-  evictionTtl?: never;
-  evictionInterval?: never;
-  maxKeys?: never;
-  clock?: never;
-}
+export type StoreRateLimiterOptions =
+  & { /** The store backend to delegate to. */ store: RateLimitStore }
+  & { [K in keyof MemoryStoreOptions]?: never };
 
 /**
  * Options for {@linkcode createRateLimiter}.
