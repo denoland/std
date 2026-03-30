@@ -171,6 +171,13 @@ export class TtlCache<K, V> extends Map<K, V>
       );
     }
 
+    const abs = options?.absoluteExpiration;
+    if (abs !== undefined && (!(abs >= 0) || !Number.isFinite(abs))) {
+      throw new RangeError(
+        `Cannot set entry in TtlCache: absoluteExpiration must be a finite, non-negative number: received ${abs}`,
+      );
+    }
+
     const existing = this.#timeouts.get(key);
     if (existing !== undefined) clearTimeout(existing);
     super.set(key, value);
@@ -178,13 +185,7 @@ export class TtlCache<K, V> extends Map<K, V>
 
     if (this.#slidingExpiration) {
       this.#entryTtls!.set(key, ttl);
-      if (options?.absoluteExpiration !== undefined) {
-        const abs = options.absoluteExpiration;
-        if (!(abs >= 0) || !Number.isFinite(abs)) {
-          throw new RangeError(
-            `Cannot set entry in TtlCache: absoluteExpiration must be a finite, non-negative number: received ${abs}`,
-          );
-        }
+      if (abs !== undefined) {
         this.#absoluteDeadlines!.set(key, Date.now() + abs);
       } else {
         this.#absoluteDeadlines!.delete(key);
@@ -220,6 +221,46 @@ export class TtlCache<K, V> extends Map<K, V>
   override get(key: K): V | undefined {
     if (!super.has(key)) return undefined;
     if (this.#slidingExpiration) this.#resetTtl(key);
+    return super.get(key);
+  }
+
+  /**
+   * Returns the value associated with the given key, or `undefined` if the
+   * key is not present, **without** resetting its TTL.
+   *
+   * This is the TTL-cache equivalent of
+   * {@linkcode LruCache.prototype.peek | LruCache.peek()}: a side-effect-free
+   * read that leaves the entry's expiration unchanged.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param key The key to look up.
+   * @returns The value, or `undefined` if not present.
+   *
+   * @example Peeking at a value without resetting the sliding TTL
+   * ```ts
+   * import { TtlCache } from "@std/cache/ttl-cache";
+   * import { assertEquals } from "@std/assert/equals";
+   * import { FakeTime } from "@std/testing/time";
+   *
+   * using time = new FakeTime(0);
+   * const cache = new TtlCache<string, number>(100, {
+   *   slidingExpiration: true,
+   * });
+   *
+   * cache.set("a", 1);
+   * time.now = 80;
+   *
+   * // peek does not reset the TTL
+   * assertEquals(cache.peek("a"), 1);
+   *
+   * // entry still expires at t=100
+   * time.now = 100;
+   * assertEquals(cache.peek("a"), undefined);
+   * ```
+   */
+  peek(key: K): V | undefined {
+    if (!super.has(key)) return undefined;
     return super.get(key);
   }
 
