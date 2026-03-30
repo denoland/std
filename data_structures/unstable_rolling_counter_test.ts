@@ -202,3 +202,58 @@ Deno.test("RollingCounter handles many rotations without data loss", () => {
   counter.increment(1);
   assertEquals([...counter], [0, 0, 1]);
 });
+
+// -- toJSON / from --
+
+Deno.test("RollingCounter.toJSON() and from() round-trip through JSON", () => {
+  const original = new RollingCounter(4);
+  original.increment(5);
+  original.rotate();
+  original.increment(3);
+  original.rotate();
+  original.increment(7);
+
+  const json = JSON.stringify(original);
+  const restored = RollingCounter.from(JSON.parse(json));
+
+  assertEquals([...restored], [...original]);
+  assertEquals(restored.total, original.total);
+  assertEquals(restored.segmentCount, original.segmentCount);
+});
+
+Deno.test("RollingCounter.from() produces an independent, functional copy", () => {
+  const a = new RollingCounter(3);
+  a.increment(5);
+  a.rotate();
+  a.increment(3);
+
+  const b = RollingCounter.from(a.toJSON());
+  b.rotate();
+  b.increment(7);
+
+  assertEquals(a.total, 8);
+  assertEquals([...a], [0, 5, 3]);
+  assertEquals(b.total, 15);
+  assertEquals([...b], [5, 3, 7]);
+});
+
+Deno.test("RollingCounter.from() with single-segment counter", () => {
+  const restored = RollingCounter.from({ segments: [42] });
+  assertEquals(restored.total, 42);
+  assertEquals(restored.rotate(), 42);
+});
+
+Deno.test("RollingCounter.from() throws on invalid snapshots", () => {
+  assertThrows(() => RollingCounter.from({ segments: [] }), RangeError);
+  // deno-lint-ignore no-explicit-any
+  assertThrows(
+    () => RollingCounter.from({ segments: "no" as any }),
+    RangeError,
+  );
+  for (const bad of [-1, 1.5, NaN, Infinity]) {
+    assertThrows(
+      () => RollingCounter.from({ segments: [0, bad, 0] }),
+      RangeError,
+    );
+  }
+});
