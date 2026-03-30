@@ -62,7 +62,7 @@ jobs:
         if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
