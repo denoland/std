@@ -1,5 +1,4 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-// This module is browser compatible.
 
 /**
  * Rate limiting strategies for controlling how many operations can occur over
@@ -8,7 +7,8 @@
  * The primary API is {@linkcode createRateLimiter}, a keyed rate limiter for
  * the common case of "allow key X at most N requests per window." It supports
  * fixed-window, sliding-window, token-bucket, and GCRA algorithms and accepts
- * a pluggable {@linkcode RateLimitStore} backend (in-memory by default).
+ * a pluggable {@linkcode RateLimitStore} backend (in-memory by default, or
+ * Redis via {@linkcode createRedisStore} for distributed deployments).
  *
  * For single-resource limiting, use the primitives:
  * {@linkcode createTokenBucket}, {@linkcode createFixedWindow}, and
@@ -27,10 +27,11 @@
  * @module
  */
 
-export * from "./types.ts";
-export * from "./token_bucket.ts";
 export * from "./fixed_window.ts";
-export * from "./sliding_window.ts";
-export * from "./rate_limiter.ts";
-export * from "./store_types.ts";
 export * from "./memory_store.ts";
+export * from "./rate_limiter.ts";
+export * from "./redis_store.ts";
+export * from "./sliding_window.ts";
+export * from "./store_types.ts";
+export * from "./token_bucket.ts";
+export * from "./types.ts";

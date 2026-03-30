@@ -12,36 +12,36 @@ import { createSlidingWindow } from "./sliding_window.ts";
 
 // --- Factory validation ---
 
-Deno.test("createSlidingWindow() throws for invalid permitLimit", () => {
+Deno.test("createSlidingWindow() throws for invalid limit", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 0,
+        limit: 0,
         window: 1000,
         segmentsPerWindow: 2,
       }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: -1,
+        limit: -1,
         window: 1000,
         segmentsPerWindow: 2,
       }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 1.5,
+        limit: 1.5,
         window: 1000,
         segmentsPerWindow: 2,
       }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
 });
 
@@ -49,7 +49,7 @@ Deno.test("createSlidingWindow() throws for invalid window", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 0,
         segmentsPerWindow: 2,
       }),
@@ -59,7 +59,7 @@ Deno.test("createSlidingWindow() throws for invalid window", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: -100,
         segmentsPerWindow: 2,
       }),
@@ -72,7 +72,7 @@ Deno.test("createSlidingWindow() throws for invalid segmentsPerWindow", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 1000,
         segmentsPerWindow: 1,
       }),
@@ -82,7 +82,7 @@ Deno.test("createSlidingWindow() throws for invalid segmentsPerWindow", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 1000,
         segmentsPerWindow: 0,
       }),
@@ -92,7 +92,7 @@ Deno.test("createSlidingWindow() throws for invalid segmentsPerWindow", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 1000,
         segmentsPerWindow: 1.5,
       }),
@@ -105,7 +105,7 @@ Deno.test("createSlidingWindow() throws when window is not divisible by segments
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 1000,
         segmentsPerWindow: 3,
       }),
@@ -118,7 +118,7 @@ Deno.test("createSlidingWindow() throws for invalid queueLimit", () => {
   assertThrows(
     () =>
       createSlidingWindow({
-        permitLimit: 10,
+        limit: 10,
         window: 1000,
         segmentsPerWindow: 2,
         queueLimit: -1,
@@ -133,7 +133,7 @@ Deno.test("createSlidingWindow() throws for invalid queueLimit", () => {
 Deno.test("tryAcquire() succeeds within the permit limit", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -148,7 +148,7 @@ Deno.test("tryAcquire() succeeds within the permit limit", () => {
 Deno.test("tryAcquire() acquires multiple permits at once", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -162,7 +162,7 @@ Deno.test("tryAcquire() acquires multiple permits at once", () => {
 Deno.test("tryAcquire() rejects with retryAfter equal to segment duration", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 4,
   });
@@ -177,7 +177,7 @@ Deno.test("tryAcquire() rejects with retryAfter equal to segment duration", () =
 Deno.test("tryAcquire() throws for invalid permits", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -188,10 +188,10 @@ Deno.test("tryAcquire() throws for invalid permits", () => {
   assertThrows(() => limiter.tryAcquire(1.5), RangeError);
 });
 
-Deno.test("tryAcquire() throws when permits exceed permitLimit", () => {
+Deno.test("tryAcquire() throws when permits exceed limit", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -206,7 +206,7 @@ Deno.test("permits consumed in segment 0 free after N segment rotations", () => 
   using time = new FakeTime(0);
   // 4 segments, each 250ms. Full window = 1000ms.
   using limiter = createSlidingWindow({
-    permitLimit: 4,
+    limit: 4,
     window: 1000,
     segmentsPerWindow: 4,
   });
@@ -236,7 +236,7 @@ Deno.test("sliding window prevents boundary burst that fixed window allows", () 
   using time = new FakeTime(0);
   // 2 segments of 500ms each, limit 10.
   using limiter = createSlidingWindow({
-    permitLimit: 10,
+    limit: 10,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -261,7 +261,7 @@ Deno.test("permits spread across segments free incrementally", () => {
   using time = new FakeTime(0);
   // 3 segments of 100ms each, limit 6.
   using limiter = createSlidingWindow({
-    permitLimit: 6,
+    limit: 6,
     window: 300,
     segmentsPerWindow: 3,
   });
@@ -292,7 +292,7 @@ Deno.test("permits spread across segments free incrementally", () => {
 Deno.test("replenish() throws when autoReplenishment is true", () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -307,7 +307,7 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
 
 Deno.test("replenish() rotates a segment when autoReplenishment is false", () => {
   using limiter = createSlidingWindow({
-    permitLimit: 4,
+    limit: 4,
     window: 1000,
     segmentsPerWindow: 4,
     autoReplenishment: false,
@@ -332,7 +332,7 @@ Deno.test("replenish() rotates a segment when autoReplenishment is false", () =>
 Deno.test("acquire() resolves immediately when permits available", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -345,7 +345,7 @@ Deno.test("acquire() resolves immediately when permits available", async () => {
 Deno.test("acquire() returns rejected lease when queue limit is 0", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 0,
@@ -362,7 +362,7 @@ Deno.test("acquire() queues and resolves after segment rotation frees capacity",
   using time = new FakeTime(0);
   // 2 segments of 500ms, limit 1
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 5,
@@ -394,7 +394,7 @@ Deno.test("acquire() queues and resolves after segment rotation frees capacity",
 Deno.test("acquire() rejects when aborted via signal", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 5,
@@ -413,7 +413,7 @@ Deno.test("acquire() rejects when aborted via signal", async () => {
 Deno.test("acquire() rejects when signal is already aborted", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 5,
@@ -433,7 +433,7 @@ Deno.test("acquire() rejects when signal is already aborted", async () => {
 Deno.test("dispose resolves queued waiters with rejected leases", async () => {
   using time = new FakeTime(0);
   const limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 5,
@@ -452,7 +452,7 @@ Deno.test("dispose resolves queued waiters with rejected leases", async () => {
 Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   using time = new FakeTime(0);
   const limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -466,7 +466,7 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
 Deno.test("acquire() rejects after disposal", async () => {
   using time = new FakeTime(0);
   const limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -482,7 +482,7 @@ Deno.test("oldest-first queue resolves waiters in FIFO order", async () => {
   using time = new FakeTime(0);
   // 2 segments of 500ms, limit 1.
   using limiter = createSlidingWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 10,
@@ -514,7 +514,7 @@ Deno.test("newest-first queue resolves newest waiter first", async () => {
   using time = new FakeTime(0);
   // 4 segments of 250ms, limit 2. Two permits available at start.
   using limiter = createSlidingWindow({
-    permitLimit: 2,
+    limit: 2,
     window: 1000,
     segmentsPerWindow: 4,
     queueLimit: 10,
@@ -547,7 +547,7 @@ Deno.test("newest-first queue evicts oldest waiter when queue is full", async ()
   using time = new FakeTime(0);
   // 4 segments of 250ms, limit 3, queue holds 2
   using limiter = createSlidingWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     segmentsPerWindow: 4,
     queueLimit: 2,
@@ -590,7 +590,7 @@ Deno.test("newest-first queue evicts oldest waiter when queue is full", async ()
 Deno.test("acquire() rejects for invalid permits", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -601,10 +601,10 @@ Deno.test("acquire() rejects for invalid permits", async () => {
   await assertRejects(() => limiter.acquire(1.5), RangeError);
 });
 
-Deno.test("acquire() rejects when permits exceed permitLimit", async () => {
+Deno.test("acquire() rejects when permits exceed limit", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });
@@ -619,7 +619,7 @@ Deno.test("single replenishment resolves multiple queued waiters", async () => {
   using time = new FakeTime(0);
   // 2 segments of 500ms, limit 3.
   using limiter = createSlidingWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 10,
@@ -659,7 +659,7 @@ Deno.test("single replenishment resolves multiple queued waiters", async () => {
 Deno.test("acquire() rejects when permits exceed queueLimit even if queue is empty", async () => {
   using time = new FakeTime(0);
   using limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
     queueLimit: 2,
@@ -678,7 +678,7 @@ Deno.test("acquire() rejects when permits exceed queueLimit even if queue is emp
 Deno.test("double dispose is a no-op", () => {
   using time = new FakeTime(0);
   const limiter = createSlidingWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     segmentsPerWindow: 2,
   });

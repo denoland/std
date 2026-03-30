@@ -32,9 +32,11 @@ export interface KeyedAlgorithmOptions {
 /**
  * Wraps AlgorithmOps with a Map, LRU eviction, and TTL eviction.
  *
- * LRU tracking exploits Map's insertion-order guarantee: on every access
+ * LRU tracking exploits Map's insertion-order guarantee: on `limit()`
  * the entry is deleted and re-inserted, keeping the least-recently-used
- * key at the front. Eviction is therefore O(1).
+ * key at the front. `peek()` is read-only and does not promote the key,
+ * so a key that is only peeked can still be evicted. Eviction of the
+ * LRU entry is O(1).
  */
 function createKeyedAlgorithm<S extends object>(
   ops: AlgorithmOps<S>,

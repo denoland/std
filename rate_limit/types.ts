@@ -39,7 +39,12 @@
  * @see {@linkcode createSlidingWindow} for sliding window rate limiting.
  */
 export interface RateLimiter extends Disposable {
-  /** Try to acquire permits synchronously. Never blocks. */
+  /**
+   * Try to acquire permits synchronously. Never blocks.
+   *
+   * @param permits Number of permits to acquire. Defaults to `1`.
+   * @returns A {@linkcode RateLimitLease} indicating success or rejection.
+   */
   tryAcquire(permits?: number): RateLimitLease;
 
   /**
@@ -53,6 +58,10 @@ export interface RateLimiter extends Disposable {
    * rejection) so they can be handled uniformly via the `acquired` field.
    *
    * Rejects with {@linkcode DOMException} if the signal is aborted.
+   *
+   * @param permits Number of permits to acquire. Defaults to `1`.
+   * @param options Acquire options (e.g. abort signal).
+   * @returns A {@linkcode RateLimitLease} indicating success or rejection.
    */
   acquire(
     permits?: number,
@@ -99,7 +108,7 @@ export interface AcquireOptions {
  * import { createTokenBucket } from "@std/rate-limit/token-bucket";
  *
  * using limiter = createTokenBucket({
- *   tokenLimit: 10,
+ *   limit: 10,
  *   tokensPerPeriod: 1,
  *   replenishmentPeriod: 1000,
  * });

@@ -397,12 +397,25 @@ export async function runScript(
 }
 
 export function parseResult(raw: unknown, limit: number): RateLimitResult {
-  const arr = raw as [number, number, string, string, number];
-  return {
-    ok: arr[0] === 1,
-    remaining: Number(arr[1]),
-    resetAt: Number(arr[2]),
-    retryAfter: Number(arr[3]),
-    limit,
-  };
+  if (!Array.isArray(raw) || raw.length < 4) {
+    throw new TypeError(
+      `Cannot parse rate limit result: expected an array of length >= 4, received ${
+        JSON.stringify(raw)
+      }`,
+    );
+  }
+  const ok = raw[0] === 1;
+  const remaining = Number(raw[1]);
+  const resetAt = Number(raw[2]);
+  const retryAfter = Number(raw[3]);
+  if (
+    Number.isNaN(remaining) || Number.isNaN(resetAt) || Number.isNaN(retryAfter)
+  ) {
+    throw new TypeError(
+      `Cannot parse rate limit result: numeric fields contain NaN (remaining=${
+        raw[1]
+      }, resetAt=${raw[2]}, retryAfter=${raw[3]})`,
+    );
+  }
+  return { ok, remaining, resetAt, retryAfter, limit };
 }

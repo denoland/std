@@ -73,6 +73,7 @@ export interface RateLimitStore extends AsyncDisposable {
    * Reset all state for a key, restoring it to full capacity.
    *
    * @param key Identifier for the rate limit subject.
+   * @returns Resolves when the key has been reset.
    */
   reset(key: string): Promise<void>;
 }

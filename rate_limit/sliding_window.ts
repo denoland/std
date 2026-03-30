@@ -17,7 +17,7 @@ import {
  */
 export interface SlidingWindowOptions extends QueueOptions {
   /** Maximum permits across the sliding window. */
-  permitLimit: number;
+  limit: number;
   /** Total window duration in milliseconds. */
   window: number;
   /**
@@ -58,7 +58,7 @@ export interface SlidingWindowOptions extends QueueOptions {
  * import { assert } from "@std/assert";
  *
  * using limiter = createSlidingWindow({
- *   permitLimit: 100,
+ *   limit: 100,
  *   window: 60_000,
  *   segmentsPerWindow: 6,
  * });
@@ -72,7 +72,7 @@ export interface SlidingWindowOptions extends QueueOptions {
  * import { createSlidingWindow } from "@std/rate-limit/sliding-window";
  *
  * using limiter = createSlidingWindow({
- *   permitLimit: 100,
+ *   limit: 100,
  *   window: 60_000,
  *   segmentsPerWindow: 6,
  *   autoReplenishment: false,
@@ -88,7 +88,7 @@ export function createSlidingWindow(
   options: SlidingWindowOptions,
 ): ReplenishingRateLimiter {
   const context = "sliding window";
-  assertPositiveInteger(context, "permitLimit", options.permitLimit);
+  assertPositiveInteger(context, "limit", options.limit);
   assertPositiveFinite(context, "window", options.window);
   if (
     !Number.isInteger(options.segmentsPerWindow) ||
@@ -105,10 +105,10 @@ export function createSlidingWindow(
   }
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
-  const { permitLimit, segmentsPerWindow, window } = options;
+  const { limit, segmentsPerWindow, window } = options;
   const clock = options.clock ?? Date.now;
   const segmentDuration = window / segmentsPerWindow;
-  const ops = createSlidingWindowOps(permitLimit, window, segmentsPerWindow);
+  const ops = createSlidingWindowOps(limit, window, segmentsPerWindow);
   const state = ops.create(clock());
   let lastNow = 0;
 

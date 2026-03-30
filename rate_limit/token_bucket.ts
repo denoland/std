@@ -17,7 +17,7 @@ import {
  */
 export interface TokenBucketOptions extends QueueOptions {
   /** Maximum tokens the bucket can hold. */
-  tokenLimit: number;
+  limit: number;
   /** Tokens added each replenishment period. */
   tokensPerPeriod: number;
   /** Replenishment interval in milliseconds. */
@@ -52,7 +52,7 @@ export interface TokenBucketOptions extends QueueOptions {
  * import { assert } from "@std/assert";
  *
  * using limiter = createTokenBucket({
- *   tokenLimit: 10,
+ *   limit: 10,
  *   tokensPerPeriod: 1,
  *   replenishmentPeriod: 1000,
  * });
@@ -66,7 +66,7 @@ export interface TokenBucketOptions extends QueueOptions {
  * import { createTokenBucket } from "@std/rate-limit/token-bucket";
  *
  * using limiter = createTokenBucket({
- *   tokenLimit: 10,
+ *   limit: 10,
  *   tokensPerPeriod: 5,
  *   replenishmentPeriod: 1000,
  *   autoReplenishment: false,
@@ -82,24 +82,24 @@ export function createTokenBucket(
   options: TokenBucketOptions,
 ): ReplenishingRateLimiter {
   const context = "token bucket";
-  assertPositiveInteger(context, "tokenLimit", options.tokenLimit);
+  assertPositiveInteger(context, "limit", options.limit);
   assertPositiveInteger(context, "tokensPerPeriod", options.tokensPerPeriod);
   assertPositiveFinite(
     context,
     "replenishmentPeriod",
     options.replenishmentPeriod,
   );
-  if (options.tokensPerPeriod > options.tokenLimit) {
+  if (options.tokensPerPeriod > options.limit) {
     throw new RangeError(
-      `Cannot create token bucket: 'tokensPerPeriod' (${options.tokensPerPeriod}) exceeds 'tokenLimit' (${options.tokenLimit})`,
+      `Cannot create token bucket: 'tokensPerPeriod' (${options.tokensPerPeriod}) exceeds 'limit' (${options.limit})`,
     );
   }
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
-  const { tokenLimit, tokensPerPeriod, replenishmentPeriod } = options;
+  const { limit, tokensPerPeriod, replenishmentPeriod } = options;
   const clock = options.clock ?? Date.now;
   const ops = createTokenBucketOps(
-    tokenLimit,
+    limit,
     replenishmentPeriod,
     tokensPerPeriod,
   );

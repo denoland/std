@@ -95,11 +95,17 @@ export interface KeyedRateLimiter extends AsyncDisposable {
    * Check the current state for a key without consuming any permits.
    * Useful for displaying remaining quota in UI or headers without
    * affecting the count.
+   *
+   * @param key Identifier for the rate limit subject (user ID, IP, etc.).
+   * @param options Override cost per request.
+   * @returns A {@linkcode RateLimitResult} with the current state and metadata.
    */
   peek(key: string, options?: CostOptions): Promise<RateLimitResult>;
 
   /**
    * Reset all state for a key, restoring it to full capacity.
+   *
+   * @param key Identifier for the rate limit subject (user ID, IP, etc.).
    */
   reset(key: string): Promise<void>;
 }

@@ -12,52 +12,52 @@ import { createFixedWindow } from "./fixed_window.ts";
 
 // --- Factory validation ---
 
-Deno.test("createFixedWindow() throws for invalid permitLimit", () => {
+Deno.test("createFixedWindow() throws for invalid limit", () => {
   assertThrows(
-    () => createFixedWindow({ permitLimit: 0, window: 1000 }),
+    () => createFixedWindow({ limit: 0, window: 1000 }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: -1, window: 1000 }),
+    () => createFixedWindow({ limit: -1, window: 1000 }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: 1.5, window: 1000 }),
+    () => createFixedWindow({ limit: 1.5, window: 1000 }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: NaN, window: 1000 }),
+    () => createFixedWindow({ limit: NaN, window: 1000 }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: Infinity, window: 1000 }),
+    () => createFixedWindow({ limit: Infinity, window: 1000 }),
     RangeError,
-    "permitLimit",
+    "limit",
   );
 });
 
 Deno.test("createFixedWindow() throws for invalid window", () => {
   assertThrows(
-    () => createFixedWindow({ permitLimit: 10, window: 0 }),
+    () => createFixedWindow({ limit: 10, window: 0 }),
     RangeError,
     "window",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: 10, window: -100 }),
+    () => createFixedWindow({ limit: 10, window: -100 }),
     RangeError,
     "window",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: 10, window: NaN }),
+    () => createFixedWindow({ limit: 10, window: NaN }),
     RangeError,
     "window",
   );
   assertThrows(
-    () => createFixedWindow({ permitLimit: 10, window: Infinity }),
+    () => createFixedWindow({ limit: 10, window: Infinity }),
     RangeError,
     "window",
   );
@@ -65,7 +65,7 @@ Deno.test("createFixedWindow() throws for invalid window", () => {
 
 Deno.test("createFixedWindow() throws for invalid queueLimit", () => {
   assertThrows(
-    () => createFixedWindow({ permitLimit: 10, window: 1000, queueLimit: -1 }),
+    () => createFixedWindow({ limit: 10, window: 1000, queueLimit: -1 }),
     RangeError,
     "queueLimit",
   );
@@ -76,7 +76,7 @@ Deno.test("createFixedWindow() throws for invalid queueLimit", () => {
 Deno.test("tryAcquire() succeeds within the window limit", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
   });
   void time;
@@ -90,7 +90,7 @@ Deno.test("tryAcquire() succeeds within the window limit", () => {
 Deno.test("tryAcquire() acquires multiple permits at once", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
   });
   void time;
@@ -103,7 +103,7 @@ Deno.test("tryAcquire() acquires multiple permits at once", () => {
 Deno.test("tryAcquire() rejects with retryAfter equal to window duration", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 5000,
   });
   void time;
@@ -117,7 +117,7 @@ Deno.test("tryAcquire() rejects with retryAfter equal to window duration", () =>
 Deno.test("tryAcquire() throws for invalid permits", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
   });
   void time;
@@ -127,10 +127,10 @@ Deno.test("tryAcquire() throws for invalid permits", () => {
   assertThrows(() => limiter.tryAcquire(1.5), RangeError);
 });
 
-Deno.test("tryAcquire() throws when permits exceed permitLimit", () => {
+Deno.test("tryAcquire() throws when permits exceed limit", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
   });
   void time;
@@ -142,7 +142,7 @@ Deno.test("tryAcquire() throws when permits exceed permitLimit", () => {
 
 Deno.test("permits reset after the window elapses", () => {
   using time = new FakeTime(0);
-  using limiter = createFixedWindow({ permitLimit: 2, window: 1000 });
+  using limiter = createFixedWindow({ limit: 2, window: 1000 });
 
   limiter.tryAcquire();
   limiter.tryAcquire();
@@ -157,7 +157,7 @@ Deno.test("permits reset after the window elapses", () => {
 
 Deno.test("full permit count is restored each window", () => {
   using time = new FakeTime(0);
-  using limiter = createFixedWindow({ permitLimit: 5, window: 500 });
+  using limiter = createFixedWindow({ limit: 5, window: 500 });
 
   for (let i = 0; i < 5; i++) limiter.tryAcquire();
   assertFalse(limiter.tryAcquire().acquired);
@@ -172,7 +172,7 @@ Deno.test("full permit count is restored each window", () => {
 Deno.test("replenish() throws when autoReplenishment is true", () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
   });
   void time;
@@ -186,7 +186,7 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
 
 Deno.test("replenish() drains queued acquire() waiters", async () => {
   const limiter = createFixedWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     autoReplenishment: false,
     queueLimit: 5,
@@ -213,7 +213,7 @@ Deno.test("replenish() drains queued acquire() waiters", async () => {
 
 Deno.test("replenish() resets the window when autoReplenishment is false", () => {
   const limiter = createFixedWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     autoReplenishment: false,
   });
@@ -233,7 +233,7 @@ Deno.test("replenish() resets the window when autoReplenishment is false", () =>
 
 Deno.test("acquire() resolves immediately when permits available", async () => {
   using time = new FakeTime(0);
-  using limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  using limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   const lease = await limiter.acquire();
@@ -243,7 +243,7 @@ Deno.test("acquire() resolves immediately when permits available", async () => {
 Deno.test("acquire() returns rejected lease when queue limit is 0", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 0,
   });
@@ -258,7 +258,7 @@ Deno.test("acquire() returns rejected lease when queue limit is 0", async () => 
 Deno.test("acquire() queues and resolves after window reset", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 5,
   });
@@ -283,7 +283,7 @@ Deno.test("acquire() queues and resolves after window reset", async () => {
 Deno.test("acquire() rejects when aborted via signal", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 5,
   });
@@ -301,7 +301,7 @@ Deno.test("acquire() rejects when aborted via signal", async () => {
 Deno.test("acquire() rejects when signal is already aborted", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 5,
   });
@@ -318,7 +318,7 @@ Deno.test("acquire() rejects when signal is already aborted", async () => {
 Deno.test("acquire() with already-aborted signal rejects even when permits are available", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 5,
+    limit: 5,
     window: 1000,
     queueLimit: 5,
   });
@@ -338,7 +338,7 @@ Deno.test("acquire() with already-aborted signal rejects even when permits are a
 Deno.test("acquire() with already-aborted signal does not evict queued waiters", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 1,
     queueOrder: "newest-first",
@@ -363,7 +363,7 @@ Deno.test("acquire() with already-aborted signal does not evict queued waiters",
 Deno.test("dispose resolves queued waiters with rejected leases", async () => {
   using time = new FakeTime(0);
   const limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 5,
   });
@@ -380,7 +380,7 @@ Deno.test("dispose resolves queued waiters with rejected leases", async () => {
 
 Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   using time = new FakeTime(0);
-  const limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  const limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   limiter[Symbol.dispose]();
@@ -390,7 +390,7 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
 
 Deno.test("acquire() rejects after disposal", async () => {
   using time = new FakeTime(0);
-  const limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  const limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   limiter[Symbol.dispose]();
@@ -402,7 +402,7 @@ Deno.test("acquire() rejects after disposal", async () => {
 Deno.test("oldest-first queue resolves waiters in FIFO order", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 10,
     queueOrder: "oldest-first",
@@ -431,7 +431,7 @@ Deno.test("oldest-first queue resolves waiters in FIFO order", async () => {
 Deno.test("newest-first queue resolves newest waiter first", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 10,
     queueOrder: "newest-first",
@@ -462,7 +462,7 @@ Deno.test("newest-first queue resolves newest waiter first", async () => {
 Deno.test("newest-first queue evicts oldest waiter when queue is full", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 2,
     queueOrder: "newest-first",
@@ -502,7 +502,7 @@ Deno.test("newest-first queue evicts oldest waiter when queue is full", async ()
 Deno.test("oldest-first queue evicts oldest waiter when queue is full", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 1,
+    limit: 1,
     window: 1000,
     queueLimit: 1,
     queueOrder: "oldest-first",
@@ -534,7 +534,7 @@ Deno.test("oldest-first queue evicts oldest waiter when queue is full", async ()
 Deno.test("acquire() queues multi-permit waiter spanning multiple windows", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 2,
+    limit: 2,
     window: 1000,
     queueLimit: 10,
   });
@@ -561,7 +561,7 @@ Deno.test("acquire() queues multi-permit waiter spanning multiple windows", asyn
 Deno.test("single replenishment resolves multiple queued waiters", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
-    permitLimit: 3,
+    limit: 3,
     window: 1000,
     queueLimit: 10,
   });
@@ -598,7 +598,7 @@ Deno.test("single replenishment resolves multiple queued waiters", async () => {
 
 Deno.test("acquire() rejects for invalid permits", async () => {
   using time = new FakeTime(0);
-  using limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  using limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   await assertRejects(() => limiter.acquire(0), RangeError);
@@ -606,9 +606,9 @@ Deno.test("acquire() rejects for invalid permits", async () => {
   await assertRejects(() => limiter.acquire(1.5), RangeError);
 });
 
-Deno.test("acquire() rejects when permits exceed permitLimit", async () => {
+Deno.test("acquire() rejects when permits exceed limit", async () => {
   using time = new FakeTime(0);
-  using limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  using limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   await assertRejects(() => limiter.acquire(6), RangeError, "exceeds");
@@ -618,7 +618,7 @@ Deno.test("acquire() rejects when permits exceed permitLimit", async () => {
 
 Deno.test("double dispose is a no-op", () => {
   using time = new FakeTime(0);
-  const limiter = createFixedWindow({ permitLimit: 5, window: 1000 });
+  const limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   limiter[Symbol.dispose]();

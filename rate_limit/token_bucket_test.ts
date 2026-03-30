@@ -12,36 +12,36 @@ import { createTokenBucket } from "./token_bucket.ts";
 
 // --- Factory validation ---
 
-Deno.test("createTokenBucket() throws for invalid tokenLimit", () => {
+Deno.test("createTokenBucket() throws for invalid limit", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 0,
+        limit: 0,
         tokensPerPeriod: 1,
         replenishmentPeriod: 1000,
       }),
     RangeError,
-    "tokenLimit",
+    "limit",
   );
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: -1,
+        limit: -1,
         tokensPerPeriod: 1,
         replenishmentPeriod: 1000,
       }),
     RangeError,
-    "tokenLimit",
+    "limit",
   );
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 1.5,
+        limit: 1.5,
         tokensPerPeriod: 1,
         replenishmentPeriod: 1000,
       }),
     RangeError,
-    "tokenLimit",
+    "limit",
   );
 });
 
@@ -49,7 +49,7 @@ Deno.test("createTokenBucket() throws for invalid tokensPerPeriod", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 10,
+        limit: 10,
         tokensPerPeriod: 0,
         replenishmentPeriod: 1000,
       }),
@@ -62,7 +62,7 @@ Deno.test("createTokenBucket() throws for invalid replenishmentPeriod", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 10,
+        limit: 10,
         tokensPerPeriod: 1,
         replenishmentPeriod: 0,
       }),
@@ -72,7 +72,7 @@ Deno.test("createTokenBucket() throws for invalid replenishmentPeriod", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 10,
+        limit: 10,
         tokensPerPeriod: 1,
         replenishmentPeriod: -100,
       }),
@@ -81,11 +81,11 @@ Deno.test("createTokenBucket() throws for invalid replenishmentPeriod", () => {
   );
 });
 
-Deno.test("createTokenBucket() throws when tokensPerPeriod exceeds tokenLimit", () => {
+Deno.test("createTokenBucket() throws when tokensPerPeriod exceeds limit", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 5,
+        limit: 5,
         tokensPerPeriod: 10,
         replenishmentPeriod: 1000,
       }),
@@ -98,7 +98,7 @@ Deno.test("createTokenBucket() throws for invalid queueLimit", () => {
   assertThrows(
     () =>
       createTokenBucket({
-        tokenLimit: 10,
+        limit: 10,
         tokensPerPeriod: 1,
         replenishmentPeriod: 1000,
         queueLimit: -1,
@@ -113,7 +113,7 @@ Deno.test("createTokenBucket() throws for invalid queueLimit", () => {
 Deno.test("tryAcquire() succeeds when tokens are available", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -126,7 +126,7 @@ Deno.test("tryAcquire() succeeds when tokens are available", () => {
 Deno.test("tryAcquire() acquires multiple permits", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -142,7 +142,7 @@ Deno.test("tryAcquire() acquires multiple permits", () => {
 Deno.test("tryAcquire() returns rejected lease when tokens exhausted", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -160,7 +160,7 @@ Deno.test("tryAcquire() returns rejected lease when tokens exhausted", () => {
 Deno.test("tryAcquire() throws for invalid permits", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -171,10 +171,10 @@ Deno.test("tryAcquire() throws for invalid permits", () => {
   assertThrows(() => limiter.tryAcquire(1.5), RangeError);
 });
 
-Deno.test("tryAcquire() throws when permits exceed tokenLimit", () => {
+Deno.test("tryAcquire() throws when permits exceed limit", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -188,7 +188,7 @@ Deno.test("tryAcquire() throws when permits exceed tokenLimit", () => {
 Deno.test("tokens replenish after the configured period", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 2,
+    limit: 2,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -201,10 +201,10 @@ Deno.test("tokens replenish after the configured period", () => {
   assert(limiter.tryAcquire().acquired);
 });
 
-Deno.test("tokens do not exceed tokenLimit after replenishment", () => {
+Deno.test("tokens do not exceed limit after replenishment", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 2,
+    limit: 2,
     tokensPerPeriod: 2,
     replenishmentPeriod: 1000,
   });
@@ -220,7 +220,7 @@ Deno.test("tokens do not exceed tokenLimit after replenishment", () => {
 Deno.test("replenish() throws when autoReplenishment is true", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -235,7 +235,7 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
 
 Deno.test("replenish() replenishes when autoReplenishment is false", () => {
   const limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 2,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
@@ -254,7 +254,7 @@ Deno.test("replenish() replenishes when autoReplenishment is false", () => {
 
 Deno.test("replenish() drains queued acquire() waiters", async () => {
   const limiter = createTokenBucket({
-    tokenLimit: 2,
+    limit: 2,
     tokensPerPeriod: 2,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
@@ -285,7 +285,7 @@ Deno.test("replenish() drains queued acquire() waiters", async () => {
 Deno.test("acquire() resolves immediately when tokens available", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -298,7 +298,7 @@ Deno.test("acquire() resolves immediately when tokens available", async () => {
 Deno.test("acquire() returns rejected lease when queue limit is 0", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 0,
@@ -314,7 +314,7 @@ Deno.test("acquire() returns rejected lease when queue limit is 0", async () => 
 Deno.test("acquire() queues and resolves after replenishment", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 5,
@@ -340,7 +340,7 @@ Deno.test("acquire() queues and resolves after replenishment", async () => {
 Deno.test("acquire() rejects when aborted via signal", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 5,
@@ -359,7 +359,7 @@ Deno.test("acquire() rejects when aborted via signal", async () => {
 Deno.test("acquire() rejects when signal is already aborted", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 5,
@@ -379,7 +379,7 @@ Deno.test("acquire() rejects when signal is already aborted", async () => {
 Deno.test("retryAfter reflects the deficit in tokens", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 10,
+    limit: 10,
     tokensPerPeriod: 2,
     replenishmentPeriod: 500,
   });
@@ -397,7 +397,7 @@ Deno.test("retryAfter reflects the deficit in tokens", () => {
 Deno.test("dispose resolves queued waiters with rejected leases", async () => {
   using time = new FakeTime(0);
   const limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 5,
@@ -416,7 +416,7 @@ Deno.test("dispose resolves queued waiters with rejected leases", async () => {
 Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   using time = new FakeTime(0);
   const limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -430,7 +430,7 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
 Deno.test("acquire() rejects after disposal", async () => {
   using time = new FakeTime(0);
   const limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -445,7 +445,7 @@ Deno.test("acquire() rejects after disposal", async () => {
 Deno.test("oldest-first queue resolves waiters in FIFO order", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 10,
@@ -475,7 +475,7 @@ Deno.test("oldest-first queue resolves waiters in FIFO order", async () => {
 Deno.test("newest-first queue resolves newest waiter first", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 10,
@@ -507,7 +507,7 @@ Deno.test("newest-first queue resolves newest waiter first", async () => {
 Deno.test("acquire() queues multi-permit waiter spanning multiple periods", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 3,
+    limit: 3,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 10,
@@ -543,7 +543,7 @@ Deno.test("acquire() queues multi-permit waiter spanning multiple periods", asyn
 Deno.test("single replenishment resolves multiple queued waiters", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 5,
     replenishmentPeriod: 1000,
     queueLimit: 10,
@@ -582,7 +582,7 @@ Deno.test("single replenishment resolves multiple queued waiters", async () => {
 Deno.test("acquire() rejects for invalid permits", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -593,10 +593,10 @@ Deno.test("acquire() rejects for invalid permits", async () => {
   await assertRejects(() => limiter.acquire(1.5), RangeError);
 });
 
-Deno.test("acquire() rejects when permits exceed tokenLimit", async () => {
+Deno.test("acquire() rejects when permits exceed limit", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -610,7 +610,7 @@ Deno.test("acquire() rejects when permits exceed tokenLimit", async () => {
 Deno.test("acquire() rejects when permits exceed queueLimit even if queue is empty", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 2,
@@ -627,7 +627,7 @@ Deno.test("acquire() rejects when permits exceed queueLimit even if queue is emp
 Deno.test("oldest-first queue evicts oldest waiter when queue is full", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 1,
+    limit: 1,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     queueLimit: 1,
@@ -658,7 +658,7 @@ Deno.test("oldest-first queue evicts oldest waiter when queue is full", async ()
 Deno.test("eviction evicts multiple waiters to make room for a large request", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 3,
+    limit: 3,
     tokensPerPeriod: 3,
     replenishmentPeriod: 1000,
     queueLimit: 3,
@@ -711,7 +711,7 @@ Deno.test("eviction evicts multiple waiters to make room for a large request", a
 
 Deno.test("retryAfter is correct after manual replenish", () => {
   const limiter = createTokenBucket({
-    tokenLimit: 3,
+    limit: 3,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
@@ -734,7 +734,7 @@ Deno.test("retryAfter is correct after manual replenish", () => {
 Deno.test("remaining uses floor when tokens are at integer boundary", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });
@@ -750,7 +750,7 @@ Deno.test("remaining uses floor when tokens are at integer boundary", () => {
 Deno.test("tryAcquire() denied at exact token boundary after partial refill", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 10,
+    limit: 10,
     tokensPerPeriod: 3,
     replenishmentPeriod: 1000,
   });
@@ -774,7 +774,7 @@ Deno.test("tryAcquire() denied at exact token boundary after partial refill", ()
 Deno.test("retryAfter is correct with non-power-of-two tokensPerPeriod", () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
-    tokenLimit: 7,
+    limit: 7,
     tokensPerPeriod: 3,
     replenishmentPeriod: 1000,
   });
@@ -792,7 +792,7 @@ Deno.test("retryAfter is correct with non-power-of-two tokensPerPeriod", () => {
 Deno.test("double dispose is a no-op", () => {
   using time = new FakeTime(0);
   const limiter = createTokenBucket({
-    tokenLimit: 5,
+    limit: 5,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
   });

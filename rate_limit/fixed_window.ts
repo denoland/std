@@ -17,7 +17,7 @@ import {
  */
 export interface FixedWindowOptions extends QueueOptions {
   /** Maximum permits per window. */
-  permitLimit: number;
+  limit: number;
   /** Window duration in milliseconds. */
   window: number;
   /**
@@ -51,7 +51,7 @@ export interface FixedWindowOptions extends QueueOptions {
  * import { assert } from "@std/assert";
  *
  * using limiter = createFixedWindow({
- *   permitLimit: 100,
+ *   limit: 100,
  *   window: 60_000,
  * });
  *
@@ -64,7 +64,7 @@ export interface FixedWindowOptions extends QueueOptions {
  * import { createFixedWindow } from "@std/rate-limit/fixed-window";
  *
  * using limiter = createFixedWindow({
- *   permitLimit: 100,
+ *   limit: 100,
  *   window: 60_000,
  *   autoReplenishment: false,
  * });
@@ -79,13 +79,13 @@ export function createFixedWindow(
   options: FixedWindowOptions,
 ): ReplenishingRateLimiter {
   const context = "fixed window";
-  assertPositiveInteger(context, "permitLimit", options.permitLimit);
+  assertPositiveInteger(context, "limit", options.limit);
   assertPositiveFinite(context, "window", options.window);
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
-  const { permitLimit, window: windowMs } = options;
+  const { limit, window: windowMs } = options;
   const clock = options.clock ?? Date.now;
-  const ops = createFixedWindowOps(permitLimit, windowMs);
+  const ops = createFixedWindowOps(limit, windowMs);
   const state = ops.create(clock());
   let lastNow = 0;
 
