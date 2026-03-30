@@ -243,13 +243,19 @@ Deno.test("RollingCounter.from() with single-segment counter", () => {
   assertEquals(restored.rotate(), 42);
 });
 
-Deno.test("RollingCounter.from() throws on invalid snapshots", () => {
+Deno.test("RollingCounter.from() throws on empty segments", () => {
   assertThrows(() => RollingCounter.from({ segments: [] }), RangeError);
-  // deno-lint-ignore no-explicit-any
+});
+
+Deno.test("RollingCounter.from() throws on non-array segments", () => {
   assertThrows(
+    // deno-lint-ignore no-explicit-any
     () => RollingCounter.from({ segments: "no" as any }),
     RangeError,
   );
+});
+
+Deno.test("RollingCounter.from() throws on invalid segment values", () => {
   for (const bad of [-1, 1.5, NaN, Infinity]) {
     assertThrows(
       () => RollingCounter.from({ segments: [0, bad, 0] }),
