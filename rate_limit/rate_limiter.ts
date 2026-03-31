@@ -1,5 +1,4 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-// This module is browser compatible.
 
 import type { MemoryStoreOptions } from "./memory_store.ts";
 import { createMemoryStore } from "./memory_store.ts";
