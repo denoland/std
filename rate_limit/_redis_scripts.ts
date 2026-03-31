@@ -1,5 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { encodeHex } from "@std/encoding/hex";
 import type { RateLimitResult } from "./rate_limiter.ts";
 import type { RedisConnection, RedisEvalConnection } from "./redis_store.ts";
 
@@ -336,9 +337,7 @@ export function getScripts(algorithm: string): LuaScriptPair {
 export async function sha1Hex(text: string): Promise<string> {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest("SHA-1", data);
-  return [...new Uint8Array(hash)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return encodeHex(hash);
 }
 
 export interface CachedScript {
