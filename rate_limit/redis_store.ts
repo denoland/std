@@ -31,8 +31,11 @@
  * @module
  */
 
-import type { RateLimitResult } from "./rate_limiter.ts";
-import type { AlgorithmOptions, RateLimitStore } from "./store_types.ts";
+import type {
+  AlgorithmOptions,
+  RateLimitResult,
+  RateLimitStore,
+} from "./store_types.ts";
 import { assertPositiveFinite, assertPositiveInteger } from "./_validation.ts";
 import {
   type CachedScript,

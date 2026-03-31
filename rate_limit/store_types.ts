@@ -1,7 +1,38 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import type { RateLimitResult } from "./rate_limiter.ts";
+/**
+ * The result of a rate limit check. All fields are present regardless of
+ * whether the request was allowed.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface RateLimitResult {
+  /** Whether the request is allowed. */
+  readonly ok: boolean;
+  /** Best-effort estimate of remaining permits for this key. */
+  readonly remaining: number;
+  /**
+   * Timestamp (milliseconds since epoch) of the next replenishment event
+   * (segment rotation, window boundary, or refill cycle). This is *not*
+   * necessarily when full capacity is restored — for sliding-window and
+   * token-bucket it may take multiple replenishment cycles. For GCRA this
+   * is the theoretical arrival time (TAT) at which full burst capacity is
+   * restored. Useful for the `X-RateLimit-Reset` HTTP header.
+   */
+  readonly resetAt: number;
+  /**
+   * Minimum retry delay in milliseconds. `0` when the request is allowed.
+   * This is the earliest point at which capacity *may* free up. For
+   * sliding-window, this reflects the next segment rotation and may not
+   * free enough permits for a high-cost request. For token-bucket and GCRA
+   * the value accounts for the requested cost. Useful for the
+   * `Retry-After` HTTP header.
+   */
+  readonly retryAfter: number;
+  /** The limit configured for this limiter. */
+  readonly limit: number;
+}
 
 /**
  * Algorithm configuration shared by all store backends.

@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { encodeHex } from "@std/encoding/hex";
-import type { RateLimitResult } from "./rate_limiter.ts";
+import type { RateLimitResult } from "./store_types.ts";
 import type { RedisConnection, RedisEvalConnection } from "./redis_store.ts";
 
 // --- Lua scripts ---
