@@ -190,17 +190,22 @@ export function createRedisStore(
   let consumeScript: CachedScript | undefined;
   let peekScript: CachedScript | undefined;
   let deleteScript: CachedScript | undefined;
+  let initScripts: Promise<void> | undefined;
 
-  const initScripts = (async () => {
-    const [consumeSha, peekSha, deleteSha] = await Promise.all([
-      sha1Hex(scripts.consume),
-      sha1Hex(scripts.peek),
-      sha1Hex(LUA_DELETE_KEY),
-    ]);
-    consumeScript = { source: scripts.consume, sha: consumeSha };
-    peekScript = { source: scripts.peek, sha: peekSha };
-    deleteScript = { source: LUA_DELETE_KEY, sha: deleteSha };
-  })();
+  function ensureScripts(): Promise<void> {
+    if (initScripts) return initScripts;
+    initScripts = (async () => {
+      const [consumeSha, peekSha, deleteSha] = await Promise.all([
+        sha1Hex(scripts.consume),
+        sha1Hex(scripts.peek),
+        sha1Hex(LUA_DELETE_KEY),
+      ]);
+      consumeScript = { source: scripts.consume, sha: consumeSha };
+      peekScript = { source: scripts.peek, sha: peekSha };
+      deleteScript = { source: LUA_DELETE_KEY, sha: deleteSha };
+    })();
+    return initScripts;
+  }
 
   function redisKey(key: string): string {
     return `${prefix}:${key}`;
@@ -227,7 +232,7 @@ export function createRedisStore(
       return windowMs;
     },
     async consume(key: string, cost: number): Promise<RateLimitResult> {
-      await initScripts;
+      await ensureScripts();
       const args = [...baseArgs];
       args[2] = String(cost);
       const raw = await runScript(
@@ -239,7 +244,7 @@ export function createRedisStore(
       return parseResult(raw, limit);
     },
     async peek(key: string, cost: number): Promise<RateLimitResult> {
-      await initScripts;
+      await ensureScripts();
       const args = [...baseArgs];
       args[2] = String(cost);
       const raw = await runScript(
@@ -251,7 +256,7 @@ export function createRedisStore(
       return parseResult(raw, limit);
     },
     async reset(key: string): Promise<void> {
-      await initScripts;
+      await ensureScripts();
       await runScript(redis, deleteScript!, [redisKey(key)], []);
     },
     [Symbol.asyncDispose](): Promise<void> {
