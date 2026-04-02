@@ -227,4 +227,21 @@ Deno.test("expect().toMatchObject() displays a diff", async (t) => {
       );
     },
   );
+
+  await t.step("omits keys not in expected", () => {
+    const e = assertThrows(
+      () =>
+        expect({ a: 1, b: 2, c: 3, d: { e: 4, f: 5 } }).toMatchObject({
+          a: 1,
+          d: { e: 999 },
+        }),
+      AssertionError,
+    );
+    // The diff should mention the mismatched value
+    assertMatch(e.message, /999/);
+    // The diff should NOT mention keys absent from expected
+    assertNotMatch(e.message, /b:/);
+    assertNotMatch(e.message, /c:/);
+    assertNotMatch(e.message, /f:/);
+  });
 });
