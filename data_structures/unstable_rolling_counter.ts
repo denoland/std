@@ -193,22 +193,69 @@ export class RollingCounter {
         `Cannot rotate RollingCounter: steps must be a non-negative integer, got ${steps}`,
       );
     }
-    const len = this.#segments.length;
+    const segs = this.#segments;
+    const len = segs.length;
     if (steps >= len) {
       const evicted = this.#total;
-      this.#segments.fill(0);
+      segs.fill(0);
       this.#cursor = (this.#cursor + steps) % len;
       this.#total = 0;
       return evicted;
     }
+
+    let pos = this.#cursor + 1;
+    if (pos >= len) pos = 0;
+
     let evicted = 0;
-    for (let i = 0; i < steps; i++) {
-      this.#cursor = (this.#cursor + 1) % len;
-      evicted += this.#segments[this.#cursor]!;
-      this.#segments[this.#cursor] = 0;
+    const end = pos + steps;
+
+    if (end <= len) {
+      for (let i = pos; i < end; i++) {
+        evicted += segs[i]!;
+        segs[i] = 0;
+      }
+    } else {
+      for (let i = pos; i < len; i++) {
+        evicted += segs[i]!;
+        segs[i] = 0;
+      }
+      const wrap = end - len;
+      for (let i = 0; i < wrap; i++) {
+        evicted += segs[i]!;
+        segs[i] = 0;
+      }
     }
+
+    let newCursor = pos + steps - 1;
+    if (newCursor >= len) newCursor -= len;
+    this.#cursor = newCursor;
     this.#total -= evicted;
     return evicted;
+  }
+
+  /**
+   * The count in the current (newest) segment.
+   *
+   * @returns The count in the current segment.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * counter.increment(5);
+   * assertEquals(counter.current, 5);
+   *
+   * counter.rotate();
+   * assertEquals(counter.current, 0);
+   *
+   * counter.increment(3);
+   * assertEquals(counter.current, 3);
+   * ```
+   */
+  get current(): number {
+    return this.#segments[this.#cursor]!;
   }
 
   /**
@@ -296,7 +343,15 @@ export class RollingCounter {
    * ```
    */
   toJSON(): RollingCounterSnapshot {
-    return { segments: [...this] };
+    const segs = this.#segments;
+    const len = segs.length;
+    let start = this.#cursor + 1;
+    if (start >= len) start = 0;
+    const result = new Array<number>(len);
+    const firstLen = len - start;
+    for (let i = 0; i < firstLen; i++) result[i] = segs[start + i]!;
+    for (let i = 0; i < start; i++) result[firstLen + i] = segs[i]!;
+    return { segments: result };
   }
 
   /**
@@ -321,5 +376,26 @@ export class RollingCounter {
     for (let i = 1; i <= len; i++) {
       yield this.#segments[(this.#cursor + i) % len]!;
     }
+  }
+
+  /**
+   * The string tag used by `Object.prototype.toString`.
+   *
+   * @returns `"RollingCounter"`.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * assertEquals(
+   *   Object.prototype.toString.call(counter),
+   *   "[object RollingCounter]",
+   * );
+   * ```
+   */
+  get [Symbol.toStringTag](): string {
+    return "RollingCounter";
   }
 }

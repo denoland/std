@@ -165,6 +165,51 @@ Deno.test("RollingCounter.clear() resets to initial state", () => {
   assertEquals([...counter], [...fresh]);
 });
 
+// -- current --
+
+Deno.test("RollingCounter.current returns the current segment value", () => {
+  const counter = new RollingCounter(3);
+  assertEquals(counter.current, 0);
+
+  counter.increment(5);
+  assertEquals(counter.current, 5);
+
+  counter.rotate();
+  assertEquals(counter.current, 0);
+
+  counter.increment(3);
+  assertEquals(counter.current, 3);
+});
+
+Deno.test("RollingCounter.current is 0 after clear", () => {
+  const counter = new RollingCounter(3);
+  counter.increment(10);
+  counter.clear();
+  assertEquals(counter.current, 0);
+});
+
+Deno.test("RollingCounter.current tracks the newest segment after bulk rotate", () => {
+  const counter = new RollingCounter(3);
+  counter.increment(5);
+  counter.rotate();
+  counter.increment(3);
+  counter.rotate(2);
+  assertEquals(counter.current, 0);
+
+  counter.increment(7);
+  assertEquals(counter.current, 7);
+});
+
+// -- Symbol.toStringTag --
+
+Deno.test("RollingCounter[Symbol.toStringTag] returns 'RollingCounter'", () => {
+  const counter = new RollingCounter(3);
+  assertEquals(
+    Object.prototype.toString.call(counter),
+    "[object RollingCounter]",
+  );
+});
+
 // -- Symbol.iterator --
 
 Deno.test("RollingCounter[Symbol.iterator]() yields segments oldest to newest", () => {
