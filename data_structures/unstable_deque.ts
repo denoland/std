@@ -20,6 +20,7 @@ export type ReadonlyDeque<T> = Pick<
   | "peekFront"
   | "peekBack"
   | "at"
+  | "includes"
   | "find"
   | "findIndex"
   | "toArray"
@@ -43,6 +44,26 @@ function nextPowerOfTwo(n: number): number {
 /**
  * A double-ended queue backed by a ring buffer. Pushing, popping, and indexed
  * access stay fast as the deque grows.
+ *
+ * | Method        | Average Case | Worst Case  |
+ * | ------------- | ------------ | ----------- |
+ * | pushBack()    | O(1)         | O(n) amort. |
+ * | pushFront()   | O(1)         | O(n) amort. |
+ * | popBack()     | O(1)         | O(1)        |
+ * | popFront()    | O(1)         | O(1)        |
+ * | peekFront()   | O(1)         | O(1)        |
+ * | peekBack()    | O(1)         | O(1)        |
+ * | at()          | O(1)         | O(1)        |
+ * | isEmpty()     | O(1)         | O(1)        |
+ * | clear()       | O(1)         | O(1)        |
+ * | removeAt()    | O(n)         | O(n)        |
+ * | removeFirst() | O(n)         | O(n)        |
+ * | includes()    | O(n)         | O(n)        |
+ * | find()        | O(n)         | O(n)        |
+ * | findIndex()   | O(n)         | O(n)        |
+ * | retain()      | O(n)         | O(n)        |
+ * | toArray()     | O(n)         | O(n)        |
+ * | Deque.from()  | O(n)         | O(n)        |
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -206,17 +227,11 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns The new length of the deque.
    */
   pushBack(value: T, ...rest: T[]): number {
-    if (this.#length === this.#capacity) {
-      if (this.#head === 0) this.#growWithoutCopying();
-      else this.#grow();
-    }
+    this.#maybeGrow();
     this.#buffer[(this.#head + this.#length) & this.#mask] = value;
     this.#length++;
     for (let i = 0; i < rest.length; i++) {
-      if (this.#length === this.#capacity) {
-        if (this.#head === 0) this.#growWithoutCopying();
-        else this.#grow();
-      }
+      this.#maybeGrow();
       this.#buffer[(this.#head + this.#length) & this.#mask] = rest[i]!;
       this.#length++;
     }
@@ -246,12 +261,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    */
   pushFront(value: T, ...rest: T[]): number {
     for (let i = rest.length - 1; i >= 0; i--) {
-      if (this.#length === this.#capacity) this.#grow();
+      this.#maybeGrow();
       this.#head = (this.#head - 1) & this.#mask;
       this.#buffer[this.#head] = rest[i]!;
       this.#length++;
     }
-    if (this.#length === this.#capacity) this.#grow();
+    this.#maybeGrow();
     this.#head = (this.#head - 1) & this.#mask;
     this.#buffer[this.#head] = value;
     this.#length++;
@@ -336,19 +351,44 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   removeFirst(predicate: (value: T, index: number) => boolean): T | undefined {
     const i = this.#findIndex(predicate);
     if (i === -1) return undefined;
+    return this.#removeAtUnchecked(i);
+  }
 
-    const val = this.#buffer[(this.#head + i) & this.#mask] as T;
-
-    const closerToFront = i < this.#length - i - 1;
-    if (closerToFront) {
-      this.#closeGapFromFront(i);
-    } else {
-      this.#closeGapFromBack(i);
-    }
-
-    this.#length--;
-    this.#maybeShrink();
-    return val;
+  /**
+   * Remove and return the element at the given index (0-based from front).
+   * Negative indices count from the back (`-1` is the last element). Returns
+   * `undefined` for out-of-range indices. The gap is closed by shifting
+   * whichever side (front or back) has fewer elements to move.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Removing by index
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([10, 20, 30, 40]);
+   * assertEquals(deque.removeAt(1), 20);
+   * assertEquals([...deque], [10, 30, 40]);
+   * ```
+   *
+   * @example Removing with a negative index
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([10, 20, 30, 40]);
+   * assertEquals(deque.removeAt(-1), 40);
+   * assertEquals([...deque], [10, 20, 30]);
+   * ```
+   *
+   * @param index The zero-based index. Negative values count from the back.
+   * @returns The removed element, or `undefined` if the index is out of range.
+   */
+  removeAt(index: number): T | undefined {
+    if (index < 0) index += this.#length;
+    if (index < 0 || index >= this.#length) return undefined;
+    return this.#removeAtUnchecked(index);
   }
 
   /**
@@ -475,6 +515,44 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   }
 
   /**
+   * Check whether the deque contains a value, using
+   * {@link https://tc39.es/ecma262/#sec-samevaluezero | SameValueZero}
+   * comparison (like {@linkcode Array.prototype.includes}).
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Checking for membership
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3]);
+   * assertEquals(deque.includes(2), true);
+   * assertEquals(deque.includes(99), false);
+   * ```
+   *
+   * @example NaN is found (SameValueZero semantics)
+   * ```ts
+   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, NaN, 3]);
+   * assertEquals(deque.includes(NaN), true);
+   * ```
+   *
+   * @param value The value to search for.
+   * @returns `true` if the deque contains the value, otherwise `false`.
+   */
+  includes(value: T): boolean {
+    for (let i = 0; i < this.#length; i++) {
+      const el = this.#buffer[(this.#head + i) & this.#mask];
+      // SameValueZero: === for everything except NaN
+      if (el === value || (el !== el && value !== value)) return true;
+    }
+    return false;
+  }
+
+  /**
    * Remove all elements and release the backing buffer.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
@@ -553,11 +631,15 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns An array containing the deque's elements in order.
    */
   toArray(): T[] {
-    const result = new Array<T>(this.#length);
-    for (let i = 0; i < this.#length; i++) {
-      result[i] = this.#buffer[(this.#head + i) & this.#mask] as T;
+    const len = this.#length;
+    if (len === 0) return [];
+    const head = this.#head;
+    const end = head + len;
+    if (end <= this.#capacity) {
+      return this.#buffer.slice(head, end) as T[];
     }
-    return result;
+    return (this.#buffer.slice(head) as T[])
+      .concat(this.#buffer.slice(0, end - this.#capacity) as T[]);
   }
 
   /**
@@ -655,6 +737,16 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
         return result;
       }
       unmappedValues = collection.toArray();
+    } else if (!options?.map && Array.isArray(collection)) {
+      const len = collection.length;
+      const capacity = nextPowerOfTwo(len);
+      const buf = new Array(capacity);
+      for (let i = 0; i < len; i++) buf[i] = collection[i];
+      result.#buffer = buf as (U | undefined)[];
+      result.#head = 0;
+      result.#length = len;
+      result.#mask = capacity - 1;
+      return result;
     } else {
       unmappedValues = collection;
     }
@@ -691,10 +783,23 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @returns An iterator yielding elements from front to back.
    */
-  *[Symbol.iterator](): IterableIterator<T> {
-    for (let i = 0; i < this.#length; i++) {
-      yield this.#buffer[(this.#head + i) & this.#mask] as T;
-    }
+  [Symbol.iterator](): IterableIterator<T> {
+    let i = 0;
+    const length = this.#length;
+    const buffer = this.#buffer;
+    const head = this.#head;
+    const mask = this.#mask;
+    return {
+      [Symbol.iterator]() {
+        return this;
+      },
+      next(): IteratorResult<T> {
+        if (i < length) {
+          return { value: buffer[(head + i++) & mask] as T, done: false };
+        }
+        return { value: undefined, done: true } as IteratorResult<T>;
+      },
+    };
   }
 
   /**
@@ -713,10 +818,22 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @returns An iterator yielding elements from back to front.
    */
-  *reversed(): IterableIterator<T> {
-    for (let i = this.#length - 1; i >= 0; i--) {
-      yield this.#buffer[(this.#head + i) & this.#mask] as T;
-    }
+  reversed(): IterableIterator<T> {
+    let i = this.#length - 1;
+    const buffer = this.#buffer;
+    const head = this.#head;
+    const mask = this.#mask;
+    return {
+      [Symbol.iterator]() {
+        return this;
+      },
+      next(): IteratorResult<T> {
+        if (i >= 0) {
+          return { value: buffer[(head + i--) & mask] as T, done: false };
+        }
+        return { value: undefined, done: true } as IteratorResult<T>;
+      },
+    };
   }
 
   /**
@@ -735,8 +852,17 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
   static #copyBuffer<T>(source: Deque<T>, capacity: number): (T | undefined)[] {
     const buffer = new Array<T | undefined>(capacity);
-    for (let i = 0; i < source.#length; i++) {
-      buffer[i] = source.#buffer[(source.#head + i) & source.#mask];
+    const head = source.#head;
+    const len = source.#length;
+    const srcBuf = source.#buffer;
+    const end = head + len;
+    if (end <= source.#capacity) {
+      for (let i = 0; i < len; i++) buffer[i] = srcBuf[head + i];
+    } else {
+      const srcCap = source.#capacity;
+      let j = 0;
+      for (let i = head; i < srcCap; i++) buffer[j++] = srcBuf[i];
+      for (let i = 0; j < len; i++) buffer[j++] = srcBuf[i];
     }
     return buffer;
   }
@@ -754,6 +880,19 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
       }
     }
     return -1;
+  }
+
+  /** Extract value, close the gap, update length, and optionally shrink. */
+  #removeAtUnchecked(index: number): T {
+    const val = this.#buffer[(this.#head + index) & this.#mask] as T;
+    if (index < this.#length - index - 1) {
+      this.#closeGapFromFront(index);
+    } else {
+      this.#closeGapFromBack(index);
+    }
+    this.#length--;
+    this.#maybeShrink();
+    return val;
   }
 
   /** Close the gap at `i` by shifting elements before it one slot toward the back. */
@@ -775,6 +914,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
       this.#buffer[dst] = this.#buffer[src];
     }
     this.#buffer[(this.#head + this.#length - 1) & this.#mask] = undefined;
+  }
+
+  #maybeGrow(): void {
+    if (this.#length < this.#capacity) return;
+    if (this.#head === 0) this.#growWithoutCopying();
+    else this.#grow();
   }
 
   #grow(): void {
