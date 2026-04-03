@@ -753,7 +753,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
     const mapped: U[] = options?.map
       ? Array.from(unmappedValues, options.map, options.thisArg)
-      : Array.from(unmappedValues as unknown as Iterable<U>);
+      : Array.from(unmappedValues as ArrayLike<U> & Iterable<U>);
 
     const capacity = nextPowerOfTwo(mapped.length);
     result.#buffer = new Array(capacity);
