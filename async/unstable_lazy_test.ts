@@ -219,6 +219,16 @@ Deno.test("Lazy.get() signal does not affect other callers", async () => {
   assertEquals(lazy.peek(), { ok: true, value: 42 });
 });
 
+Deno.test("Lazy.get() with signal rejects when initializer fails", async () => {
+  const lazy = new Lazy<number>(() => Promise.reject(new Error("boom")));
+  const controller = new AbortController();
+  await assertRejects(
+    () => lazy.get({ signal: controller.signal }),
+    Error,
+    "boom",
+  );
+});
+
 Deno.test("Lazy.get() signal is ignored after successful initialization", async () => {
   const lazy = new Lazy(() => 42);
   await lazy.get();
