@@ -31,7 +31,7 @@ export interface LazyGetOptions {
  * @example Concurrent deduplication
  *
  * ```ts
- * import { Lazy } from "@std/async/lazy";
+ * import { Lazy } from "@std/async/unstable-lazy";
  * import { assertEquals } from "@std/assert";
  *
  * let initCount = 0;
@@ -49,7 +49,7 @@ export interface LazyGetOptions {
  * @example Composing with retry
  *
  * ```ts ignore
- * import { Lazy } from "@std/async/lazy";
+ * import { Lazy } from "@std/async/unstable-lazy";
  * import { retry } from "@std/async/retry";
  *
  * const db = new Lazy(() =>
@@ -88,7 +88,7 @@ export class Lazy<T> {
    *
    * @example Usage
    * ```ts no-assert
-   * import { Lazy } from "@std/async/lazy";
+   * import { Lazy } from "@std/async/unstable-lazy";
    *
    * const config = new Lazy(async () => ({ loaded: true }));
    * const value = await config.get();
@@ -96,7 +96,7 @@ export class Lazy<T> {
    *
    * @example Abort a slow initialization
    * ```ts
-   * import { Lazy } from "@std/async/lazy";
+   * import { Lazy } from "@std/async/unstable-lazy";
    * import { assertRejects } from "@std/assert";
    *
    * const slow = new Lazy(() => new Promise<string>(() => {}));
@@ -164,7 +164,7 @@ export class Lazy<T> {
    *
    * @example Fast-path when already initialized
    * ```ts
-   * import { Lazy } from "@std/async/lazy";
+   * import { Lazy } from "@std/async/unstable-lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const config = new Lazy(async () => ({ port: 8080 }));
@@ -176,7 +176,7 @@ export class Lazy<T> {
    *
    * @example Not yet initialized
    * ```ts
-   * import { Lazy } from "@std/async/lazy";
+   * import { Lazy } from "@std/async/unstable-lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const lazy = new Lazy(() => 42);
@@ -201,7 +201,7 @@ export class Lazy<T> {
    *
    * @example Force reload
    * ```ts ignore
-   * import { Lazy } from "@std/async/lazy";
+   * import { Lazy } from "@std/async/unstable-lazy";
    *
    * const config = new Lazy(async () => loadConfig());
    * await config.get();
