@@ -158,6 +158,28 @@ export class Lazy<T> {
   }
 
   /**
+   * Whether the value has been successfully initialized.
+   *
+   * @example Check initialization state
+   * ```ts
+   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const lazy = new Lazy(() => 42);
+   * assertEquals(lazy.initialized, false);
+   * await lazy.get();
+   * assertEquals(lazy.initialized, true);
+   * ```
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns `true` if the value has been initialized, `false` otherwise.
+   */
+  get initialized(): boolean {
+    return this.#settled;
+  }
+
+  /**
    * Returns the value if already resolved, or indicates that it is not yet
    * available. The discriminated union avoids ambiguity when `T` itself can
    * be `undefined`.

@@ -56,6 +56,39 @@ Deno.test("Lazy.get() propagates rejection to all concurrent callers", async () 
   );
 });
 
+Deno.test("Lazy.initialized reflects lifecycle", async () => {
+  const holder: { resolve: (v: number) => void } = { resolve: () => {} };
+  const lazy = new Lazy<number>(
+    () =>
+      new Promise((res) => {
+        holder.resolve = res;
+      }),
+  );
+
+  assertEquals(lazy.initialized, false);
+
+  const getPromise = lazy.get();
+  await Promise.resolve();
+  assertEquals(lazy.initialized, false);
+
+  holder.resolve(1);
+  await getPromise;
+  assertEquals(lazy.initialized, true);
+
+  lazy.reset();
+  assertEquals(lazy.initialized, false);
+});
+
+Deno.test("Lazy.initialized is false after rejection", async () => {
+  const lazy = new Lazy<number>(() => Promise.reject(new Error("fail")));
+  try {
+    await lazy.get();
+  } catch {
+    // expected
+  }
+  assertEquals(lazy.initialized, false);
+});
+
 Deno.test("Lazy.peek() reflects lifecycle", async () => {
   const holder: { resolve: (v: number) => void } = { resolve: () => {} };
   const lazy = new Lazy<number>(
