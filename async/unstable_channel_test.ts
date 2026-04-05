@@ -412,6 +412,47 @@ Deno.test("Channel.receive() skips cancelled receiver during delivery", async ()
   assertEquals(await p2, 42);
 });
 
+Deno.test("Channel.send() resolves signal-attached sender when receiver arrives", async () => {
+  const ch = new Channel<number>();
+  const controller = new AbortController();
+  const p = ch.send(42, { signal: controller.signal });
+  assertEquals(await ch.receive(), 42);
+  await p;
+  assertFalse(ch.closed);
+});
+
+Deno.test("Channel.receive() resolves signal-attached receiver when sender arrives", async () => {
+  const ch = new Channel<number>();
+  const controller = new AbortController();
+  const p = ch.receive({ signal: controller.signal });
+  await ch.send(99);
+  assertEquals(await p, 99);
+  assertFalse(ch.closed);
+});
+
+Deno.test("Channel.close() skips cancelled sender in drain loop", async () => {
+  const ch = new Channel<number>();
+  const c1 = new AbortController();
+  const p1 = ch.send(1, { signal: c1.signal });
+  const p2 = ch.send(2);
+  c1.abort(new Error("abort-before-close"));
+  await assertRejects(() => p1, Error, "abort-before-close");
+  ch.close();
+  const err = await assertRejects(() => p2, ChannelClosedError);
+  assertEquals(err.value, 2);
+});
+
+Deno.test("Channel.close() skips cancelled receiver in drain loop", async () => {
+  const ch = new Channel<number>();
+  const c1 = new AbortController();
+  const p1 = ch.receive({ signal: c1.signal });
+  const p2 = ch.receive();
+  c1.abort(new Error("abort-before-close"));
+  await assertRejects(() => p1, Error, "abort-before-close");
+  ch.close();
+  await assertRejects(() => p2, ChannelClosedError);
+});
+
 // -- Async iteration --
 
 Deno.test("Channel async iteration drains until closed", async () => {
