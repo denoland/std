@@ -287,6 +287,30 @@ Deno.test("parseCacheControl() return type is CacheControl", () => {
   assertType<IsExact<typeof cc, CacheControl>>(true);
 });
 
+Deno.test("parseCacheControl() splits correctly when quoted values contain escaped quotes", () => {
+  assertEquals(
+    parseCacheControl('no-cache="x-\\"header", max-age=60'),
+    { noCache: ['x-"header'], maxAge: 60 },
+  );
+});
+
+Deno.test("parseCacheControl() normalizes no-cache with empty value to true", () => {
+  assertEquals(parseCacheControl("no-cache="), { noCache: true });
+  assertEquals(parseCacheControl('no-cache=""'), { noCache: true });
+});
+
+Deno.test("parseCacheControl() normalizes private with empty value to true", () => {
+  assertEquals(parseCacheControl("private="), { private: true });
+  assertEquals(parseCacheControl('private=""'), { private: true });
+});
+
+Deno.test("parseCacheControl() round-trips no-cache with empty value", () => {
+  const parsed = parseCacheControl("no-cache=");
+  const formatted = formatCacheControl(parsed);
+  const reparsed = parseCacheControl(formatted);
+  assertEquals(parsed, reparsed);
+});
+
 Deno.test("formatCacheControl() accepts RequestCacheControl and ResponseCacheControl", () => {
   const req: RequestCacheControl = { maxStale: true, noStore: true };
   const res: ResponseCacheControl = { maxAge: 3600, public: true };
@@ -295,7 +319,7 @@ Deno.test("formatCacheControl() accepts RequestCacheControl and ResponseCacheCon
   assertType<
     IsExact<
       Parameters<typeof formatCacheControl>[0],
-      RequestCacheControl | ResponseCacheControl
+      CacheControl
     >
   >(true);
 });

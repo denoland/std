@@ -45,10 +45,8 @@
  * @module
  */
 
-/**
- * Shared Cache-Control directives valid in both request and response.
- */
-export interface CacheControlBase {
+/** Shared Cache-Control directives valid in both request and response. */
+interface CacheControlBase {
   /** When present, the cache must not store the request or response. */
   noStore?: true;
   /** When present, the cache must not transform the payload. */
@@ -58,6 +56,8 @@ export interface CacheControlBase {
    * greater than this. In a response: the response is stale after this many seconds.
    */
   maxAge?: number;
+  /** Allow use of stale response if revalidation fails (seconds). */
+  staleIfError?: number;
 }
 
 /**
@@ -110,20 +110,14 @@ export interface ResponseCacheControl extends CacheControlBase {
   immutable?: true;
   /** Allow use of stale response while revalidating in the background (seconds). */
   staleWhileRevalidate?: number;
-  /** Allow use of stale response if revalidation fails (seconds). */
-  staleIfError?: number;
 }
 
 /**
- * Parsed Cache-Control value. Union of request and response types when direction
- * is unknown (e.g. after parsing a raw header string).
+ * Parsed Cache-Control value. Contains all directives from both request and
+ * response contexts with the widest applicable types. Returned by
+ * {@linkcode parseCacheControl} and accepted by {@linkcode formatCacheControl}.
  */
-export type CacheControl = RequestCacheControl | ResponseCacheControl;
-
-/** Union of every directive field across both interfaces, using the widest type
- * for fields that appear in both (e.g. `noCache` becomes `true | string[]`).
- * Avoids per-field type assertions during parsing and formatting. */
-type AllCacheControlFields = {
+export type CacheControl = {
   [K in keyof RequestCacheControl | keyof ResponseCacheControl]?: K extends
     keyof RequestCacheControl
     ? K extends keyof ResponseCacheControl
@@ -137,9 +131,11 @@ type AllCacheControlFields = {
  * clamped to this sentinel which represents "infinity" (~68 years). */
 const MAX_DELTA_SECONDS = 2_147_483_648; // 2^31
 
+const DIGITS_REGEXP = /^\d+$/;
+
 function parseNonNegativeInt(value: string, directive: string): number {
   const trimmed = value.trim();
-  if (!/^\d+$/.test(trimmed)) {
+  if (!DIGITS_REGEXP.test(trimmed)) {
     throw new SyntaxError(
       `Cache-Control: invalid value for ${directive}: "${value}"`,
     );
@@ -159,7 +155,9 @@ function splitDirectives(value: string): string[] {
   let inQuotes = false;
   for (let i = 0; i < value.length; i++) {
     const c = value.charCodeAt(i);
-    if (c === 34 /* " */) {
+    if (c === 92 /* \ */ && inQuotes) {
+      i++;
+    } else if (c === 34 /* " */) {
       inQuotes = !inQuotes;
     } else if (c === 44 /* , */ && !inQuotes) {
       parts.push(value.slice(start, i));
@@ -204,12 +202,11 @@ function parseFieldNames(value: string): string[] {
  * `max-age=abc`) or a required value is missing (e.g. bare `max-age`).
  */
 export function parseCacheControl(value: string | null): CacheControl {
-  const result: AllCacheControlFields = {};
+  const result: CacheControl = {};
   if (value === null || value.trim() === "") {
     return result as CacheControl;
   }
 
-  const seen = new Set<string>();
   const parts = splitDirectives(value);
   for (const part of parts) {
     const trimmed = part.trim();
@@ -221,12 +218,10 @@ export function parseCacheControl(value: string | null): CacheControl {
     const rawValue = eq === -1 ? undefined : trimmed.slice(eq + 1).trim();
 
     // RFC 9111 §4.2.1: when a directive appears more than once, use the first
-    // occurrence. Track seen directive names to skip subsequent duplicates.
-    if (seen.has(name)) continue;
-    seen.add(name);
-
+    // occurrence. Skip if the property is already set on result.
     switch (name) {
       case "max-age":
+        if (result.maxAge !== undefined) continue;
         if (rawValue === undefined) {
           throw new SyntaxError(
             `Cache-Control: ${name} requires an integer value`,
@@ -235,11 +230,13 @@ export function parseCacheControl(value: string | null): CacheControl {
         result.maxAge = parseNonNegativeInt(rawValue, name);
         break;
       case "max-stale":
+        if (result.maxStale !== undefined) continue;
         result.maxStale = rawValue === undefined
           ? true
           : parseNonNegativeInt(rawValue, name);
         break;
       case "min-fresh":
+        if (result.minFresh !== undefined) continue;
         if (rawValue === undefined) {
           throw new SyntaxError(
             `Cache-Control: ${name} requires an integer value`,
@@ -247,33 +244,47 @@ export function parseCacheControl(value: string | null): CacheControl {
         }
         result.minFresh = parseNonNegativeInt(rawValue, name);
         break;
-      case "no-cache":
-        result.noCache = rawValue === undefined
-          ? true
+      case "no-cache": {
+        if (result.noCache !== undefined) continue;
+        const noCacheFields = rawValue === undefined
+          ? undefined
           : parseFieldNames(rawValue);
+        result.noCache =
+          noCacheFields === undefined || noCacheFields.length === 0
+            ? true
+            : noCacheFields;
         break;
+      }
       case "no-store":
+        if (result.noStore !== undefined) continue;
         result.noStore = true;
         break;
       case "no-transform":
+        if (result.noTransform !== undefined) continue;
         result.noTransform = true;
         break;
       case "only-if-cached":
+        if (result.onlyIfCached !== undefined) continue;
         result.onlyIfCached = true;
         break;
       case "must-revalidate":
+        if (result.mustRevalidate !== undefined) continue;
         result.mustRevalidate = true;
         break;
       case "must-understand":
+        if (result.mustUnderstand !== undefined) continue;
         result.mustUnderstand = true;
         break;
       case "proxy-revalidate":
+        if (result.proxyRevalidate !== undefined) continue;
         result.proxyRevalidate = true;
         break;
       case "public":
+        if (result.public !== undefined) continue;
         result.public = true;
         break;
       case "s-maxage":
+        if (result.sMaxage !== undefined) continue;
         if (rawValue === undefined) {
           throw new SyntaxError(
             `Cache-Control: ${name} requires an integer value`,
@@ -281,15 +292,23 @@ export function parseCacheControl(value: string | null): CacheControl {
         }
         result.sMaxage = parseNonNegativeInt(rawValue, name);
         break;
-      case "private":
-        result.private = rawValue === undefined
-          ? true
+      case "private": {
+        if (result.private !== undefined) continue;
+        const privateFields = rawValue === undefined
+          ? undefined
           : parseFieldNames(rawValue);
+        result.private =
+          privateFields === undefined || privateFields.length === 0
+            ? true
+            : privateFields;
         break;
+      }
       case "immutable":
+        if (result.immutable !== undefined) continue;
         result.immutable = true;
         break;
       case "stale-while-revalidate":
+        if (result.staleWhileRevalidate !== undefined) continue;
         if (rawValue === undefined) {
           throw new SyntaxError(
             `Cache-Control: ${name} requires an integer value`,
@@ -298,6 +317,7 @@ export function parseCacheControl(value: string | null): CacheControl {
         result.staleWhileRevalidate = parseNonNegativeInt(rawValue, name);
         break;
       case "stale-if-error":
+        if (result.staleIfError !== undefined) continue;
         if (rawValue === undefined) {
           throw new SyntaxError(
             `Cache-Control: ${name} requires an integer value`,
@@ -306,7 +326,6 @@ export function parseCacheControl(value: string | null): CacheControl {
         result.staleIfError = parseNonNegativeInt(rawValue, name);
         break;
       default:
-        // Unknown directives are ignored per RFC 9111 §5.2.3.
         continue;
     }
   }
@@ -361,7 +380,7 @@ function append(
  * integer (e.g. `NaN`, `Infinity`, `-1`, or `3.14`).
  */
 export function formatCacheControl(cc: CacheControl): string {
-  const d: AllCacheControlFields = cc;
+  const d: CacheControl = cc;
   const out: string[] = [];
   append(out, "max-age", d.maxAge);
   append(out, "no-cache", d.noCache);
