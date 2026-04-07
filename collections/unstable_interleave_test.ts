@@ -79,3 +79,28 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "interleave() handles non-array iterables",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+    assertEquals(
+      interleave(numbers(), ["a", "b", "c"]),
+      [1, "a", 2, "b", 3, "c"],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles Set iterables",
+  fn() {
+    assertEquals(
+      interleave(new Set([1, 2, 3]), ["a", "b", "c"]),
+      [1, "a", 2, "b", 3, "c"],
+    );
+  },
+});
