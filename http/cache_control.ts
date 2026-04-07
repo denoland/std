@@ -45,8 +45,12 @@
  * @module
  */
 
-/** Shared Cache-Control directives valid in both request and response. */
-interface CacheControlBase {
+/**
+ * Cache-Control directives for requests (e.g. from a client).
+ *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2.1}
+ */
+export interface RequestCacheControl {
   /** When present, the cache must not store the request or response. */
   noStore?: true;
   /** When present, the cache must not transform the payload. */
@@ -58,14 +62,6 @@ interface CacheControlBase {
   maxAge?: number;
   /** Allow use of stale response if revalidation fails (seconds). */
   staleIfError?: number;
-}
-
-/**
- * Cache-Control directives for requests (e.g. from a client).
- *
- * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2.1}
- */
-export interface RequestCacheControl extends CacheControlBase {
   /** When present, the cache must not use a stored response without revalidation. */
   noCache?: true;
   /**
@@ -84,7 +80,18 @@ export interface RequestCacheControl extends CacheControlBase {
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2.2}
  */
-export interface ResponseCacheControl extends CacheControlBase {
+export interface ResponseCacheControl {
+  /** When present, the cache must not store the request or response. */
+  noStore?: true;
+  /** When present, the cache must not transform the payload. */
+  noTransform?: true;
+  /**
+   * Maximum age in seconds. In a request: accept responses whose age is no
+   * greater than this. In a response: the response is stale after this many seconds.
+   */
+  maxAge?: number;
+  /** Allow use of stale response if revalidation fails (seconds). */
+  staleIfError?: number;
   /**
    * When `true`, the response must not be used from cache without revalidation.
    * When an array, only the listed response header fields require revalidation;
