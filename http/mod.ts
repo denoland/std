@@ -40,11 +40,6 @@
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
- * ## Cache-Control
- *
- * {@linkcode parseCacheControl} and {@linkcode formatCacheControl} parse and serialize the
- * `Cache-Control` header per RFC 9111 §5.2.
- *
  * ## User agent handling
  *
  * The {@linkcode UserAgent} class provides user agent string parsing, allowing
@@ -102,7 +97,6 @@
  * @module
  */
 
-export * from "./cache_control.ts";
 export * from "./cookie.ts";
 export * from "./etag.ts";
 export * from "./status.ts";

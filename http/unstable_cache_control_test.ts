@@ -8,7 +8,7 @@ import {
   parseCacheControl,
   type RequestCacheControl,
   type ResponseCacheControl,
-} from "./cache_control.ts";
+} from "./unstable_cache_control.ts";
 
 Deno.test("parseCacheControl() returns empty object for null", () => {
   assertEquals(parseCacheControl(null), {});

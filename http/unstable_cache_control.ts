@@ -10,7 +10,7 @@
  *
  * @example Response with Cache-Control and ETag
  * ```ts ignore
- * import { formatCacheControl } from "@std/http/cache-control";
+ * import { formatCacheControl } from "@std/http/unstable-cache-control";
  * import { eTag } from "@std/http/etag";
  *
  * Deno.serve(async (_req) => {
@@ -29,7 +29,7 @@
  *
  * @example Parse request Cache-Control
  * ```ts ignore
- * import { parseCacheControl } from "@std/http/cache-control";
+ * import { parseCacheControl } from "@std/http/unstable-cache-control";
  *
  * Deno.serve((req) => {
  *   const cc = parseCacheControl(req.headers.get("cache-control"));
@@ -40,6 +40,8 @@
  * });
  * ```
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2}
  *
  * @module
@@ -47,6 +49,8 @@
 
 /**
  * Cache-Control directives for requests (e.g. from a client).
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2.1}
  */
@@ -77,6 +81,8 @@ export interface RequestCacheControl {
 
 /**
  * Cache-Control directives for responses (e.g. from a server).
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2.2}
  */
@@ -123,6 +129,8 @@ export interface ResponseCacheControl {
  * Parsed Cache-Control value. Contains all directives from both request and
  * response contexts with the widest applicable types. Returned by
  * {@linkcode parseCacheControl} and accepted by {@linkcode formatCacheControl}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type CacheControl = {
   [K in keyof RequestCacheControl | keyof ResponseCacheControl]?: K extends
@@ -192,12 +200,14 @@ function parseFieldNames(value: string): string[] {
  * Unknown directives are ignored per RFC 9111. Throws on malformed values for
  * known directives (e.g. `max-age=abc`).
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param value The header value (e.g. `headers.get("cache-control")`).
  * @returns Parsed directives as a union of request/response types.
  *
  * @example Usage
  * ```ts
- * import { parseCacheControl } from "@std/http/cache-control";
+ * import { parseCacheControl } from "@std/http/unstable-cache-control";
  * import { assertEquals } from "@std/assert";
  *
  * const cc = parseCacheControl("max-age=3600, no-store");
@@ -371,12 +381,14 @@ function append(
  * Serializes a Cache-Control object to a header value string. Output is
  * lowercase and comma-separated. Empty object produces an empty string.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * @param cc The Cache-Control object (request or response).
  * @returns The header value string, or empty string if no directives.
  *
  * @example Usage
  * ```ts
- * import { formatCacheControl } from "@std/http/cache-control";
+ * import { formatCacheControl } from "@std/http/unstable-cache-control";
  * import { assertEquals } from "@std/assert";
  *
  * const value = formatCacheControl({ maxAge: 300, mustRevalidate: true });
