@@ -2,18 +2,17 @@
 // This module is browser compatible.
 
 /**
- * Merges multiple iterables into a single array by round-robin picking one
- * element from each source in turn. Unlike {@linkcode zip}, which stops at
- * the shortest array and produces tuples, `interleave` continues through
- * all elements and returns a flat array.
+ * Returns all elements from the given iterables in round-robin order.
+ * Unlike {@linkcode zip}, which stops at the shortest iterable and returns
+ * tuples, `interleave` continues until all input iterables are exhausted and
+ * returns a flat array.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @typeParam T Tuple of element types, one per input iterable; result is
- * `T[number][]`.
+ * @typeParam T The tuple of element types in the input iterables.
  *
  * @param iterables The iterables to interleave.
- * @returns A new array containing elements from all input iterables in
+ * @returns A new array containing all elements from the input iterables in
  * round-robin order.
  *
  * @example Basic usage
@@ -69,6 +68,7 @@ export function interleave<T extends unknown[]>(
 
   const result: T[number][] = new Array(totalLength);
 
+  // Fast path for two arrays
   if (arrayCount === 2) {
     const a = arrays[0]!;
     const b = arrays[1]!;
@@ -86,6 +86,7 @@ export function interleave<T extends unknown[]>(
     return result;
   }
 
+  // Fast path for equal-length arrays
   if (minLength === maxLength) {
     let k = 0;
     for (let i = 0; i < maxLength; ++i) {
@@ -96,6 +97,7 @@ export function interleave<T extends unknown[]>(
     return result;
   }
 
+  // General case
   let k = 0;
   for (let i = 0; i < maxLength; ++i) {
     for (let j = 0; j < arrayCount; ++j) {
