@@ -5,7 +5,7 @@
  * Returns all elements from the given iterables in round-robin order.
  * Unlike {@linkcode zip}, which stops at the shortest iterable and returns
  * tuples, `interleave` continues until all input iterables are exhausted and
- * returns a flat array.
+ * returns a flat array. All input iterables are consumed eagerly.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -86,18 +86,6 @@ export function interleave<T extends unknown[]>(
     return result;
   }
 
-  // Fast path for equal-length arrays
-  if (minLength === maxLength) {
-    let k = 0;
-    for (let i = 0; i < maxLength; ++i) {
-      for (let j = 0; j < arrayCount; ++j) {
-        result[k++] = arrays[j]![i] as T[number];
-      }
-    }
-    return result;
-  }
-
-  // General case
   let k = 0;
   for (let i = 0; i < maxLength; ++i) {
     for (let j = 0; j < arrayCount; ++j) {
