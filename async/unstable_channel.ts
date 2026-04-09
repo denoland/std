@@ -244,6 +244,9 @@ export class Channel<T>
         const onAbort = () => {
           node.cancelled = true;
           rej(signal.reason);
+          while (this.#senders.peekFront()?.cancelled) {
+            this.#senders.popFront();
+          }
         };
         signal.addEventListener("abort", onAbort, { once: true });
         node.res = () => {
@@ -315,6 +318,9 @@ export class Channel<T>
         const onAbort = () => {
           node.cancelled = true;
           rej(signal.reason);
+          while (this.#receivers.peekFront()?.cancelled) {
+            this.#receivers.popFront();
+          }
         };
         signal.addEventListener("abort", onAbort, { once: true });
         node.res = (value: T) => {
