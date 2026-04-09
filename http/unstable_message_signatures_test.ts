@@ -990,6 +990,224 @@ Deno.test("verifyMessage() rejects invalid inputs and malformed headers", async 
 });
 
 // =============================================================================
+// verifyMessage — round-trip with component parameters (;sf, ;key, ;bs, ;name)
+// =============================================================================
+
+Deno.test("verifyMessage() round-trips with ;sf component parameter", async () => {
+  const { privateKey, publicKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", {
+    method: "GET",
+    headers: { "Example-Dict": "a=1, b=2;x=1;y=2, c=(a b c)" },
+  });
+
+  const signed = await signMessage({
+    message: request,
+    params: {
+      components: [
+        "@method",
+        { name: "example-dict", parameters: { sf: true } },
+      ],
+      keyId: "k",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+
+  const results = await verifyMessage(signed, () => publicKey);
+  assertEquals(results.length, 1);
+  const comp = results[0]!.params.components[1]!;
+  assertEquals(comp.name, "example-dict");
+  assertEquals(comp.parameters?.sf, true);
+});
+
+Deno.test("verifyMessage() round-trips with ;key component parameter", async () => {
+  const { privateKey, publicKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", {
+    method: "GET",
+    headers: { "Example-Dict": "a=1, b=2" },
+  });
+
+  const signed = await signMessage({
+    message: request,
+    params: {
+      components: [
+        "@method",
+        { name: "example-dict", parameters: { key: "a" } },
+      ],
+      keyId: "k",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+
+  const results = await verifyMessage(signed, () => publicKey);
+  assertEquals(results.length, 1);
+  const comp = results[0]!.params.components[1]!;
+  assertEquals(comp.parameters?.key, "a");
+});
+
+Deno.test("verifyMessage() round-trips with ;bs component parameter", async () => {
+  const { privateKey, publicKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", {
+    method: "GET",
+    headers: { "X-Value": "some-value" },
+  });
+
+  const signed = await signMessage({
+    message: request,
+    params: {
+      components: [
+        "@method",
+        { name: "x-value", parameters: { bs: true } },
+      ],
+      keyId: "k",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+
+  const results = await verifyMessage(signed, () => publicKey);
+  assertEquals(results.length, 1);
+  const comp = results[0]!.params.components[1]!;
+  assertEquals(comp.parameters?.bs, true);
+});
+
+Deno.test("verifyMessage() round-trips with ;name component parameter (@query-param)", async () => {
+  const { privateKey, publicKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/path?foo=bar", {
+    method: "GET",
+  });
+
+  const signed = await signMessage({
+    message: request,
+    params: {
+      components: [
+        "@method",
+        { name: "@query-param", parameters: { name: "foo" } },
+      ],
+      keyId: "k",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+
+  const results = await verifyMessage(signed, () => publicKey);
+  assertEquals(results.length, 1);
+  const comp = results[0]!.params.components[1]!;
+  assertEquals(comp.parameters?.name, "foo");
+});
+
+// =============================================================================
+// verifyMessage — requiredComponents success path
+// =============================================================================
+
+Deno.test("verifyMessage() passes when all requiredComponents are covered", async () => {
+  const { privateKey, publicKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", { method: "GET" });
+
+  const signed = await signMessage({
+    message: request,
+    params: {
+      components: ["@method", "@authority"],
+      keyId: "k",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+
+  const results = await verifyMessage(signed, () => publicKey, {
+    requiredComponents: ["@method"],
+  });
+  assertEquals(results.length, 1);
+});
+
+// =============================================================================
+// verifyMessage — malformed Signature header values
+// =============================================================================
+
+Deno.test("verifyMessage() rejects Signature member that is not an Item", async () => {
+  await assertRejects(
+    () =>
+      verifyMessage(
+        new Request("https://example.com/", {
+          method: "GET",
+          headers: {
+            "Signature-Input": 'sig=("@method");created=1618884473',
+            "Signature": "sig=(1 2 3)",
+          },
+        }),
+        () => {
+          throw new Error("unreachable");
+        },
+      ),
+    TypeError,
+    "is not an Item",
+  );
+});
+
+Deno.test("verifyMessage() rejects Signature member that is not a Byte Sequence", async () => {
+  await assertRejects(
+    () =>
+      verifyMessage(
+        new Request("https://example.com/", {
+          method: "GET",
+          headers: {
+            "Signature-Input": 'sig=("@method");created=1618884473',
+            "Signature": "sig=42",
+          },
+        }),
+        () => {
+          throw new Error("unreachable");
+        },
+      ),
+    TypeError,
+    "is not a Byte Sequence",
+  );
+});
+
+Deno.test("verifyMessage() parses ;tr parameter then rejects during base construction", async () => {
+  await assertRejects(
+    () =>
+      verifyMessage(
+        new Request("https://example.com/", {
+          method: "GET",
+          headers: {
+            "Example": "value",
+            "Signature-Input":
+              'sig=("example";tr);created=1618884473;keyid="k"',
+            "Signature": "sig=:AAAA:",
+          },
+        }),
+        () => {
+          throw new Error("unreachable");
+        },
+      ),
+    TypeError,
+    "Trailer field resolution",
+  );
+});
+
+Deno.test("verifyMessage() rejects non-string component identifier in Signature-Input", async () => {
+  await assertRejects(
+    () =>
+      verifyMessage(
+        new Request("https://example.com/", {
+          method: "GET",
+          headers: {
+            "Signature-Input": "sig=(42);created=1618884473",
+            "Signature": "sig=:AAAA:",
+          },
+        }),
+        () => {
+          throw new Error("unreachable");
+        },
+      ),
+    TypeError,
+    "is not a String",
+  );
+});
+
+// =============================================================================
 // Response signing with ;req components (end-to-end)
 // =============================================================================
 
