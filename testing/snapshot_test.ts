@@ -26,9 +26,9 @@ function formatTestOutput(string: string) {
 }
 
 function formatTestError(string: string) {
-  // Strip colors and remove "Check file:///workspaces/deno_std/testing/.tmp/test.ts"
+  // Strip colors and remove "Check <path>" lines
   // as this is always output to stderr
-  return stripAnsiCode(string).replace(/^Check file:\/\/(.+)\n/gm, "");
+  return stripAnsiCode(string).replace(/^Check .+\n/gm, "");
 }
 
 function testFnWithTempDir(
