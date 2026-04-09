@@ -73,7 +73,12 @@ Deno.test("RollingCounter.rotate() with steps=0 is a no-op", () => {
   counter.increment(10);
   assertEquals(counter.rotate(0), 0);
   assertEquals(counter.total, 10);
+  assertEquals(counter.current, 10);
   assertEquals([...counter], [0, 0, 10]);
+
+  counter.increment(1);
+  assertEquals(counter.current, 11);
+  assertEquals(counter.total, 11);
 });
 
 Deno.test("RollingCounter.rotate() bulk advances partial window", () => {

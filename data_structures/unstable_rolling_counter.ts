@@ -193,6 +193,7 @@ export class RollingCounter {
         `Cannot rotate RollingCounter: steps must be a non-negative integer, got ${steps}`,
       );
     }
+    if (steps === 0) return 0;
     const segs = this.#segments;
     const len = segs.length;
     if (steps >= len) {
