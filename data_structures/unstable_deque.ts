@@ -631,15 +631,11 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns An array containing the deque's elements in order.
    */
   toArray(): T[] {
-    const len = this.#length;
-    if (len === 0) return [];
-    const head = this.#head;
-    const end = head + len;
-    if (end <= this.#capacity) {
-      return this.#buffer.slice(head, end) as T[];
+    const result = new Array<T>(this.#length);
+    for (let i = 0; i < this.#length; i++) {
+      result[i] = this.#buffer[(this.#head + i) & this.#mask] as T;
     }
-    return (this.#buffer.slice(head) as T[])
-      .concat(this.#buffer.slice(0, end - this.#capacity) as T[]);
+    return result;
   }
 
   /**
@@ -737,16 +733,6 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
         return result;
       }
       unmappedValues = collection.toArray();
-    } else if (!options?.map && Array.isArray(collection)) {
-      const len = collection.length;
-      const capacity = nextPowerOfTwo(len);
-      const buf = new Array(capacity);
-      for (let i = 0; i < len; i++) buf[i] = collection[i];
-      result.#buffer = buf as (U | undefined)[];
-      result.#head = 0;
-      result.#length = len;
-      result.#mask = capacity - 1;
-      return result;
     } else {
       unmappedValues = collection;
     }
@@ -783,23 +769,10 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @returns An iterator yielding elements from front to back.
    */
-  [Symbol.iterator](): IterableIterator<T> {
-    let i = 0;
-    const length = this.#length;
-    const buffer = this.#buffer;
-    const head = this.#head;
-    const mask = this.#mask;
-    return {
-      [Symbol.iterator]() {
-        return this;
-      },
-      next(): IteratorResult<T> {
-        if (i < length) {
-          return { value: buffer[(head + i++) & mask] as T, done: false };
-        }
-        return { value: undefined, done: true } as IteratorResult<T>;
-      },
-    };
+  *[Symbol.iterator](): IterableIterator<T> {
+    for (let i = 0; i < this.#length; i++) {
+      yield this.#buffer[(this.#head + i) & this.#mask] as T;
+    }
   }
 
   /**
@@ -818,22 +791,10 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @returns An iterator yielding elements from back to front.
    */
-  reversed(): IterableIterator<T> {
-    let i = this.#length - 1;
-    const buffer = this.#buffer;
-    const head = this.#head;
-    const mask = this.#mask;
-    return {
-      [Symbol.iterator]() {
-        return this;
-      },
-      next(): IteratorResult<T> {
-        if (i >= 0) {
-          return { value: buffer[(head + i--) & mask] as T, done: false };
-        }
-        return { value: undefined, done: true } as IteratorResult<T>;
-      },
-    };
+  *reversed(): IterableIterator<T> {
+    for (let i = this.#length - 1; i >= 0; i--) {
+      yield this.#buffer[(this.#head + i) & this.#mask] as T;
+    }
   }
 
   /**
@@ -852,17 +813,8 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
   static #copyBuffer<T>(source: Deque<T>, capacity: number): (T | undefined)[] {
     const buffer = new Array<T | undefined>(capacity);
-    const head = source.#head;
-    const len = source.#length;
-    const srcBuf = source.#buffer;
-    const end = head + len;
-    if (end <= source.#capacity) {
-      for (let i = 0; i < len; i++) buffer[i] = srcBuf[head + i];
-    } else {
-      const srcCap = source.#capacity;
-      let j = 0;
-      for (let i = head; i < srcCap; i++) buffer[j++] = srcBuf[i];
-      for (let i = 0; j < len; i++) buffer[j++] = srcBuf[i];
+    for (let i = 0; i < source.#length; i++) {
+      buffer[i] = source.#buffer[(source.#head + i) & source.#mask];
     }
     return buffer;
   }
