@@ -115,6 +115,7 @@ export class Lazy<T> {
    * @returns The cached or newly initialized value.
    */
   get(options?: LazyGetOptions): Promise<T> {
+    if (this.#settled) return Promise.resolve(this.#value as T);
     const signal = options?.signal;
     if (signal?.aborted) return Promise.reject(signal.reason);
 

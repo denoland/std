@@ -265,7 +265,6 @@ Deno.test("Lazy.get() with signal rejects when initializer fails", async () => {
 Deno.test("Lazy.get() signal is ignored after successful initialization", async () => {
   const lazy = new Lazy(() => 42);
   await lazy.get();
-  const controller = new AbortController();
-  const value = await lazy.get({ signal: controller.signal });
+  const value = await lazy.get({ signal: AbortSignal.abort() });
   assertEquals(value, 42);
 });
