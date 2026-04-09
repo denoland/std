@@ -22,6 +22,10 @@ Example
 
 <!-- A clear and concise description of what you expected to happen. -->
 
+**Actual behavior**
+
+<!-- Actual output of the steps, in your environment. -->
+
 **Environment**
 
 <!-- please complete the following information -->
