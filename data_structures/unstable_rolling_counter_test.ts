@@ -271,6 +271,17 @@ Deno.test("RollingCounter.toJSON() and from() round-trip through JSON", () => {
   assertEquals(restored.segmentCount, original.segmentCount);
 });
 
+Deno.test("RollingCounter.toJSON() on a never-rotated counter", () => {
+  const counter = new RollingCounter(3);
+  counter.increment(5);
+  const snapshot = counter.toJSON();
+  assertEquals(snapshot, { segments: [0, 0, 5] });
+
+  const restored = RollingCounter.from(snapshot);
+  assertEquals([...restored], [0, 0, 5]);
+  assertEquals(restored.total, 5);
+});
+
 Deno.test("RollingCounter.from() produces an independent, functional copy", () => {
   const a = new RollingCounter(3);
   a.increment(5);
