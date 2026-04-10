@@ -57,13 +57,11 @@ export function interleave<T extends unknown[]>(
   const arrays = iterables.map((it) => Array.isArray(it) ? it : Array.from(it));
 
   let maxLength = 0;
-  let minLength = Infinity;
   let totalLength = 0;
   for (let i = 0; i < arrayCount; ++i) {
     const len = arrays[i]!.length;
     totalLength += len;
     if (len > maxLength) maxLength = len;
-    if (len < minLength) minLength = len;
   }
 
   const result: T[number][] = new Array(totalLength);
@@ -72,15 +70,16 @@ export function interleave<T extends unknown[]>(
   if (arrayCount === 2) {
     const a = arrays[0]!;
     const b = arrays[1]!;
+    const minLen = Math.min(a.length, b.length);
     let k = 0;
-    for (let i = 0; i < minLength; ++i) {
+    for (let i = 0; i < minLen; ++i) {
       result[k++] = a[i] as T[number];
       result[k++] = b[i] as T[number];
     }
-    for (let i = minLength; i < a.length; ++i) {
+    for (let i = minLen; i < a.length; ++i) {
       result[k++] = a[i] as T[number];
     }
-    for (let i = minLength; i < b.length; ++i) {
+    for (let i = minLen; i < b.length; ++i) {
       result[k++] = b[i] as T[number];
     }
     return result;
