@@ -10,14 +10,12 @@ interface SenderNode<T> {
   value: T;
   res: () => void;
   rej: (reason: unknown) => void;
-  cancelled: boolean;
 }
 
 /** Internal node for the FIFO receiver waiting queue. */
 interface ReceiverNode<T> {
   res: (value: T) => void;
   rej: (reason: unknown) => void;
-  cancelled: boolean;
 }
 
 /**
@@ -237,16 +235,13 @@ export class Channel<T>
     }
 
     return new Promise<void>((res, rej) => {
-      const node: SenderNode<T> = { value, res, rej, cancelled: false };
+      const node: SenderNode<T> = { value, res, rej };
       this.#senders.pushBack(node);
       const signal = options?.signal;
       if (signal) {
         const onAbort = () => {
-          node.cancelled = true;
-          rej(signal.reason);
-          while (this.#senders.peekFront()?.cancelled) {
-            this.#senders.popFront();
-          }
+          this.#senders.removeFirst((n) => n === node);
+          node.rej(signal.reason);
         };
         signal.addEventListener("abort", onAbort, { once: true });
         node.res = () => {
@@ -311,16 +306,13 @@ export class Channel<T>
     }
 
     return new Promise<T>((res, rej) => {
-      const node: ReceiverNode<T> = { res, rej, cancelled: false };
+      const node: ReceiverNode<T> = { res, rej };
       this.#receivers.pushBack(node);
       const signal = options?.signal;
       if (signal) {
         const onAbort = () => {
-          node.cancelled = true;
-          rej(signal.reason);
-          while (this.#receivers.peekFront()?.cancelled) {
-            this.#receivers.popFront();
-          }
+          this.#receivers.removeFirst((n) => n === node);
+          node.rej(signal.reason);
         };
         signal.addEventListener("abort", onAbort, { once: true });
         node.res = (value: T) => {
@@ -442,7 +434,6 @@ export class Channel<T>
 
     let sender: SenderNode<T> | undefined;
     while ((sender = this.#senders.popFront()) !== undefined) {
-      if (sender.cancelled) continue;
       sender.rej(
         new ChannelClosedError(
           "Cannot send to a closed channel",
@@ -453,7 +444,6 @@ export class Channel<T>
 
     let receiver: ReceiverNode<T> | undefined;
     while ((receiver = this.#receivers.popFront()) !== undefined) {
-      if (receiver.cancelled) continue;
       receiver.rej(this.#receiveError());
     }
   }
@@ -631,22 +621,14 @@ export class Channel<T>
     return RESOLVED;
   }
 
-  /** Pops the next non-cancelled sender from the queue. */
+  /** Pops the next sender from the queue. */
   #nextSender(): SenderNode<T> | undefined {
-    let sender: SenderNode<T> | undefined;
-    while ((sender = this.#senders.popFront()) !== undefined) {
-      if (!sender.cancelled) return sender;
-    }
-    return undefined;
+    return this.#senders.popFront();
   }
 
-  /** Pops the next non-cancelled receiver from the queue. */
+  /** Pops the next receiver from the queue. */
   #nextReceiver(): ReceiverNode<T> | undefined {
-    let receiver: ReceiverNode<T> | undefined;
-    while ((receiver = this.#receivers.popFront()) !== undefined) {
-      if (!receiver.cancelled) return receiver;
-    }
-    return undefined;
+    return this.#receivers.popFront();
   }
 
   /** Hands `value` to the next waiting receiver, if any. */

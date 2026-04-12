@@ -390,7 +390,7 @@ Deno.test("Channel.close() rejects signal-attached receiver", async () => {
   await assertRejects(() => p, ChannelClosedError);
 });
 
-Deno.test("Channel.send() skips cancelled sender during delivery", async () => {
+Deno.test("Channel.send() aborted sender is removed so next sender is delivered", async () => {
   const ch = new Channel<number>();
   const c1 = new AbortController();
   const p1 = ch.send(1, { signal: c1.signal });
@@ -401,7 +401,7 @@ Deno.test("Channel.send() skips cancelled sender during delivery", async () => {
   await p2;
 });
 
-Deno.test("Channel.receive() skips cancelled receiver during delivery", async () => {
+Deno.test("Channel.receive() aborted receiver is removed so next receiver is delivered", async () => {
   const ch = new Channel<number>();
   const c1 = new AbortController();
   const p1 = ch.receive({ signal: c1.signal });
@@ -410,6 +410,38 @@ Deno.test("Channel.receive() skips cancelled receiver during delivery", async ()
   await assertRejects(() => p1, Error, "abort1");
   await ch.send(42);
   assertEquals(await p2, 42);
+});
+
+Deno.test("Channel.send() abort eagerly removes middle sender from deque", async () => {
+  const ch = new Channel<number>();
+  const p1 = ch.send(1);
+  const c2 = new AbortController();
+  const p2 = ch.send(2, { signal: c2.signal });
+  const p3 = ch.send(3);
+
+  c2.abort(new Error("abort-middle"));
+  await assertRejects(() => p2, Error, "abort-middle");
+
+  assertEquals(await ch.receive(), 1);
+  await p1;
+  assertEquals(await ch.receive(), 3);
+  await p3;
+});
+
+Deno.test("Channel.receive() abort eagerly removes middle receiver from deque", async () => {
+  const ch = new Channel<number>();
+  const p1 = ch.receive();
+  const c2 = new AbortController();
+  const p2 = ch.receive({ signal: c2.signal });
+  const p3 = ch.receive();
+
+  c2.abort(new Error("abort-middle"));
+  await assertRejects(() => p2, Error, "abort-middle");
+
+  await ch.send(10);
+  assertEquals(await p1, 10);
+  await ch.send(30);
+  assertEquals(await p3, 30);
 });
 
 Deno.test("Channel.send() resolves signal-attached sender when receiver arrives", async () => {
@@ -430,7 +462,7 @@ Deno.test("Channel.receive() resolves signal-attached receiver when sender arriv
   assertFalse(ch.closed);
 });
 
-Deno.test("Channel.close() skips cancelled sender in drain loop", async () => {
+Deno.test("Channel.close() does not see previously aborted sender", async () => {
   const ch = new Channel<number>();
   const c1 = new AbortController();
   const p1 = ch.send(1, { signal: c1.signal });
@@ -442,7 +474,7 @@ Deno.test("Channel.close() skips cancelled sender in drain loop", async () => {
   assertEquals(err.value, 2);
 });
 
-Deno.test("Channel.close() skips cancelled receiver in drain loop", async () => {
+Deno.test("Channel.close() does not see previously aborted receiver", async () => {
   const ch = new Channel<number>();
   const c1 = new AbortController();
   const p1 = ch.receive({ signal: c1.signal });
