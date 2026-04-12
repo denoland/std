@@ -1,6 +1,6 @@
 {
   "name": "@std/data-structures",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "exports": {
     ".": "./mod.ts",
     "./unstable-bidirectional-map": "./unstable_bidirectional_map.ts",
@@ -11,6 +11,6 @@
     "./red-black-tree": "./red_black_tree.ts",
     "./unstable-2d-array": "./unstable_2d_array.ts",
     "./unstable-rolling-counter": "./unstable_rolling_counter.ts",
-    "./unstable-deque": "./unstable_deque.ts"
+    "./deque": "./deque.ts"
   }
 }
