@@ -42,6 +42,13 @@
  * );
  * ```
  *
+ * Note: The `;bs` (Binary-wrapped Structured Field) parameter relies on
+ * splitting header values by `", "` because the Fetch API `Headers.get()`
+ * joins multiple values with this separator and does not expose `getAll()`.
+ * This means `;bs` will produce incorrect results for headers whose single
+ * value contains a literal `", "` (e.g. the `Date` header). Avoid using `;bs`
+ * on such fields; prefer `;sf` where the field is a known Structured Field.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
@@ -104,7 +111,13 @@ export interface ComponentParameters {
   sf?: true;
   /** Dictionary member key. */
   key?: string;
-  /** Binary-wrapped field values. */
+  /**
+   * Binary-wrapped field values. Each field value is individually wrapped as
+   * a Byte Sequence. Because the Fetch API `Headers.get()` joins multiple
+   * values with `", "`, this flag will produce incorrect results for headers
+   * whose single value contains a literal `", "` (e.g. `Date`). Avoid using
+   * `;bs` on such fields.
+   */
   bs?: true;
   /** Derive value from the related request. */
   req?: true;
@@ -297,8 +310,9 @@ function inferAlgorithm(key: CryptoKey): SignatureAlgorithm {
   if (name === "RSASSA-PKCS1-v1_5") return "rsa-v1_5-sha256";
   if (name === "ECDSA") {
     const curve = (alg as EcKeyAlgorithm).namedCurve;
+    if (curve === "P-256") return "ecdsa-p256-sha256";
     if (curve === "P-384") return "ecdsa-p384-sha384";
-    return "ecdsa-p256-sha256";
+    throw new TypeError(`Unsupported ECDSA curve: "${curve}"`);
   }
   throw new TypeError(`Cannot infer signature algorithm from key: "${name}"`);
 }
@@ -440,6 +454,8 @@ function resolveRequestDerived(
           `Query parameter "${params.name}" not found in request URL`,
         );
       }
+      // RFC 9421 section 2.2.8: "If a parameter name occurs multiple times
+      // in a request, the named query parameter MUST NOT be included."
       if (values.length > 1) {
         throw new TypeError(
           `Query parameter "${params.name}" occurs multiple times`,

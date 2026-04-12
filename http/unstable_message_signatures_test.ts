@@ -671,6 +671,24 @@ Deno.test("signMessage() rejects invalid params", async () => {
     RangeError,
     "expires must be a non-negative integer",
   );
+
+  // Unsupported ECDSA curve
+  const fakeKey = {
+    algorithm: { name: "ECDSA", namedCurve: "P-521" },
+    type: "private",
+    extractable: false,
+    usages: ["sign"],
+  } as unknown as CryptoKey;
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: fakeKey,
+      }),
+    TypeError,
+    'Unsupported ECDSA curve: "P-521"',
+  );
 });
 
 // =============================================================================
