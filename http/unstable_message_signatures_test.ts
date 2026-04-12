@@ -743,6 +743,24 @@ Deno.test("signMessage() rejects invalid params", async () => {
     TypeError,
     'Unsupported RSASSA-PKCS1-v1_5 hash: "SHA-512"',
   );
+
+  // Completely unknown algorithm name
+  const fakeUnknownKey = {
+    algorithm: { name: "X-Custom" },
+    type: "private",
+    extractable: false,
+    usages: ["sign"],
+  } as unknown as CryptoKey;
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: fakeUnknownKey,
+      }),
+    TypeError,
+    'Cannot infer signature algorithm from key: "X-Custom"',
+  );
 });
 
 // =============================================================================
