@@ -14,7 +14,7 @@
     "@std/collections": "jsr:@std/collections@^1.1.6",
     "@std/crypto": "jsr:@std/crypto@^1.0.5",
     "@std/csv": "jsr:@std/csv@^1.0.6",
-    "@std/data-structures": "jsr:@std/data-structures@^1.0.10",
+    "@std/data-structures": "jsr:@std/data-structures@^1.1.0",
     "@std/datetime": "jsr:@std/datetime@^0.225.7",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.6",
     "@std/encoding": "jsr:@std/encoding@^1.0.10",
