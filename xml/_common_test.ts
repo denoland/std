@@ -2,8 +2,11 @@
 
 import { assertEquals } from "@std/assert";
 import {
+  isIllegalXmlLiteralChar,
+  LINE_ENDING_REGEXP,
   parseName,
   validateNamespaceBinding,
+  validatePubidLiteral,
   validateQName,
   validateXmlDeclaration,
 } from "./_common.ts";
@@ -57,6 +60,14 @@ Deno.test("validateXmlDeclaration() accepts single-quoted values", () => {
   if (result.valid) {
     assertEquals(result.version, "1.0");
     assertEquals(result.encoding, "UTF-8");
+  }
+});
+
+Deno.test("validateXmlDeclaration() accepts trailing whitespace", () => {
+  const result = validateXmlDeclaration('version="1.0"   ');
+  assertEquals(result.valid, true);
+  if (result.valid) {
+    assertEquals(result.version, "1.0");
   }
 });
 
@@ -352,22 +363,30 @@ Deno.test("validateQName() rejects multiple colons", () => {
 // =============================================================================
 
 Deno.test("validateNamespaceBinding() accepts default namespace declaration", () => {
-  const error = validateNamespaceBinding("xmlns", "http://example.com");
+  const error = validateNamespaceBinding("xmlns", "http://example.com", false);
   assertEquals(error, null);
 });
 
 Deno.test("validateNamespaceBinding() accepts prefixed namespace declaration", () => {
-  const error = validateNamespaceBinding("xmlns:ns", "http://example.com");
+  const error = validateNamespaceBinding(
+    "xmlns:ns",
+    "http://example.com",
+    false,
+  );
   assertEquals(error, null);
 });
 
 Deno.test("validateNamespaceBinding() rejects empty prefix after xmlns:", () => {
-  const error = validateNamespaceBinding("xmlns:", "http://example.com");
+  const error = validateNamespaceBinding(
+    "xmlns:",
+    "http://example.com",
+    false,
+  );
   assertEquals(error, "Cannot have empty namespace prefix after 'xmlns:'");
 });
 
 Deno.test("validateNamespaceBinding() rejects prefix unbinding (empty URI)", () => {
-  const error = validateNamespaceBinding("xmlns:ns", "");
+  const error = validateNamespaceBinding("xmlns:ns", "", false);
   assertEquals(
     error,
     "Cannot unbind namespace prefix (empty URI) in Namespaces 1.0",
@@ -375,17 +394,25 @@ Deno.test("validateNamespaceBinding() rejects prefix unbinding (empty URI)", () 
 });
 
 Deno.test("validateNamespaceBinding() allows empty default namespace", () => {
-  const error = validateNamespaceBinding("xmlns", "");
+  const error = validateNamespaceBinding("xmlns", "", false);
   assertEquals(error, null);
 });
 
 Deno.test("validateNamespaceBinding() rejects xmlns prefix declaration", () => {
-  const error = validateNamespaceBinding("xmlns:xmlns", "http://example.com");
+  const error = validateNamespaceBinding(
+    "xmlns:xmlns",
+    "http://example.com",
+    false,
+  );
   assertEquals(error, "Cannot declare the 'xmlns' prefix");
 });
 
 Deno.test("validateNamespaceBinding() rejects wrong URI for xml prefix", () => {
-  const error = validateNamespaceBinding("xmlns:xml", "http://wrong.uri");
+  const error = validateNamespaceBinding(
+    "xmlns:xml",
+    "http://wrong.uri",
+    false,
+  );
   assertEquals(
     error,
     "Cannot bind 'xml' prefix to 'http://wrong.uri': must use 'http://www.w3.org/XML/1998/namespace'",
@@ -396,6 +423,7 @@ Deno.test("validateNamespaceBinding() accepts correct xml prefix binding", () =>
   const error = validateNamespaceBinding(
     "xmlns:xml",
     "http://www.w3.org/XML/1998/namespace",
+    false,
   );
   assertEquals(error, null);
 });
@@ -404,6 +432,7 @@ Deno.test("validateNamespaceBinding() rejects xml namespace URI for non-xml pref
   const error = validateNamespaceBinding(
     "xmlns:other",
     "http://www.w3.org/XML/1998/namespace",
+    false,
   );
   assertEquals(
     error,
@@ -415,6 +444,7 @@ Deno.test("validateNamespaceBinding() rejects binding to xmlns namespace", () =>
   const error = validateNamespaceBinding(
     "xmlns:ns",
     "http://www.w3.org/2000/xmlns/",
+    false,
   );
   assertEquals(
     error,
@@ -426,6 +456,7 @@ Deno.test("validateNamespaceBinding() rejects xml namespace as default", () => {
   const error = validateNamespaceBinding(
     "xmlns",
     "http://www.w3.org/XML/1998/namespace",
+    false,
   );
   assertEquals(
     error,
@@ -437,6 +468,7 @@ Deno.test("validateNamespaceBinding() rejects xmlns namespace as default", () =>
   const error = validateNamespaceBinding(
     "xmlns",
     "http://www.w3.org/2000/xmlns/",
+    false,
   );
   // The general "Cannot bind any prefix" check comes first
   assertEquals(
@@ -594,4 +626,180 @@ Deno.test("isReservedPiTarget() returns false for other targets", () => {
   assertEquals(isReservedPiTarget("xmlfoo"), false); // starts with xml but longer
   assertEquals(isReservedPiTarget("xm"), false); // too short
   assertEquals(isReservedPiTarget(""), false);
+});
+
+// =============================================================================
+// XML 1.1 Namespace Unbinding Tests
+// =============================================================================
+
+Deno.test("validateNamespaceBinding() xml11 allows prefix unbinding", () => {
+  const error = validateNamespaceBinding("xmlns:ns", "", true);
+  assertEquals(error, null);
+});
+
+Deno.test("validateNamespaceBinding() xml11 still rejects xmlns prefix declaration", () => {
+  const error = validateNamespaceBinding(
+    "xmlns:xmlns",
+    "http://example.com",
+    true,
+  );
+  assertEquals(typeof error, "string");
+});
+
+Deno.test("validateNamespaceBinding() xml11 still validates xml prefix binding", () => {
+  const error = validateNamespaceBinding(
+    "xmlns:xml",
+    "http://wrong.example.com",
+    true,
+  );
+  assertEquals(typeof error, "string");
+});
+
+// =============================================================================
+// LINE_ENDING_REGEXP Tests
+// =============================================================================
+
+Deno.test("LINE_ENDING_REGEXP 1.0 normalizes \\r\\n to \\n", () => {
+  assertEquals("a\r\nb".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.0 normalizes standalone \\r to \\n", () => {
+  assertEquals("a\rb".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.0 does not normalize NEL or LS", () => {
+  assertEquals("a\x85b".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\x85b");
+  assertEquals("a\u2028b".replace(LINE_ENDING_REGEXP["1.0"], "\n"), "a\u2028b");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes \\r\\n to \\n", () => {
+  assertEquals("a\r\nb".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes standalone \\r to \\n", () => {
+  assertEquals("a\rb".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes NEL to \\n", () => {
+  assertEquals("a\x85b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes \\r\\x85 to single \\n", () => {
+  assertEquals("a\r\x85b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+Deno.test("LINE_ENDING_REGEXP 1.1 normalizes LS (U+2028) to \\n", () => {
+  assertEquals("a\u2028b".replace(LINE_ENDING_REGEXP["1.1"], "\n"), "a\nb");
+});
+
+// =============================================================================
+// validatePubidLiteral Tests
+// =============================================================================
+
+Deno.test("validatePubidLiteral() accepts valid characters", () => {
+  assertEquals(
+    validatePubidLiteral("-//OASIS//DTD DocBook V4.5//EN", '"'),
+    null,
+  );
+});
+
+Deno.test("validatePubidLiteral() accepts empty string", () => {
+  assertEquals(validatePubidLiteral("", '"'), null);
+});
+
+Deno.test("validatePubidLiteral() accepts all special PubidChars", () => {
+  assertEquals(
+    validatePubidLiteral("-()+,./:=?;!*#@$_%", '"'),
+    null,
+  );
+});
+
+Deno.test("validatePubidLiteral() accepts single quote inside double-quoted literal", () => {
+  assertEquals(validatePubidLiteral("it's", '"'), null);
+});
+
+Deno.test("validatePubidLiteral() rejects single quote inside single-quoted literal", () => {
+  const error = validatePubidLiteral("it's", "'");
+  assertEquals(typeof error, "string");
+});
+
+Deno.test("validatePubidLiteral() rejects invalid character", () => {
+  const error = validatePubidLiteral("hello\x7F", '"');
+  assertEquals(typeof error, "string");
+});
+
+// =============================================================================
+// isIllegalXmlLiteralChar Tests
+// =============================================================================
+
+Deno.test("isIllegalXmlLiteralChar() xml10 rejects NULL", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x00, false), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml10 rejects C0 controls except TAB/LF/CR", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x01, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0x08, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0B, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0C, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0E, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0x1F, false), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml10 allows TAB, LF, CR", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x09, false), false);
+  assertEquals(isIllegalXmlLiteralChar(0x0A, false), false);
+  assertEquals(isIllegalXmlLiteralChar(0x0D, false), false);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml10 rejects noncharacters", () => {
+  assertEquals(isIllegalXmlLiteralChar(0xFFFE, false), true);
+  assertEquals(isIllegalXmlLiteralChar(0xFFFF, false), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml10 allows normal characters", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x20, false), false);
+  assertEquals(isIllegalXmlLiteralChar(0x41, false), false);
+  assertEquals(isIllegalXmlLiteralChar(0x7F, false), false);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 rejects NULL", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x00, true), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 restricts C0 controls (literal only)", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x01, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x08, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0B, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0C, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x0E, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x1F, true), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 allows TAB, LF, CR", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x09, true), false);
+  assertEquals(isIllegalXmlLiteralChar(0x0A, true), false);
+  assertEquals(isIllegalXmlLiteralChar(0x0D, true), false);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 restricts C1 controls except NEL", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x7F, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x80, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x84, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x86, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0x9F, true), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 allows NEL (U+0085)", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x85, true), false);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 rejects noncharacters", () => {
+  assertEquals(isIllegalXmlLiteralChar(0xFFFE, true), true);
+  assertEquals(isIllegalXmlLiteralChar(0xFFFF, true), true);
+});
+
+Deno.test("isIllegalXmlLiteralChar() xml11 allows normal characters", () => {
+  assertEquals(isIllegalXmlLiteralChar(0x20, true), false);
+  assertEquals(isIllegalXmlLiteralChar(0x41, true), false);
+  assertEquals(isIllegalXmlLiteralChar(0xA0, true), false);
 });

@@ -16,8 +16,10 @@ import {
   type XmlTokenCallbacks,
 } from "./types.ts";
 import {
+  isIllegalXmlLiteralChar,
   isReservedPiTarget,
   LINE_ENDING_REGEXP,
+  validatePubidLiteral,
   validateXmlDeclaration,
 } from "./_common.ts";
 import { isNameChar, isNameStartChar } from "./_name_chars.ts";
@@ -31,10 +33,23 @@ interface XmlTokenizerOptions {
    * @default {true}
    */
   readonly trackPosition?: boolean;
+
+  /**
+   * If true, reject DOCTYPE declarations immediately.
+   *
+   * @default {false}
+   */
+  readonly disallowDoctype?: boolean;
+
+  /**
+   * If true, apply XML 1.1 character and line-ending rules.
+   */
+  readonly xml11?: boolean;
 }
 
 /** Tokenizer state machine states. */
 const State = {
+  // --- Hot: text content and element tags ---
   /** Waiting for < or text content */
   INITIAL: 0,
   /** Just saw <, determining tag type */
@@ -55,6 +70,16 @@ const State = {
   ATTRIBUTE_VALUE_DOUBLE: 8,
   /** Reading attribute value (single quoted) */
   ATTRIBUTE_VALUE_SINGLE: 9,
+
+  // --- Warm: markup transitions and self-closing ---
+  /** After <! */
+  MARKUP_DECLARATION: 14,
+  /** After </element name, expecting > */
+  AFTER_END_TAG_NAME: 17,
+  /** After / in start tag, expecting > for self-closing */
+  EXPECT_SELF_CLOSE_GT: 28,
+
+  // --- Cold: CDATA, comments, PIs ---
   /** Inside <![CDATA[...]]> */
   CDATA: 10,
   /** Inside <!--...--> */
@@ -63,14 +88,24 @@ const State = {
   PI_TARGET: 12,
   /** Reading PI content */
   PI_CONTENT: 13,
-  /** After <! */
-  MARKUP_DECLARATION: 14,
   /** After <!- */
   COMMENT_START: 15,
   /** After <![, expecting CDATA[ */
   CDATA_START: 16,
-  /** After </element name, expecting > */
-  AFTER_END_TAG_NAME: 17,
+  /** Inside comment, seen one - */
+  COMMENT_DASH: 29,
+  /** Inside comment, seen -- (expecting > or spec violation) */
+  COMMENT_DASH_DASH: 30,
+  /** Inside CDATA, seen one ] */
+  CDATA_BRACKET: 31,
+  /** Inside CDATA, seen ]] */
+  CDATA_BRACKET_BRACKET: 32,
+  /** Inside PI target, seen ? (expecting > for empty PI) */
+  PI_TARGET_QUESTION: 33,
+  /** Inside PI content, seen ? */
+  PI_QUESTION: 34,
+
+  // --- Coldest: DOCTYPE and DTD ---
   /** Reading <!DOCTYPE */
   DOCTYPE_START: 18,
   /** Reading DOCTYPE name */
@@ -91,20 +126,6 @@ const State = {
   DOCTYPE_INTERNAL_SUBSET: 26,
   /** Inside quoted string in internal subset */
   DOCTYPE_INTERNAL_SUBSET_STRING: 27,
-  /** After / in start tag, expecting > for self-closing */
-  EXPECT_SELF_CLOSE_GT: 28,
-  /** Inside comment, seen one - */
-  COMMENT_DASH: 29,
-  /** Inside comment, seen -- (expecting > or spec violation) */
-  COMMENT_DASH_DASH: 30,
-  /** Inside CDATA, seen one ] */
-  CDATA_BRACKET: 31,
-  /** Inside CDATA, seen ]] */
-  CDATA_BRACKET_BRACKET: 32,
-  /** Inside PI target, seen ? (expecting > for empty PI) */
-  PI_TARGET_QUESTION: 33,
-  /** Inside PI content, seen ? */
-  PI_QUESTION: 34,
   /** After <! in internal subset, determining declaration type */
   DTD_DECL_START: 35,
   /** Reading declaration keyword (ENTITY, ELEMENT, ATTLIST, NOTATION) */
@@ -200,12 +221,21 @@ ASCII_NAME_START_CHAR[0x5F] = 1; // _
 ASCII_NAME_START_CHAR[0x3A] = 1; // :
 
 /**
- * Matches any C0 control character that is illegal in XML 1.0 content.
- * Valid C0 chars: TAB (0x09), LF (0x0A), CR (0x0D). All others are illegal.
+ * Matches any character that is illegal as a literal in XML 1.0 content.
+ * Illegal: C0 controls except TAB/LF/CR, plus noncharacters U+FFFE/U+FFFF.
  * Used as a fast native pre-check in {@link XmlTokenizer.#flushText}.
  */
 // deno-lint-ignore no-control-regex
-const ILLEGAL_XML_CHAR_REGEXP = /[\x00-\x08\x0B\x0C\x0E-\x1F]/;
+const ILLEGAL_XML_CHAR_REGEXP = /[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFE\uFFFF]/;
+
+/**
+ * Matches any character that is illegal as a literal in XML 1.1 content.
+ * XML 1.1 RestrictedChar: [#x1-#x8] | [#xB-#xC] | [#xE-#x1F] | [#x7F-#x84] | [#x86-#x9F]
+ * Plus NULL (#x0) and noncharacters U+FFFE/U+FFFF.
+ */
+const ILLEGAL_XML_11_CHAR_REGEXP =
+  // deno-lint-ignore no-control-regex
+  /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFFFE\uFFFF]/;
 
 /** Sentinel position used when position tracking is disabled. */
 const NO_POSITION: XmlPosition = { line: 0, column: 0, offset: 0 };
@@ -230,6 +260,10 @@ export class XmlTokenizer {
 
   /** Whether to track line/column positions. */
   readonly #trackPosition: boolean;
+  /** Whether to reject DOCTYPE declarations. */
+  readonly #disallowDoctype: boolean;
+  /** Whether to use XML 1.1 character and line-ending rules. */
+  readonly #xml11: boolean;
 
   // Slice-based accumulators: track start index + partial for cross-chunk
   #textStartIdx = -1;
@@ -281,7 +315,6 @@ export class XmlTokenizer {
   #isEntityDecl = false;
   #isParameterEntity = false;
   #entityName = "";
-  #entityValue = "";
   #entityParsePhase: "name" | "value" | "done" = "name";
   #entityExternalType: "" | "SYSTEM" | "PUBLIC" = ""; // Track SYSTEM/PUBLIC keyword
   #entityQuotedLiterals = 0; // Count quoted literals for PUBLIC validation
@@ -302,6 +335,8 @@ export class XmlTokenizer {
   /** Constructs a new XmlTokenizer. */
   constructor(options: XmlTokenizerOptions = {}) {
     this.#trackPosition = options.trackPosition ?? true;
+    this.#disallowDoctype = options.disallowDoctype ?? false;
+    this.#xml11 = options.xml11 ?? false;
   }
 
   #saveTokenPosition(): void {
@@ -318,6 +353,10 @@ export class XmlTokenizer {
         ? { line: this.#line, column: this.#column, offset: this.#offset }
         : NO_POSITION,
     );
+  }
+
+  #isIllegalLiteralChar(code: number): boolean {
+    return isIllegalXmlLiteralChar(code, this.#xml11);
   }
 
   // XML 1.0 Fifth Edition name character validation with inlined ASCII fast path
@@ -398,49 +437,50 @@ export class XmlTokenizer {
   }
 
   #flushText(): void {
-    if (this.#textStartIdx !== -1) {
-      const content = this.#textPartial +
-        this.#buffer.slice(this.#textStartIdx, this.#bufferIndex);
-      this.#textStartIdx = -1;
-      this.#textPartial = "";
-      if (content.length > 0) {
-        // XML 1.0 §2.2: Reject illegal C0 control characters.
-        // The position-tracking path already validates inline in
-        // #captureText, so this native regex pre-check only runs for the
-        // no-position-tracking path (avoids redundant scan of every text
-        // node when positions are tracked).
-        if (!this.#trackPosition && ILLEGAL_XML_CHAR_REGEXP.test(content)) {
-          for (let i = 0; i < content.length; i++) {
-            const code = content.charCodeAt(i);
-            if (
-              code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
-            ) {
-              this.#error(
-                `Illegal XML character U+${
-                  code.toString(16).toUpperCase().padStart(4, "0")
-                } (XML 1.0 §2.2)`,
-              );
-            }
+    if (this.#textStartIdx === -1) return;
+
+    const content = this.#textPartial +
+      this.#buffer.slice(this.#textStartIdx, this.#bufferIndex);
+    this.#textStartIdx = -1;
+    this.#textPartial = "";
+
+    if (content.length === 0) return;
+
+    // Reject illegal literal characters.
+    // The position-tracking path already validates inline in
+    // #captureText, so this native regex pre-check only runs for the
+    // no-position-tracking path (avoids redundant scan of every text
+    // node when positions are tracked).
+    if (!this.#trackPosition) {
+      const illegalRegex = this.#xml11
+        ? ILLEGAL_XML_11_CHAR_REGEXP
+        : ILLEGAL_XML_CHAR_REGEXP;
+      if (illegalRegex.test(content)) {
+        for (let i = 0; i < content.length; i++) {
+          const code = content.charCodeAt(i);
+          if (this.#isIllegalLiteralChar(code)) {
+            this.#error(
+              `Illegal XML character U+${
+                code.toString(16).toUpperCase().padStart(4, "0")
+              }`,
+            );
           }
         }
-        // XML 1.0 §2.4: "]]>" is not allowed in text content.
-        // Catches both within-chunk and cross-chunk occurrences since
-        // #textPartial accumulates across chunks.
-        if (content.includes("]]>")) {
-          this.#error(
-            "Cannot use ']]>' in text content (XML 1.0 §2.4)",
-          );
-        }
-        // Any content before XML declaration invalidates XMLDecl position
-        this.#xmlDeclAllowed = false;
-        this.#callbacks.onText?.(
-          content,
-          this.#textStartLine,
-          this.#textStartColumn,
-          this.#textStartOffset,
-        );
       }
     }
+    // XML 1.0 §2.4: "]]>" is not allowed in text content.
+    // Catches both within-chunk and cross-chunk occurrences since
+    // #textPartial accumulates across chunks.
+    if (content.includes("]]>")) {
+      this.#error("Cannot use ']]>' in text content (XML 1.0 §2.4)");
+    }
+    this.#xmlDeclAllowed = false;
+    this.#callbacks.onText?.(
+      content,
+      this.#textStartLine,
+      this.#textStartColumn,
+      this.#textStartOffset,
+    );
   }
 
   #getAttrValue(): string {
@@ -564,8 +604,14 @@ export class XmlTokenizer {
   }
 
   #normalizeLineEndings(chunk: string): string {
-    return chunk.includes("\r")
-      ? chunk.replace(LINE_ENDING_REGEXP, "\n")
+    const version = this.#xml11 ? "1.1" : "1.0";
+    const needsNormalization = this.#xml11
+      ? chunk.includes("\r") || chunk.includes("\x85") ||
+        chunk.includes("\u2028")
+      : chunk.includes("\r");
+
+    return needsNormalization
+      ? chunk.replace(LINE_ENDING_REGEXP[version], "\n")
       : chunk;
   }
 
@@ -685,45 +731,6 @@ export class XmlTokenizer {
     return value;
   }
 
-  /**
-   * Validates a PubidLiteral per XML 1.0 §2.3.
-   * PubidChar ::= #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
-   *
-   * Note: If quoted with ', the value cannot contain '.
-   *
-   * @param quote The quote character used (' or ").
-   */
-  #validatePubidLiteral(value: string, quote: string): void {
-    for (let i = 0; i < value.length; i++) {
-      const code = value.charCodeAt(i);
-      const ch = value[i];
-      // Valid PubidChar:
-      // #x20 (space), #xD (CR), #xA (LF)
-      // [a-zA-Z0-9]
-      // [-'()+,./:=?;!*#@$_%]
-      const isValid = code === 0x20 || // space
-        code === 0x0D || // CR
-        code === 0x0A || // LF
-        (code >= 0x41 && code <= 0x5A) || // A-Z
-        (code >= 0x61 && code <= 0x7A) || // a-z
-        (code >= 0x30 && code <= 0x39) || // 0-9
-        ch === "-" || ch === "(" || ch === ")" || ch === "+" ||
-        ch === "," || ch === "." || ch === "/" || ch === ":" ||
-        ch === "=" || ch === "?" || ch === ";" || ch === "!" ||
-        ch === "*" || ch === "#" || ch === "@" || ch === "$" ||
-        ch === "_" || ch === "%" ||
-        (ch === "'" && quote === '"'); // ' only allowed if quoted with "
-
-      if (!isValid) {
-        this.#error(
-          `Invalid character '${ch}' (U+${
-            code.toString(16).toUpperCase().padStart(4, "0")
-          }) in public ID literal`,
-        );
-      }
-    }
-  }
-
   // ========================================================================
   // DEDICATED CAPTURE METHODS
   // These tight loops avoid per-character switch overhead for hot paths.
@@ -769,11 +776,7 @@ export class XmlTokenizer {
           return true;
         }
 
-        // XML 1.0 §2.2: Reject illegal C0 control characters.
-        // Valid: TAB (0x09), LF (0x0A), CR (0x0D).
-        if (
-          code < 0x20 && code !== CC_TAB && code !== CC_LF && code !== CC_CR
-        ) {
+        if (this.#isIllegalLiteralChar(code)) {
           this.#bufferIndex = idx;
           this.#line = line;
           this.#column = column;
@@ -781,7 +784,7 @@ export class XmlTokenizer {
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
+            }`,
           );
         }
 
@@ -917,15 +920,14 @@ export class XmlTokenizer {
         );
       }
 
-      // XML 1.0 §2.2: Validate characters are legal XML Char
       for (let i = this.#commentStartIdx; i < endIdx; i++) {
         const code = buffer.charCodeAt(i);
-        if (code < 0x20 && C0_VALID[code] !== 1) {
+        if (this.#isIllegalLiteralChar(code)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
+            }`,
           );
         }
       }
@@ -979,15 +981,14 @@ export class XmlTokenizer {
         );
       }
 
-      // XML 1.0 §2.2: Validate characters are legal XML Char
       for (let i = this.#commentStartIdx; i < safeEnd; i++) {
         const code = buffer.charCodeAt(i);
-        if (code < 0x20 && C0_VALID[code] !== 1) {
+        if (this.#isIllegalLiteralChar(code)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
+            }`,
           );
         }
       }
@@ -1011,15 +1012,14 @@ export class XmlTokenizer {
     if (endIdx !== -1) {
       // Fast path: found complete "?>" terminator
 
-      // XML 1.0 §2.2: Validate characters in PI content are legal XML Char
       for (let i = this.#piContentStartIdx; i < endIdx; i++) {
         const charCode = buffer.charCodeAt(i);
-        if (charCode < 0x20 && C0_VALID[charCode] !== 1) {
+        if (this.#isIllegalLiteralChar(charCode)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               charCode.toString(16).toUpperCase().padStart(4, "0")
-            } in processing instruction (XML 1.0 §2.2)`,
+            } in processing instruction`,
           );
         }
       }
@@ -1065,15 +1065,14 @@ export class XmlTokenizer {
 
     // Batch consume the safe region, validating characters
     if (safeEnd > this.#bufferIndex) {
-      // XML 1.0 §2.2: Validate characters in PI content
       for (let i = this.#piContentStartIdx; i < safeEnd; i++) {
         const charCode = buffer.charCodeAt(i);
-        if (charCode < 0x20 && C0_VALID[charCode] !== 1) {
+        if (this.#isIllegalLiteralChar(charCode)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               charCode.toString(16).toUpperCase().padStart(4, "0")
-            } in processing instruction (XML 1.0 §2.2)`,
+            } in processing instruction`,
           );
         }
       }
@@ -1099,15 +1098,14 @@ export class XmlTokenizer {
     if (endIdx !== -1) {
       // Fast path: found complete "]]>" terminator
 
-      // XML 1.0 §2.2: Validate characters are legal XML Char
       for (let i = this.#cdataStartIdx; i < endIdx; i++) {
         const code = buffer.charCodeAt(i);
-        if (code < 0x20 && C0_VALID[code] !== 1) {
+        if (this.#isIllegalLiteralChar(code)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
+            }`,
           );
         }
       }
@@ -1150,15 +1148,14 @@ export class XmlTokenizer {
 
     // Batch consume the safe region
     if (safeEnd > this.#bufferIndex) {
-      // XML 1.0 §2.2: Validate characters are legal XML Char
       for (let i = this.#cdataStartIdx; i < safeEnd; i++) {
         const code = buffer.charCodeAt(i);
-        if (code < 0x20 && C0_VALID[code] !== 1) {
+        if (this.#isIllegalLiteralChar(code)) {
           this.#bufferIndex = i;
           this.#error(
             `Illegal XML character U+${
               code.toString(16).toUpperCase().padStart(4, "0")
-            } (XML 1.0 §2.2)`,
+            }`,
           );
         }
       }
@@ -1631,18 +1628,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const commentCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `-` characters
-          if (commentCode === CC_DASH) {
-            this.#commentPartial += buffer.slice(
-              this.#commentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(commentCode);
-            this.#commentStartIdx = this.#bufferIndex;
-            this.#state = State.COMMENT_DASH;
-          } else {
-            this.#advanceWithCode(commentCode);
-          }
+          // After batch capture, only trailing `-` chars remain
+          this.#commentPartial += buffer.slice(
+            this.#commentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(commentCode);
+          this.#commentStartIdx = this.#bufferIndex;
+          this.#state = State.COMMENT_DASH;
           break;
         }
 
@@ -1657,18 +1650,14 @@ export class XmlTokenizer {
           }
           // Re-read code since bufferIndex may have changed
           const cdataCode = buffer.charCodeAt(this.#bufferIndex);
-          // Fall through to char-by-char for trailing `]` characters
-          if (cdataCode === CC_RBRACKET) {
-            this.#cdataPartial += buffer.slice(
-              this.#cdataStartIdx,
-              this.#bufferIndex,
-            );
-            this.#advanceWithCode(cdataCode);
-            this.#cdataStartIdx = this.#bufferIndex;
-            this.#state = State.CDATA_BRACKET;
-          } else {
-            this.#advanceWithCode(cdataCode);
-          }
+          // After batch capture, only trailing `]` chars remain
+          this.#cdataPartial += buffer.slice(
+            this.#cdataStartIdx,
+            this.#bufferIndex,
+          );
+          this.#advanceWithCode(cdataCode);
+          this.#cdataStartIdx = this.#bufferIndex;
+          this.#state = State.CDATA_BRACKET;
           break;
         }
 
@@ -1681,28 +1670,14 @@ export class XmlTokenizer {
           if (this.#bufferIndex >= bufferLen) {
             break; // Buffer exhausted, need more data
           }
-          // Re-read code since bufferIndex may have changed
-          const piCode = buffer.charCodeAt(this.#bufferIndex);
-          // XML 1.0 §2.2: Validate character
-          if (piCode < 0x20 && C0_VALID[piCode] !== 1) {
-            this.#error(
-              `Illegal XML character U+${
-                piCode.toString(16).toUpperCase().padStart(4, "0")
-              } in processing instruction (XML 1.0 §2.2)`,
-            );
-          }
-          // Fall through to char-by-char for trailing `?` character
-          if (piCode === CC_QUESTION) {
-            this.#piContentPartial += buffer.slice(
-              this.#piContentStartIdx,
-              this.#bufferIndex,
-            );
-            this.#piContentStartIdx = -1;
-            this.#advanceWithCode(piCode);
-            this.#state = State.PI_QUESTION;
-          } else {
-            this.#advanceWithCode(piCode);
-          }
+          // After batch capture, only a trailing `?` remains
+          this.#piContentPartial += buffer.slice(
+            this.#piContentStartIdx,
+            this.#bufferIndex,
+          );
+          this.#piContentStartIdx = -1;
+          this.#advanceWithCode(buffer.charCodeAt(this.#bufferIndex));
+          this.#state = State.PI_QUESTION;
           break;
         }
 
@@ -1963,6 +1938,9 @@ export class XmlTokenizer {
           this.#doctypeCheck += String.fromCharCode(code);
           this.#advanceWithCode(code);
           if (this.#doctypeCheck === "DOCTYPE") {
+            if (this.#disallowDoctype) {
+              this.#error("DOCTYPE declarations are not allowed");
+            }
             this.#doctypeName = "";
             this.#doctypePublicId = "";
             this.#doctypeSystemId = "";
@@ -2098,11 +2076,11 @@ export class XmlTokenizer {
             this.#doctypeQuoteChar = String.fromCharCode(code);
             this.#advanceWithCode(code);
             this.#doctypePublicId = this.#readDoctypeQuotedString();
-            // Validate PubidLiteral characters
-            this.#validatePubidLiteral(
+            const pubidError = validatePubidLiteral(
               this.#doctypePublicId,
               this.#doctypeQuoteChar,
             );
+            if (pubidError) this.#error(pubidError);
             this.#state = State.DOCTYPE_AFTER_PUBLIC_ID;
           } else {
             this.#error(`Expected quote to start public ID`);
@@ -2239,7 +2217,6 @@ export class XmlTokenizer {
               this.#isEntityDecl = kw === "ENTITY";
               this.#isParameterEntity = false;
               this.#entityName = "";
-              this.#entityValue = "";
               this.#entityParsePhase = "name";
               this.#entityExternalType = "";
               this.#entityQuotedLiterals = 0;
@@ -2280,13 +2257,10 @@ export class XmlTokenizer {
                 );
               }
               // Emit entity if applicable
-              if (
-                !this.#isParameterEntity &&
-                this.#entityName && this.#entityValue !== undefined
-              ) {
+              if (!this.#isParameterEntity && this.#entityName) {
                 this.#callbacks.onEntityDeclaration?.(
                   this.#entityName,
-                  this.#entityValue,
+                  "",
                 );
               }
             }
@@ -2311,9 +2285,6 @@ export class XmlTokenizer {
             this.#dtdStringIsPubid = false;
             // For ENTITY declarations, track quoted literals
             if (this.#isEntityDecl) {
-              if (this.#entityParsePhase === "value") {
-                this.#entityValue = "";
-              }
               this.#entityQuotedLiterals++;
               // First quoted literal after PUBLIC is PubidLiteral
               if (
@@ -2434,12 +2405,12 @@ export class XmlTokenizer {
 
         case State.DTD_DECL_STRING: {
           if (String.fromCharCode(code) === this.#dtdDeclQuoteChar) {
-            // Validate PubidLiteral if applicable
             if (this.#dtdStringIsPubid) {
-              this.#validatePubidLiteral(
+              const pubidError = validatePubidLiteral(
                 this.#dtdStringValue,
                 this.#dtdDeclQuoteChar,
               );
+              if (pubidError) this.#error(pubidError);
             }
             // For ENTITY declarations, mark value capture as done
             if (this.#isEntityDecl && this.#entityParsePhase === "value") {
@@ -2449,11 +2420,8 @@ export class XmlTokenizer {
             this.#dtdDeclSawWhitespace = false;
             this.#state = State.DTD_DECL_CONTENT;
           } else {
-            // Accumulate string value for validation
-            this.#dtdStringValue += String.fromCharCode(code);
-            // For ENTITY declarations in value phase, capture the value
-            if (this.#isEntityDecl && this.#entityParsePhase === "value") {
-              this.#entityValue += String.fromCharCode(code);
+            if (this.#dtdStringIsPubid) {
+              this.#dtdStringValue += String.fromCharCode(code);
             }
             this.#advanceWithCode(code);
           }

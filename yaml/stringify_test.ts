@@ -624,6 +624,16 @@ Deno.test("stringify() changes the key order when the sortKeys option is specifi
   );
 });
 
+Deno.test("stringify() passes depth to sortKeys callback", () => {
+  const input = { b: 1, a: 2, nested: { c: 3, d: 4 } };
+  const sortKeys = (a: string, b: string, depth: number) =>
+    depth === 0 ? a.localeCompare(b) : b.localeCompare(a);
+  const expected = ["a: 2", "b: 1", "nested:", "  d: 4", "  c: 3", ""].join(
+    "\n",
+  );
+  assertEquals(stringify(input, { sortKeys }), expected);
+});
+
 Deno.test("stringify() changes line wrap behavior based on lineWidth option", () => {
   const object = {
     message:

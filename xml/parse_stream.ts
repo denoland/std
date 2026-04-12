@@ -65,8 +65,10 @@ export async function parseXmlStream(
   options: ParseStreamOptions = {},
 ): Promise<void> {
   const trackPosition = options.trackPosition ?? false;
-  const tokenizer = new XmlTokenizer({ trackPosition });
-  const parser = new XmlEventParser(callbacks, options);
+  const disallowDoctype = options.disallowDoctype ?? true;
+  const xml11 = options.xmlVersion === "1.1";
+  const tokenizer = new XmlTokenizer({ trackPosition, disallowDoctype, xml11 });
+  const parser = new XmlEventParser(callbacks, options, xml11);
 
   for await (const chunk of source) {
     tokenizer.process(chunk, parser);

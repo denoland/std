@@ -10,10 +10,43 @@
 import type { XmlName } from "./types.ts";
 
 /**
- * Line ending normalization pattern per XML 1.0 §2.11.
- * Converts \r\n and standalone \r to \n.
+ * Checks if a code point is illegal as a literal character in the given
+ * XML version. XML 1.0 forbids C0 controls except TAB/LF/CR. XML 1.1
+ * additionally forbids C1 controls (#x7F-#x9F except #x85 NEL) and NULL,
+ * while allowing #x1-#x8, #xB-#xC, #xE-#x1F only via character references.
+ *
+ * @see {@link https://www.w3.org/TR/xml/#charsets | XML 1.0 §2.2}
+ * @see {@link https://www.w3.org/TR/xml11/#charsets | XML 1.1 §2.2}
  */
-export const LINE_ENDING_REGEXP = /\r\n?/g;
+export function isIllegalXmlLiteralChar(
+  code: number,
+  xml11: boolean,
+): boolean {
+  if (xml11) {
+    // XML 1.1 RestrictedChar + NULL + noncharacters
+    return code === 0 ||
+      (code >= 0x01 && code <= 0x08) ||
+      code === 0x0B || code === 0x0C ||
+      (code >= 0x0E && code <= 0x1F) ||
+      (code >= 0x7F && code <= 0x84) ||
+      (code >= 0x86 && code <= 0x9F) ||
+      code === 0xFFFE || code === 0xFFFF;
+  }
+  // XML 1.0: C0 controls except TAB/LF/CR + noncharacters
+  return (code < 0x20 && code !== 0x09 && code !== 0x0A && code !== 0x0D) ||
+    code === 0xFFFE || code === 0xFFFF;
+}
+
+/**
+ * Line ending normalization patterns per XML 1.0 §2.11 and XML 1.1 §2.11.
+ *
+ * XML 1.0: Converts `\r\n` and standalone `\r` to `\n`.
+ * XML 1.1: Additionally normalizes NEL (`\x85`), `\r\x85`, and LS (`\u2028`).
+ */
+export const LINE_ENDING_REGEXP: Record<"1.0" | "1.1", RegExp> = {
+  "1.0": /\r\n?/g,
+  "1.1": /\r[\n\x85]?|\x85|\u2028/g,
+};
 
 /**
  * Whitespace-only test per XML 1.0 §2.3.
@@ -206,12 +239,6 @@ export function validateXmlDeclaration(
       }
       foundVersion = true;
     } else if (name === "encoding") {
-      if (!foundVersion) {
-        return {
-          valid: false,
-          error: "'encoding' must come after 'version' in XML declaration",
-        };
-      }
       if (foundEncoding) {
         return {
           valid: false,
@@ -226,12 +253,6 @@ export function validateXmlDeclaration(
       }
       foundEncoding = true;
     } else if (name === "standalone") {
-      if (!foundVersion) {
-        return {
-          valid: false,
-          error: "'standalone' must come after 'version' in XML declaration",
-        };
-      }
       if (foundStandalone) {
         return {
           valid: false,
@@ -351,14 +372,6 @@ export function validateXmlDeclaration(
     }
   }
 
-  // Validate required attributes
-  if (!foundVersion) {
-    return {
-      valid: false,
-      error: "Missing required 'version' attribute in XML declaration",
-    };
-  }
-
   return {
     valid: true,
     version: version!,
@@ -443,6 +456,7 @@ export function validateQName(name: string, colonIndex: number): string | null {
 export function validateNamespaceBinding(
   attrName: string,
   attrValue: string,
+  xml11: boolean,
 ): string | null {
   const colonIndex = attrName.indexOf(":");
   const isDefaultNs = attrName === "xmlns";
@@ -455,8 +469,8 @@ export function validateNamespaceBinding(
     return "Cannot have empty namespace prefix after 'xmlns:'";
   }
 
-  // Prefix unbinding not allowed in NS 1.0 (xmlns:foo="")
-  if (!isDefaultNs && uri === "") {
+  // Prefix unbinding: xmlns:foo="" is forbidden in NS 1.0, allowed in NS 1.1
+  if (!isDefaultNs && uri === "" && !xml11) {
     return "Cannot unbind namespace prefix (empty URI) in Namespaces 1.0";
   }
 
@@ -486,6 +500,44 @@ export function validateNamespaceBinding(
   }
 
   return null; // Valid binding
+}
+
+/**
+ * Validates a PubidLiteral per XML 1.0 §2.3.
+ * PubidChar ::= #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+ *
+ * Note: If quoted with ', the value cannot contain '.
+ *
+ * @param quote The quote character used (' or ").
+ * @returns Error message if invalid, null if valid.
+ */
+export function validatePubidLiteral(
+  value: string,
+  quote: string,
+): string | null {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    const ch = value[i];
+    const isValid = code === 0x20 || // space
+      code === 0x0D || // CR
+      code === 0x0A || // LF
+      (code >= 0x41 && code <= 0x5A) || // A-Z
+      (code >= 0x61 && code <= 0x7A) || // a-z
+      (code >= 0x30 && code <= 0x39) || // 0-9
+      ch === "-" || ch === "(" || ch === ")" || ch === "+" ||
+      ch === "," || ch === "." || ch === "/" || ch === ":" ||
+      ch === "=" || ch === "?" || ch === ";" || ch === "!" ||
+      ch === "*" || ch === "#" || ch === "@" || ch === "$" ||
+      ch === "_" || ch === "%" ||
+      (ch === "'" && quote === '"'); // ' only allowed if quoted with "
+
+    if (!isValid) {
+      return `Invalid character '${ch}' (U+${
+        code.toString(16).toUpperCase().padStart(4, "0")
+      }) in public ID literal`;
+    }
+  }
+  return null;
 }
 
 /**

@@ -35,13 +35,16 @@ import {
  *
  * @see {@link https://www.w3.org/TR/xml/#AVNormalize}
  */
-function normalizeAttributeValue(raw: string): string {
+function normalizeAttributeValue(raw: string, xml11: boolean): string {
   // Replace literal \t and \n with space BEFORE entity decoding (preserves &#10;)
   const normalized = raw.includes("\t") || raw.includes("\n")
     ? raw.replace(/[\t\n]/g, " ")
     : raw;
-  return decodeEntities(normalized);
+  return decodeEntities(normalized, xml11);
 }
+
+/** Threshold above which duplicate detection switches from linear scan to Set. */
+const ATTR_SET_THRESHOLD = 32;
 
 /**
  * Reusable attribute iterator implementation.
@@ -55,6 +58,7 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   #colonIndices: number[] = [];
   #uris: (string | undefined)[] = [];
   #count = 0;
+  #nameSet: Set<string> | null = null;
 
   get count(): number {
     return this.#count;
@@ -79,14 +83,16 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   /** @internal Reset the iterator for a new element. */
   _reset(): void {
     this.#count = 0;
+    this.#nameSet = null;
   }
 
   /** @internal Add an attribute (name already decoded, value raw). */
-  _add(name: string, value: string): void {
+  _add(name: string, value: string, xml11: boolean): void {
     this.#names[this.#count] = name;
-    this.#values[this.#count] = normalizeAttributeValue(value);
+    this.#values[this.#count] = normalizeAttributeValue(value, xml11);
     this.#colonIndices[this.#count] = name.indexOf(":");
-    this.#uris[this.#count] = undefined; // Will be set later
+    this.#uris[this.#count] = undefined;
+    this.#nameSet?.add(name);
     this.#count++;
   }
 
@@ -97,10 +103,19 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
 
   /** @internal Check if an attribute with this name already exists. */
   _has(name: string): boolean {
-    for (let i = 0; i < this.#count; i++) {
-      if (this.#names[i] === name) return true;
+    if (this.#count < ATTR_SET_THRESHOLD) {
+      for (let i = 0; i < this.#count; i++) {
+        if (this.#names[i] === name) return true;
+      }
+      return false;
     }
-    return false;
+    if (!this.#nameSet) {
+      this.#nameSet = new Set<string>();
+      for (let i = 0; i < this.#count; i++) {
+        this.#nameSet.add(this.#names[i]!);
+      }
+    }
+    return this.#nameSet.has(name);
   }
 }
 
@@ -120,6 +135,9 @@ export class XmlEventParser implements XmlTokenCallbacks {
   #ignoreComments: boolean;
   #ignoreProcessingInstructions: boolean;
   #coerceCDataToText: boolean;
+  #maxDepth: number;
+  #maxAttributes: number;
+  #xml11: boolean;
 
   #elementStack: Array<{
     rawName: string;
@@ -156,13 +174,20 @@ export class XmlEventParser implements XmlTokenCallbacks {
   /** Pending namespace bindings for current element */
   #pendingNsBindings: Array<[string, string | undefined]> = [];
 
-  constructor(callbacks: XmlEventCallbacks, options: ParseStreamOptions = {}) {
+  constructor(
+    callbacks: XmlEventCallbacks,
+    options: ParseStreamOptions = {},
+    xml11: boolean = false,
+  ) {
     this.#callbacks = callbacks;
     this.#ignoreWhitespace = options.ignoreWhitespace ?? false;
     this.#ignoreComments = options.ignoreComments ?? false;
     this.#ignoreProcessingInstructions = options.ignoreProcessingInstructions ??
       false;
     this.#coerceCDataToText = options.coerceCDataToText ?? false;
+    this.#maxDepth = options.maxDepth ?? Infinity;
+    this.#maxAttributes = options.maxAttributes ?? Infinity;
+    this.#xml11 = xml11;
   }
 
   // XmlTokenCallbacks implementation
@@ -221,8 +246,12 @@ export class XmlEventParser implements XmlTokenCallbacks {
       // Validate namespace binding if this is an xmlns attribute
       if (name === "xmlns" || name.startsWith("xmlns:")) {
         // Normalize the attribute value for namespace URI
-        const normalizedValue = normalizeAttributeValue(value);
-        const nsError = validateNamespaceBinding(name, normalizedValue);
+        const normalizedValue = normalizeAttributeValue(value, this.#xml11);
+        const nsError = validateNamespaceBinding(
+          name,
+          normalizedValue,
+          this.#xml11,
+        );
         if (nsError) {
           throw new XmlSyntaxError(
             nsError,
@@ -246,6 +275,17 @@ export class XmlEventParser implements XmlTokenCallbacks {
         }
       }
 
+      if (this.#attrIterator.count >= this.#maxAttributes) {
+        throw new XmlSyntaxError(
+          `Attribute count exceeds limit of ${this.#maxAttributes}`,
+          {
+            line: this.#pendingLine,
+            column: this.#pendingColumn,
+            offset: this.#pendingOffset,
+          },
+        );
+      }
+
       // XML 1.0 §3.1: Attribute names must be unique within a start-tag
       if (this.#attrIterator._has(name)) {
         throw new XmlSyntaxError(
@@ -257,7 +297,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
           },
         );
       }
-      this.#attrIterator._add(name, value);
+      this.#attrIterator._add(name, value, this.#xml11);
     }
   }
 
@@ -410,6 +450,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
           }
         }
       } else {
+        if (this.#elementStack.length >= this.#maxDepth) {
+          throw new XmlSyntaxError(
+            `Element nesting depth exceeds limit of ${this.#maxDepth}`,
+            {
+              line: this.#pendingLine,
+              column: this.#pendingColumn,
+              offset: this.#pendingOffset,
+            },
+          );
+        }
         this.#elementStack.push({
           rawName: this.#pendingName,
           colonIndex: this.#pendingColonIndex,
@@ -520,7 +570,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
     }
 
     // Inside root element - decode entities
-    const text = decodeEntities(content);
+    const text = decodeEntities(content, this.#xml11);
     if (this.#ignoreWhitespace && WHITESPACE_ONLY_REGEXP.test(text)) return;
     this.#callbacks.onText?.(text, line, column, offset);
   }
@@ -605,8 +655,16 @@ export class XmlEventParser implements XmlTokenCallbacks {
     );
   }
 
-  // DOCTYPE parsed by tokenizer but not emitted as event
-  onDoctype(): void {}
+  onDoctype(
+    name: string,
+    publicId: string | undefined,
+    systemId: string | undefined,
+    line: number,
+    column: number,
+    offset: number,
+  ): void {
+    this.#callbacks.onDoctype?.(name, publicId, systemId, line, column, offset);
+  }
 
   // Entity declarations from DTD are intentionally NOT stored.
   // We only support the 5 predefined XML entities.
