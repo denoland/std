@@ -673,7 +673,7 @@ Deno.test("signMessage() rejects invalid params", async () => {
   );
 
   // Unsupported ECDSA curve
-  const fakeKey = {
+  const fakeEcdsaKey = {
     algorithm: { name: "ECDSA", namedCurve: "P-521" },
     type: "private",
     extractable: false,
@@ -684,10 +684,64 @@ Deno.test("signMessage() rejects invalid params", async () => {
       signMessage({
         message: request,
         params: { components: ["@method"], keyId: "k", created: NOW },
-        key: fakeKey,
+        key: fakeEcdsaKey,
       }),
     TypeError,
     'Unsupported ECDSA curve: "P-521"',
+  );
+
+  // Unsupported HMAC hash
+  const fakeHmacKey = {
+    algorithm: { name: "HMAC", hash: { name: "SHA-512" } },
+    type: "secret",
+    extractable: false,
+    usages: ["sign"],
+  } as unknown as CryptoKey;
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: fakeHmacKey,
+      }),
+    TypeError,
+    'Unsupported HMAC hash: "SHA-512"',
+  );
+
+  // Unsupported RSA-PSS hash
+  const fakeRsaPssKey = {
+    algorithm: { name: "RSA-PSS", hash: { name: "SHA-256" } },
+    type: "private",
+    extractable: false,
+    usages: ["sign"],
+  } as unknown as CryptoKey;
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: fakeRsaPssKey,
+      }),
+    TypeError,
+    'Unsupported RSA-PSS hash: "SHA-256"',
+  );
+
+  // Unsupported RSASSA-PKCS1-v1_5 hash
+  const fakePkcs1Key = {
+    algorithm: { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-512" } },
+    type: "private",
+    extractable: false,
+    usages: ["sign"],
+  } as unknown as CryptoKey;
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: fakePkcs1Key,
+      }),
+    TypeError,
+    'Unsupported RSASSA-PKCS1-v1_5 hash: "SHA-512"',
   );
 });
 

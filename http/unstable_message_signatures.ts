@@ -305,9 +305,21 @@ function inferAlgorithm(key: CryptoKey): SignatureAlgorithm {
   const alg = key.algorithm;
   const name = alg.name;
   if (name === "Ed25519") return "ed25519";
-  if (name === "HMAC") return "hmac-sha256";
-  if (name === "RSA-PSS") return "rsa-pss-sha512";
-  if (name === "RSASSA-PKCS1-v1_5") return "rsa-v1_5-sha256";
+  if (name === "HMAC") {
+    const hash = (alg as HmacKeyAlgorithm).hash.name;
+    if (hash === "SHA-256") return "hmac-sha256";
+    throw new TypeError(`Unsupported HMAC hash: "${hash}"`);
+  }
+  if (name === "RSA-PSS") {
+    const hash = (alg as RsaHashedKeyAlgorithm).hash.name;
+    if (hash === "SHA-512") return "rsa-pss-sha512";
+    throw new TypeError(`Unsupported RSA-PSS hash: "${hash}"`);
+  }
+  if (name === "RSASSA-PKCS1-v1_5") {
+    const hash = (alg as RsaHashedKeyAlgorithm).hash.name;
+    if (hash === "SHA-256") return "rsa-v1_5-sha256";
+    throw new TypeError(`Unsupported RSASSA-PKCS1-v1_5 hash: "${hash}"`);
+  }
   if (name === "ECDSA") {
     const curve = (alg as EcKeyAlgorithm).namedCurve;
     if (curve === "P-256") return "ecdsa-p256-sha256";
@@ -1016,7 +1028,7 @@ export async function verifyMessage(
     );
 
     // Look up key
-    const algorithm = parsedParams.algorithm ?? undefined;
+    const algorithm = parsedParams.algorithm;
     const keyId = parsedParams.keyId ?? "";
     const verifyKey = await keyLookup(keyId, algorithm);
     if (verifyKey === null) {
