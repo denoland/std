@@ -496,6 +496,107 @@ Deno.test("Deque.retain() triggers shrink on large deque", () => {
   assertEquals(deque.at(7), 127);
 });
 
+// -- includes() --
+
+Deno.test("Deque.includes() returns true for a present value", () => {
+  const deque = new Deque([1, 2, 3]);
+  assertEquals(deque.includes(2), true);
+});
+
+Deno.test("Deque.includes() returns false for an absent value", () => {
+  const deque = new Deque([1, 2, 3]);
+  assertEquals(deque.includes(99), false);
+});
+
+Deno.test("Deque.includes() returns false on an empty deque", () => {
+  assertEquals(new Deque<number>().includes(1), false);
+});
+
+Deno.test("Deque.includes() finds NaN via SameValueZero", () => {
+  const deque = new Deque([1, NaN, 3]);
+  assertEquals(deque.includes(NaN), true);
+});
+
+Deno.test("Deque.includes() works after wrap-around", () => {
+  const deque = new Deque<number>();
+  for (let i = 0; i < 6; i++) deque.pushBack(i);
+  for (let i = 0; i < 6; i++) deque.popFront();
+  deque.pushBack(10, 20, 30);
+  assertEquals(deque.includes(20), true);
+  assertEquals(deque.includes(99), false);
+});
+
+// -- removeAt() --
+
+Deno.test("Deque.removeAt() removes and returns element at positive index", () => {
+  const deque = new Deque([10, 20, 30, 40]);
+  assertEquals(deque.removeAt(1), 20);
+  assertEquals([...deque], [10, 30, 40]);
+});
+
+Deno.test("Deque.removeAt() supports negative indices", () => {
+  const deque = new Deque([10, 20, 30, 40]);
+  assertEquals(deque.removeAt(-1), 40);
+  assertEquals([...deque], [10, 20, 30]);
+  assertEquals(deque.removeAt(-2), 20);
+  assertEquals([...deque], [10, 30]);
+});
+
+Deno.test("Deque.removeAt() returns undefined for out-of-range index", () => {
+  const deque = new Deque([1, 2, 3]);
+  assertStrictEquals(deque.removeAt(3), undefined);
+  assertStrictEquals(deque.removeAt(-4), undefined);
+  assertEquals([...deque], [1, 2, 3]);
+});
+
+Deno.test("Deque.removeAt() removes the first element", () => {
+  const deque = new Deque([10, 20, 30]);
+  assertEquals(deque.removeAt(0), 10);
+  assertEquals([...deque], [20, 30]);
+});
+
+Deno.test("Deque.removeAt() removes the last element", () => {
+  const deque = new Deque([10, 20, 30]);
+  assertEquals(deque.removeAt(2), 30);
+  assertEquals([...deque], [10, 20]);
+});
+
+Deno.test("Deque.removeAt() on single-element deque", () => {
+  const deque = new Deque([42]);
+  assertEquals(deque.removeAt(0), 42);
+  assertEquals(deque.length, 0);
+});
+
+Deno.test("Deque.removeAt() works after wrap-around", () => {
+  const deque = new Deque<number>();
+  for (let i = 0; i < 6; i++) deque.pushBack(i);
+  for (let i = 0; i < 6; i++) deque.popFront();
+  deque.pushBack(10, 20, 30, 40, 50);
+  assertEquals(deque.removeAt(2), 30);
+  assertEquals([...deque], [10, 20, 40, 50]);
+});
+
+Deno.test("Deque.removeAt() shifts front side for front-half index", () => {
+  const deque = new Deque([10, 20, 30, 40, 50]);
+  assertEquals(deque.removeAt(1), 20);
+  assertEquals([...deque], [10, 30, 40, 50]);
+});
+
+Deno.test("Deque.removeAt() shifts back side for back-half index", () => {
+  const deque = new Deque([10, 20, 30, 40, 50]);
+  assertEquals(deque.removeAt(3), 40);
+  assertEquals([...deque], [10, 20, 30, 50]);
+});
+
+Deno.test("Deque.removeAt() triggers shrink on large deque", () => {
+  const deque = new Deque<number>();
+  for (let i = 0; i < 128; i++) deque.pushBack(i);
+  for (let i = 0; i < 112; i++) deque.popFront();
+  assertEquals(deque.removeAt(8), 120);
+  assertEquals(deque.length, 15);
+  assertEquals(deque.at(0), 112);
+});
+
 // -- Symbol.toStringTag --
 
 Deno.test("Deque has correct Symbol.toStringTag", () => {
@@ -508,6 +609,7 @@ Deno.test("Deque has correct Symbol.toStringTag", () => {
 
 Deno.test("ReadonlyDeque exposes read-only methods", () => {
   const deque: ReadonlyDeque<number> = new Deque([1, 2, 3, 4]);
+  assertEquals(deque.includes(3), true);
   assertEquals(deque.find((v) => v === 3), 3);
   assertEquals(deque.findIndex((v) => v === 3), 2);
   assertEquals(deque[Symbol.toStringTag], "Deque");
