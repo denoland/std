@@ -103,6 +103,17 @@ export interface ProgressBarOptions {
 
 const LINE_CLEAR = "\r\u001b[K";
 
+const timeFormatter = new Intl.DurationFormat(undefined, {
+  minutes: "2-digit",
+  seconds: "2-digit",
+});
+
+const DURATION_ROUNDING_OPTIONS: Temporal.DurationRoundingOptions = {
+  largestUnit: "minutes",
+  smallestUnit: "seconds",
+  roundingMode: "trunc",
+};
+
 function defaultFormatter(formatter: ProgressBarFormatter) {
   return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
 }
@@ -256,9 +267,10 @@ export class ProgressBar {
 
     return {
       get styledTime() {
-        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
-        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `${minutes}:${seconds}`;
+        const duration = Temporal.Duration
+          .from({ milliseconds: this.time })
+          .round(DURATION_ROUNDING_OPTIONS);
+        return timeFormatter.format(duration);
       },
       styledData() {
         return formatUnitFraction(this.value, this.max);
