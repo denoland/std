@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { generateRandomString } from "./_test_util.ts";
 import { reverse } from "./unstable_reverse.ts";
 

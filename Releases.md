@@ -1,3 +1,559 @@
+### 2026.02.20
+
+#### @std/assert 1.0.19 (patch)
+
+- fix(assert): preserve Date instances in assertObjectMatch filter (#6988)
+- docs(assert): add a note about unreliable equality (#6989)
+
+#### @std/async 1.2.0 (minor)
+
+- feat(async): stabilize abort signal support in retry (#6968)
+- feat(async/unstable): add `Lazy` for once-only async init (#7007)
+- feat(async/unstable): allow `AbortableOptions` with optional signal in
+  `abortable` (#6971)
+- feat(async/unstable): add poll function (#6973)
+- feat(async/unstable): add allKeyed and allSettledKeyed (#6959)
+- refactor(async/unstable): apply style guide to circuit breaker (#7008)
+- refactor(async/unstable): make circuit breaker resilient to throwing callbacks
+  (#6996)
+
+#### @std/cli 1.0.28 (patch)
+
+- feat(cli/unstable): introduce StaticLine (#6758)
+- fix(cli): handle empty value in parseArgs (#6995)
+- fix(cli): prevent prototype pollution in parseArgs (#6980)
+
+#### @std/collections 1.1.6 (patch)
+
+- fix(collections): stricter enforcement on generics (#6961)
+
+#### @std/expect 1.0.18 (patch)
+
+- feat(expect/unstable): implement toMatchSnapshot() (#7003)
+
+#### @std/fs 1.0.23 (patch)
+
+- fix(fs/unstable): use crypto.getRandomValues() for temp file naming (#6983)
+
+#### @std/http 1.0.25 (patch)
+
+- feat(http/unstable): add `Cache-Control` header parser and formatter (#7005)
+- feat(http/unstable): implement RFC 9651 Structured Field Values (#6963)
+- fix(http): guard top-level Deno global access for browser compatibility
+  (#6987)
+- refactor(http/unstable): improve route() method matching (#6990)
+
+#### @std/json 1.0.3 (patch)
+
+- feat(json/unstable): implement RFC 8785 JSON canonicalization (#6965)
+
+#### @std/xml 0.1.0 (minor)
+
+- feat(xml/unstable): add XML parsing and serialization module (#6981)
+- docs(xml): clean up JSDoc and error message style (#7009)
+- refactor(xml): improve tokenizer edge cases and performance (#6997)
+
+#### @std/yaml 1.0.12 (patch)
+
+- refactor(yaml): add `Scanner` class (#6958)
+
+### 2026.01.30
+
+#### @std/assert 1.0.18 (patch)
+
+- docs(assert): improve assertFalse() docs and test coverage (#6956)
+- docs(assert): improve assert() docs and test coverage (#6955)
+- refactor(assert): improve assertArrayIncludes perf and docs (#6953)
+
+#### @std/async 1.1.1 (patch)
+
+- feat(async/unstable): enhance CircuitBreaker with AbortSignal and onHalfOpen
+  callback (#6951)
+- fix(async/unstable): ensure state consistency in circuit breaker before
+  callbacks fire (#6967)
+
+#### @std/cli 1.0.27 (patch)
+
+- feat(cli/unstable): add fitToRemainingHeight option for promptSelect and
+  promptMultipleSelect (#6978)
+- fix(cli): strip ANSI codes from indicator for padding in promptSelect (#6977)
+
+#### @std/collections 1.1.5 (patch)
+
+- perf(collections): optimize deepMerge (#6948)
+
+#### @std/http 1.0.24 (patch)
+
+- feat(http/unstable): FormData Decoder/Encoder Streams (#6928)
+- feat(http/unstable): add ServerSentEventParseStream for decoding SSE streams
+  (#6957)
+
+#### @std/io 0.225.3 (patch)
+
+- fix(io): re-export public type aliases (#6969)
+
+#### @std/tar 0.1.10 (patch)
+
+- feat(tar/unstable): add symlink support to TarStream (#6976)
+
+### 2026.01.20
+
+#### @std/assert 1.0.17 (patch)
+
+- docs(assert): fix typo and add @throws tag in assertAlmostEquals (#6950)
+
+#### @std/async 1.1.0 (minor)
+
+- feat(async): stabilize isRetriable option for retry (#6944)
+- feat(async/unstable): add support for AbortSignal in retry (#6938)
+- feat(async/unstable): support sync functions in CircuitBreaker (#6933)
+- feat(async/unstable): add unstable circuit breaker (#6900)
+- fix(async/unstable): validate Semaphore max is a positive integer (#6934)
+- fix(async/unstable): make circuit breaker state getter pure (#6926)
+- docs(async): list exact API names in module document (#6946)
+- refactor(async): improve retry() input validation (#6922)
+- refactor(async): optimize delay() for common timeout durations (#6923)
+- refactor(async/unstable): improve circuit breaker defaults and readability
+  (#6917)
+
+#### @std/cache 0.2.2 (patch)
+
+- fix(cache/unstable): call onEject for falsy values on delete (#6935)
+
+#### @std/cli 1.0.26 (patch)
+
+- fix(cli): accept readonly string array in parseArgs (#6911)
+
+#### @std/collections 1.1.4 (patch)
+
+- feat(collections/unstable): add index arg to methods (#6382)
+- fix(collections): correct overload ordering (#6930)
+- perf(collections): optimize minOf/maxOf with fast array paths (#6936)
+- perf(collections): optimize minBy/maxBy with fast array paths (#6919)
+- perf(collections): optimize sortBy (#6916)
+- refactor(collections): optimize zip() (#6931)
+
+#### @std/data-structures 1.0.10 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/datetime 0.225.7 (patch)
+
+- feat(datetime): add month and day of week constants (#6910)
+- refactor(datetime): rename abbreviated month and weekday constants to full
+  names (#6939)
+
+#### @std/fmt 1.0.9 (patch)
+
+- docs(fmt): fix JSDoc errors and inconsistencies (#6937)
+
+#### @std/fs 1.0.22 (patch)
+
+- docs(fs): fix `walk` examples (#6918)
+
+#### @std/random 0.1.5 (patch)
+
+- perf(random): inline random index calculation in shuffle() (#6920)
+- test(random): replace exact-value assertions with property-based checks
+  (#6932)
+
+#### @std/semver 1.0.8 (patch)
+
+- fix(semver): correcting <= operator behavior when minor version is wildcard
+  (#6943)
+- refactor(semver): removing unreachable code, bringing coverage to 100% (#6924)
+
+#### @std/streams 1.0.17 (patch)
+
+- fix(streams): add input validation to toTransformStream (#6945)
+
+#### @std/testing 1.0.17 (patch)
+
+- test(testing,data-structures): deduplicate test helper code (#6927)
+
+#### @std/text 1.0.17 (patch)
+
+- fix(text/unstable): only strip single trailing newline in dedent (#6913)
+
+#### @std/yaml 1.0.11 (patch)
+
+- perf(yaml): rewrite `inspectNode()` (#6952)
+- perf(yaml): make `DEPRECATED_BOOLEANS_SYNTAX` a `Set` (#6949)
+- refactor(yaml): eliminate shared class state by passing parameters in
+  `LoaderState` (#6902)
+- refactor(yaml): add correct `kind` type (#6941)
+- refactor(yaml): remove `anchor` `undefined` check (#6915)
+- refactor(yaml): cleanup `composeNode()` statements (#6905)
+- refactor(yaml): remove `undefined` type from `tag`, `anchor` and `kind`
+  (#6907)
+- refactor(yaml): flatten `stringifyNode()` (#6906)
+- refactor(yaml): add `resolveTag()` method (#6904)
+- refactor(yaml): add `getIndentStatus` function (#6903)
+
+### 2025.12.25
+
+#### @std/streams 1.0.16 (patch)
+
+- fix(streams/unstable): use relative path for in-package import (#6909)
+
+### 2025.12.24
+
+#### @std/async 1.0.16 (patch)
+
+- feat(async/unstable): add semaphore (#6894)
+- fix(async): allow numbers greater than `Number.MAX_SAFE_INTEGER` in deadline
+  (#6810)
+- docs(async/unstable): update semaphore docs to suggest try/finally (#6899)
+
+#### @std/cli 1.0.25 (patch)
+
+- test(cli): ignore flaky examples (#6882)
+
+#### @std/datetime 0.225.6 (patch)
+
+- test(datetime): adding test for potential null-state of 'months' (#6891)
+
+#### @std/dotenv 0.225.6 (patch)
+
+- refactor(dotenv): avoid recursive `expand()` (#6892)
+- refactor(dotenv): use for loops (#6893)
+- refactor(dotenv): move `charactersMap` outside of `expandCharacters()` fn
+  (#6889)
+- refactor(dotenv): rename regexp constants (#6888)
+
+#### @std/fs 1.0.21 (patch)
+
+- fix(fs): "Deno is not defined" when using the module in browser (#6896)
+- fix(fs): support for Node.js v20 (#6873)
+- docs(fs): remove unversioned jsr specifiers (#6874)
+
+#### @std/http 1.0.23 (patch)
+
+- fix(http): negotiation returns the specific type of supported outcomes (when
+  provided) (#6876)
+- refactor(http): removing unreachable conditions, increasing coverage (#6895)
+- refactor(http): reached full line coverage, unwind ternary to improve
+  reability (#6885)
+
+#### @std/ini 1.0.0-rc.9 (prerelease)
+
+- feat(ini): reviver value is type casted (#6887)
+
+#### @std/path 1.1.4 (patch)
+
+- fix(path): handle file separator in group (#6880)
+- docs(path): fix typo in API doc (#6881)
+- test(path): relax timeout of isGlob perf testing (#6883)
+
+#### @std/streams 1.0.15 (patch)
+
+- feat(streams/unstable): new CappedDelimiterStream() (#6890)
+
+#### @std/uuid 1.1.0 (minor)
+
+- feat(uuid): stabilize uuidv7 module (#6897)
+
+### 2025.11.17
+
+#### @std/assert 1.0.16 (patch)
+
+- fix(assert,streams): handle SharedArrayBuffer being disabled in some browser
+  context (#6856)
+
+#### @std/cache 0.2.1 (patch)
+
+- feat(cache): add cleanup callback to `LruCache` and `TtlCache` (#6857)
+
+#### @std/cbor 0.1.9 (patch)
+
+- docs(cbor): remove h2 and change spelling from UK -> US (#6847)
+
+#### @std/cli 1.0.24 (patch)
+
+- feat(cli/unstable): custom progress bar refresh interval (#6862)
+- fix(cli/unstable): typo in ProgressBar example (#6848)
+
+#### @std/fs 1.0.20 (patch)
+
+- fix(fs): "Deno is not defined" when using the module in browser (#6868)
+- fix(fs): `expandGlob`/`expandGlobSync` - match non-glob path segments
+  containing escaped glob chars (#6788)
+- fix(fs,path): `expandGlob`, `expandGlobSync`, and `isGlob` match
+  `@(alternate)` syntax with only one member (#6850)
+
+#### @std/http 1.0.22 (patch)
+
+- feat(http/unstable): add support for extra headers in serveFile (#6842)
+- fix(http): runtime types for `getCookies` (#6853)
+
+#### @std/math 0.0.0 (patch)
+
+- feat(math/unstable): add `math` package with basic math utilities (#6823)
+
+#### @std/path 1.1.3 (patch)
+
+- fix(fs,path): `expandGlob`, `expandGlobSync`, and `isGlob` match
+  `@(alternate)` syntax with only one member (#6850)
+
+#### @std/random 0.1.4 (patch)
+
+- docs(random): use PRNG initialization with secure random seed (#6855)
+
+#### @std/semver 1.0.7 (patch)
+
+- refactor(semver): reduce nesting in `testComparatorSet()` (#6866)
+
+#### @std/streams 1.0.14 (patch)
+
+- fix(assert,streams): handle SharedArrayBuffer being disabled in some browser
+  context (#6856)
+
+### 2025.10.07a
+
+#### @std/internal 1.0.12 (patch)
+
+- fix(internal): fix error in module reference (#6845)
+
+### 2025.10.07
+
+#### @std/assert 1.0.15 (patch)
+
+- feat(assert/unstable): truncate big diffs (#6835)
+- fix(assert): add support for checking ArrayBuffer equality (#6821)
+
+#### @std/async 1.0.15 (patch)
+
+- feat(async/unstable): add `ensureLastCall` option for `throttle` (#6800)
+- fix(async/unstable): fix handling of async predicate in waitFor (#6839)
+- fix(async): convert setTimeout return values to Number (fixing type error when
+  used with Node.js) (#6833)
+- fix(async): pass numeric value of `delay` timer to `unrefTimer` when
+  `persistent=false` (#6822)
+
+#### @std/cli 1.0.23 (patch)
+
+- fix(cli): improve Node compatibility by removing top-level Deno API usage
+  (#6837)
+- fix(cli): ensure unknown() is not called for collect args (parseArgs) (#6813)
+
+#### @std/html 1.0.5 (patch)
+
+- feat(html/unstable): add escapeJs and escapeCss functions (#6782)
+
+#### @std/http 1.0.21 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/internal 1.0.11 (patch)
+
+- chore(internal): support truncating of big diffs (#6835)
+
+#### @std/random 0.1.3 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/semver 1.0.6 (patch)
+
+- fix(semver): allow users to set prerelease number during increment (#6825)
+
+#### @std/streams 1.0.13 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/tar 0.1.9 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/testing 1.0.16 (patch)
+
+- feat(testing/unstable): add `it.todo` `test.todo` and `describe.todo` API
+  (#6712)
+
+#### @std/toml 1.0.11 (patch)
+
+- test(toml): test with the official toml-test suite (#6798)
+
+#### @std/webgpu 0.224.9 (patch)
+
+- fix(http,random,streams,tar,webgpu): update types for Deno 2.5 (#6817)
+
+#### @std/yaml 1.0.10 (patch)
+
+- feat(yaml/unstable): allow to add custom types for parse and stringify (#6841)
+
+### 2025.09.04
+
+#### @std/cli 1.0.22 (patch)
+
+- fix(cli/unstable): update typing of ProgressBarStream for TS 5.9 (#6811)
+
+#### @std/net 1.0.6 (patch)
+
+- feat(net/unstable): add matchSubnets on @std/net (#6786)
+
+#### @std/streams 1.0.12 (patch)
+
+- deprecation(streams/unstable): AbortStream (#6799)
+
+#### @std/tar 0.1.8 (patch)
+
+- refactor(tar): clean up TarStream (#6783)
+- test(tar): improve TarStream's tests (#6793)
+
+#### @std/toml 1.0.10 (patch)
+
+- fix(toml): nested table arrays (#6794)
+
+### 2025.08.13
+
+#### @std/assert 1.0.14 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/collections 1.1.3 (patch)
+
+- test(collections): fix mapValues mutation test so it actually tests mutation
+  (#6780)
+
+#### @std/expect 1.0.17 (patch)
+
+- chore(assert,expect): bump assert and expect versions (#6791)
+
+#### @std/net 1.0.5 (patch)
+
+- feat(net/unstable): add ip utilities (#6765)
+
+#### @std/path 1.1.2 (patch)
+
+- fix(path): improve regex in `isGlob` (#6764)
+
+#### @std/streams 1.0.11 (patch)
+
+- refactor(streams/unstable): toByteStream to make use of autoAllocateChunkSize
+  (#6781)
+
+#### @std/text 1.0.16 (patch)
+
+- feat(text/unstable): add `trimBy` functions (#6778)
+
+#### @std/toml 1.0.9 (patch)
+
+- fix(toml): prevent prototype pollution by table key
+
+### 2025.07.29
+
+#### @std/async 1.0.14 (patch)
+
+- fix(async): allow delay timeout of arbitrary length (#6775)
+
+#### @std/tar 0.1.7 (patch)
+
+- fix(tar): receiving empty buffers (#6777)
+
+### 2025.07.22
+
+#### @std/cli 1.0.21 (patch)
+
+- BREAKING(cli/unstable): rename `fmt` of `ProgressBarOption` to `formatter`
+  (#6707)
+- feat(cli/unstable): introduce Ansi module (#6756)
+- feat(cli/unstable): add search to promptSelect and promptMultipleSelect
+  (#6741)
+- feat(cli/unstable): valued prompt items (#6742)
+- feat(cli/unstable): add `visibleLines` and `indicator` options to
+  `promptMultipleSelect`, and show `...` above the options when appropriate
+  (#6699)
+- refactor(cli/unstable): dedupe logic between promptSelect and
+  promptMultipleSelect (#6769)
+- refactor(cli/unstable): rename `title` to `label` for valued prompt items
+  (#6751)
+
+#### @std/data-structures 1.0.9 (patch)
+
+- feat(data-structures/unstable): 2d array (#6754)
+
+#### @std/http 1.0.20 (patch)
+
+- fix(http): respect colors and other `Deno.inspect` options when logging
+  `UserAgent`s (#6763)
+
+#### @std/internal 1.0.10 (patch)
+
+- fix(internal): fix inspect fallbacks for formatting diffs (#6747)
+
+#### @std/testing 1.0.15 (patch)
+
+- feat(testing/unstable): add `stubProperty` function (#6761)
+- fix(testing): align types for fake timeout/interval signatures (#6767)
+
+#### @std/yaml 1.0.9 (patch)
+
+- refactor(yaml): remove `version` property, separate directive handling (#6657)
+
+### 2025.07.01
+
+#### @std/collections 1.1.2 (patch)
+
+- chore(collections): add browser compatibility declaration to `unstable-cycle`
+  module (#6720)
+
+#### @std/fs 1.0.19 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/http 1.0.19 (patch)
+
+- perf(http): increase performance of HTML rendering (#6727)
+
+#### @std/internal 1.0.9 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/path 1.1.1 (patch)
+
+- fix(fs,internal,path): unify `isWindows` implementations (#6744)
+
+#### @std/text 1.0.15 (patch)
+
+- feat(text/unstable): add `longestCommonPrefix` (#6734)
+- feat(text/unstable): add `toTitleCase()` and `toSentenceCase()` (#6701)
+- fix(text/unstable): `dedent()` correct blank line handling (#6738)
+
+### 2025.06.12
+
+#### @std/cli 1.0.20 (patch)
+
+- fix(cli/unstable): `Spinner` print on `start()` (#6706)
+- refactor(cli/unstable): move unit related stuff to separate file (#6693)
+
+#### @std/http 1.0.18 (patch)
+
+- feat(http/unstable): add `cleanUrls` option to `serveDir` (#6231)
+
+#### @std/streams 1.0.10 (patch)
+
+- feat(streams/unstable): add `AbortStream` (#6708)
+- refactor(streams): throw `RangeError` within `Buffer` methods (#6714)
+
+#### @std/testing 1.0.14 (patch)
+
+- test(testing): ignore doc test of snapshot docs (#6718)
+
+#### @std/toml 1.0.8 (patch)
+
+- fix(toml): february edge cases in datetime (#6704)
+- fix(toml): leading zeroes in float (#6703)
+- refactor(toml): use RegExp groups for month validation (#6705)
+
+#### @std/uuid 1.0.9 (patch)
+
+- fix(uuid): support for UUID v7 validation (#6709)
+
+#### @std/yaml 1.0.8 (patch)
+
+- feat(yaml/unstable): export `unstable_stringify.ts` (#6702)
+- refactor(yaml): move `composeNode()` params in an object (#6658)
+
 ### 2025.05.30
 
 #### @std/cli 1.0.19 (patch)

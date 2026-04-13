@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import type { Comparator, Range } from "./types.ts";
 import { OPERATORS } from "./_constants.ts";

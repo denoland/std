@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { crypto as stdCrypto } from "../crypto.ts";
 import { __wbindgen_memory } from "../_wasm/lib/deno_std_wasm_crypto.internal.mjs";
 import { encodeHex } from "../../encoding/hex.ts";

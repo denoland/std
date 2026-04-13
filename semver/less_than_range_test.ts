@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Copyright Isaac Z. Schlueter and npm contributors. All rights reserved. ISC license.
 
 import { assert, assertEquals, assertFalse } from "@std/assert";
@@ -186,6 +186,5 @@ Deno.test("lessThanRange() handles not equals operator", () => {
     prerelease: [],
     build: [],
   }]];
-  // FIXME(kt3k): This demonstrates a bug. This should be false
-  assertEquals(lessThanRange(version, range), true);
+  assertEquals(lessThanRange(version, range), false);
 });

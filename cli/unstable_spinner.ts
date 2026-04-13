@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 const encoder = new TextEncoder();
 
@@ -239,6 +239,7 @@ export class Spinner {
     };
 
     this.#intervalId = setInterval(updateFrame, this.#interval);
+    updateFrame();
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import { equal } from "./equal.ts";
 import { buildMessage } from "@std/internal/build-message";
@@ -15,9 +15,11 @@ import { AssertionError } from "./assertion_error.ts";
  * Type parameter can be specified to ensure values under comparison have the
  * same type.
  *
- * Note: When comparing `Blob` objects, you should first convert them to
- * `Uint8Array` using the `Blob.bytes()` method and then compare their
- * contents.
+ * Note: This function is based on value equality, but for some cases (such as
+ * data that can only be read asynchronously or function properties) value
+ * equality is not possible to determine. In such cases, reference equality is
+ * used instead, which may cause false negatives for objects such as `Blob`s or
+ * `Request`s.
  *
  * @example Usage
  * ```ts ignore
@@ -59,7 +61,8 @@ export function assertEquals<T>(
   const diffResult = stringDiff
     ? diffStr(actual as string, expected as string)
     : diff(actualString.split("\n"), expectedString.split("\n"));
-  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  const diffMsg = buildMessage(diffResult, { stringDiff }, arguments[3])
+    .join("\n");
   message = `${message}\n${diffMsg}`;
   throw new AssertionError(message);
 }

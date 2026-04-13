@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert, assertFalse, assertThrows, equal } from "./mod.ts";
 
 Deno.test("equal() different zero", () => {
@@ -486,6 +486,25 @@ Deno.test("equal() with typed arrays", async (t) => {
       assert(equal(
         new Float64Array([0]),
         new Float64Array([-0]),
+      ));
+    });
+  });
+});
+
+Deno.test("equal() with ArrayBuffer", async (t) => {
+  await t.step("ArrayBuffer", async (t) => {
+    await t.step("equal", () => {
+      assert(equal(
+        new Uint8Array([1, 2, 3]).buffer,
+        new Uint8Array([1, 2, 3]).buffer,
+      ));
+    });
+  });
+  await t.step("ArrayBuffer", async (t) => {
+    await t.step("not equal", () => {
+      assertFalse(equal(
+        new Uint8Array([1, 2, 3]).buffer,
+        new Uint8Array([1, 2, 4]).buffer,
       ));
     });
   });

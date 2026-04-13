@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 export const MIN_READ_BUFFER_SIZE = 16;
 export const bufsizes = [

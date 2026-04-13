@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import {
   assert,
   assertAlmostEquals,
@@ -23,6 +23,8 @@ import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
+import { serveDir as unstableServeDir } from "./unstable_file_server.ts";
+import { serveFile as unstableServeFile } from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -1149,4 +1151,89 @@ Deno.test(async function serveFileHeadRequest() {
   assertEquals(res.statusText, "OK");
   assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
   assertEquals(res.headers.get("content-length"), "10034");
+});
+
+Deno.test("serveDir() handles HEAD request for a file", async () => {
+  const req = new Request("http://localhost/test_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.statusText, "OK");
+  assertEquals(res.headers.get("content-type"), "text/plain; charset=UTF-8");
+  assertEquals(res.headers.get("content-length"), `${TEST_FILE_SIZE}`);
+  assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
+  assertEquals(res.headers.get("last-modified"), TEST_FILE_LAST_MODIFIED);
+  assertEquals(res.headers.get("accept-ranges"), "bytes");
+});
+
+Deno.test("serveDir() handles HEAD request for index.html", async () => {
+  const req = new Request(
+    "http://localhost/http/testdata/subdir-with-index/",
+    { method: "HEAD" },
+  );
+  const res = await serveDir(req, { showIndex: true });
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+});
+
+Deno.test("serveDir() handles HEAD request for directory listing", async () => {
+  const req = new Request("http://localhost/", { method: "HEAD" });
+  const res = await serveDir(req, serveDirOptions);
+
+  assert(!res.body);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+  assert(Number(res.headers.get("content-length")) > 0);
+});
+
+Deno.test("serveDir() handles HEAD request for missing file", async () => {
+  const req = new Request("http://localhost/no_such_file.txt", {
+    method: "HEAD",
+  });
+  const res = await serveDir(req, serveDirOptions);
+  await res.body?.cancel();
+
+  assertEquals(res.status, 404);
+  assertEquals(res.statusText, "Not Found");
+});
+
+Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
+  const req = new Request("http://localhost/hello");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions,
+    cleanUrls: true,
+  });
+  const downloadedFile = await res.text();
+  const localFile = await Deno.readTextFile(join(testdataDir, "hello.html"));
+
+  assertEquals(res.status, 200);
+  assertEquals(downloadedFile, localFile);
+  assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
+});
+
+Deno.test("(unstable) serveDir() does not shadow existing files and directory if cleanUrls=true", async () => {
+  const req = new Request("http://localhost/test_clean_urls");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions,
+    cleanUrls: true,
+  });
+
+  assertEquals(res.status, 301);
+  assertEquals(res.headers.has("location"), true);
+});
+
+Deno.test("(unstable) serveFile() sends custom headers", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt");
+  const res = await unstableServeFile(req, TEST_FILE_PATH, {
+    headers: ["X-Extra: extra header"],
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("X-Extra"), "extra header");
+  assertEquals(await res.text(), TEST_FILE_TEXT);
 });

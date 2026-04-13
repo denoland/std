@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -24,7 +24,7 @@
  * assertEquals(picked, { a: 5, c: 7 });
  * ```
  */
-export function pick<T extends object, K extends keyof T>(
+export function pick<T extends object, const K extends keyof T>(
   obj: Readonly<T>,
   keys: readonly K[],
 ): Pick<T, K> {

@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: ""
 labels: bug, needs triage
-assignees: ''
+assignees: ""
 ---
 
 **Describe the bug**
@@ -21,6 +21,10 @@ Example
 **Expected behavior**
 
 <!-- A clear and concise description of what you expected to happen. -->
+
+**Actual behavior**
+
+<!-- Actual output of the steps, in your environment. -->
 
 **Environment**
 

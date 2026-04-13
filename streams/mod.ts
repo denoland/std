@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 /**
  * Utilities for working with the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Streams API}.
@@ -30,6 +30,7 @@ export * from "./text_delimiter_stream.ts";
 export * from "./text_line_stream.ts";
 export * from "./to_array_buffer.ts";
 export * from "./to_blob.ts";
+export * from "./to_bytes.ts";
 export * from "./to_json.ts";
 export * from "./to_text.ts";
 export * from "./to_transform_stream.ts";

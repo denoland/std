@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { basename } from "@std/path/basename";
 import { join } from "@std/path/join";
@@ -7,9 +7,7 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType } from "./_get_file_info_type.ts";
 import { toPathString } from "./_to_path_string.ts";
 import { isSubdir } from "./_is_subdir.ts";
-
-// deno-lint-ignore no-explicit-any
-const isWindows = (globalThis as any).Deno?.build.os === "windows";
+import { isWindows } from "@std/internal/os";
 
 /** Options for {@linkcode copy} and {@linkcode copySync}. */
 export interface CopyOptions {

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
  * Utilities for parsing streaming JSON data.
@@ -23,3 +23,4 @@ export * from "./concatenated_json_parse_stream.ts";
 export * from "./types.ts";
 export * from "./parse_stream.ts";
 export * from "./stringify_stream.ts";
+export * from "./canonicalize.ts";

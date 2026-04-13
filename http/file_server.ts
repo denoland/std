@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
@@ -38,6 +38,7 @@ import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
 import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { exists } from "@std/fs/exists";
 import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
 import {
@@ -62,15 +63,20 @@ interface EntryInfo {
   name: string;
 }
 
-const ENV_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "env", variable: "DENO_DEPLOYMENT_ID" })
-    .state ?? "granted"; // for deno deploy
-const NET_PERM_STATUS =
-  Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
-    .state ?? "granted"; // for deno deploy
-const DENO_DEPLOYMENT_ID = ENV_PERM_STATUS === "granted"
-  ? Deno.env.get("DENO_DEPLOYMENT_ID")
-  : undefined;
+const ENV_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({
+    name: "env",
+    variable: "DENO_DEPLOYMENT_ID",
+  }).state ?? "granted"
+  : "granted"; // for deno deploy
+const NET_PERM_STATUS = typeof Deno !== "undefined"
+  ? Deno.permissions.querySync?.({ name: "sys", kind: "networkInterfaces" })
+    .state ?? "granted"
+  : "granted"; // for deno deploy
+const DENO_DEPLOYMENT_ID =
+  ENV_PERM_STATUS === "granted" && typeof Deno !== "undefined"
+    ? Deno.env.get("DENO_DEPLOYMENT_ID")
+    : undefined;
 const HASHED_DENO_DEPLOYMENT_ID = DENO_DEPLOYMENT_ID
   ? eTag(DENO_DEPLOYMENT_ID, { weak: true })
   : undefined;
@@ -178,6 +184,8 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
+  await req.body?.cancel();
+
   if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
@@ -188,7 +196,6 @@ export async function serveFile(
     fileInfo ??= await Deno.stat(filePath);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
-      await req.body?.cancel();
       return createStandardResponse(STATUS_CODE.NotFound);
     } else {
       throw error;
@@ -196,7 +203,6 @@ export async function serveFile(
   }
 
   if (fileInfo.isDirectory) {
-    await req.body?.cancel();
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
@@ -331,6 +337,7 @@ export async function serveFile(
 }
 
 async function serveDirIndex(
+  req: Request,
   dirPath: string,
   options: {
     showDotfiles: boolean;
@@ -400,9 +407,13 @@ async function serveDirIndex(
 
   const headers = createBaseHeaders();
   headers.set(HEADER.ContentType, "text/html; charset=UTF-8");
+  if (req.method === METHOD.Head) {
+    const pageSize = new TextEncoder().encode(page).byteLength;
+    headers.set(HEADER.ContentLength, String(pageSize));
+  }
 
   const status = STATUS_CODE.OK;
-  return new Response(page, {
+  return new Response(req.method === METHOD.Head ? null : page, {
     status,
     statusText: STATUS_TEXT[status],
     headers,
@@ -431,7 +442,12 @@ function html(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): string {
-  return String.raw({ raw: strings }, ...values);
+  let out = "";
+  for (let i = 0; i < strings.length; ++i) {
+    out += strings[i];
+    if (i < values.length) out += values[i] ?? "";
+  }
+  return out;
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
@@ -512,19 +528,19 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <main>
           <h1>
             Index of ${headerPaths
-      .map((path, index) => {
-        if (path === "") return "";
-        const depth = headerPaths.length - index - 1;
-        let link;
-        if (depth == 0) {
-          link = ".";
-        } else {
-          link = "../".repeat(depth);
-        }
-        // deno-fmt-ignore
-        return html`<a href="${link}">${escape(path)}</a>`;
-      })
-      .join("/")}/
+              .map((path, index) => {
+                if (path === "") return "";
+                const depth = headerPaths.length - index - 1;
+                let link;
+                if (depth == 0) {
+                  link = ".";
+                } else {
+                  link = "../".repeat(depth);
+                }
+                // deno-fmt-ignore
+                return html`<a href="${link}">${escape(path)}</a>`;
+              })
+              .join("/")}/
           </h1>
           <table>
             <thead>
@@ -535,23 +551,23 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
               </tr>
             </thead>
             ${entries
-      .map(
-        (entry) =>
-          html`
-            <tr>
-              <td class="mode">
-                ${entry.mode}
-              </td>
-              <td class="size">
-                ${entry.size}
-              </td>
-              <td>
-                <a href="${escape(entry.url)}">${escape(entry.name)}</a>
-              </td>
-            </tr>
-          `,
-      )
-      .join("")}
+              .map(
+                (entry) =>
+                  html`
+                    <tr>
+                      <td class="mode">
+                        ${entry.mode}
+                      </td>
+                      <td class="size">
+                        ${entry.size}
+                      </td>
+                      <td>
+                        <a href="${escape(entry.url)}">${escape(entry.name)}</a>
+                      </td>
+                    </tr>
+                  `,
+              )
+              .join("")}
           </table>
         </main>
       </body>
@@ -649,7 +665,7 @@ export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  if (req.method !== METHOD.Get) {
+  if (req.method !== METHOD.Get && req.method !== METHOD.Head) {
     return createStandardResponse(STATUS_CODE.MethodNotAllowed);
   }
 
@@ -695,6 +711,7 @@ async function createServeDirResponse(
   const target = opts.fsRoot ?? ".";
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
+  const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
   const showDotfiles = opts.showDotfiles || false;
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
@@ -728,7 +745,13 @@ async function createServeDirResponse(
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  const fsPath = join(target, normalizedPath);
+  // Resolve path
+  // If cleanUrls is enabled, automatically append ".html" if not present
+  // and it does not shadow another existing file or directory
+  let fsPath = join(target, normalizedPath);
+  if (cleanUrls && !fsPath.endsWith(".html") && !(await exists(fsPath))) {
+    fsPath += ".html";
+  }
   const fileInfo = await Deno.stat(fsPath);
 
   // For files, remove the trailing slash from the path.
@@ -778,7 +801,7 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);

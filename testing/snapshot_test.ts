@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { stripAnsiCode } from "@std/fmt/colors";
 import { dirname, fromFileUrl, join, toFileUrl } from "@std/path";
 import {
@@ -26,9 +26,9 @@ function formatTestOutput(string: string) {
 }
 
 function formatTestError(string: string) {
-  // Strip colors and remove "Check file:///workspaces/deno_std/testing/.tmp/test.ts"
+  // Strip colors and remove "Check <path>" lines
   // as this is always output to stderr
-  return stripAnsiCode(string).replace(/^Check file:\/\/(.+)\n/gm, "");
+  return stripAnsiCode(string).replace(/^Check .+\n/gm, "");
 }
 
 function testFnWithTempDir(

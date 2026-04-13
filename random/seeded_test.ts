@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { getRandomValuesSeeded } from "./get_random_values_seeded.ts";
 import { nextFloat64 } from "./next_float_64.ts";
 import { type Prng, randomSeeded } from "./seeded.ts";

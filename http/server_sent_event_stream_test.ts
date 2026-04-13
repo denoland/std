@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import {
   type ServerSentEventMessage,
@@ -58,26 +58,33 @@ Deno.test("ServerSentEventStream enqueues a stringified server-sent event messag
   );
 });
 
+Deno.test("ServerSentEventStream serializes multi-line comments", async () => {
+  const stream = createStream([{ comment: "line1\nline2\r\nline3" }]);
+  const result = await Array.fromAsync(stream);
+
+  assertEquals(result, [":line1\n:line2\n:line3\n\n"]);
+});
+
+Deno.test("ServerSentEventStream serializes empty string fields", async () => {
+  const stream = createStream([
+    { comment: "" },
+    { event: "" },
+    { data: "" },
+    { id: 0 },
+    { retry: 0 },
+  ]);
+  const result = await Array.fromAsync(stream);
+
+  assertEquals(result, [
+    ":\n\n",
+    "event:\n\n",
+    "data:\n\n",
+    "id:0\n\n",
+    "retry:0\n\n",
+  ]);
+});
+
 Deno.test("ServerSentEventStream throws if single-line fields contain a newline", async () => {
-  // Comment
-  await assertRejects(
-    async () => await createStream([{ comment: "a\n" }]).getReader().read(),
-    SyntaxError,
-    "`message.comment` cannot contain a newline",
-  );
-
-  await assertRejects(
-    async () => await createStream([{ comment: "a\r" }]).getReader().read(),
-    SyntaxError,
-    "`message.comment` cannot contain a newline",
-  );
-
-  await assertRejects(
-    async () => await createStream([{ comment: "a\n\r" }]).getReader().read(),
-    SyntaxError,
-    "`message.comment` cannot contain a newline",
-  );
-
   // Event
   await assertRejects(
     async () => await createStream([{ event: "a\n" }]).getReader().read(),

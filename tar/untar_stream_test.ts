@@ -1,7 +1,7 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects } from "@std/assert";
-import { toBytes } from "@std/streams/unstable-to-bytes";
+import { toBytes } from "@std/streams/to-bytes";
 import { TarStream, type TarStreamInput } from "./tar_stream.ts";
 import {
   type OldStyleFormat,

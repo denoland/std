@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { difference } from "./difference.ts";
 
@@ -22,6 +22,12 @@ Deno.test({
     assertEquals(diff.months, 23);
     assertEquals(diff.quarters, 7);
     assertEquals(diff.years, 1);
+
+    // test for 'months' potential null-state when calculating quarters only
+    diff = difference(denoInit, denoReleaseV1, {
+      units: ["quarters"],
+    });
+    assertEquals(diff.quarters, 7);
 
     // Default units
     diff = difference(denoReleaseV1, denoInit);

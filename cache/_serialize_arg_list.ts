@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import type { MemoizationCache } from "./memoize.ts";
 
 /**
@@ -10,13 +10,20 @@ import type { MemoizationCache } from "./memoize.ts";
  * @param cache The cache for which the keys will be used.
  * @returns `getKey`, the function for getting cache keys.
  */
-
 export function _serializeArgList<Return>(
   cache: MemoizationCache<unknown, Return>,
 ): (this: unknown, ...args: unknown[]) => string {
+  // Three cooperating data structures track weak (reference-type) arguments:
+  //   1. weakKeyToKeySegmentCache: WeakMap from object/symbol → segment id
+  //      (e.g. `"{0}"`) so the same reference always maps to the same segment.
+  //   2. weakKeySegmentToKeyCache: Map from segment id → set of composite cache
+  //      keys that contain that segment, used by the finalization callback.
+  //   3. registry (FinalizationRegistry): when a weak key is garbage-collected,
+  //      looks up its segment in (2) and deletes all associated entries from the
+  //      caller-provided cache.
   const weakKeyToKeySegmentCache = new WeakMap<WeakKey, string>();
-  const weakKeySegmentToKeyCache = new Map<string, string[]>();
-  let i = 0;
+  const weakKeySegmentToKeyCache = new Map<string, Set<string>>();
+  let nextWeakKeyId = 0;
 
   const registry = new FinalizationRegistry<string>((keySegment) => {
     for (const key of weakKeySegmentToKeyCache.get(keySegment) ?? []) {
@@ -46,26 +53,28 @@ export function _serializeArgList<Return>(
         return JSON.stringify(arg);
       }
 
-      try {
-        assertWeakKey(arg);
-      } catch {
-        if (typeof arg === "symbol") {
+      if (typeof arg === "symbol") {
+        try {
+          new WeakRef(arg);
+        } catch {
           return `Symbol.for(${JSON.stringify(arg.description)})`;
         }
-        // Non-weak keys other than `Symbol.for(...)` are handled by the branches above.
+      }
+
+      try {
+        new WeakRef(arg as WeakKey);
+      } catch {
         throw new Error(
           "Should be unreachable: please open an issue at https://github.com/denoland/std/issues/new",
         );
       }
 
-      if (!weakKeyToKeySegmentCache.has(arg)) {
-        const keySegment = `{${i++}}`;
-        weakKeySegments.push(keySegment);
-        registry.register(arg, keySegment);
-        weakKeyToKeySegmentCache.set(arg, keySegment);
+      let keySegment = weakKeyToKeySegmentCache.get(arg as WeakKey);
+      if (keySegment === undefined) {
+        keySegment = `{${nextWeakKeyId++}}`;
+        registry.register(arg as WeakKey, keySegment);
+        weakKeyToKeySegmentCache.set(arg as WeakKey, keySegment);
       }
-
-      const keySegment = weakKeyToKeySegmentCache.get(arg)!;
       weakKeySegments.push(keySegment);
       return keySegment;
     });
@@ -73,15 +82,14 @@ export function _serializeArgList<Return>(
     const key = keySegments.join(",");
 
     for (const keySegment of weakKeySegments) {
-      const keys = weakKeySegmentToKeyCache.get(keySegment) ?? [];
-      keys.push(key);
-      weakKeySegmentToKeyCache.set(keySegment, keys);
+      let keys = weakKeySegmentToKeyCache.get(keySegment);
+      if (keys === undefined) {
+        keys = new Set();
+        weakKeySegmentToKeyCache.set(keySegment, keys);
+      }
+      keys.add(key);
     }
 
     return key;
   };
-}
-
-function assertWeakKey(arg: unknown): asserts arg is WeakKey {
-  new WeakRef(arg as WeakKey);
 }

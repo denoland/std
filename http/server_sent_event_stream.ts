@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 const NEWLINE_REGEXP = /\r\n|\r|\n/;
@@ -37,15 +37,12 @@ function assertHasNoNewline(value: string, varName: string, errPrefix: string) {
  */
 function stringify(message: ServerSentEventMessage): Uint8Array {
   const lines = [];
-  if (message.comment) {
-    assertHasNoNewline(
-      message.comment,
-      "`message.comment`",
-      "Cannot serialize message",
+  if (message.comment !== undefined) {
+    message.comment.split(NEWLINE_REGEXP).forEach((line) =>
+      lines.push(`:${line}`)
     );
-    lines.push(`:${message.comment}`);
   }
-  if (message.event) {
+  if (message.event !== undefined) {
     assertHasNoNewline(
       message.event,
       "`message.event`",
@@ -53,12 +50,12 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     );
     lines.push(`event:${message.event}`);
   }
-  if (message.data) {
+  if (message.data !== undefined) {
     message.data.split(NEWLINE_REGEXP).forEach((line) =>
       lines.push(`data:${line}`)
     );
   }
-  if (message.id) {
+  if (message.id !== undefined) {
     assertHasNoNewline(
       message.id.toString(),
       "`message.id`",
@@ -66,7 +63,7 @@ function stringify(message: ServerSentEventMessage): Uint8Array {
     );
     lines.push(`id:${message.id}`);
   }
-  if (message.retry) lines.push(`retry:${message.retry}`);
+  if (message.retry !== undefined) lines.push(`retry:${message.retry}`);
   return encoder.encode(lines.join("\n") + "\n\n");
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved. MIT license.
 
 import type { EqualOptions, EqualOptionUtil } from "./_types.ts";
@@ -280,4 +280,54 @@ export function subsetEquality(
     };
 
   return subsetEqualityWithContext()(object, subset);
+}
+
+// Ported from https://github.com/jestjs/jest/blob/442c7f692e3a92f14a2fb56c1737b26fc663a0ef/packages/expect-utils/src/utils.ts#L82
+export function getObjectSubset(
+  object: unknown,
+  subset: unknown,
+  customTesters: Tester[] = [],
+  seenReferences: WeakMap<object, boolean> = new WeakMap(),
+): unknown {
+  if (Array.isArray(object)) {
+    if (Array.isArray(subset) && subset.length === object.length) {
+      return subset.map((_: unknown, i: number) =>
+        getObjectSubset(object[i], subset[i], customTesters, seenReferences)
+      );
+    }
+  } else if (object instanceof Date) {
+    return object;
+  } else if (isObject(object) && isObject(subset)) {
+    if (
+      equal(object, subset, {
+        customTesters: [...customTesters, iterableEquality, subsetEquality],
+      })
+    ) {
+      return subset;
+    }
+
+    const obj = object as Record<string, unknown>;
+    const sub = subset as Record<string, unknown>;
+    const trimmed: Record<string, unknown> = {};
+    seenReferences.set(object as object, true);
+
+    for (const key of Object.keys(obj)) {
+      if (!Object.prototype.hasOwnProperty.call(sub, key)) continue;
+
+      const val = obj[key];
+      if (typeof val === "object" && val !== null && seenReferences.has(val)) {
+        trimmed[key] = val;
+      } else {
+        trimmed[key] = getObjectSubset(
+          val,
+          sub[key],
+          customTesters,
+          seenReferences,
+        );
+      }
+    }
+
+    if (Object.keys(trimmed).length > 0) return trimmed;
+  }
+  return object;
 }

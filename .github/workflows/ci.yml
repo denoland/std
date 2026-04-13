@@ -1,7 +1,7 @@
 name: ci
 
 permissions:
-  contents: write
+  contents: read
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -39,8 +39,12 @@ jobs:
 
       - name: Run tests
         run: |
-          deno task test --coverage --clean
+          deno task test
           deno task test:with-unsafe-proto
+
+      - name: Run tools tests
+        run: deno task test:tools
+        if: matrix.deno == 'canary'
 
       - name: Run timezone-dependent tests
         run: |
@@ -57,16 +61,12 @@ jobs:
         run: deno publish --dry-run
         if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
 
-      - name: Generate lcov and html reports
-        run: |
-          deno task cov:lcov
-          deno task cov:html
-
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
+          files: ./coverage/lcov.info
           name: ${{ matrix.os }}-${{ matrix.deno }}
 
       - name: Upload coverage to Deploy
@@ -84,13 +84,15 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - latest
+          # TODO(kt3k): change this back to latest when the issue below resolved
+          # https://github.com/nodejs/node/issues/58826
+          - 24.2.0
         os:
           - ubuntu-latest
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -98,7 +100,7 @@ jobs:
           cache: true
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
 
@@ -118,7 +120,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -144,7 +146,7 @@ jobs:
           - windows-latest
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -174,7 +176,7 @@ jobs:
         module: [crypto/_wasm]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # required to check for changes
           fetch-depth: 2

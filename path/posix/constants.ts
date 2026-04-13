@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -12,4 +12,5 @@ export const SEPARATOR = "/" as const;
 /**
  * A regular expression that matches one or more path separators.
  */
+// deno-lint-ignore deno-style-guide/naming-convention
 export const SEPARATOR_PATTERN = /\/+/;

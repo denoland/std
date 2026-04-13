@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 /**
@@ -138,7 +138,7 @@ export class Base64EncoderStream<T extends "string" | "bytes">
  *   Base64DecoderStream,
  *   Base64EncoderStream,
  * } from "@std/encoding/unstable-base64-stream";
- * import { toBytes } from "@std/streams/unstable-to-bytes";
+ * import { toBytes } from "@std/streams/to-bytes";
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert, assertEquals } from "@std/assert";
 import { type GlobOptions, globToRegExp } from "./glob_to_regexp.ts";
 import { globToRegExp as posixGlobToRegExp } from "./posix/glob_to_regexp.ts";
@@ -491,5 +491,19 @@ Deno.test({
     const pattern2 = globToRegExp("foo/bar", { caseInsensitive: true });
     assertEquals("foo/bar".match(pattern2)?.[0], "foo/bar");
     assertEquals("Foo/Bar".match(pattern2)?.[0], "Foo/Bar");
+  },
+});
+
+Deno.test({
+  name: "globToRegExp() path seperator in middle of group",
+  fn() {
+    assert(match("**/{foo/*.json,*.txt}", "/c/Users/me/foo/bar.json"));
+    assert(match("**/{foo/*.json,*.txt}", "/c/Users/me/file.txt"));
+    assert(!match("!(foo/*.json|*.txt)", "/foo/bar.json"));
+    assert(!match("!(foo/*.json|*.txt)", "/file.json"));
+    assert(match("**/@(foo/*.json|*.txt)", "/c/Users/me/foo/bar.json"));
+    assert(match("**/@(foo/*.json|*.txt)", "/c/Users/me/file.txt"));
+    assert(match("**/+(foo/*.json|*.txt)", "/c/Users/me/foo/bar.json"));
+    assert(match("**/+(foo/*.json|*.txt)", "/c/Users/me/file.txt"));
   },
 });

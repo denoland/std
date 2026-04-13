@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assert } from "@std/assert";
 import { ANY } from "./_constants.ts";
 import { isSemVer } from "./is_semver.ts";

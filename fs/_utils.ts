@@ -1,25 +1,11 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 /**
  * True if the runtime is Deno, false otherwise.
  */
-export const isDeno = navigator.userAgent?.includes("Deno");
-
-/** True if the platform is windows, false otherwise */
-export const isWindows = checkWindows();
-
-/**
- * @returns true if the platform is Windows, false otherwise.
- */
-function checkWindows(): boolean {
-  if (typeof navigator !== "undefined" && (navigator as any).platform) {
-    return (navigator as any).platform.startsWith("Win");
-  } else if (typeof (globalThis as any).process !== "undefined") {
-    return (globalThis as any).platform === "win32";
-  }
-  return false;
-}
+export const isDeno = (globalThis as any).navigator
+  ?.userAgent?.includes("Deno");
 
 /**
  * @returns The Node.js `fs` module.
@@ -76,6 +62,11 @@ export function getNodeUtil() {
  * @returns A randomized 6-digit hexadecimal string.
  */
 export function randomId(): string {
-  const n = (Math.random() * 0xfffff * 1_000_000).toString(16);
-  return "".concat(n.slice(0, 6));
+  const bytes = new Uint8Array(3);
+  crypto.getRandomValues(bytes);
+  let result = "";
+  for (const byte of bytes) {
+    result += byte.toString(16).padStart(2, "0");
+  }
+  return result;
 }

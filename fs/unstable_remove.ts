@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import type { RemoveOptions } from "./unstable_types.ts";
 import { getNodeFs, isDeno } from "./_utils.ts";

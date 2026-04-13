@@ -1,0 +1,181 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+/**
+ * Internal module for XML entity encoding and decoding.
+ *
+ * @module
+ */
+
+// Single-pass regex that matches all entity references and bare ampersands.
+// Group 1: named entity ([a-zA-Z][a-zA-Z0-9]*, e.g. "amp", "foo1")
+// Group 2: decimal char ref (e.g. "#13")
+// Group 3: hex char ref (e.g. "#xd")
+// No groups: bare/invalid ampersand
+const ENTITY_OR_AMPERSAND_REGEXP =
+  /&(?:([a-zA-Z][a-zA-Z0-9]*);|(#[0-9]+);|(#x[0-9a-fA-F]+);)?/g;
+const SPECIAL_CHARS_REGEXP = /[<>&'"]/g;
+const ATTR_ENCODE_REGEXP = /[<>&'"\t\n\r]/g;
+
+/** XML 1.0 §4.6 predefined entities (decode). */
+const NAMED_ENTITIES: Record<string, string> = {
+  lt: "<",
+  gt: ">",
+  amp: "&",
+  apos: "'",
+  quot: '"',
+};
+
+/** XML 1.0 §4.6 predefined entities (encode). */
+const ENTITY_MAP: Record<string, string> = {
+  "<": "&lt;",
+  ">": "&gt;",
+  "&": "&amp;",
+  "'": "&apos;",
+  '"': "&quot;",
+};
+
+/** Entity map extended with whitespace for attribute values (§3.3.3). */
+const ATTR_ENTITY_MAP: Record<string, string> = {
+  ...ENTITY_MAP,
+  "\t": "&#9;",
+  "\n": "&#10;",
+  "\r": "&#13;",
+};
+
+/**
+ * Checks if a code point is valid for a character reference in XML 1.0 per §2.2.
+ *
+ * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+ *
+ * @see {@link https://www.w3.org/TR/xml/#charsets | XML 1.0 §2.2 Characters}
+ */
+function isValidXml10CharRef(codePoint: number): boolean {
+  return (
+    codePoint === 0x9 ||
+    codePoint === 0xA ||
+    codePoint === 0xD ||
+    (codePoint >= 0x20 && codePoint <= 0xD7FF) ||
+    (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
+    (codePoint >= 0x10000 && codePoint <= 0x10FFFF)
+  );
+}
+
+/**
+ * Checks if a code point is valid for a character reference in XML 1.1 per §2.2.
+ *
+ * Char ::= [#x1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+ *
+ * XML 1.1 allows all code points except NULL (#x0), surrogates, and
+ * non-characters #xFFFE-#xFFFF. C0 and C1 controls are valid as character
+ * references but restricted as literal characters (handled by
+ * {@linkcode isIllegalXmlLiteralChar} in `_common.ts`).
+ *
+ * @see {@link https://www.w3.org/TR/xml11/#charsets | XML 1.1 §2.2 Characters}
+ */
+function isValidXml11CharRef(codePoint: number): boolean {
+  return (
+    (codePoint >= 0x1 && codePoint <= 0xD7FF) ||
+    (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
+    (codePoint >= 0x10000 && codePoint <= 0x10FFFF)
+  );
+}
+
+/**
+ * Decodes XML entities in a string.
+ *
+ * This parser only supports the five predefined XML entities (§4.6)
+ * and numeric character references (§4.1). Custom entities defined in DTD are
+ * NOT expanded - this is a deliberate design choice for:
+ * - Security: Prevents entity expansion attacks (billion laughs, etc.)
+ * - Simplicity: No need to track DTD entity definitions
+ * - Consistency: Matches behavior of popular parsers like saxes
+ *
+ * External entities (SYSTEM/PUBLIC) are also not supported.
+ *
+ * @returns The text with predefined entities decoded.
+ * @throws {Error} If the text contains invalid or unknown entity references.
+ */
+export function decodeEntities(text: string, xml11: boolean): string {
+  // Fast path: no ampersand means no entities to decode
+  if (!text.includes("&")) return text;
+
+  const isValid = xml11 ? isValidXml11CharRef : isValidXml10CharRef;
+
+  // Single-pass: decode predefined entities and char refs, error on invalid
+  return text.replace(
+    ENTITY_OR_AMPERSAND_REGEXP,
+    (
+      match: string,
+      namedEntity: string | undefined,
+      decimalRef: string | undefined,
+      hexRef: string | undefined,
+      offset: number,
+    ) => {
+      // Hex character reference (&#xNN;)
+      if (hexRef !== undefined) {
+        const codePoint = parseInt(hexRef.slice(2), 16);
+        if (!isValid(codePoint)) {
+          throw new Error(
+            `Invalid character reference '${match}' at position ${offset}: ` +
+              `code point ${codePoint} is not a valid XML character`,
+          );
+        }
+        return String.fromCodePoint(codePoint);
+      }
+
+      // Decimal character reference (&#NN;)
+      if (decimalRef !== undefined) {
+        const codePoint = parseInt(decimalRef.slice(1), 10);
+        if (!isValid(codePoint)) {
+          throw new Error(
+            `Invalid character reference '${match}' at position ${offset}: ` +
+              `code point ${codePoint} is not a valid XML character`,
+          );
+        }
+        return String.fromCodePoint(codePoint);
+      }
+
+      // Named entity (&name;)
+      if (namedEntity !== undefined) {
+        const predefined = NAMED_ENTITIES[namedEntity];
+        if (predefined !== undefined) {
+          return predefined;
+        }
+        throw new Error(
+          `Unknown entity '${match}' at position ${offset}: ` +
+            `only predefined entities (lt, gt, amp, apos, quot) are recognized`,
+        );
+      }
+
+      // Bare ampersand (no valid entity pattern matched)
+      throw new Error(
+        `Invalid bare '&' at position ${offset}: ` +
+          `use &amp; or a valid entity reference (&name;, &#num;, &#xHex;)`,
+      );
+    },
+  );
+}
+
+/**
+ * Encodes special characters as XML entities.
+ *
+ * @returns The text with special characters encoded as entities.
+ */
+export function encodeEntities(text: string): string {
+  // Fast path: no special characters means nothing to encode
+  if (!/[<>&'"]/.test(text)) return text;
+  return text.replace(SPECIAL_CHARS_REGEXP, (c) => ENTITY_MAP[c]!);
+}
+
+/**
+ * Encodes special characters for use in XML attribute values.
+ * Encodes whitespace characters that would be normalized per XML 1.0 §3.3.3.
+ *
+ * @returns The encoded attribute value.
+ */
+export function encodeAttributeValue(value: string): string {
+  // Fast path: no special characters means nothing to encode
+  if (!/[<>&'"\t\n\r]/.test(value)) return value;
+  return value.replace(ATTR_ENCODE_REGEXP, (c) => ATTR_ENTITY_MAP[c]!);
+}

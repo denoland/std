@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
 import { mapValues } from "./map_values.ts";
@@ -13,10 +13,10 @@ function mapValuesTest<T, O>(
 }
 
 Deno.test({
-  name: "mapValues() handles no mutation",
+  name: "mapValues() does not mutate its input",
   fn() {
     const object = { a: 5, b: true };
-    mapValues(object, (it) => it ?? "nothing");
+    mapValues(object, () => 999);
 
     assertEquals(object, { a: 5, b: true });
   },

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 import { AssertionError } from "./assertion_error.ts";
 
@@ -28,6 +28,7 @@ import { AssertionError } from "./assertion_error.ts";
  * @param tolerance The tolerance to consider the values almost equal. The
  * default is one hundred thousandth of a percent of the expected value.
  * @param msg The optional message to include in the error.
+ * @throws {AssertionError} If the values are not almost equal.
  */
 export function assertAlmostEquals(
   actual: number,

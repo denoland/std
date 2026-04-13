@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
 import { greaterOrEqual } from "./greater_or_equal.ts";

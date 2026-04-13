@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { delay } from "./delay.ts";
 import {
   assert,
@@ -8,6 +8,7 @@ import {
   assertStrictEquals,
 } from "@std/assert";
 import { assertSpyCalls, stub } from "@std/testing/mock";
+import { FakeTime } from "@std/testing/time";
 
 // https://dom.spec.whatwg.org/#interface-AbortSignal
 function assertIsDefaultAbortReason(reason: unknown) {
@@ -22,6 +23,20 @@ Deno.test("delay()", async () => {
   const diff = new Date().getTime() - start.getTime();
   assert(result === undefined);
   assert(diff >= 100);
+});
+
+Deno.test("delay() resolves immediately with ms = 0", async () => {
+  const start = new Date();
+  await delay(0);
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 50);
+});
+
+Deno.test("delay() treats negative ms as 0", async () => {
+  const start = new Date();
+  await delay(-100);
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 50);
 });
 
 Deno.test("delay() handles abort", async () => {
@@ -107,8 +122,14 @@ Deno.test("delay() handles already aborted signal", async () => {
 });
 
 Deno.test("delay() handles persistent option", async () => {
-  using unrefTimer = stub(Deno, "unrefTimer");
-  await delay(100, { persistent: false });
+  // Stub with itself to ensure the actual function is still called, but we can track calls
+  using unrefTimer = stub(Deno, "unrefTimer", Deno.unrefTimer);
+
+  await Promise.all([
+    delay(0, { persistent: false }),
+    // Longer, persistent timer to ensure the process doesn't actually exit early (this would cause a test failure)
+    delay(1),
+  ]);
   assertSpyCalls(unrefTimer, 1);
 });
 
@@ -124,16 +145,83 @@ Deno.test({
   name: "delay() handles persistent option with error",
   async fn() {
     using unrefTimer = stub(Deno, "unrefTimer", () => {
-      throw new Error("Error!");
+      throw new TypeError("Error!");
     });
-    try {
-      await delay(100, { persistent: false });
-    } catch (e) {
-      assert(e instanceof Error);
-      assertEquals(e.message, "Error!");
-      assertSpyCalls(unrefTimer, 1);
+
+    await assertRejects(
+      () => delay(100, { persistent: false }),
+      TypeError,
+      "Error!",
+    );
+
+    assertSpyCalls(unrefTimer, 1);
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+Deno.test({
+  name: "delay() doesn't resolve early with `ms` argument > 0x7fffffff",
+  async fn(t) {
+    for (
+      const bigNum of [
+        0x7fffffff,
+        0x80000000,
+        Number.MAX_SAFE_INTEGER,
+        Infinity,
+      ]
+    ) {
+      await t.step(`delay(${bigNum})`, async () => {
+        const result = await Promise.race(
+          [1, bigNum].map((n) => delay(n).then(() => n)),
+        );
+        assertEquals(result, 1);
+      });
     }
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test({
+  name: "delay() handles abort with ms > 0x7fffffff",
+  async fn() {
+    const abort = new AbortController();
+    const { signal } = abort;
+    const delayedPromise = delay(Number.MAX_SAFE_INTEGER, { signal });
+    setTimeout(() => abort.abort(), 10);
+    const cause = await assertRejects(() => delayedPromise);
+    assertIsDefaultAbortReason(cause);
+  },
+  sanitizeResources: false,
+  sanitizeOps: false,
+});
+
+async function advanceUntilComplete<T>(
+  time: FakeTime,
+  tickMs: number,
+  task: () => Promise<T>,
+): Promise<T> {
+  let done = false;
+
+  const result = (async () => {
+    try {
+      return await task();
+    } finally {
+      done = true;
+    }
+  })();
+
+  while (!done) await time.tickAsync(tickMs);
+
+  return result;
+}
+
+Deno.test({
+  name: "delay() runs to completion with `ms` argument > 0x7fffffff",
+  async fn() {
+    using time = new FakeTime(0);
+    await advanceUntilComplete(time, 2 ** 30, () => delay(2 ** 32));
+    assertEquals(time.now, 2 ** 32);
+  },
 });

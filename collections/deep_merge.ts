@@ -1,7 +1,12 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { filterInPlace } from "./_utils.ts";
+/** Default merging options - cached to avoid object allocation on each call */
+const DEFAULT_OPTIONS: DeepMergeOptions = {
+  arrays: "merge",
+  sets: "merge",
+  maps: "merge",
+};
 
 /**
  * Merges the two given records, recursively merging any nested records with the
@@ -214,7 +219,12 @@ export function deepMerge<
   other: Readonly<U>,
   options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
-  return deepMergeInternal(record, other, new Set(), options);
+  return deepMergeInternal(
+    record,
+    other,
+    new Set(),
+    options ?? DEFAULT_OPTIONS as Options,
+  );
 }
 
 function deepMergeInternal<
@@ -229,7 +239,7 @@ function deepMergeInternal<
   record: Readonly<T>,
   other: Readonly<U>,
   seen: Set<NonNullable<unknown>>,
-  options?: Readonly<Options>,
+  options: Readonly<Options>,
 ) {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
@@ -281,11 +291,7 @@ function mergeObjects(
   left: Readonly<NonNullable<Record<string, unknown>>>,
   right: Readonly<NonNullable<Record<string, unknown>>>,
   seen: Set<NonNullable<unknown>>,
-  options: Readonly<DeepMergeOptions> = {
-    arrays: "merge",
-    sets: "merge",
-    maps: "merge",
-  },
+  options: Readonly<DeepMergeOptions>,
 ): Readonly<NonNullable<Record<string, unknown> | Iterable<unknown>>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
@@ -305,10 +311,11 @@ function mergeObjects(
     // Handle maps
     if ((left instanceof Map) && (right instanceof Map)) {
       if (options.maps === "merge") {
-        return new Map([
-          ...left,
-          ...right,
-        ]);
+        const result = new Map(left);
+        for (const [k, v] of right) {
+          result.set(k, v);
+        }
+        return result;
       }
 
       return right;
@@ -317,10 +324,11 @@ function mergeObjects(
     // Handle sets
     if ((left instanceof Set) && (right instanceof Set)) {
       if (options.sets === "merge") {
-        return new Set([
-          ...left,
-          ...right,
-        ]);
+        const result = new Set(left);
+        for (const v of right) {
+          result.add(v);
+        }
+        return result;
       }
 
       return right;
@@ -354,14 +362,19 @@ function isNonNullObject(
 }
 
 function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
-  const result = Object.getOwnPropertySymbols(record) as Array<keyof T>;
-  filterInPlace(
-    result,
-    (key) => Object.prototype.propertyIsEnumerable.call(record, key),
-  );
-  result.push(...(Object.keys(record) as Array<keyof T>));
+  const keys = Object.keys(record) as Array<keyof T>;
+  const symbols = Object.getOwnPropertySymbols(record);
 
-  return result;
+  // Fast path: most objects have no symbol keys
+  if (symbols.length === 0) return keys;
+
+  for (const sym of symbols) {
+    if (Object.prototype.propertyIsEnumerable.call(record, sym)) {
+      keys.push(sym as keyof T);
+    }
+  }
+
+  return keys;
 }
 
 /** Merging strategy */
@@ -476,7 +489,7 @@ export type MergeAllSets<
 /** Get array values type */
 export type ArrayValueType<T> = T extends Array<infer V> ? V : never;
 
-/** Merge all sets types definitions from keys present in both objects */
+/** Merge all arrays types definitions from keys present in both objects */
 export type MergeAllArrays<
   T,
   U,
@@ -495,7 +508,7 @@ export type MapKeyType<T> = T extends Map<infer K, unknown> ? K : never;
 /** Get map values types */
 export type MapValueType<T> = T extends Map<unknown, infer V> ? V : never;
 
-/** Merge all sets types definitions from keys present in both objects */
+/** Merge all maps types definitions from keys present in both objects */
 export type MergeAllMaps<
   T,
   U,

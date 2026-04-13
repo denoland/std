@@ -4,7 +4,8 @@
   "exports": {
     ".": "./mod.ts",
     "./crypto": "./crypto.ts",
-    "./timing-safe-equal": "./timing_safe_equal.ts"
+    "./timing-safe-equal": "./timing_safe_equal.ts",
+    "./aes-gcm": "./aes_gcm.ts"
   },
   "exclude": [
     "_wasm/target"

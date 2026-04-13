@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertRejects } from "@std/assert";
 import { delay } from "./delay.ts";
 import { deadline } from "./deadline.ts";
@@ -90,4 +90,9 @@ Deno.test("deadline() handles already aborted signal", async () => {
   );
   assertEquals(error.name, "AbortError");
   controller.abort();
+});
+
+Deno.test("deadline() supports numbers greater than Number.MAX_SAFE_INTEGER", async () => {
+  const promise = await deadline(Promise.resolve("Hello"), Infinity);
+  assertEquals(promise, "Hello");
 });

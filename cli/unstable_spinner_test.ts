@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
@@ -134,6 +134,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
       "\r\x1b[K⠋\x1b[0m ",
       "\r\x1b[K⠙\x1b[0m ",
       "\r\x1b[K⠹\x1b[0m ",
+      "\r\x1b[K⠸\x1b[0m ",
       "\r\x1b[K",
     ];
 

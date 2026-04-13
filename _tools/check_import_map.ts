@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-console
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 
 import importMap from "../import_map.json" with { type: "json" };
 import { getPackagesDenoJsons } from "./utils.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 import { assertThrows } from "./throws.ts";
 import { AssertionError, assertMatch } from "./mod.ts";
 

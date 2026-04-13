@@ -1,9 +1,16 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
+
+import { formatUnitFraction } from "./_unit.ts";
 
 /**
  * The properties provided to the fmt function upon every visual update.
  */
 export interface ProgressBarFormatter {
+  /**
+   * A formatted version of the duration.
+   * `mm:ss`
+   */
+  styledTime: string;
   /**
    * A function that returns a formatted version of the data received.
    * `0.40/97.66 KiB`
@@ -80,51 +87,24 @@ export interface ProgressBarOptions {
    * A function that creates the style of the progress bar.
    * Default Style: `[mm:ss] [###-------] [0.24/97.6 KiB]`.
    */
-  fmt?: (fmt: ProgressBarFormatter) => string;
+  formatter?: (formatter: ProgressBarFormatter) => string;
   /**
    * Whether the writable should be kept open when progress bar stops.
    * @default {true}
    */
   keepOpen?: boolean;
-}
-
-type Unit = "KiB" | "MiB" | "GiB" | "TiB" | "PiB" | "EiB" | "ZiB" | "YiB";
-
-const UNIT_RATE_MAP = new Map<Unit, number>([
-  ["KiB", 2 ** 10],
-  ["MiB", 2 ** 20],
-  ["GiB", 2 ** 30],
-  ["TiB", 2 ** 40],
-  ["PiB", 2 ** 50],
-  ["EiB", 2 ** 60],
-  ["ZiB", 2 ** 70],
-  ["YiB", 2 ** 80],
-]);
-
-function getUnitEntry(max: number): [Unit, number] {
-  let result: [Unit, number] = ["KiB", 2 ** 10];
-  for (const entry of UNIT_RATE_MAP) {
-    if (entry[1] > max) break;
-    result = entry;
-  }
-  return result;
+  /**
+   * How often the progress bar updates. The progress bar will be updated every
+   * `refreshMilliseconds` milliseconds.
+   * @default {1000}
+   */
+  refreshMilliseconds?: number;
 }
 
 const LINE_CLEAR = "\r\u001b[K";
 
-// HACK (Intl as any) until https://github.com/microsoft/TypeScript/issues/60608 is closed
-// deno-lint-ignore no-explicit-any
-const timeFormatter = new (Intl as any).DurationFormat(undefined, {
-  minutes: "2-digit",
-  seconds: "2-digit",
-  fractionalDigits: 0,
-});
-
-function defaultFormatter(
-  { time, progressBar, styledData }: ProgressBarFormatter,
-) {
-  const timeString = timeFormatter.format({ milliseconds: time });
-  return `[${timeString}] [${progressBar}] [${styledData()}]`;
+function defaultFormatter(formatter: ProgressBarFormatter) {
+  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -169,8 +149,8 @@ function clamp(value: number, min: number, max: number) {
  *
  * const bar = new ProgressBar({
  *   max: 100,
- *   fmt(x) {
- *     return `[${x.styledTime()}] [${x.progressBar}] [${x.value}/${x.max} files]`;
+ *   formatter(formatter) {
+ *     return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
  *   },
  * });
  *
@@ -213,8 +193,6 @@ export class ProgressBar {
    */
   max: number;
 
-  #unit: Unit;
-  #rate: number;
   #writer: WritableStreamDefaultWriter;
   #id: number;
   #startTime: number;
@@ -224,7 +202,7 @@ export class ProgressBar {
   #fillChar: string;
   #emptyChar: string;
   #clear: boolean;
-  #fmt: (fmt: ProgressBarFormatter) => string;
+  #formatter: (formatter: ProgressBarFormatter) => string;
   #keepOpen: boolean;
   #pipePromise: Promise<void>;
   /**
@@ -243,8 +221,9 @@ export class ProgressBar {
       fillChar = "#",
       emptyChar = "-",
       clear = false,
-      fmt = defaultFormatter,
+      formatter = defaultFormatter,
       keepOpen = true,
+      refreshMilliseconds = 1000,
     } = options;
     this.value = value;
     this.max = max;
@@ -252,13 +231,8 @@ export class ProgressBar {
     this.#fillChar = fillChar;
     this.#emptyChar = emptyChar;
     this.#clear = clear;
-    this.#fmt = fmt;
+    this.#formatter = formatter;
     this.#keepOpen = keepOpen;
-
-    const [unit, rate] = getUnitEntry(options.max);
-
-    this.#unit = unit;
-    this.#rate = rate;
 
     const stream = new TextEncoderStream();
     this.#pipePromise = stream.readable
@@ -269,7 +243,7 @@ export class ProgressBar {
     this.#previousTime = 0;
     this.#previousValue = this.value;
 
-    this.#id = setInterval(() => this.#print(), 1000);
+    this.#id = setInterval(() => this.#print(), refreshMilliseconds);
     this.#print();
   }
   #createFormatterObject() {
@@ -281,10 +255,13 @@ export class ProgressBar {
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
     return {
-      styledData: (fractions = 2): string => {
-        const currentValue = (this.value / this.#rate).toFixed(fractions);
-        const maxValue = (this.max / this.#rate).toFixed(fractions);
-        return `${currentValue}/${maxValue} ${this.#unit}`;
+      get styledTime() {
+        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
+        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
+        return `${minutes}:${seconds}`;
+      },
+      styledData() {
+        return formatUnitFraction(this.value, this.max);
       },
       progressBar: `${fillChars}${emptyChars}`,
       time,
@@ -296,7 +273,7 @@ export class ProgressBar {
   }
   async #print(): Promise<void> {
     const formatter = this.#createFormatterObject();
-    const output = this.#fmt(formatter);
+    const output = this.#formatter(formatter);
     try {
       await this.#writer.write(LINE_CLEAR + output);
     } catch {

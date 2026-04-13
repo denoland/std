@@ -1,4 +1,4 @@
-// Copyright 2018-2025 the Deno authors. MIT license.
+// Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
 import { deadline } from "./deadline.ts";
@@ -51,13 +51,20 @@ export function waitFor(
   const { step = 100 } = options;
 
   // Create a new promise that resolves when the predicate is true
-  let interval: number;
+  let timer: number;
   const p: Promise<void> = new Promise(function (resolve) {
-    interval = setInterval(() => {
-      if (predicate()) resolve();
-    }, step);
+    const setTimer = () => {
+      timer = setTimeout(async () => {
+        if (await predicate()) {
+          resolve();
+        } else {
+          setTimer();
+        }
+      }, step);
+    };
+    setTimer();
   });
 
   // Return a deadline promise
-  return deadline(p, ms, options).finally(() => clearInterval(interval));
+  return deadline(p, ms, options).finally(() => clearTimeout(timer));
 }
