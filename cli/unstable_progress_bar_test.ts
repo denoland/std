@@ -69,7 +69,7 @@ Deno.test("ProgressBar() prints twice every second", async () => {
   const bar = new ProgressBar({
     writable,
     max: 10 * 1000,
-    refreshMilliseconds: 500,
+    interval: 500,
   });
   fakeTime.tick(3000);
   bar.stop().then(() => writable.close());
