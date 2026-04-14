@@ -761,11 +761,15 @@ export class CircuitBreaker<T = unknown> {
       (totalRequests >= this.#minimumThroughput &&
         failureCount / totalRequests >= this.#failureRateThreshold);
 
+    const existingOpenedAt = this.#state.state === "open"
+      ? this.#state.openedAt
+      : undefined;
+
     if (shouldOpen) {
       this.#state = {
         ...this.#state,
         state: "open",
-        openedAt: Date.now(),
+        openedAt: existingOpenedAt ?? Date.now(),
         consecutiveSuccesses: 0,
       };
     } else {
@@ -780,7 +784,7 @@ export class CircuitBreaker<T = unknown> {
       failureCount,
       totalRequests,
     );
-    if (shouldOpen) {
+    if (shouldOpen && existingOpenedAt === undefined) {
       this.#onStateChange?.(previousState, "open");
       this.#onOpen?.(failureCount, totalRequests);
     }
