@@ -471,6 +471,59 @@ Deno.test("CircuitBreaker.execute() prevents stale half_open success from closin
   assertEquals(breaker.state, "open");
 });
 
+Deno.test("CircuitBreaker.execute() fires callbacks once when concurrent half_open requests both fail", async () => {
+  using time = new FakeTime();
+
+  const transitions: Array<[CircuitState, CircuitState]> = [];
+  let openCallCount = 0;
+
+  const breaker = new CircuitBreaker({
+    failureRateThreshold: 1,
+    minimumThroughput: 1,
+    cooldownMs: 1000,
+    halfOpenMaxConcurrent: 2,
+    onStateChange: (from, to) => transitions.push([from, to]),
+    onOpen: () => openCallCount++,
+  });
+
+  await failN(breaker, 1);
+  time.tick(1001);
+
+  let rejectA: ((e: Error) => void) | undefined;
+  let rejectB: ((e: Error) => void) | undefined;
+
+  const promiseA = breaker.execute(
+    () =>
+      new Promise<string>((_r, rej) => {
+        rejectA = (e) => rej(e);
+      }),
+  );
+  const promiseB = breaker.execute(
+    () =>
+      new Promise<string>((_r, rej) => {
+        rejectB = (e) => rej(e);
+      }),
+  );
+
+  rejectA?.(new Error("fail A"));
+  rejectB?.(new Error("fail B"));
+
+  try {
+    await promiseA;
+  } catch { /* expected */ }
+  try {
+    await promiseB;
+  } catch { /* expected */ }
+
+  assertEquals(breaker.state, "open");
+  assertEquals(
+    transitions.filter(([from, to]) => from === "half_open" && to === "open")
+      .length,
+    1,
+  );
+  assertEquals(openCallCount, 2); // 1 initial trip + 1 half_open reopen
+});
+
 // ---------------------------------------------------------------------------
 // Predicates: isFailure / isResultFailure
 // ---------------------------------------------------------------------------
