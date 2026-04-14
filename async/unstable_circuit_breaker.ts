@@ -309,6 +309,21 @@ function safeCallback<A extends unknown[]>(
 }
 
 /**
+ * Calls `fn(arg)` and returns the result. If `fn` throws, the error is
+ * reported asynchronously and `undefined` is returned.
+ */
+function tryCall<A, R>(fn: (arg: A) => R, arg: A): R | undefined {
+  try {
+    return fn(arg);
+  } catch (error) {
+    queueMicrotask(() => {
+      throw error;
+    });
+    return undefined;
+  }
+}
+
+/**
  * A circuit breaker that wraps async operations to prevent cascading failures.
  *
  * The circuit breaker monitors the failure rate within a sliding window and
@@ -568,14 +583,8 @@ export class CircuitBreaker<T = unknown> {
     try {
       result = await fn();
     } catch (error) {
-      try {
-        if (this.#isFailure(error)) {
-          this.#handleFailure(error, currentState.state, currentTime);
-        }
-      } catch (predicateError) {
-        queueMicrotask(() => {
-          throw predicateError;
-        });
+      if (tryCall(this.#isFailure, error)) {
+        this.#handleFailure(error, currentState.state, currentTime);
       }
       throw error;
     } finally {
@@ -587,19 +596,12 @@ export class CircuitBreaker<T = unknown> {
       }
     }
 
-    try {
-      if (this.#isResultFailure(result)) {
-        this.#handleFailure(undefined, currentState.state, currentTime);
-        return result;
-      }
-    } catch (predicateError) {
-      queueMicrotask(() => {
-        throw predicateError;
-      });
-      return result;
+    const isResultFail = tryCall(this.#isResultFailure, result);
+    if (isResultFail) {
+      this.#handleFailure(undefined, currentState.state, currentTime);
+    } else if (isResultFail === false) {
+      this.#handleSuccess(currentState.state);
     }
-
-    this.#handleSuccess(currentState.state);
     return result;
   }
 
@@ -629,10 +631,9 @@ export class CircuitBreaker<T = unknown> {
       openedAt: now,
       consecutiveSuccesses: 0,
     };
-    if (previous !== "open") {
-      this.#onStateChange?.(previous, "open");
-      this.#onOpen?.(this.#failures.total, this.#requests.total);
-    }
+    if (previous === "open") return;
+    this.#onStateChange?.(previous, "open");
+    this.#onOpen?.(this.#failures.total, this.#requests.total);
   }
 
   /**
@@ -661,10 +662,9 @@ export class CircuitBreaker<T = unknown> {
     const previous = this.#state.state;
     this.#state = createInitialState();
     this.#clearCounters();
-    if (previous !== "closed") {
-      this.#onStateChange?.(previous, "closed");
-      this.#onClose?.();
-    }
+    if (previous === "closed") return;
+    this.#onStateChange?.(previous, "closed");
+    this.#onClose?.();
   }
 
   /**
