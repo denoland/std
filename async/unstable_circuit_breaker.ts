@@ -590,7 +590,7 @@ export class CircuitBreaker<T = unknown> {
       result = await fn();
     } catch (error) {
       if (tryCall(this.#isFailure, error)) {
-        this.#handleFailure(error, currentState.state, currentTime);
+        this.#handleFailure(error, currentState.state);
       }
       throw error;
     } finally {
@@ -604,7 +604,7 @@ export class CircuitBreaker<T = unknown> {
 
     const isResultFail = tryCall(this.#isResultFailure, result);
     if (isResultFail) {
-      this.#handleFailure(undefined, currentState.state, currentTime);
+      this.#handleFailure(undefined, currentState.state);
     } else if (isResultFail === false) {
       this.#handleSuccess(currentState.state);
     }
@@ -752,7 +752,6 @@ export class CircuitBreaker<T = unknown> {
   #handleFailure(
     error: unknown,
     previousState: CircuitState,
-    now: number,
   ): void {
     this.#failures.increment();
     const totalRequests = this.#requests.total;
@@ -766,7 +765,7 @@ export class CircuitBreaker<T = unknown> {
       this.#state = {
         ...this.#state,
         state: "open",
-        openedAt: now,
+        openedAt: Date.now(),
         consecutiveSuccesses: 0,
       };
     } else {
