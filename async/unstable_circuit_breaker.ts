@@ -589,8 +589,7 @@ export class CircuitBreaker<T = unknown> {
 
     try {
       if (this.#isResultFailure(result)) {
-        const syntheticError = new Error("Result classified as failure");
-        this.#handleFailure(syntheticError, currentState.state, currentTime);
+        this.#handleFailure(undefined, currentState.state, currentTime);
         return result;
       }
     } catch (predicateError) {
@@ -763,7 +762,11 @@ export class CircuitBreaker<T = unknown> {
       };
     }
 
-    this.#onFailure?.(error, failureCount, totalRequests);
+    this.#onFailure?.(
+      error ?? new Error("Result classified as failure"),
+      failureCount,
+      totalRequests,
+    );
     if (shouldOpen) {
       this.#onStateChange?.(previousState, "open");
       this.#onOpen?.(failureCount, totalRequests);
