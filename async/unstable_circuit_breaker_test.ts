@@ -113,6 +113,23 @@ Deno.test("CircuitBreaker.execute() propagates thrown errors", async () => {
   );
 });
 
+Deno.test("CircuitBreaker.execute() propagates synchronous throws and counts them as failures", async () => {
+  const breaker = new CircuitBreaker({
+    failureRateThreshold: 1,
+    minimumThroughput: 1,
+  });
+
+  await assertRejects(
+    () =>
+      breaker.execute(() => {
+        throw new Error("sync boom");
+      }),
+    Error,
+    "sync boom",
+  );
+  assertEquals(breaker.state, "open");
+});
+
 // ---------------------------------------------------------------------------
 // Failure-rate tripping
 // ---------------------------------------------------------------------------

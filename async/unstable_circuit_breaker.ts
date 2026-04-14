@@ -110,7 +110,8 @@ export interface CircuitBreakerOptions<T> {
    * without disrupting circuit breaker operation.
    *
    * @param error The error that caused the failure, or a synthetic error
-   *   when the result was classified as failure by {@linkcode isResultFailure}.
+   *   when the result was classified as failure by
+   *   {@linkcode CircuitBreakerOptions.isResultFailure | isResultFailure}.
    * @param failureCount Current number of failures in the window.
    * @param totalRequests Current number of total requests in the window.
    */
@@ -335,6 +336,11 @@ function tryCall<A, R>(fn: (arg: A) => R, arg: A): R | undefined {
  * {@linkcode CircuitBreakerOptions.minimumThroughput | minimumThroughput}
  * requests have been recorded in the window, preventing false positives
  * during low traffic.
+ *
+ * When state changes occur, callbacks fire in a fixed order:
+ * - Circuit trips open: `onFailure` → `onStateChange` → `onOpen`
+ * - Cooldown expires: `onStateChange` → `onHalfOpen`
+ * - Recovery completes: `onStateChange` → `onClose`
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -620,6 +626,8 @@ export class CircuitBreaker<T = unknown> {
    * breaker.forceOpen();
    * assertEquals(breaker.state, "open");
    * ```
+   *
+   * @returns void
    */
   forceOpen(): void {
     const previous = this.#state.state;
@@ -639,8 +647,10 @@ export class CircuitBreaker<T = unknown> {
   /**
    * Forces the circuit breaker to closed state and notifies observers.
    *
-   * This is an operational transition that fires {@linkcode onStateChange}
-   * and {@linkcode onClose} callbacks. Use this when the protected service
+   * This is an operational transition that fires
+   * {@linkcode CircuitBreakerOptions.onStateChange | onStateChange} and
+   * {@linkcode CircuitBreakerOptions.onClose | onClose} callbacks. Use this
+   * when the protected service
    * has recovered and you want observers to be notified.
    *
    * For silent resets (e.g., in tests), use {@linkcode reset} instead.
@@ -657,6 +667,8 @@ export class CircuitBreaker<T = unknown> {
    * breaker.forceClose();
    * assertEquals(breaker.state, "closed");
    * ```
+   *
+   * @returns void
    */
   forceClose(): void {
     const previous = this.#state.state;
@@ -685,6 +697,8 @@ export class CircuitBreaker<T = unknown> {
    * breaker.reset();
    * assertEquals(breaker.state, "closed");
    * ```
+   *
+   * @returns void
    */
   reset(): void {
     this.#state = createInitialState();
