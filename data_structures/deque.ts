@@ -510,9 +510,19 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns `true` if the deque contains the value, otherwise `false`.
    */
   includes(value: T): boolean {
-    for (let i = 0; i < this.#length; i++) {
-      const el = this.#buffer[(this.#head + i) & this.#mask];
-      // SameValueZero: === for everything except NaN
+    const buf = this.#buffer;
+    const head = this.#head;
+    const len = this.#length;
+    const cap = this.#mask + 1;
+    const firstLen = Math.min(len, cap - head);
+    // SameValueZero: === for everything except NaN
+    for (let i = 0; i < firstLen; i++) {
+      const el = buf[head + i];
+      if (el === value || (el !== el && value !== value)) return true;
+    }
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) {
+      const el = buf[i];
       if (el === value || (el !== el && value !== value)) return true;
     }
     return false;
@@ -591,10 +601,15 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns An array containing the deque's elements in order.
    */
   toArray(): T[] {
-    const result = new Array<T>(this.#length);
-    for (let i = 0; i < this.#length; i++) {
-      result[i] = this.#buffer[(this.#head + i) & this.#mask] as T;
-    }
+    const buf = this.#buffer;
+    const head = this.#head;
+    const len = this.#length;
+    const cap = this.#mask + 1;
+    const result = new Array<T>(len);
+    const firstLen = Math.min(len, cap - head);
+    for (let i = 0; i < firstLen; i++) result[i] = buf[head + i] as T;
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) result[firstLen + i] = buf[i] as T;
     return result;
   }
 
@@ -765,9 +780,14 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
   static #copyBuffer<T>(source: Deque<T>, capacity: number): (T | undefined)[] {
     const buffer = new Array<T | undefined>(capacity);
-    for (let i = 0; i < source.#length; i++) {
-      buffer[i] = source.#buffer[(source.#head + i) & source.#mask];
-    }
+    const src = source.#buffer;
+    const head = source.#head;
+    const len = source.#length;
+    const srcCap = source.#mask + 1;
+    const firstLen = Math.min(len, srcCap - head);
+    for (let i = 0; i < firstLen; i++) buffer[i] = src[head + i];
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) buffer[firstLen + i] = src[i];
     return buffer;
   }
 
