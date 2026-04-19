@@ -5,6 +5,13 @@ import { Deque } from "@std/data-structures/unstable-deque";
 
 const RESOLVED: Promise<void> = Promise.resolve();
 
+const EMPTY_RESULT: { readonly state: "empty" } = Object.freeze({
+  state: "empty",
+});
+const CLOSED_RESULT: { readonly state: "closed" } = Object.freeze({
+  state: "closed",
+});
+
 /** Internal node for the FIFO sender waiting queue. */
 interface SenderNode<T> {
   value: T;
@@ -160,6 +167,7 @@ export class Channel<T>
   #closed = false;
   #closeReason: unknown = undefined;
   #hasCloseReason = false;
+  #receiveClosedError: ChannelClosedError | undefined;
 
   #senders: Deque<SenderNode<T>>;
   #receivers: Deque<ReceiverNode<T>>;
@@ -240,7 +248,11 @@ export class Channel<T>
       const signal = options?.signal;
       if (signal) {
         const onAbort = () => {
-          this.#senders.removeFirst((n) => n === node);
+          if (this.#senders.peekFront() === node) {
+            this.#senders.popFront();
+          } else {
+            this.#senders.removeFirst((n) => n === node);
+          }
           node.rej(signal.reason);
         };
         signal.addEventListener("abort", onAbort, { once: true });
@@ -311,7 +323,11 @@ export class Channel<T>
       const signal = options?.signal;
       if (signal) {
         const onAbort = () => {
-          this.#receivers.removeFirst((n) => n === node);
+          if (this.#receivers.peekFront() === node) {
+            this.#receivers.popFront();
+          } else {
+            this.#receivers.removeFirst((n) => n === node);
+          }
           node.rej(signal.reason);
         };
         signal.addEventListener("abort", onAbort, { once: true });
@@ -385,8 +401,8 @@ export class Channel<T>
       sender.res();
       return { state: "ok", value: sender.value };
     }
-    if (this.#closed) return { state: "closed" };
-    return { state: "empty" };
+    if (this.#closed) return CLOSED_RESULT;
+    return EMPTY_RESULT;
   }
 
   /**
@@ -548,7 +564,9 @@ export class Channel<T>
    * Creates a {@linkcode ReadableStream} that yields values from this
    * channel. The stream closes when the channel closes after draining
    * buffered values. If the channel was closed with a reason, the stream
-   * errors with that reason. Cancelling the stream closes the channel.
+   * errors with that reason. Cancelling the stream closes the channel; a
+   * non-`undefined` cancel reason is forwarded to {@linkcode Channel.close}
+   * so other consumers observe it.
    *
    * @example Usage
    * ```ts
@@ -579,8 +597,9 @@ export class Channel<T>
           }
         }
       },
-      cancel: () => {
-        this.close();
+      cancel: (reason) => {
+        if (reason === undefined) this.close();
+        else this.close(reason);
       },
     });
   }
@@ -655,6 +674,9 @@ export class Channel<T>
 
   #receiveError(): unknown {
     if (this.#hasCloseReason) return this.#closeReason;
-    return new ChannelClosedError("Cannot receive from a closed channel");
+    this.#receiveClosedError ??= new ChannelClosedError(
+      "Cannot receive from a closed channel",
+    );
+    return this.#receiveClosedError;
   }
 }

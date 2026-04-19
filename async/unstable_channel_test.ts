@@ -155,6 +155,15 @@ Deno.test("Channel.receive() rejects on closed empty channel", async () => {
   await assertRejects(() => ch.receive(), ChannelClosedError);
 });
 
+Deno.test("Channel.receive() reuses a single ChannelClosedError after close()", async () => {
+  const ch = new Channel<number>();
+  ch.close();
+  const e1 = await ch.receive().catch((e: unknown) => e);
+  const e2 = await ch.receive().catch((e: unknown) => e);
+  assertInstanceOf(e1, ChannelClosedError);
+  assert(e1 === e2);
+});
+
 Deno.test("Channel.receive() drains buffered values before rejecting", async () => {
   const ch = new Channel<number>(4);
   await ch.send(1);
@@ -290,6 +299,17 @@ Deno.test("Channel.tryReceive() drains buffer before reporting closed", async ()
   ch.close();
   assertEquals(ch.tryReceive(), { state: "ok", value: 1 });
   assertEquals(ch.tryReceive(), { state: "closed" });
+});
+
+Deno.test("Channel.tryReceive() returns a shared empty result across calls", () => {
+  const ch = new Channel<number>(1);
+  assert(ch.tryReceive() === ch.tryReceive());
+});
+
+Deno.test("Channel.tryReceive() returns a shared closed result across calls", () => {
+  const ch = new Channel<number>();
+  ch.close();
+  assert(ch.tryReceive() === ch.tryReceive());
 });
 
 Deno.test("Channel.tryReceive() handles undefined as a valid value", async () => {
@@ -604,6 +624,23 @@ Deno.test("Channel.toReadableStream() cancel closes the channel", async () => {
   const stream = ch.toReadableStream();
   await stream.cancel();
   assert(ch.closed);
+});
+
+Deno.test("Channel.toReadableStream() cancel(reason) forwards reason to close", async () => {
+  const ch = new Channel<number>(2);
+  const stream = ch.toReadableStream();
+  const reason = new Error("stream-cancelled");
+  await stream.cancel(reason);
+  assert(ch.closed);
+  const err = await ch.receive().catch((e: unknown) => e);
+  assertEquals(err, reason);
+});
+
+Deno.test("Channel.toReadableStream() cancel() without reason keeps no-reason close", async () => {
+  const ch = new Channel<number>();
+  const stream = ch.toReadableStream();
+  await stream.cancel();
+  await assertRejects(() => ch.receive(), ChannelClosedError);
 });
 
 // -- Disposable --
