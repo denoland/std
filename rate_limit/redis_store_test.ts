@@ -1,12 +1,19 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertFalse,
+  assertRejects,
+  assertThrows,
+} from "@std/assert";
 import { createRedisStore } from "./redis_store.ts";
 import type {
   RedisEvalConnection,
   RedisSendCommandConnection,
 } from "./redis_store.ts";
 import { createRateLimiter } from "./rate_limiter.ts";
+import { parseResult, runScript } from "./_redis_scripts.ts";
 
 /**
  * In-memory Redis emulator that supports the subset of commands used
@@ -1140,4 +1147,83 @@ Deno.test("redis store falls back from EVALSHA to EVAL on NOSCRIPT", async () =>
   const r = await store.consume("a", 1);
   assert(r.ok);
   assertEquals(r.remaining, 4);
+});
+
+// === parseResult ===
+
+Deno.test("parseResult() throws when raw is not an array", () => {
+  assertThrows(
+    () => parseResult("not-an-array", 5),
+    TypeError,
+    "expected an array of length >= 4",
+  );
+});
+
+Deno.test("parseResult() throws when raw array is too short", () => {
+  assertThrows(
+    () => parseResult([1, 2, 3], 5),
+    TypeError,
+    "expected an array of length >= 4",
+  );
+});
+
+Deno.test("parseResult() throws when numeric fields are NaN", () => {
+  assertThrows(
+    () => parseResult([1, "not-a-number", "1000", "0"], 5),
+    TypeError,
+    "numeric fields contain NaN",
+  );
+});
+
+Deno.test("parseResult() parses valid results", () => {
+  const r = parseResult([1, "4", "1000", "0"], 5);
+  assertEquals(r, {
+    ok: true,
+    remaining: 4,
+    resetAt: 1000,
+    retryAfter: 0,
+    limit: 5,
+  });
+});
+
+// === runScript ===
+
+Deno.test("runScript() re-throws non-NOSCRIPT errors from evalsha", async () => {
+  const err = new Error("ERR some unrelated failure");
+  const redis: RedisEvalConnection = {
+    eval() {
+      throw new Error("eval should not be called");
+    },
+    evalsha() {
+      return Promise.reject(err);
+    },
+  };
+
+  await assertRejects(
+    () => runScript(redis, { source: "return 1", sha: "x" }, [], []),
+    Error,
+    "ERR some unrelated failure",
+  );
+});
+
+Deno.test("runScript() falls back to eval when evalsha rejects with non-Error NOSCRIPT", async () => {
+  let evalCalled = false;
+  const redis: RedisEvalConnection = {
+    eval(_script, _keys, _args) {
+      evalCalled = true;
+      return Promise.resolve("ok");
+    },
+    evalsha() {
+      return Promise.reject("NOSCRIPT No matching script");
+    },
+  };
+
+  const result = await runScript(
+    redis,
+    { source: "return 1", sha: "x" },
+    [],
+    [],
+  );
+  assertEquals(result, "ok");
+  assert(evalCalled);
 });

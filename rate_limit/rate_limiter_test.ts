@@ -1380,6 +1380,58 @@ Deno.test("concurrent limit() calls on the same key respect the limit", async ()
 
 // === LRU eviction ordering ===
 
+// === GCRA clock regression ===
+
+Deno.test("gcra: limit() rejects when clock regresses past allowAt", async () => {
+  let now = 1000;
+  await using limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  // Fill all 5 slots: tat advances to now + window = 2000.
+  for (let i = 0; i < 5; i++) await limiter.limit("a");
+
+  // Regress the clock so now < allowAt (allowAt = tat - tau = 2000 - 1000 = 1000).
+  now = 500;
+  const r = await limiter.limit("a");
+  assertFalse(r.ok);
+  assert(r.retryAfter > 0);
+});
+
+// === Double dispose ===
+
+Deno.test("double dispose of rate limiter is a no-op", async () => {
+  const limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+  });
+
+  await limiter[Symbol.asyncDispose]();
+  await limiter[Symbol.asyncDispose]();
+});
+
+// === Memory store metadata ===
+
+Deno.test("memory store exposes capacity and window", async () => {
+  using _time = new FakeTime();
+  const store = createMemoryStore({
+    limit: 7,
+    window: 2500,
+    algorithm: "gcra",
+    evictionTtl: 0,
+  });
+
+  assertEquals(store.capacity, 7);
+  assertEquals(store.window, 2500);
+
+  await store[Symbol.asyncDispose]();
+});
+
 Deno.test("maxKeys evicts the least-recently-used key", async () => {
   let now = 0;
   const store = createMemoryStore({

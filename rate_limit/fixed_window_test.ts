@@ -71,6 +71,19 @@ Deno.test("createFixedWindow() throws for invalid queueLimit", () => {
   );
 });
 
+Deno.test("createFixedWindow() throws for unknown queueOrder", () => {
+  assertThrows(
+    () =>
+      createFixedWindow({
+        limit: 10,
+        window: 1000,
+        queueOrder: "random" as "oldest-first",
+      }),
+    TypeError,
+    "unknown queueOrder",
+  );
+});
+
 // --- tryAcquire ---
 
 Deno.test("tryAcquire() succeeds within the window limit", () => {
@@ -623,4 +636,62 @@ Deno.test("double dispose is a no-op", () => {
 
   limiter[Symbol.dispose]();
   limiter[Symbol.dispose]();
+});
+
+Deno.test("replenish() after dispose is a no-op", () => {
+  const limiter = createFixedWindow({
+    limit: 5,
+    window: 1000,
+    autoReplenishment: false,
+  });
+
+  limiter[Symbol.dispose]();
+  limiter.replenish();
+});
+
+// --- Lease disposal ---
+
+Deno.test("acquired lease is disposable", () => {
+  using time = new FakeTime(0);
+  using limiter = createFixedWindow({ limit: 5, window: 1000 });
+  void time;
+
+  {
+    using lease = limiter.tryAcquire();
+    assert(lease.acquired);
+  }
+});
+
+Deno.test("rejected lease is disposable", () => {
+  using time = new FakeTime(0);
+  using limiter = createFixedWindow({ limit: 1, window: 1000 });
+  void time;
+
+  assert(limiter.tryAcquire().acquired);
+  {
+    using lease = limiter.tryAcquire();
+    assertFalse(lease.acquired);
+  }
+});
+
+// --- Signal cleanup on normal drain ---
+
+Deno.test("queued waiter with non-aborted signal is drained cleanly", async () => {
+  using time = new FakeTime(0);
+  using limiter = createFixedWindow({
+    limit: 1,
+    window: 1000,
+    queueLimit: 5,
+  });
+
+  limiter.tryAcquire();
+
+  const controller = new AbortController();
+  const promise = limiter.acquire(1, { signal: controller.signal });
+
+  time.tick(1000);
+  const lease = await promise;
+  assert(lease.acquired);
+
+  controller.abort();
 });
