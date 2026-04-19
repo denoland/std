@@ -123,7 +123,7 @@ export function createTokenBucket(
       },
       replenish(): void {
         lastNow = state.lastRefill + replenishmentPeriod;
-        ops.replenish(state);
+        ops.advance(state, lastNow);
       },
       computeRetryAfter(permits: number): number {
         return ops.computeRetryAfter(state, permits, lastNow);

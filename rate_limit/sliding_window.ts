@@ -129,7 +129,7 @@ export function createSlidingWindow(
       },
       replenish(): void {
         lastNow = state.segmentStart + segmentDuration;
-        ops.replenish(state);
+        ops.advance(state, lastNow);
       },
       computeRetryAfter(permits: number): number {
         return ops.computeRetryAfter(state, permits, lastNow);

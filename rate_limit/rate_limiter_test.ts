@@ -668,6 +668,43 @@ Deno.test("peek() returns full capacity for unknown key", async () => {
   assertEquals(p.limit, 10);
 });
 
+// Regression: peek() on an unknown key must report a forward-looking resetAt
+// (the next replenishment event), not `now`. Fixed-window and token-bucket
+// replenish at `now + window`; sliding-window rotates at the end of the
+// current segment. GCRA has no scheduled replenishment, so resetAt === now
+// is correct (state.tat is initialized to now).
+Deno.test("peek() on unknown key reports forward-looking resetAt", async () => {
+  const now = 1000;
+
+  await using fixed = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+  assertEquals((await fixed.peek("unknown")).resetAt, now + 1000);
+
+  await using bucket = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "token-bucket",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+  assertEquals((await bucket.peek("unknown")).resetAt, now + 1000);
+
+  await using sliding = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "sliding-window",
+    segmentsPerWindow: 4,
+    evictionTtl: 0,
+    clock: () => now,
+  });
+  assertEquals((await sliding.peek("unknown")).resetAt, now + 250);
+});
+
 Deno.test("peek() reflects consumed permits after limit()", async () => {
   const now = 0;
   await using limiter = createRateLimiter({

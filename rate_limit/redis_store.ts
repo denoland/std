@@ -214,18 +214,13 @@ export function createRedisStore(
     return `${prefix}:${key}`;
   }
 
-  function buildArgs(): string[] {
-    const args = [String(limit), String(windowMs)];
-    if (algorithmName === "sliding-window") {
-      return [...args, "", String(segmentsPerWindow)];
-    }
-    if (algorithmName === "token-bucket") {
-      return [...args, "", String(tokensPerPeriod)];
-    }
-    return [...args, ""];
-  }
-
-  const baseArgs = buildArgs();
+  const limitStr = String(limit);
+  const windowStr = String(windowMs);
+  const extraStr = algorithmName === "sliding-window"
+    ? String(segmentsPerWindow)
+    : algorithmName === "token-bucket"
+    ? String(tokensPerPeriod)
+    : "";
 
   return {
     get capacity(): number {
@@ -236,8 +231,7 @@ export function createRedisStore(
     },
     async consume(key: string, cost: number): Promise<RateLimitResult> {
       await ensureScripts();
-      const args = [...baseArgs];
-      args[2] = String(cost);
+      const args = [limitStr, windowStr, String(cost), extraStr];
       const raw = await runScript(
         redis,
         consumeScript!,
@@ -248,8 +242,7 @@ export function createRedisStore(
     },
     async peek(key: string, cost: number): Promise<RateLimitResult> {
       await ensureScripts();
-      const args = [...baseArgs];
-      args[2] = String(cost);
+      const args = [limitStr, windowStr, String(cost), extraStr];
       const raw = await runScript(
         redis,
         peekScript!,

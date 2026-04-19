@@ -40,8 +40,6 @@ export interface AlgorithmOps<S> {
   tryConsume(state: S, cost: number, now: number): boolean;
   /** Return whether a request of `cost` would be allowed without mutating state. */
   wouldAllow(state: S, cost: number, now: number): boolean;
-  /** Replenish permits (one timer tick). Mutates state. No-op for algorithms without timer-based replenishment (e.g. GCRA). */
-  replenish(state: S): void;
   /** Compute result metadata (remaining, resetAt, retryAfter). */
   result(state: S, ok: boolean, cost: number, now: number): AlgorithmResult;
   /** Compute the retry delay for a denied request without allocating a result object. */
@@ -91,9 +89,6 @@ export function createFixedWindowOps(
     },
     wouldAllow(state, cost, _now) {
       return state.count + cost <= limit;
-    },
-    replenish(state) {
-      state.count = 0;
     },
     result(state, ok, cost, now) {
       return {
@@ -170,10 +165,6 @@ export function createSlidingWindowOps(
     wouldAllow(state, cost, _now) {
       return state.counter.total + cost <= limit;
     },
-    replenish(state) {
-      state.counter.rotate();
-      state.segmentStart += segmentDuration;
-    },
     result(state, ok, cost, now) {
       return {
         ok,
@@ -234,10 +225,6 @@ export function createTokenBucketOps(
     },
     wouldAllow(state, cost, _now) {
       return state.tokens >= cost;
-    },
-    replenish(state) {
-      state.tokens = Math.min(limit, state.tokens + tokensPerPeriod);
-      state.lastRefill += window;
     },
     result(state, ok, cost, now) {
       const remaining = Math.max(0, Math.floor(state.tokens));
@@ -306,8 +293,6 @@ export function createGcraOps(
       const newTat = Math.max(state.tat, now) + emissionInterval * cost;
       return newTat - now <= tau;
     },
-    // No-op: GCRA has no timer-based replenishment.
-    replenish(_state) {},
     result(state, ok, cost, now) {
       return {
         ok,
