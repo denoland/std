@@ -263,9 +263,12 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * import { assertEquals } from "@std/assert";
    *
    * const map = new MultiMap([["a", 1], ["a", 2], ["a", 1]]);
-   * assertEquals(map.deleteEntry("a", 1), true);
    *
+   * assertEquals(map.deleteEntry("a", 1), true);
    * assertEquals(map.get("a"), [2, 1]);
+   *
+   * assertEquals(map.deleteEntry("a", 1), true);
+   * assertEquals(map.get("a"), [2]);
    * ```
    */
   deleteEntry(key: K, value: V): boolean {
@@ -341,14 +344,13 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * import { MultiMap } from "@std/data-structures/unstable-multimap";
    * import { assertEquals } from "@std/assert";
    *
-   * const map = new MultiMap([["a", 1], ["b", 2]]);
-   * const context = { prefix: "x:" };
-   * const result: string[] = [];
-   * map.forEach(function (value, key) {
-   *   result.push(`${this.prefix}${key}=${value}`);
-   * }, context);
+   * const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]]);
+   * const counter = { total: 0 };
+   * map.forEach(function (value) {
+   *   this.total += value;
+   * }, counter);
    *
-   * assertEquals(result, ["x:a=1", "x:b=2"]);
+   * assertEquals(counter.total, 6);
    * ```
    */
   forEach<T = undefined>(
@@ -464,10 +466,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    *
    * const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]]);
    *
-   * assertEquals(
-   *   Array.from(map.groups(), ([k, vs]) => [k, [...vs]]),
-   *   [["a", [1, 2]], ["b", [3]]],
-   * );
+   * assertEquals(Array.from(map.groups()), [["a", [1, 2]], ["b", [3]]]);
    * ```
    *
    * @example Filter by bucket size
@@ -682,11 +681,11 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    *
    * const grouped = MultiMap.groupBy(
    *   ["a", "b", "c", "d"],
-   *   (_, i) => (i % 2 === 0 ? "even" : "odd"),
+   *   (item, index) => index < 2 ? "first-half" : "second-half",
    * );
    *
-   * assertEquals(grouped.get("even"), ["a", "c"]);
-   * assertEquals(grouped.get("odd"), ["b", "d"]);
+   * assertEquals(grouped.get("first-half"), ["a", "b"]);
+   * assertEquals(grouped.get("second-half"), ["c", "d"]);
    * ```
    */
   static groupBy<K, T>(
