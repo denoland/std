@@ -12,7 +12,7 @@
     "@std/cbor": "jsr:@std/cbor@^0.1.9",
     "@std/cli": "jsr:@std/cli@^1.0.29",
     "@std/collections": "jsr:@std/collections@^1.1.7",
-    "@std/crypto": "jsr:@std/crypto@^2.0.0",
+    "@std/crypto": "jsr:@std/crypto@^1.1.0",
     "@std/csv": "jsr:@std/csv@^1.0.6",
     "@std/data-structures": "jsr:@std/data-structures@^1.0.11",
     "@std/datetime": "jsr:@std/datetime@^0.225.7",

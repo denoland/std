@@ -33,7 +33,7 @@
 
 - feat(collections/unstable): add interleave (#7010)
 
-#### @std/crypto 2.0.0 (major)
+#### @std/crypto 1.1.0 (minor)
 
 - BREAKING(crypto): throw TypeError on length mismatch in `timingSafeEqual()`
   (#7042)
