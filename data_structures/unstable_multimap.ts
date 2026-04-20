@@ -510,7 +510,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * assertEquals(Array.from(map.keys()), ["a", "b"]);
    * ```
    */
-  keys(): MapIterator<K> {
+  keys(): IterableIterator<K> {
     return this.#map.keys();
   }
 
