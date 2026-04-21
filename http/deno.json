@@ -20,6 +20,7 @@
     "./unstable-structured-fields": "./unstable_structured_fields.ts",
     "./user-agent": "./user_agent.ts",
     "./unstable-route": "./unstable_route.ts",
-    "./unstable-cache-control": "./unstable_cache_control.ts"
+    "./unstable-cache-control": "./unstable_cache_control.ts",
+    "./unstable-digest-fields": "./unstable_digest_fields.ts"
   }
 }
