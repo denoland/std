@@ -7,11 +7,6 @@ import { formatUnitFraction } from "./_unit.ts";
  */
 export interface ProgressBarFormatter {
   /**
-   * A formatted version of the duration.
-   * `mm:ss`
-   */
-  styledTime: string;
-  /**
    * A function that returns a formatted version of the data received.
    * `0.40/97.66 KiB`
    * @param fractions The number of decimal places the values should have.
@@ -103,8 +98,23 @@ export interface ProgressBarOptions {
 
 const LINE_CLEAR = "\r\u001b[K";
 
+const timeFormatter = new Intl.DurationFormat(undefined, {
+  minutes: "2-digit",
+  seconds: "2-digit",
+});
+
+const DURATION_ROUNDING_OPTIONS: Temporal.DurationRoundingOptions = {
+  largestUnit: "minutes",
+  smallestUnit: "seconds",
+  roundingMode: "trunc",
+};
+
 function defaultFormatter(formatter: ProgressBarFormatter) {
-  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
+  const duration = Temporal.Duration
+    .from({ milliseconds: formatter.time })
+    .round(DURATION_ROUNDING_OPTIONS);
+  const styledTime = timeFormatter.format(duration);
+  return `[${styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -255,11 +265,6 @@ export class ProgressBar {
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
     return {
-      get styledTime() {
-        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
-        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `${minutes}:${seconds}`;
-      },
       styledData() {
         return formatUnitFraction(this.value, this.max);
       },
