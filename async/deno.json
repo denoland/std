@@ -20,7 +20,7 @@
     "./unstable-wait-for": "./unstable_wait_for.ts",
     "./unstable-semaphore": "./unstable_semaphore.ts",
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
-    "./unstable-lazy": "./unstable_lazy.ts",
+    "./lazy": "./lazy.ts",
     "./unstable-pool-settled": "./unstable_pool_settled.ts",
     "./unstable-channel": "./unstable_channel.ts"
   }

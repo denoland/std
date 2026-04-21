@@ -3,8 +3,6 @@
 
 /**
  * Options for {@linkcode Lazy.prototype.get}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface LazyGetOptions {
   /**
@@ -31,7 +29,7 @@ export interface LazyGetOptions {
  * @example Concurrent deduplication
  *
  * ```ts
- * import { Lazy } from "@std/async/unstable-lazy";
+ * import { Lazy } from "@std/async/lazy";
  * import { assertEquals } from "@std/assert";
  *
  * let initCount = 0;
@@ -49,7 +47,7 @@ export interface LazyGetOptions {
  * @example Composing with retry
  *
  * ```ts ignore
- * import { Lazy } from "@std/async/unstable-lazy";
+ * import { Lazy } from "@std/async/lazy";
  * import { retry } from "@std/async/retry";
  *
  * const db = new Lazy(() =>
@@ -57,8 +55,6 @@ export interface LazyGetOptions {
  * );
  * await db.get();
  * ```
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam T The type of the lazily initialized value.
  */
@@ -70,8 +66,6 @@ export class Lazy<T> {
 
   /**
    * Creates a new lazy value.
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param init Initializer function, called at most once (until {@linkcode reset}).
    */
@@ -88,7 +82,7 @@ export class Lazy<T> {
    *
    * @example Usage
    * ```ts no-assert
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    *
    * const config = new Lazy(async () => ({ loaded: true }));
    * const value = await config.get();
@@ -96,7 +90,7 @@ export class Lazy<T> {
    *
    * @example Abort a slow initialization
    * ```ts
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    * import { assertRejects } from "@std/assert";
    *
    * const slow = new Lazy(() => new Promise<string>(() => {}));
@@ -108,8 +102,6 @@ export class Lazy<T> {
    *   "timed out",
    * );
    * ```
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param options Optional settings for this call.
    * @returns The cached or newly initialized value.
@@ -163,7 +155,7 @@ export class Lazy<T> {
    *
    * @example Check initialization state
    * ```ts
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const lazy = new Lazy(() => 42);
@@ -171,8 +163,6 @@ export class Lazy<T> {
    * await lazy.get();
    * assertEquals(lazy.initialized, true);
    * ```
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns `true` if the value has been initialized, `false` otherwise.
    */
@@ -187,7 +177,7 @@ export class Lazy<T> {
    *
    * @example Fast-path when already initialized
    * ```ts
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const config = new Lazy(async () => ({ port: 8080 }));
@@ -199,14 +189,12 @@ export class Lazy<T> {
    *
    * @example Not yet initialized
    * ```ts
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    * import { assertEquals } from "@std/assert";
    *
    * const lazy = new Lazy(() => 42);
    * assertEquals(lazy.peek(), { ok: false });
    * ```
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns `{ ok: true, value }` if the value has been initialized, or
    *   `{ ok: false }` if not yet initialized or still in-flight.
@@ -224,15 +212,13 @@ export class Lazy<T> {
    *
    * @example Force reload
    * ```ts ignore
-   * import { Lazy } from "@std/async/unstable-lazy";
+   * import { Lazy } from "@std/async/lazy";
    *
    * const config = new Lazy(async () => loadConfig());
    * await config.get();
    * config.reset();
    * const fresh = await config.get();
    * ```
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   reset(): void {
     this.#promise = undefined;
