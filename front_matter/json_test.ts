@@ -1,9 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { assert } from "@std/assert";
 import { assertThrows } from "../assert/throws.ts";
 import { extract } from "./json.ts";
 
 import { assertEquals } from "@std/assert/equals";
+import { test as unstableTest } from "./unstable_json.ts";
 
 Deno.test("json() extracts type error on invalid input", () => {
   assertThrows(() => extract(""));
@@ -79,4 +81,21 @@ Deno.test("extractJson() throws at missing newline before body", () => {
     TypeError,
     "Unexpected end of input",
   );
+});
+
+Deno.test("(unstable)test() handles valid json input", () => {
+  assert(unstableTest("---json\nname = 'deno'\n---\n"));
+  assert(unstableTest("= json =\nname = 'deno'\n= json =\n"));
+  assert(unstableTest("= json =\nname = 'deno'\n= json =\ndeno is awesome\n"));
+});
+
+Deno.test("(unstable)test() handles invalid json input", () => {
+  assert(!unstableTest(""));
+  assert(!unstableTest("---"));
+  assert(!unstableTest("---json"));
+  assert(!unstableTest("= json ="));
+  assert(!unstableTest("---\n"));
+  assert(!unstableTest("---json\n"));
+  assert(!unstableTest("= json =\n"));
+  assert(!unstableTest("---\nasdasdasd"));
 });
