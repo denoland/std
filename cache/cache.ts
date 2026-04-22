@@ -20,14 +20,14 @@ import type { MemoizationCache } from "./memoize.ts";
 export type CacheRemovalReason = "evicted" | "expired" | "deleted" | "cleared";
 
 /**
- * Options shared by all {@linkcode Cache} configurations.
+ * Fields shared by every {@linkcode CacheOptions} variant.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
  */
-export interface CacheOptionsBase<K, V> {
+export interface CacheOptionsShared<K, V> {
   /**
    * Maximum number of entries. When exceeded, the least-recently-used entry
    * is evicted. Omit for unbounded.
@@ -45,7 +45,17 @@ export interface CacheOptionsBase<K, V> {
    * @param reason Why the entry was removed.
    */
   onRemove?: (key: K, value: V, reason: CacheRemovalReason) => void;
+}
 
+/**
+ * Options shared by all {@linkcode Cache} configurations.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @typeParam K The type of the cache keys.
+ * @typeParam V The type of the cache values.
+ */
+export interface CacheOptionsBase<K, V> extends CacheOptionsShared<K, V> {
   /** Must be `undefined` for non-TTL caches. */
   ttl?: undefined;
   /** Must be `undefined` for non-TTL caches. */
@@ -66,24 +76,7 @@ export interface CacheOptionsBase<K, V> {
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
  */
-export interface CacheOptionsTtl<K, V> {
-  /**
-   * Maximum number of entries. When exceeded, the least-recently-used entry
-   * is evicted. Omit for unbounded.
-   */
-  maxSize?: number;
-  /**
-   * Called when an entry is removed by eviction, expiration, deletion, or
-   * clearing. Not called when {@linkcode Cache.prototype.set | set()}
-   * overwrites an existing key. The entry is already removed when this
-   * fires. The cache is not re-entrant during this callback: calling
-   * `set`, `delete`, or `clear` will throw.
-   *
-   * @param key The key of the removed entry.
-   * @param value The value of the removed entry.
-   * @param reason Why the entry was removed.
-   */
-  onRemove?: (key: K, value: V, reason: CacheRemovalReason) => void;
+export interface CacheOptionsTtl<K, V> extends CacheOptionsShared<K, V> {
   /**
    * Default time-to-live in milliseconds. Entries expire after this
    * duration.
@@ -121,24 +114,7 @@ export interface CacheOptionsTtl<K, V> {
  * @typeParam K The type of the cache keys.
  * @typeParam V The type of the cache values.
  */
-export interface CacheOptionsSwr<K, V> {
-  /**
-   * Maximum number of entries. When exceeded, the least-recently-used entry
-   * is evicted. Omit for unbounded.
-   */
-  maxSize?: number;
-  /**
-   * Called when an entry is removed by eviction, expiration, deletion, or
-   * clearing. Not called when {@linkcode Cache.prototype.set | set()}
-   * overwrites an existing key. The entry is already removed when this
-   * fires. The cache is not re-entrant during this callback: calling
-   * `set`, `delete`, or `clear` will throw.
-   *
-   * @param key The key of the removed entry.
-   * @param value The value of the removed entry.
-   * @param reason Why the entry was removed.
-   */
-  onRemove?: (key: K, value: V, reason: CacheRemovalReason) => void;
+export interface CacheOptionsSwr<K, V> extends CacheOptionsShared<K, V> {
   /**
    * Default time-to-live in milliseconds. Entries expire after this
    * duration. Must be greater than
@@ -614,7 +590,10 @@ export class Cache<K, V> implements MemoizationCache<K, V> {
     while (!heap.isEmpty()) {
       if (heap.peekPriority()! > now) break;
       const top = heap.pop()!;
-      const entry = this.#data.get(top.key)!;
+      const entry = this.#data.get(top.key);
+      // Heap entries are kept in sync with `#data` via `#removeEntry`; this
+      // guard is defensive against future desyncs rather than a known race.
+      if (entry === undefined) continue;
       this.#data.delete(top.key);
       this.#unlink(entry);
       this.#stats.expirations++;
