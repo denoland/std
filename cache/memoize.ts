@@ -48,9 +48,8 @@ export type MemoizeOptions<
    * {@linkcode Map} object is instantiated upon memoization and used as a cache, with no
    * limit on the number of results to be cached.
    *
-   * Alternatively, you can supply an
-   * {@link https://jsr.io/@std/cache/doc/lru-cache/~/LruCache | LruCache}
-   * with a specified max size to limit memory usage.
+   * Alternatively, you can supply a `Cache` with a specified max size
+   * to limit memory usage.
    */
   cache?: Cache;
   /**
