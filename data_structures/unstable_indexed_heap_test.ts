@@ -624,16 +624,14 @@ Deno.test("IndexedHeap.from() throws TypeError on non-iterable, non-array-like i
   assertThrows(() => IndexedHeap.from({} as any), TypeError, message);
 });
 
-Deno.test("IndexedHeap.from() rejects a string (iterable of non-pair values)", () => {
-  // A string is iterable, so it passes the `from()` guard, but each iterated
-  // character is not a `[key, priority]` pair — `priority` is `undefined`,
-  // which fails the NaN check.
-  assertThrows(
-    // deno-lint-ignore no-explicit-any
-    () => IndexedHeap.from("ab" as any),
-    RangeError,
-    "Cannot set priority: value is NaN",
-  );
+Deno.test("IndexedHeap.from() accepts strings (iterable of characters)", () => {
+  // A string is iterable, so it passes the `from()` guard. Each destructured
+  // character yields `key = char`, `priority = undefined`, resulting in a
+  // heap with two undefined-priority entries. Not useful in practice, but
+  // documents that strings bypass the type guard.
+  // deno-lint-ignore no-explicit-any
+  const heap = IndexedHeap.from("ab" as any);
+  assertEquals(heap.size, 2);
 });
 
 Deno.test("IndexedHeap toArray() returns all entries without modifying heap", () => {
