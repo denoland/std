@@ -96,7 +96,7 @@ export interface ProgressBarOptions {
   /**
    * The time between each frame of the progress bar in milliseconds.
    *
-   * @default {75}
+   * @default {1000}
    */
   interval?: number;
 }
