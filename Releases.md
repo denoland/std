@@ -1,3 +1,124 @@
+### 2026.04.20
+
+#### @std/async 1.3.0 (minor)
+
+- BREAKING(async/unstable): change `Lazy.peek()` return type, add AbortSignal
+  support (#7084)
+- feat(async): stabilize `poll` (#7060)
+- feat(async): stabilize `allKeyed` (#7058)
+- feat(async/unstable): add `Channel` (#7035)
+- feat(async/unstable): use failure-rate threshold in circuit breaker (#7036)
+- feat(async/unstable): allow setting dynamic timeframe for `throttle` (#7002)
+- feat(async/unstable): add support for AbortSignal in `debounce` (#7023)
+- feat(async/unstable): add `pooledMapSettled` (#7015)
+- fix(async): validate poolLimit in pooledMap (#7016)
+- refactor(async): improve `debounce` readability, docs, and input validation
+  (#7022)
+- test(async): make debounce tests deterministic (#7034)
+
+#### @std/cache 0.2.3 (patch)
+
+- BREAKING(cache/unstable): refactor `TtlCache` (#7065)
+- feat(cache/unstable): add `peek()` to `TtlCache` (#7070)
+- feat(cache/unstable): add sliding expiration to `TtlCache` (#7046)
+- feat(cache/unstable): improve `LruCache` callback and add `peek()` (#7047)
+- feat(cache): expose cache property on memoized functions (#7045)
+- perf(cache): optimize _serializeArgList key generation (#7044)
+
+#### @std/cli 1.0.29 (patch)
+
+- feat(cli/unstable): introduce askForCursorPositionSync (#6757)
+
+#### @std/collections 1.1.7 (patch)
+
+- feat(collections/unstable): add interleave (#7010)
+
+#### @std/crypto 1.1.0 (minor)
+
+- BREAKING(crypto): throw TypeError on length mismatch in `timingSafeEqual()`
+  (#7042)
+- feat(crypto): stabilize AES-GCM encryption (#7089)
+- feat(crypto/unstable): add AES-GCM encrypt/decrypt helpers (#7012)
+
+#### @std/data-structures 1.0.11 (patch)
+
+- feat(data-structures/unstable): add `includes()` and `removeAt()` to `Deque`
+  (#7083)
+- feat(data-structures/unstable): add RollingCounter (#7028)
+- feat(data-structures/unstable): add `Deque` (#7019)
+
+#### @std/expect 1.0.19 (patch)
+
+- fix(expect): scope toMatchObject diff to only keys present in expected (#7078)
+
+#### @std/fmt 1.0.10 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/html 1.0.6 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/http 1.1.0 (minor)
+
+- feat(http/unstable): add RFC 9457 Problem Details response helpers (#7033)
+- feat(http): stabilize `ServerSentEventParseStream` (#7050)
+- fix(http): handle empty values and multi-line comments in
+  `ServerSentEventStream` (#7051)
+- fix(http): handle HEAD requests in serveDir (#7024)
+- fix(http): always cancel request body in `serveFile()` (#7041)
+
+#### @std/internal 1.0.13 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/json 1.1.0 (minor)
+
+- feat(json): stabilize `canonicalize` (#7061)
+
+#### @std/regexp 1.0.2 (patch)
+
+- feat(regexp/unstable): add `replaceAllAsync` (#7031)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/streams 1.1.0 (minor)
+
+- feat(streams): stabilize `toBytes` (#7043)
+
+#### @std/testing 1.0.18 (patch)
+
+- fix(testing): strip relative paths (as well as file:// paths) from snapshot
+  test subprocess stderr (#7081)
+- fix(testing): stop beforeAll from swallowing test.only error (#7000)
+
+#### @std/text 1.0.18 (patch)
+
+- feat(text/unstable): add `truncate` (#7052)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/uuid 1.1.1 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/xml 0.1.1 (patch)
+
+- feat(xml/unstable): add XML 1.1 support (#7057)
+- fix(xml): harden parser against DoS and fix entity handling (#7021)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/yaml 1.1.0 (minor)
+
+- feat(yaml): pass depth to sortKeys callback in stringify (#7001)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
 ### 2026.02.20
 
 #### @std/assert 1.0.19 (patch)
