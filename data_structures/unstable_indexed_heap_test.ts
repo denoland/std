@@ -593,6 +593,22 @@ Deno.test("IndexedHeap.from() throws on duplicate keys", () => {
   );
 });
 
+Deno.test("IndexedHeap.from() creates heap from an ArrayLike", () => {
+  const arrayLike: ArrayLike<readonly [string, number]> = {
+    length: 3,
+    0: ["c", 3],
+    1: ["a", 1],
+    2: ["b", 2],
+  };
+  const heap = IndexedHeap.from(arrayLike);
+  assertEquals(heap.size, 3);
+  assertEquals([...heap.drain()], [
+    { key: "a", priority: 1 },
+    { key: "b", priority: 2 },
+    { key: "c", priority: 3 },
+  ]);
+});
+
 Deno.test("IndexedHeap.from() throws TypeError on non-iterable, non-array-like input", () => {
   const message =
     "Cannot create an IndexedHeap: the 'collection' parameter is not iterable or array-like";
@@ -606,6 +622,18 @@ Deno.test("IndexedHeap.from() throws TypeError on non-iterable, non-array-like i
   assertThrows(() => IndexedHeap.from(true as any), TypeError, message);
   // deno-lint-ignore no-explicit-any
   assertThrows(() => IndexedHeap.from({} as any), TypeError, message);
+});
+
+Deno.test("IndexedHeap.from() rejects a string (iterable of non-pair values)", () => {
+  // A string is iterable, so it passes the `from()` guard, but each iterated
+  // character is not a `[key, priority]` pair — `priority` is `undefined`,
+  // which fails the NaN check.
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => IndexedHeap.from("ab" as any),
+    RangeError,
+    "Cannot set priority: value is NaN",
+  );
 });
 
 Deno.test("IndexedHeap toArray() returns all entries without modifying heap", () => {
