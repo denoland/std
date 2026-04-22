@@ -7,7 +7,7 @@ import type {
   RejectedLease,
   ReplenishingRateLimiter,
 } from "./types.ts";
-import { Deque } from "@std/data-structures/unstable-deque";
+import { Deque } from "@std/data-structures/deque";
 
 type RejectionReason =
   | "Insufficient permits"
