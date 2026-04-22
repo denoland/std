@@ -481,6 +481,7 @@ function resolveRequestDerived(
       return encodeQueryParamValue(values[0]!);
     }
     default:
+      // Unreachable: gated by REQUEST_ONLY_DERIVED; kept for exhaustiveness.
       throw new TypeError(`Unknown derived component "${name}"`);
   }
 }
@@ -611,7 +612,7 @@ function buildSignatureParamsValue(
     }
     if (p.bs) sfParams.set("bs", { type: "boolean", value: true });
     if (p.req) sfParams.set("req", { type: "boolean", value: true });
-    if (p.tr) sfParams.set("tr", { type: "boolean", value: true });
+    // `;tr` is rejected upstream; add handling here when trailer support lands.
     if (p.name !== undefined) {
       sfParams.set("name", { type: "string", value: p.name });
     }
@@ -648,20 +649,13 @@ function serializeInnerListValue(il: InnerList): string {
   const items = il.items.map((i) => serializeItem(i)).join(" ");
   let result = `(${items})`;
   for (const [key, value] of il.parameters) {
-    result += `;${key}=${serializeBareItemValue(value)}`;
+    // buildSignatureParamsValue only ever puts integer (created/expires) or
+    // string (nonce/alg/keyid/tag) bare items into listParams.
+    result += `;${key}=${
+      value.type === "integer" ? String(value.value) : `"${value.value}"`
+    }`;
   }
   return result;
-}
-
-function serializeBareItemValue(bareItem: BareItem): string {
-  switch (bareItem.type) {
-    case "integer":
-      return String(bareItem.value);
-    case "string":
-      return `"${bareItem.value}"`;
-    default:
-      return serializeItem(sfItem(bareItem));
-  }
 }
 
 /**
