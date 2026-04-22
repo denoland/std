@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertRejects, assertStrictEquals } from "@std/assert";
-import { Lazy } from "./unstable_lazy.ts";
+import { Lazy } from "./lazy.ts";
 
 Deno.test("Lazy.get() initializes and returns sync value", async () => {
   const lazy = new Lazy(() => 42);
@@ -179,6 +179,35 @@ Deno.test("Lazy.reset() does not affect in-flight initialization", async () => {
   holder.resolve("ok");
   const value = await getPromise;
   assertEquals(value, "ok");
+});
+
+Deno.test("Lazy.get() after reset() during in-flight triggers fresh init", async () => {
+  let initCount = 0;
+  const holders: { resolve: (v: number) => void }[] = [];
+  const lazy = new Lazy<number>(
+    () =>
+      new Promise((res) => {
+        initCount++;
+        holders.push({ resolve: res });
+      }),
+  );
+
+  const first = lazy.get();
+  await Promise.resolve();
+  assertEquals(initCount, 1);
+
+  lazy.reset();
+  const second = lazy.get();
+  await Promise.resolve();
+  assertEquals(initCount, 2);
+
+  holders[0]!.resolve(1);
+  holders[1]!.resolve(2);
+
+  assertEquals(await first, 1);
+  assertEquals(await second, 2);
+  assertEquals(lazy.initialized, true);
+  assertEquals(lazy.peek(), { ok: true, value: 2 });
 });
 
 Deno.test("Lazy.get() resolves falsy values correctly", async (t) => {

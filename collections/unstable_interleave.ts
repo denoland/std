@@ -2,18 +2,17 @@
 // This module is browser compatible.
 
 /**
- * Merges multiple arrays into a single array by round-robin picking one
- * element from each source in turn. Unlike {@linkcode zip}, which stops at
- * the shortest array and produces tuples, `interleave` continues through
- * all elements and returns a flat array.
+ * Returns all elements from the given iterables in round-robin order.
+ * Unlike {@linkcode zip}, which stops at the shortest iterable and returns
+ * tuples, `interleave` continues until all input iterables are exhausted and
+ * returns a flat array. All input iterables are consumed eagerly.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
- * @typeParam T Tuple of element types, one per input array; result is
- * `T[number][]`.
+ * @typeParam T The tuple of element types in the input iterables.
  *
- * @param arrays The arrays to interleave.
- * @returns A new array containing elements from all input arrays in
+ * @param iterables The iterables to interleave.
+ * @returns A new array containing all elements from the input iterables in
  * round-robin order.
  *
  * @example Basic usage
@@ -37,12 +36,25 @@
  *   [1, "a", true, 2, "b", 3],
  * );
  * ```
+ *
+ * @example With iterables
+ * ```ts
+ * import { interleave } from "@std/collections/unstable-interleave";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(
+ *   interleave(new Set([1, 2, 3]), ["a", "b", "c"]),
+ *   [1, "a", 2, "b", 3, "c"],
+ * );
+ * ```
  */
 export function interleave<T extends unknown[]>(
-  ...arrays: { [K in keyof T]: ReadonlyArray<T[K]> }
+  ...iterables: { [K in keyof T]: Iterable<T[K]> }
 ): T[number][] {
-  const arrayCount = arrays.length;
+  const arrayCount = iterables.length;
   if (arrayCount === 0) return [];
+
+  const arrays = iterables.map((it) => Array.isArray(it) ? it : Array.from(it));
 
   let maxLength = 0;
   let totalLength = 0;
@@ -53,8 +65,27 @@ export function interleave<T extends unknown[]>(
   }
 
   const result: T[number][] = new Array(totalLength);
-  let k = 0;
 
+  // Fast path for two arrays
+  if (arrayCount === 2) {
+    const a = arrays[0]!;
+    const b = arrays[1]!;
+    const minLen = Math.min(a.length, b.length);
+    let k = 0;
+    for (let i = 0; i < minLen; ++i) {
+      result[k++] = a[i] as T[number];
+      result[k++] = b[i] as T[number];
+    }
+    for (let i = minLen; i < a.length; ++i) {
+      result[k++] = a[i] as T[number];
+    }
+    for (let i = minLen; i < b.length; ++i) {
+      result[k++] = b[i] as T[number];
+    }
+    return result;
+  }
+
+  let k = 0;
   for (let i = 0; i < maxLength; ++i) {
     for (let j = 0; j < arrayCount; ++j) {
       if (i < arrays[j]!.length) {
