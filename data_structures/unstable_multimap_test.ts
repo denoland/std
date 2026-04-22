@@ -206,6 +206,63 @@ Deno.test("MultiMap.size counts distinct keys, not total values", () => {
   assertEquals(map.size, 2);
 });
 
+Deno.test("MultiMap.valueCount is 0 for an empty map", () => {
+  const map = new MultiMap<string, number>();
+
+  assertEquals(map.valueCount, 0);
+});
+
+Deno.test("MultiMap.valueCount counts every value, including duplicates", () => {
+  const map = new MultiMap(
+    [
+      ["a", 1],
+      ["a", 2],
+      ["a", 1],
+      ["b", 3],
+    ] as const,
+  );
+
+  assertEquals(map.size, 2);
+  assertEquals(map.valueCount, 4);
+});
+
+Deno.test("MultiMap.valueCount increments on add()", () => {
+  const map = new MultiMap<string, number>();
+  map.add("a", 1);
+  assertEquals(map.valueCount, 1);
+  map.add("a", 2);
+  assertEquals(map.valueCount, 2);
+  map.add("b", 3);
+  assertEquals(map.valueCount, 3);
+});
+
+Deno.test("MultiMap.valueCount decrements by bucket length on delete()", () => {
+  const map = new MultiMap<string, number>([["a", 1], ["a", 2], ["b", 3]]);
+
+  assertEquals(map.delete("a"), true);
+  assertEquals(map.valueCount, 1);
+
+  assertEquals(map.delete("missing"), false);
+  assertEquals(map.valueCount, 1);
+});
+
+Deno.test("MultiMap.valueCount decrements by one on successful deleteEntry()", () => {
+  const map = new MultiMap<string, number>([["a", 1], ["a", 2], ["a", 1]]);
+
+  assertEquals(map.deleteEntry("a", 1), true);
+  assertEquals(map.valueCount, 2);
+
+  assertEquals(map.deleteEntry("a", 999), false);
+  assertEquals(map.valueCount, 2);
+});
+
+Deno.test("MultiMap.valueCount resets to 0 on clear()", () => {
+  const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]] as const);
+  map.clear();
+
+  assertEquals(map.valueCount, 0);
+});
+
 Deno.test("MultiMap.keys() yields each key once in insertion order", () => {
   const map = new MultiMap([["b", 1], ["a", 2], ["b", 3]] as const);
 
@@ -579,4 +636,29 @@ Deno.test("MultiMap[Symbol.toStringTag] is 'MultiMap'", () => {
   const map = new MultiMap();
 
   assertEquals(map[Symbol.toStringTag], "MultiMap");
+});
+
+Deno.test("MultiMap is inspected as 'MultiMap(size) { key => [values], ... }'", () => {
+  const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]] as const);
+
+  assertEquals(
+    Deno.inspect(map),
+    `MultiMap(2) { "a" => [ 1, 2 ], "b" => [ 3 ] }`,
+  );
+});
+
+Deno.test("MultiMap is inspected as 'MultiMap(0) {}' when empty", () => {
+  const map = new MultiMap<string, number>();
+
+  assertEquals(Deno.inspect(map), `MultiMap(0) {}`);
+});
+
+Deno.test("MultiMap inspect does not alias internal state", () => {
+  const map = new MultiMap<string, number>([["a", 1], ["a", 2]]);
+  const before = Deno.inspect(map);
+  map.add("b", 3);
+  const after = Deno.inspect(map);
+
+  assertEquals(before, `MultiMap(1) { "a" => [ 1, 2 ] }`);
+  assertEquals(after, `MultiMap(2) { "a" => [ 1, 2 ], "b" => [ 3 ] }`);
 });

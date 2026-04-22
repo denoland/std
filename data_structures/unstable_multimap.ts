@@ -14,18 +14,20 @@
  * lazily; fully draining them is linear in the total value count (or the
  * number of distinct keys, for {@linkcode MultiMap.prototype.keys}).
  *
- * | Method                                                      | Per-call time complexity        |
- * | ----------------------------------------------------------- | ------------------------------- |
- * | {@linkcode MultiMap.prototype.add}                          | Amortized constant              |
- * | {@linkcode MultiMap.prototype.get}                          | Linear in the bucket size       |
- * | {@linkcode MultiMap.prototype.has}                          | Constant                        |
- * | {@linkcode MultiMap.prototype.hasEntry}                     | Linear in the bucket size       |
- * | {@linkcode MultiMap.prototype.delete}                       | Constant                        |
- * | {@linkcode MultiMap.prototype.deleteEntry}                  | Linear in the bucket size       |
- * | {@linkcode MultiMap.prototype.clear}                        | Linear in the key count         |
- * | {@linkcode MultiMap.prototype.forEach}                      | Linear in the total value count |
- * | {@linkcode MultiMap.prototype.toMap}                        | Linear in the total value count |
- * | {@linkcode MultiMap.groupBy}                                | Linear in the number of items   |
+ * | Method                                                      | Per-call time complexity         |
+ * | ----------------------------------------------------------- | -------------------------------- |
+ * | {@linkcode MultiMap.prototype.size}                         | Constant                         |
+ * | {@linkcode MultiMap.prototype.valueCount}                   | Constant                         |
+ * | {@linkcode MultiMap.prototype.add}                          | Amortized constant               |
+ * | {@linkcode MultiMap.prototype.get}                          | Linear in the bucket size (copy) |
+ * | {@linkcode MultiMap.prototype.has}                          | Constant                         |
+ * | {@linkcode MultiMap.prototype.hasEntry}                     | Linear in the bucket size        |
+ * | {@linkcode MultiMap.prototype.delete}                       | Constant                         |
+ * | {@linkcode MultiMap.prototype.deleteEntry}                  | Linear in the bucket size        |
+ * | {@linkcode MultiMap.prototype.clear}                        | Linear in the key count          |
+ * | {@linkcode MultiMap.prototype.forEach}                      | Linear in the total value count  |
+ * | {@linkcode MultiMap.prototype.toMap}                        | Linear in the total value count  |
+ * | {@linkcode MultiMap.groupBy}                                | Linear in the number of items    |
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -57,6 +59,7 @@
  */
 export class MultiMap<K, V> implements Iterable<[K, V]> {
   #map = new Map<K, V[]>();
+  #valueCount = 0;
 
   /**
    * Creates a new instance.
@@ -113,6 +116,38 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
   }
 
   /**
+   * The total number of values stored across all keys, counting duplicates.
+   *
+   * In contrast to {@linkcode MultiMap.prototype.size} — which reports the
+   * number of distinct keys, matching the `Map` convention — this counts
+   * every individual value. Maintained in O(1): `add()` increments it,
+   * `delete()` and `deleteEntry()` decrement it, and `clear()` resets it.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns The total number of values across all keys.
+   *
+   * @example Usage
+   * ```ts
+   * import { MultiMap } from "@std/data-structures/unstable-multimap";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]]);
+   * assertEquals(map.size, 2);
+   * assertEquals(map.valueCount, 3);
+   *
+   * map.add("a", 2);
+   * assertEquals(map.valueCount, 4);
+   *
+   * map.deleteEntry("a", 1);
+   * assertEquals(map.valueCount, 3);
+   * ```
+   */
+  get valueCount(): number {
+    return this.#valueCount;
+  }
+
+  /**
    * Appends a value to the list stored under the given key. Duplicate values
    * are preserved.
    *
@@ -140,6 +175,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
       this.#map.set(key, list);
     }
     list.push(value);
+    this.#valueCount++;
     return this;
   }
 
@@ -219,6 +255,9 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   hasEntry(key: K, value: V): boolean {
+    // `Array.prototype.includes` uses SameValueZero, which matches the
+    // hand-rolled loop in `deleteEntry()` (and the `Map`/`Set` contract) so
+    // `NaN` and `±0` behave consistently across the two methods.
     return this.#map.get(key)?.includes(value) ?? false;
   }
 
@@ -244,7 +283,11 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   delete(key: K): boolean {
-    return this.#map.delete(key);
+    const list = this.#map.get(key);
+    if (list === undefined) return false;
+    this.#valueCount -= list.length;
+    this.#map.delete(key);
+    return true;
   }
 
   /**
@@ -287,6 +330,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
     }
     if (index === -1) return false;
     list.splice(index, 1);
+    this.#valueCount--;
     if (list.length === 0) this.#map.delete(key);
     return true;
   }
@@ -309,6 +353,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    */
   clear(): void {
     this.#map.clear();
+    this.#valueCount = 0;
   }
 
   /**
@@ -362,26 +407,14 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
         `Cannot call MultiMap.prototype.forEach: "callbackfn" is not a function: received ${typeof callbackfn}`,
       );
     }
-    // Split on thisArg to avoid paying the .call() binding cost per value in
-    // the common case where no thisArg is passed. The bucket is snapshotted
-    // before the inner loop so mutations to the current key's list (e.g. a
-    // callback calling `add()` or splicing via `deleteEntry()`) do not
-    // extend, truncate, or shift the visit. This mirrors the per-bucket
-    // contract of `Map.prototype.forEach`.
-    if (thisArg === undefined) {
-      const fn = callbackfn as (v: V, k: K, m: this) => void;
-      for (const [key, list] of this.#map) {
-        const snapshot = list.slice();
-        for (let i = 0; i < snapshot.length; i++) {
-          fn(snapshot[i]!, key, this);
-        }
-      }
-    } else {
-      for (const [key, list] of this.#map) {
-        const snapshot = list.slice();
-        for (let i = 0; i < snapshot.length; i++) {
-          callbackfn.call(thisArg, snapshot[i]!, key, this);
-        }
+    // The bucket is snapshotted before the inner loop so mutations to the
+    // current key's list (e.g. a callback calling `add()` or splicing via
+    // `deleteEntry()`) do not extend, truncate, or shift the visit. This
+    // mirrors the per-bucket contract of `Map.prototype.forEach`.
+    for (const [key, list] of this.#map) {
+      const snapshot = list.slice();
+      for (let i = 0; i < snapshot.length; i++) {
+        callbackfn.call(thisArg as T, snapshot[i]!, key, this);
       }
     }
   }
@@ -408,11 +441,12 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   entries(): IterableIterator<[K, V]> {
-    // Hand-rolled iterator rather than a generator: avoids per-yield
-    // generator-frame overhead. ~5x faster on full iteration. The bucket is
-    // snapshotted on first entry so mutations to the current bucket during
-    // iteration (including `delete()` of the current key) do not extend,
-    // truncate, or shift the visit.
+    // Hand-rolled iterator rather than a generator to avoid per-yield
+    // generator-frame overhead (measured 2–4× advantage on flattened
+    // iteration). `groups()` and `values()` follow the same pattern for
+    // consistency. The bucket is snapshotted on first entry so mutations
+    // to the current bucket during iteration (including `delete()` of the
+    // current key) do not extend, truncate, or shift the visit.
     const outer = this.#map[Symbol.iterator]();
     let currentKey!: K;
     let currentList: V[] | null = null;
@@ -483,10 +517,24 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * assertEquals(collisions, ["a"]);
    * ```
    */
-  *groups(): IterableIterator<[K, V[]]> {
-    for (const [key, list] of this.#map) {
-      yield [key, list.slice()];
-    }
+  groups(): IterableIterator<[K, V[]]> {
+    // Hand-rolled for consistency with `entries()` / `values()`. See
+    // `entries()` for the rationale. One yield per bucket (no inner loop).
+    const outer = this.#map[Symbol.iterator]();
+    const iter: IterableIterator<[K, V[]]> = {
+      next(): IteratorResult<[K, V[]]> {
+        const outerResult = outer.next();
+        if (outerResult.done) return { value: undefined, done: true };
+        return {
+          value: [outerResult.value[0], outerResult.value[1].slice()],
+          done: false,
+        };
+      },
+      [Symbol.iterator]() {
+        return this;
+      },
+    };
+    return iter;
   }
 
   /**
@@ -510,6 +558,9 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   keys(): IterableIterator<K> {
+    // Delegates to the underlying `Map.prototype.keys()` (a native
+    // `MapIterator`); no per-bucket work is needed, so wrapping it in a
+    // hand-rolled iterator would be pure overhead.
     return this.#map.keys();
   }
 
@@ -535,10 +586,10 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   values(): IterableIterator<V> {
-    // Hand-rolled iterator rather than a generator: avoids per-yield
-    // generator-frame overhead and the yield* delegation cost. The bucket is
-    // snapshotted on first entry so mutations to the current bucket during
-    // iteration do not extend, truncate, or shift the visit.
+    // Hand-rolled for consistency with `entries()` / `groups()`. See
+    // `entries()` for the rationale. The bucket is snapshotted on first
+    // entry so mutations to the current bucket during iteration do not
+    // extend, truncate, or shift the visit.
     const outer = this.#map.values();
     let currentList: V[] | null = null;
     let innerIndex = 0;
@@ -636,6 +687,39 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * ```
    */
   readonly [Symbol.toStringTag] = "MultiMap" as const;
+
+  /**
+   * Custom output for {@linkcode Deno.inspect}, rendering the multimap as
+   * `MultiMap(size) { key => [values], ... }`. Each key and bucket is
+   * inspected via the provided `inspect` callback so caller-configured
+   * `options` (colors, depth, circular detection) are honored.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param inspect Internal inspect function.
+   * @param options Inspect options forwarded from the host.
+   * @returns The string representation of the multimap.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { MultiMap } from "@std/data-structures/unstable-multimap";
+   *
+   * const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]]);
+   * console.log(map);
+   * ```
+   */
+  [Symbol.for("Deno.customInspect")](
+    inspect: (value: unknown, options: unknown) => string,
+    options: unknown,
+  ): string {
+    const size = this.#map.size;
+    if (size === 0) return `MultiMap(0) {}`;
+    const parts: string[] = [];
+    for (const [key, list] of this.#map) {
+      parts.push(`${inspect(key, options)} => ${inspect(list, options)}`);
+    }
+    return `MultiMap(${size}) { ${parts.join(", ")} }`;
+  }
 
   /**
    * Groups items from an iterable by the result of `keyFn`, returning a new
