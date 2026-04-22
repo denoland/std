@@ -192,7 +192,12 @@ export interface SignatureParams {
   nonce?: string;
   /** Application-specific tag. */
   tag?: string;
-  /** Signature label, defaults to `"sig"`. Must be a valid sf-key (lowercase alphanumeric, `_`, `-`, `.`, `*`). */
+  /**
+   * Signature label, defaults to `"sig"`. Must be a valid sf-key (lowercase
+   * alphanumeric, `_`, `-`, `.`, `*`). Must also be unique among existing
+   * signatures on the target message per RFC 9421 section 4; a `TypeError`
+   * is thrown on collision.
+   */
   label?: string;
 }
 
@@ -825,6 +830,7 @@ export async function signMessage<T extends Request | Response>(
   const label = params.label ?? "sig";
 
   validateSignParams(params);
+  assertUniqueLabel(message.headers, label);
 
   const algorithm = params.algorithm ?? inferAlgorithm(key);
 
@@ -861,6 +867,32 @@ function appendHeader(headers: Headers, name: string, value: string): void {
     headers.set(name, `${existing}, ${value}`);
   } else {
     headers.set(name, value);
+  }
+}
+
+// Per RFC 9421 §4, signature labels MUST be unique within an HTTP message
+// across both the Signature-Input and Signature dictionaries. Appending a
+// signature with a colliding label would produce duplicate dictionary keys
+// that silently corrupt prior signatures on parse (last value wins per
+// RFC 8941).
+function assertUniqueLabel(headers: Headers, label: string): void {
+  for (const name of ["Signature-Input", "Signature"] as const) {
+    const value = headers.get(name);
+    if (value === null) continue;
+    let dict: Dictionary;
+    try {
+      dict = parseDictionary(value);
+    } catch (cause) {
+      throw new TypeError(
+        `Cannot parse existing "${name}" header on message to check label uniqueness`,
+        { cause },
+      );
+    }
+    if (dict.has(label)) {
+      throw new TypeError(
+        `Signature label "${label}" is already present in the "${name}" header on the message; choose a unique label (RFC 9421 section 4)`,
+      );
+    }
   }
 }
 

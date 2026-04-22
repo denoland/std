@@ -160,6 +160,7 @@ Deno.test("createSignatureBase() resolves plain header, ;sf, ;key item, ;key inn
       "List-Dict": "items=(1 2 3), other=4",
       "Example-Header": "value, with, lots",
       "X-Num": "42",
+      "X-List": "1,    2,   3",
     },
   });
 
@@ -175,6 +176,16 @@ Deno.test("createSignatureBase() resolves plain header, ;sf, ;key item, ;key inn
     sfDict.split("\n")[0],
     '"example-dict";sf: a=1, b=2;x=1;y=2, c=(a b c)',
   );
+
+  // ;sf — list fallback (header fails Dictionary parse, succeeds as List)
+  const sfList = createSignatureBase({
+    message: request,
+    params: {
+      components: [{ name: "x-list", parameters: { sf: true } }],
+      created: 1618884473,
+    },
+  });
+  assertEquals(sfList.split("\n")[0], '"x-list";sf: 1, 2, 3');
 
   // ;sf — item fallback
   const sfItem = createSignatureBase({
@@ -833,6 +844,98 @@ Deno.test("signMessage() supports multiple signatures with different labels", as
     (keyId) => keyId === "key1" ? k1.publicKey : k2.publicKey,
   );
   assertEquals(results.length, 2);
+});
+
+Deno.test("signMessage() rejects duplicate labels on already-signed messages", async () => {
+  const { privateKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", { method: "GET" });
+
+  const signed = await signMessage({
+    message: request,
+    params: { components: ["@method"], keyId: "k", created: NOW },
+    key: privateKey,
+  });
+
+  // Default label collision ("sig" on both calls).
+  await assertRejects(
+    () =>
+      signMessage({
+        message: signed,
+        params: { components: ["@authority"], keyId: "k", created: NOW },
+        key: privateKey,
+      }),
+    TypeError,
+    'Signature label "sig" is already present',
+  );
+
+  // Explicit label collision.
+  const signedNamed = await signMessage({
+    message: request,
+    params: {
+      components: ["@method"],
+      keyId: "k",
+      label: "proxy",
+      created: NOW,
+    },
+    key: privateKey,
+  });
+  await assertRejects(
+    () =>
+      signMessage({
+        message: signedNamed,
+        params: {
+          components: ["@authority"],
+          keyId: "k",
+          label: "proxy",
+          created: NOW,
+        },
+        key: privateKey,
+      }),
+    TypeError,
+    'Signature label "proxy" is already present',
+  );
+});
+
+Deno.test("signMessage() rejects messages with malformed Signature-Input header", async () => {
+  const { privateKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  const request = new Request("https://example.com/", {
+    method: "GET",
+    headers: { "Signature-Input": "!!not a valid dictionary!!" },
+  });
+
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: privateKey,
+      }),
+    TypeError,
+    'Cannot parse existing "Signature-Input" header',
+  );
+});
+
+Deno.test("signMessage() rejects label collision in Signature header alone", async () => {
+  const { privateKey } = keys(await KEY_GENERATORS["ed25519"]!());
+  // Construct a message where only the Signature header carries the label.
+  // Such a message is already malformed per RFC 9421 section 4 (labels MUST
+  // match between the two headers), but signMessage should still refuse to
+  // further corrupt it.
+  const request = new Request("https://example.com/", {
+    method: "GET",
+    headers: { "Signature": "sig=:AAAA:" },
+  });
+
+  await assertRejects(
+    () =>
+      signMessage({
+        message: request,
+        params: { components: ["@method"], keyId: "k", created: NOW },
+        key: privateKey,
+      }),
+    TypeError,
+    'Signature label "sig" is already present in the "Signature" header',
+  );
 });
 
 // =============================================================================
