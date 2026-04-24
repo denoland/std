@@ -157,23 +157,21 @@ export interface ChannelReceiveOptions {
  * An async channel for communicating between concurrent tasks with optional
  * bounded buffering and backpressure.
  *
- * ## Semantics
- *
- * - **FIFO order.** Values are received in the order they were sent. When
+ * - **FIFO order:** values are received in the order they were sent. When
  *   multiple senders or receivers are suspended, they are served in the order
  *   they arrived.
- * - **Backpressure.** {@linkcode Channel.send} suspends when the buffer is
+ * - **Backpressure:** {@linkcode Channel.send} suspends when the buffer is
  *   full (or always, when unbuffered) until a receiver consumes a value.
- * - **Close asymmetry.** {@linkcode Channel.close} accepts an optional
+ * - **Close asymmetry:** {@linkcode Channel.close} accepts an optional
  *   reason. Pending and future {@linkcode Channel.receive} calls reject
  *   with that reason (or a fresh {@linkcode ChannelClosedError} when no
  *   reason was supplied). Pending {@linkcode Channel.send} calls **always**
  *   reject with a {@linkcode ChannelClosedError} carrying the unsent value,
  *   regardless of the close reason.
- * - **`undefined` is a valid value.** Non-blocking receives therefore use
- *   the {@linkcode ChannelReceiveResult} discriminated union rather than
- *   `T | undefined`.
- * - **Multiple consumers.** Concurrent {@linkcode Channel.receive} calls
+ * - **`undefined` values:** `undefined` is a valid channel value, so
+ *   non-blocking receives use the {@linkcode ChannelReceiveResult}
+ *   discriminated union rather than `T | undefined`.
+ * - **Multiple consumers:** concurrent {@linkcode Channel.receive} calls
  *   and multiple {@linkcode Channel.toReadableStream} instances each
  *   consume values FIFO; every value is delivered to exactly one consumer.
  *
