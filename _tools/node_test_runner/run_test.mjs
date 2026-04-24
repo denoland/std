@@ -74,6 +74,29 @@ import "../../fs/unstable_chmod_test.ts";
 import "../../fs/unstable_umask_test.ts";
 import "../../fs/unstable_utime_test.ts";
 import "../../internal/assertion_state_test.ts";
+import "../../path/_common/assert_path_test.ts";
+import "../../path/_common/basename_test.ts";
+import "../../path/_common/format_test.ts";
+import "../../path/_common/normalize_string_test.ts";
+import "../../path/_common/to_file_url_test.ts";
+import "../../path/basename_test.ts";
+import "../../path/common_test.ts";
+import "../../path/dirname_test.ts";
+import "../../path/extname_test.ts";
+import "../../path/from_file_url_test.ts";
+import "../../path/glob_to_regexp_test.ts";
+import "../../path/is_absolute_test.ts";
+import "../../path/is_glob_test.ts";
+import "../../path/join_globs_test.ts";
+import "../../path/join_test.ts";
+import "../../path/normalize_glob_test.ts";
+import "../../path/normalize_test.ts";
+import "../../path/parse_format_test.ts";
+import "../../path/parse_test.ts";
+import "../../path/relative_test.ts";
+import "../../path/resolve_test.ts";
+import "../../path/to_file_url_test.ts";
+import "../../path/to_namespaced_path_test.ts";
 
 for (const testDef of testDefinitions) {
   if (testDef.ignore) {
