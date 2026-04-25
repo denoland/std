@@ -529,3 +529,75 @@ export function parse<const T extends ParseOptions>(
   }
   return r as ParseResult<ParseOptions, T>;
 }
+
+/** Options for {@linkcode parseLine}. */
+export interface ParseLineOptions {
+  /** Character which separates values.
+   *
+   * @default {","}
+   */
+  separator?: string;
+  /** Flag to trim the leading space of the value.
+   *
+   * This is done even if the field delimiter, `separator`, is white space.
+   *
+   * @default {false}
+   */
+  trimLeadingSpace?: boolean;
+  /**
+   * Allow unquoted quote in a quoted field or non-double-quoted quotes in
+   * quoted field.
+   *
+   * @default {false}
+   */
+  lazyQuotes?: boolean;
+}
+
+/**
+ * Parses a single CSV-encoded line into an array of fields.
+ *
+ * This is a small, synchronous convenience for cases where a caller already
+ * has individual lines (for example, after splitting a buffer) and just wants
+ * the field array. Unlike {@linkcode parse}, no row-count validation,
+ * comment-line handling, or multi-line quoted-field continuation is performed:
+ * a quoted field containing a newline cannot span across calls. For full RFC
+ * 4180 support, use {@linkcode parse} or {@linkcode CsvParseStream} instead.
+ *
+ * @example Usage
+ * ```ts
+ * import { parseLine } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(parseLine("a,b,c"), ["a", "b", "c"]);
+ * assertEquals(parseLine(`"a","b,c","d"`), ["a", "b,c", "d"]);
+ * ```
+ *
+ * @example Custom separator
+ * ```ts
+ * import { parseLine } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(parseLine("a\tb\tc", { separator: "\t" }), ["a", "b", "c"]);
+ * ```
+ *
+ * @param line The single CSV line to parse. Should not contain a trailing
+ * newline.
+ * @param options Parsing options.
+ * @returns The fields parsed from the line.
+ */
+export function parseLine(
+  line: string,
+  options: ParseLineOptions = {},
+): string[] {
+  const stripped = line.startsWith(BYTE_ORDER_MARK) ? line.slice(1) : line;
+  // Strip a single trailing CR/LF/CRLF so callers that forgot to trim are not
+  // surprised by a phantom trailing field.
+  const normalized = stripped.endsWith("\r\n")
+    ? stripped.slice(0, -2)
+    : stripped.endsWith("\n") || stripped.endsWith("\r")
+    ? stripped.slice(0, -1)
+    : stripped;
+  const parser = new Parser(options);
+  const rows = parser.parse(normalized);
+  return rows[0] ?? [];
+}

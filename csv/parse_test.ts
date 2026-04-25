@@ -5,7 +5,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { parse, type ParseOptions } from "./parse.ts";
+import { parse, parseLine, type ParseOptions } from "./parse.ts";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 
 const BYTE_ORDER_MARK = "\ufeff";
@@ -1021,5 +1021,71 @@ Deno.test({
         IsExact<typeof parsed, Record<"aaa", string>[]>
       >;
     }
+  },
+});
+
+Deno.test({
+  name: "parseLine() parses a single line into fields",
+  async fn(t) {
+    await t.step("simple", () => {
+      assertEquals(parseLine("a,b,c"), ["a", "b", "c"]);
+    });
+
+    await t.step("empty string returns empty array", () => {
+      assertEquals(parseLine(""), []);
+    });
+
+    await t.step("single field", () => {
+      assertEquals(parseLine("hello"), ["hello"]);
+    });
+
+    await t.step("trailing separator yields empty trailing field", () => {
+      assertEquals(parseLine("a,b,"), ["a", "b", ""]);
+    });
+
+    await t.step("quoted fields with embedded separator", () => {
+      assertEquals(parseLine(`"a","b,c","d"`), ["a", "b,c", "d"]);
+    });
+
+    await t.step("escaped quotes inside quoted field", () => {
+      assertEquals(parseLine(`"a ""word""",x`), [`a "word"`, "x"]);
+    });
+
+    await t.step("custom separator (TSV)", () => {
+      assertEquals(parseLine("a\tb\tc", { separator: "\t" }), ["a", "b", "c"]);
+    });
+
+    await t.step("trimLeadingSpace option", () => {
+      assertEquals(
+        parseLine("  a, b ,  c", { trimLeadingSpace: true }),
+        ["a", "b ", "c"],
+      );
+    });
+
+    await t.step("lazyQuotes allows bare quotes", () => {
+      assertEquals(
+        parseLine(`a "word",b`, { lazyQuotes: true }),
+        [`a "word"`, "b"],
+      );
+    });
+
+    await t.step("strips trailing newline", () => {
+      assertEquals(parseLine("a,b,c\n"), ["a", "b", "c"]);
+      assertEquals(parseLine("a,b,c\r\n"), ["a", "b", "c"]);
+      assertEquals(parseLine("a,b,c\r"), ["a", "b", "c"]);
+    });
+
+    await t.step("strips leading byte-order mark", () => {
+      assertEquals(parseLine("﻿a,b,c"), ["a", "b", "c"]);
+    });
+
+    await t.step("invalid bare quote without lazyQuotes throws", () => {
+      assertThrows(() => parseLine(`a "word",b`), SyntaxError);
+    });
+
+    await t.step("return type is string[]", () => {
+      const out = parseLine("a,b");
+      type _ = AssertTrue<IsExact<typeof out, string[]>>;
+    });
   },
 });
