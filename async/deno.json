@@ -11,6 +11,7 @@
     "./unstable-mux-async-iterator": "./unstable_mux_async_iterator.ts",
     "./poll": "./poll.ts",
     "./pool": "./pool.ts",
+    "./unstable-pool": "./unstable_pool.ts",
     "./retry": "./retry.ts",
     "./tee": "./tee.ts",
     "./all-keyed": "./all_keyed.ts",
