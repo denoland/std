@@ -2,7 +2,33 @@
 // This module is browser compatible.
 
 import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
-import type { MemoizationCache } from "./memoize.ts";
+
+/**
+ * The minimal structural shape of a key/value cache.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @typeParam K The type of the cache keys.
+ * @typeParam V The type of the cache values.
+ *
+ * @example Usage
+ * ```ts
+ * import type { CacheLike } from "@std/cache/cache";
+ *
+ * const cache: CacheLike<string, number> = new Map();
+ * cache.set("a", 1);
+ * ```
+ */
+export interface CacheLike<K, V> {
+  /** Checks whether a value for the given key exists in the cache. */
+  has(key: K): boolean;
+  /** Returns the cached value associated with the given key, if present. */
+  get(key: K): V | undefined;
+  /** Stores a value in the cache under the given key. */
+  set(key: K, value: V): unknown;
+  /** Removes the value associated with the given key from the cache. */
+  delete(key: K): unknown;
+}
 
 /**
  * The reason an entry was removed from the cache.
@@ -318,7 +344,7 @@ interface CacheEntry<K, V> {
  * assertEquals(cache.get("a"), undefined);
  * ```
  */
-export class Cache<K, V> implements MemoizationCache<K, V> {
+export class Cache<K, V> implements CacheLike<K, V> {
   #data = new Map<K, CacheEntry<K, V>>();
   #maxSize: number | undefined;
   #defaultTtl: number;

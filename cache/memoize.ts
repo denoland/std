@@ -1,23 +1,8 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import type { CacheLike } from "./cache.ts";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
-
-/**
- * A cache suitable for use with {@linkcode memoize}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- */
-export interface MemoizationCache<K, V> {
-  /** Checks whether a value for the given key exists in the cache. */
-  has(key: K): boolean;
-  /** Returns the cached value associated with the given key, if present. */
-  get(key: K): V | undefined;
-  /** Stores a value in the cache under the given key. */
-  set(key: K, val: V): unknown;
-  /** Removes the value associated with the given key from the cache. */
-  delete(key: K): unknown;
-}
 
 /**
  * The result of a memoized function, as stored in its cache.
@@ -41,7 +26,7 @@ export type MemoizationCacheResult<T> =
 export type MemoizeOptions<
   Fn extends (...args: never[]) => unknown,
   Key,
-  Cache extends MemoizationCache<Key, MemoizationCacheResult<ReturnType<Fn>>>,
+  Cache extends CacheLike<Key, MemoizationCacheResult<ReturnType<Fn>>>,
 > = {
   /**
    * Provide a custom cache for getting previous results. By default, a new
@@ -121,11 +106,10 @@ export type MemoizeOptions<
 export function memoize<
   Fn extends (...args: never[]) => unknown,
   Key = string,
-  Cache extends MemoizationCache<Key, MemoizationCacheResult<ReturnType<Fn>>> =
-    Map<
-      Key,
-      MemoizationCacheResult<ReturnType<Fn>>
-    >,
+  Cache extends CacheLike<Key, MemoizationCacheResult<ReturnType<Fn>>> = Map<
+    Key,
+    MemoizationCacheResult<ReturnType<Fn>>
+  >,
 >(
   fn: Fn,
   options?: MemoizeOptions<Fn, Key, Cache>,
@@ -133,7 +117,7 @@ export function memoize<
   const cache = (options?.cache ?? new Map()) as Cache;
   const getKey = options?.getKey ??
     _serializeArgList(
-      cache as MemoizationCache<unknown, unknown>,
+      cache as CacheLike<unknown, unknown>,
     ) as unknown as (
       (this: ThisParameterType<Fn>, ...args: Parameters<Fn>) => Key
     );

@@ -253,7 +253,7 @@ Deno.test("memoize() allows passing an explicit `Map` as a cache", () => {
   assertEquals(calls, 1);
 });
 
-Deno.test("memoize() works with custom cache implementing MemoizationCache", () => {
+Deno.test("memoize() works with custom cache implementing CacheLike", () => {
   let calls = 0;
 
   const neverCache = {
