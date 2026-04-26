@@ -1,7 +1,8 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { assert } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { isGlob } from "./is_glob.ts";
 import { disposableStack } from "../internal/_testing.ts";
+import { Worker } from "node:worker_threads";
 
 Deno.test({
   name: "isGlob()",
@@ -122,22 +123,29 @@ Deno.test(
       reject(new Error("isGlob() did not finish in time"));
     }, 20000);
     const worker = new Worker(
-      `
-      data:text/javascript,
-      import { isGlob } from "@std/path";
-      import { assert } from "@std/assert";
-      assert(!isGlob("[".repeat(1_000_000) + "x"));
-      assert(!isGlob("{".repeat(1_000_000) + "x"));
-      assert(!isGlob("(".repeat(1_000_000) + "x"));
-      postMessage(true);`,
-      { type: "module" },
+      new URL(
+        `data:text/javascript,
+        import { parentPort, workerData } from "node:worker_threads";
+        const { isGlob } = await import(workerData.isGlobUrl);
+        parentPort.postMessage([
+          isGlob("[".repeat(1_000_000) + "x"),
+          isGlob("{".repeat(1_000_000) + "x"),
+          isGlob("(".repeat(1_000_000) + "x"),
+        ]);`,
+      ),
+      {
+        workerData: {
+          isGlobUrl: new URL("./is_glob.ts", import.meta.url).href,
+        },
+      },
     );
     using disposable = disposableStack();
     disposable.defer(() => worker.terminate());
-    worker.onmessage = () => {
+    worker.on("message", (results: boolean[]) => {
       clearTimeout(timer);
+      assertEquals(results, [false, false, false]);
       resolve();
-    };
+    });
 
     await promise;
   },

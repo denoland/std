@@ -5,6 +5,7 @@ import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { relative } from "./relative.ts";
+import process from "node:process";
 
 const relativeTests = {
   // arguments                     result
@@ -68,7 +69,7 @@ Deno.test("windows.relative()", function () {
 });
 
 Deno.test("relative() returns current working directory if input is empty", function () {
-  const pwd = Deno.cwd();
+  const pwd = process.cwd();
   assertEquals(relative("", pwd), "");
   assertEquals(relative(pwd, ""), "");
   assertEquals(relative(pwd, pwd), "");
