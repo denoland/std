@@ -82,4 +82,5 @@
 export * from "./types.ts";
 export * from "./parse_stream.ts";
 export * from "./parse.ts";
+export * from "./record_stream.ts";
 export * from "./stringify.ts";
