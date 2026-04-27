@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./unstable-abort-stream": "./unstable_abort_stream.ts",
+    "./unstable-batch-stream": "./unstable_batch_stream.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
     "./unstable-capped-delimiter-stream": "./unstable_capped_delimiter_stream.ts",
