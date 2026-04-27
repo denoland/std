@@ -369,9 +369,8 @@ export async function parseProblemDetailsResponse<
  * `application/problem+json` content type.
  *
  * The media type is compared without parameters (e.g. `charset=utf-8` is
- * ignored). Only the JSON serialization is recognized; problem-details
- * responses using the XML serialization (`application/problem+xml`) or any
- * other media type return `false`.
+ * ignored). Only `application/problem+json` is recognized; any other media
+ * type returns `false`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
