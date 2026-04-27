@@ -261,7 +261,10 @@ async function verifyDigestHeader<T extends Request | Response>(
 
   for (const [alg, statedDigest] of stated) {
     const computed = await computeDigest(bodyBytes, alg);
-    if (!timingSafeEqual(statedDigest, computed)) {
+    if (
+      statedDigest.length !== computed.length ||
+      !timingSafeEqual(statedDigest, computed)
+    ) {
       throw new Error(
         `"${headerName}" digest mismatch for algorithm "${alg}"`,
       );
