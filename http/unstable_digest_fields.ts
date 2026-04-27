@@ -59,6 +59,11 @@ const WEB_CRYPTO_NAMES: Record<DigestAlgorithm, string> = {
   "sha-512": "SHA-512",
 };
 
+const DIGEST_BYTE_LENGTHS: Record<DigestAlgorithm, number> = {
+  "sha-256": 32,
+  "sha-512": 64,
+};
+
 function isSupportedAlgorithm(value: string): value is DigestAlgorithm {
   return DIGEST_ALGORITHMS.includes(value as DigestAlgorithm);
 }
@@ -133,7 +138,7 @@ function buildDigestHeaderValue(
 
 function validateAlgorithms(algorithms: DigestAlgorithm[]): void {
   if (algorithms.length === 0) {
-    throw new TypeError("At least one algorithm must be specified");
+    throw new TypeError(`"algorithms" option must not be empty`);
   }
   for (const alg of algorithms) {
     if (!isSupportedAlgorithm(alg)) {
@@ -147,6 +152,9 @@ function validateAlgorithms(algorithms: DigestAlgorithm[]): void {
  *
  * Content-Digest covers the actual message body bytes (after any content
  * coding such as gzip has been applied).
+ *
+ * When `content` is a `ReadableStream`, it is fully consumed; pass a fresh
+ * stream or call `tee()` first if the body is needed afterwards.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -188,6 +196,9 @@ export async function createContentDigest(
  * Repr-Digest and Content-Digest are identical. It is the caller's
  * responsibility to pass the decoded representation bytes.
  *
+ * When `content` is a `ReadableStream`, it is fully consumed; pass a fresh
+ * stream or call `tee()` first if the body is needed afterwards.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
@@ -227,11 +238,20 @@ function parseDigestHeaderValue(
     throw new TypeError(`"${headerName}" header is malformed`, { cause });
   }
   for (const [key, member] of dict) {
-    if (!isItem(member)) continue;
     if (!isSupportedAlgorithm(key)) continue;
-    const bare = member.value;
-    if (bare.type !== "binary") continue;
-    result.set(key, bare.value);
+    if (!isItem(member) || member.value.type !== "binary") {
+      throw new TypeError(
+        `"${headerName}" value for algorithm "${key}" must be a Byte Sequence`,
+      );
+    }
+    const bytes = member.value.value;
+    const expected = DIGEST_BYTE_LENGTHS[key];
+    if (bytes.length !== expected) {
+      throw new TypeError(
+        `"${headerName}" digest for algorithm "${key}" has invalid length: expected ${expected} bytes, got ${bytes.length}`,
+      );
+    }
+    result.set(key, bytes);
   }
   return result;
 }
@@ -245,13 +265,6 @@ async function verifyDigestHeader<T extends Request | Response>(
     throw new TypeError(`Missing "${headerName}" header`);
   }
 
-  let bodyBytes: Uint8Array;
-  if (message.body === null) {
-    bodyBytes = new Uint8Array(0);
-  } else {
-    bodyBytes = await message.clone().bytes();
-  }
-
   const stated = parseDigestHeaderValue(headerValue, headerName);
   if (stated.size === 0) {
     throw new TypeError(
@@ -259,14 +272,18 @@ async function verifyDigestHeader<T extends Request | Response>(
     );
   }
 
+  let bodyBytes: Uint8Array;
+  if (message.body === null) {
+    bodyBytes = new Uint8Array(0);
+  } else {
+    bodyBytes = await message.clone().bytes();
+  }
+
   for (const [alg, statedDigest] of stated) {
     const computed = await computeDigest(bodyBytes, alg);
-    if (
-      statedDigest.length !== computed.length ||
-      !timingSafeEqual(statedDigest, computed)
-    ) {
+    if (!timingSafeEqual(statedDigest, computed)) {
       throw new Error(
-        `"${headerName}" digest mismatch for algorithm "${alg}"`,
+        `"${headerName}" digest for algorithm "${alg}" does not match`,
       );
     }
   }
@@ -279,6 +296,15 @@ async function verifyDigestHeader<T extends Request | Response>(
  *
  * Reads the body from a clone to verify; the returned message is the original
  * and its body is still consumable.
+ *
+ * Per RFC 9530, `Content-Digest` covers the message body *after* any content
+ * codings (e.g. `gzip`) have been applied. The Fetch API does not expose the
+ * raw wire bytes of a `Response`: when a runtime transparently decodes a
+ * content coding, `bytes()` returns the decoded payload. Verifying a fetched
+ * response whose `Content-Encoding` was applied by the server therefore fails
+ * with a digest mismatch even when the message is intact. Use
+ * {@linkcode verifyReprDigest} for that case, or call this helper only on
+ * messages whose body is in its on-the-wire form.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -315,6 +341,13 @@ export function verifyContentDigest<T extends Request | Response>(
  *
  * Reads the body from a clone to verify; the returned message is the original
  * and its body is still consumable.
+ *
+ * `Repr-Digest` covers the complete selected representation. This helper
+ * verifies against the message body, so it is only valid when the body *is*
+ * the complete representation. Partial responses (e.g. `206 Partial Content`
+ * or range requests) cover only part of the representation and require
+ * verification against the full representation out-of-band; this helper does
+ * not support that.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *

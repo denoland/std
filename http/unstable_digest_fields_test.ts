@@ -138,7 +138,7 @@ Deno.test("createContentDigest() throws on empty algorithms array", async () => 
   await assertRejects(
     () => createContentDigest("hello", { algorithms: [] }),
     TypeError,
-    "At least one algorithm must be specified",
+    '"algorithms" option must not be empty',
   );
 });
 
@@ -189,7 +189,7 @@ Deno.test("verifyContentDigest() throws on tampered body", async () => {
   await assertRejects(
     () => verifyContentDigest(response),
     Error,
-    "digest mismatch",
+    "does not match",
   );
 });
 
@@ -235,20 +235,20 @@ Deno.test("verifyContentDigest() with empty body", async () => {
 
 Deno.test("verifyContentDigest() with multi-algo header where one mismatches", async () => {
   const body = "test body";
-  const validDigest = await createContentDigest(body, {
-    algorithms: ["sha-256", "sha-512"],
+  const sha256Digest = await createContentDigest(body, {
+    algorithms: ["sha-256"],
   });
-  // Tamper with the sha-512 portion while keeping sha-256 intact
-  const sha256Part = validDigest.split(", ")[0]!;
-  const tampered =
-    `${sha256Part}, sha-512=:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:`;
+  const wrongSha512 = await createContentDigest("different body", {
+    algorithms: ["sha-512"],
+  });
+  const tampered = `${sha256Digest}, ${wrongSha512}`;
   const response = new Response(body, {
     headers: { "Content-Digest": tampered },
   });
   await assertRejects(
     () => verifyContentDigest(response),
     Error,
-    'digest mismatch for algorithm "sha-512"',
+    'digest for algorithm "sha-512" does not match',
   );
 });
 
@@ -313,24 +313,102 @@ Deno.test("verifyContentDigest() with unsupported algorithm only in header", asy
   );
 });
 
-Deno.test("verifyContentDigest() ignores inner-list members in header", async () => {
+Deno.test("verifyContentDigest() rejects inner-list members for supported algorithms", async () => {
   const response = new Response("x", {
     headers: { "Content-Digest": "sha-256=(1 2 3)" },
   });
   await assertRejects(
     () => verifyContentDigest(response),
     TypeError,
-    "no supported digest algorithms",
+    'value for algorithm "sha-256" must be a Byte Sequence',
   );
 });
 
-Deno.test("verifyContentDigest() ignores non-binary item values in header", async () => {
+Deno.test("verifyContentDigest() rejects non-binary item values for supported algorithms", async () => {
   const response = new Response("x", {
     headers: { "Content-Digest": "sha-256=1" },
   });
   await assertRejects(
     () => verifyContentDigest(response),
     TypeError,
-    "no supported digest algorithms",
+    'value for algorithm "sha-256" must be a Byte Sequence',
+  );
+});
+
+Deno.test("verifyContentDigest() throws TypeError on invalid sha-256 digest length", async () => {
+  const response = new Response("body", {
+    headers: { "Content-Digest": "sha-256=:AAAA:" },
+  });
+  await assertRejects(
+    () => verifyContentDigest(response),
+    TypeError,
+    'digest for algorithm "sha-256" has invalid length: expected 32 bytes, got 3',
+  );
+});
+
+Deno.test("verifyContentDigest() throws TypeError on invalid sha-512 digest length", async () => {
+  const valid256 = await createContentDigest("hello", {
+    algorithms: ["sha-256"],
+  });
+  const sha256Body = valid256.slice("sha-256=:".length, -1);
+  const response = new Response("hello", {
+    headers: { "Content-Digest": `sha-512=:${sha256Body}:` },
+  });
+  await assertRejects(
+    () => verifyContentDigest(response),
+    TypeError,
+    'digest for algorithm "sha-512" has invalid length: expected 64 bytes, got 32',
+  );
+});
+
+Deno.test("verifyContentDigest() rejects mixed header with valid sha-256 and malformed sha-512", async () => {
+  const body = "hello";
+  const validSha256 = await createContentDigest(body, {
+    algorithms: ["sha-256"],
+  });
+  const malformed = `${validSha256}, sha-512=1`;
+  const response = new Response(body, {
+    headers: { "Content-Digest": malformed },
+  });
+  await assertRejects(
+    () => verifyContentDigest(response),
+    TypeError,
+    'value for algorithm "sha-512" must be a Byte Sequence',
+  );
+});
+
+Deno.test("verifyContentDigest() rejects malformed header before reading body", async () => {
+  const body = new ReadableStream<Uint8Array>({
+    pull() {
+      throw new Error("body must not be read on malformed header");
+    },
+  });
+  const request = new Request("http://example.com", {
+    method: "POST",
+    body,
+    headers: { "Content-Digest": "not a valid structured field !!!" },
+  });
+  await assertRejects(
+    () => verifyContentDigest(request),
+    TypeError,
+    '"Content-Digest" header is malformed',
+  );
+});
+
+Deno.test("verifyContentDigest() rejects invalid digest length before reading body", async () => {
+  const body = new ReadableStream<Uint8Array>({
+    pull() {
+      throw new Error("body must not be read on invalid digest length");
+    },
+  });
+  const request = new Request("http://example.com", {
+    method: "POST",
+    body,
+    headers: { "Content-Digest": "sha-256=:AAAA:" },
+  });
+  await assertRejects(
+    () => verifyContentDigest(request),
+    TypeError,
+    "invalid length",
   );
 });
