@@ -1562,3 +1562,115 @@ Deno.test("parseSync() allows same local name with different namespace URIs", ()
   assertEquals(attrs.includes("a:x"), true);
   assertEquals(attrs.includes("b:x"), true);
 });
+
+// =============================================================================
+// XML 1.1 Character Validation Tests
+// =============================================================================
+
+Deno.test("parseSync() xml11 rejects literal C0 control in text", () => {
+  assertThrows(
+    () => parseSync("<root>\x01</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects literal C1 control in text", () => {
+  assertThrows(
+    () => parseSync("<root>\x80</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+  assertThrows(
+    () => parseSync("<root>\x9F</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects NULL in text", () => {
+  assertThrows(
+    () => parseSync("<root>\x00</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 allows NEL after line-ending normalization", () => {
+  const doc = parseSync("<root>a\x85b</root>", { xmlVersion: "1.1" });
+  assertEquals(doc.root.children.length, 1);
+});
+
+Deno.test("parseSync() xml11 rejects literal C0 control in comment", () => {
+  assertThrows(
+    () => parseSync("<root><!--\x01--></root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects literal C1 control in CDATA", () => {
+  assertThrows(
+    () =>
+      parseSync(
+        "<root><![CDATA[\x80]]></root>",
+        { disallowDoctype: false, xmlVersion: "1.1" },
+      ),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects literal C0 control in PI content", () => {
+  assertThrows(
+    () => parseSync("<root><?pi \x02?></root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects noncharacter U+FFFE", () => {
+  assertThrows(
+    () => parseSync("<root>\uFFFE</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 rejects noncharacter U+FFFF", () => {
+  assertThrows(
+    () => parseSync("<root>\uFFFF</root>", { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseSync() xml11 allows C0 control via character reference", () => {
+  const doc = parseSync("<root>&#x1;</root>", { xmlVersion: "1.1" });
+  const child = doc.root.children[0];
+  assertEquals(child?.type, "text");
+  if (child?.type === "text") {
+    assertEquals(child.text, "\x01");
+  }
+});
+
+Deno.test("parseSync() xml11 allows C1 control via character reference", () => {
+  const doc = parseSync("<root>&#x85;</root>", { xmlVersion: "1.1" });
+  const child = doc.root.children[0];
+  assertEquals(child?.type, "text");
+  if (child?.type === "text") {
+    assertEquals(child.text, "\x85");
+  }
+});
+
+Deno.test("parseSync() xml11 normalizes NEL and LS line endings", () => {
+  const doc = parseSync(
+    "<root>a\x85b\u2028c</root>",
+    { xmlVersion: "1.1" },
+  );
+  const child = doc.root.children[0];
+  assertEquals(child?.type, "text");
+  if (child?.type === "text") {
+    assertEquals(child.text, "a\nb\nc");
+  }
+});

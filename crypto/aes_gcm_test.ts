@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertNotEquals, assertRejects } from "@std/assert";
-import { decryptAesGcm, encryptAesGcm } from "./unstable_aes_gcm.ts";
+import { decryptAesGcm, encryptAesGcm } from "./aes_gcm.ts";
 
 const encoder = new TextEncoder();
 
@@ -190,5 +190,23 @@ Deno.test("encryptAesGcm()/decryptAesGcm() round-trips DataView inputs", async (
     encrypted.byteLength,
   );
   const decrypted = await decryptAesGcm(key, encryptedView);
+  assertEquals(decrypted, plaintext);
+});
+
+Deno.test("encryptAesGcm()/decryptAesGcm() round-trips Uint8Array subarray with non-zero byteOffset", async () => {
+  const key = await generateKey(256);
+  const plaintext = encoder.encode("offset test");
+
+  const paddedPlaintext = new Uint8Array(16 + plaintext.byteLength);
+  paddedPlaintext.set(plaintext, 16);
+  const plaintextSubarray = paddedPlaintext.subarray(16);
+
+  const encrypted = await encryptAesGcm(key, plaintextSubarray);
+
+  const paddedEncrypted = new Uint8Array(8 + encrypted.byteLength);
+  paddedEncrypted.set(encrypted, 8);
+  const encryptedSubarray = paddedEncrypted.subarray(8);
+
+  const decrypted = await decryptAesGcm(key, encryptedSubarray);
   assertEquals(decrypted, plaintext);
 });

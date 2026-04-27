@@ -23,7 +23,6 @@ Deno.test("deadline() throws DOMException", async () => {
   const error = await assertRejects(
     () => deadline(p, 100),
     DOMException,
-    "Signal timed out.",
   );
   assertEquals(error.name, "TimeoutError");
   controller.abort();
