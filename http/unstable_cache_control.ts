@@ -174,8 +174,11 @@ function parseNonNegativeInt(value: string, directive: string): number {
   return n > MAX_DELTA_SECONDS ? MAX_DELTA_SECONDS : n;
 }
 
-/** Split by comma but not inside double-quoted strings (needed for
- * `no-cache` and `private` whose quoted-string arguments may contain commas). */
+/** Split by comma but not inside double-quoted strings, respecting RFC 9110
+ * §5.6.4 quoted-pairs. Needed for `no-cache` and `private` whose
+ * quoted-string arguments may contain commas; quoted-pair sequences (e.g.
+ * `\"` or `\,`) inside a quoted-string must not toggle the quote state or
+ * trigger a split. */
 function splitDirectives(value: string): string[] {
   // Fast path: no quotes means a simple split is safe.
   if (!value.includes('"')) return value.split(",");
@@ -186,6 +189,8 @@ function splitDirectives(value: string): string[] {
   for (let i = 0; i < value.length; i++) {
     const c = value.charCodeAt(i);
     if (c === 92 /* \ */ && inQuotes) {
+      // Quoted-pair (RFC 9110 §5.6.4): skip the escaped byte so a `\"` is
+      // not seen as a closing quote and a `\,` is not seen as a separator.
       i++;
     } else if (c === 34 /* " */) {
       inQuotes = !inQuotes;
@@ -367,7 +372,7 @@ function append(
   if (typeof value === "number") {
     if (!Number.isInteger(value) || value < 0) {
       throw new RangeError(
-        `Cache-Control: ${directive} must be a non-negative integer: current value is ${value}`,
+        `Cache-Control: ${directive} must be a non-negative integer, got ${value}`,
       );
     }
     // Clamp to MAX_DELTA_SECONDS to match parser behavior (RFC 9111 §1.2.2).
