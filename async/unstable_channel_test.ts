@@ -18,21 +18,26 @@ Deno.test("Channel() defaults to unbuffered (capacity 0)", () => {
   assertEquals(ch.size, 0);
 });
 
+Deno.test("Channel() accepts empty options", () => {
+  const ch = new Channel<number>({});
+  assertEquals(ch.capacity, 0);
+});
+
 Deno.test("Channel() accepts valid capacity", () => {
-  assertEquals(new Channel<number>(8).capacity, 8);
+  assertEquals(new Channel<number>({ capacity: 8 }).capacity, 8);
 });
 
 Deno.test("Channel() throws for invalid capacity", () => {
-  assertThrows(() => new Channel(-1), RangeError);
-  assertThrows(() => new Channel(1.5), RangeError);
-  assertThrows(() => new Channel(NaN), RangeError);
-  assertThrows(() => new Channel(Infinity), RangeError);
+  assertThrows(() => new Channel({ capacity: -1 }), RangeError);
+  assertThrows(() => new Channel({ capacity: 1.5 }), RangeError);
+  assertThrows(() => new Channel({ capacity: NaN }), RangeError);
+  assertThrows(() => new Channel({ capacity: Infinity }), RangeError);
 });
 
 // -- Buffered send/receive --
 
 Deno.test("Channel.receive() returns buffered values in FIFO order", async () => {
-  const ch = new Channel<number>(4);
+  const ch = new Channel<number>({ capacity: 4 });
   await ch.send(1);
   await ch.send(2);
   await ch.send(3);
@@ -44,7 +49,7 @@ Deno.test("Channel.receive() returns buffered values in FIFO order", async () =>
 });
 
 Deno.test("Channel ring buffer wraps around correctly", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   await ch.send(2);
   assertEquals(await ch.receive(), 1);
@@ -83,7 +88,7 @@ Deno.test("Channel.receive() blocks until send on unbuffered channel", async () 
 // -- Backpressure --
 
 Deno.test("Channel.send() blocks when buffer is full", async () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   await ch.send(1);
   let sent = false;
   const sendPromise = ch.send(2).then(() => sent = true);
@@ -96,7 +101,7 @@ Deno.test("Channel.send() blocks when buffer is full", async () => {
 });
 
 Deno.test("Channel.receive() unblocks senders in FIFO order", async () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   await ch.send(0);
   const order: number[] = [];
   const p1 = ch.send(1).then(() => order.push(1));
@@ -165,7 +170,7 @@ Deno.test("Channel.receive() reuses a single ChannelClosedError after close()", 
 });
 
 Deno.test("Channel.receive() drains buffered values before rejecting", async () => {
-  const ch = new Channel<number>(4);
+  const ch = new Channel<number>({ capacity: 4 });
   await ch.send(1);
   await ch.send(2);
   ch.close();
@@ -213,7 +218,7 @@ Deno.test("Channel.close(reason) causes future receive to reject with reason", a
 });
 
 Deno.test("Channel.close(reason) drains buffer then rejects with reason", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   ch.close(new Error("done"));
   assertEquals(await ch.receive(), 1);
@@ -248,18 +253,18 @@ Deno.test("Channel.close(undefined) as explicit reason rejects with undefined", 
 // -- trySend --
 
 Deno.test("Channel.trySend() buffers when space available", () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   assert(ch.trySend(1));
   assert(ch.trySend(2));
   assertEquals(ch.size, 2);
 });
 
 Deno.test("Channel.trySend() returns false when full, closed, or no receiver", () => {
-  const full = new Channel<number>(1);
+  const full = new Channel<number>({ capacity: 1 });
   full.trySend(1);
   assertFalse(full.trySend(2));
 
-  const closed = new Channel<number>(1);
+  const closed = new Channel<number>({ capacity: 1 });
   closed.close();
   assertFalse(closed.trySend(1));
 
@@ -277,13 +282,13 @@ Deno.test("Channel.trySend() delivers to waiting receiver", async () => {
 // -- tryReceive --
 
 Deno.test("Channel.tryReceive() returns value when buffered", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   assertEquals(ch.tryReceive(), { state: "ok", value: 1 });
 });
 
 Deno.test("Channel.tryReceive() returns empty when no value is available", () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   assertEquals(ch.tryReceive(), { state: "empty" });
 });
 
@@ -294,7 +299,7 @@ Deno.test("Channel.tryReceive() returns closed on closed empty channel", () => {
 });
 
 Deno.test("Channel.tryReceive() drains buffer before reporting closed", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   ch.close();
   assertEquals(ch.tryReceive(), { state: "ok", value: 1 });
@@ -302,7 +307,7 @@ Deno.test("Channel.tryReceive() drains buffer before reporting closed", async ()
 });
 
 Deno.test("Channel.tryReceive() returns a shared empty result across calls", () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   assert(ch.tryReceive() === ch.tryReceive());
 });
 
@@ -313,7 +318,7 @@ Deno.test("Channel.tryReceive() returns a shared closed result across calls", ()
 });
 
 Deno.test("Channel.tryReceive() handles undefined as a valid value", async () => {
-  const ch = new Channel<undefined>(1);
+  const ch = new Channel<undefined>({ capacity: 1 });
   await ch.send(undefined);
   assertEquals(ch.tryReceive(), { state: "ok", value: undefined });
 });
@@ -326,7 +331,7 @@ Deno.test("Channel.tryReceive() drains from waiting sender on unbuffered channel
 });
 
 Deno.test("Channel.tryReceive() promotes blocked sender into buffer", async () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   await ch.send(1);
   const p = ch.send(2);
   assertEquals(ch.tryReceive(), { state: "ok", value: 1 });
@@ -354,7 +359,7 @@ Deno.test("Channel.send() rejects when signal aborts while waiting", async () =>
 });
 
 Deno.test("Channel.send() ignores signal on immediate delivery", async () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   const controller = new AbortController();
   await ch.send(42, { signal: controller.signal });
   assertEquals(ch.size, 1);
@@ -386,7 +391,7 @@ Deno.test("Channel.receive() rejects when signal aborts while waiting", async ()
 });
 
 Deno.test("Channel.receive() ignores signal on immediate delivery", async () => {
-  const ch = new Channel<number>(1);
+  const ch = new Channel<number>({ capacity: 1 });
   await ch.send(42);
   const controller = new AbortController();
   assertEquals(await ch.receive({ signal: controller.signal }), 42);
@@ -508,7 +513,7 @@ Deno.test("Channel.close() does not see previously aborted receiver", async () =
 // -- Async iteration --
 
 Deno.test("Channel async iteration drains until closed", async () => {
-  const ch = new Channel<number>(4);
+  const ch = new Channel<number>({ capacity: 4 });
   await ch.send(1);
   await ch.send(2);
   await ch.send(3);
@@ -522,7 +527,7 @@ Deno.test("Channel async iteration drains until closed", async () => {
 });
 
 Deno.test("Channel async iteration throws on close with reason", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   const reason = new Error("fail");
   ch.close(reason);
@@ -557,7 +562,7 @@ Deno.test("Channel async iteration throws reason immediately when no buffer", as
 });
 
 Deno.test("Channel async iteration works with concurrent producer", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
 
   const producer = (async () => {
     for (let i = 0; i < 5; i++) {
@@ -577,7 +582,7 @@ Deno.test("Channel async iteration works with concurrent producer", async () => 
 // -- toReadableStream --
 
 Deno.test("Channel.toReadableStream() yields buffered values then closes", async () => {
-  const ch = new Channel<number>(4);
+  const ch = new Channel<number>({ capacity: 4 });
   await ch.send(1);
   await ch.send(2);
   ch.close();
@@ -586,7 +591,7 @@ Deno.test("Channel.toReadableStream() yields buffered values then closes", async
 });
 
 Deno.test("Channel.toReadableStream() works with concurrent producer", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
 
   (async () => {
     for (let i = 0; i < 5; i++) {
@@ -600,7 +605,7 @@ Deno.test("Channel.toReadableStream() works with concurrent producer", async () 
 });
 
 Deno.test("Channel.toReadableStream() errors on close with reason", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   await ch.send(1);
   const reason = new Error("fail");
   ch.close(reason);
@@ -620,14 +625,14 @@ Deno.test("Channel.toReadableStream() errors on close with reason", async () => 
 });
 
 Deno.test("Channel.toReadableStream() cancel closes the channel", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   const stream = ch.toReadableStream();
   await stream.cancel();
   assert(ch.closed);
 });
 
 Deno.test("Channel.toReadableStream() cancel(reason) forwards reason to close", async () => {
-  const ch = new Channel<number>(2);
+  const ch = new Channel<number>({ capacity: 2 });
   const stream = ch.toReadableStream();
   const reason = new Error("stream-cancelled");
   await stream.cancel(reason);
@@ -641,6 +646,37 @@ Deno.test("Channel.toReadableStream() cancel() without reason keeps no-reason cl
   const stream = ch.toReadableStream();
   await stream.cancel();
   await assertRejects(() => ch.receive(), ChannelClosedError);
+});
+
+Deno.test("Channel.toReadableStream() multiple streams share values FIFO", async () => {
+  const ch = new Channel<number>({ capacity: 8 });
+  for (let i = 0; i < 6; i++) await ch.send(i);
+  ch.close();
+
+  const a = ch.toReadableStream();
+  const b = ch.toReadableStream();
+
+  const aReader = a.getReader();
+  const bReader = b.getReader();
+
+  const aValues: number[] = [];
+  const bValues: number[] = [];
+
+  while (true) {
+    const { value, done } = await aReader.read();
+    if (done) break;
+    aValues.push(value);
+    const next = await bReader.read();
+    if (next.done) break;
+    bValues.push(next.value);
+  }
+
+  const combined = [...aValues, ...bValues].sort((x, y) => x - y);
+  assertEquals(combined, [0, 1, 2, 3, 4, 5]);
+  assertEquals(aValues.length + bValues.length, 6);
+
+  await aReader.cancel();
+  await bReader.cancel();
 });
 
 // -- Disposable --
