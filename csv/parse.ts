@@ -3,17 +3,75 @@
 
 import {
   convertRowToObject,
-  createBareQuoteErrorMessage,
-  createQuoteErrorMessage,
+  parseLine as parseLineInternal,
   type ParseResult,
   type ReadOptions,
   type RecordWithColumn,
 } from "./_io.ts";
-import { codePointLength } from "./_shared.ts";
 
 export type { ParseResult, RecordWithColumn };
 
-const BYTE_ORDER_MARK = "\ufeff";
+const BYTE_ORDER_MARK = "﻿";
+
+/**
+ * Parse a single CSV record into its fields.
+ *
+ * `parseLine` is the synchronous primitive that `parse` and `CsvParseStream`
+ * are both built on. It is exported so callers that already own line
+ * splitting (for example, after `TextLineStream`) can reuse the same field
+ * rules without spinning up a parser class.
+ *
+ * Multi-line quoted fields are supported: pass the joined record (each
+ * source line separated by `\n`) and the function will treat the embedded
+ * newlines as field content.
+ *
+ * @example Usage
+ * ```ts
+ * import { parseLine } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(parseLine("a,b,c"), ["a", "b", "c"]);
+ * assertEquals(parseLine(`"a","b,c","d"`), ["a", "b,c", "d"]);
+ * ```
+ *
+ * @example Custom separator
+ * ```ts
+ * import { parseLine } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * assertEquals(parseLine("a\tb\tc", { separator: "\t" }), ["a", "b", "c"]);
+ * ```
+ *
+ * @param line The single CSV record to parse. May contain embedded `\n`
+ * characters inside quoted fields.
+ * @param options Parsing options. Same shape as the read-side options
+ * accepted by {@linkcode parse}.
+ * @returns The fields parsed from the record.
+ */
+export function parseLine(
+  line: string,
+  options: Omit<ParseOptions, "skipFirstRow" | "columns" | "fieldsPerRecord"> =
+    {},
+): string[] {
+  const { separator = ",", trimLeadingSpace = false, comment, lazyQuotes } =
+    options;
+  const stripped = line.startsWith(BYTE_ORDER_MARK) ? line.slice(1) : line;
+  // Treat a single trailing CR/LF/CRLF as a record terminator (callers that
+  // forgot to trim should not see a phantom empty trailing field).
+  const normalized = stripped.endsWith("\r\n")
+    ? stripped.slice(0, -2)
+    : stripped.endsWith("\n") || stripped.endsWith("\r")
+    ? stripped.slice(0, -1)
+    : stripped;
+  const readOptions: ReadOptions = {
+    separator,
+    trimLeadingSpace,
+    ...(comment !== undefined ? { comment } : {}),
+    ...(lazyQuotes !== undefined ? { lazyQuotes } : {}),
+  };
+  const result = parseLineInternal(normalized, readOptions, 0, 0, true);
+  return result ?? [];
+}
 
 class Parser {
   #input = "";
@@ -21,9 +79,9 @@ class Parser {
   #options: {
     separator: string;
     trimLeadingSpace: boolean;
-    comment: string | undefined;
-    lazyQuotes: boolean | undefined;
-    fieldsPerRecord: number | undefined;
+    comment?: string;
+    lazyQuotes?: boolean;
+    fieldsPerRecord?: number;
   };
   constructor({
     separator = ",",
@@ -35,9 +93,9 @@ class Parser {
     this.#options = {
       separator,
       trimLeadingSpace,
-      comment,
-      lazyQuotes,
-      fieldsPerRecord,
+      ...(comment !== undefined ? { comment } : {}),
+      ...(lazyQuotes !== undefined ? { lazyQuotes } : {}),
+      ...(fieldsPerRecord !== undefined ? { fieldsPerRecord } : {}),
     };
   }
   #readLine(): string | null {
@@ -71,138 +129,41 @@ class Parser {
     return this.#cursor >= this.#input.length;
   }
   #parseRecord(zeroBasedStartLine: number): string[] | null {
-    let fullLine = this.#readLine();
-    if (fullLine === null) return null;
-    if (fullLine.length === 0) {
+    const first = this.#readLine();
+    if (first === null) return null;
+    if (first.length === 0) {
       return [];
     }
 
+    // Defer all field-level parsing to the shared primitive. If the line ends
+    // inside an unclosed quoted field, accumulate the next line and re-parse;
+    // we own line iteration here, so the primitive's `atEof` signal tells us
+    // when to give up.
+    let accumulated = first;
     let zeroBasedLine = zeroBasedStartLine;
-
-    // line starting with comment character is ignored
-    if (this.#options.comment && fullLine[0] === this.#options.comment) {
-      return [];
-    }
-
-    let line = fullLine;
-    const quote = '"';
-    const quoteLen = quote.length;
-    const separatorLen = this.#options.separator.length;
-    let recordBuffer = "";
-    const fieldIndexes = [] as number[];
-    parseField: while (true) {
-      if (this.#options.trimLeadingSpace) {
-        line = line.trimStart();
+    while (true) {
+      const result = parseLineInternal(
+        accumulated,
+        this.#options,
+        zeroBasedStartLine,
+        zeroBasedLine,
+        this.#isEOF(),
+      );
+      if (result !== null) return result;
+      const next = this.#readLine();
+      if (next === null) {
+        // Force the EOF decision (will throw unless lazyQuotes is set).
+        return parseLineInternal(
+          accumulated,
+          this.#options,
+          zeroBasedStartLine,
+          zeroBasedLine,
+          true,
+        ) ?? [];
       }
-
-      if (line.length === 0 || !line.startsWith(quote)) {
-        // Non-quoted string field
-        const i = line.indexOf(this.#options.separator);
-        let field = line;
-        if (i >= 0) {
-          field = field.substring(0, i);
-        }
-        // Check to make sure a quote does not appear in field.
-        if (!this.#options.lazyQuotes) {
-          const j = field.indexOf(quote);
-          if (j >= 0) {
-            const col = codePointLength(
-              fullLine.slice(0, fullLine.length - line.slice(j).length),
-            );
-            throw new SyntaxError(
-              createBareQuoteErrorMessage(
-                zeroBasedStartLine,
-                zeroBasedLine,
-                col,
-              ),
-            );
-          }
-        }
-        recordBuffer += field;
-        fieldIndexes.push(recordBuffer.length);
-        if (i >= 0) {
-          line = line.substring(i + separatorLen);
-          continue parseField;
-        }
-        break parseField;
-      } else {
-        // Quoted string field
-        line = line.substring(quoteLen);
-        while (true) {
-          const i = line.indexOf(quote);
-          if (i >= 0) {
-            // Hit next quote.
-            recordBuffer += line.substring(0, i);
-            line = line.substring(i + quoteLen);
-            if (line.startsWith(quote)) {
-              // `""` sequence (append quote).
-              recordBuffer += quote;
-              line = line.substring(quoteLen);
-            } else if (line.startsWith(this.#options.separator)) {
-              // `","` sequence (end of field).
-              line = line.substring(separatorLen);
-              fieldIndexes.push(recordBuffer.length);
-              continue parseField;
-            } else if (0 === line.length) {
-              // `"\n` sequence (end of line).
-              fieldIndexes.push(recordBuffer.length);
-              break parseField;
-            } else if (this.#options.lazyQuotes) {
-              // `"` sequence (bare quote).
-              recordBuffer += quote;
-            } else {
-              // `"*` sequence (invalid non-escaped quote).
-              const col = codePointLength(
-                fullLine.slice(0, fullLine.length - line.length - quoteLen),
-              );
-              throw new SyntaxError(
-                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
-              );
-            }
-          } else if (line.length > 0 || !(this.#isEOF())) {
-            // Hit end of line (copy all data so far).
-            recordBuffer += line;
-            const r = this.#readLine();
-            line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
-            fullLine = line;
-            if (r === null) {
-              // Abrupt end of file (EOF or error).
-              if (!this.#options.lazyQuotes) {
-                const col = codePointLength(fullLine);
-                throw new SyntaxError(
-                  createQuoteErrorMessage(
-                    zeroBasedStartLine,
-                    zeroBasedLine,
-                    col,
-                  ),
-                );
-              }
-              fieldIndexes.push(recordBuffer.length);
-              break parseField;
-            }
-            zeroBasedLine++;
-            recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-          } else {
-            // Abrupt end of file (EOF on error).
-            if (!this.#options.lazyQuotes) {
-              const col = codePointLength(fullLine);
-              throw new SyntaxError(
-                createQuoteErrorMessage(zeroBasedStartLine, zeroBasedLine, col),
-              );
-            }
-            fieldIndexes.push(recordBuffer.length);
-            break parseField;
-          }
-        }
-      }
+      accumulated += "\n" + next;
+      zeroBasedLine++;
     }
-    const result = [] as string[];
-    let preIdx = 0;
-    for (const i of fieldIndexes) {
-      result.push(recordBuffer.slice(preIdx, i));
-      preIdx = i;
-    }
-    return result;
   }
   parse(input: string): string[][] {
     this.#input = input.startsWith(BYTE_ORDER_MARK) ? input.slice(1) : input;
@@ -240,7 +201,6 @@ class Parser {
     } else if (options.fieldsPerRecord === 0) {
       _nbFields = "UNINITIALIZED";
     } else {
-      // TODO: Should we check if it's a valid integer?
       _nbFields = options.fieldsPerRecord;
     }
 
