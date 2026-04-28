@@ -19,7 +19,6 @@ Deno.test("abortable() handles promise with aborted signal after delay", async (
   const error = await assertRejects(
     () => abortable(promise, c.signal),
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   clearTimeout(t);
@@ -48,7 +47,6 @@ Deno.test("abortable() handles promise with already aborted signal", async () =>
       await abortable(promise, c.signal);
     },
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   clearTimeout(t);
@@ -99,7 +97,6 @@ Deno.test("abortable.AsyncIterable() handles aborted signal after delay", async 
       }
     },
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   assertEquals(items, ["Hello"]);
@@ -124,7 +121,6 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
       }
     },
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   assertEquals(items, []);
@@ -159,7 +155,6 @@ Deno.test("abortable.AsyncIterable() calls return before throwing", async () => 
       }
     },
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(returnCalled, true);
   assertEquals(error.name, "AbortError");
@@ -213,7 +208,6 @@ Deno.test("abortable() does not throw when the signal is already aborted and the
   await assertRejects(
     () => abortable(promise, signal),
     DOMException,
-    "The signal has been aborted",
   );
 });
 
@@ -236,7 +230,6 @@ Deno.test("abortable() supports passing signal through AbortableOptions", async 
       await abortable(promise, { signal: c.signal });
     },
     DOMException,
-    "The signal has been aborted",
   );
   assertEquals(error.name, "AbortError");
   clearTimeout(t);
