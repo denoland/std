@@ -26,18 +26,19 @@
  */
 export function takeLastWhile<T>(
   iterable: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
   if (Array.isArray(iterable)) {
     let offset = iterable.length;
-    while (0 < offset && predicate(iterable[offset - 1] as T)) {
+    while (0 < offset && predicate(iterable[offset - 1] as T, offset - 1)) {
       offset--;
     }
     return iterable.slice(offset);
   }
+  let index = 0;
   const result: T[] = [];
   for (const el of iterable) {
-    if (predicate(el)) {
+    if (predicate(el, index++)) {
       result.push(el);
     } else {
       result.length = 0;

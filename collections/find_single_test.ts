@@ -2,7 +2,6 @@
 
 import { assertEquals } from "@std/assert";
 import { findSingle } from "./find_single.ts";
-import * as unstable from "./unstable_find_single.ts";
 
 function findSingleTest<I>(
   input: [Array<I>, (element: I) => boolean],
@@ -106,9 +105,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "unstable.findSingle() passes index to predicate",
+  name: "findSingle() passes index to predicate",
   fn() {
-    const result = unstable.findSingle(
+    const result = findSingle(
       [9, 12, 13],
       (_, index) => index === 1,
     );

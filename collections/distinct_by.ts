@@ -12,7 +12,7 @@
  *
  * @param array The array to filter for distinct elements.
  * @param discriminator The function to extract the value to compare for
- * uniqueness.
+ * uniqueness. The function receives the element and its index.
  *
  * @returns An array of distinct elements in the input array.
  *
@@ -26,15 +26,27 @@
  *
  * assertEquals(uniqueUsers, [{ id: 1, name: "Anna" }, { id: 2, name: "Kim" }]);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { distinctBy } from "@std/collections/distinct-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const items = [25, "asdf", true];
+ * const result = distinctBy(items, (_, index) => index > 1);
+ *
+ * assertEquals(result, [25, true]);
+ * ```
  */
 export function distinctBy<T, D>(
   array: Iterable<T>,
-  discriminator: (el: T) => D,
+  discriminator: (el: T, index: number) => D,
 ): T[] {
   const keys = new Set<D>();
   const result: T[] = [];
+  let index = 0;
   for (const element of array) {
-    const key = discriminator(element);
+    const key = discriminator(element, index++);
     if (!keys.has(key)) {
       keys.add(key);
       result.push(element);
