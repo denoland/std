@@ -33,10 +33,11 @@
  */
 export function firstNotNullishOf<T, O>(
   array: Iterable<T>,
-  selector: (item: T) => O | undefined | null,
+  selector: (item: T, index: number) => O | undefined | null,
 ): NonNullable<O> | undefined {
+  let index = 0;
   for (const current of array) {
-    const selected = selector(current);
+    const selected = selector(current, index++);
 
     if (selected !== null && selected !== undefined) {
       return selected as NonNullable<O>;

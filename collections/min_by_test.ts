@@ -2,7 +2,6 @@
 
 import { assertEquals, assertStrictEquals } from "@std/assert";
 import { minBy } from "./min_by.ts";
-import * as unstable from "./unstable_min_by.ts";
 
 Deno.test("minBy() handles array input", () => {
   const input = [
@@ -195,11 +194,11 @@ Deno.test("minBy() handles Map values", () => {
 });
 
 Deno.test({
-  name: "unstable.minBy() passes index to selector",
+  name: "minBy() passes index to selector",
   fn() {
     const input = [4, 3, 2, 1];
 
-    const max = unstable.minBy(input, (_, index) => index);
+    const max = minBy(input, (_, index) => index);
 
     assertEquals(max, 4);
   },
