@@ -5,6 +5,7 @@ import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { resolve } from "./resolve.ts";
+import process from "node:process";
 
 const windowsTests =
   // arguments                               result
@@ -29,8 +30,8 @@ const posixTests =
   [
     [["/var/lib", "../", "file/"], "/var/file"],
     [["/var/lib", "/../", "file/"], "/file"],
-    [["a/b/c/", "../../.."], Deno.cwd()],
-    [["."], Deno.cwd()],
+    [["a/b/c/", "../../.."], process.cwd()],
+    [["."], process.cwd()],
     [["/some/dir", ".", "/absolute/"], "/absolute"],
     [["/foo/tmp.3/", "../tmp.3/cycles/root.js"], "/foo/tmp.3/cycles/root.js"],
   ];
@@ -52,7 +53,7 @@ Deno.test("windows.resolve()", function () {
 });
 
 Deno.test("resolve() returns current working directory if input is empty", function () {
-  const pwd = Deno.cwd();
+  const pwd = process.cwd();
   assertEquals(resolve(""), pwd);
   assertEquals(resolve("", ""), pwd);
 });
