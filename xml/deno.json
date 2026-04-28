@@ -6,7 +6,7 @@
     "./types": "./types.ts",
     "./parse-stream": "./parse_stream.ts",
     "./parse": "./parse.ts",
-    "./stringify": "./stringify.ts",
-    "./record-stream": "./record_stream.ts"
+    "./parse-records": "./parse_records.ts",
+    "./stringify": "./stringify.ts"
   }
 }
