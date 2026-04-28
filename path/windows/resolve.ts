@@ -4,6 +4,7 @@
 import { CHAR_COLON } from "../_common/constants.ts";
 import { normalizeString } from "../_common/normalize_string.ts";
 import { assertPath } from "../_common/assert_path.ts";
+import { cwd } from "../_common/env.ts";
 import { isPathSeparator, isWindowsDeviceRoot } from "./_util.ts";
 
 /**
@@ -28,26 +29,16 @@ export function resolve(...pathSegments: string[]): string {
 
   for (let i = pathSegments.length - 1; i >= -1; i--) {
     let path: string;
-    // deno-lint-ignore no-explicit-any
-    const { Deno } = globalThis as any;
     if (i >= 0) {
       path = pathSegments[i]!;
     } else if (!resolvedDevice) {
-      if (typeof Deno?.cwd !== "function") {
-        throw new TypeError(
-          "Resolved a drive-letter-less path without a current working directory (CWD)",
-        );
-      }
-      path = Deno.cwd();
+      path = cwd(
+        "Resolved a drive-letter-less path without a current working directory (CWD)",
+      );
     } else {
-      if (
-        typeof Deno?.env?.get !== "function" || typeof Deno?.cwd !== "function"
-      ) {
-        throw new TypeError(
-          "Resolved a relative path without a current working directory (CWD)",
-        );
-      }
-      path = Deno.cwd();
+      path = cwd(
+        "Resolved a relative path without a current working directory (CWD)",
+      );
 
       // Verify that a cwd was found and that it actually points
       // to our drive. If not, default to the drive's root.
@@ -161,8 +152,7 @@ export function resolve(...pathSegments: string[]): string {
   }
 
   // At this point the path should be resolved to a full absolute path,
-  // but handle relative paths to be safe (might happen when Deno.cwd()
-  // fails)
+  // but handle relative paths to be safe (might happen when cwd() fails)
 
   // Normalize the tail path
   resolvedTail = normalizeString(

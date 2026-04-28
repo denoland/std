@@ -9,8 +9,6 @@ const MIN_SHRINK_CAPACITY = 64;
  * following the `ReadonlyArray` / `ReadonlyMap` / `ReadonlySet` pattern.
  * A `Deque<T>` is directly assignable to `ReadonlyDeque<T>`.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of the values stored in the deque.
  */
 export type ReadonlyDeque<T> = Pick<
@@ -20,6 +18,7 @@ export type ReadonlyDeque<T> = Pick<
   | "peekFront"
   | "peekBack"
   | "at"
+  | "includes"
   | "find"
   | "findIndex"
   | "toArray"
@@ -44,11 +43,29 @@ function nextPowerOfTwo(n: number): number {
  * A double-ended queue backed by a ring buffer. Pushing, popping, and indexed
  * access stay fast as the deque grows.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * | Method        | Average Case | Worst Case  |
+ * | ------------- | ------------ | ----------- |
+ * | pushBack()    | O(1)         | O(n) amort. |
+ * | pushFront()   | O(1)         | O(n) amort. |
+ * | popBack()     | O(1)         | O(1)        |
+ * | popFront()    | O(1)         | O(1)        |
+ * | peekFront()   | O(1)         | O(1)        |
+ * | peekBack()    | O(1)         | O(1)        |
+ * | at()          | O(1)         | O(1)        |
+ * | isEmpty()     | O(1)         | O(1)        |
+ * | clear()       | O(1)         | O(1)        |
+ * | removeAt()    | O(n)         | O(n)        |
+ * | removeFirst() | O(n)         | O(n)        |
+ * | includes()    | O(n)         | O(n)        |
+ * | find()        | O(n)         | O(n)        |
+ * | findIndex()   | O(n)         | O(n)        |
+ * | retain()      | O(n)         | O(n)        |
+ * | toArray()     | O(n)         | O(n)        |
+ * | Deque.from()  | O(n)         | O(n)        |
  *
  * @example Usage
  * ```ts
- * import { Deque } from "@std/data-structures/unstable-deque";
+ * import { Deque } from "@std/data-structures/deque";
  * import { assertEquals } from "@std/assert";
  *
  * const deque = new Deque<number>();
@@ -74,11 +91,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Creates an empty deque, optionally populated from an iterable.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Creating an empty deque
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque<number>();
@@ -87,7 +102,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @example Creating a deque from an iterable
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -146,11 +161,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * The number of elements in the deque.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Getting the length
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -166,11 +179,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Checks if the deque contains no elements.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Checking if the deque is empty
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque<number>();
@@ -189,11 +200,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Append one or more values to the back of the deque.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Pushing values to the back
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque<number>();
@@ -206,17 +215,11 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns The new length of the deque.
    */
   pushBack(value: T, ...rest: T[]): number {
-    if (this.#length === this.#capacity) {
-      if (this.#head === 0) this.#growWithoutCopying();
-      else this.#grow();
-    }
+    this.#maybeGrow();
     this.#buffer[(this.#head + this.#length) & this.#mask] = value;
     this.#length++;
     for (let i = 0; i < rest.length; i++) {
-      if (this.#length === this.#capacity) {
-        if (this.#head === 0) this.#growWithoutCopying();
-        else this.#grow();
-      }
+      this.#maybeGrow();
       this.#buffer[(this.#head + this.#length) & this.#mask] = rest[i]!;
       this.#length++;
     }
@@ -228,11 +231,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * in argument order, so `pushFront(1, 2, 3)` results in front-to-back order
    * `[1, 2, 3, ...existing]`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Pushing values to the front
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([4, 5]);
@@ -246,12 +247,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    */
   pushFront(value: T, ...rest: T[]): number {
     for (let i = rest.length - 1; i >= 0; i--) {
-      if (this.#length === this.#capacity) this.#grow();
+      this.#maybeGrow();
       this.#head = (this.#head - 1) & this.#mask;
       this.#buffer[this.#head] = rest[i]!;
       this.#length++;
     }
-    if (this.#length === this.#capacity) this.#grow();
+    this.#maybeGrow();
     this.#head = (this.#head - 1) & this.#mask;
     this.#buffer[this.#head] = value;
     this.#length++;
@@ -261,11 +262,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Remove and return the back element, or `undefined` if the deque is empty.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Popping from the back
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -288,11 +287,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Remove and return the front element, or `undefined` if the deque is empty.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Popping from the front
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -317,11 +314,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * front to back. The gap is closed by shifting whichever side (front or back)
    * has fewer elements to move, so removals near either end are fast.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Removing the first even number
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3, 4]);
@@ -336,30 +331,51 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   removeFirst(predicate: (value: T, index: number) => boolean): T | undefined {
     const i = this.#findIndex(predicate);
     if (i === -1) return undefined;
+    return this.#removeAtUnchecked(i);
+  }
 
-    const val = this.#buffer[(this.#head + i) & this.#mask] as T;
-
-    const closerToFront = i < this.#length - i - 1;
-    if (closerToFront) {
-      this.#closeGapFromFront(i);
-    } else {
-      this.#closeGapFromBack(i);
-    }
-
-    this.#length--;
-    this.#maybeShrink();
-    return val;
+  /**
+   * Remove and return the element at the given index (0-based from front).
+   * Negative indices count from the back (`-1` is the last element). Returns
+   * `undefined` for out-of-range indices. The gap is closed by shifting
+   * whichever side (front or back) has fewer elements to move.
+   *
+   * @example Removing by index
+   * ```ts
+   * import { Deque } from "@std/data-structures/deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([10, 20, 30, 40]);
+   * assertEquals(deque.removeAt(1), 20);
+   * assertEquals([...deque], [10, 30, 40]);
+   * ```
+   *
+   * @example Removing with a negative index
+   * ```ts
+   * import { Deque } from "@std/data-structures/deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([10, 20, 30, 40]);
+   * assertEquals(deque.removeAt(-1), 40);
+   * assertEquals([...deque], [10, 20, 30]);
+   * ```
+   *
+   * @param index The zero-based index. Negative values count from the back.
+   * @returns The removed element, or `undefined` if the index is out of range.
+   */
+  removeAt(index: number): T | undefined {
+    if (index < 0) index += this.#length;
+    if (index < 0 || index >= this.#length) return undefined;
+    return this.#removeAtUnchecked(index);
   }
 
   /**
    * Return the first element matching the predicate, scanning from front to
    * back, without removing it. Returns `undefined` if no match is found.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Finding the first even number
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3, 4]);
@@ -381,11 +397,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Return the index of the first element matching the predicate, scanning
    * from front to back. Returns `-1` if no match is found.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Finding the index of the first even number
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3, 4]);
@@ -405,11 +419,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Return the front element without removing it, or `undefined` if the deque
    * is empty.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Peeking at the front
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -428,11 +440,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Return the back element without removing it, or `undefined` if the deque
    * is empty.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Peeking at the back
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -452,11 +462,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * indices count from the back (`-1` is the last element). Returns `undefined`
    * for out-of-range indices.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Accessing elements by index
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([10, 20, 30, 40]);
@@ -475,13 +483,57 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   }
 
   /**
-   * Remove all elements and release the backing buffer.
+   * Check whether the deque contains a value, using
+   * {@link https://tc39.es/ecma262/#sec-samevaluezero | SameValueZero}
+   * comparison (like {@linkcode Array.prototype.includes}).
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   * @example Checking for membership
+   * ```ts
+   * import { Deque } from "@std/data-structures/deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, 2, 3]);
+   * assertEquals(deque.includes(2), true);
+   * assertEquals(deque.includes(99), false);
+   * ```
+   *
+   * @example NaN is found (SameValueZero semantics)
+   * ```ts
+   * import { Deque } from "@std/data-structures/deque";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const deque = new Deque([1, NaN, 3]);
+   * assertEquals(deque.includes(NaN), true);
+   * ```
+   *
+   * @param value The value to search for.
+   * @returns `true` if the deque contains the value, otherwise `false`.
+   */
+  includes(value: T): boolean {
+    const buf = this.#buffer;
+    const head = this.#head;
+    const len = this.#length;
+    const cap = this.#mask + 1;
+    const firstLen = Math.min(len, cap - head);
+    // SameValueZero: === for everything except NaN
+    for (let i = 0; i < firstLen; i++) {
+      const el = buf[head + i];
+      if (el === value || (el !== el && value !== value)) return true;
+    }
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) {
+      const el = buf[i];
+      if (el === value || (el !== el && value !== value)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Remove all elements and release the backing buffer.
    *
    * @example Clearing the deque
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -503,11 +555,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * {@linkcode Array.prototype.filter}. The predicate is called once per
    * element in front-to-back order.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Retaining only odd numbers
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3, 4, 5]);
@@ -539,11 +589,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Return a shallow copy of the deque's contents as an array, in
    * front-to-back order.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Converting to an array
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -553,21 +601,24 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * @returns An array containing the deque's elements in order.
    */
   toArray(): T[] {
-    const result = new Array<T>(this.#length);
-    for (let i = 0; i < this.#length; i++) {
-      result[i] = this.#buffer[(this.#head + i) & this.#mask] as T;
-    }
+    const buf = this.#buffer;
+    const head = this.#head;
+    const len = this.#length;
+    const cap = this.#mask + 1;
+    const result = new Array<T>(len);
+    const firstLen = Math.min(len, cap - head);
+    for (let i = 0; i < firstLen; i++) result[i] = buf[head + i] as T;
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) result[firstLen + i] = buf[i] as T;
     return result;
   }
 
   /**
    * Create a new deque from an array-like, iterable, or existing deque.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Creating a deque from an array
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = Deque.from([1, 2, 3]);
@@ -576,7 +627,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @example Creating a deque from an existing deque
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const original = new Deque([1, 2, 3]);
@@ -595,11 +646,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Create a new deque from an array-like, iterable, or existing deque, with
    * a mapping function applied to each element.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Creating a deque with a mapping function
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = Deque.from([1, 2, 3], { map: (v) => v * 10 });
@@ -661,7 +710,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
     const mapped: U[] = options?.map
       ? Array.from(unmappedValues, options.map, options.thisArg)
-      : Array.from(unmappedValues as unknown as Iterable<U>);
+      : Array.from(unmappedValues as ArrayLike<U> & Iterable<U>);
 
     const capacity = nextPowerOfTwo(mapped.length);
     result.#buffer = new Array(capacity);
@@ -678,11 +727,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    * Iterate over the deque's elements from front to back. Non-destructive
    * (unlike {@linkcode BinaryHeap}).
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Iterating over the deque
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -700,11 +747,9 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
   /**
    * Iterate over the deque's elements from back to front.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Iterating in reverse
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque([1, 2, 3]);
@@ -724,7 +769,7 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
    *
    * @example Usage
    * ```ts
-   * import { Deque } from "@std/data-structures/unstable-deque";
+   * import { Deque } from "@std/data-structures/deque";
    * import { assertEquals } from "@std/assert";
    *
    * const deque = new Deque<number>();
@@ -735,9 +780,14 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
 
   static #copyBuffer<T>(source: Deque<T>, capacity: number): (T | undefined)[] {
     const buffer = new Array<T | undefined>(capacity);
-    for (let i = 0; i < source.#length; i++) {
-      buffer[i] = source.#buffer[(source.#head + i) & source.#mask];
-    }
+    const src = source.#buffer;
+    const head = source.#head;
+    const len = source.#length;
+    const srcCap = source.#mask + 1;
+    const firstLen = Math.min(len, srcCap - head);
+    for (let i = 0; i < firstLen; i++) buffer[i] = src[head + i];
+    const rem = len - firstLen;
+    for (let i = 0; i < rem; i++) buffer[firstLen + i] = src[i];
     return buffer;
   }
 
@@ -754,6 +804,19 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
       }
     }
     return -1;
+  }
+
+  /** Extract value, close the gap, update length, and optionally shrink. */
+  #removeAtUnchecked(index: number): T {
+    const val = this.#buffer[(this.#head + index) & this.#mask] as T;
+    if (index < this.#length - index - 1) {
+      this.#closeGapFromFront(index);
+    } else {
+      this.#closeGapFromBack(index);
+    }
+    this.#length--;
+    this.#maybeShrink();
+    return val;
   }
 
   /** Close the gap at `i` by shifting elements before it one slot toward the back. */
@@ -775,6 +838,12 @@ export class Deque<T> implements Iterable<T>, ReadonlyDeque<T> {
       this.#buffer[dst] = this.#buffer[src];
     }
     this.#buffer[(this.#head + this.#length - 1) & this.#mask] = undefined;
+  }
+
+  #maybeGrow(): void {
+    if (this.#length < this.#capacity) return;
+    if (this.#head === 0) this.#growWithoutCopying();
+    else this.#grow();
   }
 
   #grow(): void {
