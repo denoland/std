@@ -1,0 +1,191 @@
+// Copyright 2018-2026 the Deno authors. MIT license.
+
+import { assertEquals } from "@std/assert";
+import { zip } from "./unstable_zip.ts";
+
+function zip1Test<T>(
+  input: [Array<T>],
+  expected: Array<[T]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+assertEquals(zip([]), []);
+
+Deno.test({
+  name: "zip() handles one array",
+  fn() {
+    zip1Test([
+      [1, 2, 3],
+    ], [[1], [2], [3]]);
+  },
+});
+
+function zipTest<T, U>(
+  input: [ReadonlyArray<T>, ReadonlyArray<U>],
+  expected: Array<[T, U]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+function zip3Test<T, U, V>(
+  input: [Array<T>, Array<U>, Array<V>],
+  expected: Array<[T, U, V]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+Deno.test({
+  name: "zip() handles three arrays",
+  fn() {
+    zip3Test([
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ], [[1, 4, 7], [2, 5, 8], [3, 6, 9]]);
+  },
+});
+
+Deno.test({
+  name: "zip() handles three arrays when the first is the shortest",
+  fn() {
+    zip3Test([
+      [1, 2],
+      [4, 5, 6],
+      [7, 8, 9],
+    ], [[1, 4, 7], [2, 5, 8]]);
+  },
+});
+
+Deno.test({
+  name: "zip() handles no mutation",
+  fn() {
+    const arrayA = [1, 4, 5];
+    const arrayB = ["foo", "bar"];
+    zip(arrayA, arrayB);
+
+    assertEquals(arrayA, [1, 4, 5]);
+    assertEquals(arrayB, ["foo", "bar"]);
+  },
+});
+
+Deno.test({
+  name: "zip() handles empty input",
+  fn() {
+    zipTest(
+      [[], []],
+      [],
+    );
+    zipTest(
+      [[1, 2, 3], []],
+      [],
+    );
+    zipTest(
+      [[], [{}, []]],
+      [],
+    );
+    assertEquals(zip(), []);
+  },
+});
+
+Deno.test({
+  name: "zip() handles same length",
+  fn() {
+    zipTest(
+      [
+        [1, 4, 5],
+        ["foo", "bar", "lorem"],
+      ],
+      [
+        [1, "foo"],
+        [4, "bar"],
+        [5, "lorem"],
+      ],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles first shorter",
+  fn() {
+    zipTest(
+      [
+        [1],
+        ["foo", "bar", "lorem"],
+      ],
+      [[1, "foo"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles second shorter",
+  fn() {
+    zipTest(
+      [
+        [1, 4, 5],
+        ["foo"],
+      ],
+      [[1, "foo"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles sparse arrays",
+  fn() {
+    // deno-lint-ignore no-sparse-arrays
+    const sparse = [1, , 3];
+    const result = zip(sparse, ["a", "b", "c"]);
+    assertEquals(result, [
+      [1, "a"],
+      [undefined, "b"],
+      [3, "c"],
+    ]);
+  },
+});
+
+Deno.test({
+  name: "zip() handles non-array iterables",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+    assertEquals(
+      zip(numbers(), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"], [3, "c"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles Set iterables",
+  fn() {
+    assertEquals(
+      zip(new Set([1, 2, 3]), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"], [3, "c"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles iterables of different lengths",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+    }
+    assertEquals(
+      zip(numbers(), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"]],
+    );
+  },
+});
