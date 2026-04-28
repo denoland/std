@@ -12,100 +12,73 @@ import type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
 import { createXmlPipeline } from "./_pipeline.ts";
 
 /**
- * Parses an async iterable of XML chunks and yields application-defined
- * records as they are assembled by the user's event callbacks.
+ * Parses an async iterable of XML chunks and yields records assembled inside
+ * SAX-style event callbacks.
  *
- * The user builds records in normal XML event callbacks and calls `emit(record)`
- * whenever a complete record has been assembled. Records emitted during a
- * single chunk are yielded one-by-one, so a slow consumer applies backpressure
- * per record. Memory is bounded by the records produced by a single chunk:
- * size input chunks accordingly when records are large or expensive to consume.
+ * Each input chunk is parsed synchronously and the records emitted from that
+ * chunk are buffered before any are yielded; the consumer then pulls records
+ * one at a time. Yield rate (and downstream backpressure) is per-record while
+ * peak memory is bounded by the records produced by a single chunk.
  *
- * For pipeline composition with `pipeThrough`, wrap the result with
+ * If parsing throws (XML syntax error or a user callback that throws), the
+ * iteration rejects immediately; records buffered within the failing chunk
+ * are discarded. Records yielded by earlier chunks remain visible.
+ *
+ * For `pipeThrough` composition, wrap the result with
  * {@linkcode ReadableStream.from}.
+ *
+ * @typeParam T The type of records yielded by the generator.
+ *
+ * @param source An async iterable of XML string chunks (e.g. a
+ * `ReadableStream<Uint8Array>` piped through {@linkcode TextDecoderStream}).
+ *
+ * @param createCallbacks Factory invoked once with an `emit` function; returns
+ * the SAX-style callbacks that build records and call `emit` per completed
+ * record.
+ *
+ * @param options Parser options forwarded to the underlying tokenizer/parser.
+ *
+ * @returns An async generator that yields records as the document is parsed.
  *
  * @example Parse items from an XML feed
  * ```ts
  * import { parseXmlRecords } from "@std/xml/parse-records";
  * import { assertEquals } from "@std/assert";
  *
- * const xml = `<feed>
- *   <item><title>First</title></item>
- *   <item><title>Second</title></item>
- * </feed>`;
+ * const xml = "<feed><item>First</item><item>Second</item></feed>";
  *
- * type Item = { title: string };
- * const records: Item[] = [];
- *
- * const iter = parseXmlRecords<Item>(
- *   ReadableStream.from([xml]),
- *   (emit) => {
- *     let insideItem = false;
- *     let insideTitle = false;
- *     let title = "";
- *     return {
- *       onStartElement(name) {
- *         if (name === "item") { insideItem = true; title = ""; }
- *         else if (insideItem && name === "title") insideTitle = true;
- *       },
- *       onText(text) {
- *         if (insideTitle) title += text;
- *       },
- *       onEndElement(name) {
- *         if (name === "title") insideTitle = false;
- *         if (name === "item") { emit({ title }); insideItem = false; }
- *       },
- *     };
- *   },
- *   { ignoreWhitespace: true },
- * );
- *
- * for await (const record of iter) records.push(record);
- *
- * assertEquals(records, [{ title: "First" }, { title: "Second" }]);
- * ```
- *
- * @example Compose with `pipeThrough` via {@linkcode ReadableStream.from}
- * ```ts
- * import { parseXmlRecords } from "@std/xml/parse-records";
- * import { assertEquals } from "@std/assert";
- *
- * const xml = "<root><id>1</id><id>2</id></root>";
- *
- * const records = ReadableStream.from(
- *   parseXmlRecords<string>(
+ * const titles: string[] = [];
+ * for await (
+ *   const title of parseXmlRecords<string>(
  *     ReadableStream.from([xml]),
  *     (emit) => {
  *       let inside = false;
  *       let text = "";
  *       return {
  *         onStartElement(name) {
- *           if (name === "id") { inside = true; text = ""; }
+ *           if (name === "item") {
+ *             inside = true;
+ *             text = "";
+ *           }
  *         },
- *         onText(t) { if (inside) text += t; },
+ *         onText(t) {
+ *           if (inside) text += t;
+ *         },
  *         onEndElement(name) {
- *           if (name === "id") { emit(text); inside = false; }
+ *           if (name === "item") {
+ *             emit(text);
+ *             inside = false;
+ *           }
  *         },
  *       };
  *     },
- *   ),
- * );
+ *   )
+ * ) {
+ *   titles.push(title);
+ * }
  *
- * const collected: string[] = [];
- * await records.pipeTo(
- *   new WritableStream({ write(r) { collected.push(r); } }),
- * );
- * assertEquals(collected, ["1", "2"]);
+ * assertEquals(titles, ["First", "Second"]);
  * ```
- *
- * @typeParam T The type of records yielded by the generator.
- * @param source An async iterable of XML string chunks (e.g. a decoded
- * `ReadableStream` or `parseXmlStreamFromBytes`-compatible source).
- * @param createCallbacks Factory invoked once with an `emit` function; returns
- * the SAX-style callbacks that build records and call `emit` per completed
- * record.
- * @param options Parser options forwarded to the underlying tokenizer/parser.
- * @returns An async generator that yields records as the document is parsed.
  */
 export async function* parseXmlRecords<T>(
   source: AsyncIterable<string>,
@@ -116,11 +89,18 @@ export async function* parseXmlRecords<T>(
   const callbacks = createCallbacks((record) => buffer.push(record));
   const { tokenizer, parser } = createXmlPipeline(options, callbacks);
 
+  // Fail-fast contract: parse errors propagate immediately and records
+  // buffered within the failing chunk are dropped. Wrapping `process` /
+  // `finalize` in `try { ... } finally { drain }` is tempting but unsafe —
+  // `iter.return()` from a consumer `break` mid-drain silently swallows
+  // the pending exception per ECMAScript semantics.
   for await (const chunk of source) {
     tokenizer.process(chunk, parser);
-    while (buffer.length > 0) yield buffer.shift()!;
+    for (let i = 0; i < buffer.length; i++) yield buffer[i]!;
+    buffer.length = 0;
   }
   tokenizer.finalize(parser);
   parser.finalize();
-  while (buffer.length > 0) yield buffer.shift()!;
+  for (let i = 0; i < buffer.length; i++) yield buffer[i]!;
+  buffer.length = 0;
 }

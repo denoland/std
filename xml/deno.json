@@ -3,10 +3,10 @@
   "version": "0.1.1",
   "exports": {
     ".": "./mod.ts",
-    "./types": "./types.ts",
-    "./parse-stream": "./parse_stream.ts",
     "./parse": "./parse.ts",
     "./parse-records": "./parse_records.ts",
-    "./stringify": "./stringify.ts"
+    "./parse-stream": "./parse_stream.ts",
+    "./stringify": "./stringify.ts",
+    "./types": "./types.ts"
   }
 }

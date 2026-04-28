@@ -9,12 +9,13 @@
  *
  * ## Parsing APIs
  *
- * Two parsing APIs are provided for different use cases:
+ * Three parsing APIs are provided for different use cases:
  *
  * | API | Use Case | Output |
  * |-----|----------|--------|
  * | {@linkcode parse} | Parse a complete XML string | Document tree |
  * | {@linkcode parseXmlStream} | Streaming with maximum throughput | Direct callbacks |
+ * | {@linkcode parseXmlRecords} | Streaming records assembled in callbacks | `AsyncGenerator<T>` |
  *
  * ## Quick Examples
  *

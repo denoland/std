@@ -89,6 +89,17 @@ Deno.test("parseXmlRecords() preserves record order across many chunks", async (
   assertEquals(records, Array.from({ length: n }, (_, i) => ({ id: `${i}` })));
 });
 
+Deno.test("parseXmlRecords() handles many records emitted in a single chunk", async () => {
+  const n = 5000;
+  const xml = `<root>${
+    Array.from({ length: n }, (_, i) => `<item><id>${i}</id></item>`).join("")
+  }</root>`;
+  const records = await collect(items([xml]));
+  assertEquals(records.length, n);
+  assertEquals(records[0], { id: "0" });
+  assertEquals(records[n - 1], { id: `${n - 1}` });
+});
+
 // =============================================================================
 // Parse option forwarding
 // =============================================================================
@@ -233,13 +244,123 @@ Deno.test("parseXmlRecords() propagates errors thrown from createCallbacks", asy
   );
 });
 
+Deno.test("parseXmlRecords() discards records buffered in a chunk that errors", async () => {
+  const xml =
+    "<root><item><id>1</id></item><item><id>2</id></item><item attr=value/></root>";
+  const received: string[] = [];
+  await assertRejects(async () => {
+    for await (const id of ids(xml)) received.push(id);
+  }, XmlSyntaxError);
+  // The malformed third item and the preceding items 1, 2 are all parsed in
+  // the same chunk; on syntax error the buffer is discarded and the
+  // iteration rejects without yielding anything from that chunk.
+  assertEquals(received, []);
+});
+
+Deno.test("parseXmlRecords() yields records from earlier chunks before failing on a later one", async () => {
+  // Splitting across chunk boundaries lets the first two items drain through
+  // the iteration cleanly before the third (malformed) chunk is processed.
+  const chunks = [
+    "<root><item><id>1</id></item>",
+    "<item><id>2</id></item>",
+    "<item attr=value/></root>",
+  ];
+  const received: string[] = [];
+  await assertRejects(async () => {
+    for await (const id of ids(chunks)) received.push(id);
+  }, XmlSyntaxError);
+  assertEquals(received, ["1", "2"]);
+});
+
+Deno.test("parseXmlRecords() rejects with the parse error even if the consumer breaks early when the next chunk would throw", async () => {
+  // Iteration consumes one record then breaks. The break completes the
+  // iteration cleanly; the malformed chunk is never processed because the
+  // consumer asked to stop. This documents the iterator contract that
+  // breaking signals "no further values needed".
+  const chunks = [
+    "<root><item><id>1</id></item>",
+    "<item attr=value/></root>",
+  ];
+  const received: string[] = [];
+  for await (const id of ids(chunks)) {
+    received.push(id);
+    break;
+  }
+  assertEquals(received, ["1"]);
+});
+
+Deno.test("parseXmlRecords() discards records buffered during a failing finalize", async () => {
+  const xml = "<root>hello";
+  const received: string[] = [];
+  const iter = parseXmlRecords<string>(
+    ReadableStream.from([xml]),
+    (emit) => ({
+      onText(text) {
+        emit(text);
+      },
+    }),
+  );
+  await assertRejects(async () => {
+    for await (const r of iter) received.push(r);
+  }, XmlSyntaxError);
+  // Pending text "hello" is flushed via onText inside finalize, but the
+  // unclosed-root error means the buffer is never drained.
+  assertEquals(received, []);
+});
+
+Deno.test("parseXmlRecords() rejects with the user error when a callback throws", async () => {
+  const xml =
+    "<root><item><id>1</id></item><item><id>2</id></item><item><id>3</id></item></root>";
+  const iter = parseXmlRecords<string>(
+    ReadableStream.from([xml]),
+    (emit) => {
+      let inside = false;
+      let text = "";
+      let count = 0;
+      return {
+        onStartElement(name) {
+          if (name === "id") {
+            inside = true;
+            text = "";
+          }
+        },
+        onText(t) {
+          if (inside) text += t;
+        },
+        onEndElement(name) {
+          if (name === "id") {
+            count++;
+            if (count === 3) throw new Error("boom");
+            emit(text);
+            inside = false;
+          }
+        },
+      };
+    },
+    { ignoreWhitespace: true },
+  );
+
+  const received: string[] = [];
+  await assertRejects(
+    async () => {
+      for await (const id of iter) received.push(id);
+    },
+    Error,
+    "boom",
+  );
+  // Records 1, 2 were buffered in the same chunk as the throw on item 3;
+  // fail-fast contract drops them along with the throw.
+  assertEquals(received, []);
+});
+
 // =============================================================================
 // Per-record yielding and early termination
 // =============================================================================
 
-function ids(xml: string): AsyncGenerator<string> {
+function ids(xml: string | string[]): AsyncGenerator<string> {
+  const chunks = Array.isArray(xml) ? xml : [xml];
   return parseXmlRecords<string>(
-    ReadableStream.from([xml]),
+    ReadableStream.from(chunks),
     (emit) => {
       let inside = false;
       let text = "";
