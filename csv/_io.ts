@@ -79,7 +79,6 @@ export function parseLine(
   fullLine: string,
   options: ReadOptions,
   zeroBasedRecordStartLine: number = 0,
-  zeroBasedLine: number = zeroBasedRecordStartLine,
   atEof: boolean = true,
 ): string[] | null {
   // line starting with comment character is ignored
@@ -253,16 +252,13 @@ export async function parseRecord(
   reader: LineReader,
   options: ReadOptions,
   zeroBasedRecordStartLine: number,
-  zeroBasedLine: number = zeroBasedRecordStartLine,
 ): Promise<Array<string>> {
   let accumulated = fullLine;
-  let currentLine = zeroBasedLine;
   while (true) {
     const result = parseLine(
       accumulated,
       options,
       zeroBasedRecordStartLine,
-      currentLine,
       reader.isEOF(),
     );
     if (result !== null) {
@@ -277,7 +273,6 @@ export async function parseRecord(
         accumulated,
         options,
         zeroBasedRecordStartLine,
-        currentLine,
         true,
       );
       // parseLine with atEof=true cannot return null; this is a defensive
@@ -285,7 +280,6 @@ export async function parseRecord(
       return eofResult ?? [];
     }
     accumulated += "\n" + next;
-    currentLine++;
   }
 }
 

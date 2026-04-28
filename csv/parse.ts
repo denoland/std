@@ -69,7 +69,7 @@ export function parseLine(
     ...(comment !== undefined ? { comment } : {}),
     ...(lazyQuotes !== undefined ? { lazyQuotes } : {}),
   };
-  const result = parseLineInternal(normalized, readOptions, 0, 0, true);
+  const result = parseLineInternal(normalized, readOptions, 0, true);
   return result ?? [];
 }
 
@@ -140,13 +140,11 @@ class Parser {
     // we own line iteration here, so the primitive's `atEof` signal tells us
     // when to give up.
     let accumulated = first;
-    let zeroBasedLine = zeroBasedStartLine;
     while (true) {
       const result = parseLineInternal(
         accumulated,
         this.#options,
         zeroBasedStartLine,
-        zeroBasedLine,
         this.#isEOF(),
       );
       if (result !== null) return result;
@@ -157,12 +155,10 @@ class Parser {
           accumulated,
           this.#options,
           zeroBasedStartLine,
-          zeroBasedLine,
           true,
         ) ?? [];
       }
       accumulated += "\n" + next;
-      zeroBasedLine++;
     }
   }
   parse(input: string): string[][] {
