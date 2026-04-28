@@ -146,25 +146,192 @@ Deno.test("pooledMapSettled() yields in-flight results then rejects on abort", a
   }
 });
 
-Deno.test("pooledMapSettled() closes cleanly when input iterable throws", async () => {
+Deno.test("pooledMapSettled() propagates source iterable error after in-flight results", async () => {
   async function* failing() {
     yield 1;
     yield 2;
     throw new Error("source failed");
   }
 
-  const results = await Array.fromAsync(
-    pooledMapSettled(
-      failing(),
-      (i) => Promise.resolve(i * 10),
-      { poolLimit: 2 },
-    ),
+  const collected: PromiseSettledResult<number>[] = [];
+
+  await assertRejects(
+    async () => {
+      for await (
+        const result of pooledMapSettled(
+          failing(),
+          (i) => Promise.resolve(i * 10),
+          { poolLimit: 2 },
+        )
+      ) {
+        collected.push(result);
+      }
+    },
+    Error,
+    "source failed",
   );
 
-  assertEquals(results, [
+  assertEquals(collected, [
     { status: "fulfilled", value: 10 },
     { status: "fulfilled", value: 20 },
   ]);
+});
+
+Deno.test("pooledMapSettled() source error is not wrapped as PromiseSettledResult", async () => {
+  async function* failing() {
+    yield 1;
+    throw new Error("source failed");
+  }
+
+  const collected: PromiseSettledResult<number>[] = [];
+
+  await assertRejects(
+    async () => {
+      for await (
+        const result of pooledMapSettled(
+          failing(),
+          async (i) => {
+            await delay(10);
+            return i;
+          },
+          { poolLimit: 2 },
+        )
+      ) {
+        collected.push(result);
+      }
+    },
+    Error,
+    "source failed",
+  );
+
+  assertEquals(collected, [{ status: "fulfilled", value: 1 }]);
+});
+
+Deno.test("pooledMapSettled() rejects with source error when signal is not yet aborted at source failure", async () => {
+  const controller = new AbortController();
+
+  async function* failingSource() {
+    yield 1;
+    yield 2;
+    throw new Error("source failed");
+  }
+
+  const collected: PromiseSettledResult<number>[] = [];
+
+  await assertRejects(
+    async () => {
+      for await (
+        const result of pooledMapSettled(
+          failingSource(),
+          async (i) => {
+            await delay(20);
+            if (i === 2) controller.abort(new Error("abort later"));
+            return i;
+          },
+          { poolLimit: 3, signal: controller.signal },
+        )
+      ) {
+        collected.push(result);
+      }
+    },
+    Error,
+    "source failed",
+  );
+
+  assertGreaterOrEqual(collected.length, 1);
+});
+
+Deno.test("pooledMapSettled() rejects with abort reason when signal is already aborted at source failure", async () => {
+  const controller = new AbortController();
+
+  function* failingSource() {
+    yield 1;
+    controller.abort(new Error("aborted"));
+    throw new Error("source failed");
+  }
+
+  const collected: PromiseSettledResult<number>[] = [];
+
+  await assertRejects(
+    async () => {
+      for await (
+        const result of pooledMapSettled(
+          failingSource(),
+          (i) => Promise.resolve(i),
+          { poolLimit: 2, signal: controller.signal },
+        )
+      ) {
+        collected.push(result);
+      }
+    },
+    Error,
+    "aborted",
+  );
+
+  assertEquals(collected, [{ status: "fulfilled", value: 1 }]);
+});
+
+Deno.test({
+  name:
+    "pooledMapSettled() reacts to abort while waiting for slow async source",
+  async fn() {
+    const controller = new AbortController();
+
+    async function* slowSource() {
+      yield 1;
+      await new Promise((r) => setTimeout(r, 1000));
+      yield 2;
+    }
+
+    setTimeout(() => controller.abort(new Error("aborted")), 25);
+
+    const start = performance.now();
+    await assertRejects(
+      () =>
+        Array.fromAsync(
+          pooledMapSettled(slowSource(), (i) => i, {
+            poolLimit: 1,
+            signal: controller.signal,
+          }),
+        ),
+      Error,
+      "aborted",
+    );
+    assertLess(performance.now() - start, 200);
+  },
+  sanitizeOps: false,
+  sanitizeResources: false,
+});
+
+Deno.test({
+  name: "pooledMapSettled() reacts to abort with stalled async source",
+  async fn() {
+    const controller = new AbortController();
+
+    async function* stalledSource() {
+      yield 1;
+      await new Promise(() => {});
+      yield 2;
+    }
+
+    setTimeout(() => controller.abort(new Error("aborted")), 25);
+
+    const start = performance.now();
+    await assertRejects(
+      () =>
+        Array.fromAsync(
+          pooledMapSettled(stalledSource(), (i) => i, {
+            poolLimit: 1,
+            signal: controller.signal,
+          }),
+        ),
+      Error,
+      "aborted",
+    );
+    assertLess(performance.now() - start, 200);
+  },
+  sanitizeOps: false,
+  sanitizeResources: false,
 });
 
 Deno.test("pooledMapSettled() checks browser compat", async () => {
@@ -183,4 +350,106 @@ Deno.test("pooledMapSettled() checks browser compat", async () => {
   } finally {
     ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;
   }
+});
+
+// Early consumer break tests are grouped at the end of this file because
+// breaking out of `for await` leaves the producer IIFE running with in-flight
+// timers that cannot be deterministically drained. Sanitizers are disabled
+// following the same pattern as delay_test.ts.
+
+Deno.test({
+  name:
+    "pooledMapSettled() handles early consumer break without unhandled rejections",
+  async fn() {
+    const collected: PromiseSettledResult<number>[] = [];
+
+    for await (
+      const result of pooledMapSettled(
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        async (i) => {
+          await delay(10);
+          return i;
+        },
+        { poolLimit: 2 },
+      )
+    ) {
+      collected.push(result);
+      if (collected.length === 2) break;
+    }
+
+    assertEquals(collected.length, 2);
+    for (const r of collected) {
+      assertEquals(r.status, "fulfilled");
+    }
+  },
+  sanitizeOps: false,
+  sanitizeResources: false,
+});
+
+Deno.test({
+  name: "pooledMapSettled() handles early consumer break with source error",
+  async fn() {
+    async function* failingSource() {
+      for (let i = 1; i <= 10; i++) {
+        yield i;
+        if (i === 5) throw new Error("source failed");
+      }
+    }
+
+    const collected: PromiseSettledResult<number>[] = [];
+
+    for await (
+      const result of pooledMapSettled(
+        failingSource(),
+        async (i) => {
+          await delay(10);
+          return i;
+        },
+        { poolLimit: 2 },
+      )
+    ) {
+      collected.push(result);
+      if (collected.length === 2) break;
+    }
+
+    assertGreaterOrEqual(collected.length, 1);
+    assertLess(collected.length, 10);
+  },
+  sanitizeOps: false,
+  sanitizeResources: false,
+});
+
+Deno.test({
+  name: "pooledMapSettled() fallback path handles early consumer break",
+  async fn() {
+    const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
+    // deno-lint-ignore no-explicit-any
+    delete (ReadableStream.prototype as any)[Symbol.asyncIterator];
+    try {
+      const collected: PromiseSettledResult<number>[] = [];
+
+      for await (
+        const result of pooledMapSettled(
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          async (i) => {
+            await delay(10);
+            return i;
+          },
+          { poolLimit: 2 },
+        )
+      ) {
+        collected.push(result);
+        if (collected.length === 2) break;
+      }
+
+      assertEquals(collected.length, 2);
+      for (const r of collected) {
+        assertEquals(r.status, "fulfilled");
+      }
+    } finally {
+      ReadableStream.prototype[Symbol.asyncIterator] = asyncIterFunc;
+    }
+  },
+  sanitizeOps: false,
+  sanitizeResources: false,
 });

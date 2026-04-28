@@ -12,7 +12,7 @@ export type { Uint8Array_ };
  *
  * @example Usage
  * ```ts
- * import { encryptAesGcm, decryptAesGcm } from "@std/crypto/unstable-aes-gcm";
+ * import { encryptAesGcm, decryptAesGcm } from "@std/crypto/aes-gcm";
  * import { assertEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
@@ -48,7 +48,7 @@ export interface AesGcmOptions {
  *
  * @example Usage
  * ```ts
- * import { encryptAesGcm } from "@std/crypto/unstable-aes-gcm";
+ * import { encryptAesGcm } from "@std/crypto/aes-gcm";
  * import { assertNotEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(
@@ -88,6 +88,7 @@ export async function encryptAesGcm(
     iv: nonce,
     tagLength: TAG_LENGTH * 8,
   };
+
   if (options?.additionalData !== undefined) {
     params.additionalData = options.additionalData;
   }
@@ -109,7 +110,7 @@ export async function encryptAesGcm(
  *
  * @example Usage
  * ```ts
- * import { decryptAesGcm, encryptAesGcm } from "@std/crypto/unstable-aes-gcm";
+ * import { decryptAesGcm, encryptAesGcm } from "@std/crypto/aes-gcm";
  * import { assertEquals } from "@std/assert";
  *
  * const key = await crypto.subtle.generateKey(

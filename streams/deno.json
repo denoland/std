@@ -1,9 +1,10 @@
 {
   "name": "@std/streams",
-  "version": "1.0.17",
+  "version": "1.1.0",
   "exports": {
     ".": "./mod.ts",
     "./unstable-abort-stream": "./unstable_abort_stream.ts",
+    "./unstable-batch-stream": "./unstable_batch_stream.ts",
     "./buffer": "./buffer.ts",
     "./byte-slice-stream": "./byte_slice_stream.ts",
     "./unstable-capped-delimiter-stream": "./unstable_capped_delimiter_stream.ts",
@@ -19,7 +20,7 @@
     "./to-array-buffer": "./to_array_buffer.ts",
     "./to-blob": "./to_blob.ts",
     "./unstable-to-byte-stream": "./unstable_to_byte_stream.ts",
-    "./unstable-to-bytes": "./unstable_to_bytes.ts",
+    "./to-bytes": "./to_bytes.ts",
     "./to-json": "./to_json.ts",
     "./unstable-to-lines": "./unstable_to_lines.ts",
     "./to-text": "./to_text.ts",

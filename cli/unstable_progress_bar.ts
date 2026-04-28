@@ -12,11 +12,10 @@ export interface ProgressBarFormatter {
    */
   styledTime: string;
   /**
-   * A function that returns a formatted version of the data received.
+   * A formatted version of the data received.
    * `0.40/97.66 KiB`
-   * @param fractions The number of decimal places the values should have.
    */
-  styledData: (fractions?: number) => string;
+  styledData: string;
   /**
    * The progress bar string.
    * Default Style: `###-------`
@@ -94,17 +93,17 @@ export interface ProgressBarOptions {
    */
   keepOpen?: boolean;
   /**
-   * How often the progress bar updates. The progress bar will be updated every
-   * `refreshMilliseconds` milliseconds.
+   * The time between each frame of the progress bar in milliseconds.
+   *
    * @default {1000}
    */
-  refreshMilliseconds?: number;
+  interval?: number;
 }
 
 const LINE_CLEAR = "\r\u001b[K";
 
 function defaultFormatter(formatter: ProgressBarFormatter) {
-  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData()}]`;
+  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -223,7 +222,7 @@ export class ProgressBar {
       clear = false,
       formatter = defaultFormatter,
       keepOpen = true,
-      refreshMilliseconds = 1000,
+      interval = 1000,
     } = options;
     this.value = value;
     this.max = max;
@@ -243,7 +242,7 @@ export class ProgressBar {
     this.#previousTime = 0;
     this.#previousValue = this.value;
 
-    this.#id = setInterval(() => this.#print(), refreshMilliseconds);
+    this.#id = setInterval(() => this.#print(), interval);
     this.#print();
   }
   #createFormatterObject() {
@@ -260,7 +259,7 @@ export class ProgressBar {
         const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
         return `${minutes}:${seconds}`;
       },
-      styledData() {
+      get styledData() {
         return formatUnitFraction(this.value, this.max);
       },
       progressBar: `${fillChars}${emptyChars}`,

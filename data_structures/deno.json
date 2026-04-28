@@ -1,6 +1,6 @@
 {
   "name": "@std/data-structures",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "exports": {
     ".": "./mod.ts",
     "./unstable-bidirectional-map": "./unstable_bidirectional_map.ts",
@@ -8,7 +8,11 @@
     "./binary-search-tree": "./binary_search_tree.ts",
     "./unstable-binary-search-tree": "./unstable_binary_search_tree.ts",
     "./comparators": "./comparators.ts",
+    "./deque": "./deque.ts",
     "./red-black-tree": "./red_black_tree.ts",
-    "./unstable-2d-array": "./unstable_2d_array.ts"
+    "./unstable-2d-array": "./unstable_2d_array.ts",
+    "./unstable-rolling-counter": "./unstable_rolling_counter.ts",
+    "./unstable-indexed-heap": "./unstable_indexed_heap.ts",
+    "./unstable-multimap": "./unstable_multimap.ts"
   }
 }
