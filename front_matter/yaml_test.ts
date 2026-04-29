@@ -1,7 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { extract } from "./yaml.ts";
-import { extract as unstableExtract } from "./unstable_yaml.ts";
+import {
+  extract as unstableExtract,
+  test as unstableTest,
+} from "./unstable_yaml.ts";
+import { assert } from "../assert/mod.ts";
 import { assertEquals } from "@std/assert/equals";
 import { assertThrows } from "../assert/throws.ts";
 
@@ -125,4 +129,22 @@ Deno.test("extractYaml() throws at missing newline before body", () => {
     TypeError,
     "Unexpected end of input",
   );
+});
+
+Deno.test("(unstable)test() handles valid yaml input", () => {
+  assert(unstableTest("---yaml\nname = 'deno'\n---\n"));
+  assert(unstableTest("= yaml =\nname = 'deno'\n= yaml =\n"));
+  assert(unstableTest("= yaml =\nname = 'deno'\n= yaml =\ndeno is awesome\n"));
+  assert(unstableTest("---\nname: deno\n---\n"));
+});
+
+Deno.test("(unstable)test() handles invalid yaml input", () => {
+  assert(!unstableTest(""));
+  assert(!unstableTest("---"));
+  assert(!unstableTest("---yaml"));
+  assert(!unstableTest("= yaml ="));
+  assert(!unstableTest("---\n"));
+  assert(!unstableTest("---yaml\n"));
+  assert(!unstableTest("= yaml =\n"));
+  assert(!unstableTest("---\nasdasdasd"));
 });
