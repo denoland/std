@@ -28,7 +28,7 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
- * Route configuration for {@linkcode routeRadix}.
+ * Route configuration for {@linkcode route}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -459,4 +459,4 @@ export function routeRadix(
   };
 }
 
-export { routeRadix as route };
+export { routeLinear as route };
