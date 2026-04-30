@@ -181,12 +181,14 @@ function parsePathname(url: string): string {
  *   - Regex-constrained params:           `:id(\d+)`  `:lang(en|fr)`
  *   - Inline wildcards:                   `*.js`  `prefix*`
  *   - Modifier suffixes on params/groups: `:id?`  `:id+`  `:id*`  `(\d+)?`
+ *   - Backslash escapes for literals:     `\+`  `\?`  `\*`  `\:`  `\(`  `\{`
  *
- * This heuristic relies on URLPattern syntax being well-formed: URLPattern's
- * own parser rejects `?`, `+`, and `*` as literal characters in pathnames
- * (e.g. `new URLPattern({ pathname: "/foo+bar" })` throws at construction),
- * so a segment that ends with one of those characters here is always a
- * modifier, never a literal.
+ * Note that URLPattern's parser treats `?`, `+`, and `*` as modifier tokens
+ * in pathnames; literal occurrences (e.g. `/c++`) must be backslash-escaped
+ * (e.g. `/c\+\+`). The `pathname` property preserves the escape sequence,
+ * which the radix tree cannot match against an unescaped request path —
+ * so any segment containing `\` is routed to the linear fallback to keep
+ * URLPattern as the authoritative matcher.
  *
  * The `:id*` "zero-or-more" modifier is caught by the inline-wildcard branch
  * (`includes("*")` with `segment !== "*"`), not by an explicit `endsWith("*")`
@@ -196,6 +198,7 @@ function isComplexSegment(segment: string): boolean {
   if (segment.includes("{") || segment.includes("(")) return true;
   if (segment.includes("*") && segment !== "*") return true;
   if (segment.endsWith("?") || segment.endsWith("+")) return true;
+  if (segment.includes("\\")) return true;
   return false;
 }
 

@@ -433,6 +433,39 @@ function testRouter(name: string, route: typeof routeRadix) {
       assertEquals(withoutId?.status, 200);
       assertEquals(await withoutId?.text(), "id:none");
     });
+
+    await t.step(
+      "backslash-escaped literal in pathname matches request path",
+      async () => {
+        // URLPattern requires reserved characters (+, ?, *) to be backslash-
+        // escaped to match literally. The escape is preserved in
+        // `pattern.pathname`, so the matcher must not treat the segment
+        // as a static radix-tree key.
+        const escapedRoutes: Route[] = [
+          {
+            pattern: new URLPattern({ pathname: "/file\\+v2" }),
+            handler: () => new Response("plus"),
+          },
+          {
+            pattern: new URLPattern({ pathname: "/c\\+\\+" }),
+            handler: () => new Response("cpp"),
+          },
+        ];
+        const escapedHandler = route(escapedRoutes, defaultHandler);
+
+        const plusResponse = await escapedHandler(
+          new Request("http://example.com/file+v2"),
+        );
+        assertEquals(plusResponse?.status, 200);
+        assertEquals(await plusResponse?.text(), "plus");
+
+        const cppResponse = await escapedHandler(
+          new Request("http://example.com/c++"),
+        );
+        assertEquals(cppResponse?.status, 200);
+        assertEquals(await cppResponse?.text(), "cpp");
+      },
+    );
   });
 }
 
