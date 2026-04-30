@@ -123,18 +123,45 @@ interface IndexedRoute {
 
 interface RouteNode {
   staticChildren: Record<string, RouteNode>;
+  /**
+   * Whether `staticChildren` has at least one entry. Tracked as a flag so
+   * dispatch can skip the substring slice when there are no static children
+   * to look up.
+   */
+  hasStaticChildren: boolean;
   paramChild: RouteNode | null;
   wildcardChild: RouteNode | null;
   routes: IndexedRoute[];
+  /**
+   * Smallest insertion index reachable from this subtree (including its own
+   * `routes`). Used to prune subtrees that cannot improve on the current
+   * best match during dispatch.
+   */
+  minIndex: number;
 }
 
 /**
  * Extract pathname from a URL string without allocating a URL object.
- * Handles both `http://host/path?query` and `http://host/path` forms.
+ *
+ * This is a fast path tailored for `request.url`, which is always a fully
+ * normalized absolute URL with an authority component (e.g. `http://host/p`,
+ * `https://host/p?q`). It is NOT a general-purpose URL parser:
+ *
+ *   - Assumes the URL contains `://` separating scheme and authority. URLs
+ *     without an authority (e.g. `file:/path`, `mailto:x@y`) are not handled.
+ *   - Relies on userinfo containing no literal `/` (per WHATWG URL parsing,
+ *     `/` in userinfo is percent-encoded), so the first `/` after the
+ *     authority delimiter unambiguously starts the path.
+ *
+ * Always call this with a `Request#url` value; do not export.
  */
 function parsePathname(url: string): string {
-  const authorityStart = url.indexOf("//");
-  const pathStart = url.indexOf("/", authorityStart + 2);
+  // Skip past the scheme delimiter `://`. Using indexOf with the full token
+  // avoids the corner case where a scheme contains a colon-prefixed segment
+  // before the authority.
+  const schemeEnd = url.indexOf("://");
+  const authorityStart = schemeEnd === -1 ? 0 : schemeEnd + 3;
+  const pathStart = url.indexOf("/", authorityStart);
   if (pathStart === -1) return "/";
   const qmark = url.indexOf("?", pathStart);
   const hash = url.indexOf("#", pathStart);
@@ -150,9 +177,20 @@ function parsePathname(url: string): string {
  * string, a bare `:param`, or a standalone `*`.
  *
  * Affected syntax:
- *   - Optional / non-capturing groups:  `{.ext}?`  `{foo}`
- *   - Regex-constrained params:         `:id(\d+)`  `:lang(en|fr)`
- *   - Inline wildcards:                 `*.js`  `prefix*`
+ *   - Optional / non-capturing groups:    `{.ext}?`  `{foo}`
+ *   - Regex-constrained params:           `:id(\d+)`  `:lang(en|fr)`
+ *   - Inline wildcards:                   `*.js`  `prefix*`
+ *   - Modifier suffixes on params/groups: `:id?`  `:id+`  `:id*`  `(\d+)?`
+ *
+ * This heuristic relies on URLPattern syntax being well-formed: URLPattern's
+ * own parser rejects `?`, `+`, and `*` as literal characters in pathnames
+ * (e.g. `new URLPattern({ pathname: "/foo+bar" })` throws at construction),
+ * so a segment that ends with one of those characters here is always a
+ * modifier, never a literal.
+ *
+ * The `:id*` "zero-or-more" modifier is caught by the inline-wildcard branch
+ * (`includes("*")` with `segment !== "*"`), not by an explicit `endsWith("*")`
+ * clause. This is intentional — the two checks subsume each other for `*`.
  */
 function isComplexSegment(segment: string): boolean {
   if (segment.includes("{") || segment.includes("(")) return true;
@@ -164,9 +202,11 @@ function isComplexSegment(segment: string): boolean {
 function createNode(): RouteNode {
   return {
     staticChildren: Object.create(null) as Record<string, RouteNode>,
+    hasStaticChildren: false,
     paramChild: null,
     wildcardChild: null,
     routes: [],
+    minIndex: Number.POSITIVE_INFINITY,
   };
 }
 
@@ -179,6 +219,15 @@ function createNode(): RouteNode {
  * Routes with complex URLPattern syntax (regex constraints, optional/non-capturing
  * groups, inline wildcards) fall back to linear matching while preserving
  * insertion order relative to tree-indexed routes.
+ *
+ * The tree is keyed by pathname segments only. Other URLPattern components
+ * (hostname, search, protocol, etc.) are not indexed; routes that constrain
+ * those components are inserted in the tree under their pathname, and the
+ * additional constraints are validated by `pattern.exec()` per request. As a
+ * result, multiple routes sharing the same pathname but differing on
+ * hostname/search/protocol receive no pruning from the tree — every
+ * pathname-matching candidate is tested by the URLPattern matcher in
+ * insertion order, just as `routeLinear` would.
  *
  * @example Usage
  * ```ts ignore
@@ -229,13 +278,9 @@ export function routeRadix(
   const fallbackRoutes: IndexedRoute[] = [];
   let insertionCounter = 0;
 
-  function parseSegments(pathname: string): string[] {
-    return pathname.split("/").filter(Boolean);
-  }
-
   function insert(r: Route): void {
     const indexed: IndexedRoute = { route: r, index: insertionCounter++ };
-    const segments = parseSegments(r.pattern.pathname);
+    const segments = r.pattern.pathname.split("/").filter(Boolean);
 
     // If any pathname segment uses URLPattern syntax the radix tree cannot
     // model, fall back to linear matching. Insertion order is preserved via
@@ -245,12 +290,17 @@ export function routeRadix(
       return;
     }
 
+    // Walk the tree, creating nodes as needed and updating `minIndex` along
+    // the way so each ancestor remembers the lowest insertion index that
+    // can be reached through it. This is what enables pruning at dispatch.
     let node = root;
+    if (indexed.index < node.minIndex) node.minIndex = indexed.index;
 
     for (const segment of segments) {
       if (segment === "*") {
         if (!node.wildcardChild) node.wildcardChild = createNode();
         node = node.wildcardChild;
+        if (indexed.index < node.minIndex) node.minIndex = indexed.index;
         break; // Wildcards terminate the path
       } else if (segment.startsWith(":")) {
         if (!node.paramChild) node.paramChild = createNode();
@@ -258,47 +308,14 @@ export function routeRadix(
       } else {
         if (!(segment in node.staticChildren)) {
           node.staticChildren[segment] = createNode();
+          node.hasStaticChildren = true;
         }
         node = node.staticChildren[segment]!;
       }
+      if (indexed.index < node.minIndex) node.minIndex = indexed.index;
     }
 
     node.routes.push(indexed);
-  }
-
-  function collectCandidates(
-    node: RouteNode,
-    segments: string[],
-    index: number,
-    results: IndexedRoute[],
-  ): void {
-    if (index === segments.length) {
-      for (const r of node.routes) results.push(r);
-      if (node.wildcardChild) {
-        for (const r of node.wildcardChild.routes) results.push(r);
-      }
-      return;
-    }
-
-    const segment = segments[index]!;
-
-    // Explore ALL matching branches so insertion order can break ties.
-    if (segment in node.staticChildren) {
-      collectCandidates(
-        node.staticChildren[segment]!,
-        segments,
-        index + 1,
-        results,
-      );
-    }
-
-    if (node.paramChild) {
-      collectCandidates(node.paramChild, segments, index + 1, results);
-    }
-
-    if (node.wildcardChild) {
-      for (const r of node.wildcardChild.routes) results.push(r);
-    }
   }
 
   // Build the tree
@@ -312,47 +329,129 @@ export function routeRadix(
     return routeLinear(routes, defaultHandler);
   }
 
-  return (request: Request, info?: Deno.ServeHandlerInfo) => {
-    const pathname = parsePathname(request.url);
-    const segments = parseSegments(pathname);
-    const radixCandidates: IndexedRoute[] = [];
-    collectCandidates(root, segments, 0, radixCandidates);
-    radixCandidates.sort((a, b) => a.index - b.index);
+  // Per-request mutable match state. Hoisted to a single object so the
+  // recursive walker doesn't allocate a closure per request.
+  interface MatchState {
+    request: Request;
+    pathname: string;
+    bestRoute: Route | null;
+    bestIndex: number;
+    bestParams: URLPatternResult | null;
+  }
 
-    // When the tree found no candidates and there are no fallback routes,
-    // go straight to defaultHandler.
-    if (radixCandidates.length === 0 && fallbackRoutes.length === 0) {
-      return defaultHandler(request, info);
+  /**
+   * Try a single route as a candidate. Updates `state` in place when the
+   * route matches and has a lower insertion index than the current best.
+   */
+  function tryRoute(state: MatchState, r: IndexedRoute): void {
+    if (r.index >= state.bestIndex) return;
+    if (!methodMatches(r.route.method, state.request.method)) return;
+    const params = r.route.pattern.exec(state.request.url);
+    if (!params) return;
+    state.bestRoute = r.route;
+    state.bestIndex = r.index;
+    state.bestParams = params;
+  }
+
+  /**
+   * Walk the tree in lockstep with the pathname. `from` is the index of the
+   * current segment's first character in `pathname`. Each step finds the
+   * segment slice [start, end) and recurses on matching children.
+   *
+   * No segments array is allocated; only the substrings needed for static
+   * lookups are materialised.
+   */
+  function walk(node: RouteNode, state: MatchState, from: number): void {
+    // Subtree pruning: if everything reachable here has a higher index than
+    // the current best, skip the whole branch.
+    if (node.minIndex >= state.bestIndex) return;
+
+    const pathname = state.pathname;
+    const len = pathname.length;
+
+    // Skip leading '/'
+    let start = from;
+    while (start < len && pathname.charCodeAt(start) === 47 /* '/' */) {
+      start++;
     }
 
-    // Merge radix candidates with fallback routes by insertion order.
-    // Fast path: skip merge if one side is empty.
-    let candidates: IndexedRoute[];
-    if (fallbackRoutes.length === 0) {
-      candidates = radixCandidates;
-    } else if (radixCandidates.length === 0) {
-      candidates = fallbackRoutes;
-    } else {
-      candidates = [];
-      let r = 0;
-      let f = 0;
-      while (r < radixCandidates.length && f < fallbackRoutes.length) {
-        if (radixCandidates[r]!.index < fallbackRoutes[f]!.index) {
-          candidates.push(radixCandidates[r++]!);
-        } else {
-          candidates.push(fallbackRoutes[f++]!);
-        }
+    if (start >= len) {
+      // End of pathname — try every route registered at this node, plus
+      // any wildcard child's routes (matches an empty trailing segment).
+      for (const r of node.routes) tryRoute(state, r);
+      const wc = node.wildcardChild;
+      if (wc !== null && wc.minIndex < state.bestIndex) {
+        for (const r of wc.routes) tryRoute(state, r);
       }
-      while (r < radixCandidates.length) candidates.push(radixCandidates[r++]!);
-      while (f < fallbackRoutes.length) candidates.push(fallbackRoutes[f++]!);
+      return;
     }
 
-    for (const { route: r } of candidates) {
-      if (!methodMatches(r.method, request.method)) continue;
-      const params = r.pattern.exec(request.url);
-      if (params) return r.handler(request, params, info);
+    // Find segment end.
+    let end = start;
+    while (end < len && pathname.charCodeAt(end) !== 47 /* '/' */) end++;
+
+    // Static children: only allocate the substring if this node has any.
+    if (node.hasStaticChildren) {
+      const segment = pathname.slice(start, end);
+      const child = node.staticChildren[segment];
+      if (child !== undefined) {
+        walk(child, state, end);
+        if (state.bestIndex === 0) return; // can't do better
+      }
     }
 
+    if (node.paramChild) {
+      walk(node.paramChild, state, end);
+      if (state.bestIndex === 0) return;
+    }
+
+    const wc = node.wildcardChild;
+    if (wc !== null && wc.minIndex < state.bestIndex) {
+      // A wildcard child consumes the rest of the path; try its routes.
+      for (const r of wc.routes) tryRoute(state, r);
+    }
+  }
+
+  // Lowest insertion index reachable through the radix tree. Fallback
+  // routes with a smaller index than this are guaranteed to come before
+  // any radix candidate in insertion order, so we can scan them first
+  // and let pruning skip the rest of the tree if one matches.
+  const radixMinIndex = root.minIndex;
+
+  return (request: Request, info?: Deno.ServeHandlerInfo) => {
+    const state: MatchState = {
+      request,
+      pathname: parsePathname(request.url),
+      bestRoute: null,
+      bestIndex: Number.POSITIVE_INFINITY,
+      bestParams: null,
+    };
+
+    // Scan fallback routes registered before any radix route first.
+    // This preserves insertion order without a merge step and lets the
+    // tree walk prune itself if one of these earlier fallbacks matches.
+    let fbCursor = 0;
+    while (
+      fbCursor < fallbackRoutes.length &&
+      fallbackRoutes[fbCursor]!.index < radixMinIndex
+    ) {
+      tryRoute(state, fallbackRoutes[fbCursor]!);
+      fbCursor++;
+    }
+
+    walk(root, state, 0);
+
+    // Remaining fallback routes (those whose index is >= radixMinIndex).
+    // Stop as soon as the next fallback can't improve on the current best.
+    for (let i = fbCursor; i < fallbackRoutes.length; i++) {
+      const fb = fallbackRoutes[i]!;
+      if (fb.index >= state.bestIndex) break;
+      tryRoute(state, fb);
+    }
+
+    if (state.bestRoute !== null) {
+      return state.bestRoute.handler(request, state.bestParams!, info);
+    }
     return defaultHandler(request, info);
   };
 }
