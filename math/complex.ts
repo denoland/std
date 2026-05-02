@@ -11,26 +11,33 @@ export class Complex {
 }
 
 export const I = new Complex(0, 1);
+export const NEGI = new Complex(0, -1);
 
-export function add(...nums: (Complex | number)[]): Complex {
+type Number = Complex | number;
+
+export function add(...nums: (Number)[]): Complex {
   let sum = new Complex(0);
 
   for (let num of nums) {
-    if (typeof num === "number") num = new Complex(num)
+    if (typeof num === "number") num = new Complex(num);
     sum = new Complex(sum.real + num.real, sum.imag + num.real);
   }
 
   return sum;
 }
 
-export function sub(x: Complex, y: Complex): Complex {
+export function sub(x: Number, y: Number): Complex {
+  if (typeof x === "number") x = new Complex(x);
+  if (typeof y === "number") y = new Complex(y);
+
   return new Complex(x.real - y.real, x.imag - y.imag);
 }
 
-export function mul(...nums: Complex[]): Complex {
+export function mul(...nums: (Number)[]): Complex {
   let prod = new Complex(1);
 
-  for (const num of nums) {
+  for (let num of nums) {
+    if (typeof num === "number") num = new Complex(num);
     prod = new Complex(
       prod.real * num.real - prod.imag * num.imag,
       prod.real * num.imag + prod.imag * num.real,
@@ -40,7 +47,10 @@ export function mul(...nums: Complex[]): Complex {
   return prod;
 }
 
-export function div(x: Complex, y: Complex): Complex {
+export function div(x: Number, y: Number): Complex {
+  if (typeof x === "number") x = new Complex(x);
+  if (typeof y === "number") y = new Complex(y);
+
   const absSquaredY = absSquared(y);
 
   return new Complex(
@@ -49,7 +59,9 @@ export function div(x: Complex, y: Complex): Complex {
   );
 }
 
-export function recip(z: Complex): Complex {
+export function recip(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
   const absSquaredZ = absSquared(z);
 
   return new Complex(
@@ -81,8 +93,30 @@ export function sqrt(z: Complex): Complex {
   );
 }
 
+export function cbrt(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  // If w is a real number, use de Moivres formula
+  const argZ = arg(z);
+  const absCbrt = Math.cbrt(abs(z));
+
+  return new Complex(
+    absCbrt * Math.cos(argZ / 3),
+    absCbrt * Math.sin(argZ / 3),
+  );
+}
+
+// I know in the Math namespace the natural logarithm is log and not ln, but fuck that
 export function ln(z: Complex): Complex {
   return new Complex(Math.log(absSquared(z)) / 2, arg(z));
+}
+
+export function log(z: Complex): Complex {
+  return (div(ln(z), Math.LN10));
+}
+
+export function logn(z: Complex, n: number): Complex {
+  return (div(ln(z), Math.log(n)));
 }
 
 export function exp(z: Complex): Complex {
@@ -90,7 +124,7 @@ export function exp(z: Complex): Complex {
   return new Complex(expReal * Math.cos(z.imag), expReal * Math.sin(z.imag));
 }
 
-export function pow(z: Complex | number, w: Complex | number): Complex {
+export function pow(z: Number, w: Number): Complex {
   if (typeof z === "number") z = new Complex(z);
 
   if (typeof w === "number" && w % 1 === 0) {
@@ -118,4 +152,132 @@ export function pow(z: Complex | number, w: Complex | number): Complex {
   } else {
     return mul(pow(z, w.real), exp(mul(ln(z), new Complex(0, w.imag))));
   }
+}
+
+// Trig!
+
+export function sin(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  return new Complex(
+    Math.sin(z.real) * Math.cosh(z.imag),
+    Math.cos(z.real) * Math.sinh(z.imag),
+  );
+}
+
+export function cos(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  return new Complex(
+    Math.cos(z.real) * Math.cosh(z.imag),
+    -Math.sin(z.real) * Math.sinh(z.imag),
+  );
+}
+
+export function tan(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  const w = Math.cos(2 * z.imag) + Math.cosh(2 * z.imag);
+
+  return new Complex(
+    Math.sin(2 * z.real) / w,
+    Math.sinh(2 * z.real) / w,
+  );
+}
+
+export function cot(z: Number): Complex {
+  return div(1, tan(z));
+}
+
+export function sec(z: Number): Complex {
+  return div(1, cos(z));
+}
+
+export function csc(z: Number): Complex {
+  return div(1, sin(z));
+}
+
+// Inverse trig!
+export function asin(z: Number): Complex {
+  return mul(NEGI, ln(add(sqrt(sub(1, pow(z, 2))), mul(I, z))));
+}
+
+export function acos(z: Number): Complex {
+  return sub(Math.PI / 2, asin(z));
+}
+
+export function atan(z: Number): Complex {
+  return asin(div(z, sqrt(sub(1, pow(z, 2)))));
+}
+
+export function acot(z: Number): Complex {
+  return atan(div(1, z));
+}
+
+export function asec(z: Number): Complex {
+  return acos(div(1, z));
+}
+
+export function acsc(z: Number): Complex {
+  return asin(div(1, z));
+}
+
+// Hypertrig!
+export function sinh(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  return new Complex(
+    Math.sinh(z.real) * Math.cos(z.imag),
+    Math.cosh(z.real) * Math.sin(z.imag),
+  );
+}
+
+export function cosh(z: Number): Complex {
+  if (typeof z === "number") z = new Complex(z);
+
+  return new Complex(
+    Math.cosh(z.real) * Math.cos(z.imag),
+    Math.sinh(z.real) * Math.sin(z.imag),
+  );
+}
+
+export function tanh(z: Number): Complex {
+  return div(sinh(z), cosh(z));
+}
+
+export function coth(z: Number): Complex {
+  return div(cosh(z), sinh(z));
+}
+
+export function sech(z: Number): Complex {
+  return recip(cosh(z));
+}
+
+export function csch(z: Number): Complex {
+  return recip(sinh(z));
+}
+
+// Inverse hyprtrig!
+export function asinh(z: Number): Complex {
+  return ln(add(sqrt(add(pow(z, 2), 1)), z));
+}
+
+export function acosh(z: Number): Complex {
+  return ln(add(sqrt(sub(pow(z, 2), 1)), z));
+}
+
+export function atanh(z: Number): Complex {
+  return div(ln(div(add(1, z), sub(1, z))), 2);
+}
+
+export function acoth(z: Number): Complex {
+  return atanh(recip(z));
+}
+
+export function asech(z: Number): Complex {
+  return acosh(recip(z));
+}
+
+export function acsch(z: Number): Complex {
+  return asinh(recip(z));
 }
