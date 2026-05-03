@@ -1,6 +1,8 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { union } from "./union.ts";
+
 /** Default merging options - cached to avoid object allocation on each call */
 const DEFAULT_OPTIONS: DeepMergeOptions = {
   arrays: "merge",
@@ -303,6 +305,8 @@ function mergeObjects(
     if ((Array.isArray(left)) && (Array.isArray(right))) {
       if (options.arrays === "merge") {
         return left.concat(right);
+      } else if (options.arrays === "union") {
+        return union(left, right);
       }
 
       return right;
@@ -380,6 +384,9 @@ function getKeys<T extends Record<string, unknown>>(record: T): Array<keyof T> {
 /** Merging strategy */
 export type MergingStrategy = "replace" | "merge";
 
+/** Arrays Merging strategy */
+export type ArraysMergingStrategy = MergingStrategy | "union";
+
 /** Options for {@linkcode deepMerge}. */
 export type DeepMergeOptions = {
   /**
@@ -387,7 +394,7 @@ export type DeepMergeOptions = {
    *
    * @default {"merge"}
    */
-  arrays?: MergingStrategy;
+  arrays?: ArraysMergingStrategy;
   /**
    * Merging strategy for maps.
    *
