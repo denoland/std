@@ -1,5 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+// Should this class be parameterized to support bigint?
 export class Complex {
   real: number;
   imag: number;
@@ -17,13 +18,7 @@ export class Complex {
   /** -i, the negative of the imaginary unit */
   static negI = new Complex(0, -1);
 
-  /**
-   * Returns the sum of the supplied complex numbers
-   *
-   * @param {(Complex | number)[]} nums The complex numbers to sum
-   *
-   * @returns {Complex} The sum of the supplied complex numbers
-   */
+  /** Returns the sum of the supplied complex numbers. */
   static add(...nums: (Complex | number)[]): Complex {
     let sum = new Complex(0);
 
@@ -35,9 +30,12 @@ export class Complex {
     return sum;
   }
 
-  /**
-   * Subtracts one complex number from another
-   */
+  /** Returns the negative of a complex number. */
+  static neg(z: Complex): Complex {
+    return new Complex(-z.real, -z.imag);
+  }
+
+  /** Returns the difference of two complex numbers. */
   static sub(x: Complex | number, y: Complex | number): Complex {
     if (typeof x === "number") x = new Complex(x);
     if (typeof y === "number") y = new Complex(y);
@@ -45,13 +43,7 @@ export class Complex {
     return new Complex(x.real - y.real, x.imag - y.imag);
   }
 
-  /**
-   * Returns the product of the supplied complex numbers
-   *
-   * @param {(Complex | number)[]} nums The complex numbers to sum
-   *
-   * @returns {Complex} The product of the supplied complex numbers
-   */
+  /** Returns the product of the supplied complex numbers. */
   static mul(...nums: (Complex | number)[]): Complex {
     let prod = new Complex(1);
 
@@ -114,7 +106,9 @@ export class Complex {
   }
 
   /** Returns the square root of a complex number. */
-  static sqrt(z: Complex): Complex {
+  static sqrt(z: Complex | number): Complex {
+    if (typeof z === "number") z = new Complex(z);
+
     return new Complex(
       Math.sqrt((z.real + this.abs(z)) / 2),
       Math.sign(z.imag) * Math.sqrt((-z.real + this.abs(z)) / 2),
@@ -134,7 +128,7 @@ export class Complex {
     );
   }
 
-  // I know in the Math namespace the natural logarithm is log and not ln, but fuck that
+  // Should this be named ln or log?
   /** Returns the natural logarithm of a complex number. */
   static ln(z: Complex): Complex {
     return new Complex(Math.log(this.absSquared(z)) / 2, this.arg(z));
@@ -150,7 +144,7 @@ export class Complex {
     return (this.div(this.ln(z), Math.log(n)));
   }
 
-  /** Returns the e (Euler's number) raised to the power of a complex number. */
+  /** Returns e (Euler's number) raised to the power of a complex number. */
   static exp(z: Complex | number): Complex {
     if (typeof z === "number") z = new Complex(z);
 
@@ -164,7 +158,7 @@ export class Complex {
     if (typeof z === "number") z = new Complex(z);
 
     if (typeof w === "number" && w % 1 === 0) {
-      // If w is an integer, use exponentiation by squaring
+      // If w is an integer, use exponentiation by squaring.
       return w === 0
         ? new Complex(1, 0)
         : w === 1
@@ -177,7 +171,7 @@ export class Complex {
         ? this.pow(this.mul(z, z), w / 2)
         : this.mul(z, this.pow(this.mul(z, z), (w - 1) / 2));
     } else if (typeof w === "number") {
-      // If w is a real number, use de Moivres formula
+      // If w is a real number, use De Moivre's formula.
       const argZ = Complex.arg(z);
       const absPow = Math.pow(Complex.abs(z), w);
 
@@ -227,28 +221,25 @@ export class Complex {
 
   /** Returns the cotangent of a complex number. */
   static cot(z: Complex | number): Complex {
-    return this.div(1, this.tan(z));
+    return this.recip(this.tan(z));
   }
 
   /** Returns the secant of a complex number. */
   static sec(z: Complex | number): Complex {
-    return this.div(1, this.cos(z));
+    return this.recip(this.cos(z));
   }
 
   /** Returns the cosecant of a complex number. */
   static csc(z: Complex | number): Complex {
-    return this.div(1, this.sin(z));
+    return this.recip(this.sin(z));
   }
 
   /** Returns the arcsine (inverse sine) of a complex number. */
   static asin(z: Complex | number): Complex {
-    return Complex.mul(
+    return this.mul(
       this.negI,
       this.ln(
-        this.add(
-          this.sqrt(this.sub(1, this.pow(z, 2))),
-          this.mul(this.i, z),
-        ),
+        this.add(this.sqrt(this.sub(1, this.pow(z, 2))), this.mul(this.i, z)),
       ),
     );
   }
@@ -305,7 +296,7 @@ export class Complex {
 
   /** Returns the hyperbolic cotangent of a complex number. */
   static coth(z: Complex | number): Complex {
-    return this.div(this.cosh(z), this.sinh(z));
+    return this.recip(this.tanh(z));
   }
 
   /** Returns the hyperbolic secant of a complex number. */
