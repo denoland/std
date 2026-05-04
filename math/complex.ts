@@ -2,6 +2,24 @@
 
 // Should this class be parameterized to support bigint?
 
+/*
+Currently, the following functions are broken
+- asin
+- acos
+- atan
+- acot
+- asec
+- acsc
+- asinh
+- acosh
+- atanh
+- acoth
+- asech
+- acsch
+
+I suspect this is because of faulty branch cuts but I really don't know.
+*/
+
 /**
  * A class representing a complex number. Also contains utility functions for complex numbers.
  *
@@ -9,18 +27,37 @@
  * @param {number} imag The imaginary part of this complex number.
  */
 export class Complex {
-  real: number;
-  imag: number;
+  #real: number;
+  #imag: number;
+
+  get real() {
+    return this.#real;
+  }
+
+  get imag() {
+    return this.#imag;
+  }
 
   constructor(real: number, imag?: number) {
-    this.real = real;
-    this.imag = imag ?? 0;
+    if (Number.isNaN(real) || Number.isNaN(imag)) {
+      this.#real = NaN;
+      this.#imag = NaN;
+    } else {
+      this.#real = real;
+      this.#imag = imag ?? 0;
+    }
   }
 
   /** i, the imaginary unit */
   static i = new Complex(0, 1);
   /** -i, the negative of the imaginary unit */
   static negI = new Complex(0, -1);
+
+  static #complexNaN = new Complex(NaN, NaN);
+
+  static #NaNChecker(z: Complex) {
+    return Number.isNaN(z.real) || Number.isNaN(z.real);
+  }
 
   /**
    * Returns the sum of the supplied complex numbers.
@@ -30,6 +67,8 @@ export class Complex {
    * @returns {Complex} The sum of the supplied complex numbers.
    */
   static add(...nums: (Complex | number)[]): Complex {
+    if (nums.includes(this.#complexNaN)) return this.#complexNaN;
+
     let sum = new Complex(0);
 
     for (let num of nums) {
@@ -60,6 +99,9 @@ export class Complex {
    * @returns {Complex} The difference of the two complex numbers.
    */
   static sub(x: Complex | number, y: Complex | number): Complex {
+    if (x === this.#complexNaN || y === this.#complexNaN) {
+      return this.#complexNaN;
+    }
     if (typeof x === "number") x = new Complex(x);
     if (typeof y === "number") y = new Complex(y);
 
@@ -74,10 +116,13 @@ export class Complex {
    * @returns {Complex} The product of the supplied complex numbers.
    */
   static mul(...nums: (Complex | number)[]): Complex {
+    if (nums.includes(this.#complexNaN)) return this.#complexNaN;
+
     let prod = new Complex(1);
 
     for (let num of nums) {
       if (typeof num === "number") num = new Complex(num);
+
       prod = new Complex(
         prod.real * num.real - prod.imag * num.imag,
         prod.real * num.imag + prod.imag * num.real,
@@ -96,6 +141,9 @@ export class Complex {
    * @returns {Complex} The ratio of the two complex numbers.
    */
   static div(x: Complex | number, y: Complex | number): Complex {
+    if (x === this.#complexNaN || y === this.#complexNaN) {
+      return this.#complexNaN;
+    }
     if (typeof x === "number") x = new Complex(x);
     if (typeof y === "number") y = new Complex(y);
 
@@ -115,7 +163,7 @@ export class Complex {
    * @returns {Complex} The reciprocal of the supplied number.
    */
   static recip(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(1 / z);
 
     const absSquaredZ = this.absSquared(z);
 
@@ -185,9 +233,11 @@ export class Complex {
   static sqrt(z: Complex | number): Complex {
     if (typeof z === "number") z = new Complex(z);
 
+    const absZ = this.abs(z);
+
     return new Complex(
-      Math.sqrt((z.real + this.abs(z)) / 2),
-      Math.sign(z.imag) * Math.sqrt((-z.real + this.abs(z)) / 2),
+      Math.sqrt((z.real + absZ) / 2),
+      Math.sign(z.imag) * Math.sqrt((-z.real + absZ) / 2),
     );
   }
 
@@ -199,14 +249,14 @@ export class Complex {
    * @returns {Complex} The cube root of the supplied number.
    */
   static cbrt(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(Math.cbrt(z));
 
-    const argZ = this.arg(z);
+    const argZdiv = this.arg(z) / 3;
     const absCbrt = Math.cbrt(Complex.abs(z));
 
     return new Complex(
-      absCbrt * Math.cos(argZ / 3),
-      absCbrt * Math.sin(argZ / 3),
+      absCbrt * Math.cos(argZdiv),
+      absCbrt * Math.sin(argZdiv),
     );
   }
 
@@ -230,7 +280,7 @@ export class Complex {
    * @returns {Complex} The base-10 logarithm of the supplied number.
    */
   static log(z: Complex): Complex {
-    return (this.div(this.ln(z), Math.LN10));
+    return this.div(this.ln(z), Math.LN10);
   }
 
   /**
@@ -252,13 +302,14 @@ export class Complex {
    * @returns {Complex} E (Euler's number) raised to the power of a complex number.
    */
   static exp(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(Math.exp(z));
 
     const expReal = Math.exp(z.real);
 
     return new Complex(expReal * Math.cos(z.imag), expReal * Math.sin(z.imag));
   }
 
+  // Branch cut conforming!
   /**
    * Returns a complex number raised to the power of another complex number.
    *
@@ -268,8 +319,9 @@ export class Complex {
    */
   static pow(z: Complex | number, w: Complex | number): Complex {
     if (typeof z === "number") z = new Complex(z);
+    if (typeof w !== "number" && w.imag === 0) w = w.real;
 
-    if (typeof w === "number" && w % 1 === 0) {
+    if (typeof w === "number" && Number.isInteger(w)) {
       // If w is an integer, use exponentiation by squaring.
       return w === 0
         ? new Complex(1, 0)
@@ -284,12 +336,12 @@ export class Complex {
         : this.mul(z, this.pow(this.mul(z, z), (w - 1) / 2));
     } else if (typeof w === "number") {
       // If w is a real number, use De Moivre's formula.
-      const argZ = Complex.arg(z);
+      const argZw = Complex.arg(z) * w;
       const absPow = Math.pow(Complex.abs(z), w);
 
       return new Complex(
-        absPow * Math.cos(argZ * w),
-        absPow * Math.sin(argZ * w),
+        absPow * Math.cos(argZw),
+        absPow * Math.sin(argZw),
       );
     } else {
       return Complex.mul(
@@ -307,7 +359,7 @@ export class Complex {
    * @returns The sine of the supplied complex number.
    */
   static sin(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(Math.sin(z));
 
     return new Complex(
       Math.sin(z.real) * Math.cosh(z.imag),
@@ -323,7 +375,7 @@ export class Complex {
    * @returns The cosine of the supplied complex number.
    */
   static cos(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(Math.cos(z));
 
     return new Complex(
       Math.cos(z.real) * Math.cosh(z.imag),
@@ -339,7 +391,7 @@ export class Complex {
    * @returns The tangent of the supplied complex number.
    */
   static tan(z: Complex | number): Complex {
-    if (typeof z === "number") z = new Complex(z);
+    if (typeof z === "number") return new Complex(Math.tan(z));
 
     const w = Math.cos(2 * z.imag) + Math.cosh(2 * z.imag);
 
@@ -382,6 +434,7 @@ export class Complex {
     return this.recip(this.sin(z));
   }
 
+  // This function is broken and I have no clue why
   /**
    * Returns the arcsine (inverse sine) of a complex number.
    *
@@ -537,7 +590,17 @@ export class Complex {
    * @returns {Complex | number} The hyperbolic arcsine (inverse hyperbolic sine) of the supplied complex number.
    */
   static asinh(z: Complex | number): Complex {
-    return this.ln(this.add(this.sqrt(this.add(this.pow(z, 2), 1)), z));
+    return this.ln(
+      this.add(
+        this.sqrt(
+          this.add(
+            this.pow(z, 2),
+            1,
+          ),
+        ),
+        z,
+      ),
+    );
   }
 
   /**
