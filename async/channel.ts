@@ -32,7 +32,7 @@ interface ReceiverNode<T> {
  *
  * @example Usage
  * ```ts
- * import { Channel, ChannelClosedError } from "@std/async/unstable-channel";
+ * import { Channel, ChannelClosedError } from "@std/async/channel";
  * import { assertInstanceOf } from "@std/assert";
  *
  * const ch = new Channel<number>();
