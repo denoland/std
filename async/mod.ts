@@ -16,6 +16,7 @@
  */
 
 export * from "./abortable.ts";
+export * from "./channel.ts";
 export * from "./deadline.ts";
 export * from "./debounce.ts";
 export * from "./delay.ts";

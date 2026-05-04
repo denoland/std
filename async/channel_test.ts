@@ -8,7 +8,7 @@ import {
   assertRejects,
   assertThrows,
 } from "@std/assert";
-import { Channel, ChannelClosedError } from "./unstable_channel.ts";
+import { Channel, ChannelClosedError } from "./channel.ts";
 
 // -- Constructor --
 

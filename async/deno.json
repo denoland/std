@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./abortable": "./abortable.ts",
+    "./channel": "./channel.ts",
     "./deadline": "./deadline.ts",
     "./debounce": "./debounce.ts",
     "./delay": "./delay.ts",
@@ -20,7 +21,6 @@
     "./unstable-semaphore": "./unstable_semaphore.ts",
     "./unstable-circuit-breaker": "./unstable_circuit_breaker.ts",
     "./lazy": "./lazy.ts",
-    "./unstable-pool-settled": "./unstable_pool_settled.ts",
-    "./unstable-channel": "./unstable_channel.ts"
+    "./unstable-pool-settled": "./unstable_pool_settled.ts"
   }
 }
