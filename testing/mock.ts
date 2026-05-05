@@ -293,7 +293,7 @@
  * } from "@std/testing/mock";
  * import { FakeTime } from "@std/testing/time";
  *
- * function secondInterval(cb: () => void): ReturnType<typeof setInterval> {
+ * function secondInterval(cb: () => void) {
  *   return setInterval(cb, 1000);
  * }
  *
