@@ -137,6 +137,14 @@ regexp: !!js/regexp bar
 });
 
 Deno.test({
+  name: "parseAll() throws SyntaxError on invalid YAML",
+  fn() {
+    assertThrows(() => parseAll(`"`), SyntaxError);
+    assertThrows(() => parseAll(`---\nfoo: bar\n---\n"`), SyntaxError);
+  },
+});
+
+Deno.test({
   name: "parse() handles __proto__",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
