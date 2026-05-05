@@ -10,7 +10,7 @@ This package provides utilities for testing.
 import { assertSpyCalls, spy } from "@std/testing/mock";
 import { FakeTime } from "@std/testing/time";
 
-function secondInterval(cb: () => void): number {
+function secondInterval(cb: () => void): ReturnType<typeof setInterval> {
   return setInterval(cb, 1000);
 }
 

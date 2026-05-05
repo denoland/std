@@ -193,7 +193,7 @@ export class ProgressBar {
   max: number;
 
   #writer: WritableStreamDefaultWriter;
-  #id: number;
+  #id: ReturnType<typeof setInterval>;
   #startTime: number;
   #previousTime: number;
   #previousValue: number;
