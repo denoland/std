@@ -1071,6 +1071,29 @@ Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
   );
 });
 
+Deno.test("parse() does not pollute prototype with `__proto__` key", () => {
+  // A YAML key of `__proto__` must produce an own property on the result,
+  // not mutate the result's prototype chain.
+  const result = parse("__proto__:\n  polluted: true") as Record<
+    string,
+    unknown
+  >;
+  assert(Object.hasOwn(result, "__proto__"));
+  assertEquals(
+    (result as { __proto__: unknown }).__proto__,
+    { polluted: true },
+  );
+  // Same guarantee for the merge type (which goes through `mergeMappings`).
+  const merged = parse(`<<:
+  __proto__:
+    polluted: true
+ok: 1`) as Record<string, unknown>;
+  assert(Object.hasOwn(merged, "__proto__"));
+  assertEquals(merged.ok, 1);
+  // Sanity: an unrelated object's prototype is untouched.
+  assertEquals(({} as { polluted?: unknown }).polluted, undefined);
+});
+
 Deno.test("parse() handles sequence", () => {
   assertEquals(parse("[]"), []);
   assertEquals(
