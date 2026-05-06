@@ -106,7 +106,7 @@ export function throttle<T extends Array<any>>(
   options?: ThrottleOptions,
 ): ThrottledFunction<T> {
   const ensureLast = Boolean(options?.ensureLastCall);
-  let timeout = -1;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
 
   let lastExecution = -Infinity;
   let flush: (() => void) | null = null;
