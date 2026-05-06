@@ -1,4 +1,13 @@
-{
+// Copyright 2018-2026 the Deno authors. MIT license.
+// This module is browser compatible.
+
+// This data is generated from the Unicode Character Database. See
+// `_tools/generate_title_case_data.ts` for the generation script. The mapping
+// is inlined as a TypeScript module rather than imported from JSON so that
+// bundlers (notably Vite) that don't handle JSON imports from JSR correctly
+// can still consume the module. See https://github.com/denoland/std/issues/7128.
+
+export const titleCaseMapping: Record<string, string> = {
   "ß": "Ss",
   "Ǆ": "ǅ",
   "ǅ": "ǅ",
@@ -133,5 +142,5 @@
   "ﬔ": "Մե",
   "ﬕ": "Մի",
   "ﬖ": "Վն",
-  "ﬗ": "Մխ"
-}
+  "ﬗ": "Մխ",
+};
