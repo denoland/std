@@ -93,7 +93,7 @@ export interface TtlCacheOptions<K, V> {
 export class TtlCache<K, V> extends Map<K, V>
   implements MemoizationCache<K, V> {
   #defaultTtl: number;
-  #timeouts = new Map<K, ReturnType<typeof setTimeout>>();
+  #timeouts = new Map();
   #eject?: ((ejectedKey: K, ejectedValue: V) => void) | undefined;
   #slidingExpiration: boolean;
   #entryTtls?: Map<K, number>;
