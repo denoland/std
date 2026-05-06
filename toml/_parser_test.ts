@@ -489,7 +489,7 @@ Deno.test({
 Deno.test({
   name: "(private) deepAssign() works correctly",
   fn() {
-    const source = {
+    const source: Record<string, unknown> = {
       foo: {
         items: [
           {
@@ -528,7 +528,7 @@ Deno.test({
                 email: {
                   x: { main: "mail@example.com" },
                 },
-              } as unknown,
+              },
             },
           ],
         },
