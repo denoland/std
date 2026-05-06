@@ -357,7 +357,7 @@ export class Cache<K, V> implements CacheLike<K, V> {
   #head: CacheEntry<K, V> | undefined;
   #tail: CacheEntry<K, V> | undefined;
   #heap: IndexedHeap<K> | undefined;
-  #timerId: number | undefined;
+  #timerId: ReturnType<typeof setTimeout> | undefined;
   #scheduledDeadline: number | undefined;
   #inFlight: Map<K, Promise<V>> | undefined;
 
