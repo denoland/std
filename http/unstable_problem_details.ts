@@ -7,8 +7,9 @@
  *
  * Provides {@linkcode createProblemDetailsResponse} to build a `Response` with
  * an `application/problem+json` body, {@linkcode parseProblemDetails} to parse
- * from a `Response` or plain object, and {@linkcode isProblemDetailsResponse}
- * to detect problem-details responses by content type.
+ * a plain object, {@linkcode parseProblemDetailsResponse} to parse a `Response`
+ * body, and {@linkcode isProblemDetailsResponse} to detect problem-details
+ * responses by content type.
  *
  * @example Basic 404 response
  * ```ts
@@ -20,16 +21,16 @@
  * });
  * ```
  *
- * @example Parse from a Response
+ * @example Parse a Response
  * ```ts ignore
  * import {
  *   isProblemDetailsResponse,
- *   parseProblemDetails,
+ *   parseProblemDetailsResponse,
  * } from "@std/http/unstable-problem-details";
  *
  * const response = await fetch("https://api.example.com/resource");
  * if (isProblemDetailsResponse(response)) {
- *   const problem = await parseProblemDetails(response);
+ *   const problem = await parseProblemDetailsResponse(response);
  *   console.error(problem.detail);
  * }
  * ```
@@ -38,8 +39,6 @@
  * The XML serialization defined by the RFC is not supported.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @see {@link https://www.rfc-editor.org/rfc/rfc9457.html}
  *
  * @module
  */
@@ -62,14 +61,16 @@ export type StandardProblemDetailsMember =
   | "instance";
 
 /**
- * Constraint for Problem Details extension members. Permits any string-keyed
- * properties except the five standard members defined by RFC 9457.
+ * Constraint for Problem Details extension members.
  *
- * Uses `Omit` rather than a mapped `never` constraint so that TypeScript can
- * infer `T` from object literals at call sites without the standard keys
- * being captured into `T` and then failing a `never` check. If `T`
- * explicitly redeclares a standard key, the intersection with the base type
- * collapses that key to `never`, making it unusable.
+ * The constraint itself is intentionally loose (effectively
+ * `Record<string, unknown>`) so that TypeScript can infer `T` from object
+ * literals at call sites without standard keys being captured into `T` and
+ * then failing a stricter `never` check. Safety is enforced one level up: the
+ * intersection in {@linkcode ProblemDetails} explicitly types the five
+ * standard members, so if `T` redeclares any of them with an incompatible
+ * type the resulting field collapses to `never` and the value becomes
+ * unconstructible.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -86,13 +87,14 @@ export type ProblemDetailsExtensions = Omit<
  * top-level properties in both the TypeScript type and the serialized JSON
  * — matching the wire format exactly.
  *
- * The generic constraint on `T` prevents extension types from shadowing the
- * five standard members, which the RFC forbids.
+ * If `T` declares a property whose name matches one of the five standard
+ * members with an incompatible type, the intersection collapses that field
+ * to `never`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type ProblemDetails<
-  T extends ProblemDetailsExtensions = Record<never, never>,
+  T extends ProblemDetailsExtensions = Record<string, never>,
 > = {
   /**
    * A URI reference identifying the problem type. Defaults to `"about:blank"`
@@ -117,6 +119,11 @@ export type ProblemDetails<
 export interface ProblemDetailsResponseOptions {
   /** Additional headers to include in the response. */
   headers?: HeadersInit;
+  /**
+   * Status text for the response. When omitted, the platform's default for
+   * `status` is used.
+   */
+  statusText?: string;
 }
 
 /**
@@ -141,6 +148,8 @@ export interface ProblemDetailsResponseOptions {
  *
  * @returns A `Response` with status, `application/problem+json` content type,
  * and the serialized problem details as the body.
+ *
+ * @throws {RangeError} If `problemDetails.status` is not a finite integer.
  *
  * @example Basic 404 response
  * ```ts
@@ -193,6 +202,14 @@ export function createProblemDetailsResponse<
 
   if (pd.status === undefined) pd.status = 500;
 
+  if (!Number.isInteger(pd.status)) {
+    throw new RangeError(
+      `Cannot create Problem Details response: status must be a finite integer: received ${
+        typeof pd.status === "string" ? `"${pd.status}"` : String(pd.status)
+      }`,
+    );
+  }
+
   if (pd.type === "about:blank" && pd.title === undefined) {
     const statusText = STATUS_TEXT[pd.status as keyof typeof STATUS_TEXT];
     if (statusText !== undefined) {
@@ -202,21 +219,26 @@ export function createProblemDetailsResponse<
 
   const body = JSON.stringify(pd);
   const status = pd.status as number;
+  const statusText = options?.statusText;
 
   if (options?.headers === undefined) {
     return new Response(body, {
       status,
+      ...(statusText !== undefined ? { statusText } : {}),
       headers: { "Content-Type": PROBLEM_JSON_MEDIA_TYPE },
     });
   }
   const headers = new Headers(options.headers);
   headers.set("Content-Type", PROBLEM_JSON_MEDIA_TYPE);
-  return new Response(body, { status, headers });
+  return new Response(body, {
+    status,
+    ...(statusText !== undefined ? { statusText } : {}),
+    headers,
+  });
 }
 
-/** Per RFC 9457 §3.1: ignore standard members whose value type does not match. */
 function normalizeParsedProblemDetails(
-  raw: Record<string, unknown>,
+  raw: unknown,
 ): Record<string, unknown> {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
     throw new TypeError(
@@ -227,10 +249,12 @@ function normalizeParsedProblemDetails(
   }
 
   const result: Record<string, unknown> = {};
+  const source = raw as Record<string, unknown>;
 
-  for (const key in raw) {
-    if (!Object.hasOwn(raw, key)) continue;
-    const value = raw[key];
+  // RFC 9457 §3.1: ignore standard members whose value type does not match.
+  for (const key in source) {
+    if (!Object.hasOwn(source, key)) continue;
+    const value = source[key];
     switch (key) {
       case "type":
         if (typeof value === "string") result.type = value;
@@ -256,56 +280,23 @@ function normalizeParsedProblemDetails(
 }
 
 /**
- * Parses a `Response` body into a {@linkcode ProblemDetails}.
- *
- * Reads the response body as JSON and returns the standard members plus any
- * extension members as a flat object. Standard members with invalid types are
- * ignored per RFC 9457 §3.1. Does not throw on missing fields — the RFC makes
- * all members optional. Extension member types provided via `T` are asserted at
- * the type level only — values are not validated at runtime.
- *
- * Note: this consumes the response body. The `Response` cannot be re-read
- * after this call.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
- * @typeParam T The type of extension members expected in the parsed result.
- *
- * @param input The `Response` whose JSON body will be parsed.
- *
- * @returns A promise that resolves to the parsed problem details.
- *
- * @example Parse from a Response
- * ```ts ignore
- * import { parseProblemDetails } from "@std/http/unstable-problem-details";
- *
- * const response = await fetch("https://api.example.com/resource");
- * if (isProblemDetailsResponse(response)) {
- *   const problem = await parseProblemDetails(response);
- *   console.log(problem.status, problem.detail);
- * }
- * ```
- */
-export function parseProblemDetails<
-  T extends ProblemDetailsExtensions = Record<never, never>,
->(input: Response): Promise<ProblemDetails<T>>;
-
-/**
- * Parses a plain JSON object into a {@linkcode ProblemDetails}.
+ * Parses a plain JSON value into a {@linkcode ProblemDetails}.
  *
  * Returns the standard members plus any extension members as a flat object.
- * Standard members with invalid types are ignored per RFC 9457 §3.1. Does not
- * throw on missing fields — the RFC makes all members optional. Extension
- * member types provided via `T` are asserted at the type level only — values
- * are not validated at runtime.
+ * Standard members with invalid types are silently dropped per RFC 9457 §3.1.
+ * Does not throw on missing fields — the RFC makes all members optional.
+ * Extension member types provided via `T` are asserted at the type level only;
+ * values are not validated at runtime.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam T The type of extension members expected in the parsed result.
  *
- * @param input A plain JSON object to parse as problem details.
+ * @param input A JSON value to parse as problem details.
  *
  * @returns The parsed problem details.
+ *
+ * @throws {TypeError} If `input` is not a non-null, non-array object.
  *
  * @example Parse from a plain object
  * ```ts
@@ -323,20 +314,54 @@ export function parseProblemDetails<
  * ```
  */
 export function parseProblemDetails<
-  T extends ProblemDetailsExtensions = Record<never, never>,
->(input: Record<string, unknown>): ProblemDetails<T>;
-
-export function parseProblemDetails<
-  T extends ProblemDetailsExtensions = Record<never, never>,
->(
-  input: Response | Record<string, unknown>,
-): Promise<ProblemDetails<T>> | ProblemDetails<T> {
-  if (input instanceof Response) {
-    return input.json().then((raw: Record<string, unknown>) =>
-      normalizeParsedProblemDetails(raw) as ProblemDetails<T>
-    );
-  }
+  T extends ProblemDetailsExtensions = Record<string, never>,
+>(input: unknown): ProblemDetails<T> {
   return normalizeParsedProblemDetails(input) as ProblemDetails<T>;
+}
+
+/**
+ * Parses a `Response` body into a {@linkcode ProblemDetails}.
+ *
+ * Reads the response body as JSON and delegates to
+ * {@linkcode parseProblemDetails}. Standard members with invalid types are
+ * silently dropped per RFC 9457 §3.1. Does not throw on missing fields — the
+ * RFC makes all members optional. Extension member types provided via `T` are
+ * asserted at the type level only; values are not validated at runtime.
+ *
+ * Note: this consumes the response body. The `Response` cannot be re-read
+ * after this call.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @typeParam T The type of extension members expected in the parsed result.
+ *
+ * @param input The `Response` whose JSON body will be parsed.
+ *
+ * @returns A promise that resolves to the parsed problem details.
+ *
+ * @throws {TypeError} If the response body parses to a value that is not a
+ * non-null, non-array object.
+ * @throws {SyntaxError} If the response body is not valid JSON.
+ *
+ * @example Parse from a Response
+ * ```ts
+ * import { parseProblemDetailsResponse } from "@std/http/unstable-problem-details";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const response = new Response(
+ *   JSON.stringify({ type: "about:blank", status: 404, title: "Not Found" }),
+ *   { headers: { "Content-Type": "application/problem+json" } },
+ * );
+ * const problem = await parseProblemDetailsResponse(response);
+ * assertEquals(problem.status, 404);
+ * assertEquals(problem.title, "Not Found");
+ * ```
+ */
+export async function parseProblemDetailsResponse<
+  T extends ProblemDetailsExtensions = Record<string, never>,
+>(input: Response): Promise<ProblemDetails<T>> {
+  const raw = await input.json();
+  return normalizeParsedProblemDetails(raw) as ProblemDetails<T>;
 }
 
 /**
@@ -344,7 +369,8 @@ export function parseProblemDetails<
  * `application/problem+json` content type.
  *
  * The media type is compared without parameters (e.g. `charset=utf-8` is
- * ignored).
+ * ignored). Only `application/problem+json` is recognized; any other media
+ * type returns `false`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -357,12 +383,12 @@ export function parseProblemDetails<
  * ```ts ignore
  * import {
  *   isProblemDetailsResponse,
- *   parseProblemDetails,
+ *   parseProblemDetailsResponse,
  * } from "@std/http/unstable-problem-details";
  *
  * const response = await fetch("https://api.example.com/resource");
  * if (isProblemDetailsResponse(response)) {
- *   const problem = await parseProblemDetails(response);
+ *   const problem = await parseProblemDetailsResponse(response);
  *   console.error(problem.detail);
  * }
  * ```

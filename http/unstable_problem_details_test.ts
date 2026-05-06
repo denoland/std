@@ -6,6 +6,7 @@ import {
   createProblemDetailsResponse,
   isProblemDetailsResponse,
   parseProblemDetails,
+  parseProblemDetailsResponse,
   type ProblemDetails,
   type StandardProblemDetailsMember,
 } from "./unstable_problem_details.ts";
@@ -68,12 +69,14 @@ Deno.test("createProblemDetailsResponse() does not override explicit title for a
   assertEquals(body.title, "Custom title");
 });
 
-Deno.test("createProblemDetailsResponse() custom type does not auto-populate title", async () => {
+Deno.test("createProblemDetailsResponse() custom type does not auto-populate title from STATUS_TEXT", async () => {
   const response = createProblemDetailsResponse({
     type: "https://example.com/problems/out-of-stock",
-    status: 409,
+    status: 404,
   });
   const body = await response.json();
+  assertEquals(body.type, "https://example.com/problems/out-of-stock");
+  assertEquals(body.status, 404);
   assertEquals(body.title, undefined);
 });
 
@@ -130,26 +133,56 @@ Deno.test("createProblemDetailsResponse() all five standard members round-trip",
   assertEquals(body.instance, "/orders/123");
 });
 
-// --- parseProblemDetails (Response) ---
+Deno.test("createProblemDetailsResponse() throws RangeError for non-integer status", () => {
+  for (
+    const value of [
+      NaN,
+      Infinity,
+      -Infinity,
+      3.14,
+      "500",
+    ] as unknown[]
+  ) {
+    assertThrows(
+      () =>
+        createProblemDetailsResponse(
+          { status: value } as unknown as ProblemDetails,
+        ),
+      RangeError,
+      "Cannot create Problem Details response: status must be a finite integer",
+    );
+  }
+});
 
-Deno.test("parseProblemDetails() from Response returns correct fields", async () => {
-  const response = new Response(
-    JSON.stringify({
-      type: "about:blank",
-      status: 400,
-      title: "Bad Request",
-      detail: "Invalid payload",
-    }),
+Deno.test("createProblemDetailsResponse() forwards statusText to the response", () => {
+  const response = createProblemDetailsResponse(
+    { status: 418 },
+    { statusText: "I'm a teapot, actually" },
+  );
+  assertEquals(response.status, 418);
+  assertEquals(response.statusText, "I'm a teapot, actually");
+});
+
+Deno.test("createProblemDetailsResponse() forwards statusText alongside custom headers", () => {
+  const response = createProblemDetailsResponse(
+    { status: 400 },
     {
-      headers: { "Content-Type": "application/problem+json" },
+      headers: { "X-Trace-Id": "trace-1" },
+      statusText: "Bad Input",
     },
   );
-  const problem = await parseProblemDetails(response);
-  assertEquals(problem.type, "about:blank");
-  assertEquals(problem.status, 400);
-  assertEquals(problem.title, "Bad Request");
-  assertEquals(problem.detail, "Invalid payload");
+  assertEquals(response.statusText, "Bad Input");
+  assertEquals(response.headers.get("X-Trace-Id"), "trace-1");
 });
+
+Deno.test("createProblemDetailsResponse() leaves statusText empty when not provided", () => {
+  // Per the Fetch spec, Response.statusText defaults to the empty byte
+  // sequence; we do not synthesize one from STATUS_TEXT.
+  const response = createProblemDetailsResponse({ status: 404 });
+  assertEquals(response.statusText, "");
+});
+
+// --- parseProblemDetails (plain value) ---
 
 Deno.test("parseProblemDetails() from plain object returns correct fields with extensions", () => {
   const problem = parseProblemDetails<{ balance: number; accounts: string[] }>({
@@ -170,6 +203,13 @@ Deno.test("parseProblemDetails() from plain object returns correct fields with e
   assertEquals(problem.accounts, ["/a", "/b"]);
 });
 
+Deno.test("parseProblemDetails() accepts unknown input and validates at runtime", () => {
+  const json: unknown = JSON.parse('{"status":400,"detail":"bad"}');
+  const problem = parseProblemDetails(json);
+  assertEquals(problem.status, 400);
+  assertEquals(problem.detail, "bad");
+});
+
 Deno.test("parseProblemDetails() ignores status when not a finite integer", () => {
   for (
     const value of [
@@ -179,9 +219,7 @@ Deno.test("parseProblemDetails() ignores status when not a finite integer", () =
       404.5,
     ] as unknown[]
   ) {
-    const problem = parseProblemDetails(
-      { status: value } as Record<string, unknown>,
-    );
+    const problem = parseProblemDetails({ status: value });
     assertEquals(
       problem.status,
       undefined,
@@ -228,9 +266,20 @@ Deno.test("parseProblemDetails() excludes inherited prototype properties", () =>
   );
 });
 
+Deno.test("parseProblemDetails() preserves extension keys that look like standard members but with wrong type", () => {
+  // Standard members with invalid types are dropped per RFC 9457 §3.1; they
+  // are not promoted into the extensions bag.
+  const problem = parseProblemDetails({
+    type: 123,
+    extra: "kept",
+  });
+  assertEquals(problem.type, undefined);
+  assertEquals((problem as Record<string, unknown>).extra, "kept");
+});
+
 Deno.test("parseProblemDetails() throws TypeError for null input", () => {
   assertThrows(
-    () => parseProblemDetails(null as unknown as Record<string, unknown>),
+    () => parseProblemDetails(null),
     TypeError,
     "Cannot parse Problem Details: expected a JSON object",
   );
@@ -238,7 +287,7 @@ Deno.test("parseProblemDetails() throws TypeError for null input", () => {
 
 Deno.test("parseProblemDetails() throws TypeError for array input", () => {
   assertThrows(
-    () => parseProblemDetails([] as unknown as Record<string, unknown>),
+    () => parseProblemDetails([]),
     TypeError,
     "Cannot parse Problem Details: expected a JSON object",
   );
@@ -246,29 +295,74 @@ Deno.test("parseProblemDetails() throws TypeError for array input", () => {
 
 Deno.test("parseProblemDetails() throws TypeError for primitive input", () => {
   assertThrows(
-    () => parseProblemDetails("string" as unknown as Record<string, unknown>),
+    () => parseProblemDetails("string"),
+    TypeError,
+    "Cannot parse Problem Details: expected a JSON object",
+  );
+  assertThrows(
+    () => parseProblemDetails(42),
+    TypeError,
+    "Cannot parse Problem Details: expected a JSON object",
+  );
+  assertThrows(
+    () => parseProblemDetails(true),
     TypeError,
     "Cannot parse Problem Details: expected a JSON object",
   );
 });
 
-Deno.test("parseProblemDetails() from Response rejects for non-JSON body", async () => {
+// --- parseProblemDetailsResponse ---
+
+Deno.test("parseProblemDetailsResponse() returns correct fields", async () => {
+  const response = new Response(
+    JSON.stringify({
+      type: "about:blank",
+      status: 400,
+      title: "Bad Request",
+      detail: "Invalid payload",
+    }),
+    {
+      headers: { "Content-Type": "application/problem+json" },
+    },
+  );
+  const problem = await parseProblemDetailsResponse(response);
+  assertEquals(problem.type, "about:blank");
+  assertEquals(problem.status, 400);
+  assertEquals(problem.title, "Bad Request");
+  assertEquals(problem.detail, "Invalid payload");
+});
+
+Deno.test("parseProblemDetailsResponse() rejects with SyntaxError for non-JSON body", async () => {
   const response = new Response("not json", {
     headers: { "Content-Type": "application/problem+json" },
   });
   await assertRejects(
-    () => parseProblemDetails(response),
+    () => parseProblemDetailsResponse(response),
     SyntaxError,
   );
 });
 
-Deno.test("parseProblemDetails() from Response rejects for JSON array body", async () => {
+Deno.test("parseProblemDetailsResponse() rejects with TypeError for JSON array body", async () => {
   const response = new Response(JSON.stringify([1, 2, 3]));
   await assertRejects(
-    () => parseProblemDetails(response),
+    () => parseProblemDetailsResponse(response),
     TypeError,
     "Cannot parse Problem Details: expected a JSON object",
   );
+});
+
+Deno.test("parseProblemDetailsResponse() rejects with TypeError for JSON primitive body", async () => {
+  for (const body of ["true", "42", '"hello"', "null"]) {
+    const response = new Response(body, {
+      headers: { "Content-Type": "application/problem+json" },
+    });
+    await assertRejects(
+      () => parseProblemDetailsResponse(response),
+      TypeError,
+      "Cannot parse Problem Details: expected a JSON object",
+      `body=${body} should be rejected`,
+    );
+  }
 });
 
 // --- isProblemDetailsResponse ---
@@ -296,6 +390,13 @@ Deno.test("isProblemDetailsResponse() returns false for application/json", () =>
   assertEquals(isProblemDetailsResponse(response), false);
 });
 
+Deno.test("isProblemDetailsResponse() returns false for application/problem+xml", () => {
+  const response = new Response(null, {
+    headers: { "Content-Type": "application/problem+xml" },
+  });
+  assertEquals(isProblemDetailsResponse(response), false);
+});
+
 Deno.test("isProblemDetailsResponse() returns false for missing Content-Type", () => {
   const response = new Response(null);
   assertEquals(isProblemDetailsResponse(response), false);
@@ -310,13 +411,13 @@ Deno.test("isProblemDetailsResponse() is case insensitive", () => {
 
 // --- Round-trip tests ---
 
-Deno.test("createProblemDetailsResponse() then parseProblemDetails() round-trips with extensions", async () => {
+Deno.test("createProblemDetailsResponse() then parseProblemDetailsResponse() round-trips with extensions", async () => {
   const response = createProblemDetailsResponse({
     status: 422,
     detail: "Validation failed",
     errors: [{ field: "email", message: "required" }],
   });
-  const parsed = await parseProblemDetails<
+  const parsed = await parseProblemDetailsResponse<
     { errors: { field: string; message: string }[] }
   >(response);
   assertEquals(parsed.type, "about:blank");
