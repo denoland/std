@@ -130,7 +130,7 @@ Deno.test("abortable.AsyncIterable() handles already aborted signal", async () =
 Deno.test("abortable.AsyncIterable() calls return before throwing", async () => {
   const c = new AbortController();
   let returnCalled = false;
-  let timeoutId: number;
+  let timeoutId;
   const iterable: AsyncIterable<string> = {
     [Symbol.asyncIterator]: () => ({
       next: () =>
