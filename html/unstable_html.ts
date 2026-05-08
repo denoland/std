@@ -5,6 +5,8 @@
  * A template literal tag function for creating HTML strings with interpolated
  * values.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
  * This function processes template literals and concatenates them with
  * interpolated values. Values are inserted as-is without any HTML escaping or
  * sanitization. Undefined values are treated as empty strings.
