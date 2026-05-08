@@ -3,6 +3,7 @@ import { assertEquals } from "@std/assert";
 import * as posix from "./posix/mod.ts";
 import * as windows from "./windows/mod.ts";
 import { join } from "./join.ts";
+import process from "node:process";
 
 const backslashRE = /\\/g;
 
@@ -172,7 +173,7 @@ Deno.test(`join() returns "." if input is empty`, function () {
   assertEquals(join(""), ".");
   assertEquals(join("", ""), ".");
 
-  const pwd = Deno.cwd();
+  const pwd = process.cwd();
   assertEquals(join(pwd), pwd);
   assertEquals(join(pwd, ""), pwd);
 });
