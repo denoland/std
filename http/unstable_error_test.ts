@@ -53,4 +53,13 @@ Deno.test("HttpError", async (t) => {
       );
     },
   );
+
+  await t.step(
+    "init.statusText reflects standard HTTP text, not custom message",
+    () => {
+      const error = new HttpError(403, "Access denied for this resource");
+      assertEquals(error.message, "Access denied for this resource");
+      assertEquals(error.init.statusText, "Forbidden");
+    },
+  );
 });

@@ -24,6 +24,7 @@ export interface HttpErrorOptions extends ErrorOptions {
  * It's commonly used in route handlers to signal HTTP errors that should be
  * returned to the client.
  *
+ * @param status The HTTP status code (e.g., 404, 500, 403)
  * @param message Optional error message. Defaults to the standard status text for the given status code
  * @param options Optional error options including cause and response init configuration
  *
@@ -114,6 +115,10 @@ export class HttpError extends Error {
   status: ErrorStatus;
   /**
    * Configuration options for the HTTP response associated with this error.
+   *
+   * `init.status` and `init.statusText` always reflect the standard HTTP
+   * values for the given status code. A custom `message` passed to the
+   * constructor does not affect `init.statusText`.
    *
    * @example Usage
    * ```ts
