@@ -14,10 +14,10 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 ## Resources
 
 - [Package list](https://jsr.io/@std)
-- [Architecture guide](./.github/ARCHITECTURE.md)
+- [Architecture guide](.github/ARCHITECTURE.md)
 - [Design documentation](.github/ARCHITECTURE.md#design)
 - [Contributing guidelines](.github/CONTRIBUTING.md)
-- [Frequently asked questions (FAQ)](./.github/FAQ.md)
+- [Frequently asked questions (FAQ)](.github/FAQ.md)
 - [Test coverage explorer](https://std-coverage.deno.dev/)
 
 ## Releases
