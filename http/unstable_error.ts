@@ -162,6 +162,6 @@ export class HttpError extends Error {
     super(message, options);
     this.name = this.constructor.name;
     this.status = status;
-    this.init = { ...options?.init, status, statusText: STATUS_TEXT[status] };
+    this.init = { status, ...options?.init };
   }
 }

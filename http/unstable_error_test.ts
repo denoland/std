@@ -12,7 +12,6 @@ Deno.test("HttpError", async (t) => {
     assertEquals(error.cause, undefined);
     assertEquals(error.init, {
       status: 500,
-      statusText: "Internal Server Error",
     });
   });
 
