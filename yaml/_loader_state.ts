@@ -64,7 +64,7 @@ export interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error: Error): void;
+  onWarning?(error: SyntaxError): void;
 }
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
@@ -229,7 +229,7 @@ export class LoaderState {
   lineIndent = 0;
   lineStart = 0;
   line = 0;
-  onWarning: ((error: Error) => void) | undefined;
+  onWarning: ((error: SyntaxError) => void) | undefined;
   allowDuplicateKeys: boolean;
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
