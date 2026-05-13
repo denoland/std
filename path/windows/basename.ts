@@ -30,6 +30,7 @@ import { fromFileUrl } from "./from_file_url.ts";
  * @param path The path to extract the name from.
  * @param suffix The suffix to remove from extracted name.
  * @returns The extracted name.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
  */
 export function basename(path: string | URL, suffix = ""): string {
   if (path instanceof URL) {

@@ -25,10 +25,13 @@ import { basename as windowsBasename } from "./windows/basename.ts";
  * }
  * ```
  *
- * @param path Path to extract the name from.
+ * @param path Path to extract the name from. When passed as a `URL`
+ * instance, its protocol must be `file:`. For other protocols, pass the URL
+ * as a string or pass its `pathname` property.
  * @param suffix Suffix to remove from extracted name.
  *
  * @returns The basename of the path.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
  */
 export function basename(path: string | URL, suffix = ""): string {
   return isWindows
