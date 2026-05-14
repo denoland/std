@@ -375,7 +375,9 @@ export async function* expandGlob(
       (entry: WalkEntry): boolean => !entry.isDirectory,
     );
   }
-  yield* currentMatches;
+  for (const match of currentMatches) {
+    yield match;
+  }
 }
 
 /**
@@ -530,7 +532,9 @@ export function* expandGlobSync(
       (entry: WalkEntry): boolean => !entry.isDirectory,
     );
   }
-  yield* currentMatches;
+  for (const match of currentMatches) {
+    yield match;
+  }
 }
 
 const globEscapeChar =

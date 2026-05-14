@@ -11,6 +11,7 @@ import {
   expandGlob,
   type ExpandGlobOptions,
   expandGlobSync,
+  type WalkEntry,
 } from "./expand_glob.ts";
 
 async function expandGlobArray(
@@ -465,26 +466,21 @@ Deno.test("expandGlobSync() finds directory with escaped brackets", function () 
   );
 });
 
-Deno.test("expandGlobSync() returns a generator that exposes iterator helpers", () => {
-  // Regression test for https://github.com/denoland/std/issues/7099
-  // `expandGlobSync` is a generator function, so the returned value exposes
-  // the ES2025 iterator helpers (`.map`, `.filter`, etc.) at the type level.
-  const names = expandGlobSync("*", EG_OPTIONS)
-    .map((entry) => entry.name)
-    .toArray();
-  assert(names.length > 0);
-  for (const name of names) {
-    assertEquals(typeof name, "string");
-  }
+Deno.test("expandGlobSync() preserves the Generator return type", () => {
+  // Regression test for https://github.com/denoland/std/issues/7099:
+  // the return type must be `Generator<WalkEntry>` so the ES2025 iterator
+  // helpers (`.map`, `.filter`, etc.) are exposed at the type level wherever
+  // the host TypeScript lib defines them. `Generator<T>` requires the
+  // `.return()` / `.throw()` methods that `IterableIterator<T>` leaves
+  // optional, so this assignment fails if the return type is widened back
+  // to `IterableIterator<WalkEntry>`.
+  const iter: Generator<WalkEntry> = expandGlobSync("*", EG_OPTIONS);
+  iter.return(undefined);
 });
 
-Deno.test("expandGlob() returns an async generator", async () => {
-  // Regression test for https://github.com/denoland/std/issues/7099
-  // `expandGlob` is annotated as `AsyncGenerator<WalkEntry>` so it can be
-  // combined with future async iterator helpers without the type widening to
-  // the helper-free `AsyncIterableIterator`.
-  const iter = expandGlob("*", EG_OPTIONS);
-  const next = await iter.next();
-  assertEquals(typeof next.value?.name, "string");
+Deno.test("expandGlob() preserves the AsyncGenerator return type", async () => {
+  // Regression test for https://github.com/denoland/std/issues/7099 — see the
+  // sync counterpart for rationale.
+  const iter: AsyncGenerator<WalkEntry> = expandGlob("*", EG_OPTIONS);
   await iter.return(undefined);
 });
