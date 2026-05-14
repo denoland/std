@@ -834,7 +834,7 @@ function addHook<T>(
     TestSuiteInternal.current = new TestSuiteInternal({
       name: "global",
       [name]: fn,
-    });
+    }, true);
   } else {
     TestSuiteInternal.setHook(TestSuiteInternal.current!, name, fn);
   }
