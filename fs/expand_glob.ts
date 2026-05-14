@@ -271,7 +271,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
 export async function* expandGlob(
   glob: string | URL,
   options?: ExpandGlobOptions,
-): AsyncIterableIterator<WalkEntry> {
+): AsyncGenerator<WalkEntry> {
   let {
     root,
     exclude = [],
@@ -428,7 +428,7 @@ export async function* expandGlob(
 export function* expandGlobSync(
   glob: string | URL,
   options?: ExpandGlobOptions,
-): IterableIterator<WalkEntry> {
+): Generator<WalkEntry> {
   let {
     root,
     exclude = [],

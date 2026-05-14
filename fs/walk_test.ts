@@ -338,6 +338,26 @@ Deno.test({
   },
 });
 
+Deno.test("walkSync() returns a generator that exposes iterator helpers", () => {
+  // Regression test for https://github.com/denoland/std/issues/7099
+  // `walkSync` is a generator function, so the returned value exposes the
+  // ES2025 iterator helpers (`.map`, `.filter`, etc.) at the type level.
+  const iter = walkSync(testdataDir);
+  const names = iter.map((entry) => entry.name).toArray();
+  assertEquals(typeof names[0], "string");
+});
+
+Deno.test("walk() returns an async generator", async () => {
+  // Regression test for https://github.com/denoland/std/issues/7099
+  // `walk` is annotated as `AsyncGenerator<WalkEntry>` so it can be combined
+  // with future async iterator helpers without the type widening to the
+  // helper-free `AsyncIterableIterator`.
+  const iter = walk(testdataDir);
+  const next = await iter.next();
+  assertEquals(typeof next.value?.name, "string");
+  await iter.return(undefined);
+});
+
 Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed during execution", async () => {
   const tempDirPath = await Deno.makeTempDir({
     prefix: "deno_std_walk_",

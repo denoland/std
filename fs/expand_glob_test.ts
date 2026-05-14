@@ -464,3 +464,27 @@ Deno.test("expandGlobSync() finds directory with escaped brackets", function () 
     [join("a[b]c", "foo")],
   );
 });
+
+Deno.test("expandGlobSync() returns a generator that exposes iterator helpers", () => {
+  // Regression test for https://github.com/denoland/std/issues/7099
+  // `expandGlobSync` is a generator function, so the returned value exposes
+  // the ES2025 iterator helpers (`.map`, `.filter`, etc.) at the type level.
+  const names = expandGlobSync("*", EG_OPTIONS)
+    .map((entry) => entry.name)
+    .toArray();
+  assert(names.length > 0);
+  for (const name of names) {
+    assertEquals(typeof name, "string");
+  }
+});
+
+Deno.test("expandGlob() returns an async generator", async () => {
+  // Regression test for https://github.com/denoland/std/issues/7099
+  // `expandGlob` is annotated as `AsyncGenerator<WalkEntry>` so it can be
+  // combined with future async iterator helpers without the type widening to
+  // the helper-free `AsyncIterableIterator`.
+  const iter = expandGlob("*", EG_OPTIONS);
+  const next = await iter.next();
+  assertEquals(typeof next.value?.name, "string");
+  await iter.return(undefined);
+});
