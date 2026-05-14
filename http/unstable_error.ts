@@ -116,9 +116,8 @@ export class HttpError extends Error {
   /**
    * Configuration options for the HTTP response associated with this error.
    *
-   * `init.status` and `init.statusText` always reflect the standard HTTP
-   * values for the given status code. A custom `message` passed to the
-   * constructor does not affect `init.statusText`.
+   * `init.status` always reflects the standard HTTP value for the given status
+   * code.
    *
    * @example Usage
    * ```ts
@@ -144,11 +143,6 @@ export class HttpError extends Error {
 
   /**
    * Constructs a new instance.
-   *
-   * Extends the standard {@linkcode Error} class to include HTTP-specific
-   * properties such as status codes and optional response initialization options.
-   * It's commonly used in route handlers to signal HTTP errors that should be
-   * returned to the client.
    *
    * @param status The HTTP status code (e.g., 404, 500, 403)
    * @param message Optional error message. Defaults to the standard status text for the given status code
