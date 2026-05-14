@@ -347,26 +347,54 @@ x,,,
         columns: ["foo", "bar", "baz"],
       },
       {
-        name: "mismatching number of headers and fields 1",
+        name:
+          "variable-length records: short row yields undefined for missing fields (skipFirstRow + columns)",
         input: "a,b,c\nd,e",
+        output: [{ foo: "d", bar: "e", baz: undefined }],
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
-        error: {
-          klass: Error,
-          msg:
-            "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
-        },
       },
       {
-        name: "mismatching number of headers and fields 2",
+        name:
+          "variable-length records: extra fields are ignored (skipFirstRow + columns)",
         input: "a,b,c\nd,e,,g",
+        output: [{ foo: "d", bar: "e", baz: "" }],
         skipFirstRow: true,
         columns: ["foo", "bar", "baz"],
-        error: {
-          klass: Error,
-          msg:
-            "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
-        },
+      },
+      {
+        name:
+          "fieldsPerRecord: -1 with skipFirstRow: true tolerates short rows (issue #6434)",
+        input: "name,age\nAlice,34\nBob\n",
+        output: [
+          { name: "Alice", age: "34" },
+          { name: "Bob", age: undefined },
+        ],
+        fieldsPerRecord: -1,
+        skipFirstRow: true,
+      },
+      {
+        name:
+          "fieldsPerRecord: -1 with columns tolerates short rows (issue #6434)",
+        input: "Alice,34\nBob\n",
+        output: [
+          { name: "Alice", age: "34" },
+          { name: "Bob", age: undefined },
+        ],
+        fieldsPerRecord: -1,
+        columns: ["name", "age"],
+      },
+      {
+        name:
+          "fieldsPerRecord: -1 with skipFirstRow and columns tolerates short rows (issue #6434)",
+        input: "header1,header2\nAlice,34\nBob\n",
+        output: [
+          { name: "Alice", age: "34" },
+          { name: "Bob", age: undefined },
+        ],
+        fieldsPerRecord: -1,
+        skipFirstRow: true,
+        columns: ["name", "age"],
       },
       {
         name: "bad quote in bare field",
@@ -491,13 +519,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is ReadableStream<string[] | Record<string, string>>
+      // the return type is ReadableStream<string[] | Record<string, string | undefined>>
       const options: CsvParseStreamOptions = {};
       const { readable } = new CsvParseStream(options);
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<string[] | Record<string, string>>
+          ReadableStream<string[] | Record<string, string | undefined>>
         >
       >;
     }
@@ -520,7 +548,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string>>
+          ReadableStream<Record<string, string | undefined>>
         >
       >;
     }
@@ -533,7 +561,10 @@ Deno.test({
     {
       const { readable } = new CsvParseStream({ columns: ["aaa", "bbb"] });
       type _ = AssertTrue<
-        IsExact<typeof readable, ReadableStream<Record<"aaa" | "bbb", string>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<"aaa" | "bbb", string | undefined>>
+        >
       >;
     }
     {
@@ -541,7 +572,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string>>
+          ReadableStream<Record<string, string | undefined>>
         >
       >;
     }
@@ -556,7 +587,7 @@ Deno.test({
       type _ = AssertTrue<
         IsExact<
           typeof readable,
-          ReadableStream<Record<string, string>>
+          ReadableStream<Record<string, string | undefined>>
         >
       >;
     }
@@ -566,7 +597,10 @@ Deno.test({
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<"aaa", string | undefined>>
+        >
       >;
     }
     {
@@ -575,7 +609,10 @@ Deno.test({
         columns: ["aaa"],
       });
       type _ = AssertTrue<
-        IsExact<typeof readable, ReadableStream<Record<"aaa", string>>>
+        IsExact<
+          typeof readable,
+          ReadableStream<Record<"aaa", string | undefined>>
+        >
       >;
     }
   },

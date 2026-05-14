@@ -831,32 +831,95 @@ c"d,e`;
       },
     });
     await t.step({
-      name: "mismatching number of headers and fields 1",
+      name:
+        "variable-length records: short row yields undefined for missing fields (skipFirstRow + columns)",
       fn() {
         const input = "a,b,c\nd,e";
-        assertThrows(
-          () =>
-            parse(input, {
-              skipFirstRow: true,
-              columns: ["foo", "bar", "baz"],
-            }),
-          Error,
-          "Syntax error on line 2: The record has 2 fields, but the header has 3 fields",
+        assertEquals(
+          parse(input, {
+            skipFirstRow: true,
+            columns: ["foo", "bar", "baz"],
+          }),
+          [{ foo: "d", bar: "e", baz: undefined }],
         );
       },
     });
     await t.step({
-      name: "mismatching number of headers and fields 2",
+      name:
+        "variable-length records: extra fields are ignored (skipFirstRow + columns)",
       fn() {
         const input = "a,b,c\nd,e,,g";
+        assertEquals(
+          parse(input, {
+            skipFirstRow: true,
+            columns: ["foo", "bar", "baz"],
+          }),
+          [{ foo: "d", bar: "e", baz: "" }],
+        );
+      },
+    });
+    await t.step({
+      name:
+        "mismatching number of headers and fields throws when fieldsPerRecord enforces strict mode",
+      fn() {
+        const input = "a,b\nc,d";
         assertThrows(
           () =>
             parse(input, {
-              skipFirstRow: true,
-              columns: ["foo", "bar", "baz"],
+              columns: ["foo"],
+              fieldsPerRecord: 2,
             }),
           Error,
-          "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
+          "Syntax error on line 1: The record has 2 fields, but the header has 1 fields",
+        );
+      },
+    });
+    await t.step({
+      name:
+        "fieldsPerRecord: -1 with skipFirstRow: true tolerates short rows (issue #6434)",
+      fn() {
+        const input = "name,age\nAlice,34\nBob\n";
+        assertEquals(
+          parse(input, { fieldsPerRecord: -1, skipFirstRow: true }),
+          [
+            { name: "Alice", age: "34" },
+            { name: "Bob", age: undefined },
+          ],
+        );
+      },
+    });
+    await t.step({
+      name:
+        "fieldsPerRecord: -1 with columns tolerates short rows (issue #6434)",
+      fn() {
+        const input = "Alice,34\nBob\n";
+        assertEquals(
+          parse(input, {
+            fieldsPerRecord: -1,
+            columns: ["name", "age"],
+          }),
+          [
+            { name: "Alice", age: "34" },
+            { name: "Bob", age: undefined },
+          ],
+        );
+      },
+    });
+    await t.step({
+      name:
+        "fieldsPerRecord: -1 with skipFirstRow and columns tolerates short rows (issue #6434)",
+      fn() {
+        const input = "header1,header2\nAlice,34\nBob\n";
+        assertEquals(
+          parse(input, {
+            fieldsPerRecord: -1,
+            skipFirstRow: true,
+            columns: ["name", "age"],
+          }),
+          [
+            { name: "Alice", age: "34" },
+            { name: "Bob", age: undefined },
+          ],
         );
       },
     });
@@ -943,13 +1006,13 @@ Deno.test({
       // `skipFirstRow` may be `true` or `false`.
       // `columns` may be `undefined` or `string[]`.
       // If you don't know exactly what the value of the option is,
-      // the return type is string[][] | Record<string, string>[]
+      // the return type is string[][] | Record<string, string | undefined>[]
       const options: ParseOptions = {};
       const parsed = parse("a\nb", options);
       type _ = AssertTrue<
         IsExact<
           typeof parsed,
-          string[][] | Record<string, string>[]
+          string[][] | Record<string, string | undefined>[]
         >
       >;
     }
@@ -970,7 +1033,7 @@ Deno.test({
     {
       const parsed = parse("a\nb", { skipFirstRow: true });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string>[]>
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
       >;
     }
 
@@ -982,13 +1045,13 @@ Deno.test({
     {
       const parsed = parse("a,b\nc,d", { columns: ["aaa", "bbb"] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<"aaa" | "bbb", string>[]>
+        IsExact<typeof parsed, Record<"aaa" | "bbb", string | undefined>[]>
       >;
     }
     {
       const parsed = parse("a\nb", { columns: ["aaa"] as string[] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string>[]>
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
       >;
     }
 
@@ -1006,19 +1069,19 @@ Deno.test({
         { skipFirstRow: true },
       );
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<string, string>[]>
+        IsExact<typeof parsed, Record<string, string | undefined>[]>
       >;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: false, columns: ["aaa"] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<"aaa", string>[]>
+        IsExact<typeof parsed, Record<"aaa", string | undefined>[]>
       >;
     }
     {
       const parsed = parse("a\nb", { skipFirstRow: true, columns: ["aaa"] });
       type _ = AssertTrue<
-        IsExact<typeof parsed, Record<"aaa", string>[]>
+        IsExact<typeof parsed, Record<"aaa", string | undefined>[]>
       >;
     }
   },
