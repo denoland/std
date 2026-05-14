@@ -83,4 +83,24 @@ Deno.test("stringify()", async (t) => {
       stringify({ PARSE: "par'se" }),
       `PARSE="par'se"`,
     ));
+  await t.step("handles double-quote characters", () =>
+    assertEquals(
+      stringify({ JSON: '{"key":"value"}' }),
+      `JSON='{"key":"value"}'`,
+    ));
+  await t.step("handles both quote characters", () =>
+    assertEquals(
+      stringify({ MIXED: `a'b"c` }),
+      `MIXED="a'b\\"c"`,
+    ));
+  await t.step("handles backslash with double quotes", () =>
+    assertEquals(
+      stringify({ BS: String.raw`test\"value` }),
+      `BS="test\\\\\\"value"`,
+    ));
+  await t.step("handles newline with single quotes", () =>
+    assertEquals(
+      stringify({ NL: "hello\nit's me" }),
+      `NL="hello\\nit's me"`,
+    ));
 });

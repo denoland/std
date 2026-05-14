@@ -19,7 +19,7 @@
 export function stringify(object: Record<string, string>): string {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object)) {
-    let quote;
+    let quote: string | undefined;
 
     let escapedValue = value ?? "";
     if (key.startsWith("#")) {
@@ -28,11 +28,21 @@ export function stringify(object: Record<string, string>): string {
         `key starts with a '#' indicates a comment and is ignored: '${key}'`,
       );
       continue;
-    } else if (escapedValue.includes("\n") || escapedValue.includes("'")) {
-      // escape inner new lines
-      escapedValue = escapedValue.replaceAll("\n", "\\n");
+    }
+
+    const hasNewline = escapedValue.includes("\n");
+    const hasSingleQuote = escapedValue.includes("'");
+    const hasDoubleQuote = escapedValue.includes('"');
+
+    // Use double quotes when the value contains newlines (so they can be
+    // expanded back) or single quotes (which are safe inside double quotes).
+    if (hasNewline || hasSingleQuote) {
       quote = `"`;
-    } else if (escapedValue.match(/\W/)) {
+      // Escape backslashes first so that existing backslashes are not
+      // confused with escape sequences when parsed.
+      escapedValue = escapedValue.replaceAll("\\", "\\\\");
+      if (hasNewline) escapedValue = escapedValue.replaceAll("\n", "\\n");
+    } else if (hasDoubleQuote || escapedValue.match(/\W/)) {
       quote = "'";
     }
 
