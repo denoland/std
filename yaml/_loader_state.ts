@@ -451,12 +451,21 @@ export class LoaderState {
 
     for (const [key, value] of Object.entries(source)) {
       if (Object.hasOwn(destination, key)) continue;
-      Object.defineProperty(destination, key, {
-        value,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
+      // `Object.defineProperty` is significantly slower than direct
+      // assignment in V8. Direct assignment produces an identical descriptor
+      // (writable/enumerable/configurable) for ordinary keys; the only
+      // sensitive case is `__proto__`, where direct assignment would mutate
+      // the prototype chain instead of creating an own property.
+      if (key === "__proto__") {
+        Object.defineProperty(destination, key, {
+          value,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        destination[key] = value;
+      }
       overridableKeys.add(key);
     }
   }
@@ -523,12 +532,18 @@ export class LoaderState {
         this.#scanner.position = startPos || this.#scanner.position;
         throw this.#createError("Cannot store mapping pair: duplicated key");
       }
-      Object.defineProperty(result, keyNode, {
-        value: valueNode,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
+      // See `mergeMappings` above for why `Object.defineProperty` is kept
+      // only for the `__proto__` key.
+      if (keyNode === "__proto__") {
+        Object.defineProperty(result, keyNode, {
+          value: valueNode,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        result[keyNode] = valueNode;
+      }
       overridableKeys.delete(keyNode);
     }
 
