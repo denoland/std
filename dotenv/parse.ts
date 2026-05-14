@@ -8,7 +8,7 @@ type LineParseResult = {
 };
 
 const KEY_VALUE_REGEXP =
-  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
+  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(?:.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(?:[^"\\]|\\.)*)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
 const VALID_KEY_REGEXP = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -19,11 +19,13 @@ const CHARACTERS_MAP: { [key: string]: string } = {
   "\\n": "\n",
   "\\r": "\r",
   "\\t": "\t",
+  '\\"': '"',
+  "\\\\": "\\",
 };
 
 function expandCharacters(str: string): string {
   return str.replace(
-    /\\([nrt])/g,
+    /\\([nrt"\\])/g,
     ($1: keyof typeof CHARACTERS_MAP): string => CHARACTERS_MAP[$1] ?? "",
   );
 }

@@ -284,3 +284,42 @@ Deno.test("parse() result is not affected by extended Object.prototype", () => {
   assertEquals(result.foo, undefined);
   assertEquals(result.bar, "1");
 });
+
+Deno.test("parse() round-trips through stringify()", async (t) => {
+  const { stringify } = await import("./stringify.ts");
+
+  await t.step("basic value", () => {
+    const original = { HELLO: "world" };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with spaces", () => {
+    const original = { GREETING: "hello world" };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with single quote", () => {
+    const original = { PARSE: "par'se" };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with double quote (JSON-like)", () => {
+    const original = { JSON: '{"key":"value"}' };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with both quote types", () => {
+    const original = { MIXED: `a'b"c` };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with newline", () => {
+    const original = { MULTILINE: "hello\nworld" };
+    assertEquals(parse(stringify(original)), original);
+  });
+
+  await t.step("value with backslash and quotes", () => {
+    const original = { BS: String.raw`test\"value` };
+    assertEquals(parse(stringify(original)), original);
+  });
+});
