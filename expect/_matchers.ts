@@ -27,7 +27,8 @@ import {
 } from "./_utils.ts";
 import {
   buildEqualErrorMessage,
-  buildNotEqualErrorMessage,
+  buildNotToMatchObjectErrorMessage,
+  buildToMatchObjectErrorMessage,
 } from "./_build_message.ts";
 import {
   escapeStringForJs,
@@ -595,7 +596,10 @@ export function toMatchObject(
 
   const triggerError = () => {
     if (context.isNot) {
-      const defaultMessage = buildNotEqualErrorMessage(received, expected);
+      const defaultMessage = buildNotToMatchObjectErrorMessage(
+        received,
+        expected,
+      );
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
@@ -603,7 +607,7 @@ export function toMatchObject(
       );
     } else {
       const subset = getObjectSubset(received, expected, context.customTesters);
-      const defaultMessage = buildEqualErrorMessage(subset, expected);
+      const defaultMessage = buildToMatchObjectErrorMessage(subset, expected);
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`
