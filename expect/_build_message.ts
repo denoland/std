@@ -49,3 +49,38 @@ export function buildNotEqualErrorMessage<T>(
   const msgPrefix = msg ? `${msg}: ` : "";
   return `${msgPrefix}Expected actual: ${actualString} not to be: ${expectedString}.`;
 }
+
+export function buildToMatchObjectErrorMessage<T>(
+  actual: T,
+  expected: T,
+  options: EqualErrorMessageOptions = {},
+): string {
+  const { formatter = format, msg } = options;
+  const msgPrefix = msg ? `${msg}: ` : "";
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
+
+  let message = `${msgPrefix}expect(received).toMatchObject(expected)`;
+
+  const stringDiff = isString(actual) && isString(expected);
+  const diffResult = stringDiff
+    ? diffStr(actual, expected)
+    : diff(actualString.split("\n"), expectedString.split("\n"));
+  const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+  message = `${message}\n${diffMsg}`;
+
+  return message;
+}
+
+export function buildNotToMatchObjectErrorMessage<T>(
+  actual: T,
+  expected: T,
+  options: EqualErrorMessageOptions = {},
+): string {
+  const { formatter = format, msg } = options;
+  const actualString = formatter(actual);
+  const expectedString = formatter(expected);
+
+  const msgPrefix = msg ? `${msg}: ` : "";
+  return `${msgPrefix}expect(received).not.toMatchObject(expected)\n\nExpected: not ${expectedString}\nReceived: ${actualString}`;
+}
