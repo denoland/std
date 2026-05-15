@@ -8,7 +8,7 @@ type LineParseResult = {
 };
 
 const KEY_VALUE_REGEXP =
-  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(.|\r\n|\n)*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
+  /^\s*(?:export\s+)?(?<key>[^\s=#]+?)\s*=[\ \t]*('\r?\n?(?<notInterpolated>(.|\r\n|\n)*?)\r?\n?'|"\r?\n?(?<interpolated>(?:[^"\\]|\\[\s\S])*?)\r?\n?"|(?<unquoted>[^\r\n#]*)) *#*.*$/gm;
 
 const VALID_KEY_REGEXP = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -19,12 +19,15 @@ const CHARACTERS_MAP: { [key: string]: string } = {
   "\\n": "\n",
   "\\r": "\r",
   "\\t": "\t",
+  '\\"': '"',
+  "\\'": "'",
+  "\\\\": "\\",
 };
 
 function expandCharacters(str: string): string {
   return str.replace(
-    /\\([nrt])/g,
-    ($1: keyof typeof CHARACTERS_MAP): string => CHARACTERS_MAP[$1] ?? "",
+    /\\[\s\S]/g,
+    (match: string): string => CHARACTERS_MAP[match] ?? match,
   );
 }
 
@@ -56,6 +59,8 @@ function expand(str: string, variablesMap: Record<string, string>): string {
  * Parse `.env` file output in an object.
  *
  * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
+ * Double-quoted values expand `\n`, `\r`, `\t`, `\"`, `\'`, and `\\` escape
+ * sequences.
  *
  * @example Usage
  * ```ts
