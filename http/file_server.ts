@@ -55,6 +55,7 @@ import { getNetworkAddress } from "@std/net/unstable-get-network-address";
 import { escape } from "@std/html/entities";
 import { HEADER } from "./unstable_header.ts";
 import { METHOD } from "./unstable_method.ts";
+import { html } from "@std/html/unstable-html";
 
 interface EntryInfo {
   mode: string;
@@ -436,18 +437,6 @@ function createBaseHeaders(): Headers {
     // Set "accept-ranges" so that the client knows it can make range requests on future requests
     [HEADER.AcceptRanges]: "bytes",
   });
-}
-
-function html(
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): string {
-  let out = "";
-  for (let i = 0; i < strings.length; ++i) {
-    out += strings[i];
-    if (i < values.length) out += values[i] ?? "";
-  }
-  return out;
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
