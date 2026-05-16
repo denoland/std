@@ -247,6 +247,19 @@ Deno.test("deepMerge() handles array merge (merge)", () => {
   );
 });
 
+Deno.test("deepMerge() handles array merge (union)", () => {
+  assertEquals(
+    deepMerge({
+      foo: [1, 2, 3],
+    }, {
+      foo: [3, 4, 5],
+    }, { arrays: "union" }),
+    {
+      foo: [1, 2, 3, 4, 5],
+    },
+  );
+});
+
 Deno.test("deepMerge() handles maps merge (replace)", () => {
   assertEquals(
     deepMerge({
