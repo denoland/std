@@ -4,8 +4,10 @@
 /**
  * XML parsing and serialization for Deno.
  *
- * This module implements a non-validating XML 1.0 parser based on the
- * {@link https://www.w3.org/TR/xml/ | W3C XML 1.0 (Fifth Edition)} specification.
+ * This module implements a non-validating parser for
+ * {@link https://www.w3.org/TR/xml/ | XML 1.0 (Fifth Edition)}, with opt-in
+ * support for {@link https://www.w3.org/TR/xml11/ | XML 1.1 (Second Edition)}
+ * via the `xmlVersion` parsing option.
  *
  * ## Parsing APIs
  *
@@ -62,6 +64,30 @@
  *   },
  * });
  * ```
+ *
+ * ### XML 1.1 mode
+ *
+ * Pass `xmlVersion: "1.1"` to opt in to XML 1.1 parsing rules. The option is
+ * independent of the document's `<?xml version="..."?>` declaration.
+ *
+ * ```ts
+ * import { parse } from "@std/xml";
+ * import { assertEquals, assertThrows } from "@std/assert";
+ *
+ * // Accepted in XML 1.1, rejected in XML 1.0:
+ * const xml = "<root>&#x1;</root>";
+ * const doc = parse(xml, { xmlVersion: "1.1" });
+ * assertEquals(doc.root.name.local, "root");
+ * assertThrows(() => parse(xml));
+ * ```
+ *
+ * ## DOCTYPE handling
+ *
+ * `<!DOCTYPE ...>` declarations are rejected by default to avoid processing
+ * hostile DTD content. Pass `disallowDoctype: false` to tolerate them in
+ * trusted input (e.g. legacy XHTML or RSS feeds). DTD contents are still
+ * ignored — only the five predefined entities (`lt`, `gt`, `amp`, `apos`,
+ * `quot`) are ever expanded.
  *
  * ## Position Tracking
  *

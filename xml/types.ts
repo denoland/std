@@ -252,8 +252,9 @@ export interface BaseParseOptions {
    * {@linkcode XmlSyntaxError}, before any internal subset is parsed.
    * This prevents resource exhaustion attacks via hostile DTD content.
    *
-   * Set to `false` to allow DOCTYPE declarations (e.g. for documents
-   * that use predefined entities or external DTD references).
+   * Set to `false` to tolerate DOCTYPE declarations in trusted input (e.g.
+   * legacy XHTML or RSS feeds). DTD contents are still not processed: custom
+   * entity declarations are ignored, and external DTDs are never fetched.
    *
    * @default {true}
    */
