@@ -228,15 +228,16 @@ export function convertRowToObject(
   row: readonly string[],
   headers: readonly string[],
   zeroBasedLine: number,
+  allowVariableLength: boolean = false,
 ) {
-  if (row.length !== headers.length) {
+  if (!allowVariableLength && row.length !== headers.length) {
     throw new Error(
       `Syntax error on line ${
         zeroBasedLine + 1
       }: The record has ${row.length} fields, but the header has ${headers.length} fields`,
     );
   }
-  const out: Record<string, unknown> = {};
+  const out: Record<string, string | undefined> = {};
   for (const [index, header] of headers.entries()) {
     out[header] = row[index];
   }
@@ -249,23 +250,29 @@ export type ParseResult<ParseOptions, T> =
   T extends ParseOptions & { columns: readonly (infer C extends string)[] }
     ? RecordWithColumn<C>[]
     // If `skipFirstRow` option is specified, the return type is Record type.
-    : T extends ParseOptions & { skipFirstRow: true } ? Record<string, string>[]
+    : T extends ParseOptions & { skipFirstRow: true }
+      ? Record<string, string | undefined>[]
     // If `columns` and `skipFirstRow` option is _not_ specified, the return type is string[][].
     : T extends
       ParseOptions & { columns?: undefined; skipFirstRow?: false | undefined }
       ? string[][]
     // else, the return type is Record type or string[][].
-    : Record<string, string>[] | string[][];
+    : Record<string, string | undefined>[] | string[][];
 
 /**
  * Record type with column type.
  *
+ * Values are typed as `string | undefined` because variable-length records
+ * (the default mode when `fieldsPerRecord` is undefined or negative) may
+ * yield rows that are shorter than the header list. Missing fields surface
+ * as `undefined`.
+ *
  * @example
  * ```
- * type RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string>
+ * type RecordWithColumn<"aaa"|"bbb"> => Record<"aaa"|"bbb", string | undefined>
  * type RecordWithColumn<string> => Record<string, string | undefined>
  * ```
  */
 export type RecordWithColumn<C extends string> = string extends C
-  ? Record<string, string>
-  : Record<C, string>;
+  ? Record<string, string | undefined>
+  : Record<C, string | undefined>;

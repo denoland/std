@@ -388,7 +388,7 @@ export function parse(input: string): string[][];
  * const result = parse(string, { skipFirstRow: true });
  *
  * assertEquals(result, [{ a: "d", b: "e", c: "f" }]);
- * assertType<IsExact<typeof result, Record<string, string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option
@@ -401,7 +401,7 @@ export function parse(input: string): string[][];
  * const result = parse(string, { columns: ["x", "y", "z"] });
  *
  * assertEquals(result, [{ x: "a", y: "b", z: "c" }, { x: "d", y: "e", z: "f" }]);
- * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string | undefined>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option and skip first row with
@@ -415,7 +415,7 @@ export function parse(input: string): string[][];
  * const result = parse(string, { columns: ["x", "y", "z"], skipFirstRow: true });
  *
  * assertEquals(result, [{ x: "d", y: "e", z: "f" }]);
- * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<"x" | "y" | "z", string | undefined>[]>>(true);
  * ```
  *
  * @example TSV (tab-separated values) with `separator: "\t"`
@@ -489,12 +489,29 @@ export function parse(input: string): string[][];
  * );
  * ```
  *
+ * @example Variable-length records with `skipFirstRow` or `columns`
+ * ```ts
+ * import { parse } from "@std/csv/parse";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const string = "name,age\nAlice,34\nBob\n";
+ * const result = parse(string, { skipFirstRow: true });
+ *
+ * assertEquals(result, [
+ *   { name: "Alice", age: "34" },
+ *   { name: "Bob", age: undefined },
+ * ]);
+ * ```
+ *
  * @typeParam T The options' type for parsing.
  * @param input The input to parse.
  * @param options The options for parsing.
  * @returns If you don't provide `options.skipFirstRow` or `options.columns`, it
  * returns `string[][]`. If you provide `options.skipFirstRow` or
- * `options.columns`, it returns `Record<string, string>[]`.
+ * `options.columns`, it returns `Record<string, string | undefined>[]`. Values
+ * are typed as `string | undefined` to reflect that variable-length records
+ * (the default when `fieldsPerRecord` is undefined or negative) may produce
+ * rows shorter than the header list. Missing fields surface as `undefined`.
  */
 export function parse<const T extends ParseOptions>(
   input: string,
@@ -523,8 +540,15 @@ export function parse<const T extends ParseOptions>(
     }
 
     const zeroBasedFirstLineIndex = options.skipFirstRow ? 1 : 0;
+    const allowVariableLength = options.fieldsPerRecord === undefined ||
+      options.fieldsPerRecord < 0;
     return r.map((row, i) => {
-      return convertRowToObject(row, headers, zeroBasedFirstLineIndex + i);
+      return convertRowToObject(
+        row,
+        headers,
+        zeroBasedFirstLineIndex + i,
+        allowVariableLength,
+      );
     }) as ParseResult<ParseOptions, T>;
   }
   return r as ParseResult<ParseOptions, T>;
