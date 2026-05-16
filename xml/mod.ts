@@ -4,8 +4,10 @@
 /**
  * XML parsing and serialization for Deno.
  *
- * This module implements a non-validating XML 1.0 parser based on the
- * {@link https://www.w3.org/TR/xml/ | W3C XML 1.0 (Fifth Edition)} specification.
+ * This module implements a non-validating parser for
+ * {@link https://www.w3.org/TR/xml/ | XML 1.0 (Fifth Edition)}, with opt-in
+ * support for {@link https://www.w3.org/TR/xml11/ | XML 1.1 (Second Edition)}
+ * via the `xmlVersion` parsing option.
  *
  * ## Parsing APIs
  *
@@ -61,6 +63,22 @@
  *     console.log(`Element: ${name}`);
  *   },
  * });
+ * ```
+ *
+ * ### XML 1.1 mode
+ *
+ * Pass `xmlVersion: "1.1"` to opt in to XML 1.1 parsing rules. The option is
+ * independent of the document's `<?xml version="..."?>` declaration.
+ *
+ * ```ts
+ * import { parse } from "@std/xml";
+ * import { assertEquals, assertThrows } from "@std/assert";
+ *
+ * // Accepted in XML 1.1, rejected in XML 1.0:
+ * const xml = "<root>&#x1;</root>";
+ * const doc = parse(xml, { xmlVersion: "1.1" });
+ * assertEquals(doc.root.name.local, "root");
+ * assertThrows(() => parse(xml));
  * ```
  *
  * ## Position Tracking
