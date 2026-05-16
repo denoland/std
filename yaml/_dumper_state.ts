@@ -173,6 +173,10 @@ function needIndentIndicator(string: string): boolean {
   return LEADING_SPACE_REGEXP.test(string);
 }
 
+function isAmbiguousLeadingZeroNumber(string: string): boolean {
+  return /^-?0\d+$/.test(string);
+}
+
 // Determines which scalar styles are possible and returns the preferred style.
 // lineWidth = -1 => no limit.
 // Pre-conditions: str.length > 0.
@@ -238,7 +242,8 @@ function chooseScalarStyle(
   if (!hasLineBreak && !hasFoldableLine) {
     // Strings interpretable as another type have to be quoted;
     // e.g. the string 'true' vs. the boolean true.
-    return plain && !implicitTypes.some((type) => type.resolve(string))
+    return plain && !isAmbiguousLeadingZeroNumber(string) &&
+        !implicitTypes.some((type) => type.resolve(string))
       ? STYLE_PLAIN
       : quoteStyle === "'"
       ? STYLE_SINGLE

@@ -70,6 +70,18 @@ Deno.test({
 });
 
 Deno.test({
+  name: "stringify() quotes leading-zero numeric strings",
+  fn() {
+    assertEquals(stringify("00"), "'00'\n");
+    assertEquals(stringify("07"), "'07'\n");
+    assertEquals(stringify("08"), "'08'\n");
+    assertEquals(stringify("09"), "'09'\n");
+    assertEquals(stringify("010"), "'010'\n");
+    assertEquals(stringify("-08"), "'-08'\n");
+  },
+});
+
+Deno.test({
   name: "numbers can be stringified directly",
   fn() {
     const number = 1.01;
