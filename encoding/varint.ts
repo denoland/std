@@ -108,7 +108,7 @@ export function decodeVarint(buf: Uint8Array, offset = 0): [bigint, number] {
     intermediate |= (byte & 0b01111111) << position;
 
     // If position is 28
-    // it means that this iteration needs to be written the the two's complement view
+    // it means that this iteration needs to be written the two's complement view
     // This only happens once due to the `-4` in this branch
     if (position === 28) {
       // Write to the view
