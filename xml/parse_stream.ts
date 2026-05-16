@@ -8,8 +8,7 @@
  */
 
 import type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
-import { XmlTokenizer } from "./_tokenizer.ts";
-import { XmlEventParser } from "./_parser.ts";
+import { createXmlPipeline } from "./_pipeline.ts";
 
 export type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
 
@@ -64,11 +63,7 @@ export async function parseXmlStream(
   callbacks: XmlEventCallbacks,
   options: ParseStreamOptions = {},
 ): Promise<void> {
-  const trackPosition = options.trackPosition ?? false;
-  const disallowDoctype = options.disallowDoctype ?? true;
-  const xml11 = options.xmlVersion === "1.1";
-  const tokenizer = new XmlTokenizer({ trackPosition, disallowDoctype, xml11 });
-  const parser = new XmlEventParser(callbacks, options, xml11);
+  const { tokenizer, parser } = createXmlPipeline(options, callbacks);
 
   for await (const chunk of source) {
     tokenizer.process(chunk, parser);
