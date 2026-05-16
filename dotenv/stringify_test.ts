@@ -87,7 +87,7 @@ Deno.test("stringify()", async (t) => {
 });
 
 Deno.test("stringify() round-trips through parse() for tricky values", () => {
-  // Regression for https://github.com/denoland/std/issues/7055 — values
+  // Regression for https://github.com/denoland/std/issues/7055. Values
   // containing combinations of quotes, apostrophes, real newlines, and
   // literal backslash-n (or other escape-like character pairs) must round-trip
   // losslessly.
@@ -128,6 +128,19 @@ Deno.test("stringify() round-trips through parse() for tricky values", () => {
         `round-trip mismatch for value ${JSON.stringify(value)}`,
       );
     }
+  }
+});
+
+Deno.test("stringify() round-trips reported quote and newline combinations", () => {
+  const values = [
+    `start_'"_end`,
+    "start_'\\n_end",
+    'start_"\n_end',
+    "start_\\n\n_end",
+  ];
+
+  for (const value of values) {
+    assertEquals(parse(stringify({ TEST_VAR: value })).TEST_VAR, value);
   }
 });
 
