@@ -2,7 +2,6 @@
 
 import { assertEquals, assertStrictEquals } from "@std/assert";
 import { maxBy } from "./max_by.ts";
-import * as unstable from "./unstable_max_by.ts";
 
 Deno.test("maxBy() handles array input", () => {
   const input = [
@@ -194,11 +193,11 @@ Deno.test("maxBy() handles Map values", () => {
 });
 
 Deno.test({
-  name: "unstable.maxBy() passes index to selector",
+  name: "maxBy() passes index to selector",
   fn() {
     const input = [4, 3, 2, 1];
 
-    const max = unstable.maxBy(input, (_, index) => index);
+    const max = maxBy(input, (_, index) => index);
 
     assertEquals(max, 1);
   },

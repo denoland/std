@@ -2,7 +2,6 @@
 
 import { assertEquals } from "@std/assert";
 import { mapNotNullish } from "./map_not_nullish.ts";
-import * as unstable from "./unstable_map_not_nullish.ts";
 
 function mapNotNullishTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],
@@ -93,9 +92,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "unstable.mapNotNullish() passes index to transformer",
+  name: "mapNotNullish() passes index to transformer",
   fn() {
-    const result = unstable.mapNotNullish(
+    const result = mapNotNullish(
       [1, 2, 3, 4],
       (it, index) => index === 1 ? null : it + index,
     );
