@@ -81,6 +81,14 @@
  * assertThrows(() => parse(xml));
  * ```
  *
+ * ## DOCTYPE handling
+ *
+ * `<!DOCTYPE ...>` declarations are rejected by default to avoid processing
+ * hostile DTD content. Pass `disallowDoctype: false` to tolerate them in
+ * trusted input (e.g. legacy XHTML or RSS feeds). DTD contents are still
+ * ignored — only the five predefined entities (`lt`, `gt`, `amp`, `apos`,
+ * `quot`) are ever expanded.
+ *
  * ## Position Tracking
  *
  * Both parsers support optional position tracking (line, column, offset) for
