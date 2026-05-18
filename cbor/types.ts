@@ -28,6 +28,9 @@ export type CborPrimitiveType =
  * This type specifies the encodable and decodable values for
  * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
  * {@link decodeCborSequence}.
+ *
+ * The encoder functions also accept {@link CborInputType}, which permits
+ * `readonly` arrays, `ReadonlyMap`, and `readonly` index signatures.
  */
 export type CborType =
   | CborPrimitiveType
@@ -39,14 +42,44 @@ export type CborType =
   };
 
 /**
+ * Readonly-friendly input type for {@link encodeCbor} and
+ * {@link encodeCborSequence}. Lets you pass `as const` literals,
+ * `ReadonlyMap`s, and frozen arrays without casting.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeCbor } from "@std/cbor";
+ *
+ * const data = {
+ *   a: 1,
+ *   b: { c: 2n },
+ *   d: [3, { e: 4 }],
+ * } as const;
+ *
+ * encodeCbor(data);
+ * ```
+ */
+export type CborInputType =
+  | CborPrimitiveType
+  | CborTag<CborInputType>
+  | ReadonlyMap<CborInputType, CborInputType>
+  | readonly CborInputType[]
+  | {
+    readonly [k: string]: CborInputType;
+  };
+
+/**
  * Specifies the encodable value types for the {@link CborSequenceEncoderStream}
  * and {@link CborArrayEncoderStream}.
+ *
+ * Arrays and index signatures are `readonly` so `as const` literals work
+ * without casting.
  */
 export type CborStreamInput =
   | CborPrimitiveType
   | CborTag<CborStreamInput>
-  | CborStreamInput[]
-  | { [k: string]: CborStreamInput }
+  | readonly CborStreamInput[]
+  | { readonly [k: string]: CborStreamInput }
   | CborByteEncoderStream
   | CborTextEncoderStream
   | CborArrayEncoderStream

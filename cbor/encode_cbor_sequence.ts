@@ -1,11 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { calcEncodingSize, encode } from "./_common_encode.ts";
-import type { CborType } from "./types.ts";
+import type { CborInputType } from "./types.ts";
 
 /**
- * Encodes an array of {@link CborType} values into a CBOR format sequence
- * represented as a {@link Uint8Array}.
+ * Encodes an array of {@link CborInputType} values into a CBOR format
+ * sequence represented as a {@link Uint8Array}.
  * [RFC 8949 - Concise Binary Object Representation (CBOR)](https://datatracker.ietf.org/doc/html/rfc8949)
  *
  * @example Usage
@@ -31,10 +31,12 @@ import type { CborType } from "./types.ts";
  * assertEquals(decodedMessage, rawMessage);
  * ```
  *
- * @param values An array of values to encode of type {@link CborType}
+ * @param values An array of values to encode of type {@link CborInputType}
  * @returns A {@link Uint8Array} representing the encoded data.
  */
-export function encodeCborSequence(values: CborType[]): Uint8Array {
+export function encodeCborSequence(
+  values: readonly CborInputType[],
+): Uint8Array {
   let o = 0;
   for (const value of values) o += calcEncodingSize(value);
   const output = new Uint8Array(o);

@@ -498,3 +498,59 @@ Deno.test("encodeCbor() rejecting CborTag()", () => {
     `Cannot encode Tag Item: Tag Number (${num}) exceeds 2 ** 64 - 1`,
   );
 });
+
+Deno.test("encodeCbor() accepting `as const` (deeply readonly) input", () => {
+  // Regression test for #5831. Before, this call failed type-checking
+  // (`readonly` properties weren't assignable to `CborType`). The encoded
+  // bytes are identical to the mutable equivalent.
+  const data = {
+    a: 1,
+    b: { c: 2n },
+    d: [3, { e: 4 }],
+  } as const;
+
+  assertEquals(encodeCbor(data), encodeCbor(structuredClone(data)));
+});
+
+Deno.test("encodeCbor() accepting readonly array literals", () => {
+  const tuple = ["hello", 42, { nested: "value" }] as const;
+  // `readonly [3, ...]` is now assignable to the encoder input type.
+  assertEquals(
+    encodeCbor(tuple),
+    encodeCbor(["hello", 42, { nested: "value" }]),
+  );
+});
+
+Deno.test("encodeCbor() accepting ReadonlyMap input", () => {
+  const map: ReadonlyMap<CborType, CborType> = new Map<CborType, CborType>([
+    [1, 2],
+    ["3", 4],
+    [[5], { a: 6 }],
+  ]);
+
+  // `ReadonlyMap<...>` is now assignable to the encoder input type.
+  assertEquals(
+    encodeCbor(map),
+    encodeCbor(
+      new Map<CborType, CborType>([
+        [1, 2],
+        ["3", 4],
+        [[5], { a: 6 }],
+      ]),
+    ),
+  );
+});
+
+Deno.test("encodeCbor() accepting readonly index signature", () => {
+  const obj: { readonly [k: string]: number } = { x: 1, y: 2, z: 3 };
+  assertEquals(encodeCbor(obj), encodeCbor({ x: 1, y: 2, z: 3 }));
+});
+
+Deno.test("encodeCbor() accepting CborTag with readonly content", () => {
+  const data = [1, { inner: 2 }] as const;
+  // The tag content type widens to accept `CborInputType`.
+  assertEquals(
+    encodeCbor(new CborTag(1, data)),
+    encodeCbor(new CborTag(1, structuredClone(data))),
+  );
+});
