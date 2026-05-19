@@ -29,7 +29,7 @@ export type CborPrimitiveType =
  * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
  * {@link decodeCborSequence}.
  *
- * The encoder functions also accept {@link CborInputType}, which permits
+ * The encoder functions also accept {@link ReadonlyCborType}, which permits
  * `readonly` arrays, `ReadonlyMap`, and `readonly` index signatures.
  */
 export type CborType =
@@ -42,7 +42,7 @@ export type CborType =
   };
 
 /**
- * Readonly-friendly input type for {@link encodeCbor} and
+ * Readonly variant of {@link CborType} accepted by {@link encodeCbor} and
  * {@link encodeCborSequence}. Lets you pass `as const` literals,
  * `ReadonlyMap`s, and frozen arrays without casting.
  *
@@ -59,13 +59,13 @@ export type CborType =
  * encodeCbor(data);
  * ```
  */
-export type CborInputType =
+export type ReadonlyCborType =
   | CborPrimitiveType
-  | CborTag<CborInputType>
-  | ReadonlyMap<CborInputType, CborInputType>
-  | readonly CborInputType[]
+  | CborTag<ReadonlyCborType>
+  | ReadonlyMap<ReadonlyCborType, ReadonlyCborType>
+  | readonly ReadonlyCborType[]
   | {
-    readonly [k: string]: CborInputType;
+    readonly [k: string]: ReadonlyCborType;
   };
 
 /**

@@ -1,12 +1,12 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { CborTag } from "./tag.ts";
-import type { CborInputType } from "./types.ts";
+import type { ReadonlyCborType } from "./types.ts";
 
 // Narrows to ReadonlyMap (which TS's instanceof Map doesn't do on its own).
 function isReadonlyMap(
   x: unknown,
-): x is ReadonlyMap<CborInputType, CborInputType> {
+): x is ReadonlyMap<ReadonlyCborType, ReadonlyCborType> {
   return x instanceof Map;
 }
 
@@ -27,7 +27,7 @@ function calcHeaderSize(x: number | bigint): number {
   return 9;
 }
 
-export function calcEncodingSize(x: CborInputType): number {
+export function calcEncodingSize(x: ReadonlyCborType): number {
   if (x == undefined || typeof x === "boolean") return 1;
   if (typeof x === "number") {
     return x % 1 === 0 ? calcHeaderSize(x < 0 ? -x - 1 : x) : 9;
@@ -68,7 +68,7 @@ export function calcEncodingSize(x: CborInputType): number {
 }
 
 export function encode(
-  input: CborInputType,
+  input: ReadonlyCborType,
   output: Uint8Array,
   offset: number,
 ): number {
@@ -210,7 +210,7 @@ function encodeString(
 }
 
 function encodeArray(
-  input: readonly CborInputType[],
+  input: readonly ReadonlyCborType[],
   output: Uint8Array,
   offset: number,
 ): number {
@@ -220,7 +220,7 @@ function encodeArray(
 }
 
 function encodeObject(
-  input: { readonly [k: string]: CborInputType },
+  input: { readonly [k: string]: ReadonlyCborType },
   output: Uint8Array,
   offset: number,
 ): number {
@@ -239,7 +239,7 @@ function encodeDate(input: Date, output: Uint8Array, offset: number): number {
 }
 
 function encodeTag(
-  input: CborTag<CborInputType>,
+  input: CborTag<ReadonlyCborType>,
   output: Uint8Array,
   offset: number,
 ): number {
@@ -263,7 +263,7 @@ function encodeTag(
 }
 
 function encodeMap(
-  input: ReadonlyMap<CborInputType, CborInputType>,
+  input: ReadonlyMap<ReadonlyCborType, ReadonlyCborType>,
   output: Uint8Array,
   offset: number,
 ): number {

@@ -14,7 +14,6 @@ Deno.test("encodeCborSequence() correctly encoding", () => {
 Deno.test("encodeCborSequence() accepting readonly array input", () => {
   const values = [1, "two", { three: 3n }] as const;
   const mutable: CborType[] = [1, "two", { three: 3n }];
-  // `readonly CborInputType[]` is now an accepted input.
   assertEquals(
     encodeCborSequence(values),
     encodeCborSequence(mutable),

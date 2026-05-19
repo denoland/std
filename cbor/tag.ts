@@ -1,10 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import type {
-  CborInputType,
   CborStreamInput,
   CborStreamOutput,
   CborType,
+  ReadonlyCborType,
 } from "./types.ts";
 
 /**
@@ -35,11 +35,11 @@ import type {
  * ```
  *
  * @typeParam T The type of the tag's content, which can be a
- * {@link CborType}, {@link CborInputType}, {@link CborStreamInput}, or
+ * {@link CborType}, {@link ReadonlyCborType}, {@link CborStreamInput}, or
  * {@link CborStreamOutput}.
  */
 export class CborTag<
-  T extends CborType | CborInputType | CborStreamInput | CborStreamOutput,
+  T extends CborType | ReadonlyCborType | CborStreamInput | CborStreamOutput,
 > {
   /**
    * A {@link number} or {@link bigint} representing the CBOR tag number, used

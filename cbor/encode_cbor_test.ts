@@ -500,9 +500,6 @@ Deno.test("encodeCbor() rejecting CborTag()", () => {
 });
 
 Deno.test("encodeCbor() accepting `as const` (deeply readonly) input", () => {
-  // Regression test for #5831. Before, this call failed type-checking
-  // (`readonly` properties weren't assignable to `CborType`). The encoded
-  // bytes are identical to the mutable equivalent.
   const data = {
     a: 1,
     b: { c: 2n },
@@ -514,7 +511,6 @@ Deno.test("encodeCbor() accepting `as const` (deeply readonly) input", () => {
 
 Deno.test("encodeCbor() accepting readonly array literals", () => {
   const tuple = ["hello", 42, { nested: "value" }] as const;
-  // `readonly [3, ...]` is now assignable to the encoder input type.
   assertEquals(
     encodeCbor(tuple),
     encodeCbor(["hello", 42, { nested: "value" }]),
@@ -528,7 +524,6 @@ Deno.test("encodeCbor() accepting ReadonlyMap input", () => {
     [[5], { a: 6 }],
   ]);
 
-  // `ReadonlyMap<...>` is now assignable to the encoder input type.
   assertEquals(
     encodeCbor(map),
     encodeCbor(
@@ -548,7 +543,6 @@ Deno.test("encodeCbor() accepting readonly index signature", () => {
 
 Deno.test("encodeCbor() accepting CborTag with readonly content", () => {
   const data = [1, { inner: 2 }] as const;
-  // The tag content type widens to accept `CborInputType`.
   assertEquals(
     encodeCbor(new CborTag(1, data)),
     encodeCbor(new CborTag(1, structuredClone(data))),
