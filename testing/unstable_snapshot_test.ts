@@ -151,7 +151,7 @@ Deno.test("assertInlineSnapshot() counts lines and columns like V8", async () =>
     await Deno.writeTextFile(
       countTestFile,
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
- \n \r \n\r \r\n \u2028 \u2029 
+ \n \r \n\r \r\n \u2028 \u2029\u0020
 Deno.test("format", async () => {
   /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot( "hello world", "" );
 });`,
@@ -174,7 +174,7 @@ Deno.test("format", async () => {
     assertEquals(
       await Deno.readTextFile(countTestFile),
       `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
- \n \r \n\r \r\n \u2028 \u2029 
+ \n \r \n\r \r\n \u2028 \u2029\u0020
 Deno.test("format", async () => {
   /* 🐈‍⬛🇦🇶 */ assertInlineSnapshot( "hello world", \`"hello world"\` );
 });`,
@@ -192,4 +192,50 @@ Deno.test("createAssertInlineSnapshot()", () => {
     "\x1b[32mThis green text has had its colors stripped\x1b[39m",
     `This green text has had its colors stripped`,
   );
+});
+
+Deno.test("createAssertInlineSnapshot() writes to the correct location", async () => {
+  if (!LINT_SUPPORTED) return;
+
+  const tempDir = await Deno.makeTempDir();
+  const testFile = join(tempDir, "create_test.ts");
+  try {
+    await Deno.writeTextFile(
+      testFile,
+      `import { createAssertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+const assertInlineSnapshot = createAssertInlineSnapshot({});
+
+Deno.test("format", () => {
+  assertInlineSnapshot( "hello world", "" );
+});`,
+    );
+
+    const command = new Deno.Command(Deno.execPath(), {
+      args: [
+        "test",
+        "--no-lock",
+        "--allow-read",
+        "--allow-write",
+        tempDir,
+        "--",
+        "--update",
+        "--no-format",
+      ],
+    });
+    await command.output();
+
+    assertEquals(
+      await Deno.readTextFile(testFile),
+      `import { createAssertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+const assertInlineSnapshot = createAssertInlineSnapshot({});
+
+Deno.test("format", () => {
+  assertInlineSnapshot( "hello world", \`"hello world"\` );
+});`,
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
 });
