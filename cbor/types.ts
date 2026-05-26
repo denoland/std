@@ -59,6 +59,13 @@ export type CborType =
  * encodeCbor(data);
  * ```
  */
+// Note: encoder signatures take `CborType | ReadonlyCborType` rather than
+// just `ReadonlyCborType`. Mutable `Map`/array/index-signature are all
+// assignable to their readonly counterparts, so the union looks redundant,
+// but `CborTag<T>` has a writable `tagContent: T` field, which makes it
+// invariant in `T`. That means `CborTag<CborType>` is NOT assignable to
+// `CborTag<ReadonlyCborType>`, and existing callers passing
+// `CborTag<CborType>` instances would break if the union were collapsed.
 export type ReadonlyCborType =
   | CborPrimitiveType
   | CborTag<ReadonlyCborType>
