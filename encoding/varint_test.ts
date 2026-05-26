@@ -120,6 +120,46 @@ Deno.test("encodeVarint() throws on overflow with negative", () => {
     "Cannot encode the input into varint as it should be non-negative integer: received -1",
   );
 });
+Deno.test(
+  "encodeVarint() throws when the default buffer is too small (#7147)",
+  () => {
+    // 0x1234567891234567891n is 76 bits → cannot fit in 10-byte uint64
+    // varint and must throw. Previously the OOB write at the 11th byte was
+    // silently dropped and the function returned `[Uint8Array(10), 11]`.
+    assertThrows(
+      () => encodeVarint(0x1234567891234567891n),
+      RangeError,
+      "overflows uint64",
+    );
+  },
+);
+
+Deno.test(
+  "encodeVarint() throws when a caller-provided buffer is too small",
+  () => {
+    // 200000 needs 3 varint bytes, buffer only has 2 → must throw rather
+    // than silently truncate to 2 bytes.
+    assertThrows(
+      () => encodeVarint(200_000, new Uint8Array(2)),
+      RangeError,
+      "buffer holds at most 2 byte(s) after offset",
+    );
+  },
+);
+
+Deno.test(
+  "encodeVarint() throws when offset leaves no room in the buffer",
+  () => {
+    // 10-byte buf but offset=10 → 0 bytes available; any positive value
+    // overflows the slice and must throw.
+    assertThrows(
+      () => encodeVarint(42n, new Uint8Array(10), 10),
+      RangeError,
+      "buffer holds at most 0 byte(s) after offset",
+    );
+  },
+);
+
 Deno.test("encodeVarint() encodes with offset", () => {
   let uint = new Uint8Array(3);
   assertEquals(
