@@ -17,7 +17,10 @@ Deno.test("HttpError initialises with correct defaults", () => {
 Deno.test("HttpError initialises with custom properties", () => {
   const error = new HttpError(401, "Unauthorized", {
     cause: new Error("Underlying error"),
-    init: { headers: { "WWW-Authenticate": 'Basic realm="Secure Area"' } },
+    init: {
+      headers: { "WWW-Authenticate": 'Basic realm="Secure Area"' },
+      status: 400,
+    },
   });
   assertInstanceOf(error, Error);
   assertEquals(error.name, "HttpError");
@@ -29,4 +32,5 @@ Deno.test("HttpError initialises with custom properties", () => {
     (error.init.headers as Record<string, string>)["WWW-Authenticate"],
     'Basic realm="Secure Area"',
   );
+  assertEquals(error.init.status, error.status);
 });

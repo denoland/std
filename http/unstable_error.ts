@@ -116,8 +116,9 @@ export class HttpError extends Error {
   /**
    * Configuration options for the HTTP response associated with this error.
    *
-   * `init.status` always reflects the standard HTTP value for the given status
-   * code.
+   * `init.status` always equals the status argument passed to the constructor
+   * and represents the HTTP status code. Other {@linkcode ResponseInit} fields
+   * (`headers`, `statusText`) come from `options.init` if supplied.
    *
    * @example Usage
    * ```ts
@@ -156,6 +157,6 @@ export class HttpError extends Error {
     super(message, options);
     this.name = this.constructor.name;
     this.status = status;
-    this.init = { status, ...options?.init };
+    this.init = { ...options?.init, status };
   }
 }
