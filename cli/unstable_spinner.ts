@@ -1,5 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+import { unicodeWidth } from "./unicode_width.ts";
+
 const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
@@ -34,6 +36,24 @@ export type Color =
   | "white"
   | "gray"
   | Ansi;
+
+/**
+ * Truncate `str` so its `unicodeWidth` is at most `maxWidth`. Iterates by
+ * code point so surrogate pairs are kept intact; wide CJK characters that
+ * would straddle the limit are dropped rather than half-rendered.
+ */
+function truncateToWidth(str: string, maxWidth: number): string {
+  if (maxWidth <= 0) return "";
+  let acc = "";
+  let accWidth = 0;
+  for (const ch of str) {
+    const w = unicodeWidth(ch);
+    if (accWidth + w > maxWidth) break;
+    acc += ch;
+    accWidth += w;
+  }
+  return acc;
+}
 
 const COLORS: Record<Color, string> = {
   black: "\u001b[30m",
@@ -225,10 +245,26 @@ export class Spinner {
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
+      const spinnerChar = this.#spinner[i] ?? "";
+      // #6975: when the spinner + message visual width exceeds the
+      // terminal width, the terminal wraps to a new line and `\r[K`
+      // no longer clears the previous frame, leaving stale output. Truncate
+      // the message to the available columns so each frame stays on one
+      // line. ANSI color/reset escapes have no visible width, so only the
+      // glyph + space prefix is subtracted.
+      let displayMessage = this.message;
+      const columns = this.#terminalColumns();
+      if (columns !== undefined) {
+        const prefixWidth = unicodeWidth(spinnerChar) + 1; // glyph + space
+        const available = Math.max(0, columns - prefixWidth);
+        if (unicodeWidth(displayMessage) > available) {
+          displayMessage = truncateToWidth(displayMessage, available);
+        }
+      }
       const frame = encoder.encode(
         noColor
-          ? this.#spinner[i] + " " + this.message
-          : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
+          ? spinnerChar + " " + displayMessage
+          : color + spinnerChar + COLOR_RESET + " " + displayMessage,
       );
       // call writeSync once to reduce flickering
       const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
@@ -240,6 +276,23 @@ export class Spinner {
 
     this.#intervalId = setInterval(updateFrame, this.#interval);
     updateFrame();
+  }
+
+  /**
+   * Returns the terminal column count if the spinner is writing to a TTY,
+   * otherwise undefined (so the message is not truncated when output is
+   * piped or redirected).
+   */
+  #terminalColumns(): number | undefined {
+    try {
+      if (!this.#output.isTerminal()) return undefined;
+      const { columns } = Deno.consoleSize();
+      return columns > 0 ? columns : undefined;
+    } catch {
+      // `Deno.consoleSize()` and `isTerminal()` can throw if the stream is
+      // closed or unsupported; treat as "unknown size" and skip truncation.
+      return undefined;
+    }
   }
 
   /**
