@@ -118,6 +118,9 @@ export function pooledMap<T, R>(
  * @param iteratorFn The function to call for every item of the array.
  * @returns The async iterator with the transformed values.
  * @throws {RangeError} If `poolLimit` is not a positive integer.
+ *
+ * The returned iterator rejects with `options.signal.reason` if the signal is
+ * aborted, or with an `AggregateError` collecting all `iteratorFn` rejections.
  */
 export function pooledMap<T, R>(
   options: PooledMapOptions,
@@ -159,7 +162,7 @@ export function pooledMap<T, R>(
           e instanceof AggregateError &&
           e.message === ERROR_WHILE_MAPPING_MESSAGE
         ) {
-          controller.error(e as unknown);
+          controller.error(e);
         }
       }
     },
