@@ -69,7 +69,10 @@ export function assertEquals<T>(
   // one nested property is a function (or Promise / Request / Blob / etc.)
   // that gets compared by reference. The empty diff is confusing, so append
   // a hint pointing at the likely cause.
-  if (!stringDiff && diffResult.every((r) => r.type !== "added" && r.type !== "removed")) {
+  if (
+    !stringDiff &&
+    diffResult.every((r) => r.type !== "added" && r.type !== "removed")
+  ) {
     message = `${message}\n` +
       "    Note: values stringify identically but are not structurally equal. " +
       "Functions, Promises, Requests, Blobs, and other built-ins are compared by " +
