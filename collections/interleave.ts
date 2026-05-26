@@ -7,8 +7,6 @@
  * tuples, `interleave` continues until all input iterables are exhausted and
  * returns a flat array. All input iterables are consumed eagerly.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The tuple of element types in the input iterables.
  *
  * @param iterables The iterables to interleave.
@@ -17,7 +15,7 @@
  *
  * @example Basic usage
  * ```ts
- * import { interleave } from "@std/collections/unstable-interleave";
+ * import { interleave } from "@std/collections/interleave";
  * import { assertEquals } from "@std/assert";
  *
  * const numbers = [1, 2, 3];
@@ -28,7 +26,7 @@
  *
  * @example Unequal-length arrays
  * ```ts
- * import { interleave } from "@std/collections/unstable-interleave";
+ * import { interleave } from "@std/collections/interleave";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
@@ -39,7 +37,7 @@
  *
  * @example With iterables
  * ```ts
- * import { interleave } from "@std/collections/unstable-interleave";
+ * import { interleave } from "@std/collections/interleave";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(
