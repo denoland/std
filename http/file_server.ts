@@ -53,6 +53,7 @@ import denoConfig from "./deno.json" with { type: "json" };
 import { format as formatBytes } from "@std/fmt/bytes";
 import { getNetworkAddress } from "@std/net/unstable-get-network-address";
 import { escape } from "@std/html/entities";
+import { html } from "@std/html/unstable-html";
 
 interface EntryInfo {
   mode: string;
@@ -434,18 +435,6 @@ function createBaseHeaders(): Headers {
     // Set "accept-ranges" so that the client knows it can make range requests on future requests
     ["Accept-Ranges"]: "bytes",
   });
-}
-
-function html(
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): string {
-  let out = "";
-  for (let i = 0; i < strings.length; ++i) {
-    out += strings[i];
-    if (i < values.length) out += values[i] ?? "";
-  }
-  return out;
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
