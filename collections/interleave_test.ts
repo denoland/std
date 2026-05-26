@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { interleave } from "./unstable_interleave.ts";
+import { interleave } from "./interleave.ts";
 
 Deno.test({
   name: "interleave() handles no arguments",

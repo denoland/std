@@ -21,8 +21,11 @@ import { extname as windowsExtname } from "./windows/extname.ts";
  * }
  * ```
  *
- * @param path Path with extension.
+ * @param path Path with extension. When passed as a `URL` instance, its
+ * protocol must be `file:`. For other protocols, pass the URL as a string or
+ * pass its `pathname` property.
  * @returns The file extension. E.g. returns `.ts` for `file.ts`.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
  */
 export function extname(path: string | URL): string {
   return isWindows ? windowsExtname(path) : posixExtname(path);
