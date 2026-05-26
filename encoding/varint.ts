@@ -221,26 +221,38 @@ export function encodeVarint(
   buf: Uint8Array = new Uint8Array(MaxVarintLen64),
   offset = 0,
 ): [Uint8Array_, number] {
-  num = BigInt(num);
-  if (num < 0n) {
+  const input = BigInt(num);
+  if (input < 0n) {
     throw new RangeError(
-      `Cannot encode the input into varint as it should be non-negative integer: received ${num}`,
+      `Cannot encode the input into varint as it should be non-negative integer: received ${input}`,
     );
   }
-  for (
-    let i = offset;
-    i <= Math.min(buf.length, MaxVarintLen64);
-    i += 1
-  ) {
-    if (num < MSBN) {
-      buf[i] = Number(num);
-      i += 1;
-      return [buf.slice(offset, i), i];
+  // #7147: the previous loop used `i <= Math.min(buf.length, MaxVarintLen64)`,
+  // which would walk one byte past the end of `buf` on the final iteration.
+  // For values that needed all 10 uint64 varint bytes plus a continuation,
+  // the OOB write was silently dropped by `Uint8Array`, the function
+  // returned a too-short slice, and the caller never learned the buffer
+  // was full. Cap the iteration count at the smaller of `buf.length`
+  // (relative to `offset`) and `MaxVarintLen64`, then explicitly
+  // distinguish "buffer too small" from "input overflows uint64".
+  const cap = Math.min(buf.length - offset, MaxVarintLen64);
+  let pending = input;
+  for (let i = 0; i < cap; i += 1) {
+    if (pending < MSBN) {
+      buf[offset + i] = Number(pending);
+      return [buf.slice(offset, offset + i + 1), offset + i + 1];
     }
-    buf[i] = Number((num & 0xFFn) | MSBN);
-    num >>= SHIFTN;
+    buf[offset + i] = Number((pending & 0xFFn) | MSBN);
+    pending >>= SHIFTN;
+  }
+  if (buf.length - offset < MaxVarintLen64) {
+    throw new RangeError(
+      `Cannot encode the input ${input} into varint: the provided buffer holds at most ${
+        buf.length - offset
+      } byte(s) after offset, but the value requires more`,
+    );
   }
   throw new RangeError(
-    `Cannot encode the input ${num} into varint as it overflows uint64`,
+    `Cannot encode the input ${input} into varint as it overflows uint64`,
   );
 }
