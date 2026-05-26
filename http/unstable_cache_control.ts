@@ -147,8 +147,24 @@ const MAX_DELTA_SECONDS = 2_147_483_648; // 2^31
 
 const DIGITS_REGEXP = /^\d+$/;
 
+/** RFC 9110 §5.6.2 tchar; used to validate HTTP token grammar (e.g. field
+ * names that appear inside `no-cache` / `private` arguments). */
+const TCHAR_REGEXP = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+
+/** Resolve a directive argument that may be either a token or a quoted-string
+ * (RFC 9111 §5.2). When the value is a quoted-string, surrounding double
+ * quotes are stripped and quoted-pair sequences (`\\X`) are unescaped per
+ * RFC 9110 §5.6.4. */
+function unquoteArgument(value: string): string {
+  const t = value.trim();
+  if (t.length >= 2 && t.startsWith('"') && t.endsWith('"')) {
+    return t.slice(1, -1).replace(/\\(.)/g, "$1");
+  }
+  return t;
+}
+
 function parseNonNegativeInt(value: string, directive: string): number {
-  const trimmed = value.trim();
+  const trimmed = unquoteArgument(value);
   if (!DIGITS_REGEXP.test(trimmed)) {
     throw new SyntaxError(
       `Cache-Control: invalid value for ${directive}: "${value}"`,
@@ -158,8 +174,11 @@ function parseNonNegativeInt(value: string, directive: string): number {
   return n > MAX_DELTA_SECONDS ? MAX_DELTA_SECONDS : n;
 }
 
-/** Split by comma but not inside double-quoted strings (needed for
- * `no-cache` and `private` whose quoted-string arguments may contain commas). */
+/** Split by comma but not inside double-quoted strings, respecting RFC 9110
+ * §5.6.4 quoted-pairs. Needed for `no-cache` and `private` whose
+ * quoted-string arguments may contain commas; quoted-pair sequences (e.g.
+ * `\"` or `\,`) inside a quoted-string must not toggle the quote state or
+ * trigger a split. */
 function splitDirectives(value: string): string[] {
   // Fast path: no quotes means a simple split is safe.
   if (!value.includes('"')) return value.split(",");
@@ -170,6 +189,8 @@ function splitDirectives(value: string): string[] {
   for (let i = 0; i < value.length; i++) {
     const c = value.charCodeAt(i);
     if (c === 92 /* \ */ && inQuotes) {
+      // Quoted-pair (RFC 9110 §5.6.4): skip the escaped byte so a `\"` is
+      // not seen as a closing quote and a `\,` is not seen as a separator.
       i++;
     } else if (c === 34 /* " */) {
       inQuotes = !inQuotes;
@@ -183,14 +204,14 @@ function splitDirectives(value: string): string[] {
 }
 
 /** Parse a comma-separated list of HTTP field names from a directive argument.
- * Strips surrounding double quotes if present and unescapes `\"` sequences.
- * Returns an array of trimmed, non-empty field names. */
+ * Strips surrounding double quotes if present and unescapes any quoted-pair
+ * sequence (RFC 9110 §5.6.4). Returns an array of trimmed, non-empty field
+ * names. */
 function parseFieldNames(value: string): string[] {
-  const t = value.trim();
-  const parsed = t.length >= 2 && t.startsWith('"') && t.endsWith('"')
-    ? t.slice(1, -1).replace(/\\"/g, '"')
-    : t;
-  return parsed.split(",").map((s) => s.trim()).filter(Boolean);
+  return unquoteArgument(value)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -362,6 +383,13 @@ function append(
     out.push(directive);
     return;
   }
+  for (const name of value) {
+    if (!TCHAR_REGEXP.test(name)) {
+      throw new TypeError(
+        `Cache-Control: invalid field name in ${directive}: "${name}"`,
+      );
+    }
+  }
   out.push(`${directive}="${value.join(", ")}"`);
 }
 
@@ -385,6 +413,8 @@ function append(
  *
  * @throws {RangeError} If a numeric directive value is not a non-negative
  * integer (e.g. `NaN`, `Infinity`, `-1`, or `3.14`).
+ * @throws {TypeError} If a field name in `noCache` or `private` is not a
+ * valid HTTP token (RFC 9110 §5.6.2).
  */
 export function formatCacheControl(cc: CacheControl): string {
   const d: CacheControl = cc;
