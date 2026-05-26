@@ -26,10 +26,10 @@ export interface ParseOptions {
    */
   allowDuplicateKeys?: boolean;
   /**
-   * If defined, a function to call on warning messages taking an
-   * {@linkcode Error} as its only argument.
+   * If defined, a function to call on warning messages taking a
+   * {@linkcode SyntaxError} as its only argument.
    */
-  onWarning?(error: Error): void;
+  onWarning?(error: SyntaxError): void;
 }
 
 function sanitizeInput(input: string) {
@@ -64,7 +64,8 @@ function sanitizeInput(input: string) {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {SyntaxError} Throws error on invalid YAML.
+ * @throws {SyntaxError} Throws if the YAML is invalid or contains more than
+ * one document.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
@@ -111,11 +112,15 @@ export function parse(
  * assertEquals(data, [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" }]);
  * ```
  *
+ * @throws {SyntaxError} Throws if the YAML is invalid.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Array of parsed documents.
  */
-export function parseAll(content: string, options: ParseOptions = {}): unknown {
+export function parseAll(
+  content: string,
+  options: ParseOptions = {},
+): unknown[] {
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,
