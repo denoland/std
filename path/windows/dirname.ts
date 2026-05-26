@@ -25,6 +25,7 @@ import { fromFileUrl } from "./from_file_url.ts";
  *
  * @param path The path to get the directory from.
  * @returns The directory path.
+ * @throws {TypeError} If `path` is a `URL` instance whose protocol is not `file:`.
  */
 export function dirname(path: string | URL): string {
   if (path instanceof URL) {

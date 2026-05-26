@@ -86,7 +86,26 @@ for (let i = 0; i < 0x110000; i++) {
   }
 }
 
+const HEADER = `\
+// Copyright 2018-${new Date().getFullYear()} the Deno authors. MIT license.
+// This module is browser compatible.
+
+// This data is generated from the Unicode Character Database. See
+// \`_tools/generate_title_case_data.ts\` for the generation script. The mapping
+// is inlined as a TypeScript module rather than imported from JSON so that
+// bundlers (notably Vite) that don't handle JSON imports from JSR correctly
+// can still consume the module. See https://github.com/denoland/std/issues/7128.
+
+export const titleCaseMapping: Record<string, string> = {
+`;
+
+const FOOTER = "};\n";
+
+const entries = Object.entries(data)
+  .map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},\n`)
+  .join("");
+
 await Deno.writeTextFile(
-  new URL(import.meta.resolve("../title_case_mapping.json")),
-  JSON.stringify(data, null, 2) + "\n",
+  new URL(import.meta.resolve("../_title_case_mapping.ts")),
+  HEADER + entries + FOOTER,
 );
