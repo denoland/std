@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assert, assertEquals, assertRejects } from "@std/assert";
-import { parseXmlRecords } from "./parse_records.ts";
+import { parseXmlRecords, parseXmlRecordsFromBytes } from "./parse_records.ts";
 import { XmlSyntaxError } from "./types.ts";
 
 async function collect<T>(iter: AsyncIterable<T>): Promise<T[]> {
@@ -272,7 +272,7 @@ Deno.test("parseXmlRecords() yields records from earlier chunks before failing o
   assertEquals(received, ["1", "2"]);
 });
 
-Deno.test("parseXmlRecords() rejects with the parse error even if the consumer breaks early when the next chunk would throw", async () => {
+Deno.test("parseXmlRecords() suppresses parse errors when the consumer breaks before the malformed chunk", async () => {
   // Iteration consumes one record then breaks. The break completes the
   // iteration cleanly; the malformed chunk is never processed because the
   // consumer asked to stop. This documents the iterator contract that
@@ -455,4 +455,73 @@ Deno.test("parseXmlRecords() stops parsing further chunks when the consumer brea
     pullCount < totalChunks,
     `expected early break to bound upstream pulls, got ${pullCount}/${totalChunks}`,
   );
+});
+
+Deno.test("parseXmlRecordsFromBytes() decodes byte chunks and yields records", async () => {
+  const xml = new TextEncoder().encode(
+    "<feed><item>First</item><item>Second</item></feed>",
+  );
+  const titles = await collect(
+    parseXmlRecordsFromBytes<string>(
+      ReadableStream.from([xml]),
+      (emit) => {
+        let inside = false;
+        let text = "";
+        return {
+          onStartElement(name) {
+            if (name === "item") {
+              inside = true;
+              text = "";
+            }
+          },
+          onText(t) {
+            if (inside) text += t;
+          },
+          onEndElement(name) {
+            if (name === "item") {
+              emit(text);
+              inside = false;
+            }
+          },
+        };
+      },
+    ),
+  );
+  assertEquals(titles, ["First", "Second"]);
+});
+
+Deno.test("parseXmlRecordsFromBytes() handles multi-byte UTF-8 split across chunks", async () => {
+  // "café" — the 'é' (U+00E9) is two UTF-8 bytes (0xC3 0xA9). We split the
+  // input mid-character to verify the streaming TextDecoder reassembles it.
+  const full = new TextEncoder().encode("<root><item>café</item></root>");
+  const splitAt = full.indexOf(0xc3) + 1;
+  const chunks = [full.slice(0, splitAt), full.slice(splitAt)];
+
+  const out = await collect(
+    parseXmlRecordsFromBytes<string>(
+      ReadableStream.from(chunks),
+      (emit) => {
+        let inside = false;
+        let text = "";
+        return {
+          onStartElement(name) {
+            if (name === "item") {
+              inside = true;
+              text = "";
+            }
+          },
+          onText(t) {
+            if (inside) text += t;
+          },
+          onEndElement(name) {
+            if (name === "item") {
+              emit(text);
+              inside = false;
+            }
+          },
+        };
+      },
+    ),
+  );
+  assertEquals(out, ["café"]);
 });
