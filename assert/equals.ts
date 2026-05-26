@@ -64,5 +64,17 @@ export function assertEquals<T>(
   const diffMsg = buildMessage(diffResult, { stringDiff }, arguments[3])
     .join("\n");
   message = `${message}\n${diffMsg}`;
+  // #6878: if the diff shows no removed/added lines, the values stringify
+  // identically but were still deemed unequal — typically because at least
+  // one nested property is a function (or Promise / Request / Blob / etc.)
+  // that gets compared by reference. The empty diff is confusing, so append
+  // a hint pointing at the likely cause.
+  if (!stringDiff && diffResult.every((r) => r.type !== "added" && r.type !== "removed")) {
+    message = `${message}\n` +
+      "    Note: values stringify identically but are not structurally equal. " +
+      "Functions, Promises, Requests, Blobs, and other built-ins are compared by " +
+      "reference, so two distinct instances are never equal even when their " +
+      "representations match.";
+  }
   throw new AssertionError(message);
 }
