@@ -45,9 +45,12 @@ Deno.test({
   fn() {
     const headers = new Headers([["Cookie", "foo=bar"]]);
     const cookies = getCookies(headers);
-    assertType<IsExact<typeof cookies, Record<string, string>>>(true);
-    // allowed due to `noUncheckedIndexedAccess`
-    const baz = cookies.baz as undefined;
+    // Return type is Partial<Record<string, string>> so arbitrary key access
+    // surfaces as `string | undefined` regardless of `noUncheckedIndexedAccess`.
+    // Closes the type/runtime gap reported in #6852 and #7053 — at runtime the
+    // returned object is null-prototyped, so missing keys really are undefined.
+    assertType<IsExact<typeof cookies, Partial<Record<string, string>>>>(true);
+    const baz: string | undefined = cookies.baz;
     assertEquals(baz, undefined);
     assertEquals(Object.getPrototypeOf(cookies), null);
     assertEquals(cookies.toString, undefined);
