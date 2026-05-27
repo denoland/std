@@ -1,6 +1,6 @@
 {
   "name": "@std/collections",
-  "version": "1.1.7",
+  "version": "1.2.0",
   "exports": {
     ".": "./mod.ts",
     "./aggregate-groups": "./aggregate_groups.ts",
@@ -18,6 +18,7 @@
     "./find-single": "./find_single.ts",
     "./first-not-nullish-of": "./first_not_nullish_of.ts",
     "./includes-value": "./includes_value.ts",
+    "./interleave": "./interleave.ts",
     "./intersect": "./intersect.ts",
     "./invert-by": "./invert_by.ts",
     "./invert": "./invert.ts",
@@ -48,7 +49,6 @@
     "./union": "./union.ts",
     "./unstable-binary-search": "./unstable_binary_search.ts",
     "./unstable-cycle": "./unstable_cycle.ts",
-    "./unstable-interleave": "./unstable_interleave.ts",
     "./unzip": "./unzip.ts",
     "./without-all": "./without_all.ts",
     "./zip": "./zip.ts"
