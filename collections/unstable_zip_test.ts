@@ -12,7 +12,12 @@ function zip1Test<T>(
   assertEquals(actual, expected, message);
 }
 
-assertEquals(zip([]), []);
+Deno.test({
+  name: "zip() handles a single empty array",
+  fn() {
+    assertEquals(zip([]), []);
+  },
+});
 
 Deno.test({
   name: "zip() handles one array",
@@ -172,6 +177,24 @@ Deno.test({
     assertEquals(
       zip(new Set([1, 2, 3]), ["a", "b", "c"]),
       [[1, "a"], [2, "b"], [3, "c"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles a single non-array iterable",
+  fn() {
+    assertEquals(
+      zip(new Set([1, 2, 3])),
+      [[1], [2], [3]],
+    );
+    function* gen() {
+      yield "a";
+      yield "b";
+    }
+    assertEquals(
+      zip(gen()),
+      [["a"], ["b"]],
     );
   },
 });
