@@ -52,7 +52,8 @@ function sanitizeInput(input: string) {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {SyntaxError} Throws error on invalid YAML.
+ * @throws {SyntaxError} Throws if the YAML is invalid or contains more than
+ * one document.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
@@ -99,11 +100,15 @@ export function parse(
  * assertEquals(data, [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" }]);
  * ```
  *
+ * @throws {SyntaxError} Throws if the YAML is invalid.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Array of parsed documents.
  */
-export function parseAll(content: string, options: ParseOptions = {}): unknown {
+export function parseAll(
+  content: string,
+  options: ParseOptions = {},
+): unknown[] {
   content = sanitizeInput(content);
   const state = new LoaderState(content, {
     ...options,

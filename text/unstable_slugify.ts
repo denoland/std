@@ -7,7 +7,7 @@ const wordSegmenter = new Intl.Segmenter("en-US", { granularity: "word" });
 export type SlugifyOptions = {
   /**
    * The regular expression to use for stripping characters.
-   * @default {typeof NON_WORD}
+   * @default {@linkcode NON_WORD_REGEXP}
    */
   strip: RegExp;
   /**
