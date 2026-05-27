@@ -311,6 +311,20 @@ Deno.test("parseProblemDetails() throws TypeError for primitive input", () => {
   );
 });
 
+Deno.test("parseProblemDetails() throws TypeError for Response input", () => {
+  // A Response is a non-null, non-array object with no enumerable own keys,
+  // so without the guard it would silently return an empty ProblemDetails.
+  const response = new Response(
+    JSON.stringify({ status: 400, detail: "bad" }),
+    { headers: { "Content-Type": "application/problem+json" } },
+  );
+  assertThrows(
+    () => parseProblemDetails(response as unknown),
+    TypeError,
+    "Cannot parse Problem Details: input is a Response, use parseProblemDetailsResponse instead",
+  );
+});
+
 // --- parseProblemDetailsResponse ---
 
 Deno.test("parseProblemDetailsResponse() returns correct fields", async () => {

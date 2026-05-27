@@ -40,6 +40,8 @@
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc9457.html | RFC 9457}
+ *
  * @module
  */
 
@@ -120,8 +122,10 @@ export interface ProblemDetailsResponseOptions {
   /** Additional headers to include in the response. */
   headers?: HeadersInit;
   /**
-   * Status text for the response. When omitted, the platform's default for
-   * `status` is used.
+   * Status text for the response. When omitted, the `Response` constructor's
+   * default (the empty string, per the Fetch spec) is used; we deliberately
+   * do not synthesize one from the standard HTTP status text — the JSON
+   * `title` field already carries that information.
    */
   statusText?: string;
 }
@@ -138,6 +142,10 @@ export interface ProblemDetailsResponseOptions {
  * - Defaults `status` to `500` if not provided.
  * - Serializes directly to JSON — the flat intersection type already matches
  *   the RFC wire format, so no flattening step is needed.
+ * - Forwards `options.statusText` to the `Response` only when defined; when
+ *   omitted, the constructor's empty-string default is used and the standard
+ *   HTTP status text is intentionally not synthesized — the JSON `title`
+ *   field already carries that information.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -149,7 +157,8 @@ export interface ProblemDetailsResponseOptions {
  * @returns A `Response` with status, `application/problem+json` content type,
  * and the serialized problem details as the body.
  *
- * @throws {RangeError} If `problemDetails.status` is not a finite integer.
+ * @throws {RangeError} If `problemDetails.status` is not a finite integer, or
+ * is any value the `Response` constructor rejects (i.e. outside 200–599).
  *
  * @example Basic 404 response
  * ```ts
@@ -204,7 +213,7 @@ export function createProblemDetailsResponse<
 
   if (!Number.isInteger(pd.status)) {
     throw new RangeError(
-      `Cannot create Problem Details response: status must be a finite integer: received ${
+      `Cannot create Problem Details response: status must be a finite integer, received ${
         typeof pd.status === "string" ? `"${pd.status}"` : String(pd.status)
       }`,
     );
@@ -296,7 +305,9 @@ function normalizeParsedProblemDetails(
  *
  * @returns The parsed problem details.
  *
- * @throws {TypeError} If `input` is not a non-null, non-array object.
+ * @throws {TypeError} If `input` is not a non-null, non-array object, or if
+ * `input` is a `Response` (use {@linkcode parseProblemDetailsResponse}
+ * instead).
  *
  * @example Parse from a plain object
  * ```ts
@@ -316,6 +327,14 @@ function normalizeParsedProblemDetails(
 export function parseProblemDetails<
   T extends ProblemDetailsExtensions = Record<string, never>,
 >(input: unknown): ProblemDetails<T> {
+  // A `Response` is a non-null, non-array object with no enumerable own keys,
+  // so it would silently parse to an empty result. Reject it explicitly so
+  // callers who forgot to migrate to `parseProblemDetailsResponse` fail loudly.
+  if (input instanceof Response) {
+    throw new TypeError(
+      "Cannot parse Problem Details: input is a Response, use parseProblemDetailsResponse instead",
+    );
+  }
   return normalizeParsedProblemDetails(input) as ProblemDetails<T>;
 }
 
