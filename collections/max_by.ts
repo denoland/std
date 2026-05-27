@@ -9,6 +9,7 @@
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
@@ -28,6 +29,17 @@
  *
  * assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { maxBy } from "@std/collections/max-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [4, 3, 2, 1];
+ * const result = maxBy(array, (_, index) => index);
+ *
+ * assertEquals(result, 1);
+ * ```
  */
 export function maxBy<T>(
   array: Iterable<T>,
@@ -41,6 +53,7 @@ export function maxBy<T>(
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
@@ -73,6 +86,7 @@ export function maxBy<T>(
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
@@ -105,6 +119,7 @@ export function maxBy<T>(
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.

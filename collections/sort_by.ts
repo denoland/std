@@ -24,7 +24,8 @@ export type SortByOptions = {
  * @typeParam U The type of the selected values.
  *
  * @param iterator The iterator to sort.
- * @param selector The selector function to get the value to sort by.
+ * @param selector The selector function to get the value to sort by. The
+ * function receives the element and its index.
  * @param options The options for sorting.
  *
  * @returns A new array containing all elements sorted by the selector.
@@ -113,6 +114,17 @@ export type SortByOptions = {
  *   { name: "Kim", startedAt: new Date("2020-03-01") },
  *   { name: "John", startedAt: new Date("2020-06-01") },
  * ]);
+ * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { sortBy } from "@std/collections/sort-by";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [2, 3, 1];
+ * const result = sortBy(array, (_, index) => -index);
+ *
+ * assertEquals(result, [1, 3, 2]);
  * ```
  */
 export function sortBy<T>(

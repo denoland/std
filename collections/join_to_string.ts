@@ -48,7 +48,8 @@ export type JoinToStringOptions = {
  * @typeParam T The type of the elements in the input array.
  *
  * @param array The array to join elements from.
- * @param selector The function to transform elements to strings.
+ * @param selector The function to transform elements to strings. The function
+ * receives the element and its index.
  * @param options The options to configure the joining.
  *
  * @returns The resulting string.
@@ -73,6 +74,17 @@ export type JoinToStringOptions = {
  * });
  *
  * assertEquals(message, "result: Kim and others are winners");
+ * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { joinToString } from "@std/collections/join-to-string";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const names = ["Kim", "Anna", "Tim"];
+ * const result = joinToString(names, (name, index) => `${index}:${name}`);
+ *
+ * assertEquals(result, "0:Kim,1:Anna,2:Tim");
  * ```
  */
 export function joinToString<T>(

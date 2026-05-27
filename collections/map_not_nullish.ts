@@ -10,7 +10,8 @@
  * @typeParam O The type of the elements in the output array.
  *
  * @param array The array to map elements from.
- * @param transformer The function to transform each element.
+ * @param transformer The function to transform each element. The function
+ * receives the element and its index.
  *
  * @returns A new array with all elements transformed by the given transformer,
  * except the ones that were transformed to `null` or `undefined`.
@@ -29,6 +30,17 @@
  * const foundMiddleNames = mapNotNullish(people, (people) => people.middleName);
  *
  * assertEquals(foundMiddleNames, ["William", "Martha"]);
+ * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { mapNotNullish } from "@std/collections/map-not-nullish";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const values = [10, 20, 30, 40];
+ * const result = mapNotNullish(values, (value, index) => index % 2 === 0 ? value : null);
+ *
+ * assertEquals(result, [10, 30]);
  * ```
  */
 export function mapNotNullish<T, O>(

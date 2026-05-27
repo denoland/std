@@ -10,6 +10,7 @@
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The largest value of the given function or undefined if there are no
  * elements.
@@ -29,6 +30,17 @@
  *
  * assertEquals(maxCount, 32);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [4, 3, 2, 1];
+ * const result = maxOf(array, (_, index) => index);
+ *
+ * assertEquals(result, 3);
+ * ```
  */
 export function maxOf<T>(
   array: Iterable<T>,
@@ -43,6 +55,7 @@ export function maxOf<T>(
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.

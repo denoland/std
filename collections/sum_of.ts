@@ -8,7 +8,8 @@
  * @typeParam T The type of the array elements.
  *
  * @param array The array to calculate the sum of.
- * @param selector The selector function to get the value to sum.
+ * @param selector The selector function to get the value to sum. The function
+ * receives the element and its index.
  *
  * @returns The sum of all elements in the collection.
  *
@@ -26,6 +27,17 @@
  * const totalAge = sumOf(people, (person) => person.age);
  *
  * assertEquals(totalAge, 99);
+ * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { sumOf } from "@std/collections/sum-of";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [1, 2, 3];
+ * const result = sumOf(array, (_, index) => index);
+ *
+ * assertEquals(result, 3);
  * ```
  */
 export function sumOf<T>(

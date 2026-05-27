@@ -10,6 +10,7 @@
  *
  * @param array The array to find the minimum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The smallest value of the given function or undefined if there are
  * no elements.
@@ -29,6 +30,17 @@
  *
  * assertEquals(minCount, 2);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { minOf } from "@std/collections/min-of";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [4, 3, 2, 1];
+ * const result = minOf(array, (_, index) => index);
+ *
+ * assertEquals(result, 0);
+ * ```
  */
 export function minOf<T>(
   array: Iterable<T>,
@@ -43,6 +55,7 @@ export function minOf<T>(
  *
  * @param array The array to find the minimum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the smallest value of the given function
  * or undefined if there are no elements.

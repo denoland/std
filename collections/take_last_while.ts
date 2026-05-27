@@ -9,7 +9,7 @@
  *
  * @param iterable The iterable to take elements from.
  * @param predicate The predicate function to determine if an element should be
- * included.
+ * included. The function receives the element and its index.
  *
  * @returns An array containing all elements after the last element that does
  * not match the predicate.
@@ -22,6 +22,17 @@
  * const numbers = [1, 2, 3, 4, 5, 6];
  * const result = takeLastWhile(numbers, (number) => number > 4);
  * assertEquals(result, [5, 6]);
+ * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { takeLastWhile } from "@std/collections/take-last-while";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [20, 30, 20];
+ * const result = takeLastWhile(array, (_, index) => index > 0);
+ *
+ * assertEquals(result, [30, 20]);
  * ```
  */
 export function takeLastWhile<T>(
