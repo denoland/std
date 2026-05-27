@@ -15,6 +15,25 @@ export interface RollingCounterSnapshot {
 }
 
 /**
+ * Read-only view of a {@linkcode RollingCounter}. Strips all mutation methods,
+ * following the `ReadonlyArray` / `ReadonlyMap` / `ReadonlySet` pattern.
+ * A `RollingCounter` is directly assignable to `ReadonlyRollingCounter`.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export type ReadonlyRollingCounter = Pick<
+  RollingCounter,
+  | "current"
+  | "total"
+  | "segmentCount"
+  | "at"
+  | "toArray"
+  | "toJSON"
+  | typeof Symbol.iterator
+  | typeof Symbol.toStringTag
+>;
+
+/**
  * A fixed-size rolling counter.
  *
  * The counter splits a window into a fixed number of segments, each tracking
@@ -66,7 +85,8 @@ export interface RollingCounterSnapshot {
  * assertEquals([...counter], [3, 0, 0]);
  * ```
  */
-export class RollingCounter implements Iterable<number> {
+export class RollingCounter
+  implements Iterable<number>, ReadonlyRollingCounter {
   #segments: number[];
   #cursor: number;
   #total: number;
@@ -92,15 +112,22 @@ export class RollingCounter implements Iterable<number> {
   }
 
   /**
-   * Creates a counter from a snapshot previously obtained via
+   * Creates a counter from an existing {@linkcode RollingCounter} or from a
+   * snapshot previously obtained via
    * {@linkcode RollingCounter.prototype.toJSON | `toJSON`}. The snapshot's
    * `segments` array defines both the number of segments and their initial
    * values, ordered oldest to newest (matching iteration order). The last
    * element is the current (newest) segment.
    *
+   * When given a `RollingCounter`, returns an independent clone with a
+   * canonical internal layout: segments laid out oldest-to-newest with the
+   * current segment at the last position. Mutating the clone does not affect
+   * the source.
+   *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
-   * @param snapshot A snapshot previously obtained from `toJSON`.
+   * @param source A `RollingCounter` to clone, or a snapshot previously
+   * obtained from `toJSON`.
    * @returns A new `RollingCounter` with the given state.
    *
    * @example Round-trip serialization
@@ -120,16 +147,48 @@ export class RollingCounter implements Iterable<number> {
    * assertEquals(restored.total, original.total);
    * assertEquals(restored.segmentCount, original.segmentCount);
    * ```
+   *
+   * @example Cloning from a counter
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const original = new RollingCounter(3);
+   * original.increment(5);
+   * original.rotate();
+   * original.increment(3);
+   *
+   * const clone = RollingCounter.from(original);
+   * clone.rotate();
+   * clone.increment(7);
+   *
+   * assertEquals([...original], [0, 5, 3]);
+   * assertEquals([...clone], [5, 3, 7]);
+   * ```
    */
-  static from(snapshot: RollingCounterSnapshot): RollingCounter {
-    if (snapshot === null || typeof snapshot !== "object") {
+  static from(
+    source: RollingCounter | RollingCounterSnapshot,
+  ): RollingCounter {
+    if (source instanceof RollingCounter) {
+      const src = source.#segments;
+      const len = src.length;
+      const counter = new RollingCounter(len);
+      let start = source.#cursor + 1;
+      if (start >= len) start = 0;
+      const firstLen = len - start;
+      for (let i = 0; i < firstLen; i++) counter.#segments[i] = src[start + i]!;
+      for (let i = 0; i < start; i++) counter.#segments[firstLen + i] = src[i]!;
+      counter.#total = source.#total;
+      return counter;
+    }
+    if (source === null || typeof source !== "object") {
       throw new TypeError(
-        `Cannot restore RollingCounter: "snapshot" must be an object, got ${
-          snapshot === null ? "null" : typeof snapshot
+        `Cannot restore RollingCounter: "source" must be a RollingCounter or snapshot object, got ${
+          source === null ? "null" : typeof source
         }`,
       );
     }
-    const { segments } = snapshot;
+    const { segments } = source;
     if (!Array.isArray(segments)) {
       throw new TypeError(
         `Cannot restore RollingCounter: "segments" must be an array, got ${typeof segments}`,
