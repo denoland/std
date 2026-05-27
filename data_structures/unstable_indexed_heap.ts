@@ -56,6 +56,20 @@ function checkPriority(priority: unknown): void {
 }
 
 /**
+ * Conditional rest-parameter tuple for the comparator options bag. When
+ * the priority `P` is one of the primitive types that {@linkcode ascend}
+ * orders correctly (`number`, `bigint`, `string`, plus their literal and
+ * union subtypes), the options bag — and therefore `compare` itself —
+ * is optional. For any other `P` (object, tuple, custom class), the
+ * options bag is required and must provide `compare`; without it,
+ * `ascend` would silently produce nonsense ordering (e.g., lexicographic
+ * string comparison of `[number, number]` tuples).
+ */
+type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
+  ? [options?: { compare?: (a: P, b: P) => number }]
+  : [options: { compare: (a: P, b: P) => number }];
+
+/**
  * A priority queue that supports looking up, removing, and re-prioritizing
  * entries by key. Each entry is a unique `(key, priority)` pair. The entry
  * with the smallest priority (under the comparator) is always at the front.
@@ -102,7 +116,10 @@ function checkPriority(priority: unknown): void {
  * priority's contents (e.g., `heap.peek().priority[0] = 0`) corrupts
  * the heap invariant. Use
  * {@linkcode IndexedHeap.prototype.set | set} to change a key's
- * priority.
+ * priority. `set` itself uses reference equality (`===`) to short-circuit
+ * when the priority is unchanged, so passing a structurally-equal but
+ * distinct object/tuple priority replaces the reference and runs a sift
+ * (no observable reorder, but not a no-op).
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -183,9 +200,12 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * @param entries An optional iterable of `[key, priority]` pairs. Each key
    * must be unique; duplicates throw a `TypeError`. Pass `null` or
    * `undefined` to create an empty heap with options.
-   * @param options Optional configuration. `compare` overrides the default
-   * ascending-numeric ordering; pass {@linkcode descend} for max-heap
-   * order, or a custom function for tuple/`bigint`/etc. priorities.
+   * @param options Optional configuration when `P` is `number`, `bigint`,
+   * or `string`; required when `P` is any other type (e.g. tuples or
+   * objects) so the heap has a valid comparator. `compare` overrides the
+   * default ascending-numeric ordering; pass {@linkcode descend} for
+   * max-heap order, or a custom function for tuple/`bigint`/etc.
+   * priorities.
    *
    * @example Empty heap
    * ```ts
@@ -229,6 +249,10 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    */
   constructor(
     entries?: Iterable<readonly [K, P]> | null,
+    ...options: IndexedHeapCompareArgs<P>
+  );
+  constructor(
+    entries?: Iterable<readonly [K, P]> | null,
     options?: { compare?: (a: P, b: P) => number },
   ) {
     const compare = options?.compare ?? (ascend as (a: P, b: P) => number);
@@ -240,7 +264,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
     this.#compare = compare;
     if (entries === undefined || entries === null) return;
     if (
-      typeof entries !== "object" && typeof entries !== "string" ||
+      typeof entries !== "object" ||
       !(Symbol.iterator in Object(entries))
     ) {
       throw new TypeError(
@@ -267,22 +291,14 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   readonly [Symbol.toStringTag] = "IndexedHeap" as const;
 
   /**
-   * Create a new {@linkcode IndexedHeap} from an iterable of key-priority
-   * pairs, an array-like of key-priority pairs, or an existing
-   * {@linkcode IndexedHeap}. When copying from another `IndexedHeap`, the
-   * source's comparator is inherited unless `options.compare` overrides it.
+   * Create a shallow copy of an existing {@linkcode IndexedHeap}. The
+   * source's comparator is inherited unless `options.compare` overrides
+   * it; when overridden, the copy is re-heapified in O(n).
+   *
+   * Because the source already carries a valid comparator, `compare`
+   * stays optional regardless of the priority type `P`.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
-   * @example Creating from an array of pairs
-   * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const heap = IndexedHeap.from([["a", 3], ["b", 1], ["c", 2]]);
-   * assertEquals(heap.peek(), { key: "b", priority: 1 });
-   * assertEquals(heap.size, 3);
-   * ```
    *
    * @example Creating from another IndexedHeap (shallow copy)
    * ```ts
@@ -297,16 +313,6 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * assertEquals(copy.peek(), { key: "y", priority: 5 });
    * assertEquals(copy.size, 2);
    * assertEquals(original.size, 2);
-   * ```
-   *
-   * @example Creating from a Map (iterable of [key, value] pairs)
-   * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const map = new Map([["task-a", 3], ["task-b", 1]]);
-   * const heap = IndexedHeap.from(map);
-   * assertEquals(heap.peek(), { key: "task-b", priority: 1 });
    * ```
    *
    * @example Re-ordering an existing heap with a different comparator
@@ -324,13 +330,75 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @typeParam K The type of the keys in the heap.
    * @typeParam P The type of the priority. Defaults to `number`.
-   * @param collection An iterable or array-like of `[key, priority]` pairs,
-   *   or an existing {@linkcode IndexedHeap} to copy.
-   * @param options Optional configuration. `compare` overrides the
-   *   ordering; when copying from another `IndexedHeap`, omitting this
-   *   inherits the source's comparator.
+   * @param collection The source {@linkcode IndexedHeap} to copy.
+   * @param options Optional configuration. Omitting it inherits the
+   *   source's comparator; passing `compare` overrides it and triggers
+   *   a re-heapify.
+   * @returns A new heap containing all entries from the source heap.
+   */
+  static from<K, P = number>(
+    collection: IndexedHeap<K, P>,
+    options?: { compare?: (a: P, b: P) => number },
+  ): IndexedHeap<K, P>;
+  /**
+   * Create a new {@linkcode IndexedHeap} from an iterable or array-like
+   * of `[key, priority]` pairs.
+   *
+   * When the priority type `P` is `number`, `bigint`, or `string`, the
+   * default {@linkcode ascend} comparator orders correctly and the
+   * `options` bag is optional. For any other `P` (tuples, objects), the
+   * `compare` option is required at the type level so the heap has a
+   * valid comparator — otherwise `ascend` would silently mis-order.
+   *
+   * Use the {@linkcode IndexedHeap.from} overload that takes an existing
+   * {@linkcode IndexedHeap} to copy from another heap instead.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Creating from an array of pairs
+   * ```ts
+   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const heap = IndexedHeap.from([["a", 3], ["b", 1], ["c", 2]]);
+   * assertEquals(heap.peek(), { key: "b", priority: 1 });
+   * assertEquals(heap.size, 3);
+   * ```
+   *
+   * @example Creating from a Map (iterable of [key, value] pairs)
+   * ```ts
+   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const map = new Map([["task-a", 3], ["task-b", 1]]);
+   * const heap = IndexedHeap.from(map);
+   * assertEquals(heap.peek(), { key: "task-b", priority: 1 });
+   * ```
+   *
+   * @example Tuple priority requires an explicit comparator
+   * ```ts
+   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const heap = IndexedHeap.from<string, [number, number]>(
+   *   [["a", [5, 0]], ["b", [3, 1]]],
+   *   { compare: (a, b) => a[0] - b[0] || a[1] - b[1] },
+   * );
+   * assertEquals(heap.peek(), { key: "b", priority: [3, 1] });
+   * ```
+   *
+   * @typeParam K The type of the keys in the heap.
+   * @typeParam P The type of the priority. Defaults to `number`.
+   * @param collection An iterable or array-like of `[key, priority]` pairs.
+   * @param options Optional configuration when `P` is `number`, `bigint`,
+   *   or `string`; required when `P` is any other type. `compare`
+   *   overrides the default ascending-numeric ordering.
    * @returns A new heap containing all entries from the collection.
    */
+  static from<K, P = number>(
+    collection: Iterable<readonly [K, P]> | ArrayLike<readonly [K, P]>,
+    ...options: IndexedHeapCompareArgs<P>
+  ): IndexedHeap<K, P>;
   static from<K, P = number>(
     collection:
       | IndexedHeap<K, P>
@@ -340,7 +408,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   ): IndexedHeap<K, P> {
     if (
       collection === null || collection === undefined ||
-      typeof collection !== "object" && typeof collection !== "string" ||
+      typeof collection !== "object" ||
       !(
         Symbol.iterator in Object(collection) ||
         "length" in Object(collection)
@@ -351,7 +419,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
       );
     }
     if (collection instanceof IndexedHeap) {
-      const heap = new IndexedHeap<K, P>(null, {
+      const heap = IndexedHeap.#createInternal<K, P>({
         compare: options?.compare ?? collection.#compare,
       });
       for (const entry of collection.#data) {
@@ -368,13 +436,29 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
       }
       return heap;
     }
-    const heap = new IndexedHeap<K, P>(null, options);
+    const heap = IndexedHeap.#createInternal<K, P>(options);
     heap.#bulkLoad(
       Symbol.iterator in Object(collection)
         ? collection as Iterable<readonly [K, P]>
         : Array.from(collection as ArrayLike<readonly [K, P]>),
     );
     return heap;
+  }
+
+  /**
+   * Allocate a new {@linkcode IndexedHeap} from inside the class, bypassing
+   * the public constructor's conditional rest-tuple constraint. Used by
+   * {@linkcode IndexedHeap.from} where `P` is still generic and the
+   * conditional `IndexedHeapCompareArgs<P>` cannot be resolved.
+   */
+  static #createInternal<K, P>(
+    options?: { compare?: (a: P, b: P) => number },
+  ): IndexedHeap<K, P> {
+    type RelaxedCtor = new <K2, P2>(
+      entries?: Iterable<readonly [K2, P2]> | null,
+      options?: { compare?: (a: P2, b: P2) => number },
+    ) => IndexedHeap<K2, P2>;
+    return new (IndexedHeap as RelaxedCtor)<K, P>(null, options);
   }
 
   /**
@@ -533,11 +617,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * Return the front entry (smallest priority) without removing it, or
    * `undefined` if the heap is empty.
    *
-   * The returned wrapper is a fresh object — replacing its `key` or
-   * `priority` property has no effect on the heap. Object-typed
-   * priorities (e.g., tuples) share their reference with the heap and
-   * must not be mutated; see the class-level note on priority
-   * mutability.
+   * The returned entry is a fresh wrapper, but for object-typed priorities
+   * the `priority` field shares its reference with the heap — see the
+   * class-level note on treating object priorities as immutable.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
@@ -667,6 +749,13 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * counterpart to {@linkcode IndexedHeap.prototype.push | push} (which
    * throws on existing keys) and is the natural operation for relaxation
    * steps in graph algorithms like Dijkstra's.
+   *
+   * When `key` already exists, the no-op fast path uses reference equality
+   * (`===`) to skip work when the new priority is identical to the old.
+   * For object/tuple priorities this means a structurally-equal but
+   * distinct reference still replaces the stored reference and runs a
+   * sift (no observable reorder, but not free). See the class-level note
+   * on treating object priorities as immutable.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
@@ -880,6 +969,10 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * Use {@linkcode IndexedHeap.prototype.drain | drain} to retrieve entries
    * in sorted (smallest-first) order.
    *
+   * Each returned entry is a fresh wrapper, but for object-typed priorities
+   * the `priority` field shares its reference with the heap — see the
+   * class-level note on treating object priorities as immutable.
+   *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
@@ -913,6 +1006,10 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * Mutating the heap (`push`, `pop`, `set`, `delete`, `clear`) while
    * iterating is not supported and may skip or repeat entries.
+   *
+   * Each yielded entry is a fresh wrapper, but for object-typed priorities
+   * the `priority` field shares its reference with the heap — see the
+   * class-level note on treating object priorities as immutable.
    *
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    *

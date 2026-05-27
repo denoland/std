@@ -727,14 +727,31 @@ Deno.test("IndexedHeap.from() throws TypeError on non-iterable, non-array-like i
   assertThrows(() => IndexedHeap.from({} as any), TypeError, message);
 });
 
-Deno.test("IndexedHeap.from() accepts strings (iterable of characters)", () => {
-  // A string is iterable, so it passes the `from()` guard. Each destructured
-  // character yields `key = char`, `priority = undefined`, resulting in a
-  // heap with two undefined-priority entries. Not useful in practice, but
-  // documents that strings bypass the type guard.
-  // deno-lint-ignore no-explicit-any
-  const heap = IndexedHeap.from("ab" as any);
-  assertEquals(heap.size, 2);
+Deno.test("IndexedHeap constructor rejects a string with a helpful error", () => {
+  // Strings are technically iterable but never as `Iterable<[K, P]>`.
+  // Route them through the same "did you mean `from`?" guard as any other
+  // non-iterable-of-pairs input, instead of letting them silently fail
+  // inside the destructuring loop with a confusing error.
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => new IndexedHeap("ab" as any),
+    TypeError,
+    "the 'entries' parameter is not iterable, did you mean to call IndexedHeap.from?",
+  );
+});
+
+Deno.test("IndexedHeap.from() rejects a string with a helpful error", () => {
+  // A string is both iterable (yielding characters) and array-like (has
+  // `length`), so it would otherwise bypass the type guard and silently
+  // build a heap of undefined-priority entries from destructured chars.
+  // Reject it explicitly so the caller learns the type was wrong, instead
+  // of debugging a heap full of `priority: undefined`.
+  assertThrows(
+    // deno-lint-ignore no-explicit-any
+    () => IndexedHeap.from("ab" as any),
+    TypeError,
+    "the 'collection' parameter is not iterable or array-like",
+  );
 });
 
 Deno.test("IndexedHeap toArray() returns all entries without modifying heap", () => {
@@ -948,6 +965,57 @@ Deno.test("IndexedHeap throws TypeError when compare option is not a function", 
       }),
     TypeError,
     "the 'compare' option is not a function",
+  );
+});
+
+Deno.test("IndexedHeap requires compare at the type level when priority is not a primitive", () => {
+  // Primitive priorities (number, bigint, string) accept ascend by default,
+  // so the options bag — and therefore `compare` — stays optional.
+  const _numHeap = new IndexedHeap<string>();
+  const _bigintHeap = new IndexedHeap<string, bigint>();
+  const _strHeap = new IndexedHeap<string, string>();
+
+  // Non-primitive priorities (tuples, objects) would silently lexicographically
+  // mis-order under the default `ascend`, so `compare` is required at the
+  // type level. The casts below pin the @ts-expect-error to the missing
+  // `compare`, not to anything else; if the typed overload regresses the
+  // compiler will stop flagging these lines and the test will fail to
+  // typecheck (because @ts-expect-error itself errors when nothing errors).
+
+  // @ts-expect-error - 'compare' is required when P is a tuple
+  const _tupleHeap = new IndexedHeap<string, [number, number]>();
+  // @ts-expect-error - 'compare' is required when P is an object
+  const _objHeap = new IndexedHeap<string, { score: number }>();
+  // @ts-expect-error - 'compare' is required when P is a tuple
+  const _tupleFromIter = IndexedHeap.from<string, [number, number]>([]);
+
+  // Supplying `compare` satisfies the requirement.
+  const _tupleHeapOk = new IndexedHeap<string, [number, number]>(null, {
+    compare: (a, b) => a[0] - b[0] || a[1] - b[1],
+  });
+  const _objHeapOk = new IndexedHeap<string, { score: number }>([], {
+    compare: (a, b) => a.score - b.score,
+  });
+
+  // Copying from an existing IndexedHeap inherits the source's comparator,
+  // so `compare` stays optional even when P is non-primitive.
+  const _tupleCopy = IndexedHeap.from(_tupleHeapOk);
+
+  // Reference all locals so this stays a runtime-passing test even if the
+  // type-only assertions above are ever removed.
+  assertEquals(
+    [
+      _numHeap.size,
+      _bigintHeap.size,
+      _strHeap.size,
+      _tupleHeap.size,
+      _objHeap.size,
+      _tupleFromIter.size,
+      _tupleHeapOk.size,
+      _objHeapOk.size,
+      _tupleCopy.size,
+    ],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
   );
 });
 
