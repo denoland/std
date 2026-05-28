@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { canonicalize, canonicalizeToBytes } from "./unstable_canonicalize.ts";
+import { canonicalize, canonicalizeToBytes } from "./canonicalize.ts";
 
 // RFC 8785 §3.2.2.1: Literals
 
@@ -127,6 +127,39 @@ Deno.test("canonicalize() sorts object keys by UTF-16 code units", () => {
 Deno.test("canonicalize() sorts unicode keys by UTF-16 code units", () => {
   assertEquals(canonicalize({ "€": 1, "$": 2 }), '{"$":2,"€":1}');
   assertEquals(canonicalize({ "ö": 1, "o": 2 }), '{"o":2,"ö":1}');
+});
+
+Deno.test("canonicalize() sorts supplementary-plane keys by UTF-16 code units (RFC 8785 §3.2.3)", () => {
+  // RFC 8785 §3.2.3 sorting vector: keys span ASCII, control chars, BMP, and
+  // supplementary plane (surrogate pairs). Default sort matches UTF-16 order.
+  const data = {
+    "\u20ac": "Euro Sign",
+    "\r": "Carriage Return",
+    "\ufb33": "Hebrew Letter Dalet With Dagesh",
+    "1": "One",
+    "\ud83d\ude00": "Emoji: Grinning Face",
+    "\u0080": "Control",
+    "\u00f8": "Latin Small Letter O With Stroke",
+  };
+  // Verify the canonical key order directly (not via JSON.parse, which
+  // reorders integer-like keys per V8 property ordering rules).
+  assertEquals(
+    canonicalize(data),
+    '{"\\r":"Carriage Return",' +
+      '"1":"One",' +
+      '"\u0080":"Control",' +
+      '"\u00f8":"Latin Small Letter O With Stroke",' +
+      '"\u20ac":"Euro Sign",' +
+      '"\ud83d\ude00":"Emoji: Grinning Face",' +
+      '"\ufb33":"Hebrew Letter Dalet With Dagesh"}',
+  );
+});
+
+Deno.test("canonicalize() orders BMP key before supplementary-plane key", () => {
+  assertEquals(
+    canonicalize({ "\ud83d\ude00": 1, "a": 2 }),
+    '{"a":2,"\ud83d\ude00":1}',
+  );
 });
 
 Deno.test("canonicalize() handles keys requiring escaping", () => {

@@ -23,3 +23,4 @@ export * from "./concatenated_json_parse_stream.ts";
 export * from "./types.ts";
 export * from "./parse_stream.ts";
 export * from "./stringify_stream.ts";
+export * from "./canonicalize.ts";

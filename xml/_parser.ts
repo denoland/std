@@ -35,12 +35,12 @@ import {
  *
  * @see {@link https://www.w3.org/TR/xml/#AVNormalize}
  */
-function normalizeAttributeValue(raw: string): string {
+function normalizeAttributeValue(raw: string, xml11: boolean): string {
   // Replace literal \t and \n with space BEFORE entity decoding (preserves &#10;)
   const normalized = raw.includes("\t") || raw.includes("\n")
     ? raw.replace(/[\t\n]/g, " ")
     : raw;
-  return decodeEntities(normalized);
+  return decodeEntities(normalized, xml11);
 }
 
 /** Threshold above which duplicate detection switches from linear scan to Set. */
@@ -87,9 +87,9 @@ class AttributeIteratorImpl implements XmlAttributeIterator {
   }
 
   /** @internal Add an attribute (name already decoded, value raw). */
-  _add(name: string, value: string): void {
+  _add(name: string, value: string, xml11: boolean): void {
     this.#names[this.#count] = name;
-    this.#values[this.#count] = normalizeAttributeValue(value);
+    this.#values[this.#count] = normalizeAttributeValue(value, xml11);
     this.#colonIndices[this.#count] = name.indexOf(":");
     this.#uris[this.#count] = undefined;
     this.#nameSet?.add(name);
@@ -137,6 +137,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
   #coerceCDataToText: boolean;
   #maxDepth: number;
   #maxAttributes: number;
+  #xml11: boolean;
 
   #elementStack: Array<{
     rawName: string;
@@ -173,7 +174,11 @@ export class XmlEventParser implements XmlTokenCallbacks {
   /** Pending namespace bindings for current element */
   #pendingNsBindings: Array<[string, string | undefined]> = [];
 
-  constructor(callbacks: XmlEventCallbacks, options: ParseStreamOptions = {}) {
+  constructor(
+    callbacks: XmlEventCallbacks,
+    options: ParseStreamOptions = {},
+    xml11: boolean = false,
+  ) {
     this.#callbacks = callbacks;
     this.#ignoreWhitespace = options.ignoreWhitespace ?? false;
     this.#ignoreComments = options.ignoreComments ?? false;
@@ -182,6 +187,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
     this.#coerceCDataToText = options.coerceCDataToText ?? false;
     this.#maxDepth = options.maxDepth ?? Infinity;
     this.#maxAttributes = options.maxAttributes ?? Infinity;
+    this.#xml11 = xml11;
   }
 
   // XmlTokenCallbacks implementation
@@ -240,8 +246,12 @@ export class XmlEventParser implements XmlTokenCallbacks {
       // Validate namespace binding if this is an xmlns attribute
       if (name === "xmlns" || name.startsWith("xmlns:")) {
         // Normalize the attribute value for namespace URI
-        const normalizedValue = normalizeAttributeValue(value);
-        const nsError = validateNamespaceBinding(name, normalizedValue);
+        const normalizedValue = normalizeAttributeValue(value, this.#xml11);
+        const nsError = validateNamespaceBinding(
+          name,
+          normalizedValue,
+          this.#xml11,
+        );
         if (nsError) {
           throw new XmlSyntaxError(
             nsError,
@@ -287,7 +297,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
           },
         );
       }
-      this.#attrIterator._add(name, value);
+      this.#attrIterator._add(name, value, this.#xml11);
     }
   }
 
@@ -560,7 +570,7 @@ export class XmlEventParser implements XmlTokenCallbacks {
     }
 
     // Inside root element - decode entities
-    const text = decodeEntities(content);
+    const text = decodeEntities(content, this.#xml11);
     if (this.#ignoreWhitespace && WHITESPACE_ONLY_REGEXP.test(text)) return;
     this.#callbacks.onText?.(text, line, column, offset);
   }

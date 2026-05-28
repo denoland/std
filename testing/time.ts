@@ -10,7 +10,7 @@
  * } from "@std/testing/mock";
  * import { FakeTime } from "@std/testing/time";
  *
- * function secondInterval(cb: () => void): number {
+ * function secondInterval(cb: () => void) {
  *   return setInterval(cb, 1000);
  * }
  *
@@ -138,15 +138,15 @@ function assertIsCallbackFunction(
   }
 }
 
-const fakeSetTimeout: typeof globalThis.setTimeout = function (
-  callback,
+function fakeSetTimeout(
+  callback: string | ((...args: unknown[]) => unknown),
   delay = 0,
-  ...args
-) {
+  ...args: unknown[]
+): number {
   assertIsCallbackFunction(callback, "setTimeout");
   if (!time) throw new TimeError("Cannot set timeout: time is not faked");
   return setTimer(callback, delay, args, false);
-};
+}
 
 function fakeClearTimeout(id?: unknown) {
   if (!time) throw new TimeError("Cannot clear timeout: time is not faked");
@@ -155,15 +155,15 @@ function fakeClearTimeout(id?: unknown) {
   }
 }
 
-const fakeSetInterval: typeof globalThis.setInterval = function (
-  callback,
+function fakeSetInterval(
+  callback: string | ((...args: unknown[]) => unknown),
   delay = 0,
-  ...args
-) {
+  ...args: unknown[]
+): number {
   assertIsCallbackFunction(callback, "setInterval");
   if (!time) throw new TimeError("Cannot set interval: time is not faked");
   return setTimer(callback, delay, args, true);
-};
+}
 
 function fakeClearInterval(id?: unknown) {
   if (!time) throw new TimeError("Cannot clear interval: time is not faked");
@@ -173,8 +173,7 @@ function fakeClearInterval(id?: unknown) {
 }
 
 function setTimer(
-  // deno-lint-ignore no-explicit-any
-  callback: (...args: any[]) => void,
+  callback: (...args: unknown[]) => unknown,
   delay = 0,
   args: unknown[],
   repeat = false,
@@ -209,9 +208,11 @@ function fakeAbortSignalTimeout(delay: number): AbortSignal {
 
 function overrideGlobals() {
   globalThis.Date = FakeDate;
-  globalThis.setTimeout = fakeSetTimeout;
+  globalThis.setTimeout =
+    fakeSetTimeout as unknown as typeof globalThis.setTimeout;
   globalThis.clearTimeout = fakeClearTimeout;
-  globalThis.setInterval = fakeSetInterval;
+  globalThis.setInterval =
+    fakeSetInterval as unknown as typeof globalThis.setInterval;
   globalThis.clearInterval = fakeClearInterval;
   AbortSignal.timeout = fakeAbortSignalTimeout;
 }
@@ -245,7 +246,7 @@ let now: number;
 let initializedAt: number;
 let advanceRate: number;
 let advanceFrequency: number;
-let advanceIntervalId: number | undefined;
+let advanceIntervalId: ReturnType<typeof setInterval> | undefined;
 let timerId: Generator<number>;
 let dueNodes: Map<number, DueNode>;
 let dueTree: RedBlackTree<DueNode>;
@@ -265,7 +266,7 @@ let dueTree: RedBlackTree<DueNode>;
  * } from "@std/testing/mock";
  * import { FakeTime } from "@std/testing/time";
  *
- * function secondInterval(cb: () => void): number {
+ * function secondInterval(cb: () => void) {
  *   return setInterval(cb, 1000);
  * }
  *
@@ -575,7 +576,7 @@ export class FakeTime {
       );
     }
     return await new Promise((resolve, reject) => {
-      let timer: number | null = null;
+      let timer: ReturnType<typeof setTimeout> | null = null;
       const abort = () =>
         FakeTime
           .restoreFor(() => {
@@ -629,7 +630,7 @@ export class FakeTime {
    * } from "@std/testing/mock";
    * import { FakeTime } from "@std/testing/time";
    *
-   * function secondInterval(cb: () => void): number {
+   * function secondInterval(cb: () => void) {
    *   return setInterval(cb, 1000);
    * }
    *

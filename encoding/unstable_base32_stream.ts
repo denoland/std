@@ -134,7 +134,7 @@ export class Base32EncoderStream<T extends "string" | "bytes">
  *   Base32DecoderStream,
  *   Base32EncoderStream,
  * } from "@std/encoding/unstable-base32-stream";
- * import { toBytes } from "@std/streams/unstable-to-bytes";
+ * import { toBytes } from "@std/streams/to-bytes";
  *
  * const readable = (await Deno.open("./deno.lock"))
  *   .readable

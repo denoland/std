@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
-import _titleCaseMapping from "./title_case_mapping.json" with { type: "json" };
-const titleCaseMap = new Map(Object.entries(_titleCaseMapping));
+import { titleCaseMapping } from "./_title_case_mapping.ts";
+const titleCaseMap = new Map(Object.entries(titleCaseMapping));
 
 /** The case for the remaining characters in the string */
 export type TrailingCase = "lower" | "unchanged";

@@ -48,9 +48,11 @@
  */
 
 /**
- * Shared Cache-Control directives valid in both request and response.
+ * Directives shared by both request and response Cache-Control headers.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @see {@link https://www.rfc-editor.org/rfc/rfc9111#section-5.2}
  */
 export interface CacheControlBase {
   /** When present, the cache must not store the request or response. */
@@ -62,6 +64,8 @@ export interface CacheControlBase {
    * greater than this. In a response: the response is stale after this many seconds.
    */
   maxAge?: number;
+  /** Allow use of stale response if revalidation fails (seconds). */
+  staleIfError?: number;
 }
 
 /**
@@ -118,22 +122,16 @@ export interface ResponseCacheControl extends CacheControlBase {
   immutable?: true;
   /** Allow use of stale response while revalidating in the background (seconds). */
   staleWhileRevalidate?: number;
-  /** Allow use of stale response if revalidation fails (seconds). */
-  staleIfError?: number;
 }
 
 /**
- * Parsed Cache-Control value. Union of request and response types when direction
- * is unknown (e.g. after parsing a raw header string).
+ * Parsed Cache-Control value. Contains all directives from both request and
+ * response contexts with the widest applicable types. Returned by
+ * {@linkcode parseCacheControl} and accepted by {@linkcode formatCacheControl}.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
-export type CacheControl = RequestCacheControl | ResponseCacheControl;
-
-/** Union of every directive field across both interfaces, using the widest type
- * for fields that appear in both (e.g. `noCache` becomes `true | string[]`).
- * Avoids per-field type assertions during parsing and formatting. */
-type AllCacheControlFields = {
+export type CacheControl = {
   [K in keyof RequestCacheControl | keyof ResponseCacheControl]?: K extends
     keyof RequestCacheControl
     ? K extends keyof ResponseCacheControl
@@ -147,9 +145,27 @@ type AllCacheControlFields = {
  * clamped to this sentinel which represents "infinity" (~68 years). */
 const MAX_DELTA_SECONDS = 2_147_483_648; // 2^31
 
+const DIGITS_REGEXP = /^\d+$/;
+
+/** RFC 9110 §5.6.2 tchar; used to validate HTTP token grammar (e.g. field
+ * names that appear inside `no-cache` / `private` arguments). */
+const TCHAR_REGEXP = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+
+/** Resolve a directive argument that may be either a token or a quoted-string
+ * (RFC 9111 §5.2). When the value is a quoted-string, surrounding double
+ * quotes are stripped and quoted-pair sequences (`\\X`) are unescaped per
+ * RFC 9110 §5.6.4. */
+function unquoteArgument(value: string): string {
+  const t = value.trim();
+  if (t.length >= 2 && t.startsWith('"') && t.endsWith('"')) {
+    return t.slice(1, -1).replace(/\\(.)/g, "$1");
+  }
+  return t;
+}
+
 function parseNonNegativeInt(value: string, directive: string): number {
-  const trimmed = value.trim();
-  if (!/^\d+$/.test(trimmed)) {
+  const trimmed = unquoteArgument(value);
+  if (!DIGITS_REGEXP.test(trimmed)) {
     throw new SyntaxError(
       `Cache-Control: invalid value for ${directive}: "${value}"`,
     );
@@ -158,8 +174,11 @@ function parseNonNegativeInt(value: string, directive: string): number {
   return n > MAX_DELTA_SECONDS ? MAX_DELTA_SECONDS : n;
 }
 
-/** Split by comma but not inside double-quoted strings (needed for
- * `no-cache` and `private` whose quoted-string arguments may contain commas). */
+/** Split by comma but not inside double-quoted strings, respecting RFC 9110
+ * §5.6.4 quoted-pairs. Needed for `no-cache` and `private` whose
+ * quoted-string arguments may contain commas; quoted-pair sequences (e.g.
+ * `\"` or `\,`) inside a quoted-string must not toggle the quote state or
+ * trigger a split. */
 function splitDirectives(value: string): string[] {
   // Fast path: no quotes means a simple split is safe.
   if (!value.includes('"')) return value.split(",");
@@ -169,7 +188,11 @@ function splitDirectives(value: string): string[] {
   let inQuotes = false;
   for (let i = 0; i < value.length; i++) {
     const c = value.charCodeAt(i);
-    if (c === 34 /* " */) {
+    if (c === 92 /* \ */ && inQuotes) {
+      // Quoted-pair (RFC 9110 §5.6.4): skip the escaped byte so a `\"` is
+      // not seen as a closing quote and a `\,` is not seen as a separator.
+      i++;
+    } else if (c === 34 /* " */) {
       inQuotes = !inQuotes;
     } else if (c === 44 /* , */ && !inQuotes) {
       parts.push(value.slice(start, i));
@@ -181,14 +204,14 @@ function splitDirectives(value: string): string[] {
 }
 
 /** Parse a comma-separated list of HTTP field names from a directive argument.
- * Strips surrounding double quotes if present and unescapes `\"` sequences.
- * Returns an array of trimmed, non-empty field names. */
+ * Strips surrounding double quotes if present and unescapes any quoted-pair
+ * sequence (RFC 9110 §5.6.4). Returns an array of trimmed, non-empty field
+ * names. */
 function parseFieldNames(value: string): string[] {
-  const t = value.trim();
-  const parsed = t.length >= 2 && t.startsWith('"') && t.endsWith('"')
-    ? t.slice(1, -1).replace(/\\"/g, '"')
-    : t;
-  return parsed.split(",").map((s) => s.trim()).filter(Boolean);
+  return unquoteArgument(value)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -216,7 +239,7 @@ function parseFieldNames(value: string): string[] {
  * `max-age=abc`) or a required value is missing (e.g. bare `max-age`).
  */
 export function parseCacheControl(value: string | null): CacheControl {
-  const result: AllCacheControlFields = {};
+  const result: CacheControl = {};
   if (value === null || value.trim() === "") {
     return result as CacheControl;
   }
@@ -259,11 +282,16 @@ export function parseCacheControl(value: string | null): CacheControl {
         }
         result.minFresh = parseNonNegativeInt(rawValue, name);
         break;
-      case "no-cache":
-        result.noCache = rawValue === undefined
-          ? true
+      case "no-cache": {
+        const noCacheFields = rawValue === undefined
+          ? undefined
           : parseFieldNames(rawValue);
+        result.noCache =
+          noCacheFields === undefined || noCacheFields.length === 0
+            ? true
+            : noCacheFields;
         break;
+      }
       case "no-store":
         result.noStore = true;
         break;
@@ -293,11 +321,16 @@ export function parseCacheControl(value: string | null): CacheControl {
         }
         result.sMaxage = parseNonNegativeInt(rawValue, name);
         break;
-      case "private":
-        result.private = rawValue === undefined
-          ? true
+      case "private": {
+        const privateFields = rawValue === undefined
+          ? undefined
           : parseFieldNames(rawValue);
+        result.private =
+          privateFields === undefined || privateFields.length === 0
+            ? true
+            : privateFields;
         break;
+      }
       case "immutable":
         result.immutable = true;
         break;
@@ -350,6 +383,13 @@ function append(
     out.push(directive);
     return;
   }
+  for (const name of value) {
+    if (!TCHAR_REGEXP.test(name)) {
+      throw new TypeError(
+        `Cache-Control: invalid field name in ${directive}: "${name}"`,
+      );
+    }
+  }
   out.push(`${directive}="${value.join(", ")}"`);
 }
 
@@ -373,9 +413,11 @@ function append(
  *
  * @throws {RangeError} If a numeric directive value is not a non-negative
  * integer (e.g. `NaN`, `Infinity`, `-1`, or `3.14`).
+ * @throws {TypeError} If a field name in `noCache` or `private` is not a
+ * valid HTTP token (RFC 9110 §5.6.2).
  */
 export function formatCacheControl(cc: CacheControl): string {
-  const d: AllCacheControlFields = cc;
+  const d: CacheControl = cc;
   const out: string[] = [];
   append(out, "max-age", d.maxAge);
   append(out, "no-cache", d.noCache);

@@ -167,3 +167,97 @@ Deno.test("parse() excludes processing instructions from tree", () => {
   // PIs are not included in the tree - root should have no children
   assertEquals(doc.root.children.length, 0);
 });
+
+// =============================================================================
+// XML 1.1 Support
+// =============================================================================
+
+Deno.test("parse() xml11 accepts C0 control char refs", () => {
+  const doc = parse("<root>&#x1;&#x2;</root>", { xmlVersion: "1.1" });
+  assertEquals(doc.root.children.length, 1);
+  const text = doc.root.children[0]!;
+  assertEquals(text.type, "text");
+  if (text.type === "text") {
+    assertEquals(text.text, "\x01\x02");
+  }
+});
+
+Deno.test("parse() xml10 rejects C0 control char refs", () => {
+  assertThrows(
+    () => parse("<root>&#x2;</root>"),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("parse() xml11 rejects NULL char ref", () => {
+  assertThrows(
+    () => parse("<root>&#x0;</root>", { xmlVersion: "1.1" }),
+    Error,
+    "Invalid character reference",
+  );
+});
+
+Deno.test("parse() xml11 rejects literal C0 controls", () => {
+  assertThrows(
+    () => parse("<root>\x01</root>", { xmlVersion: "1.1" }),
+    SyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parse() xml11 rejects literal C1 controls", () => {
+  assertThrows(
+    () => parse("<root>\x80</root>", { xmlVersion: "1.1" }),
+    SyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parse() xml11 normalizes NEL line endings", () => {
+  const doc = parse("<root>line1\x85line2</root>", { xmlVersion: "1.1" });
+  const text = doc.root.children[0]!;
+  if (text.type === "text") {
+    assertEquals(text.text, "line1\nline2");
+  }
+});
+
+Deno.test("parse() xml11 normalizes LS (U+2028) line endings", () => {
+  const doc = parse("<root>line1\u2028line2</root>", { xmlVersion: "1.1" });
+  const text = doc.root.children[0]!;
+  if (text.type === "text") {
+    assertEquals(text.text, "line1\nline2");
+  }
+});
+
+Deno.test("parse() xml11 allows namespace prefix unbinding", () => {
+  const doc = parse(
+    '<root xmlns:ns="http://example.com"><child xmlns:ns="" /></root>',
+    { xmlVersion: "1.1" },
+  );
+  assertEquals(doc.root.name.local, "root");
+});
+
+Deno.test("parse() xml10 rejects namespace prefix unbinding", () => {
+  assertThrows(
+    () =>
+      parse(
+        '<root xmlns:ns="http://example.com"><child xmlns:ns="" /></root>',
+      ),
+    SyntaxError,
+    "Cannot unbind namespace prefix",
+  );
+});
+
+Deno.test("parse() xml11 accepts C0 char refs in attributes", () => {
+  const doc = parse('<root attr="&#x2;"/>', { xmlVersion: "1.1" });
+  assertEquals(doc.root.attributes["attr"], "\x02");
+});
+
+Deno.test("parse() xml11 version declaration is reported", () => {
+  const doc = parse(
+    '<?xml version="1.1"?><root/>',
+    { xmlVersion: "1.1" },
+  );
+  assertEquals(doc.declaration?.version, "1.1");
+});

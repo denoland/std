@@ -98,14 +98,12 @@ function serializeValue(value: JsonValue, ancestors: object[] = []): string {
  * Note: The input must be JSON-compatible data. Objects with `toJSON()` methods
  * (like `Date`) should be converted to their JSON representation first.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The JSON value to canonicalize.
  * @returns The canonical JSON string.
  *
  * @example Basic usage (RFC 8785 Appendix E inspired)
  * ```ts
- * import { canonicalize } from "@std/json/unstable-canonicalize";
+ * import { canonicalize } from "@std/json/canonicalize";
  * import { assertEquals } from "@std/assert";
  *
  * // Keys are sorted lexicographically, no whitespace between tokens
@@ -119,7 +117,7 @@ function serializeValue(value: JsonValue, ancestors: object[] = []): string {
  *
  * @example Number serialization (RFC 8785 Section 3.2.2.3)
  * ```ts
- * import { canonicalize } from "@std/json/unstable-canonicalize";
+ * import { canonicalize } from "@std/json/canonicalize";
  * import { assertEquals } from "@std/assert";
  *
  * // Numbers follow ECMAScript serialization rules
@@ -131,7 +129,7 @@ function serializeValue(value: JsonValue, ancestors: object[] = []): string {
  *
  * @example Key sorting by UTF-16 code units (RFC 8785 Section 3.2.3)
  * ```ts
- * import { canonicalize } from "@std/json/unstable-canonicalize";
+ * import { canonicalize } from "@std/json/canonicalize";
  * import { assertEquals } from "@std/assert";
  *
  * // Keys sorted by UTF-16 code units: digits < uppercase < lowercase
@@ -157,14 +155,12 @@ export function canonicalize(value: JsonValue): string {
  * is provided as a convenience for cryptographic operations that require
  * byte input.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The JSON value to canonicalize.
  * @returns The canonical JSON as UTF-8 bytes.
  *
  * @example Creating a verifiable hash
  * ```ts
- * import { canonicalizeToBytes } from "@std/json/unstable-canonicalize";
+ * import { canonicalizeToBytes } from "@std/json/canonicalize";
  * import { encodeHex } from "@std/encoding/hex";
  * import { assertEquals } from "@std/assert";
  *

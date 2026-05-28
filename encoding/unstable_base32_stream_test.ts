@@ -2,7 +2,7 @@
 
 import { assertEquals } from "@std/assert";
 import { toText } from "@std/streams";
-import { toBytes } from "@std/streams/unstable-to-bytes";
+import { toBytes } from "@std/streams/to-bytes";
 import { FixedChunkStream } from "@std/streams/unstable-fixed-chunk-stream";
 import { encodeBase32 } from "./unstable_base32.ts";
 import {

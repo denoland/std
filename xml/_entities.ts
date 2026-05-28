@@ -44,25 +44,38 @@ const ATTR_ENTITY_MAP: Record<string, string> = {
 };
 
 /**
- * Checks if a code point is a valid XML 1.0 Char per §2.2.
+ * Checks if a code point is valid for a character reference in XML 1.0 per §2.2.
  *
- * Per the specification:
- *   Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
- *
- * This excludes:
- * - NULL (#x0)
- * - Control characters #x1-#x8, #xB-#xC, #xE-#x1F
- * - Surrogate pairs #xD800-#xDFFF (handled separately)
- * - Non-characters #xFFFE-#xFFFF
+ * Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
  *
  * @see {@link https://www.w3.org/TR/xml/#charsets | XML 1.0 §2.2 Characters}
  */
-function isValidXmlChar(codePoint: number): boolean {
+function isValidXml10CharRef(codePoint: number): boolean {
   return (
     codePoint === 0x9 ||
     codePoint === 0xA ||
     codePoint === 0xD ||
     (codePoint >= 0x20 && codePoint <= 0xD7FF) ||
+    (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
+    (codePoint >= 0x10000 && codePoint <= 0x10FFFF)
+  );
+}
+
+/**
+ * Checks if a code point is valid for a character reference in XML 1.1 per §2.2.
+ *
+ * Char ::= [#x1-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+ *
+ * XML 1.1 allows all code points except NULL (#x0), surrogates, and
+ * non-characters #xFFFE-#xFFFF. C0 and C1 controls are valid as character
+ * references but restricted as literal characters (handled by
+ * {@linkcode isIllegalXmlLiteralChar} in `_common.ts`).
+ *
+ * @see {@link https://www.w3.org/TR/xml11/#charsets | XML 1.1 §2.2 Characters}
+ */
+function isValidXml11CharRef(codePoint: number): boolean {
+  return (
+    (codePoint >= 0x1 && codePoint <= 0xD7FF) ||
     (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
     (codePoint >= 0x10000 && codePoint <= 0x10FFFF)
   );
@@ -83,9 +96,11 @@ function isValidXmlChar(codePoint: number): boolean {
  * @returns The text with predefined entities decoded.
  * @throws {Error} If the text contains invalid or unknown entity references.
  */
-export function decodeEntities(text: string): string {
+export function decodeEntities(text: string, xml11: boolean): string {
   // Fast path: no ampersand means no entities to decode
   if (!text.includes("&")) return text;
+
+  const isValid = xml11 ? isValidXml11CharRef : isValidXml10CharRef;
 
   // Single-pass: decode predefined entities and char refs, error on invalid
   return text.replace(
@@ -100,7 +115,7 @@ export function decodeEntities(text: string): string {
       // Hex character reference (&#xNN;)
       if (hexRef !== undefined) {
         const codePoint = parseInt(hexRef.slice(2), 16);
-        if (!isValidXmlChar(codePoint)) {
+        if (!isValid(codePoint)) {
           throw new Error(
             `Invalid character reference '${match}' at position ${offset}: ` +
               `code point ${codePoint} is not a valid XML character`,
@@ -112,7 +127,7 @@ export function decodeEntities(text: string): string {
       // Decimal character reference (&#NN;)
       if (decimalRef !== undefined) {
         const codePoint = parseInt(decimalRef.slice(1), 10);
-        if (!isValidXmlChar(codePoint)) {
+        if (!isValid(codePoint)) {
           throw new Error(
             `Invalid character reference '${match}' at position ${offset}: ` +
               `code point ${codePoint} is not a valid XML character`,

@@ -694,3 +694,83 @@ Deno.test("parseXmlStreamFromBytes() yields final flush when stream ends with in
     "Cannot have content after the root element",
   );
 });
+
+// =============================================================================
+// XML 1.1 Streaming Tests
+// =============================================================================
+
+Deno.test("parseXmlStream() xml11 accepts C0 control char refs", async () => {
+  const xml = "<root>&#x1;&#x2;</root>";
+  const stream = ReadableStream.from([xml]);
+  let text = "";
+  await parseXmlStream(stream, {
+    onText(t) {
+      text += t;
+    },
+  }, { xmlVersion: "1.1" });
+  assertEquals(text, "\x01\x02");
+});
+
+Deno.test("parseXmlStream() xml11 rejects literal C0 controls", async () => {
+  const xml = "<root>\x01</root>";
+  const stream = ReadableStream.from([xml]);
+  await assertRejects(
+    () =>
+      parseXmlStream(stream, {
+        onText() {},
+      }, { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseXmlStream() xml11 rejects literal C0 controls with position tracking", async () => {
+  const xml = "<root>\x01</root>";
+  const stream = ReadableStream.from([xml]);
+  await assertRejects(
+    () =>
+      parseXmlStream(stream, {
+        onText() {},
+      }, { xmlVersion: "1.1", trackPosition: true }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseXmlStream() xml11 rejects literal C1 controls", async () => {
+  const xml = "<root>\x80</root>";
+  const stream = ReadableStream.from([xml]);
+  await assertRejects(
+    () =>
+      parseXmlStream(stream, {
+        onText() {},
+      }, { xmlVersion: "1.1" }),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("parseXmlStream() xml11 normalizes NEL line endings", async () => {
+  const xml = "<root>a\x85b</root>";
+  const stream = ReadableStream.from([xml]);
+  let text = "";
+  await parseXmlStream(stream, {
+    onText(t) {
+      text += t;
+    },
+  }, { xmlVersion: "1.1" });
+  assertEquals(text, "a\nb");
+});
+
+Deno.test("parseXmlStream() xml11 allows namespace prefix unbinding", async () => {
+  const xml =
+    '<root xmlns:ns="http://example.com"><child xmlns:ns="" /></root>';
+  const stream = ReadableStream.from([xml]);
+  const elements: string[] = [];
+  await parseXmlStream(stream, {
+    onStartElement(name) {
+      elements.push(name);
+    },
+  }, { xmlVersion: "1.1" });
+  assertEquals(elements, ["root", "child"]);
+});

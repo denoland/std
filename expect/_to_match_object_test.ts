@@ -227,4 +227,75 @@ Deno.test("expect().toMatchObject() displays a diff", async (t) => {
       );
     },
   );
+
+  await t.step("omits keys not in expected", () => {
+    const e = assertThrows(
+      () =>
+        expect({ a: 1, b: 2, c: 3, d: { e: 4, f: 5 } }).toMatchObject({
+          a: 1,
+          d: { e: 999 },
+        }),
+      AssertionError,
+    );
+    // The diff should mention the mismatched value
+    assertMatch(e.message, /999/);
+    // The diff should NOT mention keys absent from expected
+    assertNotMatch(e.message, /b:/);
+    assertNotMatch(e.message, /c:/);
+    assertNotMatch(e.message, /f:/);
+  });
+
+  await t.step("omits keys not in expected with arrays", () => {
+    const e = assertThrows(
+      () =>
+        expect([{ a: 1, extra: true }, { b: 2 }]).toMatchObject([
+          { a: 999 },
+          { b: 2 },
+        ]),
+      AssertionError,
+    );
+    assertMatch(e.message, /999/);
+    assertNotMatch(e.message, /extra/);
+  });
+
+  await t.step("omits keys not in expected with Date values", () => {
+    const e = assertThrows(
+      () =>
+        expect({
+          d: new Date("2020-01-01"),
+          extra: "noise",
+        }).toMatchObject({ d: new Date("2025-01-01") }),
+      AssertionError,
+    );
+    assertNotMatch(e.message, /noise/);
+  });
+
+  await t.step("omits keys not in expected with equal nested subset", () => {
+    const e = assertThrows(
+      () =>
+        expect({
+          a: { x: 1, y: 2 },
+          b: 999,
+          extra: true,
+        }).toMatchObject({ a: { x: 1 }, b: 42 }),
+      AssertionError,
+    );
+    // b is the mismatch
+    assertMatch(e.message, /999/);
+    assertMatch(e.message, /42/);
+    // extra top-level key should be omitted
+    assertNotMatch(e.message, /extra/);
+    // y should be omitted (not in expected.a)
+    assertNotMatch(e.message, /y:/);
+  });
+
+  await t.step("handles circular references without throwing", () => {
+    const received: Record<string, unknown> = { a: 1 };
+    received.self = received;
+    const e = assertThrows(
+      () => expect(received).toMatchObject({ a: 999, self: {} }),
+      AssertionError,
+    );
+    assertMatch(e.message, /999/);
+  });
 });

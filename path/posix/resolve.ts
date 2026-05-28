@@ -3,6 +3,7 @@
 
 import { normalizeString } from "../_common/normalize_string.ts";
 import { assertPath } from "../_common/assert_path.ts";
+import { cwd } from "../_common/env.ts";
 import { isPosixPathSeparator } from "./_util.ts";
 
 /**
@@ -29,14 +30,9 @@ export function resolve(...pathSegments: string[]): string {
 
     if (i >= 0) path = pathSegments[i]!;
     else {
-      // deno-lint-ignore no-explicit-any
-      const { Deno } = globalThis as any;
-      if (typeof Deno?.cwd !== "function") {
-        throw new TypeError(
-          "Resolved a relative path without a current working directory (CWD)",
-        );
-      }
-      path = Deno.cwd();
+      path = cwd(
+        "Resolved a relative path without a current working directory (CWD)",
+      );
     }
 
     assertPath(path);
@@ -51,7 +47,7 @@ export function resolve(...pathSegments: string[]): string {
   }
 
   // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when Deno.cwd() fails)
+  // handle relative paths to be safe (might happen when cwd() fails)
 
   // Normalize the path
   resolvedPath = normalizeString(

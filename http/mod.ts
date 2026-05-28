@@ -102,5 +102,6 @@ export * from "./etag.ts";
 export * from "./status.ts";
 export * from "./negotiation.ts";
 export * from "./server_sent_event_stream.ts";
+export * from "./server_sent_event_parse_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";

@@ -22,11 +22,9 @@ export interface PollOptions {
  * The function is called repeatedly with `interval` milliseconds between each call
  * until `isDone` returns `true`, at which point the result is returned.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Polling a payment status with {@linkcode deadline}
  * ```ts ignore
- * import { poll } from "@std/async/unstable-poll";
+ * import { poll } from "@std/async/poll";
  * import { deadline } from "@std/async/deadline";
  *
  * async function getPaymentStatus(id: string): Promise<{ status: string }> {
@@ -46,7 +44,7 @@ export interface PollOptions {
  *
  * @example Using AbortSignal for timeout
  * ```ts ignore
- * import { poll } from "@std/async/unstable-poll";
+ * import { poll } from "@std/async/poll";
  *
  * const result = await poll(
  *   () => fetch("https://api.example.com/status").then((r) => r.json()),
@@ -55,6 +53,7 @@ export interface PollOptions {
  * );
  * ```
  *
+ * @throws {RangeError} If `interval` is negative, `NaN`, or not finite.
  * @throws {DOMException & { name: "AbortError" }} If the optional signal is
  * aborted with the default `reason`.
  * @throws {AbortSignal["reason"]} If the optional signal is aborted with a
@@ -73,6 +72,13 @@ export async function poll<T>(
   options: PollOptions = {},
 ): Promise<Awaited<T>> {
   const { signal, interval = 1000 } = options;
+
+  if (!Number.isFinite(interval) || interval < 0) {
+    throw new RangeError(
+      `Cannot poll as 'interval' must be a non-negative finite number: current value is ${interval}`,
+    );
+  }
+
   const delayOptions = signal ? { signal } : undefined;
 
   while (true) {

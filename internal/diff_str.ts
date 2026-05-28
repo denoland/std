@@ -177,18 +177,18 @@ export function diffStr(A: string, B: string): DiffResult<string>[] {
   const hasMoreRemovedLines = added.length < removed.length;
   const aLines = hasMoreRemovedLines ? added : removed;
   const bLines = hasMoreRemovedLines ? removed : added;
+  let bIdx = 0;
   for (const a of aLines) {
     let tokens = [] as Array<DiffResult<string>>;
     let b: undefined | ChangedDiffResult<string>;
+    const aTokens = tokenize(a.value, true);
     // Search another diff line with at least one common token
-    while (bLines.length) {
-      b = bLines.shift();
-      const tokenized = [
-        tokenize(a.value, true),
-        tokenize(b!.value, true),
-      ] as [string[], string[]];
-      if (hasMoreRemovedLines) tokenized.reverse();
-      tokens = diff(tokenized[0], tokenized[1]);
+    while (bIdx < bLines.length) {
+      b = bLines[bIdx++];
+      const bTokens = tokenize(b!.value, true);
+      tokens = hasMoreRemovedLines
+        ? diff(bTokens, aTokens)
+        : diff(aTokens, bTokens);
       if (
         tokens.some(({ type, value }) =>
           type === "common" && NON_WHITESPACE_REGEXP.test(value)

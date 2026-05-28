@@ -5,14 +5,12 @@
  * Converts a {@linkcode ReadableStream} of {@linkcode Uint8Array}s to a
  * {@linkcode Uint8Array}. Works the same as {@linkcode Response.bytes}.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param stream A `ReadableStream` of `Uint8Array`s to convert into a `Uint8Array`.
  * @returns A `Promise` that resolves to the `Uint8Array`.
  *
  * @example Basic usage
  * ```ts
- * import { toBytes } from "@std/streams/unstable-to-bytes";
+ * import { toBytes } from "@std/streams/to-bytes";
  * import { assertEquals } from "@std/assert";
  *
  * const stream = ReadableStream.from([

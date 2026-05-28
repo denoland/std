@@ -21,6 +21,7 @@ import { getMockCalls } from "./_mock_util.ts";
 import { inspectArg, inspectArgs } from "./_inspect_args.ts";
 import {
   buildEqualOptions,
+  getObjectSubset,
   iterableEquality,
   subsetEquality,
 } from "./_utils.ts";
@@ -601,7 +602,8 @@ export function toMatchObject(
           : defaultMessage,
       );
     } else {
-      const defaultMessage = buildEqualErrorMessage(received, expected);
+      const subset = getObjectSubset(received, expected, context.customTesters);
+      const defaultMessage = buildEqualErrorMessage(subset, expected);
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`

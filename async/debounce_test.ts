@@ -128,3 +128,32 @@ Deno.test("debounce() re-invocation after flush re-schedules", () => {
   assertEquals(called, 2);
   assertEquals(d.pending, false);
 });
+
+Deno.test("debounce() abort signal clears pending call", () => {
+  let called = 0;
+  const controller = new AbortController();
+  const d = debounce(() => called++, 100, { signal: controller.signal });
+  d();
+  assertEquals(d.pending, true);
+  controller.abort();
+  assertEquals(called, 0);
+  assertEquals(d.pending, false);
+});
+
+Deno.test("debounce() abort signal after flush does not interfere", () => {
+  let called = 0;
+  const controller = new AbortController();
+  const d = debounce(() => called++, 100, { signal: controller.signal });
+  d();
+  d.flush();
+  assertEquals(called, 1);
+  controller.abort();
+  assertEquals(called, 1);
+});
+
+Deno.test("debounce() throws if signal is already aborted", () => {
+  assertThrows(
+    () => debounce(() => {}, 100, { signal: AbortSignal.abort() }),
+    DOMException,
+  );
+});

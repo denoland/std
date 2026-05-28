@@ -2466,3 +2466,130 @@ Deno.test("XmlTokenizer.process() throws on lowercase public/system in DOCTYPE",
     "Unexpected character",
   );
 });
+
+// =============================================================================
+// XML 1.1 Character Validation Tests
+// =============================================================================
+
+function collectTokensXml11(xml: string): XmlToken[] {
+  const tokenizer = new XmlTokenizer({ xml11: true });
+  const { tokens, callbacks } = createCollector();
+  tokenizer.process(xml, callbacks);
+  tokenizer.finalize(callbacks);
+  return tokens;
+}
+
+Deno.test("XmlTokenizer xml11 rejects literal C0 control in text", () => {
+  assertThrows(
+    () => collectTokensXml11("<root>\x01</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects literal C1 control in text", () => {
+  assertThrows(
+    () => collectTokensXml11("<root>\x80</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+  assertThrows(
+    () => collectTokensXml11("<root>\x9F</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects NULL in text", () => {
+  assertThrows(
+    () => collectTokensXml11("<root>\x00</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 allows NEL (U+0085) after line-ending normalization", () => {
+  const tokens = collectTokensXml11("<root>a\x85b</root>");
+  const textToken = tokens.find((t) => t.type === "text");
+  assertEquals(textToken?.content, "a\nb");
+});
+
+Deno.test("XmlTokenizer xml11 rejects literal C0 control in comment", () => {
+  assertThrows(
+    () => collectTokensXml11("<root><!--\x01--></root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects literal C1 control in comment", () => {
+  assertThrows(
+    () => collectTokensXml11("<root><!--\x80--></root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects literal C0 control in PI content", () => {
+  assertThrows(
+    () => collectTokensXml11("<root><?pi \x02?></root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects literal C1 control in CDATA", () => {
+  assertThrows(
+    () => collectTokensXml11("<root><![CDATA[\x80]]></root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects noncharacter U+FFFE in text", () => {
+  assertThrows(
+    () => collectTokensXml11("<root>\uFFFE</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects noncharacter U+FFFF in text", () => {
+  assertThrows(
+    () => collectTokensXml11("<root>\uFFFF</root>"),
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 allows normal text content", () => {
+  const tokens = collectTokensXml11("<root>hello</root>");
+  const textToken = tokens.find((t) => t.type === "text");
+  assertEquals(textToken?.content, "hello");
+});
+
+Deno.test("XmlTokenizer xml11 rejects C0 in text without position tracking", () => {
+  const tokenizer = new XmlTokenizer({ xml11: true, trackPosition: false });
+  const { callbacks } = createCollector();
+  assertThrows(
+    () => {
+      tokenizer.process("<root>\x01</root>", callbacks);
+      tokenizer.finalize(callbacks);
+    },
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
+
+Deno.test("XmlTokenizer xml11 rejects C1 in text without position tracking", () => {
+  const tokenizer = new XmlTokenizer({ xml11: true, trackPosition: false });
+  const { callbacks } = createCollector();
+  assertThrows(
+    () => {
+      tokenizer.process("<root>\x80</root>", callbacks);
+      tokenizer.finalize(callbacks);
+    },
+    XmlSyntaxError,
+    "Illegal XML character",
+  );
+});
