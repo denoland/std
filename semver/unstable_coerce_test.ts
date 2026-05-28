@@ -2,7 +2,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
 import { parse } from "./parse.ts";
-import { coerce } from "./coerce.ts";
+import { coerce } from "./unstable_coerce.ts";
 
 Deno.test("coerce() basic coercion", async (t) => {
   const tests: [string | number, string][] = [

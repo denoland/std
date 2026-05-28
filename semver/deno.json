@@ -4,7 +4,6 @@
   "exports": {
     ".": "./mod.ts",
     "./can-parse": "./can_parse.ts",
-    "./coerce": "./coerce.ts",
     "./compare": "./compare.ts",
     "./difference": "./difference.ts",
     "./equals": "./equals.ts",
@@ -21,7 +20,6 @@
     "./less-than-range": "./less_than_range.ts",
     "./max-satisfying": "./max_satisfying.ts",
     "./min-satisfying": "./min_satisfying.ts",
-    "./min-version": "./min_version.ts",
     "./not-equals": "./not_equals.ts",
     "./parse": "./parse.ts",
     "./parse-range": "./parse_range.ts",
@@ -29,6 +27,8 @@
     "./satisfies": "./satisfies.ts",
     "./try-parse": "./try_parse.ts",
     "./try-parse-range": "./try_parse_range.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./unstable-coerce": "./unstable_coerce.ts",
+    "./unstable-min-version": "./unstable_min_version.ts"
   }
 }

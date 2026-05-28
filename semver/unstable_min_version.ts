@@ -10,7 +10,8 @@ import { satisfies } from "./satisfies.ts";
  *
  * @example Usage
  * ```ts
- * import { minVersion, parseRange, parse } from "@std/semver";
+ * import { parse, parseRange } from "@std/semver";
+ * import { minVersion } from "@std/semver/unstable-min-version";
  * import { assertEquals } from "@std/assert";
  *
  * const range = parseRange(">=1.0.0 <2.0.0");
@@ -22,6 +23,8 @@ import { satisfies } from "./satisfies.ts";
  * const range3 = parseRange(">1.0.0-0");
  * assertEquals(minVersion(range3), parse("1.0.0-0.0"));
  * ```
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param range The range to find the minimum version for.
  * @returns The minimum version that satisfies the range, or `undefined`.
@@ -77,7 +80,7 @@ export function minVersion(range: Range): SemVer | undefined {
         case "!=":
           break;
         default:
-          throw new Error(`Unexpected operator: ${comparator.operator}`);
+          throw new Error(`Unexpected operator: "${comparator.operator}"`);
       }
     }
 

@@ -4,7 +4,7 @@ import { assertEquals } from "@std/assert";
 import type { SemVer } from "./types.ts";
 import { parse } from "./parse.ts";
 import { parseRange } from "./parse_range.ts";
-import { minVersion } from "./min_version.ts";
+import { minVersion } from "./unstable_min_version.ts";
 
 Deno.test("minVersion()", async (t) => {
   const tests: [string, SemVer][] = [

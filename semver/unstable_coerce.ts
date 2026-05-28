@@ -23,7 +23,11 @@ const COERCE_FULL_REGEXP = new RegExp(
 const COERCE_RTL_REGEXP = new RegExp(COERCE_REGEXP.source, "g");
 const COERCE_RTL_FULL_REGEXP = new RegExp(COERCE_FULL_REGEXP.source, "g");
 
-/** Options for {@linkcode coerce}. */
+/**
+ * Options for {@linkcode coerce}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
 export interface CoerceOptions {
   /**
    * When `true`, the coercion will also include prerelease and build metadata.
@@ -51,13 +55,15 @@ export interface CoerceOptions {
  *
  * @example Usage
  * ```ts
- * import { coerce } from "@std/semver/coerce";
+ * import { coerce } from "@std/semver/unstable-coerce";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(coerce("v1"), { major: 1, minor: 0, patch: 0, prerelease: [], build: [] });
  * assertEquals(coerce("42.6.7.9.3-alpha"), { major: 42, minor: 6, patch: 7, prerelease: [], build: [] });
  * assertEquals(coerce("invalid"), undefined);
  * ```
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param version The value to coerce into a SemVer.
  * @param options Options for coercion.
