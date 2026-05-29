@@ -240,7 +240,7 @@ Deno.test({
     const expected = `emptyArray = []
 mixedArray1 = [1,{b = 2}]
 mixedArray2 = [{b = 2},1]
-nestedArray1 = [[{b = 1,date = "2022-05-13T00:00:00.000"}]]
+nestedArray1 = [[{b = 1,date = 2022-05-13T00:00:00.000}]]
 nestedArray2 = [[[{b = 1}]]]
 nestedArray3 = [[],[{b = 1}]]
 
@@ -273,5 +273,76 @@ Deno.test({
 `.trim();
     const actual = stringify(src).trim();
     assertEquals(actual, expected);
+  },
+});
+
+// https://github.com/denoland/std/issues/7162
+Deno.test({
+  name:
+    "stringify() emits TOML float literals for Infinity/NaN in primitive arrays",
+  fn() {
+    const actual = stringify({ x: [Infinity, -Infinity, NaN] });
+    assertEquals(actual, "x = [inf,-inf,nan]\n");
+  },
+});
+
+// https://github.com/denoland/std/issues/7162
+Deno.test({
+  name: "stringify() emits TOML datetime literal for Date in primitive arrays",
+  fn() {
+    const actual = stringify({ x: [new Date(0)] });
+    assertEquals(actual, "x = [1970-01-01T00:00:00.000]\n");
+  },
+});
+
+// https://github.com/denoland/std/issues/7162
+Deno.test({
+  name:
+    "stringify() emits TOML float literals for Infinity/NaN in mixed arrays",
+  fn() {
+    const actual = stringify({ x: [Infinity, -Infinity, NaN, {}] });
+    assertEquals(actual, "x = [inf,-inf,nan,{}]\n");
+  },
+});
+
+// https://github.com/denoland/std/issues/7162
+Deno.test({
+  name: "stringify() emits TOML datetime literal for Date in mixed arrays",
+  fn() {
+    const actual = stringify({ x: [new Date(0), {}] });
+    assertEquals(actual, "x = [1970-01-01T00:00:00.000,{}]\n");
+  },
+});
+
+// https://github.com/denoland/std/issues/7162 - regression check for the new
+// #printPrimitive path that replaced JSON.stringify: finite numbers in
+// primitive arrays must keep their JSON representation.
+Deno.test({
+  name: "stringify() preserves finite numbers in primitive arrays",
+  fn() {
+    const actual = stringify({ x: [1, -1, 0, 3.14, 1e6] });
+    assertEquals(actual, "x = [1,-1,0,3.14,1000000]\n");
+  },
+});
+
+// https://github.com/denoland/std/issues/7162 - bare numeric and Date scalar
+// declarations (not array elements) must be unaffected by the array fixes.
+Deno.test({
+  name: "stringify() preserves scalar Infinity/NaN/Date declarations",
+  fn() {
+    const actual = stringify({
+      pi: Infinity,
+      bad: NaN,
+      neg: -Infinity,
+      when: new Date(0),
+    });
+    assertEquals(
+      actual,
+      `pi = inf
+bad = nan
+neg = -inf
+when = 1970-01-01T00:00:00.000
+`,
+    );
   },
 });
