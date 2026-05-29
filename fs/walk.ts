@@ -878,7 +878,7 @@ export async function* walk(
 export function* walkSync(
   root: string | URL,
   options?: WalkOptions,
-): IterableIterator<WalkEntry> {
+): Generator<WalkEntry> {
   let {
     maxDepth = Infinity,
     includeFiles = true,

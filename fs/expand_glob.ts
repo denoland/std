@@ -428,7 +428,7 @@ export async function* expandGlob(
 export function* expandGlobSync(
   glob: string | URL,
   options?: ExpandGlobOptions,
-): IterableIterator<WalkEntry> {
+): Generator<WalkEntry> {
   let {
     root,
     exclude = [],
@@ -473,7 +473,7 @@ export function* expandGlobSync(
   function* advanceMatch(
     walkInfo: WalkEntry,
     globSegment: string,
-  ): IterableIterator<WalkEntry> {
+  ): Generator<WalkEntry> {
     if (!walkInfo.isDirectory) {
       return;
     } else if (globSegment === "..") {
