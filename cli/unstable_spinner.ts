@@ -1,11 +1,18 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { unicodeWidth } from "./unicode_width.ts";
-
 const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
 const COLOR_RESET = "\u001b[0m";
+// DECAWM (Auto-Wrap Mode) toggles. With DECAWM off, the terminal silently
+// truncates anything past the right edge instead of wrapping to the next
+// line. We disable it before each frame and re-enable it after, so the
+// spinner never overflows and "\r\u001b[K" keeps clearing the same row
+// even when the message is longer than the terminal width (#6975).
+// Letting the terminal truncate avoids guessing display widths for emoji,
+// ZWJ sequences, combining marks, etc.
+const DECAWM_OFF = encoder.encode("\u001b[?7l");
+const DECAWM_ON = encoder.encode("\u001b[?7h");
 const DEFAULT_INTERVAL = 75;
 const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -36,24 +43,6 @@ export type Color =
   | "white"
   | "gray"
   | Ansi;
-
-/**
- * Truncate `str` so its `unicodeWidth` is at most `maxWidth`. Iterates by
- * code point so surrogate pairs are kept intact; wide CJK characters that
- * would straddle the limit are dropped rather than half-rendered.
- */
-function truncateToWidth(str: string, maxWidth: number): string {
-  if (maxWidth <= 0) return "";
-  let acc = "";
-  let accWidth = 0;
-  for (const ch of str) {
-    const w = unicodeWidth(ch);
-    if (accWidth + w > maxWidth) break;
-    acc += ch;
-    accWidth += w;
-  }
-  return acc;
-}
 
 const COLORS: Record<Color, string> = {
   black: "\u001b[30m",
@@ -242,34 +231,34 @@ export class Spinner {
     let i = 0;
     const noColor = Deno.noColor;
 
+    // Cache the TTY check so we don't probe the stream every frame.
+    const isTty = this.#isTerminal();
+
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
       const spinnerChar = this.#spinner[i] ?? "";
-      // #6975: when the spinner + message visual width exceeds the
-      // terminal width, the terminal wraps to a new line and `\r[K`
-      // no longer clears the previous frame, leaving stale output. Truncate
-      // the message to the available columns so each frame stays on one
-      // line. ANSI color/reset escapes have no visible width, so only the
-      // glyph + space prefix is subtracted.
-      let displayMessage = this.message;
-      const columns = this.#terminalColumns();
-      if (columns !== undefined) {
-        const prefixWidth = unicodeWidth(spinnerChar) + 1; // glyph + space
-        const available = Math.max(0, columns - prefixWidth);
-        if (unicodeWidth(displayMessage) > available) {
-          displayMessage = truncateToWidth(displayMessage, available);
-        }
-      }
       const frame = encoder.encode(
         noColor
-          ? spinnerChar + " " + displayMessage
-          : color + spinnerChar + COLOR_RESET + " " + displayMessage,
+          ? spinnerChar + " " + this.message
+          : color + spinnerChar + COLOR_RESET + " " + this.message,
       );
-      // call writeSync once to reduce flickering
-      const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
-      writeData.set(LINE_CLEAR);
-      writeData.set(frame, LINE_CLEAR.length);
+      // On a TTY, bracket the frame with DECAWM off/on so any overflow is
+      // truncated by the terminal instead of wrapping to the next line
+      // (#6975). On non-TTY streams the literal escape bytes would just
+      // clutter the output, so skip them.
+      const parts: Uint8Array[] = isTty
+        ? [LINE_CLEAR, DECAWM_OFF, frame, DECAWM_ON]
+        : [LINE_CLEAR, frame];
+      let total = 0;
+      for (const part of parts) total += part.length;
+      const writeData = new Uint8Array(total);
+      let off = 0;
+      for (const part of parts) {
+        writeData.set(part, off);
+        off += part.length;
+      }
+      // single writeSync to reduce flickering
       this.#output.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
@@ -279,19 +268,16 @@ export class Spinner {
   }
 
   /**
-   * Returns the terminal column count if the spinner is writing to a TTY,
-   * otherwise undefined (so the message is not truncated when output is
-   * piped or redirected).
+   * Returns whether the spinner is writing to an interactive terminal.
+   * Decides whether to emit DECAWM toggles around each frame.
    */
-  #terminalColumns(): number | undefined {
+  #isTerminal(): boolean {
     try {
-      if (!this.#output.isTerminal()) return undefined;
-      const { columns } = Deno.consoleSize();
-      return columns > 0 ? columns : undefined;
+      return this.#output.isTerminal();
     } catch {
-      // `Deno.consoleSize()` and `isTerminal()` can throw if the stream is
-      // closed or unsupported; treat as "unknown size" and skip truncation.
-      return undefined;
+      // `isTerminal()` can throw if the stream is closed or unsupported;
+      // treat as "not a TTY" and skip the wrap toggles.
+      return false;
     }
   }
 
