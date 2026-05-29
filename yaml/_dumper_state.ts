@@ -39,6 +39,12 @@ const STYLE_DOUBLE = 5;
 
 const LEADING_SPACE_REGEXP = /^\n* /;
 
+// Matches integer-shaped strings with a leading zero (e.g. "08", "09",
+// "089", "-012"). resolveYamlInteger rejects these when they contain a
+// non-octal digit, but they still read as numbers to humans and to other
+// YAML parsers, so force-quote them for cross-parser safety.
+const AMBIGUOUS_LEADING_ZERO_INT_REGEXP = /^[-+]?0[0-9]+$/;
+
 const ESCAPE_SEQUENCES = new Map<number, string>([
   [0x00, "\\0"],
   [0x07, "\\a"],
@@ -238,7 +244,8 @@ function chooseScalarStyle(
   if (!hasLineBreak && !hasFoldableLine) {
     // Strings interpretable as another type have to be quoted;
     // e.g. the string 'true' vs. the boolean true.
-    return plain && !implicitTypes.some((type) => type.resolve(string))
+    return plain && !implicitTypes.some((type) => type.resolve(string)) &&
+        !AMBIGUOUS_LEADING_ZERO_INT_REGEXP.test(string)
       ? STYLE_PLAIN
       : quoteStyle === "'"
       ? STYLE_SINGLE

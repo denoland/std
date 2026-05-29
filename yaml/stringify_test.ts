@@ -906,3 +906,24 @@ tags:
     );
   },
 });
+
+Deno.test({
+  name: "stringify() quotes leading-zero numeric strings",
+  fn() {
+    // resolveYamlInteger accepts "07" as octal so stringify already quoted
+    // it. "08" and "09" fell through because they aren't valid octal, but
+    // they still read as numbers to humans and to other YAML parsers, so
+    // they must be quoted too. See https://github.com/denoland/std/issues/7040
+    assertEquals(stringify("07"), "'07'\n");
+    assertEquals(stringify("08"), "'08'\n");
+    assertEquals(stringify("09"), "'09'\n");
+    assertEquals(stringify("089"), "'089'\n");
+    assertEquals(stringify("-08"), "'-08'\n");
+    assertEquals(stringify("+09"), "'+09'\n");
+    // Strings that are not integer-shaped are still emitted plain.
+    assertEquals(stringify("0a8"), "0a8\n");
+    // Already-numeric strings stay quoted as before.
+    assertEquals(stringify("8"), "'8'\n");
+    assertEquals(stringify("0"), "'0'\n");
+  },
+});
