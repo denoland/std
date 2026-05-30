@@ -83,9 +83,9 @@ Deno.test(
   "pooledMap() surfaces errors thrown by the input iterable (#6716)",
   async () => {
     const sentinel = new Error("Iterator failed on first step!");
-    async function* errorThrowing() {
+    // deno-lint-ignore require-yield
+    async function* errorThrowing(): AsyncGenerator<number> {
       throw sentinel;
-      yield 1;
     }
     const results = pooledMap(
       2,
