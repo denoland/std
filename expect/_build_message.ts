@@ -9,7 +9,14 @@ import type { EqualOptions } from "./_types.ts";
 type EqualErrorMessageOptions = Pick<
   EqualOptions,
   "formatter" | "msg"
->;
+> & {
+  /**
+   * Overrides the default "Values are not equal." headline. Set by matchers
+   * (such as toMatchObject) that don't actually test for equality and would
+   * otherwise mislead the reader.
+   */
+  summary?: string;
+};
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
@@ -20,12 +27,13 @@ export function buildEqualErrorMessage<T>(
   expected: T,
   options: EqualErrorMessageOptions = {},
 ): string {
-  const { formatter = format, msg } = options;
+  const { formatter = format, msg, summary = "Values are not equal." } =
+    options;
   const msgPrefix = msg ? `${msg}: ` : "";
   const actualString = formatter(actual);
   const expectedString = formatter(expected);
 
-  let message = `${msgPrefix}Values are not equal.`;
+  let message = `${msgPrefix}${summary}`;
 
   const stringDiff = isString(actual) && isString(expected);
   const diffResult = stringDiff
