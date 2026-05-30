@@ -428,7 +428,7 @@ export async function* expandGlob(
 export function* expandGlobSync(
   glob: string | URL,
   options?: ExpandGlobOptions,
-): Generator<WalkEntry> {
+): Generator<WalkEntry, void, undefined> {
   let {
     root,
     exclude = [],
@@ -473,7 +473,7 @@ export function* expandGlobSync(
   function* advanceMatch(
     walkInfo: WalkEntry,
     globSegment: string,
-  ): Generator<WalkEntry> {
+  ): Generator<WalkEntry, void, undefined> {
     if (!walkInfo.isDirectory) {
       return;
     } else if (globSegment === "..") {
