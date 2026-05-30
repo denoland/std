@@ -469,7 +469,10 @@ export async function* walk(
   if (exts) {
     exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
   }
-  if (includeDirs && include(root, exts, match, skip)) {
+  // Directories don't have file extensions, so the `exts` filter must not be
+  // applied when deciding whether to yield a directory entry. The `match`
+  // and `skip` regex filters still apply. See #6736.
+  if (includeDirs && include(root, undefined, match, skip)) {
     yield await createWalkEntry(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
@@ -898,7 +901,10 @@ export function* walkSync(
   if (maxDepth < 0) {
     return;
   }
-  if (includeDirs && include(root, exts, match, skip)) {
+  // Directories don't have file extensions, so the `exts` filter must not
+  // be applied when deciding whether to yield a directory entry. The
+  // `match` and `skip` regex filters still apply. See #6736.
+  if (includeDirs && include(root, undefined, match, skip)) {
     yield createWalkEntrySync(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
