@@ -147,7 +147,7 @@ export type RowType<T> = T extends undefined ? string[]
  *   { name: "Alice", age: "34" },
  *   { name: "Bob", age: "24" },
  * ]);
- * assertType<IsExact<typeof result, Record<string, string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<string, string | undefined>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option
@@ -169,7 +169,7 @@ export type RowType<T> = T extends undefined ? string[]
  *   { name: "Alice", age: "34" },
  *   { name: "Bob", age: "24" },
  * ]);
- * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<"name" | "age", string | undefined>[]>>(true);
  * ```
  *
  * @example Specify columns with `columns` option and skip first row with
@@ -190,7 +190,7 @@ export type RowType<T> = T extends undefined ? string[]
  * const result = await Array.fromAsync(stream);
  *
  * assertEquals(result, [{ name: "Bob", age: "24" }]);
- * assertType<IsExact<typeof result, Record<"name" | "age", string>[]>>(true);
+ * assertType<IsExact<typeof result, Record<"name" | "age", string | undefined>[]>>(true);
  * ```
  *
  * @example TSV (tab-separated values) with `separator: "\t"`
@@ -336,6 +336,27 @@ export type RowType<T> = T extends undefined ? string[]
  * );
  * ```
  *
+ * @example Variable-length records with `skipFirstRow` or `columns`
+ * ```ts
+ * import { CsvParseStream } from "@std/csv/parse-stream";
+ * import { assertEquals } from "@std/assert/equals";
+ *
+ * const source = ReadableStream.from([
+ *   "name,age\n",
+ *   "Alice,34\n",
+ *   "Bob\n",
+ * ]);
+ * const stream = source.pipeThrough(
+ *   new CsvParseStream({ skipFirstRow: true }),
+ * );
+ * const result = await Array.fromAsync(stream);
+ *
+ * assertEquals(result, [
+ *   { name: "Alice", age: "34" },
+ *   { name: "Bob", age: undefined },
+ * ]);
+ * ```
+ *
  * @typeParam T The type of options for the stream.
  */
 export class CsvParseStream<
@@ -461,6 +482,7 @@ export class CsvParseStream<
           record,
           this.#headers,
           this.#zeroBasedLineIndex,
+          this.#fieldsPerRecord === "ANY",
         ));
       } else {
         controller.enqueue(record);
