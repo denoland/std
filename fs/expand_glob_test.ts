@@ -11,6 +11,7 @@ import {
   expandGlob,
   type ExpandGlobOptions,
   expandGlobSync,
+  type WalkEntry,
 } from "./expand_glob.ts";
 
 async function expandGlobArray(
@@ -463,4 +464,23 @@ Deno.test("expandGlobSync() finds directory with escaped brackets", function () 
     expandGlobSyncArray(`a${escapeChar}[b${escapeChar}]c/fo[o]`, EG_OPTIONS),
     [join("a[b]c", "foo")],
   );
+});
+
+Deno.test("expandGlobSync() preserves the Generator return type", () => {
+  // Regression test for https://github.com/denoland/std/issues/7099:
+  // the return type must be `Generator<WalkEntry>` so the ES2025 iterator
+  // helpers (`.map`, `.filter`, etc.) are exposed at the type level wherever
+  // the host TypeScript lib defines them. `Generator<T>` requires the
+  // `.return()` / `.throw()` methods that `IterableIterator<T>` leaves
+  // optional, so this assignment fails if the return type is widened back
+  // to `IterableIterator<WalkEntry>`.
+  const iter: Generator<WalkEntry> = expandGlobSync("*", EG_OPTIONS);
+  iter.return(undefined);
+});
+
+Deno.test("expandGlob() preserves the AsyncGenerator return type", async () => {
+  // Regression test for https://github.com/denoland/std/issues/7099 — see the
+  // sync counterpart for rationale.
+  const iter: AsyncGenerator<WalkEntry> = expandGlob("*", EG_OPTIONS);
+  await iter.return(undefined);
 });
