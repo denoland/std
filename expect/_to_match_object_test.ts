@@ -121,6 +121,11 @@ Deno.test("expect().toMatchObject() throws the correct error messages", () => {
       () => expect({ a: 1 }).toMatchObject({ a: 2 }),
       AssertionError,
     );
+    // The matcher name must appear in the message, not a generic equality
+    // phrase such as "Values are not equal." which misleads users into
+    // thinking strict equality was checked.
+    assertMatch(e.message, /expect\(received\)\.toMatchObject\(expected\)/);
+    assertNotMatch(e.message, /Values are not equal/);
     assertNotMatch(e.message, /not to be/);
   }
   {
@@ -128,7 +133,12 @@ Deno.test("expect().toMatchObject() throws the correct error messages", () => {
       () => expect({ a: 1 }).not.toMatchObject({ a: 1 }),
       AssertionError,
     );
-    assertMatch(e.message, /not to be/);
+    assertMatch(
+      e.message,
+      /expect\(received\)\.not\.toMatchObject\(expected\)/,
+    );
+    assertNotMatch(e.message, /Values are equal/);
+    assertNotMatch(e.message, /Expected actual: .* not to be:/);
   }
 });
 
