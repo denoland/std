@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { getNodeFs } from "./_utils.ts";
+import { getNodeFs, getNodeOs } from "./_utils.ts";
 import type { WriteFileOptions } from "./unstable_types.ts";
 import type { OpenOptions } from "./unstable_open.ts";
 
@@ -22,11 +22,23 @@ type OpenBooleanOptions = Pick<
 export function getWriteFsFlag(opt: WriteBooleanOptions): number {
   const { O_APPEND, O_CREAT, O_EXCL, O_TRUNC, O_WRONLY } =
     getNodeFs().constants;
+  const { platform } = getNodeOs();
 
-  let flag = O_WRONLY;
-  if (opt.create) {
+  // On Windows: The O_CREAT flag is set by default to prevent throwing an
+  // EINVAL error (code -4071) when running Node on a Windows OS. The O_CREAT
+  // flag will create a new file if the file does not exist and is a no-op when
+  // the file exists on Windows. This makes the `WriteBooleanOption`,
+  // `{ create: true }`, the default option. Passing `{ create: false }` will
+  // throw an Error.
+  let flag = platform() !== "win32" ? O_WRONLY : O_CREAT | O_WRONLY;
+
+  if (platform() === "win32" && !opt.create) {
+    flag ^= O_CREAT;
+  }
+  if (platform() !== "win32" && opt.create) {
     flag |= O_CREAT;
   }
+
   if (opt.createNew) {
     flag |= O_EXCL;
   }
