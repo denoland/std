@@ -123,6 +123,162 @@ Deno.test("beforeAll(), afterAll(), beforeEach() and afterEach()", async () => {
   assertSpyCalls(afterEachFn, 2);
 });
 
+Deno.test(
+  "top-level beforeAll() with only nested describe() does not add an extra step",
+  async () => {
+    using test = stub(Deno, "test");
+    const fns = [spy(), spy()] as const;
+    const { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
+
+    const context = new TestContext("the describe");
+    try {
+      beforeAll(beforeAllFn);
+      afterAll(afterAllFn);
+      beforeEach(beforeEachFn);
+      afterEach(afterEachFn);
+
+      describe("the describe", () => {
+        it({ name: "test 1", fn: fns[0] });
+        it({ name: "test 2", fn: fns[1] });
+      });
+
+      // Only one Deno.test should be registered, named after the user's
+      // describe — not a synthetic "global" wrapper. Without the fix this
+      // is called twice (once for "global", once as a step), inflating the
+      // step count reported by `deno test`.
+      assertSpyCalls(test, 1);
+      const options = test.calls[0]?.args[0] as Deno.TestDefinition;
+      assertEquals(Object.keys(options).sort(), ["fn", "name"]);
+      assertEquals(options.name, "the describe");
+
+      const result = options.fn(context);
+      assertStrictEquals(Promise.resolve(result), result);
+      assertEquals(await result, undefined);
+      // Only the two user tests should appear as steps; no extra wrapping step.
+      assertSpyCalls(context.spies.step, 2);
+    } finally {
+      TestSuiteInternal.reset();
+    }
+
+    assertSpyCalls(fns[0], 1);
+    assertSpyCalls(fns[1], 1);
+
+    // Top-level hooks still run around the nested tests.
+    assertSpyCalls(beforeAllFn, 1);
+    assertSpyCalls(afterAllFn, 1);
+    assertSpyCalls(beforeEachFn, 2);
+    assertSpyCalls(afterEachFn, 2);
+  },
+);
+
+Deno.test(
+  "top-level beforeAll() with only nested describe() still wires up hooks when describe has its own hooks",
+  async () => {
+    using test = stub(Deno, "test");
+    const fns = [spy(), spy()] as const;
+    const globalBeforeAll = spy();
+    const globalAfterAll = spy();
+    const globalBeforeEach = spy();
+    const globalAfterEach = spy();
+    const localBeforeAll = spy();
+    const localAfterAll = spy();
+    const localBeforeEach = spy();
+    const localAfterEach = spy();
+
+    const order: string[] = [];
+    const trackOrder = (label: string) => () => {
+      order.push(label);
+    };
+
+    const context = new TestContext("d");
+    try {
+      beforeAll(spy(trackOrder("globalBeforeAll")));
+      beforeAll(globalBeforeAll);
+      afterAll(globalAfterAll);
+      afterAll(spy(trackOrder("globalAfterAll")));
+      beforeEach(spy(trackOrder("globalBeforeEach")));
+      beforeEach(globalBeforeEach);
+      afterEach(globalAfterEach);
+      afterEach(spy(trackOrder("globalAfterEach")));
+
+      describe("d", () => {
+        beforeAll(spy(trackOrder("localBeforeAll")));
+        beforeAll(localBeforeAll);
+        afterAll(localAfterAll);
+        afterAll(spy(trackOrder("localAfterAll")));
+        beforeEach(spy(trackOrder("localBeforeEach")));
+        beforeEach(localBeforeEach);
+        afterEach(localAfterEach);
+        afterEach(spy(trackOrder("localAfterEach")));
+
+        it({ name: "t1", fn: fns[0] });
+        it({ name: "t2", fn: fns[1] });
+      });
+
+      assertSpyCalls(test, 1);
+      const options = test.calls[0]?.args[0] as Deno.TestDefinition;
+      assertEquals(options.name, "d");
+
+      await options.fn(context);
+    } finally {
+      TestSuiteInternal.reset();
+    }
+
+    // Global hooks wrap local hooks around the tests.
+    assertEquals(order, [
+      "globalBeforeAll",
+      "localBeforeAll",
+      "globalBeforeEach",
+      "localBeforeEach",
+      "localAfterEach",
+      "globalAfterEach",
+      "globalBeforeEach",
+      "localBeforeEach",
+      "localAfterEach",
+      "globalAfterEach",
+      "localAfterAll",
+      "globalAfterAll",
+    ]);
+
+    assertSpyCalls(globalBeforeAll, 1);
+    assertSpyCalls(globalAfterAll, 1);
+    assertSpyCalls(globalBeforeEach, 2);
+    assertSpyCalls(globalAfterEach, 2);
+    assertSpyCalls(localBeforeAll, 1);
+    assertSpyCalls(localAfterAll, 1);
+    assertSpyCalls(localBeforeEach, 2);
+    assertSpyCalls(localAfterEach, 2);
+    assertSpyCalls(fns[0], 1);
+    assertSpyCalls(fns[1], 1);
+  },
+);
+
+Deno.test(
+  "top-level beforeAll() with multiple nested describes registers each describe as its own Deno.test",
+  () => {
+    using test = stub(Deno, "test");
+    const beforeAllFn = spy();
+    try {
+      beforeAll(beforeAllFn);
+
+      describe("d1", () => {
+        it({ name: "t1", fn: () => {} });
+      });
+      describe("d2", () => {
+        it({ name: "t2", fn: () => {} });
+      });
+
+      assertSpyCalls(test, 2);
+      const first = test.calls[0]?.args[0] as Deno.TestDefinition;
+      const second = test.calls[1]?.args[0] as Deno.TestDefinition;
+      assertEquals(first.name, "d1");
+      assertEquals(second.name, "d2");
+    } finally {
+      TestSuiteInternal.reset();
+    }
+  },
+);
+
 Deno.test("beforeAll() with it.only() propagates only to Deno.test", () => {
   using test = stub(Deno, "test");
   try {

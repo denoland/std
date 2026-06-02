@@ -69,12 +69,27 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   protected describe: DescribeDefinition<T>;
   protected steps: (TestSuiteInternal<T> | ItDefinition<T>)[];
   protected hasOnlyStep: boolean;
+  /**
+   * Whether this is the synthetic "global" suite created when a top-level
+   * `beforeAll`/`afterAll`/`beforeEach`/`afterEach` is called outside any
+   * `describe`. Synthetic suites are only registered with `Deno.test` if a
+   * top-level `it()` is also added; otherwise their hooks are inherited by
+   * child describes promoted to top-level `Deno.test`s.
+   */
+  protected isSynthetic: boolean;
+  /**
+   * For a child of a synthetic global suite, this points back to the synthetic
+   * suite so its hooks can be invoked around the child's tests at run time.
+   */
+  protected syntheticParent: TestSuiteInternal<T> | null;
   #registeredOptions: Deno.TestDefinition | undefined;
 
-  constructor(describe: DescribeDefinition<T>) {
+  constructor(describe: DescribeDefinition<T>, isSynthetic = false) {
     this.describe = describe;
     this.steps = [];
     this.hasOnlyStep = false;
+    this.isSynthetic = isSynthetic;
+    this.syntheticParent = null;
 
     const { suite } = describe;
     if (suite && !TestSuiteInternal.suites.has(suite.symbol)) {
@@ -138,28 +153,45 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       }
     }
 
-    if (testSuite) {
+    if (testSuite && testSuite.isSynthetic) {
+      // Promote: a child describe of the synthetic global is registered as its
+      // own top-level Deno.test rather than as a step of the global suite. The
+      // child inherits the global's hooks at run time via syntheticParent.
+      this.syntheticParent = testSuite;
+      this.registerAsDenoTest();
+    } else if (testSuite) {
       TestSuiteInternal.addStep(testSuite, this);
-    } else {
-      const {
-        name,
-        ignore,
-        permissions,
-        sanitizeExit = globalSanitizersState.sanitizeExit,
-        sanitizeOps = globalSanitizersState.sanitizeOps,
-        sanitizeResources = globalSanitizersState.sanitizeResources,
-      } = describe;
-      let { only } = describe;
-      if (!ignore && this.hasOnlyStep) {
-        only = true;
-      }
-      const options: Deno.TestDefinition = {
-        name,
-        fn: async (t) => {
-          TestSuiteInternal.runningCount++;
-          try {
-            const context = {} as T;
-            const { beforeAll } = this.describe;
+    } else if (!this.isSynthetic) {
+      this.registerAsDenoTest();
+    }
+    // Synthetic suites without a parent are not registered eagerly. They are
+    // registered lazily by `addStep` when a top-level `it()` is added.
+  }
+
+  /** Builds the Deno.test options for this suite and registers them. */
+  protected registerAsDenoTest() {
+    if (this.#registeredOptions) return;
+    const {
+      name,
+      ignore,
+      permissions,
+      sanitizeExit = globalSanitizersState.sanitizeExit,
+      sanitizeOps = globalSanitizersState.sanitizeOps,
+      sanitizeResources = globalSanitizersState.sanitizeResources,
+    } = this.describe;
+    let { only } = this.describe;
+    if (!ignore && this.hasOnlyStep) {
+      only = true;
+    }
+    const options: Deno.TestDefinition = {
+      name,
+      fn: async (t) => {
+        TestSuiteInternal.runningCount++;
+        try {
+          const context = {} as T;
+          const parent = this.syntheticParent;
+          if (parent) {
+            const { beforeAll } = parent.describe;
             if (typeof beforeAll === "function") {
               await beforeAll.call(context);
             } else if (beforeAll) {
@@ -167,12 +199,36 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
                 await hook.call(context);
               }
             }
-            try {
-              TestSuiteInternal.active.push(this.symbol);
-              await TestSuiteInternal.run(this, context, t);
-            } finally {
+          }
+          const { beforeAll } = this.describe;
+          if (typeof beforeAll === "function") {
+            await beforeAll.call(context);
+          } else if (beforeAll) {
+            for (const hook of beforeAll) {
+              await hook.call(context);
+            }
+          }
+          try {
+            if (parent) {
+              TestSuiteInternal.active.push(parent.symbol);
+            }
+            TestSuiteInternal.active.push(this.symbol);
+            await TestSuiteInternal.run(this, context, t);
+          } finally {
+            TestSuiteInternal.active.pop();
+            if (parent) {
               TestSuiteInternal.active.pop();
-              const { afterAll } = this.describe;
+            }
+            const { afterAll } = this.describe;
+            if (typeof afterAll === "function") {
+              await afterAll.call(context);
+            } else if (afterAll) {
+              for (const hook of afterAll) {
+                await hook.call(context);
+              }
+            }
+            if (parent) {
+              const { afterAll } = parent.describe;
               if (typeof afterAll === "function") {
                 await afterAll.call(context);
               } else if (afterAll) {
@@ -181,31 +237,31 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
                 }
               }
             }
-          } finally {
-            TestSuiteInternal.runningCount--;
           }
-        },
-      };
-      if (ignore !== undefined) {
-        options.ignore = ignore;
-      }
-      if (only !== undefined) {
-        options.only = only;
-      }
-      if (permissions !== undefined) {
-        options.permissions = permissions;
-      }
-      if (sanitizeExit !== undefined) {
-        options.sanitizeExit = sanitizeExit;
-      }
-      if (sanitizeOps !== undefined) {
-        options.sanitizeOps = sanitizeOps;
-      }
-      if (sanitizeResources !== undefined) {
-        options.sanitizeResources = sanitizeResources;
-      }
-      this.#registeredOptions = TestSuiteInternal.registerTest(options);
+        } finally {
+          TestSuiteInternal.runningCount--;
+        }
+      },
+    };
+    if (ignore !== undefined) {
+      options.ignore = ignore;
     }
+    if (only !== undefined) {
+      options.only = only;
+    }
+    if (permissions !== undefined) {
+      options.permissions = permissions;
+    }
+    if (sanitizeExit !== undefined) {
+      options.sanitizeExit = sanitizeExit;
+    }
+    if (sanitizeOps !== undefined) {
+      options.sanitizeOps = sanitizeOps;
+    }
+    if (sanitizeResources !== undefined) {
+      options.sanitizeResources = sanitizeResources;
+    }
+    this.#registeredOptions = TestSuiteInternal.registerTest(options);
   }
 
   /** Stores how many test suites are executing. */
@@ -289,6 +345,17 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     suite: TestSuiteInternal<T>,
     step: TestSuiteInternal<T> | ItDefinition<T>,
   ) {
+    // When adding a top-level `it()` to the synthetic global suite, the global
+    // needs to become a real `Deno.test` so the test has a place to run.
+    // Child `describe`s are promoted at construction time and never reach
+    // `addStep` with the synthetic suite as their parent.
+    if (
+      suite.isSynthetic && !suite.#registeredOptions &&
+      !(step instanceof TestSuiteInternal)
+    ) {
+      suite.registerAsDenoTest();
+    }
+
     if (!suite.hasOnlyStep) {
       if (step instanceof TestSuiteInternal) {
         if (step.hasOnlyStep || step.describe.only) {
