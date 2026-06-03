@@ -29,6 +29,10 @@
 export function concatReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
+  if (streams.length === 0) {
+    return ReadableStream.from([]);
+  }
+
   let i = 0;
   return new ReadableStream<T>({
     async pull(controller) {

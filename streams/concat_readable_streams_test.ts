@@ -26,6 +26,15 @@ Deno.test("concatStreams()", async () => {
   );
 });
 
+Deno.test("concatStreams() with no streams", async () => {
+  assertEquals(
+    await Array.fromAsync(
+      concatReadableStreams(),
+    ),
+    [],
+  );
+});
+
 Deno.test("concatStreams() with empty streams", async () => {
   const readable1 = ReadableStream.from([]);
   const readable2 = ReadableStream.from([]);
