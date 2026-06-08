@@ -144,4 +144,28 @@ export class Semaphore {
       this.#count++;
     }
   }
+
+  /**
+   * Convenience method to run a function once a permit is available,
+   * automatically releasing the permit when the function completes.
+   *
+   * @example Usage
+   * ```ts no-assert
+   * import { Semaphore } from "@std/async/unstable-semaphore";
+   *
+   * const sem = new Semaphore(1);
+   * const result = await sem.withPermit(async () => {
+   *   return "result";
+   * });
+   * console.log(result); // "result"
+   * ```
+   *
+   * @typeParam T The type of the value resolved from the function.
+   * @param fn Function to run with a permit.
+   * @returns The result of the function.
+   */
+  async withPermit<T>(fn: () => T | Promise<T>): Promise<T> {
+    using _permit = await this.acquire();
+    return await fn();
+  }
 }
