@@ -2,6 +2,8 @@
 
 // Should this class be parameterized to support bigint?
 
+// Annex G https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3886.pdf
+
 /*
 Currently, the following functions are broken
 - asin
@@ -39,7 +41,10 @@ export class Complex {
   }
 
   constructor(real: number, imag?: number) {
-    if (Number.isNaN(real) || Number.isNaN(imag)) {
+    if (!Number.isFinite(real) || !Number.isFinite(imag)) {
+      this.#real = Infinity;
+      this.#imag = Infinity;
+    } else if (Number.isNaN(real) || Number.isNaN(imag)) {
       this.#real = NaN;
       this.#imag = NaN;
     } else {
@@ -48,15 +53,46 @@ export class Complex {
     }
   }
 
+  /** Zero as a complex number */
+  static zero = new Complex(0);
   /** i, the imaginary unit */
   static i = new Complex(0, 1);
   /** -i, the negative of the imaginary unit */
   static negI = new Complex(0, -1);
 
-  static #complexNaN = new Complex(NaN, NaN);
+  static #complexNaN = new Complex(NaN);
 
-  static #NaNChecker(z: Complex) {
-    return Number.isNaN(z.real) || Number.isNaN(z.real);
+  /**
+   * Checks whether a complex number is finite.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is finite.
+   */
+  static isFinite(z: Complex): boolean {
+    return Number.isFinite(z.real) && Number.isFinite(z.imag);
+  }
+
+  /**
+   * Checks whether a complex number is equal to zero.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is equal to zero.
+   */
+  static isZero(z: Complex): boolean {
+    return z.real === 0 && z.imag === 0;
+  }
+
+  /**
+   * Checks whether a complex number is NaN.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is NaN.
+   */
+  static isNaN(z: Complex): boolean {
+    return Number.isNaN(z.real) || Number.isNaN(z.imag);
   }
 
   /**

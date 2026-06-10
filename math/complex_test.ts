@@ -5,8 +5,7 @@ import { assertEquals } from "@std/assert";
 Deno.test("Complex", async (t) => {
   const complexZero = new Complex(0);
   const complexNaN = new Complex(NaN);
-  const complexInfinity = new Complex(Infinity, Infinity);
-  const complexNegInfinity = new Complex(-Infinity, -Infinity);
+  const complexInfinity = new Complex(Infinity);
 
   await t.step("constructor", () => {
     assertEquals(new Complex(5, 1).imag, 1);
@@ -19,10 +18,6 @@ Deno.test("Complex", async (t) => {
     assertEquals(new Complex(Infinity, 1), complexInfinity);
     assertEquals(new Complex(1, Infinity), complexInfinity);
     assertEquals(new Complex(Infinity, Infinity), complexInfinity);
-
-    assertEquals(new Complex(-Infinity, 1), complexNegInfinity);
-    assertEquals(new Complex(1, -Infinity), complexNegInfinity);
-    assertEquals(new Complex(-Infinity, -Infinity), complexNegInfinity);
   });
 
   await t.step("add()", () => {
