@@ -62,6 +62,13 @@ export class Complex {
 
   static #complexNaN = new Complex(NaN);
 
+  static #containsNaN(nums: (Complex | number)[]): boolean {
+    return !nums.every((num) =>
+      (typeof num === "number" && Number.isNaN(num)) ||
+      (num instanceof Complex && this.isNaN(num))
+    );
+  }
+
   /**
    * Checks whether a complex number is finite.
    *
@@ -71,6 +78,28 @@ export class Complex {
    */
   static isFinite(z: Complex): boolean {
     return Number.isFinite(z.real) && Number.isFinite(z.imag);
+  }
+
+  /**
+   * Checks whether a complex number is real, meaning its imaginary part is equal to zero.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is real.
+   */
+  static isReal(z: Complex): boolean {
+    return z.imag === 0;
+  }
+
+  /**
+   * Checks whether a complex number is imaginary, meaning its real part is equal to zero.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is imaginary.
+   */
+  static isImaginary(z: Complex): boolean {
+    return z.real === 0;
   }
 
   /**
@@ -92,7 +121,7 @@ export class Complex {
    * @returns {boolean} Whether the supplied complex number is NaN.
    */
   static isNaN(z: Complex): boolean {
-    return Number.isNaN(z.real) || Number.isNaN(z.imag);
+    return Number.isNaN(z.real) && Number.isNaN(z.imag);
   }
 
   /**
@@ -103,7 +132,7 @@ export class Complex {
    * @returns {Complex} The sum of the supplied complex numbers.
    */
   static add(...nums: (Complex | number)[]): Complex {
-    if (nums.includes(this.#complexNaN)) return this.#complexNaN;
+    if (this.#containsNaN(nums)) return this.#complexNaN;
 
     let sum = new Complex(0);
 
@@ -120,7 +149,7 @@ export class Complex {
    *
    * @param {Complex} z The complex number to negate.
    *
-   * @returns {Complex} The negative of the complex number.
+   * @returns {Complex} The negative of the supplied complex number.
    */
   static neg(z: Complex): Complex {
     return new Complex(-z.real, -z.imag);
@@ -132,14 +161,14 @@ export class Complex {
    * @param {Complex} x A complex number.
    * @param {Complex} y A complex number.
    *
-   * @returns {Complex} The difference of the two complex numbers.
+   * @returns {Complex} The difference of the two supplied complex numbers.
    */
   static sub(x: Complex | number, y: Complex | number): Complex {
-    if (x === this.#complexNaN || y === this.#complexNaN) {
-      return this.#complexNaN;
-    }
     if (typeof x === "number") x = new Complex(x);
     if (typeof y === "number") y = new Complex(y);
+    if (this.#containsNaN([x, y])) {
+      return this.#complexNaN;
+    }
 
     return new Complex(x.real - y.real, x.imag - y.imag);
   }
@@ -152,7 +181,7 @@ export class Complex {
    * @returns {Complex} The product of the supplied complex numbers.
    */
   static mul(...nums: (Complex | number)[]): Complex {
-    if (nums.includes(this.#complexNaN)) return this.#complexNaN;
+    if (this.#containsNaN(nums)) return this.#complexNaN;
 
     let prod = new Complex(1);
 
@@ -174,16 +203,16 @@ export class Complex {
    * @param {Complex} x A complex number.
    * @param {Complex} y A complex number.
    *
-   * @returns {Complex} The ratio of the two complex numbers.
+   * @returns {Complex} The ratio of the two supplied complex numbers.
    */
   static div(x: Complex | number, y: Complex | number): Complex {
-    if (x === this.#complexNaN || y === this.#complexNaN) {
-      return this.#complexNaN;
-    }
     if (typeof x === "number") x = new Complex(x);
     if (typeof y === "number") y = new Complex(y);
+    if (this.#containsNaN([x, y])) {
+      return this.#complexNaN;
+    }
 
-    const absSquaredY = Complex.absSquared(y);
+    const absSquaredY = this.absSquared(y);
 
     return new Complex(
       (x.real * y.real + x.imag * y.imag) / absSquaredY,
@@ -239,7 +268,7 @@ export class Complex {
    * @returns {Complex} The square of the absolute value of the supplied number.
    */
   static arg(z: Complex): number {
-    return z.real === 0 && z.imag === 0
+    return this.isZero(z)
       ? 0
       : z.imag === 0 && z.real > 0
       ? 0
@@ -288,7 +317,7 @@ export class Complex {
     if (typeof z === "number") return new Complex(Math.cbrt(z));
 
     const argZdiv = this.arg(z) / 3;
-    const absCbrt = Math.cbrt(Complex.abs(z));
+    const absCbrt = Math.cbrt(this.abs(z));
 
     return new Complex(
       absCbrt * Math.cos(argZdiv),
@@ -372,17 +401,17 @@ export class Complex {
         : this.mul(z, this.pow(this.mul(z, z), (w - 1) / 2));
     } else if (typeof w === "number") {
       // If w is a real number, use De Moivre's formula.
-      const argZw = Complex.arg(z) * w;
-      const absPow = Math.pow(Complex.abs(z), w);
+      const argZw = this.arg(z) * w;
+      const absPow = Math.pow(this.abs(z), w);
 
       return new Complex(
         absPow * Math.cos(argZw),
         absPow * Math.sin(argZw),
       );
     } else {
-      return Complex.mul(
-        Complex.pow(z, w.real),
-        Complex.exp(Complex.mul(Complex.ln(z), new Complex(0, w.imag))),
+      return this.mul(
+        this.pow(z, w.real),
+        this.exp(this.mul(this.ln(z), new Complex(0, w.imag))),
       );
     }
   }
