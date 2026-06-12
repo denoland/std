@@ -14,6 +14,8 @@ import { FakeTime, TimeError } from "./time.ts";
 import { _internals } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
 import { deadline, delay } from "@std/async";
+import nodeTimers from "node:timers";
+import nodeTimersPromises from "node:timers/promises";
 
 function fromNow(): (..._args: unknown[]) => number {
   const start: number = Date.now();
@@ -215,6 +217,141 @@ Deno.test("FakeTime controls intervals", () => {
   clearInterval(interval);
   time.tick(1000);
   assertEquals(cb.calls, expected);
+});
+
+Deno.test("FakeTime node:timers functions unchanged if FakeTime is uninitialized", () => {
+  assertStrictEquals(nodeTimers.setTimeout, _internals.nodeTimersSetTimeout);
+  assertStrictEquals(
+    nodeTimers.clearTimeout,
+    _internals.nodeTimersClearTimeout,
+  );
+  assertStrictEquals(nodeTimers.setInterval, _internals.nodeTimersSetInterval);
+  assertStrictEquals(
+    nodeTimers.clearInterval,
+    _internals.nodeTimersClearInterval,
+  );
+  assertStrictEquals(
+    nodeTimers.promises.setTimeout,
+    _internals.nodeTimersPromisesSetTimeout,
+  );
+  assertStrictEquals(
+    nodeTimersPromises.setTimeout,
+    _internals.nodeTimersPromisesSetTimeout,
+  );
+});
+
+Deno.test("FakeTime fakes node:timers functions", () => {
+  {
+    using _time: FakeTime = new FakeTime();
+    assertNotEquals(nodeTimers.setTimeout, _internals.nodeTimersSetTimeout);
+    assertNotEquals(
+      nodeTimers.clearTimeout,
+      _internals.nodeTimersClearTimeout,
+    );
+    assertNotEquals(nodeTimers.setInterval, _internals.nodeTimersSetInterval);
+    assertNotEquals(
+      nodeTimers.clearInterval,
+      _internals.nodeTimersClearInterval,
+    );
+    assertNotEquals(
+      nodeTimers.promises.setTimeout,
+      _internals.nodeTimersPromisesSetTimeout,
+    );
+    assertNotEquals(
+      nodeTimersPromises.setTimeout,
+      _internals.nodeTimersPromisesSetTimeout,
+    );
+  }
+  assertStrictEquals(nodeTimers.setTimeout, _internals.nodeTimersSetTimeout);
+  assertStrictEquals(
+    nodeTimers.clearTimeout,
+    _internals.nodeTimersClearTimeout,
+  );
+  assertStrictEquals(nodeTimers.setInterval, _internals.nodeTimersSetInterval);
+  assertStrictEquals(
+    nodeTimers.clearInterval,
+    _internals.nodeTimersClearInterval,
+  );
+  assertStrictEquals(
+    nodeTimers.promises.setTimeout,
+    _internals.nodeTimersPromisesSetTimeout,
+  );
+  assertStrictEquals(
+    nodeTimersPromises.setTimeout,
+    _internals.nodeTimersPromisesSetTimeout,
+  );
+});
+
+Deno.test("FakeTime controls node:timers timeouts and intervals", () => {
+  using time: FakeTime = new FakeTime();
+  const timeoutCb = spy(fromNow());
+  const intervalCb = spy(fromNow());
+
+  nodeTimers.setTimeout(timeoutCb, 1000);
+  const interval = nodeTimers.setInterval(intervalCb, 1000);
+  time.tick(500);
+  assertEquals(timeoutCb.calls.length, 0);
+  assertEquals(intervalCb.calls.length, 0);
+  time.tick(500);
+  assertEquals(timeoutCb.calls.length, 1);
+  assertEquals(intervalCb.calls.length, 1);
+  time.tick(1000);
+  assertEquals(timeoutCb.calls.length, 1);
+  assertEquals(intervalCb.calls.length, 2);
+
+  nodeTimers.clearInterval(interval);
+  time.tick(1000);
+  assertEquals(intervalCb.calls.length, 2);
+
+  const timeout = nodeTimers.setTimeout(timeoutCb, 1000);
+  nodeTimers.clearTimeout(timeout);
+  time.tick(1000);
+  assertEquals(timeoutCb.calls.length, 1);
+});
+
+Deno.test("FakeTime controls node:timers/promises setTimeout", async () => {
+  using time: FakeTime = new FakeTime();
+
+  let done = false;
+  const promise = nodeTimersPromises.setTimeout(1000, "done").then((value) => {
+    done = true;
+    return value;
+  });
+  await time.tickAsync(500);
+  assertEquals(done, false);
+  await time.tickAsync(500);
+  assertEquals(await promise, "done");
+
+  // The object attached at `nodeTimers.promises` is also faked.
+  let attachedDone = false;
+  const attachedPromise = nodeTimers.promises.setTimeout(1000, "done").then(
+    (value) => {
+      attachedDone = true;
+      return value;
+    },
+  );
+  await time.tickAsync(500);
+  assertEquals(attachedDone, false);
+  await time.tickAsync(500);
+  assertEquals(await attachedPromise, "done");
+});
+
+Deno.test("FakeTime node:timers/promises setTimeout rejects on abort", async () => {
+  using time: FakeTime = new FakeTime();
+
+  const aborted = new AbortController();
+  aborted.abort();
+  await assertRejects(() =>
+    nodeTimersPromises.setTimeout(1000, "done", { signal: aborted.signal })
+  );
+
+  const controller = new AbortController();
+  const promise = nodeTimersPromises.setTimeout(1000, "done", {
+    signal: controller.signal,
+  });
+  controller.abort();
+  await assertRejects(() => promise);
+  await time.tickAsync(1000);
 });
 
 Deno.test("FakeTime calls timeout and interval callbacks in correct order", () => {
