@@ -11,11 +11,33 @@ import {
   assertThrows,
 } from "@std/assert";
 import { FakeTime, TimeError } from "./time.ts";
-import { _internals } from "./_time.ts";
+import { _internals, nodeTimers as maybeNodeTimers } from "./_time.ts";
 import { assertSpyCall, spy, type SpyCall } from "./mock.ts";
 import { deadline, delay } from "@std/async";
-import nodeTimers from "node:timers";
-import nodeTimersPromises from "node:timers/promises";
+import nodeTimersDefault from "node:timers";
+import nodeTimersPromisesDefault from "node:timers/promises";
+
+// Deno 1.x ships Node typings without `promises` on the `node:timers` module
+// object and with an `AbortSignal` type that conflicts with the global one, so
+// the module objects are viewed through local types here. On runtimes without
+// `process.getBuiltinModule()` (such as Deno 1.x) `FakeTime` skips the
+// `node:timers` faking, so the related tests are ignored there.
+type NodeTimersPromisesSetTimeout = (
+  delay?: number,
+  value?: string,
+  options?: { signal?: AbortSignal },
+) => Promise<string>;
+const nodeTimers = nodeTimersDefault as unknown as {
+  setTimeout: typeof setTimeout;
+  clearTimeout: typeof clearTimeout;
+  setInterval: typeof setInterval;
+  clearInterval: typeof clearInterval;
+  promises: { setTimeout: NodeTimersPromisesSetTimeout };
+};
+const nodeTimersPromises = nodeTimersPromisesDefault as unknown as {
+  setTimeout: NodeTimersPromisesSetTimeout;
+};
+const nodeTimersFaked = maybeNodeTimers !== undefined;
 
 function fromNow(): (..._args: unknown[]) => number {
   const start: number = Date.now();
@@ -219,7 +241,10 @@ Deno.test("FakeTime controls intervals", () => {
   assertEquals(cb.calls, expected);
 });
 
-Deno.test("FakeTime node:timers functions unchanged if FakeTime is uninitialized", () => {
+Deno.test({
+  name: "FakeTime node:timers functions unchanged if FakeTime is uninitialized",
+  ignore: !nodeTimersFaked,
+}, () => {
   assertStrictEquals(nodeTimers.setTimeout, _internals.nodeTimersSetTimeout);
   assertStrictEquals(
     nodeTimers.clearTimeout,
@@ -240,7 +265,10 @@ Deno.test("FakeTime node:timers functions unchanged if FakeTime is uninitialized
   );
 });
 
-Deno.test("FakeTime fakes node:timers functions", () => {
+Deno.test({
+  name: "FakeTime fakes node:timers functions",
+  ignore: !nodeTimersFaked,
+}, () => {
   {
     using _time: FakeTime = new FakeTime();
     assertNotEquals(nodeTimers.setTimeout, _internals.nodeTimersSetTimeout);
@@ -282,7 +310,10 @@ Deno.test("FakeTime fakes node:timers functions", () => {
   );
 });
 
-Deno.test("FakeTime controls node:timers timeouts and intervals", () => {
+Deno.test({
+  name: "FakeTime controls node:timers timeouts and intervals",
+  ignore: !nodeTimersFaked,
+}, () => {
   using time: FakeTime = new FakeTime();
   const timeoutCb = spy(fromNow());
   const intervalCb = spy(fromNow());
@@ -309,7 +340,10 @@ Deno.test("FakeTime controls node:timers timeouts and intervals", () => {
   assertEquals(timeoutCb.calls.length, 1);
 });
 
-Deno.test("FakeTime controls node:timers/promises setTimeout", async () => {
+Deno.test({
+  name: "FakeTime controls node:timers/promises setTimeout",
+  ignore: !nodeTimersFaked,
+}, async () => {
   using time: FakeTime = new FakeTime();
 
   let done = false;
@@ -336,7 +370,10 @@ Deno.test("FakeTime controls node:timers/promises setTimeout", async () => {
   assertEquals(await attachedPromise, "done");
 });
 
-Deno.test("FakeTime node:timers/promises setTimeout rejects on abort", async () => {
+Deno.test({
+  name: "FakeTime node:timers/promises setTimeout rejects on abort",
+  ignore: !nodeTimersFaked,
+}, async () => {
   using time: FakeTime = new FakeTime();
 
   const aborted = new AbortController();
