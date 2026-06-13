@@ -83,7 +83,7 @@ export class Complex {
    * @returns {boolean} Whether the supplied complex number is real.
    */
   static isReal(z: Complex): boolean {
-    return z.imag === 0;
+    return z.imag === 0 && Number.isFinite(z.real);
   }
 
   /**
@@ -94,7 +94,7 @@ export class Complex {
    * @returns {boolean} Whether the supplied complex number is imaginary.
    */
   static isImaginary(z: Complex): boolean {
-    return z.real === 0;
+    return z.real === 0 && Number.isFinite(z.imag);
   }
 
   /**
@@ -138,7 +138,8 @@ export class Complex {
    * @returns {boolean} Whether the supplied complex number is NaN.
    */
   static isNaN(z: Complex): boolean {
-    return Number.isNaN(z.real) || Number.isNaN(z.imag);
+    return (Number.isNaN(z.real) && !isInfinite(z.real)) ||
+      (Number.isNaN(z.imag) && !isInfinite(z.real));
   }
 
   /**
@@ -204,12 +205,18 @@ export class Complex {
     let prod = new Complex(1);
 
     for (let num of nums) {
-      if (typeof num === "number") num = new Complex(num);
-
-      prod = new Complex(
-        prod.real * num.real - prod.imag * num.imag,
-        prod.real * num.imag + prod.imag * num.real,
-      );
+      if (num instanceof Complex && this.isReal(num)) num = num.real;
+      if (typeof num === "number") {
+        prod = new Complex(
+          prod.real * num,
+          prod.imag * num,
+        );
+      } else {
+        prod = new Complex(
+          prod.real * num.real - prod.imag * num.imag,
+          prod.real * num.imag + prod.imag * num.real,
+        );
+      }
     }
 
     return prod;
@@ -225,17 +232,22 @@ export class Complex {
    */
   static div(x: Complex | number, y: Complex | number): Complex {
     if (typeof x === "number") x = new Complex(x);
-    if (typeof y === "number") y = new Complex(y);
-    if (this.#containsNaN([x, y])) {
-      return this.#complexNaN;
+    if (this.isNaN(x)) return this.#complexNaN;
+    if (y instanceof Complex && this.isReal(y)) y = y.real;
+
+    if (typeof y === "number") {
+      return Number.isNaN(y) ? this.#complexNaN : new Complex(
+        x.real / y,
+        x.imag / y,
+      );
+    } else {
+      const absSquaredY = this.absSquared(y);
+
+      return new Complex(
+        (x.real * y.real + x.imag * y.imag) / absSquaredY,
+        (x.imag * y.real - x.real * y.imag) / absSquaredY,
+      );
     }
-
-    const absSquaredY = this.absSquared(y);
-
-    return new Complex(
-      (x.real * y.real + x.imag * y.imag) / absSquaredY,
-      (x.imag * y.real - x.real * y.imag) / absSquaredY,
-    );
   }
 
   /**
@@ -246,14 +258,16 @@ export class Complex {
    * @returns {Complex} The reciprocal of the supplied number.
    */
   static recip(z: Complex | number): Complex {
-    if (typeof z === "number") return new Complex(1 / z);
+    if (z instanceof Complex && this.isReal(z)) z = z.real;
 
-    const absSquaredZ = this.absSquared(z);
+    if (typeof z === "number") {
+      return Number.isNaN(z) ? this.#complexNaN : new Complex(1 / z);
+    } else {
+      if (this.isInfinite(z)) return this.zero;
+      const absSquaredZ = this.absSquared(z);
 
-    return new Complex(
-      z.real / absSquaredZ,
-      -z.imag / absSquaredZ,
-    );
+      return new Complex(z.real / absSquaredZ, -z.imag / absSquaredZ);
+    }
   }
 
   /**
