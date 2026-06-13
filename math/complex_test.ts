@@ -8,6 +8,7 @@ Deno.test("Complex", async (t) => {
   const complexInfinity = new Complex(Infinity);
 
   await t.step("constructor", () => {
+    assertEquals(new Complex(1), new Complex(1, 0));
     assertEquals(new Complex(5, 1).imag, 1);
     assertEquals(new Complex(5, 1).real, 5);
 
@@ -18,21 +19,26 @@ Deno.test("Complex", async (t) => {
     assertEquals(new Complex(Infinity, 1), complexInfinity);
     assertEquals(new Complex(1, Infinity), complexInfinity);
     assertEquals(new Complex(Infinity, Infinity), complexInfinity);
+    assertEquals(new Complex(Infinity, NaN), complexInfinity);
+    assertEquals(new Complex(NaN, Infinity), complexInfinity);
   });
 
   await t.step("add()", () => {
     assertEquals(
-      Complex.add(new Complex(0, 0), new Complex(1, 2), new Complex(4, 2)),
-      new Complex(5, 4),
+      Complex.add(complexZero, new Complex(3, 2), new Complex(4, 4)),
+      new Complex(7, 6),
     );
     assertEquals(
-      Complex.add(new Complex(0, 0), new Complex(1, 2), new Complex(4, 2)),
-      new Complex(5, 4),
+      Complex.add(new Complex(5, 4), new Complex(Infinity, 2)),
+      complexInfinity,
     );
-
     assertEquals(
-      Complex.add(new Complex(2, 3), new Complex(2, Infinity)),
-      new Complex(0),
+      Complex.add(new Complex(NaN, 4), new Complex(Infinity, 2)),
+      complexInfinity,
+    );
+    assertEquals(
+      Complex.add(new Complex(NaN, 4), new Complex(3, 2)),
+      complexNaN,
     );
   });
 });

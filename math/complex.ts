@@ -22,6 +22,10 @@ Currently, the following functions are broken
 I suspect this is because of faulty branch cuts but I really don't know.
 */
 
+function isInfinite(num: number): boolean {
+  return num === Infinity || num === -Infinity;
+}
+
 /**
  * A class representing a complex number. Also contains utility functions for complex numbers.
  *
@@ -29,27 +33,21 @@ I suspect this is because of faulty branch cuts but I really don't know.
  * @param {number} imag The imaginary part of this complex number.
  */
 export class Complex {
-  #real: number;
-  #imag: number;
-
-  get real() {
-    return this.#real;
-  }
-
-  get imag() {
-    return this.#imag;
-  }
+  real: number;
+  imag: number;
 
   constructor(real: number, imag?: number) {
-    if (!Number.isFinite(real) || !Number.isFinite(imag)) {
-      this.#real = Infinity;
-      this.#imag = Infinity;
-    } else if (Number.isNaN(real) || Number.isNaN(imag)) {
-      this.#real = NaN;
-      this.#imag = NaN;
+    if (isInfinite(real) || (imag !== undefined && isInfinite(imag))) {
+      this.real = Infinity;
+      this.imag = Infinity;
+    } else if (
+      Number.isNaN(real) || (imag !== undefined && Number.isNaN(imag))
+    ) {
+      this.real = NaN;
+      this.imag = NaN;
     } else {
-      this.#real = real;
-      this.#imag = imag ?? 0;
+      this.real = real;
+      this.imag = imag ?? 0;
     }
   }
 
@@ -61,24 +59,21 @@ export class Complex {
   static negI = new Complex(0, -1);
 
   static #complexNaN = new Complex(NaN);
+  static #complexInfinity = new Complex(Infinity);
 
-  static #containsNaN(nums: (Complex | number)[]): boolean {
-    return !nums.every((num) =>
+  static #containsNaN = (nums: (Complex | number)[]): boolean =>
+    Boolean(nums.find((num) =>
       (typeof num === "number" && Number.isNaN(num)) ||
       (num instanceof Complex && this.isNaN(num))
-    );
-  }
+    ));
 
-  /**
-   * Checks whether a complex number is finite.
-   *
-   * @param {Complex} z A complex number.
-   *
-   * @returns {boolean} Whether the supplied complex number is finite.
-   */
-  static isFinite(z: Complex): boolean {
-    return Number.isFinite(z.real) && Number.isFinite(z.imag);
-  }
+  static #containsInfinity = (nums: (Complex | number)[]): boolean =>
+    Boolean(
+      nums.find((num) =>
+        (typeof num === "number" && isInfinite(num)) ||
+        (num instanceof Complex && isInfinite(num.real) && isInfinite(num.imag))
+      ),
+    );
 
   /**
    * Checks whether a complex number is real, meaning its imaginary part is equal to zero.
@@ -114,6 +109,28 @@ export class Complex {
   }
 
   /**
+   * Checks whether a complex number is finite.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is finite.
+   */
+  static isFinite(z: Complex): boolean {
+    return Number.isFinite(z.real) && Number.isFinite(z.imag);
+  }
+
+  /**
+   * Checks whether a complex number is finite.
+   *
+   * @param {Complex} z A complex number.
+   *
+   * @returns {boolean} Whether the supplied complex number is finite.
+   */
+  static isInfinite(z: Complex): boolean {
+    return isInfinite(z.real) && isInfinite(z.imag);
+  }
+
+  /**
    * Checks whether a complex number is NaN.
    *
    * @param {Complex} z A complex number.
@@ -121,7 +138,7 @@ export class Complex {
    * @returns {boolean} Whether the supplied complex number is NaN.
    */
   static isNaN(z: Complex): boolean {
-    return Number.isNaN(z.real) && Number.isNaN(z.imag);
+    return Number.isNaN(z.real) || Number.isNaN(z.imag);
   }
 
   /**
@@ -132,13 +149,14 @@ export class Complex {
    * @returns {Complex} The sum of the supplied complex numbers.
    */
   static add(...nums: (Complex | number)[]): Complex {
+    if (this.#containsInfinity(nums)) return this.#complexInfinity;
     if (this.#containsNaN(nums)) return this.#complexNaN;
 
     let sum = new Complex(0);
 
     for (let num of nums) {
       if (typeof num === "number") num = new Complex(num);
-      sum = new Complex(sum.real + num.real, sum.imag + num.real);
+      sum = new Complex(sum.real + num.real, sum.imag + num.imag);
     }
 
     return sum;
@@ -723,3 +741,6 @@ export class Complex {
     return this.asinh(this.recip(z));
   }
 }
+
+const x = new Complex(2, 3);
+const y = new Complex(4, 5);
