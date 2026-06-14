@@ -561,7 +561,11 @@ export class Complex {
    * @returns The arctangent of the supplied complex number.
    */
   static atan(z: Complex | number): Complex {
-    return this.asin(this.div(z, this.sqrt(this.sub(1, this.pow(z, 2)))));
+    return this.mul(
+      .5,
+      this.i,
+      this.ln(this.div(this.add(this.i, z), this.sub(this.i, z))),
+    );
   }
 
   /**
@@ -572,7 +576,10 @@ export class Complex {
    * @returns The arccotangent of the supplied complex number.
    */
   static acot(z: Complex | number): Complex {
-    return this.atan(this.recip(z));
+    if (typeof z === "number") return new Complex(Math.atan(z));
+    if (this.isInfinite(z)) return this.#complexNaN;
+
+    return this.isZero(z) ? new Complex(Math.PI / 2) : this.atan(this.recip(z));
   }
 
   /**
@@ -583,6 +590,8 @@ export class Complex {
    * @returns The arcsecant of the supplied complex number.
    */
   static asec(z: Complex | number): Complex {
+    if (z instanceof Complex && this.isInfinite(z)) return this.#complexNaN;
+
     return this.acos(this.recip(z));
   }
 
@@ -594,6 +603,8 @@ export class Complex {
    * @returns The arccosecant of the supplied complex number.
    */
   static acsc(z: Complex | number): Complex {
+    if (z instanceof Complex && this.isInfinite(z)) return this.#complexNaN;
+
     return this.asin(this.recip(z));
   }
 
