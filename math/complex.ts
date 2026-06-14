@@ -489,14 +489,7 @@ export class Complex {
    * @returns The tangent of the supplied complex number.
    */
   static tan(z: Complex | number): Complex {
-    if (typeof z === "number") return new Complex(Math.tan(z));
-
-    const w = Math.cos(2 * z.imag) + Math.cosh(2 * z.imag);
-
-    return new Complex(
-      Math.sin(2 * z.real) / w,
-      Math.sinh(2 * z.real) / w,
-    );
+    return this.div(this.sin(z), this.cos(z));
   }
 
   /**

@@ -7,6 +7,11 @@ import {
 } from "@std/assert";
 import { Complex } from "./complex.ts";
 
+function assertAlmostEqualComplex(actual: Complex, expected: Complex) {
+  assertAlmostEquals(actual.real, expected.real);
+  assertAlmostEquals(actual.imag, expected.imag);
+}
+
 Deno.test("Complex", async (t) => {
   const complexZero = new Complex(0);
   const complexOne = new Complex(1);
@@ -212,12 +217,9 @@ Deno.test("Complex", async (t) => {
   });
 
   await t.step("sqrt()", () => {
-    assertEquals(
+    assertAlmostEqualComplex(
       Complex.sqrt(new Complex(1, 2)),
-      new Complex(
-        Math.sqrt((1 + Math.sqrt(5)) / 2),
-        Math.sqrt((-1 + Math.sqrt(5)) / 2),
-      ),
+      new Complex(1.27201965, 0.78615138),
     );
     assertEquals(Complex.sqrt(new Complex(0, -2)), new Complex(1, -1));
     assertEquals(Complex.sqrt(complexZero), complexZero);
@@ -226,48 +228,56 @@ Deno.test("Complex", async (t) => {
   });
 
   await t.step("cbrt()", () => {
-    const cbrt1 = Complex.cbrt(new Complex(1, 2));
-    assertAlmostEquals(cbrt1.real, 1.21961651);
-    assertAlmostEquals(cbrt1.imag, .47171127);
-    const cbrt2 = Complex.cbrt(new Complex(0, -2));
-    assertAlmostEquals(cbrt2.real, 1.09112364);
-    assertAlmostEquals(cbrt2.imag, -.62996052);
+    assertAlmostEqualComplex(
+      Complex.cbrt(new Complex(1, 2)),
+      new Complex(1.21961651, .47171127),
+    );
+    assertAlmostEqualComplex(
+      Complex.cbrt(new Complex(0, -2)),
+      new Complex(1.09112364, -.62996052),
+    );
     assertEquals(Complex.cbrt(complexZero), complexZero);
     assertEquals(Complex.cbrt(complexNaN), complexNaN);
     assertEquals(Complex.cbrt(complexInfinity), complexInfinity);
   });
 
   await t.step("ln()", () => {
-    const ln1 = Complex.ln(new Complex(1, 2));
-    assertAlmostEquals(ln1.real, .80471896);
-    assertAlmostEquals(ln1.imag, 1.10714872);
-    const ln2 = Complex.ln(new Complex(0, -2));
-    assertAlmostEquals(ln2.real, Math.log(2));
-    assertAlmostEquals(ln2.imag, -Math.PI / 2);
+    assertAlmostEqualComplex(
+      Complex.ln(new Complex(1, 2)),
+      new Complex(.80471896, 1.10714872),
+    );
+    assertAlmostEqualComplex(
+      Complex.ln(new Complex(0, -2)),
+      new Complex(Math.log(2), -Math.PI / 2),
+    );
     assertEquals(Complex.ln(complexZero), complexNaN);
     assertEquals(Complex.ln(complexNaN), complexNaN);
     assertEquals(Complex.ln(complexInfinity), complexInfinity);
   });
 
   await t.step("log()", () => {
-    const log1 = Complex.log(new Complex(1, 2));
-    assertAlmostEquals(log1.real, .349485);
-    assertAlmostEquals(log1.imag, .48082858);
-    const log2 = Complex.log(new Complex(0, -2));
-    assertAlmostEquals(log2.real, .30103);
-    assertAlmostEquals(log2.imag, -.68218818);
+    assertAlmostEqualComplex(
+      Complex.log(new Complex(1, 2)),
+      new Complex(.349485, .48082858),
+    );
+    assertAlmostEqualComplex(
+      Complex.log(new Complex(0, -2)),
+      new Complex(.30103, -.68218818),
+    );
     assertEquals(Complex.log(complexZero), complexNaN);
     assertEquals(Complex.log(complexNaN), complexNaN);
     assertEquals(Complex.log(complexInfinity), complexInfinity);
   });
 
   await t.step("logn()", () => {
-    const log1 = Complex.logn(new Complex(1, 2), 3);
-    assertAlmostEquals(log1.real, .73248676);
-    assertAlmostEquals(log1.imag, 1.00777019);
-    const log2 = Complex.logn(new Complex(0, -2), 6);
-    assertAlmostEquals(log2.real, .38685281);
-    assertAlmostEquals(log2.imag, -.87667812);
+    assertAlmostEqualComplex(
+      Complex.logn(new Complex(1, 2), 3),
+      new Complex(.73248676, 1.00777019),
+    );
+    assertAlmostEqualComplex(
+      Complex.logn(new Complex(0, -2), 6),
+      new Complex(.38685281, -.87667812),
+    );
     for (const base of [2, 3, 4, 5, 6]) {
       assertEquals(Complex.logn(complexZero, base), complexNaN);
       assertEquals(Complex.logn(complexNaN, base), complexNaN);
@@ -276,53 +286,202 @@ Deno.test("Complex", async (t) => {
   });
 
   await t.step("exp()", () => {
-    const exp1 = Complex.exp(new Complex(1, 2));
-    assertAlmostEquals(exp1.real, -1.13120438);
-    assertAlmostEquals(exp1.imag, 2.47172667);
-    const exp2 = Complex.exp(new Complex(0, -2));
-    assertAlmostEquals(exp2.real, -.41614684);
-    assertAlmostEquals(exp2.imag, -0.90929743);
+    assertAlmostEqualComplex(
+      Complex.exp(new Complex(1, 2)),
+      new Complex(-1.13120438, 2.47172667),
+    );
+    assertAlmostEqualComplex(
+      Complex.exp(new Complex(0, -2)),
+      new Complex(-.41614684, -0.90929743),
+    );
     assertEquals(Complex.exp(complexZero), complexOne);
     assertEquals(Complex.exp(complexNaN), complexNaN);
     assertEquals(Complex.exp(complexInfinity), complexNaN);
   });
 
   await t.step("pow()", () => {
-    const pow1 = Complex.pow(new Complex(1, 2), new Complex(3, 4));
-    assertAlmostEquals(pow1.real, .12900959);
-    assertAlmostEquals(pow1.imag, .03392409);
-    const pow2 = Complex.pow(new Complex(0, -2), 4);
-    assertAlmostEquals(pow2.real, 16);
-    assertAlmostEquals(pow2.imag, 0);
-    const pow3 = Complex.pow(new Complex(-4, -2), new Complex(6, 2));
-    assertAlmostEquals(pow3.real, 1482797.452);
-    assertAlmostEquals(pow3.imag, -820807.812);
+    assertAlmostEqualComplex(
+      Complex.pow(new Complex(1, 2), new Complex(3, 4)),
+      new Complex(.12900959, .03392409),
+    );
+    assertAlmostEqualComplex(
+      Complex.pow(new Complex(0, -2), 4),
+      new Complex(16, 0),
+    );
+    assertAlmostEqualComplex(
+      Complex.pow(new Complex(-4, -2), new Complex(6, 2)),
+      new Complex(1482797.452, -820807.812),
+    );
     assertEquals(Complex.pow(complexZero, complexZero), complexOne);
     assertEquals(Complex.pow(complexNaN, new Complex(2, 3)), complexNaN);
     assertEquals(Complex.pow(complexInfinity, new Complex(4, 5)), complexNaN);
   });
 
   await t.step("sin()", () => {
-    const sin1 = Complex.sin(new Complex(1, 2));
-    assertAlmostEquals(sin1.real, 3.16577851);
-    assertAlmostEquals(sin1.imag, 1.95960104);
-    const sin2 = Complex.sin(new Complex(0, -2));
-    assertAlmostEquals(sin2.real, 0);
-    assertAlmostEquals(sin2.imag, -3.62686041);
+    assertAlmostEqualComplex(
+      Complex.sin(new Complex(1, 2)),
+      new Complex(3.16577851, 1.95960104),
+    );
+    assertAlmostEqualComplex(
+      Complex.sin(new Complex(0, -2)),
+      new Complex(0, -3.62686041),
+    );
     assertEquals(Complex.sin(complexZero), complexZero);
     assertEquals(Complex.sin(complexNaN), complexNaN);
     assertEquals(Complex.sin(complexInfinity), complexNaN);
   });
 
   await t.step("cos()", () => {
-    const cos1 = Complex.cos(new Complex(1, 2));
-    assertAlmostEquals(cos1.real, 2.03272301);
-    assertAlmostEquals(cos1.imag, -3.0518978);
-    const cos2 = Complex.cos(new Complex(0, -2));
-    assertAlmostEquals(cos2.real, 3.76219569);
-    assertAlmostEquals(cos2.imag, 0);
+    assertAlmostEqualComplex(
+      Complex.cos(new Complex(1, 2)),
+      new Complex(2.03272301, -3.0518978),
+    );
+    assertAlmostEqualComplex(
+      Complex.cos(new Complex(0, -2)),
+      new Complex(3.76219569, 0),
+    );
     assertEquals(Complex.cos(complexZero), complexOne);
     assertEquals(Complex.cos(complexNaN), complexNaN);
     assertEquals(Complex.cos(complexInfinity), complexNaN);
+  });
+
+  await t.step("tan()", () => {
+    assertAlmostEqualComplex(
+      Complex.tan(new Complex(1, 2)),
+      new Complex(0.0338128260, 1.0147936161),
+    );
+    assertAlmostEqualComplex(
+      Complex.tan(new Complex(0, -2)),
+      new Complex(0, -0.96402758),
+    );
+    assertEquals(Complex.tan(complexZero), complexZero);
+    assertEquals(Complex.tan(complexNaN), complexNaN);
+    assertEquals(Complex.tan(complexInfinity), complexNaN);
+  });
+
+  await t.step("cot()", () => {
+    assertAlmostEqualComplex(
+      Complex.cot(new Complex(1, 2)),
+      new Complex(0.0327977555, -0.9843292264),
+    );
+    assertAlmostEqualComplex(
+      Complex.cot(new Complex(0, -2)),
+      new Complex(0, 1.03731472),
+    );
+    assertEquals(Complex.cot(complexZero), complexInfinity);
+    assertEquals(Complex.cot(complexNaN), complexNaN);
+    assertEquals(Complex.cot(complexInfinity), complexNaN);
+  });
+
+  await t.step("sec()", () => {
+    assertAlmostEqualComplex(
+      Complex.sec(new Complex(1, 2)),
+      new Complex(.1511763, .22697368),
+    );
+    assertAlmostEqualComplex(
+      Complex.sec(new Complex(0, -2)),
+      new Complex(.26580223),
+    );
+    assertEquals(Complex.sec(complexZero), complexOne);
+    assertEquals(Complex.sec(complexNaN), complexNaN);
+    assertEquals(Complex.sec(complexInfinity), complexNaN);
+  });
+
+  await t.step("csc()", () => {
+    assertAlmostEqualComplex(
+      Complex.csc(new Complex(1, 2)),
+      new Complex(.2283750655, -.1413630216),
+    );
+    assertAlmostEqualComplex(
+      Complex.csc(new Complex(0, -2)),
+      new Complex(0, .2757205647),
+    );
+    assertEquals(Complex.csc(complexZero), complexInfinity);
+    assertEquals(Complex.csc(complexNaN), complexNaN);
+    assertEquals(Complex.csc(complexInfinity), complexNaN);
+  });
+
+  await t.step("sinh()", () => {
+    assertAlmostEqualComplex(
+      Complex.sinh(new Complex(1, 2)),
+      new Complex(-.48905626, 1.40311925),
+    );
+    assertAlmostEqualComplex(
+      Complex.sinh(new Complex(0, -2)),
+      new Complex(0, -.90929743),
+    );
+    assertEquals(Complex.sinh(complexZero), complexZero);
+    assertEquals(Complex.sinh(complexNaN), complexNaN);
+    assertEquals(Complex.sinh(complexInfinity), complexNaN);
+  });
+
+  await t.step("cosh()", () => {
+    assertAlmostEqualComplex(
+      Complex.cosh(new Complex(1, 2)),
+      new Complex(-.64214812, 1.06860742),
+    );
+    assertAlmostEqualComplex(
+      Complex.cosh(new Complex(0, -2)),
+      new Complex(-.41614684, 0),
+    );
+    assertEquals(Complex.cosh(complexZero), complexOne);
+    assertEquals(Complex.cosh(complexNaN), complexNaN);
+    assertEquals(Complex.cosh(complexInfinity), complexNaN);
+  });
+
+  await t.step("tanh()", () => {
+    assertAlmostEqualComplex(
+      Complex.tanh(new Complex(1, 2)),
+      new Complex(1.16673626, -.2434582),
+    );
+    assertAlmostEqualComplex(
+      Complex.tanh(new Complex(0, -2)),
+      new Complex(0, 2.18503986),
+    );
+    assertEquals(Complex.tanh(complexZero), complexZero);
+    assertEquals(Complex.tanh(complexNaN), complexNaN);
+    assertEquals(Complex.tanh(complexInfinity), complexNaN);
+  });
+
+  await t.step("coth()", () => {
+    assertAlmostEqualComplex(
+      Complex.coth(new Complex(1, 2)),
+      new Complex(.8213298, .17138361),
+    );
+    assertAlmostEqualComplex(
+      Complex.coth(new Complex(0, -2)),
+      new Complex(0, -.45765755),
+    );
+    assertEquals(Complex.coth(complexZero), complexInfinity);
+    assertEquals(Complex.coth(complexNaN), complexNaN);
+    assertEquals(Complex.coth(complexInfinity), complexNaN);
+  });
+
+  await t.step("sech()", () => {
+    assertAlmostEqualComplex(
+      Complex.sech(new Complex(1, 2)),
+      new Complex(-.41314934, -.68752744),
+    );
+    assertAlmostEqualComplex(
+      Complex.sech(new Complex(0, -2)),
+      new Complex(-2.40299796),
+    );
+    assertEquals(Complex.sech(complexZero), complexOne);
+    assertEquals(Complex.sech(complexNaN), complexNaN);
+    assertEquals(Complex.sech(complexInfinity), complexNaN);
+  });
+
+  await t.step("csch()", () => {
+    assertAlmostEqualComplex(
+      Complex.csch(new Complex(1, 2)),
+      new Complex(-.22150093, -.6354938),
+    );
+    assertAlmostEqualComplex(
+      Complex.csch(new Complex(0, -2)),
+      new Complex(0, 1.09975017),
+    );
+    assertEquals(Complex.csch(complexZero), complexInfinity);
+    assertEquals(Complex.csch(complexNaN), complexNaN);
+    assertEquals(Complex.csch(complexInfinity), complexNaN);
   });
 });
