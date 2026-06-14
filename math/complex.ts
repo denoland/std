@@ -347,6 +347,7 @@ export class Complex {
    */
   static cbrt(z: Complex | number): Complex {
     if (typeof z === "number") return new Complex(Math.cbrt(z));
+    if (this.isInfinite(z)) return this.#complexInfinity;
 
     const argZdiv = this.arg(z) / 3;
     const absCbrt = Math.cbrt(this.abs(z));
@@ -357,7 +358,6 @@ export class Complex {
     );
   }
 
-  // Should this be named ln or log?
   /**
    * Returns the natural logarithm of a complex number.
    *
@@ -366,7 +366,9 @@ export class Complex {
    * @returns {Complex} The natural logarithm of the supplied number.
    */
   static ln(z: Complex): Complex {
-    return new Complex(Math.log(this.absSquared(z)) / 2, this.arg(z));
+    return this.isZero(z)
+      ? this.#complexNaN
+      : new Complex(Math.log(this.absSquared(z)) / 2, this.arg(z));
   }
 
   /**
@@ -406,7 +408,6 @@ export class Complex {
     return new Complex(expReal * Math.cos(z.imag), expReal * Math.sin(z.imag));
   }
 
-  // Branch cut conforming!
   /**
    * Returns a complex number raised to the power of another complex number.
    *
@@ -755,6 +756,3 @@ export class Complex {
     return this.asinh(this.recip(z));
   }
 }
-
-const x = new Complex(2, 3);
-const y = new Complex(4, 5);
