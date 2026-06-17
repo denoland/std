@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals } from "@std/assert";
-import { interleave } from "./unstable_interleave.ts";
+import { interleave } from "./interleave.ts";
 
 Deno.test({
   name: "interleave() handles no arguments",
@@ -76,6 +76,61 @@ Deno.test({
     assertEquals(
       interleave(sparse, ["a", "b", "c"]),
       [1, "a", undefined, "b", 3, "c"],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles second array longer",
+  fn() {
+    assertEquals(
+      interleave([1, 2, 3], ["a"]),
+      [1, "a", 2, 3],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles three equal-length arrays",
+  fn() {
+    assertEquals(
+      interleave([1, 2], ["a", "b"], [true, false]),
+      [1, "a", true, 2, "b", false],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles four equal-length arrays",
+  fn() {
+    assertEquals(
+      interleave([1, 2], ["a", "b"], [true, false], [10, 20]),
+      [1, "a", true, 10, 2, "b", false, 20],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles non-array iterables",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+    assertEquals(
+      interleave(numbers(), ["a", "b", "c"]),
+      [1, "a", 2, "b", 3, "c"],
+    );
+  },
+});
+
+Deno.test({
+  name: "interleave() handles Set iterables",
+  fn() {
+    assertEquals(
+      interleave(new Set([1, 2, 3]), ["a", "b", "c"]),
+      [1, "a", 2, "b", 3, "c"],
     );
   },
 });

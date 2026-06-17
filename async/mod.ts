@@ -25,3 +25,4 @@ export * from "./pool.ts";
 export * from "./tee.ts";
 export * from "./retry.ts";
 export * from "./all_keyed.ts";
+export * from "./lazy.ts";

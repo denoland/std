@@ -74,8 +74,6 @@ export interface WalkOptions {
    * are excluded.
    *
    * File extensions with or without a leading period are accepted.
-   *
-   * @default {[]}
    */
   exts?: string[];
   /**

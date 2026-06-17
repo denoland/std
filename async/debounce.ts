@@ -16,11 +16,21 @@ export interface DebouncedFunction<T extends Array<unknown>> {
   readonly pending: boolean;
 }
 
+/** Options for {@linkcode debounce}. */
+export interface DebounceOptions {
+  /** An AbortSignal that clears the debounce timeout when aborted. */
+  signal?: AbortSignal | undefined;
+}
+
 /**
  * Creates a debounced function that delays the given `func`
  * by a given `wait` time in milliseconds. If the method is called
  * again before the timeout expires, the previous call will be
  * aborted.
+ *
+ * If an {@linkcode AbortSignal} is provided via `options.signal`, aborting the
+ * signal clears any pending debounce timeout, equivalent to calling
+ * {@linkcode DebouncedFunction.clear}.
  *
  * @example Usage
  * ```ts ignore
@@ -39,10 +49,31 @@ export interface DebouncedFunction<T extends Array<unknown>> {
  * // output: [modify] /path/to/file
  * ```
  *
+ * @example With AbortSignal
+ * ```ts ignore
+ * import { debounce } from "@std/async/debounce";
+ *
+ * const controller = new AbortController();
+ * const log = debounce(
+ *   (event: Deno.FsEvent) =>
+ *     console.log("[%s] %s", event.kind, event.paths[0]),
+ *   200,
+ *   { signal: controller.signal },
+ * );
+ *
+ * for await (const event of Deno.watchFs("./")) {
+ *   log(event);
+ * }
+ *
+ * // Abort clears any pending debounce
+ * controller.abort();
+ * ```
+ *
  * @typeParam T The arguments of the provided function.
  * @param fn The function to debounce.
  * @param wait The time in milliseconds to delay the function.
  * Must be a positive integer.
+ * @param options Optional parameters.
  * @throws {RangeError} If `wait` is not a non-negative integer.
  * @returns The debounced function.
  */
@@ -50,6 +81,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
 export function debounce<T extends Array<any>>(
   fn: (this: DebouncedFunction<T>, ...args: T) => void,
   wait: number,
+  options?: DebounceOptions,
 ): DebouncedFunction<T> {
   if (!Number.isInteger(wait) || wait < 0) {
     throw new RangeError("'wait' must be a positive integer");
@@ -81,6 +113,12 @@ export function debounce<T extends Array<any>>(
   Object.defineProperty(debounced, "pending", {
     get: () => timeout !== null,
   });
+
+  const signal = options?.signal;
+  if (signal) {
+    signal.throwIfAborted();
+    signal.addEventListener("abort", () => debounced.clear(), { once: true });
+  }
 
   return debounced;
 }

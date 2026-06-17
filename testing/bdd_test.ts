@@ -42,7 +42,7 @@ interface GlobalContext {
 }
 
 let timerIdx = 1;
-const timers = new Map<number, number>();
+const timers = new Map();
 function hookFns() {
   timerIdx = 1;
   timers.clear();

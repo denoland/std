@@ -137,6 +137,14 @@ regexp: !!js/regexp bar
 });
 
 Deno.test({
+  name: "parseAll() throws SyntaxError on invalid YAML",
+  fn() {
+    assertThrows(() => parseAll(`"`), SyntaxError);
+    assertThrows(() => parseAll(`---\nfoo: bar\n---\n"`), SyntaxError);
+  },
+});
+
+Deno.test({
   name: "parse() handles __proto__",
   async fn() {
     // Tests if the value is set using `Object.defineProperty(target, key, {value})`
@@ -1069,6 +1077,29 @@ Deno.test("parse() throws at reseverd characters '`' and '@'", () => {
     SyntaxError,
     "end of the stream or a document separator is expected at line 1, column 1:\n    @\n    ^",
   );
+});
+
+Deno.test("parse() does not pollute prototype with `__proto__` key", () => {
+  // A YAML key of `__proto__` must produce an own property on the result,
+  // not mutate the result's prototype chain.
+  const result = parse("__proto__:\n  polluted: true") as Record<
+    string,
+    unknown
+  >;
+  assert(Object.hasOwn(result, "__proto__"));
+  assertEquals(
+    (result as { __proto__: unknown }).__proto__,
+    { polluted: true },
+  );
+  // Same guarantee for the merge type (which goes through `mergeMappings`).
+  const merged = parse(`<<:
+  __proto__:
+    polluted: true
+ok: 1`) as Record<string, unknown>;
+  assert(Object.hasOwn(merged, "__proto__"));
+  assertEquals(merged.ok, 1);
+  // Sanity: an unrelated object's prototype is untouched.
+  assertEquals(({} as { polluted?: unknown }).polluted, undefined);
 });
 
 Deno.test("parse() handles sequence", () => {

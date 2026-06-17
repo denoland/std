@@ -110,7 +110,8 @@ export interface CircuitBreakerOptions<T> {
    * without disrupting circuit breaker operation.
    *
    * @param error The error that caused the failure, or a synthetic error
-   *   when the result was classified as failure by {@linkcode isResultFailure}.
+   *   when the result was classified as failure by
+   *   {@linkcode CircuitBreakerOptions.isResultFailure | isResultFailure}.
    * @param failureCount Current number of failures in the window.
    * @param totalRequests Current number of total requests in the window.
    */
@@ -309,6 +310,21 @@ function safeCallback<A extends unknown[]>(
 }
 
 /**
+ * Calls `fn(arg)` and returns the result. If `fn` throws, the error is
+ * reported asynchronously and `undefined` is returned.
+ */
+function tryCall<A, R>(fn: (arg: A) => R, arg: A): R | undefined {
+  try {
+    return fn(arg);
+  } catch (error) {
+    queueMicrotask(() => {
+      throw error;
+    });
+    return undefined;
+  }
+}
+
+/**
  * A circuit breaker that wraps async operations to prevent cascading failures.
  *
  * The circuit breaker monitors the failure rate within a sliding window and
@@ -320,6 +336,11 @@ function safeCallback<A extends unknown[]>(
  * {@linkcode CircuitBreakerOptions.minimumThroughput | minimumThroughput}
  * requests have been recorded in the window, preventing false positives
  * during low traffic.
+ *
+ * When state changes occur, callbacks fire in a fixed order:
+ * - Circuit trips open: `onFailure` → `onStateChange` → `onOpen`
+ * - Cooldown expires: `onStateChange` → `onHalfOpen`
+ * - Recovery completes: `onStateChange` → `onClose`
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -568,14 +589,8 @@ export class CircuitBreaker<T = unknown> {
     try {
       result = await fn();
     } catch (error) {
-      try {
-        if (this.#isFailure(error)) {
-          this.#handleFailure(error, currentState.state, currentTime);
-        }
-      } catch (predicateError) {
-        queueMicrotask(() => {
-          throw predicateError;
-        });
+      if (tryCall(this.#isFailure, error)) {
+        this.#handleFailure(error, currentState.state);
       }
       throw error;
     } finally {
@@ -587,20 +602,12 @@ export class CircuitBreaker<T = unknown> {
       }
     }
 
-    try {
-      if (this.#isResultFailure(result)) {
-        const syntheticError = new Error("Result classified as failure");
-        this.#handleFailure(syntheticError, currentState.state, currentTime);
-        return result;
-      }
-    } catch (predicateError) {
-      queueMicrotask(() => {
-        throw predicateError;
-      });
-      return result;
+    const isResultFail = tryCall(this.#isResultFailure, result);
+    if (isResultFail) {
+      this.#handleFailure(undefined, currentState.state);
+    } else if (isResultFail === false) {
+      this.#handleSuccess(currentState.state);
     }
-
-    this.#handleSuccess(currentState.state);
     return result;
   }
 
@@ -619,6 +626,8 @@ export class CircuitBreaker<T = unknown> {
    * breaker.forceOpen();
    * assertEquals(breaker.state, "open");
    * ```
+   *
+   * @returns void
    */
   forceOpen(): void {
     const previous = this.#state.state;
@@ -630,17 +639,18 @@ export class CircuitBreaker<T = unknown> {
       openedAt: now,
       consecutiveSuccesses: 0,
     };
-    if (previous !== "open") {
-      this.#onStateChange?.(previous, "open");
-      this.#onOpen?.(this.#failures.total, this.#requests.total);
-    }
+    if (previous === "open") return;
+    this.#onStateChange?.(previous, "open");
+    this.#onOpen?.(this.#failures.total, this.#requests.total);
   }
 
   /**
    * Forces the circuit breaker to closed state and notifies observers.
    *
-   * This is an operational transition that fires {@linkcode onStateChange}
-   * and {@linkcode onClose} callbacks. Use this when the protected service
+   * This is an operational transition that fires
+   * {@linkcode CircuitBreakerOptions.onStateChange | onStateChange} and
+   * {@linkcode CircuitBreakerOptions.onClose | onClose} callbacks. Use this
+   * when the protected service
    * has recovered and you want observers to be notified.
    *
    * For silent resets (e.g., in tests), use {@linkcode reset} instead.
@@ -657,15 +667,16 @@ export class CircuitBreaker<T = unknown> {
    * breaker.forceClose();
    * assertEquals(breaker.state, "closed");
    * ```
+   *
+   * @returns void
    */
   forceClose(): void {
     const previous = this.#state.state;
     this.#state = createInitialState();
     this.#clearCounters();
-    if (previous !== "closed") {
-      this.#onStateChange?.(previous, "closed");
-      this.#onClose?.();
-    }
+    if (previous === "closed") return;
+    this.#onStateChange?.(previous, "closed");
+    this.#onClose?.();
   }
 
   /**
@@ -686,6 +697,8 @@ export class CircuitBreaker<T = unknown> {
    * breaker.reset();
    * assertEquals(breaker.state, "closed");
    * ```
+   *
+   * @returns void
    */
   reset(): void {
     this.#state = createInitialState();
@@ -739,7 +752,6 @@ export class CircuitBreaker<T = unknown> {
   #handleFailure(
     error: unknown,
     previousState: CircuitState,
-    now: number,
   ): void {
     this.#failures.increment();
     const totalRequests = this.#requests.total;
@@ -749,11 +761,15 @@ export class CircuitBreaker<T = unknown> {
       (totalRequests >= this.#minimumThroughput &&
         failureCount / totalRequests >= this.#failureRateThreshold);
 
+    const existingOpenedAt = this.#state.state === "open"
+      ? this.#state.openedAt
+      : undefined;
+
     if (shouldOpen) {
       this.#state = {
         ...this.#state,
         state: "open",
-        openedAt: now,
+        openedAt: existingOpenedAt ?? Date.now(),
         consecutiveSuccesses: 0,
       };
     } else {
@@ -763,8 +779,12 @@ export class CircuitBreaker<T = unknown> {
       };
     }
 
-    this.#onFailure?.(error, failureCount, totalRequests);
-    if (shouldOpen) {
+    this.#onFailure?.(
+      error ?? new Error("Result classified as failure"),
+      failureCount,
+      totalRequests,
+    );
+    if (shouldOpen && existingOpenedAt === undefined) {
       this.#onStateChange?.(previousState, "open");
       this.#onOpen?.(failureCount, totalRequests);
     }

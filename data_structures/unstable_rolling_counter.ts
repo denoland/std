@@ -2,6 +2,19 @@
 // This module is browser compatible.
 
 /**
+ * A serializable snapshot of a {@linkcode RollingCounter}'s state.
+ *
+ * Obtain one via {@linkcode RollingCounter.prototype.toJSON | `toJSON`} and
+ * restore it with {@linkcode RollingCounter.from}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export interface RollingCounterSnapshot {
+  /** Segment counts ordered from oldest to newest. */
+  readonly segments: readonly number[];
+}
+
+/**
  * A fixed-size rolling counter.
  *
  * The counter splits a window into a fixed number of segments, each tracking
@@ -10,6 +23,21 @@
  * window on your own schedule.
  *
  * The class is iterable and yields segment counts from oldest to newest.
+ *
+ * | Method            | Time complexity                        |
+ * | ----------------- | -------------------------------------- |
+ * | increment(n)      | Constant                               |
+ * | rotate(steps)     | Linear in min(steps, segment count)    |
+ * | current           | Constant                               |
+ * | total             | Constant                               |
+ * | segmentCount      | Constant                               |
+ * | at(index)         | Constant                               |
+ * | clear()           | Linear in the number of segments       |
+ * | toArray()         | Linear in the number of segments       |
+ * | toJSON()          | Linear in the number of segments       |
+ * | [Symbol.iterator] | Linear in the number of segments       |
+ * | RollingCounter()  | Linear in the number of segments       |
+ * | RollingCounter.from(snapshot) | Linear in the number of segments |
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -38,13 +66,15 @@
  * assertEquals([...counter], [3, 0, 0]);
  * ```
  */
-export class RollingCounter {
+export class RollingCounter implements Iterable<number> {
   #segments: number[];
   #cursor: number;
   #total: number;
 
   /**
    * Creates a counter with the given number of segments, all starting at zero.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param segmentCount The number of segments. Must be a positive integer.
    */
@@ -62,7 +92,72 @@ export class RollingCounter {
   }
 
   /**
+   * Creates a counter from a snapshot previously obtained via
+   * {@linkcode RollingCounter.prototype.toJSON | `toJSON`}. The snapshot's
+   * `segments` array defines both the number of segments and their initial
+   * values, ordered oldest to newest (matching iteration order). The last
+   * element is the current (newest) segment.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param snapshot A snapshot previously obtained from `toJSON`.
+   * @returns A new `RollingCounter` with the given state.
+   *
+   * @example Round-trip serialization
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const original = new RollingCounter(3);
+   * original.increment(5);
+   * original.rotate();
+   * original.increment(3);
+   *
+   * const snapshot = original.toJSON();
+   * const restored = RollingCounter.from(snapshot);
+   *
+   * assertEquals([...restored], [...original]);
+   * assertEquals(restored.total, original.total);
+   * assertEquals(restored.segmentCount, original.segmentCount);
+   * ```
+   */
+  static from(snapshot: RollingCounterSnapshot): RollingCounter {
+    if (snapshot === null || typeof snapshot !== "object") {
+      throw new TypeError(
+        `Cannot restore RollingCounter: "snapshot" must be an object, got ${
+          snapshot === null ? "null" : typeof snapshot
+        }`,
+      );
+    }
+    const { segments } = snapshot;
+    if (!Array.isArray(segments)) {
+      throw new TypeError(
+        `Cannot restore RollingCounter: "segments" must be an array, got ${typeof segments}`,
+      );
+    }
+    if (segments.length < 1) {
+      throw new RangeError(
+        'Cannot restore RollingCounter: "segments" must be a non-empty array',
+      );
+    }
+    const counter = new RollingCounter(segments.length);
+    for (let i = 0; i < segments.length; i++) {
+      const v = segments[i]!;
+      if (!Number.isInteger(v) || v < 0) {
+        throw new RangeError(
+          `Cannot restore RollingCounter: segment[${i}] must be a non-negative integer, got ${v}`,
+        );
+      }
+      counter.#segments[i] = v;
+      counter.#total += v;
+    }
+    return counter;
+  }
+
+  /**
    * Adds `n` to the current segment.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param n The amount to add. Defaults to `1`. Must be a non-negative integer.
    * @returns The new total across all segments.
@@ -91,6 +186,8 @@ export class RollingCounter {
   /**
    * Advances the window by `steps`, dropping the oldest segments. If `steps`
    * is at least {@linkcode segmentCount}, all segments are cleared.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param steps How many steps to advance. Defaults to `1`. Must be a
    * non-negative integer.
@@ -148,7 +245,36 @@ export class RollingCounter {
   }
 
   /**
+   * The count in the current (newest) segment.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns The count in the current segment.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * counter.increment(5);
+   * assertEquals(counter.current, 5);
+   *
+   * counter.rotate();
+   * assertEquals(counter.current, 0);
+   *
+   * counter.increment(3);
+   * assertEquals(counter.current, 3);
+   * ```
+   */
+  get current(): number {
+    return this.#segments[this.#cursor]!;
+  }
+
+  /**
    * The sum of all segment counts.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns The sum of all segment counts.
    *
@@ -171,6 +297,8 @@ export class RollingCounter {
   /**
    * The number of segments in the window.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @returns The number of segments.
    *
    * @example Usage
@@ -187,7 +315,46 @@ export class RollingCounter {
   }
 
   /**
+   * Returns the segment count at `index`, where index `0` is the oldest
+   * segment and index `segmentCount - 1` is the current (newest) segment.
+   * Negative indices count from the newest end (`at(-1)` is the current
+   * segment, same as {@linkcode RollingCounter.prototype.current | current}).
+   * Returns `undefined` for out-of-range indices.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @param index The zero-based index in oldest-to-newest order. Negative
+   * values count from the newest end.
+   * @returns The count at the index, or `undefined` if out of range.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * counter.increment(5);
+   * counter.rotate();
+   * counter.increment(3);
+   *
+   * assertEquals(counter.at(0), 0);
+   * assertEquals(counter.at(1), 5);
+   * assertEquals(counter.at(2), 3);
+   * assertEquals(counter.at(-1), 3);
+   * assertEquals(counter.at(99), undefined);
+   * ```
+   */
+  at(index: number): number | undefined {
+    const len = this.#segments.length;
+    if (index < 0) index += len;
+    if (index < 0 || index >= len) return undefined;
+    return this.#segments[(this.#cursor + 1 + index) % len]!;
+  }
+
+  /**
    * Resets all segments to zero, as if the counter were just created.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @example Usage
    * ```ts
@@ -207,7 +374,72 @@ export class RollingCounter {
   }
 
   /**
+   * Returns a fresh array of segment counts ordered from oldest to newest
+   * (matching iteration order). The returned array is owned by the caller;
+   * mutating it does not affect the counter.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns A new array of segment counts in oldest-to-newest order.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * counter.increment(5);
+   * counter.rotate();
+   * counter.increment(3);
+   *
+   * assertEquals(counter.toArray(), [0, 5, 3]);
+   * ```
+   */
+  toArray(): number[] {
+    const segs = this.#segments;
+    const len = segs.length;
+    let start = this.#cursor + 1;
+    if (start >= len) start = 0;
+    const result = new Array<number>(len);
+    const firstLen = len - start;
+    for (let i = 0; i < firstLen; i++) result[i] = segs[start + i]!;
+    for (let i = 0; i < start; i++) result[firstLen + i] = segs[i]!;
+    return result;
+  }
+
+  /**
+   * Returns a serializable snapshot of the counter state. The `segments`
+   * array is ordered oldest to newest (matching iteration order), so the
+   * last element is the current segment.
+   *
+   * The snapshot is compatible with `JSON.stringify` and can be restored
+   * with {@linkcode RollingCounter.from}.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns A plain-object snapshot of the counter.
+   *
+   * @example JSON round-trip
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * counter.increment(5);
+   *
+   * const json = JSON.stringify(counter);
+   * const restored = RollingCounter.from(JSON.parse(json));
+   * assertEquals(restored.total, 5);
+   * ```
+   */
+  toJSON(): RollingCounterSnapshot {
+    return { segments: this.toArray() };
+  }
+
+  /**
    * Yields segment counts from oldest to newest.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns An iterator over segment counts.
    *
@@ -229,4 +461,23 @@ export class RollingCounter {
       yield this.#segments[(this.#cursor + i) % len]!;
     }
   }
+
+  /**
+   * A string tag for the class, used by `Object.prototype.toString()`.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @example Usage
+   * ```ts
+   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const counter = new RollingCounter(3);
+   * assertEquals(
+   *   Object.prototype.toString.call(counter),
+   *   "[object RollingCounter]",
+   * );
+   * ```
+   */
+  readonly [Symbol.toStringTag] = "RollingCounter" as const;
 }

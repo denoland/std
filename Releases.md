@@ -1,3 +1,216 @@
+### 2026.05.26
+
+#### @std/async 1.4.0 (minor)
+
+- feat(async/unstable): move `Channel` to options-bag constructor and split
+  per-operation options (#7106)
+- feat(async): stabilize AbortSignal support in debounce() (#7096)
+- feat(async): stabilize Lazy (#7091)
+- feat(async/unstable): add AbortSignal and toReadableStream to `Channel`
+  (#7086)
+- fix(async/unstable): harden `pooledMapSettled` error handling and abort
+  (#7093)
+- fix(async/unstable): circuit breaker stale openedAt and duplicate callbacks
+  (#7097)
+- test(async): assert AbortError name instead of message (#7113)
+- test(async): assert TimeoutError name instead of message (#7112)
+
+#### @std/cli 1.0.30 (patch)
+
+- BREAKING(cli/unstable): rename `refreshMilliseconds` to `interval` (#7094)
+- BREAKING(cli/unstable): make `ProgressBarFormatter.styledData` a getter
+  (#7095)
+
+#### @std/collections 1.2.0 (minor)
+
+- feat(collections): stabilize `interleave` (#7115)
+- feat(collections/unstable): accept `Iterable` in interleave (#7088)
+
+#### @std/data-structures 1.1.0 (minor)
+
+- feat(data-structures/unstable): align RollingCounter with other data
+  structures, add `at()` and `toArray()` (#7102)
+- feat(data-structures/unstable): add MultiMap (#7100)
+- feat(data-structures/unstable): add `IndexedHeap` (#7076)
+- feat(data-structures/unstable): add `RollingCounter` serialization (#7074)
+- feat(data-structures): stabilize `Deque` (#7092)
+
+#### @std/dotenv 0.225.7 (patch)
+
+- fix(dotenv): make stringify and parse lossless for tricky values (#7140)
+
+#### @std/fs 1.0.24 (patch)
+
+- docs(fs): remove wrong `@default` tag (#7098)
+
+#### @std/html 1.0.7 (patch)
+
+- feat(html/unstable): `html()` (#7130)
+
+#### @std/http 1.1.1 (patch)
+
+- feat(http/unstable): add radix tree router; keep linear scan as routeLinear
+  (#7075)
+- feat(http/unstable): add RFC 9421 message signatures (#7039)
+- fix(http/unstable): align Cache-Control with RFC 9111 quoted-string and
+  field-name rules (#7116)
+- fix(http): getCookies returns Partial<Record<string, string>> (#7131)
+- refactor(http/unstable): improve Cache Control parsing and types (#7087)
+
+#### @std/internal 1.0.14 (patch)
+
+- perf(internal): build diff backtrace via `push`+`reverse` instead of `unshift`
+  (#7108)
+- refactor(internal): tidy up `diffStr` inner loop (#7109)
+
+#### @std/path 1.1.5 (patch)
+
+- fix(path): support Node.js (#7103)
+- docs(path): clarify URL handling in basename, dirname, extname (#7134)
+
+#### @std/streams 1.1.1 (patch)
+
+- feat(streams/unstable): add `BatchStream` (#7110)
+
+#### @std/testing 1.0.19 (patch)
+
+- fix(testing): support canary timer return types (#7127)
+
+#### @std/text 1.0.19 (patch)
+
+- fix(text): inline title case mapping to avoid JSON import attribute (#7129)
+- docs(text/unstable): fix typeof->linkcode typo in SlugifyOptions jsdoc (#7146)
+
+#### @std/xml 0.1.2 (patch)
+
+- docs(xml): document XML 1.1 parsing mode and DOCTYPE defaults (#7143)
+
+#### @std/yaml 1.1.1 (patch)
+
+- fix(yaml): tighten `parse()` and `parseAll()` types (#7125)
+- perf(yaml): use direct assignment for mapping keys (#7126)
+
+### 2026.04.20
+
+#### @std/async 1.3.0 (minor)
+
+- BREAKING(async/unstable): change `Lazy.peek()` return type, add AbortSignal
+  support (#7084)
+- feat(async): stabilize `poll` (#7060)
+- feat(async): stabilize `allKeyed` (#7058)
+- feat(async/unstable): add `Channel` (#7035)
+- feat(async/unstable): use failure-rate threshold in circuit breaker (#7036)
+- feat(async/unstable): allow setting dynamic timeframe for `throttle` (#7002)
+- feat(async/unstable): add support for AbortSignal in `debounce` (#7023)
+- feat(async/unstable): add `pooledMapSettled` (#7015)
+- fix(async): validate poolLimit in pooledMap (#7016)
+- refactor(async): improve `debounce` readability, docs, and input validation
+  (#7022)
+- test(async): make debounce tests deterministic (#7034)
+
+#### @std/cache 0.2.3 (patch)
+
+- BREAKING(cache/unstable): refactor `TtlCache` (#7065)
+- feat(cache/unstable): add `peek()` to `TtlCache` (#7070)
+- feat(cache/unstable): add sliding expiration to `TtlCache` (#7046)
+- feat(cache/unstable): improve `LruCache` callback and add `peek()` (#7047)
+- feat(cache): expose cache property on memoized functions (#7045)
+- perf(cache): optimize _serializeArgList key generation (#7044)
+
+#### @std/cli 1.0.29 (patch)
+
+- feat(cli/unstable): introduce askForCursorPositionSync (#6757)
+
+#### @std/collections 1.1.7 (patch)
+
+- feat(collections/unstable): add interleave (#7010)
+
+#### @std/crypto 1.1.0 (minor)
+
+- BREAKING(crypto): throw TypeError on length mismatch in `timingSafeEqual()`
+  (#7042)
+- feat(crypto): stabilize AES-GCM encryption (#7089)
+- feat(crypto/unstable): add AES-GCM encrypt/decrypt helpers (#7012)
+
+#### @std/data-structures 1.0.11 (patch)
+
+- feat(data-structures/unstable): add `includes()` and `removeAt()` to `Deque`
+  (#7083)
+- feat(data-structures/unstable): add RollingCounter (#7028)
+- feat(data-structures/unstable): add `Deque` (#7019)
+
+#### @std/expect 1.0.19 (patch)
+
+- fix(expect): scope toMatchObject diff to only keys present in expected (#7078)
+
+#### @std/fmt 1.0.10 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/html 1.0.6 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/http 1.1.0 (minor)
+
+- feat(http/unstable): add RFC 9457 Problem Details response helpers (#7033)
+- feat(http): stabilize `ServerSentEventParseStream` (#7050)
+- fix(http): handle empty values and multi-line comments in
+  `ServerSentEventStream` (#7051)
+- fix(http): handle HEAD requests in serveDir (#7024)
+- fix(http): always cancel request body in `serveFile()` (#7041)
+
+#### @std/internal 1.0.13 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/json 1.1.0 (minor)
+
+- feat(json): stabilize `canonicalize` (#7061)
+
+#### @std/regexp 1.0.2 (patch)
+
+- feat(regexp/unstable): add `replaceAllAsync` (#7031)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/streams 1.1.0 (minor)
+
+- feat(streams): stabilize `toBytes` (#7043)
+
+#### @std/testing 1.0.18 (patch)
+
+- fix(testing): strip relative paths (as well as file:// paths) from snapshot
+  test subprocess stderr (#7081)
+- fix(testing): stop beforeAll from swallowing test.only error (#7000)
+
+#### @std/text 1.0.18 (patch)
+
+- feat(text/unstable): add `truncate` (#7052)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/uuid 1.1.1 (patch)
+
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/xml 0.1.1 (patch)
+
+- feat(xml/unstable): add XML 1.1 support (#7057)
+- fix(xml): harden parser against DoS and fix entity handling (#7021)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
+#### @std/yaml 1.1.0 (minor)
+
+- feat(yaml): pass depth to sortKeys callback in stringify (#7001)
+- refactor(fmt,html,internal,regexp,text,uuid,xml,yaml): add `CONSTANT_CASE`
+  `RegExp` name lint check (#6994)
+
 ### 2026.02.20
 
 #### @std/assert 1.0.19 (patch)
