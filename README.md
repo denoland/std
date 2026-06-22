@@ -9,7 +9,9 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 > [!IMPORTANT]
 > Newer versions of the Standard Library are now hosted on
 > [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
-> at [deno.land/std](https://deno.land/std).
+> at [deno.land/std](https://jsr.io/@std) (the deno.land landing was retired;
+> archive copies of the older releases are preserved on JSR under the
+> `@std` scope).
 
 ## Resources
 
