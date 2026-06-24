@@ -160,7 +160,15 @@ function updateSnapshots() {
   );
 }
 globalThis.addEventListener("unload", () => {
-  updateSnapshots();
+  try {
+    updateSnapshots();
+  } catch (error) {
+    const cause = error instanceof Error ? error : new Error(String(error));
+    throw new Error(
+      `assertInlineSnapshot: failed to update snapshots: ${cause.message}`,
+      { cause },
+    );
+  }
 });
 
 /**
