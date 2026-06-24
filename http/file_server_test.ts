@@ -23,7 +23,10 @@ import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
-import { serveDir as unstableServeDir } from "./unstable_file_server.ts";
+import {
+  serveDir as unstableServeDir,
+  type ServeDirOptions as UnstableServeDirOptions,
+} from "./unstable_file_server.ts";
 import { serveFile as unstableServeFile } from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -1205,7 +1208,7 @@ Deno.test("serveDir() handles HEAD request for missing file", async () => {
 Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
   const req = new Request("http://localhost/hello");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions,
+    ...serveDirOptions as UnstableServeDirOptions,
     cleanUrls: true,
   });
   const downloadedFile = await res.text();
@@ -1219,7 +1222,7 @@ Deno.test("(unstable) serveDir() serves files without the need of html extension
 Deno.test("(unstable) serveDir() does not shadow existing files and directory if cleanUrls=true", async () => {
   const req = new Request("http://localhost/test_clean_urls");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions,
+    ...serveDirOptions as UnstableServeDirOptions,
     cleanUrls: true,
   });
 
@@ -1227,13 +1230,61 @@ Deno.test("(unstable) serveDir() does not shadow existing files and directory if
   assertEquals(res.headers.has("location"), true);
 });
 
-Deno.test("(unstable) serveFile() sends custom headers", async () => {
+Deno.test("(unstable) serveFile() sends custom headers from a record", async () => {
   const req = new Request("http://localhost/testdata/test_file.txt");
   const res = await unstableServeFile(req, TEST_FILE_PATH, {
-    headers: ["X-Extra: extra header"],
+    headers: { "X-Extra": "extra header" },
   });
 
   assertEquals(res.status, 200);
   assertEquals(res.headers.get("X-Extra"), "extra header");
   assertEquals(await res.text(), TEST_FILE_TEXT);
+});
+
+Deno.test("(unstable) serveFile() sends custom headers from a Headers instance", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt");
+  const res = await unstableServeFile(req, TEST_FILE_PATH, {
+    headers: new Headers([["X-Extra", "extra header"]]),
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("x-extra"), "extra header");
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+});
+
+Deno.test("(unstable) serveDir() sets headers from a record", async () => {
+  const req = new Request("http://localhost/test_file.txt");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions as UnstableServeDirOptions,
+    headers: { "cache-control": "max-age=100", "x-custom-header": "hi" },
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("cache-control"), "max-age=100");
+  assertEquals(res.headers.get("x-custom-header"), "hi");
+});
+
+Deno.test("(unstable) serveDir() sets headers from a Headers instance", async () => {
+  const req = new Request("http://localhost/test_file.txt");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions as UnstableServeDirOptions,
+    headers: new Headers({ "x-custom-header": "hi" }),
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("x-custom-header"), "hi");
+});
+
+Deno.test("(unstable) serveDir() does not set headers on redirect responses", async () => {
+  const req = new Request(
+    "http://localhost/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
+  );
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions as UnstableServeDirOptions,
+    headers: { "x-custom-header": "hi" },
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.status, 301);
+  assertEquals(res.headers.has("x-custom-header"), false);
 });
