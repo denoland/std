@@ -131,6 +131,25 @@ export interface TarStreamEntry {
    * The content of the entry, if the entry is a file.
    */
   readable?: ReadableStream<Uint8Array>;
+  /**
+   * Cancels {@linkcode TarStreamEntry.readable} if it has not already been
+   * consumed, so the next entry can be read. This lets callers use the
+   * `await using` form to skip entries without an explicit `cancel()` call:
+   *
+   * ```ts ignore
+   * import { UntarStream } from "@std/tar/untar-stream";
+   *
+   * for await (
+   *   await using entry of (await Deno.open("./out.tar"))
+   *     .readable
+   *     .pipeThrough(new UntarStream())
+   * ) {
+   *   if (entry.path.endsWith(".log")) continue;
+   *   // …consume entry.readable as usual…
+   * }
+   * ```
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 /**
@@ -287,6 +306,9 @@ export class UntarStream
           "prefix" in header && header.prefix.length ? header.prefix + "/" : ""
         ) + header.name,
         header,
+        async [Symbol.asyncDispose]() {
+          await this.readable?.cancel();
+        },
       };
       if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
         entry.readable = this.#readableFile(header.size);

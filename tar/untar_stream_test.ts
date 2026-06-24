@@ -268,3 +268,44 @@ Deno.test("UntarStream() with extra checksum digits", async () => {
     entry.readable?.cancel();
   }
 });
+
+Deno.test("UntarStream() entry can be skipped with `await using`", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "file",
+      path: "./a.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+    {
+      type: "file",
+      path: "./b.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  const seen: string[] = [];
+  for await (await using entry of readable) {
+    seen.push(entry.path);
+    // Intentionally do not consume or cancel `entry.readable` — the
+    // `await using` form must dispose it so the next entry can be read.
+  }
+  assertEquals(seen, ["./a.txt", "./b.txt"]);
+});
+
+Deno.test("UntarStream() asyncDispose is a no-op when readable is absent", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    { type: "directory", path: "./dir" },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.readable, undefined);
+    await entry[Symbol.asyncDispose]();
+  }
+});
