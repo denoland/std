@@ -4,24 +4,6 @@
 
 // Annex G https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3886.pdf
 
-/*
-Currently, the following functions are broken
-- asin
-- acos
-- atan
-- acot
-- asec
-- acsc
-- asinh
-- acosh
-- atanh
-- acoth
-- asech
-- acsch
-
-I suspect this is because of faulty branch cuts but I really don't know.
-*/
-
 function isInfinite(num: number): boolean {
   return num === Infinity || num === -Infinity;
 }
@@ -66,6 +48,10 @@ export class Complex {
       (typeof num === "number" && Number.isNaN(num)) ||
       (num instanceof Complex && this.isNaN(num))
     ));
+
+  static #isInfinity = (num: Complex | number): boolean =>
+    (typeof num === "number" && isInfinite(num)) ||
+    (num instanceof Complex && isInfinite(num.real) && isInfinite(num.imag));
 
   static #containsInfinity = (nums: (Complex | number)[]): boolean =>
     Boolean(
@@ -334,7 +320,7 @@ export class Complex {
 
     return new Complex(
       Math.sqrt((z.real + absZ) / 2),
-      Math.sign(z.imag) * Math.sqrt((-z.real + absZ) / 2),
+      (z.imag < 0 ? -1 : 1) * Math.sqrt((-z.real + absZ) / 2),
     );
   }
 
@@ -525,7 +511,6 @@ export class Complex {
     return this.recip(this.sin(z));
   }
 
-  // This function is broken and I have no clue why
   /**
    * Returns the arcsine (inverse sine) of a complex number.
    *
@@ -564,48 +549,11 @@ export class Complex {
     return this.mul(
       .5,
       this.i,
-      this.ln(this.div(this.add(this.i, z), this.sub(this.i, z))),
+      this.sub(
+        this.ln(this.sub(1, this.mul(this.i, z))),
+        this.ln(this.add(1, this.mul(this.i, z))),
+      ),
     );
-  }
-
-  /**
-   * Returns the arccotangent (inverse cotangent) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns The arccotangent of the supplied complex number.
-   */
-  static acot(z: Complex | number): Complex {
-    if (typeof z === "number") return new Complex(Math.atan(z));
-    if (this.isInfinite(z)) return this.#complexNaN;
-
-    return this.isZero(z) ? new Complex(Math.PI / 2) : this.atan(this.recip(z));
-  }
-
-  /**
-   * Returns the arcsecant (inverse secant) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns The arcsecant of the supplied complex number.
-   */
-  static asec(z: Complex | number): Complex {
-    if (z instanceof Complex && this.isInfinite(z)) return this.#complexNaN;
-
-    return this.acos(this.recip(z));
-  }
-
-  /**
-   * Returns the arccosecant (inverse cosecant) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns The arccosecant of the supplied complex number.
-   */
-  static acsc(z: Complex | number): Complex {
-    if (z instanceof Complex && this.isInfinite(z)) return this.#complexNaN;
-
-    return this.asin(this.recip(z));
   }
 
   /**
@@ -713,7 +661,15 @@ export class Complex {
    * @returns {Complex | number} The hyperbolic arccosine (inverse hyperbolic cosine) of the supplied complex number.
    */
   static acosh(z: Complex | number): Complex {
-    return this.ln(this.add(this.sqrt(this.sub(this.pow(z, 2), 1)), z));
+    return this.#isInfinity(z) ? this.#complexNaN : this.ln(
+      this.add(
+        this.mul(
+          this.sqrt(this.sub(z, 1)),
+          this.sqrt(this.add(z, 1)),
+        ),
+        z,
+      ),
+    );
   }
 
   /**
@@ -724,39 +680,12 @@ export class Complex {
    * @returns {Complex | number} The hyperbolic arctangent (inverse hyperbolic tangent) of the supplied complex number.
    */
   static atanh(z: Complex | number): Complex {
-    return this.div(this.ln(this.div(this.add(1, z), this.sub(1, z))), 2);
-  }
-
-  /**
-   * Returns the hyperbolic arccotangent (inverse hyperbolic cotangent) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns {Complex | number} The hyperbolic arctangent (inverse hyperbolic cotangent) of the supplied complex number.
-   */
-  static acoth(z: Complex | number): Complex {
-    return this.atanh(this.recip(z));
-  }
-
-  /**
-   * Returns the hyperbolic arcsecant (inverse hyperbolic secant) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns {Complex | number} The hyperbolic arcsecant (inverse hyperbolic secant) of the supplied complex number.
-   */
-  static asech(z: Complex | number): Complex {
-    return this.acosh(this.recip(z));
-  }
-
-  /**
-   * Returns the hyperbolic arccosecant (inverse hyperbolic cosecant) of a complex number.
-   *
-   * @param {Complex | number} z A complex number.
-   *
-   * @returns {Complex | number} The hyperbolic arccosecant (inverse hyperbolic cosecant) of the supplied complex number.
-   */
-  static acsch(z: Complex | number): Complex {
-    return this.asinh(this.recip(z));
+    return this.mul(
+      .5,
+      this.sub(
+        this.ln(this.add(1, z)),
+        this.ln(this.sub(1, z)),
+      ),
+    );
   }
 }
