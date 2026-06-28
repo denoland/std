@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "exports": {
     ".": "./mod.ts",
+    "./complex": "./unstable_complex.ts",
     "./clamp": "./clamp.ts",
     "./modulo": "./modulo.ts",
     "./round-to": "./round_to.ts"

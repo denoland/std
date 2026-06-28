@@ -19,7 +19,7 @@
  * @module
  */
 
-export * from "./complex.ts";
+export * from "./unstable_complex.ts";
 export * from "./clamp.ts";
 export * from "./modulo.ts";
 export * from "./round_to.ts";
