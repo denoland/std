@@ -7,9 +7,13 @@ import {
 } from "@std/assert";
 import { Complex } from "./unstable_complex.ts";
 
-function assertAlmostEqualComplex(actual: Complex, expected: Complex) {
-  assertAlmostEquals(actual.real, expected.real);
-  assertAlmostEquals(actual.imag, expected.imag);
+function assertAlmostEqualComplex(
+  actual: Complex,
+  expected: Complex,
+  tolerance?: number,
+) {
+  assertAlmostEquals(actual.real, expected.real, tolerance);
+  assertAlmostEquals(actual.imag, expected.imag, tolerance);
 }
 
 Deno.test("Complex", async (t) => {
@@ -216,6 +220,17 @@ Deno.test("Complex", async (t) => {
     await t.step("conj()", () => {
       assertEquals(new Complex(1, 2).conj(), new Complex(1, -2));
       assertEquals(new Complex(0, -2).conj(), new Complex(0, 2));
+
+      const nums = [0, 1, 2, 3];
+      for (const real of nums) {
+        for (const imag of nums) {
+          assertEquals(
+            new Complex(real, imag).conj().conj(),
+            new Complex(real, imag),
+          );
+        }
+      }
+
       assertEquals(complexZero.conj(), complexZero);
       assertEquals(complexNaN.conj(), complexNaN);
       assertEquals(complexInfinity.conj(), complexInfinity);
@@ -240,6 +255,24 @@ Deno.test("Complex", async (t) => {
         new Complex(-1, -2).sqrt(),
         new Complex(.78615138, -1.27201965),
       );
+
+      assertEquals(
+        Complex.one.sqrt(),
+        Complex.one,
+      );
+      assertEquals(
+        Complex.i.sqrt(),
+        new Complex(Math.SQRT1_2, Math.SQRT1_2),
+      );
+      assertEquals(
+        Complex.negOne.sqrt(),
+        new Complex(0, 1),
+      );
+      assertEquals(
+        Complex.negI.sqrt(),
+        new Complex(Math.SQRT1_2, -Math.SQRT1_2),
+      );
+
       assertEquals(complexZero.sqrt(), complexZero);
       assertEquals(complexNaN.sqrt(), complexNaN);
       assertEquals(complexInfinity.sqrt(), complexInfinity);
@@ -284,6 +317,11 @@ Deno.test("Complex", async (t) => {
         new Complex(-1, -2).ln(),
         new Complex(.80471896, -2.03444394),
       );
+      assertAlmostEqualComplex(
+        new Complex(-1).ln(),
+        new Complex(0, Math.PI),
+      );
+
       assertEquals(complexZero.ln(), complexNaN);
       assertEquals(complexNaN.ln(), complexNaN);
       assertEquals(complexInfinity.ln(), complexInfinity);
@@ -351,6 +389,16 @@ Deno.test("Complex", async (t) => {
       assertAlmostEqualComplex(
         new Complex(-1, -2).exp(),
         new Complex(-.15309187, -.33451183),
+      );
+      assertAlmostEqualComplex(
+        new Complex(0, Math.PI).exp(),
+        Complex.negOne,
+        1e-15,
+      );
+      assertAlmostEqualComplex(
+        new Complex(0, 2 * Math.PI).exp(),
+        Complex.one,
+        1e-15,
       );
       assertEquals(complexZero.exp(), complexOne);
       assertEquals(complexNaN.exp(), complexNaN);
