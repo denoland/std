@@ -192,7 +192,7 @@ function chooseScalarStyle(
   let hasLineBreak = false;
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
-  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+  let plain = isPlainSafeFirst(string.codePointAt(0)!) &&
     !isWhiteSpace(string.charCodeAt(string.length - 1));
 
   let char: number;
@@ -201,16 +201,19 @@ function chooseScalarStyle(
     // Case: no block styles.
     // Check for disallowed characters to rule out plain and single.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      // iterate by code point so astral characters (e.g. emoji) are inspected
+      // as a whole rather than as their non-printable surrogate halves
+      char = string.codePointAt(i)!;
       if (!isPrintable(char)) {
         return STYLE_DOUBLE;
       }
       plain = plain && isPlainSafe(char);
+      if (char > 0xffff) i++;
     }
   } else {
     // Case: block styles permitted.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      char = string.codePointAt(i)!;
       if (char === LINE_FEED) {
         hasLineBreak = true;
         // Check if any line can be folded.
@@ -225,6 +228,7 @@ function chooseScalarStyle(
         return STYLE_DOUBLE;
       }
       plain = plain && isPlainSafe(char);
+      if (char > 0xffff) i++;
     }
     // in case the end is missing a \n
     hasFoldableLine = hasFoldableLine ||
