@@ -77,27 +77,6 @@ const DEPRECATED_BOOLEANS_SYNTAX = new Set([
 ]);
 
 /**
- * Returns the Unicode code point at `index`, combining a surrogate pair into a
- * single value (reference Unicode 3.0 section "3.7 Surrogates"). A combined
- * code point is greater than 0xffff, so callers can detect a consumed pair and
- * advance their index by an extra unit.
- *
- * `charCodeAt` is used rather than `codePointAt` so the result is always a
- * number; it returns NaN for an out-of-range index, which never matches the
- * surrogate ranges below.
- */
-function codePointAt(string: string, index: number): number {
-  const char = string.charCodeAt(index);
-  if (char >= 0xd800 && char <= 0xdbff /* high surrogate */) {
-    const nextChar = string.charCodeAt(index + 1);
-    if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
-      return (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000;
-    }
-  }
-  return char;
-}
-
-/**
  * Encodes a Unicode character code point as a hexadecimal escape sequence.
  */
 function charCodeToHexString(charCode: number): string {
@@ -213,7 +192,7 @@ function chooseScalarStyle(
   let hasLineBreak = false;
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
-  let plain = isPlainSafeFirst(codePointAt(string, 0)) &&
+  let plain = isPlainSafeFirst(string.codePointAt(0)!) &&
     !isWhiteSpace(string.charCodeAt(string.length - 1));
 
   let char: number;
@@ -224,7 +203,7 @@ function chooseScalarStyle(
     for (i = 0; i < string.length; i++) {
       // iterate by code point so astral characters (e.g. emoji) are inspected
       // as a whole rather than as their non-printable surrogate halves
-      char = codePointAt(string, i);
+      char = string.codePointAt(i)!;
       if (!isPrintable(char)) {
         return STYLE_DOUBLE;
       }
@@ -234,7 +213,7 @@ function chooseScalarStyle(
   } else {
     // Case: block styles permitted.
     for (i = 0; i < string.length; i++) {
-      char = codePointAt(string, i);
+      char = string.codePointAt(i)!;
       if (char === LINE_FEED) {
         hasLineBreak = true;
         // Check if any line can be folded.
@@ -367,9 +346,9 @@ function foldString(string: string, width: number): string {
 function escapeString(string: string): string {
   let result = "";
   for (let i = 0; i < string.length; i++) {
-    const char = codePointAt(string, i);
+    const char = string.codePointAt(i)!;
     if (char > 0xffff) {
-      // a combined surrogate pair — store it escaped and skip its low surrogate
+      // an astral code point — store it escaped and skip its low surrogate
       result += charCodeToHexString(char);
       i++;
       continue;
