@@ -19,10 +19,14 @@ const SNAPSHOT_MODULE_URL = toFileUrl(join(
 
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
-  return stripAnsiCode(string).replace(/([0-9])+m?s/g, "--ms").replace(
-    /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
-    "<tempDir>/",
-  ).replace(/\(file:\/\/.+\)/g, "(file://<path>)");
+  return stripAnsiCode(string).replace(
+    /[0-9]+(?:\.[0-9]+)?(?:µ|m|n)?s/g,
+    "--ms",
+  )
+    .replace(
+      /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
+      "<tempDir>/",
+    ).replace(/\(file:\/\/.+\)/g, "(file://<path>)");
 }
 
 function formatTestError(string: string) {

@@ -61,7 +61,7 @@ import type {
   Dictionary,
   InnerList,
   Item,
-} from "@std/http/unstable-structured-fields";
+} from "./unstable_structured_fields.ts";
 import {
   binary,
   innerList as sfInnerList,
@@ -76,7 +76,7 @@ import {
   serializeItem,
   serializeList,
   string as sfString,
-} from "@std/http/unstable-structured-fields";
+} from "./unstable_structured_fields.ts";
 
 const UTF8_ENCODER = new TextEncoder();
 const SF_KEY_REGEXP = /^[a-z*][a-z0-9_\-.*]*$/;
