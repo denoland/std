@@ -23,21 +23,18 @@ import { MINUTE } from "@std/datetime/constants";
 import { getAvailablePort } from "@std/net/get-available-port";
 import { concat } from "@std/bytes/concat";
 import { lessThan, parse as parseSemver } from "@std/semver";
-import {
-  serveDir as unstableServeDir,
-  type ServeDirOptions as UnstableServeDirOptions,
-} from "./unstable_file_server.ts";
+import { serveDir as unstableServeDir } from "./unstable_file_server.ts";
 import { serveFile as unstableServeFile } from "./unstable_file_server.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
-const serveDirOptions: ServeDirOptions = {
+const serveDirOptions = {
   quiet: true,
   fsRoot: testdataDir,
   showDirListing: true,
   showDotfiles: true,
   enableCors: true,
-};
+} satisfies ServeDirOptions;
 const denoVersion = parseSemver(Deno.version.deno);
 const isCanary = denoVersion.build ? denoVersion.build.length > 0 : false;
 // FileInfo.mode is not available on Windows before Deno 2.1.0
@@ -1208,7 +1205,7 @@ Deno.test("serveDir() handles HEAD request for missing file", async () => {
 Deno.test("(unstable) serveDir() serves files without the need of html extension when cleanUrls=true", async () => {
   const req = new Request("http://localhost/hello");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions as UnstableServeDirOptions,
+    ...serveDirOptions,
     cleanUrls: true,
   });
   const downloadedFile = await res.text();
@@ -1222,7 +1219,7 @@ Deno.test("(unstable) serveDir() serves files without the need of html extension
 Deno.test("(unstable) serveDir() does not shadow existing files and directory if cleanUrls=true", async () => {
   const req = new Request("http://localhost/test_clean_urls");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions as UnstableServeDirOptions,
+    ...serveDirOptions,
     cleanUrls: true,
   });
 
@@ -1255,7 +1252,7 @@ Deno.test("(unstable) serveFile() sends custom headers from a Headers instance",
 Deno.test("(unstable) serveDir() sets headers from a record", async () => {
   const req = new Request("http://localhost/test_file.txt");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions as UnstableServeDirOptions,
+    ...serveDirOptions,
     headers: { "cache-control": "max-age=100", "x-custom-header": "hi" },
   });
   await res.body?.cancel();
@@ -1267,7 +1264,7 @@ Deno.test("(unstable) serveDir() sets headers from a record", async () => {
 Deno.test("(unstable) serveDir() sets headers from a Headers instance", async () => {
   const req = new Request("http://localhost/test_file.txt");
   const res = await unstableServeDir(req, {
-    ...serveDirOptions as UnstableServeDirOptions,
+    ...serveDirOptions,
     headers: new Headers({ "x-custom-header": "hi" }),
   });
   await res.body?.cancel();
@@ -1280,7 +1277,7 @@ Deno.test("(unstable) serveDir() does not set headers on redirect responses", as
     "http://localhost/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
   );
   const res = await unstableServeDir(req, {
-    ...serveDirOptions as UnstableServeDirOptions,
+    ...serveDirOptions,
     headers: { "x-custom-header": "hi" },
   });
   await res.body?.cancel();

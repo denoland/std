@@ -77,6 +77,10 @@ export interface ServeDirOptions
   cleanUrls?: boolean;
   /** Headers to add to each response.
    *
+   * Values are appended to the response, not replaced, so passing a header
+   * the file server already sets (e.g. `cache-control`) yields a
+   * comma-joined value rather than overriding it.
+   *
    * @default {[]}
    */
   headers?: HeadersInit;
@@ -85,6 +89,10 @@ export interface ServeDirOptions
 /** Interface for serveFile options. */
 export interface ServeFileOptions extends StableServeFileOptions {
   /** Headers to add to each response.
+   *
+   * Values are appended to the response, not replaced, so passing a header
+   * the file server already sets (e.g. `cache-control`) yields a
+   * comma-joined value rather than overriding it.
    *
    * @default {[]}
    */
