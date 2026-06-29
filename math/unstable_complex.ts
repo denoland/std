@@ -11,8 +11,16 @@ function isInfinite(num: number): boolean {
 /**
  * A class representing a complex number. Also contains utility functions for complex numbers.
  *
- * @param {number} real The real part of this complex number.
- * @param {number} imag The imaginary part of this complex number.
+ * @example Usage
+ * ```ts
+ * import { Complex } from "@std/math/unstable-complex";
+ *
+ * let z0 = new Complex(1, 2); // Represents 1 + 2i
+ * let z1 = new Complex(-3) // Represents -3 + 0i
+ * ```
+ *
+ * @property {number} real The real part of this complex number.
+ * @property {number} imag The imaginary part of this complex number.
  */
 export class Complex {
   real: number;
@@ -58,7 +66,16 @@ export class Complex {
   /**
    * Checks whether a complex number is real, meaning its imaginary part is equal to zero.
    *
-   * @returns {boolean} Whether the supplied complex number is real.
+   * @returns {boolean} Whether this is real.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(4, 0).isReal());
+   * assertFalse(new Complex(0, 4).isReal());
+   * ```
    */
   isReal(): boolean {
     return this.imag === 0 && Number.isFinite(this.real);
@@ -67,34 +84,73 @@ export class Complex {
   /**
    * Checks whether a complex number is imaginary, meaning its real part is equal to zero.
    *
-   * @returns {boolean} Whether the supplied complex number is imaginary.
+   * @returns {boolean} Whether this is imaginary.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(0, 4).isImaginary());
+   * assertFalse(new Complex(4, 0).isImaginary());
+   * ```
    */
   isImaginary(): boolean {
     return this.real === 0 && Number.isFinite(this.imag);
   }
 
   /**
-   * Checks whether a complex number is equal to zero.
+   * Checks whether this is equal to zero.
    *
-   * @returns {boolean} Whether the supplied complex number is equal to zero.
+   * @returns {boolean} Whether this is equal to zero.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(0, 0).isZero());
+   * assertFalse(new Complex(0, 4).isZero());
+   * ```
    */
-  isZero(): boolean {
-    return this.real === 0 && this.imag === 0;
+  isZero(tolerance?: number): boolean {
+    return (this.real === 0 && this.imag === 0) ||
+      (tolerance !== undefined && this.abs() < tolerance);
   }
 
   /**
    * Checks whether a complex number is finite.
    *
    * @returns {boolean} Whether this is finite.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(5, 3).isFinite());
+   * assertFalse(new Complex(Infinity, 3).isFinite());
+   * assertFalse(new Complex(0, -Infinity).isFinite());
+   * ```
    */
   isFinite(): boolean {
     return Number.isFinite(this.real) && Number.isFinite(this.imag);
   }
 
   /**
-   * Checks whether a complex number is finite.
+   * Checks whether a complex number is infinite.
    *
-   * @returns {boolean} Whether the supplied complex number is finite.
+   * @returns {boolean} Whether this is infinite.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(Infinity, 3).isFinite());
+   * assert(new Complex(0, -Infinity).isFinite());
+   * assertFalse(new Complex(5, 3).isFinite());
+   * ```
    */
   isInfinite(): boolean {
     return isInfinite(this.real) && isInfinite(this.imag);
@@ -103,7 +159,17 @@ export class Complex {
   /**
    * Checks whether a complex number is NaN.
    *
-   * @returns {boolean} Whether the supplied complex number is NaN.
+   * @returns {boolean} Whether this complex number is NaN.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assert, assertFalse } from "@std/assert";
+   *
+   * assert(new Complex(NaN, 3).isNaN());
+   * assertFalse(new Complex(0, -Infinity).isNaN());
+   * assertFalse(new Complex(NaN, Infinity).isNaN());
+   * ```
    */
   isNaN(): boolean {
     return (Number.isNaN(this.real) && !isInfinite(this.real)) ||
@@ -111,24 +177,40 @@ export class Complex {
   }
 
   /**
-   * Returns the sum of the supplied complex numbers.
+   * Adds complex numbers.
    *
-   * @param {Complex | number} num The complex numbers to sum.
+   * @param {Complex | number} num A complex number.
    *
-   * @returns {Complex} The sum of the supplied complex numbers.
+   * @returns {Complex} The sum of this and the supplied complex numbers.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).add(new Complex(5, 2)), new Complex(5, 5));
+   * assertEquals(new Complex(4, 3).add(new Complex(-2, 4)), new Complex(2, 7));
+   * ```
    */
   add(num: Complex | number): Complex {
-    if (Complex.#isInfinite(num)) return Complex.#complexInfinity;
-    if (Complex.#isNaN(num)) return Complex.#complexNaN;
     if (typeof num === "number") num = new Complex(num);
 
     return new Complex(this.real + num.real, this.imag + num.imag);
   }
 
   /**
-   * Returns the negative of a complex number.
+   * Negates complex numbers.
    *
-   * @returns {Complex} The negative of the supplied complex number.
+   * @returns {Complex} The negative of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).neg(), new Complex(0, -3));
+   * assertEquals(new Complex(4, -3).neg(), new Complex(-4, 3));
+   * ```
    */
   neg(): Complex {
     return new Complex(-this.real, -this.imag);
@@ -139,7 +221,16 @@ export class Complex {
    *
    * @param {Complex} num A complex number.
    *
-   * @returns {Complex} The difference of the two supplied complex numbers.
+   * @returns {Complex} The difference of this and the supplied complex number.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).sub(new Complex(5, 2)), new Complex(-5, 1));
+   * assertEquals(new Complex(4, 3).sub(new Complex(-2, 4)), new Complex(6, -1));
+   * ```
    */
   sub(num: Complex | number): Complex {
     if (typeof num === "number") num = new Complex(num);
@@ -149,11 +240,20 @@ export class Complex {
   }
 
   /**
-   * Returns the product of the supplied complex numbers.
+   * Multiplies complex numbers.
    *
-   * @param {Complex | number} num The complex numbers to multiply.
+   * @param {Complex | number} num A complex number.
    *
-   * @returns {Complex} The product of the supplied complex numbers.
+   * @returns {Complex} The product of this and the supplied complex number.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(1, 3).mul(new Complex(5, 2)), new Complex(-1, 17));
+   * assertEquals(new Complex(4, 3).mul(new Complex(-2, 4)), new Complex(-20, 10));
+   * ```
    */
   mul(num: Complex | number): Complex {
     return typeof num === "number"
@@ -165,11 +265,20 @@ export class Complex {
   }
 
   /**
-   * Returns the ratio of two complex numbers.
+   * Divides complex numbers.
    *
    * @param {Complex} num A complex number.
    *
-   * @returns {Complex} The ratio of the two supplied complex numbers.
+   * @returns {Complex} The ratio of this and the supplied complex number.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(-1, 17).div(new Complex(5, 2)), new Complex(1, 3));
+   * assertEquals(new Complex(-20, 10).div(new Complex(-2, 4)), new Complex(4, 3));
+   * ```
    */
   div(num: Complex | number): Complex {
     if (num instanceof Complex && num.isReal()) num = num.real;
@@ -191,9 +300,18 @@ export class Complex {
   }
 
   /**
-   * Returns the reciprocal (multiplicative inverse) of a complex number.
+   * Takes the reciprocal of a complex number.
    *
-   * @returns {Complex} The reciprocal of the supplied number.
+   * @returns {Complex} The reciprocal of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).recip(), new Complex(0, -1 / 3));
+   * assertEquals(new Complex(4, -3).recip(), new Complex(.16, .12));
+   * ```
    */
   recip(): Complex {
     if (this instanceof Complex && this.isReal()) {
@@ -216,25 +334,52 @@ export class Complex {
   /**
    * Returns the square of the absolute value of a complex number.
    *
-   * @returns {Complex} The square of the absolute value of the supplied number.
+   * @returns {Complex} The square of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).absSquared(), 9);
+   * assertEquals(new Complex(4, -3).absSquared(), 25);
+   * ```
    */
   absSquared(): number {
     return this.real * this.real + this.imag * this.imag;
   }
 
   /**
-   * Returns the absolute value of a complex number.
+   * Takes the absolute value of a complex number.
    *
-   * @returns {Complex} The absolute value of the supplied number.
+   * @returns {Complex} The absolute value of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).abs(), 3);
+   * assertEquals(new Complex(4, -3).abs(), 5);
+   * ```
    */
   abs(): number {
     return Math.sqrt(this.absSquared());
   }
 
   /**
-   * Returns the argument of a complex number. The range of this function is (-pi, pi].
+   * Takes the argument of a complex number on a range from (-pi, pi], (exclusive negative pi to inclusive positive pi).
    *
-   * @returns {Complex} The square of the absolute value of the supplied number.
+   * @returns {Complex} The square of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertAlmostEquals } from "@std/assert";
+   *
+   * assertAlmostEquals(new Complex(0, 3).abs(), Math.PI / 2);
+   * assertAlmostEquals(new Complex(4, -3).abs(), -0.6435011088);
+   * ```
    */
   arg(): number {
     return this.isZero()
@@ -247,18 +392,36 @@ export class Complex {
   }
 
   /**
-   * Returns the conjugate of a complex number.
+   * Takes the conjugate of a complex number.
    *
-   * @returns {Complex} The conjugate of the supplied number.
+   * @returns {Complex} The conjugate of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, 3).conj(), new Complex(0, -3));
+   * assertEquals(new Complex(4, -3).conj(), new Complex(4, 3));
+   * ```
    */
   conj(): Complex {
     return new Complex(this.real, -this.imag);
   }
 
   /**
-   * Returns the square root of a complex number.
+   * Takes the square root of a complex number.
    *
-   * @returns {Complex} The square root of the supplied number.
+   * @returns {Complex} The square root of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(-9).sqrt(), new Complex(0, 3));
+   * assertEquals(new Complex(7, -24).sqrt(), new Complex(4, -3));
+   * ```
    */
   sqrt(): Complex {
     if (this.isReal()) {
@@ -276,9 +439,18 @@ export class Complex {
   }
 
   /**
-   * Returns the cube root of a complex number.
+   * Takes the cube root of a complex number.
    *
-   * @returns {Complex} The cube root of the supplied number.
+   * @returns {Complex} The cube root of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertEquals } from "@std/assert";
+   *
+   * assertEquals(new Complex(0, -27).cbrt(), new Complex(0, 3));
+   * assertEquals(new Complex(-44, -117).cbrt(), new Complex(4, -3));
+   * ```
    */
   cbrt(): Complex {
     if (this.isReal()) return new Complex(Math.cbrt(this.real));
@@ -294,9 +466,17 @@ export class Complex {
   }
 
   /**
-   * Returns the natural logarithm of a complex number.
+   * Takes the natural logarithm of a complex number.
    *
-   * @returns {Complex} The natural logarithm of the supplied number.
+   * @returns {Complex} The natural logarithm of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertAlmostEquals } from "@std/assert";
+   *
+   * assertAlmostEquals(new Complex(-1).ln(), new Complex(0, Math.PI));
+   * ```
    */
   ln(): Complex {
     return this.isZero()
@@ -305,27 +485,35 @@ export class Complex {
   }
 
   /**
-   * Returns the base-10 logarithm of a complex number.
+   * Takes the base-10 logarithm of a complex number.
    *
-   * @returns {Complex} The base-10 logarithm of the supplied number.
+   * @returns {Complex} The base-10 logarithm of this.
    */
   log(): Complex {
     return this.ln().div(Math.LN10);
   }
 
   /**
-   * Returns the base-n logarithm of a complex number.
+   * Takes the base-n logarithm of a complex number.
    *
-   * @returns {Complex} The base-n logarithm of the supplied number.
+   * @returns {Complex} The base-n logarithm of this.
    */
   logn(n: number): Complex {
     return this.ln().div(Math.log(n));
   }
 
   /**
-   * Returns e (Euler's number) raised to the power of a complex number.
+   * Raises e (Euler's number) to the power of a complex number.
    *
-   * @returns {Complex} E (Euler's number) raised to the power of a complex number.
+   * @returns {Complex} E (Euler's number) raised to the power of this.
+   *
+   * @example Usage
+   * ```ts
+   * import { Complex } from "@std/math/unstable-complex";
+   * import { assertAlmostEquals } from "@std/assert";
+   *
+   * assertAlmostEquals(new Complex(0, Math.PI).exp(), new Complex(-1));
+   * ```
    */
   exp(): Complex {
     if (this.isReal()) return new Complex(Math.exp(this.real));
@@ -339,9 +527,11 @@ export class Complex {
   }
 
   /**
-   * Returns a complex number raised to the power of another complex number.
+   * Raises a complex number to the power of another complex number.
    *
-   * @returns {Complex} The supplied complex number raised to the power the other complex number.
+   * @param {Complex | number} num A complex number.
+   *
+   * @returns {Complex} This to the power of the supplied complex number.
    */
   pow(num: Complex | number): Complex {
     if (typeof num !== "number" && num.imag === 0) num = num.real;
@@ -376,9 +566,9 @@ export class Complex {
   }
 
   /**
-   * Returns the sine of a complex number.
+   * Takes the sine of a complex number.
    *
-   * @returns The sine of the supplied complex number.
+   * @returns {Complex} The sine of this.
    */
   sin(): Complex {
     if (this.isReal()) return new Complex(Math.sin(this.real));
@@ -390,9 +580,9 @@ export class Complex {
   }
 
   /**
-   * Returns the cosine of a complex number.
+   * Takes the cosine of a complex number.
    *
-   * @returns The cosine of the supplied complex number.
+   * @returns {Complex} The cosine of this.
    */
   cos(): Complex {
     if (this.isReal()) return new Complex(Math.cos(this.real));
@@ -404,45 +594,45 @@ export class Complex {
   }
 
   /**
-   * Returns the tangent of a complex number.
+   * Takes the tangent of a complex number.
    *
-   * @returns The tangent of the supplied complex number.
+   * @returns {Complex} The tangent of this.
    */
   tan(): Complex {
     return this.sin().div(this.cos());
   }
 
   /**
-   * Returns the cotangent of a complex number.
+   * Takes the cotangent of a complex number.
    *
-   * @returns The cotangent of the supplied complex number.
+   * @returns {Complex} The cotangent of this.
    */
   cot(): Complex {
     return this.tan().recip();
   }
 
   /**
-   * Returns the secant of a complex number.
+   * Takes the secant of a complex number.
    *
-   * @returns The secant of the supplied complex number.
+   * @returns {Complex} The secant of this.
    */
   sec(): Complex {
     return this.cos().recip();
   }
 
   /**
-   * Returns the cosecant of a complex number.
+   * Takes the cosecant of a complex number.
    *
-   * @returns The cosecant of the supplied complex number.
+   * @returns {Complex} The cosecant of this.
    */
   csc(): Complex {
     return this.sin().recip();
   }
 
   /**
-   * Returns the arcsine (inverse sine) of a complex number.
+   * Takes the arcsine (inverse sine) of a complex number.
    *
-   * @returns The arcsine of the supplied complex number.
+   * @returns {Complex} The arcsine of this.
    */
   asin(): Complex {
     if (this.isReal()) return new Complex(Math.asin(this.real));
@@ -453,18 +643,18 @@ export class Complex {
   }
 
   /**
-   * Returns the arccosine (inverse cosine) of a complex number.
+   * Takes the arccosine (inverse cosine) of a complex number.
    *
-   * @returns The arccosine of the supplied complex number.
+   * @returns {Complex} The arccosine of this.
    */
   acos(): Complex {
     return new Complex(Math.PI / 2).sub(this.asin());
   }
 
   /**
-   * Returns the arctangent (inverse tangent) of a complex number.
+   * Takes the arctangent (inverse tangent) of a complex number.
    *
-   * @returns The arctangent of the supplied complex number.
+   * @returns {Complex} The arctangent of this.
    */
   atan(): Complex {
     return (Complex.one.sub(Complex.i.mul(this))).ln().sub(
@@ -473,9 +663,9 @@ export class Complex {
   }
 
   /**
-   * Returns the hyperbolic sine of a complex number.
+   * Takes the hyperbolic sine of a complex number.
    *
-   * @returns The hyperbolic sine of the supplied complex number.
+   * @returns {Complex} The hyperbolic sine of this.
    */
   sinh(): Complex {
     if (this.isReal()) return new Complex(this.real);
@@ -487,9 +677,9 @@ export class Complex {
   }
 
   /**
-   * Returns the hyperbolic cosine of a complex number.
+   * Takes the hyperbolic cosine of a complex number.
    *
-   * @returns The hyperbolic cosine of the supplied complex number.
+   * @returns {Complex} The hyperbolic cosine of this.
    */
   cosh(): Complex {
     if (this.isReal()) return new Complex(Math.cosh(this.real));
@@ -501,45 +691,45 @@ export class Complex {
   }
 
   /**
-   * Returns the hyperbolic tangent of a complex number.
+   * Takes the hyperbolic tangent of a complex number.
    *
-   * @returns The hyperbolic tangent of the supplied complex number.
+   * @returns {Complex} The hyperbolic tangent of this.
    */
   tanh(): Complex {
     return this.sinh().div(this.cosh());
   }
 
   /**
-   * Returns the hyperbolic cotangent of a complex number.
+   * Takes the hyperbolic cotangent of a complex number.
    *
-   * @returns The hyperbolic cotangent of the supplied complex number.
+   * @returns {Complex} The hyperbolic cotangent of this.
    */
   coth(): Complex {
     return this.tanh().recip();
   }
 
   /**
-   * Returns the hyperbolic secant of a complex number.
+   * Takes the hyperbolic secant of a complex number.
    *
-   * @returns The hyperbolic secant of the supplied complex number.
+   * @returns {Complex} The hyperbolic secant of this.
    */
   sech(): Complex {
     return this.cosh().recip();
   }
 
   /**
-   * Returns the hyperbolic cosecant of a complex number.
+   * Takes the hyperbolic cosecant of a complex number.
    *
-   * @returns The hyperbolic cosecant of the supplied complex number.
+   * @returns {Complex} The hyperbolic cosecant of this.
    */
   csch(): Complex {
     return this.sinh().recip();
   }
 
   /**
-   * Returns the hyperbolic arcsine (inverse hyperbolic sine) of a complex number.
+   * Takes the hyperbolic arcsine (inverse hyperbolic sine) of a complex number.
    *
-   * @returns {Complex | number} The hyperbolic arcsine (inverse hyperbolic sine) of the supplied complex number.
+   * @returns {Complex} The hyperbolic arcsine of this.
    */
   asinh(): Complex {
     if (this.isReal()) return new Complex(this.real);
@@ -547,9 +737,9 @@ export class Complex {
   }
 
   /**
-   * Returns the hyperbolic arccosine (inverse hyperbolic cosine) of a complex number.
+   * Takes the hyperbolic arccosine (inverse hyperbolic cosine) of a complex number.
    *
-   * @returns {Complex | number} The hyperbolic arccosine (inverse hyperbolic cosine) of the supplied complex number.
+   * @returns {Complex} The hyperbolic arccosine of this.
    */
   acosh(): Complex {
     if (this.isReal() && 1 <= this.real) {
@@ -565,9 +755,9 @@ export class Complex {
   }
 
   /**
-   * Returns the hyperbolic arctangent (inverse hyperbolic tangent) of a complex number.
+   * Takes the hyperbolic arctangent (inverse hyperbolic tangent) of a complex number.
    *
-   * @returns {Complex | number} The hyperbolic arctangent (inverse hyperbolic tangent) of the supplied complex number.
+   * @returns {Complex} The hyperbolic arctangent of this.
    */
   atanh(): Complex {
     return Complex.one.add(this).ln().sub(Complex.one.sub(this).ln()).div(2);
