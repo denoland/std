@@ -7,9 +7,8 @@
 High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 
 > [!IMPORTANT]
-> Newer versions of the Standard Library are now hosted on
-> [JSR](https://jsr.io/@std). Older versions up till 0.224.0 are still available
-> at [deno.land/std](https://deno.land/std).
+> The Standard Library is now hosted on [JSR](https://jsr.io/@std). The legacy
+> deno.land/std registry has been retired and no longer serves any packages.
 
 ## Resources
 
