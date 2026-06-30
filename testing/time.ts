@@ -39,7 +39,7 @@
 import { RedBlackTree } from "@std/data-structures/red-black-tree";
 import { ascend } from "@std/data-structures/comparators";
 import type { DelayOptions } from "@std/async/delay";
-import { _internals } from "./_time.ts";
+import { _internals, nodeTimers, nodeTimersPromises } from "./_time.ts";
 
 export type { DelayOptions };
 
@@ -206,6 +206,28 @@ function fakeAbortSignalTimeout(delay: number): AbortSignal {
   return aborter.signal;
 }
 
+function fakeNodeTimersPromisesSetTimeout<T = void>(
+  delay?: number,
+  value?: T,
+  options?: { signal?: AbortSignal; ref?: boolean },
+): Promise<T> {
+  const signal = options?.signal;
+  if (signal?.aborted) {
+    return Promise.reject(signal.reason);
+  }
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => {
+      fakeClearTimeout(id);
+      reject(signal!.reason);
+    };
+    const id = fakeSetTimeout(() => {
+      signal?.removeEventListener("abort", abort);
+      resolve(value as T);
+    }, delay);
+    signal?.addEventListener("abort", abort, { once: true });
+  });
+}
+
 function overrideGlobals() {
   globalThis.Date = FakeDate;
   globalThis.setTimeout =
@@ -215,6 +237,18 @@ function overrideGlobals() {
     fakeSetInterval as unknown as typeof globalThis.setInterval;
   globalThis.clearInterval = fakeClearInterval;
   AbortSignal.timeout = fakeAbortSignalTimeout;
+  if (nodeTimers) {
+    nodeTimers.setTimeout = fakeSetTimeout;
+    nodeTimers.clearTimeout = fakeClearTimeout;
+    nodeTimers.setInterval = fakeSetInterval;
+    nodeTimers.clearInterval = fakeClearInterval;
+    // In Deno the object attached at `nodeTimers.promises` and the
+    // `node:timers/promises` module object are distinct, so patch both.
+    nodeTimers.promises.setTimeout = fakeNodeTimersPromisesSetTimeout;
+  }
+  if (nodeTimersPromises) {
+    nodeTimersPromises.setTimeout = fakeNodeTimersPromisesSetTimeout;
+  }
 }
 
 function restoreGlobals() {
@@ -224,6 +258,16 @@ function restoreGlobals() {
   globalThis.setInterval = _internals.setInterval;
   globalThis.clearInterval = _internals.clearInterval;
   AbortSignal.timeout = _internals.AbortSignalTimeout;
+  if (nodeTimers) {
+    nodeTimers.setTimeout = _internals.nodeTimersSetTimeout!;
+    nodeTimers.clearTimeout = _internals.nodeTimersClearTimeout!;
+    nodeTimers.setInterval = _internals.nodeTimersSetInterval!;
+    nodeTimers.clearInterval = _internals.nodeTimersClearInterval!;
+    nodeTimers.promises.setTimeout = _internals.nodeTimersPromisesSetTimeout!;
+  }
+  if (nodeTimersPromises) {
+    nodeTimersPromises.setTimeout = _internals.nodeTimersPromisesSetTimeout!;
+  }
 }
 
 function* timerIdGen() {
@@ -286,6 +330,38 @@ let dueTree: RedBlackTree<DueNode>;
  *   clearInterval(intervalId);
  *   time.tick(1000);
  *   assertSpyCalls(cb, 4);
+ * });
+ * ```
+ *
+ * In addition to the global timer functions, on runtimes that provide the
+ * Node compatibility layer the timer methods on the `node:timers` and
+ * `node:timers/promises` module objects are also faked (`setTimeout`,
+ * `clearTimeout`, `setInterval` and `clearInterval` on `node:timers`, and
+ * `setTimeout` on `node:timers/promises`).
+ *
+ * Note that named imports such as
+ * `import { setTimeout } from "node:timers/promises"` capture the real
+ * implementation when the importing module is loaded and cannot be faked
+ * afterwards. Use the default import form to get fakeable timer methods.
+ *
+ * @example Faking `node:timers/promises`
+ * ```ts
+ * import { FakeTime } from "@std/testing/time";
+ * import { assertEquals } from "@std/assert";
+ * import timersPromises from "node:timers/promises";
+ *
+ * Deno.test("setTimeout from node:timers/promises is faked", async () => {
+ *   using time = new FakeTime();
+ *
+ *   let done = false;
+ *   const promise = timersPromises.setTimeout(1000, "done").then((value) => {
+ *     done = true;
+ *     return value;
+ *   });
+ *   await time.tickAsync(500);
+ *   assertEquals(done, false);
+ *   await time.tickAsync(500);
+ *   assertEquals(await promise, "done");
  * });
  * ```
  */
