@@ -9,7 +9,7 @@
  *
  * @param iterable The iterable to take elements from.
  * @param predicate The predicate function to determine if an element should be
- * included.
+ * included. The function receives the element and its index.
  *
  * @returns An array containing all elements until the first element that
  * does not match the predicate.
@@ -25,14 +25,26 @@
  *
  * assertEquals(result, [1, 2, 3]);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { takeWhile } from "@std/collections/take-while";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [20, 30, 20];
+ * const result = takeWhile(array, (_, index) => index < 2);
+ *
+ * assertEquals(result, [20, 30]);
+ * ```
  */
 export function takeWhile<T>(
   iterable: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): T[] {
+  let index = 0;
   const result: T[] = [];
   for (const element of iterable) {
-    if (!predicate(element)) {
+    if (!predicate(element, index++)) {
       break;
     }
     result.push(element);

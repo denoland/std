@@ -8,8 +8,8 @@
  */
 
 import type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
-import { XmlTokenizer } from "./_tokenizer.ts";
-import { XmlEventParser } from "./_parser.ts";
+import { createXmlPipeline } from "./_pipeline.ts";
+import { decodeAsyncIterable } from "./_decode.ts";
 
 export type { ParseStreamOptions, XmlEventCallbacks } from "./types.ts";
 
@@ -64,11 +64,7 @@ export async function parseXmlStream(
   callbacks: XmlEventCallbacks,
   options: ParseStreamOptions = {},
 ): Promise<void> {
-  const trackPosition = options.trackPosition ?? false;
-  const disallowDoctype = options.disallowDoctype ?? true;
-  const xml11 = options.xmlVersion === "1.1";
-  const tokenizer = new XmlTokenizer({ trackPosition, disallowDoctype, xml11 });
-  const parser = new XmlEventParser(callbacks, options, xml11);
+  const { tokenizer, parser } = createXmlPipeline(options, callbacks);
 
   for await (const chunk of source) {
     tokenizer.process(chunk, parser);
@@ -109,19 +105,5 @@ export function parseXmlStreamFromBytes(
   callbacks: XmlEventCallbacks,
   options: ParseStreamOptions = {},
 ): Promise<void> {
-  const textStream = decodeAsyncIterable(source);
-  return parseXmlStream(textStream, callbacks, options);
-}
-
-/** Helper to decode an AsyncIterable of bytes to strings. */
-async function* decodeAsyncIterable(
-  source: AsyncIterable<Uint8Array>,
-): AsyncGenerator<string> {
-  const decoder = new TextDecoder();
-  for await (const chunk of source) {
-    yield decoder.decode(chunk, { stream: true });
-  }
-  // Flush any remaining bytes
-  const final = decoder.decode();
-  if (final) yield final;
+  return parseXmlStream(decodeAsyncIterable(source), callbacks, options);
 }
