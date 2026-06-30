@@ -603,7 +603,12 @@ export function toMatchObject(
       );
     } else {
       const subset = getObjectSubset(received, expected, context.customTesters);
-      const defaultMessage = buildEqualErrorMessage(subset, expected);
+      // toMatchObject is a subset check, not equality. Override the default
+      // "Values are not equal." headline so the failure message describes
+      // what actually went wrong (see #6999).
+      const defaultMessage = buildEqualErrorMessage(subset, expected, {
+        summary: "Object does not match the expected pattern.",
+      });
       throw new AssertionError(
         context.customMessage
           ? `${context.customMessage}: ${defaultMessage}`

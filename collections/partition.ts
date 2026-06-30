@@ -46,7 +46,7 @@ export function partition<T, U extends T>(
  *
  * @param array The array to partition.
  * @param predicate The predicate function to determine which array an element
- * belongs to.
+ * belongs to. The function receives the element and its index.
  *
  * @returns A tuple of two arrays. The first array contains all elements that
  * match the predicate, the second contains all elements that do not.
@@ -62,20 +62,36 @@ export function partition<T, U extends T>(
  * assertEquals(even, [6, 8]);
  * assertEquals(odd, [5, 7, 9]);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { partition } from "@std/collections/partition";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [2, 4, 6];
+ * const [evenIndexed, oddIndexed] = partition(
+ *   array,
+ *   (_: number, index: number) => index % 2 === 0,
+ * );
+ *
+ * assertEquals(evenIndexed, [2, 6]);
+ * assertEquals(oddIndexed, [4]);
+ * ```
  */
 export function partition<T>(
   array: Iterable<T>,
-  predicate: (el: T) => boolean,
+  predicate: (el: T, index: number) => boolean,
 ): [T[], T[]];
 export function partition(
   array: Iterable<unknown>,
-  predicate: (el: unknown) => boolean,
+  predicate: (el: unknown, index: number) => boolean,
 ): [unknown[], unknown[]] {
   const matches: Array<unknown> = [];
   const rest: Array<unknown> = [];
+  let index = 0;
 
   for (const element of array) {
-    if (predicate(element)) {
+    if (predicate(element, index++)) {
       matches.push(element);
     } else {
       rest.push(element);
