@@ -1,3 +1,49 @@
+### 2026.06.30
+
+#### @std/async 1.5.0 (minor)
+
+- feat(async): stabilize `Channel` (#7123)
+
+#### @std/cli 1.0.31 (patch)
+
+- fix(cli/unstable): speed up `ProgressBarStream` tests (#7193)
+
+#### @std/collections 1.3.0 (minor)
+
+- feat(collections/unstable): have `zip` accept `Iterable` (#7120)
+- feat(collections): stabilize index argument in iterable methods (#7119)
+
+#### @std/data-structures 1.1.1 (patch)
+
+- feat(data-structures/unstable): rework IndexedHeap with set() upsert and
+  generic priorities (#7124)
+
+#### @std/encoding 1.0.11 (patch)
+
+- fix(encoding): `encodeVarint()` throws when value or buffer overflows (#7149)
+
+#### @std/expect 1.0.20 (patch)
+
+- fix(expect): toMatchObject failure headline describes a subset match (#7168)
+
+#### @std/http 1.1.2 (patch)
+
+- feat(http/unstable): split parseProblemDetails, validate status, add
+  statusText option (#7117)
+- fix(http/unstable): use relative import for unstable_structured_fields (#7155)
+
+#### @std/path 1.1.6 (patch)
+
+- fix(path): improve Node.js compatibility, run tests in node and bun (#7104)
+
+#### @std/xml 0.1.3 (patch)
+
+- feat(xml): add `parseXmlRecords` (#7111)
+
+#### @std/yaml 1.1.2 (patch)
+
+- fix(yaml): stringify astral characters (emoji) without escaping (#7197)
+
 ### 2026.05.26
 
 #### @std/async 1.4.0 (minor)
